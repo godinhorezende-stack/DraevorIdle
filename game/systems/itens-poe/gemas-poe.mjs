@@ -45,6 +45,8 @@ import * as GemasC1 from './gemas-c1.mjs';
 import * as GemasC2 from './gemas-c2.mjs';
 // (lote B2, dono 20/10: os leitores das gemas de contadores próprios, chão e espalhar — as Cargas Sangrentas, o Golpe Infernal, o Contágio, a Febre…)
 import * as GemasB2 from './gemas-b2.mjs';
+// (lote B3, dono 21/10: os leitores das gemas de ondas, sequências, formas e cadáveres — a Cascata Glacial, a Retribuição Divina, a Conflagração, a Troca de Corpos…)
+import * as GemasB3 from './gemas-b3.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
 const ARQ_GEMAS = new URL('../../gamedata/itens-poe/gemas-poe.json', import.meta.url);
@@ -522,6 +524,8 @@ const LINHAS_QUE_NAO_SE_APLICAM = [
   [/^Projéteis mudam de direção \d+ vezes$/i, 'não se aplica: "Projéteis mudam de direção N vezes" (Raio Cinético) só muda a trajetória — o projétil não acerta de novo a cada mudança'],
   // (lote PR1, dono 20/10 — D1 do plano: como a 2ª forma da Lança de Gelo) a Hélice Espectral
   [/^Gira por [\d.]+ rotações$/i, 'não se aplica: "Gira por N rotações" (Hélice Espectral) só muda a trajetória da espiral — o PoB não a usa na conta, e o projétil do jogo acerta no tique'],
+  // (lote B3, dono 21/10) o Morto Volátil e o do Fervor (a qualidade)
+  [GemasB3.LINHA_VELOCIDADE_DO_ORBE, 'não se aplica: "Velocidade de Movimento do Orbe aumentada em X%" (Morto Volátil) só muda a trajetória do orbe até o inimigo — o PoB não a usa na conta, e o orbe do jogo acerta no uso'],
 ];
 /**
  * (lote A3, dono 19/10) O que o projétil da gema faz só no PoB, sem linha (o status não o vê): a Vaal Faísca lança 100 projéteis em espiral por 3 s
@@ -697,7 +701,10 @@ export function areaNoNivel(slug, nivel = 1, qualidade = 0) {
   // (lote A4, dono 19/10: D8: os dados divergentes seguem o PoB) a Rajada de Chamas Vaal: o raio de 4,5 m do PoB (radius 45, act_int.lua:7106) — o
   // poedb diz 3,5
   const base = RAIO_DO_POB[slug] ?? st.raio ?? st.raioProp ?? null;
-  const raioM = base == null ? null : Math.max(0, (base + (st.raioBonus ?? 0)) * Math.sqrt(Math.max(0.2, 1 + (st.areaMais ?? 0) / 100)));
+  // (decisão do dono, 21/10 — o PoB) a Rajada Divina e a do Esplendor: o raio da gema é o da IMPLOSÃO (o secundário, 1,2 m); o "+X metros de raio" da qualidade
+  // (active_skill_base_radius_+) vai no primário — a explosão (`GemasB3.objetoDaGema`)
+  const bonus = /^Divine_Blast/.test(slug) ? 0 : st.raioBonus ?? 0;
+  const raioM = base == null ? null : Math.max(0, (base + bonus) * Math.sqrt(Math.max(0.2, 1 + (st.areaMais ?? 0) / 100)));
   return { raioM, areaIncPct: st.areaInc ?? 0 };
 }
 
@@ -966,6 +973,9 @@ export const ehLinhaDaSequencia = (l) => LINHA_DA_SEQUENCIA.test(l);
  * Gelo (`concentrica`) e o Estilhaçar a Terra (`estrela`, com as estacas — D5). A da Ruptura é a `linha`.
  */
 export function sequenciaDaGema(slug, nivel = 1, qualidade = 0) {
+  // (lote B3, dono 21/10: + a Cascata Glacial — `cascata` —, a Retribuição Divina — `ondas`, o raio do estouro pela coluna do poedb — e a Chuva Cinética do Impacto —
+  // `chuvaRetangular` — `GemasB3.sequenciaDasLinhas`)
+  if (/^(Glacial_Cascade|Divine_Retribution$|Kinetic_Rain_of_Impact$)/.test(slug)) return GemasB3.sequenciaDasLinhas(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), { raioDoEstouroM: slug === 'Divine_Retribution' ? ultimoDaColuna(slug, nivel, /^Raio do Estouro/i) : null });
   if (!/^Sunder/.test(slug)) {
     const a4 = /^(Bladefall|Ice_Crash|Earthshatter)/.test(slug) ? GemasA4.sequenciaDasLinhas(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade)) : null;
     return a4;
@@ -1022,7 +1032,7 @@ export const snipeDaGema = (slug, nivel = 1) => comCache(A4, `sni|${slug}@${nive
 const A3B = new Map();
 /** O objeto que o uso da gema deixa (`GemasA3b.objetoDaGema`): a bola, o tornado, a espiral, o olho, o marcador, o chão, as lâminas, a captura. */
 // (lote B1, dono 20/10 — D-B1.10: + o marcador da Invocar Tormenta, `GemasB1.tormentaDasLinhas`; lote B2: + a Explosão Voltáxica e a Tormenta Flamejante Vaal)
-export const objetoDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A3B, `obj|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA3b.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasB1.tormentaDasLinhas(slug, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasPR1.objetoDasLinhas(slug, textosDaGema(slug, nivel).linhas) ?? GemasB2.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}));
+export const objetoDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A3B, `obj|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA3b.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasB1.tormentaDasLinhas(slug, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasPR1.objetoDasLinhas(slug, textosDaGema(slug, nivel).linhas) ?? GemasB2.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasB3.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}));
 /** (D2) O que a gema faz com os seus Disparos Congelantes (a Nova Glacial dos Disparos, o Vórtice da Projeção). */
 export const consomeDisparosDaGema = (slug, nivel = 1) => comCache(A3B, `con|${slug}@${nivel | 0}`, () => GemasA3b.consomeDisparos(slug, textosDaGema(slug, nivel).linhas));
 /** Os esporos da Flecha Flagelante. */
@@ -1141,6 +1151,33 @@ export const b2DaGema = (slug, nivel = 1, qualidade = 0) => comCache(B2, `b2|${s
     larguraDoVinculo: GemasB2.larguraDoVinculoDasLinhas(slug, linhas), descarrego: GemasB2.descarregoDasLinhas(slug, linhas, daQ),
   };
 });
+
+/*
+ * ---- (lote B3, dono 21/10) os leitores no nível do lote B3 (`itens-poe/gemas-b3.mjs`) ----
+ * `{ conflagracao, explodeAoDisparar, vulcao, troca, trarthus }` (o que vale na gema; o resto, null/false).
+ */
+const B3 = new Map();
+export const b3DaGema = (slug, nivel = 1, qualidade = 0) => comCache(B3, `b3|${slug}@${nivel | 0}@${qualidade | 0}`, () => {
+  const [linhas, daQ] = linhasA1b(slug, nivel, qualidade);
+  const st = compilada(slug, nivel, qualidade)?.stats ?? {};
+  return {
+    conflagracao: GemasB3.conflagracaoDasLinhas(slug, linhas, daQ, slug === 'Conflagration' ? ultimoDaColuna(slug, nivel, /^Raio Base da explos[aã]o/i) : null),
+    explodeAoDisparar: GemasB3.explodeAoDispararDasLinhas(slug, linhas), vulcao: GemasB3.vulcaoDasLinhas(slug, linhas, daQ, st),
+    troca: GemasB3.trocaDeCorposDasLinhas(slug, linhas, daQ, st), trarthus: GemasB3.trarthusDasLinhas(slug, linhas, st),
+  };
+});
+/**
+ * (lote B3, dono 21/10) O ÚLTIMO número da célula da coluna do poedb cujo cabeçalho casa com `re`, no nível: a célula "2, 1.6" da Retribuição Divina e a "1, 2" da
+ * Conflagração têm o raio no segundo número (o primeiro é o modo de descrição da área do PoB) — `textosDoNivel` põe o primeiro no texto. Null sem a coluna.
+ */
+export function ultimoDaColuna(slug, nivel, re) {
+  const g = POR_SLUG.get(slug);
+  const i = (g?.colunas ?? []).findIndex((c) => re.test(c));
+  if (i < 0 || !g.linhas?.length) return null;
+  const linha = g.linhas[Math.max(1, Math.min(nivel | 0 || 1, g.linhas.length)) - 1];
+  const n = Number(String(linha?.[i] ?? '').split(/,\s*/).filter(Boolean).at(-1));
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
 
 /*
  * ---- (lote C1, dono 20/10) os leitores no nível do lote C1 (`itens-poe/gemas-c1.mjs`) ----
@@ -1541,7 +1578,7 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
  * os dois não se separarem — `h`: a gema compilada com `slug`, `arquetipo` e `nivel`; `q`: a qualidade.
  */
 function ehLinhaFeita(h, l, q) {
-  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasPR3.ehLinhaPR3(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l));
+  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasPR3.ehLinhaPR3(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l) && !GemasB3.ehLinhaB3(h.slug, l));
 }
 function avaliarNoJogo(h, formato) {
   const st = h.stats;
@@ -1617,11 +1654,12 @@ function avaliarNoJogo(h, formato) {
     for (const [k, v] of Object.entries(st.chances ?? {})) if (v && !AFECCAO_NO_JOGO[k] && !CHANCE_NO_ACERTO[k]) motivos.push(`a chance de ${v}% de ${k} ainda não existe no jogo`);
     // (lote G12: as gemas de cadáver que o jogo faz — `cadaverDaGema`)
     // (lote B2, dono 20/10: + o Golpe Infernal — o morto com o debuff explode como cadáver, `GemasB2.explodeAoMorrer`)
-    if (st.cadaver && !cadaverDaGema(h.slug, h.nivel) && !GemasB2.explodeAoMorrer(h.slug)) motivos.push('o uso de cadáveres não existe no jogo');
+    // (lote B3, dono 21/10: + a Troca de Corpos — `GemasB3.usaCadaver`)
+    if (st.cadaver && !cadaverDaGema(h.slug, h.nivel) && !GemasB2.explodeAoMorrer(h.slug) && !GemasB3.usaCadaver(h.slug)) motivos.push('o uso de cadáveres não existe no jogo');
     // (lote A1: a gema de movimento sem dano — o Avanço, o Passo Rápido, a Emboscada — tem o efeito dela: o deslocamento)
     // (lote B1, dono 20/10: + a gema de cadáver sem dano mágico — o Detonar Mortos da Limpeza: o efeito é a explosão, `cadaverDaGema`)
-    // (lote PR3, dono 21/10: + o Pacto de Beidat — o uso é o buff que fortalece as próximas magias, `GemasPR3.pactoNoUso`)
-    if (!Object.keys(st.dano ?? {}).length && !h.ataque && !st.dot?.length && !DESLOCAMENTO[h.slug] && !cadaverDaGema(h.slug, h.nivel) && !GemasPR3.ehPactoDeBeidat(h.slug)) motivos.push('sem dano direto: nenhum efeito no combate');
+    // (lote PR3, dono 21/10: + o Pacto de Beidat — o uso é o buff que fortalece as próximas magias, `GemasPR3.pactoNoUso`; lote B3: + a Troca de Corpos — o Fogo base + a Vida, `GemasB3.temDanoProprio`)
+    if (!Object.keys(st.dano ?? {}).length && !h.ataque && !st.dot?.length && !DESLOCAMENTO[h.slug] && !cadaverDaGema(h.slug, h.nivel) && !GemasPR3.ehPactoDeBeidat(h.slug) && !GemasB3.temDanoProprio(h.slug)) motivos.push('sem dano direto: nenhum efeito no combate');
   }
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)

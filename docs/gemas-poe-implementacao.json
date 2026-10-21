@@ -2,17 +2,17 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 292,
+   "implementada e testada": 307,
    "implementada, sem teste próprio": 47,
-   "parcial": 211,
+   "parcial": 196,
    "limitação do modelo idle": 11,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 136,
+   "implementada e testada": 141,
    "implementada, sem teste próprio": 18,
-   "parcial": 50,
+   "parcial": 45,
    "limitação do modelo idle": 6
   },
   "suportes": {
@@ -24,15 +24,15 @@
   "variantes": {
    "vaal": {
     "total": 52,
-    "implementada e testada": 26,
-    "parcial": 20,
+    "implementada e testada": 27,
+    "parcial": 19,
     "implementada, sem teste próprio": 6
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 99,
+    "implementada e testada": 107,
     "implementada, sem teste próprio": 25,
-    "parcial": 78,
+    "parcial": 70,
     "limitação do modelo idle": 7
    }
   },
@@ -44,8 +44,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 573,
-   "emDuasOuMais": 96
+   "linhasDistintas": 544,
+   "emDuasOuMais": 92
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -59,7 +59,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 374,
+   "ativasCitadas": 383,
    "suportesCitados": 119,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -1566,10 +1566,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Explosão causa 100 % mais Dano com Acertos e Afecções"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1581,10 +1579,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "orbe",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Taxa base de explosão do orbe é de uma vez por segundo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3622,12 +3618,13 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Velocidade de Movimento do Orbe aumentada em 40 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
+   "linhasNaoSeAplicam": [
+    "não se aplica: \"Velocidade de Movimento do Orbe aumentada em X%\" (Morto Volátil) só muda a trajetória do orbe até o inimigo — o PoB não a usa na conta, e o orbe do jogo acerta no uso"
+   ],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -3650,12 +3647,13 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Velocidade de Movimento do Orbe aumentada em 40 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
+   "linhasNaoSeAplicam": [
+    "não se aplica: \"Velocidade de Movimento do Orbe aumentada em X%\" (Morto Volátil) só muda a trajetória do orbe até o inimigo — o PoB não a usa na conta, e o orbe do jogo acerta no uso"
+   ],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -4127,18 +4125,12 @@
   },
   {
    "slug": "Bladefall_of_Trarthus",
-   "nome": "Corrente com Gancho de Trarthus",
+   "nome": "Chuva de Lâminas de Trarthus",
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Uma rajada de lâminas cai a cada 0.7 segundos",
-    "efeito não simulado: 2 % maior frequência de rajadas por 100 de mana máximo",
-    "efeito não simulado: O raio base da Saraivada é de 2.5 metros",
-    "efeito não simulado: Raio base da lâmina é de 1 metro",
-    "efeito não simulado: Cada rajada dispara 5 lâminas, que permanecem no chão"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4202,14 +4194,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "chuva",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: As flechas após a primeira caem em um raio base de 3 metros",
-    "efeito não simulado: Raio de alcance base do impacto é de 1 metro",
-    "efeito não simulado: Explosão causa + 50 % de dano com ataques e afecções",
-    "efeito não simulado: Duração da penalidade base é de 4 segundos",
-    "efeito não simulado: Explosão causa + 30 % de dano com ataques e afecções"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4234,11 +4220,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Explode um Cadáver próximo ao Disparar Projéteis",
-    "efeito não simulado: Dispara Projéteis 15 % mais rápido"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4250,11 +4233,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "orbe",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Dispara Projéteis a cada 1 segundos",
-    "efeito não simulado: Máximo de +2 gêiseres por vez"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4618,10 +4598,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "chuva",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Dispara um Carregamento de Flechas no ar Projéteis Disparam de onde a Flecha com o Carregamento cair"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5461,14 +5439,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "o uso de cadáveres não existe no jogo",
-    "sem dano direto: nenhum efeito no combate",
-    "efeito não simulado: Esta Magia causa 210 a 315 , mais 6 % da sua Vida Máxima, como Dano de Fogo base",
-    "efeito não simulado: 300 % mais Área de Efeito se Consumiu um cadáver",
-    "efeito não simulado: Causa +6 % da sua Vida Máxima como Dano de Fogo base"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6321,10 +6293,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Ataca um Inimigo a cada 0.2 segundos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6435,11 +6405,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Cada onda tem 6 Explosões",
-    "efeito não simulado: Causa 4 Ondas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7298,13 +7265,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Empurra Inimigos ao Acertar",
-    "efeito não simulado: Explosão Final Causa + 200 % mais Dano",
-    "efeito não simulado: Causa 4 rajadas",
-    "efeito não simulado: Explosão Final causa + 50 % de dano"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7316,11 +7278,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Causa 6 rajadas",
-    "efeito não simulado: Causa +2 rajadas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7428,11 +7387,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "chuva",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: A área alvejada base mede 9 metros de comprimento",
-    "efeito não simulado: Circunferência base da área-alvo é de 4.5 metros"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7653,7 +7609,7 @@
    "arquetipo": "projetil",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Dano de ataques é absorvido pela concha antes de afetar a vida ou o escudo de Energia do alvo Concha pode sofrer até 100 de dano antes de explodir"
+    "efeito não simulado: Dano de ataques é absorvido pela concha antes de afetar a vida ou o escudo de Energia do alvo Concha pode sofrer até 6214 de dano antes de explodir"
    ],
    "idle": [],
    "outros": [],
@@ -10757,17 +10713,6 @@
    ]
   },
   {
-   "linha": "sem dano direto: nenhum efeito no combate",
-   "gemas": [
-    "Arcanist_Brand",
-    "Bodyswap",
-    "Conversion_Trap",
-    "Detonate_Mines",
-    "Smoke_Mine",
-    "Wither"
-   ]
-  },
-  {
    "linha": "Duração do Efeito de Habilidades aumentada em # %",
    "gemas": [
     "Molten_Shell",
@@ -10775,6 +10720,16 @@
     "Vaal_Arctic_Armour",
     "Vaal_Immortal_Call",
     "Vaal_Molten_Shell"
+   ]
+  },
+  {
+   "linha": "sem dano direto: nenhum efeito no combate",
+   "gemas": [
+    "Arcanist_Brand",
+    "Conversion_Trap",
+    "Detonate_Mines",
+    "Smoke_Mine",
+    "Wither"
    ]
   },
   {
@@ -11113,13 +11068,6 @@
    ]
   },
   {
-   "linha": "Causa # rajadas",
-   "gemas": [
-    "Glacial_Cascade",
-    "Glacial_Cascade_of_the_Fissure"
-   ]
-  },
-  {
    "linha": "Causa +# explosões menores",
    "gemas": [
     "Explosive_Trap",
@@ -11162,13 +11110,6 @@
    ]
   },
   {
-   "linha": "Duração da penalidade base é de # segundos",
-   "gemas": [
-    "Conflagration",
-    "Infernal_Cry"
-   ]
-  },
-  {
    "linha": "Duração de Maldições aumentada em # %",
    "gemas": [
     "Enfeeble",
@@ -11194,13 +11135,6 @@
    "gemas": [
     "Greater_Kinetic_Instability_Support",
     "Kinetic_Instability_Support"
-   ]
-  },
-  {
-   "linha": "Esta Magia causa # a # , mais # % da sua Vida Máxima, como Dano de Fogo base",
-   "gemas": [
-    "Bodyswap",
-    "Bodyswap_of_Sacrifice"
    ]
   },
   {
@@ -11414,13 +11348,6 @@
    ]
   },
   {
-   "linha": "Velocidade de Movimento do Orbe aumentada em # %",
-   "gemas": [
-    "Volatile_Dead",
-    "Volatile_Dead_of_Seething"
-   ]
-  },
-  {
    "linha": "Velocidade de Movimento dos Lacaios está no Máximo",
    "gemas": [
     "Raise_Spectre",
@@ -11483,21 +11410,9 @@
    ]
   },
   {
-   "linha": "# % maior frequência de rajadas por # de mana máximo",
-   "gemas": [
-    "Bladefall_of_Trarthus"
-   ]
-  },
-  {
    "linha": "# % mais Área de Efeito se Consumindo um Lacaio",
    "gemas": [
     "Bodyswap_of_Sacrifice"
-   ]
-  },
-  {
-   "linha": "# % mais Área de Efeito se Consumiu um cadáver",
-   "gemas": [
-    "Bodyswap"
    ]
   },
   {
@@ -11654,12 +11569,6 @@
    "linha": "a absorção de dano da guarda ainda não existe no jogo",
    "gemas": [
     "Steelskin"
-   ]
-  },
-  {
-   "linha": "A área alvejada base mede # metros de comprimento",
-   "gemas": [
-    "Kinetic_Rain_of_Impact"
    ]
   },
   {
@@ -11822,18 +11731,6 @@
    "linha": "Arqueiro Ilusório utiliza Habilidades Suportadas com #% menos Velocidade de Ataque",
    "gemas": [
     "Mirage_Archer_Support"
-   ]
-  },
-  {
-   "linha": "As flechas após a primeira caem em um raio base de # metros",
-   "gemas": [
-    "Conflagration"
-   ]
-  },
-  {
-   "linha": "Ataca um Inimigo a cada # segundos",
-   "gemas": [
-    "Vaal_Storm_Call"
    ]
   },
   {
@@ -12071,18 +11968,6 @@
    ]
   },
   {
-   "linha": "Cada onda tem # Explosões",
-   "gemas": [
-    "Divine_Retribution"
-   ]
-  },
-  {
-   "linha": "Cada rajada dispara # lâminas, que permanecem no chão",
-   "gemas": [
-    "Bladefall_of_Trarthus"
-   ]
-  },
-  {
    "linha": "Campo ganha # % mais Dano com Ataques por cada # % de Efeito de Eletrização no Inimigo quando criado",
    "gemas": [
     "Galvanic_Field"
@@ -12119,24 +12004,6 @@
    ]
   },
   {
-   "linha": "Causa # Ondas",
-   "gemas": [
-    "Divine_Retribution"
-   ]
-  },
-  {
-   "linha": "Causa +# % da sua Vida Máxima como Dano de Fogo base",
-   "gemas": [
-    "Bodyswap"
-   ]
-  },
-  {
-   "linha": "Causa +# rajadas",
-   "gemas": [
-    "Glacial_Cascade_of_the_Fissure"
-   ]
-  },
-  {
    "linha": "Causa Dano de Fogo base igual a #% da Vida Máxima dos Totens",
    "gemas": [
     "Flamewood_Support"
@@ -12158,12 +12025,6 @@
    "linha": "Chão amaldiçoado de habilidades reforçadas ativam Sapo Explosivo a cada # segundo",
    "gemas": [
     "Hextoad_Support"
-   ]
-  },
-  {
-   "linha": "Circunferência base da área-alvo é de # metros",
-   "gemas": [
-    "Kinetic_Rain_of_Impact"
    ]
   },
   {
@@ -12413,33 +12274,21 @@
    ]
   },
   {
-   "linha": "Dispara Projéteis # % mais rápido",
-   "gemas": [
-    "Cremation_of_Exhuming"
-   ]
-  },
-  {
-   "linha": "Dispara Projéteis a cada # segundos",
-   "gemas": [
-    "Cremation_of_the_Volcano"
-   ]
-  },
-  {
    "linha": "Dispara tentáculos em até # Alvos",
    "gemas": [
     "Exsanguinate"
    ]
   },
   {
-   "linha": "Dispara um Carregamento de Flechas no ar Projéteis Disparam de onde a Flecha com o Carregamento cair",
-   "gemas": [
-    "Tornado_Shot_of_Cloudburst"
-   ]
-  },
-  {
    "linha": "Duração Base do Frenesi Faminto é de # segundos",
    "gemas": [
     "Feeding_Frenzy_Support"
+   ]
+  },
+  {
+   "linha": "Duração da penalidade base é de # segundos",
+   "gemas": [
+    "Infernal_Cry"
    ]
   },
   {
@@ -12488,12 +12337,6 @@
    "linha": "Empurra e Interrompe Inimigos em uma pequena Área",
    "gemas": [
     "Seismic_Cry"
-   ]
-  },
-  {
-   "linha": "Empurra Inimigos ao Acertar",
-   "gemas": [
-    "Glacial_Cascade"
    ]
   },
   {
@@ -12575,6 +12418,12 @@
    ]
   },
   {
+   "linha": "Esta Magia causa # a # , mais # % da sua Vida Máxima, como Dano de Fogo base",
+   "gemas": [
+    "Bodyswap_of_Sacrifice"
+   ]
+  },
+  {
    "linha": "Esta Magia ganha Intensidade quando você Conjurá-la, máximo de #",
    "gemas": [
     "Crackling_Lance"
@@ -12629,18 +12478,6 @@
    ]
   },
   {
-   "linha": "Explode um Cadáver próximo ao Disparar Projéteis",
-   "gemas": [
-    "Cremation_of_Exhuming"
-   ]
-  },
-  {
-   "linha": "Explosão causa # % mais Dano com Acertos e Afecções",
-   "gemas": [
-    "Divine_Blast"
-   ]
-  },
-  {
    "linha": "Explosão causa # % mais Dano com Acertos por Flecha Explosiva no Alvo",
    "gemas": [
     "Explosive_Arrow"
@@ -12656,24 +12493,6 @@
    "linha": "Explosão causa # % menos Dano Base",
    "gemas": [
     "Explosive_Arrow"
-   ]
-  },
-  {
-   "linha": "Explosão causa + # % de dano com ataques e afecções",
-   "gemas": [
-    "Conflagration"
-   ]
-  },
-  {
-   "linha": "Explosão Final causa + # % de dano",
-   "gemas": [
-    "Glacial_Cascade"
-   ]
-  },
-  {
-   "linha": "Explosão Final Causa + # % mais Dano",
-   "gemas": [
-    "Glacial_Cascade"
    ]
   },
   {
@@ -13763,12 +13582,6 @@
    ]
   },
   {
-   "linha": "Máximo de +# gêiseres por vez",
-   "gemas": [
-    "Cremation_of_the_Volcano"
-   ]
-  },
-  {
    "linha": "Máximo de +# Paredes Flamejantes por vez",
    "gemas": [
     "Flame_Wall"
@@ -13841,12 +13654,6 @@
    ]
   },
   {
-   "linha": "O raio base da Saraivada é de # metros",
-   "gemas": [
-    "Bladefall_of_Trarthus"
-   ]
-  },
-  {
    "linha": "o Raio por estágio e o \"menos dano\" valem para você e os inimigos na área; os aliados (a party) na área não recebem o buff",
    "gemas": [
     "Sigil_of_Power"
@@ -13856,12 +13663,6 @@
    "linha": "o totem provoca os monstros em volta a atacá-lo (act_str.lua:##)",
    "gemas": [
     "Decoy_Totem"
-   ]
-  },
-  {
-   "linha": "o uso de cadáveres não existe no jogo",
-   "gemas": [
-    "Bodyswap"
    ]
   },
   {
@@ -13979,21 +13780,9 @@
    ]
   },
   {
-   "linha": "Raio base da lâmina é de # metro",
-   "gemas": [
-    "Bladefall_of_Trarthus"
-   ]
-  },
-  {
    "linha": "Raio Base terciário igual a # metros",
    "gemas": [
     "Ice_Trap"
-   ]
-  },
-  {
-   "linha": "Raio de alcance base do impacto é de # metro",
-   "gemas": [
-    "Conflagration"
    ]
   },
   {
@@ -14171,12 +13960,6 @@
    ]
   },
   {
-   "linha": "Taxa base de explosão do orbe é de uma vez por segundo",
-   "gemas": [
-    "Divine_Blast_of_Radiance"
-   ]
-  },
-  {
    "linha": "Tempestade Furiosa causa # % mais Dano por cada # de Fúria Sacrificada",
    "gemas": [
     "Rage_Vortex"
@@ -14222,12 +14005,6 @@
    "linha": "Um lacaio próximo ganha uma alma para cada # de vida que você gasta em custos\\niniciais com magias reforçadas",
    "gemas": [
     "Transfusion_Support"
-   ]
-  },
-  {
-   "linha": "Uma rajada de lâminas cai a cada # segundos",
-   "gemas": [
-    "Bladefall_of_Trarthus"
    ]
   },
   {

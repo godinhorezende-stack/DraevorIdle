@@ -155,7 +155,10 @@ test('G2: a forma da área no raio do PoE da gema (1 casa = 2 m; a fração é a
 
 test('G2: a qualidade nas linhas que o compilador lê — raio, duração, recarga e projéteis', { skip: SEM }, () => {
   // Explosão Divina: "+(0 — 0.3) metros de raio".
-  assert.ok(Math.abs(GP.areaNoNivel('Divine_Blast', 20, 20).raioM - GP.areaNoNivel('Divine_Blast', 20, 0).raioM - 0.3) < 1e-9);
+  // (lote B3, com o AVAL do dono 21/10 — o PoB: o "+0,3 m" da qualidade, active_skill_base_radius_+, vale no raio primário — a explosão —; o raio da gema é o da
+  // implosão, o secundário de 1,2 m, sem ele. Antes: a implosão crescia 0,3 m com a qualidade)
+  assert.ok(Math.abs(GP.areaNoNivel('Divine_Blast', 20, 20).raioM - 1.2) < 1e-9 && Math.abs(GP.areaNoNivel('Divine_Blast', 20, 0).raioM - 1.2) < 1e-9);
+  assert.ok(Math.abs(GP.objetoDaGema('Divine_Blast', 20, 20).raioM - GP.objetoDaGema('Divine_Blast', 20, 0).raioM - 0.3) < 1e-9);
   // Clamor Resistente: a recarga é a do PoE (8 s — a "Velocidade de Clamor" do nível é o tempo de uso, não a recarga), e a qualidade
   // "Velocidade de Recarga aumentada em (0 — 40) %" a divide por 1,4.
   const r0 = GP.temposNoNivel('Enduring_Cry', 20, 0).recargaMs;

@@ -211,7 +211,9 @@ test('C1: a Tormenta de Espadas — oito acertos em cada inimigo da área (sword
 // ---------------------------------------------------------------- as ondas
 
 test('C1: a Evisceração — a onda retangular de 10 m (5 casas) de extensão e 5 m de largura (1 casa de cada lado, a fração de 0,25 como chance)', { skip: SEM }, () => {
-  assert.deepEqual(G.c1DaGema('Eviscerate', 20, 0).onda, { comprimentoM: 10, larguraM: 5 });
+  // (lote B3, com o AVAL do dono 21/10: a largura do nível 20 é 3,2 m — a coluna "5, 3.2" do poedb tem o número do texto no segundo lugar; antes o leitor ficava
+  // com o 5)
+  assert.deepEqual(G.c1DaGema('Eviscerate', 20, 0).onda, { comprimentoM: 10, larguraM: 3.2 });
   const f = C1.formaRetangular(5, 1);
   assert.equal(f.length, 15);
   assert.equal(Areas.raioDaForma(f), 5);
