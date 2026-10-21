@@ -29,7 +29,9 @@ const BUFF = new Set(['aura', 'arauto', 'clamor', 'maldicao', 'guarda', 'vinculo
 // conferida usando-a seguida dessa outra, encaixada junto e no slot 2; o critério do dano é o mesmo das outras)
 // (lote B2, com o aval do dono 20/10: a Febre Corrompedora é um buff — o uso dela não acerta; o dano é o Sangue Corrompido nos acertos de OUTRA habilidade com ela ligada:
 // a montagem usa a Febre e logo depois a Bola de Fogo, e confere o Sangue Corrompido no alvo — `febre`, abaixo)
-const DANO_POR_OUTRA = { Vaal_Venom_Gyre: 'Whirling_Blades', Corrupting_Fever: 'Fireball' };
+// (lote PR3, com o aval do dono 21/10: o Pacto de Beidat não causa dano no PoE — base_deal_no_spell_damage —; o uso fortalece as próximas magias: a montagem usa o
+// Pacto e logo depois a Bola de Fogo, como a Febre)
+const DANO_POR_OUTRA = { Vaal_Venom_Gyre: 'Whirling_Blades', Corrupting_Fever: 'Fireball', Pact_of_Beidat: 'Fireball' };
 // (lote B2, com o aval do dono 20/10: a Explosão de Lâminas do Descarrego detona as lâminas do SEU Vórtice de Lâminas — sem lâmina não sai: a montagem usa o Vórtice
 // ANTES, encaixado junto e no slot 2; o dano conferido é o do Descarrego)
 const USAR_ANTES = { Blade_Blast_of_Unloading: 'Blade_Vortex' };
