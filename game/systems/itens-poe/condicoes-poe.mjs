@@ -44,10 +44,11 @@ export function soloImuneAMaldicoes(h, agora = h?.clock ?? 0) {
   const p = h?.pos;
   return !!p && (h.solosSagrados ?? []).some((s) => s.imuneMaldicao && soloValendo(h, s, agora) && Math.max(Math.abs(s.x - p.x), Math.abs(s.y - p.y)) <= s.raio);
 }
-export function criarSoloSagrado(h, segundos, agora = h?.clock ?? 0) {
+// (lote B2, dono 20/10: + `onde` — o lugar e o raio em casas do Solo Sagrado que a gema cria longe de você: a Chama Purificadora, no local mirado)
+export function criarSoloSagrado(h, segundos, agora = h?.clock ?? 0, onde = null) {
   if (!h?.pos || !(segundos > 0)) return;
   const lista = (h.solosSagrados ??= []).filter((s) => s.ate > agora);
-  lista.push({ x: h.pos.x, y: h.pos.y, raio: SOLO_SAGRADO.raio, ate: agora + segundos * 1000 });
+  lista.push({ x: onde?.x ?? h.pos.x, y: onde?.y ?? h.pos.y, raio: onde?.raio ?? SOLO_SAGRADO.raio, ate: agora + segundos * 1000 });
   h.solosSagrados = lista.slice(-SOLO_SAGRADO.maximo);
 }
 /**

@@ -853,6 +853,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     let mudou = false;
     for (const t of ModsPoe.cargasAoMorrerNaAreaFria(hunt, alvo, hunt.clock ?? 0)) mudou = CargasPoe.ganhar(estado, t, f.afPoe ?? {}) || mudou;
     if (mudou) Ficha.invalidar(estado);
+    // (lote B2, dono 20/10) a morte de quem tinha o debuff do Ceifar (perde uma Carga Sangrenta), do Contágio (espalha) e do Golpe Infernal (explode) — `Acoes.aoMorrerB2`
+    Acoes.aoMorrerB2(estado, hunt, personagem, alvo, eventos);
   }
   if (!itensPoeLigado() || QuemFeriu.abateSeu(alvo)) {
     const f = Ficha.combate(estado);
@@ -1658,6 +1660,8 @@ export function round(estado, personagem) {
         // (lote 31, P034: a parte de Fogo do golpe — as partes somadas e a elemental da arma — para o "Atordoam como se causassem mais Dano de Fogo")
         const fogoDoGolpe = dosAtributos.filter((d) => d.tipo === 'fire').reduce((n, d) => n + d.v, 0) + (elemental && (elemental.tipo ?? arma?.element?.type) === 'fire' ? elemental.v : 0);
         const doAcerto = poe ? ModsPoe.aoAcertar(estado, hunt, alvo, ficha, { dano: golpe + (elemental?.v ?? 0) + dosAtributos.reduce((n, d) => n + d.v, 0), fisico: golpe, fogo: fogoDoGolpe, crit: critico, eventos, personagem, mover: (b) => ModsPoe.empurrar(hunt, b), elementos: ['physical', ...dosAtributos.map((d) => d.tipo), ...(elemental ? [elemental.tipo ?? arma?.element?.type] : [])] }) : null;
+        // (lote B2, dono 20/10: o acerto seu — a Febre Corrompedora ligada põe o Sangue Corrompido; o Contágio da Transferência espalha — `Acoes.aoAcertarB2`)
+        if (poe) for (const st of Acoes.aoAcertarB2(hunt, alvo, golpe + (elemental?.v ?? 0) + dosAtributos.reduce((n, d) => n + d.v, 0), hunt.clock ?? 0)) eventos.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: st });
         // A carga de Frenesi "ao Acertar um Inimigo Único" (cargas do PoE).
         if (CargasPoe.reageAoAcerto(ficha.cargas) && CargasPoe.aoAcertar(estado, ficha.cargas, alvo, { crit: critico, corpoACorpo: categoriaDaArma(arma) !== 'distancia', atordoou: !!doAcerto?.atordoou }).length) Ficha.invalidar(estado);
         // ("Acertos Corpo a Corpo contam como Mortes com Fúria" — o Rampage.)

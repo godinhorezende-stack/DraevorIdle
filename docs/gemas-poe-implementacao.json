@@ -2,17 +2,17 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 263,
+   "implementada e testada": 282,
    "implementada, sem teste próprio": 48,
-   "parcial": 239,
+   "parcial": 220,
    "limitação do modelo idle": 11,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 125,
+   "implementada e testada": 128,
    "implementada, sem teste próprio": 19,
-   "parcial": 60,
+   "parcial": 57,
    "limitação do modelo idle": 6
   },
   "suportes": {
@@ -24,15 +24,15 @@
   "variantes": {
    "vaal": {
     "total": 52,
-    "implementada e testada": 23,
-    "parcial": 23,
+    "implementada e testada": 25,
+    "parcial": 21,
     "implementada, sem teste próprio": 6
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 88,
+    "implementada e testada": 96,
     "implementada, sem teste próprio": 25,
-    "parcial": 89,
+    "parcial": 81,
     "limitação do modelo idle": 7
    }
   },
@@ -44,8 +44,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 629,
-   "emDuasOuMais": 109
+   "linhasDistintas": 589,
+   "emDuasOuMais": 100
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -59,7 +59,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 351,
+   "ativasCitadas": 366,
    "suportesCitados": 119,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -783,12 +783,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "o uso de cadáveres não existe no jogo",
-    "efeito não simulado: Debuffs causam 66 % de Dano por Carga",
-    "efeito não simulado: Debuffs causam +10 % de Dano por Carga"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1024,11 +1020,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Duração do Buff é atualizada após você gastar um total de 205 de Vida",
-    "efeito não simulado: Duração da penalidade base é de 1.5 segundos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1765,13 +1758,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Ganhe uma Carga Sangrenta se esta Habilidade Acertar Inimigos e nenhum deles Morrerem Perca uma Carga Sangrenta quando um Inimigo Morrer enquanto afetado pelo Debuff desta Habilidade",
-    "efeito não simulado: Custa 20 % mais Vida por Carga Sangrenta",
-    "efeito não simulado: Causa 15 % mais Dano por Carga Sangrenta",
-    "efeito não simulado: Causa +5 % mais Dano por Carga Sangrenta"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1783,13 +1771,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Ganhe uma Carga Sangrenta se esta Habilidade Acertar Inimigos e nenhum deles Morrerem Perca uma Carga Sangrenta quando um Inimigo Morrer enquanto afetado pelo Debuff desta Habilidade",
-    "efeito não simulado: Custa 20 % mais Vida por Carga Sangrenta",
-    "efeito não simulado: Causa 25 % mais Dano por Carga Sangrenta",
-    "efeito não simulado: Causa +5 % mais Dano por Carga Sangrenta"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1902,13 +1885,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Efeitos do Sangue Fervendo Perduram por 4 segundos",
-    "efeito não simulado: Concede +4 ao máximo de Cargas de Sangue",
-    "efeito não simulado: Concede até o máximo de Cargas de Sangue",
-    "efeito não simulado: Causa +5 % mais Dano por Carga Sangrenta"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3516,10 +3494,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "chuva",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Cada Esporo aplica 5 % menos Velocidade de Movimento aos Inimigos próximos, até um máximo de 30 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3531,10 +3507,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "chuva",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Cada Esporo aplica 5 % menos Velocidade de Movimento aos Inimigos próximos, até um máximo de 30 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3722,12 +3696,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "nova",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 5 % mais dano por lâmina de Vórtice de Lâminas",
-    "efeito não simulado: 100 % mais Área de Efeito por lâmina do Vórtice de Lâminas detonada",
-    "efeito não simulado: 20 % mais Área de Efeito por lâmina do Vórtice de Lâminas detonada"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5044,12 +5014,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 0.6 metros ao raio do Solo Sagrado",
-    "efeito não simulado: Onda de Choque causa 25 % menos Dano",
-    "efeito não simulado: +0.3 metros ao raio do Solo Sagrado"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5061,12 +5027,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: +1.1 metros ao raio do Solo Sagrado",
-    "efeito não simulado: Onda de Choque causa 150 % mais Dano",
-    "efeito não simulado: Onda de Choque causa +30 % mais Dano"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5243,10 +5205,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Espalha quando o Inimigo afetado morrer"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5258,10 +5218,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Espalha quando o Inimigo afetado morrer"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5273,10 +5231,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Espalha quando o Inimigo afetado for Acertado"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5896,15 +5852,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 88 % mais Dano com Acertos contra Inimigos Incendiados",
-    "efeito não simulado: Não pode Incendiar",
-    "efeito não simulado: 9 de largura do Efeito em Área",
-    "efeito não simulado: Acertos em Inimigos Incendiados criam Solo Ardente, não mais que uma vez a cada 2 segundos",
-    "efeito não simulado: Solo Ardente causa 30 % de Dano de Fogo por segundo de Incêndio afetando o Inimigo",
-    "efeito não simulado: +20 % mais Dano com Acertos contra Inimigos Incendiados"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5916,12 +5865,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 9 de largura do Efeito em Área",
-    "efeito não simulado: Incendiar Inimigos cria Solo Ardente, não mais que uma vez por segundo Solo Ardente causa 50 % do Dano de Fogo por segundo do Incêndio infligido",
-    "efeito não simulado: Solo ardente causa +15 % do Dano de Fogo por segundo do Incêndio infligido"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6165,12 +6110,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Causa Dano de Raio base igual a 44 % da Mana Não Reservada que falta",
-    "efeito não simulado: +6 de largura por cada 25 % de Mana Máxima Não Reservada possuída",
-    "efeito não simulado: Causa Dano de Raio base igual a +10 % da Mana Não Reservada que falta"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6412,13 +6353,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "nova",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 60 % do Dano de Raio Convertido em Dano de Caos",
-    "efeito não simulado: Explosões causam Dano de Raio igual a 10 % da Vida Máxima do cadáver",
-    "efeito não simulado: 1 % mais Dano com Acertos e Afecções por cada Conjuração desta Magia aguardando no momento",
-    "efeito não simulado: +1 % mais Dano com Acertos e Afecções por cada Conjuração desta Magia aguardando no momento"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7184,11 +7120,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "nova",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Ganha uma Ruína por uso Ao chegar a sete, sacrifica 50 % da sua vida e causa 600 % da vida sacrificada como dano de caos",
-    "efeito não simulado: 20 % de chance de ganhar uma Ruína adicional ao usar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7879,12 +7812,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Solo Ardente dura 6 segundos",
-    "efeito não simulado: 16 Tiros",
-    "efeito não simulado: Impactos têm 20 % mais Efeito em Área"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -10979,27 +10908,11 @@
    ]
   },
   {
-   "linha": "Causa +# % mais Dano por Carga Sangrenta",
-   "gemas": [
-    "Reap",
-    "Reap_of_Butchery",
-    "Vaal_Reap"
-   ]
-  },
-  {
    "linha": "Cria # Estaca",
    "gemas": [
     "Perforate",
     "Perforate_of_Bloodshed",
     "Perforate_of_Duality"
-   ]
-  },
-  {
-   "linha": "Duração da penalidade base é de # segundos",
-   "gemas": [
-    "Conflagration",
-    "Corrupting_Fever",
-    "Infernal_Cry"
    ]
   },
   {
@@ -11129,13 +11042,6 @@
    ]
   },
   {
-   "linha": "# de largura do Efeito em Área",
-   "gemas": [
-    "Flame_Surge",
-    "Flame_Surge_of_Combusting"
-   ]
-  },
-  {
    "linha": "# segundos entre o aparecimento de seções da Parede",
    "gemas": [
     "Frost_Wall",
@@ -11168,13 +11074,6 @@
    "gemas": [
     "Bladestorm",
     "Bladestorm_of_Uncertainty"
-   ]
-  },
-  {
-   "linha": "+# metros ao raio do Solo Sagrado",
-   "gemas": [
-    "Purifying_Flame",
-    "Purifying_Flame_of_Revelations"
    ]
   },
   {
@@ -11234,24 +11133,10 @@
    ]
   },
   {
-   "linha": "Cada Esporo aplica # % menos Velocidade de Movimento aos Inimigos próximos, até um máximo de # %",
-   "gemas": [
-    "Toxic_Rain",
-    "Toxic_Rain_of_Sporeburst"
-   ]
-  },
-  {
    "linha": "Cada Flecha pode disparar +# Feixes",
    "gemas": [
     "Storm_Rain_of_the_Conduit",
     "Storm_Rain_of_the_Fence"
-   ]
-  },
-  {
-   "linha": "Causa # % mais Dano por Carga Sangrenta",
-   "gemas": [
-    "Reap",
-    "Reap_of_Butchery"
    ]
   },
   {
@@ -11311,13 +11196,6 @@
    ]
   },
   {
-   "linha": "Custa # % mais Vida por Carga Sangrenta",
-   "gemas": [
-    "Reap",
-    "Reap_of_Butchery"
-   ]
-  },
-  {
    "linha": "Definhado dura # segundos",
    "gemas": [
     "Wither",
@@ -11332,6 +11210,13 @@
    ]
   },
   {
+   "linha": "Duração da penalidade base é de # segundos",
+   "gemas": [
+    "Conflagration",
+    "Infernal_Cry"
+   ]
+  },
+  {
    "linha": "Duração de Maldições aumentada em # %",
    "gemas": [
     "Enfeeble",
@@ -11343,13 +11228,6 @@
    "gemas": [
     "Immortal_Call",
     "Vaal_Immortal_Call"
-   ]
-  },
-  {
-   "linha": "Espalha quando o Inimigo afetado morrer",
-   "gemas": [
-    "Contagion",
-    "Contagion_of_Subsiding"
    ]
   },
   {
@@ -11392,13 +11270,6 @@
    "gemas": [
     "Vaal_Volcanic_Fissure",
     "Volcanic_Fissure_of_Snaking"
-   ]
-  },
-  {
-   "linha": "Ganhe uma Carga Sangrenta se esta Habilidade Acertar Inimigos e nenhum deles Morrerem Perca uma Carga Sangrenta quando um Inimigo Morrer enquanto afetado pelo Debuff desta Habilidade",
-   "gemas": [
-    "Reap",
-    "Reap_of_Butchery"
    ]
   },
   {
@@ -11504,13 +11375,6 @@
    "gemas": [
     "Greater_Kinetic_Instability_Support",
     "Kinetic_Instability_Support"
-   ]
-  },
-  {
-   "linha": "o uso de cadáveres não existe no jogo",
-   "gemas": [
-    "Bodyswap",
-    "Infernal_Blow"
    ]
   },
   {
@@ -11675,12 +11539,6 @@
    ]
   },
   {
-   "linha": "# % de chance de ganhar uma Ruína adicional ao usar",
-   "gemas": [
-    "Dark_Bargain_of_Trarthus"
-   ]
-  },
-  {
    "linha": "# % de chancer de causar Sangramento enquanto na Postura de Sangue",
    "gemas": [
     "Lacerate"
@@ -11690,12 +11548,6 @@
    "linha": "# % do Dano de Acertos é sofrido no Buff antes da sua Vida ou Escudo de Energia Buff pode sofrer Dano igual a Mana Gasta pelo efeito desta Habilidade",
    "gemas": [
     "Arcane_Cloak"
-   ]
-  },
-  {
-   "linha": "# % do Dano de Raio Convertido em Dano de Caos",
-   "gemas": [
-    "Voltaxic_Burst"
    ]
   },
   {
@@ -11711,12 +11563,6 @@
    ]
   },
   {
-   "linha": "# % mais Área de Efeito por lâmina do Vórtice de Lâminas detonada",
-   "gemas": [
-    "Blade_Blast_of_Unloading"
-   ]
-  },
-  {
    "linha": "# % mais Área de Efeito se Consumindo um Lacaio",
    "gemas": [
     "Bodyswap_of_Sacrifice"
@@ -11726,18 +11572,6 @@
    "linha": "# % mais Área de Efeito se Consumiu um cadáver",
    "gemas": [
     "Bodyswap"
-   ]
-  },
-  {
-   "linha": "# % mais Dano com Acertos contra Inimigos Incendiados",
-   "gemas": [
-    "Flame_Surge"
-   ]
-  },
-  {
-   "linha": "# % mais Dano com Acertos e Afecções por cada Conjuração desta Magia aguardando no momento",
-   "gemas": [
-    "Voltaxic_Burst"
    ]
   },
   {
@@ -11756,12 +11590,6 @@
    "linha": "# % mais Dano na Postura de Sangue",
    "gemas": [
     "Perforate_of_Duality"
-   ]
-  },
-  {
-   "linha": "# % mais dano por lâmina de Vórtice de Lâminas",
-   "gemas": [
-    "Blade_Blast_of_Unloading"
    ]
   },
   {
@@ -11807,21 +11635,9 @@
    ]
   },
   {
-   "linha": "# metros ao raio do Solo Sagrado",
-   "gemas": [
-    "Purifying_Flame"
-   ]
-  },
-  {
    "linha": "# metros de raio",
    "gemas": [
     "Prismatic_Burst_Support"
-   ]
-  },
-  {
-   "linha": "# Tiros",
-   "gemas": [
-    "Vaal_Firestorm"
    ]
   },
   {
@@ -11843,18 +11659,6 @@
    ]
   },
   {
-   "linha": "+# % mais Dano com Acertos contra Inimigos Incendiados",
-   "gemas": [
-    "Flame_Surge"
-   ]
-  },
-  {
-   "linha": "+# % mais Dano com Acertos e Afecções por cada Conjuração desta Magia aguardando no momento",
-   "gemas": [
-    "Voltaxic_Burst"
-   ]
-  },
-  {
    "linha": "+# % mais Dano com Acertos e Afecções por Intensidade",
    "gemas": [
     "Crackling_Lance"
@@ -11870,12 +11674,6 @@
    "linha": "+# ao número máximo de Zumbis",
    "gemas": [
     "Raise_Zombie_of_Falling"
-   ]
-  },
-  {
-   "linha": "+# de largura por cada # % de Mana Máxima Não Reservada possuída",
-   "gemas": [
-    "Manabond"
    ]
   },
   {
@@ -12026,12 +11824,6 @@
    "linha": "Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe # de Ressonância de outros Elementos por # segundos\\nPerde # de Ressonância por segundo para cada Elemento que não estiver ganhando",
    "gemas": [
     "Trinity_Support"
-   ]
-  },
-  {
-   "linha": "Acertos em Inimigos Incendiados criam Solo Ardente, não mais que uma vez a cada # segundos",
-   "gemas": [
-    "Flame_Surge"
    ]
   },
   {
@@ -12443,18 +12235,6 @@
    ]
   },
   {
-   "linha": "Causa Dano de Raio base igual a # % da Mana Não Reservada que falta",
-   "gemas": [
-    "Manabond"
-   ]
-  },
-  {
-   "linha": "Causa Dano de Raio base igual a +# % da Mana Não Reservada que falta",
-   "gemas": [
-    "Manabond"
-   ]
-  },
-  {
    "linha": "Causa Dano Físico Adicional igual a # % da Mana Máxima",
    "gemas": [
     "Kinetic_Blast_of_Clustering"
@@ -12563,21 +12343,9 @@
    ]
   },
   {
-   "linha": "Concede +# ao máximo de Cargas de Sangue",
-   "gemas": [
-    "Vaal_Reap"
-   ]
-  },
-  {
    "linha": "Concede aos Lacaios +# % de Chance de Bloquear Dano Mágico",
    "gemas": [
     "Bone_Offering"
-   ]
-  },
-  {
-   "linha": "Concede até o máximo de Cargas de Sangue",
-   "gemas": [
-    "Vaal_Reap"
    ]
   },
   {
@@ -12725,18 +12493,6 @@
    ]
   },
   {
-   "linha": "Debuffs causam # % de Dano por Carga",
-   "gemas": [
-    "Infernal_Blow"
-   ]
-  },
-  {
-   "linha": "Debuffs causam +# % de Dano por Carga",
-   "gemas": [
-    "Infernal_Blow"
-   ]
-  },
-  {
    "linha": "Detonação da Mina é Instantânea",
    "gemas": [
     "Smoke_Mine"
@@ -12791,12 +12547,6 @@
    ]
   },
   {
-   "linha": "Duração do Buff é atualizada após você gastar um total de # de Vida",
-   "gemas": [
-    "Corrupting_Fever"
-   ]
-  },
-  {
    "linha": "Efeito da Marca aumentado em # %",
    "gemas": [
     "Alchemists_Mark"
@@ -12830,12 +12580,6 @@
    "linha": "Efeito em Área de Habilidades Maldição Suportadas reduzido em #%",
    "gemas": [
     "Hexpass_Support"
-   ]
-  },
-  {
-   "linha": "Efeitos do Sangue Fervendo Perduram por # segundos",
-   "gemas": [
-    "Vaal_Reap"
    ]
   },
   {
@@ -12896,12 +12640,6 @@
    "linha": "Envia um feixe ao Inimigo Vinculado",
    "gemas": [
     "Storm_Brand_of_Indecision"
-   ]
-  },
-  {
-   "linha": "Espalha quando o Inimigo afetado for Acertado",
-   "gemas": [
-    "Contagion_of_Transference"
    ]
   },
   {
@@ -13046,12 +12784,6 @@
    "linha": "Explosões causam Dano de Fogo base igual a # % da Vida máxima do Lacaio",
    "gemas": [
     "Bodyswap_of_Sacrifice"
-   ]
-  },
-  {
-   "linha": "Explosões causam Dano de Raio igual a # % da Vida Máxima do cadáver",
-   "gemas": [
-    "Voltaxic_Burst"
    ]
   },
   {
@@ -13202,12 +12934,6 @@
    "linha": "Ganha uma instância de Intensidade Sobrecarregada por # segundos após\\nperder # de Intensidade com habilidades reforçadas",
    "gemas": [
     "Overloaded_Intensity_Support"
-   ]
-  },
-  {
-   "linha": "Ganha uma Ruína por uso Ao chegar a sete, sacrifica # % da sua vida e causa # % da vida sacrificada como dano de caos",
-   "gemas": [
-    "Dark_Bargain_of_Trarthus"
    ]
   },
   {
@@ -13715,12 +13441,6 @@
    ]
   },
   {
-   "linha": "Impactos têm # % mais Efeito em Área",
-   "gemas": [
-    "Vaal_Firestorm"
-   ]
-  },
-  {
    "linha": "Impele os próximos # Ataques de Golpe Corpo a Corpo que você executar",
    "gemas": [
     "Ancestral_Cry"
@@ -13730,12 +13450,6 @@
    "linha": "Impele os próximos # Ataques de Pancada Corpo a Corpo que você executar",
    "gemas": [
     "Seismic_Cry"
-   ]
-  },
-  {
-   "linha": "Incendiar Inimigos cria Solo Ardente, não mais que uma vez por segundo Solo Ardente causa # % do Dano de Fogo por segundo do Incêndio infligido",
-   "gemas": [
-    "Flame_Surge_of_Combusting"
    ]
   },
   {
@@ -14213,12 +13927,6 @@
    ]
   },
   {
-   "linha": "Não pode Incendiar",
-   "gemas": [
-    "Flame_Surge"
-   ]
-  },
-  {
    "linha": "Não pode infligir Envenenamento em Inimigos Envenenados",
    "gemas": [
     "Viper_Strike_of_the_Mamba"
@@ -14273,27 +13981,15 @@
    ]
   },
   {
+   "linha": "o uso de cadáveres não existe no jogo",
+   "gemas": [
+    "Bodyswap"
+   ]
+  },
+  {
    "linha": "Oferendas reforçadas ativam Invocar Nascidos da Colmeia ao usar",
    "gemas": [
     "Hiveborn_Support"
-   ]
-  },
-  {
-   "linha": "Onda de Choque causa # % mais Dano",
-   "gemas": [
-    "Purifying_Flame_of_Revelations"
-   ]
-  },
-  {
-   "linha": "Onda de Choque causa # % menos Dano",
-   "gemas": [
-    "Purifying_Flame"
-   ]
-  },
-  {
-   "linha": "Onda de Choque causa +# % mais Dano",
-   "gemas": [
-    "Purifying_Flame_of_Revelations"
    ]
   },
   {
@@ -14579,27 +14275,9 @@
    ]
   },
   {
-   "linha": "Solo Ardente causa # % de Dano de Fogo por segundo de Incêndio afetando o Inimigo",
-   "gemas": [
-    "Flame_Surge"
-   ]
-  },
-  {
    "linha": "Solo Ardente causa # % do Dano de Fogo por Segundo do Incêndio mais forte no Inimigo Solo Cáustico causa # % do Dano de Caos por Segundo do Envenenamento mais forte no Inimigo Pode criar cada efeito de Solo não mais que uma vez por segundo",
    "gemas": [
     "Alchemists_Mark"
-   ]
-  },
-  {
-   "linha": "Solo ardente causa +# % do Dano de Fogo por segundo do Incêndio infligido",
-   "gemas": [
-    "Flame_Surge_of_Combusting"
-   ]
-  },
-  {
-   "linha": "Solo Ardente dura # segundos",
-   "gemas": [
-    "Vaal_Firestorm"
    ]
   },
   {

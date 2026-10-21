@@ -27,7 +27,12 @@ const ARMAS = [['Wands/Driftwood_Wand'], ['Bows/Crude_Bow'], ['One_Hand_Swords/R
 const BUFF = new Set(['aura', 'arauto', 'clamor', 'maldicao', 'guarda', 'vinculo', 'feiticeiro']);
 // (lote A3b, com o aval do dono: a gema cujo dano sai por OUTRA gema — a Espiral Venenosa Vaal só cria os capturados, e as Lâminas Giratórias os soltam — é
 // conferida usando-a seguida dessa outra, encaixada junto e no slot 2; o critério do dano é o mesmo das outras)
-const DANO_POR_OUTRA = { Vaal_Venom_Gyre: 'Whirling_Blades' };
+// (lote B2, com o aval do dono 20/10: a Febre Corrompedora é um buff — o uso dela não acerta; o dano é o Sangue Corrompido nos acertos de OUTRA habilidade com ela ligada:
+// a montagem usa a Febre e logo depois a Bola de Fogo, e confere o Sangue Corrompido no alvo — `febre`, abaixo)
+const DANO_POR_OUTRA = { Vaal_Venom_Gyre: 'Whirling_Blades', Corrupting_Fever: 'Fireball' };
+// (lote B2, com o aval do dono 20/10: a Explosão de Lâminas do Descarrego detona as lâminas do SEU Vórtice de Lâminas — sem lâmina não sai: a montagem usa o Vórtice
+// ANTES, encaixado junto e no slot 2; o dano conferido é o do Descarrego)
+const USAR_ANTES = { Blade_Blast_of_Unloading: 'Blade_Vortex' };
 
 let J;
 let gerarPeca;
@@ -50,7 +55,7 @@ function montar(slug, [arma, escudo], suportes = []) {
   e.actions = Array(Acoes.SLOTS).fill(null);
   e.actions[0] = { id: G.doSlug(slug).acao, enabled: true, minMana: 0, conditions: [] };
   // (lote A3b, com o aval do dono: a outra gema no slot 2)
-  if (DANO_POR_OUTRA[slug]) e.actions[1] = { id: G.doSlug(DANO_POR_OUTRA[slug]).acao, enabled: true, minMana: 0, conditions: [] };
+  if (DANO_POR_OUTRA[slug] || USAR_ANTES[slug]) e.actions[1] = { id: G.doSlug(DANO_POR_OUTRA[slug] ?? USAR_ANTES[slug]).acao, enabled: true, minMana: 0, conditions: [] };
   Afixos.sincronizarMaximos(e);
   Ficha.invalidar(e);
   if (!Cacadas.entrar(e, { huntId: 'poe-a1-the-coast', mode: 'auto', strategy: 'nearest' }).ok) return null;
@@ -93,6 +98,14 @@ function usar({ e, b }, slug) {
   const estagios = G.estagiosDaGema(slug, 20);
   const vezes = estagios?.modo === 'carrega' ? estagios.max : 1;
   const ev = [];
+  // (lote B2, com o aval do dono: a gema usada ANTES — o Vórtice de Lâminas do Descarrego; os eventos dela não contam no dano)
+  if (USAR_ANTES[slug]) {
+    const r0 = Acoes.disparar(e, e.hunt, PERSONAGEM, 1, b, { manual: true });
+    if (!r0.ok) return { ok: false, erro: `${USAR_ANTES[slug]}: ${r0.motivo ?? r0.erro}` };
+    if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM); }
+    e.hunt.clock = Math.max(e.hunt.clock, e.hunt.cooldowns?.[Acoes.GRUPO_DO_POE]?.ate ?? e.hunt.clock);
+    b.hp = b.maxHp;
+  }
   for (let i = 0; i < vezes; i++) {
     // (o próximo uso logo depois do fim deste: a canalização continua)
     if (i) e.hunt.clock = Math.max(e.hunt.clock, e.hunt.canalizacao?.ate ?? e.hunt.clock);
@@ -111,6 +124,8 @@ function usar({ e, b }, slug) {
   }
   // (a Mina detona com você parado e o inimigo perto; a Armadilha, com o inimigo a 1 casa; o gêiser e a torre, no tempo)
   for (let i = 0; i < 6; i++) { e.hunt.clock += 400; ev.push(...Acoes.tiqueDasPlantadas(e, e.hunt, PERSONAGEM, [])); ev.push(...Acoes.tiqueDasRunas(e, e.hunt, PERSONAGEM, [])); }
+  // (lote B2, com o aval do dono 20/10: a Explosão Voltáxica solta 2,5 s × a Duração depois do uso — a montagem espera mais 200 ms, além dos 2,4 s acima)
+  if (slug === 'Voltaxic_Burst') { e.hunt.clock += 200; ev.push(...Acoes.tiqueDasPlantadas(e, e.hunt, PERSONAGEM, [])); }
   // (lote G20a, com o aval do dono: o TOTEM — o seu uso o coloca; o dano é o do totem usando a habilidade, uma vez, no alvo)
   if (G.doSlug(slug).arquetipo === 'totem') for (const l of (e.hunt.lacaios ?? []).filter((x) => x.tipo === 'totem' && x.hp > 0)) ev.push(...Cacadas.golpeDoTotem(e, e.hunt, l, b, Ficha.combate(e), PERSONAGEM, e.hunt.clock));
   // (lote G20c, com o aval do dono: o totem SEM golpe é conferido pelo efeito dele — a aura do Rejuvenescedor na sua soma, perto dele; o Devorador
@@ -129,7 +144,7 @@ function usar({ e, b }, slug) {
   }
   const dano = ev.filter((x) => x.t === 'dmg' && x.uid === b.uid && x.foe).reduce((t, x) => t + (x.v ?? 0), 0) + (b.dots?.length ? 1 : 0) + (efeitoDoTotem ? 1 : 0);
   const deslocou = e.hunt.pos.x !== de.x || e.hunt.pos.y !== de.y || (e.hunt.teleportes ?? 0) > de.teleportes;
-  return { ok: true, dano, buff: !!e.hunt.buffs?.[G.doSlug(slug).acao] || !!e.hunt.vinculos?.length, deslocou };
+  return { ok: true, dano, buff: !!e.hunt.buffs?.[G.doSlug(slug).acao] || !!e.hunt.vinculos?.length, deslocou, febre: (b.dots ?? []).some((d) => d.chave === 'Corrupting_Fever' && d.falta > 0) };
 }
 
 test('G16: toda gema ativa "funciona" faz no jogo o que o status promete (o dano, ou o buff ligado)', { skip: SEM, timeout: 600_000 }, async () => {
@@ -144,7 +159,7 @@ test('G16: toda gema ativa "funciona" faz no jogo o que o status promete (o dano
     let feito = null;
     const erros = [];
     for (const armas of ARMAS) {
-      const m = montar(slug, armas, slug === 'Brand_Recall' ? ['Storm_Brand'] : DANO_POR_OUTRA[slug] ? [DANO_POR_OUTRA[slug]] : []);
+      const m = montar(slug, armas, slug === 'Brand_Recall' ? ['Storm_Brand'] : DANO_POR_OUTRA[slug] ? [DANO_POR_OUTRA[slug]] : USAR_ANTES[slug] ? [USAR_ANTES[slug]] : []);
       if (!m) continue;
       let u;
       try { u = usar(m, slug); } catch (err) { u = { ok: false, erro: `exceção: ${err.message}` }; }
@@ -153,7 +168,8 @@ test('G16: toda gema ativa "funciona" faz no jogo o que o status promete (o dano
       // dano segue exigindo o acerto)
       const semDano = !r.ataque && !Object.keys(G.compilada(slug, 20)?.stats?.dano ?? {}).length && !(G.compilada(slug, 20)?.stats?.dot ?? []).length;
       // (lote A1b, com o aval do dono: a Emboscada colada no alvo não se move e não causa dano — o efeito dela é o buff, `hunt.emboscada`)
-      if (buff ? u.buff : u.dano > 0 || (r.arquetipo === 'movimento' && semDano && u.deslocou) || (slug === 'Ambush' && !!m.e.hunt.emboscada)) { feito = armas[0]; break; }
+      // (lote B2, com o aval do dono: a Febre Corrompedora — o Sangue Corrompido no alvo, pelo acerto da outra gema)
+      if (slug === 'Corrupting_Fever' ? u.febre : buff ? u.buff : u.dano > 0 || (r.arquetipo === 'movimento' && semDano && u.deslocou) || (slug === 'Ambush' && !!m.e.hunt.emboscada)) { feito = armas[0]; break; }
       erros.push(`${armas[0]}: saiu sem ${buff ? 'buff' : 'dano'}`);
     }
     if (!feito) falhas.push(`${slug} (${r.arquetipo}) — ${erros.slice(0, 3).join(' · ')}`);
