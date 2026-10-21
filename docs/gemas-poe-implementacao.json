@@ -2,9 +2,9 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 255,
+   "implementada e testada": 260,
    "implementada, sem teste próprio": 48,
-   "parcial": 247,
+   "parcial": 242,
    "limitação do modelo idle": 11,
    "não se aplica": 1
   },
@@ -30,9 +30,9 @@
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 81,
+    "implementada e testada": 83,
     "implementada, sem teste próprio": 25,
-    "parcial": 96,
+    "parcial": 94,
     "limitação do modelo idle": 7
    }
   },
@@ -44,7 +44,7 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 647,
+   "linhasDistintas": 639,
    "emDuasOuMais": 114
   },
   "imagens": {
@@ -3746,12 +3746,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "nova",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 5 % mais dano por lâmina de Vórtice de Lâminas",
-    "efeito não simulado: 100 % mais Área de Efeito por lâmina do Vórtice de Lâminas detonada",
-    "efeito não simulado: 20 % mais Área de Efeito por lâmina do Vórtice de Lâminas detonada"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5932,11 +5928,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Acertos em Inimigos Incendiados criam Solo Ardente, não mais que uma vez a cada 2 segundos",
-    "efeito não simulado: Solo Ardente causa 30 % de Dano de Fogo por segundo de Incêndio afetando o Inimigo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5948,11 +5941,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Incendiar Inimigos cria Solo Ardente, não mais que uma vez por segundo Solo Ardente causa 50 % do Dano de Fogo por segundo do Incêndio infligido",
-    "efeito não simulado: Solo ardente causa +15 % do Dano de Fogo por segundo do Incêndio infligido"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6196,10 +6186,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: +6 de largura por cada 25 % de Mana Máxima Não Reservada possuída"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6441,10 +6429,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "nova",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Explosões causam Dano de Raio igual a 10 % da Vida Máxima do cadáver"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -11783,12 +11769,6 @@
    ]
   },
   {
-   "linha": "# % mais Área de Efeito por lâmina do Vórtice de Lâminas detonada",
-   "gemas": [
-    "Blade_Blast_of_Unloading"
-   ]
-  },
-  {
    "linha": "# % mais Área de Efeito se Consumindo um Lacaio",
    "gemas": [
     "Bodyswap_of_Sacrifice"
@@ -11828,12 +11808,6 @@
    "linha": "# % mais Dano por Carga de Tolerância removida",
    "gemas": [
     "Tectonic_Slam_of_Cataclysm"
-   ]
-  },
-  {
-   "linha": "# % mais dano por lâmina de Vórtice de Lâminas",
-   "gemas": [
-    "Blade_Blast_of_Unloading"
    ]
   },
   {
@@ -11984,12 +11958,6 @@
    "linha": "+# cascatas por carga de poder removida",
    "gemas": [
     "Holy_Hammers_of_Spirals"
-   ]
-  },
-  {
-   "linha": "+# de largura por cada # % de Mana Máxima Não Reservada possuída",
-   "gemas": [
-    "Manabond"
    ]
   },
   {
@@ -12146,12 +12114,6 @@
    "linha": "Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe # de Ressonância de outros Elementos por # segundos\\nPerde # de Ressonância por segundo para cada Elemento que não estiver ganhando",
    "gemas": [
     "Trinity_Support"
-   ]
-  },
-  {
-   "linha": "Acertos em Inimigos Incendiados criam Solo Ardente, não mais que uma vez a cada # segundos",
-   "gemas": [
-    "Flame_Surge"
    ]
   },
   {
@@ -13157,12 +13119,6 @@
    ]
   },
   {
-   "linha": "Explosões causam Dano de Raio igual a # % da Vida Máxima do cadáver",
-   "gemas": [
-    "Voltaxic_Burst"
-   ]
-  },
-  {
    "linha": "Explosões terão # a # de Dano de Fogo adicional",
    "gemas": [
     "Explosive_Arrow"
@@ -13826,12 +13782,6 @@
    "linha": "Impele os próximos # Ataques de Pancada Corpo a Corpo que você executar",
    "gemas": [
     "Seismic_Cry"
-   ]
-  },
-  {
-   "linha": "Incendiar Inimigos cria Solo Ardente, não mais que uma vez por segundo Solo Ardente causa # % do Dano de Fogo por segundo do Incêndio infligido",
-   "gemas": [
-    "Flame_Surge_of_Combusting"
    ]
   },
   {
@@ -14717,21 +14667,9 @@
    ]
   },
   {
-   "linha": "Solo Ardente causa # % de Dano de Fogo por segundo de Incêndio afetando o Inimigo",
-   "gemas": [
-    "Flame_Surge"
-   ]
-  },
-  {
    "linha": "Solo Ardente causa # % do Dano de Fogo por Segundo do Incêndio mais forte no Inimigo Solo Cáustico causa # % do Dano de Caos por Segundo do Envenenamento mais forte no Inimigo Pode criar cada efeito de Solo não mais que uma vez por segundo",
    "gemas": [
     "Alchemists_Mark"
-   ]
-  },
-  {
-   "linha": "Solo ardente causa +# % do Dano de Fogo por segundo do Incêndio infligido",
-   "gemas": [
-    "Flame_Surge_of_Combusting"
    ]
   },
   {

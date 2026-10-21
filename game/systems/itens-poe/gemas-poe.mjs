@@ -1096,7 +1096,8 @@ export const b2DaGema = (slug, nivel = 1, qualidade = 0) => comCache(B2, `b2|${s
     ceifar: GemasB2.ceifarDasLinhas(slug, linhas, daQ, st), infernal: GemasB2.golpeInfernalDasLinhas(slug, linhas, daQ, st), febre: GemasB2.febreDasLinhas(slug, linhas, st),
     ruina: GemasB2.ruinaDasLinhas(slug, linhas, daQ), manaQueFaltaPct: GemasB2.manaQueFaltaDasLinhas(slug, linhas, daQ), contagio: GemasB2.contagioDasLinhas(slug, linhas),
     esporos: GemasB2.esporosLentosDasLinhas(slug, linhas), purificadora: GemasB2.chamaPurificadoraDasLinhas(slug, linhas, daQ, st), chicote: GemasB2.chicoteDasLinhas(slug, linhas, daQ),
-    raioEmCaosPct: slug === 'Voltaxic_Burst' ? GemasB2.conversaoRaioEmCaosDasLinhas(linhas) : 0,
+    raioEmCaosPct: slug === 'Voltaxic_Burst' ? GemasB2.conversaoRaioEmCaosDasLinhas(linhas) : 0, cadaverVoltaxicoPct: GemasB2.cadaverVoltaxicoDasLinhas(slug, linhas),
+    larguraDoVinculo: GemasB2.larguraDoVinculoDasLinhas(slug, linhas), descarrego: GemasB2.descarregoDasLinhas(slug, linhas, daQ),
   };
 });
 

@@ -468,6 +468,16 @@ Teste: `testes/area-no-impacto-a3c.test.mjs`. Com o aval do dono: `itens-poe-uni
 - Teste novo: `game/testes/ativas-b2.test.mjs` (17 casos, os sorteios travados).
 - **Teste que quebra pela regra do PoE (para o aval, sem editar):** `gemas-todas-funcionam-poe.test.mjs:162` (G16). A Febre Corrompedora agora é `funciona`, e o uso dela não causa dano: o dano é o Sangue Corrompido nos acertos de OUTRAS habilidades com o buff ligado. A montagem precisaria usar outra gema depois dela (como a Espiral Venenosa Vaal com as Lâminas Giratórias).
 - Depois: parcial 261 → 247 nas ativas (ataques 73 → 70); 109 → 109 nos suportes.
+- **As decisões do dono (20/10, o segundo commit) — as 5 que faltavam saíram de parcial (19 de 19):**
+  - a Explosão de Lâminas do Descarrego segue o PoB: detona as N lâminas do SEU Vórtice de Lâminas (o comum), N explosões, cada uma com 5% × N mais Dano e (100% + 1% por qualidade) × N mais Área; sem lâmina, o uso não sai (`SEM_LAMINAS`); as lâminas saem quando o uso sai;
+  - o Vínculo de Mana: o círculo de 1,8 m (o PoB, radius 18) e os 4 braços, que ganham 0,6 m a cada 25% inteiros de mana livre (a de agora ÷ a máxima não reservada, no começo do uso), contados da borda do círculo, × √ da Área, 1 casa de largura (a largura é a escolha do lote);
+  - a Explosão Voltáxica: quem a explosão mata explode com 10% da Vida máxima como Raio, no raio da própria nova (2,5 m × √ da Área) — só os mortos pela explosão (`explodirCadaveres` com `elemento`);
+  - o Chicote Ardente: o acerto num inimigo Incendiado cria o Solo Ardente em 1 casa em volta dele, com 30% do dano por segundo do Incêndio mais forte nele, por 4 s × a Duração, uma vez a cada 2 s; o da Combustão, ao Incendiar, 50% (+15% da qualidade 20) do Incêndio posto, uma vez por segundo;
+  - as 8 escolhas sem fonte do primeiro commit ficam aprovadas.
+- **Teste ajustado com o aval do dono (20/10):** `gemas-todas-funcionam-poe.test.mjs` (G16): a montagem usa a Febre Corrompedora e logo depois a Bola de Fogo, e confere o Sangue Corrompido no alvo.
+- **Testes que quebram pela regra do PoE (para o aval, sem editar):** `gemas-todas-funcionam-poe.test.mjs:165` (G16) — a Explosão de Lâminas do Descarrego (`SEM_LAMINAS`: a montagem não tem o Vórtice de Lâminas) e a Explosão Voltáxica (o teste anda 6 × 400 ms = 2,4 s depois do uso; a explosão sai aos 2,5 s).
+- Teste: `game/testes/ativas-b2.test.mjs` com 21 casos.
+- Depois: parcial 261 → 242 nas ativas (ataques 73 → 70); 109 → 109 nos suportes.
 
 ## Pendências conhecidas (por ordem de prioridade)
 

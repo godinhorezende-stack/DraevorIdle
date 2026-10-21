@@ -29,9 +29,9 @@ const tem = (linhas, re) => linhas.some((l) => re.test(norm(l)));
 /**
  * O raio-base (m) das gemas do lote que o poedb não publica (só o "+X metros de raio"): o `radius` dos baseMods do PoB — a Explosão Voltáxica (22, act_int.lua
  * :20470), a Chama Purificadora e a das Revelações (o acerto inicial, 18 — act_int.lua:14382/14485), o Ceifar Vaal (23, act_str.lua:11252) e a Barganha de Trarthus
- * (26, act_int.lua:4043).
+ * (26, act_int.lua:4043); (decisão do dono, 20/10) o círculo do Vínculo de Mana (18, act_int.lua:13552 — os braços saem da borda dele, `bracosDoVinculo`).
  */
-export const RAIO_DO_POB_B2 = Object.freeze({ Voltaxic_Burst: 2.2, Purifying_Flame: 1.8, Purifying_Flame_of_Revelations: 1.8, Vaal_Reap: 2.3, Dark_Bargain_of_Trarthus: 2.6 });
+export const RAIO_DO_POB_B2 = Object.freeze({ Voltaxic_Burst: 2.2, Purifying_Flame: 1.8, Purifying_Flame_of_Revelations: 1.8, Vaal_Reap: 2.3, Dark_Bargain_of_Trarthus: 2.6, Manabond: 1.8 });
 
 // ---------------------------------------------------------------- o Ceifar (as Cargas Sangrentas)
 
@@ -130,6 +130,12 @@ export function voltaxicaDasLinhas(slug, linhas = [], daQualidade = [], stats = 
   return { tipo: 'voltaxica', semAcerto: true, atrasoMs: Math.round((stats.duracao ?? 2.5) * 1000), porAguardandoPct: somar([...linhas, ...daQualidade], LINHA_POR_AGUARDANDO) };
 }
 /** "60% do Dano de Raio Convertido em Dano de Caos" (a conversão da habilidade — `af:conv_hab_energy_chaos` no uso, `ModsPoe.transformarPartes`). */
+const LINHA_CADAVER_VOLTAXICO = /^Explosões causam Dano de Raio igual a ([\d.]+) % da Vida Máxima do cadáver$/i;
+/**
+ * (decisão do dono, 20/10) "Explosões causam Dano de Raio igual a 10% da Vida Máxima do cadáver": o inimigo MORTO pela explosão da Voltáxica explode no raio da própria
+ * nova (2,5 m × √ da Área do uso), com Raio — só os mortos pela explosão (os da explosão do cadáver, não). O %, ou 0.
+ */
+export const cadaverVoltaxicoDasLinhas = (slug, linhas = []) => (slug === 'Voltaxic_Burst' ? achar(linhas, LINHA_CADAVER_VOLTAXICO) ?? 0 : 0);
 export const conversaoRaioEmCaosDasLinhas = (linhas = []) => achar(linhas, LINHA_CONVERTE_RAIO_EM_CAOS) ?? 0;
 
 // ---------------------------------------------------------------- a Barganha Sombria de Trarthus (a Ruína)
@@ -166,6 +172,19 @@ export const manaQueFaltaDasLinhas = (slug, linhas = [], daQualidade = []) => (s
  * Dano Adicionado): a mana livre (a máxima menos a reservada) menos a de agora.
  */
 export const raioDaManaQueFalta = (pct, manaMax, reservada, manaAgora) => Math.floor(((pct || 0) / 100) * Math.max(0, Math.max(0, (manaMax ?? 0) - (reservada ?? 0)) - Math.max(0, manaAgora ?? 0)));
+
+const LINHA_LARGURA_DO_VINCULO = /^\+?([\d.]+) de largura por cada ([\d.]+) ?% de Mana Máxima Não Reservada possuída$/i;
+/** "+6 de largura por cada 25% de Mana Máxima Não Reservada possuída": `{ unidades, porPct }` (10 unidades = 1 m) ou null. */
+export function larguraDoVinculoDasLinhas(slug, linhas = []) {
+  if (slug !== 'Manabond') return null;
+  for (const l of linhas) { const m = LINHA_LARGURA_DO_VINCULO.exec(norm(l)); if (m) return { unidades: Number(m[1]), porPct: Number(m[2]) }; }
+  return null;
+}
+/**
+ * (decisão do dono, 20/10) Os 4 BRAÇOS do Vínculo de Mana: cada um ganha 0,6 m (6 unidades) a cada 25% inteiros de Mana livre que você tem (a de agora ÷ a máxima não
+ * reservada), contados da borda do círculo. Os metros a mais de cada braço.
+ */
+export const bracosDoVinculo = (l, mana, livre) => (l && livre > 0 ? Math.floor((100 * Math.max(0, mana)) / livre / l.porPct + 1e-9) * (l.unidades / 10) : 0);
 
 // ---------------------------------------------------------------- o Contágio
 
@@ -258,9 +277,41 @@ const LINHA_LARGURA = /^\+?([\d.]+) de largura do Efeito em Área$/i;
  * nível + a qualidade), "Não pode Incendiar" (never_ignite) e "+N de largura do Efeito em Área" (active_skill_base_area_length_+ → AreaOfEffect BASE: o PoB soma N
  * unidades ao raio-base — CalcOffence.lua:360 —, 10 unidades = 1 m). `{ contraIncendiadoPct, naoIncendeia, raioExtraM }` ou null.
  */
+const LINHA_SOLO_NO_INCENDIADO = /^Acertos em Inimigos Incendiados criam Solo Ardente, não mais que uma vez a cada ([\d.]+) segundos?$/i;
+const LINHA_SOLO_PCT_DO_INCENDIO = /^Solo Ardente causa ([\d.]+) % de Dano de Fogo por segundo de Incêndio afetando o Inimigo$/i;
+const LINHA_SOLO_AO_INCENDIAR = /^Incendiar Inimigos cria Solo Ardente, não mais que uma vez por segundo Solo Ardente causa ([\d.]+) % do Dano de Fogo por segundo do Incêndio infligido$/i;
+const LINHA_SOLO_AO_INCENDIAR_Q = /^Solo ardente causa \+?([\d.]+) % do Dano de Fogo por segundo do Incêndio infligido$/i;
+/**
+ * (decisão do dono, 20/10) O SOLO ARDENTE do Chicote Ardente (o PoB: flame_surge_ignite_damage_as_burning_ground_damage_% 30, a recarga de 2 s): o acerto num inimigo
+ * Incendiado cria o Solo Ardente em 1 casa em volta dele, com 30% do dano por segundo do Incêndio dele; o da Combustão — ao Incendiar, 50% (+15% da qualidade) do Incêndio
+ * posto, uma vez por segundo. "Seus modificadores de dano não se aplicam": o dano por segundo é o do Incêndio. `{ aoIncendiar, pct, recargaMs, raio }` ou null.
+ */
+export const SOLO_DO_CHICOTE = Object.freeze({ raio: 1 });
+function soloDoChicote(linhas, daQualidade) {
+  const cada = achar(linhas, LINHA_SOLO_NO_INCENDIADO);
+  const pct = achar(linhas, LINHA_SOLO_PCT_DO_INCENDIO);
+  if (cada != null && pct != null) return { aoIncendiar: false, pct, recargaMs: Math.round(cada * 1000), raio: SOLO_DO_CHICOTE.raio };
+  const ao = achar(linhas, LINHA_SOLO_AO_INCENDIAR);
+  if (ao != null) return { aoIncendiar: true, pct: ao + somar(daQualidade, LINHA_SOLO_AO_INCENDIAR_Q), recargaMs: 1000, raio: SOLO_DO_CHICOTE.raio };
+  return null;
+}
 export function chicoteDasLinhas(slug, linhas = [], daQualidade = []) {
   if (!/^Flame_Surge/.test(slug)) return null;
-  return { contraIncendiadoPct: somar([...linhas, ...daQualidade], LINHA_CONTRA_INCENDIADOS), naoIncendeia: tem(linhas, LINHA_NAO_INCENDEIA), raioExtraM: (achar(linhas, LINHA_LARGURA) ?? 0) / 10 };
+  return { contraIncendiadoPct: somar([...linhas, ...daQualidade], LINHA_CONTRA_INCENDIADOS), naoIncendeia: tem(linhas, LINHA_NAO_INCENDEIA), raioExtraM: (achar(linhas, LINHA_LARGURA) ?? 0) / 10, solo: soloDoChicote(linhas, daQualidade) };
+}
+
+// ---------------------------------------------------------------- a Explosão de Lâminas do Descarrego
+
+const LINHA_DANO_POR_LAMINA = /^([\d.]+) % mais dano por lâmina de Vórtice de Lâminas$/i;
+const LINHA_AREA_POR_LAMINA = /^([\d.]+) % mais Área de Efeito por lâmina do Vórtice de Lâminas detonada$/i;
+/**
+ * (decisão do dono, 20/10 — o PoB, act_dex.lua:1446) A EXPLOSÃO DE LÂMINAS DO DESCARREGO detona as N lâminas do SEU Vórtice de Lâminas: N explosões em volta de você
+ * (dpsBaseMultiplier × BladeBlastofUnloadingStage), cada uma com 5% × N mais Dano e (100% + 1% por qualidade) × N mais Área (um "mais" só de cada). Sem lâmina, não há dano
+ * (o uso não sai). `{ danoPorLaminaPct, areaPorLaminaPct }` ou null.
+ */
+export function descarregoDasLinhas(slug, linhas = [], daQualidade = []) {
+  if (slug !== 'Blade_Blast_of_Unloading') return null;
+  return { danoPorLaminaPct: somar(linhas, LINHA_DANO_POR_LAMINA), areaPorLaminaPct: somar([...linhas, ...daQualidade], LINHA_AREA_POR_LAMINA) };
 }
 
 // ---------------------------------------------------------------- o objeto do uso
@@ -279,15 +330,16 @@ export function ehLinhaB2(slug, l) {
   if (slug === 'Vaal_Reap' && (LINHA_SANGUE_PERDURA.test(t) || LINHA_MAX_SANGUE.test(t) || LINHA_DA_MAX_SANGUE.test(t) || LINHA_DANO_POR_SANGRENTA.test(t))) return true;
   if (slug === 'Infernal_Blow' && (LINHA_DEBUFF_POR_CARGA.test(t) || LINHA_EXPLOSAO_DO_CADAVER.test(t) || LINHA_RAIO_DA_EXPLOSAO.test(t))) return true;
   if (slug === 'Corrupting_Fever' && (LINHA_FEBRE_RENOVA.test(t) || LINHA_FEBRE_PENALIDADE.test(t))) return true;
-  if (slug === 'Voltaxic_Burst' && (LINHA_CONVERTE_RAIO_EM_CAOS.test(t) || LINHA_POR_AGUARDANDO.test(t))) return true;
+  if (slug === 'Voltaxic_Burst' && (LINHA_CONVERTE_RAIO_EM_CAOS.test(t) || LINHA_POR_AGUARDANDO.test(t) || LINHA_CADAVER_VOLTAXICO.test(t))) return true;
   if (slug === 'Dark_Bargain_of_Trarthus' && (LINHA_RUINA.test(t) || LINHA_RUINA_EXTRA.test(t))) return true;
-  if (slug === 'Manabond' && LINHA_MANA_QUE_FALTA.test(t)) return true;
+  if (slug === 'Manabond' && (LINHA_MANA_QUE_FALTA.test(t) || LINHA_LARGURA_DO_VINCULO.test(t))) return true;
+  if (slug === 'Blade_Blast_of_Unloading' && (LINHA_DANO_POR_LAMINA.test(t) || LINHA_AREA_POR_LAMINA.test(t))) return true;
   if (/^Contagion/.test(slug) && (LINHA_ESPALHA_AO_MORRER.test(t) || LINHA_ESPALHA_AO_ACERTAR.test(t))) return true;
   if (/^Toxic_Rain/.test(slug) && LINHA_ESPORO_LENTO.test(t)) return true;
   if (/^Purifying_Flame/.test(slug) && (LINHA_RAIO_DO_SAGRADO.test(t) || LINHA_ONDA_MENOS.test(t) || LINHA_ONDA_MAIS.test(t))) return true;
   if (slug === 'Vaal_Firestorm' && (LINHA_TIROS.test(t) || LINHA_SOLO_ARDENTE_DURA.test(t) || LINHA_IMPACTOS_AREA.test(t))) return true;
-  if (slug === 'Flame_Surge' && (LINHA_CONTRA_INCENDIADOS.test(t) || LINHA_NAO_INCENDEIA.test(t) || LINHA_LARGURA.test(t))) return true;
-  if (slug === 'Flame_Surge_of_Combusting' && LINHA_LARGURA.test(t)) return true;
+  if (slug === 'Flame_Surge' && (LINHA_CONTRA_INCENDIADOS.test(t) || LINHA_NAO_INCENDEIA.test(t) || LINHA_LARGURA.test(t) || LINHA_SOLO_NO_INCENDIADO.test(t) || LINHA_SOLO_PCT_DO_INCENDIO.test(t))) return true;
+  if (slug === 'Flame_Surge_of_Combusting' && (LINHA_LARGURA.test(t) || LINHA_SOLO_AO_INCENDIAR.test(t) || LINHA_SOLO_AO_INCENDIAR_Q.test(t))) return true;
   return false;
 }
 /** (o Golpe Infernal) o morto com o debuff explode como cadáver — a gema tem o efeito de cadáver dela (o status não diz "o uso de cadáveres não existe"). */

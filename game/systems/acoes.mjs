@@ -3317,24 +3317,26 @@ function explodirCadaveres(estado, hunt, entry, efeito, def, cadaveres, ficha, a
   const eventos = [];
   const fator = ModsPoe.fatorDaArea(efeito?.areaIncPct ?? 0, efeito?.areaMaisPct ?? 0);
   const c0 = (def.raioExplosaoM * Math.sqrt(fator)) / 2;
-  const aumento = Math.max(0, 1 + (ficha.danoDoElemento?.fire ?? 0) / 100);
+  // (lote B2: `def.elemento` — o cadáver da Explosão Voltáxica explode com Raio; os outros, com Fogo)
+  const el = def.elemento ?? 'fire';
+  const aumento = Math.max(0, 1 + (ficha.danoDoElemento?.[el] ?? 0) / 100);
   for (const c of cadaveres) {
     const r = Math.max(0, Math.trunc(c0) + (Math.random() < c0 % 1 ? 1 : 0));
     const bruto = ((def.pct / 100) * Math.max(0, Number(c.maxHp) || 0)) * aumento;
     if (bruto > 0) for (const m of hunt.monstros ?? []) {
       if (!(m.hp > 0) || m.dummy || Math.max(Math.abs(m.x - c.x), Math.abs(m.y - c.y)) > r) continue;
-      const v = Math.round(resistido(hunt, m, 'fire', bruto, ficha));
+      const v = Math.round(resistido(hunt, m, el, bruto, ficha));
       if (!(v > 0)) continue;
       m.hp -= v;
       // (lote B2: `def.tags` — a explosão do morto pelo Golpe Infernal é de um ataque)
       QuemFeriu.carimbar(m, QuemFeriu.VOCE, def.tags ?? ['magia', 'area', 'fogo']);
-      eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v, foe: true, alvo: m.name, color: COR_DO_ELEMENTO.fire ?? '#ff9000', sk: entry.id });
+      eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v, foe: true, alvo: m.name, color: COR_DO_ELEMENTO[el] ?? '#ff9000', sk: entry.id });
       // (17/10, lote G18) a explosão é um ACERTO de Fogo (o PoB: a vida do cadáver × % como dano base da habilidade): põe as afecções pela chance
       // (a da ficha, a da gema, a dos suportes), com o "mais/menos" das afecções dos suportes e o da gema (o Detonar Mortos da Limpeza: 70% menos)
       if (itensPoeLigado() && ficha.afeccoes && entry.poeGema && m.hp > 0) {
         const k = (x) => Math.max(0, 1 + (x ?? 0) / 100);
         const g = GemasPoe.maisNasAfeccoesDaGema(entry.poeGema.slug, efeito?.nivel ?? 1, efeito?.qualidade ?? 0);
-        const postos = AfeccoesPoe.aoAcertar(m, [{ elemento: 'fire', dano: bruto }], { afeccoes: GemasPoe.afeccoesComAGema(ficha.afeccoes, entry.poeGema.slug, efeito?.nivel ?? 1, efeito?.qualidade ?? 0), ataque: false, agora, salaDeBoss: !!hunt.isBoss, fatoresDoDano: { todas: k(efeito?.maisAfeccaoPct) * k(efeito?.maisDotPct) * k(g.maisAfeccaoPct), incendio: k(efeito?.maisIncendioPct) * k(efeito?.maisDotFogoPct) } });
+        const postos = AfeccoesPoe.aoAcertar(m, [{ elemento: el, dano: bruto }], { afeccoes: GemasPoe.afeccoesComAGema(ficha.afeccoes, entry.poeGema.slug, efeito?.nivel ?? 1, efeito?.qualidade ?? 0), ataque: false, agora, salaDeBoss: !!hunt.isBoss, fatoresDoDano: { todas: k(efeito?.maisAfeccaoPct) * k(efeito?.maisDotPct) * k(g.maisAfeccaoPct), incendio: k(efeito?.maisIncendioPct) * k(efeito?.maisDotFogoPct) } });
         for (const st of postos) eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: st });
       }
     }
@@ -3785,6 +3787,14 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   if (b2?.raioEmCaosPct > 0 && efeitoDaGema) efeitoDaGema = { ...efeitoDaGema, 'af:conv_hab_energy_chaos': (efeitoDaGema['af:conv_hab_energy_chaos'] ?? 0) + b2.raioEmCaosPct };
   //  - D-B2.2: o Ceifar e o da Carnificina — "Custa 20% mais Vida por Carga Sangrenta" (um "mais" só no custo de Vida da gema: o PoB, LifeCost MORE × BloodCharge)
   const sangrentasNoCusto = b2?.ceifar?.custoPorCargaPct ? GemasB2.cargasSangrentas(hunt, agora).n : 0;
+  //  - (decisão do dono, 20/10 — o PoB) a Explosão de Lâminas do Descarrego detona as N lâminas do SEU Vórtice de Lâminas (o comum, não o Vaal): N explosões, cada uma com
+  //    5% × N mais Dano e (100% + 1% por qualidade) × N mais Área; sem lâmina, não há dano — o uso não sai. As lâminas saem quando o uso sai (pagou)
+  const vorticeDoDescarrego = b2?.descarrego ? (hunt.poeObjetos ?? []).find((o) => o.tipo === 'vortice' && o.dono === (doTotem ? 'totem' : 'voce') && !o.vaal && o.ate > agora && (o.z ?? 0) === (hunt.z ?? 0)) : null;
+  const laminasDoDescarrego = vorticeDoDescarrego ? (vorticeDoDescarrego.laminas ?? []).filter((a) => a > agora).length : 0;
+  if (b2?.descarrego && !laminasDoDescarrego) return { ok: false, erro: 'Sem lâminas do Vórtice de Lâminas para detonar.', motivo: 'SEM_LAMINAS' };
+  if (laminasDoDescarrego && efeitoDaGema) {
+    efeitoDaGema = { ...efeitoDaGema, fatorDeDano: (efeitoDaGema.fatorDeDano ?? 1) * (1 + (b2.descarrego.danoPorLaminaPct * laminasDoDescarrego) / 100), areaMaisPct: ((1 + (efeitoDaGema.areaMaisPct ?? 0) / 100) * (1 + (b2.descarrego.areaPorLaminaPct * laminasDoDescarrego) / 100) - 1) * 100 };
+  }
   if (sangrentasNoCusto > 0 && efeitoDaGema && GemasPoe.recursoDoCusto(entry.poeGema.slug, efeitoDaGema.nivel ?? 1) === 'vida') {
     efeitoDaGema = { ...efeitoDaGema, custoPct: ((1 + (efeitoDaGema.custoPct ?? 0) / 100) * (1 + GemasB2.maisPelasSangrentas(b2.ceifar.custoPorCargaPct, sangrentasNoCusto) / 100) - 1) * 100 };
   }
@@ -4267,6 +4277,18 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         return legado ? Areas.mudar(cs, legado) : cs;
       };
       casas = areaNoUso();
+      // (decisão do dono, 20/10) os 4 BRAÇOS do Vínculo de Mana: da borda do círculo, cada um ganha 0,6 m a cada 25% inteiros de Mana livre que você tem (a de agora ÷ a
+      // máxima não reservada), × √ da Área do uso, em casas (a fração como chance), 1 casa de largura
+      if (b2?.larguraDoVinculo && formaNoUso) {
+        const livre = Math.max(0, (estado.maxMana ?? 0) - Reserva.reservadas(estado).mana);
+        const extraM = GemasB2.bracosDoVinculo(b2.larguraDoVinculo, estado.mana ?? 0, livre);
+        const raioC = casas.reduce((r, c) => Math.max(r, Math.abs(c.x - formaNoUso.x), Math.abs(c.y - formaNoUso.y)), 0);
+        const comp = extraM > 0 ? casasDoRaio(((GemasPoe.areaNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0).raioM ?? 1.8) + extraM) * Math.sqrt(ModsPoe.fatorDaArea(inc, ...mais))) : 0;
+        if (comp > raioC) {
+          const ja = new Set(casas.map(Areas.chave));
+          for (const [ux, uy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) for (let d = raioC + 1; d <= comp; d++) { const c = { x: formaNoUso.x + ux * d, y: formaNoUso.y + uy * d }; if (!ja.has(Areas.chave(c))) { ja.add(Areas.chave(c)); casas.push(c); } }
+        }
+      }
     }
     // (lote A1) a Investida com Escudo acerta também quem está no percurso; a segunda ponta é a mesma área, transladada
     if (plano && casas && desloc.danoEm === 'caminho_e_alvo') casas = [...casas, ...plano.caminho];
@@ -4675,6 +4697,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   //  - D-B2.4: a Vida gasta no custo (o inteiro em Vida, a parte em Vida e a Vida a mais) renova a Febre Corrompedora (`vidaGastaB2`)
   const vidaGastaNoUso = (vidaAMais || 0) + (pagaComVida ? custoDeMana : 0) + (parteEmVida || 0);
   if (vidaGastaNoUso > 0) vidaGastaB2(hunt, vidaGastaNoUso, agora);
+  //  - o Descarrego detonou as lâminas do Vórtice
+  if (vorticeDoDescarrego) { vorticeDoDescarrego.laminas = []; vorticeDoDescarrego.ate = Math.min(vorticeDoDescarrego.ate, agora); }
   //  - D-B2.2: o Ceifar Vaal dá o "+4 ao máximo" pela duração secundária e "até o máximo" de Cargas Sangrentas; o "mais Dano por Carga Sangrenta" do uso (o acerto e o
   //    degenerativo — o PoB: Damage MORE × BloodCharge), com as cargas de agora
   if (b2?.ceifar?.vaal && !plantada && !doTotem) GemasB2.sangueDoVaal(hunt, b2.ceifar.vaal, fatorDeDuracao(estado, entry, efeitoDaGema), agora);
@@ -4936,6 +4960,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const infernalMs = infernalDoUso ? Math.max(1, Math.round(infernalDoUso.duracaoMs * fatorDeDuracao(estado, entry, efeitoDaGema))) : 0;
     const raioInfernal = infernalDoUso ? Math.max(0, casasDoRaio(infernalDoUso.raioM * Math.sqrt(ModsPoe.fatorDaArea(efeitoDaGema?.areaIncPct ?? 0, efeitoDaGema?.areaMaisPct ?? 0)))) : 0;
     const explodemNoPasse = [];
+    //  - (decisão do dono, 20/10) os mortos pela explosão da Voltáxica explodem como cadáver (`mortosDaVoltaxica`, no fim do passe)
+    const mortosDaVoltaxica = [];
     //  - D-B2.5: o Contágio — o raio do espalhar é o da área do uso (em casas)
     const raioDoContagio = b2?.contagio ? (casas && formaNoUso ? casas.reduce((r, c) => Math.max(r, Math.abs(c.x - formaNoUso.x), Math.abs(c.y - formaNoUso.y)), 0) : Math.max(0, casasDoRaio(GemasPoe.areaNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0).raioM ?? 2))) : 0;
     // (17/10, lote G18) o "até X% mais Dano com Acertos aos alvos próximos" da gema (só no acerto; o perto do Curto Alcance — 2 casas — ou a rampa do
@@ -5302,6 +5328,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // pela explosão), a Febre Corrompedora e o Contágio da Transferência (`aoAcertarB2`); o acerto do totem não é seu
       if (infernalDoUso && infernalNoAcerto(bicho, infernalDoUso, agora + infernalMs, !(fonte === 'explosaoInfernal' || plantada?.explosaoInfernal), entry.id, agora) >= infernalDoUso.maxCargas) explodemNoPasse.push(bicho);
       if (!doTotem) for (const st of aoAcertarB2(hunt, bicho, dano, agora)) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
+      if (b2?.cadaverVoltaxicoPct > 0 && plantada?.voltaxica && dano > 0 && bicho.hp <= 0 && !mortosDaVoltaxica.includes(bicho)) mortosDaVoltaxica.push(bicho);
+      // (decisão do dono, 20/10) o Chicote Ardente: o acerto num Incendiado cria o Solo Ardente sob ele (`soloDoChicoteArdente`)
+      if (b2?.chicote?.solo && !b2.chicote.solo.aoIncendiar && dano > 0) soloDoChicoteArdente(estado, hunt, entry, efeitoDaGema, b2.chicote.solo, bicho, agora, doTotem ? 'totem' : 'voce');
       // (lote A2) os suportes do acerto: o Pacifismo ("Ataques de habilidades reforçadas não podem matar inimigos" — o golpe deixa com 1 de Vida), a
       // Chance de Fugir (`acertoDosSuportesA2`); a Raridade de Itens do abate vai no carimbo do golpe (`QuemFeriu.carimbar`)
       if (efeitoDaGema) acertoDosSuportesA2(hunt, bicho, efeitoDaGema, { dano, ataque: ehAtaque, agora, doTotem });
@@ -5493,6 +5522,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         // (14/10, o Avatar da Selva: a Fúria Liberta pelas Afecções Elementais que o acerto pôs)
         if (!doTotem) ModsPoe.ganharFuriaLiberta(estado, hunt, ficha.afPoe, postos, agora);
         ModsPoe.aoPorAfeccoes(estado, hunt, bicho, ficha, postos, { eventos, personagem, deTotem: doTotem });
+        // (decisão do dono, 20/10) o Chicote Ardente da Combustão: Incendiar cria o Solo Ardente sob o Incendiado (`soloDoChicoteArdente`)
+        if (b2?.chicote?.solo?.aoIncendiar && postos.includes('queimando')) soloDoChicoteArdente(estado, hunt, entry, efeitoDaGema, b2.chicote.solo, bicho, agora, doTotem ? 'totem' : 'voce');
         // (lote 73, a Cutilada Perigosa: o Sangramento das afecções do PoE ou o da gema de suporte — `postosDaGema`)
         ModsPoe.empalamentoComSangramento(bicho, ficha, postos.includes('sangrando') || postosDaGema.includes('sangrando'));
       }
@@ -5702,6 +5733,11 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
           for (const m of vivos) if (m.hp > 0 && distanciaChebyshev(m, b) <= raioInfernal) acertar(m, pctX, 'explosaoInfernal');
         }
       }
+      // (decisão do dono, 20/10) a Explosão Voltáxica: quem a explosão matou explode — 10% da Vida máxima como Raio, no raio da própria nova (2,5 m × √ da Área)
+      if (mortosDaVoltaxica.length) {
+        const raioM = GemasPoe.areaNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0).raioM ?? 2.5;
+        eventos.push(...explodirCadaveres(estado, hunt, entry, efeitoDaGema, { pct: b2.cadaverVoltaxicoPct, raioExplosaoM: raioM, elemento: 'energy', tags: ['magia', 'area', 'raio'] }, mortosDaVoltaxica.splice(0).map((b) => ({ x: b.x, y: b.y, z: b.z ?? hunt.z ?? 0, maxHp: b.maxHp ?? 0 })), ficha, agora));
+      }
       // (lote B2, dono 20/10) a CHAMA PURIFICADORA: o Solo Sagrado no local mirado — o raio do acerto inicial + "X metros ao raio do Solo Sagrado", × √ da Área —, pela
       // duração (× a Duração); depois a Onda de Choque (5 m × √ da Área, o PoB: radiusSecondary 50) acerta quem está sobre um Solo Sagrado e ainda não foi acertado
       // neste passe, com o "mais/menos" dela (sanctify_wave_damage_+%_final: no acerto e nas afecções)
@@ -5785,6 +5821,14 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     novasDosAcertados();
     // (lote B2, dono 20/10) depois do primeiro passe do uso:
     const atingidosDoUsoB2 = atingidos;
+    //  - (decisão do dono, 20/10) a Explosão de Lâminas do Descarrego: a explosão de cada lâmina detonada — N no total (o primeiro passe é a primeira)
+    for (let k = 1; k < laminasDoDescarrego && casas; k++) {
+      atingidos = Areas.dentro(casas, vivos.filter((b) => b.hp > 0));
+      if (!atingidos.length) break;
+      if (entry.efeito) eventos.push({ t: 'area', id: entry.efeito, x, y, casas: Areas.paraTela(casas, { x, y }) });
+      atacar(true);
+    }
+    if (laminasDoDescarrego > 1) atingidos = atingidosDoUsoB2;
     //  - D-B2.1: os ESPOROS da Chuva Tóxica — cada flecha do uso deixa um esporo na área; quem está nela fica com o lento da fonte (5% por esporo vivo, até 30%: os de
     //    usos seguidos somam, a mesma fonte não multiplica), pela duração dos esporos (× a Duração) — `GemasB2.porEsporos`
     if (b2?.esporos && atingidos.length && plantada?.tipo !== 'objeto') {
@@ -7392,6 +7436,7 @@ function pulsarObjeto(estado, hunt, personagem, o, t, eventos) {
     o.ate = Math.min(o.ate, t);
     const aguardando = (hunt.poeObjetos ?? []).filter((x) => x !== o && x.tipo === 'voltaxica' && x.acao === o.acao && x.dono === o.dono && x.ate > t && x.proxima > t).length;
     if (aguardando && o.porAguardandoPct) extra.maisPct = o.porAguardandoPct * aguardando;
+    extra.voltaxica = true;
     eventos.push({ t: 'explosao', id: EFEITO_DA_EXPLOSAO, x: o.x, y: o.y, lado: 2 * o.raio + 1 });
   } else if (o.tipo === 'vortice') {
     const n = (o.laminas ?? []).filter((a) => a > t).length;
@@ -7545,6 +7590,21 @@ export function aoMorrerB2(estado, hunt, personagem, morto, eventos = []) {
     if (inf?.cadaverPct > 0) eventos.push(...explodirCadaveres(estado, hunt, entry, ef, { pct: inf.cadaverPct, raioExplosaoM: inf.raioM, tags: ['ataque', 'area', 'fogo'] }, [{ ...onde, maxHp: morto.maxHp ?? 0 }], Ficha.combate(estado), agora));
   }
   return eventos;
+}
+/**
+ * (decisão do dono, 20/10) O SOLO ARDENTE do Chicote Ardente sob o inimigo Incendiado: 1 casa em volta dele, com o % do dano por segundo do Incêndio mais forte nele ("Seus
+ * modificadores de dano não se aplicam": o do Incêndio), pela duração da gema (4 s × a Duração); uma vez a cada 2 s (o da Combustão: 1 s) por gema.
+ */
+function soloDoChicoteArdente(estado, hunt, entry, ef, solo, bicho, agora, dono) {
+  const cd = (hunt.poeSoloDoChicote ??= {});
+  if ((cd[entry.id] ?? -Infinity) > agora) return false;
+  const incendios = (bicho.dots ?? []).filter((d) => d.tipo === 'queimadura' && d.falta > 0 && d.ate > agora);
+  if (!incendios.length) return false;
+  const dps = Math.max(...incendios.map((d) => d.falta / Math.max(0.1, (d.ate - agora) / 1000)));
+  cd[entry.id] = agora + solo.recargaMs;
+  const durMs = Math.round((GemasPoe.compilada(entry.poeGema.slug, ef?.nivel ?? 1, ef?.qualidade ?? 0)?.stats?.duracao ?? 4) * 1000 * fatorDeDuracao(estado, entry, ef));
+  porObjeto(hunt, { acao: entry.id, slug: entry.poeGema.slug, el: 'fire', dono, tipo: 'chao', mov: 'parado', x: bicho.x, y: bicho.y, z: bicho.z ?? hunt.z ?? 0, efeito: 'solo', raio: solo.raio, partes: [{ tipo: GemasPoe.DEGEN_DO_ELEMENTO.fire, elemento: 'fire', porSegundo: (dps * solo.pct) / 100 }], ultimo: agora, ate: agora + durMs, max: 10 }, agora);
+  return true;
 }
 /** (lote B2) Quem está agora num chão de Sangue Fervendo `o` fica queimando pelo "Perduram por N segundos" depois de sair (o fim: o do chão, ou agora, + N s). */
 function marcarSangueFervendo(hunt, o, agora) {

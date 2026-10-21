@@ -8,10 +8,10 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 255 |
+| implementada e testada | 260 |
 | implementada, sem teste próprio | 48 |
 | limitação do modelo idle | 11 |
-| parcial | 247 |
+| parcial | 242 |
 | não se aplica | 1 |
 
 Só os ataques:
@@ -34,12 +34,12 @@ Só os ataques:
 ### Variantes
 
 - Vaal (52): implementada e testada 25 · parcial 21 · implementada, sem teste próprio 6
-- Alternativas (209): implementada e testada 81 · implementada, sem teste próprio 25 · parcial 96 · limitação do modelo idle 7
+- Alternativas (209): implementada e testada 83 · implementada, sem teste próprio 25 · parcial 94 · limitação do modelo idle 7
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 647 linhas distintas (114 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 639 linhas distintas (114 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
 - Testes que citam a gema: 346/562 ativas, 119/262 suportes.
@@ -177,7 +177,6 @@ Só os ataques:
 | 1 | # % do Dano Físico é Convertido para Dano de Gelo enquanto a Esfera não possuir Afeções # % do Dano Físico é Convertido para Dano de Raio enquanto a Esfera estiver Eletrizada ou Exaurida # % do Dano Físico é Convertido para Dano de Gelo enquanto a Esfera etiver Congelada ou Enfraquecida |
 | 1 | # % maior frequência de rajadas por # de mana máximo |
 | 1 | # % mais Área de Efeito por Carga de Tolerância removida |
-| 1 | # % mais Área de Efeito por lâmina do Vórtice de Lâminas detonada |
 | 1 | # % mais Área de Efeito se Consumindo um Lacaio |
 | 1 | # % mais Área de Efeito se Consumiu um cadáver |
 | 1 | # % mais Dano com Acertos e Afecções por Intensidade |
@@ -185,7 +184,6 @@ Só os ataques:
 | 1 | # % mais Dano de Projétil |
 | 1 | # % mais Dano na Postura de Sangue |
 | 1 | # % mais Dano por Carga de Tolerância removida |
-| 1 | # % mais dano por lâmina de Vórtice de Lâminas |
 | 1 | # % mais Dano por Maldição aplicada |
 | 1 | # % mais Dano por Trauma, até # % |
 | 1 | # % mais Dano por Traumatismo |
@@ -211,7 +209,6 @@ Só os ataques:
 | 1 | +# % mais Dano por Traumatismo |
 | 1 | +# ao número máximo de Zumbis |
 | 1 | +# cascatas por carga de poder removida |
-| 1 | +# de largura por cada # % de Mana Máxima Não Reservada possuída |
 | 1 | +# de Relâmpagos Concentrados máximos |
 | 1 | +# metro ao Raio por # de Fúria |
 | 1 | +# metros à Largura do Feixe Por Intensidade # % menos ângulo de ramificação por Intensidade |
@@ -238,7 +235,6 @@ Só os ataques:
 | 1 | Acada segundo # % mais Fúria perdida |
 | 1 | Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe # de Ressonância de outros Elementos por # segundos Perde # de Ressonância por segundo para cada Elemento que não estiver ganhando |
 | 1 | Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe # de Ressonância de outros Elementos por # segundos\nPerde # de Ressonância por segundo para cada Elemento que não estiver ganhando |
-| 1 | Acertos em Inimigos Incendiados criam Solo Ardente, não mais que uma vez a cada # segundos |
 | 1 | Adrenalina de Combate concede #% mais Velocidade de Ataque às Habilidades de Deslocamento não Suportadas por Combate Próximo |
 | 1 | Afecções Elementais infligidas por Habilidades Suportadas se espalham para outros inimigos dentro de # metros |
 | 1 | Alcance do Posicionamento de Totens aumentado em # % |
@@ -406,7 +402,6 @@ Só os ataques:
 | 1 | Explosão Final causa + # % de dano |
 | 1 | Explosão Final Causa + # % mais Dano |
 | 1 | Explosões causam Dano de Fogo base igual a # % da Vida máxima do Lacaio |
-| 1 | Explosões causam Dano de Raio igual a # % da Vida Máxima do cadáver |
 | 1 | Explosões terão # a # de Dano de Fogo adicional |
 | 1 | Feitiços aplicados por habilidades de maldição reforçadas afetam inimigos imunes a feitiços |
 | 1 | Feitiços aplicados por habilidades de maldição reforçadas têm #% de chance de afetar inimigos imunes a feitiços |
@@ -518,7 +513,6 @@ Só os ataques:
 | 1 | Ignora Atordoamentos enquanto Usando Habilidades Suportadas |
 | 1 | Impele os próximos # Ataques de Golpe Corpo a Corpo que você executar |
 | 1 | Impele os próximos # Ataques de Pancada Corpo a Corpo que você executar |
-| 1 | Incendiar Inimigos cria Solo Ardente, não mais que uma vez por segundo Solo Ardente causa # % do Dano de Fogo por segundo do Incêndio infligido |
 | 1 | Incêndios causados por Habilidades Suportadas se espalham para outros Inimigos dentro de # metros |
 | 1 | Inervação dura # segundos |
 | 1 | Inflige Definhando por # segundos ao Acertar |
@@ -666,9 +660,7 @@ Só os ataques:
 | 1 | Só pode ser Acertado uma vez a cada # segundo |
 | 1 | Sofre # % da Vida Máxima e # % do Escudo de Energia Máximo como Dano de Caos |
 | 1 | Sofre # % do Escudo de Energia Máximo como Dano de Caos |
-| 1 | Solo Ardente causa # % de Dano de Fogo por segundo de Incêndio afetando o Inimigo |
 | 1 | Solo Ardente causa # % do Dano de Fogo por Segundo do Incêndio mais forte no Inimigo Solo Cáustico causa # % do Dano de Caos por Segundo do Envenenamento mais forte no Inimigo Pode criar cada efeito de Solo não mais que uma vez por segundo |
-| 1 | Solo ardente causa +# % do Dano de Fogo por segundo do Incêndio infligido |
 | 1 | Solo Eletrizado causa # % de Dano sofrido aumentado |
 | 1 | Somente uma Mina deste tipo pode ser Detonada em cada Sequência de Detonação |
 | 1 | Suas Habilidades e de seus aliados próximos não Custam Mana |
@@ -764,10 +756,6 @@ Só os ataques:
 - **Bear_Trap_of_Skewers** (Armadilha de Urso dos Espetos) — parcial
   - efeito não simulado: Trava o inimigo no lugar
   - efeito não simulado: Empala Inimigos ao Acertar
-- **Blade_Blast_of_Unloading** (Explosão de Lâminas do Descarrego) — parcial
-  - efeito não simulado: 5 % mais dano por lâmina de Vórtice de Lâminas
-  - efeito não simulado: 100 % mais Área de Efeito por lâmina do Vórtice de Lâminas detonada
-  - efeito não simulado: 20 % mais Área de Efeito por lâmina do Vórtice de Lâminas detonada
 - **Blade_Trap** (Armadilha de Lâminas) — parcial
   - efeito não simulado: Gira 4 vezes
   - efeito não simulado: Velocidade de rotação aumentada em 25 % se em Empunhadura Dupla
@@ -969,12 +957,6 @@ Só os ataques:
 - **Fire_Trap_of_Blasting** (Armadilha Flamejante da Explosão) — parcial
   - efeito não simulado: 50 % de Chance de uma Armadilha ser Ativada uma vez adicional
   - efeito não simulado: 881 a 1316 de Dano de Fogo adicionado contra Inimigos Queimando
-- **Flame_Surge** (Chicote Ardente) — parcial
-  - efeito não simulado: Acertos em Inimigos Incendiados criam Solo Ardente, não mais que uma vez a cada 2 segundos
-  - efeito não simulado: Solo Ardente causa 30 % de Dano de Fogo por segundo de Incêndio afetando o Inimigo
-- **Flame_Surge_of_Combusting** (Chicote Ardente da Combustão) — parcial
-  - efeito não simulado: Incendiar Inimigos cria Solo Ardente, não mais que uma vez por segundo Solo Ardente causa 50 % do Dano de Fogo por segundo do Incêndio infligido
-  - efeito não simulado: Solo ardente causa +15 % do Dano de Fogo por segundo do Incêndio infligido
 - **Flame_Wall** (Parede Flamejante) — parcial
   - efeito não simulado: Parede terá 5.9 metros
   - efeito não simulado: Projéteis que passam pela parede causam 78 a 117 de Dano de Fogo Adicional
@@ -1158,8 +1140,6 @@ Só os ataques:
   - efeito não simulado: 15 % de Chance de uma Armadilha ser Ativada uma vez adicional
 - **Mana-Infused_Staff** (Cajado Impregnado de Mana) — parcial
   - efeito não simulado: a Onda Arcana é um acerto só, no anel de 2 casas em volta de você — a duração de 0,35 s e a Eficácia de 450% do dano adicionado não entram
-- **Manabond** (Vínculo de Mana) — parcial
-  - efeito não simulado: +6 de largura por cada 25 % de Mana Máxima Não Reservada possuída
 - **Mirror_Arrow** (Flecha Espelhada) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Mirror_Arrow_of_Bombarding_Clones** (Flecha Espelhada dos Clones Bombardeiros) — limitação do modelo idle
@@ -1592,8 +1572,6 @@ Só os ataques:
 - **Volcanic_Fissure_of_Snaking** (Fissura Vulcânica do Serpenteado) — parcial
   - efeito não simulado: Fissuras irrompem 2 vezes adicionais
   - efeito não simulado: Fissuras irrompem 1 vezes adicionais
-- **Voltaxic_Burst** (Explosão Voltáxica) — parcial
-  - efeito não simulado: Explosões causam Dano de Raio igual a 10 % da Vida Máxima do cadáver
 - **War_Banner** (Estandarte da Guerra) — parcial
   - nenhum efeito do buff tem equivalente no jogo
   - efeito não simulado: Estandarte concede Precisão aumentada em 8 % a Você e Aliados

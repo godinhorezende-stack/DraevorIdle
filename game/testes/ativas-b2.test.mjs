@@ -81,17 +81,11 @@ function vizinho(m, dx = 1, dy = 0) {
 
 // ---------------------------------------------------------------- o status
 
-test('B2: as gemas do lote saem de parcial (as linhas do PoE têm leitor); as que esperam o dono seguem com só a linha dele', { skip: SEM }, () => {
-  for (const s of ['Reap', 'Reap_of_Butchery', 'Vaal_Reap', 'Infernal_Blow', 'Corrupting_Fever', 'Dark_Bargain_of_Trarthus', 'Contagion', 'Contagion_of_Subsiding', 'Contagion_of_Transference', 'Vaal_Firestorm', 'Toxic_Rain', 'Toxic_Rain_of_Sporeburst', 'Purifying_Flame', 'Purifying_Flame_of_Revelations']) {
+test('B2: as 19 gemas do lote saem de parcial (as linhas do PoE têm leitor; as 4 decisões do dono de 20/10 também)', { skip: SEM }, () => {
+  for (const s of ['Reap', 'Reap_of_Butchery', 'Vaal_Reap', 'Infernal_Blow', 'Corrupting_Fever', 'Dark_Bargain_of_Trarthus', 'Contagion', 'Contagion_of_Subsiding', 'Contagion_of_Transference', 'Vaal_Firestorm', 'Toxic_Rain', 'Toxic_Rain_of_Sporeburst', 'Purifying_Flame', 'Purifying_Flame_of_Revelations', 'Voltaxic_Burst', 'Manabond', 'Flame_Surge', 'Flame_Surge_of_Combusting', 'Blade_Blast_of_Unloading']) {
     const r = G.REGISTRO.get(s);
     assert.deepEqual([s, r.statusNoJogo, r.motivosNoJogo], [s, 'funciona', []]);
   }
-  const so = (s, re) => { const r = G.REGISTRO.get(s); assert.equal(r.statusNoJogo, 'parcial', s); assert.ok(r.motivosNoJogo.every((m) => re.test(m)), `${s}: ${r.motivosNoJogo.join(' | ')}`); };
-  so('Voltaxic_Burst', /Vida Máxima do cadáver/);
-  so('Manabond', /de largura por cada 25/);
-  so('Flame_Surge', /Solo Ardente/);
-  so('Flame_Surge_of_Combusting', /Solo [Aa]rdente/);
-  so('Blade_Blast_of_Unloading', /Vórtice de Lâminas/);
 });
 
 // ---------------------------------------------------------------- os leitores (os números do PoE)
@@ -114,7 +108,14 @@ test('B2: os leitores no nível 20 — os números do PoB e do poedb', { skip: S
   assert.deepEqual(G.b2DaGema('Toxic_Rain_of_Sporeburst', 20, 0).esporos, { porEsporoPct: 5, maxPct: 30 });
   assert.deepEqual(G.b2DaGema('Purifying_Flame', 20, 20).purificadora, { sagradoExtraM: 0.8999999999999999, ondaRaioM: 5, ondaMaisPct: -25, duracaoMs: 4000 });
   assert.equal(G.b2DaGema('Purifying_Flame_of_Revelations', 20, 20).purificadora.ondaMaisPct, 180);
-  assert.deepEqual(G.b2DaGema('Flame_Surge', 20, 20).chicote, { contraIncendiadoPct: 108, naoIncendeia: true, raioExtraM: 0.9 });
+  assert.deepEqual(G.b2DaGema('Flame_Surge', 20, 20).chicote, { contraIncendiadoPct: 108, naoIncendeia: true, raioExtraM: 0.9, solo: { aoIncendiar: false, pct: 30, recargaMs: 2000, raio: 1 } });
+  assert.deepEqual(G.b2DaGema('Flame_Surge_of_Combusting', 20, 20).chicote.solo, { aoIncendiar: true, pct: 65, recargaMs: 1000, raio: 1 });
+  assert.deepEqual(G.b2DaGema('Blade_Blast_of_Unloading', 20, 20).descarrego, { danoPorLaminaPct: 5, areaPorLaminaPct: 120 });
+  assert.equal(G.b2DaGema('Voltaxic_Burst', 20, 0).cadaverVoltaxicoPct, 10);
+  assert.deepEqual(G.b2DaGema('Manabond', 20, 0).larguraDoVinculo, { unidades: 6, porPct: 25 });
+  // (os braços: 0,6 m a cada 25% inteiros de mana livre — 100% → 2,4 m; 49% → 0,6 m)
+  assert.ok(perto(B2.bracosDoVinculo({ unidades: 6, porPct: 25 }, 800, 800), 2.4));
+  assert.ok(perto(B2.bracosDoVinculo({ unidades: 6, porPct: 25 }, 392, 800), 0.6));
   assert.equal(G.b2DaGema('Voltaxic_Burst', 20, 0).raioEmCaosPct, 60);
   const t = G.objetoDaGema('Vaal_Firestorm', 20, 0);
   assert.deepEqual([t.tipo, t.total, t.intervaloMs, t.areaM, t.soloMs, t.impactoAreaMaisPct], ['tempestade', 16, 500, 2, 6000, 20]);
@@ -416,4 +417,72 @@ test('B2 no jogo: o Chicote Ardente — 88% mais contra o Incendiado; +0,9 m no 
   assert.ok(perto(com.alvo / sem.alvo, 1.88, 0.001), `razão ${com.alvo / sem.alvo}`);
   // (o raio de 3,9 m: 1,95 casas — com o sorteio em 0,5, 2 casas; o vizinho a 2 casas do alvo leva o golpe)
   assert.ok(sem.vizinho > 0, 'o vizinho a 2 casas');
+});
+
+// ---------------------------------------------------------------- as decisões do dono (20/10)
+
+test('B2 no jogo (dono): a Explosão de Lâminas do Descarrego — sem lâmina não sai; N lâminas, N explosões com 5% × N mais dano; as lâminas saem', { skip: SEM }, async () => {
+  const m0 = await montar('Blade_Blast_of_Unloading');
+  assert.equal(usar(m0.e, m0.b).motivo, 'SEM_LAMINAS');
+  const dano = async (n) => {
+    const m = await montar('Blade_Blast_of_Unloading');
+    const t = m.e.hunt.clock;
+    m.e.hunt.poeObjetos = [{ id: 'v', acao: G.doSlug('Blade_Vortex').acao, slug: 'Blade_Vortex', tipo: 'vortice', dono: 'voce', mov: 'no_dono', efeito: 'pulso', x: m.e.hunt.pos.x, y: m.e.hunt.pos.y, z: m.e.hunt.z ?? 0, raio: 1, laminas: Array(n).fill(t + 60_000), intervaloMs: 600, proxima: t + 60_000, ate: t + 60_000 }];
+    const hp = m.b.hp;
+    assert.ok(usar(m.e, m.b).ok);
+    assert.equal(m.e.hunt.poeObjetos?.find((o) => o.id === 'v')?.laminas?.length ?? 0, 0, 'as lâminas detonadas saem');
+    return hp - m.b.hp;
+  };
+  const um = await dano(1);
+  const tres = await dano(3);
+  assert.ok(um > 0);
+  assert.ok(perto(tres / um, (3 * 1.15) / 1.05, 0.002), `razão ${tres / um}`);
+});
+
+test('B2 no jogo (dono): o Vínculo de Mana — os braços ganham 0,6 m a cada 25% de mana livre, da borda do círculo', { skip: SEM }, async () => {
+  const noBraco = async (mana) => {
+    const m = await montar('Manabond');
+    m.e.maxMana = 100_000;
+    m.e.mana = mana;
+    const v = vizinho(m, 2, 0);
+    const hp = v.hp;
+    assert.ok(usar(m.e, m.b).ok);
+    return hp - v.hp;
+  };
+  // (o círculo de 1,8 m: 1 casa; com 100% de mana, 1,8 + 2,4 = 4,2 m — 2 casas: o vizinho a 2 casas do alvo, no braço)
+  assert.ok((await noBraco(100_000)) > 0);
+  assert.equal(await noBraco(20_000), 0);
+});
+
+test('B2 no jogo (dono): a Explosão Voltáxica — quem a explosão mata explode com 10% da Vida máxima como Raio, no raio da nova', { skip: SEM }, async () => {
+  const m = await montar('Voltaxic_Burst');
+  const v = vizinho(m, 1, 0);
+  assert.ok(usar(m.e, m.b).ok);
+  Object.assign(m.b, { hp: 1, maxHp: 100_000 });
+  const ev = tiques(m.e, 2600, 50);
+  const doCadaver = ev.filter((x) => x.t === 'dmg' && x.uid === v.uid && x.v >= 9900);
+  assert.equal(doCadaver.length, 1, `os golpes no vizinho: ${ev.filter((x) => x.t === 'dmg' && x.uid === v.uid).map((x) => x.v).join(', ')}`);
+});
+
+test('B2 no jogo (dono): o Chicote Ardente — o acerto no Incendiado cria o Solo Ardente (1 casa, 30% do Incêndio), uma vez a cada 2 s; o da Combustão, ao Incendiar (50%)', { skip: SEM }, async () => {
+  const m = await montar('Flame_Surge');
+  const t = m.e.hunt.clock;
+  m.b.dots = [{ id: 'q', tipo: 'queimadura', elemento: 'fire', ate: t + 10_000, falta: 10_000, porPulso: 1000, proximo: t + 1000 }];
+  assert.ok(usar(m.e, m.b).ok);
+  const solos = () => (m.e.hunt.poeObjetos ?? []).filter((o) => o.tipo === 'chao' && o.slug === 'Flame_Surge');
+  assert.equal(solos().length, 1);
+  const s0 = solos()[0];
+  assert.deepEqual([s0.x, s0.y, s0.raio, s0.ate - s0.desde], [m.b.x, m.b.y, 1, 4000]);
+  assert.ok(perto(s0.partes[0].porSegundo, 0.3 * (m.b.dots.find((d) => d.id === 'q').falta / ((m.b.dots.find((d) => d.id === 'q').ate - s0.desde) / 1000)), 0.05));
+  m.e.hunt.clock += 1000;
+  m.e.hunt.cooldowns = {};
+  assert.ok(usar(m.e, m.b).ok);
+  assert.equal(solos().length, 1, 'a recarga de 2 s');
+  const c = await montar('Flame_Surge_of_Combusting');
+  assert.ok(usar(c.e, c.b, 0.01).ok);
+  const inc = c.b.dots.find((d) => d.tipo === 'queimadura');
+  assert.ok(inc, 'Incendiou');
+  const sc = (c.e.hunt.poeObjetos ?? []).find((o) => o.tipo === 'chao' && o.slug === 'Flame_Surge_of_Combusting');
+  assert.ok(sc, 'o Solo Ardente da Combustão');
+  assert.ok(perto(sc.partes[0].porSegundo, 0.5 * (inc.falta / ((inc.ate - sc.desde) / 1000)), 0.01));
 });
