@@ -2,8 +2,8 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 314,
-   "implementada, sem teste próprio": 47,
+   "implementada e testada": 315,
+   "implementada, sem teste próprio": 46,
    "parcial": 188,
    "limitação do modelo idle": 12,
    "não se aplica": 1
@@ -31,8 +31,8 @@
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 110,
-    "implementada, sem teste próprio": 25,
+    "implementada e testada": 111,
+    "implementada, sem teste próprio": 24,
     "parcial": 67,
     "limitação do modelo idle": 7
    }
@@ -60,7 +60,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 388,
+   "ativasCitadas": 389,
    "suportesCitados": 119,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -5887,7 +5887,7 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],

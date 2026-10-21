@@ -3287,12 +3287,25 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
  * (o Intimidado) ou de Magia (o Inervado). A Exposição já está na resistência (`hunt/resistencia`), que o pulso usa.
  */
 const FICHA_DO_DOT = Object.freeze({ afPoe: Object.freeze({}), tagsDoGolpe: Object.freeze([]) });
-export function fatorRecebidoNoDot(alvo, tipo, agora) {
+/*
+ * (revisão do C4, 21/10 — o PoB: o Definhado é `6 × (1 + WitherEffect)` no `enemyDB ChaosDamageTaken`, CalcPerform.lua; os "Inimigos … sofrem Dano aumentado" são
+ * `EnemyModifier DamageTaken`, ModParser.lua — sem flag de Acerto: valem no dano contínuo, CalcOffence.lua) as chaves do ATACANTE que são dano SOFRIDO pelo inimigo (não
+ * o "mais" do tipo, que é dano do atacante, nem as só de Acerto, de Ataque ou de Magia): o dano contínuo as leva na `origem.sofrido` (`sofridoDoAtacante`), e o pulso
+ * as usa (`fatorRecebidoNoDot`). Vale o efeito de quem pôs o dano contínuo, na hora em que pôs.
+ */
+const CHAVES_SOFRIDO_NO_DOT = Object.freeze(['efeito_definhamento', 'dano_elemental_eletrizado_congelado', 'dano_por_runa_vinculada', 'provocados_dano_sofrido', 'provocados_clamor_dano_sofrido', 'resfriado_fragil', 'resfriados_sofrem_mais', 'dano_por_afeccao_no_alvo', 'amaldicoados_esconjuro_apos_pct']);
+/** As chaves de dano sofrido do atacante (`afPoe`) que valem no pulso do dano contínuo — um objeto pequeno, que grava e volta com a caçada; null sem nenhuma. */
+export function sofridoDoAtacante(afPoe) {
+  const r = {};
+  for (const k of CHAVES_SOFRIDO_NO_DOT) if (Number(afPoe?.[k]) > 0) r[k] = Number(afPoe[k]);
+  return Object.keys(r).length ? r : null;
+}
+export function fatorRecebidoNoDot(alvo, tipo, agora, sofrido = null) {
   if (!ligado() || !alvo) return 1;
   const e = alvo.estados ?? {};
   const pilha = (e.chocadosPilha ?? []).filter((x) => x.ate > agora);
   const eletrizacao = pilha.length ? 1 + pilha.reduce((t, x) => t + (x.pct ?? 0), 0) / 100 : ativo(e.chocado, agora) ? 1 + (e.chocado.pct ?? 0) / 100 : 1;
-  return fatorRecebidoPeloBicho(alvo, tipo, FICHA_DO_DOT, agora) * eletrizacao;
+  return fatorRecebidoPeloBicho(alvo, tipo, sofrido ? { afPoe: sofrido, tagsDoGolpe: FICHA_DO_DOT.tagsDoGolpe } : FICHA_DO_DOT, agora) * eletrizacao;
 }
 /** As chaves com escala do ALVO (`resfriamentoNoAlvo:N`, `eletrizacaoNoAlvo:N`), guardadas por soma (`afPoe`). */
 const ESCALAS_DO_ALVO = /^(resfriamentoNoAlvo|eletrizacaoNoAlvo)(:|$)/;

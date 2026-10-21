@@ -515,6 +515,12 @@ const DESCRICAO_DO_PROJETIL = [
   [/^(?:Vaal_)?Spectral_Throw(?:_of_Trarthus)?$/, { perfurar: 99, retornar: 1, voltaAtravessa: true }],
   [/^Spectral_Throw_of_Materialising$/, { perfurar: 99, retornar: 1, voltaAtravessa: true, soNaVolta: true }],
   [/^Spectral_Helix(?:_of_Trarthus)?$/, { perfurar: 99 }],
+  // (revisão do PR3, 21/10 — o PoB, act_int.lua IceSpear: `mod("PierceChance", "BASE", 100, …, { type = "SkillPart", skillPart = 1 })`) a 1ª forma da Lança Gélida
+  // atravessa todos (os acertos a menos de 2 casas de você — a 2ª forma, `GemasPR3.SEGUNDA_FORMA`); a 2ª não (só com os suportes)
+  [/^Ice_Spear$/, { perfuraNaPrimeiraForma: GemasPR3.SEGUNDA_FORMA.casas }],
+  // (dono, 21/10 — o PoB, act_int.lua IceSpearAltX: o mesmo `PierceChance` 100 na skillPart 1) a da Divisão: a 1ª forma é o fragmento até se dividir ("Após se
+  // dividir, os projéteis entram na segunda forma") — o voo todo do projétil principal atravessa; os da divisão (a 2ª forma) não
+  [/^Ice_Spear_of_Splitting$/, { perfuraNaPrimeiraForma: 99 }],
 ];
 /**
  * (lote A3, dono 19/10 — D1, D6) As linhas de projétil que NÃO SE APLICAM ao jogo (só a trajetória — o projétil do jogo acerta no tique, e o PoB
@@ -705,7 +711,9 @@ export function areaNoNivel(slug, nivel = 1, qualidade = 0) {
   const base = RAIO_DO_POB[slug] ?? st.raio ?? st.raioProp ?? null;
   // (decisão do dono, 21/10 — o PoB) a Rajada Divina e a do Esplendor: o raio da gema é o da IMPLOSÃO (o secundário, 1,2 m); o "+X metros de raio" da qualidade
   // (active_skill_base_radius_+) vai no primário — a explosão (`GemasB3.objetoDaGema`)
-  const bonus = /^Divine_Blast/.test(slug) ? 0 : st.raioBonus ?? 0;
+  // (revisão do B3, 21/10 — o PoB) a Invocar Tormenta Vaal: `radius` 16 fixo nos baseMods (act_int.lua, VaalStormCall — "Initial Lightning tether area"), sem
+  // `active_skill_base_radius_+` em nenhum nível; a coluna "# metros de raio" do poedb é a da Invocar Tormenta comum (até a "Mana" dela vem junto) — fica 1,6 m
+  const bonus = /^Divine_Blast/.test(slug) || slug === 'Vaal_Storm_Call' ? 0 : st.raioBonus ?? 0;
   const raioM = base == null ? null : Math.max(0, (base + bonus) * Math.sqrt(Math.max(0.2, 1 + (st.areaMais ?? 0) / 100)));
   return { raioM, areaIncPct: st.areaInc ?? 0 };
 }

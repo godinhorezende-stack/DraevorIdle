@@ -121,8 +121,11 @@ var vulnerabilidadeNoDot;
 export function definirVulnerabilidadeNoDot(fn) { vulnerabilidadeNoDot = fn; }
 export function recebidoNoPulso(m, d, agora) {
   if (!itensPoeLigado()) return 1;
-  const daGema = d.origem?.fonte === 'gema' || d.origem?.fonte === 'totem';
-  return ModsPoe.fatorRecebidoNoDot(m, d.elemento, agora) * (daGema && vulnerabilidadeNoDot ? vulnerabilidadeNoDot(m, d.elemento, agora) : 1);
+  // (revisão do C4, 21/10: a afecção do ACERTO posta pelo totem — `origem.doAcerto` — já traz a maldição na base, como a sua: não conta de novo)
+  const daGema = (d.origem?.fonte === 'gema' || d.origem?.fonte === 'totem') && !d.origem?.doAcerto;
+  // (revisão do C4, 21/10: + o dano sofrido do ATACANTE — o Definhado com o "Efeito do Definhamento aumentado", os "Inimigos … sofrem Dano aumentado" —, guardado
+  // na `origem.sofrido` de quem pôs — `ModsPoe.sofridoDoAtacante`)
+  return ModsPoe.fatorRecebidoNoDot(m, d.elemento, agora, d.origem?.sofrido ?? null) * (daGema && vulnerabilidadeNoDot ? vulnerabilidadeNoDot(m, d.elemento, agora) : 1);
 }
 
 /**

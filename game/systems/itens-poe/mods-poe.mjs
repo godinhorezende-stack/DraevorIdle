@@ -172,7 +172,8 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
     e.desacelerado = { ate: agora + NO_ACERTO.desacelerar.duracaoMs, regenMenosPct: v('desacelerados_regen_red') };
     // (lote C4, dono 21/10: o "Desacelerar" das magias é o Tolhimento do PoE — "Hinder reduces movement speed by 30% for 4 seconds": o estado próprio `tolhido`, só
     // de movimento, sem teto, vale o mais forte — `Estados.tolher`; antes, o `lento`)
-    if (Estados.tolher(alvo, NO_ACERTO.desacelerar.lentidaoPct, NO_ACERTO.desacelerar.duracaoMs, agora)) ev('tolhido');
+    // (revisão do C4, 21/10: + a Regeneração de Vida reduzida no próprio Tolhimento — `Estados.tolher`; o `desacelerado` acima segue, e o maior dos dois vale)
+    if (Estados.tolher(alvo, NO_ACERTO.desacelerar.lentidaoPct, NO_ACERTO.desacelerar.duracaoMs, agora, v('desacelerados_regen_red'))) ev('tolhido');
   }
   if (sorte(v('chance_provocar'))) {
     // (+ "Duração da Provocação aumentada em X%".)

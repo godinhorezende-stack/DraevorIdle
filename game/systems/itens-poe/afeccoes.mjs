@@ -194,7 +194,7 @@ function congelarNoGolpeFatal(bicho, partes, { afeccoes, crit, agora, rng, salaD
  * crítico; `ataque`: é ataque (golpe da arma, habilidade de ataque) — as chances "com Ataques" só valem nele. `afeccoes`: o de `daSoma`
  * (a ficha guarda). Devolve os nomes dos estados postos (o evento na tela). Sem o sistema do PoE, não faz nada.
  */
-export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = false, agora = 0, rng = Math.random, salaDeBoss = false, praga = null, fatoresDoDano = null, fonte = 'poe', aoPor = null } = {}) {
+export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = false, agora = 0, rng = Math.random, salaDeBoss = false, praga = null, fatoresDoDano = null, fonte = 'poe', aoPor = null, sofrido = null } = {}) {
   if (!ligado() || !bicho || bicho.dummy) return [];
   // (lote 81 — dono: "Golpe fatal também") o golpe que MATA e congelaria: o morto conta como Congelado (o PoE Estilhaça — a explosão do Arauto
   // Glacial, as Almas Vaal…); nada mais se aplica a um morto
@@ -244,7 +244,9 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     const total = ultimoTotal = base * doCritico * porSegundo * (duracaoMs / 1000) * (1 + multiplicador / 100) * (1 + ((a.danoAumentado ?? 0) + (a.danoComAfeccoes ?? 0) + aumentado + mutilado) / 100) * Math.max(0, 1 + mais / 100) * Math.max(0, 1 + (a.dotMais ?? 0) / 100);
     const rapido = Math.max(100, Math.round(duracaoMs / (1 + ((a.maisRapido ?? 0) + (tipo === 'queimadura' ? a.incendioMaisRapido ?? 0 : 0) + (tipo === 'sangramento' ? a.sangramentoMaisRapido ?? 0 : 0) + (tipo === 'venenoPoe' ? a.venenoMaisRapido ?? 0 : 0)) / 100)));
     // (lote G20a: `fonte` — a do totem é dele: o abate pelo pulso é `matarTotem`, `combate/dot`)
-    const estado = Dot.aplicar(bicho, { tipo, total, duracaoMs: rapido, origem: { fonte }, ...(chave != null ? { chave } : {}), agravado, semMovimento }, agora);
+    // (revisão do C4, 21/10: `doAcerto` — a afecção do ACERTO já traz a maldição de dano sofrido na base: o pulso não a conta de novo, nem a do totem, `Dot.recebidoNoPulso`;
+    // `sofrido` — o dano sofrido do atacante no pulso, `ModsPoe.sofridoDoAtacante`)
+    const estado = Dot.aplicar(bicho, { tipo, total, duracaoMs: rapido, origem: { fonte, doAcerto: true, ...(sofrido ? { sofrido } : {}) }, ...(chave != null ? { chave } : {}), agravado, semMovimento }, agora);
     if (estado) postos.push(estado);
     // (lote 53, a Regra de Ouro: o dano contínuo posto, com o total e a duração — `ModsPoe.refletorDeAfeccoes` o reflete em você)
     if (estado) aoPor?.(tipo, total, rapido, agora);

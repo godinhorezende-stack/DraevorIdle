@@ -554,7 +554,11 @@ function unicas(supports) {
  */
 const ehFeiticeiro = (def) => def?.tipo === 'ativa' && def.poe?.slug === 'Spellslinger';
 const FORA_DO_FEITICEIRO = ['poe:Ataque', 'poe:Aura', 'poe:Arauto', 'poe:Armadilha', 'poe:Mina', 'poe:Totem', 'poe:Canalização', 'poe:Ativação', 'poe:Vínculo'];
-const magiaDoFeiticeiro = (def) => def?.tipo === 'ativa' && !ehFeiticeiro(def) && !!def.tags?.includes('poe:Magia') && !FORA_DO_FEITICEIRO.some((t) => def.tags.includes(t));
+// (revisão do B3, dono 21/10) as gemas que o PoE não deixa ATIVAR por gatilho: a Chuva de Lâminas de Trarthus (o PoB, act_dex.lua: "This skill cannot be triggered or used
+// by Totems, Traps, or Mines" — sem Triggerable nos `skillTypes`). Fora do Feiticeiro e da Automação
+const NAO_ATIVAVEIS_POR_GATILHO = new Set(['Bladefall_of_Trarthus']);
+const ativavelPorGatilho = (def) => !NAO_ATIVAVEIS_POR_GATILHO.has(def?.poe?.slug);
+const magiaDoFeiticeiro = (def) => def?.tipo === 'ativa' && !ehFeiticeiro(def) && ativavelPorGatilho(def) && !!def.tags?.includes('poe:Magia') && !FORA_DO_FEITICEIRO.some((t) => def.tags.includes(t));
 /**
  * (lote A2, dono 19/10: "a habilidade suportada sai sozinha a cada 0,6 s, ou pela recarga dela, se for maior") A AUTOMAÇÃO do PoE (PoB act_int.lua:
  * 417-472): enquanto ela está ligada, as magias INSTANTÂNEAS do grupo dela, sem reserva, saem sozinhas (`acoes.ativarGatilhos`, `'automacao'` —
@@ -567,7 +571,7 @@ const FORA_DA_AUTOMACAO = ['poe:Ataque', 'poe:Armadilha', 'poe:Mina', 'poe:Totem
 // one supported bow skill for each stage gained" (o PoB, act_dex.lua:17606): saem na liberação, uma por estágio (`Acoes.ativarGatilhos`, 'snipe')
 const ehAtirar = (def) => def?.tipo === 'ativa' && def.poe?.slug === 'Snipe';
 const suportadaDoAtirar = (def) => def?.tipo === 'ativa' && !ehAtirar(def) && !!def.tags?.includes('poe:Ataque') && !!def.tags?.includes('poe:Arco') && !def.tags?.includes('poe:Canalização');
-const magiaDaAutomacao = (def) => def?.tipo === 'ativa' && !ehAutomacao(def) && !ehFeiticeiro(def) && !!def.tags?.includes('poe:Magia') && !(def.castTime > 0) && !ACOES.get(def.acao)?.poeGema?.reserva && !FORA_DA_AUTOMACAO.some((t) => def.tags.includes(t));
+const magiaDaAutomacao = (def) => def?.tipo === 'ativa' && !ehAutomacao(def) && !ehFeiticeiro(def) && ativavelPorGatilho(def) && !!def.tags?.includes('poe:Magia') && !(def.castTime > 0) && !ACOES.get(def.acao)?.poeGema?.reserva && !FORA_DA_AUTOMACAO.some((t) => def.tags.includes(t));
 
 export function skillsAtivas(estado) {
   const saida = new Map();

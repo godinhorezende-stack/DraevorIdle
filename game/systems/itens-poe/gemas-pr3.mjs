@@ -108,11 +108,18 @@ export function cineticaNoUso(e, k) {
   const extras = Math.max(0, Math.round(Number(e.alvosExtras) || 0));
   return { ...e, alvosExtras: 0, cinetica: { n: k.n + extras, menosAreaPct: k.menosAreaPct, raioM: k.raioM, raioSecM: k.raioSecM } };
 }
-/** O ponto de uma explosão adicional: sorteado no quadrado de `raioSec` casas em volta de `centro` (D6 do dono). */
-export const pontoDaExplosao = (centro, raioSec, rng = Math.random) => ({
-  x: centro.x + Math.round((2 * rng() - 1) * raioSec),
-  y: centro.y + Math.round((2 * rng() - 1) * raioSec),
-});
+/**
+ * O ponto de uma explosão adicional: sorteado no quadrado de `raioSec` casas em volta de `centro` (D6 do dono).
+ * (dono, 21/10) `pode(c)`: a casa vale (a andável com a linha livre até o impacto — `Secundarios`); a sorteada que não vale é trocada por uma sorteada entre as
+ * que valem (sem nenhuma, o próprio centro).
+ */
+export function pontoDaExplosao(centro, raioSec, rng = Math.random, pode = null) {
+  const c = { x: centro.x + Math.round((2 * rng() - 1) * raioSec), y: centro.y + Math.round((2 * rng() - 1) * raioSec) };
+  if (!pode || pode(c)) return c;
+  const validas = [];
+  for (let dx = -raioSec; dx <= raioSec; dx++) for (let dy = -raioSec; dy <= raioSec; dy++) { const q = { x: centro.x + dx, y: centro.y + dy }; if (pode(q)) validas.push(q); }
+  return validas.length ? validas[Math.min(validas.length - 1, Math.floor(rng() * validas.length))] : { x: centro.x, y: centro.y };
+}
 
 // ---------------------------------------------------------------- o Aço Perfurador
 

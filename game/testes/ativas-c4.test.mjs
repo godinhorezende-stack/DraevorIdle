@@ -276,7 +276,10 @@ test('C4 (dono, 21/10): o Tolhimento é o estado próprio — só o passo, sem t
   assert.equal(Estados.fatorDeLentidao(m, 500), 1, 'o ataque (o lento) não muda');
   // o mais forte fica; o fim é o maior
   Estados.tolher(m, 30, 3000, 500);
-  assert.deepEqual(m.estados.tolhido, { ate: 3500, pct: 80 });
+  // (aval do dono, 21/10: vale a instância mais forte inteira — o % e a duração dela; o fraco segue depois, até o fim dele — revisão do C4)
+  assert.ok(Math.abs(Estados.fatorDeTolhimento(m, 800) - 5) < 1e-9, 'até 1 s: os 80%');
+  assert.ok(Math.abs(Estados.fatorDeTolhimento(m, 2000) - 1 / 0.7) < 1e-9, 'de 1 s a 3,5 s: os 30%');
+  assert.equal(m.estados.tolhido.ate, 3500);
   assert.equal(Estados.fatorDeTolhimento(m, 4000), 1);
   // o chefe: a mesma regra (o lento leva a metade; o Tolhimento, não)
   const chefe = { hp: 10, boss: true, estados: {} };

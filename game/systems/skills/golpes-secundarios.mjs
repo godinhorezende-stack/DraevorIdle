@@ -95,13 +95,16 @@ function maisPerto(vivos, ponto, distancia, n, fora) {
  * adicionais em pontos sorteados no quadrado do raio secundário (`GemasPR3.pontoDaExplosao`), cada uma o quadrado do raio, pegando todos dentro (o atingido também —
  * a exceção 5 do lote); o % de cada uma: o do impacto × o do "menos Dano em Área". Devolve false quando bateu no teto (`max`).
  */
-function explosoesCineticas({ ponto, z, kin, porCasa, pctDoImpacto, rng, golpes, explosoes, conta, max }) {
+function explosoesCineticas({ ponto, z, kin, porCasa, pctDoImpacto, rng, golpes, explosoes, conta, max, andavel = null }) {
   const pct = (pctDoImpacto * kin.pct) / 100;
   const raio = Math.max(0, Math.round(kin.raio ?? 0));
+  // (dono, 21/10) com o terreno do andar, a explosão a mais só cai numa casa andável com a linha livre até o ponto do impacto (não dentro nem atrás da parede)
+  const anda = (c) => andavel.has(`${c.x},${c.y}`);
+  const pode = andavel ? (c) => anda(c) && Areas.reta(ponto, c, Math.max(Math.abs(c.x - ponto.x), Math.abs(c.y - ponto.y))).every(anda) : null;
   for (let i = 0; i <= Math.max(0, Math.round(kin.n ?? 0)); i++) {
     if (conta.n >= max) return false;
     conta.n++;
-    const c0 = i === 0 ? { x: ponto.x, y: ponto.y } : GemasPR3.pontoDaExplosao(ponto, Math.max(0, Math.round(kin.raioSec ?? 0)), rng);
+    const c0 = i === 0 ? { x: ponto.x, y: ponto.y } : GemasPR3.pontoDaExplosao(ponto, Math.max(0, Math.round(kin.raioSec ?? 0)), rng, pode);
     explosoes.push({ ...c0, lado: 2 * raio + 1, cinetica: true });
     for (const c of Areas.quadrado(c0, raio)) {
       const b = porCasa.get(Areas.chave(c));
@@ -118,16 +121,26 @@ function explosoesCineticas({ ponto, z, kin, porCasa, pctDoImpacto, rng, golpes,
  */
 export function resolver(args) {
   const r = resolverDoUso(args);
-  const { efeito, tags, origem, vivos = [], area = false, rng = Math.random, cinetica = null, atingidos = [] } = args;
+  const { efeito, tags, origem, vivos = [], area = false, rng = Math.random, cinetica = null, atingidos = [], andavel = null, alcance } = args;
   const t = new Set(tags ?? []);
   if (cinetica && efeito && t.has('projectile') && !area) {
     const porCasa = new Map(vivos.filter((b) => b.hp > 0).map((b) => [`${b.x},${b.y}`, b]));
-    const conta = { n: r.golpes.filter((g) => g.cinetica).length };
+    // (revisão do PR3, 21/10) o teto conta EXPLOSÕES (a unidade de `explosoesCineticas` e do `explosoesCineticasPorUso`): começa pelas dos impactos, não pelos golpes
+    const conta = { n: r.explosoes.filter((e) => e.cinetica).length };
     const max = G().limites?.explosoesCineticasPorUso ?? 90;
+    // (revisão do PR3, 21/10) onde o voo PARA: o projétil que erra e bate no TERRENO no caminho explode ali ("pequenas explosões em volta do ponto de impacto" —
+    // bater no terreno é o impacto), não no fim do alcance; o mesmo critério de `terrenoNaReta`
+    const fimDoVoo = (p) => {
+      if (!andavel) return p.para;
+      const reta = casasDaReta(p.de ?? origem, p.para, alcance);
+      const i = reta.findIndex((c) => !andavel.has(`${c.x},${c.y}`));
+      const de = p.de ?? origem;
+      return i < 0 ? p.para : i > 0 ? { x: reta[i - 1].x, y: reta[i - 1].y } : { x: de.x, y: de.y };
+    };
     for (const p of r.emitidos) {
       if (p.bicho || !p.para) continue;
       const pct = p.tipo === 'direto' ? 100 : (Number(efeito.danoDosExtrasPct) || 100);
-      if (!explosoesCineticas({ ponto: p.para, z: origem?.z ?? 0, kin: cinetica, porCasa, pctDoImpacto: pct, rng, golpes: r.golpes, explosoes: r.explosoes, conta, max })) { r.cortado = true; break; }
+      if (!explosoesCineticas({ ponto: fimDoVoo(p), z: origem?.z ?? 0, kin: cinetica, porCasa, pctDoImpacto: pct, rng, golpes: r.golpes, explosoes: r.explosoes, conta, max, andavel })) { r.cortado = true; break; }
     }
   }
   if (efeito?.lanca?.menosPct > 0) GemasPR3.menosAposOPrimeiro(r.golpes, efeito.lanca.menosPct, atingidos);
@@ -218,7 +231,7 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
     explodir(bicho, pct);
     areaDoImpacto(bicho, pct, tipo, meta, ja);
     // (lote PR3) as explosões da Explosão Cinética em todo impacto que acerta
-    if (kin && !explosoesCineticas({ ponto: bicho, z: bicho.z ?? 0, kin, porCasa, pctDoImpacto: pct, rng, golpes, explosoes, conta: contaCinetica, max: cfg.limites?.explosoesCineticasPorUso ?? 90 })) r.cortado = true;
+    if (kin && !explosoesCineticas({ ponto: bicho, z: bicho.z ?? 0, kin, porCasa, pctDoImpacto: pct, rng, golpes, explosoes, conta: contaCinetica, max: cfg.limites?.explosoesCineticasPorUso ?? 90, andavel })) r.cortado = true;
     return true;
   };
 
@@ -313,13 +326,18 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
       if (p.estilhas) soltarEstilhas(atual);
       // (lote A3, D5) a DIVISÃO no primeiro acerto (o projétil segue o caminho dele)
       if (p.dividir > 0) dividir(p, atual, p.pct);
+      // (revisão do PR3, 21/10 — o PoB, act_int.lua IceSpear: `PierceChance` 100 na skillPart 1, "First Form") a 1ª forma da Lança Gélida atravessa: o acerto a
+      // menos de `perfuraNaPrimeiraForma` casas de quem lançou (a 2ª forma começa ali — `GemasPR3.SEGUNDA_FORMA`) atravessa sem gastar a perfuração dos suportes;
+      // da 2ª forma em diante, só a dos suportes (a D10 do A3)
+      // (dono, 21/10: + a da Divisão — os projéteis da divisão já são a 2ª forma)
+      const primeiraForma = efeito.perfuraNaPrimeiraForma > 0 && tipo !== 'divisao' && !!origem && cheb(origem, atual) < efeito.perfuraNaPrimeiraForma;
       // Pierce: o próximo bicho na MESMA reta, adiante deste.
-      if (p.perfurar > 0) {
+      if (p.perfurar > 0 || primeiraForma) {
         const daqui = reta.findIndex((c) => c.x === atual.x && c.y === atual.y);
         const adiante = daqui >= 0 ? reta.slice(daqui + 1) : [];
         const proximo = adiante.map((c) => porCasa.get(`${c.x},${c.y}`)).find((b) => b && !p.acertados.has(b));
         if (proximo) {
-          p.perfurar--;
+          if (!primeiraForma) p.perfurar--;
           // (revisão do A3: na Materialização a ida não acerta — não atravessa ninguém; a contagem é a da volta)
           if (!p.soNaVolta) p.perfurados++;
           atual = proximo;
@@ -330,7 +348,7 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
       }
       // Fork: se divide em N (uma vez por projétil); os filhos seguem sozinhos e este acaba.
       // (revisão do A3: com perfurar ≥ 99 — "atravessa todos" — não difunde: no PoE o atravessar tem prioridade)
-      if (p.bifurcar > 0 && !atravessaTodos) {
+      if (p.bifurcar > 0 && !atravessaTodos && !primeiraForma) {
         const pctDoFilho = (p.pct * pctDe('danoDaBifurcacaoPct')) / 100;
         // (13/10) "Projéteis têm X% de chance de receber um Projétil adicional quando Difundindo": um filho a mais. Os filhos levam o que o
         // projétil já atravessou e ricocheteou.
