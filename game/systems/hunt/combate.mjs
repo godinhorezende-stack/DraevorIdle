@@ -855,6 +855,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     if (mudou) Ficha.invalidar(estado);
     // (lote B2, dono 20/10) a morte de quem tinha o debuff do Ceifar (perde uma Carga Sangrenta), do Contágio (espalha) e do Golpe Infernal (explode) — `Acoes.aoMorrerB2`
     Acoes.aoMorrerB2(estado, hunt, personagem, alvo, eventos);
+    // (lote C4, dono 21/10) a morte de quem tinha o debuff do Golpe Pestilento e estava Envenenado: o secundário em volta — `Acoes.aoMorrerC4`
+    Acoes.aoMorrerC4(hunt, alvo, eventos);
   }
   if (!itensPoeLigado() || QuemFeriu.abateSeu(alvo)) {
     const f = Ficha.combate(estado);

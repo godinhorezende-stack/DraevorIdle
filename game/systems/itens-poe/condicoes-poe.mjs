@@ -3234,6 +3234,8 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   // (lote 72) o Esconjuro: 10% de dano sofrido aumentado (`esconjurado`)
   if (esconjurado(alvo, ficha?.afPoe, agora)) f *= 1 + ESCONJURO.pct / 100;
   if (tipo === 'chaos' && ativo(e.definhado, agora)) f *= 1 + 0.06 * Math.max(0, 1 + (Number(ficha?.afPoe?.efeito_definhamento) || 0) / 100) * Math.min(15, e.definhado.n ?? 1);
+  // (lote C4, dono 21/10) o Tolhido pela Praga Vaal: "Inimigos Desacelerados sofrem Dano de Caos aumentado em 30%" (no pulso do dano contínuo: `Dot.caosDoTolhido`)
+  if (tipo === 'chaos' && ativo(e.tolhidoCaos, agora)) f *= 1 + (e.tolhidoCaos.pct ?? 0) / 100;
   // Coberto de Gelo (PoE): +20% de dano de Gelo recebido.
   if (tipo === 'ice' && ativo(e.cobertoGelo, agora)) f *= 1.2;
   // "Inimigos sofrem permanentemente Dano aumentado em X% por cada segundo que passaram Congelados/Resfriados por você, máximo de Y%".

@@ -41,6 +41,8 @@ import * as GemasPR2 from './gemas-pr2.mjs';
 import * as GemasC1 from './gemas-c1.mjs';
 // (lote C2, dono 20/10: os leitores das gemas de corpo a corpo, impacto e canalização — os contadores próprios e as cargas consumidas)
 import * as GemasC2 from './gemas-c2.mjs';
+// (lote C4, dono 21/10: os leitores das gemas de corpo a corpo, impacto e canalização — os debuffs canalizados e as afecções específicas)
+import * as GemasC4 from './gemas-c4.mjs';
 // (lote B2, dono 20/10: os leitores das gemas de contadores próprios, chão e espalhar — as Cargas Sangrentas, o Golpe Infernal, o Contágio, a Febre…)
 import * as GemasB2 from './gemas-b2.mjs';
 
@@ -1153,6 +1155,18 @@ export const c2DaGema = (slug, nivel = 1, qualidade = 0) => comCache(C2, `c2|${s
     runas: GemasC2.runasDasLinhas(slug, linhas, qualidade),
   };
 });
+/*
+ * ---- (lote C4, dono 21/10) os leitores no nível do lote C4 (`itens-poe/gemas-c4.mjs`) ----
+ * `{ praga, definhar, pestilento, veneno }`.
+ */
+const C4 = new Map();
+export const c4DaGema = (slug, nivel = 1, qualidade = 0) => comCache(C4, `c4|${slug}@${nivel | 0}@${qualidade | 0}`, () => {
+  const [linhas, daQ] = linhasA1b(slug, nivel, qualidade);
+  return {
+    praga: GemasC4.pragaDasLinhas(slug, linhas, daQ), definhar: GemasC4.definharDasLinhas(slug, linhas), pestilento: GemasC4.pestilentoDasLinhas(slug, linhas, daQ),
+    veneno: GemasC4.venenoDasLinhas(slug, linhas, daQ),
+  };
+});
 /** A Corrente com Gancho: o raio por Fúria. */
 // (lote C1, dono 20/10: + a Cutilada da Fúria — chain_strike_cone_radius_+_per_x_rage 5, act_str.lua:1875)
 // (lote C2, dono 20/10: + a Corrente com Gancho de Trarthus — chain_strike_cone_radius_+_per_x_rage 5, act_str.lua:1696)
@@ -1521,7 +1535,7 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
  * os dois não se separarem — `h`: a gema compilada com `slug`, `arquetipo` e `nivel`; `q`: a qualidade.
  */
 function ehLinhaFeita(h, l, q) {
-  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l));
+  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasC4.ehLinhaC4(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l));
 }
 function avaliarNoJogo(h, formato) {
   const st = h.stats;
@@ -1600,7 +1614,8 @@ function avaliarNoJogo(h, formato) {
     if (st.cadaver && !cadaverDaGema(h.slug, h.nivel) && !GemasB2.explodeAoMorrer(h.slug)) motivos.push('o uso de cadáveres não existe no jogo');
     // (lote A1: a gema de movimento sem dano — o Avanço, o Passo Rápido, a Emboscada — tem o efeito dela: o deslocamento)
     // (lote B1, dono 20/10: + a gema de cadáver sem dano mágico — o Detonar Mortos da Limpeza: o efeito é a explosão, `cadaverDaGema`)
-    if (!Object.keys(st.dano ?? {}).length && !h.ataque && !st.dot?.length && !DESLOCAMENTO[h.slug] && !cadaverDaGema(h.slug, h.nivel)) motivos.push('sem dano direto: nenhum efeito no combate');
+    // (lote C4, dono 21/10: + o Definhar — o efeito é o Definhamento e o Tolhimento, `GemasC4.EFEITO_SEM_DANO`)
+    if (!Object.keys(st.dano ?? {}).length && !h.ataque && !st.dot?.length && !DESLOCAMENTO[h.slug] && !cadaverDaGema(h.slug, h.nivel) && !GemasC4.EFEITO_SEM_DANO.has(h.slug)) motivos.push('sem dano direto: nenhum efeito no combate');
   }
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)
@@ -1614,6 +1629,8 @@ function avaliarNoJogo(h, formato) {
   for (const m of GemasC1.MOTIVOS_C1[h.slug] ?? []) motivos.push(m);
   // (lote C2: o que a mecânica do lote C2 ainda não faz — `GemasC2.MOTIVOS_C2`)
   for (const m of GemasC2.MOTIVOS_C2[h.slug] ?? []) motivos.push(m);
+  // (lote C4: o que a mecânica do lote C4 ainda não faz, ou a limitação do idle — `GemasC4.MOTIVOS_C4`)
+  for (const m of GemasC4.MOTIVOS_C4[h.slug] ?? []) motivos.push(m);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 /**

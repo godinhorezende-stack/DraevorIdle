@@ -86,6 +86,8 @@ import * as GemasPR2 from './itens-poe/gemas-pr2.mjs';
 import * as GemasC1 from './itens-poe/gemas-c1.mjs';
 // (lote C2, dono 20/10: os contadores próprios e as cargas consumidas das gemas de corpo a corpo, impacto e canalização)
 import * as GemasC2 from './itens-poe/gemas-c2.mjs';
+// (lote C4, dono 21/10: os debuffs canalizados e as afecções específicas — a Praga, o Definhar, o Golpe Pestilento, a Víbora da Mamba)
+import * as GemasC4 from './itens-poe/gemas-c4.mjs';
 // (lote B2, dono 20/10: as gemas de contadores próprios, chão e espalhar — as Cargas Sangrentas, o Golpe Infernal, a Febre, o Contágio, a Ruína…)
 import * as GemasB2 from './itens-poe/gemas-b2.mjs';
 import { JANELA } from '../websocket/quadro.mjs';
@@ -4028,6 +4030,11 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   }
   // (lote C2, dono 20/10) o que o lote C2 muda no uso antes da área (`GemasPoe.c2DaGema`, `itens-poe/gemas-c2.mjs`)
   const c2 = itensPoeLigado() && entry.poeGema && !entry.poeGema.buff ? GemasPoe.c2DaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
+  // (lote C4, dono 21/10) o que o lote C4 faz no acerto (`GemasPoe.c4DaGema`, `itens-poe/gemas-c4.mjs`): o Tolhimento e as camadas da Praga, o Definhamento do Definhar,
+  // o debuff do Golpe Pestilento e as regras do Veneno da gema
+  const c4 = itensPoeLigado() && entry.poeGema && !entry.poeGema.buff ? GemasPoe.c4DaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
+  const msDoC4 = (ms) => Math.round(ms * fatorDeDuracao(estado, entry, efeitoDaGema));
+  const definhadosPeloC4 = new Set();
   //  - o golpe de ALVO ÚNICO do Esmagar Ossos e do Golpe Infernal da Imolação (MeleeSingleTarget no PoB: a área é a do pulso e a da explosão, abaixo)
   if (c2?.alvoUnico && (!plantada || doTotem) && entry.forma) entry = { ...entry, forma: null };
   //  - D2.1: o Traumatismo — o "mais" pelos Traumatismos de agora (o ganho é no acerto — `acertar`); o totem não tem os seus
@@ -5521,6 +5528,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       }
       const { dano, crit, onslaught, chance } = rolado;
       if (crit) { houveCritico = true; danoCritico += dano; }
+      // (lote C4, dono 21/10) os debuffs do lote C4 no acertado (antes da camada nova da Praga — o "quem ainda não tem a Praga" é o de antes deste acerto)
+      if (c4) debuffsDoC4(hunt, bicho, c4, { agora, msDoC4, definhados: definhadosPeloC4, ficha, acao: entry.id, quem: doTotem ? null : personagem?.nome ?? null, raioDoPestilento: c4.pestilento ? Math.max(0, casasDoRaio(c4.pestilento.raioM * Math.sqrt(ModsPoe.fatorDaArea(efeitoDaGema?.areaIncPct ?? 0, efeitoDaGema?.areaMaisPct ?? 0)))) : 0, eventos });
       // (os suportes no acerto: a Crueldade — "Acertos de Habilidades Suportadas concedem Crueldade"; a Lâmina Noturna — "concedem Elusivo no
       // Golpe Crítico"; o Golpe Impiedoso — o atordoamento base dele e, da árvore, "Acertos Impiedosos Intimidam Inimigos por N segundos")
       const doSuporte = dano > 0 ? efeitosDosSuportesNoAcerto(estado, hunt, bicho, ficha, efeitoDaGema, { crit, impiedoso, agora, eventos, doTotem }) : null;
@@ -5696,6 +5705,12 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
           // (revisão B2, 21/10: o do Ceifar guarda QUEM o pôs — a Carga Sangrenta da morte é do dono — `aoMorrerB2`)
           const quemDoDot = !doTotem && /^Reap(_of_Butchery)?$/.test(entry.poeGema.slug) ? { quem: personagem?.nome ?? null } : {};
           const posto = Dot.aplicar(bicho, { tipo: tipoDegen, total, duracaoMs: duracaoDoDebuff, chave: entry.poeGema.slug, origem: { fonte: doTotem ? 'totem' : 'gema', habilidade: entry.id, ...quemDoDot } }, agora);
+          // (lote C4, dono 21/10 — D4.2) a Praga: o uso põe mais uma CAMADA (cada uma com a sua duração, até o máximo): o pulso é o de uma camada × as vivas
+          if (c4?.praga && posto) {
+            const d = (bicho.dots ?? []).find((x) => x.chave === entry.poeGema.slug && x.tipo === tipoDegen);
+            const pulsoMs = Dot.CONFIG.tipos[tipoDegen]?.pulsoMs ?? 500;
+            if (d) GemasC4.porCamada(d, { ate: agora + duracaoDoDebuff, max: c4.praga.max, porPulsoCamada: total / Math.max(1, Math.round(duracaoDoDebuff / pulsoMs)), pulsoMs, agora });
+          }
           if (posto) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: posto });
           // (lote PR2, dono 20/10 — D2) o DRENAR ESSÊNCIA: o debuff da gema leva a % do dano dele que vira a sua Vida (ou a perda do Desespero) — cada pulso, em
           // cada debuff ativo, somados (`Dot.tique` → `drenoDosDebuffs`); o do totem, não (exceção 1)
@@ -5709,7 +5724,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         const tagsDoAcerto = Tags.tagsDaAcao(entry);
         const ataque = entry.poeGema ? !!entry.poeGema.ataque : tagsDoAcerto.includes('physical') && (tagsDoAcerto.includes('melee') || tagsDoAcerto.includes('ranged'));
         // A gema do PoE soma as chances dela (incendiar, congelar, eletrizar, envenenar, sangrar) no nível em que está.
-        const afeccoes = entry.poeGema ? GemasPoe.afeccoesComAGema(ficha.afeccoes, entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : ficha.afeccoes;
+        // (lote C4, dono 21/10: + as regras do Veneno da gema — a Víbora da Mamba, o Golpe Pestilento — `GemasC4.comOVenenoDaGema`)
+        const afeccoes = entry.poeGema ? GemasC4.comOVenenoDaGema(GemasPoe.afeccoesComAGema(ficha.afeccoes, entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0), c4?.veneno) : ficha.afeccoes;
         // (o Golpe Impiedoso: "X% mais Dano com Afecções causadas por Acertos Corpo a Corpo")
         // (17/10, lote G17) O DANO das afecções (Incêndio, Sangramento, Veneno) sai do acerto SEM o "mais/menos Dano com Acertos" dos suportes (as
         // Afecções Mortais: 80% menos no acerto, a afecção inteira) e COM o "mais Dano de Afecções" e o de cada uma — `fatoresDoDano`. A força das
@@ -8121,6 +8137,73 @@ function explodirInfernal(estado, hunt, personagem, onde, deb, eventos) {
   const alvo = vivosNoAndar(hunt, onde.z ?? hunt.z ?? 0).filter((m) => distanciaChebyshev(m, onde) <= r).sort((a, b) => distanciaChebyshev(a, onde) - distanciaChebyshev(b, onde))[0];
   eventos.push({ t: 'explosao', id: entry.efeito || EFEITO_DA_EXPLOSAO, x: onde.x, y: onde.y, lado: 2 * r + 1 });
   if (alvo) golpeDoObjeto(estado, hunt, personagem, { acao: deb.acao, x: onde.x, y: onde.y, z: onde.z ?? hunt.z ?? 0, raio: r, dono: 'voce' }, alvo, { maisPct: GemasB2.pctDaExplosaoInfernal(inf.porCargaPct, deb.n) - 100, explosaoInfernal: true }, eventos);
+}
+/**
+ * (lote C4, dono 21/10) Os DEBUFFS DO LOTE C4 no acertado:
+ *  - D4.1: o TOLHIMENTO da Praga ("Enemies who aren't already debuffed by Blight are also hindered" — a Vaal Tolhe sempre) e o do Definhar: o `lento` do jogo com a
+ *    porcentagem do PoE pela Duração Secundária × a Duração da Habilidade (`Estados.aplicar` — vale o mais forte; o teto do jogo e a metade no chefe seguem); o Tolhido
+ *    pela Atrofia tem a Regeneração de Vida reduzida (`regenMenosDebuff`), e o pela Vaal sofre +X% de Dano de Caos (`tolhidoCaos` — no acerto e no dano contínuo);
+ *  - o DEFINHAMENTO do Definhar (2 s × a Duração; +6% de Caos sofrido por acúmulo, até 15 — o `definhado`), uma vez por uso em cada um;
+ *  - o debuff do GOLPE PESTILENTO (1 s × a Duração): quem morre com ele e Envenenado solta o secundário em volta (`aoMorrerC4`).
+ */
+function debuffsDoC4(hunt, bicho, c4, { agora, msDoC4, definhados, ficha, acao, quem, raioDoPestilento, eventos }) {
+  // (o golpe que matou ainda marca o Pestilento — a morte é processada depois do passe; o Tolhimento e o Definhamento, só no vivo)
+  const tolher = (pct, ms) => {
+    if (!(pct > 0) || !(ms > 0) || !(bicho.hp > 0)) return false;
+    const postos = Estados.aplicar(bicho, { lentidaoPct: pct, lentidaoMs: ms }, 1, agora, Math.random, !!hunt.isBoss);
+    if (postos.includes('lento')) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: 'lento' });
+    return true;
+  };
+  const p = c4.praga;
+  if (p && (!p.soSemPraga || !GemasC4.temPraga(bicho, agora))) {
+    const ms = msDoC4(p.tolheMs);
+    if (tolher(p.tolhePct, ms)) {
+      const e = (bicho.estados ??= {});
+      if (p.regenMenosPct > 0) {
+        const r = e.regenMenosDebuff;
+        e.regenMenosDebuff = r?.ate > agora ? { ate: Math.max(r.ate, agora + ms), pct: Math.max(r.pct ?? 0, p.regenMenosPct) } : { ate: agora + ms, pct: p.regenMenosPct };
+      }
+      if (p.caosSofridoPct > 0) {
+        const c = e.tolhidoCaos;
+        e.tolhidoCaos = c?.ate > agora ? { ate: Math.max(c.ate, agora + ms), pct: Math.max(c.pct ?? 0, p.caosSofridoPct) } : { ate: agora + ms, pct: p.caosSofridoPct };
+      }
+    }
+  }
+  const w = c4.definhar;
+  if (w && bicho.hp > 0 && !definhados.has(bicho)) {
+    definhados.add(bicho);
+    tolher(w.tolhePct, msDoC4(w.tolheMs));
+    ModsPoe.porNoAlvoComMods(bicho, 'definhado', agora + msDoC4(w.definhadoMs), agora, ficha);
+    eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: 'definhado' });
+  }
+  const ps = c4.pestilento;
+  if (ps) {
+    const e = (bicho.estados ??= {});
+    e.poePestilento = { ate: agora + msDoC4(ps.debuffMs), acao, quem, porSegundoPct: ps.porSegundoPct, secundarioMs: msDoC4(ps.secundarioMs), raio: raioDoPestilento };
+  }
+}
+/**
+ * (lote C4, dono 21/10 — D4.3) A MORTE de quem tinha o debuff do GOLPE PESTILENTO e estava Envenenado: o debuff secundário em cada vivo a até o raio da gema (2,7 m × a
+ * Área) em volta do morto — dano de Caos degenerativo, X%/s do que faltava de todos os Venenos no morto pela Duração Secundária ("This damage is not affected by your
+ * damage modifiers": o total cru; a resistência a Caos do vizinho vale no pulso). Um secundário por inimigo (o mais forte fica, renovado). Os números são os do debuff,
+ * guardados no acerto: a morte não depende da ficha de quem o pôs.
+ */
+export function aoMorrerC4(hunt, morto, eventos = []) {
+  if (!itensPoeLigado() || !hunt || !morto) return eventos;
+  const agora = hunt.clock ?? 0;
+  const deb = morto.estados?.poePestilento;
+  if (!deb) return eventos;
+  delete morto.estados.poePestilento;
+  if (!(deb.ate > agora)) return eventos;
+  const total = GemasC4.totalDoSecundario(morto, deb, deb.secundarioMs);
+  if (!(total > 0) || !(deb.secundarioMs > 0)) return eventos;
+  eventos.push({ t: 'explosao', id: EFEITO_DA_EXPLOSAO, x: morto.x, y: morto.y, lado: 2 * deb.raio + 1 });
+  for (const m of vivosNoAndar(hunt, morto.z ?? hunt.z ?? 0)) {
+    if (m === morto || m.dummy || distanciaChebyshev(m, morto) > deb.raio) continue;
+    const posto = Dot.aplicar(m, { tipo: 'degenCaos', total, duracaoMs: deb.secundarioMs, chave: 'Pestilent_Strike#secundario', origem: { fonte: 'gema', habilidade: deb.acao, ...(deb.quem != null ? { quem: deb.quem } : {}) } }, agora);
+    if (posto) eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: posto });
+  }
+  return eventos;
 }
 /**
  * A MORTE de um inimigo (por quem for — `combate.matarMonstro`): o Ceifar perde uma Carga Sangrenta se ele tinha o debuff de um Ceifar (D-B2.2); o Contágio espalha

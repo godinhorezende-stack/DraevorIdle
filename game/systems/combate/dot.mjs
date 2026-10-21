@@ -106,6 +106,14 @@ export function agravar(bicho, agora, maisAntigosQueMs = 0) {
   return n;
 }
 
+/** (lote C4, dono 21/10 — D4.2) As camadas vivas da Praga no pulso `quando` (as que acabam nele ou depois). */
+const camadasNoPulso = (d, quando) => d.camadas.filter((a) => a >= quando).length;
+/**
+ * (lote C4, dono 21/10) O "Inimigos Desacelerados sofrem Dano de Caos aumentado em X%" da Praga Vaal (hinder_enemy_chaos_damage_taken_+% — o ChaosDamageTaken INC
+ * do Tolhido, que vale em todo o dano de Caos que ele sofre): × no Caos, enquanto o Tolhimento dela dura (`estados.tolhidoCaos`).
+ */
+export const caosDoTolhido = (m, elemento, agora) => (elemento === 'chaos' && m?.estados?.tolhidoCaos?.ate > agora ? 1 + (m.estados.tolhidoCaos.pct ?? 0) / 100 : 1);
+
 /**
  * Um tique da caçada: os pulsos de todos os efeitos de todos os bichos. O dano sai direto na vida, depois da resistência do bicho ao
  * elemento; quem cair é recolhido por `processarMortes`. Devolve o dano total do tique.
@@ -122,9 +130,13 @@ export function tique(hunt, eventos, agora) {
       const t = CONFIG.tipos[d.tipo];
       if (!t) continue;
       while (d.falta > 0 && R.jaPode(agora, d.proximo) && d.proximo <= d.ate + t.pulsoMs && m.hp > 0) {
-        const parte = Math.max(1, Math.round(Math.min(d.falta, d.porPulso)));
+        // (lote C4, dono 21/10 — D4.2) as CAMADAS da Praga: o pulso é o de uma camada × as camadas vivas nele (cada uma com a sua duração — `GemasC4.porCamada`)
+        const porPulso = d.camadas ? (d.porPulsoCamada ?? 0) * camadasNoPulso(d, d.proximo) : d.porPulso;
+        if (d.camadas && !(porPulso > 0)) { d.falta = 0; break; }
+        const parte = Math.max(1, Math.round(Math.min(d.falta, porPulso)));
         // (o Sangramento no bicho em movimento ou Agravado: × 3 no pulso — `fatorDoMovimento`)
-        const v = resistido(hunt, m, d.elemento, parte * fatorDoMovimento(d, m, agora));
+        // (lote C4: + o Tolhido pela Praga Vaal — "Inimigos Desacelerados sofrem Dano de Caos aumentado em 30%", também no dano contínuo — `caosDoTolhido`)
+        const v = resistido(hunt, m, d.elemento, parte * fatorDoMovimento(d, m, agora) * caosDoTolhido(m, d.elemento, agora));
         m.hp -= v;
         // (lote 31, S001: o dano contínuo é de quem o pôs — o do lacaio é dele; não é acerto; lote G20a: o do totem é dele)
         QuemFeriu.carimbar(m, d.origem?.fonte === 'lacaio' ? QuemFeriu.LACAIO : d.origem?.fonte === 'totem' ? QuemFeriu.TOTEM : QuemFeriu.VOCE);

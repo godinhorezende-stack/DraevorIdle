@@ -306,7 +306,8 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
   // Veneno: do dano Físico e de Caos (ou de TODO o dano, com "Todo o Dano … pode Envenenar").
   const todos = ['physical', 'fire', 'ice', 'energy', 'chaos'].reduce((x, el) => x + dano(el), 0);
   const baseDoVeneno = a.naoPode?.veneno ? 0 : a.qualquerDanoEnvenena ? todos : dano('physical') + caos + (a.pode?.veneno ?? []).filter((el) => !['physical', 'chaos'].includes(el)).reduce((x, el) => x + dano(el), 0);
-  if (baseDoVeneno > 0 && sorte(chance('veneno'))) {
+  // (lote C4, dono 21/10) o Golpe da Víbora da Mamba: "Não pode infligir Envenenamento em Inimigos Envenenados" (cannot_poison_poisoned_enemies — por quem for)
+  if (baseDoVeneno > 0 && !(a.naoEnvenenaEnvenenado && jaEnvenenado) && sorte(chance('veneno'))) {
     // ("Inflige N envenenamentos adicionais": mais pilhas do mesmo veneno.)
     // (+ "em Inimigos não-Envenenados causam Dano aumentado", "+X% … por Envenenamento infligido por você em Inimigos Sangrando", o do
     // crítico — multiplicador e "X% mais Dano")
@@ -319,8 +320,12 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     const maisDoVeneno = () => (crit ? a.venenoCriticoMais ?? 0 : 0) + (a.venenoMaisChance > 0 && rng() * 100 < a.venenoMaisChance ? a.venenoMaisPct ?? 0 : 0);
     // (14/10, o Infestador Incubando: "20% menos Dano com Veneno enquanto Incubando e não estiver no Máximo do Valor da Praga" e "Ao infligir
     // Veneno enquanto Incubando, adiciona 40% do Dano Esperado de Veneno ao Valor da Praga" — `acoes.pragaDoAcerto`)
-    for (let k = 0; k <= Math.max(0, Math.floor(a.venenosExtras ?? 0)) && jaTem + k < teto; k++) {
-      if (dot('venenoPoe', BASE.veneno.porSegundo, duracaoDe(BASE.veneno.duracaoMs, a.duracaoVeneno), baseDoVeneno, multVeneno, aumVeneno, { mais: comSuporte('veneno', ((1 + maisDoVeneno() / 100) * (1 + (a.venenoMaisFinal ?? 0) / 100) * (1 - (praga?.menosPct ?? 0) / 100) - 1) * 100) })) praga?.somar(ultimoTotal);
+    // (lote C4, dono 21/10) "Não pode infligir múltiplos envenenamentos com o mesmo ataque" (a Mamba — cannot_inflict_additional_poisons: os adicionais não valem) e
+    // o "X% mais Duração do Veneno" da gema (o Golpe Pestilento — active_skill_poison_duration_+%_final, o do nível + o da qualidade)
+    const extras = a.venenoUnico ? 0 : Math.max(0, Math.floor(a.venenosExtras ?? 0));
+    const duracaoDoVeneno = Math.round(duracaoDe(BASE.veneno.duracaoMs, a.duracaoVeneno) * Math.max(0, 1 + (a.venenoDuracaoMais ?? 0) / 100));
+    for (let k = 0; k <= extras && jaTem + k < teto; k++) {
+      if (dot('venenoPoe', BASE.veneno.porSegundo, duracaoDoVeneno, baseDoVeneno, multVeneno, aumVeneno, { mais: comSuporte('veneno', ((1 + maisDoVeneno() / 100) * (1 + (a.venenoMaisFinal ?? 0) / 100) * (1 - (praga?.menosPct ?? 0) / 100) - 1) * 100) })) praga?.somar(ultimoTotal);
     }
     // ("Inimigos Envenenados por você têm −X% de Resistência a Caos" — `hunt/resistencia.resistenciaDe`)
     if (a.resMenosCaosEnvenenado > 0) (bicho.estados ??= {}).resMenosCaos = Math.max(bicho.estados.resMenosCaos ?? 0, a.resMenosCaosEnvenenado);
