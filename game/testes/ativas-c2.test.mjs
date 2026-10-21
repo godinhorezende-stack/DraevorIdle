@@ -423,7 +423,8 @@ test('C2 (dono 20/10): o inimigo em cima da runa é Tolhido (−50% de movimento
   // (o alvo longe da explosão não: a runa fica, e ele em cima dela)
   e.hunt.clock += 200;
   travado(0.5, () => Acoes.tiqueDasPlantadas(e, e.hunt, PERSONAGEM, [], e.hunt.clock));
-  assert.equal(b.estados.lento?.pct, 40);
+  // (lote C4, com o aval do dono 21/10: o Tolhimento é o estado próprio `tolhido` — só de movimento e sem o teto de 40% do `lento`: a runa Tolhe os 50% inteiros)
+  assert.equal(b.estados.tolhido?.pct, 50);
 });
 
 test('C2 (dono 20/10): a Vinculação do Teletransporte leva você à runa detonada se você não detonou há 0,5 s', { skip: SEM }, async () => {
