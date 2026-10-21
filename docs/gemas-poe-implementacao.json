@@ -2,17 +2,17 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 282,
-   "implementada, sem teste próprio": 48,
-   "parcial": 220,
+   "implementada e testada": 292,
+   "implementada, sem teste próprio": 47,
+   "parcial": 211,
    "limitação do modelo idle": 11,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 128,
-   "implementada, sem teste próprio": 19,
-   "parcial": 57,
+   "implementada e testada": 136,
+   "implementada, sem teste próprio": 18,
+   "parcial": 50,
    "limitação do modelo idle": 6
   },
   "suportes": {
@@ -24,15 +24,15 @@
   "variantes": {
    "vaal": {
     "total": 52,
-    "implementada e testada": 25,
-    "parcial": 21,
+    "implementada e testada": 26,
+    "parcial": 20,
     "implementada, sem teste próprio": 6
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 96,
+    "implementada e testada": 99,
     "implementada, sem teste próprio": 25,
-    "parcial": 81,
+    "parcial": 78,
     "limitação do modelo idle": 7
    }
   },
@@ -44,8 +44,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 589,
-   "emDuasOuMais": 100
+   "linhasDistintas": 573,
+   "emDuasOuMais": 96
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -59,7 +59,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 366,
+   "ativasCitadas": 374,
    "suportesCitados": 119,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -960,10 +960,8 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Fissuras irrompem 2 vezes adicionais"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -975,7 +973,7 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -4402,10 +4400,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Acertos aós o primeiro em cada Inimigo causam 60 % menos Dano"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4417,10 +4413,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Acertos aós o primeiro em cada Inimigo causam 90 % menos Dano"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4462,13 +4456,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Cada Flecha deixa 1 Esporos",
-    "efeito não simulado: Cada Esporo dispara 4 Flechas de Espinho",
-    "efeito não simulado: Projéteis de Espinhos causam 50 % menos Dano",
-    "efeito não simulado: Cada Esporo dispara +1 Flecha de Espinho"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4616,10 +4605,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Dispara 3 Projéteis secundários"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5937,12 +5924,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Segunda forma possui um aumento de 600 % de Chance de Crítico",
-    "efeito não simulado: A Segunda forma possui +49 % ao Multiplicador de Acerto Crítico",
-    "efeito não simulado: A Segunda forma possui +40 % ao Multiplicador de Acerto Crítico"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "linhasNaoSeAplicam": [
@@ -7406,12 +7389,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Explosão Cinética cria 4 explosões adicionais",
-    "efeito não simulado: 40 % menos Dano em Área",
-    "efeito não simulado: Explosão Cinética cria 1 explosões adicionais"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7423,12 +7402,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Explosão Cinética cria 3 explosões adicionais",
-    "efeito não simulado: Causa Dano Físico Adicional igual a 15 % da Mana Máxima",
-    "efeito não simulado: Explosão Cinética cria 1 explosões adicionais"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -8188,16 +8163,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "sem dano direto: nenhum efeito no combate",
-    "efeito não simulado: [Empowered|Fortalece] as próximas 6 magias que você conjurar",
-    "efeito não simulado: Habilidades fortalecidas causam + 35 % de dano com ataques e afecções",
-    "efeito não simulado: Habilidades fortalecidas também afetam 8 áreas adicionais em espiral ao redor da área-alvo",
-    "efeito não simulado: Feixes de habilidades fortalecidas se propagam mais 6 vezes",
-    "efeito não simulado: Habilidades fortalecidas disparam 6 projéteis adicionais Habilidades fortalecidas disparam projéteis em círculo",
-    "efeito não simulado: [Empowered|Fortalece] as próximas +2 magias que você conjurar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -10779,18 +10746,6 @@
    ]
   },
   {
-   "linha": "sem dano direto: nenhum efeito no combate",
-   "gemas": [
-    "Arcanist_Brand",
-    "Bodyswap",
-    "Conversion_Trap",
-    "Detonate_Mines",
-    "Pact_of_Beidat",
-    "Smoke_Mine",
-    "Wither"
-   ]
-  },
-  {
    "linha": "# % de Chance de uma Armadilha ser Ativada uma vez adicional",
    "gemas": [
     "Fire_Trap_of_Blasting",
@@ -10799,6 +10754,17 @@
     "Lightning_Spire_Trap_of_Zapping",
     "Lightning_Trap",
     "Lightning_Trap_of_Sparking"
+   ]
+  },
+  {
+   "linha": "sem dano direto: nenhum efeito no combate",
+   "gemas": [
+    "Arcanist_Brand",
+    "Bodyswap",
+    "Conversion_Trap",
+    "Detonate_Mines",
+    "Smoke_Mine",
+    "Wither"
    ]
   },
   {
@@ -11028,13 +10994,6 @@
    ]
   },
   {
-   "linha": "# % menos Dano em Área",
-   "gemas": [
-    "Kinetic_Blast",
-    "Smite"
-   ]
-  },
-  {
    "linha": "# a # de Dano de Fogo adicionado contra Inimigos Queimando",
    "gemas": [
     "Fire_Trap",
@@ -11088,13 +11047,6 @@
    "gemas": [
     "Earthquake",
     "Vaal_Earthquake"
-   ]
-  },
-  {
-   "linha": "Acertos aós o primeiro em cada Inimigo causam # % menos Dano",
-   "gemas": [
-    "Lancing_Steel",
-    "Lancing_Steel_of_Spraying"
    ]
   },
   {
@@ -11252,24 +11204,10 @@
    ]
   },
   {
-   "linha": "Explosão Cinética cria # explosões adicionais",
-   "gemas": [
-    "Kinetic_Blast",
-    "Kinetic_Blast_of_Clustering"
-   ]
-  },
-  {
    "linha": "Feixes se dividem em direção a alvos dentro de um raio base de # metros",
    "gemas": [
     "Orb_of_Storms",
     "Orb_of_Storms_of_Squalls"
-   ]
-  },
-  {
-   "linha": "Fissuras irrompem # vezes adicionais",
-   "gemas": [
-    "Vaal_Volcanic_Fissure",
-    "Volcanic_Fissure_of_Snaking"
    ]
   },
   {
@@ -11509,18 +11447,6 @@
    ]
   },
   {
-   "linha": "[Empowered|Fortalece] as próximas # magias que você conjurar",
-   "gemas": [
-    "Pact_of_Beidat"
-   ]
-  },
-  {
-   "linha": "[Empowered|Fortalece] as próximas +# magias que você conjurar",
-   "gemas": [
-    "Pact_of_Beidat"
-   ]
-  },
-  {
    "linha": "# % de aumento da Distância do Empurrão",
    "gemas": [
     "Seismic_Cry"
@@ -11614,6 +11540,12 @@
    "linha": "# % menos Dano de Afecções",
    "gemas": [
     "Bodyswap_of_Sacrifice"
+   ]
+  },
+  {
+   "linha": "# % menos Dano em Área",
+   "gemas": [
+    "Smite"
    ]
   },
   {
@@ -11782,12 +11714,6 @@
    "linha": "A Recarga do seu Escudo de Energia e dos seus aliados próximos não é impedida por Dano",
    "gemas": [
     "Vaal_Discipline"
-   ]
-  },
-  {
-   "linha": "A Segunda forma possui +# % ao Multiplicador de Acerto Crítico",
-   "gemas": [
-    "Ice_Spear"
    ]
   },
   {
@@ -12115,24 +12041,6 @@
    ]
   },
   {
-   "linha": "Cada Esporo dispara # Flechas de Espinho",
-   "gemas": [
-    "Scourge_Arrow_of_Menace"
-   ]
-  },
-  {
-   "linha": "Cada Esporo dispara +# Flecha de Espinho",
-   "gemas": [
-    "Scourge_Arrow_of_Menace"
-   ]
-  },
-  {
-   "linha": "Cada Flecha deixa # Esporos",
-   "gemas": [
-    "Scourge_Arrow_of_Menace"
-   ]
-  },
-  {
    "linha": "Cada Flecha pode disparar +# Feixe",
    "gemas": [
     "Storm_Rain"
@@ -12232,12 +12140,6 @@
    "linha": "Causa Dano de Fogo base igual a #% da Vida Máxima dos Totens",
    "gemas": [
     "Flamewood_Support"
-   ]
-  },
-  {
-   "linha": "Causa Dano Físico Adicional igual a # % da Mana Máxima",
-   "gemas": [
-    "Kinetic_Blast_of_Clustering"
    ]
   },
   {
@@ -12502,12 +12404,6 @@
    "linha": "Dispara # projéteis",
    "gemas": [
     "Windburst_Support"
-   ]
-  },
-  {
-   "linha": "Dispara # Projéteis secundários",
-   "gemas": [
-    "Tornado_Shot"
    ]
   },
   {
@@ -12811,9 +12707,9 @@
    ]
   },
   {
-   "linha": "Feixes de habilidades fortalecidas se propagam mais # vezes",
+   "linha": "Fissuras irrompem # vezes adicionais",
    "gemas": [
-    "Pact_of_Beidat"
+    "Volcanic_Fissure_of_Snaking"
    ]
   },
   {
@@ -13042,24 +12938,6 @@
    "linha": "Habilidades fortalecidas causam + # % de dano",
    "gemas": [
     "Pact_of_KTash"
-   ]
-  },
-  {
-   "linha": "Habilidades fortalecidas causam + # % de dano com ataques e afecções",
-   "gemas": [
-    "Pact_of_Beidat"
-   ]
-  },
-  {
-   "linha": "Habilidades fortalecidas disparam # projéteis adicionais Habilidades fortalecidas disparam projéteis em círculo",
-   "gemas": [
-    "Pact_of_Beidat"
-   ]
-  },
-  {
-   "linha": "Habilidades fortalecidas também afetam # áreas adicionais em espiral ao redor da área-alvo",
-   "gemas": [
-    "Pact_of_Beidat"
    ]
   },
   {
@@ -14029,12 +13907,6 @@
    ]
   },
   {
-   "linha": "Projéteis de Espinhos causam # % menos Dano",
-   "gemas": [
-    "Scourge_Arrow_of_Menace"
-   ]
-  },
-  {
    "linha": "Projéteis deixam Solo Eletrizado",
    "gemas": [
     "Vaal_Lightning_Trap"
@@ -14260,12 +14132,6 @@
    "linha": "Sangue Corrompido infligido por estandartes reforçados tem uma duração base de # segundos",
    "gemas": [
     "Bloodsoaked_Banner_Support"
-   ]
-  },
-  {
-   "linha": "Segunda forma possui um aumento de # % de Chance de Crítico",
-   "gemas": [
-    "Ice_Spear"
    ]
   },
   {

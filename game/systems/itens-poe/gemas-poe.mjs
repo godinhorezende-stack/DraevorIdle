@@ -37,6 +37,8 @@ import * as GemasB1 from './gemas-b1.mjs';
 import * as GemasPR1 from './gemas-pr1.mjs';
 // (lote PR2, dono 20/10: as gemas ativas de projétil do recurso — o Ritual Proibido, o Drenar Essência, a Barganha Sombria em você, os Compostos)
 import * as GemasPR2 from './gemas-pr2.mjs';
+// (lote PR3, dono 21/10: as gemas ativas de projétil que geram outros golpes — o Tiro Tornado, a 2ª forma da Lança Gélida, a Explosão Cinética, o Aço Perfurador…)
+import * as GemasPR3 from './gemas-pr3.mjs';
 // (lote C1, dono 20/10: os leitores das gemas de corpo a corpo, impacto e canalização — a forma do golpe, o raio condicional, os buffs da gema)
 import * as GemasC1 from './gemas-c1.mjs';
 // (lote C2, dono 20/10: os leitores das gemas de corpo a corpo, impacto e canalização — os contadores próprios e as cargas consumidas)
@@ -1085,6 +1087,24 @@ export const compostoDaGema = (slug, nivel = 1, qualidade = 0) => comCache(PR2, 
 /** O "X% de chance de infligir Definhando por N segundos ao Acertar" da qualidade do Composto Venenoso (`GemasPR2.definharDasLinhas`). */
 export const definharDaGema = (slug, qualidade = 0) => comCache(PR2, `def|${slug}@${qualidade | 0}`, () => (/^Poisonous_Concoction/.test(slug) ? GemasPR2.definharDasLinhas(linhasDaQualidadeDe(slug, qualidade)) : null));
 /*
+ * ---- (lote PR3, dono 21/10) os leitores no nível do lote PR3 (`itens-poe/gemas-pr3.mjs`) ----
+ */
+const PR3 = new Map();
+/** Os projéteis secundários do Tiro Tornado (`GemasPR3.tornadoDasLinhas`). */
+export const tornadoDaGema = (slug, nivel = 1) => comCache(PR3, `tor|${slug}@${nivel | 0}`, () => GemasPR3.tornadoDasLinhas(slug, textosDaGema(slug, nivel).linhas));
+/** A 2ª forma da Lança Gélida (`GemasPR3.segundaFormaDasLinhas`). */
+export const segundaFormaDaGema = (slug, nivel = 1, qualidade = 0) => comCache(PR3, `sf|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasPR3.segundaFormaDasLinhas(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade)));
+/** As explosões da Explosão Cinética (`GemasPR3.cineticaDasLinhas`). */
+export const cineticaDaGema = (slug, nivel = 1, qualidade = 0) => comCache(PR3, `cin|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasPR3.cineticaDasLinhas(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade)));
+/** O "menos" após o primeiro acerto do Aço Perfurador (`GemasPR3.lancaDasLinhas`). */
+export const lancaDaGema = (slug, nivel = 1) => comCache(PR3, `lan|${slug}@${nivel | 0}`, () => GemasPR3.lancaDasLinhas(slug, textosDaGema(slug, nivel).linhas));
+/** Os esporos por flecha da Flecha Virulenta da Ameaça (`GemasPR3.esporosPorFlechaDasLinhas`). */
+export const esporosPorFlechaDaGema = (slug, nivel = 1, qualidade = 0) => comCache(PR3, `epf|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasPR3.esporosPorFlechaDasLinhas(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade)));
+/** As erupções a mais da Fissura Vulcânica Vaal (`GemasPR3.erupcoesDasLinhas`). */
+export const erupcoesDaGema = (slug, nivel = 1) => comCache(PR3, `eru|${slug}@${nivel | 0}`, () => GemasPR3.erupcoesDasLinhas(slug, textosDaGema(slug, nivel).linhas));
+/** O Pacto de Beidat (`GemasPR3.pactoDasLinhas`). */
+export const pactoDaGema = (slug, nivel = 1, qualidade = 0) => comCache(PR3, `pac|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasPR3.pactoDasLinhas(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade)));
+/*
  * ---- (lote B1, dono 20/10) os leitores no nível do lote B1 (`itens-poe/gemas-b1.mjs`) ----
  */
 const B1 = new Map();
@@ -1521,7 +1541,7 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
  * os dois não se separarem — `h`: a gema compilada com `slug`, `arquetipo` e `nivel`; `q`: a qualidade.
  */
 function ehLinhaFeita(h, l, q) {
-  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l));
+  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasPR3.ehLinhaPR3(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l));
 }
 function avaliarNoJogo(h, formato) {
   const st = h.stats;
@@ -1600,7 +1620,8 @@ function avaliarNoJogo(h, formato) {
     if (st.cadaver && !cadaverDaGema(h.slug, h.nivel) && !GemasB2.explodeAoMorrer(h.slug)) motivos.push('o uso de cadáveres não existe no jogo');
     // (lote A1: a gema de movimento sem dano — o Avanço, o Passo Rápido, a Emboscada — tem o efeito dela: o deslocamento)
     // (lote B1, dono 20/10: + a gema de cadáver sem dano mágico — o Detonar Mortos da Limpeza: o efeito é a explosão, `cadaverDaGema`)
-    if (!Object.keys(st.dano ?? {}).length && !h.ataque && !st.dot?.length && !DESLOCAMENTO[h.slug] && !cadaverDaGema(h.slug, h.nivel)) motivos.push('sem dano direto: nenhum efeito no combate');
+    // (lote PR3, dono 21/10: + o Pacto de Beidat — o uso é o buff que fortalece as próximas magias, `GemasPR3.pactoNoUso`)
+    if (!Object.keys(st.dano ?? {}).length && !h.ataque && !st.dot?.length && !DESLOCAMENTO[h.slug] && !cadaverDaGema(h.slug, h.nivel) && !GemasPR3.ehPactoDeBeidat(h.slug)) motivos.push('sem dano direto: nenhum efeito no combate');
   }
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)

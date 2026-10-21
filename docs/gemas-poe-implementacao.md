@@ -8,20 +8,20 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 282 |
-| implementada, sem teste próprio | 48 |
+| implementada e testada | 292 |
+| implementada, sem teste próprio | 47 |
 | limitação do modelo idle | 11 |
-| parcial | 220 |
+| parcial | 211 |
 | não se aplica | 1 |
 
 Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 128 |
-| implementada, sem teste próprio | 19 |
+| implementada e testada | 136 |
+| implementada, sem teste próprio | 18 |
 | limitação do modelo idle | 6 |
-| parcial | 57 |
+| parcial | 50 |
 
 ### Gemas de suporte (262)
 
@@ -33,16 +33,16 @@ Só os ataques:
 
 ### Variantes
 
-- Vaal (52): implementada e testada 25 · parcial 21 · implementada, sem teste próprio 6
-- Alternativas (209): implementada e testada 96 · implementada, sem teste próprio 25 · parcial 81 · limitação do modelo idle 7
+- Vaal (52): implementada e testada 26 · parcial 20 · implementada, sem teste próprio 6
+- Alternativas (209): implementada e testada 99 · implementada, sem teste próprio 25 · parcial 78 · limitação do modelo idle 7
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 589 linhas distintas (100 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 573 linhas distintas (96 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 366/562 ativas, 119/262 suportes.
+- Testes que citam a gema: 374/562 ativas, 119/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
@@ -52,8 +52,8 @@ Só os ataques:
 | 16 | nenhum efeito do buff tem equivalente no jogo |
 | 12 | Lacaios têm Recuperação da Recarga aumentada em # % |
 | 9 | Efeito do Buff aumentado em # % |
-| 7 | sem dano direto: nenhum efeito no combate |
 | 6 | # % de Chance de uma Armadilha ser Ativada uma vez adicional |
+| 6 | sem dano direto: nenhum efeito no combate |
 | 5 | Duração do Efeito de Habilidades aumentada em # % |
 | 5 | Velocidade de Movimento reduzida em # % |
 | 4 | +# ao Máximo de Armas Animadas |
@@ -82,7 +82,6 @@ Só os ataques:
 | 2 | # % mais Dano com Afecções se o Inimigo estiver Enfeitiçado |
 | 2 | # % mais Dano com Sangramento enquanto na Postura de Sangue |
 | 2 | # % mais Velocidade de Ataque enquanto estiver em uma Tempestade de Lâminas Sangrentas |
-| 2 | # % menos Dano em Área |
 | 2 | # a # de Dano de Fogo adicionado contra Inimigos Queimando |
 | 2 | # segundos entre o aparecimento de seções da Parede |
 | 2 | #% do Dano Físico Convertido para Dano de Fogo |
@@ -91,7 +90,6 @@ Só os ataques:
 | 2 | +# ao número Máximo de Tempestades de Lâminas por vez |
 | 2 | Abalo Secundário causa # % mais Dano com Acertos e Afecções |
 | 2 | Abalo Secundário causa +# % mais Dano com Acertos e Afecções |
-| 2 | Acertos aós o primeiro em cada Inimigo causam # % menos Dano |
 | 2 | Aplica feixes aos # Inimigos próximos |
 | 2 | as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente) |
 | 2 | Aura de Exposição ao Fogo aplica # % à resistência a dano de fogo |
@@ -114,9 +112,7 @@ Só os ataques:
 | 2 | Essa Gema só pode Suportar Gemas de Habilidade que requerem Nível # ou menos |
 | 2 | Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética |
 | 2 | Esta Magia causa # a # , mais # % da sua Vida Máxima, como Dano de Fogo base |
-| 2 | Explosão Cinética cria # explosões adicionais |
 | 2 | Feixes se dividem em direção a alvos dentro de um raio base de # metros |
-| 2 | Fissuras irrompem # vezes adicionais |
 | 2 | Golens causam # % mais Dano por Lacaio Não-Golem próximo deles, até # % |
 | 2 | Golpeia a cada # segundos enquanto Canalizando uma Habilidade de Raio próximo ao Orbe |
 | 2 | Golpes Abatedores com Habilidades Suportadas Consomem cadáveres para Recuperar # de Vida e # de Mana |
@@ -151,8 +147,6 @@ Só os ataques:
 | 2 | Você não pode Conjurar Magias Maldição Suportadas |
 | 1 | [DNT] Deals # % more Damage per active wall |
 | 1 | [Empowered\|Fortalece] a próxima magia vaal danosa que você conjurar |
-| 1 | [Empowered\|Fortalece] as próximas # magias que você conjurar |
-| 1 | [Empowered\|Fortalece] as próximas +# magias que você conjurar |
 | 1 | # % de aumento da Distância do Empurrão |
 | 1 | # % de chance de convocar um Lacaio extra |
 | 1 | # % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único |
@@ -169,6 +163,7 @@ Só os ataques:
 | 1 | # % mais Duração do Veneno |
 | 1 | # % mais Velocidade de Projétil |
 | 1 | # % menos Dano de Afecções |
+| 1 | # % menos Dano em Área |
 | 1 | # % menos Dano Físico sofrido por Carga de Tolerância removida |
 | 1 | # % menos Velocidade de Arremesso de Armadilhas |
 | 1 | # % menos velocidade de lançar armadilhas com arma de duas mãos |
@@ -197,7 +192,6 @@ Só os ataques:
 | 1 | a onda usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma) |
 | 1 | a perda de #% da Vida e do Escudo de Energia por segundo é a perda por segundo do jogo — não mata (deixa # de Vida) e não passa pelos modificadores de dano degenerativo recebido; no PoE é Dano Físico degenerativo (PhysicalDegen) |
 | 1 | A Recarga do seu Escudo de Energia e dos seus aliados próximos não é impedida por Dano |
-| 1 | A Segunda forma possui +# % ao Multiplicador de Acerto Crítico |
 | 1 | Abalo Secundário causa # % mais Dano com Acertos por cada # segundos de Duração |
 | 1 | Abalo Secundário causa # % mais Dano com Afecções por cada # segundos de Duração |
 | 1 | Abalo Secundário tem # % mais Área de Efeito por cada # segundos de Duração |
@@ -252,9 +246,6 @@ Só os ataques:
 | 1 | Cada Aprisionamento aplica # % menos Velocidade de Movimento aos Inimigos Normais ou Mágicos |
 | 1 | Cada Aprisionamento aplica # % menos Velocidade de Movimento aos Inimigos Raros |
 | 1 | Cada Aprisionamento aplica # % menos Velocidade de Movimento aos Inimigos Únicos |
-| 1 | Cada Esporo dispara # Flechas de Espinho |
-| 1 | Cada Esporo dispara +# Flecha de Espinho |
-| 1 | Cada Flecha deixa # Esporos |
 | 1 | Cada Flecha pode disparar +# Feixe |
 | 1 | Cada Habilidade Suportada causa #% mais Dano com Incêndio por cada Incêndio infligido com ela Recentemente, máximo de #% |
 | 1 | Cada Habilidade Suportada causa #% menos Dano por cada Incêndio infligido com ela Recentemente, máximo de #% |
@@ -272,7 +263,6 @@ Só os ataques:
 | 1 | Causa +# % da sua Vida Máxima como Dano de Fogo base |
 | 1 | Causa +# rajadas |
 | 1 | Causa Dano de Fogo base igual a #% da Vida Máxima dos Totens |
-| 1 | Causa Dano Físico Adicional igual a # % da Mana Máxima |
 | 1 | Ceifadores fazem com que seus Lacaios não-Ceifadores tenham # % menos Dano |
 | 1 | Ceifadores fazem com que seus Lacaios não-Ceifadores tenham # % menos Vida Máxima |
 | 1 | Chão amaldiçoado de habilidades reforçadas ativam Sapo Explosivo a cada # segundo |
@@ -317,7 +307,6 @@ Só os ataques:
 | 1 | Debuff Secundário causa # % do total restante do Dano Venenoso Esperado de todos os Venenos no Inimigo morto por segundo como Dano de Caos |
 | 1 | Detonação da Mina é Instantânea |
 | 1 | Dispara # projéteis |
-| 1 | Dispara # Projéteis secundários |
 | 1 | Dispara até # Flechas em alvos diferentes |
 | 1 | Dispara Projéteis # % mais rápido |
 | 1 | Dispara Projéteis a cada # segundos |
@@ -368,7 +357,7 @@ Só os ataques:
 | 1 | Feitiços aplicados por habilidades de maldição reforçadas afetam inimigos imunes a feitiços |
 | 1 | Feitiços aplicados por habilidades de maldição reforçadas têm #% de chance de afetar inimigos imunes a feitiços |
 | 1 | Feitiços de Habilidades Suportadas se Transferem para todos os Inimigos dentro de # metros quando o Inimigo Enfeitiçado morrer |
-| 1 | Feixes de habilidades fortalecidas se propagam mais # vezes |
+| 1 | Fissuras irrompem # vezes adicionais |
 | 1 | Flechas caem em duas linhas perpendiculares |
 | 1 | Flechas causam Dano ao alvo final # vezes adicionais após grudar |
 | 1 | Fonte de Vida dura # segundos |
@@ -407,9 +396,6 @@ Só os ataques:
 | 1 | Habilidades de Aura Suportadas não tem Reserva |
 | 1 | Habilidades de Efeito em Área Suportadas também afetam áreas na frente e atrás da área alvo |
 | 1 | Habilidades fortalecidas causam + # % de dano |
-| 1 | Habilidades fortalecidas causam + # % de dano com ataques e afecções |
-| 1 | Habilidades fortalecidas disparam # projéteis adicionais Habilidades fortalecidas disparam projéteis em círculo |
-| 1 | Habilidades fortalecidas também afetam # áreas adicionais em espiral ao redor da área-alvo |
 | 1 | Habilidades Não-Instantâneas Suportadas têm +# Usos de Tempo do Recarga |
 | 1 | Habilidades reforçadas ativam Cristal em Queda ao atingir |
 | 1 | Habilidades reforçadas ativam Fluxo Cinético ao causar golpe crítico |
@@ -571,7 +557,6 @@ Só os ataques:
 | 1 | perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB) |
 | 1 | Possui # Chamas |
 | 1 | Primeira Mina é Detonada Instantaneamente Minas recebem # % mais Velocidade de Detonação para cada Mina anteior na Sequência de Detonação |
-| 1 | Projéteis de Espinhos causam # % menos Dano |
 | 1 | Projéteis deixam Solo Eletrizado |
 | 1 | Projéteis Perfuram todos Alvos |
 | 1 | Projéteis que Acertarem Inimigos Amaldiçoados se Dividem na direção de # alvos adicionais |
@@ -610,7 +595,6 @@ Só os ataques:
 | 1 | Sangue Corrompido infligido por Clamores Suportados tem uma Duração Base de # segundos |
 | 1 | Sangue Corrompido infligido por estandartes reforçados causam # de dano físico base por segundo por bravura consumida |
 | 1 | Sangue Corrompido infligido por estandartes reforçados tem uma duração base de # segundos |
-| 1 | Segunda forma possui um aumento de # % de Chance de Crítico |
 | 1 | Só pode ser Acertado uma vez a cada # segundo |
 | 1 | Solo Ardente causa # % do Dano de Fogo por Segundo do Incêndio mais forte no Inimigo Solo Cáustico causa # % do Dano de Caos por Segundo do Envenenamento mais forte no Inimigo Pode criar cada efeito de Solo não mais que uma vez por segundo |
 | 1 | Solo Eletrizado causa # % de Dano sofrido aumentado |
@@ -969,10 +953,6 @@ Só os ataques:
   - efeito não simulado: Receba 15 % do Dano Físico como Dano de Gelo Extra
 - **Ice_Crash_of_Cadence** (Pancada de Gelo da Cadência) — parcial
   - efeito não simulado: Receba 20 % do Dano Físico como Dano de Gelo Extra
-- **Ice_Spear** (Lança Gélida) — parcial
-  - efeito não simulado: Segunda forma possui um aumento de 600 % de Chance de Crítico
-  - efeito não simulado: A Segunda forma possui +49 % ao Multiplicador de Acerto Crítico
-  - efeito não simulado: A Segunda forma possui +40 % ao Multiplicador de Acerto Crítico
 - **Ice_Trap** (Armadilha Glacial) — parcial
   - efeito não simulado: Raio Base terciário igual a 0.6 metros
   - efeito não simulado: 15 % de Chance de uma Armadilha ser Ativada uma vez adicional
@@ -991,14 +971,6 @@ Só os ataques:
 - **Intuitive_Link** (Vínculo Intuitivo) — parcial
   - efeito não simulado: Magias Suportadas causam 44 % menos Dano
   - os acertos do alvo vinculado ainda não ativam as suas magias suportadas
-- **Kinetic_Blast** (Explosão Cinética) — parcial
-  - efeito não simulado: Explosão Cinética cria 4 explosões adicionais
-  - efeito não simulado: 40 % menos Dano em Área
-  - efeito não simulado: Explosão Cinética cria 1 explosões adicionais
-- **Kinetic_Blast_of_Clustering** (Explosão Cinética da Ramificação) — parcial
-  - efeito não simulado: Explosão Cinética cria 3 explosões adicionais
-  - efeito não simulado: Causa Dano Físico Adicional igual a 15 % da Mana Máxima
-  - efeito não simulado: Explosão Cinética cria 1 explosões adicionais
 - **Kinetic_Rain_of_Impact** (Chuva Cinética do Impacto) — parcial
   - efeito não simulado: A área alvejada base mede 9 metros de comprimento
   - efeito não simulado: Circunferência base da área-alvo é de 4.5 metros
@@ -1006,10 +978,6 @@ Só os ataques:
   - efeito não simulado: 88 % mais Dano com Sangramento enquanto na Postura de Sangue
   - efeito não simulado: 25 % de chancer de causar Sangramento enquanto na Postura de Sangue
   - efeito não simulado: Velocidade de Ataque aumentada em 20 % caso tenha mudado de Postura Recentemente
-- **Lancing_Steel** (Aço Perfurador) — parcial
-  - efeito não simulado: Acertos aós o primeiro em cada Inimigo causam 60 % menos Dano
-- **Lancing_Steel_of_Spraying** (Aço Perfurador da Pulverização) — parcial
-  - efeito não simulado: Acertos aós o primeiro em cada Inimigo causam 90 % menos Dano
 - **Lightning_Arrow_of_Electrocution** (Flecha Relampejante da Eletrocussão) — parcial
   - efeito não simulado: Flechas causam Dano ao alvo final 4 vezes adicionais após grudar
   - efeito não simulado: Raios acertam a cada 0.5 segundos
@@ -1044,14 +1012,6 @@ Só os ataques:
   - efeito não simulado: Golpeia a cada 0.5 segundos enquanto Canalizando uma Habilidade de Raio próximo ao Orbe
   - efeito não simulado: Feixes se dividem em direção a alvos dentro de um raio base de 3.8 metros
   - efeito não simulado: Orbes desaparecem após 14 Golpes
-- **Pact_of_Beidat** (Pacto de Beidat) — parcial
-  - sem dano direto: nenhum efeito no combate
-  - efeito não simulado: [Empowered|Fortalece] as próximas 6 magias que você conjurar
-  - efeito não simulado: Habilidades fortalecidas causam + 35 % de dano com ataques e afecções
-  - efeito não simulado: Habilidades fortalecidas também afetam 8 áreas adicionais em espiral ao redor da área-alvo
-  - efeito não simulado: Feixes de habilidades fortalecidas se propagam mais 6 vezes
-  - efeito não simulado: Habilidades fortalecidas disparam 6 projéteis adicionais Habilidades fortalecidas disparam projéteis em círculo
-  - efeito não simulado: [Empowered|Fortalece] as próximas +2 magias que você conjurar
 - **Pact_of_KTash** (Pacto de K'tash) — parcial
   - nenhum efeito do buff tem equivalente no jogo
   - efeito não simulado: [Empowered|Fortalece] a próxima magia vaal danosa que você conjurar
@@ -1144,11 +1104,6 @@ Só os ataques:
   - efeito não simulado: Causa 70 % da sua Mana Máxima como Dano de Fogo Base por segundo
   - efeito não simulado: Você Queima por 90 % da sua Mana Máxima por segundo como Dano de Fogo
   - efeito não simulado: Concede 24 % mais velocidade de conjuração
-- **Scourge_Arrow_of_Menace** (Flecha Virulenta da Ameaça) — parcial
-  - efeito não simulado: Cada Flecha deixa 1 Esporos
-  - efeito não simulado: Cada Esporo dispara 4 Flechas de Espinho
-  - efeito não simulado: Projéteis de Espinhos causam 50 % menos Dano
-  - efeito não simulado: Cada Esporo dispara +1 Flecha de Espinho
 - **Seismic_Cry** (Clamor Sísmico) — parcial
   - efeito não simulado: 200 % de aumento da Distância do Empurrão
   - efeito não simulado: Empurra e Interrompe Inimigos em uma pequena Área
@@ -1344,8 +1299,6 @@ Só os ataques:
   - efeito não simulado: Outros efeitos em inimigos Amaldiçoados expiram 25 % mais devagar
   - efeito não simulado: Inimigos Raros e Únicos Amaldiçoados tem 18 % menos Velocidade de Ação
   - efeito não simulado: Duração de Maldições aumentada em 20 %
-- **Tornado_Shot** (Tiro Tornado) — parcial
-  - efeito não simulado: Dispara 3 Projéteis secundários
 - **Tornado_Shot_of_Cloudburst** (Tiro Tornado da Núvem Explosiva) — parcial
   - efeito não simulado: Dispara um Carregamento de Flechas no ar Projéteis Disparam de onde a Flecha com o Carregamento cair
 - **Vaal_Absolution** (Absolvição Vaal) — parcial
@@ -1421,8 +1374,6 @@ Só os ataques:
   - efeito não simulado: +7 ao Máximo de Esqueletos Convocados
   - efeito não simulado: +1 ao Máximo de Esqueletos Convocados
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Vaal_Volcanic_Fissure** (Fissura Vulcânica Vaal) — parcial
-  - efeito não simulado: Fissuras irrompem 2 vezes adicionais
 - **Viper_Strike_of_the_Mamba** (Golpe da Víbora d Mamba) — parcial
   - efeito não simulado: Não pode infligir múltiplos envenenamentos com o mesmo ataque
   - efeito não simulado: Não pode infligir Envenenamento em Inimigos Envenenados
@@ -1846,11 +1797,11 @@ Só os ataques:
   - não se aplica: "Projéteis mudam de direção N vezes" (Raio Cinético) só muda a trajetória — o projétil não acerta de novo a cada mudança
 - **Kinetic_Bolt_of_Fragmentation** (Tiro Cinético da Fragmentação) — implementada, sem teste próprio
   - não se aplica: "Projéteis mudam de direção N vezes" (Raio Cinético) só muda a trajetória — o projétil não acerta de novo a cada mudança
-- **Ice_Spear** (Lança Gélida) — parcial
+- **Ice_Spear** (Lança Gélida) — implementada e testada
   - não se aplica: "A Segunda forma possui X% mais Velocidade de Projétil" (Lança de Gelo) só muda a trajetória da segunda forma — o PoB não a usa na conta, e o projétil do jogo acerta no tique
 - **Ice_Spear_of_Splitting** (Lança de Gelo da Divisão) — implementada, sem teste próprio
   - não se aplica: "A Segunda forma possui X% mais Velocidade de Projétil" (Lança de Gelo) só muda a trajetória da segunda forma — o PoB não a usa na conta, e o projétil do jogo acerta no tique
 
 ## Implementadas sem teste próprio
 
-Added_Chaos_Damage_Support, Arc_of_Oscillating, Awakened_Added_Chaos_Damage_Support, Awakened_Added_Cold_Damage_Support, Awakened_Added_Fire_Damage_Support, Awakened_Added_Lightning_Damage_Support, Awakened_Arrow_Nova_Support, Awakened_Blasphemy_Support, Awakened_Burning_Damage_Support, Awakened_Chain_Support, Awakened_Deadly_Ailments_Support, Awakened_Elemental_Focus_Support, Awakened_Empower_Support, Awakened_Enlighten_Support, Awakened_Fork_Support, Awakened_Generosity_Support, Awakened_Greater_Multiple_Projectiles_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Melee_Splash_Support, Awakened_Minion_Damage_Support, Awakened_Multistrike_Support, Awakened_Swift_Affliction_Support, Awakened_Unbound_Ailments_Support, Awakened_Unleash_Support, Awakened_Vicious_Projectiles_Support, Barrage_Support, Battlemages_Cry, Blade_Trap_of_Greatswords, Blazing_Salvo, Bloodlust_Support, Brutality_Support, Cast_on_Melee_Kill_Support, Caustic_Arrow_of_Poison, Cold_Penetration_Support, Conductivity, Cooldown_Recovery_Support, Damage_on_Full_Life_Support, Detonate_Dead_of_Chain_Reaction, Elemental_Damage_with_Attacks_Support, Elemental_Penetration_Support, Elemental_Weakness, Enlighten_Support, Ethereal_Knives_of_the_Massacre, Firestorm_of_Meteors, Flameblast_of_Celerity, Flameblast_of_Contraction, Fork_Support, Frost_Bomb_of_Instability, Frozen_Legion, Frozen_Legion_of_Rallying, Generals_Cry, Glacial_Hammer_of_Shattering, Greater_Multistrike_Support, Greater_Spell_Echo_Support, Greater_Unleash_Support, Greater_Volley_Support, Ice_Nova_of_Deep_Freeze, Ice_Spear_of_Splitting, Icicle_Mine_of_Fanning, Immolate_Support, Incinerate_of_Venting, Increased_Critical_Damage_Support, Increased_Critical_Strikes_Support, Kinetic_Bolt_of_Fragmentation, Kinetic_Rain, Lacerate_of_Haemorrhage, Less_Duration_Support, Lightning_Penetration_Support, Lightning_Spire_Trap_of_Overloading, Lightning_Strike_of_Arcing, Mana_Leech_Support, Minion_Life_Support, More_Duration_Support, Multiple_Projectiles_Support, Pact_of_Ghorr, Pact_of_Lycia, Pulverise_Support, Puncture_of_Shanking, Purity_of_Ice, Purity_of_Lightning, Rain_of_Arrows_of_Artillery, Rain_of_Arrows_of_Saturation, Scorching_Ray_of_Immolation, Shattering_Steel, Spark_of_Unpredictability, Spark_of_the_Nova, Storm_Call_of_Trarthus, Stun_Support, Swift_Affliction_Support, Thunderstorm, Vaal_Arc, Vaal_Burning_Arrow, Vaal_Caustic_Arrow, Vaal_Cyclone, Vaal_Haste, Vaal_Ice_Shot, Vitality, Volatile_Dead_of_Confinement, Volcanic_Fissure
+Added_Chaos_Damage_Support, Arc_of_Oscillating, Awakened_Added_Chaos_Damage_Support, Awakened_Added_Cold_Damage_Support, Awakened_Added_Fire_Damage_Support, Awakened_Added_Lightning_Damage_Support, Awakened_Arrow_Nova_Support, Awakened_Blasphemy_Support, Awakened_Burning_Damage_Support, Awakened_Chain_Support, Awakened_Deadly_Ailments_Support, Awakened_Elemental_Focus_Support, Awakened_Empower_Support, Awakened_Enlighten_Support, Awakened_Fork_Support, Awakened_Generosity_Support, Awakened_Greater_Multiple_Projectiles_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Melee_Splash_Support, Awakened_Minion_Damage_Support, Awakened_Multistrike_Support, Awakened_Swift_Affliction_Support, Awakened_Unbound_Ailments_Support, Awakened_Unleash_Support, Awakened_Vicious_Projectiles_Support, Barrage_Support, Battlemages_Cry, Blade_Trap_of_Greatswords, Blazing_Salvo, Bloodlust_Support, Brutality_Support, Cast_on_Melee_Kill_Support, Caustic_Arrow_of_Poison, Cold_Penetration_Support, Conductivity, Cooldown_Recovery_Support, Damage_on_Full_Life_Support, Detonate_Dead_of_Chain_Reaction, Elemental_Damage_with_Attacks_Support, Elemental_Penetration_Support, Elemental_Weakness, Enlighten_Support, Ethereal_Knives_of_the_Massacre, Firestorm_of_Meteors, Flameblast_of_Celerity, Flameblast_of_Contraction, Fork_Support, Frost_Bomb_of_Instability, Frozen_Legion, Frozen_Legion_of_Rallying, Generals_Cry, Glacial_Hammer_of_Shattering, Greater_Multistrike_Support, Greater_Spell_Echo_Support, Greater_Unleash_Support, Greater_Volley_Support, Ice_Nova_of_Deep_Freeze, Ice_Spear_of_Splitting, Icicle_Mine_of_Fanning, Immolate_Support, Incinerate_of_Venting, Increased_Critical_Damage_Support, Increased_Critical_Strikes_Support, Kinetic_Bolt_of_Fragmentation, Kinetic_Rain, Lacerate_of_Haemorrhage, Less_Duration_Support, Lightning_Penetration_Support, Lightning_Spire_Trap_of_Overloading, Lightning_Strike_of_Arcing, Mana_Leech_Support, Minion_Life_Support, More_Duration_Support, Multiple_Projectiles_Support, Pact_of_Ghorr, Pact_of_Lycia, Pulverise_Support, Puncture_of_Shanking, Purity_of_Ice, Purity_of_Lightning, Rain_of_Arrows_of_Artillery, Rain_of_Arrows_of_Saturation, Scorching_Ray_of_Immolation, Shattering_Steel, Spark_of_Unpredictability, Spark_of_the_Nova, Storm_Call_of_Trarthus, Stun_Support, Swift_Affliction_Support, Thunderstorm, Vaal_Arc, Vaal_Burning_Arrow, Vaal_Caustic_Arrow, Vaal_Cyclone, Vaal_Haste, Vaal_Ice_Shot, Vitality, Volatile_Dead_of_Confinement

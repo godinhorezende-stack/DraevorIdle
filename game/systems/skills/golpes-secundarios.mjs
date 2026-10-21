@@ -32,6 +32,7 @@
 // do Magma (exceção 2) já são áreas: não somam outra.
 import { CONFIG } from './gemas.mjs';
 import * as Areas from '../../engine/areas.mjs';
+import * as GemasPR3 from '../itens-poe/gemas-pr3.mjs';
 
 const G = () => CONFIG.golpesSecundarios ?? {};
 const cheb = Areas.distancia;
@@ -89,7 +90,51 @@ function maisPerto(vivos, ponto, distancia, n, fora) {
  * leque). Na gema que "Dispara Projéteis em sequência" (`sequencia`, a Barragem) os que sobram vão no alvo, como no PoE. Sem alvo nenhum
  * (0 bichos), os projéteis saem todos e erram. A emissão não diminui com quem erra nem com quem morre no meio.
  */
-export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, alcance, area = false, rumo = null, rng = Math.random, andavel = null, areaNoImpacto = null }) {
+/**
+ * (lote PR3, dono 21/10) As EXPLOSÕES da Explosão Cinética num impacto (`kin`: `{ n, pct, raio, raioSec }` em casas, de `cineticaDoUso`): a do ponto e as `n`
+ * adicionais em pontos sorteados no quadrado do raio secundário (`GemasPR3.pontoDaExplosao`), cada uma o quadrado do raio, pegando todos dentro (o atingido também —
+ * a exceção 5 do lote); o % de cada uma: o do impacto × o do "menos Dano em Área". Devolve false quando bateu no teto (`max`).
+ */
+function explosoesCineticas({ ponto, z, kin, porCasa, pctDoImpacto, rng, golpes, explosoes, conta, max }) {
+  const pct = (pctDoImpacto * kin.pct) / 100;
+  const raio = Math.max(0, Math.round(kin.raio ?? 0));
+  for (let i = 0; i <= Math.max(0, Math.round(kin.n ?? 0)); i++) {
+    if (conta.n >= max) return false;
+    conta.n++;
+    const c0 = i === 0 ? { x: ponto.x, y: ponto.y } : GemasPR3.pontoDaExplosao(ponto, Math.max(0, Math.round(kin.raioSec ?? 0)), rng);
+    explosoes.push({ ...c0, lado: 2 * raio + 1, cinetica: true });
+    for (const c of Areas.quadrado(c0, raio)) {
+      const b = porCasa.get(Areas.chave(c));
+      if (b && b.hp > 0 && (b.z ?? 0) === z) golpes.push({ bicho: b, pct, de: c0, tipo: 'explosao', cinetica: true });
+    }
+  }
+  return true;
+}
+
+/*
+ * (lote PR3, dono 21/10) O resolvedor do uso com o que vem DEPOIS dele: as explosões da Explosão Cinética no fim do voo dos projéteis que erram (a exceção 5 do lote
+ * PR3 — as dos impactos saem no `impacto`) e o "X% menos Dano nos acertos após o primeiro em cada Inimigo" do Aço Perfurador (`GemasPR3.menosAposOPrimeiro`: o
+ * golpe direto conta como o primeiro).
+ */
+export function resolver(args) {
+  const r = resolverDoUso(args);
+  const { efeito, tags, origem, vivos = [], area = false, rng = Math.random, cinetica = null, atingidos = [] } = args;
+  const t = new Set(tags ?? []);
+  if (cinetica && efeito && t.has('projectile') && !area) {
+    const porCasa = new Map(vivos.filter((b) => b.hp > 0).map((b) => [`${b.x},${b.y}`, b]));
+    const conta = { n: r.golpes.filter((g) => g.cinetica).length };
+    const max = G().limites?.explosoesCineticasPorUso ?? 90;
+    for (const p of r.emitidos) {
+      if (p.bicho || !p.para) continue;
+      const pct = p.tipo === 'direto' ? 100 : (Number(efeito.danoDosExtrasPct) || 100);
+      if (!explosoesCineticas({ ponto: p.para, z: origem?.z ?? 0, kin: cinetica, porCasa, pctDoImpacto: pct, rng, golpes: r.golpes, explosoes: r.explosoes, conta, max })) { r.cortado = true; break; }
+    }
+  }
+  if (efeito?.lanca?.menosPct > 0) GemasPR3.menosAposOPrimeiro(r.golpes, efeito.lanca.menosPct, atingidos);
+  return r;
+}
+
+function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alcance, area = false, rumo = null, rng = Math.random, andavel = null, areaNoImpacto = null, cinetica = null }) {
   const golpes = [];
   const explosoes = [];
   const emitidos = [];
@@ -111,6 +156,9 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
   const raioNoImpacto = areaNoImpacto && t.has('projectile') && !area ? Math.max(0, Math.round(Number(areaNoImpacto.raio) || 0)) : null;
   const maxAreas = cfg.limites?.areasNoImpactoPorUso ?? 60;
   let nAreas = 0;
+  // (lote PR3) as explosões da Explosão Cinética (`cinetica`, já em casas — `Acoes.cineticaDoUso`)
+  const kin = cinetica && t.has('projectile') && !area ? cinetica : null;
+  const contaCinetica = { n: 0 };
   /**
    * (lote A3c) A ÁREA do impacto do projétil `p` em `centro` (o bicho atingido): os vivos do andar dele no quadrado do raio, fora o próprio e os
    * que este projétil já acertou nesta passada (`ja`: os alvos da ida, ou os da volta); cada um leva um acerto com o % do impacto e o que o
@@ -169,6 +217,8 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
     }
     explodir(bicho, pct);
     areaDoImpacto(bicho, pct, tipo, meta, ja);
+    // (lote PR3) as explosões da Explosão Cinética em todo impacto que acerta
+    if (kin && !explosoesCineticas({ ponto: bicho, z: bicho.z ?? 0, kin, porCasa, pctDoImpacto: pct, rng, golpes, explosoes, conta: contaCinetica, max: cfg.limites?.explosoesCineticasPorUso ?? 90 })) r.cortado = true;
     return true;
   };
 
@@ -454,6 +504,48 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
     }
     return r;
   }
+  /*
+   * (lote PR3, dono 21/10) o TIRO TORNADO: cada tiro atravessa todos até o local mirado (o alvo; o que erra, o fim do voo — a exceção 1) e lá solta os N
+   * projéteis SECUNDÁRIOS (`efeito.tornado.n`), cada um num rumo sorteado na sua fatia do círculo (`GemasPR3.anguloDoSecundario` — D2 do dono, a exceção 3),
+   * até o alcance; cada secundário acerta o primeiro vivo do caminho (não o alvo do tiro, onde nasce — a exceção 2) e segue os modificadores do projétil
+   * (perfurar, difundir, ricochetear, retornar). Os projéteis adicionais são mais tiros (o PoB: ProjectileCount × os secundários), nos mais perto de você.
+   */
+  if (efeito.tornado && deProjetil && alvo) {
+    const n = Math.max(0, Math.round(Number(efeito.tornado.n) || 0));
+    const soltar = (ponto, pct) => {
+      const de = { x: ponto.x, y: ponto.y };
+      const a0 = anguloDe(origem, de);
+      for (let k = 0; k < n; k++) {
+        const fim = noAngulo(de, GemasPR3.anguloDoSecundario(k, n, a0, rng));
+        const bicho = primeiroNaReta(de, fim, new Set());
+        emitidos.push({ de, para: bicho ? { x: bicho.x, y: bicho.y } : fim, bicho, tipo: 'secundario' });
+        if (bicho) voar({ ...base(), de, pct }, bicho, 'secundario');
+        else naParede(fim, pct, de);
+      }
+    };
+    const tiro = (destino, bicho, k) => {
+      const direto = k === 0;
+      const pct = direto ? 100 : pctDe('danoDosExtrasPct');
+      emitidos.push({ de: { x: origem.x, y: origem.y }, para: { x: destino.x, y: destino.y }, bicho: bicho ?? null, tipo: direto ? 'direto' : 'projetil' });
+      const ja = new Set();
+      for (const c of casasDaReta(origem, destino, cheb(origem, destino))) {
+        const b = porCasa.get(Areas.chave(c));
+        if (!b || !(b.hp > 0) || b === bicho || ja.has(b)) continue;
+        ja.add(b);
+        if (!impacto(b, (pct * pctDe('danoDaPerfuracaoPct')) / 100, origem, 'perfuracao', false)) return;
+      }
+      if (bicho && !impacto(bicho, pct, origem, direto ? 'direto' : 'projetil', direto)) return;
+      soltar(destino, pct);
+    };
+    tiro(alvo, alvo, 0);
+    for (const b of atingidos) if (b !== alvo) impacto(b, 100, origem, 'direto', true);
+    const fora = new Set([alvo, ...atingidos]);
+    const extras = total - 1;
+    const com = extras > 0 ? maisPerto(vivosNoInicio, origem, alcance, extras, fora) : [];
+    com.forEach((b, i) => { fora.add(b); tiro(b, b, i + 1); });
+    for (let k = com.length + 1; k <= extras; k++) tiro(pontoDoProjetil(k), null, k);
+    return r;
+  }
   if (!(t.has('projectile') && alvo)) {
     // Sem projétil (alvo único, cadeia da magia, corpo a corpo com Impact): cada golpe principal é um impacto.
     for (const b of atingidos) impacto(b, 100, origem, 'direto', true);
@@ -532,6 +624,20 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
       emitidos.push({ de, para: bicho ? { x: bicho.x, y: bicho.y } : fim, bicho, tipo: 'projetil' });
       if (bicho) { fora.add(bicho); voar({ ...base(), de, pct: pctDe('danoDosExtrasPct') }, bicho, 'projetil'); }
       else naParede(fim, pctDe('danoDosExtrasPct'), de);
+    }
+    return r;
+  }
+  /*
+   * (lote PR3, dono 21/10 — D4) o AÇO PERFURADOR: "aiming at enemies in front of or close to it" — os projéteis miram o alvo e os vizinhos dele (a até
+   * `lanca.raio` casas, os mais perto primeiro), em rodízio (a exceção 7): o 1º no alvo (o golpe direto), o 2º no vizinho mais perto… e de volta ao alvo. O
+   * "menos Dano após o primeiro acerto em cada inimigo" sai no fim (`resolver`).
+   */
+  if (extras > 0 && efeito.lanca) {
+    const roda = [alvo, ...maisPerto(vivosNoInicio, alvo, Math.max(0, Math.round(efeito.lanca.raio ?? 1)), 99, new Set([alvo]))];
+    for (let k = 1; k <= extras; k++) {
+      const b = roda[k % roda.length];
+      emitir(b, 'projetil', k);
+      voar({ ...base(), de: origem, pct: pctDe('danoDosExtrasPct') }, b, 'projetil');
     }
     return r;
   }

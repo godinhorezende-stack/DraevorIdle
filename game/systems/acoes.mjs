@@ -83,6 +83,7 @@ import * as GemasA5 from './itens-poe/gemas-a5.mjs';
 import * as GemasB1 from './itens-poe/gemas-b1.mjs';
 import * as GemasPR1 from './itens-poe/gemas-pr1.mjs';
 import * as GemasPR2 from './itens-poe/gemas-pr2.mjs';
+import * as GemasPR3 from './itens-poe/gemas-pr3.mjs';
 import * as GemasC1 from './itens-poe/gemas-c1.mjs';
 // (lote C2, dono 20/10: os contadores próprios e as cargas consumidas das gemas de corpo a corpo, impacto e canalização)
 import * as GemasC2 from './itens-poe/gemas-c2.mjs';
@@ -1490,7 +1491,7 @@ export function alvosDoGolpeDoMercenario(estado, l, alvo, vivos, rng = Math.rand
   if (!tags.includes('projectile')) return null;
   // (lote A3c, dono 19/10: "Sim, igual") + a área no impacto do projétil da gema dele, com o mesmo raio do seu (`areaNoImpactoDoUso`); o golpe da
   // área vai como 'area' (a caçada não desenha um voo para ele), com `impacto: true` e o `doImpacto`
-  const r = Secundarios.resolver({ efeito, tags, origem, alvo, atingidos: [alvo], vivos, alcance: entry.range || ALCANCE_PADRAO, rng, areaNoImpacto: areaNoImpactoDoUso(entry, efeito, 0, rng) });
+  const r = Secundarios.resolver({ efeito, tags, origem, alvo, atingidos: [alvo], vivos, alcance: entry.range || ALCANCE_PADRAO, rng, areaNoImpacto: areaNoImpactoDoUso(entry, efeito, 0, rng), cinetica: cineticaDoUso(entry, efeito, 0, rng) });
   return { golpes: r.golpes.map((g) => (g.tipo === 'impacto' ? { ...g, tipo: 'area', impacto: true } : g)), eventos: [], emitidos: r.emitidos, explosoes: r.explosoes };
 }
 /**
@@ -1505,6 +1506,17 @@ export function areaNoImpactoDoUso(entry, efeito, intensidade = 0, rng = Math.ra
   if (!a) return null;
   const fator = ModsPoe.fatorDaArea(efeito?.areaIncPct ?? 0, efeito?.areaMaisPct ?? 0, intensidade > 0 ? -intensidade * (efeito?.intensidadeMenosAreaPct ?? 0) : 0);
   return { raio: casasDoRaio(a.raioM * Math.sqrt(fator), rng), soNosExtras: a.soNosExtras };
+}
+/**
+ * (lote PR3, dono 21/10) As EXPLOSÕES da Explosão Cinética neste uso (`GemasPoe.cineticaDaGema`, `Secundarios.resolver`): `{ n, pct, raio, raioSec }` — as
+ * adicionais, o % de cada explosão (o "menos Dano em Área"), o raio da explosão e o secundário em casas (os metros × √ da Área de Efeito do uso ÷ 2, a fração como
+ * a chance de uma casa a mais, sorteados uma vez no uso — a exceção 6 do lote) —, ou null.
+ */
+export function cineticaDoUso(entry, efeito, intensidade = 0, rng = Math.random) {
+  const k = itensPoeLigado() && entry?.poeGema ? efeito?.cinetica : null;
+  if (!k) return null;
+  const fator = ModsPoe.fatorDaArea(efeito?.areaIncPct ?? 0, efeito?.areaMaisPct ?? 0, intensidade > 0 ? -intensidade * (efeito?.intensidadeMenosAreaPct ?? 0) : 0);
+  return { n: k.n, pct: Math.max(0, 100 - (k.menosAreaPct ?? 0)), raio: casasDoRaio(k.raioM * Math.sqrt(fator), rng), raioSec: casasDoRaio(k.raioSecM * Math.sqrt(fator), rng) };
 }
 /** Depois de cada golpe do mercenário: a próxima gema do arquétipo (ele alterna as habilidades). */
 export function depoisDoGolpeDoMercenario(l) {
@@ -2590,7 +2602,15 @@ export function comOsAlvosDaGema(entry, efeito, estado = null) {
   }
   // (lote PR1, dono 20/10) o ARREMESSO DE ESCUDO ESPECTRAL: os projéteis adicionais são as ESTILHAS (`GemasPR1.estilhasNoUso`) — o escudo não perfura e as solta a
   // cada colisão (`Secundarios.resolver`); o de Trarthus perfura e as solta do lugar onde para (`criarObjetosDoUso`)
-  return GemasPR1.estilhasNoUso(comOsProjeteisDaGema(e, a), GemasPoe.estilhasDaGema(entry.poeGema.slug, efeito.nivel ?? 1));
+  const comEstilhas = GemasPR1.estilhasNoUso(comOsProjeteisDaGema(e, a), GemasPoe.estilhasDaGema(entry.poeGema.slug, efeito.nivel ?? 1));
+  // (lote PR3, dono 21/10) o que o projétil da gema GERA (`itens-poe/gemas-pr3.mjs`, `Secundarios.resolver`): os secundários do Tiro Tornado (`tornado`), as
+  // explosões da Explosão Cinética (`cinetica` — na da Ramificação, os projéteis adicionais viram explosões) e o rodízio do Aço Perfurador (`lanca`)
+  const slug = entry.poeGema.slug;
+  const tornado = GemasPoe.tornadoDaGema(slug, efeito.nivel ?? 1);
+  if (tornado) comEstilhas.tornado = tornado;
+  const lanca = GemasPoe.lancaDaGema(slug, efeito.nivel ?? 1);
+  if (lanca) comEstilhas.lanca = lanca;
+  return GemasPR3.cineticaNoUso(comEstilhas, GemasPoe.cineticaDaGema(slug, efeito.nivel ?? 1, efeito.qualidade ?? 0));
 }
 
 /**
@@ -4253,7 +4273,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (lote B2, dono 20/10: + a Febre Corrompedora — o uso é o buff em você; o dano é o Sangue Corrompido dos SEUS acertos, `febreNoAcerto`)
   // (lote C2, dono 20/10: + a Vinculação da Tempestade — o uso espalha a runa; o dano é o da runa detonada pela Explosão de Runas, `explosaoDeRunas`)
   const runasDoUso = c2?.runas && !plantada && !doTotem ? c2.runas : null;
-  const semGolpeDireto = (!!doCadaver && (!doCadaver.comDano || doCadaver.modo === 'geiser')) || !!orbeDoUso || !!runasDoUso || !!b2?.febre;
+  // (lote PR3, dono 21/10: + o Pacto de Beidat — o uso é o buff que fortalece as próximas magias, `GemasPR3.pactoNoUso`)
+  const usoDoPacto = itensPoeLigado() && entry.poeGema && !doTotem && !plantada && GemasPR3.ehPactoDeBeidat(entry.poeGema.slug) ? GemasPoe.pactoDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
+  const semGolpeDireto = (!!doCadaver && (!doCadaver.comDano || doCadaver.modo === 'geiser')) || !!orbeDoUso || !!runasDoUso || !!b2?.febre || !!usoDoPacto;
 
   /*
    * ---- Onde a magia de ataque pega, ANTES de gastar nada ----
@@ -4295,6 +4317,23 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   let virarPara = null;
   // (PoE, 12/10) A gema que PLANTA (Armadilha, Mina): o uso joga a armadilha/mina no lugar mirado; a habilidade sai quando ela ativa.
   const tipoPlantado = Plantadas.tipoDaGema(entry, efeitoDaGema);
+  /*
+   * (lote PR3, dono 21/10 — D7) o PACTO DE BEIDAT fortalece esta magia? (`hunt.poePacto`, `GemasPR3.pactoNoUso`): a sua magia não canalizada que dispara projéteis,
+   * cai numa área no local mirado ou tem feixe com ricochete (a cadeia) — o totem, a armadilha e a mina não contam (a exceção 10). Fortalecida: "+35% de dano com
+   * ataques e afecções" (o PoB: MORE com Hit e Ailment — o do acerto sai da afecção como o estágio, e o da afecção entra só nela), "6 projéteis adicionais … em círculo"
+   * (o círculo de você — o `emCirculo` do A3), "Feixes … se propagam mais 6 vezes" (os saltos da cadeia) e "8 áreas adicionais em espiral" (`golpesDoPacto`). Gasta
+   * uma das magias quando o uso sai (pagou).
+   */
+  const pactoAgora = itensPoeLigado() && entry.poeGema && efeitoDaGema && !doTotem && !plantada && !tipoPlantado && hunt.poePacto
+    ? GemasPR3.pactoNoUso(hunt.poePacto, { tags: tagsPoeDaSkill(entry), cadeia: !!entry.cadeia, noLocal: !!(entry.miraNoChao || entry.alvoNoCentro) }) : null;
+  if (pactoAgora) {
+    const xm = (a, b) => ((1 + (a ?? 0) / 100) * (1 + (b ?? 0) / 100) - 1) * 100;
+    efeitoDaGema = { ...efeitoDaGema, fatorDeDano: (efeitoDaGema.fatorDeDano ?? 1) * (1 + pactoAgora.maisPct / 100), maisDanoAcertoPct: xm(efeitoDaGema.maisDanoAcertoPct, pactoAgora.maisPct), maisAfeccaoPct: xm(efeitoDaGema.maisAfeccaoPct, pactoAgora.maisPct) };
+    if (pactoAgora.projeteis > 0) efeitoDaGema = { ...efeitoDaGema, alvosExtras: (efeitoDaGema.alvosExtras ?? 0) + pactoAgora.projeteis, emCirculo: true, doPontoDoAlvo: false };
+    if (pactoAgora.feixes > 0 && efeitoDaGema.cadeiaPoe) efeitoDaGema = { ...efeitoDaGema, cadeiaPoe: { ...efeitoDaGema.cadeiaPoe, saltos: (efeitoDaGema.cadeiaPoe.saltos ?? 0) + pactoAgora.feixes } };
+  }
+  // (lote PR3) as áreas da espiral do Pacto: cada uma, a forma do uso transladada (`GemasPR3.centrosDaEspiral`); quem está nelas leva um acerto de cada (em `atacar`)
+  let golpesDoPacto = null;
   // (lote A3b, dono 19/10) o OBJETO que este uso deixa no chão ou no tempo (`GemasPoe.objetoDaGema`, `criarObjetosDoUso`): o seu uso e o do totem (D3) — a
   // armadilha, a mina e o golpe que já sai de um objeto não deixam. `semAcerto`: o uso não acerta na hora (a bola, o tornado, a espiral, o olho)
   const objetoDaGemaNoUso = itensPoeLigado() && entry.poeGema && !entry.poeGema.lacaio && !tipoPlantado && (!plantada || plantada.tipo === 'totem') ? GemasPoe.objetoDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
@@ -4477,6 +4516,16 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     if (pontas && casas) segundaPonta = casas.map((c) => ({ x: c.x - pontas[0].x + pontas[1].x, y: c.y - pontas[0].y + pontas[1].y }));
     // Quem está nas casas da área: por índice de casa (sem varrer área × bichos).
     if (casas) atingidos = Areas.dentro(casas, vivos);
+    if (pactoAgora?.espiral > 0 && casas?.length && formaNoUso) {
+      const raio = casas.reduce((m, c) => Math.max(m, Math.abs(c.x - formaNoUso.x), Math.abs(c.y - formaNoUso.y)), 0);
+      const a0 = Math.atan2(formaNoUso.y - y, formaNoUso.x - x);
+      golpesDoPacto = [];
+      for (const c of GemasPR3.centrosDaEspiral(formaNoUso, pactoAgora.espiral, raio, a0)) {
+        const cs = casas.map((k) => ({ x: k.x - formaNoUso.x + c.x, y: k.y - formaNoUso.y + c.y }));
+        if (entry.efeito) golpesDoPacto.push({ evento: { t: 'area', id: entry.efeito, x: c.x, y: c.y, casas: Areas.paraTela(cs, c) } });
+        for (const b of Areas.dentro(cs, vivos)) golpesDoPacto.push({ bicho: b });
+      }
+    }
     // (revisão do C1) o Esmagar Escudos do Chefe Guerreiro: "Inimigos podem ser acertados por duas das ondas sobrepostas" (o PoB: a parte "2 Overlapping Waves", dpsMultiplier 2;
     // o poedb: 100%, 100%, 100%) — quem está no cone E na Onda Central leva os dois acertos (`GemasC1.sobreposicaoDaOndaCentral`, na escala da Área do uso)
     if (entry.ondaCentral && casas && formaNoUso) {
@@ -4875,6 +4924,15 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (lote PR2, dono 20/10 — D1) o RITUAL PROIBIDO fere você a cada conjuração (pela resistência a Caos; pode matar); o do totem e o da armadilha/mina, não
   // (exceção 1 do lote)
   if (itensPoeLigado() && entry.poeGema && !doTotem && !plantada && !tipoPlantado && GemasPoe.ritualDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1)) ritualEmVoce(estado, hunt, personagem, entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, eventos);
+  // (lote PR3, dono 21/10) o PACTO DE BEIDAT: o uso dele fortalece as próximas N magias (com as da qualidade; um uso novo recomeça a conta — a exceção 12); a magia
+  // fortalecida gasta uma
+  if (usoDoPacto) {
+    hunt.poePacto = { acao: entry.id, restantes: usoDoPacto.magias, maisPct: usoDoPacto.maisPct, espiral: usoDoPacto.espiral, feixes: usoDoPacto.feixes, projeteis: usoDoPacto.projeteis };
+    if (entry.efeito) eventos.push({ t: 'fx', id: entry.efeito, uid: 'player', x: hunt.pos.x, y: hunt.pos.y });
+  } else if (pactoAgora && hunt.poePacto) {
+    hunt.poePacto.restantes -= 1;
+    if (!(hunt.poePacto.restantes > 0)) delete hunt.poePacto;
+  }
   // (lote A1b, dono 19/10) o uso SAIU (pagou):
   //  - D-a: a carga que pula a recarga é gasta agora (o golpe já sai sem ela — no PoE ela é gasta no uso);
   if (pulaARecarga && CargasPoe.gastar(estado, cargaQuePula, 1)) Ficha.invalidar(estado);
@@ -5220,7 +5278,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       if (quinto && projDaGema.quintoProjeteis) efeitoDaGema = { ...efeitoDaGema, alvosExtras: (efeitoDaGema.alvosExtras ?? 0) + projDaGema.quintoProjeteis };
     }
     // (lote PR1: + as estilhas do Arremesso de Escudo Espectral)
-    const FONTES_DE_PROJETIL = new Set(['projetil', 'perfuracao', 'bifurcacao', 'encadeamento', 'retorno', 'estilha']);
+    // (lote PR3: + os secundários do Tiro Tornado)
+    const FONTES_DE_PROJETIL = new Set(['projetil', 'perfuracao', 'bifurcacao', 'encadeamento', 'retorno', 'estilha', 'secundario']);
     const doProjetilDaGema = (fonte) => (projDaGema && FONTES_DE_PROJETIL.has(fonte) ? Math.max(0, 1 + projDaGema.pct / 100) * (quinto ? 1 + projDaGema.quintoPct / 100 : 1) : 1);
     // (PoE, a Impiedade: "Cada terceiro Ataque com Ataques Corpo a Corpo Suportados causa um Golpe Impiedoso" — este uso é o terceiro?)
     const impiedosoCada = Math.round(efeitoDaGema?.impiedosoCada ?? 0);
@@ -5370,6 +5429,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const atordoadosNoPasse = new Map();
     let imolacaoExplode = 0;
     let passeC2 = null;
+    // (lote PR3, dono 21/10 — D3) a 2ª forma da Lança Gélida: o acerto a ≥ 2 casas de você leva o crítico dela
+    const segundaForma = itensPoeLigado() && entry.poeGema && !casas ? GemasPoe.segundaFormaDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
     const acertar = (bicho, pct0 = 100, fonte = null, golpe = null) => {
       // (revisão do C1) o raio do Castigo do Julgamento Divino não é golpe corpo a corpo (a parte "Area Hit" do PoB: melee = false): sem o Golpe Impiedoso e sem a
       // Proximidade do Impacto, que são do corpo a corpo; o "aumentado"/"mais" corpo a corpo da ficha sai pelo `fatorDoRaioSemCorpo`
@@ -5492,8 +5553,11 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         : fichaNoAlvo;
       // (lote A4, dono 19/10) o crítico deste acerto: o "X% de aumento da Chance de Acerto Crítico por Rajada" das Saraivadas (`golpe.critIncPct`, somado aos
       // "aumentada" da ficha) e o "+X% ao multiplicador de golpe crítico quando em estágios máximos" das Lâminas Velozes da Incisão (`critMultPct`)
-      const incDoGolpe = golpe?.critIncPct ?? 0;
-      const multDoUso = estagioDoUso?.critMultPct ?? 0;
+      // (lote PR3, dono 21/10 — D3) + a 2ª forma da Lança Gélida: "Segunda forma possui um aumento de 600% de Chance de Crítico" e "+49% ao Multiplicador" (+ a
+      // qualidade) no acerto a ≥ 2 casas de você (`GemasPR3.naSegundaForma`)
+      const daSegunda = segundaForma && GemasPR3.naSegundaForma(segundaForma, { x, y }, bicho) ? segundaForma : null;
+      const incDoGolpe = (golpe?.critIncPct ?? 0) + (daSegunda?.critIncPct ?? 0);
+      const multDoUso = (estagioDoUso?.critMultPct ?? 0) + (daSegunda?.critMultPct ?? 0);
       const fichaDoCritico2 = incDoGolpe || multDoUso ? (() => {
         const inc = Number(fichaDoCritico.critMagiaPoe?.aumentada ?? fichaDoCritico.critInc ?? 0) || 0;
         const k = incDoGolpe ? (1 + (inc + incDoGolpe) / 100) / Math.max(0.01, 1 + inc / 100) : 1;
@@ -5807,6 +5871,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (lote A3c, dono 19/10: "Fazer como o PoE") a ÁREA NO IMPACTO do projétil da gema com raio-base no PoB — `areaNoImpactoDoUso`, sorteada uma
     // vez no uso. (revisão do A3c: também no Totem de Magia e na Balista — no PoE o projétil lançado pelo totem explode igual)
     const areaNoImpacto = !casas ? areaNoImpactoDoUso(entry, efeitoDaGema, intensidade) : null;
+    // (lote PR3, dono 21/10) as explosões da Explosão Cinética — `cineticaDoUso`, sorteadas uma vez no uso
+    const cineticaNoUso = !casas ? cineticaDoUso(entry, efeitoDaGema, intensidade) : null;
     // (lote C1, dono 20/10) os acertos da gema em cada inimigo do uso (a Tormenta de Espadas: 8)
     const golpesPorAlvo = Math.max(1, c1?.golpesPorAlvo ?? 1);
     // (revisão do C1) o raio do Castigo do Julgamento Divino sem o corpo a corpo da ficha: a razão do dano médio do uso sem a tag `corpo` (e sem a Força no Físico
@@ -5908,6 +5974,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         andavel: ModsPoe.gradeDoCombate(hunt)?.andavel ?? null,
         // (lote A3c) a área no impacto do projétil
         areaNoImpacto,
+        // (lote PR3) as explosões da Explosão Cinética
+        cinetica: cineticaNoUso,
       });
       // (lote A3b, dono 19/10) os projéteis que saíram do uso (o primeiro passe): o marcador do Disparo Congelante, a captura da Espiral Venenosa, a
       // Lâmina Persistente das Facas Etéreas (D8: 1 a cada N facas, onde a faca parou), o Tornado que os absorve (D7)
@@ -5927,6 +5995,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         if (s.tipo !== 'explosao' && s.tipo !== 'projetil' && s.tipo !== 'impacto' && entry.projetil) eventos.push({ t: 'shot', id: entry.projetil, x: s.de.x, y: s.de.y, tx: s.bicho.x, ty: s.bicho.y, ...(velDoTiro !== 1 ? { vel: velDoTiro } : {}) });
         acertar(s.bicho, s.pct, s.tipo, s);
       }
+      // (lote PR3) as áreas da espiral do Pacto de Beidat: um acerto em cada um de cada área
+      if (golpesDoPacto) for (const g of golpesDoPacto) { if (g.evento) { if (!segundo) eventos.push(g.evento); } else if (g.bicho.hp > 0) acertar(g.bicho, 100, 'pacto'); }
       // (lote A4, dono 19/10: D7) o CONE do Tiro Gélido: em cada impacto da flecha (o alvo direto e os dos projéteis — a perfuração, a difusão…), o
       // cone sai do acertado na direção do tiro, no raio da gema, aberto pelo "Ângulo do Efeito em Área aumentado"; os do cone levam um acerto com
       // todo o Físico como Gelo (os +40% de conversão do PoB); o acertado não leva o do próprio cone
@@ -6431,6 +6501,37 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
           if (!perto.length) break;
           acertar(perto[Math.min(perto.length - 1, Math.floor(Math.random() * perto.length))], Math.max(0, 100 - esporos.menosPct), 'espinho');
         }
+      }
+    }
+    // (lote PR3, dono 21/10) a FLECHA VIRULENTA DA AMEAÇA: cada flecha do uso (a principal e as adicionais — "Modifiers that cause additional projectiles to be
+    // fired will only apply to the initial arrows, each of which leaves its own spore pod") deixa os seus esporos no caminho (a exceção 8 do lote), que disparam na
+    // hora as Flechas de Espinho como as da Flecha Flagelante (nos vivos a até 2 casas, sorteados), com o "50% menos Dano" delas
+    const esporosDaAmeaca = itensPoeLigado() && entry.poeGema && !estagioDoUso?.liberar ? GemasPoe.esporosPorFlechaDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
+    if (esporosDaAmeaca?.flechas > 0) {
+      for (const p of emitidosDoUso.filter((q) => q.tipo === 'direto' || q.tipo === 'projetil')) {
+        for (const c of GemasPR3.pontosDosEsporos(p.de, p.para, esporosDaAmeaca.porFlecha)) {
+          if (entry.efeito) eventos.push({ t: 'fx', id: entry.efeito, uid: 'player', x: c.x, y: c.y });
+          for (let k = 0; k < esporosDaAmeaca.flechas; k++) {
+            const perto = vivos.filter((b) => b.hp > 0 && !b.dummy && distanciaChebyshev(b, c) <= esporosDaAmeaca.raio);
+            if (!perto.length) break;
+            acertar(perto[Math.min(perto.length - 1, Math.floor(Math.random() * perto.length))], Math.max(0, 100 - esporosDaAmeaca.menosPct), 'espinho');
+          }
+        }
+      }
+    }
+    // (lote PR3, dono 21/10 — D5) a FISSURA VULCÂNICA VAAL: "After erupting, the fissure continues moving towards enemies to cause further eruptions" — as 2 erupções a
+    // mais (o poedb), cada uma o acerto do uso no vivo mais perto da erupção anterior, a até o alcance da habilidade (o mesmo, se for o único — a exceção 9)
+    const erupcoes = itensPoeLigado() && entry.poeGema && !casas && alvo && !plantada ? GemasPoe.erupcoesDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : 0;
+    if (erupcoes > 0 && atingidos.length) {
+      let anterior = alvo;
+      for (let i = 0; i < erupcoes; i++) {
+        const de = anterior;
+        const perto = vivos.filter((b) => b.hp > 0 && distanciaChebyshev(b, de) <= (entry.range || ALCANCE_PADRAO)).sort((a, b) => distanciaChebyshev(a, de) - distanciaChebyshev(b, de));
+        const prox = perto.find((b) => b !== de) ?? (de.hp > 0 ? de : null);
+        if (!prox) break;
+        if (entry.projetil) eventos.push({ t: 'shot', id: entry.projetil, x: de.x, y: de.y, tx: prox.x, ty: prox.y });
+        acertar(prox, 100, 'erupcao');
+        anterior = prox;
       }
     }
     // (lote A4, dono 19/10: E2) o Devastar que acertou ganha 1 estágio
