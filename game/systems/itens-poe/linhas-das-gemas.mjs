@@ -29,6 +29,8 @@ const REGRAS = [
   [new RegExp(`^Congela inimigos causando ${N} ?% mais Dano$`, 'i'), (m) => ({ congelamento_como_mais: num(m[1]) })],
   // (lote G18b: o Golpe de Misericórdia da gema — mata no acerto com 10% de vida, 5% no Raro/Único — `ModsPoe.aoAcertar`)
   [/^Golpe de Misericórdia$/i, () => ({ culling: 1 })],
+  // (lote B3, dono 21/10: a Cascata Glacial — "Empurra Inimigos ao Acertar", o global_knockback do PoB: o Empurrão do jogo em todo acerto da gema, `ModsPoe.aoAcertar`)
+  [/^Empurra Inimigos ao Acertar$/i, () => ({ chance_empurrar: 100 })],
   // (o "+N % à Chance de Crítico" das Concocções: pontos na chance base)
   [new RegExp(`^\\+${N} ?% à Chance de Crítico$`, 'i'), (m) => ({ crit_chance: num(m[1]) })],
   // (o Golpe Duplo: o dano dobrado contra quem sangra)

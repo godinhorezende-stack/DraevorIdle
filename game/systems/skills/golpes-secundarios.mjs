@@ -446,7 +446,10 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
     for (let k = 0; k < total; k++) {
       const angulo = Number.isFinite(efeito.angulos?.[k]) ? efeito.angulos[k] : rng() * 2 * Math.PI;
       const fim = noAngulo(origem, angulo);
-      const bicho = primeiroNaReta(origem, fim, new Set());
+      // (lote B3, dono 21/10: `efeito.acertaNaOrigem` — o projétil que nasce DENTRO de um inimigo o acerta primeiro, como no PoE: as flechas do Tiro Tornado da Nuvem
+      // Explosiva saem de onde a carregada caiu)
+      const naOrigem = efeito.acertaNaOrigem ? porCasa.get(`${origem.x},${origem.y}`) : null;
+      const bicho = (naOrigem?.hp > 0 ? naOrigem : null) ?? primeiroNaReta(origem, fim, new Set());
       const pct = k ? pctDe('danoDosExtrasPct') : 100;
       emitidos.push({ de: { x: origem.x, y: origem.y }, para: bicho ? { x: bicho.x, y: bicho.y } : fim, bicho, tipo: 'projetil' });
       if (bicho) voar({ ...base(), de: origem, pct }, bicho, 'projetil');
