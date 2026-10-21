@@ -229,7 +229,7 @@ test('B3 no jogo: o Tiro Tornado da Nuvem Explosiva — a carregada cai no alvo 
 
 // ---------------------------------------------------------------- a Conflagração (D-B3.2)
 
-test('B3 no jogo: a Conflagração — os impactos no uso, as flechas presas; chegando perto, elas explodem (todas, em cadeia) com 80% mais e o Fogo de 4 s', { skip: SEM }, async () => {
+test('B3 no jogo: a Conflagração — os impactos no uso, as flechas presas; um inimigo chegando perto (decisão do dono, 21/10) as explode, em cadeia, com 80% mais e o Fogo de 4 s', { skip: SEM }, async () => {
   const m = await montar('Conflagration', { qualidade: 20, arma: 'Bows/Harbinger_Bow', dx: 3 });
   const r = usar(m.e, m.b);
   assert.ok(r.ok, r.erro);
@@ -239,11 +239,13 @@ test('B3 no jogo: a Conflagração — os impactos no uso, as flechas presas; ch
   assert.ok(!(m.b.dots ?? []).some((d) => d.chave === 'Conflagration'), 'o impacto não põe o Fogo');
   const presas = () => (m.e.hunt.poeObjetos ?? []).filter((o) => o.tipo === 'flechaPresa');
   assert.equal(presas().length, 3);
-  // longe (3 casas), nada explode
+  // o alvo longe (a 3 casas delas) e você longe: nada explode
+  const casa = { x: m.b.x, y: m.b.y };
+  m.b.x += 3;
   assert.equal(golpesEm(tiques(m.e, 500), m.b).length, 0);
   assert.equal(presas().length, 3);
-  // você a 1 casa da flecha: ela e as outras no raio dela explodem
-  m.e.hunt.pos.x = m.b.x - 1;
+  // o inimigo volta para a casa das flechas: elas explodem (a 1 casa — todas, a cadeia)
+  Object.assign(m.b, casa);
   const exp = golpesEm(tiques(m.e, 100), m.b).map((x) => x.v);
   assert.equal(exp.length, 3);
   assert.equal(presas().length, 0);
@@ -251,6 +253,21 @@ test('B3 no jogo: a Conflagração — os impactos no uso, as flechas presas; ch
   const fogo = (m.b.dots ?? []).find((d) => d.chave === 'Conflagration');
   assert.ok(fogo, 'a explosão põe o Fogo degenerativo');
   assert.equal(fogo.ate - fogo.desde, 4000);
+});
+
+test('B3 no jogo: a Conflagração — você chegando a 1 casa da flecha presa também a explode', { skip: SEM }, async () => {
+  const m = await montar('Conflagration', { arma: 'Bows/Harbinger_Bow', dx: 3 });
+  assert.ok(usar(m.e, m.b).ok);
+  const presas = () => (m.e.hunt.poeObjetos ?? []).filter((o) => o.tipo === 'flechaPresa');
+  const f = presas()[0];
+  m.b.x += 3;
+  tiques(m.e, 200);
+  assert.equal(presas().length, 3);
+  m.e.hunt.pos.x = f.x - 1;
+  m.e.hunt.pos.y = f.y;
+  const ev = tiques(m.e, 100);
+  assert.equal(presas().length, 0);
+  assert.equal(ev.filter((x) => x.t === 'explosao').length, 3);
 });
 
 test('B3 no jogo: a Conflagração — no máximo 20 flechas presas da gema (saem as mais velhas)', { skip: SEM }, async () => {

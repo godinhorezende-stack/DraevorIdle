@@ -567,6 +567,22 @@ Teste: `testes/area-no-impacto-a3c.test.mjs`. Com o aval do dono: `itens-poe-uni
 - Teste novo: `game/testes/ativas-b3.test.mjs` (17 casos, os sorteios travados).
 - Testes: os 42 arquivos afetados (`ativas-*`, `gemas-*`, `suportes-*`, `precisao-a5b`, `itens-poe-gemas*`, `gemas-todas-funcionam-poe`, `eficacia-ataque-poe`, `caos-atravessa-escudo-poe`, `cadaveres-poe`, `conversao-magias-a5c`, `objetos-no-chao-a3b`, `projeteis*`, `area-no-impacto-a3c`, `movimento-a1b`, `deslocamento-a1`, `retaliacao-unicos-poe`): 558 testes, 517 passam, 41 pulados, 0 falhas. Nenhum teste existente mudou.
 - Depois: parcial 220 → 205 nas ativas (ataques 57 → 52); 109 → 109 nos suportes.
+- **As decisões do dono (21/10, o segundo commit):**
+  - **a Conflagração:** a flecha presa explode também com um INIMIGO a até 1 casa dela, não só com você;
+  - **a Retribuição Divina:** as ondas partem do local mirado (o PoE). A Chuva Cinética e o Tiro Tornado da Nuvem ficam como estão;
+  - **o leitor das colunas "a, b" do poedb** (`compilador-de-gemas/progressao.mjs`, `celulaDoTexto`): o número certo é o da posição em que a célula do nível 1 tem o número do cabeçalho. Mudaram, no nível 20:
+    - Smite e a Vaal: 4 → 4,2 m;
+    - a Evisceração: 5 → 3,2 m;
+    - o Atirar: 1 → 80% e 108%;
+    - a Concha Somática: 100 → 6214;
+    - a Conflagração: 1 → 2 m;
+    - a Retribuição Divina: 2 → 1,6 m.
+
+    Nenhuma outra gema mudou (a comparação dos textos de todas as gemas, níveis 1–40). Ficam como antes as da outra sessão: as Armadilhas Explosivas (o certo no 20 é 1,8 m — a da Magnitude, 2,4 m — e a explosão menor 1,3 m) e a Balista de Cerco de Trarthus (o certo no 20 é 8 totens);
+  - **a implosão da Rajada Divina** (e a do Esplendor) fica em 1,2 m; o "+0,3 m" da qualidade vale só na explosão (o PoB). Teste ajustado com o aval: `gemas-linhas-locais-poe.test.mjs:158`;
+  - **o nome:** a `Bladefall_of_Trarthus` é "Chuva de Lâminas de Trarthus" (`gemas-poe.json`; o nome de exibição — a `VERSAO_DA_TRADUCAO` não muda);
+  - **o gêiser da Cremação comum** (e o da Exumação): a duração × os modificadores de Duração, como o do Vulcão.
+- **Teste que quebra pela regra do PoE (para o aval, sem editar):** `ativas-c1.test.mjs:214` — a Evisceração: esperado `{ comprimentoM: 10, larguraM: 5 }`, agora `{ comprimentoM: 10, larguraM: 3.2 }` (a coluna "5, 3.2" do poedb; o 3,2 m é o do nível 20).
 
 ## Pendências conhecidas (por ordem de prioridade)
 

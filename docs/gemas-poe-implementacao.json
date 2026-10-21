@@ -4127,7 +4127,7 @@
   },
   {
    "slug": "Bladefall_of_Trarthus",
-   "nome": "Corrente com Gancho de Trarthus",
+   "nome": "Chuva de Lâminas de Trarthus",
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
@@ -7634,7 +7634,7 @@
    "arquetipo": "projetil",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Dano de ataques é absorvido pela concha antes de afetar a vida ou o escudo de Energia do alvo Concha pode sofrer até 100 de dano antes de explodir"
+    "efeito não simulado: Dano de ataques é absorvido pela concha antes de afetar a vida ou o escudo de Energia do alvo Concha pode sofrer até 6214 de dano antes de explodir"
    ],
    "idle": [],
    "outros": [],

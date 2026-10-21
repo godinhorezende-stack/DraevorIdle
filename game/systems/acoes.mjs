@@ -3501,7 +3501,8 @@ function explodirCadaveres(estado, hunt, entry, efeito, def, cadaveres, ficha, a
       }
     }
     eventos.push({ t: 'area', id: entry.efeito ?? null, x: c.x, y: c.y, casas: Areas.paraTela(Areas.quadrado({ x: c.x, y: c.y }, r), { x: c.x, y: c.y }), sk: entry.id });
-    if (def.geiser) porGeiser(estado, hunt, entry, c, def.geiser, agora, def.explodeAoDisparar ? { pct: def.pct, raioExplosaoM: def.raioExplosaoM } : null);
+    // (decisão do dono, 21/10 — a regra do PoE: a duração do gêiser × os modificadores de Duração, como o do Vulcão)
+    if (def.geiser) porGeiser(estado, hunt, entry, c, { ...def.geiser, duracaoMs: Math.max(1, Math.round(def.geiser.duracaoMs * fatorDeDuracao(estado, entry, efeito))) }, agora, def.explodeAoDisparar ? { pct: def.pct, raioExplosaoM: def.raioExplosaoM } : null);
   }
   const usados = new Set(cadaveres);
   hunt.cadaveres = (hunt.cadaveres ?? []).filter((c) => !usados.has(c));
@@ -8461,7 +8462,8 @@ function rajadaDaTrarthus(estado, hunt, personagem, entry, ef, d, eventos, t) {
 }
 /**
  * O tique do lote B3:
- *  - D-B3.2: as FLECHAS PRESAS da Conflagração a até 1 casa de você explodem (o PoE: "If you move close to a stuck arrow, it will explode"), e cada explosão detona as suas
+ *  - D-B3.2: as FLECHAS PRESAS da Conflagração a até 1 casa de você (o PoE: "If you move close to a stuck arrow, it will explode") ou de um inimigo vivo (decisão
+ *    do dono, 21/10) explodem, e cada explosão detona as suas
  *    presas no raio dela ("causing other stuck arrows in range to also explode"); a explosão acerta quem está no raio dela, com o "+50%" nos acertos e nas afecções, e põe
  *    o Fogo degenerativo da gema por 4 s × a Duração;
  *  - D-B3.4: a CHUVA DE LÂMINAS DE TRARTHUS ligada gasta 5% da Mana máxima por segundo (× o multiplicador de custo do uso) e solta as rajadas no intervalo; sem Mana para o
@@ -8470,7 +8472,9 @@ function rajadaDaTrarthus(estado, hunt, personagem, entry, ef, d, eventos, t) {
 export function tiqueDasGemasB3(estado, hunt, personagem, eventos = [], agora = hunt?.clock ?? 0) {
   if (!hunt?.pos) return eventos;
   const presas = (hunt.poeObjetos ?? []).filter((o) => o.tipo === 'flechaPresa' && o.dono === 'voce' && (o.z ?? 0) === (hunt.z ?? 0) && o.ate > agora);
-  const fila = presas.filter((o) => distanciaChebyshev(o, hunt.pos) <= GemasB3.CONFLAGRACAO.gatilhoCasas);
+  // (decisão do dono, 21/10: também um INIMIGO a até 1 casa da flecha a detona)
+  const vivosAqui = presas.length ? vivosNoAndar(hunt) : [];
+  const fila = presas.filter((o) => distanciaChebyshev(o, hunt.pos) <= GemasB3.CONFLAGRACAO.gatilhoCasas || vivosAqui.some((m) => distanciaChebyshev(m, o) <= GemasB3.CONFLAGRACAO.gatilhoCasas));
   if (fila.length) {
     const explodem = new Set();
     while (fila.length) {

@@ -1128,7 +1128,7 @@ Só os ataques:
   - efeito não simulado: Projéteis que Acertarem Inimigos Amaldiçoados se Dividem na direção de 2 alvos adicionais
   - efeito não simulado: Inimigos Amaldiçoados sofrem Dano aumentado em 5 % de Acertos de Projéteis
 - **Somatic_Shell** (Concha Somática) — parcial
-  - efeito não simulado: Dano de ataques é absorvido pela concha antes de afetar a vida ou o escudo de Energia do alvo Concha pode sofrer até 100 de dano antes de explodir
+  - efeito não simulado: Dano de ataques é absorvido pela concha antes de afetar a vida ou o escudo de Energia do alvo Concha pode sofrer até 6214 de dano antes de explodir
 - **Spectral_Helix_of_Trarthus** (Hélice Espectral de Trarthus) — parcial
   - efeito não simulado: Lança até 1 armadilhas a mais ao usar duas armas
   - efeito não simulado: 25 % menos velocidade de lançar armadilhas com arma de duas mãos

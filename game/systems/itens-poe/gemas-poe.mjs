@@ -699,7 +699,10 @@ export function areaNoNivel(slug, nivel = 1, qualidade = 0) {
   // (lote A4, dono 19/10: D8: os dados divergentes seguem o PoB) a Rajada de Chamas Vaal: o raio de 4,5 m do PoB (radius 45, act_int.lua:7106) — o
   // poedb diz 3,5
   const base = RAIO_DO_POB[slug] ?? st.raio ?? st.raioProp ?? null;
-  const raioM = base == null ? null : Math.max(0, (base + (st.raioBonus ?? 0)) * Math.sqrt(Math.max(0.2, 1 + (st.areaMais ?? 0) / 100)));
+  // (decisão do dono, 21/10 — o PoB) a Rajada Divina e a do Esplendor: o raio da gema é o da IMPLOSÃO (o secundário, 1,2 m); o "+X metros de raio" da qualidade
+  // (active_skill_base_radius_+) vai no primário — a explosão (`GemasB3.objetoDaGema`)
+  const bonus = /^Divine_Blast/.test(slug) ? 0 : st.raioBonus ?? 0;
+  const raioM = base == null ? null : Math.max(0, (base + bonus) * Math.sqrt(Math.max(0.2, 1 + (st.areaMais ?? 0) / 100)));
   return { raioM, areaIncPct: st.areaInc ?? 0 };
 }
 
