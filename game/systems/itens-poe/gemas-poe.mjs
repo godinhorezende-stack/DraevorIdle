@@ -1167,6 +1167,20 @@ export const c4DaGema = (slug, nivel = 1, qualidade = 0) => comCache(C4, `c4|${s
     veneno: GemasC4.venenoDasLinhas(slug, linhas, daQ),
   };
 });
+/**
+ * (lote C4, dono 21/10: "magias sem dano de acerto deixam de gerar o acerto de 1") A MAGIA SEM ACERTO: a gema que não é ataque, sem dano de acerto no nível (o
+ * `stats.dano` do compilador vazio), cujo efeito é o debuff — o degenerativo dela (a Praga, o Contágio, o Raio Abrasador, a Maré Invernal, a Profanação…) ou o
+ * do lote C4 (o Definhar). No PoE ela não acerta: o uso põe o debuff, sem o "1" do piso da faixa, sem crítico e sem os efeitos de acerto. Ficam de fora as de
+ * cadáver, as armadilhas, as minas e os totens (o caminho deles é outro — e são da outra sessão).
+ */
+const SEM_ACERTO_FORA = new Set(['mina', 'armadilha', 'totem']);
+export const magiaSemAcerto = (slug, nivel = 1, qualidade = 0) => comCache(C4, `sa|${slug}@${nivel | 0}@${qualidade | 0}`, () => {
+  const r = doSlug(slug);
+  if (!r || r.ataque || SEM_ACERTO_FORA.has(r.arquetipo)) return false;
+  const st = compilada(slug, nivel, qualidade)?.stats ?? {};
+  if (Object.keys(st.dano ?? {}).length || st.cadaver) return false;
+  return !!st.dot?.length || GemasC4.EFEITO_SEM_DANO.has(slug);
+});
 /** A Corrente com Gancho: o raio por Fúria. */
 // (lote C1, dono 20/10: + a Cutilada da Fúria — chain_strike_cone_radius_+_per_x_rage 5, act_str.lua:1875)
 // (lote C2, dono 20/10: + a Corrente com Gancho de Trarthus — chain_strike_cone_radius_+_per_x_rage 5, act_str.lua:1696)

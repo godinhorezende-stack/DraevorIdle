@@ -3130,6 +3130,14 @@ export class MapView {
         ctx.beginPath();
         ctx.moveTo(x - 1.6, cy); ctx.lineTo(x + 1.6, cy);
         ctx.stroke();
+      } else if (estado === 'tolhido') {
+        // (lote C4) Tolhido (o Hinder do PoE: só o passo): o anel do lento, lilás, com o traço em pé.
+        ctx.arc(x, cy, r - 0.5, 0, Math.PI * 2);
+        ctx.strokeStyle = '#c49bff';
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, cy - 1.6); ctx.lineTo(x, cy + 1.6);
+        ctx.stroke();
       } else if (estado === 'enregelado') {
         // Enregelamento (dano contínuo de gelo): um losango azul-claro vazado (o congelado é cheio).
         ctx.moveTo(x, cy - r); ctx.lineTo(x + r, cy); ctx.lineTo(x, cy + r); ctx.lineTo(x - r, cy); ctx.closePath();

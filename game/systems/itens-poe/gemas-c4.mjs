@@ -3,9 +3,9 @@
 // status), `acoes.mjs` (o uso e a morte), `afeccoes.mjs` (o Veneno) e `combate/dot.mjs` (as camadas no pulso).
 //
 // As decisões do dono (21/10 — as recomendações do plano do grupo corpo a corpo/impacto/canalização, aceitas):
-//   - D4.1: o TOLHIMENTO é o `lento` do jogo com a porcentagem do PoE, e vale o mais forte (o PoE: "A creature can only be affected by one Hinder at a time; …
-//     only the strongest Hinder takes effect" — o poedb). O teto do `lento` (`gamedata/gemas/config.json` → `estados.lento.maximo`, 40%) e a metade no chefe
-//     seguem como estão: o PoE não tem esse teto no Tolhimento (pendência levada ao dono — ver docs/gemas-poe-progresso.md, seção C4);
+//   - D4.1 (revisto pelo dono em 21/10): o TOLHIMENTO é um estado próprio, `tolhido` (`Estados.tolher`) — só de movimento, sem teto e sem a metade do chefe, e
+//     vale o mais forte (o PoE: "A creature can only be affected by one Hinder at a time; … only the strongest Hinder takes effect" — o poedb). A lentidão geral
+//     (`lento`, com o teto de 40%: o Resfriamento e afins) segue como está;
 //   - D4.2: as CAMADAS da Praga — cada uso canalizado soma uma camada, cada uma com a sua duração; o dano é o de uma camada × as camadas vivas no pulso (o PoB:
 //     Damage MORE 100 × (estágios − 1), act_int.lua:1897 — "+100% mais por camada depois da primeira"); no máximo, a nova entra no lugar da mais antiga;
 //   - D4.3: o raio da explosão da Golpe Pestilento é o da gema (radius 27 — 2,7 m);
@@ -33,6 +33,10 @@ const somar = (linhas, re) => linhas.reduce((t, l) => t + (Number(re.exec(norm(l
 // ---------------------------------------------------------------- a Praga
 
 export const PRAGA = /^(Vaal_)?Blight(_of_(Contagion|Atrophy))?$/;
+/** (dono, 21/10) A Praga Vaal: as 2 camadas a mais, cada uma com 50% mais Área que a anterior. */
+export const PRAGA_VAAL = Object.freeze({ camadasExtras: 2, areaMaisPorCamadaPct: 50 });
+/** O fator da Área da camada `k` a mais da Praga Vaal (1, 2): 1,5^k. */
+export const fatorDaCamadaVaal = (p, k) => (1 + (p?.areaMaisPorCamadaPct ?? 0) / 100) ** Math.max(0, k);
 const LINHA_TOLHE = /^Velocidade de Movimento reduzida em ([\d.]+) %$/i;
 const LINHA_CAMADAS = /^Debuff pode ter até (\d+) camadas de Dano$/i;
 const LINHA_REGEN_DO_TOLHIDO = /^Regeneração de Vida reduzida em ([\d.]+) %$/i;
@@ -49,6 +53,8 @@ export function pragaDasLinhas(slug, linhas = [], daQualidade = []) {
   return {
     max, tolhePct: achar(linhas, LINHA_TOLHE) ?? 0, tolheMs: Math.round(((achar(linhas, LINHA_SECUNDARIA) ?? 0) + somar(daQualidade, LINHA_SECUNDARIA)) * 1000),
     regenMenosPct: achar(linhas, LINHA_REGEN_DO_TOLHIDO) ?? 0, caosSofridoPct: achar(linhas, LINHA_CAOS_DO_TOLHIDO) ?? 0, soSemPraga: !/^Vaal_/.test(slug),
+    // (dono, 21/10) a Vaal: a camada do uso + 2, cada uma numa área 50% maior que a anterior ("Then applies two additional layers in a larger area")
+    ...(/^Vaal_/.test(slug) ? { camadasExtras: PRAGA_VAAL.camadasExtras, areaMaisPorCamadaPct: PRAGA_VAAL.areaMaisPorCamadaPct } : {}),
   };
 }
 /** O inimigo já tem uma camada viva de alguma Praga (o "already debuffed by Blight")? */
@@ -160,7 +166,4 @@ export const EFEITO_SEM_DANO = Object.freeze(new Set(['Wither']));
 export const MOTIVOS_C4 = Object.freeze({
   // (D4.4) o "limitação do idle:" é lido pelo relatório (`tools/relatorio-gemas-poe.mjs` — LIMITACAO_IDLE)
   Vaal_Double_Strike: ['limitação do idle: os clones do Golpe Duplo Vaal não andam no jogo — o "Clones possuem X% de aumento da Velocidade de Movimento" não tem onde valer (D4.4)'],
-  // (decisão do dono pendente) "Then applies two additional layers in a larger area, growing greatly in size each time": o PoE não publica o crescimento, e o PoB
-  // não conta as duas camadas a mais (VaalBlight sem o Damage MORE por estágio)
-  Vaal_Blight: ['efeito não simulado: as duas camadas adicionais da Praga Vaal (em áreas cada vez maiores) — o PoE não publica o crescimento da área e o PoB não as conta; o uso põe uma camada (decisão do dono pendente)'],
 });

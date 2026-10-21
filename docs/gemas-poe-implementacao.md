@@ -8,10 +8,10 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 288 |
+| implementada e testada | 289 |
 | implementada, sem teste próprio | 48 |
 | limitação do modelo idle | 12 |
-| parcial | 213 |
+| parcial | 212 |
 | não se aplica | 1 |
 
 Só os ataques:
@@ -33,13 +33,13 @@ Só os ataques:
 
 ### Variantes
 
-- Vaal (52): implementada e testada 25 · parcial 20 · implementada, sem teste próprio 6 · limitação do modelo idle 1
+- Vaal (52): implementada e testada 26 · parcial 19 · implementada, sem teste próprio 6 · limitação do modelo idle 1
 - Alternativas (209): implementada e testada 99 · implementada, sem teste próprio 25 · parcial 78 · limitação do modelo idle 7
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 580 linhas distintas (97 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 579 linhas distintas (97 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
 - Testes que citam a gema: 371/562 ativas, 119/262 suportes.
@@ -212,7 +212,6 @@ Só os ataques:
 | 1 | Armadilha dura +# segundo Gira |
 | 1 | Arqueiro Ilusório dura # segundos |
 | 1 | Arqueiro Ilusório utiliza Habilidades Suportadas com #% menos Velocidade de Ataque |
-| 1 | as duas camadas adicionais da Praga Vaal (em áreas cada vez maiores) — o PoE não publica o crescimento da área e o PoB não as conta; o uso põe uma camada (decisão do dono pendente) |
 | 1 | As flechas após a primeira caem em um raio base de # metros |
 | 1 | Ataca um Inimigo a cada # segundos |
 | 1 | Ataque de Impacto dos Zumbis Erguidos tem Efeito em Área aumentado em # % |
@@ -1340,8 +1339,6 @@ Só os ataques:
   - efeito não simulado: Buff concede 30.6 de Regeneração de Mana por segundo
   - efeito não simulado: Buff concede 395 de Regeneração de Escudo de Energia por segundo
   - efeito não simulado: Duração do Efeito de Habilidades aumentada em 20 %
-- **Vaal_Blight** (Infestação Vaal) — parcial
-  - efeito não simulado: as duas camadas adicionais da Praga Vaal (em áreas cada vez maiores) — o PoE não publica o crescimento da área e o PoB não as conta; o uso põe uma camada (decisão do dono pendente)
 - **Vaal_Clarity** (Clareza Vaal) — parcial
   - efeito não simulado: Suas Habilidades e de seus aliados próximos não Custam Mana
 - **Vaal_Discipline** (Disciplina Vaal) — parcial

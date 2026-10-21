@@ -1855,6 +1855,8 @@ export function tagsDoAlvo(alvo, agora) {
   const e = alvo.estados ?? {};
   const at = (x) => !!x && x.ate > agora;
   if (at(e.lento)) t.push('alvoResfriado', 'alvoLento');
+  // (lote C4, dono 21/10) o Tolhido (o Hinder do PoE, `estados.tolhido` — o "Inimigos Desacelerados por você"): Lento, não Resfriado
+  else if (at(e.tolhido)) t.push('alvoLento');
   if (at(e.congelado)) t.push('alvoCongelado');
   if (at(e.chocado)) t.push('alvoEletrizado');
   if (at(e.cego)) t.push('alvoCego');
@@ -3234,7 +3236,7 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   // (lote 72) o Esconjuro: 10% de dano sofrido aumentado (`esconjurado`)
   if (esconjurado(alvo, ficha?.afPoe, agora)) f *= 1 + ESCONJURO.pct / 100;
   if (tipo === 'chaos' && ativo(e.definhado, agora)) f *= 1 + 0.06 * Math.max(0, 1 + (Number(ficha?.afPoe?.efeito_definhamento) || 0) / 100) * Math.min(15, e.definhado.n ?? 1);
-  // (lote C4, dono 21/10) o Tolhido pela Praga Vaal: "Inimigos Desacelerados sofrem Dano de Caos aumentado em 30%" (no pulso do dano contínuo: `Dot.caosDoTolhido`)
+  // (lote C4, dono 21/10) o Tolhido pela Praga Vaal: "Inimigos Desacelerados sofrem Dano de Caos aumentado em 30%" (também no pulso do dano contínuo — `fatorRecebidoNoDot`)
   if (tipo === 'chaos' && ativo(e.tolhidoCaos, agora)) f *= 1 + (e.tolhidoCaos.pct ?? 0) / 100;
   // Coberto de Gelo (PoE): +20% de dano de Gelo recebido.
   if (tipo === 'ice' && ativo(e.cobertoGelo, agora)) f *= 1.2;
@@ -3276,6 +3278,21 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   const porAfeccao = Number(ficha?.afPoe?.dano_por_afeccao_no_alvo) || 0;
   if (porAfeccao) f *= 1 + (porAfeccao * afeccoesNoAlvo(alvo, agora)) / 100;
   return f;
+}
+/**
+ * (lote C4, dono 21/10: "o dano sofrido aumentado do alvo vale no dano contínuo, como no PoE") O que o ALVO sofre a mais no PULSO do dano contínuo (`Dot.tique`):
+ * os estados dele que o PoB põe como DamageTaken / <Tipo>DamageTaken (sem ModFlag de Acerto, Ataque ou Magia) — o Definhado (+6% de Caos por acúmulo), as Cinzas,
+ * o Coberto de Gelo, o Tolhido pela Praga Vaal, a Marca, o Esconjuro, os solos e auras frágeis, o "permanente", a maldição com o `danoApos` — e a ELETRIZAÇÃO (o
+ * "increased Damage taken" do Shock). Fica de fora o que é do atacante (a ficha do golpe: o "mais" do tipo, os "contra Inimigos X"), o que é só de Acerto, de Ataque
+ * (o Intimidado) ou de Magia (o Inervado). A Exposição já está na resistência (`hunt/resistencia`), que o pulso usa.
+ */
+const FICHA_DO_DOT = Object.freeze({ afPoe: Object.freeze({}), tagsDoGolpe: Object.freeze([]) });
+export function fatorRecebidoNoDot(alvo, tipo, agora) {
+  if (!ligado() || !alvo) return 1;
+  const e = alvo.estados ?? {};
+  const pilha = (e.chocadosPilha ?? []).filter((x) => x.ate > agora);
+  const eletrizacao = pilha.length ? 1 + pilha.reduce((t, x) => t + (x.pct ?? 0), 0) / 100 : ativo(e.chocado, agora) ? 1 + (e.chocado.pct ?? 0) / 100 : 1;
+  return fatorRecebidoPeloBicho(alvo, tipo, FICHA_DO_DOT, agora) * eletrizacao;
 }
 /** As chaves com escala do ALVO (`resfriamentoNoAlvo:N`, `eletrizacaoNoAlvo:N`), guardadas por soma (`afPoe`). */
 const ESCALAS_DO_ALVO = /^(resfriamentoNoAlvo|eletrizacaoNoAlvo)(:|$)/;

@@ -16,6 +16,9 @@ const G = await import('../systems/itens-poe/gemas-poe.mjs');
 const C4 = await import('../systems/itens-poe/gemas-c4.mjs');
 const Dot = await import('../systems/combate/dot.mjs');
 const AfeccoesPoe = await import('../systems/itens-poe/afeccoes.mjs');
+const ModsPoe = await import('../systems/itens-poe/condicoes-poe.mjs');
+const Estados = await import('../systems/skills/estados.mjs');
+const Reforcos = await import('../systems/skills/reforcos.mjs');
 const Cacadas = await import('../systems/cacadas.mjs');
 const Ficha = await import('../systems/ficha.mjs');
 const Afixos = await import('../systems/afixos.mjs');
@@ -84,15 +87,13 @@ function pulsos(e, b, chave, ate) {
 // ---------------------------------------------------------------- o status e os leitores
 
 test('C4: as gemas do lote saem de parcial (as linhas do PoE têm leitor); a Praga Vaal e o Golpe Duplo Vaal ficam com o motivo do dono', { skip: SEM }, () => {
-  for (const s of ['Blight', 'Blight_of_Contagion', 'Blight_of_Atrophy', 'Wither', 'Pestilent_Strike', 'Viper_Strike_of_the_Mamba']) {
+  for (const s of ['Blight', 'Blight_of_Contagion', 'Blight_of_Atrophy', 'Vaal_Blight', 'Wither', 'Pestilent_Strike', 'Viper_Strike_of_the_Mamba']) {
     const r = G.REGISTRO.get(s);
     assert.deepEqual([s, r.statusNoJogo, r.motivosNoJogo], [s, 'funciona', []]);
   }
   // (D4.4: o clone não anda no jogo — limitação do idle, não um efeito não simulado)
   assert.deepEqual(G.REGISTRO.get('Vaal_Double_Strike').motivosNoJogo, [C4.MOTIVOS_C4.Vaal_Double_Strike[0]]);
   assert.match(C4.MOTIVOS_C4.Vaal_Double_Strike[0], /^limitação do idle: /);
-  // (decisão do dono pendente: as duas camadas a mais da Praga Vaal, em áreas maiores — o resto da gema tem leitor)
-  assert.deepEqual(G.REGISTRO.get('Vaal_Blight').motivosNoJogo, [C4.MOTIVOS_C4.Vaal_Blight[0]]);
 });
 
 test('C4: os números das linhas no nível 20 e na qualidade 20 (os do PoB)', { skip: SEM }, () => {
@@ -101,7 +102,7 @@ test('C4: os números das linhas no nível 20 e na qualidade 20 (os do PoB)', { 
   // (a Atrofia: 3 s de Tolhimento + 50 ms por qualidade — base_secondary_skill_effect_duration; a regeneração do Tolhido −80%)
   assert.deepEqual(G.c4DaGema('Blight_of_Atrophy', 20, 20).praga, { max: 20, tolhePct: 80, tolheMs: 4000, regenMenosPct: 80, caosSofridoPct: 0, soSemPraga: true });
   assert.equal(G.c4DaGema('Blight_of_Atrophy', 20, 0).praga.tolheMs, 3000);
-  assert.deepEqual(G.c4DaGema('Vaal_Blight', 20, 20).praga, { max: 20, tolhePct: 80, tolheMs: 3000, regenMenosPct: 0, caosSofridoPct: 30, soSemPraga: false });
+  assert.deepEqual(G.c4DaGema('Vaal_Blight', 20, 20).praga, { max: 20, tolhePct: 80, tolheMs: 3000, regenMenosPct: 0, caosSofridoPct: 30, soSemPraga: false, camadasExtras: 2, areaMaisPorCamadaPct: 50 });
   assert.deepEqual(G.c4DaGema('Wither', 20, 0).definhar, { definhadoMs: 2000, tolhePct: 36, tolheMs: 500, caosPorDefinhamentoPct: 6 });
   assert.equal(G.c4DaGema('Wither', 1, 0).definhar.tolhePct, 30);
   // (o Golpe Pestilento: 30% + 1 por qualidade do mesmo active_skill_poison_duration_+%_final; o raio da gema, 2,7 m — D4.3)
@@ -131,22 +132,28 @@ test('C4: as contas puras — as camadas (cada uma com o seu fim, a mais antiga 
 
 // ---------------------------------------------------------------- a Praga (D4.1 e D4.2)
 
+/** O Tolhimento do bicho agora: `{ pct, ms }` (o que falta dele, a partir de `desde`), ou null. */
+const tolhido = (b, desde) => (b.estados?.tolhido ? { pct: b.estados.tolhido.pct, ms: b.estados.tolhido.ate - desde } : null);
+
 test('C4: a Praga — cada uso soma uma camada (o pulso é o de uma × as vivas), cada camada acaba no seu tempo; o Tolhimento só em quem não tinha a Praga', { skip: SEM }, async () => {
   const { e, b } = await montar('Blight');
+  const t0 = e.hunt.clock;
   const r1 = usar(e, b);
   assert.ok(r1.ok);
-  // (D4.1) o Tolhimento de 80% pelo `lento` do jogo — o teto de hoje (40%, `estados.lento.maximo`) — por 1 s × a Duração
-  assert.equal(b.estados.lento.pct, 40);
-  assert.equal(b.estados.lento.dur, 1000);
+  // (D4.1, dono 21/10) o Tolhimento de 80% — o estado próprio `tolhido`, sem o teto da lentidão — por 1 s × a Duração; o `lento` (a lentidão geral) não muda
+  const tl = tolhido(b, t0);
+  assert.equal(tl.pct, 80);
+  assert.ok(tl.ms >= 1000 && tl.ms <= 1000 + 400, `${tl.ms}`);
+  assert.equal(b.estados.lento, undefined);
   const d = doDot(b, 'Blight');
   assert.equal(d.camadas.length, 1);
   const porCamada = d.porPulsoCamada;
   assert.ok(porCamada > 0);
   const t1 = e.hunt.clock;
   // o segundo uso: mais uma camada; o Tolhimento não renova (o alvo já tem a Praga)
-  delete b.estados.lento;
+  delete b.estados.tolhido;
   usar(e, b);
-  assert.equal(b.estados.lento, undefined, 'quem já tem a Praga não é Tolhido de novo');
+  assert.equal(b.estados.tolhido, undefined, 'quem já tem a Praga não é Tolhido de novo');
   assert.equal(d.camadas.length, 2);
   usar(e, b);
   assert.equal(d.camadas.length, 3);
@@ -176,21 +183,26 @@ test('C4: a Praga da Atrofia — o Tolhido tem a Regeneração de Vida reduzida 
   usar(e, b);
   assert.equal(b.estados.regenMenosDebuff.pct, 80);
   assert.ok(b.estados.regenMenosDebuff.ate - antes >= 4000 && b.estados.regenMenosDebuff.ate - antes <= 4000 + 1000);
-  assert.equal(b.estados.lento.dur, 4000);
+  assert.equal(b.estados.tolhido.pct, 80);
+  assert.ok(b.estados.tolhido.ate - antes >= 4000 && b.estados.tolhido.ate - antes <= 4000 + 1000);
 });
 
 test('C4: a Praga Vaal — Tolhe sempre (3 s) e o Tolhido sofre +30% de Dano de Caos, também no pulso do dano contínuo', { skip: SEM }, async () => {
   const { e, b } = await montar('Vaal_Blight');
+  const antes = e.hunt.clock;
   usar(e, b);
   assert.equal(b.estados.tolhidoCaos.pct, 30);
-  assert.equal(b.estados.lento.dur, 3000);
+  assert.equal(b.estados.tolhido.pct, 80);
+  assert.ok(b.estados.tolhido.ate - antes >= 3000 && b.estados.tolhido.ate - antes <= 3000 + 1000);
   const d = doDot(b, 'Vaal_Blight');
   const um = () => { const antes = b.hp; e.hunt.clock = d.proximo; Dot.tique(e.hunt, [], e.hunt.clock); return antes - b.hp; };
   const com = um();
   b.estados.tolhidoCaos.ate = 0;
   const sem = um();
   assert.ok(Math.abs(com / sem - 1.3) < 0.01, `${com} / ${sem}`);
-  assert.equal(Dot.caosDoTolhido({ estados: { tolhidoCaos: { ate: 10, pct: 30 } } }, 'fire', 5), 1, 'só no Caos');
+  // (só no Caos: o fator do pulso de outro elemento não muda)
+  assert.equal(ModsPoe.fatorRecebidoNoDot({ estados: { tolhidoCaos: { ate: 10, pct: 30 } } }, 'fire', 5), 1);
+  assert.ok(Math.abs(ModsPoe.fatorRecebidoNoDot({ estados: { tolhidoCaos: { ate: 10, pct: 30 } } }, 'chaos', 5) - 1.3) < 1e-9);
 });
 
 // ---------------------------------------------------------------- o Definhar
@@ -202,8 +214,9 @@ test('C4: o Definhar — sem dano direto, põe um Definhamento por uso (2 s × a
   assert.equal(b.estados.definhado.n, 3);
   // (a qualidade 20: Duração do Efeito de Habilidades aumentada em 20% — 2 s → 2,4 s; 0,5 s → 0,6 s)
   assert.ok(b.estados.definhado.ate > antes + 2400);
-  assert.equal(b.estados.lento.pct, 36);
-  assert.equal(b.estados.lento.dur, 600);
+  assert.equal(b.estados.tolhido.pct, 36);
+  assert.ok(b.estados.tolhido.ate - e.hunt.clock <= 600);
+  assert.equal(b.estados.lento, undefined);
 });
 
 // ---------------------------------------------------------------- o Golpe Pestilento (D4.3)
@@ -252,4 +265,75 @@ test('C4: a Víbora da Mamba — não envenena quem já está Envenenado, e um V
   AfeccoesPoe.aoAcertar(sem, [{ elemento: 'physical', dano: 1000 }], { afeccoes: a, rng: () => 0, agora: 1 });
   assert.equal(com.dots.length, 1);
   assert.equal(sem.dots.length, 3);
+});
+
+// ---------------------------------------------------------------- a segunda rodada (dono, 21/10)
+
+test('C4 (dono, 21/10): o Tolhimento é o estado próprio — só o passo, sem teto, sem a metade do chefe, vale o mais forte; o lento segue com o teto', { skip: SEM }, () => {
+  const m = { hp: 10, estados: {} };
+  assert.ok(Estados.tolher(m, 80, 1000, 0));
+  assert.ok(Math.abs(Estados.fatorDeTolhimento(m, 500) - 5) < 1e-9, 'o passo 5× mais lento (1 / (1 − 0,8))');
+  assert.equal(Estados.fatorDeLentidao(m, 500), 1, 'o ataque (o lento) não muda');
+  // o mais forte fica; o fim é o maior
+  Estados.tolher(m, 30, 3000, 500);
+  assert.deepEqual(m.estados.tolhido, { ate: 3500, pct: 80 });
+  assert.equal(Estados.fatorDeTolhimento(m, 4000), 1);
+  // o chefe: a mesma regra (o lento leva a metade; o Tolhimento, não)
+  const chefe = { hp: 10, boss: true, estados: {} };
+  Estados.tolher(chefe, 80, 1000, 0);
+  assert.equal(chefe.estados.tolhido.pct, 80);
+  Estados.aplicar(chefe, { lentidaoPct: 80 }, 1, 0, () => 0.5, true);
+  assert.equal(chefe.estados.lento.pct, 20, 'a lentidão geral segue: teto de 40% e metade no chefe');
+  // as condições: o Tolhido conta como "Desacelerado/Lento", não como Resfriado
+  const tags = ModsPoe.tagsDoAlvo({ estados: { tolhido: { ate: 10, pct: 50 } } }, 5);
+  assert.ok(tags.includes('alvoLento') && !tags.includes('alvoResfriado'));
+});
+
+test('C4 (dono, 21/10): as runas da Vinculação, a Esfera do Vazio e o Tornado Tolhem pelo estado próprio, sem o teto', { skip: SEM }, async () => {
+  const { e, b } = await montar('Stormbind');
+  e.hunt.poeObjetos = [{ tipo: 'runa_tempestade', x: b.x, y: b.y, z: e.hunt.z ?? 0, ate: e.hunt.clock + 10_000, desde: e.hunt.clock, nivel: 0, acao: G.doSlug('Stormbind').acao, dono: 'voce' }];
+  Acoes.tiqueDasRunas(e, e.hunt, PERSONAGEM, []);
+  Acoes.tiqueDasPlantadas(e, e.hunt, PERSONAGEM, []);
+  assert.equal(b.estados.tolhido?.pct, 50, 'a runa: −50%, sem o teto de 40%');
+  assert.equal(b.estados.lento, undefined);
+});
+
+test('C4 (dono, 21/10): o dano sofrido aumentado do alvo vale no pulso do dano contínuo — o Definhado no Caos, a Eletrização, a maldição no degenerativo da gema', { skip: SEM }, async () => {
+  const { e, b } = await montar('Blight');
+  usar(e, b);
+  const d = doDot(b, 'Blight');
+  const um = () => { const antes = b.hp; e.hunt.clock = d.proximo; Dot.tique(e.hunt, [], e.hunt.clock); return antes - b.hp; };
+  const sem = um();
+  b.estados.definhado = { ate: e.hunt.clock + 10_000, n: 5 };
+  const comDefinhado = um();
+  assert.ok(Math.abs(comDefinhado / sem - 1.3) < 0.01, `5 Definhamentos: +30% de Caos sofrido (${comDefinhado} / ${sem})`);
+  delete b.estados.definhado;
+  b.estados.chocado = { ate: e.hunt.clock + 10_000, pct: 20 };
+  const comEletrizado = um();
+  assert.ok(Math.abs(comEletrizado / sem - 1.2) < 0.01, `a Eletrização de 20% (${comEletrizado} / ${sem})`);
+  delete b.estados.chocado;
+  b.maldicoes = { teste: { ate: e.hunt.clock + 10_000, desde: e.hunt.clock, dur: 10_000, efeitos: [{ tipo: 'vulneravel', tipos: ['chaos'], pct: 25 }] } };
+  const comMaldicao = um();
+  assert.ok(Math.abs(comMaldicao / sem - 1.25) < 0.01, `a maldição de +25% de Caos sofrido, no degenerativo da gema (${comMaldicao} / ${sem})`);
+  // (o que é do atacante ou só de acerto não entra: o Intimidado — dano de Ataque)
+  assert.equal(ModsPoe.fatorRecebidoNoDot({ estados: { intimidado: { ate: 10 } } }, 'chaos', 5), 1);
+  assert.ok(Reforcos.vulnerabilidade(b, 'chaos', e.hunt.clock) > 1);
+});
+
+test('C4 (dono, 21/10): a magia sem acerto não gera o acerto de 1 — a Praga, o Definhar, o Contágio, o Raio Abrasador', { skip: SEM }, async () => {
+  for (const s of ['Blight', 'Wither', 'Contagion', 'Scorching_Ray', 'Vaal_Blight']) {
+    assert.ok(G.magiaSemAcerto(s, 20, 20), s);
+    const { e, b } = await montar(s);
+    const r = usar(e, b);
+    assert.ok(r.ok, s);
+    assert.deepEqual((r.eventos ?? []).filter((x) => x.t === 'dmg' && x.uid === b.uid), [], `${s}: sem acerto`);
+  }
+  for (const s of ['Fireball', 'Essence_Drain', 'Cleave', 'Detonate_Dead']) assert.equal(G.magiaSemAcerto(s, 20, 0), false, s);
+});
+
+test('C4 (dono, 21/10): a Praga Vaal põe 3 camadas — a do uso e mais 2, cada uma numa área 50% maior que a anterior', { skip: SEM }, async () => {
+  assert.ok(Math.abs(C4.fatorDaCamadaVaal(G.c4DaGema('Vaal_Blight', 20, 0).praga, 2) - 2.25) < 1e-9);
+  const { e, b } = await montar('Vaal_Blight');
+  usar(e, b);
+  assert.equal(doDot(b, 'Vaal_Blight').camadas.length, 3, 'o alvo colado leva as 3');
 });

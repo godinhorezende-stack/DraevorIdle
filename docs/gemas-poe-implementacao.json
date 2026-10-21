@@ -2,9 +2,9 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 288,
+   "implementada e testada": 289,
    "implementada, sem teste próprio": 48,
-   "parcial": 213,
+   "parcial": 212,
    "limitação do modelo idle": 12,
    "não se aplica": 1
   },
@@ -24,8 +24,8 @@
   "variantes": {
    "vaal": {
     "total": 52,
-    "implementada e testada": 25,
-    "parcial": 20,
+    "implementada e testada": 26,
+    "parcial": 19,
     "implementada, sem teste próprio": 6,
     "limitação do modelo idle": 1
    },
@@ -45,7 +45,7 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 580,
+   "linhasDistintas": 579,
    "emDuasOuMais": 97
   },
   "imagens": {
@@ -5146,10 +5146,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: as duas camadas adicionais da Praga Vaal (em áreas cada vez maiores) — o PoE não publica o crescimento da área e o PoB não as conta; o uso põe uma camada (decisão do dono pendente)"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -11840,12 +11838,6 @@
    "linha": "Arqueiro Ilusório utiliza Habilidades Suportadas com #% menos Velocidade de Ataque",
    "gemas": [
     "Mirage_Archer_Support"
-   ]
-  },
-  {
-   "linha": "as duas camadas adicionais da Praga Vaal (em áreas cada vez maiores) — o PoE não publica o crescimento da área e o PoB não as conta; o uso põe uma camada (decisão do dono pendente)",
-   "gemas": [
-    "Vaal_Blight"
    ]
   },
   {

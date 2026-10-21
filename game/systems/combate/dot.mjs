@@ -10,6 +10,7 @@ import { resistido } from '../hunt/resistencia.mjs';
 import * as R from '../regras.mjs';
 import { registrarGolpe } from './registro.mjs';
 import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
+import * as ModsPoe from '../itens-poe/condicoes-poe.mjs';
 
 export const CONFIG = JSON.parse(readFileSync(new URL('../../gamedata/combate/dot.json', import.meta.url), 'utf8'));
 
@@ -109,10 +110,20 @@ export function agravar(bicho, agora, maisAntigosQueMs = 0) {
 /** (lote C4, dono 21/10 — D4.2) As camadas vivas da Praga no pulso `quando` (as que acabam nele ou depois). */
 const camadasNoPulso = (d, quando) => d.camadas.filter((a) => a >= quando).length;
 /**
- * (lote C4, dono 21/10) O "Inimigos Desacelerados sofrem Dano de Caos aumentado em X%" da Praga Vaal (hinder_enemy_chaos_damage_taken_+% — o ChaosDamageTaken INC
- * do Tolhido, que vale em todo o dano de Caos que ele sofre): × no Caos, enquanto o Tolhimento dela dura (`estados.tolhidoCaos`).
+ * (lote C4, dono 21/10: "o dano sofrido aumentado do alvo vale no dano contínuo, como no PoE") O que o alvo sofre a mais no pulso: os estados dele
+ * (`ModsPoe.fatorRecebidoNoDot` — o Definhado, as Cinzas, a Eletrização…) e, no degenerativo das GEMAS (o da Praga, do Vórtice…), as maldições de dano sofrido
+ * (`vulnerabilidadeNoDot`, registrada por `acoes.mjs` — `Reforcos.vulnerabilidade`). As afecções do acerto (o Incêndio, o Veneno, o Sangramento) já trazem as
+ * maldições na base (o dano do acerto que as pôs passa por elas), então o pulso delas não as conta de novo.
  */
-export const caosDoTolhido = (m, elemento, agora) => (elemento === 'chaos' && m?.estados?.tolhidoCaos?.ate > agora ? 1 + (m.estados.tolhidoCaos.pct ?? 0) / 100 : 1);
+// (`var`: o ciclo de imports — `acoes.mjs` registra antes de este módulo terminar de carregar)
+// eslint-disable-next-line no-var
+var vulnerabilidadeNoDot;
+export function definirVulnerabilidadeNoDot(fn) { vulnerabilidadeNoDot = fn; }
+export function recebidoNoPulso(m, d, agora) {
+  if (!itensPoeLigado()) return 1;
+  const daGema = d.origem?.fonte === 'gema' || d.origem?.fonte === 'totem';
+  return ModsPoe.fatorRecebidoNoDot(m, d.elemento, agora) * (daGema && vulnerabilidadeNoDot ? vulnerabilidadeNoDot(m, d.elemento, agora) : 1);
+}
 
 /**
  * Um tique da caçada: os pulsos de todos os efeitos de todos os bichos. O dano sai direto na vida, depois da resistência do bicho ao
@@ -135,8 +146,8 @@ export function tique(hunt, eventos, agora) {
         if (d.camadas && !(porPulso > 0)) { d.falta = 0; break; }
         const parte = Math.max(1, Math.round(Math.min(d.falta, porPulso)));
         // (o Sangramento no bicho em movimento ou Agravado: × 3 no pulso — `fatorDoMovimento`)
-        // (lote C4: + o Tolhido pela Praga Vaal — "Inimigos Desacelerados sofrem Dano de Caos aumentado em 30%", também no dano contínuo — `caosDoTolhido`)
-        const v = resistido(hunt, m, d.elemento, parte * fatorDoMovimento(d, m, agora) * caosDoTolhido(m, d.elemento, agora));
+        // (lote C4, dono 21/10: + o dano sofrido aumentado do alvo — `recebidoNoPulso`)
+        const v = resistido(hunt, m, d.elemento, parte * fatorDoMovimento(d, m, agora) * recebidoNoPulso(m, d, agora));
         m.hp -= v;
         // (lote 31, S001: o dano contínuo é de quem o pôs — o do lacaio é dele; não é acerto; lote G20a: o do totem é dele)
         QuemFeriu.carimbar(m, d.origem?.fonte === 'lacaio' ? QuemFeriu.LACAIO : d.origem?.fonte === 'totem' ? QuemFeriu.TOTEM : QuemFeriu.VOCE);

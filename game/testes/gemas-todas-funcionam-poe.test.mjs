@@ -144,7 +144,11 @@ function usar({ e, b }, slug) {
   }
   const dano = ev.filter((x) => x.t === 'dmg' && x.uid === b.uid && x.foe).reduce((t, x) => t + (x.v ?? 0), 0) + (b.dots?.length ? 1 : 0) + (efeitoDoTotem ? 1 : 0);
   const deslocou = e.hunt.pos.x !== de.x || e.hunt.pos.y !== de.y || (e.hunt.teleportes ?? 0) > de.teleportes;
-  return { ok: true, dano, buff: !!e.hunt.buffs?.[G.doSlug(slug).acao] || !!e.hunt.vinculos?.length, deslocou, febre: (b.dots ?? []).some((d) => d.chave === 'Corrupting_Fever' && d.falta > 0) };
+  // (lote C4, com o aval do dono 21/10: a MAGIA SEM ACERTO — a Praga, o Definhar, o Contágio… — não fere no uso; o efeito dela é o DEBUFF no alvo: o degenerativo,
+  // o Definhamento ou o Tolhimento)
+  // (o relógio já andou os tiques acima: vale o debuff que o uso pôs, mesmo que já tenha acabado)
+  const debuff = (b.dots ?? []).length > 0 || ['definhado', 'tolhido'].some((k) => !!b.estados?.[k]);
+  return { ok: true, dano, debuff, buff: !!e.hunt.buffs?.[G.doSlug(slug).acao] || !!e.hunt.vinculos?.length, deslocou, febre: (b.dots ?? []).some((d) => d.chave === 'Corrupting_Fever' && d.falta > 0) };
 }
 
 test('G16: toda gema ativa "funciona" faz no jogo o que o status promete (o dano, ou o buff ligado)', { skip: SEM, timeout: 600_000 }, async () => {
@@ -169,7 +173,8 @@ test('G16: toda gema ativa "funciona" faz no jogo o que o status promete (o dano
       const semDano = !r.ataque && !Object.keys(G.compilada(slug, 20)?.stats?.dano ?? {}).length && !(G.compilada(slug, 20)?.stats?.dot ?? []).length;
       // (lote A1b, com o aval do dono: a Emboscada colada no alvo não se move e não causa dano — o efeito dela é o buff, `hunt.emboscada`)
       // (lote B2, com o aval do dono: a Febre Corrompedora — o Sangue Corrompido no alvo, pelo acerto da outra gema)
-      if (slug === 'Corrupting_Fever' ? u.febre : buff ? u.buff : u.dano > 0 || (r.arquetipo === 'movimento' && semDano && u.deslocou) || (slug === 'Ambush' && !!m.e.hunt.emboscada)) { feito = armas[0]; break; }
+      // (lote C4, com o aval do dono 21/10: a magia sem acerto é conferida pelo debuff — `GemasPoe.magiaSemAcerto`)
+      if (slug === 'Corrupting_Fever' ? u.febre : buff ? u.buff : G.magiaSemAcerto(slug, 20) ? u.debuff : u.dano > 0 || (r.arquetipo === 'movimento' && semDano && u.deslocou) || (slug === 'Ambush' && !!m.e.hunt.emboscada)) { feito = armas[0]; break; }
       erros.push(`${armas[0]}: saiu sem ${buff ? 'buff' : 'dano'}`);
     }
     if (!feito) falhas.push(`${slug} (${r.arquetipo}) — ${erros.slice(0, 3).join(' · ')}`);
