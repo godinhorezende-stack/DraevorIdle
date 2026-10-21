@@ -1097,7 +1097,7 @@ export const c1DaGema = (slug, nivel = 1, qualidade = 0) => comCache(C1, `c1|${s
 });
 /*
  * ---- (lote C2, dono 20/10) os leitores no nível do lote C2 (`itens-poe/gemas-c2.mjs`) ----
- * `{ trauma, pulso, imolacao, martelos, fissura, pulsoForte, correntes, alvoUnico }`.
+ * `{ trauma, pulso, imolacao, martelos, fissura, pulsoForte, correntes, alvoUnico, runas }`.
  */
 const C2 = new Map();
 export const c2DaGema = (slug, nivel = 1, qualidade = 0) => comCache(C2, `c2|${slug}@${nivel | 0}@${qualidade | 0}`, () => {
@@ -1108,6 +1108,7 @@ export const c2DaGema = (slug, nivel = 1, qualidade = 0) => comCache(C2, `c2|${s
     martelos: GemasC2.martelosDasLinhas(slug, linhas, daQ), fissura: GemasC2.fissuraDasLinhas(slug, linhas, daQ),
     pulsoForte: /^Lightning_Tendrils(_of_Eccentricity)?$/.test(slug) ? GemasC2.pulsoForteDasLinhas(linhas) : null, correntes: GemasC2.correntesDasLinhas(slug, linhas, daQ),
     alvoUnico: GemasC2.ALVO_UNICO.has(slug),
+    runas: GemasC2.runasDasLinhas(slug, linhas, qualidade),
   };
 });
 /** A Corrente com Gancho: o raio por Fúria. */

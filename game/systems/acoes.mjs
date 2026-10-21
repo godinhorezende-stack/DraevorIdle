@@ -4099,7 +4099,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (lote G12: o uso que não tem acerto próprio — a Detonação do Saque, só a explosão; a Cremação, cujo dano mágico é o dos projéteis do gêiser)
   // (lote A4, dono 19/10: + o uso do Orbe Invernal — a canalização carrega o orbe; o dano é o dos projéteis dele, `tiqueDoOrbe`)
   const orbeDoUso = itensPoeLigado() && entry.poeGema && !gatilho && !plantada && !doTotem ? GemasPoe.orbeDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
-  const semGolpeDireto = (!!doCadaver && (!doCadaver.comDano || doCadaver.modo === 'geiser')) || !!orbeDoUso;
+  // (lote C2, dono 20/10: + a Vinculação da Tempestade — o uso espalha a runa; o dano é o da runa detonada pela Explosão de Runas, `explosaoDeRunas`)
+  const runasDoUso = c2?.runas && !plantada && !doTotem ? c2.runas : null;
+  const semGolpeDireto = (!!doCadaver && (!doCadaver.comDano || doCadaver.modo === 'geiser')) || !!orbeDoUso || !!runasDoUso;
 
   /*
    * ---- Onde a magia de ataque pega, ANTES de gastar nada ----
@@ -4713,6 +4715,13 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   //    Tolerância) — o "mais" delas já está no efeito do uso
   if (poderGasto && CargasPoe.gastar(estado, 'poder', poderGasto)) Ficha.invalidar(estado);
   if (toleranciaGasta && CargasPoe.gastar(estado, 'tolerancia', toleranciaGasta)) Ficha.invalidar(estado);
+  //    (dono, 20/10) o Golpe Tectônico comum gasta 1 Carga de Tolerância a cada 3 usos ("every third time you slam" — act_str.lua:12144); o "mais" das cargas deste uso
+  //    já foi lido acima
+  if (c2?.fissura?.consomeACada > 0 && !plantada && !doTotem) {
+    const k = (hunt.poeGolpesTectonicos ??= {});
+    k[entry.id] = (k[entry.id] ?? 0) + 1;
+    if (k[entry.id] % c2.fissura.consomeACada === 0 && CargasPoe.gastar(estado, 'tolerancia', 1)) Ficha.invalidar(estado);
+  }
   //  - D-e: a Corrida de Fase troca para o buff de dano (o uso de qualquer habilidade sua, não a dela, não a do totem nem a liberação da miragem); este
   //    uso já o recebe (a ficha é refeita antes do golpe);
   if (!gatilho && !plantada && !doTotem) trocarCorridaDeFase(estado, hunt, inicio, { exceto: entry.id });
@@ -4726,6 +4735,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   let fatorDoTempo = 1;
   // (lote A4, dono 19/10) o ORBE INVERNAL: cada uso da canalização soma 1 estágio ao orbe (`carregarOrbe`) — ele dispara no tique
   if (orbeDoUso) carregarOrbe(estado, hunt, entry, efeitoDaGema, orbeDoUso, inicio);
+  // (lote C2, dono 20/10) a Vinculação da Tempestade: o uso da canalização espalha uma runa no chão (`porRunaDaTempestade`)
+  if (runasDoUso) eventos.push(...porRunaDaTempestade(estado, hunt, entry, efeitoDaGema, runasDoUso, mira ?? alvo ?? hunt.pos, inicio));
   // (lote A4, dono 19/10: E2) o uso saiu: o Golpe Duplo do Ímpeto conta o ataque (o par ganha 1 estágio — antes do tempo deste uso, que já o leva)
   if (semCanalizar?.est.modo === 'usos') estagioSemCanalizar(hunt, entry, efeitoDaGema, inicio, { gatilho, plantada, contar: true });
   // (lote A2) a Parede de Força: a colisão deste uso
@@ -6641,7 +6652,7 @@ export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora 
   // (lote A3b, dono 19/10: os OBJETOS no chão ou no tempo — a bola, o tornado, a espiral, o olho, o chão —, no mesmo tique)
   if (itensPoeLigado() && hunt?.poeObjetos?.length) tiqueDosObjetos(estado, hunt, personagem, eventos, agora);
   // (lote C2, dono 20/10: a Imolação que acabou e as correntes da Corrente com Gancho de Trarthus, no mesmo tique)
-  if (itensPoeLigado() && (hunt?.poeImolacao || hunt?.poeCorrentes?.length)) tiqueDoC2(estado, hunt, personagem, eventos, agora);
+  if (itensPoeLigado() && (hunt?.poeImolacao || hunt?.poeCorrentes?.length || hunt?.poeObjetos?.length)) tiqueDoC2(estado, hunt, personagem, eventos, agora);
   if (!hunt?.plantadas?.length || !itensPoeLigado()) return eventos;
   const ficha = Ficha.combate(estado);
   for (const { p, alvo } of [...Plantadas.armadilhasQueAtivam(hunt, ficha, agora), ...Plantadas.minasQueDetonam(hunt, ficha, agora)]) {
@@ -7134,6 +7145,91 @@ function tiqueDasEstacas(estado, hunt, personagem, eventos, agora) {
 }
 
 /**
+ * (lote C2, dono 20/10) A RUNA da Vinculação da Tempestade: um objeto inerte no chão (`hunt.poeObjetos`, tipo `runa_tempestade`), na casa do alvo ou na mais perto
+ * dele que ainda não tem runa (o "padrão crescente" — escolha do lote), por 12 s × a Duração, no nível 0. Devolve os eventos.
+ */
+function porRunaDaTempestade(estado, hunt, entry, efeitoDaGema, R, centro, agora) {
+  const z = hunt.z ?? 0;
+  const minhas = (hunt.poeObjetos ?? []).filter((o) => o.tipo === 'runa_tempestade' && (o.z ?? 0) === z && o.ate > agora);
+  const c = GemasC2.casaDaProximaRuna({ x: centro.x, y: centro.y }, minhas);
+  if (!c) return [];
+  porObjeto(hunt, { acao: entry.id, slug: entry.poeGema.slug, tipo: 'runa_tempestade', efeito: 'inerte', mov: 'parado', dono: 'voce', x: c.x, y: c.y, raio: 0, nivel: 0, ate: agora + Math.round(R.duracaoMs * fatorDeDuracao(estado, entry, efeitoDaGema)) }, agora);
+  return [{ t: 'fx', id: entry.efeito ?? EFEITO_DA_EXPLOSAO, x: c.x, y: c.y }];
+}
+/** As runas da Vinculação na caçada (as do andar, vivas). */
+const runasDaTempestade = (hunt, agora) => (hunt?.poeObjetos ?? []).filter((o) => o.tipo === 'runa_tempestade' && o.ate > agora && (o.z ?? 0) === (hunt.z ?? 0));
+/**
+ * (lote C2, dono 20/10: "criar a Explosão de Runas, como no PoE") A EXPLOSÃO DE RUNAS que a Vinculação concede, automática (o jogo é idle — como o Convocar o Aço
+ * que as gemas de Aço concedem): com o relógio de ação livre e uma runa cuja explosão pega um inimigo vivo,
+ *  - CANALIZA enquanto houver runa a melhorar e nenhuma das que pegam inimigo estiver a 1 s de acabar: cada uso (0,16 s ÷ a Velocidade de Conjuração) paga o
+ *    custo dela, e cada "X de Mana Gasta" da Vinculação melhora a runa mais antiga que ainda não está no nível 3 (D2.6; uma vez por runa em cada uso, até 9);
+ *  - senão, LIBERA: detona a runa que pega mais inimigos e, em cadeia, as ligadas a ela — cada uma com o golpe da Vinculação (a gema e os suportes dela), +100%
+ *    de dano e +30% (+0,5 por qualidade) de área por nível, no raio de 1,6 m × √ da Área de Efeito; a do Teletransporte leva você à runa detonada se você não
+ *    detonou runas nos últimos 0,5 s. Sem mana para a canalização, libera.
+ * Devolve os eventos.
+ */
+function explosaoDeRunas(estado, hunt, personagem, agora) {
+  if ((estado.hp ?? 0) <= 0 || hunt.conjurando || Protecao.imune(hunt)) return [];
+  const cds = (hunt.cooldowns ??= {});
+  if (cds[GRUPO_DO_POE] && !R.liberou(agora, cds[GRUPO_DO_POE].ate)) return [];
+  const runas = runasDaTempestade(hunt, agora);
+  if (!runas.length) return [];
+  // (a Vinculação encaixada que concede: a da runa mais nova — o nível e a qualidade dela)
+  const acao = runas.at(-1).acao;
+  const ef = Gemas.efeitoNaSkill(estado, acao);
+  const slug = String(acao).replace(GemasPoe.PREFIXO, '');
+  const Rr = ef ? GemasPoe.c2DaGema(slug, ef.nivel ?? 1, ef.qualidade ?? 0).runas : null;
+  if (!Rr) return [];
+  const fator = ModsPoe.fatorDaArea(ef.areaIncPct ?? 0, ef.areaMaisPct ?? 0);
+  const vivos = vivosNoAndar(hunt);
+  const raioDe = (r) => Math.max(0, Math.floor((GemasC2.raioDaRunaM(Rr, r.nivel ?? 0) * Math.sqrt(fator)) / 2));
+  const pega = (r) => vivos.filter((m) => !m.dummy && distanciaChebyshev(m, r) <= raioDe(r)).length;
+  const comAlvo = runas.map((r) => ({ r, n: pega(r) })).filter((x) => x.n > 0);
+  if (!comAlvo.length) return [];
+  const ficha = Ficha.combate(estado);
+  const usoMs = Math.round(Rr.explosaoMs / Math.max(0.1, 1 + (ficha.castSpeed ?? 0) / 100));
+  const custo = GemasC2.custoDaExplosao(ef.nivel ?? 1);
+  const melhoravel = runas.some((r) => (r.nivel ?? 0) < Rr.nivelMax);
+  const acabando = comAlvo.some((x) => x.r.ate - agora <= 1000);
+  const eventos = [];
+  if (melhoravel && !acabando && (estado.mana ?? 0) >= custo) {
+    estado.mana = Math.max(0, (estado.mana ?? 0) - custo);
+    const g = (hunt.poeExplosaoDeRunas ??= { gasto: 0 });
+    g.gasto += custo;
+    const n = Math.floor(g.gasto / Rr.manaPorMelhoria);
+    const feitas = GemasC2.melhorarRunas(runas, n, Rr);
+    g.gasto -= feitas.length * Rr.manaPorMelhoria;
+    // (sem runa a melhorar, o gasto que sobrou não passa do custo de uma melhoria)
+    g.gasto = Math.min(g.gasto, Rr.manaPorMelhoria);
+    cds[GRUPO_DO_POE] = { ate: agora + usoMs, total: usoMs };
+    for (const r of feitas) eventos.push({ t: 'fx', id: EFEITO_DA_EXPLOSAO, x: r.x, y: r.y });
+    return eventos;
+  }
+  cds[GRUPO_DO_POE] = { ate: agora + usoMs, total: usoMs };
+  const alvo = comAlvo.sort((a, b) => b.n - a.n || distanciaChebyshev(hunt.pos, a.r) - distanciaChebyshev(hunt.pos, b.r))[0].r;
+  const cadeia = GemasC2.cadeiaDeRunas(runas, alvo);
+  consumirObjetos(hunt, cadeia);
+  if (hunt.poeExplosaoDeRunas) hunt.poeExplosaoDeRunas.gasto = 0;
+  // (a do Teletransporte: até a runa detonada, se você não detonou runas há 0,5 s — e a casa não tem bicho)
+  if (Rr.teleporta && agora - (hunt.poeUltimaDetonacao ?? -Infinity) >= Rr.teleporteMs && !vivos.some((m) => m.x === alvo.x && m.y === alvo.y)) {
+    eventos.push({ t: 'fx', id: EFEITO_DO_TELEPORTE, uid: 'player', x: hunt.pos.x, y: hunt.pos.y });
+    moverNoDeslocamento(hunt, { x: alvo.x, y: alvo.y }, agora);
+    eventos.push({ t: 'fx', id: EFEITO_DO_TELEPORTE, uid: 'player', x: hunt.pos.x, y: hunt.pos.y });
+  }
+  hunt.poeUltimaDetonacao = agora;
+  for (const r of cadeia) {
+    if ((estado.hp ?? 0) <= 0) break;
+    const raio = raioDe(r);
+    eventos.push({ t: 'explosao', id: EFEITO_DA_EXPLOSAO, x: r.x, y: r.y, lado: 2 * raio + 1 });
+    const quem = vivosNoAndar(hunt).filter((m) => !m.dummy && distanciaChebyshev(m, r) <= raio).sort((a, b) => distanciaChebyshev(a, r) - distanciaChebyshev(b, r))[0];
+    if (!quem) continue;
+    const res = dispararSemMarcar(estado, hunt, personagem, null, quem, { plantada: { tipo: 'estaca', acao: r.acao, x: r.x, y: r.y, z: r.z ?? hunt.z ?? 0, maisPct: Rr.maisDanoPorNivelPct * (r.nivel ?? 0), raio } });
+    if (res?.ok) eventos.push(...(res.eventos ?? []));
+  }
+  return eventos;
+}
+
+/**
  * (lote C2, dono 20/10) O que o lote C2 deixa no tempo:
  *  - a Imolação do Golpe Infernal que ACABOU (o debuff em você, sem chegar às 6 cargas) explode com as cargas que tem, em volta de você — o golpe da gema × o "% por
  *    carga" × as cargas, no raio da gema × √ da Área (o PoB: "Upon reaching 6 charges, or charges expiring");
@@ -7155,6 +7251,13 @@ function tiqueDoC2(estado, hunt, personagem, eventos, agora) {
     const r = dispararSemMarcar(estado, hunt, personagem, null, alvo, { plantada: { tipo: 'estaca', acao, x: centro.x, y: centro.y, z, maisPct: pct - 100, raio } });
     if (r?.ok) eventos.push(...(r.eventos ?? []));
   };
+  // (a Vinculação da Tempestade) o Tolhimento de quem está numa runa ("Inimigos em cima das runas são Desacelerados", −50%) e a Explosão de Runas
+  const runas = runasDaTempestade(hunt, agora);
+  if (runas.length) {
+    const casas = new Set(runas.map((r) => `${r.x},${r.y}`));
+    for (const m of vivosNoAndar(hunt)) if (!m.dummy && casas.has(`${m.x},${m.y}`)) Estados.aplicar(m, { lentidaoPct: GemasC2.RUNAS_DA_TEMPESTADE.tolhePct }, 1, agora, Math.random, !!hunt.isBoss);
+    eventos.push(...explosaoDeRunas(estado, hunt, personagem, agora));
+  }
   const im = hunt.poeImolacao;
   if (im && im.ate <= agora) {
     delete hunt.poeImolacao;

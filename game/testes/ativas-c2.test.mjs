@@ -76,12 +76,12 @@ const emVoce = (r) => (r.eventos ?? []).filter((ev) => ev.t === 'dmg' && ev.uid 
 
 // ---------------------------------------------------------------- o status e os leitores
 
-test('C2: as gemas do lote saem de parcial (as linhas do PoE têm leitor); a Vinculação da Tempestade fica (as Runas e a Explosão de Runas não existem no jogo)', { skip: SEM }, () => {
-  for (const s of ['Boneshatter', 'Boneshatter_of_Complex_Trauma', 'Boneshatter_of_Carnage', 'Infernal_Blow_of_Immolation', 'Holy_Hammers', 'Holy_Hammers_of_Spirals', 'Tectonic_Slam', 'Tectonic_Slam_of_Cataclysm', 'Lightning_Tendrils', 'Lightning_Tendrils_of_Eccentricity', 'Chain_Hook_of_Trarthus']) {
+// (dono, 20/10 — a segunda rodada do C2: a Vinculação da Tempestade e a do Teletransporte saem de parcial com as Runas e a Explosão de Runas)
+test('C2: as 13 gemas do lote saem de parcial (as linhas do PoE têm leitor)', { skip: SEM }, () => {
+  for (const s of ['Boneshatter', 'Boneshatter_of_Complex_Trauma', 'Boneshatter_of_Carnage', 'Infernal_Blow_of_Immolation', 'Holy_Hammers', 'Holy_Hammers_of_Spirals', 'Tectonic_Slam', 'Tectonic_Slam_of_Cataclysm', 'Lightning_Tendrils', 'Lightning_Tendrils_of_Eccentricity', 'Chain_Hook_of_Trarthus', 'Stormbind', 'Stormbind_of_Teleportation']) {
     const r = G.REGISTRO.get(s);
     assert.deepEqual([s, r.statusNoJogo, r.motivosNoJogo], [s, 'funciona', []]);
   }
-  for (const s of ['Stormbind', 'Stormbind_of_Teleportation']) assert.deepEqual(G.REGISTRO.get(s).motivosNoJogo, ['efeito não simulado: Uma Runa é Melhorada para cada 24 de Mana Gasta']);
 });
 
 test('C2: os números das linhas no nível 20 e na qualidade 20 (os do PoB)', { skip: SEM }, () => {
@@ -94,8 +94,9 @@ test('C2: os números das linhas no nível 20 e na qualidade 20 (os do PoB)', { 
   assert.deepEqual(G.c2DaGema('Infernal_Blow_of_Immolation', 20, 20).imolacao, { porCargaPct: 90, max: 6 });
   assert.deepEqual(G.c2DaGema('Holy_Hammers', 20, 20).martelos, { primeiroMaisPct: 100, cascatas: 2, lados: 2, maisAoGastarPct: 20, consome: 1, maisPorCargaPct: 0, cascataPorCarga: 0 });
   assert.deepEqual(G.c2DaGema('Holy_Hammers_of_Spirals', 20, 20).martelos, { primeiroMaisPct: 0, cascatas: 6, lados: 0, maisAoGastarPct: 0, consome: Infinity, maisPorCargaPct: 20, cascataPorCarga: 1 });
-  assert.deepEqual(G.c2DaGema('Tectonic_Slam', 20, 20).fissura, { chancePct: 60, porToleranciaPct: 5, consome: 0, maisDanoPorCargaPct: 0, maisAreaPorCargaPct: 0, chancePorCargaPct: 0 });
-  assert.deepEqual(G.c2DaGema('Tectonic_Slam_of_Cataclysm', 20, 20).fissura, { chancePct: 0, porToleranciaPct: 0, consome: Infinity, maisDanoPorCargaPct: 20, maisAreaPorCargaPct: 10, chancePorCargaPct: 10 });
+  // (dono, 20/10: o comum gasta 1 Carga de Tolerância a cada 3 usos — a descrição do PoB)
+  assert.deepEqual(G.c2DaGema('Tectonic_Slam', 20, 20).fissura, { chancePct: 60, porToleranciaPct: 5, consome: 0, consomeACada: 3, maisDanoPorCargaPct: 0, maisAreaPorCargaPct: 0, chancePorCargaPct: 0 });
+  assert.deepEqual(G.c2DaGema('Tectonic_Slam_of_Cataclysm', 20, 20).fissura, { chancePct: 0, porToleranciaPct: 0, consome: Infinity, consomeACada: 0, maisDanoPorCargaPct: 20, maisAreaPorCargaPct: 10, chancePorCargaPct: 10 });
   assert.deepEqual(G.c2DaGema('Lightning_Tendrils', 20, 0).pulsoForte, { cada: 3, sempreCritico: true, maisAreaPct: 0, maisDanoPct: 0 });
   assert.deepEqual(G.c2DaGema('Lightning_Tendrils_of_Eccentricity', 20, 0).pulsoForte, { cada: 5, sempreCritico: true, maisAreaPct: 150, maisDanoPct: 500 });
   assert.equal(G.c2DaGema('Lightning_Tendrils_of_Escalation', 20, 0).pulsoForte, null);
@@ -281,7 +282,7 @@ test('C2 (D2.4): o Golpe Tectônico — o ramo a 45° da fissura (60% por casa n
   assert.ok(r.ok, r.erro);
   const ramo = (r.eventos ?? []).filter((ev) => ev.t === 'area')[1];
   assert.ok(ramo, 'o ramo saiu');
-  assert.equal(CargasPoe.ativas(e).tolerancia, 2, 'o Golpe Tectônico não gasta as cargas');
+  assert.equal(CargasPoe.ativas(e).tolerancia, 2, 'o 1º uso não gasta as cargas');
   // um inimigo no ramo leva o acerto dele
   const c = ramo.casas.at(-1);
   por(e, resto[0], ramo.x - e.hunt.pos.x + c[0], ramo.y - e.hunt.pos.y + c[1]);
@@ -345,4 +346,95 @@ test('C2 (D2.7): a Corrente com Gancho de Trarthus — prende os acertados; o ac
   assert.equal(e.hunt.poeCorrentes, undefined, 'a corrente arrebentou');
   assert.equal(ev.filter((x) => x.t === 'dmg' && x.uid === b.uid).length, 1);
   assert.equal(ev.filter((x) => x.t === 'dmg' && x.uid === vizinho.uid).length, 1);
+});
+
+// ---------------------------------------------------------------- (dono, 20/10) o Golpe Tectônico gasta a cada 3 usos
+
+test('C2 (dono 20/10): o Golpe Tectônico comum gasta 1 Carga de Tolerância a cada 3 usos ("every third time you slam" — o PoB)', { skip: SEM }, async () => {
+  const { e, b } = await montar('Tectonic_Slam');
+  e.hunt.cargasPoe = { tolerancia: { n: 3, ate: e.hunt.clock + 600_000 } };
+  const restam = [1, 2, 3, 4, 5, 6].map(() => { usar(e, b); return CargasPoe.ativas(e).tolerancia; });
+  assert.deepEqual(restam, [3, 3, 2, 2, 2, 1]);
+});
+
+// ---------------------------------------------------------------- (dono, 20/10) a Vinculação da Tempestade e a Explosão de Runas
+
+/** As runas da Vinculação na caçada. */
+const runas = (e) => (e.hunt.poeObjetos ?? []).filter((o) => o.tipo === 'runa_tempestade');
+/** Um tique das plantadas (onde a Explosão de Runas sai, sozinha), 200 ms depois. */
+const tique = (e, v = 0.5) => { e.hunt.clock += 200; return travado(v, () => Acoes.tiqueDasPlantadas(e, e.hunt, PERSONAGEM, [], e.hunt.clock)); };
+const danoEm = (ev, b) => ev.filter((x) => x.t === 'dmg' && x.uid === b.uid).reduce((t, x) => t + x.v, 0);
+
+test('C2 (dono 20/10): os números das Runas e da Explosão de Runas (o PoB e o poedb)', { skip: SEM }, () => {
+  const r = G.c2DaGema('Stormbind', 20, 20).runas;
+  assert.deepEqual([r.duracaoMs, r.nivelMax, r.maisDanoPorNivelPct, r.maisAreaPorNivelPct, r.raioM, r.tolhePct, r.explosaoMs, r.manaPorMelhoria, r.teleporta], [12000, 3, 100, 40, 1.6, 50, 160, 24, false]);
+  assert.equal(G.c2DaGema('Stormbind', 1, 0).runas.manaPorMelhoria, 5);
+  assert.equal(G.c2DaGema('Stormbind_of_Teleportation', 20, 0).runas.teleporta, true);
+  // o custo da Explosão (o PoB: 6 no nível 1, 18 no 20, 26 no 40)
+  assert.deepEqual([C2.custoDaExplosao(1), C2.custoDaExplosao(20), C2.custoDaExplosao(40)], [6, 18, 26]);
+  // a próxima runa: a casa do alvo, depois a mais perto dela sem runa
+  assert.deepEqual(C2.casaDaProximaRuna({ x: 5, y: 5 }, []), { x: 5, y: 5 });
+  assert.deepEqual(C2.casaDaProximaRuna({ x: 5, y: 5 }, [{ x: 5, y: 5 }]), { x: 4, y: 4 });
+  // a melhoria: as mais antigas abaixo do nível 3, uma vez cada; a cadeia: as ligadas a 1 casa
+  const rs = [{ desde: 1, nivel: 3, x: 0, y: 0 }, { desde: 2, nivel: 0, x: 1, y: 0 }, { desde: 3, nivel: 0, x: 2, y: 0 }, { desde: 4, nivel: 0, x: 9, y: 9 }];
+  assert.deepEqual(C2.melhorarRunas(rs, 2).map((x) => x.desde), [2, 3]);
+  assert.deepEqual(C2.cadeiaDeRunas(rs, rs[0]).map((x) => x.desde), [1, 2, 3]);
+  assert.ok(Math.abs(C2.raioDaRunaM({ raioM: 1.6, maisAreaPorNivelPct: 30 }, 3) - 1.6 * Math.sqrt(1.9)) < 1e-9);
+});
+
+test('C2 (dono 20/10): a Vinculação espalha runas (sem dano no uso); a Explosão de Runas melhora pelos 24 de mana gasta e detona em cadeia', { skip: SEM }, async () => {
+  const { e, b } = await montar('Stormbind', { arma: 'Wands/Driftwood_Wand', qualidade: 0 });
+  const r1 = usar(e, b);
+  assert.ok(r1.ok, r1.erro);
+  assert.equal(acertos(r1, b), 0, 'o uso da canalização não acerta: espalha a runa');
+  assert.deepEqual(runas(e).map((o) => [o.x - e.hunt.pos.x, o.y - e.hunt.pos.y, o.nivel]), [[1, 0, 0]]);
+  assert.equal(runas(e)[0].ate - runas(e)[0].desde, 12_000);
+  // a segunda runa na casa vizinha do alvo (o padrão crescente)
+  usar(e, b);
+  assert.equal(runas(e).length, 2);
+  // a Explosão de Runas canaliza: 18 de mana por uso; a cada 24, a runa mais antiga abaixo do nível 3 melhora (6 melhorias: 144 de mana, 8 usos); depois detona
+  const mana0 = e.mana;
+  const ev = [];
+  for (let k = 0; k < 40 && runas(e).length; k++) ev.push(...tique(e));
+  assert.equal(runas(e).length, 0, 'as duas detonaram (a cadeia)');
+  assert.equal(mana0 - e.mana, 18 * 8);
+  assert.equal(ev.filter((x) => x.t === 'dmg' && x.uid === b.uid).length, 2, 'as duas runas acertam o alvo (cada runa é um acerto)');
+});
+
+test('C2 (dono 20/10): a runa no nível 3 causa 4× o dano da runa sem melhoria (+100% por nível)', { skip: SEM }, async () => {
+  const dano = async (nivel) => {
+    const { e, b } = await montar('Stormbind', { arma: 'Wands/Driftwood_Wand', qualidade: 0 });
+    usar(e, b);
+    runas(e)[0].nivel = nivel;
+    // (sem mana, a Explosão não canaliza: detona já)
+    e.mana = 0;
+    return danoEm(tique(e), b);
+  };
+  const d0 = await dano(0);
+  const d3 = await dano(3);
+  assert.ok(d0 > 0 && Math.abs(d3 / d0 - 4) < 0.1, `nível 3: 4× (${d3} / ${d0})`);
+});
+
+// (o Tolhimento é a lentidão do jogo, com o teto dela — `estados.lento.maximo`, 40%: os 50% do PoE ficam em 40, como o Tolhimento dos objetos do A3b)
+test('C2 (dono 20/10): o inimigo em cima da runa é Tolhido (−50% de movimento, no teto de 40% da lentidão do jogo)', { skip: SEM }, async () => {
+  const { e, b } = await montar('Stormbind', { arma: 'Wands/Driftwood_Wand', qualidade: 0 });
+  usar(e, b);
+  for (const o of runas(e)) o.nivel = 3;
+  // (o alvo longe da explosão não: a runa fica, e ele em cima dela)
+  e.hunt.clock += 200;
+  travado(0.5, () => Acoes.tiqueDasPlantadas(e, e.hunt, PERSONAGEM, [], e.hunt.clock));
+  assert.equal(b.estados.lento?.pct, 40);
+});
+
+test('C2 (dono 20/10): a Vinculação do Teletransporte leva você à runa detonada se você não detonou há 0,5 s', { skip: SEM }, async () => {
+  const { e, b, resto } = await montar('Stormbind_of_Teleportation', { arma: 'Wands/Driftwood_Wand', qualidade: 0 });
+  // (a runa a 3 casas, sem bicho em cima; o alvo ao lado dela)
+  por(e, b, 3, 0);
+  usar(e, b);
+  const r = runas(e)[0];
+  Object.assign(r, { x: e.hunt.pos.x + 3, y: e.hunt.pos.y + 1, nivel: 3 });
+  void resto;
+  tique(e);
+  assert.deepEqual([e.hunt.pos.x, e.hunt.pos.y], [r.x, r.y]);
+  assert.equal(runas(e).length, 0);
 });

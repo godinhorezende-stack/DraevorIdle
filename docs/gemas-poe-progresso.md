@@ -431,7 +431,7 @@ Teste: `testes/area-no-impacto-a3c.test.mjs`. Com o aval do dono: `itens-poe-uni
 
 ### C2 — corpo a corpo, impacto e canalização: os contadores próprios e as cargas consumidas (20/10, as recomendações D2.1–D2.7 do plano aceitas)
 
-- **O plano tinha 13 gemas; nenhuma saiu de parcial antes.** Saíram 11 (`gemas-c2.mjs`, `gemas-poe.mjs`, `acoes.mjs`, `mods-poe.mjs`, `linhas-das-gemas.mjs`). A Vinculação da Tempestade e a do Teletransporte ficam para o dono (abaixo).
+- **O plano tinha 13 gemas; nenhuma saiu de parcial antes.** Saíram as 13 (`gemas-c2.mjs`, `gemas-poe.mjs`, `acoes.mjs`, `mods-poe.mjs`, `linhas-das-gemas.mjs`) — a Vinculação da Tempestade e a do Teletransporte na segunda rodada (abaixo).
 - **O Esmagar Ossos e o Traumatismo** (D2.1):
   - cada ataque que acerta dá 1 Traumatismo ("a primeira vez que este Ataque Acertar": o uso e cada repetição do Golpe Múltiplo). Cada um dura 6 s × a Duração (`hunt.poeTrauma`, a lista dos fins);
   - a cada ganho, você sofre o dano por Traumatismo × os que tem depois do ganho (194 no nível 20). É Físico que não é acerto: sem a Armadura, com a redução do Físico recebido e o Escudo de Energia na frente (`danoDoTraumatismo`). Pode matar, como no PoE;
@@ -446,7 +446,7 @@ Teste: `testes/area-no-impacto-a3c.test.mjs`. Com o aval do dono: `itens-poe-uni
   - o primeiro martelo de cada cascata tem +100%: o da área do uso e os dos lados;
   - a cascata é um anel em volta de tudo o que já caiu, da largura do raio do martelo × √ da Área. O próximo anel só cai se o anterior acertou alguém ("repeating if further enemies are hit"), até 2;
   - os das Espirais: gastam todas as Cargas de Poder, 15% (+5%) mais dano por carga e +1 cascata por carga, até 6 + as cargas.
-- **O Golpe Tectônico** (D2.4): o eixo da fissura vai da casa à sua frente até a ponta da área. A primeira casa do eixo que sorteia a chance abre o ramo a 45°, com metade do comprimento (1 ramo por fissura). A chance é de 30% + 30% na qualidade 20 + 5% por Carga de Tolerância, que ele só lê. O "5% mais Área por Carga de Tolerância" já era uma linha local. O do Cataclismo consome todas as Cargas de Tolerância: 15% (+5%) mais Dano, 10% mais Área e 10% de chance de ramificar por carga.
+- **O Golpe Tectônico** (D2.4): o eixo da fissura vai da casa à sua frente até a ponta da área. A primeira casa do eixo que sorteia a chance abre o ramo a 45°, com metade do comprimento (1 ramo por fissura). A chance é de 30% + 30% na qualidade 20 + 5% por Carga de Tolerância. O "5% mais Área por Carga de Tolerância" já era uma linha local. O do Cataclismo consome todas as Cargas de Tolerância: 15% (+5%) mais Dano, 10% mais Área e 10% de chance de ramificar por carga.
 - **As Gavinhas Relampejantes:** o Pulso Mais Forte é o 3º uso seguido da canalização (a da Excentricidade: o 5º). A contagem é `hunt.poeSeguidos`, a mesma do "terceiro golpe sucessivo" do Martelo Glacial. Ele é sempre crítico (CritChance OVERRIDE 100). O da Excentricidade tem também 150% mais Área e 500% mais Dano com Acertos e Afecções.
 - **A Corrente com Gancho de Trarthus** (D2.7): os acertados do uso ficam presos, até 8 (+3 na qualidade 20) por uso e 16 no total; sai o mais antigo (`hunt.poeCorrentes`). O seu acerto num preso dá 1 de Fúria (`ModsPoe.aoAcertar`, também no golpe básico). O preso que fica a mais de 6 m (3 casas) de você arrebenta a corrente: o golpe da gema na área dela em volta dele (2,4 m + 0,1 m por 5 de Fúria, × √ da Área). O preso que morre sai sem arrebentar. A gema não tem duração: os presos ficam até a corrente arrebentar.
 - **Escolhas sem fonte, para o dono conferir:**
@@ -454,13 +454,16 @@ Teste: `testes/area-no-impacto-a3c.test.mjs`. Com o aval do dono: `itens-poe-uni
   2. a cascata das Espirais também para quando o anel não acerta ninguém (a descrição só diz isso dos Martelos Sagrados);
   3. o totem não tem Traumatismo, não carrega a Imolação, não gasta as suas cargas e não conta o Pulso Mais Forte;
   4. a explosão da Imolação no tique acerta só se houver um inimigo no raio; sem ele, as cargas se perdem.
-- **Para o dono confirmar — o D2.3 no Golpe Tectônico comum:** segui o D2.3 (só lê as Cargas de Tolerância). A descrição do PoB diz outra coisa: "Consume an Endurance Charge every third time you slam the ground with this skill" (act_str.lua:12144). Pelo PoE, ele gastaria 1 carga a cada 3 usos.
-- **Fica para o dono — a Vinculação da Tempestade e a do Teletransporte:** no PoE, a canalização espalha Runas no chão, que só causam dano quando a Explosão de Runas (a gema que vem com ela) as detona; elas somem sem dano quando acabam. O jogo não tem as Runas da Vinculação nem a Explosão de Runas: hoje cada uso da canalização acerta a linha à frente. O D2.6 ("melhore a Runa mais antiga a cada 24 de mana") precisa das Runas antes. Opções:
-  - (a) criar as Runas como objetos (12 s, até o nível 3, +100% de dano e +30% de área por nível) e uma detonação automática na liberação da canalização, no lugar da Explosão de Runas;
-  - (b) criar as Runas e a Explosão de Runas como gema;
-  - (c) manter o acerto a cada uso e marcar o D2.6 como limitação do idle.
-- Teste novo: `game/testes/ativas-c2.test.mjs` (17 casos, os sorteios travados; os bichos sem armadura, para o "mais" sair limpo).
-- Depois: parcial 261 → 250 nas ativas (implementada e testada 241 → 252); 109 → 109 nos suportes.
+- **A segunda rodada (dono, 20/10):** as escolhas sem fonte acima ficaram aprovadas, e mais duas decisões.
+  - **O Golpe Tectônico comum** gasta 1 Carga de Tolerância a cada 3 usos, pela descrição do PoB ("Consume an Endurance Charge every third time you slam" — act_str.lua:12144; `hunt.poeGolpesTectonicos`).
+  - **A Vinculação da Tempestade e a do Teletransporte, com a Explosão de Runas.** No PoE, a Explosão de Runas não é uma gema: é a sub-habilidade que a Vinculação concede (a wiki no poedb salvo: "The gem grants a sub-skill, Rune Blast"). O poedb mostra a Explosão Rúnica dentro da página da Vinculação. Aqui segue o modelo do Convocar o Aço: a Vinculação encaixada a concede, sem gema nova no catálogo nem no drop, e o jogo a usa sozinho (`explosaoDeRunas`, no tique das plantadas, antes da barra).
+    - **As runas:** cada uso da canalização espalha uma runa no chão (`hunt.poeObjetos`, tipo `runa_tempestade`, inerte), sem acerto. A primeira cai na casa do alvo; as seguintes, na casa livre mais perto dele (a espiral — o "padrão crescente"). Duram 12 s × a Duração e sobem até o nível 3. Cada nível dá +100% de Dano com Acertos e Afecções e +30% (+0,5 por qualidade) de Área. Quem está em cima de uma runa é Tolhido (−50%, no teto de 40% da lentidão do jogo).
+    - **A Explosão de Runas canaliza:** a cada uso (0,16 s ÷ a Velocidade de Conjuração) ela paga o custo do PoB (6 a 26 de Mana; 18 no nível 20). A cada "X de Mana Gasta" da Vinculação (24 no nível 20), melhora a runa mais antiga que ainda não está no nível 3 (D2.6), uma vez por runa em cada uso, até 9. A mana contada é a da Explosão, como no PoE ("based on the mana you spend channelling this skill").
+    - **A Explosão de Runas libera** quando não há runa a melhorar, ou quando uma das runas que pegam inimigo está a 1 s de acabar, ou quando falta mana. Ela detona a runa que pega mais inimigos e, em cadeia, as ligadas a ela (a 1 casa). Cada uma é um acerto da Vinculação (a gema e os suportes dela) no raio de 1,6 m × √(1 + 30% × o nível) × √ da Área.
+    - **A do Teletransporte** leva você até a runa detonada, se você não detonou runas nos últimos 0,5 s e a casa está livre.
+    - **Escolhas sem fonte, para o dono conferir:** a espiral das runas; quando a Explosão sai sozinha (ela começa quando uma runa pega um inimigo vivo e libera pelas regras acima); o custo da Explosão sem os modificadores de custo; o totem com a Vinculação segue acertando a linha à frente (não espalha runas).
+- Teste novo: `game/testes/ativas-c2.test.mjs` (23 casos, os sorteios travados; os bichos sem armadura, para o "mais" sair limpo). Na segunda rodada, dois casos da primeira mudaram com as decisões do dono: o do status (a Vinculação agora sai de parcial) e o dos números do Golpe Tectônico (o `consomeACada`).
+- Depois: parcial 261 → 248 nas ativas; 109 → 109 nos suportes.
 
 ## Pendências conhecidas (por ordem de prioridade)
 

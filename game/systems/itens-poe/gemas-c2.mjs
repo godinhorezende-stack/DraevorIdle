@@ -6,8 +6,8 @@
 //   - D2.1: o Traumatismo — +1 por ataque que acerta ("a primeira vez que este Ataque Acertar"), cada ponto com os seus 6 s (× a Duração da Habilidade), e o dano
 //     em você a cada ganho (o dano por Traumatismo × os Traumatismos que você tem depois do ganho); no Traumatismo Complexo, ao chegar em 10, zera;
 //   - D2.2: o pulso do Esmagar Ossos sai só quando o golpe atordoa, em volta do atordoado; a área cresce "X% por 0,1 s" do atordoamento que saiu, até +400%;
-//   - D2.3: as cargas — os Martelos Sagrados gastam 1 de Poder, os das Espirais e o Golpe Tectônico do Cataclismo gastam todas, o Golpe Tectônico só lê as de
-//     Tolerância (sem gastar); gastas no uso, antes do golpe (como o D-a do A1b);
+//   - D2.3: as cargas — os Martelos Sagrados gastam 1 de Poder, os das Espirais e o Golpe Tectônico do Cataclismo gastam todas, o Golpe Tectônico comum lê as de
+//     Tolerância e gasta 1 a cada 3 usos (dono, 20/10: a descrição do PoB); gastas no uso, antes do golpe (como o D-a do A1b);
 //   - D2.4: a ramificação do Golpe Tectônico — cada casa da fissura com a chance de abrir uma fissura lateral de metade do comprimento, a 45°, no máximo 1 ramo
 //     por fissura;
 //   - D2.5: a cascata dos Martelos Sagrados — cada cascata é um anel de martelos em volta do anterior (como a forma `concentrica` do A4), com o "+100%" só no
@@ -162,6 +162,8 @@ const LINHA_RAMIFICAR_POR_TOLERANCIA = /^\+([\d.]+) % de chance de ramificar fis
 const LINHA_DANO_POR_REMOVIDA = /^\+?([\d.]+) % mais Dano por Carga de Tolerância removida$/i;
 const LINHA_AREA_POR_REMOVIDA = /^([\d.]+) % mais Área de Efeito por Carga de Tolerância removida$/i;
 const LINHA_RAMIFICAR_POR_REMOVIDA = /^([\d.]+) % de chance de ramificação de fissuras por Carga de Tolerância removida$/i;
+/** (dono, 20/10) o Golpe Tectônico comum: "Consume an Endurance Charge every third time you slam the ground with this skill" (a descrição do PoB, act_str.lua:12144). */
+export const TECTONICO = Object.freeze({ consomeACada: 3 });
 /**
  * A fissura (`{ chancePct, porToleranciaPct, consome, maisDanoPorCargaPct, maisAreaPorCargaPct, chancePorCargaPct }`), ou null. `consome`: 0 (o Golpe
  * Tectônico — só lê as cargas) ou Infinity (o do Cataclismo — consome todas).
@@ -171,7 +173,7 @@ export function fissuraDasLinhas(slug, linhas = [], daQualidade = []) {
   const todas = [...linhas, ...daQualidade];
   const cataclismo = slug === 'Tectonic_Slam_of_Cataclysm';
   return {
-    chancePct: somar(todas, LINHA_RAMIFICAR), porToleranciaPct: somar(todas, LINHA_RAMIFICAR_POR_TOLERANCIA), consome: cataclismo ? Infinity : 0,
+    chancePct: somar(todas, LINHA_RAMIFICAR), porToleranciaPct: somar(todas, LINHA_RAMIFICAR_POR_TOLERANCIA), consome: cataclismo ? Infinity : 0, consomeACada: cataclismo ? 0 : TECTONICO.consomeACada,
     maisDanoPorCargaPct: somar(todas, LINHA_DANO_POR_REMOVIDA), maisAreaPorCargaPct: somar(todas, LINHA_AREA_POR_REMOVIDA), chancePorCargaPct: somar(todas, LINHA_RAMIFICAR_POR_REMOVIDA),
   };
 }
@@ -239,6 +241,74 @@ export function prender(hunt, c, novos, agora, acao) {
 /** A Fúria que o acerto em `alvo` dá pelas correntes (0 se ele não está preso). */
 export const furiaDoPreso = (hunt, alvo) => (hunt?.poeCorrentes ?? []).find((x) => x.uid === alvo?.uid)?.furia ?? 0;
 
+// ---------------------------------------------------------------- a Vinculação da Tempestade e a Explosão de Runas
+
+/**
+ * (dono, 20/10: "criar a Explosão de Runas, como no PoE") as RUNAS da Vinculação da Tempestade e a EXPLOSÃO DE RUNAS que a gema concede ("The gem grants a
+ * sub-skill, Rune Blast" — a wiki no poedb salvo; o poedb mostra a Explosão Rúnica dentro da página da Vinculação, sem gema própria). Os números do PoB
+ * (act_int.lua:17649-17954) e do poedb:
+ *   - a runa: base_skill_effect_duration 12000; rune_paint_max_rune_level 3; rune_paint_damage_+%_final_per_rune_level 100 (acertos e afecções);
+ *     rune_paint_area_of_effect_+%_final_per_rune_level 30 (+0,5 por qualidade); radius 16 (1,6 m); base_movement_velocity_+% −50 (o Tolhimento de quem está nela);
+ *     rune_paint_mana_spend_per_rune_upgrade (5 a 24 — a linha "Uma Runa é Melhorada para cada X de Mana Gasta");
+ *   - a Explosão de Runas: castTime 0.16; o custo é a coluna "Mana" da tabela do poedb da Vinculação (6 a 26 — "Explosão Rúnica, Custo: (6 — 18) Mana"); "Channel to
+ *     improve runes … based on the mana you spend channelling this skill. Release to detonate the targeted rune, which will cause other runes to detonate in a
+ *     chain reaction"; a wiki: "Each rune can only be improved once per cast", "a maximum of 9 runes improved per cast, because each rune is only connected to 8";
+ *   - a do Teletransporte: "Teletransporta para a runa detonada, se você não detonou runas há 0,5 segundo" (rune_blast_teleports_to_detonated_rune_with_100_ms_cooldown).
+ */
+export const RUNAS_DA_TEMPESTADE = Object.freeze({
+  duracaoMs: 12000, nivelMax: 3, maisDanoPorNivelPct: 100, maisAreaPorNivelPct: 30, areaPorNivelPorQualidade: 0.5, raioM: 1.6, tolhePct: 50,
+  explosaoMs: 160, maxMelhoriasPorUso: 9, teleporteMs: 500,
+});
+const LINHA_MANA_POR_MELHORIA = /^Uma Runa é Melhorada para cada (\d+) de Mana Gasta$/i;
+/** As runas da Vinculação (`{ manaPorMelhoria, maisAreaPorNivelPct, teleporta, …RUNAS_DA_TEMPESTADE }`), ou null. */
+export function runasDasLinhas(slug, linhas = [], qualidade = 0) {
+  if (!/^Stormbind(_of_Teleportation)?$/.test(slug)) return null;
+  const manaPorMelhoria = achar(linhas, LINHA_MANA_POR_MELHORIA);
+  if (!manaPorMelhoria) return null;
+  const R = RUNAS_DA_TEMPESTADE;
+  return { ...R, manaPorMelhoria, maisAreaPorNivelPct: R.maisAreaPorNivelPct + R.areaPorNivelPorQualidade * Math.max(0, Number(qualidade) || 0), teleporta: slug === 'Stormbind_of_Teleportation' };
+}
+/**
+ * O custo da Explosão de Runas por nível da Vinculação (Mana — o PoB, RuneBlast levels 1–40, act_int.lua:17772; o mesmo da tabela "Explosão Rúnica" do poedb, que o
+ * gemas-poe.json guardou como a coluna "Mana" da Vinculação antes da troca pela tabela própria dela).
+ */
+export const CUSTO_DA_EXPLOSAO = Object.freeze([6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 13, 13, 14, 14, 15, 15, 16, 16, 18, 18, 18, 19, 19, 20, 20, 21, 21, 23, 23, 24, 24, 24, 25, 25, 25, 25, 26, 26, 26, 26]);
+/** O custo da Explosão de Runas no nível `nivel` da Vinculação. */
+export const custoDaExplosao = (nivel = 1) => CUSTO_DA_EXPLOSAO[Math.max(1, Math.min(CUSTO_DA_EXPLOSAO.length, Math.round(Number(nivel) || 1))) - 1];
+/**
+ * (escolha do lote — o PoE diz "spread runes on the ground in a growing pattern", sem a geometria) a casa da próxima runa: a do alvo e, ocupada, a mais perto
+ * dele na espiral (os anéis em volta, de dentro para fora), sem repetir a casa de outra runa.
+ */
+export function casaDaProximaRuna(centro, ocupadas, raioMax = 8) {
+  const tem = new Set(ocupadas.map((c) => `${c.x},${c.y}`));
+  for (let r = 0; r <= raioMax; r++) {
+    for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+      if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+      const c = { x: centro.x + dx, y: centro.y + dy };
+      if (!tem.has(`${c.x},${c.y}`)) return c;
+    }
+  }
+  return null;
+}
+/** (D2.6) Melhora `n` runas: as mais antigas que ainda não estão no máximo, uma vez cada, até o teto por uso. Devolve as melhoradas. */
+export function melhorarRunas(runas, n, R = RUNAS_DA_TEMPESTADE) {
+  const fila = runas.filter((r) => (r.nivel ?? 0) < R.nivelMax).sort((a, b) => (a.desde ?? 0) - (b.desde ?? 0)).slice(0, Math.min(Math.max(0, n), R.maxMelhoriasPorUso));
+  for (const r of fila) r.nivel = (r.nivel ?? 0) + 1;
+  return fila;
+}
+/** A REAÇÃO EM CADEIA: a runa `primeira` e todas as ligadas a ela (vizinhas, a 1 casa, uma da outra). */
+export function cadeiaDeRunas(runas, primeira) {
+  const fora = new Set(runas);
+  fora.delete(primeira);
+  const cadeia = [primeira];
+  for (let i = 0; i < cadeia.length; i++) {
+    for (const r of [...fora]) if (Math.max(Math.abs(r.x - cadeia[i].x), Math.abs(r.y - cadeia[i].y)) <= 1) { fora.delete(r); cadeia.push(r); }
+  }
+  return cadeia;
+}
+/** O raio da explosão da runa no nível dela, em metros, antes da Área de Efeito do uso: 1,6 m × √(1 + X% × nível). */
+export const raioDaRunaM = (R, nivel) => R.raioM * Math.sqrt(1 + (R.maisAreaPorNivelPct * Math.max(0, nivel)) / 100);
+
 // ---------------------------------------------------------------- o status
 
 /** As linhas que este lote faz com leitor próprio (saem de "efeito não simulado"). */
@@ -249,6 +319,7 @@ export function ehLinhaC2(slug, l) {
   if (/^Holy_Hammers(_of_Spirals)?$/.test(slug) && [LINHA_PRIMEIRO_MARTELO, LINHA_CASCATAS, LINHA_LADOS, LINHA_MAIS_AO_GASTAR, LINHA_POR_CARGA_REMOVIDA, LINHA_CASCATA_POR_CARGA].some((re) => re.test(t))) return true;
   if (/^Tectonic_Slam(_of_Cataclysm)?$/.test(slug) && [LINHA_RAMIFICAR, LINHA_RAMIFICAR_POR_TOLERANCIA, LINHA_DANO_POR_REMOVIDA, LINHA_AREA_POR_REMOVIDA, LINHA_RAMIFICAR_POR_REMOVIDA].some((re) => re.test(t))) return true;
   if (/^Lightning_Tendrils(_of_Eccentricity)?$/.test(slug) && [LINHA_PULSO_FORTE, LINHA_PULSO_AREA, LINHA_PULSO_DANO].some((re) => re.test(t))) return true;
+  if (/^Stormbind(_of_Teleportation)?$/.test(slug) && LINHA_MANA_POR_MELHORIA.test(t)) return true;
   if (slug === 'Chain_Hook_of_Trarthus' && (LINHA_CORRENTES.test(t) || LINHA_COMPRIMENTO.test(t) || LINHA_FURIA_DO_PRESO.test(t) || /^\+[\d.]+ metros? ao Raio por \d+ de Fúria$/i.test(t))) return true;
   return false;
 }

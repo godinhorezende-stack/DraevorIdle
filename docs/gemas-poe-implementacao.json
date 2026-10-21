@@ -2,9 +2,9 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 252,
+   "implementada e testada": 254,
    "implementada, sem teste próprio": 48,
-   "parcial": 250,
+   "parcial": 248,
    "limitação do modelo idle": 11,
    "não se aplica": 1
   },
@@ -30,9 +30,9 @@
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 82,
+    "implementada e testada": 83,
     "implementada, sem teste próprio": 25,
-    "parcial": 95,
+    "parcial": 94,
     "limitação do modelo idle": 7
    }
   },
@@ -44,8 +44,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 650,
-   "emDuasOuMais": 119
+   "linhasDistintas": 649,
+   "emDuasOuMais": 118
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -7835,10 +7835,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Uma Runa é Melhorada para cada 24 de Mana Gasta"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7850,10 +7848,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Uma Runa é Melhorada para cada 24 de Mana Gasta"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -11714,13 +11710,6 @@
    "gemas": [
     "Bear_Trap",
     "Bear_Trap_of_Skewers"
-   ]
-  },
-  {
-   "linha": "Uma Runa é Melhorada para cada # de Mana Gasta",
-   "gemas": [
-    "Stormbind",
-    "Stormbind_of_Teleportation"
    ]
   },
   {

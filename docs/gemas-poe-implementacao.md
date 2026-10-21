@@ -8,10 +8,10 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 252 |
+| implementada e testada | 254 |
 | implementada, sem teste próprio | 48 |
 | limitação do modelo idle | 11 |
-| parcial | 250 |
+| parcial | 248 |
 | não se aplica | 1 |
 
 Só os ataques:
@@ -34,12 +34,12 @@ Só os ataques:
 ### Variantes
 
 - Vaal (52): implementada e testada 23 · parcial 23 · implementada, sem teste próprio 6
-- Alternativas (209): implementada e testada 82 · implementada, sem teste próprio 25 · parcial 95 · limitação do modelo idle 7
+- Alternativas (209): implementada e testada 83 · implementada, sem teste próprio 25 · parcial 94 · limitação do modelo idle 7
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 650 linhas distintas (119 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 649 linhas distintas (118 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
 - Testes que citam a gema: 344/562 ativas, 119/262 suportes.
@@ -164,7 +164,6 @@ Só os ataques:
 | 2 | Tempestades de Lâminas causam # % menos Dano com Acertos e Afecções |
 | 2 | Todos os Danos podem Incendiar, Congelar e Eletrizar |
 | 2 | Trava o inimigo no lugar |
-| 2 | Uma Runa é Melhorada para cada # de Mana Gasta |
 | 2 | Velocidade de Movimento do Orbe aumentada em # % |
 | 2 | Velocidade de Movimento dos Lacaios está no Máximo |
 | 2 | Você não pode Conjurar Magias Maldição Suportadas |
@@ -1392,10 +1391,6 @@ Só os ataques:
   - efeito não simulado: Flecha dispara Raios a cada 0.15 segundos
   - efeito não simulado: Cada Flecha pode disparar 20 Feixes
   - efeito não simulado: Cada Flecha pode disparar +4 Feixes
-- **Stormbind** (Vínculo Tempestuoso) — parcial
-  - efeito não simulado: Uma Runa é Melhorada para cada 24 de Mana Gasta
-- **Stormbind_of_Teleportation** (Vínculo Tempestuoso do Teleporte) — parcial
-  - efeito não simulado: Uma Runa é Melhorada para cada 24 de Mana Gasta
 - **Stormblast_Mine** (Mina da Tormenta Explosiva) — parcial
   - efeito não simulado: Cada mina aplica Dano aumentado em +1 % aos Inimigos próximos máximo de 150 %
 - **Summon_Carrion_Golem** (Convocar Golem da Carniça) — parcial
