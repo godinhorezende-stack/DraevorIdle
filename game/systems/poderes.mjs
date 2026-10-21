@@ -181,11 +181,8 @@ export function aplicarNoJogador({ estado, hunt, bicho, dano, elemento, eventos,
   dano -= direto;
   // PoE: o dano de CAOS atravessa o Escudo de Energia (a menos que um único diga que não); a espera da recarga reinicia do mesmo jeito.
   // (+ ciclo 7, lote E: "X% do dano de caos sofrido não ignora o escudo de energia" — essa parte passa pelo escudo.)
-  if (elemento === 'chaos' && ModsPoe.caosAtravessaOEscudo(ficha)) {
-    estado.esEspera = Defesa.esperaDaRecarga(ficha);
-    const peloEscudo = Math.round((dano * Math.min(100, ModsPoe.valor(ficha, 'caos_pelo_escudo_pct'))) / 100);
-    if (peloEscudo > 0) dano = dano - peloEscudo + Defesa.absorver(estado, ficha, peloEscudo, eventos, base);
-  }
+  // (dono, 20/10 — o lote PR2: a regra num lugar só, `Defesa.absorverComOCaos`)
+  if (elemento === 'chaos' && ModsPoe.caosAtravessaOEscudo(ficha)) dano = Defesa.absorverComOCaos(estado, ficha, dano, dano, eventos, base);
   // ("Dano Físico sofrido ignora o Escudo de Energia".)
   else if (elemento === 'physical' && ModsPoe.valor(ficha, 'fisico_ignora_escudo') > 0) estado.esEspera = Defesa.esperaDaRecarga(ficha);
   else dano = Defesa.absorver(estado, ficha, dano, eventos, base);

@@ -1241,7 +1241,11 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // resto passa pelo escudo.)
   const fisicoDireto = ModsPoe.valor(ficha, 'fisico_ignora_escudo') > 0 ? Math.min(final, Math.round(fisicoProtegido * fatorFinal)) : 0;
   if (fisicoDireto > 0) estado.esEspera = Defesa.esperaDaRecarga(ficha);
-  final = fisicoDireto + Defesa.absorver(estado, ficha, final - fisicoDireto, eventos, { uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: bicho.name, golpe: 'corpo a corpo' });
+  // (dono, 20/10 — o lote PR2: "o Caos dos monstros atravessa o Escudo de Energia, como no PoE") a parte de Caos do golpe — a do monstro (`danoExtra`, o
+  // `danoExtraPct` do mapa), depois das resistências e do fator final — vai direto à Vida, salvo as exceções do PoE (`Defesa.absorverComOCaos`); no limite
+  // do que sobrou do golpe depois da Égide, do Escudo Gélido e do Vínculo
+  const caosDoGolpe = Math.min(final - fisicoDireto, Math.round((partes.chaos ?? 0) * fatorFinal));
+  final = fisicoDireto + Defesa.absorverComOCaos(estado, ficha, final - fisicoDireto, caosDoGolpe, eventos, { uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: bicho.name, golpe: 'corpo a corpo' });
   // (o "X% do Dano de Acertos é sofrido na Vida do seu Totem mais próximo antes da sua" sai no `Arvore.danoRecebido`, logo abaixo.)
   // Magic shield ligado: o golpe sai da MANA primeiro (o que sobra, da vida).
   if (final > 0 && Acoes.temBuff(hunt, 'shield') && (estado.mana ?? 0) > 0) {

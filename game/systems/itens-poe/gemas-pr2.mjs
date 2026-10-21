@@ -24,7 +24,7 @@
 //   - o Composto Venenoso SALTADOR: "Projéteis podem Ricochetear ao atingir o solo / Ricocheteiam para direções aleatórias" — o salto no solo do A3 (o
 //     quadrado de 1 casa a cada 3 casas), com o rumo de cada salto sorteado (`gemas-poe.REGRAS_DE_ALVOS` → `saltoAleatorio`, `Secundarios.resolver`).
 //
-// EXCEÇÕES DO DONO (as escolhas sem fonte do lote, para o aval): (1) o Ritual do totem e o da armadilha/mina não ferem você (o totem é da outra sessão; a do
+// EXCEÇÕES DO DONO (as escolhas sem fonte do lote — aprovadas pelo dono, 20/10): (1) o Ritual do totem e o da armadilha/mina não ferem você (o totem é da outra sessão; a do
 // PoE fere o totem); (2) a perda do Desespero é a "perda por segundo" do jogo (a da Fúria Sangrenta): não passa pelas resistências nem pelo "dano sofrido" e
 // não mata (deixa 1 de Vida); (3) "Esqueleto em alcance" (a Barganha) = um Esqueleto seu vivo a até o alcance da gema de você ou do alvo; (4) com mais de um
 // projétil, cada um consome o seu; os que o frasco não pagou saem sem o bônus — no jogo os projéteis de um uso têm uma conta só, então o bônus do uso é ×

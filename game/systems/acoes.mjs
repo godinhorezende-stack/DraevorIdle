@@ -764,11 +764,7 @@ function ritualEmVoce(estado, hunt, personagem, slug, nivel, eventos) {
   let dano = GemasPR2.danoEmVoceDoRitual(r, estado.maxHp ?? 0, ficha.energyShield ?? 0, ModsPoe.fatorDaResistenciaRecebida(ficha, 'chaos'));
   if (!(dano > 0)) return 0;
   const base = { uid: 'player', quem: personagem?.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: personagem?.nome, golpe: 'Ritual Proibido' };
-  if (ModsPoe.caosAtravessaOEscudo(ficha)) {
-    estado.esEspera = Defesa.esperaDaRecarga(ficha);
-    const peloEscudo = Math.round((dano * Math.min(100, ModsPoe.valor(ficha, 'caos_pelo_escudo_pct'))) / 100);
-    if (peloEscudo > 0) dano = dano - peloEscudo + Defesa.absorver(estado, ficha, peloEscudo, eventos, base);
-  } else dano = Defesa.absorver(estado, ficha, dano, eventos, base);
+  dano = Defesa.absorverComOCaos(estado, ficha, dano, dano, eventos, base);
   if (!(dano > 0)) return 0;
   estado.hp = Math.max(0, (estado.hp ?? 0) - dano);
   eventos.push({ t: 'dmg', ...base, v: dano, color: COR_DO_ELEMENTO.chaos ?? '#b44dff' });

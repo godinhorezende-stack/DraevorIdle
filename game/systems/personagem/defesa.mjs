@@ -109,6 +109,24 @@ export function absorver(estado, ficha, dano, eventos, evento) {
 }
 
 /**
+ * (dono, 20/10 — o lote PR2) O dano com uma parte de CAOS (`caos`, já dentro de `dano`): no PoE o Caos ATRAVESSA o Escudo de Energia — vai direto à Vida,
+ * e a espera da recarga reinicia do mesmo jeito —, salvo as exceções do PoE: "Dano de Caos sofrido não ultrapassa o Escudo de Energia" (a Carne Divina, os
+ * modificadores de mapa — `caos_nao_atravessa_escudo`) e "X% do dano de caos sofrido não ignora o escudo de energia" (essa parte passa pelo escudo —
+ * `caos_pelo_escudo_pct`). O resto do dano passa por `absorver`. Fora do PoE, tudo pelo escudo, como antes. Devolve o que sobra para a Vida (e o que vem
+ * depois — a mana do escudo mágico, a árvore). O caminho é um só: o golpe dos monstros, as magias e as mecânicas deles, o degenerativo em você, o Ritual.
+ */
+export function absorverComOCaos(estado, ficha, dano, caos, eventos, evento) {
+  if (!(dano > 0)) return dano;
+  const c = Math.max(0, Math.min(dano, Math.round(Number(caos) || 0)));
+  if (!(c > 0) || !ModsPoe.caosAtravessaOEscudo(ficha)) return absorver(estado, ficha, dano, eventos, evento);
+  const peloEscudo = Math.round((c * Math.min(100, Math.max(0, ModsPoe.valor(ficha, 'caos_pelo_escudo_pct')))) / 100);
+  const direto = c - peloEscudo;
+  estado.esEspera = esperaDaRecarga(ficha);
+  const resto = dano - direto;
+  return direto + (resto > 0 ? absorver(estado, ficha, resto, eventos, evento) : 0);
+}
+
+/**
  * A espera até a recarga começar: a do Draevor (`ATRASO_MS`) ou, com o PoE, a do PoE 1 (`ATRASO_MS_POE`, 2 s) — dividida por (1 + "Início
  * da Recarga X% mais rápido" das peças e da árvore, `ficha.esInicioPct`).
  */
