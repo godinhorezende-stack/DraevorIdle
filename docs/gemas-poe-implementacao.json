@@ -2,17 +2,17 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 315,
+   "implementada e testada": 326,
    "implementada, sem teste próprio": 46,
-   "parcial": 188,
+   "parcial": 177,
    "limitação do modelo idle": 12,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 143,
+   "implementada e testada": 146,
    "implementada, sem teste próprio": 18,
-   "parcial": 42,
+   "parcial": 39,
    "limitação do modelo idle": 7
   },
   "suportes": {
@@ -31,9 +31,9 @@
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 111,
+    "implementada e testada": 115,
     "implementada, sem teste próprio": 24,
-    "parcial": 67,
+    "parcial": 63,
     "limitação do modelo idle": 7
    }
   },
@@ -45,8 +45,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 534,
-   "emDuasOuMais": 89
+   "linhasDistintas": 507,
+   "emDuasOuMais": 77
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -60,7 +60,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 389,
+   "ativasCitadas": 402,
    "suportesCitados": 119,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -4515,12 +4515,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "chuva",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Flecha dispara Raios a cada 0.41 segundos",
-    "efeito não simulado: Cada Flecha pode disparar 4 Feixes",
-    "efeito não simulado: Cada Flecha pode disparar +1 Feixe"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4532,12 +4528,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "chuva",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Flecha dispara Raios a cada 0.3 segundos",
-    "efeito não simulado: Cada Flecha pode disparar 6 Feixes",
-    "efeito não simulado: Cada Flecha pode disparar +2 Feixes"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4549,12 +4541,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "chuva",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Flecha dispara Raios a cada 0.15 segundos",
-    "efeito não simulado: Cada Flecha pode disparar 20 Feixes",
-    "efeito não simulado: Cada Flecha pode disparar +4 Feixes"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5204,12 +5192,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Parede terá 5.9 metros",
-    "efeito não simulado: Projéteis que passam pela parede causam 78 a 117 de Dano de Fogo Adicional",
-    "efeito não simulado: Máximo de +2 Paredes Flamejantes por vez"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5260,11 +5244,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 0.15 segundos entre o aparecimento de seções da Parede",
-    "efeito não simulado: Parede terá 5.6 metros"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5276,12 +5257,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 0.15 segundos entre o aparecimento de seções da Parede",
-    "efeito não simulado: Parede terá 4.6 metros",
-    "efeito não simulado: [DNT] Deals 10 % more Damage per active wall"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5319,12 +5296,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "orbe",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Golpeia a cada 0.5 segundos enquanto Canalizando uma Habilidade de Raio próximo ao Orbe",
-    "efeito não simulado: Feixes se dividem em direção a alvos dentro de um raio base de 3.5 metros",
-    "efeito não simulado: Orbes desaparecem após 29 Golpes"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5336,12 +5309,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "orbe",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Golpeia a cada 0.5 segundos enquanto Canalizando uma Habilidade de Raio próximo ao Orbe",
-    "efeito não simulado: Feixes se dividem em direção a alvos dentro de um raio base de 3.8 metros",
-    "efeito não simulado: Orbes desaparecem após 14 Golpes"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6418,16 +6387,9 @@
    "nome": "Campo Galvânico",
    "variante": "normal",
    "ataque": false,
-   "arquetipo": "orbe",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Dispara um feixe a cada 0.1 segundos",
-    "efeito não simulado: Pode focar em cada inimigo apenas uma vez a cada 0.4 segundos",
-    "efeito não simulado: Campo ganha 15 % mais Dano com Ataques por cada 5 % de Efeito de Eletrização no Inimigo quando criado",
-    "efeito não simulado: Campo ganha +0.1 metros ao raio por cada 10 % de Efeito de Eletrização no Inimigo quando criado",
-    "efeito não simulado: Buff Concede 50 % de chance de Eletrizar inimigos",
-    "efeito não simulado: Buff concede +20 % de chance de Eletrizar inimigos"
-   ],
+   "arquetipo": "guarda",
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6438,14 +6400,9 @@
    "nome": "Campo Galvânico da Intensidade",
    "variante": "alternativa",
    "ataque": false,
-   "arquetipo": "orbe",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Dispara um feixe a cada 0.2 segundos",
-    "efeito não simulado: Pode focar em cada inimigo apenas uma vez a cada 0.55 segundos",
-    "efeito não simulado: Buff Concede 50 % de chance de Eletrizar inimigos",
-    "efeito não simulado: Buff concede +20 % de chance de Eletrizar inimigos"
-   ],
+   "arquetipo": "guarda",
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6984,11 +6941,7 @@
    "arquetipo": "area",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Esta Magia perde 1 de Intensidade a cada 0.5 segundos enquanto se movendo, ou imediatamente ao teleportar",
-    "efeito não simulado: Esta Magia ganha Intensidade quando você Conjurá-la, máximo de 3",
-    "efeito não simulado: +0.3 metros à Largura do Feixe Por Intensidade 33 % menos ângulo de ramificação por Intensidade",
-    "efeito não simulado: 35 % mais Dano com Acertos e Afecções por Intensidade",
-    "efeito não simulado: +10 % mais Dano com Acertos e Afecções por Intensidade"
+    "efeito não simulado: +0.3 metros à Largura do Feixe Por Intensidade 33 % menos ângulo de ramificação por Intensidade"
    ],
    "idle": [],
    "outros": [],
@@ -7809,14 +7762,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "orbe",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Pulsa a cada 0.4 enquanto Congelada, Eletrizada, Enfraquecida ou Exaurida",
-    "efeito não simulado: Só pode ser Acertado uma vez a cada 1 segundo",
-    "efeito não simulado: Inimigos Encharcados têm Exposição a Gelo e Raio, aplicando -10 % às Resistências",
-    "efeito não simulado: 100 % do Dano Físico é Convertido para Dano de Gelo enquanto a Esfera não possuir Afeções 100 % do Dano Físico é Convertido para Dano de Raio enquanto a Esfera estiver Eletrizada ou Exaurida 100 % do Dano Físico é Convertido para Dano de Gelo enquanto a Esfera etiver Congelada ou Enfraquecida",
-    "efeito não simulado: Frequência do Pulso aumentada em +10 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -10776,14 +10723,6 @@
    ]
   },
   {
-   "linha": "Cada Flecha pode disparar # Feixes",
-   "gemas": [
-    "Storm_Rain",
-    "Storm_Rain_of_the_Conduit",
-    "Storm_Rain_of_the_Fence"
-   ]
-  },
-  {
    "linha": "Cria # Estaca",
    "gemas": [
     "Perforate",
@@ -10797,14 +10736,6 @@
     "Bone_Offering",
     "Flesh_Offering",
     "Spirit_Offering"
-   ]
-  },
-  {
-   "linha": "Flecha dispara Raios a cada # segundos",
-   "gemas": [
-    "Storm_Rain",
-    "Storm_Rain_of_the_Conduit",
-    "Storm_Rain_of_the_Fence"
    ]
   },
   {
@@ -10829,14 +10760,6 @@
     "Divine_Blessing_Support",
     "Eternal_Blessing_Support",
     "Guardians_Blessing_Support"
-   ]
-  },
-  {
-   "linha": "Parede terá # metros",
-   "gemas": [
-    "Flame_Wall",
-    "Frost_Wall",
-    "Frost_Wall_of_Encroachment"
    ]
   },
   {
@@ -10911,13 +10834,6 @@
    ]
   },
   {
-   "linha": "# segundos entre o aparecimento de seções da Parede",
-   "gemas": [
-    "Frost_Wall",
-    "Frost_Wall_of_Encroachment"
-   ]
-  },
-  {
    "linha": "#% do Dano Físico Convertido para Dano de Fogo",
    "gemas": [
     "Fissure_Support",
@@ -10981,27 +10897,6 @@
    ]
   },
   {
-   "linha": "Buff Concede # % de chance de Eletrizar inimigos",
-   "gemas": [
-    "Galvanic_Field",
-    "Galvanic_Field_of_Intensity"
-   ]
-  },
-  {
-   "linha": "Buff concede +# % de chance de Eletrizar inimigos",
-   "gemas": [
-    "Galvanic_Field",
-    "Galvanic_Field_of_Intensity"
-   ]
-  },
-  {
-   "linha": "Cada Flecha pode disparar +# Feixes",
-   "gemas": [
-    "Storm_Rain_of_the_Conduit",
-    "Storm_Rain_of_the_Fence"
-   ]
-  },
-  {
    "linha": "Causa # a # de Dano de Caos",
    "gemas": [
     "Hextoad_Support",
@@ -11051,13 +10946,6 @@
    ]
   },
   {
-   "linha": "Dispara um feixe a cada # segundos",
-   "gemas": [
-    "Galvanic_Field",
-    "Galvanic_Field_of_Intensity"
-   ]
-  },
-  {
    "linha": "Duração de Maldições aumentada em # %",
    "gemas": [
     "Enfeeble",
@@ -11086,24 +10974,10 @@
    ]
   },
   {
-   "linha": "Feixes se dividem em direção a alvos dentro de um raio base de # metros",
-   "gemas": [
-    "Orb_of_Storms",
-    "Orb_of_Storms_of_Squalls"
-   ]
-  },
-  {
    "linha": "Golens causam # % mais Dano por Lacaio Não-Golem próximo deles, até # %",
    "gemas": [
     "Summon_Carrion_Golem",
     "Summon_Carrion_Golem_of_Scavenging"
-   ]
-  },
-  {
-   "linha": "Golpeia a cada # segundos enquanto Canalizando uma Habilidade de Raio próximo ao Orbe",
-   "gemas": [
-    "Orb_of_Storms",
-    "Orb_of_Storms_of_Squalls"
    ]
   },
   {
@@ -11198,13 +11072,6 @@
    ]
   },
   {
-   "linha": "Orbes desaparecem após # Golpes",
-   "gemas": [
-    "Orb_of_Storms",
-    "Orb_of_Storms_of_Squalls"
-   ]
-  },
-  {
    "linha": "Orbes Explosivas causam # % do Dano da Habilidade para cada # segundos de Duração restante",
    "gemas": [
     "Storm_Burst",
@@ -11216,13 +11083,6 @@
    "gemas": [
     "Storm_Burst",
     "Storm_Burst_of_Repulsion"
-   ]
-  },
-  {
-   "linha": "Pode focar em cada inimigo apenas uma vez a cada # segundos",
-   "gemas": [
-    "Galvanic_Field",
-    "Galvanic_Field_of_Intensity"
    ]
   },
   {
@@ -11310,12 +11170,6 @@
    ]
   },
   {
-   "linha": "[DNT] Deals # % more Damage per active wall",
-   "gemas": [
-    "Frost_Wall_of_Encroachment"
-   ]
-  },
-  {
    "linha": "[Empowered|Fortalece] a próxima magia vaal danosa que você conjurar",
    "gemas": [
     "Pact_of_KTash"
@@ -11352,21 +11206,9 @@
    ]
   },
   {
-   "linha": "# % do Dano Físico é Convertido para Dano de Gelo enquanto a Esfera não possuir Afeções # % do Dano Físico é Convertido para Dano de Raio enquanto a Esfera estiver Eletrizada ou Exaurida # % do Dano Físico é Convertido para Dano de Gelo enquanto a Esfera etiver Congelada ou Enfraquecida",
-   "gemas": [
-    "Hydrosphere"
-   ]
-  },
-  {
    "linha": "# % mais Área de Efeito se Consumindo um Lacaio",
    "gemas": [
     "Bodyswap_of_Sacrifice"
-   ]
-  },
-  {
-   "linha": "# % mais Dano com Acertos e Afecções por Intensidade",
-   "gemas": [
-    "Crackling_Lance"
    ]
   },
   {
@@ -11445,12 +11287,6 @@
    "linha": "#% mais Dano por Carga de Tolerância",
    "gemas": [
     "Endurance_Charge_on_Melee_Stun_Support"
-   ]
-  },
-  {
-   "linha": "+# % mais Dano com Acertos e Afecções por Intensidade",
-   "gemas": [
-    "Crackling_Lance"
    ]
   },
   {
@@ -11880,12 +11716,6 @@
    ]
   },
   {
-   "linha": "Cada Flecha pode disparar +# Feixe",
-   "gemas": [
-    "Storm_Rain"
-   ]
-  },
-  {
    "linha": "Cada Habilidade Suportada causa #% mais Dano com Incêndio por cada Incêndio infligido com ela Recentemente, máximo de #%",
    "gemas": [
     "Controlled_Blaze_Support"
@@ -11907,18 +11737,6 @@
    "linha": "Cada Mina das Habilidades Suportadas aplicadas #% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de #%",
    "gemas": [
     "High-Impact_Mine_Support"
-   ]
-  },
-  {
-   "linha": "Campo ganha # % mais Dano com Ataques por cada # % de Efeito de Eletrização no Inimigo quando criado",
-   "gemas": [
-    "Galvanic_Field"
-   ]
-  },
-  {
-   "linha": "Campo ganha +# metros ao raio por cada # % de Efeito de Eletrização no Inimigo quando criado",
-   "gemas": [
-    "Galvanic_Field"
    ]
   },
   {
@@ -12354,18 +12172,6 @@
    ]
   },
   {
-   "linha": "Esta Magia ganha Intensidade quando você Conjurá-la, máximo de #",
-   "gemas": [
-    "Crackling_Lance"
-   ]
-  },
-  {
-   "linha": "Esta Magia perde # de Intensidade a cada # segundos enquanto se movendo, ou imediatamente ao teleportar",
-   "gemas": [
-    "Crackling_Lance"
-   ]
-  },
-  {
    "linha": "Estandarte concede # % mais Dano Físico com Habilidades Corpo a Corpo a Você e Aliados",
    "gemas": [
     "War_Banner"
@@ -12483,12 +12289,6 @@
    "linha": "Fonte de Vida dura +# segundos",
    "gemas": [
     "Lifetap_Support"
-   ]
-  },
-  {
-   "linha": "Frequência do Pulso aumentada em +# %",
-   "gemas": [
-    "Hydrosphere"
    ]
   },
   {
@@ -13164,12 +12964,6 @@
    ]
   },
   {
-   "linha": "Inimigos Encharcados têm Exposição a Gelo e Raio, aplicando # % às Resistências",
-   "gemas": [
-    "Hydrosphere"
-   ]
-  },
-  {
    "linha": "Inimigos possuem # % menos Velocidade de Movimento no início do Debuff",
    "gemas": [
     "Bear_Trap"
@@ -13506,12 +13300,6 @@
    ]
   },
   {
-   "linha": "Máximo de +# Paredes Flamejantes por vez",
-   "gemas": [
-    "Flame_Wall"
-   ]
-  },
-  {
    "linha": "Minas de Habilidades Suportadas não podem ser Detonadas enquanto dentro de # metros de você",
    "gemas": [
     "Locus_Mine_Support"
@@ -13638,21 +13426,9 @@
    ]
   },
   {
-   "linha": "Projéteis que passam pela parede causam # a # de Dano de Fogo Adicional",
-   "gemas": [
-    "Flame_Wall"
-   ]
-  },
-  {
    "linha": "Projéteis Ricocheteiam ao colidirem com o terreno",
    "gemas": [
     "Lightning_Trap_of_Sparking"
-   ]
-  },
-  {
-   "linha": "Pulsa a cada # enquanto Congelada, Eletrizada, Enfraquecida ou Exaurida",
-   "gemas": [
-    "Hydrosphere"
    ]
   },
   {
@@ -13827,12 +13603,6 @@
    "linha": "Sangue Corrompido infligido por estandartes reforçados tem uma duração base de # segundos",
    "gemas": [
     "Bloodsoaked_Banner_Support"
-   ]
-  },
-  {
-   "linha": "Só pode ser Acertado uma vez a cada # segundo",
-   "gemas": [
-    "Hydrosphere"
    ]
   },
   {

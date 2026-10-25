@@ -1251,6 +1251,8 @@ export function novaInstancia(estado, pronta = null) {
   delete hunt.poeObjetos;
   // (lote B2, dono 20/10 — D-B2.2: as Cargas Sangrentas zeram na troca de instância)
   delete hunt.poeSangue;
+  // (lote B4, dono 25/10 — D-B4.6: a Intensidade zera na troca de instância)
+  delete hunt.poeIntensidade;
   if (hunt.areasFrias) hunt.areasFrias = hunt.areasFrias.filter((a) => !a.obj);
   hunt.pos = { x: novo.inicio.x, y: novo.inicio.y, dir: 2 };
   hunt.percurso = novo.grade.percurso ? { passo: waypointMaisPerto(novo.grade.percurso, novo.inicio, 0, novo.grade.percurso.length, novo.andarInicial) } : null;
@@ -2057,7 +2059,8 @@ export function tique(estado, personagem, agora = Date.now()) {
     }
     // (PoE, 11/10) A Furtividade encolhe o raio em que os bichos notam você (`ModsPoe.percepcaoComFurtividade`).
     const percepcao = itensPoeLigado() ? ModsPoe.percepcaoComFurtividade(ALCANCE_DE_PERCEPCAO, Ficha.combate(estado)) : ALCANCE_DE_PERCEPCAO;
-    moverMonstros(hunt, gradeDosBichos, agora, { semPerseguir: naZonaSegura, percepcao });
+    // (lote B4, dono 25/10 — D-B4.5: as suas Paredes de Gelo seguram os bichos como terreno até expirar — `Acoes.gradeSemParedes`)
+    moverMonstros(hunt, Acoes.gradeSemParedes(hunt, gradeDosBichos, agora), agora, { semPerseguir: naZonaSegura, percepcao });
   }
 
   const eventos = [];
