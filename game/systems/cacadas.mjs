@@ -1254,6 +1254,7 @@ export function novaInstancia(estado, pronta = null) {
   // (lote PR4, dono 25/10: a energia estática do Golpe Estático e os Relâmpagos Concentrados também — os bichos novos não têm as flechas nem as conchas)
   delete hunt.poeEstatico;
   delete hunt.poeConcentrados;
+  delete hunt.poeFeixesConcentrados;
   if (hunt.areasFrias) hunt.areasFrias = hunt.areasFrias.filter((a) => !a.obj);
   hunt.pos = { x: novo.inicio.x, y: novo.inicio.y, dir: 2 };
   hunt.percurso = novo.grade.percurso ? { passo: waypointMaisPerto(novo.grade.percurso, novo.inicio, 0, novo.grade.percurso.length, novo.andarInicial) } : null;

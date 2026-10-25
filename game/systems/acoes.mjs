@@ -7322,7 +7322,7 @@ export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora 
   // (lote B3, dono 21/10: as flechas presas da Conflagração que você ativou chegando perto, a Chuva de Lâminas de Trarthus ligada — `tiqueDasGemasB3`)
   if (itensPoeLigado() && (hunt?.poeTrarthus || hunt?.poeObjetos?.length)) tiqueDasGemasB3(estado, hunt, personagem, eventos, agora);
   // (lote PR4, dono 25/10: as flechas grudadas, as conchas, as cordas, a energia estática — `tiqueDasGemasPR4`)
-  if (itensPoeLigado() && (hunt?.poeEstatico || hunt?.poeConcentrados || hunt?.monstros?.length)) tiqueDasGemasPR4(estado, hunt, personagem, eventos, agora);
+  if (itensPoeLigado() && (hunt?.poeEstatico || hunt?.poeConcentrados || hunt?.poeFeixesConcentrados || hunt?.monstros?.length)) tiqueDasGemasPR4(estado, hunt, personagem, eventos, agora);
   if (!hunt?.plantadas?.length || !itensPoeLigado()) return eventos;
   const ficha = Ficha.combate(estado);
   for (const { p, alvo } of [...Plantadas.armadilhasQueAtivam(hunt, ficha, agora), ...Plantadas.minasQueDetonam(hunt, ficha, agora)]) {
@@ -8864,6 +8864,8 @@ function aposOPasseDoPR4(estado, hunt, personagem, u, { diretos = [], golpes = [
     }
     if (u.rc) {
       const at = hunt.poeConcentrados?.acao === u.entry.id && hunt.poeConcentrados.ate > agora ? hunt.poeConcentrados.n ?? 0 : 0;
+      // (decisão do dono, 25/10) com Relâmpagos Concentrados, o ataque solta o feixe (os de antes do ganho — a exceção 9), no tique (a exceção 4)
+      if (at > 0) (hunt.poeFeixesConcentrados ??= []).push({ acao: u.entry.id, n: Math.min(u.rc.maximo, at), z: hunt.z ?? 0 });
       hunt.poeConcentrados = { acao: u.entry.id, n: Math.min(u.rc.maximo, at + u.rc.ganha), ate: agora + u.durMs };
     }
   }
@@ -8980,6 +8982,25 @@ export function tiqueDasGemasPR4(estado, hunt, personagem, eventos = [], agora =
         }
         if (ge.ate <= agora) delete hunt.poeEstatico;
       }
+    }
+  }
+  // (decisão do dono, 25/10) o FEIXE dos Relâmpagos Concentrados: 1 alvo (o vivo mais perto de você a até 2 m × √ da Área), +1 ricochete a cada 2 Relâmpagos (+ os
+  // ricochetes dos suportes), sem "menos Dano"; o "mais" dos Relâmpagos do ataque que o soltou
+  const feixes = hunt.poeFeixesConcentrados;
+  if (feixes) {
+    delete hunt.poeFeixesConcentrados;
+    for (const fx of feixes) {
+      const entry = POR_ID.get(fx.acao);
+      if (!entry?.poeGema || !naBarra(estado, fx.acao) || (fx.z ?? 0) !== z || !vivo()) continue;
+      const ef = efeitoDe(entry);
+      const rc = GemasPoe.concentradosDaGema(entry.poeGema.slug, ef?.nivel ?? 1, ef?.qualidade ?? 0);
+      if (!rc) continue;
+      const raio = Math.max(1, raioDoUsoPR4(ef, GemasPR4.GOLPE_ESTATICO.raioM));
+      const vivosAqui = vivosNoAndar(hunt, z);
+      const t = vivosAqui.filter((m) => distanciaChebyshev(m, hunt.pos) <= raio).sort((a, m) => distanciaChebyshev(a, hunt.pos) - distanciaChebyshev(m, hunt.pos))[0];
+      if (!t) continue;
+      const cadeia = saltosDaCadeia(t, vivosAqui, { targets: 1 + GemasPR4.ricochetesDoConcentrado(fx.n) + (ef?.cadeiaPoe?.saltos ?? 0), distance: alcanceDoRicochete(DISTANCIA_DA_CADEIA_POE(), ef) });
+      golpeDoObjeto(estado, hunt, personagem, { acao: fx.acao, x: hunt.pos.x, y: hunt.pos.y, z, raio: 0, dono: 'voce' }, t, { casas: cadeia.map((m) => ({ x: m.x, y: m.y })), pr4: { tipo: 'feixeConcentrado', n: fx.n, maisPct: rc.maisPct } }, eventos);
     }
   }
   if (hunt.poeConcentrados && !(hunt.poeConcentrados.ate > agora)) delete hunt.poeConcentrados;

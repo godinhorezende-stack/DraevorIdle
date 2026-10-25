@@ -337,3 +337,44 @@ test('PR4 no jogo: a Flecha Aprisionadora — as cordas no alvo (40% cada, até 
   tique(e, e.hunt.clock);
   assert.equal(b.poeAprisionado, undefined);
 });
+
+// ---------------------------------------------------------------- as decisões do dono (25/10)
+
+test('PR4 (dono, 25/10): o feixe dos Relâmpagos Concentrados — +1 ricochete a cada 2 (5 no máximo de 10, 6 com os 12 da qualidade), sem "menos Dano"', () => {
+  assert.deepEqual([0, 1, 2, 3, 10, 12].map(PR4.ricochetesDoConcentrado), [0, 0, 1, 1, 5, 6]);
+  const e = PR4.efeitoDoGolpePR4({ fatorDeDano: 1 }, { tipo: 'feixeConcentrado', n: 5, maisPct: 8 });
+  assert.ok(perto(e.fatorDeDano, 1.4));
+  assert.ok(perto(e.maisAfeccaoPct, 40));
+});
+
+test('PR4 no jogo (dono, 25/10): com Relâmpagos Concentrados o ataque solta o feixe — 1 alvo, os ricochetes pelos Relâmpagos, o dano do golpe com o "mais"', { skip: SEM }, async () => {
+  const { e, b, resto } = await montar('Static_Strike_of_Gathering_Lightning', { arma: 'One_Hand_Swords/Rusted_Sword', dx: 1 });
+  const [m1, m2, m3] = [outro(e, resto[0], 2, 0), outro(e, resto[1], 3, 0), outro(e, resto[2], 4, 0)];
+  // sem Relâmpago antes do ataque: sem feixe
+  usar(e, b);
+  assert.equal(e.hunt.poeFeixesConcentrados, undefined);
+  // 1 Relâmpago: o feixe sem ricochete, no vivo mais perto de você (o alvo)
+  liberar(e);
+  const direto = golpesEm(usar(e, b).eventos, b)[0];
+  assert.deepEqual(e.hunt.poeFeixesConcentrados.map((f) => f.n), [1]);
+  const ev1 = tique(e, e.hunt.clock);
+  assert.equal(golpesEm(ev1, b).length, 1);
+  assert.equal(golpesEm(ev1, m1).length, 0);
+  // o feixe sem "menos": o mesmo dano do golpe com o mesmo "mais" (a mesma rolagem; o arredondamento, até 1)
+  assert.ok(Math.abs(golpesEm(ev1, b)[0] - direto) <= 1, `${golpesEm(ev1, b)[0]} / ${direto}`);
+  assert.equal(e.hunt.poeFeixesConcentrados, undefined);
+  // 5 Relâmpagos: 2 ricochetes — o alvo e mais 2 em sequência
+  e.hunt.poeConcentrados.n = 5;
+  liberar(e);
+  usar(e, b);
+  const ev5 = tique(e, e.hunt.clock);
+  assert.deepEqual([b, m1, m2, m3].map((m) => golpesEm(ev5, m).length), [1, 1, 1, 0]);
+});
+
+test('PR4 no jogo (dono, 25/10): a flecha da Flecha Explosiva causa dano ao acertar (a parte "Arrow" do PoB), além de grudar', { skip: SEM }, async () => {
+  const { e, b } = await montar('Explosive_Arrow', { dx: 3 });
+  const r = usar(e, b);
+  assert.equal(golpesEm(r.eventos, b).length, 1);
+  assert.ok(golpesEm(r.eventos, b)[0] > 0);
+  assert.equal(b.poeFusiveis[QUEM].n, 1);
+});

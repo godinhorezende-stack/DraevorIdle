@@ -22,8 +22,10 @@
 //     (chaining = false). D2 do dono: os N mais perto num raio de 2 m (radius 20 → 1 casa) × √ da Área, e a velocidade de ataque fora (só a frequência);
 //   - o GOLPE ESTÁTICO DE RELÂMPAGOS CONCENTRADOS (StaticStrikeAltX): +1 Relâmpago Concentrado por acerto (static_strike_number_gathering_lightning_to_gain_on_hit),
 //     máximo 10 (+0,1 por qualidade), "8% mais Dano com Acertos e Afecções por Relâmpago Concentrado" (hit_and_ailment_damage_+%_final_per_gathering_lightning —
-//     MORE × o número, Hit e Ailment), 4 s × a Duração. OS RICOCHETES A MAIS DO FEIXE ("chain additional times the more Gathering Lightning you have") NÃO TÊM
-//     NÚMERO no PoB nem no poedb: ficam para o dono (o feixe não sai neste lote);
+//     MORE × o número, Hit e Ailment), 4 s × a Duração. O FEIXE ("While you have Gathering Lightning, attacks with this skill will cause chaining beams of lightning,
+//     which chain additional times the more Gathering Lightning you have" — sem número no PoB nem no poedb): decisão do dono (25/10) — +1 ricochete a cada 2
+//     Relâmpagos (5 no máximo de 10; 6 com os 12 da qualidade 20), 1 alvo por feixe (static_strike_number_of_beam_targets 1), sem o "30% menos" (a variante não
+//     tem o static_strike_beam_damage_+%_final);
 //   - o ENSANGUENTAR (Exsanguinate): "Releases several tendrils of blood from your character, targeting enemies in a narrow angle in front of you … Effects which
 //     allow skills to chain can apply to these tendrils" — até blood_tendrils_beam_count (9) alvos, cada tentáculo com os ricochetes;
 //   - a CONCHA SOMÁTICA (SomaticShell): "applies a shell to the first enemy struck. Damage from hits against that target is taken from the shell first. If fully
@@ -38,7 +40,7 @@
 //     tethered_movement_speed_+%_final_per_rope), até 3 cordas; a qualidade: o Efeito do Debuff (skill_buff_effect_+%). D4 do dono: a % de cada fonte guardada
 //     (cada corda com a sua), o "menos" multiplicativo por corda, e o Aprisionamento quebra quando o bicho se afasta mais de 2 casas.
 //
-// EXCEÇÕES DO DONO (as escolhas sem fonte do lote, para o aval): (1) as flechas grudam só no inimigo que acertam (a que erra ou acaba no chão some, sem explodir
+// EXCEÇÕES DO DONO (as escolhas sem fonte do lote — aprovadas pelo dono em 25/10): (1) as flechas grudam só no inimigo que acertam (a que erra ou acaba no chão some, sem explodir
 // nem prender); (2) o "alvo final" de cada flecha é o último inimigo que ela acertou (com perfuração, ricochete ou retorno, o último da sequência dela); (3) as
 // flechas, as conchas e as cordas são só do seu uso — o totem, a armadilha, a mina e o mercenário acertam como antes; (4) a explosão da Flecha Explosiva, a da
 // Concha e o golpe das flechas grudadas saem no tique da caçada seguinte ao que as fez (o PoE: na hora); (5) o feixe do Golpe Estático sai de você e o
@@ -255,9 +257,13 @@ export function efeitoDoGolpePR4(e, pr4) {
     };
   }
   if (pr4.tipo === 'feixe') return { ...e, fatorDeDano: (e.fatorDeDano ?? 1) * Math.max(0, 1 - (pr4.menosPct ?? 0) / 100) };
+  if (pr4.tipo === 'feixeConcentrado') return comOsConcentrados(e, pr4.maisPct, pr4.n);
   if (pr4.tipo === 'concha') return { ...e, fatorDeDano: (e.fatorDeDano ?? 1) * (1 + (pr4.maisAreaPct ?? 0) / 100) };
   return e;
 }
+/** (decisão do dono, 25/10) os ricochetes a mais do feixe dos Relâmpagos Concentrados: +1 a cada 2. */
+export const RICOCHETES_POR_CONCENTRADOS = 2;
+export const ricochetesDoConcentrado = (n) => Math.floor(Math.max(0, n) / RICOCHETES_POR_CONCENTRADOS);
 /** O "mais" dos Relâmpagos Concentrados no uso (`n` os de agora): o MORE de Hit e Ailment — o do acerto sai da afecção, e o da afecção entra só nela. */
 export function comOsConcentrados(e, maisPct, n) {
   const p = (maisPct ?? 0) * Math.max(0, n);
