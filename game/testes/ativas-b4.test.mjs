@@ -383,7 +383,8 @@ test('B4 no jogo: a Parede de Gelo — as casas aparecem do centro para fora (0,
   assert.ok(r.ok, r.erro);
   const s = objetos(m.e, 'secaoGelo');
   assert.equal(s.length, 3, '5,6 m: 2,8 casas, o sorteio 0,1 dá 3');
-  assert.deepEqual(s.map((o) => [o.x - m.e.hunt.pos.x, o.y - m.e.hunt.pos.y, o.aparece - s[0].aparece]), [[2, 0, 0], [2, 1, 150], [2, -1, 300]]);
+  // (aval do dono, 25/10 — a revisão: do centro para os DOIS lados ao mesmo tempo; a −1 aparece junto com a +1, aos 150 ms — wall_expand_delay_ms do PoB)
+  assert.deepEqual(s.map((o) => [o.x - m.e.hunt.pos.x, o.y - m.e.hunt.pos.y, o.aparece - s[0].aparece]), [[2, 0, 0], [2, 1, 150], [2, -1, 150]]);
   const ev = tiques(m.e, 50);
   assert.equal(golpesEm(ev, m.b).length, 1, 'o centro');
   assert.equal(m.b.x, x0 + 1, 'empurrado');

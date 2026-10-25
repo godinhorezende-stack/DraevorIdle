@@ -38,7 +38,7 @@ export function larguraDoFeixe(larguraM, fatorDaArea = 1, rng = Math.random) {
 }
 /**
  * As casas do FEIXE de `de` a `para` (as duas pontas incluídas; a reta de Bresenham) com `largura` casas: as laterais saem para os dois lados da perpendicular ao
- * eixo dominante (⌊(largura − 1) ÷ 2⌋ de cada lado). Sem repetir casa.
+ * eixo dominante (⌊(largura − 1) ÷ 2⌋ de um lado, ⌊largura ÷ 2⌋ do outro). Sem repetir casa.
  */
 export function casasDoFeixe(de, para, largura = 1) {
   const casas = new Map();
@@ -47,11 +47,14 @@ export function casasDoFeixe(de, para, largura = 1) {
   const dy = para.y - de.y;
   const passos = Math.max(Math.abs(dx), Math.abs(dy));
   const [px, py] = Math.abs(dx) >= Math.abs(dy) ? [0, 1] : [1, 0];
-  const lado = Math.max(0, Math.floor((Math.max(1, largura) - 1) / 2));
+  // (revisão: a largura PAR vale — a casa a mais de um lado só; antes a 2 dava o mesmo que a 1, e a fração da D-B4.1 só contava a partir de 3 casas)
+  const w = Math.max(1, Math.trunc(largura) || 1);
+  const de0 = -Math.floor((w - 1) / 2);
+  const ate = Math.floor(w / 2);
   for (let i = 0; i <= passos; i++) {
     const x = passos ? Math.round(de.x + (dx * i) / passos) : de.x;
     const y = passos ? Math.round(de.y + (dy * i) / passos) : de.y;
-    for (let k = -lado; k <= lado; k++) por(x + px * k, y + py * k);
+    for (let k = de0; k <= ate; k++) por(x + px * k, y + py * k);
   }
   return [...casas.values()];
 }
@@ -218,20 +221,38 @@ export function intensidadeDasLinhas(linhas = [], daQualidade = []) {
   return { max, perde, perdeMs, maisPorPct: (achar(linhas, LINHA_MAIS_POR_INTENSIDADE) ?? 0) + somar(daQualidade, LINHA_MAIS_POR_INTENSIDADE_Q) };
 }
 /**
- * (dono, 25/10 — a ramificação da Lança Crepitante, a opção (a)) o FEIXE da Lança: o principal de 1 m de largura (+0,3 m por Intensidade — a Área não vale: "Neither
- * the beam itself nor the branches have an area to modify", o Community Wiki do poedb), até 7 casas, como o da Ira Divina do A4; as 2 laterais saem do meio dele a 45°
+ * (dono, 25/10 — a ramificação da Lança Crepitante, a opção (a)) o FEIXE da Lança: o principal de 1 m de largura (+0,3 m por Intensidade) e 7 casas, como o da Ira
+ * Divina do A4 — × √ do fator da Área de qualquer fonte nos dois (dono, 25/10, a revisão: como o PoB, act_int.lua:3456/3557, a Área muda o `radius` do feixe; o Community
+ * Wiki, "Neither the beam itself nor the branches have an area to modify", deixou de valer; `casasDaLancaNoUso`); as 2 laterais saem do meio dele a 45°
  * (a decisão do dono: o PoB não publica o ângulo base), 33% menos por Intensidade (multiplicado: 45° × 0,67³ ≈ 13,5° com 3), e a da Ramificação com o "+50%" (67,5°).
  * `{ comprimento, meio, larguraM, porIntensidadeM, anguloGraus, menosPorIntensidadePct }` ou null.
  */
 export const LANCA = Object.freeze({ comprimento: 7, meio: 3, larguraM: 1, anguloGraus: 45 });
 const LINHA_LARGURA_POR_INTENSIDADE = /^\+([\d.]+) metros à Largura do Feixe Por Intensidade ([\d.]+) ?% menos ângulo de ramificação por Intensidade$/i;
 const LINHA_ANGULO_INC = /^Ângulo da ramificação aumentado em ([\d.]+) ?%$/i;
-export function lancaDasLinhas(slug, linhas = []) {
+const LINHA_MAIS_AREA_Q = /^([\d.]+) ?% mais Área de Efeito$/i;
+/**
+ * (+ revisão B4/PR4/C3) `fatorDaArea`: o da QUALIDADE da própria gema (a da Ramificação: "(0 — 20) % mais Área de Efeito" — o PoB, act_int.lua:3557,
+ * `active_skill_area_of_effect_+%_final` no `radius` do feixe; o efeito do uso não a traz), que multiplica a Área das outras fontes no uso (`casasDaLancaNoUso`).
+ */
+export function lancaDasLinhas(slug, linhas = [], daQualidade = []) {
   if (!/^Crackling_Lance(_of_Branching)?$/.test(slug)) return null;
   let porIntensidadeM = 0;
   let menosPorIntensidadePct = 0;
   for (const l of linhas) { const m = LINHA_LARGURA_POR_INTENSIDADE.exec(norm(l)); if (m) { porIntensidadeM = Number(m[1]); menosPorIntensidadePct = Number(m[2]); } }
-  return { ...LANCA, porIntensidadeM, menosPorIntensidadePct, anguloGraus: LANCA.anguloGraus * (1 + (achar(linhas, LINHA_ANGULO_INC) ?? 0) / 100) };
+  const fatorDaArea = slug === 'Crackling_Lance_of_Branching' ? 1 + somar(daQualidade, LINHA_MAIS_AREA_Q) / 100 : 1;
+  return { ...LANCA, porIntensidadeM, menosPorIntensidadePct, anguloGraus: LANCA.anguloGraus * (1 + (achar(linhas, LINHA_ANGULO_INC) ?? 0) / 100), ...(fatorDaArea > 1 ? { fatorDaArea } : {}) };
+}
+/**
+ * As casas da Lança no USO com a Intensidade `n` e o fator da Área do uso `fatorDoUso` (toda a Área — dono, 25/10, como o PoB), × o da qualidade da gema: a largura
+ * (os metros ÷ 2 × √ do fator, a fração como a chance de uma casa a mais — D-B4.1) e, com o fator ≠ 1, o comprimento (7 casas × √ do fator, idem; ao menos o meio + 1);
+ * o mesmo `casasDaLanca`.
+ */
+export function casasDaLancaNoUso(de, para, l, n = 0, rng = Math.random, fatorDoUso = 1) {
+  const fator = (l.fatorDaArea ?? 1) * Math.max(0, fatorDoUso);
+  const largura = larguraDoFeixe(l.larguraM + l.porIntensidadeM * n, fator, rng);
+  const comprimento = Math.abs(fator - 1) > 1e-9 ? Math.max(l.meio + 1, casasDoComprimento(l.comprimento * 2, fator, rng)) : l.comprimento;
+  return casasDaLanca(de, para, { ...l, comprimento }, anguloDaLanca(l, n), largura);
 }
 /** O ângulo das laterais (graus) com a Intensidade `n`: o da gema × (1 − X%)ⁿ. */
 export const anguloDaLanca = (l, n = 0) => l.anguloGraus * Math.pow(Math.max(0, 1 - l.menosPorIntensidadePct / 100), Math.max(0, n));

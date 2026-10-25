@@ -1213,7 +1213,7 @@ const B4 = new Map();
 export const b4DaGema = (slug, nivel = 1, qualidade = 0) => comCache(B4, `b4|${slug}@${nivel | 0}@${qualidade | 0}`, () => {
   const [linhas, daQ] = linhasA1b(slug, nivel, qualidade);
   const st = compilada(slug, nivel, qualidade)?.stats ?? {};
-  return { intensidade: GemasB4.intensidadeDasLinhas(linhas, daQ), campo: GemasB4.campoGalvanicoDasLinhas(slug, linhas, daQ, st), lanca: GemasB4.lancaDasLinhas(slug, linhas) };
+  return { intensidade: GemasB4.intensidadeDasLinhas(linhas, daQ), campo: GemasB4.campoGalvanicoDasLinhas(slug, linhas, daQ, st), lanca: GemasB4.lancaDasLinhas(slug, linhas, daQ) };
 });
 /**
  * (lote B3, dono 21/10) O ÚLTIMO número da célula da coluna do poedb cujo cabeçalho casa com `re`, no nível: a célula "2, 1.6" da Retribuição Divina e a "1, 2" da

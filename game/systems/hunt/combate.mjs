@@ -113,6 +113,8 @@ function morrerOsMortos(estado, personagem, eventos, lista) {
       const sai = new Set(mortos.slice(0, Math.max(0, mortos.length - 10)));
       hunt.cadaveres = lista.filter((c) => !sai.has(c));
     }
+    // (revisão das gemas PR4: as flechas da Flecha Explosiva e a Concha esgotada explodem na morte — os restos ficam na sala para o tique)
+    if (m.poeFusiveis || m.poeConchas) Acoes.guardarRestosPR4(hunt, m);
     matarMonstro(estado, hunt, personagem, m, eventos);
   }
 }

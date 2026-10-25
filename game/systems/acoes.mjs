@@ -4192,8 +4192,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   }
   // (lote B4, dono 25/10 — D-B4.5) a PAREDE FLAMEJANTE: o uso de PROJÉTIL seu (ou do seu totem) cuja linha até o alvo cruza uma Parede Flamejante sua ganha o dano de Fogo
   // adicional dela ("Projéteis que passam pela parede causam X a Y de Dano de Fogo Adicional" — o PoB: FireMin/FireMax BASE com ModFlag.Projectile), × a eficácia
-  // do dano adicionado, como o dos suportes; uma vez por projétil (a parede de fogo mais forte que a linha cruza)
-  const pelaParedeDeFogo = itensPoeLigado() && (!plantada || doTotem) && alvo && efeitoDaGema && entry.poeGema && !entry.poeGema.buff && tagsPoeDaSkill(entry).includes('projetil') ? paredeDeFogoNoCaminho(hunt, hunt.pos, alvo, agora) : null;
+  // do dano adicionado, como o dos suportes; uma vez por projétil (a parede de fogo mais forte que a linha cruza). (revisão: a linha sai de onde o projétil sai — o
+  // objeto do totem, a espiral, atira da casa dele; o totem direto já tem `hunt.pos` na casa dele, `usarComoTotem`)
+  const pelaParedeDeFogo = itensPoeLigado() && (!plantada || doTotem) && alvo && efeitoDaGema && entry.poeGema && !entry.poeGema.buff && tagsPoeDaSkill(entry).includes('projetil') ? paredeDeFogoNoCaminho(hunt, plantada?.tipo === 'objeto' ? { x: plantada.x, y: plantada.y } : hunt.pos, alvo, agora) : null;
   if (pelaParedeDeFogo) efeitoDaGema = { ...efeitoDaGema, 'somadoMin:fire': (efeitoDaGema['somadoMin:fire'] ?? 0) + pelaParedeDeFogo[0], 'somadoMax:fire': (efeitoDaGema['somadoMax:fire'] ?? efeitoDaGema['somadoMin:fire'] ?? 0) + pelaParedeDeFogo[1] };
   if (naParede) efeitoDaGema = { ...efeitoDaGema, encadear: (efeitoDaGema.encadear ?? 0) + (Number(naParede.a2?.ricochetes) || 1), fatorDeDano: (efeitoDaGema.fatorDeDano ?? 1) * Math.max(0, 1 - (Number(naParede.a2?.menosDanoPct) || 20) / 100) };
   // (PoE, a Lâmina Noturna: "Habilidades Suportadas só podem ser usadas com Garras e Adagas".)
@@ -4692,12 +4693,15 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       atingidos = Areas.dentro(casas, vivos);
       formaNoUso = { x, y, dir };
     }
-    // (dono, 25/10 — a ramificação da Lança Crepitante) o FEIXE da Lança no lugar da área do molde: o principal de 7 casas na direção do alvo e as 2 laterais, do meio
+    // (dono, 25/10 — a ramificação da Lança Crepitante) o FEIXE da Lança no lugar da área do molde: o principal de 7 casas (× √ da Área) na direção do alvo e as 2 laterais, do meio
     // dele, a 45° (67,5° na da Ramificação) × (1 − 33%) por Intensidade (`GemasB4.casasDaLanca`); cada inimigo nas casas leva um acerto
     if (b4?.lanca && casas && (alvo || mira) && (!plantada || doTotem)) {
       const l = b4.lanca;
       const n = doTotem ? 0 : intensidade;
-      casas = GemasB4.casasDaLanca({ x, y }, mira ?? alvo, l, GemasB4.anguloDaLanca(l, n), GemasB4.larguraDoFeixe(l.larguraM + l.porIntensidadeM * n));
+      // (dono, 25/10 — a revisão: como o PoB, TODA a Área do uso alarga e alonga o feixe nas duas Lanças — a mesma conta da área das outras gemas: o "aumentado" da
+      // gema, das peças e dos suportes, a Runa, e os "mais/menos", o da Intensidade do Intensificar também; + a qualidade da Ramificação, `casasDaLancaNoUso`)
+      const fatorDoUso = ModsPoe.fatorDaArea((efeitoDaGema?.areaIncPct ?? 0) + (plantada?.areaPct ?? 0), efeitoDaGema?.areaMaisPct ?? 0, intensidade > 0 ? -intensidade * (efeitoDaGema?.intensidadeMenosAreaPct ?? 0) : 0);
+      casas = GemasB4.casasDaLancaNoUso({ x, y }, mira ?? alvo, l, n, Math.random, fatorDoUso);
       atingidos = Areas.dentro(casas, vivos);
       formaNoUso = { x, y, dir: null };
     }
@@ -4980,6 +4984,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   if (plantada) consumirRaioDoPoe(hunt, entry);
   // (lote G10: o uso que só carrega estágios — a Rajada de Chamas antes do máximo — sai sem ninguém na área, como no PoE)
   // (lote A1) a VIAGEM e a FUGA saem sem bicho na área (o deslocamento é o efeito): o raio sorteado vale só para este uso
+  // (revisão do C3) a TROCA de Postura do Sangue e Areia ligado (`trocarPosturaNoUso`, abaixo) sai sem bicho por perto: não gasta mana, só alterna a Postura
+  const trocaPostura = itensPoeLigado() && manual && !gatilho && !plantada?.comoUso && !!BUFFS[entry.id] && GemasC3.ehGemaDePostura(entry.poeGema?.slug) && hunt.buffs?.[entry.id]?.ate > agora;
   if (ataque && plano && (desloc.modo === 'viagem' || plano.fuga)) consumirRaioDoPoe(hunt, entry);
   // (lote A1b, dono 19/10) a MIRAGEM canaliza sem bicho na área (ela anda; o pulso pega quem estiver lá) — o alvo do começo já foi conferido (`planoDaMiragem`)
   else if (ataque && miragemDoUso) consumirRaioDoPoe(hunt, entry);
@@ -4994,7 +5000,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (17/10, lote G2) o uso sai: o raio sorteado da gema vale só para ele (`formaNoRaioDoPoe`)
     consumirRaioDoPoe(hunt, entry);
   // (revisão do A3b: o golpe do OBJETO não passa pelo "bicho por perto" — ele só sai com o alvo no raio do objeto, que pode estar longe de você)
-  } else if (!plano && plantada?.tipo !== 'objeto' && !entry.heals && entry.kind === 'spell' && !vivos.some((b) => distanciaChebyshev(hunt.pos, b) <= 8)) {
+  } else if (!plano && !trocaPostura && plantada?.tipo !== 'objeto' && !entry.heals && entry.kind === 'spell' && !vivos.some((b) => distanciaChebyshev(hunt.pos, b) <= 8)) {
     // Suporte/velocidade (haste, buffs): só com bicho por perto, senão era mana jogada fora sem parar.
     return { ok: false, erro: 'Nenhum bicho por perto.', motivo: 'SEM_BICHO_POR_PERTO' };
   }
@@ -5017,7 +5023,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   const buff = plantada?.comoUso ? null : BUFFS[entry.id];
   // (lote C3, dono 25/10 — D3.1) o SANGUE E AREIA ligado: o clique troca de Postura (Sangue ↔ Areia — "Using the skill again alternates between Blood Stance and Sand
   // Stance", o PoB), na recarga da gema; a barra automática não troca sozinha. "Mudou de Postura Recentemente": os 4 s desde a troca (`trocarPosturaNoUso`)
-  if (buff && itensPoeLigado() && manual && !gatilho && GemasC3.ehGemaDePostura(entry.poeGema?.slug) && hunt.buffs?.[entry.id]?.ate > agora) return trocarPosturaNoUso(estado, hunt, entry, action, agora);
+  if (buff && trocaPostura) return trocarPosturaNoUso(estado, hunt, entry, action, agora);
   if (buff && !R.jaPode(agora, hunt.buffs?.[entry.id]?.ate)) return { ok: false, erro: 'Ainda está ativo.', motivo: 'EFEITO_ATIVO' };
   // (PoE, 11/10) O ESTANDARTE se planta consumindo o Valor: sem Valor, não sai; no automático, só com o Valor no máximo (o clique planta com o que
   // tiver) — `ModsPoe.plantarEstandarte`.
@@ -6707,7 +6713,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       atacar(true);
     }
     reocorrendo = false;
-    if (efeitoDaGema?.intensidadeMax > 0) ganharIntensidade(hunt, entry.id, efeitoDaGema, ModsPoe.valor(ficha, 'intensidade_max_extra'), hunt.clock ?? 0, ficha.afPoe);
+    // (revisão B4: "ganha Intensidade quando você Conjurá-la" — a ativada por gatilho, a armadilha e a mina — `plantada` também tem o `gatilho` — não ganham; o
+    // Community Wiki: "cannot gain a stack of Intensity when this spell is repeated, triggered, or cast by a totem"; usa os acúmulos que já existem)
+    if (efeitoDaGema?.intensidadeMax > 0 && !gatilho) ganharIntensidade(hunt, entry.id, efeitoDaGema, ModsPoe.valor(ficha, 'intensidade_max_extra'), hunt.clock ?? 0, ficha.afPoe);
     const totalDoPrimeiro = total;
     const criticoDoPrimeiro = danoCritico;
     const fisicoDoPrimeiro = danoFisico;
@@ -7446,7 +7454,7 @@ export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora 
   // (lote B3, dono 21/10: as flechas presas da Conflagração que você ativou chegando perto, a Chuva de Lâminas de Trarthus ligada — `tiqueDasGemasB3`)
   if (itensPoeLigado() && (hunt?.poeTrarthus || hunt?.poeObjetos?.length)) tiqueDasGemasB3(estado, hunt, personagem, eventos, agora);
   // (lote PR4, dono 25/10: as flechas grudadas, as conchas, as cordas, a energia estática — `tiqueDasGemasPR4`)
-  if (itensPoeLigado() && (hunt?.poeEstatico || hunt?.poeConcentrados || hunt?.poeFeixesConcentrados || hunt?.monstros?.length)) tiqueDasGemasPR4(estado, hunt, personagem, eventos, agora);
+  if (itensPoeLigado() && (hunt?.poeEstatico || hunt?.poeConcentrados || hunt?.poeFeixesConcentrados || hunt?.monstros?.length || salaDe(hunt)?.poeRestosPR4?.length)) tiqueDasGemasPR4(estado, hunt, personagem, eventos, agora);
   if (!hunt?.plantadas?.length || !itensPoeLigado()) return eventos;
   const ficha = Ficha.combate(estado);
   for (const { p, alvo } of [...Plantadas.armadilhasQueAtivam(hunt, ficha, agora), ...Plantadas.minasQueDetonam(hunt, ficha, agora)]) {
@@ -8411,6 +8419,9 @@ function criarObjetoC3(estado, hunt, entry, ef, obj, { base, x, y, alvo, mira, f
     if (obj.presa) porObjeto(hunt, { ...comum, mov: 'no_dono', x: hunt.pos.x, y: hunt.pos.y, presa: true, perda: { perdaPorS: obj.perdaPorS, perdaMaisPorSPct: obj.perdaMaisPorSPct }, perdaAte: agora, perdaAcum: 0, ate: agora + 3_600_000 }, agora);
     else porObjeto(hunt, { ...comum, mov: 'persegue', x, y, passoMs: GemasC3.TEMPESTADE_FURIOSA.passoMs, proximoPasso: agora + GemasC3.TEMPESTADE_FURIOSA.passoMs, busca: GemasC3.TEMPESTADE_FURIOSA.buscaCasas, ate: agora + Math.round(obj.duracaoMs * fd) }, agora);
   } else if (obj.tipo === 'abalo') {
+    // (revisão do C3 — o PoB, act_str.lua:3287/3393: "Cracks created before the first one has erupted will not generate their own aftershocks") no Terremoto e no da
+    // Amplificação, um abalo por vez de cada dono (o seu, o do totem): com o anterior ainda pendente, o uso só golpeia; o Vaal segue a D3.4 (`abaloVaalNoAtaque`)
+    if (!obj.vaal && (hunt.poeObjetos ?? []).some((o) => o.tipo === 'abalo' && o.acao === base.acao && o.dono === base.dono && o.ate > agora)) return;
     const durMs = Math.max(1, Math.round(obj.atrasoMs * fd));
     const m = GemasC3.maisDoAbalo(obj, durMs);
     const c = formaNoUso ?? alvo ?? { x, y };
@@ -9079,6 +9090,8 @@ function conchaDoBicho(b, agora) {
   for (const c of Object.values(b?.poeConchas ?? {})) if (c && c.ate > agora && c.hp > 0) return c;
   return null;
 }
+/** (revisão) O bicho tem uma concha ESGOTADA que ainda não explodiu no tique (de qualquer um da party): conta como na imunidade — a nova não a sobrescreve. */
+const conchaEsgotada = (b) => Object.values(b?.poeConchas ?? {}).some((c) => c?.estourou != null);
 /**
  * O que o uso da gema do lote PR4 deixa (`dispararSemMarcar` → `aposOPasseDoPR4`): `{ entry, ef, ea, la, ge, rc, concha, ap, durMs, passa }` (só as da gema), ou null.
  * `passa`: o projétil que a Concha explodida solta (só a concha, no primeiro acertado).
@@ -9098,9 +9111,25 @@ function usoDoPR4(estado, entry, ef, passa = false) {
   const durS = concha ? concha.duracaoS : GemasPoe.compilada(slug, n, q)?.stats?.duracao ?? (ea ? GemasPR4.FLECHA_EXPLOSIVA.duracaoS : GemasPR4.GOLPE_ESTATICO.duracaoS);
   return { entry, ef, ea, la, ge, rc, concha, ap, durMs: Math.round(durS * 1000 * fatorDeDuracao(estado, entry, ef)) };
 }
+/**
+ * (revisão B4/PR4/C3) O bicho `m` MORREU (`combate.morrerOsMortos`, antes de sair da sala): as flechas da Flecha Explosiva grudadas nele e a Concha esgotada no golpe que
+ * o matou explodem no próximo tique (a exceção 4 — "no máximo ou na morte do bicho"). Ficam os RESTOS na sala (todos da party os veem; cada um explode as suas no
+ * tique dele), com a casa e o andar do morto; somem em 2 s ou na troca de andar.
+ */
+export function guardarRestosPR4(hunt, m) {
+  if (!itensPoeLigado() || !m) return;
+  const fusiveis = m.poeFusiveis && Object.keys(m.poeFusiveis).length ? { ...m.poeFusiveis } : null;
+  const conchas = Object.fromEntries(Object.entries(m.poeConchas ?? {}).filter(([, c]) => c?.estourou != null));
+  if (!fusiveis && !Object.keys(conchas).length) return;
+  const sala = salaDe(hunt) ?? hunt;
+  (sala.poeRestosPR4 ??= []).push({ uid: m.uid, x: m.x, y: m.y, z: m.z ?? hunt.z ?? 0, hp: 0, restos: true, ateRestos: (hunt.clock ?? 0) + 2000,
+    ...(fusiveis ? { poeFusiveis: fusiveis } : {}), ...(Object.keys(conchas).length ? { poeConchas: conchas } : {}) });
+  delete m.poeFusiveis;
+  delete m.poeConchas;
+}
 /** A concha nova no bicho `b` (D3): a imunidade de 200 ms depois de uma explosão; a 7ª sua tira a mais velha (a exceção 7). */
 function porConcha(hunt, b, u, quem, agora) {
-  if (!(b?.hp > 0) || (b.poeConchaImuneAte ?? -Infinity) > agora) return false;
+  if (!(b?.hp > 0) || (b.poeConchaImuneAte ?? -Infinity) > agora || conchaEsgotada(b)) return false;
   (b.poeConchas ??= {})[quem] = { acao: u.entry.id, hp: u.concha.absorve, max: u.concha.absorve, absorvePct: u.concha.absorvePct, ate: agora + u.durMs, desde: agora };
   const minhas = (hunt.monstros ?? []).filter((m) => m.poeConchas?.[quem]?.ate > agora).sort((a, c) => a.poeConchas[quem].desde - c.poeConchas[quem].desde);
   for (const m of minhas.slice(0, Math.max(0, minhas.length - u.concha.maximo))) delete m.poeConchas[quem];
@@ -9119,7 +9148,7 @@ function aposOPasseDoPR4(estado, hunt, personagem, u, { diretos = [], golpes = [
   if (u.concha) {
     const primeiros = GemasPR4.primeirosAcertados(diretos, golpes, acertou);
     // (a passada: o primeiro acertado que pode receber — o estourado, na imunidade, não; o que já tem concha, também não)
-    for (const b of u.passa ? primeiros.filter((m) => !conchaDoBicho(m, agora) && !((m.poeConchaImuneAte ?? -Infinity) > agora)).slice(0, u.concha.passa) : primeiros) porConcha(hunt, b, u, quem, agora);
+    for (const b of u.passa ? primeiros.filter((m) => !conchaDoBicho(m, agora) && !conchaEsgotada(m) && !((m.poeConchaImuneAte ?? -Infinity) > agora)).slice(0, u.concha.passa) : primeiros) porConcha(hunt, b, u, quem, agora);
     if (u.passa) return;
   }
   const finais = u.ea || u.la || u.ap ? GemasPR4.alvosFinais(diretos, golpes, acertou).filter((b) => b.hp > 0) : [];
@@ -9128,8 +9157,9 @@ function aposOPasseDoPR4(estado, hunt, personagem, u, { diretos = [], golpes = [
       const f = (b.poeFusiveis ??= {});
       const at = f[quem]?.ate > agora || f[quem]?.n >= f[quem]?.max ? f[quem] : null;
       const novo = at ?? { acao: u.entry.id, n: 0, desde: agora, ate: agora + u.durMs };
-      novo.n += 1;
+      // (revisão: o teto antes do tique — a flecha que gruda no pavio já no máximo, à espera do tique, não soma; o PoB, act_dex.lua: `math.min(..., fuseLimit)`)
       novo.max = u.ea.maximo;
+      novo.n = Math.min(novo.max, novo.n + 1);
       if (novo.n >= novo.max) novo.ate = agora;
       f[quem] = novo;
     }
@@ -9176,7 +9206,10 @@ export function tiqueDasGemasPR4(estado, hunt, personagem, eventos = [], agora =
   const z = hunt.z ?? 0;
   const vivo = () => (estado.hp ?? 0) > 0;
   const efeitoDe = (entry) => comOsAlvosDaGema(entry, Gemas.efeitoNaSkill(estado, entry.id), estado);
-  for (const b of [...(hunt.monstros ?? [])]) {
+  const sala = salaDe(hunt) ?? hunt;
+  // (revisão: os RESTOS dos mortos — `guardarRestosPR4` — explodem como o bicho morto: as flechas e a concha esgotada de cada um da party, no tique dele)
+  const restos = sala.poeRestosPR4 ?? [];
+  for (const b of [...(hunt.monstros ?? []), ...restos]) {
     if ((b.z ?? z) !== z) continue;
     // a Flecha Explosiva
     const f = b.poeFusiveis?.[quem];
@@ -9230,7 +9263,7 @@ export function tiqueDasGemasPR4(estado, hunt, personagem, eventos = [], agora =
           if (ref) golpeDoObjeto(estado, hunt, personagem, { acao: c.acao, x: b.x, y: b.y, z, raio, dono: 'voce' }, ref, { casas, pr4: { tipo: 'concha', maisAreaPct: d.maisAreaPct } }, eventos);
           // a concha passa: o projétil sai do estourado para o vivo mais perto dele sem concha e fora da imunidade, a até o alcance da gema
           const alcance = entry.range || ALCANCE_PADRAO;
-          const prox = vivosNoAndar(hunt, z).filter((m) => m !== b && !conchaDoBicho(m, agora) && !((m.poeConchaImuneAte ?? -Infinity) > agora) && distanciaChebyshev(m, b) <= alcance)
+          const prox = vivosNoAndar(hunt, z).filter((m) => m !== b && !conchaDoBicho(m, agora) && !conchaEsgotada(m) && !((m.poeConchaImuneAte ?? -Infinity) > agora) && distanciaChebyshev(m, b) <= alcance)
             .sort((m1, m2) => distanciaChebyshev(m1, b) - distanciaChebyshev(m2, b))[0];
           if (prox && vivo()) golpeDoObjeto(estado, hunt, personagem, { acao: c.acao, x: b.x, y: b.y, z, raio: 0, dono: 'voce' }, prox, { emitir: true, angulos: [Math.atan2(prox.y - b.y, prox.x - b.x)], pr4: { tipo: 'passaConcha' } }, eventos);
         }
@@ -9240,6 +9273,11 @@ export function tiqueDasGemasPR4(estado, hunt, personagem, eventos = [], agora =
     if (b.poeFusiveis && !Object.keys(b.poeFusiveis).length) delete b.poeFusiveis;
     // a Flecha Aprisionadora
     if (b.poeAprisionado && (!(b.hp > 0) || GemasPR4.quebrouOAprisionamento(b.poeAprisionado, b))) delete b.poeAprisionado;
+  }
+  if (restos.length) {
+    const ficam = restos.filter((r) => (r.z ?? z) === z && r.ateRestos > agora && (r.poeFusiveis || r.poeConchas));
+    if (ficam.length) sala.poeRestosPR4 = ficam;
+    else delete sala.poeRestosPR4;
   }
   // a energia estática do Golpe Estático
   const ge = hunt.poeEstatico;
@@ -9336,7 +9374,7 @@ function criarObjetosB4(estado, hunt, entry, ef, obj, { base, alvo, mira, x, y, 
     const ja = (hunt.poeObjetos ?? []).find((o) => o.tipo === 'hidroesfera' && doDono(o) && o.ate > agora);
     const comum = { raio: Math.max(1, raioEmCasas(obj.raioM)), pulsoMs: obj.pulsoMs, acertoMs: obj.acertoMs, limiar: obj.limiar, exposicaoPct: obj.exposicaoPct, encharcadoMs: Math.round(obj.encharcadoMs * fd), ate: agora + Math.round(obj.duracaoMs * fd) };
     // ("Create a sphere of water, or move an existing sphere and reset its duration … The sphere pulses when created … and after moving")
-    if (ja) Object.assign(ja, comum, { x: c.x, y: c.y, pulsoAgora: true });
+    if (ja) Object.assign(ja, comum, { x: c.x, y: c.y, z: hunt.z ?? 0, pulsoAgora: true }); // (revisão: + o andar de agora, como o `porObjeto`)
     else porObjeto(hunt, { ...base, tipo: 'hidroesfera', mov: 'parado', efeito: 'inerte', x: c.x, y: c.y, ...comum, estados: {}, proximoAcerto: -1, pulsoAgora: true, max: 1 }, agora);
   } else if (obj.tipo === 'paredeGelo' || obj.tipo === 'paredeFogo') {
     const n = GemasB4.casasDoComprimento(obj.comprimentoM, obj.comArea ? fator : 1);
@@ -9345,7 +9383,8 @@ function criarObjetosB4(estado, hunt, entry, ef, obj, { base, alvo, mira, x, y, 
     const parede = `${entry.id}#${hunt.poeParedesSeq}`;
     const durMs = Math.max(1, Math.round(obj.duracaoMs * fd));
     if (obj.tipo === 'paredeGelo') {
-      casas.forEach((v, k) => porObjeto(hunt, { ...base, tipo: 'secaoGelo', mov: 'parado', efeito: 'inerte', x: v.x, y: v.y, raio: 0, parede, aparece: agora + k * obj.secaoMs, ate: agora + k * obj.secaoMs + durMs, porParedePct: obj.porParedePct }, agora));
+      // (revisão: do centro para os DOIS lados ao mesmo tempo — o anel ⌈k ÷ 2⌉ da lista [centro, +1, −1, +2, −2, …]: wall_expand_delay_ms por passo)
+      casas.forEach((v, k) => { const anel = Math.ceil(k / 2); porObjeto(hunt, { ...base, tipo: 'secaoGelo', mov: 'parado', efeito: 'inerte', x: v.x, y: v.y, raio: 0, parede, aparece: agora + anel * obj.secaoMs, ate: agora + anel * obj.secaoMs + durMs, porParedePct: obj.porParedePct }, agora); });
     } else {
       const dg = GemasPoe.degenerativoNoNivel(slug, nivel, q);
       const [p1, p2] = dg?.partes ?? [];
@@ -9374,8 +9413,10 @@ function golpeDoOrbe(estado, hunt, personagem, o, t) {
   if (!perto.length) return eventos;
   const primeiro = perto[Math.min(perto.length - 1, Math.floor(Math.random() * perto.length))];
   const atingidos = GemasB4.atingidosDoOrbe(primeiro, vivos, o.divide, o.raioDivisao);
-  eventos.push(...atingidos.map((m) => ({ t: 'explosao', id: EFEITO_DA_EXPLOSAO, x: m.x, y: m.y, lado: 1 })));
-  golpeDoObjeto(estado, hunt, personagem, o, primeiro, { casas: atingidos.map((m) => ({ x: m.x, y: m.y })) }, eventos);
+  // (revisão: o golpe RECUSADO — a zona segura, `imune` — não aparece, não gasta golpe nem teleporta)
+  const golpe = [];
+  if (!golpeDoObjeto(estado, hunt, personagem, o, primeiro, { casas: atingidos.map((m) => ({ x: m.x, y: m.y })) }, golpe)) return eventos;
+  eventos.push(...atingidos.map((m) => ({ t: 'explosao', id: EFEITO_DA_EXPLOSAO, x: m.x, y: m.y, lado: 1 })), ...golpe);
   o.golpes -= 1;
   if (o.teleporta) {
     const para = atingidos[Math.min(atingidos.length - 1, Math.floor(Math.random() * atingidos.length))];
@@ -9429,9 +9470,11 @@ function acertarAsHidroesferas(estado, hunt, entry, ef, ficha, partes, danoMedio
 function pulsoDaHidroesfera(estado, hunt, personagem, o, t, eventos) {
   eventos.push({ t: 'explosao', id: EFEITO_DA_EXPLOSAO, x: o.x, y: o.y, lado: 2 * o.raio + 1 });
   const dentro = vivosNoAndar(hunt, o.z).filter((m) => !m.dummy && distanciaChebyshev(m, o) <= o.raio);
-  if (!dentro.length) return;
-  if (!golpeDoObjeto(estado, hunt, personagem, o, dentro[0], { casas: Areas.quadrado(o, o.raio), conversaoFisico: GemasB4.conversaoDaEsfera(o.estados, t) }, eventos)) return;
+  if (!dentro.length || Protecao.imune(hunt)) return;
+  // (revisão: o Encharcado ANTES do golpe — "continually applies a drenched debuff … to enemies in its area … damaging all drenched enemies", o PoB: o pulso já sai
+  // com a Exposição a Gelo e a Raio)
   for (const m of dentro) if (m.hp > 0) for (const el of ['ice', 'energy']) porExposicao(m, el, o.exposicaoPct, o.encharcadoMs, t);
+  golpeDoObjeto(estado, hunt, personagem, o, dentro[0], { casas: Areas.quadrado(o, o.raio), conversaoFisico: GemasB4.conversaoDaEsfera(o.estados, t) }, eventos);
 }
 /**
  * (D-B4.5) A Parede Flamejante sua que a linha de `de` a `para` cruza agora: o dano de Fogo adicional dela (`[min, max]`; a mais forte, se cruza mais de uma), ou null.
@@ -9448,7 +9491,22 @@ function paredeDeFogoNoCaminho(hunt, de, para, agora) {
 /** As casas das Paredes de Gelo que já apareceram agora (as do andar) — os bichos não passam por elas (`gradeSemParedes`). */
 function casasDasParedesDeGelo(hunt, agora = hunt?.clock ?? 0) {
   const r = new Set();
-  for (const o of hunt?.poeObjetos ?? []) if (o.tipo === 'secaoGelo' && (o.z ?? 0) === (hunt.z ?? 0) && o.ate > agora && !(o.aparece > agora)) r.add(Areas.chave(o));
+  const porParede = new Map();
+  for (const o of hunt?.poeObjetos ?? []) {
+    if (o.tipo !== 'secaoGelo' || (o.z ?? 0) !== (hunt.z ?? 0) || !(o.ate > agora) || o.aparece > agora) continue;
+    r.add(Areas.chave(o));
+    const p = porParede.get(o.parede) ?? new Set();
+    p.add(Areas.chave(o));
+    porParede.set(o.parede, p);
+  }
+  // (revisão: a parede na DIAGONAL só se tocava pela quina — o bicho passava entre duas seções; a casa da quina, entre duas seções vizinhas na diagonal da mesma
+  // parede, também segura: a parede vira uma escada contínua)
+  for (const p of porParede.values()) {
+    for (const k of p) {
+      const [x, y] = k.split(',').map(Number);
+      for (const dy of [-1, 1]) if (p.has(`${x + 1},${y + dy}`) && !p.has(`${x + 1},${y}`) && !p.has(`${x},${y + dy}`)) r.add(`${x + 1},${y}`);
+    }
+  }
   return r;
 }
 /**
@@ -9459,11 +9517,16 @@ export function gradeSemParedes(hunt, grade, agora = hunt?.clock ?? 0) {
   if (!itensPoeLigado() || !grade?.andavel || !hunt?.poeObjetos?.length) return grade;
   const paredes = casasDasParedesDeGelo(hunt, agora);
   if (!paredes.size) return grade;
+  // (revisão: a grade sem as paredes fica guardada enquanto as casas delas não mudam — antes era refeita a cada tique, e a `numerica` do mapa inteiro junto)
+  const chave = [...paredes].sort().join(';');
+  const guardada = hunt._gradeSemParedes;
+  if (guardada?.base === grade && guardada.chave === chave) return guardada.semParedes;
   const andavel = new Set();
   for (const k of grade.andavel) if (!paredes.has(k)) andavel.add(k);
   const semParedes = { ...grade, andavel };
   delete semParedes.numerica;
   delete semParedes.andares;
+  Object.defineProperty(hunt, '_gradeSemParedes', { value: { base: grade, chave, semParedes }, enumerable: false, writable: true, configurable: true });
   return semParedes;
 }
 /**
@@ -9755,7 +9818,8 @@ export function objetosParaCliente(hunt, { centro = hunt?.pos, relogio = hunt?.c
     // (lote B4: a seção da Parede de Gelo que ainda não apareceu não se desenha)
     if (o.aparece > agora) continue;
     saida.push({ id: `${o.id}${sufixo}`, t: o.tipo, x: o.x, y: o.y, r: o.raio ?? 0, ate: Math.round(o.ate - agora + relogio), ...(o.el ? { el: o.el } : {}),
-      ...(o.tipo === 'vortice' ? { n: (o.laminas ?? []).filter((a) => a > agora).length } : {}), ...(o.mov === 'no_dono' && o.dono === 'voce' ? { segue } : {}) });
+      ...(o.tipo === 'vortice' ? { n: (o.laminas ?? []).filter((a) => a > agora).length } : {}), ...(o.mov === 'no_dono' && o.dono === 'voce' ? { segue } : {}),
+      ...(o.tipo === 'tempestadeDeLaminas' && o.postura ? { postura: o.postura } : {}) }); // (revisão do C3: a cor da tempestade pela Postura dela, na tela)
   }
   if (capturados && hunt?.pos && naTela(hunt.pos)) saida.push({ id: `capturados${sufixo}`, t: 'capturados', x: hunt.pos.x, y: hunt.pos.y, r: 0, ate: 0, n: capturados, segue });
   return saida.slice(0, 160);

@@ -115,8 +115,9 @@ export function tempestadeDeLaminasDasLinhas(slug, linhas = [], daQualidade = []
     tipo: 'tempestadeDeLaminas', max: piso(max + somar(daQualidade, /^\+([\d.]+) ao número Máximo de Tempestades de Lâminas por vez$/i)),
     menosPct: achar(linhas, /^Tempestades de Lâminas causam ([\d.]+) % menos Dano com Acertos e Afecções$/i) ?? 0,
     duracaoMs: Math.round((stats.duracao ?? 3) * 1000), raioM: TEMPESTADE_DE_LAMINAS.raioM,
-    // (a da Incerteza: "creating a random bladestorm" — 50% de chance da outra Postura; o Sangrar da tempestade é só o da comum, em Postura de Sangue)
-    outraPosturaPct: incerteza ? TEMPESTADE_DE_LAMINAS.outraPosturaPadraoPct : 0, sangra: !incerteza,
+    // (a da Incerteza: "creating a random bladestorm" — 50% de chance da outra Postura; revisão: a de Sangue Sangra nas duas — o PoB, BladestormAltX: "Blood
+    // bladestorms are stationary and cause Bleeding"; o poedb: "Tempestades de lâminas sangrentas são fixas e causam sangramento"; a de Areia, não)
+    outraPosturaPct: incerteza ? TEMPESTADE_DE_LAMINAS.outraPosturaPadraoPct : 0, sangra: true,
   };
 }
 /** A Postura da tempestade deste uso: a sua; na da Incerteza, a outra na chance dela. */

@@ -103,7 +103,8 @@ test('C3: os números das linhas no nível 20 e na qualidade 20 (os do PoB)', { 
   assert.deepEqual(G.c3DaGema('Perforate_of_Bloodshed', 20, 20).estacas, { n: 6, seMudou: 0, sempre: true, raioM: 1.1 });
   assert.deepEqual(G.objetoDaGema('Bladestorm', 20, 20), { tipo: 'tempestadeDeLaminas', max: 4, menosPct: 50, duracaoMs: 3000, raioM: 2, outraPosturaPct: 0, sangra: true });
   assert.equal(G.objetoDaGema('Bladestorm', 20, 0).max, 3);
-  assert.deepEqual(G.objetoDaGema('Bladestorm_of_Uncertainty', 20, 20), { tipo: 'tempestadeDeLaminas', max: 4, menosPct: 50, duracaoMs: 3000, raioM: 2, outraPosturaPct: 50, sangra: false });
+  // (aval do dono, 25/10 — a revisão: a tempestade de Sangue da Incerteza também Sangra — o PoB, BladestormAltX: "Blood bladestorms … cause Bleeding")
+  assert.deepEqual(G.objetoDaGema('Bladestorm_of_Uncertainty', 20, 20), { tipo: 'tempestadeDeLaminas', max: 4, menosPct: 50, duracaoMs: 3000, raioM: 2, outraPosturaPct: 50, sangra: true });
   const rv = G.objetoDaGema('Rage_Vortex', 20, 20);
   assert.deepEqual([rv.tipo, rv.furiaMin, rv.sacrificaPct, rv.maisPorFuriaPct, rv.raioPorFuria, rv.frequenciaMaisPct, rv.max, rv.duracaoMs, rv.presa], ['tempestadeFuriosa', 10, 25, 10, { m: 0.1, cada: 2 }, 250, 1, 3000, false]);
   const rb = G.objetoDaGema('Rage_Vortex_of_Berserking', 20, 20);

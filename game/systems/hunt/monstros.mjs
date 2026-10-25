@@ -132,7 +132,15 @@ export function trocarDeAndar(hunt, destino) {
   if (hunt.anfitriao) return false;
   const guardados = (hunt.outrosAndares ??= {});
   const ficam = hunt.monstros.splice(0, hunt.monstros.length);
-  for (const m of ficam) m.perseguindo = false;
+  // (revisão das gemas PR4: como a troca de área do PoE, o que grudou nos bichos do andar que fica para trás some — as flechas da Flecha Explosiva, os golpes da
+  // Eletrocussão e a Concha esgotada —, sem explodir na volta; os restos dos mortos também)
+  for (const m of ficam) {
+    m.perseguindo = false;
+    delete m.poeFusiveis;
+    delete m.poeEletrocussao;
+    if (m.poeConchas) for (const [k, c] of Object.entries(m.poeConchas)) if (c?.estourou != null) delete m.poeConchas[k];
+  }
+  delete hunt.poeRestosPR4;
   if (ficam.length) guardados[hunt.z] = ficam;
   hunt.monstros.push(...(guardados[destino.z] ?? []));
   delete guardados[destino.z];

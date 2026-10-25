@@ -273,7 +273,7 @@ export function comOsConcentrados(e, maisPct, n) {
 /**
  * Os ALVOS FINAIS de cada flecha do uso (a exceção 2): `diretos` os acertados pela flecha principal e `golpes` os do `Secundarios.resolver`, na ordem — cada
  * projétil novo (`projetil`, `secundario`, `estilha`) começa uma sequência; a perfuração, a difusão, o ricochete e o retorno a continuam; o último de cada uma é o
- * alvo final. `acertou(b)`: o golpe acertou (o erro não gruda).
+ * alvo final (um por flecha: o mesmo bicho pode repetir). `acertou(b)`: o golpe acertou (o erro não gruda).
  */
 export function alvosFinais(diretos = [], golpes = [], acertou = () => true) {
   const seqs = diretos.length ? [[...diretos]] : [];
@@ -282,11 +282,12 @@ export function alvosFinais(diretos = [], golpes = [], acertou = () => true) {
     if (['projetil', 'secundario', 'estilha'].includes(g.tipo)) seqs.push([g.bicho]);
     else if (['perfuracao', 'bifurcacao', 'encadeamento', 'retorno'].includes(g.tipo) && seqs.length) seqs.at(-1).push(g.bicho);
   }
+  // (revisão B4/PR4/C3: um por flecha — o mesmo bicho pode vir várias vezes, a Barragem e os projéteis extras no mesmo alvo: cada projétil gruda a sua; o PoB,
+  // act_dex.lua — ExplosiveArrow: `fuseApplicationRate × barrageProjectiles`)
   const r = [];
   for (const s of seqs) {
-    const vivos = s.filter(acertou);
-    const f = vivos.at(-1);
-    if (f && !r.includes(f)) r.push(f);
+    const f = s.filter(acertou).at(-1);
+    if (f) r.push(f);
   }
   return r;
 }
