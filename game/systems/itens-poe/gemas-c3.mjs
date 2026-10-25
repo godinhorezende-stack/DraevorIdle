@@ -233,13 +233,13 @@ export function erupcoesExtrasDasLinhas(slug, linhas = [], daQualidade = []) {
 // ---------------------------------------------------------------- D3.5: a Tormenta Explosiva
 
 export const TORMENTA_EXPLOSIVA = Object.freeze({ raioDoSaltoM: 1.6, raioDaExplosaoM: 2.2, buscaCasas: 7, folgaDoCanalMs: 250 });
-/** O orbe da Tormenta Explosiva (`{ tipo: 'orbeTempestade', semAcerto, saltoMs, duracaoMs, porRestantePct, raioM, explosaoM }`), ou null. */
+/** O orbe da Tormenta Explosiva (`{ tipo: 'orbeTormentaExplosiva', semAcerto, saltoMs, duracaoMs, porRestantePct, raioM, explosaoM }`), ou null. */
 export function orbeDasLinhas(slug, linhas = [], stats = {}) {
   if (!/^Storm_Burst(_of_Repulsion)?$/.test(slug)) return null;
   const salto = achar(linhas, /^Orbes saltam a cada ([\d.]+) segundos?$/i);
   if (!salto) return null;
   return {
-    tipo: 'orbeTempestade', semAcerto: true, saltoMs: Math.round(salto * 1000), duracaoMs: Math.round((stats.duracao ?? 1.2) * 1000),
+    tipo: 'orbeTormentaExplosiva', semAcerto: true, saltoMs: Math.round(salto * 1000), duracaoMs: Math.round((stats.duracao ?? 1.2) * 1000),
     porRestantePct: achar(linhas, /^Orbes Explosivas causam ([\d.]+) % do Dano da Habilidade para cada [\d.]+ segundos de Duração restante$/i) ?? 0,
     raioM: TORMENTA_EXPLOSIVA.raioDoSaltoM + (achar(linhas, /^([\d.]+) metros de raio$/i) ?? 0), explosaoM: TORMENTA_EXPLOSIVA.raioDaExplosaoM,
     // (dono, 25/10) a da Repulsão: os orbes se afastam do local mirado (`saltoDaRepulsao`)
@@ -273,7 +273,7 @@ export function objetoDaGema(slug, linhas = [], daQualidade = [], stats = {}) {
     ?? (m?.tipo === 'martelosCadentes' ? m : null) ?? orbeDasLinhas(slug, linhas, stats);
 }
 /** Os tipos de objeto deste lote (`acoes.criarObjetosDoUso` / `pulsarObjeto`). */
-export const TIPOS = new Set(['tempestadeDeLaminas', 'tempestadeFuriosa', 'abalo', 'martelosCadentes', 'martelo', 'orbeTempestade']);
+export const TIPOS = new Set(['tempestadeDeLaminas', 'tempestadeFuriosa', 'abalo', 'martelosCadentes', 'martelo', 'orbeTormentaExplosiva']);
 
 // ---------------------------------------------------------------- o status
 

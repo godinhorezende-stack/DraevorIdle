@@ -1689,6 +1689,8 @@ export function round(estado, personagem) {
           // (14/10, o Avatar da Selva: a Fúria Liberta pelas Afecções Elementais que o acerto pôs)
           ModsPoe.ganharFuriaLiberta(estado, hunt, ficha.afPoe, postos, hunt.clock ?? 0);
           for (const st of postos) eventos.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: st });
+          // (lote B4, dono 25/10) o Campo Galvânico: Eletrizar com o golpe básico, com o buff ativo, também cria o campo no inimigo
+          if (postos.includes('eletrizado') && hunt.buffs) Acoes.campoGalvanicoAoEletrizar(estado, hunt, alvo, hunt.clock ?? 0);
           ModsPoe.aoPorAfeccoes(estado, hunt, alvo, ficha, postos, { eventos, personagem });
           // (lote 73, a Cutilada Perigosa: o Empalamento deste golpe, se ele também Sangrou)
           ModsPoe.empalamentoComSangramento(alvo, ficha, postos.includes('sangrando'));

@@ -118,7 +118,7 @@ test('C3: os números das linhas no nível 20 e na qualidade 20 (os do PoB)', { 
   assert.ok(Math.abs(G.areaNoNivel('Holy_Sweep', 20, 0).raioM - 2.8) < 1e-9 && Math.abs(G.areaNoNivel('Holy_Sweep', 1, 0).raioM - 2.4) < 1e-9);
   assert.equal(G.c3DaGema('Volcanic_Fissure_of_Snaking', 20, 20).erupcoesExtras, 3);
   assert.equal(G.c3DaGema('Volcanic_Fissure_of_Snaking', 20, 0).erupcoesExtras, 2);
-  assert.deepEqual(G.objetoDaGema('Storm_Burst', 20, 20), { tipo: 'orbeTempestade', semAcerto: true, saltoMs: 400, duracaoMs: 1600, porRestantePct: 75, raioM: 2, explosaoM: 2.2 });
+  assert.deepEqual(G.objetoDaGema('Storm_Burst', 20, 20), { tipo: 'orbeTormentaExplosiva', semAcerto: true, saltoMs: 400, duracaoMs: 1600, porRestantePct: 75, raioM: 2, explosaoM: 2.2 });
   assert.equal(G.objetoDaGema('Storm_Burst_of_Repulsion', 20, 0).duracaoMs, 800);
   assert.equal(G.objetoDaGema('Storm_Burst_of_Repulsion', 20, 0).afasta, true);
   assert.equal(G.objetoDaGema('Storm_Burst', 20, 0).afasta, undefined);
@@ -395,7 +395,7 @@ test('C3 (D3.5): a Tormenta Explosiva — 1 orbe por uso, que acerta ao nascer e
   const { e, b } = await montar('Storm_Burst', { arma: 'Staves/Gnarled_Branch' });
   const r = usar(e, b);
   assert.equal(total(r, b), 0, 'o uso não acerta na hora');
-  const [o] = objetos(e, 'orbeTempestade');
+  const [o] = objetos(e, 'orbeTormentaExplosiva');
   assert.ok(o && o.ate - o.desde === 1600, JSON.stringify(o));
   e.hunt.clock = o.desde;
   const nascer = total(tique(e, 0), b);
@@ -407,7 +407,7 @@ test('C3 (D3.5): a Tormenta Explosiva — 1 orbe por uso, que acerta ao nascer e
   e.hunt.canalizacao.ate = e.hunt.clock - 1000;
   const ex = total(tique(e, 0), b);
   assert.ok(Math.abs(ex / nascer - 2.25) < 0.05, `${nascer} → ${ex}`);
-  assert.equal(objetos(e, 'orbeTempestade').length, 0);
+  assert.equal(objetos(e, 'orbeTormentaExplosiva').length, 0);
 });
 
 // (dono, 25/10) a Repulsão: os orbes se afastam do local mirado (o PoE), no passo de 0,4 s, com o alcance de 7 casas
@@ -424,7 +424,7 @@ test('C3 (dono 25/10): a Tormenta Explosiva da Repulsão — os orbes se afastam
   const [c] = resto;
   Object.assign(c, { x: e.hunt.pos.x - 2, y: e.hunt.pos.y, hp: 1e12, maxHp: 1e12, estados: {}, resist: {}, evasao: 0, armaduraPct: -100 });
   usar(e, b);
-  const [o] = objetos(e, 'orbeTempestade');
+  const [o] = objetos(e, 'orbeTormentaExplosiva');
   assert.deepEqual(o.longeDe, { x: b.x, y: b.y });
   e.hunt.canalizacao.ate = 1e15; // (segue canalizando: os orbes não explodem)
   e.hunt.clock = o.desde;
@@ -436,7 +436,7 @@ test('C3 (dono 25/10): a Tormenta Explosiva da Repulsão — os orbes se afastam
   // a comum, no mesmo arranjo, salta para o vivo mais perto (o alvo)
   const m = await montar('Storm_Burst', { arma: 'Staves/Gnarled_Branch' });
   usar(m.e, m.b);
-  const [o2] = objetos(m.e, 'orbeTempestade');
+  const [o2] = objetos(m.e, 'orbeTormentaExplosiva');
   assert.equal(o2.longeDe, undefined);
   m.e.hunt.clock = o2.desde;
   tique(m.e, 0);
