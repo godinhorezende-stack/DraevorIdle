@@ -242,8 +242,25 @@ export function orbeDasLinhas(slug, linhas = [], stats = {}) {
     tipo: 'orbeTempestade', semAcerto: true, saltoMs: Math.round(salto * 1000), duracaoMs: Math.round((stats.duracao ?? 1.2) * 1000),
     porRestantePct: achar(linhas, /^Orbes Explosivas causam ([\d.]+) % do Dano da Habilidade para cada [\d.]+ segundos de Duração restante$/i) ?? 0,
     raioM: TORMENTA_EXPLOSIVA.raioDoSaltoM + (achar(linhas, /^([\d.]+) metros de raio$/i) ?? 0), explosaoM: TORMENTA_EXPLOSIVA.raioDaExplosaoM,
+    // (dono, 25/10) a da Repulsão: os orbes se afastam do local mirado (`saltoDaRepulsao`)
+    ...(orbeSeAfasta(slug) ? { afasta: true } : {}),
   };
 }
+/**
+ * (dono, 25/10) o salto do orbe da REPULSÃO: "repeatedly jump away from the targeted location" (o PoB) — no passo de 0,4 s, o orbe vai para o inimigo vivo mais perto
+ * dele, a até 7 casas, que fique MAIS LONGE do local mirado (`longeDe`) do que o orbe está; sem um, anda 1 casa para longe do local mirado. `vivos`: `[{ x, y }]`.
+ */
+const cheb = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+export function saltoDaRepulsao(orbe, longeDe, vivos = [], busca = TORMENTA_EXPLOSIVA.buscaCasas) {
+  const d0 = cheb(orbe, longeDe);
+  const alvo = vivos.filter((m) => cheb(m, longeDe) > d0 && cheb(m, orbe) <= busca).sort((a, b) => cheb(a, orbe) - cheb(b, orbe))[0];
+  if (alvo) return { x: alvo.x, y: alvo.y };
+  const sx = Math.sign(orbe.x - longeDe.x);
+  const sy = Math.sign(orbe.y - longeDe.y);
+  return sx || sy ? { x: orbe.x + sx, y: orbe.y + sy } : { x: orbe.x + 1, y: orbe.y };
+}
+/** O orbe se afasta do local mirado (a Repulsão)? */
+export const orbeSeAfasta = (slug) => slug === 'Storm_Burst_of_Repulsion';
 /** (D3.5) O "mais" da explosão do orbe com `restanteMs` de duração: max(0, 75 × ⌊restante ÷ 0,4 s⌋ − 100)% (o PoB). */
 export const maisDaExplosaoDoOrbe = (o, restanteMs) => Math.max(0, (o?.porRestantePct ?? 0) * Math.floor((Math.max(0, restanteMs) + 1) / Math.max(1, o?.saltoMs ?? 400)) - 100);
 

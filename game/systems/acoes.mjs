@@ -8332,7 +8332,7 @@ function criarObjetoC3(estado, hunt, entry, ef, obj, { base, x, y, alvo, mira, f
     const intervaloMs = Math.max(50, obj.cadaMs / Math.max(0.1, 1 + inc / 100));
     porObjeto(hunt, { ...base, tipo: 'martelosCadentes', mov: doTotem ? 'parado' : 'no_dono', x, y, efeito: 'pulso', raio: casasDe(GemasPoe.areaNoNivel(slug, nivel, q).raioM ?? obj.varridaM ?? 3), raioMartelo: casasDe(obj.raioM), porQueda: obj.porQueda, menosPct: obj.menosPct, intervaloMs, proxima: agora + intervaloMs, ate: agora + Math.round(obj.duracaoMs * fd), max: 1 }, agora);
   } else if (obj.tipo === 'orbeTempestade') {
-    porObjeto(hunt, { ...base, tipo: 'orbeTempestade', mov: 'parado', x, y, efeito: 'pulso', raio: casasDe(obj.raioM), explosao: casasDe(obj.explosaoM), porRestantePct: obj.porRestantePct, saltoMs: obj.saltoMs, saltos: 0, busca: GemasC3.TORMENTA_EXPLOSIVA.buscaCasas, intervaloMs: obj.saltoMs, proxima: agora, ate: agora + Math.round(obj.duracaoMs * fd) }, agora);
+    porObjeto(hunt, { ...base, tipo: 'orbeTempestade', mov: 'parado', x, y, efeito: 'pulso', raio: casasDe(obj.raioM), explosao: casasDe(obj.explosaoM), porRestantePct: obj.porRestantePct, saltoMs: obj.saltoMs, saltos: 0, busca: GemasC3.TORMENTA_EXPLOSIVA.buscaCasas, ...(obj.afasta ? { longeDe: (({ x: lx, y: ly }) => ({ x: lx, y: ly }))(mira ?? alvo ?? { x: x + 1, y }) } : {}), intervaloMs: obj.saltoMs, proxima: agora, ate: agora + Math.round(obj.duracaoMs * fd) }, agora);
   }
 }
 /** (lote C3, D3.4) O ataque seu durante o Terremoto Vaal: outro abalo no centro dele (o anterior já estourou), até acabarem os 9 ou os 12 s. */
@@ -8371,7 +8371,11 @@ function pulsarObjetoC3(estado, hunt, personagem, o, t, eventos) {
     if (o.tipo === 'abalo' && v?.pendente === o.id) { v.pendente = null; if (v.restantes <= 0) delete hunt.poeAbaloVaal; }
   } else if (o.tipo === 'orbeTempestade') {
     // (D3.5) depois de nascer, cada pulso é um salto: o orbe vai para a casa do vivo mais perto (a até 7 casas) e acerta lá
-    if (o.saltos++ > 0) { const quem = maisPertoDe(hunt, o, o.busca, o.z); if (quem) { o.x = quem.x; o.y = quem.y; } }
+    // (dono, 25/10: a da Repulsão se afasta do local mirado — `GemasC3.saltoDaRepulsao`)
+    if (o.saltos++ > 0) {
+      if (o.longeDe) Object.assign(o, GemasC3.saltoDaRepulsao(o, o.longeDe, vivosNoAndar(hunt, o.z), o.busca));
+      else { const quem = maisPertoDe(hunt, o, o.busca, o.z); if (quem) { o.x = quem.x; o.y = quem.y; } }
+    }
   }
   const dentro = dentroDe(o, o.raio);
   if (!dentro.length) return;

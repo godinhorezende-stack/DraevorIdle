@@ -120,6 +120,8 @@ test('C3: os números das linhas no nível 20 e na qualidade 20 (os do PoB)', { 
   assert.equal(G.c3DaGema('Volcanic_Fissure_of_Snaking', 20, 0).erupcoesExtras, 2);
   assert.deepEqual(G.objetoDaGema('Storm_Burst', 20, 20), { tipo: 'orbeTempestade', semAcerto: true, saltoMs: 400, duracaoMs: 1600, porRestantePct: 75, raioM: 2, explosaoM: 2.2 });
   assert.equal(G.objetoDaGema('Storm_Burst_of_Repulsion', 20, 0).duracaoMs, 800);
+  assert.equal(G.objetoDaGema('Storm_Burst_of_Repulsion', 20, 0).afasta, true);
+  assert.equal(G.objetoDaGema('Storm_Burst', 20, 0).afasta, undefined);
   // (as linhas locais: a Postura nas gemas — o Sangrar e a velocidade da Dilaceração, a qualidade da Dualidade, a velocidade na Tempestade Sangrenta)
   assert.deepEqual(G.linhasLocaisNoNivel('Lacerate', 20, 20).af, { 'chance_bleed@posturaSangue': 25, 'atk_speed@mudouPosturaRecente': 20 });
   assert.equal(G.linhasLocaisNoNivel('Perforate_of_Duality', 20, 20).af['mais_dano@posturaSangue'], -70, 'o −75% e o +5% da qualidade: o mesmo stat');
@@ -406,4 +408,38 @@ test('C3 (D3.5): a Tormenta Explosiva — 1 orbe por uso, que acerta ao nascer e
   const ex = total(tique(e, 0), b);
   assert.ok(Math.abs(ex / nascer - 2.25) < 0.05, `${nascer} → ${ex}`);
   assert.equal(objetos(e, 'orbeTempestade').length, 0);
+});
+
+// (dono, 25/10) a Repulsão: os orbes se afastam do local mirado (o PoE), no passo de 0,4 s, com o alcance de 7 casas
+test('C3 (dono 25/10): a conta do salto da Repulsão — o vivo mais perto que fica mais longe do local mirado, a até 7 casas; sem ele, 1 casa para longe', { skip: SEM }, () => {
+  const mira = { x: 0, y: 0 };
+  assert.deepEqual(C3.saltoDaRepulsao({ x: 2, y: 0 }, mira, [{ x: 1, y: 0 }, { x: 5, y: 1 }, { x: 12, y: 0 }]), { x: 5, y: 1 }, 'o de x=1 está mais perto da mira; o de x=12, fora das 7 casas');
+  assert.deepEqual(C3.saltoDaRepulsao({ x: 2, y: -1 }, mira, [{ x: 1, y: 0 }]), { x: 3, y: -2 }, 'sem inimigo mais longe: 1 casa para longe');
+  assert.deepEqual(C3.saltoDaRepulsao({ x: 0, y: 0 }, mira, []), { x: 1, y: 0 }, 'em cima da mira: anda 1 casa');
+});
+
+test('C3 (dono 25/10): a Tormenta Explosiva da Repulsão — os orbes se afastam do local mirado (não vão ao vivo mais perto)', { skip: SEM }, async () => {
+  const { e, b, resto } = await montar('Storm_Burst_of_Repulsion', { arma: 'Staves/Gnarled_Branch' });
+  // o alvo (o local mirado) a 1 casa à direita; um segundo inimigo à esquerda, mais longe do alvo
+  const [c] = resto;
+  Object.assign(c, { x: e.hunt.pos.x - 2, y: e.hunt.pos.y, hp: 1e12, maxHp: 1e12, estados: {}, resist: {}, evasao: 0, armaduraPct: -100 });
+  usar(e, b);
+  const [o] = objetos(e, 'orbeTempestade');
+  assert.deepEqual(o.longeDe, { x: b.x, y: b.y });
+  e.hunt.canalizacao.ate = 1e15; // (segue canalizando: os orbes não explodem)
+  e.hunt.clock = o.desde;
+  tique(e, 0);
+  tique(e, 400);
+  assert.deepEqual({ x: o.x, y: o.y }, { x: c.x, y: c.y }, 'saltou para o inimigo do outro lado, longe do alvo');
+  tique(e, 400);
+  assert.deepEqual({ x: o.x, y: o.y }, { x: c.x - 1, y: c.y }, 'e segue se afastando');
+  // a comum, no mesmo arranjo, salta para o vivo mais perto (o alvo)
+  const m = await montar('Storm_Burst', { arma: 'Staves/Gnarled_Branch' });
+  usar(m.e, m.b);
+  const [o2] = objetos(m.e, 'orbeTempestade');
+  assert.equal(o2.longeDe, undefined);
+  m.e.hunt.clock = o2.desde;
+  tique(m.e, 0);
+  tique(m.e, 400);
+  assert.deepEqual({ x: o2.x, y: o2.y }, { x: m.b.x, y: m.b.y });
 });
