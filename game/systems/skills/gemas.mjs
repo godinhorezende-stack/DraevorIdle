@@ -617,6 +617,28 @@ export function skillsAtivas(estado) {
   return dasPecas(estado, saida);
 }
 
+/**
+ * (lote G-C, dono 25/10 — D13) As outras gemas ATIVAS ligadas no MESMO grupo da gema da ação `acao` (a Ruína aplica as maldições Feitiço ligadas a ela): `[{ def, nivel,
+ * qualidade }]` (o nível com o bônus da peça e os do PoE). Vazio fora de um grupo.
+ */
+export function ativasDoMesmoGrupo(estado, acao) {
+  for (const slot of SLOTS_COM_SOCKET) {
+    const peca = estado?.equipment?.[slot];
+    const s = peca && soquetesDe(peca);
+    if (!s) continue;
+    const bonus = bonusDeNivelDaPeca(peca);
+    for (const grupo of gruposLigados(s)) {
+      const noGrupo = grupo.map((i) => ({ i, g: s.gemas[i], def: s.gemas[i] && DEFS.get(Number(s.gemas[i].id)) })).filter((x) => x.def);
+      if (!noGrupo.some((x) => x.def.tipo === 'ativa' && x.def.acao === acao)) continue;
+      return noGrupo.filter((x) => x.def.tipo === 'ativa' && x.def.acao !== acao).map((x) => {
+        const e = extrasDaGemaPoe(estado, peca, x.def, x.i);
+        return { def: x.def, nivel: x.g.nivel + bonus + e.nivel, qualidade: qualidadeDaGema((x.g.qualidade ?? 0) + e.qualidade) };
+      });
+    }
+  }
+  return [];
+}
+
 /** As gemas pelo NOME (`slugDoNome`): as ativas e os suportes — o que as peças do PoE nomeiam ("Concede a Habilidade X"). */
 let PELO_NOME = null;
 function pelosNomes() {

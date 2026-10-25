@@ -7,6 +7,8 @@ import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
 import { RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo, porExposicao } from './condicoes-poe.mjs';
 import * as Plantadas from './armas-plantadas.mjs';
+// (lotes G-A e G-C, dono 25/10: as Marcas no acerto — as Cargas, as Cargas de Frasco — e a Punição em quem acerta você)
+import * as GemasGAC from './gemas-gac.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -27,6 +29,13 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
   // (lote C2, dono 20/10 — D2.7) a Corrente com Gancho de Trarthus: o acerto seu num inimigo acorrentado (`hunt.poeCorrentes`) dá a Fúria da corrente
   const daCorrente = seu && hunt ? (hunt.poeCorrentes ?? []).find((c) => c.uid === alvo.uid)?.furia ?? 0 : 0;
   if (daCorrente > 0) ganharFuria(hunt, daCorrente, agora);
+  // (lote G-A, dono 25/10) as MARCAS no acerto seu: "Inimigos Amaldiçoados têm X% de chance de concederem uma Carga de Y quando Acertados" (o Senhor da Guerra, o
+  // Assassino, o Caçador — a qualidade) e a Alquimista: "Ganha 1 Cargas de Frasco quando você Acertar um Inimigo Amaldiçoado, não mais que uma vez a cada 3 segundos"
+  if (seu && hunt && alvo.maldicoes) {
+    const doMarcado = GemasGAC.noAcertoDoAmaldicoado(hunt, alvo, agora, rng);
+    for (const t of doMarcado.cargas) leitorDeCargas?.(estado, 'ganhar', t);
+    if (doMarcado.frascos > 0) cargasDeFrasco?.(estado, doMarcado.frascos);
+  }
   // (ciclo 7, lote D) O que o golpe FEZ entra nas tags dele: o Crítico (`X@critico`) e, depois do sorteio do atordoamento, o Atordoou
   // (`X@golpeAtordoou`) — "Acertos Críticos possuem Golpe de Misericórdia", "Acertos Corpo a Corpo que Atordoam têm X% de chance de Fortificar".
   let fichaR = crit ? { ...ficha, tagsDoGolpe: [...(ficha.tagsDoGolpe ?? []), 'critico'] } : ficha;
@@ -432,6 +441,12 @@ export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorp
   if (!ligado() || !hunt || !ficha?.afPoe) return eventos;
   const v = (k) => valor(ficha, k);
   marcar(hunt, 'acertado', agora);
+  // (lote G-C, dono 25/10) a Punição: "Inimigos Amaldiçoados são Debilitados por N Segundos quando Acertarem" (o Debilitado do jogo — `ESTADOS_NO_ALVO.debilitado`)
+  const debilitarMs = bicho ? GemasGAC.debilitarAoAcertar(bicho, agora) : 0;
+  if (debilitarMs > 0) {
+    const e = (bicho.estados ??= {});
+    if (!((e.debilitado?.ate ?? 0) >= agora + debilitarMs)) ESTADOS_NO_ALVO.debilitado(e, agora + debilitarMs);
+  }
   if (dano > 0) marcar(hunt, 'dano', agora);
   // (lote D) "Acertado por um Ataque Recentemente" (o golpe dos monstros que não é magia — 14/10: o projétil de ataque também, `ataque`).
   if (corpoACorpo || ataque) marcar(hunt, 'acertadoAtaque', agora);
@@ -676,6 +691,10 @@ export function definirMaldicao(fn) { maldicaoDeItem = fn; }
 // eslint-disable-next-line no-var
 var leitorDeCargas;
 export function definirCargas(fn) { leitorDeCargas = fn; }
+/** (lote G-A) As Cargas de Frasco ganhas por fora do abate (a Marca do Alquimista): quem registra é `acoes.mjs` (`FrascosPoe.ganharCargas`). */
+// eslint-disable-next-line no-var
+var cargasDeFrasco;
+export function definirCargasDeFrasco(fn) { cargasDeFrasco = fn; }
 
 /**
  * "Seus Acertos só podem Matar Inimigos Congelados" (`so_mata_congelados`) e "Acertos de Lacaios só podem Matar Inimigos Incendiados"

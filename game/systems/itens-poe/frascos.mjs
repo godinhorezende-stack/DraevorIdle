@@ -575,6 +575,24 @@ export function aoMatar(estado, tipoDoMonstro = 'normal', morto = null) {
   if (chance > 0 && estado?.hunt?.frascosPoe && Math.random() * 100 < chance) Tinturas.removerQueimas(estado.hunt.frascosPoe, Number(afp.tintura_remover_queima_n) || 1);
 }
 
+/**
+ * (lote G-A, dono 25/10) As CARGAS DE FRASCO ganhas por fora do abate (a Marca do Alquimista: "Ganha 1 Cargas de Frasco quando você Acertar um Inimigo Amaldiçoado"): `n` em
+ * cada frasco do cinto (as Tinturas não), × a "Recarga de Frasco recebida aumentada" do frasco e do personagem, até o máximo de cada um. Devolve se algum ganhou.
+ */
+export function ganharCargas(estado, n = 1) {
+  if (!ligado() || !(n > 0)) return false;
+  const afp = doPersonagem(estado);
+  let mudou = false;
+  for (const p of cinto(estado)) {
+    if (!p || ehTinturaDoCinto(p)) continue;
+    const par = parametros(p, afp);
+    const antes = cargasDe(p, par);
+    p.poe.cargas = Math.min(par.cargasMaximas, antes + n * Math.max(0, 1 + (par.recargaPct + (Number(afp.frasco_cargas_recebidas) || 0)) / 100));
+    if (p.poe.cargas !== antes) mudou = true;
+  }
+  return mudou;
+}
+
 /** PoE: o personagem foi acertado por OUTRO JOGADOR (o duelo): os frascos com "Efeito é removido quando Acertado por um Jogador" acabam. */
 export function aoSerAcertadoPorJogador(estado) {
   const st = estado?.hunt?.frascosPoe;

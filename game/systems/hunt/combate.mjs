@@ -60,6 +60,8 @@ export const nivelDoDropPoe = (hunt, alvo) => BESTIARY[alvo?.key]?.poe?.nivel ??
 import { resistido, resistenciaEfetivaDe, resistenciaDe } from './resistencia.mjs';
 import * as ModsPoe from '../itens-poe/mods-poe.mjs';
 import * as GemasA2 from '../itens-poe/gemas-a2.mjs';
+// (lotes G-A e G-C, dono 25/10: a Corrente Temporal, o Impelir restrito)
+import * as GemasGAC from '../itens-poe/gemas-gac.mjs';
 import { registrarGolpe } from '../combate/registro.mjs';
 import * as Limites from '../combate/limites.mjs';
 import * as Formulas from '../combate/formulas.mjs';
@@ -1372,7 +1374,7 @@ export function golpesDosMonstros(estado, hunt, personagem) {
     // O modificador de velocidade de ataque (`velocidadeDeAtaque`) encurta o intervalo do golpe.
     // (+ o buff de velocidade de ataque das mecânicas: Enfurecido, Vingativo — `mobs/buffs.mjs`.)
     // O intervalo entre golpes (`mobs/atributos.mjs`): o base × a lentidão ÷ a velocidade (modificador × buffs), com limites configuráveis.
-    bicho.proximoGolpe = agora + AtributosDoMob.intervaloDoGolpe(bicho, { base: bicho.boss?.melee?.intervaloMs ?? ATAQUE_DO_MONSTRO_MS, lentidao: Estados.fatorDeLentidao(bicho, agora), buffPct: BuffsDeMob.soma(bicho, agora, 'velocidadeDeAtaquePct') });
+    bicho.proximoGolpe = agora + AtributosDoMob.intervaloDoGolpe(bicho, { base: bicho.boss?.melee?.intervaloMs ?? ATAQUE_DO_MONSTRO_MS, lentidao: Estados.fatorDeLentidao(bicho, agora) * GemasGAC.fatorDeAcao(bicho, agora), buffPct: BuffsDeMob.soma(bicho, agora, 'velocidadeDeAtaquePct') });
     contraAtaque(estado, hunt, personagem, bicho, eventos);
   }
   return eventos;
@@ -1560,8 +1562,11 @@ export function round(estado, personagem) {
         const ficha = ModsPoe.fichaDoGolpe(emboscada ? Acoes.comAtributosDoUso(fichaDaMao, { crit_base_golpe: emboscada.critPontos, crit_dmg: emboscada.critMultPct }) : fichaDaMao, tagsDoBasico, { alvo, estado });
         if (emboscada && hunt.emboscada === emboscada) delete hunt.emboscada;
         // (PoE: o golpe Impelido por um Clamor gasta um — a tag `impelido` já está na ficha deste golpe.)
-        if (!segundo && !emboscada && hunt.impelidos?.n > 0) hunt.impelidos.n--;
-        const fatorDoGolpe = segundo ? Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct / 100 : 1;
+        // (lote G-A, D2: o Impelir do Sísmico não vale no golpe básico — `GemasGAC.impeleEste`)
+        if (!segundo && !emboscada && hunt.impelidos?.n > 0 && GemasGAC.impeleEste(hunt.impelidos, tagsDoBasico)) hunt.impelidos.n--;
+        // (lote G-C, dono 25/10) a Marca do Atirador no golpe básico de longe (o projétil da arma): "sofrem Dano aumentado em X% de Acertos de Projéteis" — no golpe da arma
+        const doAtirador = itensPoeLigado() && categoriaDaArma(arma) === 'distancia' ? GemasGAC.fatorDoProjetil(alvo, hunt.clock ?? 0) : 1;
+        const fatorDoGolpe = (segundo ? Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct / 100 : 1) * doAtirador;
         // (lote G20b: o golpe de longe é um projétil de ataque seu, acerte ou erre — a Balista Focada ataca depois dele, `cacadas.tiqueDosLacaios`)
         if (!segundo && categoriaDaArma(arma) === 'distancia') hunt.poeProjetilDeAtaqueEm = hunt.clock ?? 0;
         // Accuracy: o golpe pode errar o bicho (a perícia treina igual, como no Tibia).

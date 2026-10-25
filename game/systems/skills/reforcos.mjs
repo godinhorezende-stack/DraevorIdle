@@ -14,6 +14,9 @@ import { CONFIG as CONFIG_DAS_GEMAS } from './gemas.mjs';
 import { SOLO_PROFANO, noSoloProfano } from '../itens-poe/condicoes-poe.mjs';
 // (lote B2, dono 20/10 — D-B2.1: o lento POR FONTE dos esporos da Chuva Tóxica, no passo do monstro)
 import { fatorDosLentosPorFonte } from '../itens-poe/gemas-b2.mjs';
+// (lotes G-A e G-C, dono 25/10: os efeitos das maldições do lote no amaldiçoado — a Corrente Temporal, a Punição, as Marcas)
+import * as GemasGAC from '../itens-poe/gemas-gac.mjs';
+import { VIDA_BAIXA } from '../itens-poe/condicoes-poe.mjs';
 
 const DADOS = JSON.parse(readFileSync(new URL('../../gamedata/gemas/reforcos.json', import.meta.url), 'utf8'));
 
@@ -180,17 +183,27 @@ export function treinoDeOutraPericia(estado, hunt, tags) {
  * (só quando houve): os vizinhos que a área da maldição amaldiçoou (lote 83), com os mesmos dois avisos de cada um.
  */
 export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
+  return marcarCom(hunt, bicho, ativos(hunt, agora), agora);
+}
+/**
+ * (lote G-C, D13) O `marcar` com uma lista própria de maldições (`[{ id, def, fator, lancado, emAura }]`, a forma de `ativos`) — a Ruína aplica as maldições LIGADAS a
+ * ela, que não precisam estar ligadas como buff (`acoes.ruinaNoAcerto`).
+ */
+export function marcarCom(hunt, bicho, lista, agora = hunt?.clock ?? Date.now()) {
   const tinha = amaldicoado(bicho, agora);
   let amaldicoou = false;
   let naoAura = false;
   const vizinhos = new Map();
-  for (const { id, def, fator, lancado, emAura } of ativos(hunt, agora)) {
+  for (const { id, def, fator, lancado, emAura } of lista) {
     if (ehMaldicao(def)) {
       const efeitos = [];
       let dur = 0;
       for (const e of def.efeitos ?? []) {
         if (e.efeito === 'marcaVulneravel') efeitos.push({ tipo: 'vulneravel', pct: e.pct * fator, tipos: e.tipos });
         if (e.efeito === 'marcaEnfraquece') efeitos.push({ tipo: 'enfraquecido', pct: e.pct * fator, ...(e.pctRaro != null ? { pctRaro: e.pctRaro * fator } : {}) });
+        // (lotes G-A e G-C) os do lote: `gac:<tipo>` (`GemasGAC.efeitoNoBicho`)
+        const gac = GemasGAC.efeitoNoBicho(e, fator);
+        if (gac) efeitos.push(gac);
         if (/^marca/.test(e.efeito)) dur = Math.max(dur, e.durMarca ?? 0);
       }
       // (17/10, lote G6: + o que a Marca dá aos acertos CONTRA o amaldiçoado e ao abate dele — `maldicaoContra`, de `GemasPoe.buffNoNivel`)
@@ -286,7 +299,8 @@ export function vulnerabilidade(bicho, tipo, agora) {
   // (lote 57: + o Solo Profano — "maldições têm efeito aumentado em 10% sobre eles")
   const profano = noSoloProfano(bicho, agora) ? 1 + SOLO_PROFANO.efeitoMaldicaoPct / 100 : 1;
   for (const c of maldicoesAtivas(bicho, agora)) for (const e of c.efeitos) if (e.tipo === 'vulneravel' && e.tipos.includes(tipo)) f *= 1 + (e.pct * fatorDoExpirou(c, agora) * profano) / 100;
-  return f;
+  // (lote G-C) a Punição: "Inimigos Amaldiçoados sofrem Dano aumentado em X% enquanto em Vida Baixa" (todo tipo)
+  return f * GemasGAC.fatorDaVidaBaixa(bicho, agora, VIDA_BAIXA);
 }
 
 /** A força do bicho (o `forca` da Arena) × a marca de enfraquecido (e as maldições que enfraquecem). */
@@ -322,6 +336,8 @@ export function provocar(hunt, def, distancia) {
     for (const m of perto) {
       m.perseguindo = true;
       m.provocadoAte = (hunt.clock ?? Date.now()) + def.dur;
+      // (lote G-A) o Clamor Intimidador: "Inimigos Provocados por este Clamor são Intimidados" — enquanto provocados (10% mais dano de Ataques sofrido)
+      if (e.intimida) { const est = (m.estados ??= {}); est.intimidado = { ate: Math.max(est.intimidado?.ate ?? 0, m.provocadoAte) }; }
       n++;
     }
   }

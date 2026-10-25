@@ -97,6 +97,8 @@ import * as GemasB2 from './itens-poe/gemas-b2.mjs';
 import * as GemasB3 from './itens-poe/gemas-b3.mjs';
 // (lote B4, dono 25/10: os feixes e os objetos que reagem — `itens-poe/gemas-b4.mjs`)
 import * as GemasB4 from './itens-poe/gemas-b4.mjs';
+// (lotes G-A e G-C, dono 25/10: as maldições, as marcas e os clamores)
+import * as GemasGAC from './itens-poe/gemas-gac.mjs';
 import { JANELA } from '../websocket/quadro.mjs';
 import * as ItensPoeJogo from './itens-poe/jogo.mjs';
 
@@ -2387,10 +2389,13 @@ export function efeitosDaMaldicao(efeitos, efeitoDaGema, estado = null, entry = 
   // (ciclo 7: + "Efeito das suas Marcas aumentado em X%" — só nas gemas com a tag Marca)
   const ehMarca = (GemasPoe.doSlug(entry?.poeGema?.slug)?.gema?.tags ?? []).includes('Marca');
   const dasPecas = f ? valorPoe(f, 'efeito_maldicao') + (nome ? valorPoe(f, `efeito_maldicao_gema:${slugDoNome(nome)}`) : 0) + (ehMarca ? valorPoe(f, 'efeito_marca') : 0) : 0;
-  const pct = (Number(efeitoDaGema?.efeitoMaldicaoPct) || 0) + dasPecas;
+  // (lote G-A, dono 25/10: + a QUALIDADE da própria gema — "Efeito de Maldições aumentado" do Desespero, "Efeito da Marca aumentado" da Alquimista)
+  const daQualidade = entry?.poeGema?.slug && entry.poeGema.arquetipo === 'maldicao' ? GemasPoe.qualidadeDaMaldicaoDaGema(entry.poeGema.slug, efeitoDaGema?.qualidade ?? 0) : { efeitoPct: 0, duracaoPct: 0 };
+  const pct = (Number(efeitoDaGema?.efeitoMaldicaoPct) || 0) + dasPecas + daQualidade.efeitoPct;
   // (09/10, auditoria de dependências) "Duração da Maldição aumentada em X%" (a árvore, as peças): a marca da maldição dura mais no monstro.
   // (lote G14: + a do suporte — "Habilidades reforçadas têm -X% de duração de maldição", o Toque Maldito)
-  const duracao = (f ? valorPoe(f, 'duracao_maldicao') : 0) + (Number(efeitoDaGema?.duracaoMaldicaoPct) || 0);
+  // (lote G-A: + a da qualidade — "Duração de Maldições aumentada" do Enfraquecer e da Corrente Temporal)
+  const duracao = (f ? valorPoe(f, 'duracao_maldicao') : 0) + (Number(efeitoDaGema?.duracaoMaldicaoPct) || 0) + daQualidade.duracaoPct;
   // "X% menos Efeito das suas Maldições" e "Seus Feitiços têm Duração infinita" (Mestre dos Feitiços — só os Feitiços, as maldições Hex).
   const menos = f ? valorPoe(f, 'efeito_maldicao_menos') : 0;
   const tagsDaGema = GemasPoe.doSlug(entry?.poeGema?.slug)?.gema?.tags ?? [];
@@ -2398,7 +2403,7 @@ export function efeitosDaMaldicao(efeitos, efeitoDaGema, estado = null, entry = 
   const infinita = !!f && ehFeitico && valorPoe(f, 'feitico_duracao_infinita') > 0;
   const fatorPct = Math.max(0, 1 + pct / 100) * Math.max(0, 1 - menos / 100);
   const saida = efeitos.map((e) => (/^marca/.test(e.efeito) && typeof e.pct === 'number'
-    ? { ...e, pct: e.pct * fatorPct, ...(e.durMarca && (duracao || infinita) ? { durMarca: infinita ? DURACAO_INFINITA_MS : Math.round(e.durMarca * Math.max(0.1, 1 + duracao / 100)) } : {}) }
+    ? { ...e, pct: e.pct * fatorPct, ...(e.efeito === 'marcaGac' ? { escala: fatorPct } : {}), ...(e.durMarca && (duracao || infinita) ? { durMarca: infinita ? DURACAO_INFINITA_MS : Math.round(e.durMarca * Math.max(0.1, 1 + duracao / 100)) } : {}) }
     : e));
   // As REGRAS da maldição no monstro (`Reforcos.marcar`): o limite ("Você pode aplicar uma Maldição adicional"), o "Efeito aumentado se Y% da
   // Duração expirou" (`efeito_maldicao_expirou:<Y>`) e o "Inimigos Amaldiçoados por você são Desacelerados" — da ficha de quem conjurou.
@@ -2530,6 +2535,19 @@ export function projeteisDoLacaio(estado, acaoDaGema, { origem, alvo, vivos, alc
   return Secundarios.resolver({ efeito, tags: ['projectile', 'single', 'hit'], origem, alvo, atingidos: [alvo], vivos, alcance });
 }
 
+/**
+ * (lote G-A, dono 25/10) O Impelir do Clamor que ESTE uso da gema de ataque recebe (`hunt.impelidos` — o mesmo critério das tags do golpe, `condicoes-poe.fichaDoGolpe`:
+ * não a Emboscada, não o que não pode ser Impelido, não o totem; o Sísmico só nas Pancadas, o Ancestral só nos Golpes — `GemasGAC.impeleEste`), ou null.
+ */
+function impelidoNoUso(estado, entry) {
+  const im = estado?.hunt?.impelidos;
+  if (!itensPoeLigado() || !entry?.poeGema?.ataque || !(im?.n > 0) || !((im.ate ?? Infinity) > (estado.hunt.clock ?? 0))) return null;
+  if (estado.hunt.emboscada?.ate > (estado.hunt.clock ?? 0)) return null;
+  const tags = tagsPoeDaSkill(entry);
+  if (tags.includes('naoImpelivel') || tags.includes('totem') || !GemasGAC.impeleEste(im, tags)) return null;
+  return im;
+}
+
 const FATOR_DA_RECARGA_DE_ATAQUE = 0.5;
 const recargaDe = (entry, ms) => (entry.papeis?.[0] === 'attack' ? Math.round(ms * FATOR_DA_RECARGA_DE_ATAQUE) : ms);
 
@@ -2551,7 +2569,12 @@ export function comOsAlvosDaGema(entry, efeito, estado = null) {
   // atiram N Projéteis adicionais" (a peça da gema), "Projéteis Perfuram N Alvos" e a "Área de Efeito aumentada" (lote 36: o "aumentado" e o
   // "mais" em %, com os dos suportes; o raio da forma cresce × √ no uso — `ModsPoe.casasPelaArea`) — `itens-poe/mods-poe.mjs`.
   // (17/10: + a área das linhas locais da gema — "X% mais Área de Efeito por Carga de Tolerância" — `comAsLinhasDaGema`)
-  const dasPecas = estado ? ModsPoe.alvosDasPecas(estado, comAsLinhasDaGema(estado, Ficha.combate(estado), entry, efeito), entry, tagsPoeDaSkill(entry), Gemas.skillsAtivas(estado).get(entry.id)?.onde?.slot ?? null) : null;
+  // (lote G-A, dono 25/10) o ataque IMPELIDO pelo Clamor (o próximo uso gasta um): as tags `impelido`/`impelidoClamor` na área — "Ataques Impelidos têm 50% mais Área de
+  // Efeito" (o Sísmico) — e, no Golpe, os alvos a mais do Ancestral ("Golpes Impelidos focam em 2 Inimigos adicionais")
+  const impelidoAgora = impelidoNoUso(estado, entry);
+  const tagsDoUso = impelidoAgora ? [...tagsPoeDaSkill(entry), 'impelido', 'impelidoClamor'] : tagsPoeDaSkill(entry);
+  const dasPecas = estado ? ModsPoe.alvosDasPecas(estado, comAsLinhasDaGema(estado, Ficha.combate(estado), entry, efeito), entry, tagsDoUso, Gemas.skillsAtivas(estado).get(entry.id)?.onde?.slot ?? null) : null;
+  if (impelidoAgora?.alvosExtra && tagsDoUso.includes('golpe')) e.alvosExtras = (e.alvosExtras ?? 0) + impelidoAgora.alvosExtra;
   // (lote A3, D5: o `divide` do feixe; a divisão do projétil — `partir` — é do alvo atingido, `comOsProjeteisDaGema`)
   e.alvosExtras = (e.alvosExtras ?? 0) + a.projeteis + a.divide - (a.partir ?? 0) + (dasPecas?.projeteis ?? 0);
   // (12/10) A divisão da gema (o Aço Violento: "Projéteis se Partem na direção de N alvos") — o "Se você não tiver Fragmentos de Aço,
@@ -4483,6 +4506,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (lote A1) a SEGUNDA PONTA do deslocamento (as casas da área lá) e quem ele acertou nas duas (a recarga do Piscar Gélido conta os da área)
   let segundaPonta = null;
   const doDeslocamento = new Set();
+  // (lote G-C, dono 25/10 — D11) a DETONAÇÃO DE FEITIÇOS: os Feitiços de cada vivo ANTES do uso (o "se o Inimigo estiver Enfeitiçado" e o que o acerto consome — os
+  // que o próprio uso põe não contam); a área só sai se o alvo estava Enfeitiçado
+  const detonacaoDoUso = itensPoeLigado() && entry.poeGema ? GemasPoe.detonacaoNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
+  const feiticosAntes = detonacaoDoUso ? new Map(vivos.map((b) => [b, GemasGAC.feiticosNoBicho(b, agora)])) : null;
   if (ataque) {
     const centradoNoAlvo = entry.miraNoChao || entry.alvoNoCentro;
     if (miragemDoUso) {
@@ -4671,6 +4698,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (lote B1, dono 20/10) "Acerta até N Inimigos" (o Condutor Elétrico dos Céus — o nível + a qualidade): os N da área mais perto do centro dela
     const maxAlvos = casas && itensPoeLigado() && entry.poeGema ? GemasPoe.maxAlvosDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
     if (maxAlvos) atingidos = GemasB1.maisPertoDoCentro(atingidos, formaNoUso ?? alvo ?? hunt.pos, maxAlvos);
+    // (lote G-C, D11) "If the enemy was Hexed, also deals area damage to other enemies around the target" (o PoB): o alvo sem Feitiço leva só o acerto dele
+    if (detonacaoDoUso && casas && alvo && !feiticosAntes.get(alvo)?.length) atingidos = atingidos.includes(alvo) ? [alvo] : [];
     // (lote C1, dono 20/10 — D1.5) a Pancada de Gelo da Cadência: a área no raio da mão da vez (1,1 m na principal, 3,1 m na secundária — o revezamento das duas
     // armas, `maoDaGemaDeAtaque`; sem a segunda arma, a principal), centrada na casa à sua frente na direção do alvo (como a Colisão de Gelo), × √ da Área de Efeito
     if (c1?.maos && casas && formaNoUso) {
@@ -5347,10 +5376,14 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (lote 80, a Astúcia do Veterano) o buff de GUARDA pela tag da gema ("Habilidade de Guarda não Vaal" — o arquétipo `guarda` junta outras);
     // o que expirou e volta guarda o fim do anterior ("se um Buff de Guarda não Vaal terminou Recentemente")
     const tagsDoBuff = doPoe && entry.poeGema ? tagsPoeDaSkill(entry) : [];
+    // (lote G-A, dono 25/10) a QUALIDADE da guarda: "Duração do Efeito de Habilidades aumentada em X%" (somada aos outros "aumentados" da duração) e "Efeito do Buff aumentado
+    // em X%" (o efeito do buff — `GemasPoe.adds`)
+    const qualDoBuff = doPoe && entry.poeGema?.arquetipo === 'guarda' ? GemasPoe.qualidadeDoBuffDaGema(entry.poeGema.slug, efeitoDaGema?.qualidade ?? 0) : null;
     const anterior = hunt.buffs?.[entry.id];
     if (anterior?.guarda && !anterior.vaal && anterior.ate <= agora) ModsPoe.marcar(hunt, 'guardaNaoVaalTerminou', anterior.ate);
     if (!clamorSemBuff) (hunt.buffs ??= {})[entry.id] = doPoe
-      ? { ate: reserva || doPoe.ligada ? Reserva.LIGADA_ATE : agora + Math.round((daFase?.duracaoBaseMs ?? doPoe.dur) * fatorDeDuracao(estado, entry, efeitoDaGema, incDaFase)), desde: agora, tipo: buff.tipo,
+      ? { ate: reserva || doPoe.ligada ? Reserva.LIGADA_ATE : agora + Math.round((daFase?.duracaoBaseMs ?? doPoe.dur) * fatorDeDuracao(estado, entry, efeitoDaGema, incDaFase + (qualDoBuff?.duracaoIncPct ?? 0))), desde: agora, tipo: buff.tipo,
+        ...(qualDoBuff?.efeitoPct ? { efeitoBuffQualPct: qualDoBuff.efeitoPct } : {}),
         // (lote A2: os números da mecânica própria — `GemasA2` — e a duração, para quem renova: a Fúria Sangrenta ao matar)
         ...(doPoe.a2 ? { a2: doPoe.a2, durMs: Math.round(doPoe.dur * fatorDeDuracao(estado, entry, efeitoDaGema)) } : {}),
         // (lote C3, dono 25/10 — D3.1) o Sangue e Areia liga na Postura de SANGUE (o PoE: "Você fica automaticamente em Postura de Sangue"); o clique de novo alterna
@@ -5652,6 +5685,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
      */
     const tagsDaSkill = tagsPoeDaSkill(entry);
     const deProjetil = itensPoeLigado() && tagsDaSkill.includes('projetil');
+    // (lote G-C, D13) a RUÍNA: as maldições ligadas a ela (uma vez por uso) — aplicadas em cada inimigo do debuff (`Reforcos.marcarCom`)
+    const ruinaDoUso = itensPoeLigado() && entry.poeGema ? GemasPoe.ruinaNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
+    const ligadasDaRuina = ruinaDoUso ? maldicoesDaRuina(estado, entry, ruinaDoUso, agora) : null;
     const porDistancia = new Map();
     // (lote A3, dono 19/10 — F2, D1/D2) as rampas de distância da gema (o Pulso Congelante, o Olho Invernal), × o ProjectileSpeedMod do uso
     const rampaDoUso = efeitoDaGema?.rampaMaisPct || efeitoDaGema?.rampaCongelar ? { rampaMaisPct: efeitoDaGema.rampaMaisPct ?? 0, rampaCongelar: efeitoDaGema.rampaCongelar ?? 0, modVel: velDoTiro } : null;
@@ -5728,6 +5764,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     let passeC2 = null;
     // (lote PR3, dono 21/10 — D3) a 2ª forma da Lança Gélida: o acerto a ≥ 2 casas de você leva o crítico dela
     const segundaForma = itensPoeLigado() && entry.poeGema && !casas ? GemasPoe.segundaFormaDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
+    // (lote G-C, D11) a Detonação: "Dano de Caos com Acertos é Resistido pela Resistência mais baixa" (a da Contradição: a maior) — no acerto (`resistenciaEfetivaDe`)
+    const fichaDaRes = detonacaoDoUso?.resistencia ? { ...ficha, caosResistidoPela: detonacaoDoUso.resistencia } : ficha;
     const acertar = (bicho, pct0 = 100, fonte = null, golpe = null) => {
       // (revisão do C1) o raio do Castigo do Julgamento Divino não é golpe corpo a corpo (a parte "Area Hit" do PoB: melee = false): sem o Golpe Impiedoso e sem a
       // Proximidade do Impacto, que são do corpo a corpo; o "aumentado"/"mais" corpo a corpo da ficha sai pelo `fatorDoRaioSemCorpo`
@@ -5735,7 +5773,13 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const impiedoso = impiedosoDoUso && !naoCorpo;
       // (revisão do A5) o Condutor Elétrico só acerta o inimigo Eletrizado
       if (doCondutor?.soEletrizados && AfeccoesPoe.fatorDeEletrizacao(bicho, agora) <= 1) return;
-      const pct = contraVinculado && bicho.uid === plantada.vinculado ? pct0 * Math.max(0, 1 + contraVinculado / 100) : pct0;
+      const pct0b = contraVinculado && bicho.uid === plantada.vinculado ? pct0 * Math.max(0, 1 + contraVinculado / 100) : pct0;
+      // (lote G-C) só nos ACERTOS: a Marca do Atirador ("sofrem Dano aumentado em X% de Acertos de Projéteis") e a Detonação de Feitiços no Enfeitiçado ("+200% mais Dano
+      // com Acertos") — no `pct` (o acerto) e no `soNoAcerto` (a afecção sai sem eles); o "+90% mais com Afecções" vai na afecção (`maisNaAfeccao`)
+      const doAtirador = deProjetil ? GemasGAC.fatorDoProjetil(bicho, agora) : 1;
+      const enfeiticadoAntes = !!detonacaoDoUso && !!feiticosAntes?.get(bicho)?.length;
+      const daDetonacao = enfeiticadoAntes ? 1 + detonacaoDoUso.maisAcertoPct / 100 : 1;
+      const pct = pct0b * doAtirador * daDetonacao;
       const noAlvo = ajusteDoAlvo(bicho);
       const fichaNoAlvo = noAlvo?.ficha ?? ficha;
       // (lote A5b, dono 20/10: "fazer como o PoE") a gema de ATAQUE rola o acerto POR ALVO — a precisão do uso (a ficha do golpe, com a da gema e a dos
@@ -5836,7 +5880,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const chamaPct = ehAtaque && itensPoeLigado() ? ModsPoe.consumirChamas(estado, bicho, ModsPoe.idDaChama(hunt), agora) : 0;
       const fisicoDaChama = chamaPct > 0 ? (pedacos ? pedacos.filter((p) => p.elemento === 'physical').reduce((t, p) => t + p.dano, 0) : tipo === 'physical' ? bruto : 0) : 0;
       const fogoDaChama = fisicoDaChama > 0 ? resistido(hunt, bicho, 'fire', (fisicoDaChama * chamaPct) / 100, ficha) : 0;
-      const base = (pedacos ? Math.round(pedacos.reduce((t, p) => t + resistido(hunt, bicho, p.elemento, p.dano, ficha), 0)) : resistido(hunt, bicho, tipo, bruto, ficha)) + (naoCaotico > 0 ? resistido(hunt, bicho, 'chaos', (naoCaotico * caosDoRicochete) / 100, ficha) : 0) + fogoDaChama;
+      const base = (pedacos ? Math.round(pedacos.reduce((t, p) => t + resistido(hunt, bicho, p.elemento, p.dano, fichaDaRes), 0)) : resistido(hunt, bicho, tipo, bruto, fichaDaRes)) + (naoCaotico > 0 ? resistido(hunt, bicho, 'chaos', (naoCaotico * caosDoRicochete) / 100, ficha) : 0) + fogoDaChama;
       // (a maldição amaldiçoa no acerto; "Recupera X% de Vida quando você Amaldiçoar um Inimigo sem Maldições")
       // (revisão do C4, 21/10: a magia sem acerto não amaldiçoa "no acerto")
       if (!semAcertoDaGema) amaldicoouAgora(estado, hunt, bicho, ficha, agora, eventos, personagem, { doTotem });
@@ -5885,6 +5929,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       }
       const { dano, crit, onslaught, chance } = rolado;
       if (crit) { houveCritico = true; danoCritico += dano; }
+      // (lote G-C, D11) a Detonação consome um Feitiço sorteado dos que o alvo tinha antes do uso (a qualidade: a chance de não consumir; a do Caos nunca consome)
+      if (enfeiticadoAntes && dano > 0) GemasGAC.consumirFeitico(bicho, detonacaoDoUso, feiticosAntes.get(bicho), agora);
       // (lote C4, dono 21/10) os debuffs do lote C4 no acertado (antes da camada nova da Praga — o "quem ainda não tem a Praga" é o de antes deste acerto)
       if (c4) debuffsDoC4(hunt, bicho, c4, { agora, msDoC4, definhados: definhadosPeloC4, ficha, acao: entry.id, quem: doTotem ? null : personagem?.nome ?? null, raioDoPestilento: c4.pestilento ? Math.max(0, casasDoRaio(c4.pestilento.raioM * Math.sqrt(ModsPoe.fatorDaArea(efeitoDaGema?.areaIncPct ?? 0, efeitoDaGema?.areaMaisPct ?? 0)))) : 0, eventos });
       // (os suportes no acerto: a Crueldade — "Acertos de Habilidades Suportadas concedem Crueldade"; a Lâmina Noturna — "concedem Elusivo no
@@ -6069,6 +6115,14 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
           // (lote A5, dono 20/10 — D10: pela função única, `ModsPoe.porExposicao` — a de uma Exposição já vencida não conta mais)
           if (deb.exposicaoPct && n >= deb.max && ModsPoe.porExposicao(bicho, 'fire', Math.abs(deb.exposicaoPct), duracaoDoDebuff, agora) && !doTotem) ModsPoe.marcar(hunt, 'infligiuExposicao');
         }
+        // (lote G-C, D13) a RUÍNA aplica as maldições ligadas no inimigo do debuff e, por maldição aplicada, o debuff causa X% mais dano (o "mais" multiplica) e dura +100%
+        // (a Ruína; somado ao "aumentado" da Duração) — a duração-base é a do PoB (`GemasGAC.RUINA`)
+        if (ruinaDoUso && dg?.partes?.length) {
+          if (ligadasDaRuina?.length) Reforcos.marcarCom(hunt, bicho, ligadasDaRuina, agora);
+          const c = GemasGAC.ruinaComMaldicoes(ruinaDoUso, quantasDaRuina(ligadasDaRuina ?? []));
+          fatorDoDebuff *= c.fatorDano;
+          duracaoDoDebuff = Math.max(1, Math.round(ruinaDoUso.duracaoMs * fatorDeDuracao(estado, entry, efeitoDaGema, c.duracaoIncPct)));
+        }
         // (revisão do C4, 21/10) o dano sofrido do atacante (o Definhado com o "Efeito do Definhamento aumentado", os "Inimigos … sofrem Dano aumentado") vale no pulso
         const sofridoDoAtacante = ModsPoe.sofridoDoAtacante(ficha.afPoe);
         const sofridoDoUso = sofridoDoAtacante ? { sofrido: sofridoDoAtacante } : {};
@@ -6103,7 +6157,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         // (17/10, lote G17) O DANO das afecções (Incêndio, Sangramento, Veneno) sai do acerto SEM o "mais/menos Dano com Acertos" dos suportes (as
         // Afecções Mortais: 80% menos no acerto, a afecção inteira) e COM o "mais Dano de Afecções" e o de cada uma — `fatoresDoDano`. A força das
         // não danificadoras (Eletrização, Resfriamento, Congelamento) segue o dano do acerto, como no PoE.
-        const maisNaAfeccao = impiedoso ? 1 + (efeitoDaGema.impiedosoMaisAfeccaoPct ?? 0) / 100 : 1;
+        const maisNaAfeccao = (impiedoso ? 1 + (efeitoDaGema.impiedosoMaisAfeccaoPct ?? 0) / 100 : 1) * (enfeiticadoAntes ? 1 + detonacaoDoUso.maisAfeccaoPct / 100 : 1);
         // (lote G18: × o da própria gema — "60 % menos Dano de Afecções", "49 % mais Dano com Sangramento")
         const daGemaAf0 = entry.poeGema ? GemasPoe.maisNasAfeccoesDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
         // (lote C3, dono 25/10) "X% mais Dano com Sangramento enquanto na Postura de Sangue" (a Dilaceração, a Tempestade de Lâminas — o PoB: active_skill_bleeding_damage_
@@ -6157,6 +6211,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         ModsPoe.aoPorAfeccoes(estado, hunt, bicho, ficha, postos, { eventos, personagem, deTotem: doTotem });
         // (decisão do dono, 20/10) o Chicote Ardente da Combustão: Incendiar cria o Solo Ardente sob o Incendiado (`soloDoChicoteArdente`)
         if (b2?.chicote?.solo?.aoIncendiar && postos.includes('queimando')) soloDoChicoteArdente(estado, hunt, entry, efeitoDaGema, b2.chicote.solo, bicho, agora, doTotem ? 'totem' : 'voce');
+        // (lote G-C, D12) a Marca do Alquimista: o acerto que Incendeia / Envenena o marcado cria o Solo Ardente / Cáustico sob ele (`soloDaAlquimista`)
+        if (postos.includes('queimando') || postos.includes('envenenado')) soloDaAlquimista(hunt, bicho, postos, agora, doTotem ? 'totem' : 'voce');
         // (lote 73, a Cutilada Perigosa: o Sangramento das afecções do PoE ou o da gema de suporte — `postosDaGema`)
         ModsPoe.empalamentoComSangramento(bicho, ficha, postos.includes('sangrando') || postosDaGema.includes('sangrando'));
       }
@@ -6309,6 +6365,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         areaNoImpacto,
         // (lote PR3) as explosões da Explosão Cinética
         cinetica: cineticaNoUso,
+        // (lote G-C) a divisão do projétil que acerta o marcado pela Marca do Atirador
+        divisaoNoAlvo: deProjetil ? (b) => GemasGAC.divisaoDaMarca(b, agora) : null,
       });
       // (lote A3b, dono 19/10) os projéteis que saíram do uso (o primeiro passe): o marcador do Disparo Congelante, a captura da Espiral Venenosa, a
       // Lâmina Persistente das Facas Etéreas (D8: 1 a cada N facas, onde a faca parou), o Tornado que os absorve (D7)
@@ -6969,11 +7027,17 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         n += ModsPoe.valor(fichaDoUso, 'clamor_impele_extra');
         for (const [k, x] of Object.entries(fichaDoUso.afPoe ?? {})) if (k.startsWith('clamor_impele_chance:') && Math.random() * 100 < x) n += Number(k.slice('clamor_impele_chance:'.length)) || 0;
         if (ModsPoe.valor(fichaDoUso, 'clamor_impele_dobro') > 0) n *= 2;
-        hunt.impelidos = { n: Math.max(hunt.impelidos?.ate > inicio ? hunt.impelidos.n : 0, n), ate: inicio + 20000 };
+        // (lote G-A, dono 25/10 — D2) o que o Clamor Impele (o Sísmico: as Pancadas; o Ancestral: os Golpes — `so`) e os alvos a mais dos Golpes Impelidos (o Ancestral);
+        // um Clamor de outro tipo troca o Impelir (um por vez — os números do anterior não somam com o do novo)
+        const so = GemasPoe.impeleSoDaGema(entry.poeGema.slug);
+        const alvosExtra = GemasPoe.alvosDoImpelidoDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1);
+        const mesmo = hunt.impelidos?.ate > inicio && (hunt.impelidos.so ?? null) === so;
+        hunt.impelidos = { n: Math.max(mesmo ? hunt.impelidos.n : 0, n), ate: inicio + 20000, ...(so ? { so } : {}), ...(alvosExtra ? { alvosExtra } : {}) };
       }
     // (lote A1b, dono 19/10: D-b: o ataque Impelido pela Emboscada "não pode ser Impelido por outras Habilidades" — não gasta o Impelir do Clamor)
     // (revisão do C1: nem a que não pode ser Impelida — `naoImpelivel`)
-    } else if (tagsPoe.includes('ataque') && !tagsPoe.includes('naoImpelivel') && !emboscadaDoUso && hunt.impelidos?.n > 0 && !(tagsPoe.includes('movimento') && ModsPoe.valor(fichaDoUso, 'clamor_nao_impele_movimento') > 0)) hunt.impelidos.n--;
+    // (lote G-A, D2: + só o ataque que este Impelir alcança — `GemasGAC.impeleEste`)
+    } else if (tagsPoe.includes('ataque') && !tagsPoe.includes('naoImpelivel') && !emboscadaDoUso && hunt.impelidos?.n > 0 && GemasGAC.impeleEste(hunt.impelidos, tagsPoe) && !(tagsPoe.includes('movimento') && ModsPoe.valor(fichaDoUso, 'clamor_nao_impele_movimento') > 0)) hunt.impelidos.n--;
     const ctxDoUso = { alvo, eventos, personagem, tags: tagsPoe };
     ModsPoe.evento(estado, hunt, 'usarHabilidade', fichaDoUso, ctxDoUso);
     ModsPoe.evento(estado, hunt, tagsPoe.includes('ataque') ? 'usarAtaque' : 'usarMagia', fichaDoUso, ctxDoUso);
@@ -7318,6 +7382,8 @@ export function convocarRunas(estado, hunt, personagem, efeitoDaGema, agora = hu
   const alcancePct = daGema + ModsPoe.valor(ficha, 'convocar_runas_alcance');
   const porUid = new Map((hunt.monstros ?? []).map((b) => [b.uid, b]));
   for (const r of [...hunt.runas]) {
+    // (lote G-A) a Runa que "Não pode ser Convocada" (a do Armagedom da Volatilidade) fica onde está: nem é Ativada nem vem
+    if (r.naoConvocavel) continue;
     const alvo = r.alvo != null ? porUid.get(r.alvo) : null;
     // A parte do custo, no recurso em que a Runa foi paga (Vida — a Magia Sanguínea —, Escudo de Energia, ou Mana com a parte em Vida); só
     // depois que a Ativação saiu.
@@ -8973,6 +9039,58 @@ function soloDoChicoteArdente(estado, hunt, entry, ef, solo, bicho, agora, dono)
   porObjeto(hunt, { acao: entry.id, slug: entry.poeGema.slug, el: 'fire', dono, tipo: 'chao', mov: 'parado', x: bicho.x, y: bicho.y, z: bicho.z ?? hunt.z ?? 0, efeito: 'solo', raio: solo.raio, partes: [{ tipo: GemasPoe.DEGEN_DO_ELEMENTO.fire, elemento: 'fire', porSegundo: (dps * solo.pct) / 100 }], ultimo: agora, ate: agora + durMs, max: 10 }, agora);
   return true;
 }
+/**
+ * (lote G-C, dono 25/10 — D12) A MARCA DO ALQUIMISTA: o acerto que Incendeia o marcado cria o Solo Ardente sob ele com X% do dano por segundo do Incêndio mais forte nele;
+ * o que Envenena, o Solo Cáustico com Y% do Veneno mais forte ("Os modificadores de dano não se aplicam": o dps é o da afecção) — 1 casa em volta (o Solo Ardente do
+ * Chicote Ardente), 4 s, cada um no máximo uma vez por segundo. Devolve quantos solos criou.
+ */
+export function soloDaAlquimista(hunt, bicho, postos, agora, dono = 'voce') {
+  const a = GemasGAC.alquimistaNoBicho(bicho, agora);
+  if (!a || !hunt) return 0;
+  const cd = (hunt.poeSoloDaAlquimista ??= {});
+  const acao = GemasPoe.doSlug('Alchemists_Mark')?.acao ?? 'Alchemists_Mark';
+  let n = 0;
+  const criar = (chave, elemento, pct, doTipo) => {
+    if (!(pct > 0) || (cd[chave] ?? -Infinity) > agora) return;
+    const dots = (bicho.dots ?? []).filter((d) => doTipo(d) && d.falta > 0 && d.ate > agora);
+    if (!dots.length) return;
+    const dps = Math.max(...dots.map((d) => d.falta / Math.max(0.1, (d.ate - agora) / 1000)));
+    cd[chave] = agora + (a.cadaMs ?? 1000);
+    porObjeto(hunt, { acao, slug: 'Alchemists_Mark', el: elemento, dono, tipo: 'chao', mov: 'parado', x: bicho.x, y: bicho.y, z: bicho.z ?? hunt.z ?? 0, efeito: 'solo', raio: GemasGAC.SOLO_DO_ALQUIMISTA.raio, partes: [{ tipo: GemasPoe.DEGEN_DO_ELEMENTO[elemento], elemento, porSegundo: (dps * pct) / 100 }], ultimo: agora, ate: agora + GemasGAC.SOLO_DO_ALQUIMISTA.duracaoMs, max: 10, alquimista: chave }, agora);
+    n++;
+  };
+  if (postos.includes('queimando')) criar('ardente', 'fire', a.incendioPct, (d) => d.tipo === 'queimadura');
+  if (postos.includes('envenenado')) criar('caustico', 'chaos', a.venenoPct, (d) => d.tipo === 'venenoPoe' || d.tipo === 'veneno');
+  return n;
+}
+/**
+ * (lote G-C, dono 25/10 — D13) As MALDIÇÕES LIGADAS À RUÍNA (o PoB: "Linked hex curses are also applied to those enemies"): as gemas de maldição Feitiço no mesmo grupo
+ * dela que exigem até o nível dela (70), cada uma com os efeitos do nível dela (`GemasPoe.buffNoNivel` → `efeitosDaMaldicao`, com a qualidade da Ruína — "+1% de efeito" —
+ * e o "−25% final" dela), na forma da lista do `Reforcos.marcarCom` (sem a área da maldição: a Ruína já é a área). `[{ id, def, fator, lancado, emAura }]`.
+ */
+export function maldicoesDaRuina(estado, entry, ruina, agora = estado?.hunt?.clock ?? 0) {
+  if (!ruina || !entry) return [];
+  const out = [];
+  for (const x of Gemas.ativasDoMesmoGrupo(estado, entry.id)) {
+    const slug = x.def.poe?.slug;
+    const r = slug ? GemasPoe.doSlug(slug) : null;
+    if (!r || r.arquetipo !== 'maldicao' || !(r.gema?.tags ?? []).includes('Feitiço')) continue;
+    if ((GemasPoe.textosDaGema(slug, x.nivel).requer ?? 1) > ruina.nivelMax) continue;
+    const doPoe = GemasPoe.buffNoNivel(slug, x.nivel, x.qualidade);
+    const entryDaMaldicao = POR_ID_PUBLICO(r.acao);
+    if (!doPoe || !entryDaMaldicao) continue;
+    const k = Math.max(0, 1 + (ruina.efeitoLigadasMaisPct ?? 0) / 100);
+    const efeitos = efeitosDaMaldicao(doPoe.efeitos, { nivel: x.nivel, qualidade: x.qualidade, efeitoMaldicaoPct: ruina.efeitoLigadasPct ?? 0 }, estado, entryDaMaldicao)
+      .map((e) => (e.efeito === 'maldicaoRegras' ? { ...e, raioCasas: 0 } : /^marca/.test(e.efeito) && typeof e.pct === 'number' ? { ...e, pct: e.pct * k, ...(e.escala != null ? { escala: e.escala * k } : {}), ...(e.pctRaro != null ? { pctRaro: e.pctRaro * k } : {}) } : e));
+    out.push({ id: r.acao, def: { ...(Reforcos.REFORCOS[r.acao] ?? {}), tipo: 'poe-maldicao', efeitos }, fator: 1, lancado: agora, emAura: false });
+  }
+  return out;
+}
+/** (D13) Quantas maldições a Ruína aplica (as ligadas, até o limite de maldições — "if curseCount == output.EnemyCurseLimit then break", o PoB). */
+export function quantasDaRuina(lista) {
+  const limite = Math.max(1, ...lista.map((x) => (x.def.efeitos ?? []).find((e) => e.efeito === 'maldicaoRegras')?.limite ?? 1));
+  return Math.min(lista.length, limite);
+}
 /** (lote B2) Quem está agora num chão de Sangue Fervendo `o` fica queimando pelo "Perduram por N segundos" depois de sair (o fim: o do chão, ou agora, + N s). */
 // (revisão B2, 21/10: a marca guarda QUEM — o dono do chão, `o.quem` —; o tique de outro membro não a queima; a de outro dono só é trocada pela mais forte)
 function marcarSangueFervendo(hunt, o, agora) {
@@ -9879,6 +9997,8 @@ export function ehAtaqueDeVarinha(estado, entry = null) {
  * a gema pelo nome (ela já está entre as ativas do personagem, marcada `ativadaPorItem`), no alvo do evento ou no bicho mais perto, sem custo.
  * Uma por evento a cada 0,25 s (o PoE tem a recarga interna das ativadas).
  */
+// (lote G-A, dono 25/10) as Cargas de Frasco da Marca do Alquimista no acerto (`ModsPoe.aoAcertar` → `FrascosPoe.ganharCargas`)
+ModsPoe.definirCargasDeFrasco((estado, n) => FrascosPoe.ganharCargas(estado, n));
 ModsPoe.definirDisparo((estado, hunt, personagem, nome, nivel, alvo, eventos = []) => {
   const def = Gemas.ativaPeloNome(nome);
   if (!def || !hunt) return;
