@@ -2,17 +2,17 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 315,
+   "implementada e testada": 332,
    "implementada, sem teste próprio": 46,
-   "parcial": 188,
+   "parcial": 171,
    "limitação do modelo idle": 12,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 143,
+   "implementada e testada": 157,
    "implementada, sem teste próprio": 18,
-   "parcial": 42,
+   "parcial": 28,
    "limitação do modelo idle": 7
   },
   "suportes": {
@@ -24,16 +24,16 @@
   "variantes": {
    "vaal": {
     "total": 52,
-    "implementada e testada": 28,
-    "parcial": 17,
+    "implementada e testada": 29,
+    "parcial": 16,
     "implementada, sem teste próprio": 6,
     "limitação do modelo idle": 1
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 111,
+    "implementada e testada": 119,
     "implementada, sem teste próprio": 24,
-    "parcial": 67,
+    "parcial": 59,
     "limitação do modelo idle": 7
    }
   },
@@ -45,8 +45,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 534,
-   "emDuasOuMais": 89
+   "linhasDistintas": 503,
+   "emDuasOuMais": 78
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -60,7 +60,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 389,
+   "ativasCitadas": 401,
    "suportesCitados": 119,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -221,11 +221,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Cria 7 Estaca",
-    "efeito não simulado: Cria +2 Estacas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -237,12 +234,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Cria 10 Estacas adicionais se você mudou de Postura Recentemente",
-    "efeito não simulado: Cria 5 Estaca",
-    "efeito não simulado: 5 % mais Dano na Postura de Sangue"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -254,10 +247,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Cria 6 Estaca"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -408,11 +399,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "guarda",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Habilidades Corpo a Corpo causam 27 % mais Dano em Área enquanto na Postura de Sangue",
-    "efeito não simulado: Habilidades Corpo a Corpo têm 5 % menos Efeito em Área enquanto na Postura de Sangue"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -909,12 +897,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Martelos causam - 35 % de dano",
-    "efeito não simulado: Convoca Martelos Sagrados em até 5 inimigos atingidos",
-    "efeito não simulado: Convoca Martelos Sagrados em até 3 inimigos atingidos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -926,11 +910,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Martelos causam - 50 % de dano",
-    "efeito não simulado: Martelos Cadentes ocorrem a cada 0.7 segundos Aumentos e reduções na velocidade de ataque afetam a frequência com que esses martelos caem"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -987,11 +968,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Fissuras irrompem 2 vezes adicionais",
-    "efeito não simulado: Fissuras irrompem 1 vezes adicionais"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1467,13 +1445,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 108 % mais Dano com Sangramento enquanto na Postura de Sangue",
-    "efeito não simulado: 12 % mais Velocidade de Ataque enquanto estiver em uma Tempestade de Lâminas Sangrentas",
-    "efeito não simulado: Tempestades de Lâminas causam 50 % menos Dano com Acertos e Afecções",
-    "efeito não simulado: +1 ao número Máximo de Tempestades de Lâminas por vez"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1485,12 +1458,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 12 % mais Velocidade de Ataque enquanto estiver em uma Tempestade de Lâminas Sangrentas",
-    "efeito não simulado: Tempestades de Lâminas causam 50 % menos Dano com Acertos e Afecções",
-    "efeito não simulado: +1 ao número Máximo de Tempestades de Lâminas por vez"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1628,11 +1597,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Abalo Secundário causa 150 % mais Dano com Acertos e Afecções",
-    "efeito não simulado: Abalo Secundário causa +30 % mais Dano com Acertos e Afecções"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1644,12 +1610,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Abalo Secundário causa 15 % mais Dano com Acertos por cada 0.1 segundos de Duração",
-    "efeito não simulado: Abalo Secundário causa 5 % mais Dano com Afecções por cada 0.1 segundos de Duração",
-    "efeito não simulado: Abalo Secundário tem 2 % mais Área de Efeito por cada 0.1 segundos de Duração"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1717,14 +1679,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Sacrifica +20 % de Fúria ao criar uma Tempestade Furiosa, se você tiver ao menos 10 de Fúria",
-    "efeito não simulado: Tempestade Furiosa causa 10 % mais Dano por cada 1 de Fúria Sacrificada",
-    "efeito não simulado: Tormenta Furiosa tem +0.1 metros ao raio por cada 2 de Fúria sacrificada",
-    "efeito não simulado: Tempestade Furiosa Acerta com 250 % mais Frequência",
-    "efeito não simulado: Sacrifica +5 % de Fúria ao criar uma Tempestade Furiosa"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1736,12 +1692,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Tempestade Furiosa Acerta com 250 % mais Frequência",
-    "efeito não simulado: Perca 3 de Fúria por segundo",
-    "efeito não simulado: Acada segundo 20 % mais Fúria perdida"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1863,12 +1815,8 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Abalo Secundário causa 407 % mais Dano com Acertos e Afecções",
-    "efeito não simulado: O efeito atual é finalizado após 9 Abalos Secundários",
-    "efeito não simulado: Abalo Secundário causa +30 % mais Dano com Acertos e Afecções"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3189,12 +3137,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 88 % mais Dano com Sangramento enquanto na Postura de Sangue",
-    "efeito não simulado: 25 % de chancer de causar Sangramento enquanto na Postura de Sangue",
-    "efeito não simulado: Velocidade de Ataque aumentada em 20 % caso tenha mudado de Postura Recentemente"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6154,11 +6098,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Orbes saltam a cada 0.4 segundos",
-    "efeito não simulado: Orbes Explosivas causam 75 % do Dano da Habilidade para cada 0.4 segundos de Duração restante"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6170,11 +6111,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Orbes saltam a cada 0.4 segundos",
-    "efeito não simulado: Orbes Explosivas causam 75 % do Dano da Habilidade para cada 0.4 segundos de Duração restante"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -10784,14 +10722,6 @@
    ]
   },
   {
-   "linha": "Cria # Estaca",
-   "gemas": [
-    "Perforate",
-    "Perforate_of_Bloodshed",
-    "Perforate_of_Duality"
-   ]
-  },
-  {
    "linha": "Efeito da Oferenda aumentado em # %",
    "gemas": [
     "Bone_Offering",
@@ -10890,20 +10820,6 @@
    ]
   },
   {
-   "linha": "# % mais Dano com Sangramento enquanto na Postura de Sangue",
-   "gemas": [
-    "Bladestorm",
-    "Lacerate"
-   ]
-  },
-  {
-   "linha": "# % mais Velocidade de Ataque enquanto estiver em uma Tempestade de Lâminas Sangrentas",
-   "gemas": [
-    "Bladestorm",
-    "Bladestorm_of_Uncertainty"
-   ]
-  },
-  {
    "linha": "# a # de Dano de Fogo adicionado contra Inimigos Queimando",
    "gemas": [
     "Fire_Trap",
@@ -10936,27 +10852,6 @@
    "gemas": [
     "Raise_Zombie",
     "Raise_Zombie_of_Slamming"
-   ]
-  },
-  {
-   "linha": "+# ao número Máximo de Tempestades de Lâminas por vez",
-   "gemas": [
-    "Bladestorm",
-    "Bladestorm_of_Uncertainty"
-   ]
-  },
-  {
-   "linha": "Abalo Secundário causa # % mais Dano com Acertos e Afecções",
-   "gemas": [
-    "Earthquake",
-    "Vaal_Earthquake"
-   ]
-  },
-  {
-   "linha": "Abalo Secundário causa +# % mais Dano com Acertos e Afecções",
-   "gemas": [
-    "Earthquake",
-    "Vaal_Earthquake"
    ]
   },
   {
@@ -11184,13 +11079,6 @@
    ]
   },
   {
-   "linha": "Martelos causam - # % de dano",
-   "gemas": [
-    "Holy_Sweep",
-    "Holy_Sweep_of_Hammerfalls"
-   ]
-  },
-  {
    "linha": "Máximo de # anomalias",
    "gemas": [
     "Greater_Kinetic_Instability_Support",
@@ -11202,20 +11090,6 @@
    "gemas": [
     "Orb_of_Storms",
     "Orb_of_Storms_of_Squalls"
-   ]
-  },
-  {
-   "linha": "Orbes Explosivas causam # % do Dano da Habilidade para cada # segundos de Duração restante",
-   "gemas": [
-    "Storm_Burst",
-    "Storm_Burst_of_Repulsion"
-   ]
-  },
-  {
-   "linha": "Orbes saltam a cada # segundos",
-   "gemas": [
-    "Storm_Burst",
-    "Storm_Burst_of_Repulsion"
    ]
   },
   {
@@ -11265,20 +11139,6 @@
    "gemas": [
     "Flamethrower_Trap",
     "Flamethrower_Trap_of_Stability"
-   ]
-  },
-  {
-   "linha": "Tempestade Furiosa Acerta com # % mais Frequência",
-   "gemas": [
-    "Rage_Vortex",
-    "Rage_Vortex_of_Berserking"
-   ]
-  },
-  {
-   "linha": "Tempestades de Lâminas causam # % menos Dano com Acertos e Afecções",
-   "gemas": [
-    "Bladestorm",
-    "Bladestorm_of_Uncertainty"
    ]
   },
   {
@@ -11340,12 +11200,6 @@
    ]
   },
   {
-   "linha": "# % de chancer de causar Sangramento enquanto na Postura de Sangue",
-   "gemas": [
-    "Lacerate"
-   ]
-  },
-  {
    "linha": "# % do Dano de Acertos é sofrido no Buff antes da sua Vida ou Escudo de Energia Buff pode sofrer Dano igual a Mana Gasta pelo efeito desta Habilidade",
    "gemas": [
     "Arcane_Cloak"
@@ -11373,12 +11227,6 @@
    "linha": "# % mais Dano de Projétil",
    "gemas": [
     "Siege_Ballista_of_Trarthus"
-   ]
-  },
-  {
-   "linha": "# % mais Dano na Postura de Sangue",
-   "gemas": [
-    "Perforate_of_Duality"
    ]
   },
   {
@@ -11565,30 +11413,6 @@
    "linha": "A Recarga do seu Escudo de Energia e dos seus aliados próximos não é impedida por Dano",
    "gemas": [
     "Vaal_Discipline"
-   ]
-  },
-  {
-   "linha": "Abalo Secundário causa # % mais Dano com Acertos por cada # segundos de Duração",
-   "gemas": [
-    "Earthquake_of_Amplification"
-   ]
-  },
-  {
-   "linha": "Abalo Secundário causa # % mais Dano com Afecções por cada # segundos de Duração",
-   "gemas": [
-    "Earthquake_of_Amplification"
-   ]
-  },
-  {
-   "linha": "Abalo Secundário tem # % mais Área de Efeito por cada # segundos de Duração",
-   "gemas": [
-    "Earthquake_of_Amplification"
-   ]
-  },
-  {
-   "linha": "Acada segundo # % mais Fúria perdida",
-   "gemas": [
-    "Rage_Vortex_of_Berserking"
    ]
   },
   {
@@ -12084,21 +11908,9 @@
    ]
   },
   {
-   "linha": "Convoca Martelos Sagrados em até # inimigos atingidos",
-   "gemas": [
-    "Holy_Sweep"
-   ]
-  },
-  {
    "linha": "Convoca um Sentinela da Pureza quando você Matar um Inimigo",
    "gemas": [
     "Herald_of_Purity"
-   ]
-  },
-  {
-   "linha": "Cria # Estacas adicionais se você mudou de Postura Recentemente",
-   "gemas": [
-    "Perforate_of_Duality"
    ]
   },
   {
@@ -12123,12 +11935,6 @@
    "linha": "Cria # Pilares de Cinzas",
    "gemas": [
     "Pyre_Support"
-   ]
-  },
-  {
-   "linha": "Cria +# Estacas",
-   "gemas": [
-    "Perforate"
    ]
   },
   {
@@ -12456,12 +12262,6 @@
    ]
   },
   {
-   "linha": "Fissuras irrompem # vezes adicionais",
-   "gemas": [
-    "Volcanic_Fissure_of_Snaking"
-   ]
-  },
-  {
    "linha": "Flechas caem em duas linhas perpendiculares",
    "gemas": [
     "Artillery_Ballista_of_Cross_Strafe"
@@ -12651,18 +12451,6 @@
    "linha": "Golpes Impelidos focam em # Inimigos adicionais",
    "gemas": [
     "Ancestral_Cry"
-   ]
-  },
-  {
-   "linha": "Habilidades Corpo a Corpo causam # % mais Dano em Área enquanto na Postura de Sangue",
-   "gemas": [
-    "Blood_and_Sand"
-   ]
-  },
-  {
-   "linha": "Habilidades Corpo a Corpo têm # % menos Efeito em Área enquanto na Postura de Sangue",
-   "gemas": [
-    "Blood_and_Sand"
    ]
   },
   {
@@ -13470,12 +13258,6 @@
    ]
   },
   {
-   "linha": "Martelos Cadentes ocorrem a cada # segundos Aumentos e reduções na velocidade de ataque afetam a frequência com que esses martelos caem",
-   "gemas": [
-    "Holy_Sweep_of_Hammerfalls"
-   ]
-  },
-  {
    "linha": "Máximo de # Arqueiro Ilusório Convocado",
    "gemas": [
     "Mirage_Archer_Support"
@@ -13560,12 +13342,6 @@
    ]
   },
   {
-   "linha": "O efeito atual é finalizado após # Abalos Secundários",
-   "gemas": [
-    "Vaal_Earthquake"
-   ]
-  },
-  {
    "linha": "o Raio por estágio e o \"menos dano\" valem para você e os inimigos na área; os aliados (a party) na área não recebem o buff",
    "gemas": [
     "Sigil_of_Power"
@@ -13587,12 +13363,6 @@
    "linha": "Outros efeitos em inimigos Amaldiçoados expiram # % mais devagar",
    "gemas": [
     "Temporal_Chains"
-   ]
-  },
-  {
-   "linha": "Perca # de Fúria por segundo",
-   "gemas": [
-    "Rage_Vortex_of_Berserking"
    ]
   },
   {
@@ -13782,18 +13552,6 @@
    ]
   },
   {
-   "linha": "Sacrifica +# % de Fúria ao criar uma Tempestade Furiosa",
-   "gemas": [
-    "Rage_Vortex"
-   ]
-  },
-  {
-   "linha": "Sacrifica +# % de Fúria ao criar uma Tempestade Furiosa, se você tiver ao menos # de Fúria",
-   "gemas": [
-    "Rage_Vortex"
-   ]
-  },
-  {
    "linha": "Sangramento expira #% mais rápido por Rompimento das Habilidades Suportadas nos alvos",
    "gemas": [
     "Rupture_Support"
@@ -13866,21 +13624,9 @@
    ]
   },
   {
-   "linha": "Tempestade Furiosa causa # % mais Dano por cada # de Fúria Sacrificada",
-   "gemas": [
-    "Rage_Vortex"
-   ]
-  },
-  {
    "linha": "Tempestades Acertam Inimigos com Frequência aumentada em # %",
    "gemas": [
     "Herald_of_Thunder"
-   ]
-  },
-  {
-   "linha": "Tormenta Furiosa tem +# metros ao raio por cada # de Fúria sacrificada",
-   "gemas": [
-    "Rage_Vortex"
    ]
   },
   {
@@ -13917,12 +13663,6 @@
    "linha": "Usar habilidades vaal reforçadas inflige Tentação Vaal em você, causando # de dano físico por segundo, em vez de aplicar impedimento de ganho de almas",
    "gemas": [
     "Vaal_Temptation_Support"
-   ]
-  },
-  {
-   "linha": "Velocidade de Ataque aumentada em # % caso tenha mudado de Postura Recentemente",
-   "gemas": [
-    "Lacerate"
    ]
   },
   {
