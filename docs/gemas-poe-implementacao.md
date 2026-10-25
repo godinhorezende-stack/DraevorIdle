@@ -8,20 +8,20 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 315 |
+| implementada e testada | 322 |
 | implementada, sem teste próprio | 46 |
 | limitação do modelo idle | 12 |
-| parcial | 188 |
+| parcial | 181 |
 | não se aplica | 1 |
 
 Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 143 |
+| implementada e testada | 149 |
 | implementada, sem teste próprio | 18 |
 | limitação do modelo idle | 7 |
-| parcial | 42 |
+| parcial | 36 |
 
 ### Gemas de suporte (262)
 
@@ -34,15 +34,15 @@ Só os ataques:
 ### Variantes
 
 - Vaal (52): implementada e testada 28 · parcial 17 · implementada, sem teste próprio 6 · limitação do modelo idle 1
-- Alternativas (209): implementada e testada 111 · implementada, sem teste próprio 24 · parcial 67 · limitação do modelo idle 7
+- Alternativas (209): implementada e testada 113 · implementada, sem teste próprio 24 · parcial 65 · limitação do modelo idle 7
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 534 linhas distintas (89 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 513 linhas distintas (89 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 389/562 ativas, 119/262 suportes.
+- Testes que citam a gema: 394/562 ativas, 119/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
@@ -164,9 +164,7 @@ Só os ataques:
 | 1 | +# % mais Dano com Acertos e Afecções por Intensidade |
 | 1 | +# % mais Dano em Área |
 | 1 | +# ao número máximo de Zumbis |
-| 1 | +# de Relâmpagos Concentrados máximos |
 | 1 | +# metros à Largura do Feixe Por Intensidade # % menos ângulo de ramificação por Intensidade |
-| 1 | +# metros ao Raio da Explosão por Flecha Explosiva no Alvo, máximo de +# metros |
 | 1 | +# metros ao raio do Pulso por Energia |
 | 1 | +# metros para o alcance do golpe corpo a corpo do lacaio |
 | 1 | +# vez |
@@ -230,9 +228,6 @@ Só os ataques:
 | 1 | Buff concede Imunidade a Eletrização |
 | 1 | Buff concede Ponto de Atordoamento aumentado em # % por cada # de Poder, contando um máximo de # de Poder |
 | 1 | Buff tem # % mais Efeito em seus Lacaios |
-| 1 | Cada Aprisionamento aplica # % menos Velocidade de Movimento aos Inimigos Normais ou Mágicos |
-| 1 | Cada Aprisionamento aplica # % menos Velocidade de Movimento aos Inimigos Raros |
-| 1 | Cada Aprisionamento aplica # % menos Velocidade de Movimento aos Inimigos Únicos |
 | 1 | Cada Flecha pode disparar +# Feixe |
 | 1 | Cada Habilidade Suportada causa #% mais Dano com Incêndio por cada Incêndio infligido com ela Recentemente, máximo de #% |
 | 1 | Cada Habilidade Suportada causa #% menos Dano por cada Incêndio infligido com ela Recentemente, máximo de #% |
@@ -277,7 +272,6 @@ Só os ataques:
 | 1 | Cria +# Estacas |
 | 1 | Cria +# fendas |
 | 1 | Cria +# Pilar de Cinzas |
-| 1 | Dano de ataques é absorvido pela concha antes de afetar a vida ou o escudo de Energia do alvo Concha pode sofrer até # de dano antes de explodir |
 | 1 | Dano de Caos com Acertos é Resistido pela maior Resistência ao invés |
 | 1 | Dano de Caos com Acertos é Resistido pela Resistência mais baixa |
 | 1 | Dano e Resfriamentos Perduram por uma Duração Base de # segundos |
@@ -287,14 +281,12 @@ Só os ataques:
 | 1 | Detonação da Mina é Instantânea |
 | 1 | Dispara # projéteis |
 | 1 | Dispara até # Flechas em alvos diferentes |
-| 1 | Dispara tentáculos em até # Alvos |
 | 1 | Duração Base do Frenesi Faminto é de # segundos |
 | 1 | Duração da penalidade base é de # segundos |
 | 1 | Efeito da Marca aumentado em # % |
 | 1 | Efeito das Marcas de Habilidades Suportadas aumentado em #% |
 | 1 | Efeito das Marcas de Habilidades Suportadas reduzido em #% |
 | 1 | Efeito de Maldições aumentado em # % |
-| 1 | Efeito do Debuff aumentado em # % |
 | 1 | Efeito em Área de Habilidades Maldição Suportadas reduzido em #% |
 | 1 | Empala Inimigos ao Acertar |
 | 1 | Empurra e Interrompe Inimigos em uma pequena Área |
@@ -321,27 +313,20 @@ Só os ataques:
 | 1 | Estandartes reforçados infligem Sangue Corrompido a cada segundo aos inimigos dentro de sua área |
 | 1 | Este ataque e lacaios convertem # % do dano físico em dano elétrico |
 | 1 | Estímulo dura # segundos |
-| 1 | Explosão causa # % mais Dano com Acertos por Flecha Explosiva no Alvo |
-| 1 | Explosão causa # % mais Dano com Afecções por Flecha Explosiva no Alvo |
-| 1 | Explosão causa # % menos Dano Base |
 | 1 | Explosões causam Dano de Fogo base igual a # % da Vida máxima do Lacaio |
-| 1 | Explosões terão # a # de Dano de Fogo adicional |
 | 1 | Feitiços aplicados por habilidades de maldição reforçadas afetam inimigos imunes a feitiços |
 | 1 | Feitiços aplicados por habilidades de maldição reforçadas têm #% de chance de afetar inimigos imunes a feitiços |
 | 1 | Feitiços de Habilidades Suportadas se Transferem para todos os Inimigos dentro de # metros quando o Inimigo Enfeitiçado morrer |
 | 1 | Fissuras irrompem # vezes adicionais |
 | 1 | Flechas caem em duas linhas perpendiculares |
-| 1 | Flechas causam Dano ao alvo final # vezes adicionais após grudar |
 | 1 | Fonte de Vida dura # segundos |
 | 1 | Fonte de Vida dura +# segundos |
 | 1 | Frequência do Pulso aumentada em +# % |
-| 1 | Frequência do Raio aumentada em # % |
 | 1 | Fúria Arcana concede Velocidade de Conjuração aumentada em #% Fúria Arcana concede Regeneração de Mana aumentada em #% |
 | 1 | Fúria Arcana concede Velocidade de Conjuração aumentada em #%\nFúria Arcana concede Regeneração de Mana aumentada em #% |
 | 1 | Fúria Arcana dura # segundos |
 | 1 | Ganha # Cargas de Frasco quando você Acertar um Inimigo Amaldiçoado, não mais que uma vez a cada # segundos |
 | 1 | Ganha # de Gula ao conjurar magias reforçadas |
-| 1 | Ganha # de Relâmpagos Concentrados ao atingir corpo a corpo |
 | 1 | Ganha # Traumatismo na primeira vez que um Ataque Suportado Acertar um Inimigo Sofre # de Dano Físico por Traumatismo quando você ganhar Traumatismo das Habilidades Suportadas Traumatismos duram # segundos |
 | 1 | Ganha Fonte de Vida após Gastar um total de # de Vida no Custo Direto e Efeitos das Habilidades Suportadas |
 | 1 | Ganha Fúria Arcana após Gastar um total de # de Mana em Custos Diretos e Efeitos de uma Habilidade Suportada |
@@ -446,7 +431,6 @@ Só os ataques:
 | 1 | Inimigos Amaldiçoados têm # % de chance de concederem uma Carga de Poder quando Acertados |
 | 1 | Inimigos Amaldiçoados têm # % de chance de concederem uma Carga de Tolerância quando Acertados |
 | 1 | Inimigos Amaldiçoados têm # % de Reducão de Dano Físico |
-| 1 | Inimigos Aprisionados sofrem Dano de Projétil dos Acertos de Ataques aumentado em # % |
 | 1 | Inimigos Encharcados têm Exposição a Gelo e Raio, aplicando # % às Resistências |
 | 1 | Inimigos possuem # % menos Velocidade de Movimento no início do Debuff |
 | 1 | Inimigos Provocados por este Clamor são Intimidados |
@@ -503,7 +487,6 @@ Só os ataques:
 | 1 | Máximo de # Lacaios Relâmpagos Vivos |
 | 1 | Máximo de # mãos |
 | 1 | Máximo de # Nascido(s) da Colmeia |
-| 1 | Máximo de +# Flechas Explosivas grudadas em cada Inimigo |
 | 1 | Máximo de +# Paredes Flamejantes por vez |
 | 1 | Minas de Habilidades Suportadas não podem ser Detonadas enquanto dentro de # metros de você |
 | 1 | Minas não podem ser Re-armadas |
@@ -536,9 +519,6 @@ Só os ataques:
 | 1 | Raio acerta # alvo dentro de # metros |
 | 1 | Raio acerta # alvos dentro de # metros |
 | 1 | Raio Base terciário igual a # metros |
-| 1 | Raios acertam a cada # segundos |
-| 1 | Raios Acertam Inimigos a cada # segundos |
-| 1 | Raios causam # % menos Dano |
 | 1 | Receba uma Carga de Tolerância quando você Atordoar um Inimigo com um Acerto Corpo a Corpo com Habilidades Suportadas |
 | 1 | Reflete # % do Dano sofrido pelo Buff como Dano de Fogo por segundo, ou quando o Buff expirar ou se esgotar |
 | 1 | Reflete # % do Dano sofrido pelo Buff como Dano de Fogo quando o Buff expirar ou se esgotar |
@@ -582,7 +562,6 @@ Só os ataques:
 | 1 | Você Queima por # % de sua Vida máxima por segundo como Dano de Fogo |
 | 1 | Você Queima por # % do seu Escudo de Energia máximo por segundo como Dano de Fogo |
 | 1 | Você sofre # % menos Dano de Acertos e conta como Congelado |
-| 1 | ㅤ+ # % de dano com ataques e afecções por Relâmpagos Concentrados |
 
 ## Gemas de habilidade pendentes
 
@@ -739,19 +718,6 @@ Só os ataques:
 - **Enfeeble** (Debilitar) — parcial
   - efeito não simulado: Inimigos Amaldiçoados possuem uma redução de 19 % de Precisão
   - efeito não simulado: Duração de Maldições aumentada em 20 %
-- **Ensnaring_Arrow** (Flecha Aprisionadora) — parcial
-  - efeito não simulado: Inimigos Aprisionados sofrem Dano de Projétil dos Acertos de Ataques aumentado em 20 %
-  - efeito não simulado: Cada Aprisionamento aplica 40 % menos Velocidade de Movimento aos Inimigos Normais ou Mágicos
-  - efeito não simulado: Cada Aprisionamento aplica 30 % menos Velocidade de Movimento aos Inimigos Raros
-  - efeito não simulado: Cada Aprisionamento aplica 25 % menos Velocidade de Movimento aos Inimigos Únicos
-  - efeito não simulado: Efeito do Debuff aumentado em 20 %
-- **Explosive_Arrow** (Flecha Explosiva) — parcial
-  - efeito não simulado: Explosão causa 50 % menos Dano Base
-  - efeito não simulado: Explosões terão 522 a 783 de Dano de Fogo adicional
-  - efeito não simulado: +0.2 metros ao Raio da Explosão por Flecha Explosiva no Alvo, máximo de +1.2 metros
-  - efeito não simulado: Explosão causa 6 % mais Dano com Acertos por Flecha Explosiva no Alvo
-  - efeito não simulado: Explosão causa 3 % mais Dano com Afecções por Flecha Explosiva no Alvo
-  - efeito não simulado: Máximo de +2 Flechas Explosivas grudadas em cada Inimigo
 - **Explosive_Trap** (Armadilha Explosiva) — parcial
   - efeito não simulado: Raio Base da explosão menor igual a 3 metros
   - efeito não simulado: Causa 7 explosões menores Explosões menores têm entre 1 % de redução e 30 % de aumento do raio base, aleatoriamente
@@ -762,8 +728,6 @@ Só os ataques:
   - efeito não simulado: Raio Base da explosão menor igual a 3 metros
   - efeito não simulado: Causa 7 explosões menores Explosões menores têm entre 1 % de redução e 30 % de aumento do raio base, aleatoriamente
   - efeito não simulado: Causa +2 explosões menores
-- **Exsanguinate** (Ensanguentar) — parcial
-  - efeito não simulado: Dispara tentáculos em até 9 Alvos
 - **Fire_Trap** (Armadilha Flamejante) — parcial
   - efeito não simulado: 286 a 429 de Dano de Fogo adicionado contra Inimigos Queimando
 - **Fire_Trap_of_Blasting** (Armadilha Flamejante da Explosão) — parcial
@@ -887,10 +851,6 @@ Só os ataques:
   - efeito não simulado: 88 % mais Dano com Sangramento enquanto na Postura de Sangue
   - efeito não simulado: 25 % de chancer de causar Sangramento enquanto na Postura de Sangue
   - efeito não simulado: Velocidade de Ataque aumentada em 20 % caso tenha mudado de Postura Recentemente
-- **Lightning_Arrow_of_Electrocution** (Flecha Relampejante da Eletrocussão) — parcial
-  - efeito não simulado: Flechas causam Dano ao alvo final 4 vezes adicionais após grudar
-  - efeito não simulado: Raios acertam a cada 0.5 segundos
-  - efeito não simulado: Flechas causam Dano ao alvo final 1 vezes adicionais após grudar
 - **Lightning_Spire_Trap_of_Zapping** (Armadilha da Espiral Relampejante da Eletrização) — parcial
   - efeito não simulado: 15 % de Chance de uma Armadilha ser Ativada uma vez adicional
 - **Lightning_Trap** (Armadilha Relampejante) — parcial
@@ -1058,8 +1018,6 @@ Só os ataques:
   - efeito não simulado: Inimigos Amaldiçoados sofrem Dano aumentado em 29 % de Acertos de Projéteis
   - efeito não simulado: Projéteis que Acertarem Inimigos Amaldiçoados se Dividem na direção de 2 alvos adicionais
   - efeito não simulado: Inimigos Amaldiçoados sofrem Dano aumentado em 5 % de Acertos de Projéteis
-- **Somatic_Shell** (Concha Somática) — parcial
-  - efeito não simulado: Dano de ataques é absorvido pela concha antes de afetar a vida ou o escudo de Energia do alvo Concha pode sofrer até 6214 de dano antes de explodir
 - **Spectral_Helix_of_Trarthus** (Hélice Espectral de Trarthus) — parcial
   - efeito não simulado: Lança até 1 armadilhas a mais ao usar duas armas
   - efeito não simulado: 25 % menos velocidade de lançar armadilhas com arma de duas mãos
@@ -1067,14 +1025,6 @@ Só os ataques:
   - efeito não simulado: 1 segundos adicionais de Duração Base por Cadáver extra consumido
   - efeito não simulado: Efeito da Oferenda aumentado em 10 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Static_Strike** (Golpe Estático) — parcial
-  - efeito não simulado: Raios Acertam Inimigos a cada 0.32 segundos
-  - efeito não simulado: Raios causam 30 % menos Dano
-  - efeito não simulado: Frequência do Raio aumentada em 20 %
-- **Static_Strike_of_Gathering_Lightning** (Golpe Estático de Relâmpagos Concentrados) — parcial
-  - efeito não simulado: Ganha 1 de Relâmpagos Concentrados ao atingir corpo a corpo
-  - efeito não simulado: ㅤ+ 8 % de dano com ataques e afecções por Relâmpagos Concentrados
-  - efeito não simulado: +2 de Relâmpagos Concentrados máximos
 - **Steelskin** (Pele de Aço) — parcial
   - a absorção de dano da guarda ainda não existe no jogo
 - **Storm_Brand** (Runa Tempestuosa) — parcial

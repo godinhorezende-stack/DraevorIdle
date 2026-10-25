@@ -2,17 +2,17 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 315,
+   "implementada e testada": 322,
    "implementada, sem teste próprio": 46,
-   "parcial": 188,
+   "parcial": 181,
    "limitação do modelo idle": 12,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 143,
+   "implementada e testada": 149,
    "implementada, sem teste próprio": 18,
-   "parcial": 42,
+   "parcial": 36,
    "limitação do modelo idle": 7
   },
   "suportes": {
@@ -31,9 +31,9 @@
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 111,
+    "implementada e testada": 113,
     "implementada, sem teste próprio": 24,
-    "parcial": 67,
+    "parcial": 65,
     "limitação do modelo idle": 7
    }
   },
@@ -45,7 +45,7 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 534,
+   "linhasDistintas": 513,
    "emDuasOuMais": 89
   },
   "imagens": {
@@ -60,7 +60,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 389,
+   "ativasCitadas": 394,
    "suportesCitados": 119,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -756,10 +756,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "ricochete",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Dispara tentáculos em até 9 Alvos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -836,12 +834,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "ricochete",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Raios Acertam Inimigos a cada 0.32 segundos",
-    "efeito não simulado: Raios causam 30 % menos Dano",
-    "efeito não simulado: Frequência do Raio aumentada em 20 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -853,12 +847,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "ricochete",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Ganha 1 de Relâmpagos Concentrados ao atingir corpo a corpo",
-    "efeito não simulado: ㅤ+ 8 % de dano com ataques e afecções por Relâmpagos Concentrados",
-    "efeito não simulado: +2 de Relâmpagos Concentrados máximos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3245,12 +3235,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Flechas causam Dano ao alvo final 4 vezes adicionais após grudar",
-    "efeito não simulado: Raios acertam a cada 0.5 segundos",
-    "efeito não simulado: Flechas causam Dano ao alvo final 1 vezes adicionais após grudar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3744,14 +3730,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Inimigos Aprisionados sofrem Dano de Projétil dos Acertos de Ataques aumentado em 20 %",
-    "efeito não simulado: Cada Aprisionamento aplica 40 % menos Velocidade de Movimento aos Inimigos Normais ou Mágicos",
-    "efeito não simulado: Cada Aprisionamento aplica 30 % menos Velocidade de Movimento aos Inimigos Raros",
-    "efeito não simulado: Cada Aprisionamento aplica 25 % menos Velocidade de Movimento aos Inimigos Únicos",
-    "efeito não simulado: Efeito do Debuff aumentado em 20 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4270,15 +4250,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Explosão causa 50 % menos Dano Base",
-    "efeito não simulado: Explosões terão 522 a 783 de Dano de Fogo adicional",
-    "efeito não simulado: +0.2 metros ao Raio da Explosão por Flecha Explosiva no Alvo, máximo de +1.2 metros",
-    "efeito não simulado: Explosão causa 6 % mais Dano com Acertos por Flecha Explosiva no Alvo",
-    "efeito não simulado: Explosão causa 3 % mais Dano com Afecções por Flecha Explosiva no Alvo",
-    "efeito não simulado: Máximo de +2 Flechas Explosivas grudadas em cada Inimigo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7582,10 +7555,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Dano de ataques é absorvido pela concha antes de afetar a vida ou o escudo de Energia do alvo Concha pode sofrer até 6214 de dano antes de explodir"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -11466,21 +11437,9 @@
    ]
   },
   {
-   "linha": "+# de Relâmpagos Concentrados máximos",
-   "gemas": [
-    "Static_Strike_of_Gathering_Lightning"
-   ]
-  },
-  {
    "linha": "+# metros à Largura do Feixe Por Intensidade # % menos ângulo de ramificação por Intensidade",
    "gemas": [
     "Crackling_Lance"
-   ]
-  },
-  {
-   "linha": "+# metros ao Raio da Explosão por Flecha Explosiva no Alvo, máximo de +# metros",
-   "gemas": [
-    "Explosive_Arrow"
    ]
   },
   {
@@ -11862,24 +11821,6 @@
    ]
   },
   {
-   "linha": "Cada Aprisionamento aplica # % menos Velocidade de Movimento aos Inimigos Normais ou Mágicos",
-   "gemas": [
-    "Ensnaring_Arrow"
-   ]
-  },
-  {
-   "linha": "Cada Aprisionamento aplica # % menos Velocidade de Movimento aos Inimigos Raros",
-   "gemas": [
-    "Ensnaring_Arrow"
-   ]
-  },
-  {
-   "linha": "Cada Aprisionamento aplica # % menos Velocidade de Movimento aos Inimigos Únicos",
-   "gemas": [
-    "Ensnaring_Arrow"
-   ]
-  },
-  {
    "linha": "Cada Flecha pode disparar +# Feixe",
    "gemas": [
     "Storm_Rain"
@@ -12144,12 +12085,6 @@
    ]
   },
   {
-   "linha": "Dano de ataques é absorvido pela concha antes de afetar a vida ou o escudo de Energia do alvo Concha pode sofrer até # de dano antes de explodir",
-   "gemas": [
-    "Somatic_Shell"
-   ]
-  },
-  {
    "linha": "Dano de Caos com Acertos é Resistido pela maior Resistência ao invés",
    "gemas": [
     "Hexblast_of_Contradiction"
@@ -12204,12 +12139,6 @@
    ]
   },
   {
-   "linha": "Dispara tentáculos em até # Alvos",
-   "gemas": [
-    "Exsanguinate"
-   ]
-  },
-  {
    "linha": "Duração Base do Frenesi Faminto é de # segundos",
    "gemas": [
     "Feeding_Frenzy_Support"
@@ -12243,12 +12172,6 @@
    "linha": "Efeito de Maldições aumentado em # %",
    "gemas": [
     "Despair"
-   ]
-  },
-  {
-   "linha": "Efeito do Debuff aumentado em # %",
-   "gemas": [
-    "Ensnaring_Arrow"
    ]
   },
   {
@@ -12408,33 +12331,9 @@
    ]
   },
   {
-   "linha": "Explosão causa # % mais Dano com Acertos por Flecha Explosiva no Alvo",
-   "gemas": [
-    "Explosive_Arrow"
-   ]
-  },
-  {
-   "linha": "Explosão causa # % mais Dano com Afecções por Flecha Explosiva no Alvo",
-   "gemas": [
-    "Explosive_Arrow"
-   ]
-  },
-  {
-   "linha": "Explosão causa # % menos Dano Base",
-   "gemas": [
-    "Explosive_Arrow"
-   ]
-  },
-  {
    "linha": "Explosões causam Dano de Fogo base igual a # % da Vida máxima do Lacaio",
    "gemas": [
     "Bodyswap_of_Sacrifice"
-   ]
-  },
-  {
-   "linha": "Explosões terão # a # de Dano de Fogo adicional",
-   "gemas": [
-    "Explosive_Arrow"
    ]
   },
   {
@@ -12468,12 +12367,6 @@
    ]
   },
   {
-   "linha": "Flechas causam Dano ao alvo final # vezes adicionais após grudar",
-   "gemas": [
-    "Lightning_Arrow_of_Electrocution"
-   ]
-  },
-  {
    "linha": "Fonte de Vida dura # segundos",
    "gemas": [
     "Lifetap_Support"
@@ -12489,12 +12382,6 @@
    "linha": "Frequência do Pulso aumentada em +# %",
    "gemas": [
     "Hydrosphere"
-   ]
-  },
-  {
-   "linha": "Frequência do Raio aumentada em # %",
-   "gemas": [
-    "Static_Strike"
    ]
   },
   {
@@ -12525,12 +12412,6 @@
    "linha": "Ganha # de Gula ao conjurar magias reforçadas",
    "gemas": [
     "Gluttony_Support"
-   ]
-  },
-  {
-   "linha": "Ganha # de Relâmpagos Concentrados ao atingir corpo a corpo",
-   "gemas": [
-    "Static_Strike_of_Gathering_Lightning"
    ]
   },
   {
@@ -13158,12 +13039,6 @@
    ]
   },
   {
-   "linha": "Inimigos Aprisionados sofrem Dano de Projétil dos Acertos de Ataques aumentado em # %",
-   "gemas": [
-    "Ensnaring_Arrow"
-   ]
-  },
-  {
    "linha": "Inimigos Encharcados têm Exposição a Gelo e Raio, aplicando # % às Resistências",
    "gemas": [
     "Hydrosphere"
@@ -13500,12 +13375,6 @@
    ]
   },
   {
-   "linha": "Máximo de +# Flechas Explosivas grudadas em cada Inimigo",
-   "gemas": [
-    "Explosive_Arrow"
-   ]
-  },
-  {
    "linha": "Máximo de +# Paredes Flamejantes por vez",
    "gemas": [
     "Flame_Wall"
@@ -13695,24 +13564,6 @@
    "linha": "Raio Base terciário igual a # metros",
    "gemas": [
     "Ice_Trap"
-   ]
-  },
-  {
-   "linha": "Raios acertam a cada # segundos",
-   "gemas": [
-    "Lightning_Arrow_of_Electrocution"
-   ]
-  },
-  {
-   "linha": "Raios Acertam Inimigos a cada # segundos",
-   "gemas": [
-    "Static_Strike"
-   ]
-  },
-  {
-   "linha": "Raios causam # % menos Dano",
-   "gemas": [
-    "Static_Strike"
    ]
   },
   {
@@ -13971,12 +13822,6 @@
    "linha": "Você sofre # % menos Dano de Acertos e conta como Congelado",
    "gemas": [
     "Vaal_Arctic_Armour"
-   ]
-  },
-  {
-   "linha": "ㅤ+ # % de dano com ataques e afecções por Relâmpagos Concentrados",
-   "gemas": [
-    "Static_Strike_of_Gathering_Lightning"
    ]
   }
  ],

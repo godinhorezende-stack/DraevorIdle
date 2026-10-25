@@ -39,6 +39,8 @@ import * as GemasPR1 from './gemas-pr1.mjs';
 import * as GemasPR2 from './gemas-pr2.mjs';
 // (lote PR3, dono 21/10: as gemas ativas de projétil que geram outros golpes — o Tiro Tornado, a 2ª forma da Lança Gélida, a Explosão Cinética, o Aço Perfurador…)
 import * as GemasPR3 from './gemas-pr3.mjs';
+// (lote PR4, dono 25/10: as gemas ativas de projétil e de ricochete que grudam ou pulsam no alvo — a Flecha Explosiva, a Eletrocussão, o Golpe Estático, a Concha…)
+import * as GemasPR4 from './gemas-pr4.mjs';
 // (lote C1, dono 20/10: os leitores das gemas de corpo a corpo, impacto e canalização — a forma do golpe, o raio condicional, os buffs da gema)
 import * as GemasC1 from './gemas-c1.mjs';
 // (lote C2, dono 20/10: os leitores das gemas de corpo a corpo, impacto e canalização — os contadores próprios e as cargas consumidas)
@@ -1125,6 +1127,24 @@ export const erupcoesDaGema = (slug, nivel = 1) => comCache(PR3, `eru|${slug}@${
 /** O Pacto de Beidat (`GemasPR3.pactoDasLinhas`). */
 export const pactoDaGema = (slug, nivel = 1, qualidade = 0) => comCache(PR3, `pac|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasPR3.pactoDasLinhas(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade)));
 /*
+ * ---- (lote PR4, dono 25/10) os leitores no nível do lote PR4 (`itens-poe/gemas-pr4.mjs`) ----
+ */
+const PR4 = new Map();
+/** A Flecha Explosiva (`GemasPR4.flechaExplosivaDasLinhas`). */
+export const flechaExplosivaDaGema = (slug, nivel = 1, qualidade = 0) => comCache(PR4, `ea|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasPR4.flechaExplosivaDasLinhas(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade)));
+/** A Flecha Relampejante da Eletrocussão (`GemasPR4.eletrocussaoDasLinhas`). */
+export const eletrocussaoDaGema = (slug, nivel = 1, qualidade = 0) => comCache(PR4, `la|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasPR4.eletrocussaoDasLinhas(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade)));
+/** Os feixes do Golpe Estático (`GemasPR4.estaticoDasLinhas`). */
+export const estaticoDaGema = (slug, nivel = 1, qualidade = 0) => comCache(PR4, `ge|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasPR4.estaticoDasLinhas(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade)));
+/** Os Relâmpagos Concentrados (`GemasPR4.concentradosDasLinhas`). */
+export const concentradosDaGema = (slug, nivel = 1, qualidade = 0) => comCache(PR4, `rc|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasPR4.concentradosDasLinhas(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade)));
+/** Os tentáculos do Ensanguentar (`GemasPR4.tentaculosDasLinhas`). */
+export const tentaculosDaGema = (slug, nivel = 1) => comCache(PR4, `ten|${slug}@${nivel | 0}`, () => GemasPR4.tentaculosDasLinhas(slug, textosDaGema(slug, nivel).linhas));
+/** A Concha Somática (`GemasPR4.conchaDasLinhas`). */
+export const conchaDaGema = (slug, nivel = 1, qualidade = 0) => comCache(PR4, `con|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasPR4.conchaDasLinhas(slug, textosDaGema(slug, nivel).linhas, qualidade));
+/** A Flecha Aprisionadora (`GemasPR4.aprisionadoraDasLinhas`). */
+export const aprisionadoraDaGema = (slug, nivel = 1, qualidade = 0) => comCache(PR4, `ap|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasPR4.aprisionadoraDasLinhas(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade)));
+/*
  * ---- (lote B1, dono 20/10) os leitores no nível do lote B1 (`itens-poe/gemas-b1.mjs`) ----
  */
 const B1 = new Map();
@@ -1614,7 +1634,7 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
  * os dois não se separarem — `h`: a gema compilada com `slug`, `arquetipo` e `nivel`; `q`: a qualidade.
  */
 function ehLinhaFeita(h, l, q) {
-  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasPR3.ehLinhaPR3(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l) && !GemasB3.ehLinhaB3(h.slug, l) && !GemasC4.ehLinhaC4(h.slug, l));
+  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasPR3.ehLinhaPR3(h.slug, l) && !GemasPR4.ehLinhaPR4(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l) && !GemasB3.ehLinhaB3(h.slug, l) && !GemasC4.ehLinhaC4(h.slug, l));
 }
 function avaliarNoJogo(h, formato) {
   const st = h.stats;
