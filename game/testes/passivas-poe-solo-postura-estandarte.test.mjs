@@ -88,14 +88,16 @@ test('POSTURA: Sangue por padrão, Areia com a gema Sangue e Areia ligada; ao mu
   const { e, valor } = com(/^dmg_inc@posturaSangue$/);
   const dano = () => golpe(e, ['ataque', 'corpo']).danoDoElemento?.physical ?? 0;
   const sangue = dano();
-  e.hunt.buffs = { 'poe-gema:Blood_and_Sand': { ate: e.hunt.clock + 5000 } };
+  // (lote C3, com o aval do dono 25/10 — o PoE: o buff recém-ligado do Sangue e Areia está na Postura de Sangue; a de Areia é a troca, `postura: 'areia'`)
+  e.hunt.buffs = { 'poe-gema:Blood_and_Sand': { ate: e.hunt.clock + 5000, postura: 'areia' } };
   assert.ok(ModsPoe.condicoesDe(e, ficha(e).afPoe).has('posturaAreia'));
   assert.equal(sangue - dano(), valor);
   const r = com(/^ev:mudarPostura:removerAfeccao:danificadoras$/);
   r.e.hunt.efeitosDoJogador = { dots: [{ tipo: 'sangramento', falta: 100 }, { tipo: 'choque', falta: 10 }] };
   ModsPoe.aurasProximas(r.e, r.e.hunt, ficha(r.e));
   assert.equal(r.e.hunt.efeitosDoJogador.dots.length, 2, 'ainda não mudou');
-  r.e.hunt.buffs = { 'poe-gema:Blood_and_Sand': { ate: r.e.hunt.clock + 5000 } };
+  // (lote C3, com o aval do dono 25/10: a mudança para a Postura de Areia — `postura: 'areia'` no buff)
+  r.e.hunt.buffs = { 'poe-gema:Blood_and_Sand': { ate: r.e.hunt.clock + 5000, postura: 'areia' } };
   ModsPoe.aurasProximas(r.e, r.e.hunt, ficha(r.e));
   assert.deepEqual(r.e.hunt.efeitosDoJogador.dots.map((d) => d.tipo), ['choque'], 'o Sangramento sai; a Eletrização (não danificadora) fica');
   assert.ok(ModsPoe.condicoesDe(r.e, ficha(r.e).afPoe).has('mudouPosturaRecente'));

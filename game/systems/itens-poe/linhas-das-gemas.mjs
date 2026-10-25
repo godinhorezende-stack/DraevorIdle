@@ -66,6 +66,13 @@ const REGRAS = [
   // A Postura (Sangue e Areia) e a mão do ataque.
   [new RegExp(`^${N} ?% mais Área de Efeito enquanto na Postura da Areia$`), (m) => ({ 'area_mais@posturaAreia': num(m[1]) })],
   [new RegExp(`^${N} ?% menos Dano na Postura de Sangue$`), (m) => ({ 'mais_dano@posturaSangue': -num(m[1]) })],
+  // (lote C3, dono 25/10) a Postura nas gemas de Postura (o PoB: Condition BloodStance / ChangedStanceRecently): a qualidade da Perfuração da Dualidade ("+0,25% mais Dano
+  // na Postura de Sangue" — o mesmo stat do −75%: somam), o Sangrar só na de Sangue da Dilaceração (o poedb escreve "chancer") e a velocidade "se mudou de Postura
+  // Recentemente" da qualidade dela; o "12% mais Velocidade de Ataque" da Tempestade de Lâminas dentro de uma Sangrenta sua (`emTempestadeSangrenta`)
+  [new RegExp(`^${N} ?% mais Dano na Postura de Sangue$`), (m) => ({ 'mais_dano@posturaSangue': num(m[1]) })],
+  [new RegExp(`^${N} ?% de chancer? de causar Sangramento enquanto na Postura de Sangue$`, 'i'), (m) => ({ 'chance_bleed@posturaSangue': num(m[1]) })],
+  [new RegExp(`^Velocidade de Ataque aumentada em ${N} ?% caso tenha mudado de Postura Recentemente$`, 'i'), (m) => ({ 'atk_speed@mudouPosturaRecente': num(m[1]) })],
+  [new RegExp(`^${N} ?% mais Velocidade de Ataque enquanto estiver em uma Tempestade de Lâminas Sangrentas$`, 'i'), (m) => ({ 'atk_speed_mais@emTempestadeSangrenta': num(m[1]) })],
   [new RegExp(`^${N} ?% mais Dano com a Arma Principal$`), (m) => ({ 'mais_dano@maoPrincipal': num(m[1]) })],
   // As frases de gema que as peças escrevem de outro jeito: a duração da habilidade, a velocidade de conjuração (a da gema soma como a "com
   // Habilidades de X" — `cast_speed_tag`), o efeito do Empalamento.
@@ -247,10 +254,12 @@ const BUFF_PROPRIO = [
   [new RegExp(`^Você e (?:seus )?aliados próxim\\S* (?:ganham|têm|tem) Duração do Efeito de Habilidades aumentada em ${N} ?%$`, 'i'), (m) => ({ duracao_habilidades: num(m[1]) })],
   [/^(?:Buff concede Imunidade a|Você e (?:seus )?aliados próxim\S* são Imunes [àa]) (Incêndio|Resfriamento|Congelamento|Eletrização|Sangramento|Veneno|Envenenamento)$/i, (m) => ({ [`imune_${{ Incêndio: 'incendio', Resfriamento: 'resfriamento', Congelamento: 'congelamento', Eletrização: 'eletrizacao', Sangramento: 'sangramento', Veneno: 'veneno', Envenenamento: 'veneno' }[m[1]]}`]: 1 })],
   // (Sangue e Areia: "Habilidades Corpo a Corpo causam 27 % mais Efeito em Área enquanto na Postura de Areia" — a condição `posturaAreia`)
-  // (só a de AREIA: no jogo o buff ligado É a Postura de Areia — `condicoes-poe.posturaDe` —, e o atributo do buff só vale com ele ligado; a de
-  // Sangue, que valeria com ele desligado, segue "não simulada")
-  [new RegExp(`^Habilidades Corpo a Corpo (?:causam|têm) ${N} ?% (mais|menos) (Dano|Efeito) em Área enquanto na Postura de Areia$`, 'i'),
-    (m) => ({ [`${m[3] === 'Dano' ? 'mais_dano' : 'area_mais'}@corpo+area+posturaAreia`]: (m[2] === 'menos' ? -1 : 1) * num(m[1]) })],
+  // (lote C3, dono 25/10 — D3.1: + as de SANGUE: o buff ligado está numa das duas Posturas — `condicoes-poe.posturaDe`, o `postura` do buff —, e cada linha vale
+  // só na dela; antes o buff ligado era sempre a de Areia e as de Sangue ficavam "não simuladas")
+  [new RegExp(`^Habilidades Corpo a Corpo (?:causam|têm) ${N} ?% (mais|menos) (Dano|Efeito) em Área enquanto na Postura de (Areia|Sangue)$`, 'i'),
+  // (e o SINAL do PoB: o "5 % mais Dano em Área enquanto na Postura de Areia" do poedb é blood_sand_stance_melee_skills_area_damage_+%_final_in_sand_stance = −5 —
+  // 5% MENOS, act_str.lua:1268; antes o jogo dava 5% mais)
+    (m) => ({ [`${m[3] === 'Dano' ? 'mais_dano' : 'area_mais'}@corpo+area+postura${m[4]}`]: (m[2] === 'menos' || (m[3] === 'Dano' && m[4] === 'Areia') ? -1 : 1) * num(m[1]) })],
   [new RegExp(`^Estandarte concede \\+${N} ?% de chance de Suprimir o Dano Mágico a Você e Aliados$`, 'i'), (m) => ({ spell_suppression: num(m[1]) })],
   [new RegExp(`^Buff concede ${N} ?% mais Dano (Físico|de Fogo|de Gelo|de Raio|de Caos)$`, 'i'), (m) => ({ [{ Físico: 'mais_dano_fisico', 'de Fogo': 'mais_dano_fogo', 'de Gelo': 'mais_dano_gelo', 'de Raio': 'mais_dano_raio', 'de Caos': 'mais_dano_caos' }[m[2]]]: num(m[1]) })],
 ];

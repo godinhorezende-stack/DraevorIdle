@@ -134,8 +134,18 @@ export const naAreaFriaFragil = (h, b, agora = h?.clock ?? 0) => !!b && (h?.area
 export const naAreaFria = (h, b, agora = h?.clock ?? 0) => !!b && (h?.areasFrias ?? []).some((a) => a.ate > agora && Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y)) <= a.raio);
 /** (lote A2) O Resfriamento da área fria em que o bicho está (o maior delas): o de sempre, ou o próprio da área. */
 export const efeitoDaAreaFria = (h, b, agora = h?.clock ?? 0) => Math.max(0, ...(h?.areasFrias ?? []).filter((a) => a.ate > agora && !!b && Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y)) <= a.raio).map((a) => a.efeitoPct ?? AREAS_FRIAS.efeitoPct));
-/** (lote G) A POSTURA: a da Areia enquanto o buff da gema Sangue e Areia está ligado; senão a de Sangue (o lembrete: "Você está automaticamente em Postura de Sangue"). */
-export const posturaDe = (h, agora = h?.clock ?? 0) => (Object.entries(h?.buffs ?? {}).some(([id, b]) => b && b.ate > agora && /Blood_and_Sand/.test(id)) ? 'areia' : 'sangue');
+/**
+ * (lote G) A POSTURA. (lote C3, dono 25/10 — D3.1: o Sangue e Areia como o PoE — o PoB, BloodAndSand: o buff ligado está na Postura de SANGUE ou na de AREIA, a que
+ * ele guarda em `postura` — ligar começa na de Sangue; usar de novo alterna, `GemasC3.trocarPostura`. Antes, o buff ligado era sempre a de Areia, e os bônus de Sangue
+ * nunca valiam.) Sem o buff, a de Sangue (o lembrete: "Você está automaticamente em Postura de Sangue").
+ */
+const buffDaPostura = (h, agora) => Object.entries(h?.buffs ?? {}).find(([id, b]) => b && b.ate > agora && /Blood_and_Sand/.test(id))?.[1] ?? null;
+export const posturaDe = (h, agora = h?.clock ?? 0) => (buffDaPostura(h, agora)?.postura === 'areia' ? 'areia' : 'sangue');
+/**
+ * (lote C3, dono 25/10) Você está numa Tempestade de Lâminas SANGRENTA sua (`hunt.poeObjetos` — `GemasC3`, a Tempestade de Lâminas): "12% mais Velocidade de Ataque
+ * enquanto estiver em uma Tempestade de Lâminas Sangrentas" (o PoB: Condition BladestormInBloodstorm).
+ */
+export const emTempestadeSangrenta = (h, agora = h?.clock ?? 0) => !!h?.pos && (h.poeObjetos ?? []).some((o) => o.tipo === 'tempestadeDeLaminas' && o.postura === 'sangue' && o.dono === 'voce' && o.ate > agora && (o.z ?? 0) === (h.z ?? 0) && Math.max(Math.abs(o.x - h.pos.x), Math.abs(o.y - h.pos.y)) <= (o.raio ?? 0));
 /**
  * (11/10) O ESTANDARTE PLANTADO (Estandarte de Guerra, Horrendo, da Desafiança — o buff da gema `*_Banner`, com `estandarte: { x, y, z, valor,
  * efeitoMais }`): o PoE atual — usar a gema consome todo o Valor e planta o estandarte, com a aura dele (`mods-poe.plantarEstandarte`).
@@ -326,6 +336,8 @@ export const CONDICOES_DE_ESTADO = new Set([
   'maxUmRaroPerto', 'doisRarosPerto',
   // (lote G) a Postura (Sangue / Areia — a gema Sangue e Areia), com um Estandarte (a aura de Estandarte ligada).
   'posturaSangue', 'posturaAreia', 'estandarteAtivo',
+  // (lote C3, dono 25/10) numa Tempestade de Lâminas Sangrenta sua (`emTempestadeSangrenta`).
+  'emTempestadeSangrenta',
   // (lote 65, as Ramificadoras) afetado por um Arauto (ao menos uma gema de Arauto ligada)
   'afetadoPorArauto', 'afetadoPorGuardaNaoVaal', 'guardaNaoVaalTerminouRecente',
   // (lote 66) "enquanto portando um(a) X ou Y" — a arma em QUALQUER das mãos (as condições `comX` são da mão principal): Garra ou Adaga, Machado
@@ -579,6 +591,7 @@ export function condicoesDe(estado, total = null, principais = null) {
     if (buffAtivo(estado, 'elusivo', total)) v.add('elusivo');
     if (noSoloSagrado(h, agora)) v.add('soloSagrado');
     v.add(posturaDe(h, agora) === 'areia' ? 'posturaAreia' : 'posturaSangue');
+    if (emTempestadeSangrenta(h, agora)) v.add('emTempestadeSangrenta');
     if (estandarteAtivo(h, agora)) v.add('estandarteAtivo');
     if (Object.values(h.buffs ?? {}).some((b) => b && b.ate > agora && b.tipo === 'poe-arauto')) v.add('afetadoPorArauto');
     // (lote 80, a Astúcia do Veterano) "enquanto afetado por uma Habilidade de Guarda não Vaal" e "se um Buff de Guarda não Vaal terminou
