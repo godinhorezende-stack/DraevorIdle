@@ -2,17 +2,17 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 352,
-   "implementada, sem teste próprio": 46,
-   "parcial": 151,
+   "implementada e testada": 367,
+   "implementada, sem teste próprio": 44,
+   "parcial": 138,
    "limitação do modelo idle": 12,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 166,
+   "implementada e testada": 167,
    "implementada, sem teste próprio": 18,
-   "parcial": 19,
+   "parcial": 18,
    "limitação do modelo idle": 7
   },
   "suportes": {
@@ -24,16 +24,16 @@
   "variantes": {
    "vaal": {
     "total": 52,
-    "implementada e testada": 29,
-    "parcial": 16,
+    "implementada e testada": 30,
+    "parcial": 15,
     "implementada, sem teste próprio": 6,
     "limitação do modelo idle": 1
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 126,
+    "implementada e testada": 130,
     "implementada, sem teste próprio": 24,
-    "parcial": 52,
+    "parcial": 48,
     "limitação do modelo idle": 7
    }
   },
@@ -45,8 +45,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 453,
-   "emDuasOuMais": 66
+   "linhasDistintas": 420,
+   "emDuasOuMais": 62
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -60,7 +60,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 419,
+   "ativasCitadas": 433,
    "suportesCitados": 119,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -483,10 +483,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "guarda",
-   "estado": "parcial",
-   "ausentes": [
-    "a absorção de dano da guarda ainda não existe no jogo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1083,8 +1081,6 @@
    "arquetipo": "guarda",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: 75 % do dano de ataques é absorvido pelo bônus antes de afetar sua vida ou seu escudo de Energia Bônus pode sofrer dano equivalente a 10 % da sua armadura, até 5000",
-    "efeito não simulado: Reflete 3000 % do Dano sofrido pelo Buff como Dano de Fogo quando o Buff expirar ou se esgotar",
     "efeito não simulado: Duração do Efeito de Habilidades aumentada em 20 %"
    ],
    "idle": [],
@@ -1145,8 +1141,6 @@
    "arquetipo": "guarda",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: 39 % do dano de ataques é absorvido pelo bônus antes de afetar sua vida ou seu escudo de Energia Bônus pode sofrer dano equivalente a 20 % da sua armadura, até 10000",
-    "efeito não simulado: Reflete 9000 % do Dano sofrido pelo Buff como Dano de Fogo por segundo, ou quando o Buff expirar ou se esgotar",
     "efeito não simulado: Duração do Efeito de Habilidades aumentada em 20 %"
    ],
    "idle": [],
@@ -1201,8 +1195,10 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "clamor",
-   "estado": "implementada, sem teste próprio",
-   "ausentes": [],
+   "estado": "parcial",
+   "ausentes": [
+    "efeito não simulado: Ataques Impelidos ativam as Magias Suportadas"
+   ],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1242,8 +1238,11 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "clamor",
-   "estado": "implementada, sem teste próprio",
-   "ausentes": [],
+   "estado": "parcial",
+   "ausentes": [
+    "efeito não simulado: Conta o Poder total de Inimigos e Cadáveres no Alcance",
+    "efeito não simulado: +1 ao número máximo de Guerreiros Ilusórios"
+   ],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1255,10 +1254,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "clamor",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Duração da penalidade base é de 3.4 segundos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1330,10 +1327,7 @@
    "estado": "parcial",
    "ausentes": [
     "efeito não simulado: Conta o Poder total de Inimigos e Aliados no Raio",
-    "efeito não simulado: Buff concede Dano de Ataque Adicional igual a 4 % do Dano da sua Arma da Mão Principal por cada 5 de Poder, contando um máximo de 30 de Poder",
-    "efeito não simulado: Buff tem 100 % mais Efeito em seus Lacaios",
-    "efeito não simulado: Impele o próximo 5 Ataque de Golpe Corpo a Corpo que você executar",
-    "efeito não simulado: Ataques Impelidos causam 5 % mais Dano por Aliado afetado, máximo de 25 %"
+    "efeito não simulado: Buff tem 100 % mais Efeito em seus Lacaios"
    ],
    "idle": [],
    "outros": [],
@@ -1883,11 +1877,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "guarda",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Duração do Buff aumentada em 20 % por Carga de Tolerância removida",
-    "efeito não simulado: 15 % menos Dano Físico sofrido por Carga de Tolerância removida"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2015,8 +2006,6 @@
    "arquetipo": "guarda",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Duração do Buff aumentada em 157 % por Carga de Tolerância removida",
-    "efeito não simulado: A expiração do Buff não pode ser modificada",
     "efeito não simulado: Duração do Efeito de Habilidades aumentada em 20 %"
    ],
    "idle": [],
@@ -3593,7 +3582,6 @@
    "arquetipo": "guarda",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Resfria Inimigos por 0.5 segundos ao Acertar, reduzindo sua Velocidade de Ação em 30 %",
     "efeito não simulado: Duração do Efeito de Habilidades aumentada em 20 %"
    ],
    "idle": [],
@@ -3646,10 +3634,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "guarda",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: a perda de 4% da Vida e do Escudo de Energia por segundo é a perda por segundo do jogo — não mata (deixa 1 de Vida) e não passa pelos modificadores de dano degenerativo recebido; no PoE é Dano Físico degenerativo (PhysicalDegen)"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3773,10 +3759,6 @@
    "arquetipo": "guarda",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Você sofre 90 % menos Dano de Acertos e conta como Congelado",
-    "efeito não simulado: Gelo se quebra após você sofrer 3 Acertos Danificadores ou a Duração expirar",
-    "efeito não simulado: Buff concede 30.6 de Regeneração de Mana por segundo",
-    "efeito não simulado: Buff concede 395 de Regeneração de Escudo de Energia por segundo",
     "efeito não simulado: Duração do Efeito de Habilidades aumentada em 20 %"
    ],
    "idle": [],
@@ -6009,11 +5991,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "marca",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Envia feixes até 3 Inimigos, incluindo o Inimigo Vinculado",
-    "efeito não simulado: Envia feixes para +1 Inimigo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6025,10 +6004,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "marca",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Envia um feixe ao Inimigo Vinculado"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6189,10 +6166,6 @@
    "arquetipo": "guarda",
    "estado": "parcial",
    "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: Gasta 64 % da Mana atual",
-    "efeito não simulado: 75 % do Dano de Acertos é sofrido no Buff antes da sua Vida ou Escudo de Energia Buff pode sofrer Dano igual a Mana Gasta pelo efeito desta Habilidade",
-    "efeito não simulado: Buff concede Dano de Raio Adicional igual a 10 % da Mana Gasta pelo efeito desta Habilidade",
     "efeito não simulado: Efeito do Buff aumentado em 20 %"
    ],
    "idle": [],
@@ -6340,10 +6313,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "guarda",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: a Onda Arcana é um acerto só, no anel de 2 casas em volta de você — a duração de 0,35 s e a Eficácia de 450% do dano adicionado não entram"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6374,13 +6345,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "guarda",
-   "estado": "parcial",
-   "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: Causa 70 % da sua Mana Máxima como Dano de Fogo Base por segundo",
-    "efeito não simulado: Você Queima por 90 % da sua Mana Máxima por segundo como Dano de Fogo",
-    "efeito não simulado: Concede 24 % mais velocidade de conjuração"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6412,12 +6378,9 @@
    "nome": "Escudo Tempestuoso",
    "variante": "normal",
    "ataque": false,
-   "arquetipo": "ricochete",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Buff concede +25 % de Chance de Bloquear o Dano Mágico enquanto portando um Escudo",
-    "efeito não simulado: Buff concede Imunidade a Eletrização"
-   ],
+   "arquetipo": "guarda",
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6442,12 +6405,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "guarda",
-   "estado": "parcial",
-   "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: Sacrifica 60 % do seu total de Escudo de Energia e Vida Causa 158 % do Escudo de Energia e Vida Sacrificados como Dano de Fogo por segundo",
-    "efeito não simulado: Concede 19 % mais Dano Mágico"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7315,12 +7274,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "marca",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Pulsos causam 20 % mais Dano com Afecções por Energia após a primeira",
-    "efeito não simulado: Pulsos causam 20 % mais Dano com Dano com Acertos por Energia após a primeira",
-    "efeito não simulado: +0.1 metros ao raio do Pulso por Energia"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7332,10 +7287,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "marca",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Até 0.9 metros ao raio da propagação de Energia, escalonado pela distância da Runa"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7680,10 +7633,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "guarda",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: o Raio por estágio e o \"menos dano\" valem para você e os inimigos na área; os aliados (a party) na área não recebem o buff"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7872,10 +7823,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "marca",
-   "estado": "parcial",
-   "ausentes": [
-    "sem dano direto: nenhum efeito no combate"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7972,12 +7921,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "guarda",
-   "estado": "parcial",
-   "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: [Empowered|Fortalece] a próxima magia vaal danosa que você conjurar",
-    "efeito não simulado: Habilidades fortalecidas causam + 29 % de dano"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -10477,27 +10422,6 @@
  ],
  "linhasFaltando": [
   {
-   "linha": "nenhum efeito do buff tem equivalente no jogo",
-   "gemas": [
-    "Alchemists_Mark",
-    "Arcane_Cloak",
-    "Bane",
-    "Bane_of_Condemnation",
-    "Flesh_and_Stone",
-    "Hexblast",
-    "Hexblast_of_Contradiction",
-    "Hexblast_of_Havoc",
-    "Pact_of_KTash",
-    "Punishment",
-    "Righteous_Fire",
-    "Righteous_Fire_of_Arcane_Devotion",
-    "Snipers_Mark",
-    "Temporal_Chains",
-    "Vaal_Righteous_Fire",
-    "War_Banner"
-   ]
-  },
-  {
    "linha": "Lacaios têm Recuperação da Recarga aumentada em # %",
    "gemas": [
     "Absolution",
@@ -10512,6 +10436,23 @@
     "Summon_Stone_Golem_of_Hordes",
     "Vaal_Absolution",
     "Vaal_Domination"
+   ]
+  },
+  {
+   "linha": "nenhum efeito do buff tem equivalente no jogo",
+   "gemas": [
+    "Alchemists_Mark",
+    "Bane",
+    "Bane_of_Condemnation",
+    "Flesh_and_Stone",
+    "Hexblast",
+    "Hexblast_of_Contradiction",
+    "Hexblast_of_Havoc",
+    "Punishment",
+    "Righteous_Fire",
+    "Snipers_Mark",
+    "Temporal_Chains",
+    "War_Banner"
    ]
   },
   {
@@ -10586,15 +10527,6 @@
    ]
   },
   {
-   "linha": "sem dano direto: nenhum efeito no combate",
-   "gemas": [
-    "Arcanist_Brand",
-    "Conversion_Trap",
-    "Detonate_Mines",
-    "Smoke_Mine"
-   ]
-  },
-  {
    "linha": "Velocidade de Movimento dos Lacaios aumentada em # %",
    "gemas": [
     "Animate_Guardian",
@@ -10660,6 +10592,14 @@
    ]
   },
   {
+   "linha": "sem dano direto: nenhum efeito no combate",
+   "gemas": [
+    "Conversion_Trap",
+    "Detonate_Mines",
+    "Smoke_Mine"
+   ]
+  },
+  {
    "linha": "Velocidade de Projéteis aumentada em # %",
    "gemas": [
     "Holy_Flame_Totem",
@@ -10686,13 +10626,6 @@
    "gemas": [
     "Hexblast",
     "Hexblast_of_Contradiction"
-   ]
-  },
-  {
-   "linha": "# % do dano de ataques é absorvido pelo bônus antes de afetar sua vida ou seu escudo de Energia Bônus pode sofrer dano equivalente a # % da sua armadura, até #",
-   "gemas": [
-    "Molten_Shell",
-    "Vaal_Molten_Shell"
    ]
   },
   {
@@ -10801,24 +10734,10 @@
    ]
   },
   {
-   "linha": "Concede # % mais Dano Mágico",
-   "gemas": [
-    "Righteous_Fire",
-    "Vaal_Righteous_Fire"
-   ]
-  },
-  {
    "linha": "Duração de Maldições aumentada em # %",
    "gemas": [
     "Enfeeble",
     "Temporal_Chains"
-   ]
-  },
-  {
-   "linha": "Duração do Buff aumentada em # % por Carga de Tolerância removida",
-   "gemas": [
-    "Immortal_Call",
-    "Vaal_Immortal_Call"
    ]
   },
   {
@@ -10882,13 +10801,6 @@
    "gemas": [
     "Cluster_Traps_Support",
     "Multiple_Traps_Support"
-   ]
-  },
-  {
-   "linha": "Impele o próximo # Ataque de Golpe Corpo a Corpo que você executar",
-   "gemas": [
-    "Intimidating_Cry",
-    "Rallying_Cry"
    ]
   },
   {
@@ -10997,12 +10909,6 @@
    ]
   },
   {
-   "linha": "[Empowered|Fortalece] a próxima magia vaal danosa que você conjurar",
-   "gemas": [
-    "Pact_of_KTash"
-   ]
-  },
-  {
    "linha": "# % de aumento da Distância do Empurrão",
    "gemas": [
     "Seismic_Cry"
@@ -11018,12 +10924,6 @@
    "linha": "# % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único",
    "gemas": [
     "Herald_of_Purity"
-   ]
-  },
-  {
-   "linha": "# % do Dano de Acertos é sofrido no Buff antes da sua Vida ou Escudo de Energia Buff pode sofrer Dano igual a Mana Gasta pelo efeito desta Habilidade",
-   "gemas": [
-    "Arcane_Cloak"
    ]
   },
   {
@@ -11060,12 +10960,6 @@
    "linha": "# % menos Dano em Área",
    "gemas": [
     "Smite"
-   ]
-  },
-  {
-   "linha": "# % menos Dano Físico sofrido por Carga de Tolerância removida",
-   "gemas": [
-    "Immortal_Call"
    ]
   },
   {
@@ -11111,15 +11005,15 @@
    ]
   },
   {
-   "linha": "+# ao número máximo de Zumbis",
+   "linha": "+# ao número máximo de Guerreiros Ilusórios",
    "gemas": [
-    "Raise_Zombie_of_Falling"
+    "Generals_Cry"
    ]
   },
   {
-   "linha": "+# metros ao raio do Pulso por Energia",
+   "linha": "+# ao número máximo de Zumbis",
    "gemas": [
-    "Penance_Brand_of_Dissipation"
+    "Raise_Zombie_of_Falling"
    ]
   },
   {
@@ -11138,18 +11032,6 @@
    "linha": "+#% para o número máximo de lacaios de habilidades reforçadas",
    "gemas": [
     "Congregation_Support"
-   ]
-  },
-  {
-   "linha": "a absorção de dano da guarda ainda não existe no jogo",
-   "gemas": [
-    "Steelskin"
-   ]
-  },
-  {
-   "linha": "A expiração do Buff não pode ser modificada",
-   "gemas": [
-    "Vaal_Immortal_Call"
    ]
   },
   {
@@ -11177,21 +11059,9 @@
    ]
   },
   {
-   "linha": "a Onda Arcana é um acerto só, no anel de # casas em volta de você — a duração de # s e a Eficácia de #% do dano adicionado não entram",
-   "gemas": [
-    "Mana-Infused_Staff"
-   ]
-  },
-  {
    "linha": "a onda usa o físico médio da arma × o \"Dano de Ataque: X% de base\" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma)",
    "gemas": [
     "Void_Shockwave_Support"
-   ]
-  },
-  {
-   "linha": "a perda de #% da Vida e do Escudo de Energia por segundo é a perda por segundo do jogo — não mata (deixa # de Vida) e não passa pelos modificadores de dano degenerativo recebido; no PoE é Dano Físico degenerativo (PhysicalDegen)",
-   "gemas": [
-    "Blood_Rage"
    ]
   },
   {
@@ -11297,9 +11167,9 @@
    ]
   },
   {
-   "linha": "Ataques Impelidos causam # % mais Dano por Aliado afetado, máximo de # %",
+   "linha": "Ataques Impelidos ativam as Magias Suportadas",
    "gemas": [
-    "Rallying_Cry"
+    "Battlemages_Cry"
    ]
   },
   {
@@ -11330,12 +11200,6 @@
    "linha": "Ataques Suportados causam Dano Físico com Armas Adicional igual a\\n#% da Vida Máxima enquanto em Vida Baixa",
    "gemas": [
     "Bloodthirst_Support"
-   ]
-  },
-  {
-   "linha": "Até # metros ao raio da propagação de Energia, escalonado pela distância da Runa",
-   "gemas": [
-    "Penance_Brand_of_Conduction"
    ]
   },
   {
@@ -11417,42 +11281,6 @@
    ]
   },
   {
-   "linha": "Buff concede # de Regeneração de Escudo de Energia por segundo",
-   "gemas": [
-    "Vaal_Arctic_Armour"
-   ]
-  },
-  {
-   "linha": "Buff concede # de Regeneração de Mana por segundo",
-   "gemas": [
-    "Vaal_Arctic_Armour"
-   ]
-  },
-  {
-   "linha": "Buff concede +# % de Chance de Bloquear o Dano Mágico enquanto portando um Escudo",
-   "gemas": [
-    "Tempest_Shield"
-   ]
-  },
-  {
-   "linha": "Buff concede Dano de Ataque Adicional igual a # % do Dano da sua Arma da Mão Principal por cada # de Poder, contando um máximo de # de Poder",
-   "gemas": [
-    "Rallying_Cry"
-   ]
-  },
-  {
-   "linha": "Buff concede Dano de Raio Adicional igual a # % da Mana Gasta pelo efeito desta Habilidade",
-   "gemas": [
-    "Arcane_Cloak"
-   ]
-  },
-  {
-   "linha": "Buff concede Imunidade a Eletrização",
-   "gemas": [
-    "Tempest_Shield"
-   ]
-  },
-  {
    "linha": "Buff concede Ponto de Atordoamento aumentado em # % por cada # de Poder, contando um máximo de # de Poder",
    "gemas": [
     "Seismic_Cry"
@@ -11486,12 +11314,6 @@
    "linha": "Cada Mina das Habilidades Suportadas aplicadas #% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de #%",
    "gemas": [
     "High-Impact_Mine_Support"
-   ]
-  },
-  {
-   "linha": "Causa # % da sua Mana Máxima como Dano de Fogo Base por segundo",
-   "gemas": [
-    "Righteous_Fire_of_Arcane_Devotion"
    ]
   },
   {
@@ -11579,9 +11401,9 @@
    ]
   },
   {
-   "linha": "Concede # % mais velocidade de conjuração",
+   "linha": "Concede # % mais Dano Mágico",
    "gemas": [
-    "Righteous_Fire_of_Arcane_Devotion"
+    "Righteous_Fire"
    ]
   },
   {
@@ -11630,6 +11452,12 @@
    "linha": "Conta o Poder total de Inimigos e Aliados no Raio",
    "gemas": [
     "Rallying_Cry"
+   ]
+  },
+  {
+   "linha": "Conta o Poder total de Inimigos e Cadáveres no Alcance",
+   "gemas": [
+    "Generals_Cry"
    ]
   },
   {
@@ -11753,12 +11581,6 @@
    ]
   },
   {
-   "linha": "Duração da penalidade base é de # segundos",
-   "gemas": [
-    "Infernal_Cry"
-   ]
-  },
-  {
    "linha": "Efeito da Marca aumentado em # %",
    "gemas": [
     "Alchemists_Mark"
@@ -11822,24 +11644,6 @@
    "linha": "Envenenar inimigos não envenenados com habilidades reforçadas inflige # envenenamentos adicionais",
    "gemas": [
     "Lethal_Dose_Support"
-   ]
-  },
-  {
-   "linha": "Envia feixes até # Inimigos, incluindo o Inimigo Vinculado",
-   "gemas": [
-    "Storm_Brand"
-   ]
-  },
-  {
-   "linha": "Envia feixes para +# Inimigo",
-   "gemas": [
-    "Storm_Brand"
-   ]
-  },
-  {
-   "linha": "Envia um feixe ao Inimigo Vinculado",
-   "gemas": [
-    "Storm_Brand_of_Indecision"
    ]
   },
   {
@@ -12047,18 +11851,6 @@
    ]
   },
   {
-   "linha": "Gasta # % da Mana atual",
-   "gemas": [
-    "Arcane_Cloak"
-   ]
-  },
-  {
-   "linha": "Gelo se quebra após você sofrer # Acertos Danificadores ou a Duração expirar",
-   "gemas": [
-    "Vaal_Arctic_Armour"
-   ]
-  },
-  {
    "linha": "Gira # vez",
    "gemas": [
     "Blade_Trap_of_Laceration"
@@ -12134,12 +11926,6 @@
    "linha": "Habilidades de Efeito em Área Suportadas também afetam áreas na frente e atrás da área alvo",
    "gemas": [
     "Spell_Cascade_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades fortalecidas causam + # % de dano",
-   "gemas": [
-    "Pact_of_KTash"
    ]
   },
   {
@@ -12518,6 +12304,12 @@
    "linha": "Ignora Atordoamentos enquanto Usando Habilidades Suportadas",
    "gemas": [
     "Awakened_Cast_While_Channelling_Support"
+   ]
+  },
+  {
+   "linha": "Impele o próximo # Ataque de Golpe Corpo a Corpo que você executar",
+   "gemas": [
+    "Intimidating_Cry"
    ]
   },
   {
@@ -12983,12 +12775,6 @@
    ]
   },
   {
-   "linha": "o Raio por estágio e o \"menos dano\" valem para você e os inimigos na área; os aliados (a party) na área não recebem o buff",
-   "gemas": [
-    "Sigil_of_Power"
-   ]
-  },
-  {
    "linha": "o totem provoca os monstros em volta a atacá-lo (act_str.lua:##)",
    "gemas": [
     "Decoy_Totem"
@@ -13055,18 +12841,6 @@
    ]
   },
   {
-   "linha": "Pulsos causam # % mais Dano com Afecções por Energia após a primeira",
-   "gemas": [
-    "Penance_Brand_of_Dissipation"
-   ]
-  },
-  {
-   "linha": "Pulsos causam # % mais Dano com Dano com Acertos por Energia após a primeira",
-   "gemas": [
-    "Penance_Brand_of_Dissipation"
-   ]
-  },
-  {
    "linha": "Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade Arqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados",
    "gemas": [
     "Mirage_Archer_Support"
@@ -13103,24 +12877,6 @@
    ]
   },
   {
-   "linha": "Reflete # % do Dano sofrido pelo Buff como Dano de Fogo por segundo, ou quando o Buff expirar ou se esgotar",
-   "gemas": [
-    "Vaal_Molten_Shell"
-   ]
-  },
-  {
-   "linha": "Reflete # % do Dano sofrido pelo Buff como Dano de Fogo quando o Buff expirar ou se esgotar",
-   "gemas": [
-    "Molten_Shell"
-   ]
-  },
-  {
-   "linha": "Resfria Inimigos por # segundos ao Acertar, reduzindo sua Velocidade de Ação em # %",
-   "gemas": [
-    "Old_Arctic_Armour"
-   ]
-  },
-  {
    "linha": "Resistência à Fogo de Inimigos Próximos é Ignorada por Acertos",
    "gemas": [
     "Vaal_Impurity_of_Fire"
@@ -13148,12 +12904,6 @@
    "linha": "Sacrifica # % da Vida do Esqueleto para causar a mesma quantidade de Dano de Caos",
    "gemas": [
     "Dark_Bargain"
-   ]
-  },
-  {
-   "linha": "Sacrifica # % do seu total de Escudo de Energia e Vida Causa # % do Escudo de Energia e Vida Sacrificados como Dano de Fogo por segundo",
-   "gemas": [
-    "Vaal_Righteous_Fire"
    ]
   },
   {
@@ -13295,12 +13045,6 @@
    ]
   },
   {
-   "linha": "Você Queima por # % da sua Mana Máxima por segundo como Dano de Fogo",
-   "gemas": [
-    "Righteous_Fire_of_Arcane_Devotion"
-   ]
-  },
-  {
    "linha": "Você Queima por # % de sua Vida máxima por segundo como Dano de Fogo",
    "gemas": [
     "Righteous_Fire"
@@ -13310,12 +13054,6 @@
    "linha": "Você Queima por # % do seu Escudo de Energia máximo por segundo como Dano de Fogo",
    "gemas": [
     "Righteous_Fire"
-   ]
-  },
-  {
-   "linha": "Você sofre # % menos Dano de Acertos e conta como Congelado",
-   "gemas": [
-    "Vaal_Arctic_Armour"
    ]
   }
  ],

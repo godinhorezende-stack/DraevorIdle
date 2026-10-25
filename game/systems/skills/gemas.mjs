@@ -571,6 +571,11 @@ const FORA_DA_AUTOMACAO = ['poe:Ataque', 'poe:Armadilha', 'poe:Mina', 'poe:Totem
 // one supported bow skill for each stage gained" (o PoB, act_dex.lua:17606): saem na liberação, uma por estágio (`Acoes.ativarGatilhos`, 'snipe')
 const ehAtirar = (def) => def?.tipo === 'ativa' && def.poe?.slug === 'Snipe';
 const suportadaDoAtirar = (def) => def?.tipo === 'ativa' && !ehAtirar(def) && !!def.tags?.includes('poe:Ataque') && !!def.tags?.includes('poe:Arco') && !def.tags?.includes('poe:Canalização');
+// (lote G-D, dono 25/10 — D16) a RUNA DO ARCANISTA (o PoB, act_int.lua SupportBrandSupport): as magias ligadas a ela que podem ser ativadas, sem reserva — fora a de
+// Armadilha, Mina, Totem, as Vaal e as de Ativação embutida — saem a cada Ativação da Runa vinculada (`Acoes.ativarGatilhos`, 'arcanista')
+const ehArcanista = (def) => def?.tipo === 'ativa' && def.poe?.slug === 'Arcanist_Brand';
+const FORA_DO_ARCANISTA = ['poe:Ataque', 'poe:Armadilha', 'poe:Mina', 'poe:Totem', 'poe:Vaal', 'poe:Aura', 'poe:Arauto', 'poe:Ativação', 'poe:Vínculo'];
+const magiaDoArcanista = (def) => def?.tipo === 'ativa' && !ehArcanista(def) && ativavelPorGatilho(def) && !!def.tags?.includes('poe:Magia') && !ACOES.get(def.acao)?.poeGema?.reserva && !FORA_DO_ARCANISTA.some((t) => def.tags.includes(t));
 const magiaDaAutomacao = (def) => def?.tipo === 'ativa' && !ehAutomacao(def) && !ehFeiticeiro(def) && ativavelPorGatilho(def) && !!def.tags?.includes('poe:Magia') && !(def.castTime > 0) && !ACOES.get(def.acao)?.poeGema?.reserva && !FORA_DA_AUTOMACAO.some((t) => def.tags.includes(t));
 
 export function skillsAtivas(estado) {
@@ -706,6 +711,10 @@ export function gruposComGatilho(estado) {
       // (lote A2) a Automação: as magias instantâneas do grupo saem sozinhas com ela ligada (o buff dela)
       const auto = noGrupo.find((y) => ehAutomacao(y.def));
       if (auto) saida.push({ chave: `${slot}:${auto.i}`, nome: auto.def.nome, nivel: auto.g.nivel + bonus, gatilho: { quando: 'automacao' }, ataques: [], magias: noGrupo.filter((y) => magiaDaAutomacao(y.def)).map((y) => y.def.acao), automacao: auto.def.acao });
+      // (lote G-D — D16) a Runa do Arcanista: as magias do grupo saem nas Ativações dela (o tique das Runas)
+      const arc = noGrupo.find((y) => ehArcanista(y.def));
+      const doArcanista = arc ? noGrupo.filter((y) => magiaDoArcanista(y.def)).map((y) => y.def.acao) : [];
+      if (doArcanista.length) saida.push({ chave: `${slot}:${arc.i}`, nome: arc.def.nome, nivel: arc.g.nivel + bonus, gatilho: { quando: 'arcanista' }, ataques: [], magias: doArcanista, arcanista: arc.def.acao });
       const atirar = noGrupo.find((y) => ehAtirar(y.def));
       const doAtirar = atirar ? noGrupo.filter((y) => suportadaDoAtirar(y.def)).map((y) => y.def.acao) : [];
       if (doAtirar.length) saida.push({ chave: `${slot}:${atirar.i}`, nome: atirar.def.nome, nivel: atirar.g.nivel + bonus, gatilho: { quando: 'snipe' }, ataques: [atirar.def.acao], magias: doAtirar, atirar: atirar.def.acao });

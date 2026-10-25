@@ -2152,6 +2152,8 @@ export function tique(estado, personagem, agora = Date.now()) {
   // Gélido, a Automação); e o teto do Sangue Petrificado — a Vida que subiu sem frasco para em Vida Baixa (antes dos frascos, que passam por cima)
   if (itensPoeLigado()) {
     Acoes.tiqueDasGemasA2(estado, hunt, personagem, eventos, hunt.clock ?? 0);
+    // (lotes G-B e G-D, dono 25/10) as Guardas, o Imortal, o gelo da Armadura Ártica Vaal, a Fúria Sangrenta e o Fogo Justo no tempo (`Acoes.tiqueDasGemasGBD`)
+    Acoes.tiqueDasGemasGBD(estado, hunt, personagem, eventos, hunt.clock ?? 0);
     GemasA2.tetoDoSangue(estado, hunt);
   }
   // Os frascos do PoE no cinto: a recuperação de vida/mana, o fim dos de Utilidade e o uso automático (a ficha é refeita se o efeito mudou).

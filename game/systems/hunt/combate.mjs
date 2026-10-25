@@ -60,6 +60,8 @@ export const nivelDoDropPoe = (hunt, alvo) => BESTIARY[alvo?.key]?.poe?.nivel ??
 import { resistido, resistenciaEfetivaDe, resistenciaDe } from './resistencia.mjs';
 import * as ModsPoe from '../itens-poe/mods-poe.mjs';
 import * as GemasA2 from '../itens-poe/gemas-a2.mjs';
+// (lotes G-B e G-D, dono 25/10: as Guardas no acerto em você — a absorção, o Imortal, o gelo da Armadura Ártica Vaal, o Resfriar de quem acerta)
+import * as GemasGBD from '../itens-poe/gemas-gbd.mjs';
 import { registrarGolpe } from '../combate/registro.mjs';
 import * as Limites from '../combate/limites.mjs';
 import * as Formulas from '../combate/formulas.mjs';
@@ -859,6 +861,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     Acoes.aoMorrerB2(estado, hunt, personagem, alvo, eventos);
     // (lote C4, dono 21/10) a morte de quem tinha o debuff do Golpe Pestilento e estava Envenenado: o secundário em volta — `Acoes.aoMorrerC4`
     Acoes.aoMorrerC4(hunt, alvo, eventos);
+    // (lote G-D, dono 25/10) a morte de quem tinha a penalidade do Clamor Infernal: explode — `Acoes.aoMorrerGBD`
+    Acoes.aoMorrerGBD(estado, hunt, personagem, alvo, eventos);
   }
   if (!itensPoeLigado() || QuemFeriu.abateSeu(alvo)) {
     const f = Ficha.combate(estado);
@@ -1109,6 +1113,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
       ModsPoe.abrirRetaliacao(hunt, 'bloquear', ficha.afPoe);
       // (lote A2) o Cajado Impregnado de Mana: a Onda Arcana ao bloquear (uma vez por segundo)
       Acoes.ondaArcana(estado, hunt, personagem, eventos, hunt.clock ?? 0);
+      // (o dono, 25/10) o Escudo Tempestuoso: o raio no atacante bloqueado, que ricocheteia
+      Acoes.escudoTempestuoso(estado, hunt, personagem, bicho, eventos, hunt.clock ?? 0);
     }
     ModsPoe.evento(estado, hunt, 'bloquear', ficha, { alvo: bicho, eventos, personagem });
     // ("ao Bloquear o Dano de Ataques" / "ao Bloquear Dano Mágico": o evento de cada tipo de bloqueio.)
@@ -1173,6 +1179,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   if (bruto > 0) {
     // (PoE: o golpe corpo a corpo sem dano de outro tipo é "apenas Dano Físico" — `imune_atordoamento_so_fisico`.)
     const controle = Controle.tentar(hunt, bicho, ficha, hunt.clock ?? 0, Math.random, { soFisico: !AtributosDoMob.danoExtraDoGolpe(bicho).length, estado, semAfeccaoElemental: Vinculos.noFeixe(hunt, bicho) });
+    // (lote G-B) a Armadura Ártica: quem acerta você fica Resfriado
+    GemasGBD.resfriarQuemAcerta(hunt, bicho, hunt.clock ?? 0);
     if (controle) eventos.push({ t: 'estado', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, estado: controle, de: bicho.name });
   }
   // Os EFEITOS do golpe (`efeitos` da espécie): dano contínuo no jogador pelo motor `combate/dot.mjs` — do dano antes da defesa e do crítico.
@@ -1219,8 +1227,11 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // (PoE: "X% mais Dano de Ataque sofrido se você foi Acertado por um Ataque Recentemente" — o golpe do monstro é o ataque dele.)
   // (lote 30, P029: + "Sofre X% menos Dano de Acertos" — `menos_dano_acertos`, só nos acertos)
   // (17/10, lote G15: + a Canalização Infundida — "Enquanto Canalizando uma Habilidade Suportada, sofra X% menos Dano dos Acertos")
-  const fatorFinal = Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100) * Math.max(0, 1 - ModsPoe.valor(ficha, 'menos_dano_acertos') / 100) * Math.max(0, 1 - Acoes.menosDanoDaCanalizacao(estado, hunt) / 100);
+  // (lote G-B — D7: + a Armadura Ártica Vaal, "Você sofre 90% menos Dano de Acertos" — o MORE do PoB, `GemasGBD.fatorDoGeloVaal`)
+  const fatorFinal = Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100) * Math.max(0, 1 - ModsPoe.valor(ficha, 'menos_dano_acertos') / 100) * Math.max(0, 1 - Acoes.menosDanoDaCanalizacao(estado, hunt) / 100) * GemasGBD.fatorDoGeloVaal(hunt, hunt.clock ?? 0);
   let final = Math.round((fisicoProtegido + doutrosTipos) * fatorFinal);
+  // (lote G-B — D6) o Chamado Imortal Vaal: você não pode morrer — o PoB: immortal_call_prevent_all_damage (todo dano impedido)
+  if (final > 0 && GemasGBD.imortal(hunt, hunt.clock ?? 0)) final = 0;
   const danoDoAcerto = final;
   // (lote 32, P046 — o Berserker: "Ganha X% da vida não reservada faltante ANTES de ser atingido … para cada Desafio")
   if (final > 0) ModsPoe.antesDeSerAcertado(estado, hunt, ficha);
@@ -1241,6 +1252,12 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   if (final > 0 && hunt.a2?.escudoGelido) {
     const tomou = GemasA2.absorverNoEscudoGelido(hunt, final, bicho, hunt.clock ?? 0);
     if (tomou > 0) { final -= tomou; eventos.push({ t: 'dmg', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, v: tomou, foe: false, de: bicho.name, golpe: 'corpo a corpo', color: '#9fe0ff' }); }
+  }
+  // (lote G-B, dono 25/10 — D5) a GUARDA (a Pele de Aço, a Carapaça Derretida e a Vaal, o Manto Arcano): X% do acerto sai do buff, até o limite, antes do Escudo de
+  // Energia e da Vida
+  if (final > 0 && hunt.poeGuarda) {
+    const tomou = GemasGBD.absorverNaGuarda(hunt, final, hunt.clock ?? 0);
+    if (tomou > 0) { final -= tomou; eventos.push({ t: 'dmg', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, v: tomou, foe: false, de: bicho.name, golpe: 'corpo a corpo', color: '#ffd27f', guarda: true }); }
   }
   // (PoE, 12/10: o Vínculo D'Alma de um companheiro em você — "30% do Dano de Acertos contra o alvo é sofrido no seu Escudo de Energia antes do
   // dele": essa parte sai do Escudo de quem vincula.)
@@ -1282,6 +1299,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   registrarGolpe(() => ({ origem: 'mob', atacante: bicho.name, alvo: personagem.nome, tipo: 'physical', danoAntesDaResistencia: Math.round(bruto), resistenciaDoAlvo: Math.min(100, ficha.protection.physical ?? 0), danoAposResistencia: protegido, armadura: armorDoPersonagem(estado), danoFinal: final, vidaRestante: Math.max(0, estado.hp - Math.max(0, final)) }));
   if (final > 0) {
     estado.hp = Math.max(0, estado.hp - final);
+    // (lote G-B — D7) o acerto com dano no gelo da Armadura Ártica Vaal: no terceiro, o gelo quebra (o buff e o Congelado saem)
+    if (GemasGBD.contarAcertoNoGelo(hunt, hunt.clock ?? 0) && GemasGBD.quebrarGelo(hunt, hunt.clock ?? 0)) Ficha.invalidar(estado);
     // O sangue no boneco — sem isto o golpe só existia no número que sobe,
     // nunca na tela (mesmo id real do OTServ que `round()` usa no bicho).
     // O efeito do golpe na tela: o do cadastro do bicho (aba Mobs → Ataques e efeitos) ou o sangue de sempre.

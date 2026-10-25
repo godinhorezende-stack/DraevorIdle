@@ -234,6 +234,18 @@ export function aoGastarManaNoEmblema(hunt, mana, agora = hunt?.clock ?? 0) {
   hunt.poeFichaMudou = true;
   return true;
 }
+/**
+ * (lote G-B, dono 25/10 — D9: o PoB, SigilOfPower `buffAllies`) o Emblema de um COMPANHEIRO de party (`huntDoDono`) em você, na área dele: o Raio por estágio (aos
+ * ataques e às magias). `pos`/`z`: onde você está. Null fora da área ou sem estágio.
+ */
+export function emblemaDoAliado(huntDoDono, pos, z = 0, agora = huntDoDono?.clock ?? 0) {
+  const e = huntDoDono?.a2?.emblema;
+  if (!e || !(e.ate > agora) || !(e.estagios > 0) || !pos || (e.z ?? 0) !== (z ?? 0) || casas(e, pos) > EMBLEMA.raio) return null;
+  const [a, b] = e.a2?.raioPorEstagio ?? [0, 0];
+  const t = {};
+  for (const p of ['added', 'spell_added']) { t[`${p}_energy_dmg_min`] = a * e.estagios; t[`${p}_energy_dmg_max`] = b * e.estagios; }
+  return t;
+}
 /** O "menos dano" do inimigo na área do Emblema no máximo de estágios (o %, ou 0) — `Reforcos.forcaDoBicho`. */
 export function menosDanoDoEmblema(hunt, bicho, agora = hunt?.clock ?? 0) {
   const e = emblema(hunt, agora);
@@ -300,8 +312,11 @@ export function cruzaAParede(hunt, de, para, agora = hunt?.clock ?? 0) {
 
 // ---------------------------------------------------------------- o Cajado Impregnado de Mana
 
-/** (lote A2) A Onda Arcana do Cajado Impregnado: o raio do anel (exceção do dono, sem fonte no PoB: 2 casas) e o crítico base dela (6%, o poedb). */
-export const ONDA_ARCANA = Object.freeze({ raio: 2, critBase: 6 });
+/**
+ * (lote A2) A Onda Arcana do Cajado Impregnado: o raio do anel (exceção do dono, sem fonte no PoB: 2 casas) e o crítico base dela (6%, o poedb); (lote G-B, dono 25/10) a
+ * Eficácia do Dano Adicionado (o PoB: damageEffectiveness 4,5 em todos os níveis — o "Eficácia do Dano Adicionado: 450%").
+ */
+export const ONDA_ARCANA = Object.freeze({ raio: 2, critBase: 6, eficacia: 4.5 });
 
 // ---------------------------------------------------------------- a Sentinela Divina
 

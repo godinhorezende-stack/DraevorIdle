@@ -81,6 +81,9 @@ export function aplicar(estado, resolvido) {
   if (!naoRecebe) {
     const minhas = new Set(aurasLigadas(hunt, agora).map(([id]) => id));
     for (const { o, longe } of companheiros(estado)) {
+      // (lote G-D, dono 25/10) o buff do CLAMOR DE REUNIÃO do companheiro (o Dano de Ataque Adicional pela arma dele — `Acoes.clamorGBD`): com você no raio do Clamor, enquanto dura
+      const reu = o.hunt.poeReuniao;
+      if (reu && reu.ate > (o.hunt.clock ?? agora) && (hunt?.z ?? 0) === (reu.z ?? 0) && longe <= (reu.raio ?? 0)) for (const [k, v] of Object.entries(reu.af ?? {})) if (Math.abs(v) > Math.abs(maior[k] ?? 0)) maior[k] = v;
       const foto = o.hunt.aliados;
       if (!foto || foto.aurasSoSuas) continue;
       if (longe <= (foto.raio ?? PADRAO.raio)) for (const [k, v] of Object.entries(foto.af ?? {})) if (Math.abs(v) > Math.abs(maior[k] ?? 0)) maior[k] = v;

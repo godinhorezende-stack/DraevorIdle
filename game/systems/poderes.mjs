@@ -37,6 +37,8 @@ import * as Reforcos from './skills/reforcos.mjs';
 import * as CargasPoe from './itens-poe/cargas.mjs';
 import * as ModsPoe from './itens-poe/mods-poe.mjs';
 import * as GemasA2 from './itens-poe/gemas-a2.mjs';
+// (lotes G-B e G-D, dono 25/10: as Guardas na magia em você — a absorção, o Imortal, o gelo da Armadura Ártica Vaal, o Resfriar de quem acerta)
+import * as GemasGBD from './itens-poe/gemas-gbd.mjs';
 import * as Protecao from './protecao.mjs';
 import * as Plantadas from './itens-poe/armas-plantadas.mjs';
 import * as Vinculos from './itens-poe/vinculos.mjs';
@@ -178,6 +180,8 @@ export function alcanca(a, bicho, alvo) {
 export function aplicarNoJogador({ estado, hunt, bicho, dano, elemento, eventos, base, ficha, temEscudo, suprimiu = false, caos = null }) {
   // Numa Safe Zone, nada fere o jogador — magia, mecânica, dano contínuo (`protecao.mjs`).
   if (Protecao.imune(hunt)) return 0;
+  // (lote G-B — D6) o Chamado Imortal Vaal: todo dano em você é impedido (o PoB: immortal_call_prevent_all_damage) — a magia, a mecânica e o dano contínuo
+  if (GemasGBD.imortal(hunt, hunt?.clock ?? 0)) return 0;
   // (PoE: "X% do dano mágico sofrido suprimido ignora o escudo de energia" — essa parte vai direto.)
   const direto = suprimiu ? Math.round((dano * Math.min(100, ModsPoe.valor(ficha, 'suprimido_ignora_escudo'))) / 100) : 0;
   dano -= direto;
@@ -252,6 +256,8 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
     ModsPoe.evento(estado, hunt, 'bloquear', ficha, { alvo: bicho, eventos, personagem });
     // ("ao Bloquear o Dano de Ataques" / "ao Bloquear Dano Mágico": o evento de cada tipo de bloqueio.)
     ModsPoe.evento(estado, hunt, 'bloquearMagia', ficha, { alvo: bicho, eventos, personagem });
+    // (o dono, 25/10) o Escudo Tempestuoso: o raio no atacante bloqueado (o gancho da caçada — `definirAoBloquearMagia`)
+    aoBloquearMagia?.({ estado, hunt, personagem, bicho, eventos, agora });
   }
 
   const efeito = a.efeito ?? EFEITO_PADRAO[a.elemento];
@@ -331,6 +337,8 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // A magia ACERTOU (passou da esquiva e do bloqueio): boss e elite podem CONGELAR, ATORDOAR ou fazer LENTIDÃO no jogador (`combate/controle.mjs`).
   if (a.min > 0 || a.max > 0) {
     const controle = Controle.tentar(hunt, bicho, ficha, hunt.clock ?? 0, Math.random, { semAfeccaoElemental: semElementais, soFisico: a.elemento === 'physical', estado, semAtordoamento: suprimiu && ModsPoe.valor(ficha, 'suprimido_sem_atordoamento') > 0 });
+    // (lote G-B) a Armadura Ártica: quem acerta você fica Resfriado
+    GemasGBD.resfriarQuemAcerta(hunt, bicho, agora);
     if (controle) eventos.push({ t: 'estado', uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, estado: controle, de: bicho.name });
   }
   // PoE: os eventos "ao Suprimir Dano Mágico" dos únicos.
@@ -346,7 +354,8 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // (lote 30, P029: + "Sofre X% menos Dano de Acertos" — a magia do monstro é um acerto)
   // (lote 32, P031: o projétil do bicho é um ATAQUE — "X% menos/mais Dano de Ataque sofrido" (o Dançarino do Vento), como no golpe corpo a corpo)
   const doAtaque = projetil ? Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100) : 1;
-  let dano = Math.round(bruto * (1 - prevenido) * menosEmArea * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * (1 + (Number(ficha.afPoe?.dano_magico_recebido_inc) || 0) / 100) * Math.max(0, 1 - (Number(ficha.afPoe?.menos_dano_acertos) || 0) / 100) * doAtaque + fixosDoGolpe);
+  // (lote G-B — D7: + a Armadura Ártica Vaal, "90% menos Dano de Acertos" — `GemasGBD.fatorDoGeloVaal`)
+  let dano = Math.round(bruto * (1 - prevenido) * menosEmArea * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * (1 + (Number(ficha.afPoe?.dano_magico_recebido_inc) || 0) / 100) * Math.max(0, 1 - (Number(ficha.afPoe?.menos_dano_acertos) || 0) / 100) * doAtaque * GemasGBD.fatorDoGeloVaal(hunt, agora) + fixosDoGolpe);
   const danoDoAcerto = dano;
   // (lote 32, P046: a vida do Desafio antes do acerto)
   if (dano > 0) ModsPoe.antesDeSerAcertado(estado, hunt, ficha);
@@ -382,6 +391,11 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
     const tomou = GemasA2.absorverNoEscudoGelido(hunt, dano, bicho, hunt.clock ?? 0);
     if (tomou > 0) { dano -= tomou; eventos.push({ t: 'dmg', ...base, v: tomou, color: '#9fe0ff' }); }
   }
+  // (lote G-B, dono 25/10 — D5) a GUARDA: X% do acerto sai do buff, até o limite, antes do Escudo de Energia e da Vida
+  if (dano > 0 && hunt.poeGuarda) {
+    const tomou = GemasGBD.absorverNaGuarda(hunt, dano, hunt.clock ?? 0);
+    if (tomou > 0) { dano -= tomou; eventos.push({ t: 'dmg', ...base, v: tomou, color: '#ffd27f', guarda: true }); }
+  }
   // (PoE, 12/10: o Vínculo D'Alma de um companheiro em você — a parte do acerto no Escudo de Energia de quem vincula.)
   dano = Vinculos.desviarParaOEscudo(estado, dano);
   // (revisão PR2, 21/10) só a parte de CAOS da magia atravessa o Escudo de Energia: a de cada tipo (`ModsPoe.caosNasPartes` — o Caos e o recebido como Caos), na
@@ -396,6 +410,8 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   if (zerar > 0 && dano > 0 && ['fire', 'ice', 'energy'].includes(a.elemento)) (bicho.estados ??= {}).resZerada = { ...(bicho.estados.resZerada?.ate > agora ? bicho.estados.resZerada : {}), [a.elemento]: true, ate: agora + zerar * 1000 };
   // (PoE, 12/10) O que os modificadores de monstro e de mapa fazem no acerto além do dano (`mobs/mecanicas.aoAcertarJogador`); a magia física
   // de projétil é um Ataque (Mutilar e Empalar são só dos Ataques).
+  // (lote G-B — D7) a magia com dano no gelo da Armadura Ártica Vaal conta; no terceiro acerto, o gelo quebra
+  if (dano > 0 && GemasGBD.contarAcertoNoGelo(hunt, agora)) GemasGBD.quebrarGelo(hunt, agora);
   if (aoAcertarJogador && bruto > 0) aoAcertarJogador(estado, hunt, personagem, bicho, { dano: danoDoAcerto, bruto: Object.values(brutas).reduce((t, x) => t + x, 0), partes, brutas, critico: critDoMob.critico, ataque: projetilDeAtaque, eventos });
   if (dano <= 0) return 0;
   if (a.elemento === 'lifedrain') bicho.hp = Math.min(bicho.maxHp, bicho.hp + dano);
@@ -420,6 +436,9 @@ export function danoDeElementoNoJogador(estado, hunt, personagem, bicho, valor, 
  * mágico dele — `cacadas`).
  */
 let magiaNoLacaio = null;
+/** (o dono, 25/10) o gancho do bloqueio de magia (o Escudo Tempestuoso — `Acoes.escudoTempestuoso`), registrado pela caçada (o ciclo de imports). */
+let aoBloquearMagia = null;
+export function definirAoBloquearMagia(fn) { aoBloquearMagia = fn; }
 export function definirMagiaNoLacaio(fn) { magiaNoLacaio = fn; }
 function lacaioMaisPerto(hunt, bicho, dDoJogador) {
   let melhor = null;
