@@ -17,8 +17,8 @@
 //     expirar e empurra quem está nas casas dela; a Flamejante não bloqueia e dá os 78–117 de Fogo ao projétil seu que a cruza (uma vez por projétil); a linha
 //     "[DNT]" da Invasão vale (confirmado pelo dono, 25/10): 10% mais dano por parede ativa da gema;
 //   - D-B4.6: a INTENSIDADE — 1 por uso, até 3; perde 1 a cada 0,5 s andando e todas no teleporte; zera na troca de instância — pelo mecanismo do Intensificar
-//     que já existe (`acoes.intensidadeAgora`/`ganharIntensidade`: o tempo desde a última conjuração conta como andando se você andou depois dela). (A ramificação
-//     da Lança — "2 feixes laterais com o ângulo do PoB" — fica para o dono: o PoB não publica o ângulo base.)
+//     que já existe (`acoes.intensidadeAgora`/`ganharIntensidade`: o tempo desde a última conjuração conta como andando se você andou depois dela). A ramificação
+//     (dono, 25/10 — o PoB não publica o ângulo base): o feixe de 7 casas e as 2 laterais a 45°, que fecham 33% por Intensidade; a da Ramificação, 67,5°.
 //
 // (Sem dependência da caçada nem dos outros módulos do PoE: só as linhas.)
 
@@ -204,8 +204,6 @@ const LINHA_PERDE_INTENSIDADE = /^Esta Magia perde (\d+) de Intensidade a cada (
 const LINHA_GANHA_INTENSIDADE = /^Esta Magia ganha Intensidade quando você Conjurá-la, máximo de (\d+)$/i;
 const LINHA_MAIS_POR_INTENSIDADE = /^([\d.]+) % mais Dano com Acertos e Afecções por Intensidade$/i;
 const LINHA_MAIS_POR_INTENSIDADE_Q = /^\+([\d.]+) % mais Dano com Acertos e Afecções por Intensidade$/i;
-const LINHA_LARGURA_E_ANGULO = /^\+[\d.]+ metros à Largura do Feixe Por Intensidade [\d.]+ ?% menos ângulo de ramificação por Intensidade$/i;
-const LINHA_ANGULO_DA_RAMIFICACAO = /^Ângulo da ramificação aumentado em [\d.]+ ?%$/i;
 /**
  * (o PoB, act_int.lua:3456 — CracklingLance: SkillType.GainsIntensity; disintegrate_damage_+%_final_per_intensity 35 + 0,5 por qualidade — Damage MORE, Multiplier
  * Intensity —; o poedb/Community Wiki: "the caster cannot gain a stack of Intensity when this spell is repeated, triggered, or cast by a totem")
@@ -219,6 +217,40 @@ export function intensidadeDasLinhas(linhas = [], daQualidade = []) {
   for (const l of linhas) { const m = LINHA_PERDE_INTENSIDADE.exec(norm(l)); if (m) { perde = Number(m[1]); perdeMs = Math.round(Number(m[2]) * 1000); } }
   return { max, perde, perdeMs, maisPorPct: (achar(linhas, LINHA_MAIS_POR_INTENSIDADE) ?? 0) + somar(daQualidade, LINHA_MAIS_POR_INTENSIDADE_Q) };
 }
+/**
+ * (dono, 25/10 — a ramificação da Lança Crepitante, a opção (a)) o FEIXE da Lança: o principal de 1 m de largura (+0,3 m por Intensidade — a Área não vale: "Neither
+ * the beam itself nor the branches have an area to modify", o Community Wiki do poedb), até 7 casas, como o da Ira Divina do A4; as 2 laterais saem do meio dele a 45°
+ * (a decisão do dono: o PoB não publica o ângulo base), 33% menos por Intensidade (multiplicado: 45° × 0,67³ ≈ 13,5° com 3), e a da Ramificação com o "+50%" (67,5°).
+ * `{ comprimento, meio, larguraM, porIntensidadeM, anguloGraus, menosPorIntensidadePct }` ou null.
+ */
+export const LANCA = Object.freeze({ comprimento: 7, meio: 3, larguraM: 1, anguloGraus: 45 });
+const LINHA_LARGURA_POR_INTENSIDADE = /^\+([\d.]+) metros à Largura do Feixe Por Intensidade ([\d.]+) ?% menos ângulo de ramificação por Intensidade$/i;
+const LINHA_ANGULO_INC = /^Ângulo da ramificação aumentado em ([\d.]+) ?%$/i;
+export function lancaDasLinhas(slug, linhas = []) {
+  if (!/^Crackling_Lance(_of_Branching)?$/.test(slug)) return null;
+  let porIntensidadeM = 0;
+  let menosPorIntensidadePct = 0;
+  for (const l of linhas) { const m = LINHA_LARGURA_POR_INTENSIDADE.exec(norm(l)); if (m) { porIntensidadeM = Number(m[1]); menosPorIntensidadePct = Number(m[2]); } }
+  return { ...LANCA, porIntensidadeM, menosPorIntensidadePct, anguloGraus: LANCA.anguloGraus * (1 + (achar(linhas, LINHA_ANGULO_INC) ?? 0) / 100) };
+}
+/** O ângulo das laterais (graus) com a Intensidade `n`: o da gema × (1 − X%)ⁿ. */
+export const anguloDaLanca = (l, n = 0) => l.anguloGraus * Math.pow(Math.max(0, 1 - l.menosPorIntensidadePct / 100), Math.max(0, n));
+/**
+ * As casas da Lança de `de` na direção de `para`: o feixe principal (sem a casa de quem usa) até `comprimento` casas e as 2 laterais, do meio dele, a ±`anguloGraus`, até
+ * a mesma distância de quem usa; a largura em casas (`largura`). Sem repetir casa.
+ */
+export function casasDaLanca(de, para, l, anguloGraus, largura = 1) {
+  const th = para && (para.x !== de.x || para.y !== de.y) ? Math.atan2(para.y - de.y, para.x - de.x) : 0;
+  const ponta = (o, a, d) => ({ x: Math.round(o.x + Math.cos(a) * d), y: Math.round(o.y + Math.sin(a) * d) });
+  const meio = ponta(de, th, l.meio);
+  const casas = new Map();
+  const por = (lista) => { for (const c of lista) if (c.x !== de.x || c.y !== de.y) casas.set(`${c.x},${c.y}`, c); };
+  por(casasDoFeixe(de, ponta(de, th, l.comprimento), largura));
+  const a = (anguloGraus * Math.PI) / 180;
+  for (const s of [1, -1]) por(casasDoFeixe(meio, ponta(meio, th + s * a, l.comprimento - l.meio), largura));
+  return [...casas.values()];
+}
+
 // ---------------------------------------------------------------- a HIDROESFERA (D-B4.4)
 
 const LINHA_PULSA = /^Pulsa a cada ([\d.]+) enquanto Congelada, Eletrizada, Enfraquecida ou Exaurida$/i;
@@ -337,11 +369,10 @@ export function ehLinhaB4(slug, l) {
   if (/^Storm_Rain(_of_the_Conduit|_of_the_Fence)?$/.test(slug) && (LINHA_RAIOS_A_CADA.test(t) || LINHA_FEIXES.test(t) || LINHA_FEIXES_Q.test(t) || LINHA_MAX_FLECHAS.test(t))) return true;
   if (/^Orb_of_Storms(_of_Squalls)?$/.test(slug) && (LINHA_ATACA_A_CADA.test(t) || LINHA_CANALIZANDO.test(t) || LINHA_RAIO_DA_DIVISAO.test(t) || LINHA_GOLPES.test(t) || LINHA_DIVIDE.test(t) || LINHA_DIVIDE_Q.test(t))) return true;
   if (/^Galvanic_Field(_of_Intensity)?$/.test(slug) && (LINHA_FEIXE_A_CADA.test(t) || LINHA_FOCO.test(t) || LINHA_MAIS_POR_ELETRIZACAO.test(t) || LINHA_RAIO_POR_ELETRIZACAO.test(t) || LINHA_BUFF_CHANCE.test(t) || LINHA_BUFF_CHANCE_Q.test(t) || LINHA_MAX_CAMPOS.test(t) || /^Não Pode aplicar Eletrizar$/i.test(t) || /^Causa [\d.]+ a [\d.]+ de Dano de Raio$/i.test(t) || /^Duração base é de [\d.]+ segundos?$/i.test(t))) return true;
+  if (/^Crackling_Lance(_of_Branching)?$/.test(slug) && (LINHA_LARGURA_POR_INTENSIDADE.test(t) || LINHA_ANGULO_INC.test(t))) return true;
   if (slug === 'Crackling_Lance' && (LINHA_PERDE_INTENSIDADE.test(t) || LINHA_GANHA_INTENSIDADE.test(t) || LINHA_MAIS_POR_INTENSIDADE.test(t) || LINHA_MAIS_POR_INTENSIDADE_Q.test(t))) return true;
   if (slug === 'Hydrosphere' && (LINHA_PULSA.test(t) || LINHA_SO_ACERTADA.test(t) || LINHA_ENCHARCADO.test(t) || LINHA_CONVERSAO_DA_ESFERA.test(t) || LINHA_FREQUENCIA_DO_PULSO.test(t))) return true;
   if (/^Frost_Wall(_of_Encroachment)?$/.test(slug) && (LINHA_COMPRIMENTO.test(t) || LINHA_SECOES.test(t) || LINHA_POR_PAREDE_ATIVA.test(t))) return true;
   if (slug === 'Flame_Wall' && (LINHA_COMPRIMENTO.test(t) || LINHA_PROJETEIS_PELA_PAREDE.test(t) || LINHA_MAX_PAREDES.test(t) || LINHA_MAX_PAREDES_Q.test(t))) return true;
   return false;
 }
-/** As linhas da ramificação da Lança Crepitante (o ângulo — pendente do dono: o PoB não publica o ângulo base). */
-export const ehLinhaDaRamificacao = (l) => LINHA_LARGURA_E_ANGULO.test(norm(l)) || LINHA_ANGULO_DA_RAMIFICACAO.test(norm(l));

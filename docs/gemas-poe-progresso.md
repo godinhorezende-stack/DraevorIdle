@@ -628,7 +628,7 @@ Teste: `testes/area-no-impacto-a3c.test.mjs`. Com o aval do dono: `itens-poe-uni
 
 ### B4 — feixes e objetos que reagem (25/10, as recomendações do plano aceitas; D-B4.3, D-B4.4 e D-B4.5 confirmadas pelo dono)
 
-- **As 13 gemas do plano.** 11 saíram de parcial; a Lança Crepitante e a da Ramificação ficam parciais só pela linha do ângulo da ramificação (abaixo). Arquivos: `gemas-b4.mjs` (os dados e as contas puras), `gemas-poe.mjs` (os leitores, o status, o buff), `acoes.mjs` (o uso, os objetos de `hunt.poeObjetos` e o `tiqueDasGemasB4`), `cacadas.mjs` (a grade dos bichos sem as Paredes de Gelo; a Intensidade zera na troca de instância), `hunt/combate.mjs` (o Campo Galvânico no golpe básico) e `objetos-do-poe.mjs` (o desenho dos objetos novos).
+- **As 13 gemas do plano saíram de parcial** (11 no primeiro commit; a Lança Crepitante e a da Ramificação no segundo, com a decisão do dono sobre a ramificação). Arquivos: `gemas-b4.mjs` (os dados e as contas puras), `gemas-poe.mjs` (os leitores, o status, o buff), `acoes.mjs` (o uso, os objetos de `hunt.poeObjetos` e o `tiqueDasGemasB4`), `cacadas.mjs` (a grade dos bichos sem as Paredes de Gelo; a Intensidade zera na troca de instância), `hunt/combate.mjs` (o Campo Galvânico no golpe básico) e `objetos-do-poe.mjs` (o desenho dos objetos novos).
 - **O feixe** (D-B4.1): o segmento de casas de Bresenham entre as duas pontas, com a largura em casas (os metros ÷ 2 × √ da Área, a fração como a chance de uma casa a mais, ao menos 1). Cada feixe acerta cada bicho uma vez por pulso (`GemasB4.casasDoFeixe`).
 - **A Chuva Tempestuosa, a do Conduíte e a da Barreira** (D-B4.2; o PoB act_dex.lua:11726): a flecha do uso fica no chão, no centro da área; os "+N projéteis" põem mais flechas em volta, a até 1 casa (a da Barreira não: "Modificadores à quantidade de Projéteis não se aplicam"). Cada flecha pulsa a cada 0,41 s (0,3 s; 0,15 s) e, em cada pulso, solta um feixe de 1,2 m até a flecha viva mais perto, sem repetir o par no mesmo instante. São 4 pulsos (6; 20), +1 (+2; +4) na qualidade 20 (`storm_rain_pulse_count`). Depois dos pulsos, a flecha some. No máximo 100 flechas (10; 2) no chão, saindo as mais velhas. A flecha sozinha não solta feixe. O feixe é um acerto de ataque (rola a precisão).
 - **O Orbe Trovejante e o das Borrascas** (D-B4.3; act_int.lua:13612): o orbe fica no local mirado, no raio de 2,8 m (3,8 m) × √ da Área; usar de novo troca o orbe. Cada golpe é um feixe num inimigo sorteado no raio, que se divide para até 3 (5) outros, +2 na qualidade 20, a até 3,5 m (3,8 m) dele. Ele golpeia:
@@ -647,6 +647,7 @@ Teste: `testes/area-no-impacto-a3c.test.mjs`. Com o aval do dono: `itens-poe-uni
 
   O golpe básico que Eletriza também cria o campo.
 - **A Lança Crepitante** (D-B4.6; act_int.lua:3456): a Intensidade usa o mecanismo do Intensificar que já existia (`intensidadeAgora`, `ganharIntensidade`), com o máximo de 3 e a perda de 1 a cada 0,5 s andando. O teleporte depois da última conjuração zera; a troca de instância também. Cada Intensidade dá 35% mais dano nos acertos e nas afecções (+0,5% por ponto de qualidade).
+  - **a ramificação (dono, 25/10 — a opção (a)):** a área do molde saiu. O feixe principal tem 1 casa de largura e 7 casas, na direção do alvo, como o da Ira Divina; a sua casa não entra. As 2 laterais saem do meio dele (a 3 casas) a 45°, até a mesma distância. A Intensidade fecha o ângulo 33% por ponto, multiplicado: 45° × 0,67³ ≈ 13,5° com 3. Na da Ramificação, 67,5° (+50%). A largura é 1 m + 0,3 m por Intensidade; a Área não vale no feixe (o Community Wiki do poedb), e o resultado é sempre 1 casa. Cada inimigo nas casas leva um acerto (`GemasB4.casasDaLanca`).
 - **A Hidroesfera** (D-B4.4, como o PoE, confirmado pelo dono; act_int.lua:8940): a esfera fica no local mirado por 8 s × a Duração, com raio de 2,3 m × √ da Área. Usar de novo a move e renova a duração. Ela pulsa:
   - ao ser posta e ao ser movida;
   - a cada 0,4 s ÷ (1 + 10% na qualidade 20) enquanto estiver Congelada, Eletrizada, Fragilizada ou Exaurida.
@@ -657,20 +658,19 @@ Teste: `testes/area-no-impacto-a3c.test.mjs`. Com o aval do dono: `itens-poe-uni
 - **As Paredes** (D-B4.5): perpendiculares à direção do alvo, centradas nele (na diagonal, a outra diagonal, como a Parede de Força). O comprimento em casas é os metros ÷ 2, com a fração como chance de uma casa a mais; × √ da Área só na Flamejante, que tem a tag Área.
   - **a Parede de Gelo** (5,6 m) e **a da Invasão** (4,6 m): as casas aparecem do centro para fora, uma a cada 0,15 s. Quem está numa casa quando ela aparece leva o golpe e é empurrado. A parede segura os bichos como terreno até expirar (4,9 s × a Duração): a grade dos bichos fica sem as casas dela (`Acoes.gradeSemParedes`). A "[DNT]" da Invasão vale, como o dono escolheu: 10% mais dano por parede ativa da gema, contando a nova;
   - **a Parede Flamejante** (5,9 m, act_int.lua:6480): não bloqueia. Quem está nela queima pelo degenerativo primário, pelo tempo exato (as seções da mesma gema não somam no bicho). O secundário (2 s × a Duração) é renovado enquanto ele está nela. No máximo 3 paredes (+2 na qualidade 20), saindo as mais velhas. O uso de projétil seu (ou do seu totem) cuja linha até o alvo cruza a parede ganha os 78–117 de Fogo adicional, × a eficácia do dano adicionado (o PoB: FireMin/FireMax com ModFlag.Projectile).
-- **As exceções sem fonte (escolhas minhas, para o dono conferir):**
+- **As exceções sem fonte (aprovadas pelo dono, 25/10):**
   1. o Orbe Trovejante comum também golpeia ao ser posto (a descrição do PoB diz isso só do das Borrascas);
   2. a flecha sozinha da Chuva Tempestuosa gasta o pulso sem feixe;
   3. o campo do inimigo morto fica onde ele morreu até o fim;
   4. o "+N projéteis" da Chuva Tempestuosa põe as flechas a mais a até 1 casa da do uso.
 - **A tradução não mudou:** nenhuma linha nova em `traducao.json`; a `VERSAO_DA_TRADUCAO` fica em 73.
-- Teste novo: `game/testes/ativas-b4.test.mjs` (16 casos, os sorteios travados).
-- Testes: os 43 arquivos afetados (`ativas-*`, `gemas-*`, `suportes-*`, `objetos-no-chao-a3b`, `precisao-a5b`, `itens-poe-gemas*`, `gemas-todas-funcionam-poe`, `eficacia-ataque-poe`, `projeteis-a3`, `guardian-poe`, `passivas-poe-suportes-sem-regra`, `zerar-arvore-lote53/72`): 644 testes, 611 passam, 33 pulados, 0 falhas; mais `moverMonstros` e `safe-zones` (30 passam). Nenhum teste existente mudou.
-- Depois: parcial 188 → 177 nas ativas (implementada e testada 315 → 326; ataques 42 → 39); 109 → 109 nos suportes.
+- Teste novo: `game/testes/ativas-b4.test.mjs` (18 casos, os sorteios travados; o primeiro caso foi refeito no segundo commit, pela decisão do dono: as 13 saem de parcial).
+- Testes: os 43 arquivos afetados (`ativas-*`, `gemas-*`, `suportes-*`, `objetos-no-chao-a3b`, `precisao-a5b`, `itens-poe-gemas*`, `gemas-todas-funcionam-poe`, `eficacia-ataque-poe`, `projeteis-a3`, `guardian-poe`, `passivas-poe-suportes-sem-regra`, `zerar-arvore-lote53/72`): 644 testes, 611 passam, 33 pulados, 0 falhas; mais `moverMonstros` e `safe-zones` (30 passam). Nenhum teste existente mudou. No segundo commit (a ramificação da Lança), com `moverMonstros` e `safe-zones` juntos: 665 testes, 631 passam, 34 pulados, 0 falhas.
+- Depois: parcial 188 → 175 nas ativas (implementada e testada 315 → 328; ataques 42 → 39); 109 → 109 nos suportes.
 - **Pendências:**
-  1. **D-B4.6, a ramificação da Lança Crepitante — decisão do dono.** O PoB não publica o ângulo base dos feixes laterais (só `disintegrate_secondary_beam_angle_+%` 50 da Ramificação). Hoje a Lança acerta a área de antes, com a Intensidade valendo. As opções: (a) o feixe principal de 1 casa até 7 casas (como a Ira Divina do A4) e 2 laterais saindo do meio dele a 45° (com 3 de Intensidade, 45° × 0,67³ ≈ 13°; na Ramificação, 67,5°); (b) o mesmo com 30° de base (≈ 9° com 3; 45° na Ramificação); (c) manter a área de hoje e marcar as duas linhas como limitação do idle. As linhas que esperam: "+0.3 metros à Largura do Feixe … 33% menos ângulo de ramificação por Intensidade" e "Ângulo da ramificação aumentado em 50%". (A largura sozinha não muda nada na grade: 1 m + 0,9 m é sempre 1 casa.)
-  2. o debuff secundário da Parede Flamejante no acerto do projétil que a cruza (está só na descrição do PoE, sem linha);
-  3. a Parede de Gelo segura só os bichos: o seu caminho ainda passa por ela;
-  4. o uso das gemas de objeto (o Orbe, a Hidroesfera, as Paredes) ainda mostra na tela a área do molde no uso, sem acerto.
+  1. o debuff secundário da Parede Flamejante no acerto do projétil que a cruza (está só na descrição do PoE, sem linha);
+  2. a Parede de Gelo segura só os bichos (aprovado pelo dono, 25/10: fica assim);
+  3. o uso das gemas de objeto (o Orbe, a Hidroesfera, as Paredes) ainda mostra na tela a área do molde no uso, sem acerto.
 
 ## Pendências conhecidas (por ordem de prioridade)
 

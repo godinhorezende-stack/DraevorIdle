@@ -4660,6 +4660,15 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       atingidos = Areas.dentro(casas, vivos);
       formaNoUso = { x, y, dir };
     }
+    // (dono, 25/10 — a ramificação da Lança Crepitante) o FEIXE da Lança no lugar da área do molde: o principal de 7 casas na direção do alvo e as 2 laterais, do meio
+    // dele, a 45° (67,5° na da Ramificação) × (1 − 33%) por Intensidade (`GemasB4.casasDaLanca`); cada inimigo nas casas leva um acerto
+    if (b4?.lanca && casas && (alvo || mira) && (!plantada || doTotem)) {
+      const l = b4.lanca;
+      const n = doTotem ? 0 : intensidade;
+      casas = GemasB4.casasDaLanca({ x, y }, mira ?? alvo, l, GemasB4.anguloDaLanca(l, n), GemasB4.larguraDoFeixe(l.larguraM + l.porIntensidadeM * n));
+      atingidos = Areas.dentro(casas, vivos);
+      formaNoUso = { x, y, dir: null };
+    }
     // (lote C1, dono 20/10 — D1.4) o Castigo do Julgamento Divino: o raio cai nos N inimigos mais perto de você, a até X m (+ a qualidade), que o golpe ainda não
     // pegou ("Cada alvo só pode ser acertado uma vez por esta habilidade") — um acerto cada, com o "mais Dano em Área" do raio (`raiosDoCastigo`, em `atacar`)
     if (c1?.raioDoCastigo && !plantada && !doTotem) {

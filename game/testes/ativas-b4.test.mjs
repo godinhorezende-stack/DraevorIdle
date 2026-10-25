@@ -86,13 +86,11 @@ const LOTE = ['Storm_Rain', 'Storm_Rain_of_the_Conduit', 'Storm_Rain_of_the_Fenc
 
 // ---------------------------------------------------------------- o status
 
-test('B4: as 11 gemas do lote saem de parcial; a Lança Crepitante e a da Ramificação ficam só com a linha do ângulo da ramificação (pendente do dono)', { skip: SEM }, () => {
-  for (const s of LOTE) {
+test('B4: as 13 gemas do lote saem de parcial (a ramificação da Lança Crepitante pela decisão do dono, 25/10)', { skip: SEM }, () => {
+  for (const s of [...LOTE, 'Crackling_Lance', 'Crackling_Lance_of_Branching']) {
     const r = G.REGISTRO.get(s);
     assert.deepEqual([s, r.statusNoJogo, r.motivosNoJogo], [s, 'funciona', []]);
   }
-  assert.deepEqual(G.REGISTRO.get('Crackling_Lance').motivosNoJogo, ['efeito não simulado: +0.3 metros à Largura do Feixe Por Intensidade 33 % menos ângulo de ramificação por Intensidade']);
-  assert.deepEqual(G.REGISTRO.get('Crackling_Lance_of_Branching').motivosNoJogo, ['efeito não simulado: Ângulo da ramificação aumentado em 50 %']);
   // (o Campo Galvânico é buff no PoE — SkillType.Buff: o uso dá o buff; o dano é o do campo)
   for (const s of ['Galvanic_Field', 'Galvanic_Field_of_Intensity']) assert.equal(G.REGISTRO.get(s).arquetipo, 'guarda', s);
 });
@@ -304,6 +302,33 @@ test('B4 no jogo: a Lança Crepitante — +1 de Intensidade por uso, até 3; 35%
   assert.ok(perto(g1 / g0, 1.35, 0.01) && perto(g2 / g0, 1.7, 0.01) && perto(g3 / g0, 2.05, 0.01) && perto(g4 / g0, 2.05, 0.01), [g0, g1, g2, g3, g4].join(' '));
   m.e.hunt.teleportes = (m.e.hunt.teleportes ?? 0) + 1;
   assert.ok(perto(golpe() / g0, 1, 0.01), 'o teleporte zerou');
+});
+
+test('B4: o feixe da Lança Crepitante (dono, 25/10) — 7 casas, as laterais do meio a 45°, 33% menos por Intensidade (≈ 13,5° com 3); a da Ramificação, 67,5°', { skip: SEM }, () => {
+  const l = G.b4DaGema('Crackling_Lance', 20, 0).lanca;
+  assert.deepEqual(l, { comprimento: 7, meio: 3, larguraM: 1, anguloGraus: 45, porIntensidadeM: 0.3, menosPorIntensidadePct: 33 });
+  assert.ok(perto(B4.anguloDaLanca(l, 3), 45 * 0.67 ** 3));
+  assert.equal(B4.anguloDaLanca(G.b4DaGema('Crackling_Lance_of_Branching', 20, 0).lanca, 0), 67.5);
+  // sem Intensidade, para a direita: o principal (1..7, 0) e as laterais de (3, 0) a 45° — até (6, ±3)
+  const cs = new Set(B4.casasDaLanca({ x: 0, y: 0 }, { x: 5, y: 0 }, l, 45).map((c) => `${c.x},${c.y}`));
+  for (let i = 1; i <= 7; i++) assert.ok(cs.has(`${i},0`), `${i},0`);
+  for (const k of ['4,1', '5,2', '6,3', '4,-1', '5,-2', '6,-3']) assert.ok(cs.has(k), k);
+  assert.ok(!cs.has('0,0') && !cs.has('8,0') && !cs.has('2,2'));
+  // com 3 de Intensidade (≈ 13,5°), as laterais quase no principal: (7, ±1) no fim
+  const c3 = new Set(B4.casasDaLanca({ x: 0, y: 0 }, { x: 5, y: 0 }, l, B4.anguloDaLanca(l, 3)).map((c) => `${c.x},${c.y}`));
+  assert.ok(c3.has('7,1') && c3.has('7,-1') && !c3.has('6,3'));
+});
+
+test('B4 no jogo: a Lança Crepitante acerta no feixe e nas laterais (a 45°), não atrás de você nem fora do ângulo', { skip: SEM }, async () => {
+  const m = await montar('Crackling_Lance', { dx: 6 });
+  const lateral = vizinho(m, 6, 3, 0);
+  const atras = vizinho(m, -2, 0, 1);
+  const fora = vizinho(m, 2, 3, 2);
+  const r = usar(m.e, m.b);
+  assert.ok(r.ok, r.erro);
+  assert.equal(golpesEm(r.eventos, m.b).length, 1, 'o principal');
+  assert.equal(golpesEm(r.eventos, lateral).length, 1, 'a lateral');
+  assert.equal(golpesEm(r.eventos, atras).length + golpesEm(r.eventos, fora).length, 0);
 });
 
 // ---------------------------------------------------------------- a Hidroesfera (D-B4.4)

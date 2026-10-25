@@ -8,10 +8,10 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 326 |
+| implementada e testada | 328 |
 | implementada, sem teste próprio | 46 |
 | limitação do modelo idle | 12 |
-| parcial | 177 |
+| parcial | 175 |
 | não se aplica | 1 |
 
 Só os ataques:
@@ -34,12 +34,12 @@ Só os ataques:
 ### Variantes
 
 - Vaal (52): implementada e testada 28 · parcial 17 · implementada, sem teste próprio 6 · limitação do modelo idle 1
-- Alternativas (209): implementada e testada 115 · implementada, sem teste próprio 24 · parcial 63 · limitação do modelo idle 7
+- Alternativas (209): implementada e testada 116 · implementada, sem teste próprio 24 · parcial 62 · limitação do modelo idle 7
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 507 linhas distintas (77 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 505 linhas distintas (77 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
 - Testes que citam a gema: 402/562 ativas, 119/262 suportes.
@@ -149,7 +149,6 @@ Só os ataques:
 | 1 | +# % mais Dano em Área |
 | 1 | +# ao número máximo de Zumbis |
 | 1 | +# de Relâmpagos Concentrados máximos |
-| 1 | +# metros à Largura do Feixe Por Intensidade # % menos ângulo de ramificação por Intensidade |
 | 1 | +# metros ao Raio da Explosão por Flecha Explosiva no Alvo, máximo de +# metros |
 | 1 | +# metros ao raio do Pulso por Energia |
 | 1 | +# metros para o alcance do golpe corpo a corpo do lacaio |
@@ -175,7 +174,6 @@ Só os ataques:
 | 1 | Afecções Elementais infligidas por Habilidades Suportadas se espalham para outros inimigos dentro de # metros |
 | 1 | Alcance do Posicionamento de Totens aumentado em # % |
 | 1 | Alvos sofrem #% mais Dano do Sangramento por Rompimento das Habilidades Suportadas neles |
-| 1 | Ângulo da ramificação aumentado em # % |
 | 1 | Anima até # Armas |
 | 1 | Ao atingir # de Gula, perde toda a Gula e ganha Regurgitação por # segundos |
 | 1 | Aplica feixes aos +# Inimigos próximos |
@@ -670,10 +668,6 @@ Só os ataques:
   - sem dano direto: nenhum efeito no combate
 - **Convocation** (Convocação) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Crackling_Lance** (Lança Crepitante) — parcial
-  - efeito não simulado: +0.3 metros à Largura do Feixe Por Intensidade 33 % menos ângulo de ramificação por Intensidade
-- **Crackling_Lance_of_Branching** (Lança Crepitante da Ramificação) — parcial
-  - efeito não simulado: Ângulo da ramificação aumentado em 50 %
 - **Dark_Bargain** (Barganha Sombria) — parcial
   - efeito não simulado: Sacrifica 12 % da Vida do Esqueleto para causar a mesma quantidade de Dano de Caos
   - efeito não simulado: Sacrifica +2 % da Vida do Esqueleto para causar a mesma quantidade de Dano de Caos

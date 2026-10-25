@@ -2,9 +2,9 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 326,
+   "implementada e testada": 328,
    "implementada, sem teste próprio": 46,
-   "parcial": 177,
+   "parcial": 175,
    "limitação do modelo idle": 12,
    "não se aplica": 1
   },
@@ -31,9 +31,9 @@
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 115,
+    "implementada e testada": 116,
     "implementada, sem teste próprio": 24,
-    "parcial": 63,
+    "parcial": 62,
     "limitação do modelo idle": 7
    }
   },
@@ -45,7 +45,7 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 507,
+   "linhasDistintas": 505,
    "emDuasOuMais": 77
   },
   "imagens": {
@@ -6939,10 +6939,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: +0.3 metros à Largura do Feixe Por Intensidade 33 % menos ângulo de ramificação por Intensidade"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6954,10 +6952,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Ângulo da ramificação aumentado em 50 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -11308,12 +11304,6 @@
    ]
   },
   {
-   "linha": "+# metros à Largura do Feixe Por Intensidade # % menos ângulo de ramificação por Intensidade",
-   "gemas": [
-    "Crackling_Lance"
-   ]
-  },
-  {
    "linha": "+# metros ao Raio da Explosão por Flecha Explosiva no Alvo, máximo de +# metros",
    "gemas": [
     "Explosive_Arrow"
@@ -11461,12 +11451,6 @@
    "linha": "Alvos sofrem #% mais Dano do Sangramento por Rompimento das Habilidades Suportadas neles",
    "gemas": [
     "Rupture_Support"
-   ]
-  },
-  {
-   "linha": "Ângulo da ramificação aumentado em # %",
-   "gemas": [
-    "Crackling_Lance_of_Branching"
    ]
   },
   {

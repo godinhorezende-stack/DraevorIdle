@@ -1181,13 +1181,14 @@ export const b3DaGema = (slug, nivel = 1, qualidade = 0) => comCache(B3, `b3|${s
 });
 /*
  * ---- (lote B4, dono 25/10) os leitores no nível do lote B4 (`itens-poe/gemas-b4.mjs`) ----
- * `{ intensidade, campo }`: a Intensidade da Lança Crepitante (`GemasB4.intensidadeDasLinhas`) e o Campo Galvânico (`GemasB4.campoGalvanicoDasLinhas`); o resto, null.
+ * `{ intensidade, campo, lanca }`: a Intensidade da Lança Crepitante (`GemasB4.intensidadeDasLinhas`), o Campo Galvânico (`GemasB4.campoGalvanicoDasLinhas`) e o feixe
+ * da Lança (`GemasB4.lancaDasLinhas`); o resto, null.
  */
 const B4 = new Map();
 export const b4DaGema = (slug, nivel = 1, qualidade = 0) => comCache(B4, `b4|${slug}@${nivel | 0}@${qualidade | 0}`, () => {
   const [linhas, daQ] = linhasA1b(slug, nivel, qualidade);
   const st = compilada(slug, nivel, qualidade)?.stats ?? {};
-  return { intensidade: GemasB4.intensidadeDasLinhas(linhas, daQ), campo: GemasB4.campoGalvanicoDasLinhas(slug, linhas, daQ, st) };
+  return { intensidade: GemasB4.intensidadeDasLinhas(linhas, daQ), campo: GemasB4.campoGalvanicoDasLinhas(slug, linhas, daQ, st), lanca: GemasB4.lancaDasLinhas(slug, linhas) };
 });
 /**
  * (lote B3, dono 21/10) O ÚLTIMO número da célula da coluna do poedb cujo cabeçalho casa com `re`, no nível: a célula "2, 1.6" da Retribuição Divina e a "1, 2" da
