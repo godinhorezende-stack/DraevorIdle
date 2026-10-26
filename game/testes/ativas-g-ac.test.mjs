@@ -84,13 +84,11 @@ const bicho = (extra = {}) => ({ uid: 'm1', x: 0, y: 0, hp: 1000, maxHp: 1000, e
 // ---------------------------------------------------------------- o status
 
 test('G-A/G-C: as gemas do lote saem de parcial (as linhas do PoE têm leitor)', { skip: SEM }, () => {
-  for (const s of ['Warlords_Mark', 'Assassins_Mark', 'Poachers_Mark', 'Despair', 'Enfeeble', 'Intimidating_Cry', 'Ancestral_Cry', 'Armageddon_Brand_of_Volatility', 'Storm_Brand_of_Indecision',
+  for (const s of ['Warlords_Mark', 'Assassins_Mark', 'Poachers_Mark', 'Despair', 'Enfeeble', 'Intimidating_Cry', 'Ancestral_Cry', 'Seismic_Cry', 'Armageddon_Brand_of_Volatility', 'Storm_Brand_of_Indecision',
     'Temporal_Chains', 'Punishment', 'Snipers_Mark', 'Alchemists_Mark', 'Hexblast', 'Hexblast_of_Contradiction', 'Hexblast_of_Havoc', 'Bane', 'Bane_of_Condemnation']) {
     const r = G.REGISTRO.get(s);
     assert.equal(r.statusNoJogo, 'funciona', `${s}: ${JSON.stringify(r.motivosNoJogo)}`);
   }
-  // o Sísmico fica só com o empurrão da "pequena Área" (o raio é decisão do dono)
-  assert.deepEqual(G.REGISTRO.get('Seismic_Cry').motivosNoJogo.map((m) => m.replace(/^efeito não simulado: /, '')), ['200 % de aumento da Distância do Empurrão', 'Empurra e Interrompe Inimigos em uma pequena Área']);
   // a qualidade das guardas ("Duração do Efeito de Habilidades aumentada", "Efeito do Buff aumentado") saiu dos motivos
   for (const s of ['Molten_Shell', 'Vaal_Molten_Shell', 'Vaal_Immortal_Call', 'Old_Arctic_Armour', 'Vaal_Arctic_Armour', 'Arcane_Cloak']) {
     assert.ok(!G.REGISTRO.get(s).motivosNoJogo.some((m) => /Duração do Efeito de Habilidades aumentada|Efeito do Buff aumentado/.test(m)), s);
@@ -366,4 +364,28 @@ test('G-A: a guarda com a qualidade dura 20% mais no uso', { skip: SEM }, async 
   const d0 = await dur(0);
   const d20 = await dur(20);
   assert.ok(perto(d20 / d0, 1.2, 0.01), `${d20} / ${d0}`);
+});
+
+// ---------------------------------------------------------------- o empurrão do Sísmico (dono, 26/10)
+
+test('G-A: o Sísmico — a "pequena Área" é 1 casa do alvo; 3 casas de empurrão (+200%)', { skip: SEM }, () => {
+  assert.deepEqual(G.empurraoDoClamorDaGema('Seismic_Cry', 20), { raio: 1, casas: 3 });
+  assert.equal(G.empurraoDoClamorDaGema('Ancestral_Cry', 20), null);
+});
+
+test('G-A: o Sísmico no uso — empurra os inimigos a até 1 casa do alvo 3 casas para longe e reinicia o golpe deles; o de 2 casas não', { skip: SEM }, async () => {
+  const { e, b, resto } = await montar('Seismic_Cry', { dx: 2 });
+  const perto1 = outro(e, resto[0], 2, 1);
+  const longe = outro(e, resto[1], 2, 3);
+  for (const m of [b, perto1, longe]) m.proximoGolpe = 0;
+  const antes = { b: [b.x, b.y], p: [perto1.x, perto1.y], l: [longe.x, longe.y] };
+  const agora = e.hunt.clock;
+  const r = Acoes.empurraoDoClamor(e.hunt, Acoes.POR_ID_PUBLICO(G.doSlug('Seismic_Cry').acao), { nivel: 20 }, b, agora, []);
+  assert.equal(r, 2);
+  // o alvo e o vizinho vão 3 casas para longe de você (o alvo na reta, o vizinho na diagonal)
+  assert.deepEqual([b.x, b.y], [antes.b[0] + 3, antes.b[1]]);
+  assert.deepEqual([perto1.x, perto1.y], [antes.p[0] + 3, antes.p[1] + 3]);
+  assert.deepEqual([longe.x, longe.y], antes.l);
+  assert.ok(b.proximoGolpe > agora && perto1.proximoGolpe > agora);
+  assert.equal(longe.proximoGolpe, 0);
 });

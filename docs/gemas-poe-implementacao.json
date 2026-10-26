@@ -2,9 +2,9 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 370,
+   "implementada e testada": 371,
    "implementada, sem teste próprio": 46,
-   "parcial": 133,
+   "parcial": 132,
    "limitação do modelo idle": 12,
    "não se aplica": 1
   },
@@ -45,7 +45,7 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 415,
+   "linhasDistintas": 413,
    "emDuasOuMais": 56
   },
   "imagens": {
@@ -1091,11 +1091,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "clamor",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 200 % de aumento da Distância do Empurrão",
-    "efeito não simulado: Empurra e Interrompe Inimigos em uma pequena Área"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -10840,12 +10837,6 @@
    ]
   },
   {
-   "linha": "# % de aumento da Distância do Empurrão",
-   "gemas": [
-    "Seismic_Cry"
-   ]
-  },
-  {
    "linha": "# % de chance de convocar um Lacaio extra",
    "gemas": [
     "Summon_Raging_Spirit"
@@ -11581,12 +11572,6 @@
    "linha": "Empala Inimigos ao Acertar",
    "gemas": [
     "Bear_Trap_of_Skewers"
-   ]
-  },
-  {
-   "linha": "Empurra e Interrompe Inimigos em uma pequena Área",
-   "gemas": [
-    "Seismic_Cry"
    ]
   },
   {

@@ -318,6 +318,19 @@ export function impeleEste(impelidos, tags = []) {
 const LINHA_IMPELE = /^Impele (?:os próximos|o próximo) \d+ Ataques? de .+ que você executar$/i;
 const LINHA_ALVOS_DO_IMPELIDO = /^Golpes Impelidos focam em (\d+) Inimigos adicionais$/i;
 const LINHA_INTIMIDA = /^Inimigos Provocados por este Clamor são Intimidados$/i;
+const LINHA_EMPURRA = /^Empurra e Interrompe Inimigos em uma pequena Área$/i;
+const LINHA_DISTANCIA_EMPURRAO = /^([\d.]+) % de aumento da Distância do Empurrão$/i;
+/**
+ * (o Sísmico — dono, 26/10) "Empurra e Interrompe Inimigos em uma pequena Área": os inimigos a até `raio` casa do alvo do uso (a "pequena Área" = 1 casa — decisão do
+ * dono), empurrados 1 casa × (1 + o "% de aumento da Distância do Empurrão") — 3 casas com os +200% — e interrompidos (o próximo golpe deles reinicia). `{ raio, casas }`
+ * ou null.
+ */
+export const EMPURRAO_DO_CLAMOR = Object.freeze({ raio: 1, casasBase: 1 });
+export function empurraoDoClamorDasLinhas(linhas = []) {
+  if (!linhas.some((l) => LINHA_EMPURRA.test(norm(l)))) return null;
+  const inc = achar(linhas, LINHA_DISTANCIA_EMPURRAO) ?? 0;
+  return { raio: EMPURRAO_DO_CLAMOR.raio, casas: Math.max(1, Math.round(EMPURRAO_DO_CLAMOR.casasBase * (1 + inc / 100))) };
+}
 /** (o Ancestral) Os inimigos a mais dos Golpes Impelidos por ele. */
 export const alvosDoImpelidoDasLinhas = (linhas = []) => achar(linhas, LINHA_ALVOS_DO_IMPELIDO) ?? 0;
 /** (o Intimidador) Os provocados por este Clamor ficam Intimidados. */
@@ -343,7 +356,7 @@ export const qualidadeDoBuff = (daQualidade = []) => ({ duracaoIncPct: somar(daQ
 export function ehLinhaGAC(slug, l, arquetipo = null) {
   const t = norm(l);
   if (arquetipo === 'maldicao' && LINHAS_DA_MALDICAO.some((re) => re.test(t))) return true;
-  if (arquetipo === 'clamor' && (LINHA_IMPELE.test(t) || LINHA_ALVOS_DO_IMPELIDO.test(t) || LINHA_INTIMIDA.test(t))) return true;
+  if (arquetipo === 'clamor' && (LINHA_IMPELE.test(t) || LINHA_ALVOS_DO_IMPELIDO.test(t) || LINHA_INTIMIDA.test(t) || LINHA_EMPURRA.test(t) || LINHA_DISTANCIA_EMPURRAO.test(t))) return true;
   if (arquetipo === 'marca' && (LINHA_NAO_CONVOCAVEL.test(t) || (slug === 'Storm_Brand_of_Indecision' && LINHA_FEIXE_AO_VINCULADO.test(t)))) return true;
   if (arquetipo === 'guarda' && (LINHA_DURACAO_DO_EFEITO_Q.test(t) || LINHA_EFEITO_DO_BUFF_Q.test(t))) return true;
   if (ehDetonacao(slug) && [LINHA_HEX_ACERTO, LINHA_HEX_AFECCAO, LINHA_HEX_MENOR, LINHA_HEX_MAIOR, LINHA_HEX_TODOS, LINHA_HEX_REMOVER].some((re) => re.test(t))) return true;

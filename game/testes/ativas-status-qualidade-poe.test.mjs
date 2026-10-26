@@ -77,7 +77,9 @@ test('G18b: o raio da qualidade SOMA no do nível (a Bola de Fogo 1,8 → 2,1 m 
 });
 
 test('G18b: o status com a qualidade 20 lista as linhas da qualidade que o jogo não faz; as feitas (o Vínculo, as Marcas) seguem "funciona"', { skip: SEM }, () => {
-  assert.ok(G.doSlug('Enfeeble').motivosNoJogo.some((m) => /Duração de Maldições aumentada em 20 %/.test(m)), G.doSlug('Enfeeble').motivosNoJogo.join(' | '));
+  // (aval do dono, 26/10 — lote G-A: o "Duração de Maldições aumentada em 20 %" da qualidade do Enfraquecer passou a valer — a duração da maldição no monstro,
+  // 11,8 s × 1,2 = 14,16 s —, e o Enfraquecer ficou completo; antes a linha estava aqui como exemplo de qualidade não feita)
+  assert.equal(G.doSlug('Enfeeble').statusNoJogo, 'funciona', G.doSlug('Enfeeble').motivosNoJogo.join(' | '));
   for (const s of ['Flame_Link', 'Armageddon_Brand', 'Penance_Brand', 'Burning_Arrow', 'Double_Strike', 'Fireball']) assert.equal(G.doSlug(s).statusNoJogo, 'funciona', `${s}: ${G.doSlug(s).motivosNoJogo.join(' | ')}`);
   // (a qualidade das Marcas — "Causa +10 % mais Dano com Acertos contra o Inimigo Vinculado" — soma; a do Vínculo — "+1,5 segundos à duração base")
   assert.equal(G.contraOVinculado('Armageddon_Brand', 20, 20), G.contraOVinculado('Armageddon_Brand', 20, 0) + 10);

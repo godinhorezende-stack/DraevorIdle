@@ -8,10 +8,10 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 370 |
+| implementada e testada | 371 |
 | implementada, sem teste próprio | 46 |
 | limitação do modelo idle | 12 |
-| parcial | 133 |
+| parcial | 132 |
 | não se aplica | 1 |
 
 Só os ataques:
@@ -39,7 +39,7 @@ Só os ataques:
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 415 linhas distintas (56 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 413 linhas distintas (56 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
 - Testes que citam a gema: 432/562 ativas, 119/262 suportes.
@@ -106,7 +106,6 @@ Só os ataques:
 | 2 | Velocidade de Movimento dos Lacaios está no Máximo |
 | 2 | Você não pode Conjurar Magias Maldição Suportadas |
 | 1 | [Empowered\|Fortalece] a próxima magia vaal danosa que você conjurar |
-| 1 | # % de aumento da Distância do Empurrão |
 | 1 | # % de chance de convocar um Lacaio extra |
 | 1 | # % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único |
 | 1 | # % do Dano de Acertos é sofrido no Buff antes da sua Vida ou Escudo de Energia Buff pode sofrer Dano igual a Mana Gasta pelo efeito desta Habilidade |
@@ -230,7 +229,6 @@ Só os ataques:
 | 1 | Efeito das Marcas de Habilidades Suportadas reduzido em #% |
 | 1 | Efeito em Área de Habilidades Maldição Suportadas reduzido em #% |
 | 1 | Empala Inimigos ao Acertar |
-| 1 | Empurra e Interrompe Inimigos em uma pequena Área |
 | 1 | Enquanto na Postura da Areia, Buff faz com que você sofra até # % menos Dano dos Inimigos na Aura |
 | 1 | Enquanto na Postura de Sangue, Aura faz com que os Inimigos sofram até # % mais Dano Físico dos Acertos |
 | 1 | Enquanto você tiver Regurgitação, as magias reforçadas disparam projéteis em círculo Enquanto você tiver Regurgitação, as magias reforçadas disparam # projéteis adicionais |
@@ -718,9 +716,6 @@ Só os ataques:
   - efeito não simulado: Causa 70 % da sua Mana Máxima como Dano de Fogo Base por segundo
   - efeito não simulado: Você Queima por 90 % da sua Mana Máxima por segundo como Dano de Fogo
   - efeito não simulado: Concede 24 % mais velocidade de conjuração
-- **Seismic_Cry** (Clamor Sísmico) — parcial
-  - efeito não simulado: 200 % de aumento da Distância do Empurrão
-  - efeito não simulado: Empurra e Interrompe Inimigos em uma pequena Área
 - **Seismic_Trap** (Armadilha Císmica) — parcial
   - efeito não simulado: Libera ondas a cada 0.9 segundos
   - efeito não simulado: Libera 5 onda

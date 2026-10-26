@@ -489,6 +489,8 @@ export function gatilhoDeRetaliacao(slug) {
 export const impeleSoDaGema = (slug) => GemasGAC.IMPELE_SO[slug] ?? null;
 /** (lote G-A) Os inimigos a mais dos Golpes Impelidos pelo Clamor (o Ancestral: "Golpes Impelidos focam em 2 Inimigos adicionais"). */
 export const alvosDoImpelidoDaGema = (slug, nivel = 1) => GemasGAC.alvosDoImpelidoDasLinhas(textosDaGema(slug, nivel).linhas);
+/** (lote G-A, dono 26/10) O empurrão e a interrupção do Clamor Sísmico (`GemasGAC.empurraoDoClamorDasLinhas`), ou null. */
+export const empurraoDoClamorDaGema = (slug, nivel = 1) => GemasGAC.empurraoDoClamorDasLinhas(textosDaGema(slug, nivel).linhas);
 /** (lote G-C, D11) A Detonação de Feitiços no nível (`GemasGAC.detonacaoDaGema`), ou null. */
 export const detonacaoNoNivel = (slug, nivel = 1, qualidade = 0) => (GemasGAC.ehDetonacao(slug) ? GemasGAC.detonacaoDaGema(slug, textosDaGema(slug, nivel).linhas, qualidade) : null);
 /** (lote G-C, D13) A Ruína no nível (`GemasGAC.ruinaDaGema`), ou null. */

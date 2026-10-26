@@ -5410,6 +5410,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     if (buff.tipo === 'desafio') Reforcos.provocar(hunt, buff, distanciaChebyshev);
     // (lote 46) o raio do Clamor: o da gema em casas × √ da "Área de Efeito aumentada/mais" (a geral e a dos Clamores — `area_inc@clamor`)
     if (doPoe?.efeitos.some((e) => e.efeito === 'provocar')) Reforcos.provocar(hunt, { efeitos: doPoe.efeitos.map((e) => (e.efeito === 'provocar' ? { ...e, raio: raioDoClamor(estado, entry, e.raio) } : e)), dur: duracaoDoClamor }, distanciaChebyshev);
+    // (lote G-A, dono 26/10) o Clamor Sísmico: "Empurra e Interrompe Inimigos em uma pequena Área" — os inimigos a até 1 casa do alvo, empurrados (3 casas com os +200%)
+    // e interrompidos (`empurraoDoClamor`)
+    if (buff.tipo === 'poe-clamor' && entry.poeGema && itensPoeLigado()) empurraoDoClamor(hunt, entry, efeitoDaGema, alvo, agora, eventos);
     // (lote A2, dono 19/10) a Torre Óssea no Clamor suportado: "Clamores reforçados ativam Tomar a Carne ao usar" — as torres em volta de você
     if (efeitoDaGema?.torresOsseas > 0 && buff.tipo === 'poe-clamor' && itensPoeLigado()) eventos.push(...torresOsseas(hunt, entry, efeitoDaGema, agora));
     // (lote 72, a Palavra Sagrada) "Seus clamores infligem Chama Santificada": nos inimigos no raio do Clamor.
@@ -9038,6 +9041,27 @@ function soloDoChicoteArdente(estado, hunt, entry, ef, solo, bicho, agora, dono)
   const durMs = Math.round((GemasPoe.compilada(entry.poeGema.slug, ef?.nivel ?? 1, ef?.qualidade ?? 0)?.stats?.duracao ?? 4) * 1000 * fatorDeDuracao(estado, entry, ef));
   porObjeto(hunt, { acao: entry.id, slug: entry.poeGema.slug, el: 'fire', dono, tipo: 'chao', mov: 'parado', x: bicho.x, y: bicho.y, z: bicho.z ?? hunt.z ?? 0, efeito: 'solo', raio: solo.raio, partes: [{ tipo: GemasPoe.DEGEN_DO_ELEMENTO.fire, elemento: 'fire', porSegundo: (dps * solo.pct) / 100 }], ultimo: agora, ate: agora + durMs, max: 10 }, agora);
   return true;
+}
+/**
+ * (lote G-A, dono 26/10) O EMPURRÃO DO CLAMOR SÍSMICO: os inimigos vivos a até 1 casa do alvo do uso (sem alvo, de você) são empurrados para longe de você as casas da
+ * gema, uma a uma (`ModsPoe.empurrar` — a casa tem de ser andável e livre; o chefe não se move), e interrompidos: o próximo golpe deles começa de novo agora (o intervalo
+ * do golpe deles — `AtributosDoMob.intervaloDoGolpe`). Devolve quantos pegou.
+ */
+export function empurraoDoClamor(hunt, entry, efeitoDaGema, alvo, agora = hunt?.clock ?? 0, eventos = []) {
+  const e = GemasPoe.empurraoDoClamorDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1);
+  if (!e || !hunt?.pos) return 0;
+  const c = alvo && alvo.hp > 0 ? alvo : hunt.pos;
+  const centro = { x: c.x, y: c.y };
+  // (quem está na área ANTES de alguém se mover; os mais longe de você primeiro — o da frente não trava o de trás)
+  const naArea = (hunt.monstros ?? []).filter((m) => m.hp > 0 && !m.dummy && (m.z ?? hunt.z ?? 0) === (hunt.z ?? 0) && distanciaChebyshev(centro, m) <= e.raio).sort((a, b) => distanciaChebyshev(hunt.pos, b) - distanciaChebyshev(hunt.pos, a));
+  let n = 0;
+  for (const m of naArea) {
+    for (let k = 0; k < e.casas && ModsPoe.empurrar(hunt, m); k++);
+    m.proximoGolpe = agora + AtributosDoMob.intervaloDoGolpe(m);
+    eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'empurrado' });
+    n++;
+  }
+  return n;
 }
 /**
  * (lote G-C, dono 25/10 — D12) A MARCA DO ALQUIMISTA: o acerto que Incendeia o marcado cria o Solo Ardente sob ele com X% do dano por segundo do Incêndio mais forte nele;

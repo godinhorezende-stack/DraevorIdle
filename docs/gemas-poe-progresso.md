@@ -734,7 +734,7 @@ O código mora em `game/systems/itens-poe/gemas-gac.mjs` (os dados e as contas p
   - "Duração do Efeito de Habilidades aumentada em 20%" (a Concha Derretida e a Vaal, o Chamado Imortal Vaal, as Armaduras Árticas): a duração do buff, somada aos outros "aumentados";
   - "Efeito do Buff aumentado em 20%" (o Manto Arcano): o efeito dos atributos do buff (`GemasPoe.adds`, o `efeitoBuffQualPct` do buff). A absorção dele é do G-B.
 - **Já feitos antes:** o Sangue e Areia e a Postura padrão (D1, no C3). A coluna da Vaal_Righteous_Fire (0.7) já diz 19% no nível 20, então nada mudou.
-- **Pendente (decisão do dono):** o empurrão e a interrupção do Sísmico ("Empurra e Interrompe Inimigos em uma pequena Área" e os "+200% de Distância"). A D3 dá a distância (1 casa, ×3) e a interrupção (o `proximoGolpe`), mas não diz o tamanho da "pequena Área". O PoE não publica esse raio.
+- **O empurrão do Sísmico (dono, 26/10):** a "pequena Área" são os inimigos a até 1 casa do alvo do uso (sem alvo, de você). Eles são empurrados para longe de você 1 casa × (1 + 200%) = 3 casas, na casa andável e livre (o chefe não se move), e interrompidos: o próximo golpe deles recomeça agora (`Acoes.empurraoDoClamor`). O Sísmico saiu de parcial.
 
 ### G-C — as maldições que mudam o alvo e os Feitiços (25/10, as recomendações do plano "ativas 3" aceitas)
 
@@ -765,9 +765,9 @@ O código mora em `game/systems/itens-poe/gemas-gac.mjs` (os dados e as contas p
   - a duração-base é a do PoB: 2 s (a da Condenação, 1 s +0,01 s por qualidade). O raio da Condenação é 1,2 m;
   - quantas contam: as ligadas, até o limite de maldições.
 - **A tradução não mudou:** nenhuma linha nova em `traducao.json`; a `VERSAO_DA_TRADUCAO` fica em 73.
-- Teste novo: `game/testes/ativas-g-ac.test.mjs` (20 casos, os sorteios travados).
-- Testes: os 127 arquivos afetados (`ativas-*`, `gemas-*`, `suportes-*`, os de maldição/clamor/Impelir, `precisao-a5b`, `itens-poe-gemas*`, `gemas-todas-funcionam-poe`, `eficacia-ataque-poe`, `runas-vinculadas-poe` e os de frascos, projéteis e redução física): 1.461 testes, 1.391 passam, 1 falha, 69 pulados (com a correção do `naoConvocavel` em `runas-vinculadas-poe`, que quebrava um `deepEqual` e foi refeita no código, não no teste). O teste existente quebra por uma regra legítima do PoE e ficou para o aval do dono, sem edição: `ativas-status-qualidade-poe.test.mjs:80`. Ele esperava o "Duração de Maldições aumentada em 20 %" do Enfraquecer nos motivos; agora a linha é feita, e o Enfraquecer na qualidade 20 dura 11,8 s × 1,2 = 14,16 s.
-- Depois: parcial 151 → 133 nas ativas (implementada e testada 352 → 370); 109 → 109 nos suportes.
+- Teste novo: `game/testes/ativas-g-ac.test.mjs` (22 casos com os 2 do empurrão do Sísmico, os sorteios travados).
+- Testes: os 127 arquivos afetados (`ativas-*`, `gemas-*`, `suportes-*`, os de maldição/clamor/Impelir, `precisao-a5b`, `itens-poe-gemas*`, `gemas-todas-funcionam-poe`, `eficacia-ataque-poe`, `runas-vinculadas-poe` e os de frascos, projéteis e redução física): 1.461 testes, 1.391 passam, 1 falha, 69 pulados (com a correção do `naoConvocavel` em `runas-vinculadas-poe`, que quebrava um `deepEqual` e foi refeita no código, não no teste). O teste existente quebra por uma regra legítima do PoE e ficou para o aval do dono, sem edição: `ativas-status-qualidade-poe.test.mjs:80`. Ele esperava o "Duração de Maldições aumentada em 20 %" do Enfraquecer nos motivos; agora a linha é feita, e o Enfraquecer na qualidade 20 dura 11,8 s × 1,2 = 14,16 s. Com o aval do dono (26/10), o teste passou a pedir o Enfraquecer completo ("funciona"), com o comentário do aval.
+- Depois: parcial 151 → 133 nas ativas (implementada e testada 352 → 370); 109 → 109 nos suportes. Com o empurrão do Sísmico (26/10): 132 parciais, 371 implementadas e testadas; os 38 arquivos afetados (os de clamor, Impelir e empurrão, `ativas-g-ac`, `ativas-status-qualidade-poe`, `gemas-todas-funcionam-poe`, `itens-poe-gemas`): 424 testes, 423 passam, 1 pulado, 0 falhas.
 - **Pendências:**
   1. a Corrente Temporal não desacelera as magias dos monstros (os poderes), igual ao `lento`; e o "expira mais devagar" não estende os buffs do próprio monstro nem as tabelas aninhadas (os estágios do debuff, os lentos por fonte);
   2. os solos da Alquimista e os alvos a mais do Ancestral não valem no golpe básico (só nas gemas);
