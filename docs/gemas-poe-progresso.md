@@ -881,6 +881,7 @@ O código mora em `game/systems/itens-poe/gemas-gac.mjs` (os dados e as contas p
     3. `ativas-pr2.test.mjs:78` espera a Barganha Sombria parcial pela parte dos Esqueletos; agora ela é feita (motivos `[]`);
     4. `zerar-arvore-lote75.test.mjs:74` espera a Virulência como motivo (parcial); agora ela é nota (só o Rastejador fica de motivo);
     5. `canalizacao-estagios-poe.test.mjs:78` (as Lâminas Velozes, 1,2308 contra 1,2 ± 0,03) falhou na bateria e passa sozinho — o próprio teste diz que o dano do personagem de teste cresce ~1% a cada uso.
+  - Os avais do dono (26/10), no terceiro commit: os 4 testes (1 a 4 acima) conferem a regra nova — o `tolhido` da Mina e do Totem (30%, 4 s, e o evento `tolhido`), a Barganha Sombria completa (motivos `[]`) e a Virulência como nota (só o Rastejador de motivo) —, com o comentário do aval em cada um. Os 8 arquivos (os 4, `ativas-e1b`, `ativas-c1`, o G16 e `canalizacao-estagios-poe`): 86 testes, 86 passam.
 
 ## Pendências conhecidas (por ordem de prioridade)
 
