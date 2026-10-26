@@ -847,6 +847,92 @@ O código mora em `game/systems/itens-poe/gemas-gac.mjs` (os dados e as contas p
 - A linha do feixe da Runa Tempestuosa da Indecisão ficou só no G-D; o "Não pode ser Convocada" tem uma fonte só (`GemasGAC.naoConvocavelDasLinhas`, usada pela `runas-vinculadas`).
 - Teste novo: `game/testes/ativas-g-revisao.test.mjs` (19 casos).
 
+### E1a — os lacaios e os totens com 1 ou 2 linhas de fora (26/10, a fila da aba que fechou)
+
+A fila: 41 gemas ativas (lacaios e totens). As regras novas estão em `game/systems/itens-poe/gemas-e1a.mjs`. Quem as usa: `lacaios-poe.oQueInvoca`, o tique dos lacaios (`cacadas`), `acoes.invocarLacaios`, `GemasPoe.adds` e o status. A fonte é o PoB (act_int/act_str/act_dex.lua, Minions.lua).
+
+- **A qualidade do lacaio** (até aqui o lacaio só lia as linhas do nível):
+  - "+N ao Máximo de Zumbis / Esqueletos / Armas Animadas": o máximo sobe ⌊N⌋;
+  - "Velocidade de Movimento dos Lacaios aumentada" (o Guardião Animado e os Robôs, que a trazem no nível): o passo a mais (`poe.movimentoPct`);
+  - "Lacaios têm Recuperação da Recarga aumentada" (as 6 variantes das Hordas, o Golpe Dominador, a Relíquia da Convicção, a Dominação e a Absolvição Vaal, o Arauto da Pureza): entra em `poe.recargaPct`. Ela encurta as magias do espectro e agora também a habilidade com recarga do lacaio: o golpe em área a cada N acertos sai (1 + X%) vezes mais (`l.cargaDaArea`). Sem a recuperação, continua a cada N acertos, como antes. Isso vale também para o `minion_cdr` da árvore;
+  - "Efeito do Buff aumentado em 20%" (os 7 Golens — `golem_buff_effect_+%`): multiplica tudo o que o golem dá a você (`GemasPoe.adds`, somado ao das peças), inclusive o dano adicionado por lacaio não-golem do Golem da Carniça;
+  - "Lacaios Regeneram 3% de Vida por segundo" (o Golem da Carniça do Saque): `poe.regenPct`;
+  - "30% de chance de convocar um Lacaio extra" (o Espírito Furioso): um a mais no uso;
+  - "Efeito da Oferenda aumentado" (as três Oferendas — `offering_spells_effect_+%`): o bônus × (1 + X%).
+- **O nível:**
+  - o Golem de Pedra da Proteção tem 50% menos Vida;
+  - a Animar Arma Vaal anima 10 por uso ("Anima até N Armas");
+  - **o Ceifador** (e o dos Revenantes): enquanto vive, os seus outros lacaios causam 29% menos Dano (o golpe e as magias do espectro) e têm 29% menos Vida máxima (`aplicarCeifador`: a vida volta quando ele some; a atual acompanha na proporção). Os totens e o mercenário não entram;
+  - **o Golem da Carniça:** 5% mais Dano (só nele — `type = "SummonedCarrionGolem"`) por lacaio não-golem a até 4 casas dele (o "próximo" de sempre do jogo), até 50%;
+  - a Animar Arma dos Braços Distantes já atacava de longe (o arco, pelo nome);
+- **A Vaal Convocar Esqueletos pelo PoB:** 21 soldados + 9 arqueiros + 5 magos + 1 general por uso (antes era 3: valia a última coluna "Convoca"), com máximo de 36 no nível 20. As colunas "Convoca N Guerreiros Esqueleto" e "+N ao Máximo de Esqueletos Convocados" do poedb não existem no PoB (`COLUNA_MAL_ROTULADA_E1A`).
+- **Os totens:** a Velocidade de Projéteis da gema (o Flamejante Sagrado 40%, o da Ira 128% mais, a Balista Estilhaçante 40%) entra no tiro do totem. Desde o G20a o totem usa o caminho do seu uso (`velocidadeDoProjetil`), então a exceção do lote A3 em `ehLinhaDeAlvos` saiu.
+- **Ficam de fora** (é preciso mecânica nova ou uma decisão do dono):
+  - a provocação do Totem Chamariz (a IA dos monstros mirando o totem);
+  - a Balista de Artilharia ×3 (as flechas em linha, a cruz, o foco);
+  - o acerto repetido da Balista Estilhaçante ×2 (o PoB usa uma configuração, `ShrapnelBallistaProjectileOverlap`, padrão 1);
+  - os 25% de Sentinela ao acertar Raro/Único do Golpe Dominador ×2 (o jogo ainda não domina monstros);
+  - o Efeito do Buff da Relíquia Sagrada (o buff é o da Nova da Relíquia, que não existe);
+  - o "+1 s por Cadáver extra" da Oferenda Espiritual (a Oferenda não consome cadáveres no jogo);
+  - o efeito de Definhamento do Golem Caótico do Turbilhão (o golem não definha no jogo; o PoB também não simula: "Minions applying Wither from a skill does not work yet").
+- **Placar das ativas:** parcial 114 → 83; limitação do idle 12 → 41; implementada e testada 391 → 393. As 30 gemas da fila ficaram sem linha de fora. Saíram também linhas de gemas de outras filas com o mesmo texto: o Ceifador dos Revenantes ficou completo; a Recuperação da Recarga da Dominação Vaal, da Absolvição Vaal e do Arauto da Pureza; o +1 Zumbi do Zumbi da Pancada; o Efeito da Oferenda da Óssea e da Carnal; o movimento dos Robôs; o Ceifador da Evisceração.
+- **A tradução não mudou** (nenhuma linha nova; `VERSAO_DA_TRADUCAO` fica em 73).
+- **Teste novo:** `game/testes/ativas-e1a.test.mjs` (10 casos). Os 120 arquivos afetados (`ativas-*`, `gemas-*`, `suportes-*`, os de lacaio e de totem, `itens-poe-gemas`, `gemas-todas-funcionam-poe`, `eficacia-ataque-poe`): 1399 testes, 1363 passam, 33 pulados e 3 falharam. Um falhava pela Área do Golem Flamejante, que saiu do lote e ficou como pendência (`itens-poe-gemas.test.mjs:338`). Os outros dois são a regra do PoE e esperam o aval do dono, sem edição: `projeteis-a3.test.mjs:414` e `totens-uso-poe.test.mjs:185` ainda esperam "efeito não simulado: 128 % mais Velocidade de Projétil" no Totem Flamejante Sagrado da Ira, que agora vale no tiro do totem (velocidade × 2,28).
+
+#### E1a — as decisões do dono (26/10, segundo commit)
+
+- **O aval:** `projeteis-a3.test.mjs:414` e `totens-uso-poe.test.mjs:185` agora pedem que o "128% mais Velocidade de Projétil" do Totem Flamejante da Ira NÃO esteja nos motivos (o comentário do aval está em cada um).
+- **A Balista Estilhaçante ×2:** segue o padrão do PoB (`ShrapnelBallistaProjectileOverlap` 1, uma flecha por alvo, como o jogo já fazia). A linha fecha.
+- **As Oferendas (a Espiritual, a Óssea e a Carnal — no PoE as três consomem cadáveres):**
+  - consomem os cadáveres a até 4 casas de você (`GemasE1a.cadaveresDaOferenda`) e duram a base + 1 s por cadáver EXTRA;
+  - sem cadáver, não saem (`SEM_CADAVER`).
+- **O Golpe Dominador ×2:**
+  - com o alvo do uso Raro ou Único, há 25% de chance de uma Sentinela a mais (`GemasE1a.sentinelaAMais`);
+  - o máximo virou a soma dos máximos por raridade (3 Mágicas + 9 Normais + 1 Rara = 13; o da Inspiração, 10). Antes valia o da última linha (1), e a Sentinela a mais trocava a que estava em campo.
+- **As linhas que estavam contadas como feitas:**
+  - **a Nova da Relíquia Sagrada:** a regeneração que a Habilidade Explosiva dá aos Aliados e aos Lacaios não existe no jogo. O `LINHA_DE_LACAIO` as engolia; agora voltam a "efeito não simulado" (`GemasE1a.ehLinhaDeLacaioNaoFeita`);
+  - **o Golem de Pedra da Proteção:** 15% do acerto corpo a corpo vai para a vida dele antes do seu Escudo de Energia e da sua Vida, × o Efeito do Buff do golem, até a vida dele (`desviarParaOGolemDePedra`, no `contraAtaque`);
+  - **o Golem Flamejante:** a Área de Efeito AUMENTADA do PoB (`area_inc`, `fire_golem_grants_area_of_effect_+%`);
+  - **o Golem da Carniça:** o dano físico adicionado vai aos seus lacaios NÃO-golem (o PoB, `MinionModifier`), × o Efeito do Buff, no golpe de cada um (`danoDoGolemDaCarnica`). Você não o recebe mais (antes ia para a sua ficha × o número de lacaios). A conta do Efeito do Buff do golem ficou numa função só (`GemasPoe.fatorDoBuffDoGolem`);
+  - **o Ceifador:** "Lacaios causam 87% mais Dano com Sangramento" vale só no Sangramento dele. Antes valia no golpe inteiro.
+- **Placar das ativas:** parcial 83 → 78; limitação do idle 41 → 44; implementada e testada 393 → 395. Da fila, ficam parciais 6 (o Chamariz, a Artilharia ×3, a Relíquia Sagrada e o Golem do Turbilhão).
+- **Testes:** `ativas-e1a` agora tem 14 casos. Os 121 arquivos afetados: 1411 testes, 1376 passam, 33 pulados, 2 falham. Os dois eram pela regra do PoE e o dono deu o aval (26/10, terceiro commit, com o comentário do aval em cada um; o máximo do Golpe Dominador pela soma das raridades também ficou aprovado): `itens-poe-gemas.test.mjs:338` (o afDono do Golem Flamejante agora traz `area_inc: 20` além de `dmg_vs_monsters: 24`) e `passivas-poe-suportes-sem-regra.test.mjs:280` (a Oferenda Carnal usada sem cadáver: agora é recusada, "Nenhum cadáver perto.").
+
+### E1b — as parciais fáceis de Armadilhas, Minas, Auras e Arautos, e as que restavam em outros arquétipos (26/10, pelo PoB)
+
+- Arquivos: `gemas-e1b.mjs` (as linhas e as contas puras), `gemas-poe.mjs` (os leitores com cache, o status, a Pureza Elementar e as Impurezas no buff, a conversão aleatória no ataque), `linhas-das-gemas.mjs` (as linhas de buff das auras e dos Estandartes, o Empalamento dos Espetos, o Físico como Extra no uso), `acoes.mjs` (o arremesso, a Armadilha ativada de novo, a aura das Minas, o Fogo contra o Queimando, o ricochete no terreno, os feixes das Drenantes, o Mago de Batalha, a queima do Arauto das Cinzas por vizinho), `skills/gemas.mjs` (o grupo do Mago de Batalha), `hunt/resistencia.mjs` (a resistência ignorada), `poderes.mjs` (o Acerto Suprimido), `personagem/defesa.mjs` (a recarga do Escudo de Energia), `atributos-novos.json` (3 atributos: `suprimido_azarado`, `suprimido_fixo`, `recarga_es_nunca_interrompida`).
+- **As Armadilhas:** "X% de Chance de uma Armadilha ser Ativada uma vez adicional" da gema (a qualidade da Glacial, da do Vão, da Relampejante, da das Fagulhas e da Espiral da Eletrização; 50% na Flamejante da Explosão) soma à das peças; na Espiral, a ativada de novo ergue outra Espiral. O "30% menos Velocidade de Arremesso" da Explosiva da Magnitude e o "25% menos … com arma de duas mãos" da Hélice de Trarthus multiplicam o tempo do arremesso; a Hélice joga +1 Armadilha com duas armas. A Flamejante e a da Explosão: o Fogo adicionado contra o Queimando (o Incêndio ou outro degenerativo de Fogo) entra no acerto, × a Eficácia, o aumentado do Fogo e os "mais". A Relampejante das Fagulhas ricocheteia no terreno (100%, o motor das peças). As Drenantes (a da Dor e a base): os feixes vão aos N mais perto da Armadilha no raio. A dos Espetos Empala no acerto.
+- **As Minas:** a qualidade da Tormenta Explosiva soma ao "por Mina"; o "Efeito das Auras aumentado" da Congelante da Sabotagem soma ao Efeito de Auras das Minas; a Piroclástica põe a Exposição ao Fogo (−15/−25%, × o efeito da aura das Minas — o PoB) em quem está perto das Minas plantadas dela.
+- **Os Arautos:** a frequência da tempestade da qualidade do Trovejante já valia (só o status); a queima do Arauto das Cinzas sai com as condições de CADA vizinho.
+- **O golpe:** a Devastação da Refração converte 100% do Físico para um elemento sorteado por uso; a Pancada Glacial e a da Cadência ganham o "Físico como Gelo Extra" da qualidade.
+- **As auras:** a Disciplina (+30% de Recarga do Escudo de Energia), a Graça Vaal (+15% de chance de Evadir Ataques; o dano da magia suprimida rola duas vezes e fica o menor — a supressão é sorteada antes do dano só com a Graça), a Clareza Vaal (custo de Mana × 0), a Disciplina Vaal (o dano não reinicia a espera da recarga — também o Caos e o Físico que ignoram o Escudo), a Pureza Elementar (imune ao Incêndio, Resfriamento, Congelamento e Eletrização), o Fanatismo (10% de Solo Sagrado de 8 s ao acertar Raro/Único), o Estandarte Horrendo (Vida ao Bloquear) e o Desafiador (−X de cada tipo na magia suprimida, somado aos outros fixos).
+- **As Impurezas Vaal:** o "Efeito das Auras aumentado" da gema soma ao dos suportes; os acertos ignoram a resistência POSITIVA do elemento nos inimigos no raio da aura em volta de você (a negativa fica; o dano degenerativo não; só a sua Impureza).
+- **O Clamor do Mago de Batalha:** as magias ligadas a ele (as regras do Arcanista, sem as de Canalização) saem em cada ataque Impelido por ele, com o "X% menos Dano" do nível no acerto e nas afecções; só saem por ele.
+- Teste novo: `game/testes/ativas-e1b.test.mjs` (13 casos).
+- Placar: parcial 114 → 84 nas ativas (implementada e testada 391 → 421; sem teste próprio 44 → 44). A tradução não mudou (nenhuma regra nova em `traducao.json`; a `VERSAO_DA_TRADUCAO` fica em 73).
+- Testes: os 168 arquivos afetados (`ativas-*`, `gemas-*`, `suportes-*`, os de armadilha, mina, aura, reserva, Arauto, supressão, resistência e Escudo de Energia, `itens-poe-gemas*`, `eficacia-ataque-poe`): 1.888 testes, 1.735 passam, 151 pulados, 2 falham — os dois pela regra do PoE, para o aval do dono (não editados):
+  1. `ativas-c1.test.mjs:83` esperava o "Receba 20% do Dano Físico como Dano de Gelo Extra" da Cadência como não feito; agora é feito (motivos `[]`);
+  2. `gemas-todas-funcionam-poe.test.mjs:160` (G16): o Estandarte Desafiador e o Horrendo viraram "funciona" e o teste os usa sem Valor (SEM_VALOR — no PoE o Estandarte só se planta com Valor); o teste precisaria dar Valor antes.
+- **As decisões do dono (pendentes):** a Armadilha de Urso (e a dos Espetos) "Trava o inimigo no lugar" (a duração: a do PoE é "baseada no dano", sem fórmula no PoB); as chamas da Lança-Chamas (o PoB: um acerto a cada 0,1 s na boa posição, 0,3 s na ruim, sem usar o número de chamas); o raio terciário da Armadilha Glacial (três explosões concêntricas, ou só a maior); as ondas da Sísmica dos Poços (cada onda em todos, ou a chance de sobreposição do PoB ~37%, ou uma casa sorteada); a Virulência do Arauto Agonizante (o ganho e a perda no tempo sem números no PoB); a Barganha Sombria com Esqueleto (a área no Esqueleto, a cadeia, a Vida máxima ou atual, se mata).
+- **Ficou de fora (mecânica nova grande ou da sessão dos lacaios):** a Absolvição (o Sentinela ao acertar Raro/Único e a recarga dos lacaios — a invocação do Sentinela não existe), o Clamor do General (Guerreiros Ilusórios dos cadáveres), o Vínculo Intuitivo (os acertos do aliado ativam as suas magias), a Armadilha Conversora (converter o inimigo) e o Rastejador do Arauto Agonizante.
+- **As decisões do dono (26/10), no segundo commit:**
+  - os avais: `ativas-c1.test.mjs:83` aceita a Cadência sem motivo; o G16 dá o Valor antes de plantar o Desafiador e o Horrendo (o comentário do aval em cada um);
+  - as Armadilhas de Urso (a base e a dos Espetos) Imobilizam o acertado por 3 s × a Duração da Habilidade (`estados.imobilizado` — não anda, ataca; `hunt/monstros`); a base usa a duração dela (3 s + a qualidade);
+  - a Lança-Chamas e a da Estabilidade: um acerto a cada 0,1 s (o PoB) na área em volta da Armadilha, pela duração (3,5 s / 2 s) × a Duração — o objeto que pulsa da Espiral (`hunt.poeTorres`); o número de chamas não muda a frequência;
+  - a Armadilha Glacial: só o maior raio (o PoB) — o terciário fica como feito;
+  - a Sísmica dos Poços: 3 ondas (+1 na qualidade 20); cada onda acerta cada inimigo na área da Armadilha com a chance de sobreposição do PoB, (9 + 3 − 1)² ÷ 18² = 121/324 ≈ 37,3% (o tamanho Medium, o padrão do PoB);
+  - o Arauto Agonizante: a Virulência no máximo (como o PoB mostra) sai de parcial e fica como nota (`notas` no registro, no relatório); o Rastejador segue parcial;
+  - a Barganha Sombria com Esqueleto (o PoB): o Esqueleto vivo mais perto do alvo no alcance e a cadeia aos 2 seguintes (a até 3 casas do anterior); cada um sacrifica 12% (+ a qualidade) da Vida MÁXIMA dele, sem morrer (fica com 1), e o acerto da gema sai em cada inimigo a até 2,6 m dele, com a Vida sacrificada como Caos base; o uso não fere na hora;
+  - o Clamor de Reunião: o Dano de Ataque Adicional do buff vale nos seus lacaios no raio, × (1 + 100%), no golpe de ataque deles, cada parte pela resistência dela (`GemasE1b.reuniaoNoLacaio`, uma linha em `cacadas.mjs`);
+  - o Tolhimento: "Minas Desaceleram…" e "Totens Desaceleram…" passaram da lentidão para o Tolhimento do PoE (`Estados.tolher`, os 30% da Desaceleração, só no passo).
+  - Placar: parcial 84 → 77 nas ativas (implementada e testada 421 → 428). `ativas-e1b` com 19 casos.
+  - Testes: os 318 arquivos afetados (os do primeiro commit + os de lacaio, totem, Tolhimento e monstros): 3.287 testes, 2.824 passam, 458 pulados, 5 falham — 4 pela regra do PoE (as decisões do dono; não editados) e 1 intermitente:
+    1. `armas-plantadas-poe.test.mjs:252` espera o `lento` da Mina; agora é o `tolhido`;
+    2. `zerar-arvore-lote70.test.mjs:126` espera o `lento` { ate: 9000, pct: 30 } do Totem; agora é o `tolhido` (30%, 4 s);
+    3. `ativas-pr2.test.mjs:78` espera a Barganha Sombria parcial pela parte dos Esqueletos; agora ela é feita (motivos `[]`);
+    4. `zerar-arvore-lote75.test.mjs:74` espera a Virulência como motivo (parcial); agora ela é nota (só o Rastejador fica de motivo);
+    5. `canalizacao-estagios-poe.test.mjs:78` (as Lâminas Velozes, 1,2308 contra 1,2 ± 0,03) falhou na bateria e passa sozinho — o próprio teste diz que o dano do personagem de teste cresce ~1% a cada uso.
+  - Os avais do dono (26/10), no terceiro commit: os 4 testes (1 a 4 acima) conferem a regra nova — o `tolhido` da Mina e do Totem (30%, 4 s, e o evento `tolhido`), a Barganha Sombria completa (motivos `[]`) e a Virulência como nota (só o Rastejador de motivo) —, com o comentário do aval em cada um. Os 8 arquivos (os 4, `ativas-e1b`, `ativas-c1`, o G16 e `canalizacao-estagios-poe`): 86 testes, 86 passam.
 ### S1 — os suportes com 1 ou 2 linhas faltando (26/10)
 
 - Fila: 60 suportes parciais com 1 ou 2 linhas não feitas. Fonte: o PoB (`sup_int.lua`; os de Força e Destreza não estão na cópia do PoB, então valem as linhas do poedb salvo em `gemas-poe.json`).

@@ -3,6 +3,9 @@
 import * as QuemFeriu from './quem-feriu.mjs';
 import * as Mecanicas from '../mobs/mecanicas.mjs';
 import * as Vinculos from '../itens-poe/vinculos.mjs';
+// (dono, 26/10: a proteção do Golem de Pedra no acerto corpo a corpo)
+import * as LacaiosPoe from '../itens-poe/lacaios-poe.mjs';
+import * as GemasPoe from '../itens-poe/gemas-poe.mjs';
 import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { ITEM_CATALOG, CATALOGO } from '../dados.mjs';
 import * as Progressao from '../progressao.mjs';
@@ -1262,6 +1265,12 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
     const tomou = GemasGBD.absorverNaGuarda(hunt, final, hunt.clock ?? 0);
     if (tomou > 0) { final -= tomou; eventos.push({ t: 'dmg', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, v: tomou, foe: false, de: bicho.name, golpe: 'corpo a corpo', color: '#ffd27f', guarda: true }); }
   }
+  // (dono, 26/10 — o Golem de Pedra da Proteção: "Golens concedem 15% do Dano Corpo a Corpo sofrido na Vida do seu Golem de Pedra antes da sua" — antes do Escudo de
+  // Energia e da Vida, × o Efeito do Buff do golem; até a vida dele — `LacaiosPoe.desviarParaOGolemDePedra`)
+  if (final > 0 && hunt.lacaios?.length) {
+    const { tomou, golem } = LacaiosPoe.desviarParaOGolemDePedra(hunt, final, (g) => GemasPoe.fatorDoBuffDoGolem(estado, g));
+    if (tomou > 0) { final -= tomou; eventos.push({ t: 'dmg', uid: golem.uid, x: golem.x, y: golem.y, v: tomou, foe: false, lacaio: true, color: '#ff8a8a' }); }
+  }
   // (PoE, 12/10: o Vínculo D'Alma de um companheiro em você — "30% do Dano de Acertos contra o alvo é sofrido no seu Escudo de Energia antes do
   // dele": essa parte sai do Escudo de quem vincula.)
   final = Vinculos.desviarParaOEscudo(estado, final);
@@ -1274,7 +1283,7 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // (revisão PR2, dono 21/10: o Escudo Gélido e o Vínculo também levam a parte deles do Físico que ignora o Escudo — a mesma proporção do Caos)
   const depoisDosDesvios = depoisDaEgide > 0 ? final / depoisDaEgide : 0;
   const fisicoDireto = ModsPoe.valor(ficha, 'fisico_ignora_escudo') > 0 ? Math.min(final, Math.round((fisicoProtegido - caosFisico) * fatorFinal * depoisDosDesvios)) : 0;
-  if (fisicoDireto > 0) estado.esEspera = Defesa.esperaDaRecarga(ficha);
+  if (fisicoDireto > 0) Defesa.reiniciarEspera(estado, ficha);
   // (dono, 20/10 — o lote PR2: "o Caos dos monstros atravessa o Escudo de Energia, como no PoE") a parte de Caos do golpe — a do monstro (`danoExtra`, o
   // `danoExtraPct` do mapa), depois das resistências e do fator final — vai direto à Vida, salvo as exceções do PoE (`Defesa.absorverComOCaos`); no limite
   // do que sobrou do golpe depois da Égide, do Escudo Gélido e do Vínculo

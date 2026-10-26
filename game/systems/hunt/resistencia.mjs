@@ -19,6 +19,8 @@ import * as AtributosDoMob from '../mobs/atributos.mjs';
 import * as ModsPoe from '../itens-poe/condicoes-poe.mjs';
 // (lote G-A, dono 25/10 — D4: a Redução de Dano Físico a menos da Marca do Caçador)
 import { reducaoFisicaMenos, resistenciaDoCaos } from '../itens-poe/gemas-gac.mjs';
+// (lote E1b, 26/10: a resistência ignorada pelos acertos no raio das Impurezas Vaal)
+import { resIgnoradaNoAlvo } from '../itens-poe/gemas-e1b.mjs';
 
 /** A resistência (em %) do bicho ao `tipo`, com o teto do boss e o piso da fraqueza (antes do teto de resistência e da penetração). */
 export function resistenciaDe(hunt, alvo, tipo) {
@@ -72,6 +74,9 @@ export function resistenciaEfetivaDe(hunt, alvo, tipo, ficha = null) {
   if (ficha?.resInvertida && elemental && !sempreInvertida) res = -res;
   // (lote G-C, D11) a Detonação de Feitiços: o Caos do acerto resistido pela menor resistência do alvo entre Fogo, Gelo, Raio e Caos (a da Contradição: a maior)
   if (tipo === 'chaos' && ficha?.caosResistidoPela) res = resistenciaDoCaos(ficha.caosResistidoPela, (t) => resistenciaDe(hunt, alvo, t));
+  // (lote E1b, 26/10) as Impurezas Vaal: "Resistência a <El> de Inimigos Próximos é Ignorada por Acertos" — o acerto (com a ficha de quem acerta; o dano degenerativo
+  // vem sem ela) no bicho a até o raio da aura ignora a resistência POSITIVA (a negativa fica, como no "Golpes Críticos ignoram as Resistências" do jogo)
+  if (ficha && res > 0 && resIgnoradaNoAlvo(hunt, alvo, tipo)) res = 0;
   return Limites.resistenciaEfetiva(Limites.resistenciaDoMob(res), pen);
 }
 

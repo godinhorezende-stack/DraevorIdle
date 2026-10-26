@@ -87,6 +87,8 @@ import * as Mapas from './itens-poe/mapas.mjs';
 import * as MapasAreas from './itens-poe/mapas-areas.mjs';
 import * as MapaAberto from './itens-poe/mapa-aberto.mjs';
 import * as GemasGBD from './itens-poe/gemas-gbd.mjs';
+// (lote E1b, dono 26/10: o Clamor de Reunião nos lacaios)
+import { reuniaoNoLacaio } from './itens-poe/gemas-e1b.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
 export { nomeDaHunt, huntsJogaveis, gradeDaHunt, aquecerGrades } from './hunt/terreno.mjs';
@@ -2759,6 +2761,8 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
   // (a revisão do lote 87) o relógio deste tique (o `agora` dos lacaios: a lentidão, o próximo golpe) — a magia do monstro no lacaio
   // (`magiaNoLacaio`, que recebe o da caçada) põe a lentidão nele
   hunt.agoraDosLacaios = agora;
+  // (lote E1a) o "menos Vida Máxima" do Ceifador vivo nos outros lacaios (e a vida de volta quando ele some — `LacaiosPoe.aplicarCeifador`)
+  LacaiosPoe.aplicarCeifador(hunt.lacaios);
   for (const l of hunt.lacaios) {
     const aliado = l.mercenario ? aliadoDoMercenario : aliadoBase;
     if (l.hp <= 0 || (l.ate && agora >= l.ate)) {
@@ -2982,10 +2986,14 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       const doGolpe = LacaiosPoe.golpeDoLacaio(l, b, ficha, tipo, agora, Math.random, hunt.lacaios, hunt.clock ?? agora);
       // (o dano "aumentado" das suas auras de aliado soma ao do lacaio — `danoIncPct`, o da invocação —; o "mais" multiplica)
       const doAliado = aliado ? ((1 + ((l.poe?.danoIncPct ?? 0) + aliado.danoIncPct) / 100) / (1 + (l.poe?.danoIncPct ?? 0) / 100)) * Math.max(0, 1 + aliado.maisDanoPct / 100) : 1;
-      const bruto = ((l.dano.min + Math.random() * Math.max(0, l.dano.max - l.dano.min) + (l.somado?.[0] ?? 0) + Math.random() * Math.max(0, (l.somado?.[1] ?? 0) - (l.somado?.[0] ?? 0))) * (crit ? critico.mult : 1) * doGolpe.fator * doAliado * pct) / 100;
+      // (dono, 26/10: + o dano físico adicionado do Golem da Carniça nos lacaios não-golem — `LacaiosPoe.danoDoGolemDaCarnica`, × o Efeito do Buff do golem)
+      const [carnMin, carnMax] = LacaiosPoe.danoDoGolemDaCarnica(l, hunt.lacaios, (g) => GemasPoe.fatorDoBuffDoGolem(estado, g));
+      const bruto = ((l.dano.min + Math.random() * Math.max(0, l.dano.max - l.dano.min) + (l.somado?.[0] ?? 0) + Math.random() * Math.max(0, (l.somado?.[1] ?? 0) - (l.somado?.[0] ?? 0)) + carnMin + Math.random() * Math.max(0, carnMax - carnMin)) * (crit ? critico.mult : 1) * doGolpe.fator * doAliado * pct) / 100;
       const antes = l.poe ? { envenenado: (b.dots ?? []).some((d) => (d.tipo === 'veneno' || d.tipo === 'venenoPoe') && d.falta > 0), raroOuUnico: ['raro', 'unico'].includes(b.raridade ?? b.raridadePoe) || !!b.boss || !!b.chefe } : null;
       // (o Vínculo Flamejante no lacaio: o Fogo adicional, com o crítico e a parte do golpe)
       const fogoDoVinculo = vinculo?.fogo?.[1] > 0 ? ((vinculo.fogo[0] + Math.random() * Math.max(0, vinculo.fogo[1] - vinculo.fogo[0])) * (crit ? critico.mult : 1) * pct) / 100 : 0;
+      // (lote E1b, dono 26/10) o Clamor de Reunião: o Dano de Ataque Adicional do buff × (1 + 100%) no golpe de ATAQUE do lacaio no raio, cada parte pela resistência dela
+      const daReuniao = est.magia ? 0 : reuniaoNoLacaio(hunt, l, hunt.clock ?? agora).reduce((n, x) => n + resistido(hunt, b, x.el, ((x.min + Math.random() * Math.max(0, x.max - x.min)) * (crit ? critico.mult : 1) * pct) / 100, doGolpe.ficha), 0);
       // (14/10, a Chama Santificada: o ATAQUE do lacaio — um aliado, até o seu — leva X% do Físico como Fogo extra e tira as Chamas; as Chamas
       // contam no relógio da caçada, como as afecções do bicho)
       const chamaPct = !est.magia && itensPoeLigado() ? ModsPoe.consumirChamas(estado, b, `lacaio:${ModsPoe.idDaChama(hunt)}`, hunt.clock ?? 0) : 0;
@@ -2995,7 +3003,7 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       // (correção do lote 86: + o "aumentado"/"mais" do lacaio — `fatorDoDano`, o que a invocação pôs no `dano` — e o das suas auras, `doAliado`,
       // como o `bruto`; e todo o Fogo do golpe — o do Vínculo, o da Chama Santificada — pela ficha do golpe: a penetração de Fogo "se Bloqueou")
       const fogoDoBloqueio = doGolpe.fogoExtra > 0 ? (doGolpe.fogoExtra * (l.poe?.fatorDoDano ?? 1) * (crit ? critico.mult : 1) * doGolpe.fator * doAliado * pct) / 100 : 0;
-      const dano = Math.max(1, Math.round(partes.reduce((n, x) => n + resistido(hunt, b, x.tipo, bruto * x.f, doGolpe.ficha), 0) + (doGolpe.caosExtra ? resistido(hunt, b, 'chaos', bruto * doGolpe.caosExtra, ficha) : 0) + (fogoDoVinculo > 0 ? resistido(hunt, b, 'fire', fogoDoVinculo, doGolpe.ficha) : 0) + (fisicoDaChama > 0 ? resistido(hunt, b, 'fire', (fisicoDaChama * chamaPct) / 100, doGolpe.ficha) : 0) + (fogoDoBloqueio > 0 ? resistido(hunt, b, 'fire', fogoDoBloqueio, doGolpe.ficha) : 0)));
+      const dano = Math.max(1, Math.round(partes.reduce((n, x) => n + resistido(hunt, b, x.tipo, bruto * x.f, doGolpe.ficha), 0) + (doGolpe.caosExtra ? resistido(hunt, b, 'chaos', bruto * doGolpe.caosExtra, ficha) : 0) + (fogoDoVinculo > 0 ? resistido(hunt, b, 'fire', fogoDoVinculo, doGolpe.ficha) : 0) + (fisicoDaChama > 0 ? resistido(hunt, b, 'fire', (fisicoDaChama * chamaPct) / 100, doGolpe.ficha) : 0) + (fogoDoBloqueio > 0 ? resistido(hunt, b, 'fire', fogoDoBloqueio, doGolpe.ficha) : 0) + daReuniao));
       b.hp -= dano;
       QuemFeriu.carimbar(b, QuemFeriu.LACAIO); // (lote 31, S001: o golpe do lacaio)
       // ("Acertos de Lacaios só podem Matar Inimigos Incendiados")
@@ -3020,7 +3028,8 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       }
       // O SANGRAMENTO (o ceifador): o dano contínuo de sempre (`combate/dot.mjs`).
       if (l.sangrar && Math.random() * 100 < l.sangrar) {
-        const posto = Dot.aplicar(b, { tipo: 'sangramento', total: dano * 0.7, origem: { fonte: 'lacaio', habilidade: l.acao } }, hunt.clock ?? 0);
+        // (dono, 26/10: o "Lacaios causam X% mais Dano com Sangramento" do Ceifador vale aqui — `l.maisSangramentoPct`)
+        const posto = Dot.aplicar(b, { tipo: 'sangramento', total: dano * 0.7 * Math.max(0, 1 + (l.maisSangramentoPct ?? 0) / 100), origem: { fonte: 'lacaio', habilidade: l.acao } }, hunt.clock ?? 0);
         if (posto) eventos.push({ t: 'estado', uid: b.uid, x: b.x, y: b.y, estado: posto });
       }
       return bruto;
@@ -3060,7 +3069,15 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     // O golpe em ÁREA a cada N acertos (a pancada do zumbi, o golem de pedra, a explosão do golem de chamas): 60% em volta do alvo.
     // (a revisão do lote 87: o golpe principal que errou não conta — `errouOPrincipal`)
     if (!errouOPrincipal) l.acertos = (l.acertos ?? 0) + 1;
-    if (!errouOPrincipal && est.area && l.acertos % est.area.cada === 0) {
+    // (lote E1a) o golpe em área é a habilidade com RECARGA do lacaio (a pancada do golem, a explosão da relíquia): com "Lacaios têm Recuperação da Recarga
+    // aumentada em X%" ele sai (1 + X%) vezes mais — cada acerto carrega 1 + X% e a área sai a cada N de carga (sem a recuperação, a cada N acertos, como antes)
+    const recargaDaArea = l.poe?.recargaPct ?? 0;
+    let saiArea = false;
+    if (!errouOPrincipal && est.area && recargaDaArea > 0) {
+      l.cargaDaArea = (l.cargaDaArea ?? 0) + Math.max(0.1, 1 + recargaDaArea / 100);
+      if (l.cargaDaArea >= est.area.cada) { l.cargaDaArea -= est.area.cada; saiArea = true; }
+    } else if (!errouOPrincipal && est.area) saiArea = l.acertos % est.area.cada === 0;
+    if (saiArea) {
       // (ciclo 7) "Lacaios têm Efeito em Área aumentado em X%": o raio (lote 36: 1 casa × √(1 + X%), a fração como chance).
       const raioDaArea = LacaiosPoe.raioDaAreaDoLacaio(l);
       eventos.push({ t: 'explosao', id: est.area.efeito, x: alvo.x, y: alvo.y, lado: 1 + 2 * raioDaArea });
@@ -3120,7 +3137,8 @@ function magiasDoEspectro(hunt, l, agora, ficha, estado = null) {
     else eventos.push({ t: 'fx', id: efeito, uid: alvo.uid, x: alvo.x, y: alvo.y });
     const atingidos = casas.length > 1 ? vivos.filter((m) => casas.some((c) => c.x === m.x && c.y === m.y)) : [alvo];
     const golpear = (m, pct) => {
-      const bruto = ((Math.min(a.min, a.max) + Math.random() * Math.abs(a.max - a.min)) * l.espectro.fator * pct) / 100;
+      // (lote E1a: + o "menos Dano" do Ceifador vivo — o espectro é um lacaio não-Ceifador)
+      const bruto = ((Math.min(a.min, a.max) + Math.random() * Math.abs(a.max - a.min)) * l.espectro.fator * pct * LacaiosPoe.fatorDoCeifador(l, hunt.lacaios)) / 100;
       const d = Math.max(1, Math.round(resistido(hunt, m, tipo, bruto, ficha)));
       m.hp -= d;
       QuemFeriu.carimbar(m, QuemFeriu.LACAIO); // (o espectro)

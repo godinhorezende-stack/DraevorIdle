@@ -123,10 +123,11 @@ test('ao CONVOCAR um totem: a Fúria Arcana (4 s) e a Lentidão de 30% por 4 s n
   const ficha = fichaCom({ 'ev:convocarTotem:buff:furiaArcana': 4, totem_desacelera_ao_convocar: 1 });
   const ev = Acoes.aoConvocarTotem(e, e.hunt, totem, ficha, 5000);
   assert.equal(e.hunt.poeBuffs?.furiaArcana, 20000 + 4000, 'Fúria Arcana por 4 s');
-  assert.deepEqual(perto.estados.lento, { ate: 9000, pct: 30 });
+  // (com o aval do dono, 26/10 — lote E1b: "Totens Desaceleram…" é o Tolhimento do PoE, `Estados.tolher` — 30% por 4 s —, não a lentidão)
+  assert.deepEqual(perto.estados.tolhido, { ate: 9000, pct: 30 });
   assert.equal(perto.estados.desacelerado.ate, 9000);
-  assert.equal(longe.estados.lento, undefined, 'a 4 casas: não');
-  assert.ok(ev.some((x) => x.t === 'estado' && x.uid === 'p' && x.estado === 'lento'));
+  assert.equal(longe.estados.tolhido, undefined, 'a 4 casas: não');
+  assert.ok(ev.some((x) => x.t === 'estado' && x.uid === 'p' && x.estado === 'tolhido'));
   // sem as linhas: nada
   const outro = { uid: 'o', hp: 100, maxHp: 100, x: 1, y: 0, estados: {} };
   e.hunt = { clock: 20000, monstros: [outro], lacaios: [], pos: { x: 0, y: 0 } };
