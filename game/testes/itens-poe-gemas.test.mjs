@@ -208,7 +208,8 @@ async function comGemas(slugs, { crit = 0 } = {}) {
 test('os 262 suportes do PoE viram gemas de suporte, com o status no jogo e a compatibilidade da lista do PoE', { skip: SEM_SUPORTES }, () => {
   assert.equal(SP.REGISTRO.size, 262);
   const st = [...SP.REGISTRO.values()].reduce((o, r) => ((o[r.status] = (o[r.status] ?? 0) + 1), o), {});
-  assert.ok(st.funciona > 40 && st.parcial > 100, JSON.stringify(st));
+  // (aval do dono, 26/10 — lote S1: sem o piso de "mais de 100 suportes parciais" — os lotes tiram suportes de parcial; as outras conferências seguem)
+  assert.ok(st.funciona > 40, JSON.stringify(st));
   assert.equal(SP.doSlug('Cast_On_Critical_Strike_Support').status, 'funciona');
   assert.equal(SP.doSlug('Minion_Damage_Support')?.status, 'funciona', 'o suporte de dano de lacaio vale nos lacaios');
   // (17/10, lote G3 — o dono: "Inverter para funciona") o Suporte de Armadilha transforma a habilidade em Armadilha (`armas-plantadas.mjs`)

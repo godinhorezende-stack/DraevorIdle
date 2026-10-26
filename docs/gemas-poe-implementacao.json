@@ -17,8 +17,8 @@
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 142,
-   "parcial": 69,
+   "implementada e testada": 143,
+   "parcial": 68,
    "implementada, sem teste próprio": 51
   },
   "variantes": {
@@ -45,7 +45,7 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 331,
+   "linhasDistintas": 330,
    "emDuasOuMais": 47
   },
   "imagens": {
@@ -8353,10 +8353,8 @@
   {
    "slug": "Overexertion_Support",
    "nome": "Esforço Excessivo",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Ataques Suportados causam 10% mais Dano por cada Clamor que os Impelir"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10825,12 +10823,6 @@
    "linha": "Ataques reforçados ativam Rajada de Vento ao atingir, limitado a uma vez a cada # metros percorridos",
    "gemas": [
     "Windburst_Support"
-   ]
-  },
-  {
-   "linha": "Ataques Suportados causam #% mais Dano por cada Clamor que os Impelir",
-   "gemas": [
-    "Overexertion_Support"
    ]
   },
   {

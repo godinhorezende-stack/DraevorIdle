@@ -168,6 +168,9 @@ const REGRAS = [
   //   "Consumiu um cadáver Recentemente" (a qualidade: "Dano aumentado em X% se você tiver Consumido um cadáver Recentemente" — antes, sempre);
   [new RegExp(`^Golpes Abatedores com Habilidades Suportadas Consomem cadáveres para Recuperar ${N} de Vida e ${N} de Mana$`, 'i'), (m) => ({ devorarVida: num(m[1]), devorarMana: num(m[2]) })],
   [new RegExp(`causam Dano aumentado em ${N}% se você tiver Consumido um cadáver Recentemente$`, 'i'), (m) => ({ ['af:dmg_inc@consumiuCadaverRecente']: num(m[1]) })],
+  // - o Esforço Excessivo (dono, 26/10: "como no PoE"): "X% mais Dano por cada Clamor que os Impelir" — × os Clamores que impelem o ataque (um Impelir por Clamor —
+  //   `GemasGAC.impelemEste`, `Acoes.comOsAlvosDaGema`);
+  [new RegExp(`^Ataques Suportados causam ${N}% mais Dano por cada Clamor que os Impelir$`, 'i'), (m) => ({ impelidoPorClamorMaisPct: num(m[1]) })],
   // - a Empunhadura de Ferro e a Vontade de Ferro: o Bônus de Dano da Força (o "Dano Físico Corpo a Corpo aumentado" a cada 5 de Força) também no Dano de Ataque dos
   //   Projéteis / em todo o Dano Mágico do uso suportado (`Acoes.contaDoDano`);
   [/^Bônus de Dano da Força é aplicado ao Dano de Ataque dos Projéteis assim como às Habilidades Suportadas$/i, () => ({ forcaEmProjeteis: 1 })],

@@ -60,7 +60,7 @@ const FEITOS = ['Maim_Support', 'Endurance_Charge_on_Melee_Stun_Support', 'Iron_
   'Greater_Chain_Support', 'Lethal_Dose_Support', 'Elemental_Proliferation_Support', 'Spell_Cascade_Support', 'Devour_Support', 'Power_Charge_On_Critical_Support', 'Archmage_Support',
   'Sacrifice_Support', 'Swiftbrand_Support', 'Decay_Support', 'Ignite_Proliferation_Support', 'Minefield_Support', 'Invention_Support', 'Awakened_Cast_While_Channelling_Support',
   'Awakened_Controlled_Destruction_Support', 'Awakened_Spell_Cascade_Support', 'Congregation_Support', 'Frostmage_Support', 'Greater_Spell_Cascade_Support', 'Communion_Support',
-  'Scornful_Herald_Support', 'Vaal_Sacrifice_Support', 'Hextouch_Support', 'Ancestral_Call_Support', 'Awakened_Ancestral_Call_Support', 'Greater_Ancestral_Call_Support'];
+  'Scornful_Herald_Support', 'Vaal_Sacrifice_Support', 'Hextouch_Support', 'Ancestral_Call_Support', 'Awakened_Ancestral_Call_Support', 'Greater_Ancestral_Call_Support', 'Overexertion_Support'];
 test('S1: os suportes da fila feitos saem de "parcial" — nenhuma linha não feita no nível máximo, com a qualidade 20', { skip: SEM }, () => {
   const falhas = FEITOS.filter((s) => SP.doSlug(s)?.status !== 'funciona').map((s) => `${s}: ${SP.doSlug(s)?.status} ${(SP.doSlug(s)?.motivos ?? []).join(' | ')}`);
   assert.deepEqual(falhas, [], falhas.join('\n'));
@@ -331,4 +331,29 @@ test('S1: o Chamado Ancestral — o Golpe Duplo acerta mais 2 vivos ao alcance d
   };
   assert.deepEqual(await ferir([]), [false, false, false]);
   assert.deepEqual(await ferir(['Ancestral_Call_Support']), [true, true, false]);
+});
+
+test('S1 (dono, 26/10): um Impelir por Clamor — dois Clamores impelem o mesmo ataque, cada um gasta a sua carga; o Esforço Excessivo dá 10% por Clamor', { skip: SEM }, async () => {
+  const GAC = await import('../systems/itens-poe/gemas-gac.mjs');
+  const h = { };
+  GAC.porImpelir(h, { n: 6, ate: 5000, de: 'Seismic_Cry', so: 'pancada' }, 0);
+  GAC.porImpelir(h, { n: 3, ate: 5000, de: 'Intimidating_Cry' }, 0);
+  assert.deepEqual([h.impelidos.de, h.impelidos.n, h.impelidos.outros.map((x) => x.de)], ['Intimidating_Cry', 3, ['Seismic_Cry']], 'o novo é o principal; o anterior fica junto');
+  GAC.porImpelir(h, { n: 2, ate: 6000, de: 'Intimidating_Cry' }, 0);
+  assert.deepEqual([h.impelidos.n, h.impelidos.ate, h.impelidos.outros.length], [3, 6000, 1], 'o mesmo Clamor renova pelo máximo');
+  assert.equal(GAC.impelemEste(h.impelidos, ['ataque', 'corpo', 'pancada', 'habilidade'], 0).length, 2);
+  assert.equal(GAC.impelemEste(h.impelidos, ['ataque', 'corpo', 'golpe', 'habilidade'], 0).length, 1, 'o Sísmico só impele as Pancadas');
+  // (de ponta a ponta: o Golpe Sísmico — uma Pancada — com o Esforço Excessivo, impelido pelos dois)
+  const e = await montar(['Ground_Slam', 'Overexertion_Support']);
+  e.mana = e.maxMana = 1e7; e.maxHp = e.hp = 1e7;
+  const [b, ...resto] = e.hunt.monstros;
+  for (const m of resto) Object.assign(m, { x: e.hunt.pos.x + 60, y: e.hunt.pos.y + 60 });
+  Object.assign(b, { x: e.hunt.pos.x + 1, y: e.hunt.pos.y, hp: 1e12, maxHp: 1e12 });
+  const agora = e.hunt.clock;
+  e.hunt.impelidos = { n: 3, ate: agora + 20_000, de: 'Intimidating_Cry', outros: [{ n: 6, ate: agora + 20_000, de: 'Seismic_Cry', so: 'pancada' }] };
+  const entry = Acoes.POR_ID_PUBLICO(G.doSlug('Ground_Slam').acao);
+  const comClamores = Acoes.comOsAlvosDaGema(entry, GS.efeitoNaSkill(e, entry.id), e);
+  assert.equal(comClamores['af:mais_dano@impelido'], 14 + 10 * 2, 'os 14% do Impelido + 10% por cada um dos 2 Clamores');
+  usar(e, b);
+  assert.deepEqual([e.hunt.impelidos.n, e.hunt.impelidos.outros[0].n], [2, 5], 'cada Clamor gastou uma carga');
 });

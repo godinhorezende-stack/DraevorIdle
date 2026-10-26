@@ -27,9 +27,9 @@ Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 142 |
+| implementada e testada | 143 |
 | implementada, sem teste próprio | 51 |
-| parcial | 69 |
+| parcial | 68 |
 
 ### Variantes
 
@@ -39,7 +39,7 @@ Só os ataques:
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 331 linhas distintas (47 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 330 linhas distintas (47 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
 - Testes que citam a gema: 440/562 ativas, 156/262 suportes.
@@ -134,7 +134,6 @@ Só os ataques:
 | 1 | Ataques com habilidades reforçadas, cujo maior tipo de dano é caos, elétrico ou físico, fazem você ganhar # de Ressonância Profana dos outros tipos por segundo durante # segundos\nPerde # de Ressonância Profana por segundo para cada tipo que não ganhar |
 | 1 | Ataques Impelidos ativam as Magias Suportadas |
 | 1 | Ataques reforçados ativam Rajada de Vento ao atingir, limitado a uma vez a cada # metros percorridos |
-| 1 | Ataques Suportados causam #% mais Dano por cada Clamor que os Impelir |
 | 1 | Ativa a Habilidade Suportada quando você Acertar um Inimigo Raro ou Único com um Ataque |
 | 1 | Ativa Esta Habilidade quando um Feitiço de Habilidades Suportadas terminar |
 | 1 | Ativa esta magia reforçada quando sua salvaguarda quebra |
@@ -1002,8 +1001,6 @@ Só os ataques:
   - não simulado: Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade\nArqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados
 - **Multiple_Traps_Support** (Múltiplas Armadilhas) — parcial
   - não simulado: Habilidades Suportadas têm Efeito em Área da Ativação de Armadilhas aumentado em 20%
-- **Overexertion_Support** (Esforço Excessivo) — parcial
-  - não simulado: Ataques Suportados causam 10% mais Dano por cada Clamor que os Impelir
 - **Overloaded_Intensity_Support** (Intensidade Sobrecarregada (Reforço)) — parcial
   - não simulado: Ganha uma instância de Intensidade Sobrecarregada por 10 segundos após perder 6 de Intensidade com habilidades reforçadas
   - não simulado: Habilidades reforçadas têm +1.4% de chance de causar golpe crítico por Intensidade Sobrecarregada

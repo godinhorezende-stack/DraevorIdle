@@ -1589,11 +1589,13 @@ export function round(estado, personagem) {
         // (lote G-A, D2: o Impelir do Sísmico não vale no golpe básico — `GemasGAC.impeleEste`)
         // (revisão G, 26/10: o golpe básico Impelido tem os efeitos do Clamor, como o uso da gema — a Combustão do Infernal no corpo a corpo e os alvos a mais do Ancestral;
         // o golpe nos alvos a mais não gasta outro; o Impelir vencido não conta)
-        const im = hunt.impelidos;
-        if (!segundo && !emboscada && !extraDoImpelido && im?.n > 0 && (im.ate ?? Infinity) > (hunt.clock ?? 0) && GemasGAC.impeleEste(im, tagsDoBasico)) {
-          if (itensPoeLigado() && im.de === 'Infernal_Cry' && tagsDoBasico.includes('corpo')) eventos.push(...Acoes.combustao(estado, hunt, personagem, null, alvo, hunt.clock ?? 0));
-          if (itensPoeLigado() && im.alvosExtra > 0 && tagsDoBasico.includes('corpo')) alvosDoImpelido = im.alvosExtra;
-          im.n--;
+        // (lote S1, dono 26/10: um Impelir por Clamor — cada Clamor que alcança o golpe o impele e gasta a sua carga)
+        const impelem = !segundo && !emboscada && !extraDoImpelido ? GemasGAC.impelemEste(hunt.impelidos, tagsDoBasico, hunt.clock ?? 0) : [];
+        if (impelem.length) {
+          if (itensPoeLigado() && impelem.some((im) => im.de === 'Infernal_Cry') && tagsDoBasico.includes('corpo')) eventos.push(...Acoes.combustao(estado, hunt, personagem, null, alvo, hunt.clock ?? 0));
+          const extras = impelem.reduce((t, im) => t + (Number(im.alvosExtra) || 0), 0);
+          if (itensPoeLigado() && extras > 0 && tagsDoBasico.includes('corpo')) alvosDoImpelido = extras;
+          for (const im of impelem) im.n--;
         }
         // (lote G-C, dono 25/10) a Marca do Atirador no golpe básico de longe (o projétil da arma): "sofrem Dano aumentado em X% de Acertos de Projéteis" — no golpe da arma
         const doAtirador = itensPoeLigado() && categoriaDaArma(arma) === 'distancia' ? GemasGAC.fatorDoProjetil(alvo, hunt.clock ?? 0) : 1;

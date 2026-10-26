@@ -2708,11 +2708,14 @@ export function projeteisDoLacaio(estado, acaoDaGema, { origem, alvo, vivos, alc
  */
 function impelidoNoUso(estado, entry) {
   const im = estado?.hunt?.impelidos;
-  if (!itensPoeLigado() || !entry?.poeGema?.ataque || !(im?.n > 0) || !((im.ate ?? Infinity) > (estado.hunt.clock ?? 0))) return null;
+  if (!itensPoeLigado() || !entry?.poeGema?.ataque || !im) return null;
   if (estado.hunt.emboscada?.ate > (estado.hunt.clock ?? 0)) return null;
   const tags = tagsPoeDaSkill(entry);
-  if (tags.includes('naoImpelivel') || tags.includes('totem') || !GemasGAC.impeleEste(im, tags)) return null;
-  return im;
+  if (tags.includes('naoImpelivel') || tags.includes('totem')) return null;
+  // (lote S1, dono 26/10) todos os Clamores que impelem este ataque (um Impelir por Clamor — `GemasGAC.impelemEste`): os `de` de cada um, os alvos a mais somados e quantos
+  const lista = GemasGAC.impelemEste(im, tags, estado.hunt.clock ?? 0);
+  if (!lista.length) return null;
+  return { lista, clamores: lista.length, des: lista.map((x) => x.de).filter(Boolean), alvosExtra: lista.reduce((t, x) => t + (Number(x.alvosExtra) || 0), 0) };
 }
 
 const FATOR_DA_RECARGA_DE_ATAQUE = 0.5;
@@ -2740,7 +2743,9 @@ export function comOsAlvosDaGema(entry, efeito, estado = null) {
   // Efeito" (o Sísmico) — e, no Golpe, os alvos a mais do Ancestral ("Golpes Impelidos focam em 2 Inimigos adicionais")
   const impelidoAgora = impelidoNoUso(estado, entry);
   // (revisão G: + `impelidoClamor_<slug>` — os bônus do buff de um Clamor só no ataque Impelido por ELE — `GemasPoe.adds`)
-  const tagsDoUso = impelidoAgora ? [...tagsPoeDaSkill(entry), 'impelido', 'impelidoClamor', ...(impelidoAgora.de ? [`impelidoClamor_${impelidoAgora.de}`] : [])] : tagsPoeDaSkill(entry);
+  const tagsDoUso = impelidoAgora ? [...tagsPoeDaSkill(entry), 'impelido', 'impelidoClamor', ...impelidoAgora.des.map((d) => `impelidoClamor_${d}`)] : tagsPoeDaSkill(entry);
+  // (lote S1, dono 26/10) o Esforço Excessivo: "X% mais Dano por cada Clamor que os Impelir" — × os Clamores que impelem este ataque
+  if (impelidoAgora && e.impelidoPorClamorMaisPct > 0) e['af:mais_dano@impelido'] = (e['af:mais_dano@impelido'] ?? 0) + e.impelidoPorClamorMaisPct * impelidoAgora.clamores;
   const dasPecas = estado ? ModsPoe.alvosDasPecas(estado, comAsLinhasDaGema(estado, Ficha.combate(estado), entry, efeito), entry, tagsDoUso, Gemas.skillsAtivas(estado).get(entry.id)?.onde?.slot ?? null) : null;
   if (impelidoAgora?.alvosExtra && tagsDoUso.includes('golpe')) e.alvosExtras = (e.alvosExtras ?? 0) + impelidoAgora.alvosExtra;
   // (lote A3, D5: o `divide` do feixe; a divisão do projétil — `partir` — é do alvo atingido, `comOsProjeteisDaGema`)
@@ -6320,10 +6325,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // (lote G20a: o Rampage e as cargas são do acerto SEU — o do totem não conta: CalcPerform.lua:264)
       if (!doTotem && !semAcertoDaGema && ModsPoe.valor(ficha, 'rampage_acerto_corpo') > 0 && Tags.tagsDaAcao(entry).includes('melee') && ModsPoe.contarRampage(estado, hunt, ficha, agora)) Ficha.invalidar(estado);
       // (lote S1, 26/10: + as cargas dos suportes — a Carga de Poder no Crítico e a de Tolerância ao Atordoar com um Acerto Corpo a Corpo —, somadas às da ficha neste acerto)
-      const cargasDoAcerto = cargasDoUsoS1(ficha.cargas, efeitoDaGema, Tags.tagsDaAcao(entry).includes('melee'));
-      if (!doTotem && !semAcertoDaGema && CargasPoe.reageAoAcerto(cargasDoAcerto)) {
+      const regrasDasCargasDoAcerto = cargasDoUsoS1(ficha.cargas, efeitoDaGema, Tags.tagsDaAcao(entry).includes('melee'));
+      if (!doTotem && !semAcertoDaGema && CargasPoe.reageAoAcerto(regrasDasCargasDoAcerto)) {
         const corpoACorpo = Tags.tagsDaAcao(entry).includes('melee');
-        if (CargasPoe.aoAcertar(estado, cargasDoAcerto, bicho, { crit, corpoACorpo, atordoou: postosDaGema.includes('atordoado') || doAcerto.atordoou }).length) Ficha.invalidar(estado);
+        if (CargasPoe.aoAcertar(estado, regrasDasCargasDoAcerto, bicho, { crit, corpoACorpo, atordoou: postosDaGema.includes('atordoado') || doAcerto.atordoou }).length) Ficha.invalidar(estado);
       }
       // (lote PR1, dono 20/10 — D2 do plano) o SIFÃO DE PODER: "X% de chance de receber uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único" —
       // sorteado por projétil que acerta (a Vaal: sempre); o acerto do totem não dá carga a você
@@ -7287,17 +7292,19 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         const so = GemasPoe.impeleSoDaGema(entry.poeGema.slug);
         const alvosExtra = GemasPoe.alvosDoImpelidoDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1);
         // (revisão G: o MESMO Clamor — o `de` — renova pelo máximo; outro, mesmo com o mesmo `so`, troca: os números do anterior não ficam com o `de` do novo)
-        const mesmo = hunt.impelidos?.ate > inicio && (hunt.impelidos.so ?? null) === so && (hunt.impelidos.de ?? null) === entry.poeGema.slug;
         // (lote G-D, dono 25/10: + `de` — o Clamor que Impeliu: o ataque Impelido pelo Clamor Infernal ativa a Combustão)
-        hunt.impelidos = { n: Math.max(mesmo ? hunt.impelidos.n : 0, n), ate: inicio + 20000, de: entry.poeGema.slug, ...(so ? { so } : {}), ...(alvosExtra ? { alvosExtra } : {}) };
+        // (lote S1, dono 26/10: um Impelir por Clamor — o de outro Clamor fica junto, nos `outros`, e os dois impelem; `GemasGAC.porImpelir`)
+        GemasGAC.porImpelir(hunt, { n, ate: inicio + 20000, de: entry.poeGema.slug, ...(so ? { so } : {}), ...(alvosExtra ? { alvosExtra } : {}) }, inicio);
       }
     // (lote A1b, dono 19/10: D-b: o ataque Impelido pela Emboscada "não pode ser Impelido por outras Habilidades" — não gasta o Impelir do Clamor)
     // (revisão do C1: nem a que não pode ser Impelida — `naoImpelivel`)
     // (lote G-A, D2: + só o ataque que este Impelir alcança — `GemasGAC.impeleEste`)
-    } else if (tagsPoe.includes('ataque') && !tagsPoe.includes('naoImpelivel') && !emboscadaDoUso && hunt.impelidos?.n > 0 && GemasGAC.impeleEste(hunt.impelidos, tagsPoe) && !(tagsPoe.includes('movimento') && ModsPoe.valor(fichaDoUso, 'clamor_nao_impele_movimento') > 0)) {
+    } else if (tagsPoe.includes('ataque') && !tagsPoe.includes('naoImpelivel') && !emboscadaDoUso && GemasGAC.impelemEste(hunt.impelidos, tagsPoe, inicio).length && !(tagsPoe.includes('movimento') && ModsPoe.valor(fichaDoUso, 'clamor_nao_impele_movimento') > 0)) {
       // (lote G-D, dono 25/10 — D16) o ataque corpo a corpo Impelido pelo Clamor Infernal ativa a COMBUSTÃO no alvo (`combustao`)
-      if (hunt.impelidos.de === 'Infernal_Cry' && tagsPoe.includes('corpo') && hunt.impelidos.ate > inicio) eventos.push(...combustao(estado, hunt, personagem, entry, alvo?.hp > 0 ? alvo : atingidos.find((m) => m?.hp > 0) ?? alvo, agora));
-      hunt.impelidos.n--;
+      // (lote S1, dono 26/10: cada Clamor que impele este ataque gasta a SUA carga)
+      const impelem = GemasGAC.impelemEste(hunt.impelidos, tagsPoe, inicio);
+      if (impelem.some((x) => x.de === 'Infernal_Cry') && tagsPoe.includes('corpo')) eventos.push(...combustao(estado, hunt, personagem, entry, alvo?.hp > 0 ? alvo : atingidos.find((m) => m?.hp > 0) ?? alvo, agora));
+      for (const x of impelem) x.n--;
     }
     const ctxDoUso = { alvo, eventos, personagem, tags: tagsPoe };
     ModsPoe.evento(estado, hunt, 'usarHabilidade', fichaDoUso, ctxDoUso);

@@ -886,7 +886,7 @@ O código mora em `game/systems/itens-poe/gemas-gac.mjs` (os dados e as contas p
   8. a Comunhão: "lacaio permanente" é o lacaio vivo sem duração (os totens fora);
   9. a recarga da Onda de Choque não usa a recuperação de recarga do personagem (como a da Excepcional do Vazio).
 - **Decisões pendentes do dono (não feitas):**
-  1. o Esforço Excessivo ("10% mais Dano por cada Clamor que os Impelir"): no jogo um ataque é Impelido por um Clamor de cada vez. Opções: (a) 10% × 1 (o "mais" de um Clamor, somado aos 14% — 24% no total); (b) fazer o Impelir de vários Clamores ao mesmo tempo, como no PoE (10% × N). O teste `afeccoes-acerto-poe.test.mjs:87` pede que a linha fique não feita;
+  1. ~~o Esforço Excessivo~~ — feito no segundo commit (o dono, 26/10: vários Clamores impelem o mesmo ataque, abaixo). Antes: ("10% mais Dano por cada Clamor que os Impelir"): no jogo um ataque é Impelido por um Clamor de cada vez. Opções: (a) 10% × 1 (o "mais" de um Clamor, somado aos 14% — 24% no total); (b) fazer o Impelir de vários Clamores ao mesmo tempo, como no PoE (10% × N). O teste `afeccoes-acerto-poe.test.mjs:87` pede que a linha fique não feita;
   2. a Tentação Vaal: "1300 de dano físico por segundo, em vez de aplicar impedimento de ganho de almas" — o jogo não tem o impedimento e o poedb não diz a duração; opções: a duração da recarga da gema Vaal, ou um número do dono;
   3. o Devastador: o "Área de Efeito aumentada perto do totem" não tem o valor nos dados do PoB;
   4. o Excomungar ("excomungam os inimigos ao atingir corpo a corpo por 3 segundos"): o efeito do Excomungado não está nos dados salvos (PoB nem poedb); falta a regra;
@@ -896,6 +896,13 @@ O código mora em `game/systems/itens-poe/gemas-gac.mjs` (os dados e as contas p
 - Teste novo: `game/testes/suportes-s1.test.mjs` (13 casos, os sorteios travados).
 - Testes: os 67 arquivos afetados (`suportes-*`, `gemas-*`, `ativas-*`, `itens-poe-gemas*`, `gemas-todas-funcionam-poe`, `eficacia-ataque-poe`, `afeccoes-acerto-poe`, `repeticoes-estagios-a4`, os de runas, cargas, controle, lacaios, cadáveres, maldições, clamores, canalização e recarga): 873 testes, 836 passam, 36 pulados, 1 falha — pela regra do PoE, sem edição: `itens-poe-gemas.test.mjs:211` pede `parcial > 100` nos suportes; agora são 69 (funciona 193). Os de projéteis, totens, deslocamento, precisão e combate: 142 testes, 134 passam, 8 pulados.
 - Placar dos suportes: parcial 109 → 69; implementada e testada 102 → 142; implementada, sem teste próprio 51 → 51.
+- **As decisões do dono (26/10), no segundo commit:**
+  - o aval: `itens-poe-gemas.test.mjs:211` não pede mais o piso de "mais de 100 suportes parciais" (as outras conferências seguem), com o comentário do aval;
+  - o Esforço Excessivo como no PoE: um ataque pode ser Impelido por vários Clamores ao mesmo tempo. `hunt.impelidos` segue sendo o Impelir do último Clamor (`{ n, ate, de, so?, alvosExtra? }`) e guarda os dos outros Clamores em `hunt.impelidos.outros` (um por Clamor, cada um com o seu `n`, `so`, `alvosExtra` e `de` — `GemasGAC.porImpelir`); o mesmo Clamor renova pelo máximo. Cada Clamor impele só o ataque que ele alcança (`GemasGAC.impelemEste`) e gasta a SUA carga; as tags `impelidoClamor_<de>` saem de todos; os alvos a mais somam; a Combustão sai se o Infernal está entre eles. O Esforço dá 10% mais por Clamor que impele o ataque (`impelidoPorClamorMaisPct`). Aval: `afeccoes-acerto-poe.test.mjs:87` passou a pedir a linha feita, com o comentário do aval;
+  - corrigido no caminho: o primeiro commit sombreava o `cargasDoAcerto` da gema (o Golpe Súbito parou de dar a Frenesi no acerto — `movimento-a1b.test.mjs:237`); a regra de carga do suporte virou `regrasDasCargasDoAcerto`;
+  - testes: os 93 arquivos afetados (os de antes, mais os de clamor, Impelir, únicos, árvore e movimento): 1125 testes, 1087 passam, 36 pulados, 2 falham pela regra nova do dono, sem edição — `ativas-g-revisao.test.mjs:314` (o "outro Clamor troca o Impelir": depois do Intimidador, o Infernal ainda impele, com 5 cargas, e a Combustão sai) e `ativas-g-revisao.test.mjs:326` (o Dano Dobrado do buff do Intimidador: esperava 0 no ataque Impelido pelo Infernal; agora 100, porque o Intimidador também impele esse ataque);
+  - placar dos suportes: parcial 69 → 68; implementada e testada 142 → 143.
+
 
 ## Pendências conhecidas (por ordem de prioridade)
 
