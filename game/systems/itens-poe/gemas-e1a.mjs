@@ -37,6 +37,11 @@ const RE = {
   ceifadorDano: new RegExp(`^Ceifador(?:es)? fa(?:z|zem) com que seus Lacaios Não-Ceifadores (?:causem|tenham) ${N} ?% menos Dano$`, 'i'),
   ceifadorVida: new RegExp(`^Ceifador(?:es)? fa(?:z|zem) com que seus Lacaios Não-Ceifadores tenham ${N} ?% menos Vida Máxima$`, 'i'),
   porNaoGolem: new RegExp(`^Golens causam ${N} ?% mais Dano por Lacaio Não-Golem próximo deles, até ${N} ?%$`, 'i'),
+  // (as decisões do dono, 26/10)
+  protecao: new RegExp(`^Golens concedem ${N} ?% do Dano Corpo a Corpo sofrido na Vida do seu Golem de Pedra antes da sua$`, 'i'),
+  dominacao: new RegExp(`^${N} ?% de chance de invocar uma Sentinela da Dominação normal ao atingir um monstro raro ou único$`, 'i'),
+  porCadaver: new RegExp(`^${N} segundos? adicionais de Duração Base por Cadáver extra consumido$`, 'i'),
+  sangramento: new RegExp(`^Lacaios causam ${N} ?% mais Dano com Sangramento$`, 'i'),
 };
 
 /**
@@ -55,7 +60,15 @@ export function daQualidadeDoLacaio(linhasQ = []) {
   };
 }
 
-/** O nível do lacaio (as linhas do nível): `{ menosVidaPct, animaAte, ceifador, maisPorNaoGolem }` (null nos que a gema não tem). */
+/**
+ * O nível do lacaio (as linhas do nível): `{ menosVidaPct, animaAte, ceifador, maisPorNaoGolem, protecaoPct, chanceRaroUnico, porCadaverMs, maisSangramentoPct }`
+ * (null/0 nos que a gema não tem). As decisões do dono (26/10):
+ *   - o Golem de Pedra da Proteção: "X% do Dano Corpo a Corpo sofrido na Vida do seu Golem de Pedra antes da sua" (`stone_golem_grants_melee_damage_removed_from_
+ *     stone_golem_before_life_or_es_%` — antes do Escudo de Energia e da Vida; é buff do golem: o Efeito do Buff vale);
+ *   - o Golpe Dominador: "X% de chance de invocar uma Sentinela normal ao atingir um monstro raro ou único" — com o alvo do uso Raro ou Único, a chance de uma a mais;
+ *   - as Oferendas: "N segundos adicionais de Duração Base por Cadáver extra consumido" — a Oferenda consome os cadáveres a até 4 casas (sem cadáver, não sai);
+ *   - o Ceifador: "Lacaios causam X% mais Dano com Sangramento" só no Sangramento (antes valia no golpe inteiro).
+ */
 export function doNivelDoLacaio(linhas = []) {
   const ceifadorDano = somar(linhas, RE.ceifadorDano);
   const ceifadorVida = somar(linhas, RE.ceifadorVida);
@@ -65,7 +78,47 @@ export function doNivelDoLacaio(linhas = []) {
     animaAte: Math.floor(somar(linhas, RE.animaAte)) || null,
     ceifador: ceifadorDano || ceifadorVida ? { menosDanoPct: ceifadorDano, menosVidaPct: ceifadorVida } : null,
     maisPorNaoGolem: g ? { pct: Number(g[1]) || 0, max: Number(g[2]) || 0 } : null,
+    protecaoPct: somar(linhas, RE.protecao),
+    chanceRaroUnico: somar(linhas, RE.dominacao),
+    porCadaverMs: Math.round(somar(linhas, RE.porCadaver) * 1000),
+    maisSangramentoPct: somar(linhas, RE.sangramento),
   };
+}
+
+/** O monstro Raro ou Único (o Chefe também) — o mesmo critério das outras gemas (`GemasPR1.raroOuUnico`). */
+export const raroOuUnico = (alvo) => !!alvo && (/raro|unico/.test(String(alvo.raridade ?? alvo.raridadePoe ?? '')) || !!alvo.boss || !!alvo.chefe);
+/** O Golpe Dominador: uma Sentinela a mais neste uso? (o alvo Raro ou Único e a chance da gema) */
+export const sentinelaAMais = (q, alvo, rng = Math.random) => (q?.chanceRaroUnico > 0 && raroOuUnico(alvo) && rng() * 100 < q.chanceRaroUnico ? 1 : 0);
+
+/** As Oferendas consomem os cadáveres a até 4 casas de você (no mesmo andar). */
+export const CASAS_DA_OFERENDA = 4;
+export function cadaveresDaOferenda(hunt) {
+  const p = hunt?.pos;
+  if (!p) return [];
+  return (hunt.cadaveres ?? []).filter((c) => (c.z == null || c.z === (hunt.z ?? 0)) && Math.max(Math.abs(c.x - p.x), Math.abs(c.y - p.y)) <= CASAS_DA_OFERENDA);
+}
+/** A duração da Oferenda com `n` cadáveres consumidos: a base + N s por cadáver EXTRA (o primeiro é o da Oferenda). */
+export const duracaoDaOferenda = (q, n) => Math.max(0, q?.duracaoMs ?? 0) + Math.max(0, n - 1) * Math.max(0, q?.porCadaverMs ?? 0);
+
+/**
+ * O Golem de Pedra da Proteção: a parte do acerto corpo a corpo que vai para a vida dele antes do seu Escudo de Energia e da sua Vida (até a vida dele).
+ * `fatorDe(l)`: o Efeito do Buff do golem (`GemasPoe.fatorDoBuffDoGolem`). Devolve `{ tomou, golem }`.
+ */
+export function desviarParaOGolemDePedra(hunt, dano, fatorDe = (l) => 1 + (l?.efeitoDoBuffPct ?? 0) / 100) {
+  if (!(dano > 0)) return { tomou: 0, golem: null };
+  const golem = (hunt?.lacaios ?? []).find((l) => l?.protecaoPct > 0 && l.hp > 0);
+  if (!golem) return { tomou: 0, golem: null };
+  const tomou = Math.max(0, Math.min(Math.floor(golem.hp), Math.round((dano * Math.min(100, golem.protecaoPct * fatorDe(golem))) / 100)));
+  golem.hp -= tomou;
+  return { tomou, golem };
+}
+/**
+ * O Golem da Carniça: "Golens concedem X a Y de Dano Físico adicional" vai aos seus lacaios NÃO-golem (o PoB: `MinionModifier` com `SkillType.Golem, neg`) — não
+ * a você. O dano físico a mais no golpe do lacaio `l`: a soma dos Golens da Carniça vivos × o Efeito do Buff de cada um. `[min, max]`.
+ */
+export function danoDoGolemDaCarnica(l, lacaios, fatorDe = (g) => 1 + (g?.efeitoDoBuffPct ?? 0) / 100) {
+  if (!l || l.golem || l.tipo !== 'lacaio' || l.mercenario) return [0, 0];
+  return (lacaios ?? []).filter((g) => g?.porLacaioFisico && g.hp > 0 && g !== l).reduce(([a, b], g) => [a + g.porLacaioFisico[0] * fatorDe(g), b + g.porLacaioFisico[1] * fatorDe(g)], [0, 0]);
 }
 
 /** O bônus da Oferenda com o "Efeito da Oferenda aumentado" (os números × (1 + X%); a condição "se Bloquearam" fica). */
@@ -116,7 +169,12 @@ export function fatorPorNaoGolemPerto(l, lacaios) {
 }
 
 // ---- o status ----
-const LINHAS_DO_LACAIO_E1A = [RE.maximo, RE.movimento, RE.recarga, RE.regen, RE.extra, RE.menosVida, RE.animaAte, RE.ceifadorDano, RE.ceifadorVida, RE.porNaoGolem];
+const LINHAS_DO_LACAIO_E1A = [RE.maximo, RE.movimento, RE.recarga, RE.regen, RE.extra, RE.menosVida, RE.animaAte, RE.ceifadorDano, RE.ceifadorVida, RE.porNaoGolem, RE.dominacao, RE.porCadaver];
+/**
+ * (dono, 26/10) As linhas que o `LINHA_DE_LACAIO` contava como feitas sem que o jogo as fizesse: a Nova da Relíquia Sagrada (a regeneração que a Habilidade
+ * Explosiva dá aos Aliados e aos Lacaios — a Nova não existe no jogo). Voltam a aparecer como "efeito não simulado".
+ */
+export const ehLinhaDeLacaioNaoFeita = (l) => /^A Habilidade Explosiva da Relíquia Sagrada concede/i.test(String(l ?? ''));
 /** (o "Efeito do Buff" só nos Golens — a Relíquia Sagrada tem o dela, da Nova, que ainda não existe) */
 const GOLEM = /^Summon_\w*Golem/;
 /**

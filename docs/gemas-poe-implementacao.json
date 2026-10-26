@@ -2,18 +2,18 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 393,
+   "implementada e testada": 395,
    "implementada, sem teste próprio": 44,
-   "parcial": 83,
-   "limitação do modelo idle": 41,
+   "parcial": 78,
+   "limitação do modelo idle": 44,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 167,
+   "implementada e testada": 169,
    "implementada, sem teste próprio": 18,
-   "parcial": 18,
-   "limitação do modelo idle": 7
+   "parcial": 14,
+   "limitação do modelo idle": 9
   },
   "suportes": {
    "total": 262,
@@ -31,10 +31,10 @@
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 135,
+    "implementada e testada": 136,
     "implementada, sem teste próprio": 24,
-    "parcial": 28,
-    "limitação do modelo idle": 22
+    "parcial": 26,
+    "limitação do modelo idle": 23
    }
   },
   "compatibilidade": {
@@ -45,8 +45,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 363,
-   "emDuasOuMais": 42
+   "linhasDistintas": 362,
+   "emDuasOuMais": 39
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -60,7 +60,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 466,
+   "ativasCitadas": 467,
    "suportesCitados": 119,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -1512,10 +1512,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 25 % de chance de invocar uma Sentinela da Dominação normal ao atingir um monstro raro ou único"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -1529,10 +1527,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 25 % de chance de invocar uma Sentinela da Dominação normal ao atingir um monstro raro ou único"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -2622,10 +2618,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "totem",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente)"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2637,10 +2631,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "totem",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente)"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5132,6 +5124,8 @@
    "arquetipo": "lacaio",
    "estado": "parcial",
    "ausentes": [
+    "efeito não simulado: A Habilidade Explosiva da Relíquia Sagrada concede 154.6 de Vida regenerada por segundo aos Aliados",
+    "efeito não simulado: A Habilidade Explosiva da Relíquia Sagrada concede 985 de Vida regenerada por segundo aos Lacaios",
     "efeito não simulado: Efeito do Buff aumentado em 40 %"
    ],
    "idle": [
@@ -5468,7 +5462,6 @@
    "arquetipo": "lacaio",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: 1 segundos adicionais de Duração Base por Cadáver extra consumido",
     "efeito não simulado: Concede aos Lacaios +34 % de Chance de Bloquear Dano Mágico"
    ],
    "idle": [
@@ -5577,7 +5570,6 @@
    "arquetipo": "lacaio",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: 1 segundos adicionais de Duração Base por Cadáver extra consumido",
     "efeito não simulado: Aumenta a Velocidade de Conjuração dos Lacaios em 30 %",
     "efeito não simulado: Aumenta a Velocidade de Movimento dos Lacaios em 29 %"
    ],
@@ -5867,10 +5859,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 1 segundos adicionais de Duração Base por Cadáver extra consumido"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -10279,14 +10269,6 @@
    ]
   },
   {
-   "linha": "# segundos adicionais de Duração Base por Cadáver extra consumido",
-   "gemas": [
-    "Bone_Offering",
-    "Flesh_Offering",
-    "Spirit_Offering"
-   ]
-  },
-  {
    "linha": "Alvos Extras das Habilidades Suportadas podem ser encontrados #% mais distânte",
    "gemas": [
     "Ancestral_Call_Support",
@@ -10350,13 +10332,6 @@
    ]
   },
   {
-   "linha": "# % de chance de invocar uma Sentinela da Dominação normal ao atingir um monstro raro ou único",
-   "gemas": [
-    "Dominating_Blow",
-    "Dominating_Blow_of_Inspiring"
-   ]
-  },
-  {
    "linha": "# a # de Dano de Fogo adicionado contra Inimigos Queimando",
    "gemas": [
     "Fire_Trap",
@@ -10375,13 +10350,6 @@
    "gemas": [
     "Siphoning_Trap",
     "Siphoning_Trap_of_Pain"
-   ]
-  },
-  {
-   "linha": "as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente)",
-   "gemas": [
-    "Shrapnel_Ballista",
-    "Shrapnel_Ballista_of_Steel"
    ]
   },
   {
@@ -10671,6 +10639,18 @@
    "linha": "a explosão das torres usa o físico médio da arma × #–#% pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); as torres não bloqueiam o caminho dos monstros",
    "gemas": [
     "Bonespire_Support"
+   ]
+  },
+  {
+   "linha": "A Habilidade Explosiva da Relíquia Sagrada concede # de Vida regenerada por segundo aos Aliados",
+   "gemas": [
+    "Summon_Holy_Relic"
+   ]
+  },
+  {
+   "linha": "A Habilidade Explosiva da Relíquia Sagrada concede # de Vida regenerada por segundo aos Lacaios",
+   "gemas": [
+    "Summon_Holy_Relic"
    ]
   },
   {

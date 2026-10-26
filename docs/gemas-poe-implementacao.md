@@ -8,20 +8,20 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 393 |
+| implementada e testada | 395 |
 | implementada, sem teste próprio | 44 |
-| limitação do modelo idle | 41 |
-| parcial | 83 |
+| limitação do modelo idle | 44 |
+| parcial | 78 |
 | não se aplica | 1 |
 
 Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 167 |
+| implementada e testada | 169 |
 | implementada, sem teste próprio | 18 |
-| limitação do modelo idle | 7 |
-| parcial | 18 |
+| limitação do modelo idle | 9 |
+| parcial | 14 |
 
 ### Gemas de suporte (262)
 
@@ -34,15 +34,15 @@ Só os ataques:
 ### Variantes
 
 - Vaal (52): implementada e testada 33 · parcial 10 · implementada, sem teste próprio 6 · limitação do modelo idle 3
-- Alternativas (209): implementada e testada 135 · implementada, sem teste próprio 24 · parcial 28 · limitação do modelo idle 22
+- Alternativas (209): implementada e testada 136 · implementada, sem teste próprio 24 · parcial 26 · limitação do modelo idle 23
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 363 linhas distintas (42 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 362 linhas distintas (39 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 466/562 ativas, 119/262 suportes.
+- Testes que citam a gema: 467/562 ativas, 119/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
@@ -52,7 +52,6 @@ Só os ataques:
 | 6 | # % de Chance de uma Armadilha ser Ativada uma vez adicional |
 | 4 | Efeito das Auras aumentado em # % |
 | 4 | Habilidades Suportadas têm #% de Velocidade de Movimento de Lacaios aumentada |
-| 3 | # segundos adicionais de Duração Base por Cadáver extra consumido |
 | 3 | Alvos Extras das Habilidades Suportadas podem ser encontrados #% mais distânte |
 | 3 | as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:##; no jogo ainda são projéteis no alvo) |
 | 3 | Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida |
@@ -61,11 +60,9 @@ Só os ataques:
 | 3 | nenhum efeito do buff tem equivalente no jogo |
 | 3 | sem dano direto: nenhum efeito no combate |
 | 2 | # % de chance de Convocar um Sentinela da Absolvição ao Acertar um Inimigo Raro ou Único |
-| 2 | # % de chance de invocar uma Sentinela da Dominação normal ao atingir um monstro raro ou único |
 | 2 | # a # de Dano de Fogo adicionado contra Inimigos Queimando |
 | 2 | #% do Dano Físico Convertido para Dano de Fogo |
 | 2 | Aplica feixes aos # Inimigos próximos |
-| 2 | as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente) |
 | 2 | Aura de Exposição ao Fogo aplica # % à resistência a dano de fogo |
 | 2 | Causa # a # de Dano de Caos |
 | 2 | Causa # a # de Dano de Raio |
@@ -110,6 +107,8 @@ Só os ataques:
 | 1 | +#% para o número máximo de lacaios de habilidades reforçadas |
 | 1 | a explosão da tempestade usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); a Cegueira dentro dela (a descrição) não é aplicada |
 | 1 | a explosão das torres usa o físico médio da arma × #–#% pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); as torres não bloqueiam o caminho dos monstros |
+| 1 | A Habilidade Explosiva da Relíquia Sagrada concede # de Vida regenerada por segundo aos Aliados |
+| 1 | A Habilidade Explosiva da Relíquia Sagrada concede # de Vida regenerada por segundo aos Lacaios |
 | 1 | a imunidade a afecções ainda não existe no jogo |
 | 1 | a onda usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma) |
 | 1 | A Recarga do seu Escudo de Energia e dos seus aliados próximos não é impedida por Dano |
@@ -471,7 +470,6 @@ Só os ataques:
   - efeito não simulado: 50 % menos Dano de Afecções
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Bone_Offering** (Oferenda Óssea) — parcial
-  - efeito não simulado: 1 segundos adicionais de Duração Base por Cadáver extra consumido
   - efeito não simulado: Concede aos Lacaios +34 % de Chance de Bloquear Dano Mágico
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Conversion_Trap** (Armadilha Conversora) — parcial
@@ -491,11 +489,9 @@ Só os ataques:
   - efeito não simulado: Minas tem Velocidade de Detonação aumentada em 20 %
 - **Discipline** (Disciplina) — parcial
   - efeito não simulado: Você e Aliados próximos ganham 30 % de Velocidade de Recarga de Escudo de Energia aumentada
-- **Dominating_Blow** (Golpe Dominador) — parcial
-  - efeito não simulado: 25 % de chance de invocar uma Sentinela da Dominação normal ao atingir um monstro raro ou único
+- **Dominating_Blow** (Golpe Dominador) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Dominating_Blow_of_Inspiring** (Golpe Dominador da Inspiração) — parcial
-  - efeito não simulado: 25 % de chance de invocar uma Sentinela da Dominação normal ao atingir um monstro raro ou único
+- **Dominating_Blow_of_Inspiring** (Golpe Dominador da Inspiração) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Dread_Banner** (Estandarte Horrendo) — parcial
   - efeito não simulado: Estandarte faz com que você e Aliados Recuperem 34 de Vida ao Bloquear
@@ -524,7 +520,6 @@ Só os ataques:
   - efeito não simulado: Enquanto na Postura de Sangue, Aura faz com que os Inimigos sofram até 20 % mais Dano Físico dos Acertos
   - efeito não simulado: Enquanto na Postura da Areia, Buff faz com que você sofra até 19 % menos Dano dos Inimigos na Aura
 - **Flesh_Offering** (Oferenda Carnal) — parcial
-  - efeito não simulado: 1 segundos adicionais de Duração Base por Cadáver extra consumido
   - efeito não simulado: Aumenta a Velocidade de Conjuração dos Lacaios em 30 %
   - efeito não simulado: Aumenta a Velocidade de Movimento dos Lacaios em 29 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
@@ -623,10 +618,6 @@ Só os ataques:
 - **Seismic_Trap_of_Swells** (Armadilha Sísmica dos Poços) — parcial
   - efeito não simulado: Libera 3 onda
   - efeito não simulado: Libera +1 onda
-- **Shrapnel_Ballista** (Balista Estilhaçante) — parcial
-  - efeito não simulado: as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente)
-- **Shrapnel_Ballista_of_Steel** (Balista de Cerco do Aço) — parcial
-  - efeito não simulado: as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente)
 - **Siege_Ballista_of_Trarthus** (Balista de Cerco de Trarthus) — parcial
   - efeito não simulado: Alcance do Posicionamento de Totens aumentado em 300 %
   - efeito não simulado: Invoca 1 Totens de Balista em círculo que usam esta habilidade
@@ -653,8 +644,7 @@ Só os ataques:
 - **Spectral_Helix_of_Trarthus** (Hélice Espectral de Trarthus) — parcial
   - efeito não simulado: Lança até 1 armadilhas a mais ao usar duas armas
   - efeito não simulado: 25 % menos velocidade de lançar armadilhas com arma de duas mãos
-- **Spirit_Offering** (Oferenda Espiritual) — parcial
-  - efeito não simulado: 1 segundos adicionais de Duração Base por Cadáver extra consumido
+- **Spirit_Offering** (Oferenda Espiritual) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Stormblast_Mine** (Mina da Tormenta Explosiva) — parcial
   - efeito não simulado: Cada mina aplica Dano aumentado em +1 % aos Inimigos próximos máximo de 150 %
@@ -678,6 +668,8 @@ Só os ataques:
 - **Summon_Flame_Golem_of_the_Meteor** (Convocar Golem Flamejante do Meteoro) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Summon_Holy_Relic** (Convocar Relíquia Sagrada) — parcial
+  - efeito não simulado: A Habilidade Explosiva da Relíquia Sagrada concede 154.6 de Vida regenerada por segundo aos Aliados
+  - efeito não simulado: A Habilidade Explosiva da Relíquia Sagrada concede 985 de Vida regenerada por segundo aos Lacaios
   - efeito não simulado: Efeito do Buff aumentado em 40 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Summon_Holy_Relic_of_Conviction** (Convocar Relíquia Sagrada da Convicção) — limitação do modelo idle

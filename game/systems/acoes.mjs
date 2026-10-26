@@ -39,6 +39,8 @@ import * as Treino from './treino.mjs';
 import * as R from './regras.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import * as LacaiosPoe from './itens-poe/lacaios-poe.mjs';
+// (lote E1a, 26/10: os cadáveres das Oferendas e a Sentinela a mais do Golpe Dominador — `gemas-e1a.mjs`)
+import * as GemasE1a from './itens-poe/gemas-e1a.mjs';
 import * as Virulencia from './itens-poe/virulencia.mjs';
 import * as Poderes from './poderes.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
@@ -2949,9 +2951,17 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
   hunt.lacaios ??= [];
   // A OFERENDA: o bônus em todos os lacaios em campo, pela duração dela.
   if (q.tipo === 'oferenda') {
-    for (const l of hunt.lacaios) if (l.hp > 0 && l.tipo === 'lacaio') { l.oferenda = { ...q.bonus, ate: agora + q.duracaoMs }; eventos.push({ t: 'fx', id: 13, uid: l.uid, x: l.x, y: l.y, sk: entry.id }); }
+    // (dono, 26/10 — as Oferendas do PoE: "Consome um cadáver… e os outros cadáveres próximos, com a duração aumentada por cadáver consumido") consome os
+    // cadáveres a até 4 casas (`GemasE1a.cadaveresDaOferenda`); a duração é a base + N s por cadáver extra. Sem cadáver, não sai (`dispararSemMarcar` recusa antes).
+    const cadaveres = GemasE1a.cadaveresDaOferenda(hunt);
+    if (!cadaveres.length) return eventos;
+    const usados = new Set(cadaveres);
+    hunt.cadaveres = (hunt.cadaveres ?? []).filter((c) => !usados.has(c));
+    for (const c of cadaveres) eventos.push({ t: 'fx', id: 13, x: c.x, y: c.y, sk: entry.id });
+    const duracaoMs = GemasE1a.duracaoDaOferenda(q, cadaveres.length);
+    for (const l of hunt.lacaios) if (l.hp > 0 && l.tipo === 'lacaio') { l.oferenda = { ...q.bonus, ate: agora + duracaoMs }; eventos.push({ t: 'fx', id: 13, uid: l.uid, x: l.x, y: l.y, sk: entry.id }); }
     // (PoE, o Necromante: "Suas Habilidades de Oferenda também afetam você" — `condicoes-poe.adds`, com o "redução do Efeito em você".)
-    if (estado && ModsPoe.valor(Ficha.combate(estado), 'oferenda_em_voce') > 0) { hunt.oferendaEmVoce = { ...q.bonus, ate: (hunt.clock ?? agora) + q.duracaoMs }; Ficha.invalidar(estado); }
+    if (estado && ModsPoe.valor(Ficha.combate(estado), 'oferenda_em_voce') > 0) { hunt.oferendaEmVoce = { ...q.bonus, ate: (hunt.clock ?? agora) + duracaoMs }; Ficha.invalidar(estado); }
     return eventos;
   }
   // A CONVOCAÇÃO: todos os lacaios para perto do dono (na casa dele: o próximo passo os espalha) e a cura.
@@ -2967,7 +2977,7 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
   // (ciclo 7) "Habilidades que invocam um Totem têm X% de chance de invocar dois em vez de um".
   // (lote G20b: + "Habilidades Suportadas Convocam dois Totens ao invés de um" — os Totens Múltiplos)
   // (lote E1a: + o "X% de chance de convocar um Lacaio extra" da qualidade do Espírito Furioso — `q.chanceDeLacaioExtra`)
-  const porUso = q.tipo === 'totem' ? Math.max(q.porUso, efeito?.totensPorUso ?? 1, estado && Math.random() * 100 < ModsPoe.valor(Ficha.combate(estado), 'totem_dois_chance') ? 2 : 1) : q.porUso + (q.chanceDeLacaioExtra > 0 && Math.random() * 100 < q.chanceDeLacaioExtra ? 1 : 0);
+  const porUso = q.tipo === 'totem' ? Math.max(q.porUso, efeito?.totensPorUso ?? 1, estado && Math.random() * 100 < ModsPoe.valor(Ficha.combate(estado), 'totem_dois_chance') ? 2 : 1) : q.porUso + (q.chanceDeLacaioExtra > 0 && Math.random() * 100 < q.chanceDeLacaioExtra ? 1 : 0) + GemasE1a.sentinelaAMais(q, alvo);
   // (lote G20b) a BALISTA FOCADA: "Totens Balista das Habilidades Suportadas só Atacam quando você disparar um Projétil de Ataque" — só na balista
   const focada = q.tipo === 'totem' && efeito?.balistaFocada > 0 && (efeito?.viraTotem === 2 || (GemasPoe.doSlug(slug)?.gema?.tipos ?? []).includes('TotemsAreBallistae'));
   const fichaDoTotem = q.tipo === 'totem' && estado ? Ficha.combate(estado) : null;
@@ -5125,6 +5135,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     if (q && q.maximo && desta.length >= q.maximo && !venceLogo) return { ok: false, erro: `Já estão todos em campo (${desta.length}/${q.maximo}).`, motivo: 'LACAIOS_COMPLETOS' };
     // A Oferenda e a Convocação agem nos lacaios que estão em campo: sem nenhum, não saem.
     if (q && (q.tipo === 'oferenda' || q.tipo === 'convocacao') && !(hunt.lacaios ?? []).some((l) => l.hp > 0 && l.tipo === 'lacaio')) return { ok: false, erro: 'Nenhum lacaio em campo.', motivo: 'SEM_LACAIOS' };
+    // (dono, 26/10) a Oferenda consome cadáveres: sem nenhum a até 4 casas, não sai
+    if (q?.tipo === 'oferenda' && !GemasE1a.cadaveresDaOferenda(hunt).length) return { ok: false, erro: 'Nenhum cadáver perto.', motivo: 'SEM_CADAVER' };
   }
   // Magia de familiar: só sem um em campo e fora da recarga dele (ver `summon.mjs`).
   if (entry.summon) {

@@ -19,6 +19,12 @@ const J = await import('../systems/itens-poe/jogo.mjs');
 const LacaiosPoe = await import('../systems/itens-poe/lacaios-poe.mjs');
 const GemasE1a = await import('../systems/itens-poe/gemas-e1a.mjs');
 const Terreno = await import('../systems/hunt/terreno.mjs');
+const GS = await import('../systems/skills/gemas.mjs');
+const Combate = await import('../systems/hunt/combate.mjs');
+const Ficha = await import('../systems/ficha.mjs');
+const Afixos = await import('../systems/afixos.mjs');
+const { gerarPeca } = await import('../systems/itens-poe/gerar.mjs');
+const { PERSONAGEM } = await import('./apoio.mjs');
 if (!SEM) {
   await iniciarJogoDoPoe();
   J.iniciar(ITEM_CATALOG);
@@ -38,12 +44,13 @@ test('E1a — status: as 30 gemas sem "efeito não simulado"; as que dependem de
   for (const s of FEITAS) assert.deepEqual(naoSimuladas(s), [], s);
   assert.equal(G.statusNoJogo().Holy_Flame_Totem.status, 'funciona');
   // as que ficam (o dono decide ou é mecânica nova): a linha delas segue, e só ela
-  assert.deepEqual(naoSimuladas('Dominating_Blow').length, 1, 'o Golpe Dominador: só os 25% em Raro/Único');
+  // (as decisões do dono, 26/10: o Golpe Dominador, a Oferenda Espiritual e a Balista Estilhaçante fecharam)
+  for (const s of ['Dominating_Blow', 'Dominating_Blow_of_Inspiring', 'Spirit_Offering', 'Shrapnel_Ballista', 'Shrapnel_Ballista_of_Steel']) assert.deepEqual(naoSimuladas(s), [], s);
   assert.ok(naoSimuladas('Summon_Holy_Relic').some((m) => /Efeito do Buff/.test(m)), 'a Relíquia Sagrada: o Efeito do Buff é o da Nova, que não existe');
-  assert.ok(naoSimuladas('Spirit_Offering').some((m) => /Cadáver extra/.test(m)));
-  assert.ok(!naoSimuladas('Spirit_Offering').some((m) => /Efeito da Oferenda/.test(m)));
+  // (dono, 26/10) as linhas da Nova da Relíquia Sagrada não eram feitas: voltam aos motivos
+  assert.equal(naoSimuladas('Summon_Holy_Relic').filter((m) => /Habilidade Explosiva da Relíquia Sagrada/.test(m)).length, 2);
+  assert.ok(!naoSimuladas('Bone_Offering').some((m) => /Cadáver extra/.test(m)) && !naoSimuladas('Flesh_Offering').some((m) => /Cadáver extra/.test(m)), 'a Óssea e a Carnal também');
   assert.ok(naoSimuladas('Summon_Chaos_Golem_of_the_Maelstr%C3%B6m').some((m) => /definhamento/.test(m)));
-  assert.ok(naoSimuladas('Shrapnel_Ballista').every((m) => !/Velocidade de Proj/.test(m)), 'a Balista Estilhaçante: a velocidade vale; o acerto repetido segue');
   // a Absolvição é de área (não convoca as Sentinelas no jogo): a Recuperação da Recarga dos Lacaios dela não sai
   assert.ok(G.statusNoJogo().Absolution.motivos.some((m) => /Recuperação da Recarga/.test(m)));
   assert.equal(GemasE1a.ehLinhaE1a('Absolution', 'Lacaios têm Recuperação da Recarga aumentada em 40 %', 'area'), false);
@@ -93,11 +100,18 @@ test('E1a — o Efeito do Buff da qualidade do golem (× 1,2 no que ele dá a vo
   assert.ok(Math.abs(total.life_regen - pedra.afDono.life_regen * 1.2) < 1e-6, String(total.life_regen));
   const sem = G.adds({ hunt: { clock: 0, lacaios: [{ ...l, efeitoDoBuffPct: undefined }] }, equipment: {} });
   assert.equal(sem.life_regen, pedra.afDono.life_regen);
-  // o Golem da Carniça: o dano adicionado por lacaio não-golem também × 1,2
+  // (dono, 26/10) o Golem da Carniça: o dano físico adicionado vai aos lacaios NÃO-golem (o PoB, MinionModifier), × o Efeito do Buff — não a você
   const carn = invocar('Summon_Carrion_Golem', 20);
+  const golemC = { uid: 'c', tipo: 'lacaio', hp: 10, golem: true, gema: 'Summon_Carrion_Golem', porLacaioFisico: carn.porLacaioFisico, ...carn.e1a };
   const z = { uid: 'z', tipo: 'lacaio', hp: 10, golem: false };
-  const comCarn = G.adds({ hunt: { clock: 0, lacaios: [{ uid: 'c', tipo: 'lacaio', hp: 10, golem: true, gema: 'Summon_Carrion_Golem', porLacaioFisico: carn.porLacaioFisico, ...carn.e1a }, z] }, equipment: {} });
-  assert.ok(Math.abs(comCarn.added_phys_dmg_max - carn.porLacaioFisico[1] * 1.2) < 1e-6);
+  const comCarn = G.adds({ hunt: { clock: 0, lacaios: [golemC, z] }, equipment: {} });
+  assert.ok(!(comCarn?.added_phys_dmg_max > 0), 'você não ganha o dano físico');
+  const noZumbi = LacaiosPoe.danoDoGolemDaCarnica(z, [golemC, z], (g) => G.fatorDoBuffDoGolem({ equipment: {} }, g));
+  assert.ok(Math.abs(noZumbi[1] - carn.porLacaioFisico[1] * 1.2) < 1e-6, String(noZumbi));
+  assert.deepEqual(LacaiosPoe.danoDoGolemDaCarnica(golemC, [golemC, z]), [0, 0], 'o golem não');
+  assert.deepEqual(LacaiosPoe.danoDoGolemDaCarnica({ uid: 't', tipo: 'totem', hp: 1 }, [golemC]), [0, 0], 'o totem não');
+  // (dono, 26/10) o Golem Flamejante: "Golens concedem 20% mais área de efeito" é a Área AUMENTADA do PoB (fire_golem_grants_area_of_effect_+%)
+  assert.equal(invocar('Summon_Flame_Golem').afDono.area_inc, 20);
 });
 
 test('E1a — o Golem de Pedra da Proteção tem 50% menos Vida; o Espírito Furioso, 30% de chance de um a mais; a Oferenda Espiritual, × 1,1', { skip: SEM }, () => {
@@ -200,4 +214,112 @@ test('E1a — a Recuperação da Recarga do lacaio solta o golpe em área (a hab
   // e o ritmo: com 100%, a área sai a cada N/2 acertos
   const meio = tiqueDoZumbi({ cargaDaArea: 0, poe: { recargaPct: 100 } });
   assert.equal(meio.l.cargaDaArea, 2);
+});
+
+// ---- as decisões do dono (26/10) ----
+const peca = (base) => J.pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras: Catalogo.REGRAS, base, raridade: 'normal', ilvl: 1, rng: () => 0.5 }));
+/** Uma Bruxa com a gema na varinha (slot 1 da barra), numa caçada de verdade, com um bicho colado (`raridade`). */
+function cacadaComGema(gema, { raridade = 'normal', nivel = 20 } = {}) {
+  const e = Object.assign(personagemDeTeste({ vocacao: 'sorcerer', level: 80 }), { sistema: 'poe', classePoe: 'Witch' });
+  const arma = peca('Wands/Driftwood_Wand');
+  arma.soquetes = { abertos: 1, links: [], gemas: [null], cores: ['W'] };
+  e.equipment = { ...e.equipment, weapon: arma };
+  delete e.equipment.shield;
+  e.inventory = [GS.itemDaGema({ id: G.doSlug(gema).itemId, nivel, xp: 0, raridade: 'comum' })];
+  GS.encaixar(e, { de: 0, slot: 'weapon', indice: 0 });
+  Ficha.invalidar(e);
+  Afixos.sincronizarMaximos(e);
+  e.actions = Array(Acoes.SLOTS).fill(null);
+  e.actions[0] = { id: G.doSlug(gema).acao, enabled: true, minMana: 0, conditions: [] };
+  assert.equal(Cacadas.entrar(e, { huntId: 'poe-a1-the-coast', mode: 'auto', strategy: 'nearest' }).ok, true);
+  Object.assign(e, { mana: 1e6, maxMana: 1e6, hp: 1e6, maxHp: 1e6 });
+  const h = e.hunt;
+  h.clock = 10000;
+  h.monstros = h.monstros.slice(0, 1);
+  Object.assign(h.monstros[0], { hp: 1e12, maxHp: 1e12, x: h.pos.x + 1, y: h.pos.y, raridade });
+  h.lacaios = [];
+  h.cadaveres = [];
+  return { e, h, alvo: h.monstros[0] };
+}
+const usar = ({ e, h, alvo }) => {
+  const r = Acoes.disparar(e, h, PERSONAGEM, 0, alvo, { manual: true });
+  if (r.ok && h.conjurando) { h.clock = h.conjurando.fim; Acoes.concluirConjuracao(e, h, PERSONAGEM); }
+  return r;
+};
+
+test('E1a (dono) — as Oferendas consomem os cadáveres a até 4 casas: sem cadáver não saem; +1 s por cadáver extra', { skip: SEM }, () => {
+  for (const gema of ['Spirit_Offering', 'Bone_Offering', 'Flesh_Offering']) {
+    const c = cacadaComGema(gema);
+    c.h.lacaios = [{ uid: 'l1', tipo: 'lacaio', hp: 100, maxHp: 100, x: c.h.pos.x, y: c.h.pos.y + 1 }];
+    const sem = usar(c);
+    assert.equal(sem.ok, false, gema);
+    assert.equal(sem.motivo, 'SEM_CADAVER');
+    // três cadáveres perto e um longe (5 casas)
+    const ca = (dx) => ({ x: c.h.pos.x + dx, y: c.h.pos.y, z: c.h.z ?? 0, key: 'x' });
+    c.h.cadaveres = [ca(1), ca(2), ca(4), ca(5)];
+    const q = LacaiosPoe.oQueInvoca(gema, 20, { nivel: 20, qualidade: 0 }, {});
+    assert.equal(q.porCadaverMs, 1000, gema);
+    const agora = c.h.ultimoTique ?? Date.now();
+    const r = usar(c);
+    assert.equal(r.ok, true, r.erro);
+    assert.equal(c.h.cadaveres.length, 1, 'os três perto foram consumidos; o de 5 casas fica');
+    const ate = c.h.lacaios[0].oferenda?.ate;
+    assert.ok(ate - agora >= q.duracaoMs + 2000 - 50 && ate - agora <= q.duracaoMs + 2000 + 1000, String(ate - agora));
+  }
+  assert.equal(GemasE1a.duracaoDaOferenda({ duracaoMs: 5000, porCadaverMs: 1000 }, 1), 5000);
+  assert.equal(GemasE1a.duracaoDaOferenda({ duracaoMs: 5000, porCadaverMs: 1000 }, 4), 8000);
+});
+
+test('E1a (dono) — o Golpe Dominador: com o alvo Raro ou Único, 25% de chance de uma Sentinela a mais', { skip: SEM }, () => {
+  const q = LacaiosPoe.oQueInvoca('Dominating_Blow', 20, null, {});
+  assert.equal(q.chanceRaroUnico, 25);
+  assert.equal(q.maximo, 13, 'o máximo: 3 Mágicas + 9 Normais + 1 Rara');
+  assert.equal(LacaiosPoe.oQueInvoca('Dominating_Blow_of_Inspiring', 20, null, {}).maximo, 10);
+  assert.equal(GemasE1a.sentinelaAMais(q, { raridade: 'raro' }, () => 0.2), 1);
+  assert.equal(GemasE1a.sentinelaAMais(q, { raridade: 'unico' }, () => 0.2), 1);
+  assert.equal(GemasE1a.sentinelaAMais(q, { raridade: 'raro' }, () => 0.3), 0, 'fora dos 25%');
+  assert.equal(GemasE1a.sentinelaAMais(q, { raridade: 'normal' }, () => 0), 0, 'o normal não');
+  assert.equal(GemasE1a.sentinelaAMais(q, { raridade: 'magico' }, () => 0), 0);
+  assert.equal(GemasE1a.sentinelaAMais(LacaiosPoe.oQueInvoca('Raise_Zombie', 20, null, {}), { raridade: 'raro' }, () => 0), 0, 'só no Golpe Dominador');
+  // no uso de verdade: o alvo Raro, o sorteio dentro dos 25% → 2 Sentinelas; o Normal → 1
+  for (const [raridade, n] of [['raro', 2], ['normal', 1]]) {
+    const c = cacadaComGema('Dominating_Blow', { raridade });
+    const r0 = Math.random;
+    Math.random = () => 0.1;
+    let r;
+    try { r = usar(c); } finally { Math.random = r0; }
+    assert.equal(r.ok, true, r.erro);
+    assert.equal(c.h.lacaios.filter((l) => l.gema === 'Dominating_Blow' && l.hp > 0).length, n, raridade);
+  }
+});
+
+test('E1a (dono) — o Golem de Pedra da Proteção: 15% do acerto corpo a corpo na vida dele antes da sua (× o Efeito do Buff; até a vida dele)', { skip: SEM }, () => {
+  const q = LacaiosPoe.oQueInvoca('Summon_Stone_Golem_of_Safeguarding', 20, { nivel: 20, qualidade: 20 }, {});
+  assert.equal(q.e1a.protecaoPct, 15);
+  const golem = { uid: 'g', tipo: 'lacaio', golem: true, hp: 1000, maxHp: 1000, gema: 'Summon_Stone_Golem_of_Safeguarding', ...q.e1a };
+  const h = { lacaios: [golem] };
+  // 15% × 1,2 (o Efeito do Buff da qualidade) = 18% de 1000
+  const r = LacaiosPoe.desviarParaOGolemDePedra(h, 1000);
+  assert.equal(r.tomou, 180);
+  assert.equal(golem.hp, 820);
+  golem.hp = 50;
+  assert.equal(LacaiosPoe.desviarParaOGolemDePedra(h, 1000).tomou, 50, 'até a vida dele');
+  assert.equal(LacaiosPoe.desviarParaOGolemDePedra({ lacaios: [{ uid: 'z', tipo: 'lacaio', hp: 100 }] }, 1000).tomou, 0, 'sem o golem, nada');
+  // no golpe corpo a corpo de verdade: o golem toma a parte
+  const c = cacadaComGema('Summon_Stone_Golem_of_Safeguarding');
+  const g2 = { ...golem, hp: 1e6, maxHp: 1e6, x: c.h.pos.x - 1, y: c.h.pos.y };
+  c.h.lacaios = [g2];
+  const r0 = Math.random;
+  Math.random = () => 0.99;
+  try { for (let i = 0; i < 20 && g2.hp === 1e6; i++) Combate.contraAtaque(c.e, c.h, PERSONAGEM, c.alvo, []); } finally { Math.random = r0; }
+  assert.ok(g2.hp < 1e6, 'o golem levou parte do golpe corpo a corpo');
+});
+
+test('E1a (dono) — o Ceifador: o "87% mais Dano com Sangramento" vale só no Sangramento (não no golpe)', { skip: SEM }, () => {
+  const q = LacaiosPoe.oQueInvoca('Summon_Reaper', 20, null, {});
+  assert.equal(q.e1a.maisSangramentoPct, 87);
+  assert.ok(Math.abs(q.poe.fatorDoDano - 1) < 1e-9, 'o golpe sem o 87%: ' + q.poe.fatorDoDano);
+  // a Nova da Relíquia Sagrada: as linhas não são de lacaio feitas
+  assert.equal(LacaiosPoe.ehLinhaDeLacaio('A Habilidade Explosiva da Relíquia Sagrada concede 985 de Vida regenerada por segundo aos Lacaios'), false);
+  assert.equal(LacaiosPoe.ehLinhaDeLacaio('Golens concedem 15 % do Dano Corpo a Corpo sofrido na Vida do seu Golem de Pedra antes da sua'), true);
 });

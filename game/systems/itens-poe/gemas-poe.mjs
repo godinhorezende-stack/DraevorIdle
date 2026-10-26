@@ -275,13 +275,14 @@ export const ehLinhaDoTotem = (l) => LINHA_DO_TOTEM.test(l) || LINHA_DO_EFEITO_D
 const DESCRICAO_DO_TOTEM = [
   [/^Artillery_Ballista/, 'as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:751-769; no jogo ainda são projéteis no alvo)'],
   [/^Decoy_Totem/, 'o totem provoca os monstros em volta a atacá-lo (act_str.lua:2416-2432)'],
-  [/^Shrapnel_Ballista/, 'as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente)'],
+  // (dono, 26/10: a Balista Estilhaçante segue o padrão do PoB — `ShrapnelBallistaProjectileOverlap` 1, uma flecha por alvo, como o jogo faz: a linha fecha)
 ];
 const TOTEM_SEM_GOLPE = /^(?:Decoy_Totem|Devouring_Totem|Rejuvenation_Totem|Vaal_Rejuvenation_Totem|Searing_Bond)/;
 export const totemSemGolpe = (slug) => TOTEM_SEM_GOLPE.test(String(slug ?? ''));
 /** Lacaios e totens (`itens-poe/lacaios-poe.mjs`): as linhas que o jogo faz. (Aqui, e não lá: o módulo dos lacaios importa este.) */
 const LINHA_DE_LACAIO = /^Máximo de |^\+\d+ ao número máximo de Totens|^Convoca \d+ |^Duração base é de|^Totem dura|Lacaios? têm .*mais Vida|Lacaios? causam? .*(mais|menos) Dano|são de Nível|Invoca um Totem que usa|^Golens (aumentam|concedem)|mais Velocidade de Ataque|sempre Golpes Críticos|Multiplicador de Acerto Crítico|Dano Físico adicional|infligir Sangramento|Velocidade de Ataque dos Lacaios|Chance de Golpe Crítico aumentada|Multiplicador de Golpe Crítico|Chance de Bloquear o Dano de Ataques|Vida Regenerada por Segundo|Regenera .*da Vida por segundo|Aura dos Robôs/i;
-export const ehLinhaDeLacaio = (l) => LINHA_DE_LACAIO.test(l);
+// (dono, 26/10: a Nova da Relíquia Sagrada não existe no jogo — as linhas dela não são feitas, `GemasE1a.ehLinhaDeLacaioNaoFeita`)
+export const ehLinhaDeLacaio = (l) => LINHA_DE_LACAIO.test(l) && !GemasE1a.ehLinhaDeLacaioNaoFeita(l);
 /** (lote 75) As linhas da VIRULÊNCIA do Arauto da Agonia (`itens-poe/virulencia.mjs` e o Rastejador — `lacaios-poe.oQueInvoca`). */
 const LINHA_DA_VIRULENCIA = /Virulência|Rastejador/i;
 export const ehLinhaDaVirulencia = (l) => LINHA_DA_VIRULENCIA.test(l);
@@ -2166,10 +2167,9 @@ export function adds(estado) {
       for (const [k, v] of Object.entries(b.afPoe)) total[k] = (total[k] ?? 0) + v * f;
     }
   }
-  // Os GOLENS dão bônus ao dono enquanto vivem ("Golens aumentam 24% de Dano", "+256 de precisão"...); o Golem Carniçal, dano físico
-  // adicional por lacaio não-golem em campo.
+  // Os GOLENS dão bônus ao dono enquanto vivem ("Golens aumentam 24% de Dano", "+256 de precisão"...) (o dano físico do Golem Carniçal vai
+  // aos lacaios não-golem — `GemasE1a.danoDoGolemDaCarnica`).
   const vivos = (hunt.lacaios ?? []).filter((l) => l.hp > 0);
-  const naoGolens = vivos.filter((l) => !l.golem && l.tipo === 'lacaio').length;
   // (09/10) × o "Efeitos de Buffs concedidos pelos seus Golens aumentados" (`efeito_buff_gema:golem`) e o de UM golem ("Golens de Chamas":
   // `efeito_buff_gema:convocar-golem-flamejante`).
   // (18/10, lote G20c) os TOTENS com efeito em você enquanto você está perto deles: o buff do ancestral ATIVO (`l.buffAtivo`, com você a até
@@ -2196,18 +2196,22 @@ export function adds(estado) {
   for (const [k, v] of Object.entries(doA2)) total[k] = (total[k] ?? 0) + v;
   // (lote A4, dono 19/10) o da canalização de agora (`addsDaCanalizacao`)
   for (const [k, v] of Object.entries(daCanalizacao ?? {})) total[k] = (total[k] ?? 0) + v;
+  // (dono, 26/10: o dano físico adicionado do Golem da Carniça vai aos lacaios NÃO-golem — o PoB, `MinionModifier` —, não a você: `GemasE1a.danoDoGolemDaCarnica`,
+  // no golpe de cada lacaio)
   for (const l of vivos) {
-    const nomeDaGema = l.golem ? REGISTRO.get(l.gema)?.gema?.nome : null;
-    // (lote E1a: + o "Efeito do Buff aumentado em X%" da QUALIDADE da gema do golem — `golem_buff_effect_+%`, `l.efeitoDoBuffPct` — no buff inteiro, o dano
-    // adicionado por lacaio não-golem do Golem da Carniça também)
-    const f = l.golem ? 1 + (doEquipamento(estado, 'efeito_buff_gema:golem') + (nomeDaGema ? doEquipamento(estado, `efeito_buff_gema:${slugDoNome(nomeDaGema)}`) : 0) + (l.efeitoDoBuffPct ?? 0)) / 100 : 1;
+    const f = fatorDoBuffDoGolem(estado, l);
     for (const [k, v] of Object.entries(l.afDono ?? {})) total[k] = (total[k] ?? 0) + v * f;
-    if (l.porLacaioFisico && naoGolens) {
-      total.added_phys_dmg_min = (total.added_phys_dmg_min ?? 0) + l.porLacaioFisico[0] * naoGolens * f;
-      total.added_phys_dmg_max = (total.added_phys_dmg_max ?? 0) + l.porLacaioFisico[1] * naoGolens * f;
-    }
   }
   return Object.keys(total).length ? total : null;
+}
+/**
+ * O EFEITO DO BUFF do golem `l` (1 nos outros lacaios): × o "Efeitos de Buffs concedidos pelos seus Golens aumentados" das peças (`efeito_buff_gema:golem`), o de UM
+ * golem (`efeito_buff_gema:<nome da gema>`) e (lote E1a) o "Efeito do Buff aumentado em X%" da QUALIDADE da gema (`golem_buff_effect_+%`, `l.efeitoDoBuffPct`).
+ */
+export function fatorDoBuffDoGolem(estado, l) {
+  if (!l?.golem) return 1;
+  const nomeDaGema = REGISTRO.get(l.gema)?.gema?.nome;
+  return 1 + (doEquipamento(estado, 'efeito_buff_gema:golem') + (nomeDaGema ? doEquipamento(estado, `efeito_buff_gema:${slugDoNome(nomeDaGema)}`) : 0) + (l.efeitoDoBuffPct ?? 0)) / 100;
 }
 
 /** No tique: um buff de gema do PoE com atributos venceu? (a ficha é refeita por quem chama). */

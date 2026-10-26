@@ -879,6 +879,25 @@ A fila: 41 gemas ativas (lacaios e totens). As regras novas estão em `game/syst
 - **A tradução não mudou** (nenhuma linha nova; `VERSAO_DA_TRADUCAO` fica em 73).
 - **Teste novo:** `game/testes/ativas-e1a.test.mjs` (10 casos). Os 120 arquivos afetados (`ativas-*`, `gemas-*`, `suportes-*`, os de lacaio e de totem, `itens-poe-gemas`, `gemas-todas-funcionam-poe`, `eficacia-ataque-poe`): 1399 testes, 1363 passam, 33 pulados e 3 falharam. Um falhava pela Área do Golem Flamejante, que saiu do lote e ficou como pendência (`itens-poe-gemas.test.mjs:338`). Os outros dois são a regra do PoE e esperam o aval do dono, sem edição: `projeteis-a3.test.mjs:414` e `totens-uso-poe.test.mjs:185` ainda esperam "efeito não simulado: 128 % mais Velocidade de Projétil" no Totem Flamejante Sagrado da Ira, que agora vale no tiro do totem (velocidade × 2,28).
 
+#### E1a — as decisões do dono (26/10, segundo commit)
+
+- **O aval:** `projeteis-a3.test.mjs:414` e `totens-uso-poe.test.mjs:185` agora pedem que o "128% mais Velocidade de Projétil" do Totem Flamejante da Ira NÃO esteja nos motivos (o comentário do aval está em cada um).
+- **A Balista Estilhaçante ×2:** segue o padrão do PoB (`ShrapnelBallistaProjectileOverlap` 1, uma flecha por alvo, como o jogo já fazia). A linha fecha.
+- **As Oferendas (a Espiritual, a Óssea e a Carnal — no PoE as três consomem cadáveres):**
+  - consomem os cadáveres a até 4 casas de você (`GemasE1a.cadaveresDaOferenda`) e duram a base + 1 s por cadáver EXTRA;
+  - sem cadáver, não saem (`SEM_CADAVER`).
+- **O Golpe Dominador ×2:**
+  - com o alvo do uso Raro ou Único, há 25% de chance de uma Sentinela a mais (`GemasE1a.sentinelaAMais`);
+  - o máximo virou a soma dos máximos por raridade (3 Mágicas + 9 Normais + 1 Rara = 13; o da Inspiração, 10). Antes valia o da última linha (1), e a Sentinela a mais trocava a que estava em campo.
+- **As linhas que estavam contadas como feitas:**
+  - **a Nova da Relíquia Sagrada:** a regeneração que a Habilidade Explosiva dá aos Aliados e aos Lacaios não existe no jogo. O `LINHA_DE_LACAIO` as engolia; agora voltam a "efeito não simulado" (`GemasE1a.ehLinhaDeLacaioNaoFeita`);
+  - **o Golem de Pedra da Proteção:** 15% do acerto corpo a corpo vai para a vida dele antes do seu Escudo de Energia e da sua Vida, × o Efeito do Buff do golem, até a vida dele (`desviarParaOGolemDePedra`, no `contraAtaque`);
+  - **o Golem Flamejante:** a Área de Efeito AUMENTADA do PoB (`area_inc`, `fire_golem_grants_area_of_effect_+%`);
+  - **o Golem da Carniça:** o dano físico adicionado vai aos seus lacaios NÃO-golem (o PoB, `MinionModifier`), × o Efeito do Buff, no golpe de cada um (`danoDoGolemDaCarnica`). Você não o recebe mais (antes ia para a sua ficha × o número de lacaios). A conta do Efeito do Buff do golem ficou numa função só (`GemasPoe.fatorDoBuffDoGolem`);
+  - **o Ceifador:** "Lacaios causam 87% mais Dano com Sangramento" vale só no Sangramento dele. Antes valia no golpe inteiro.
+- **Placar das ativas:** parcial 83 → 78; limitação do idle 41 → 44; implementada e testada 393 → 395. Da fila, ficam parciais 6 (o Chamariz, a Artilharia ×3, a Relíquia Sagrada e o Golem do Turbilhão).
+- **Testes:** `ativas-e1a` agora tem 14 casos. Os 121 arquivos afetados: 1411 testes, 1376 passam, 33 pulados, 2 falham. Os dois são pela regra do PoE e esperam o aval do dono (não foram editados): `itens-poe-gemas.test.mjs:338` (o afDono do Golem Flamejante agora traz `area_inc: 20` além de `dmg_vs_monsters: 24`) e `passivas-poe-suportes-sem-regra.test.mjs:280` (a Oferenda Carnal usada sem cadáver: agora é recusada, "Nenhum cadáver perto.").
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.
