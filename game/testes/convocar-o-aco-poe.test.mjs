@@ -99,8 +99,9 @@ test('as GEMAS de Aço: as linhas dos Fragmentos de Aço contam como feitas; a d
   for (const s of ['Lancing_Steel', 'Splitting_Steel_of_Ammunition', 'Shrapnel_Ballista_of_Steel', 'Shattering_Steel_of_Ammunition']) {
     assert.ok(!G.doSlug(s).motivosNoJogo.some((m) => /Fragmento|Proteção de Aço/.test(m)), `${s}: ${G.doSlug(s).motivosNoJogo}`);
   }
-  // (o que ainda falta: "Acertos após o primeiro em cada Inimigo causam 60% menos Dano" do Aço Perfurador)
-  assert.deepEqual(G.doSlug('Lancing_Steel').motivosNoJogo, ['efeito não simulado: Acertos aós o primeiro em cada Inimigo causam 60 % menos Dano']);
+  // (lote PR3, com o aval do dono 21/10: o "Acertos após o primeiro em cada Inimigo causam 60% menos Dano" do Aço Perfurador existe — o rodízio no alvo e nos
+  // vizinhos, `Secundarios.resolver`: a gema fica completa)
+  assert.deepEqual(G.doSlug('Lancing_Steel').motivosNoJogo, []);
   assert.equal(G.alvosNoNivel('Splitting_Steel', 1).divide, 2);
   assert.equal(G.alvosNoNivel('Splitting_Steel_of_Ammunition', 1).divide, 4);
 });

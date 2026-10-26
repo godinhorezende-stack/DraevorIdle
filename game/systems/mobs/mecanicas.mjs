@@ -414,7 +414,8 @@ export function tique(estado, hunt, personagem, eventos) {
   const doLento = (origem) => {
     if (!(lentoMenos > 0) || origem?.uid == null || !hunt.pos) return 1;
     const m = (hunt.monstros ?? []).find((x) => x.uid === origem.uid);
-    return m && m.estados?.lento?.ate > agora && Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) <= 3 ? Math.max(0, 1 - lentoMenos / 100) : 1;
+    // (lote C4, dono 21/10: + o Tolhido — o "Desacelerado" do PoE é o Hinder, `estados.tolhido`; o `lento` segue valendo como antes)
+    return m && (m.estados?.lento?.ate > agora || m.estados?.tolhido?.ate > agora) && Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) <= 3 ? Math.max(0, 1 - lentoMenos / 100) : 1;
   };
   const andando = (tipo) => (afPoe && tipo === 'sangramento' && !(Number(afPoe.sangrar_andando_sem_extra) > 0) && agora - (hunt.poeRecente?.moveu ?? -Infinity) <= Dot.MOVIMENTO.janelaMs ? Dot.MOVIMENTO.fator : 1);
   // (lote 72, a Terapia de Exposição) "+X% de Resistência a Caos contra Dano Degenerativo": no dano contínuo de Caos, a resistência a Caos + X,

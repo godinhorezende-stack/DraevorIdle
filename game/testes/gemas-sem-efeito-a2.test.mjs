@@ -111,8 +111,14 @@ test('A2: a Fúria Sangrenta — a velocidade de ataque, o dreno, a perda de 4%/
   const af = Ficha.combate(e).afPoe;
   assert.equal((af.atk_speed ?? 0) - antes.atk, 20, '15% + 5% da qualidade 20');
   assert.equal(af.life_leech_fisico_ataque, 1.2);
-  assert.equal(af.perde_vida_pct_s, 4);
-  assert.equal(af.perde_es_pct_s, 4);
+  // (lote G-B, com o aval do dono 26/10 — D8: a perda é o Dano Físico degenerativo do PoB, 4% da Vida + 4% do ES máximos por segundo, que pode matar — no lugar da
+  // perda do jogo, `perde_vida_pct_s`/`perde_es_pct_s`)
+  assert.equal(af.perde_vida_pct_s, undefined);
+  assert.deepEqual([b.a2.degenVidaPct, b.a2.degenEsPct], [4, 4]);
+  Acoes.tiqueDasGemasGBD(e, e.hunt, PERSONAGEM, [], e.hunt.clock);
+  const dot = e.hunt.efeitosDoJogador.dots.find((d) => d.tipo === 'degenFisico');
+  const es = Math.round(Ficha.combate(e).energyShield ?? 0);
+  assert.ok(Math.abs(dot.falta - ((e.maxHp * 4 + es * 4) / 100) * 0.5) < 1e-6, 'o degenerativo por meio segundo: (4% da Vida + 4% do ES) × 0,5 s');
   assert.equal(af.carga_frenesi_ao_matar, 25);
   assert.ok(e.hp < antes.hp && e.mana === antes.mana, `o custo é de Vida (${antes.hp} → ${e.hp}; mana ${e.mana})`);
   b.ate = e.hunt.clock + 100;

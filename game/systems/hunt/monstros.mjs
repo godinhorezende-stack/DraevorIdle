@@ -12,6 +12,10 @@ import { VIZINHANCA_8, VIZINHANCA_4, bfsDistancias, distancia } from './caminho.
 import * as Charms from '../charms.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Reforcos from '../skills/reforcos.mjs';
+// (lote PR4, dono 25/10: o passo do Aprisionado pela Flecha Aprisionadora — o "menos" de cada corda)
+import { fatorDoPassoAprisionado } from '../itens-poe/gemas-pr4.mjs';
+// (lote G-C, dono 25/10 — D10: a Corrente Temporal, a velocidade de ação do amaldiçoado)
+import { fatorDeAcao } from '../itens-poe/gemas-gac.mjs';
 
 export const BESTIARY = CATALOGO.bestiary;
 
@@ -130,7 +134,15 @@ export function trocarDeAndar(hunt, destino) {
   if (hunt.anfitriao) return false;
   const guardados = (hunt.outrosAndares ??= {});
   const ficam = hunt.monstros.splice(0, hunt.monstros.length);
-  for (const m of ficam) m.perseguindo = false;
+  // (revisão das gemas PR4: como a troca de área do PoE, o que grudou nos bichos do andar que fica para trás some — as flechas da Flecha Explosiva, os golpes da
+  // Eletrocussão e a Concha esgotada —, sem explodir na volta; os restos dos mortos também)
+  for (const m of ficam) {
+    m.perseguindo = false;
+    delete m.poeFusiveis;
+    delete m.poeEletrocussao;
+    if (m.poeConchas) for (const [k, c] of Object.entries(m.poeConchas)) if (c?.estourou != null) delete m.poeConchas[k];
+  }
+  delete hunt.poeRestosPR4;
   if (ficam.length) guardados[hunt.z] = ficam;
   hunt.monstros.push(...(guardados[destino.z] ?? []));
   delete guardados[destino.z];
@@ -330,7 +342,7 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
       m.y = destino.y;
       m.dir = fy < 0 ? 0 : fy > 0 ? 2 : fx > 0 ? 1 : 3;
       m.andouEm = hunt.clock ?? 0;
-      m.moveMs = passoDoBicho(m, fx !== 0 && fy !== 0) * (Charms.paralisado(m, agora) ? Charms.FATOR_DA_PARALISIA : 1) * Estados.fatorDeLentidao(m, agora) * Reforcos.fatorDeDesaceleracao(m, agora);
+      m.moveMs = passoDoBicho(m, fx !== 0 && fy !== 0) * (Charms.paralisado(m, agora) ? Charms.FATOR_DA_PARALISIA : 1) * Estados.fatorDeLentidao(m, agora) * Reforcos.fatorDeDesaceleracao(m, agora) * Estados.fatorDeTolhimento(m, agora) * fatorDoPassoAprisionado(m.poeAprisionado) * fatorDeAcao(m, agora);
       m.proximoPasso = agora + m.moveMs;
       continue;
     }
@@ -363,7 +375,8 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
     // Paralisado (charms Cripple e Numb): passo bem mais lento por 10 s.
     // + lento (support Slow): o passo demora mais.
     // + Desacelerado pela maldição do PoE ("Inimigos Amaldiçoados por você são Desacelerados" — `Reforcos.fatorDeDesaceleracao`).
-    m.moveMs = passoDoBicho(m, dx !== 0 && dy !== 0) * (Charms.paralisado(m, agora) ? Charms.FATOR_DA_PARALISIA : 1) * Estados.fatorDeLentidao(m, agora) * Reforcos.fatorDeDesaceleracao(m, agora);
+    // (lote C4, dono 21/10: + o Tolhimento do PoE — `Estados.fatorDeTolhimento`, só no passo)
+    m.moveMs = passoDoBicho(m, dx !== 0 && dy !== 0) * (Charms.paralisado(m, agora) ? Charms.FATOR_DA_PARALISIA : 1) * Estados.fatorDeLentidao(m, agora) * Reforcos.fatorDeDesaceleracao(m, agora) * Estados.fatorDeTolhimento(m, agora) * fatorDoPassoAprisionado(m.poeAprisionado) * fatorDeAcao(m, agora);
     m.proximoPasso = agora + m.moveMs;
   }
 }

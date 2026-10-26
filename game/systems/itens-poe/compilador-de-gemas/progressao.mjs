@@ -57,11 +57,25 @@ export function basicosDoNivel(gema, nivel) {
   };
 }
 
+// (lote B3, dono 21/10) A célula de VÁRIOS números ("2, 1.6") numa coluna cujo cabeçalho tem UM número ("Raio do Estouro é de 1.2 metros"): o poedb põe
+// junto o número de outro stat (o modo de descrição da área do PoB…), e o primeiro não é o do texto. O certo é o da POSIÇÃO em que a célula do nível 1 tem o
+// número do cabeçalho (o cabeçalho é o texto do nível 1). Fora: as gemas da outra sessão (as Armadilhas Explosivas, os totens), que seguem como antes.
+const COLUNA_COMO_ANTES = /^Explosive_Trap|^Siege_Ballista/;
+function celulaDoTexto(gema, i, cab, valor) {
+  if (COLUNA_COMO_ANTES.test(gema.slug ?? '') || cab.includes("#")) return valor;
+  const nums = cab.match(NUM) ?? [];
+  const vals = String(valor ?? "").split(/,\s*/).filter((v) => v !== "");
+  if (nums.length !== 1 || vals.length < 2) return valor;
+  const doNivel1 = String(gema.linhas?.[0]?.[i] ?? "").split(/,\s*/).filter((v) => v !== "");
+  const k = doNivel1.findIndex((v) => parseFloat(v) === parseFloat(nums[0].replace(",", ".")));
+  return k > 0 && k < vals.length ? vals[k] : valor;
+}
+
 export function textosDoNivel(gema, nivel) {
   const linha = linhaDoNivel(gema, nivel);
   const porMolde = new Map();
   gema.colunas.forEach((c, i) => {
-    if (!COLUNAS_PADRAO.has(c)) porMolde.set(molde(c), { cab: c, valor: linha[i] });
+    if (!COLUNAS_PADRAO.has(c)) porMolde.set(molde(c), { cab: c, valor: celulaDoTexto(gema, i, c, linha[i]) });
   });
   const usados = new Set();
   const out = [];

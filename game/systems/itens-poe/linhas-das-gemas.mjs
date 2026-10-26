@@ -29,6 +29,8 @@ const REGRAS = [
   [new RegExp(`^Congela inimigos causando ${N} ?% mais Dano$`, 'i'), (m) => ({ congelamento_como_mais: num(m[1]) })],
   // (lote G18b: o Golpe de Misericórdia da gema — mata no acerto com 10% de vida, 5% no Raro/Único — `ModsPoe.aoAcertar`)
   [/^Golpe de Misericórdia$/i, () => ({ culling: 1 })],
+  // (lote B3, dono 21/10: a Cascata Glacial — "Empurra Inimigos ao Acertar", o global_knockback do PoB: o Empurrão do jogo em todo acerto da gema, `ModsPoe.aoAcertar`)
+  [/^Empurra Inimigos ao Acertar$/i, () => ({ chance_empurrar: 100 })],
   // (o "+N % à Chance de Crítico" das Concocções: pontos na chance base)
   [new RegExp(`^\\+${N} ?% à Chance de Crítico$`, 'i'), (m) => ({ crit_chance: num(m[1]) })],
   // (o Golpe Duplo: o dano dobrado contra quem sangra)
@@ -37,6 +39,8 @@ const REGRAS = [
   [new RegExp(`^Duração do Atordoamento em inimigos aumentada em ${N} ?%$`, 'i'), (m) => ({ stun_duration: num(m[1]) })],
   [new RegExp(`^${N} ?% de chance de dobrar a Duração de Atordoamentos$`, 'i'), (m) => ({ chance_dobrar_atordoamento: num(m[1]) })],
   [new RegExp(`^Duração de Atordoamentos em Inimigos com Vida Cheia aumentada em ${N} ?%$`, 'i'), (m) => ({ 'stun_duration@alvoVidaCheia': num(m[1]) })],
+  // (lote C2, dono 20/10: o Esmagar Ossos da Carnificina — active_skill_damage_+%_final_vs_stunned_enemies, o "mais" contra o atordoado: hits e afecções)
+  [new RegExp(`^Mais ${N} ?% de dano contra inimigos atordoados$`, 'i'), (m) => ({ 'mais_dano@alvoAtordoado': num(m[1]) })],
   // (o Martelo Glacial: o terceiro golpe seguido — a tag `terceiroGolpe` do golpe)
   [new RegExp(`^Cada terceiro golpe sucessivo Congela inimigos como se houvesse causado ${N} ?% mais Dano$`, 'i'), (m) => ({ 'congelamento_como_mais@terceiroGolpe': num(m[1]) })],
   [/^Cada terceiro golpe sucessivo é um Golpe Crítico$/i, () => ({ 'crit_chance@terceiroGolpe': 100 })],
@@ -62,6 +66,13 @@ const REGRAS = [
   // A Postura (Sangue e Areia) e a mão do ataque.
   [new RegExp(`^${N} ?% mais Área de Efeito enquanto na Postura da Areia$`), (m) => ({ 'area_mais@posturaAreia': num(m[1]) })],
   [new RegExp(`^${N} ?% menos Dano na Postura de Sangue$`), (m) => ({ 'mais_dano@posturaSangue': -num(m[1]) })],
+  // (lote C3, dono 25/10) a Postura nas gemas de Postura (o PoB: Condition BloodStance / ChangedStanceRecently): a qualidade da Perfuração da Dualidade ("+0,25% mais Dano
+  // na Postura de Sangue" — o mesmo stat do −75%: somam), o Sangrar só na de Sangue da Dilaceração (o poedb escreve "chancer") e a velocidade "se mudou de Postura
+  // Recentemente" da qualidade dela; o "12% mais Velocidade de Ataque" da Tempestade de Lâminas dentro de uma Sangrenta sua (`emTempestadeSangrenta`)
+  [new RegExp(`^${N} ?% mais Dano na Postura de Sangue$`), (m) => ({ 'mais_dano@posturaSangue': num(m[1]) })],
+  [new RegExp(`^${N} ?% de chancer? de causar Sangramento enquanto na Postura de Sangue$`, 'i'), (m) => ({ 'chance_bleed@posturaSangue': num(m[1]) })],
+  [new RegExp(`^Velocidade de Ataque aumentada em ${N} ?% caso tenha mudado de Postura Recentemente$`, 'i'), (m) => ({ 'atk_speed@mudouPosturaRecente': num(m[1]) })],
+  [new RegExp(`^${N} ?% mais Velocidade de Ataque enquanto estiver em uma Tempestade de Lâminas Sangrentas$`, 'i'), (m) => ({ 'atk_speed_mais@emTempestadeSangrenta': num(m[1]) })],
   [new RegExp(`^${N} ?% mais Dano com a Arma Principal$`), (m) => ({ 'mais_dano@maoPrincipal': num(m[1]) })],
   // As frases de gema que as peças escrevem de outro jeito: a duração da habilidade, a velocidade de conjuração (a da gema soma como a "com
   // Habilidades de X" — `cast_speed_tag`), o efeito do Empalamento.
@@ -122,7 +133,9 @@ const REGRAS = [
   // (lote PR1, dono 20/10) o dano ADICIONAL igual a X% da Vida/Mana máxima — a Flecha Ardente do Vigor (o PoB: added_fire_damage_to_attacks_equal_to_%_maximum_life,
   // FireMin e FireMax BASE pelo PercentStat Life, act_dex.lua:3478) e o Sifão de Poder do Arquimago (attack_skills_have_added_lightning_damage_equal_to_%_of_maximum_mana,
   // + 0,15 por qualidade): o mínimo e o máximo iguais, × a Vida/Mana máxima de agora (a escala `vidaMax:1`/`manaMax:1`, `fatorDaEscala`)
-  [new RegExp(`^Causa Dano de (Fogo|Gelo|Raio|Caos|Físico) Adicional igual a ${N} ?% da (Vida|Mana) M[áa]xima$`, 'i'), (m) => {
+  // (lote PR3, dono 21/10: + a ordem do Físico — "Causa Dano Físico Adicional igual a 15% da Mana Máxima", a Explosão Cinética da Ramificação: o PoB,
+  // added_physical_damage_to_attacks_equal_to_%_maximum_mana — PhysicalMin/Max BASE pelo PercentStat Mana, act_int.lua:10769)
+  [new RegExp(`^Causa Dano (?:de )?(Fogo|Gelo|Raio|Caos|Físico) Adicional igual a ${N} ?% da (Vida|Mana) M[áa]xima$`, 'i'), (m) => {
     const e = { fogo: 'fire', gelo: 'ice', raio: 'energy', caos: 'chaos', físico: 'physical' }[m[1].toLowerCase()];
     const escala = m[3].toLowerCase() === 'vida' ? 'vidaMax:1' : 'manaMax:1';
     return { [`added_${e}_dmg_min%${escala}`]: num(m[2]) / 100, [`added_${e}_dmg_max%${escala}`]: num(m[2]) / 100 };
@@ -241,10 +254,12 @@ const BUFF_PROPRIO = [
   [new RegExp(`^Você e (?:seus )?aliados próxim\\S* (?:ganham|têm|tem) Duração do Efeito de Habilidades aumentada em ${N} ?%$`, 'i'), (m) => ({ duracao_habilidades: num(m[1]) })],
   [/^(?:Buff concede Imunidade a|Você e (?:seus )?aliados próxim\S* são Imunes [àa]) (Incêndio|Resfriamento|Congelamento|Eletrização|Sangramento|Veneno|Envenenamento)$/i, (m) => ({ [`imune_${{ Incêndio: 'incendio', Resfriamento: 'resfriamento', Congelamento: 'congelamento', Eletrização: 'eletrizacao', Sangramento: 'sangramento', Veneno: 'veneno', Envenenamento: 'veneno' }[m[1]]}`]: 1 })],
   // (Sangue e Areia: "Habilidades Corpo a Corpo causam 27 % mais Efeito em Área enquanto na Postura de Areia" — a condição `posturaAreia`)
-  // (só a de AREIA: no jogo o buff ligado É a Postura de Areia — `condicoes-poe.posturaDe` —, e o atributo do buff só vale com ele ligado; a de
-  // Sangue, que valeria com ele desligado, segue "não simulada")
-  [new RegExp(`^Habilidades Corpo a Corpo (?:causam|têm) ${N} ?% (mais|menos) (Dano|Efeito) em Área enquanto na Postura de Areia$`, 'i'),
-    (m) => ({ [`${m[3] === 'Dano' ? 'mais_dano' : 'area_mais'}@corpo+area+posturaAreia`]: (m[2] === 'menos' ? -1 : 1) * num(m[1]) })],
+  // (lote C3, dono 25/10 — D3.1: + as de SANGUE: o buff ligado está numa das duas Posturas — `condicoes-poe.posturaDe`, o `postura` do buff —, e cada linha vale
+  // só na dela; antes o buff ligado era sempre a de Areia e as de Sangue ficavam "não simuladas")
+  [new RegExp(`^Habilidades Corpo a Corpo (?:causam|têm) ${N} ?% (mais|menos) (Dano|Efeito) em Área enquanto na Postura de (Areia|Sangue)$`, 'i'),
+  // (e o SINAL do PoB: o "5 % mais Dano em Área enquanto na Postura de Areia" do poedb é blood_sand_stance_melee_skills_area_damage_+%_final_in_sand_stance = −5 —
+  // 5% MENOS, act_str.lua:1268; antes o jogo dava 5% mais)
+    (m) => ({ [`${m[3] === 'Dano' ? 'mais_dano' : 'area_mais'}@corpo+area+postura${m[4]}`]: (m[2] === 'menos' || (m[3] === 'Dano' && m[4] === 'Areia') ? -1 : 1) * num(m[1]) })],
   [new RegExp(`^Estandarte concede \\+${N} ?% de chance de Suprimir o Dano Mágico a Você e Aliados$`, 'i'), (m) => ({ spell_suppression: num(m[1]) })],
   [new RegExp(`^Buff concede ${N} ?% mais Dano (Físico|de Fogo|de Gelo|de Raio|de Caos)$`, 'i'), (m) => ({ [{ Físico: 'mais_dano_fisico', 'de Fogo': 'mais_dano_fogo', 'de Gelo': 'mais_dano_gelo', 'de Raio': 'mais_dano_raio', 'de Caos': 'mais_dano_caos' }[m[2]]]: num(m[1]) })],
 ];

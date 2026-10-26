@@ -554,7 +554,11 @@ function unicas(supports) {
  */
 const ehFeiticeiro = (def) => def?.tipo === 'ativa' && def.poe?.slug === 'Spellslinger';
 const FORA_DO_FEITICEIRO = ['poe:Ataque', 'poe:Aura', 'poe:Arauto', 'poe:Armadilha', 'poe:Mina', 'poe:Totem', 'poe:Canalização', 'poe:Ativação', 'poe:Vínculo'];
-const magiaDoFeiticeiro = (def) => def?.tipo === 'ativa' && !ehFeiticeiro(def) && !!def.tags?.includes('poe:Magia') && !FORA_DO_FEITICEIRO.some((t) => def.tags.includes(t));
+// (revisão do B3, dono 21/10) as gemas que o PoE não deixa ATIVAR por gatilho: a Chuva de Lâminas de Trarthus (o PoB, act_dex.lua: "This skill cannot be triggered or used
+// by Totems, Traps, or Mines" — sem Triggerable nos `skillTypes`). Fora do Feiticeiro e da Automação
+const NAO_ATIVAVEIS_POR_GATILHO = new Set(['Bladefall_of_Trarthus']);
+const ativavelPorGatilho = (def) => !NAO_ATIVAVEIS_POR_GATILHO.has(def?.poe?.slug);
+const magiaDoFeiticeiro = (def) => def?.tipo === 'ativa' && !ehFeiticeiro(def) && ativavelPorGatilho(def) && !!def.tags?.includes('poe:Magia') && !FORA_DO_FEITICEIRO.some((t) => def.tags.includes(t));
 /**
  * (lote A2, dono 19/10: "a habilidade suportada sai sozinha a cada 0,6 s, ou pela recarga dela, se for maior") A AUTOMAÇÃO do PoE (PoB act_int.lua:
  * 417-472): enquanto ela está ligada, as magias INSTANTÂNEAS do grupo dela, sem reserva, saem sozinhas (`acoes.ativarGatilhos`, `'automacao'` —
@@ -567,7 +571,20 @@ const FORA_DA_AUTOMACAO = ['poe:Ataque', 'poe:Armadilha', 'poe:Mina', 'poe:Totem
 // one supported bow skill for each stage gained" (o PoB, act_dex.lua:17606): saem na liberação, uma por estágio (`Acoes.ativarGatilhos`, 'snipe')
 const ehAtirar = (def) => def?.tipo === 'ativa' && def.poe?.slug === 'Snipe';
 const suportadaDoAtirar = (def) => def?.tipo === 'ativa' && !ehAtirar(def) && !!def.tags?.includes('poe:Ataque') && !!def.tags?.includes('poe:Arco') && !def.tags?.includes('poe:Canalização');
-const magiaDaAutomacao = (def) => def?.tipo === 'ativa' && !ehAutomacao(def) && !ehFeiticeiro(def) && !!def.tags?.includes('poe:Magia') && !(def.castTime > 0) && !ACOES.get(def.acao)?.poeGema?.reserva && !FORA_DA_AUTOMACAO.some((t) => def.tags.includes(t));
+// (lote G-D, dono 25/10 — D16) a RUNA DO ARCANISTA (o PoB, act_int.lua SupportBrandSupport): as magias ligadas a ela que podem ser ativadas, sem reserva — fora a de
+// Armadilha, Mina, Totem, as Vaal e as de Ativação embutida — saem a cada Ativação da Runa vinculada (`Acoes.ativarGatilhos`, 'arcanista')
+const ehArcanista = (def) => def?.tipo === 'ativa' && def.poe?.slug === 'Arcanist_Brand';
+const FORA_DO_ARCANISTA = ['poe:Ataque', 'poe:Armadilha', 'poe:Mina', 'poe:Totem', 'poe:Vaal', 'poe:Aura', 'poe:Arauto', 'poe:Ativação', 'poe:Vínculo'];
+const magiaDoArcanista = (def) => def?.tipo === 'ativa' && !ehArcanista(def) && ativavelPorGatilho(def) && !!def.tags?.includes('poe:Magia') && !ACOES.get(def.acao)?.poeGema?.reserva && !FORA_DO_ARCANISTA.some((t) => def.tags.includes(t));
+// (revisão G, 26/10 — D13) a RUÍNA (o PoB, SupportDarkRitual: `cannot_cast_curses`, `addSkillTypes` Triggered, `excludeSkillTypes` AuraAffectsEnemies): as maldições
+// Feitiço ligadas a ela que exigem até o nível 70 só saem pela Ruína (não se conjuram à mão nem pela automação); com a Blasfêmia no grupo (a maldição vira aura) a Ruína
+// não as suporta. O nível exigido: o da tabela da gema no nível dela (`poeXp.req`, o "RequerNível" do poedb).
+const ehRuinaDef = (def) => def?.tipo === 'ativa' && /^Bane(_of_Condemnation)?$/.test(def.poe?.slug ?? '');
+export const NIVEL_MAX_DA_RUINA = 70;
+const exigeNoNivel = (def, nivel) => { const r = def?.poeXp?.req ?? []; return r.length ? (r[Math.min(r.length, Math.max(1, nivel | 0)) - 1] ?? 1) : (def?.levelMinimo ?? 1); };
+const maldicaoDaRuina = (def, nivel) => def?.tipo === 'ativa' && !ehRuinaDef(def) && ACOES.get(def.acao)?.poeGema?.arquetipo === 'maldicao' && !!def.tags?.includes('poe:Feitiço') && exigeNoNivel(def, nivel) <= NIVEL_MAX_DA_RUINA;
+const ehBlasfemia = (def) => def?.tipo === 'support' && /(^|_)Blasphemy_Support$/.test(def.poe?.slug ?? '');
+const magiaDaAutomacao = (def) => def?.tipo === 'ativa' && !ehAutomacao(def) && !ehFeiticeiro(def) && ativavelPorGatilho(def) && !!def.tags?.includes('poe:Magia') && !(def.castTime > 0) && !ACOES.get(def.acao)?.poeGema?.reserva && !FORA_DA_AUTOMACAO.some((t) => def.tags.includes(t));
 
 export function skillsAtivas(estado) {
   const saida = new Map();
@@ -611,6 +628,28 @@ export function skillsAtivas(estado) {
     }
   }
   return dasPecas(estado, saida);
+}
+
+/**
+ * (lote G-C, dono 25/10 — D13) As outras gemas ATIVAS ligadas no MESMO grupo da gema da ação `acao` (a Ruína aplica as maldições Feitiço ligadas a ela): `[{ def, nivel,
+ * qualidade }]` (o nível com o bônus da peça e os do PoE). Vazio fora de um grupo.
+ */
+export function ativasDoMesmoGrupo(estado, acao) {
+  for (const slot of SLOTS_COM_SOCKET) {
+    const peca = estado?.equipment?.[slot];
+    const s = peca && soquetesDe(peca);
+    if (!s) continue;
+    const bonus = bonusDeNivelDaPeca(peca);
+    for (const grupo of gruposLigados(s)) {
+      const noGrupo = grupo.map((i) => ({ i, g: s.gemas[i], def: s.gemas[i] && DEFS.get(Number(s.gemas[i].id)) })).filter((x) => x.def);
+      if (!noGrupo.some((x) => x.def.tipo === 'ativa' && x.def.acao === acao)) continue;
+      return noGrupo.filter((x) => x.def.tipo === 'ativa' && x.def.acao !== acao).map((x) => {
+        const e = extrasDaGemaPoe(estado, peca, x.def, x.i);
+        return { def: x.def, nivel: x.g.nivel + bonus + e.nivel, qualidade: qualidadeDaGema((x.g.qualidade ?? 0) + e.qualidade) };
+      });
+    }
+  }
+  return [];
 }
 
 /** As gemas pelo NOME (`slugDoNome`): as ativas e os suportes — o que as peças do PoE nomeiam ("Concede a Habilidade X"). */
@@ -702,6 +741,14 @@ export function gruposComGatilho(estado) {
       // (lote A2) a Automação: as magias instantâneas do grupo saem sozinhas com ela ligada (o buff dela)
       const auto = noGrupo.find((y) => ehAutomacao(y.def));
       if (auto) saida.push({ chave: `${slot}:${auto.i}`, nome: auto.def.nome, nivel: auto.g.nivel + bonus, gatilho: { quando: 'automacao' }, ataques: [], magias: noGrupo.filter((y) => magiaDaAutomacao(y.def)).map((y) => y.def.acao), automacao: auto.def.acao });
+      // (lote G-D — D16) a Runa do Arcanista: as magias do grupo saem nas Ativações dela (o tique das Runas)
+      const arc = noGrupo.find((y) => ehArcanista(y.def));
+      const doArcanista = arc ? noGrupo.filter((y) => magiaDoArcanista(y.def)).map((y) => y.def.acao) : [];
+      if (doArcanista.length) saida.push({ chave: `${slot}:${arc.i}`, nome: arc.def.nome, nivel: arc.g.nivel + bonus, gatilho: { quando: 'arcanista' }, ataques: [], magias: doArcanista, arcanista: arc.def.acao });
+      // (revisão G — D13) a Ruína: as maldições Feitiço ligadas só saem por ela (`Acoes.maldicoesDaRuina`); o `quando` 'ruina' não é evento de nenhum despachante
+      const ruina = noGrupo.find((y) => ehRuinaDef(y.def));
+      const daRuina = ruina && !noGrupo.some((y) => ehBlasfemia(y.def)) ? noGrupo.filter((y) => maldicaoDaRuina(y.def, y.g.nivel + bonus + extrasDaGemaPoe(estado, peca, y.def, y.i).nivel)).map((y) => y.def.acao) : [];
+      if (daRuina.length) saida.push({ chave: `${slot}:${ruina.i}`, nome: ruina.def.nome, nivel: ruina.g.nivel + bonus, gatilho: { quando: 'ruina' }, ataques: [], magias: daRuina, ruina: ruina.def.acao });
       const atirar = noGrupo.find((y) => ehAtirar(y.def));
       const doAtirar = atirar ? noGrupo.filter((y) => suportadaDoAtirar(y.def)).map((y) => y.def.acao) : [];
       if (doAtirar.length) saida.push({ chave: `${slot}:${atirar.i}`, nome: atirar.def.nome, nivel: atirar.g.nivel + bonus, gatilho: { quando: 'snipe' }, ataques: [atirar.def.acao], magias: doAtirar, atirar: atirar.def.acao });

@@ -12,12 +12,24 @@
 //   esfera     — a Esfera do Vazio (A3b-2): o globo escuro e o raio;
 //   tempestade — a Tormenta Flamejante (A3b-2): a área onde as bolas caem, em brasa;
 //   vortice    — o Vórtice de Lâminas (A3b-2): as lâminas girando no raio, uma por lâmina ativa.
+// (+ os do B4 — `TIPOS_B4` — e os do C3 — `TIPOS_C3`, com as mesmas formas.)
 
 const COR_DO_ELEMENTO = { fire: '#ff7a2f', ice: '#8fd8ff', energy: '#c8a6ff', chaos: '#7ee07e', physical: '#d8d0c0', holy: '#ffe08a' };
 const corDe = (o, padrao) => COR_DO_ELEMENTO[o?.el] ?? padrao;
 
 /** Os tipos que o servidor manda (`Acoes.objetosParaCliente`). */
 export const TIPOS = Object.freeze(['bola', 'tornado', 'lamina', 'marcador', 'olho', 'chao', 'capturados', 'esfera', 'tempestade', 'vortice']);
+/**
+ * (lote B4, dono 25/10) Os objetos do lote B4, com as formas que já existem: a flecha da Chuva Tempestuosa (o losango de raio), o Orbe Trovejante e o Campo Galvânico
+ * (o globo de raio e o raio deles), a Hidroesfera (o globo de água), as seções da Parede de Gelo e da Flamejante (o chão de cada casa).
+ */
+export const TIPOS_B4 = Object.freeze(['flechaTempestade', 'orbeTempestade', 'campoGalvanico', 'hidroesfera', 'secaoGelo', 'secaoFogo']);
+/**
+ * (lote C3, revisão) Os objetos do lote C3, com as formas que já existem: as Tempestades de Lâminas (o redemoinho — vermelho na Postura de Sangue, areia na de Areia)
+ * e a Tempestade Furiosa (o redemoinho em brasa), o abalo do Terremoto (o chão rachado no raio do estouro), os martelos das Varridas Sagradas (o chão dourado) e o orbe
+ * da Tormenta Explosiva (o globo de raio, mais claro que o do Orbe Trovejante).
+ */
+export const TIPOS_C3 = Object.freeze(['tempestadeDeLaminas', 'tempestadeFuriosa', 'abalo', 'martelo', 'martelosCadentes', 'orbeTormentaExplosiva']);
 /** O ESTILO de cada tipo: a cor da figura, a do véu do raio (ou null), a forma. */
 export function estiloDoObjeto(o) {
   switch (o?.t) {
@@ -31,6 +43,20 @@ export function estiloDoObjeto(o) {
     case 'esfera': return { forma: 'globo', cor: '#5b3a7a', veu: 'rgba(91,58,122,0.14)', borda: 'rgba(150,110,190,0.5)' };
     case 'tempestade': return { forma: 'chao', cor: '#ff7a2f', veu: 'rgba(255,122,47,0.10)', borda: 'rgba(255,150,80,0.45)' };
     case 'vortice': return { forma: 'laminas', cor: '#cfd6e0', veu: 'rgba(207,214,224,0.06)', borda: null };
+    case 'flechaTempestade': return { forma: 'losango', cor: '#c8a6ff', veu: null, borda: null };
+    case 'orbeTempestade': return { forma: 'globo', cor: '#c8a6ff', veu: 'rgba(200,166,255,0.08)', borda: 'rgba(200,166,255,0.4)' };
+    case 'campoGalvanico': return { forma: 'globo', cor: '#e2d2ff', veu: 'rgba(200,166,255,0.10)', borda: 'rgba(220,200,255,0.45)' };
+    case 'hidroesfera': return { forma: 'globo', cor: '#5fb4ff', veu: 'rgba(95,180,255,0.10)', borda: 'rgba(120,200,255,0.45)' };
+    case 'secaoGelo': return { forma: 'chao', cor: '#bfeaff', veu: 'rgba(170,225,255,0.35)', borda: 'rgba(200,240,255,0.7)' };
+    case 'secaoFogo': return { forma: 'chao', cor: '#ff7a2f', veu: 'rgba(255,122,47,0.25)', borda: 'rgba(255,150,80,0.6)' };
+    case 'tempestadeDeLaminas': return o.postura === 'areia'
+      ? { forma: 'redemoinho', cor: '#e0c890', veu: 'rgba(224,200,144,0.08)', borda: 'rgba(224,200,144,0.4)' }
+      : { forma: 'redemoinho', cor: '#e05050', veu: 'rgba(224,80,80,0.08)', borda: 'rgba(224,80,80,0.4)' };
+    case 'tempestadeFuriosa': return { forma: 'redemoinho', cor: corDe(o, '#ff7a2f'), veu: 'rgba(255,122,47,0.08)', borda: 'rgba(255,150,80,0.4)' };
+    case 'abalo': return { forma: 'chao', cor: '#d8d0c0', veu: 'rgba(216,208,192,0.10)', borda: 'rgba(216,208,192,0.45)' };
+    case 'martelo':
+    case 'martelosCadentes': return { forma: 'chao', cor: '#ffe08a', veu: 'rgba(255,224,138,0.10)', borda: 'rgba(255,224,138,0.45)' };
+    case 'orbeTormentaExplosiva': return { forma: 'globo', cor: '#e8dcff', veu: 'rgba(232,220,255,0.06)', borda: 'rgba(232,220,255,0.35)' };
     default: return null;
   }
 }
@@ -68,6 +94,8 @@ export function desenharObjetosDoPoe(ctx, objetos, { camX = 0, camY = 0, tile = 
     const alfa = falta < 500 ? Math.max(0.2, falta / 500) : 1;
     ctx.globalAlpha = alfa;
     desenharRaio(ctx, px, py, o.r, tile, e.veu, e.borda);
+    // (lote B4: a seção da parede é a casa dela)
+    if (!(o.r > 0) && (o.t === 'secaoGelo' || o.t === 'secaoFogo') && e.veu) { ctx.fillStyle = e.veu; ctx.fillRect(px, py, tile, tile); }
     const fase = (agora % 1000) / 1000;
     ctx.fillStyle = e.cor;
     ctx.strokeStyle = e.cor;

@@ -19,6 +19,9 @@ import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { quemRecebeAMaldicao } from './vinculos.mjs';
 import * as Aliados from './aliados.mjs';
 import { raioQueCresce } from './gemas-b1.mjs';
+// (lotes G-A e G-C, dono 25/10: a Precisão a menos do Enfraquecer, o Impelir restrito)
+import * as GemasGAC from './gemas-gac.mjs';
+import { renovarLento } from './gemas-gbd.mjs';
 
 /** "Recentemente" no PoE: nos últimos 4 segundos. */
 export const RECENTE_MS = 4000;
@@ -44,11 +47,17 @@ export function soloImuneAMaldicoes(h, agora = h?.clock ?? 0) {
   const p = h?.pos;
   return !!p && (h.solosSagrados ?? []).some((s) => s.imuneMaldicao && soloValendo(h, s, agora) && Math.max(Math.abs(s.x - p.x), Math.abs(s.y - p.y)) <= s.raio);
 }
-export function criarSoloSagrado(h, segundos, agora = h?.clock ?? 0) {
+// (lote B2, dono 20/10: + `onde` — o lugar e o raio em casas do Solo Sagrado que a gema cria longe de você: a Chama Purificadora, no local mirado)
+// (revisão B2, 21/10: o teto de 5 é POR FONTE, como no PoE — cada habilidade tem o limite dela: `onde.fonte` — a gema que o cria (a Chama Purificadora); sem ela, o
+// Solo Sagrado "seu" (o deslocamento, o no acerto). O do TOTEM (`dono`) não entra em teto nenhum: dura enquanto o totem vive; o de totem morto sai da lista.)
+export function criarSoloSagrado(h, segundos, agora = h?.clock ?? 0, onde = null) {
   if (!h?.pos || !(segundos > 0)) return;
-  const lista = (h.solosSagrados ??= []).filter((s) => s.ate > agora);
-  lista.push({ x: h.pos.x, y: h.pos.y, raio: SOLO_SAGRADO.raio, ate: agora + segundos * 1000 });
-  h.solosSagrados = lista.slice(-SOLO_SAGRADO.maximo);
+  const fonte = onde?.fonte ?? null;
+  const vivos = (h.solosSagrados ??= []).filter((s) => soloValendo(h, s, agora));
+  const daFonte = vivos.filter((s) => !s.dono && (s.fonte ?? null) === fonte);
+  daFonte.push({ x: onde?.x ?? h.pos.x, y: onde?.y ?? h.pos.y, raio: onde?.raio ?? SOLO_SAGRADO.raio, ate: agora + segundos * 1000, ...(fonte != null ? { fonte } : {}) });
+  const fica = new Set(daFonte.slice(-SOLO_SAGRADO.maximo));
+  h.solosSagrados = [...vivos.filter((s) => s.dono || (s.fonte ?? null) !== fonte), ...daFonte.filter((s) => fica.has(s))];
 }
 /**
  * (lote 57, a Doutrina Racional — dono, 16/10: "Implementar como o Sagrado") O SOLO PROFANO que o personagem cria (`hunt.solosProfanos = [{ x,
@@ -128,8 +137,18 @@ export const naAreaFriaFragil = (h, b, agora = h?.clock ?? 0) => !!b && (h?.area
 export const naAreaFria = (h, b, agora = h?.clock ?? 0) => !!b && (h?.areasFrias ?? []).some((a) => a.ate > agora && Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y)) <= a.raio);
 /** (lote A2) O Resfriamento da área fria em que o bicho está (o maior delas): o de sempre, ou o próprio da área. */
 export const efeitoDaAreaFria = (h, b, agora = h?.clock ?? 0) => Math.max(0, ...(h?.areasFrias ?? []).filter((a) => a.ate > agora && !!b && Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y)) <= a.raio).map((a) => a.efeitoPct ?? AREAS_FRIAS.efeitoPct));
-/** (lote G) A POSTURA: a da Areia enquanto o buff da gema Sangue e Areia está ligado; senão a de Sangue (o lembrete: "Você está automaticamente em Postura de Sangue"). */
-export const posturaDe = (h, agora = h?.clock ?? 0) => (Object.entries(h?.buffs ?? {}).some(([id, b]) => b && b.ate > agora && /Blood_and_Sand/.test(id)) ? 'areia' : 'sangue');
+/**
+ * (lote G) A POSTURA. (lote C3, dono 25/10 — D3.1: o Sangue e Areia como o PoE — o PoB, BloodAndSand: o buff ligado está na Postura de SANGUE ou na de AREIA, a que
+ * ele guarda em `postura` — ligar começa na de Sangue; usar de novo alterna, `GemasC3.trocarPostura`. Antes, o buff ligado era sempre a de Areia, e os bônus de Sangue
+ * nunca valiam.) Sem o buff, a de Sangue (o lembrete: "Você está automaticamente em Postura de Sangue").
+ */
+const buffDaPostura = (h, agora) => Object.entries(h?.buffs ?? {}).find(([id, b]) => b && b.ate > agora && /Blood_and_Sand/.test(id))?.[1] ?? null;
+export const posturaDe = (h, agora = h?.clock ?? 0) => (buffDaPostura(h, agora)?.postura === 'areia' ? 'areia' : 'sangue');
+/**
+ * (lote C3, dono 25/10) Você está numa Tempestade de Lâminas SANGRENTA sua (`hunt.poeObjetos` — `GemasC3`, a Tempestade de Lâminas): "12% mais Velocidade de Ataque
+ * enquanto estiver em uma Tempestade de Lâminas Sangrentas" (o PoB: Condition BladestormInBloodstorm).
+ */
+export const emTempestadeSangrenta = (h, agora = h?.clock ?? 0) => !!h?.pos && (h.poeObjetos ?? []).some((o) => o.tipo === 'tempestadeDeLaminas' && o.postura === 'sangue' && o.dono === 'voce' && o.ate > agora && (o.z ?? 0) === (h.z ?? 0) && Math.max(Math.abs(o.x - h.pos.x), Math.abs(o.y - h.pos.y)) <= (o.raio ?? 0));
 /**
  * (11/10) O ESTANDARTE PLANTADO (Estandarte de Guerra, Horrendo, da Desafiança — o buff da gema `*_Banner`, com `estandarte: { x, y, z, valor,
  * efeitoMais }`): o PoE atual — usar a gema consome todo o Valor e planta o estandarte, com a aura dele (`mods-poe.plantarEstandarte`).
@@ -164,7 +183,9 @@ export function fisicoPorEmpalamento(ficha, alvo, agora) {
 export function renovarFrioEChoque(bicho, agora) {
   const e = bicho?.estados;
   if (!e) return;
-  for (const k of ['lento', 'chocado']) if (e[k]?.ate > agora) e[k].ate = Math.max(e[k].ate, agora + (e[k].dur ?? 2000));
+  // (revisão G: o lento com as instâncias de cada fonte — cada uma volta à duração cheia dela, `GemasGBD.renovarLento`)
+  renovarLento(e, agora);
+  if (e.chocado?.ate > agora) e.chocado.ate = Math.max(e.chocado.ate, agora + (e.chocado.dur ?? 2000));
   for (const x of e.chocadosPilha ?? []) if (x.ate > agora) x.ate = Math.max(x.ate, agora + (x.dur ?? 2000));
 }
 /**
@@ -320,6 +341,8 @@ export const CONDICOES_DE_ESTADO = new Set([
   'maxUmRaroPerto', 'doisRarosPerto',
   // (lote G) a Postura (Sangue / Areia — a gema Sangue e Areia), com um Estandarte (a aura de Estandarte ligada).
   'posturaSangue', 'posturaAreia', 'estandarteAtivo',
+  // (lote C3, dono 25/10) numa Tempestade de Lâminas Sangrenta sua (`emTempestadeSangrenta`).
+  'emTempestadeSangrenta',
   // (lote 65, as Ramificadoras) afetado por um Arauto (ao menos uma gema de Arauto ligada)
   'afetadoPorArauto', 'afetadoPorGuardaNaoVaal', 'guardaNaoVaalTerminouRecente',
   // (lote 66) "enquanto portando um(a) X ou Y" — a arma em QUALQUER das mãos (as condições `comX` são da mão principal): Garra ou Adaga, Machado
@@ -573,6 +596,7 @@ export function condicoesDe(estado, total = null, principais = null) {
     if (buffAtivo(estado, 'elusivo', total)) v.add('elusivo');
     if (noSoloSagrado(h, agora)) v.add('soloSagrado');
     v.add(posturaDe(h, agora) === 'areia' ? 'posturaAreia' : 'posturaSangue');
+    if (emTempestadeSangrenta(h, agora)) v.add('emTempestadeSangrenta');
     if (estandarteAtivo(h, agora)) v.add('estandarteAtivo');
     if (Object.values(h.buffs ?? {}).some((b) => b && b.ate > agora && b.tipo === 'poe-arauto')) v.add('afetadoPorArauto');
     // (lote 80, a Astúcia do Veterano) "enquanto afetado por uma Habilidade de Guarda não Vaal" e "se um Buff de Guarda não Vaal terminou
@@ -1656,7 +1680,9 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
     const naoImpelivel = t.has('naoImpelivel');
     const daEmboscada = !naoImpelivel && !t.has('totem') && !!estado?.hunt?.emboscada?.golpe && (estado.hunt.emboscada.ate ?? 0) > agora;
     if (daEmboscada) { t.add('impelido'); t.add('impelidoEmboscada'); }
-    else if (!naoImpelivel && !semNoDeslocamento && !t.has('totem') && (estado?.hunt?.impelidos?.n ?? 0) > 0 && (estado.hunt.impelidos.ate ?? Infinity) > agora) { t.add('impelido'); t.add('impelidoClamor'); }
+    // (lote G-A, D2: o Impelir do Sísmico só vale nas Pancadas, o do Ancestral só nos Golpes — `GemasGAC.impeleEste`)
+    else if (!naoImpelivel && !semNoDeslocamento && !t.has('totem') && (estado?.hunt?.impelidos?.n ?? 0) > 0 && (estado.hunt.impelidos.ate ?? Infinity) > agora && GemasGAC.impeleEste(estado.hunt.impelidos, [...t])) { t.add('impelido'); t.add('impelidoClamor'); if (estado.hunt.impelidos.de) t.add(`impelidoClamor_${estado.hunt.impelidos.de}`); }
+    // (revisão G, 26/10: `impelidoClamor_<slug>` — DE QUAL Clamor é o Impelir; os bônus do buff de cada Clamor só valem no ataque Impelido por ele — `GemasPoe.adds`)
     if (estado?.hunt?.poeTerceiroGolpe) t.add('terceiroGolpe');
     if (ficha.mao === 'secundaria' || ficha.mao === 'ambas') t.add('maoSecundaria');
     if (ficha.mao !== 'secundaria') t.add('maoPrincipal');
@@ -1849,6 +1875,8 @@ export function tagsDoAlvo(alvo, agora) {
   const e = alvo.estados ?? {};
   const at = (x) => !!x && x.ate > agora;
   if (at(e.lento)) t.push('alvoResfriado', 'alvoLento');
+  // (lote C4, dono 21/10) o Tolhido (o Hinder do PoE, `estados.tolhido` — o "Inimigos Desacelerados por você"): Lento, não Resfriado
+  else if (at(e.tolhido)) t.push('alvoLento');
   if (at(e.congelado)) t.push('alvoCongelado');
   if (at(e.chocado)) t.push('alvoEletrizado');
   if (at(e.cego)) t.push('alvoCego');
@@ -2383,6 +2411,9 @@ export function doBicho(bicho, agora, { contraOutro = false, ficha = null } = {}
   // (ciclo 7) "Inimigo Marcado tem Precisão reduzida em X%".
   const precisaoMenos = regraDaMarca(bicho, agora, 'precisaoMenos');
   if (precisaoMenos) precisaoFator *= Math.max(0, 1 - precisaoMenos / 100);
+  // (lote G-A) o Enfraquecer: "Inimigos Amaldiçoados possuem uma redução de X% de Precisão" (`GemasGAC.precisaoMenos`)
+  const daMaldicao = GemasGAC.precisaoMenos(bicho, agora);
+  if (daMaldicao > 0) precisaoFator *= Math.max(0, 1 - daMaldicao / 100);
   // "Inimigos Resfriados pelos seus Acertos reduz o Dano causado pela metade do Efeito de Resfriamento" (o Modelador do Inverno).
   if (ativo(e.lento, agora) && e.lento.reduzDano) danoFator *= Math.max(0, 1 - e.lento.pct / 200);
   // Coberto de Gelo (PoE): 50% menos chance de crítico (o +20% de dano de Gelo recebido está em `fatorRecebidoPeloBicho`).
@@ -2796,6 +2827,7 @@ export function fatorDaResistenciaRecebida(ficha, elemento, protecao = ficha?.pr
 function conversoesRecebidas(ficha, elemento, res) {
   let resto = 1;
   let convertido = 0;
+  let paraCaos = 0;
   const v = (k) => Number(ficha.afPoe[k]) || 0;
   // (+ os "Elemental … sofrido como Físico/Caos" valem para cada elemento.)
   const elemental = ['fire', 'ice', 'energy'].includes(elemento);
@@ -2803,9 +2835,39 @@ function conversoesRecebidas(ficha, elemento, res) {
     if (outro === elemento) continue;
     const pct = v(`recebe_${elemento}_como_${outro}`) + (elemental ? v(`recebe_elemental_como_${outro}`) : 0);
     const parte = Math.min(resto, pct / 100);
-    if (parte > 0) { convertido += parte * (1 - res(outro) / 100); resto -= parte; }
+    if (parte > 0) { convertido += parte * (1 - res(outro) / 100); resto -= parte; if (outro === 'chaos') paraCaos += parte * (1 - res('chaos') / 100); }
   }
-  return { convertido, resto };
+  return { convertido, resto, paraCaos };
+}
+/**
+ * (revisão PR2, 21/10) A fração do golpe de `elemento` que CHEGA como Caos (já com a resistência a Caos e o "dano recebido" do tipo, como em
+ * `fatorDaResistenciaRecebida`): o Caos que continua Caos e o "X% do Dano … recebido como Dano de Caos" — no PoE a conversão do dano recebido vem antes da
+ * divisão entre o Escudo e a Vida, e o que virou Caos atravessa o Escudo (`Defesa.absorverComOCaos`). Sem o PoE: o Caos é Caos, o resto não.
+ */
+export function parteCaosRecebida(ficha, elemento, protecao = ficha?.protection ?? {}) {
+  if (!ligado() || !ficha?.afPoe || !['fire', 'ice', 'energy', 'physical', 'chaos'].includes(elemento)) return elemento === 'chaos' ? fatorDaResistenciaRecebida(ficha, elemento, protecao) : 0;
+  if (elemento === 'chaos' && Number(ficha.afPoe.imune_caos) > 0) return 0;
+  const res = (el) => Math.min(100, protecao[el] ?? 0);
+  const { resto, paraCaos } = conversoesRecebidas(ficha, elemento, res);
+  return (elemento === 'chaos' ? resto * (1 - res('chaos') / 100) : paraCaos) * fatorDoDanoRecebido(ficha, elemento);
+}
+/**
+ * (revisão PR2, 21/10) O CAOS dentro das `partes` de um acerto recebido (`{ tipo: dano depois das resistências }`; `brutas`: o de antes): de cada tipo, a parte
+ * que chega como Caos — o Físico pelo bruto (a armadura só corta o que continua Físico), os outros na proporção do fator da resistência daquele tipo.
+ */
+export function caosNasPartes(ficha, brutas = {}, partes = {}) {
+  let c = 0;
+  for (const [el, v] of Object.entries(partes)) {
+    if (!(v > 0)) continue;
+    if (el === 'physical') { c += Math.min(v, Math.max(0, brutas[el] ?? 0) * parteCaosRecebida(ficha, el)); continue; }
+    c += Math.min(v, v * fracaoCaosDoTipo(ficha, el));
+  }
+  return c;
+}
+/** (revisão PR2, 21/10) Do dano de `elemento` que já passou pelas resistências, a fração que é Caos (1 no Caos sem conversão; 0 nos outros sem "recebido como Caos"). */
+export function fracaoCaosDoTipo(ficha, elemento) {
+  const f = fatorDaResistenciaRecebida(ficha, elemento);
+  return f > 0 ? Math.min(1, Math.max(0, parteCaosRecebida(ficha, elemento) / f)) : elemento === 'chaos' ? 1 : 0;
 }
 
 // ---------------------------------------------------------------- a DEFESA FÍSICA do PoE 1 (dono, 10/10)
@@ -3197,6 +3259,8 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   // (lote 72) o Esconjuro: 10% de dano sofrido aumentado (`esconjurado`)
   if (esconjurado(alvo, ficha?.afPoe, agora)) f *= 1 + ESCONJURO.pct / 100;
   if (tipo === 'chaos' && ativo(e.definhado, agora)) f *= 1 + 0.06 * Math.max(0, 1 + (Number(ficha?.afPoe?.efeito_definhamento) || 0) / 100) * Math.min(15, e.definhado.n ?? 1);
+  // (lote C4, dono 21/10) o Tolhido pela Praga Vaal: "Inimigos Desacelerados sofrem Dano de Caos aumentado em 30%" (também no pulso do dano contínuo — `fatorRecebidoNoDot`)
+  if (tipo === 'chaos' && ativo(e.tolhidoCaos, agora)) f *= 1 + (e.tolhidoCaos.pct ?? 0) / 100;
   // Coberto de Gelo (PoE): +20% de dano de Gelo recebido.
   if (tipo === 'ice' && ativo(e.cobertoGelo, agora)) f *= 1.2;
   // "Inimigos sofrem permanentemente Dano aumentado em X% por cada segundo que passaram Congelados/Resfriados por você, máximo de Y%".
@@ -3237,6 +3301,34 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   const porAfeccao = Number(ficha?.afPoe?.dano_por_afeccao_no_alvo) || 0;
   if (porAfeccao) f *= 1 + (porAfeccao * afeccoesNoAlvo(alvo, agora)) / 100;
   return f;
+}
+/**
+ * (lote C4, dono 21/10: "o dano sofrido aumentado do alvo vale no dano contínuo, como no PoE") O que o ALVO sofre a mais no PULSO do dano contínuo (`Dot.tique`):
+ * os estados dele que o PoB põe como DamageTaken / <Tipo>DamageTaken (sem ModFlag de Acerto, Ataque ou Magia) — o Definhado (+6% de Caos por acúmulo), as Cinzas,
+ * o Coberto de Gelo, o Tolhido pela Praga Vaal, a Marca, o Esconjuro, os solos e auras frágeis, o "permanente", a maldição com o `danoApos` — e a ELETRIZAÇÃO (o
+ * "increased Damage taken" do Shock). Fica de fora o que é do atacante (a ficha do golpe: o "mais" do tipo, os "contra Inimigos X"), o que é só de Acerto, de Ataque
+ * (o Intimidado) ou de Magia (o Inervado). A Exposição já está na resistência (`hunt/resistencia`), que o pulso usa.
+ */
+const FICHA_DO_DOT = Object.freeze({ afPoe: Object.freeze({}), tagsDoGolpe: Object.freeze([]) });
+/*
+ * (revisão do C4, 21/10 — o PoB: o Definhado é `6 × (1 + WitherEffect)` no `enemyDB ChaosDamageTaken`, CalcPerform.lua; os "Inimigos … sofrem Dano aumentado" são
+ * `EnemyModifier DamageTaken`, ModParser.lua — sem flag de Acerto: valem no dano contínuo, CalcOffence.lua) as chaves do ATACANTE que são dano SOFRIDO pelo inimigo (não
+ * o "mais" do tipo, que é dano do atacante, nem as só de Acerto, de Ataque ou de Magia): o dano contínuo as leva na `origem.sofrido` (`sofridoDoAtacante`), e o pulso
+ * as usa (`fatorRecebidoNoDot`). Vale o efeito de quem pôs o dano contínuo, na hora em que pôs.
+ */
+const CHAVES_SOFRIDO_NO_DOT = Object.freeze(['efeito_definhamento', 'dano_elemental_eletrizado_congelado', 'dano_por_runa_vinculada', 'provocados_dano_sofrido', 'provocados_clamor_dano_sofrido', 'resfriado_fragil', 'resfriados_sofrem_mais', 'dano_por_afeccao_no_alvo', 'amaldicoados_esconjuro_apos_pct']);
+/** As chaves de dano sofrido do atacante (`afPoe`) que valem no pulso do dano contínuo — um objeto pequeno, que grava e volta com a caçada; null sem nenhuma. */
+export function sofridoDoAtacante(afPoe) {
+  const r = {};
+  for (const k of CHAVES_SOFRIDO_NO_DOT) if (Number(afPoe?.[k]) > 0) r[k] = Number(afPoe[k]);
+  return Object.keys(r).length ? r : null;
+}
+export function fatorRecebidoNoDot(alvo, tipo, agora, sofrido = null) {
+  if (!ligado() || !alvo) return 1;
+  const e = alvo.estados ?? {};
+  const pilha = (e.chocadosPilha ?? []).filter((x) => x.ate > agora);
+  const eletrizacao = pilha.length ? 1 + pilha.reduce((t, x) => t + (x.pct ?? 0), 0) / 100 : ativo(e.chocado, agora) ? 1 + (e.chocado.pct ?? 0) / 100 : 1;
+  return fatorRecebidoPeloBicho(alvo, tipo, sofrido ? { afPoe: sofrido, tagsDoGolpe: FICHA_DO_DOT.tagsDoGolpe } : FICHA_DO_DOT, agora) * eletrizacao;
 }
 /** As chaves com escala do ALVO (`resfriamentoNoAlvo:N`, `eletrizacaoNoAlvo:N`), guardadas por soma (`afPoe`). */
 const ESCALAS_DO_ALVO = /^(resfriamentoNoAlvo|eletrizacaoNoAlvo)(:|$)/;

@@ -21,6 +21,7 @@ import { camposDaPeca } from '../itens/item.mjs';
 import * as Dot from '../combate/dot.mjs';
 import { vidaSoPeloDreno, marcar, reservadoAgora } from './condicoes-poe.mjs';
 import * as Tinturas from './tinturas.mjs';
+import { quebrarGelo, porLento } from './gemas-gbd.mjs';
 
 // (12/10: + as TINTURAS — `itens-poe/tinturas.mjs`: vão no mesmo cinto, sem cargas; ativam e desativam.)
 export const CLASSES = ['Life_Flasks', 'Mana_Flasks', 'Utility_Flasks', Tinturas.CLASSE];
@@ -346,6 +347,8 @@ function aoUsarOFrasco(estado, par, eventos, quem) {
     const temControle = (im.afeccao === 'congelamento' && c.congelado?.ate > agora) || ((im.afeccao === 'lento' || im.afeccao === 'resfriamento') && c.lento?.ate > agora);
     if (!temDot && !temControle) continue;
     for (const t of tipos) Dot.removerDoJogador(hunt, t);
+    // (revisão G, 26/10) o gelo da Armadura Ártica Vaal: "When the ice breaks, the buff is also removed" (o PoB) — o frasco que tira o Congelado quebra o gelo e o buff sai
+    if (im.afeccao === 'congelamento' && c.congelado?.geloVaal) quebrarGelo(hunt, agora);
     if (im.afeccao === 'congelamento') delete c.congelado;
     if (im.afeccao === 'lento' || im.afeccao === 'resfriamento') delete c.lento;
     (hunt.imunidadesPoe ??= {})[im.afeccao] = Math.max(hunt.imunidadesPoe[im.afeccao] ?? 0, agora + im.ms);
@@ -354,7 +357,7 @@ function aoUsarOFrasco(estado, par, eventos, quem) {
   const ev = (m, st) => eventos?.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: st });
   for (const m of perto) {
     const e = (m.estados ??= {});
-    const lento = (pct, ms) => { e.lento = e.lento && e.lento.ate > agora ? { ate: Math.max(e.lento.ate, agora + ms), pct: Math.max(e.lento.pct, pct) } : { ate: agora + ms, pct }; ev(m, 'lento'); };
+    const lento = (pct, ms) => { porLento(e, agora + ms, pct, agora); ev(m, 'lento'); };
     if (u.desacelerarPct) lento(u.desacelerarPct, par.ms || 4000);
     // Solo Congelado: resfria quem está em cima (10% de lentidão, o Resfriamento base do PoE).
     if (u.solo === 'congelado') lento(10, SOLO_MS);
@@ -573,6 +576,24 @@ export function aoMatar(estado, tipoDoMonstro = 'normal', morto = null) {
   // (12/10, A Lâmina Viva: "X% de chance de remover N Queima de Mana ao Matar" — na Tintura ativa.)
   const chance = Number(afp.tintura_remover_queima_chance) || 0;
   if (chance > 0 && estado?.hunt?.frascosPoe && Math.random() * 100 < chance) Tinturas.removerQueimas(estado.hunt.frascosPoe, Number(afp.tintura_remover_queima_n) || 1);
+}
+
+/**
+ * (lote G-A, dono 25/10) As CARGAS DE FRASCO ganhas por fora do abate (a Marca do Alquimista: "Ganha 1 Cargas de Frasco quando você Acertar um Inimigo Amaldiçoado"): `n` em
+ * cada frasco do cinto (as Tinturas não), × a "Recarga de Frasco recebida aumentada" do frasco e do personagem, até o máximo de cada um. Devolve se algum ganhou.
+ */
+export function ganharCargas(estado, n = 1) {
+  if (!ligado() || !(n > 0)) return false;
+  const afp = doPersonagem(estado);
+  let mudou = false;
+  for (const p of cinto(estado)) {
+    if (!p || ehTinturaDoCinto(p)) continue;
+    const par = parametros(p, afp);
+    const antes = cargasDe(p, par);
+    p.poe.cargas = Math.min(par.cargasMaximas, antes + n * Math.max(0, 1 + (par.recargaPct + (Number(afp.frasco_cargas_recebidas) || 0)) / 100));
+    if (p.poe.cargas !== antes) mudou = true;
+  }
+  return mudou;
 }
 
 /** PoE: o personagem foi acertado por OUTRO JOGADOR (o duelo): os frascos com "Efeito é removido quando Acertado por um Jogador" acabam. */

@@ -17,6 +17,8 @@ import * as Formulas from '../combate/formulas.mjs';
 import * as Atributos from '../personagem/atributos.mjs';
 import * as AtributosDoMob from '../mobs/atributos.mjs';
 import * as ModsPoe from '../itens-poe/condicoes-poe.mjs';
+// (lote G-A, dono 25/10 — D4: a Redução de Dano Físico a menos da Marca do Caçador)
+import { reducaoFisicaMenos, resistenciaDoCaos } from '../itens-poe/gemas-gac.mjs';
 
 /** A resistência (em %) do bicho ao `tipo`, com o teto do boss e o piso da fraqueza (antes do teto de resistência e da penetração). */
 export function resistenciaDe(hunt, alvo, tipo) {
@@ -68,6 +70,8 @@ export function resistenciaEfetivaDe(hunt, alvo, tipo, ficha = null) {
   // (ciclo 7, lote E) "Acertos têm X% de chance de tratarem os valores da Resistência Elemental dos Monstros Inimigos como invertidos": o
   // golpe sorteado (`ModsPoe.fichaDoGolpe` → `resInvertida`) usa a resistência elemental com o sinal trocado (uma vez só, com a dos únicos).
   if (ficha?.resInvertida && elemental && !sempreInvertida) res = -res;
+  // (lote G-C, D11) a Detonação de Feitiços: o Caos do acerto resistido pela menor resistência do alvo entre Fogo, Gelo, Raio e Caos (a da Contradição: a maior)
+  if (tipo === 'chaos' && ficha?.caosResistidoPela) res = resistenciaDoCaos(ficha.caosResistidoPela, (t) => resistenciaDe(hunt, alvo, t));
   return Limites.resistenciaEfetiva(Limites.resistenciaDoMob(res), pen);
 }
 
@@ -103,6 +107,14 @@ export function resistido(hunt, alvo, tipo, valor, ficha = null, { armadura = tr
 export function fracaoFisicaDoPoe(hunt, alvo, valor, ficha = null, { armadura = true } = {}) {
   const adicional = resistenciaDe(hunt, alvo, 'physical');
   const daArmadura = ficha && armadura ? AtributosDoMob.reducaoDeArmadura(alvo, Atributos.levelDoBicho(hunt, alvo), valor, Formulas.PARAMETROS.armadura.poe.coeficiente) : 0;
+  // (lote G-A, D4) a Marca do Caçador: "Inimigos Amaldiçoados têm −X% de Redução de Dano Físico" — SOMADA à armadura e à redução adicional (o PoE); a soma pode
+  // ficar negativa (o monstro sofre mais). Sem a marca, a conta de sempre.
+  const menos = reducaoFisicaMenos(alvo, hunt?.clock ?? 0);
+  if (menos > 0) {
+    const soma = Math.max(0, daArmadura) * 100 + Math.max(0, adicional) - menos;
+    const red = soma > 0 ? Limites.reducaoFisicaTotal(0, soma, Limites.penetracaoDe(ficha?.penetracao, 'physical')) : soma;
+    return (1 - red / 100) * (adicional < 0 ? 1 - adicional / 100 : 1);
+  }
   const total = Limites.reducaoFisicaTotal(daArmadura, adicional, Limites.penetracaoDe(ficha?.penetracao, 'physical'));
   return (1 - total / 100) * (adicional < 0 ? 1 - adicional / 100 : 1);
 }

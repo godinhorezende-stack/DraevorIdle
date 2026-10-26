@@ -10,6 +10,7 @@ import { resistido } from '../hunt/resistencia.mjs';
 import * as R from '../regras.mjs';
 import { registrarGolpe } from './registro.mjs';
 import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
+import * as ModsPoe from '../itens-poe/condicoes-poe.mjs';
 
 export const CONFIG = JSON.parse(readFileSync(new URL('../../gamedata/combate/dot.json', import.meta.url), 'utf8'));
 
@@ -106,6 +107,27 @@ export function agravar(bicho, agora, maisAntigosQueMs = 0) {
   return n;
 }
 
+/** (lote C4, dono 21/10 — D4.2) As camadas vivas da Praga no pulso `quando` (as que acabam nele ou depois). */
+const camadasNoPulso = (d, quando) => d.camadas.filter((a) => a >= quando).length;
+/**
+ * (lote C4, dono 21/10: "o dano sofrido aumentado do alvo vale no dano contínuo, como no PoE") O que o alvo sofre a mais no pulso: os estados dele
+ * (`ModsPoe.fatorRecebidoNoDot` — o Definhado, as Cinzas, a Eletrização…) e, no degenerativo das GEMAS (o da Praga, do Vórtice…), as maldições de dano sofrido
+ * (`vulnerabilidadeNoDot`, registrada por `acoes.mjs` — `Reforcos.vulnerabilidade`). As afecções do acerto (o Incêndio, o Veneno, o Sangramento) já trazem as
+ * maldições na base (o dano do acerto que as pôs passa por elas), então o pulso delas não as conta de novo.
+ */
+// (`var`: o ciclo de imports — `acoes.mjs` registra antes de este módulo terminar de carregar)
+// eslint-disable-next-line no-var
+var vulnerabilidadeNoDot;
+export function definirVulnerabilidadeNoDot(fn) { vulnerabilidadeNoDot = fn; }
+export function recebidoNoPulso(m, d, agora) {
+  if (!itensPoeLigado()) return 1;
+  // (revisão do C4, 21/10: a afecção do ACERTO posta pelo totem — `origem.doAcerto` — já traz a maldição na base, como a sua: não conta de novo)
+  const daGema = (d.origem?.fonte === 'gema' || d.origem?.fonte === 'totem') && !d.origem?.doAcerto;
+  // (revisão do C4, 21/10: + o dano sofrido do ATACANTE — o Definhado com o "Efeito do Definhamento aumentado", os "Inimigos … sofrem Dano aumentado" —, guardado
+  // na `origem.sofrido` de quem pôs — `ModsPoe.sofridoDoAtacante`)
+  return ModsPoe.fatorRecebidoNoDot(m, d.elemento, agora, d.origem?.sofrido ?? null) * (daGema && vulnerabilidadeNoDot ? vulnerabilidadeNoDot(m, d.elemento, agora) : 1);
+}
+
 /**
  * Um tique da caçada: os pulsos de todos os efeitos de todos os bichos. O dano sai direto na vida, depois da resistência do bicho ao
  * elemento; quem cair é recolhido por `processarMortes`. Devolve o dano total do tique.
@@ -122,15 +144,21 @@ export function tique(hunt, eventos, agora) {
       const t = CONFIG.tipos[d.tipo];
       if (!t) continue;
       while (d.falta > 0 && R.jaPode(agora, d.proximo) && d.proximo <= d.ate + t.pulsoMs && m.hp > 0) {
-        const parte = Math.max(1, Math.round(Math.min(d.falta, d.porPulso)));
+        // (lote C4, dono 21/10 — D4.2) as CAMADAS da Praga: o pulso é o de uma camada × as camadas vivas nele (cada uma com a sua duração — `GemasC4.porCamada`)
+        const porPulso = d.camadas ? (d.porPulsoCamada ?? 0) * camadasNoPulso(d, d.proximo) : d.porPulso;
+        if (d.camadas && !(porPulso > 0)) { d.falta = 0; break; }
+        const parte = Math.max(1, Math.round(Math.min(d.falta, porPulso)));
         // (o Sangramento no bicho em movimento ou Agravado: × 3 no pulso — `fatorDoMovimento`)
-        const v = resistido(hunt, m, d.elemento, parte * fatorDoMovimento(d, m, agora));
+        // (lote C4, dono 21/10: + o dano sofrido aumentado do alvo — `recebidoNoPulso`)
+        const v = resistido(hunt, m, d.elemento, parte * fatorDoMovimento(d, m, agora) * recebidoNoPulso(m, d, agora));
         m.hp -= v;
         // (lote 31, S001: o dano contínuo é de quem o pôs — o do lacaio é dele; não é acerto; lote G20a: o do totem é dele)
         QuemFeriu.carimbar(m, d.origem?.fonte === 'lacaio' ? QuemFeriu.LACAIO : d.origem?.fonte === 'totem' ? QuemFeriu.TOTEM : QuemFeriu.VOCE);
         d.falta -= parte;
         d.proximo += t.pulsoMs;
         total += v;
+        // (lote PR2, dono 20/10 — D2) o debuff do Drenar Essência: a % do dano do pulso que volta como a sua Vida (ou a perda do Desespero) — `Acoes.drenoDosDebuffs`
+        if (d.dreno) { const r = (hunt.drenoDosDebuffs ??= { vida: 0, perda: 0 }); r.vida += (v * (d.dreno.vidaPct ?? 0)) / 100; r.perda += (v * (d.dreno.perdaPct ?? 0)) / 100; }
         eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v, foe: true, alvo: m.name, color: t.cor, dot: d.tipo, ...(d.tipo === 'queimadura' ? { queimando: true } : {}) });
         registrarGolpe(() => ({ origem: 'dot', tipo: d.elemento, dot: d.tipo, alvo: m.name, danoAntesDaResistencia: parte, danoFinal: v, vidaRestante: Math.max(0, m.hp), detalhe: { id: d.id, origem: d.origem, falta: d.falta } }));
       }

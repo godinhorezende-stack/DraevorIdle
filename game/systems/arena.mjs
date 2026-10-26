@@ -625,6 +625,15 @@ export function antesDoTique(s, agora = Date.now()) {
   }
 }
 
+/**
+ * (dono, 20/10 — o lote PR2) O Escudo de Energia do adversário no duelo: o golpe de CAOS atravessa o Escudo, como no PoE (e como o Caos dos monstros), com as
+ * mesmas exceções — "Dano de Caos sofrido não ultrapassa o Escudo de Energia" e "X% do dano de caos sofrido não ignora o escudo de energia"
+ * (`Defesa.absorverComOCaos`); o resto, pelo Escudo. Devolve o que vai para a Vida.
+ */
+export function absorverNoAdversario(estado, ficha, dano, elemento) {
+  return Defesa.absorverComOCaos(estado, ficha, dano, elemento === 'chaos' ? dano : 0);
+}
+
 function golpeNoAdversario(s, outro, arma, id) {
   const ficha = Ficha.combate(s.estado);
   const fo = Ficha.combate(outro.estado);
@@ -647,7 +656,7 @@ function golpeNoAdversario(s, outro, arma, id) {
   // O Energy Shield do adversário absorve antes da vida.
   // (Arredondado, como o golpe do bicho no personagem — `combate.mjs`: a armadura no modo 'poe' corta uma FRAÇÃO do golpe físico, e sem
   // isto o número na tela e a vida do adversário ficavam quebrados — 14,24, 107,01...)
-  const dano = Defesa.absorver(outro.estado, fo, Math.max(0, Math.round(elemento === 'physical' && !somaFisica ? R.danoRecebido(protegido, armorDoPersonagem(outro.estado)) : protegido)));
+  const dano = absorverNoAdversario(outro.estado, fo, Math.max(0, Math.round(elemento === 'physical' && !somaFisica ? R.danoRecebido(protegido, armorDoPersonagem(outro.estado)) : protegido)), elemento);
   outro.estado.hp = Math.max(0, outro.estado.hp - dano);
   // PoE: o frasco com "Efeito é removido quando Acertado por um Jogador" acaba.
   if (FrascosPoe.aoSerAcertadoPorJogador(outro.estado)) Ficha.invalidar(outro.estado);

@@ -396,7 +396,8 @@ test('A4 A (D7): o Golpe no Chão do Tremor (+100%), a Laceração do Abate (+50
   // (a Laceração: a varredura de 1 casa — 45° —, a 67,5° no mesmo raio, é a mesma; com a área de 300% a mais — 2 casas — a casa de 63° entra)
   const comArea = (m) => { m.e.equipment.ring = { id: 0, count: 1, af: [], poe: { af: { area_inc: 300 } } }; Ficha.invalidar(m.e); };
   const lac = await area('Lacerate', comArea);
-  const naAreia = await area('Lacerate', (m) => { comArea(m); m.e.hunt.buffs = { ...(m.e.hunt.buffs ?? {}), 'poe-gema:Blood_and_Sand': { ate: 1e12, tipo: 'poe-aura' } }; });
+  // (lote C3, com o aval do dono 25/10 — o PoE: o buff do Sangue e Areia recém-ligado está na Postura de Sangue; a de Areia é a troca, `postura: 'areia'`)
+  const naAreia = await area('Lacerate', (m) => { comArea(m); m.e.hunt.buffs = { ...(m.e.hunt.buffs ?? {}), 'poe-gema:Blood_and_Sand': { ate: 1e12, tipo: 'poe-aura', postura: 'areia' } }; });
   assert.ok(naAreia.length > lac.length, `na Postura da Areia, 50% mais ângulo: ${lac.length} → ${naAreia.length}`);
   for (const s of ['Ground_Slam_of_Earthshaking', 'Lacerate_of_Butchering', 'Incinerate', 'Ice_Shot']) assert.ok(!G.doSlug(s).motivosNoJogo.some((x) => /[Ââ]ngulo/.test(x)), `${s}: ${G.doSlug(s).motivosNoJogo.join(' | ')}`);
 });

@@ -86,6 +86,7 @@ import * as ItensPoeJogo from './itens-poe/jogo.mjs';
 import * as Mapas from './itens-poe/mapas.mjs';
 import * as MapasAreas from './itens-poe/mapas-areas.mjs';
 import * as MapaAberto from './itens-poe/mapa-aberto.mjs';
+import * as GemasGBD from './itens-poe/gemas-gbd.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
 export { nomeDaHunt, huntsJogaveis, gradeDaHunt, aquecerGrades } from './hunt/terreno.mjs';
@@ -1249,6 +1250,14 @@ export function novaInstancia(estado, pronta = null) {
   // (revisão do A3b: a instância nova começa sem os objetos das gemas do PoE — no PoE a troca de área desfaz o chão, as lâminas e os capturados — nem a área fria
   // que andava com eles; os da party, abaixo)
   delete hunt.poeObjetos;
+  // (lote B2, dono 20/10 — D-B2.2: as Cargas Sangrentas zeram na troca de instância)
+  delete hunt.poeSangue;
+  // (lote PR4, dono 25/10: a energia estática do Golpe Estático e os Relâmpagos Concentrados também — os bichos novos não têm as flechas nem as conchas)
+  delete hunt.poeEstatico;
+  delete hunt.poeConcentrados;
+  delete hunt.poeFeixesConcentrados;
+  // (lote B4, dono 25/10 — D-B4.6: a Intensidade zera na troca de instância)
+  delete hunt.poeIntensidade;
   if (hunt.areasFrias) hunt.areasFrias = hunt.areasFrias.filter((a) => !a.obj);
   hunt.pos = { x: novo.inicio.x, y: novo.inicio.y, dir: 2 };
   hunt.percurso = novo.grade.percurso ? { passo: waypointMaisPerto(novo.grade.percurso, novo.inicio, 0, novo.grade.percurso.length, novo.andarInicial) } : null;
@@ -2055,7 +2064,8 @@ export function tique(estado, personagem, agora = Date.now()) {
     }
     // (PoE, 11/10) A Furtividade encolhe o raio em que os bichos notam você (`ModsPoe.percepcaoComFurtividade`).
     const percepcao = itensPoeLigado() ? ModsPoe.percepcaoComFurtividade(ALCANCE_DE_PERCEPCAO, Ficha.combate(estado)) : ALCANCE_DE_PERCEPCAO;
-    moverMonstros(hunt, gradeDosBichos, agora, { semPerseguir: naZonaSegura, percepcao });
+    // (lote B4, dono 25/10 — D-B4.5: as suas Paredes de Gelo seguram os bichos como terreno até expirar — `Acoes.gradeSemParedes`)
+    moverMonstros(hunt, Acoes.gradeSemParedes(hunt, gradeDosBichos, agora), agora, { semPerseguir: naZonaSegura, percepcao });
   }
 
   const eventos = [];
@@ -2119,7 +2129,7 @@ export function tique(estado, personagem, agora = Date.now()) {
   // As mecânicas dos mobs no tempo: enrage na vida baixa, aura de dano e o veneno dos golpes (`mobs/mecanicas.mjs`).
   Mecanicas.tique(estado, hunt, personagem, eventos);
   // (PoE, 12/10) As Armadilhas e Minas plantadas: as que ativam ou detonam agora (`acoes.tiqueDasPlantadas`).
-  Acoes.tiqueDasPlantadas(estado, hunt, personagem, eventos);
+  Acoes.tiqueDasPlantadas(estado, hunt, personagem, eventos, hunt.clock ?? 0, { explosaoDeRunas: !umaAcaoPorVez });
   // (PoE, 12/10) As Runas vinculadas aos inimigos: as que são Ativadas agora (`acoes.tiqueDasRunas`).
   Acoes.tiqueDasRunas(estado, hunt, personagem, eventos);
   // (PoE, 12/10) Os Vínculos: o custo por segundo, a quebra e a morte do alvo (`acoes.tiqueDosVinculos`).
@@ -2143,6 +2153,8 @@ export function tique(estado, personagem, agora = Date.now()) {
   // Gélido, a Automação); e o teto do Sangue Petrificado — a Vida que subiu sem frasco para em Vida Baixa (antes dos frascos, que passam por cima)
   if (itensPoeLigado()) {
     Acoes.tiqueDasGemasA2(estado, hunt, personagem, eventos, hunt.clock ?? 0);
+    // (lotes G-B e G-D, dono 25/10) as Guardas, o Imortal, o gelo da Armadura Ártica Vaal, a Fúria Sangrenta e o Fogo Justo no tempo (`Acoes.tiqueDasGemasGBD`)
+    Acoes.tiqueDasGemasGBD(estado, hunt, personagem, eventos, hunt.clock ?? 0);
     GemasA2.tetoDoSangue(estado, hunt);
   }
   // Os frascos do PoE no cinto: a recuperação de vida/mana, o fim dos de Utilidade e o uso automático (a ficha é refeita se o efeito mudou).
@@ -2161,6 +2173,8 @@ export function tique(estado, personagem, agora = Date.now()) {
   // parede (`agora`, que começa em ~1,8e12 enquanto o da caçada começa em 0), todo pulso "já podia" e o efeito inteiro (incêndio,
   // sangramento, veneno, o degenerativo das gemas) era pago no tique seguinte, em vez de ao longo da duração.
   Estados.tique(hunt, eventos, hunt.clock ?? 0);
+  // (lote PR2, dono 20/10 — D2) o dreno dos debuffs do Drenar Essência (a Vida regenerada, a perda do Desespero), dos pulsos de agora
+  if (itensPoeLigado()) Acoes.drenoDosDebuffs(estado, hunt, personagem, eventos);
   processarMortes(estado, personagem, eventos);
 
   const usaBarra = hunt.modo !== 'online' || hunt.autoBarra !== false;
@@ -2179,8 +2193,19 @@ export function tique(estado, personagem, agora = Date.now()) {
       const conjurando = hunt.conjurando;
       // (Na primeira volta a conjuração já foi concluída, no começo do tique.)
       if (volta > 0) eventos.push(...Acoes.concluirConjuracao(estado, hunt, personagem));
-      if (usaBarra && estado.hp > 0) eventos.push(...autoDisparo(estado, hunt, personagem));
-      const barraAgiu = hunt.cooldowns?.[Acoes.GRUPO_DO_POE] !== grupo || hunt.conjurando !== conjurando;
+      // (revisão C2, dono 21/10) a EXPLOSÃO DE RUNAS em cada volta, revezando com a barra (`hunt.poeVezDaExplosao`: a barra teve a vez depois do último uso dela);
+      // quem tem a vez e não age devolve a vez ao outro na mesma volta; o golpe básico só quando nenhum dos dois agiu
+      const comRunas = !!hunt.poeObjetos?.some((o) => o.tipo === 'runa_tempestade');
+      const agiu = () => hunt.cooldowns?.[Acoes.GRUPO_DO_POE] !== grupo || hunt.conjurando !== conjurando;
+      const explodir = () => { if (comRunas && estado.hp > 0) { eventos.push(...Acoes.explosaoDeRunas(estado, hunt, personagem, hunt.clock ?? 0, { logico: true })); if (agiu()) hunt.poeVezDaExplosao = false; } };
+      const vezDela = comRunas && !!hunt.poeVezDaExplosao;
+      if (vezDela) explodir();
+      if (!agiu()) {
+        if (usaBarra && estado.hp > 0) eventos.push(...autoDisparo(estado, hunt, personagem));
+        if (comRunas) hunt.poeVezDaExplosao = true;
+        if (!agiu() && !vezDela) explodir();
+      }
+      const barraAgiu = agiu();
       if (!barraAgiu) golpeBasico();
       processarMortes(estado, personagem, eventos);
       if (hunt.cooldowns?.[Acoes.GRUPO_DO_POE] === grupo && hunt.conjurando === conjurando) break;
@@ -2443,14 +2468,14 @@ export function efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo, ctx = {}) {
     if (lista.length > E.maximo) lista.splice(0, lista.length - E.maximo);
     ev('empalado');
   }
-  if (sorte(p.chances.cinzas)) { ModsPoe.porNoAlvo(alvo, 'cinzas', agora + 4000); ev('cinzas'); }
+  if (sorte(p.chances.cinzas)) { ModsPoe.porNoAlvo(alvo, 'cinzas', agora + 4000, agora); ev('cinzas'); }
   if (sorte(p.chances.cegar)) { e.cego = { ate: agora + ModsPoe.NO_ACERTO.cegar.duracaoMs }; ev('cego'); }
   if (sorte(p.chances.provocar)) { e.provocado = { ate: agora + ModsPoe.NO_ACERTO.provocar.duracaoMs, deLacaio: true }; ev('provocado'); }
   // (lote 69) "Lacaios têm X% de chance de Empurrar Inimigos ao Acertar com Ataques" (o empurrão do jogo: para longe de você)
   if (!ctx.magia && sorte(p.chances.empurrar) && ModsPoe.empurrar(hunt, alvo)) ev('empurrado');
   if (sorte(p.chances.desacelerar)) {
     const ate = agora + ModsPoe.NO_ACERTO.desacelerar.duracaoMs;
-    e.lento = e.lento && e.lento.ate > agora ? { ate: Math.max(e.lento.ate, ate), pct: Math.max(e.lento.pct, 30) } : { ate, pct: 30 };
+    GemasGBD.porLento(e, ate, 30, agora);
     ev('lento');
   }
   const dot = (tipoDot, porSegundo, duracaoMs) => {
@@ -2544,12 +2569,12 @@ export function aoBloquearDoLacaio(hunt, l, bicho, eventos, agora, rng = Math.ra
       }
       case 'alvo':
         if (!vivo(bicho) || !nomeDoEstado || !sorte(v)) break;
-        ModsPoe.porNoAlvo(bicho, nomeDoEstado, ate);
+        ModsPoe.porNoAlvo(bicho, nomeDoEstado, ate, agora);
         eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: nomeDoEstado });
         break;
       case 'proximos':
         if (!sorte(v)) break;
-        for (const m of hunt.monstros ?? []) if (vivo(m) && distancia(m, l) <= 3) ModsPoe.porNoAlvo(m, nomeDoEstado, ate);
+        for (const m of hunt.monstros ?? []) if (vivo(m) && distancia(m, l) <= 3) ModsPoe.porNoAlvo(m, nomeDoEstado, ate, agora);
         break;
       case 'recargaEs': if (sorte(v)) l.esEspera = 0; break;
       case 'esDaArmadura': if (l.maxEs > 0) l.es = Math.min(l.maxEs, (l.es ?? 0) + (LacaiosPoe.armaduraDoLacaio(l, agora) * v) / 100); break;
@@ -2618,6 +2643,8 @@ export function magiaNoLacaio({ estado, hunt, bicho, l, a, eventos, agora, ficha
   return d;
 }
 Poderes.definirMagiaNoLacaio(magiaNoLacaio);
+// (revisão G, 26/10) o Escudo Tempestuoso também ao bloquear uma MAGIA (o gancho de `Poderes.dispararMagia` — antes nunca registrado)
+Poderes.definirAoBloquearMagia(({ estado, hunt, personagem, bicho, eventos, agora }) => Acoes.escudoTempestuoso(estado, hunt, personagem, bicho, eventos, agora));
 
 // O empalamento solto passa pela Redução de Dano Físico do monstro (`mods-poe.aoAcertar`): a resistência física e a redução de dano dele.
 ModsPoe.definirReducaoFisica((hunt, alvo, valor) => resistido(hunt, alvo, 'physical', valor, null, { armadura: false }));

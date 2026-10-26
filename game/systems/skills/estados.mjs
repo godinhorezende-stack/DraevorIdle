@@ -16,6 +16,9 @@ import * as R from '../regras.mjs';
 import * as Dot from '../combate/dot.mjs';
 import { CONFIG as ATRIBUTOS } from '../personagem/atributos.mjs';
 import { regrasDasMaldicoes } from './reforcos.mjs';
+// (lote G-C, dono 25/10 — D10: "os outros efeitos expiram mais devagar" no amaldiçoado pela Corrente Temporal)
+import { expirarMaisDevagar } from '../itens-poe/gemas-gac.mjs';
+import { atualizarLento, porLento } from '../itens-poe/gemas-gbd.mjs';
 
 const E = () => CONFIG.estados ?? {};
 const ativo = (s, agora) => !!s && s.ate > agora;
@@ -80,7 +83,8 @@ export function aplicar(bicho, efeito, dano, agora, rng = Math.random, salaDeBos
       const l = estados.lento;
       // Vale a MAIOR lentidão (não a última) e nunca encurta o que já corre.
       // (`dur`: a duração cheia do que vale — as Forças Profanadas a renovam ao amaldiçoar, `ModsPoe.renovarFrioEChoque`)
-      estados.lento = ativo(l, agora) ? { ate: Math.max(l.ate, ate), pct: Math.max(l.pct, pct), dur: ate >= l.ate ? ate - agora : l.dur } : { ate, pct, dur: ate - agora };
+      // (revisão G, dono 26/10: cada fonte com a sua duração — `porLento`; vale a mais forte ativa)
+      porLento(estados, ate, pct, agora, { dur: ate - agora });
       postos.push('lento');
     }
   }
@@ -103,10 +107,48 @@ export function atordoar(bicho, duracaoMs, agora, salaDeBoss = false) {
   return true;
 }
 
+/**
+ * (lote C4, dono 21/10) O TOLHIMENTO do PoE (Hinder): um estado próprio, `tolhido` — só a VELOCIDADE DE MOVIMENTO (o passo; o ataque não muda), sem o teto da
+ * lentidão (`lento.maximo`) e sem a metade do chefe. Um por vez, vale o mais forte ("A creature can only be affected by one Hinder at a time; … only the strongest
+ * Hinder takes effect" — o poedb).
+ * (revisão do C4, 21/10) vale a INSTÂNCIA mais forte inteira — o % e a duração DELA: cada Tolhimento guarda a sua duração (`lista`, só com mais de um), e o que vale a
+ * cada momento é o de maior % ainda ativo (o fraco segue depois que o forte acaba, até o fim dele; antes, o maior % ficava até o maior fim). `ate` é o fim do último
+ * (o estado está ativo enquanto algum está); `pct`, o do mais forte quando foi posto (o passo usa `fatorDeTolhimento`, que olha a `lista`).
+ * `regenMenosPct`: o "Inimigos Desacelerados por você têm Regeneração de Vida reduzida em X%" de quem Tolheu, na instância (vale enquanto ela está ativa —
+ * `regenMenosDoTolhimento`, no `tique`).
+ * Devolve true se pôs (ou reforçou).
+ */
+export function tolher(bicho, pct, duracaoMs, agora, regenMenosPct = 0) {
+  if (!bicho || !(bicho.hp > 0) || !(pct > 0) || !(duracaoMs > 0)) return false;
+  const estados = (bicho.estados ??= {});
+  const novo = { ate: agora + Math.round(duracaoMs), pct, ...(regenMenosPct > 0 ? { regenMenosPct } : {}) };
+  const todos = [...instanciasDoTolhimento(estados.tolhido, agora), novo];
+  // fica a que ainda pode valer: sai a que outra cobre (% e fim maiores ou iguais, e a redução da Regeneração também; entre iguais, fica a mais nova)
+  const cobre = (j, i) => j.pct >= i.pct && j.ate >= i.ate && (j.regenMenosPct ?? 0) >= (i.regenMenosPct ?? 0);
+  const lista = todos.filter((i, k) => !todos.some((j, l) => l !== k && cobre(j, i) && (!cobre(i, j) || l > k))).sort((x, y) => y.pct - x.pct || y.ate - x.ate);
+  estados.tolhido = lista.length > 1 ? { ate: Math.max(...lista.map((i) => i.ate)), pct: lista[0].pct, lista } : { ...lista[0] };
+  return true;
+}
+/** As instâncias ATIVAS do Tolhimento `t` (a `lista`, ou ele mesmo). */
+function instanciasDoTolhimento(t, agora) {
+  if (!ativo(t, agora)) return [];
+  return (t.lista ?? [t]).filter((i) => i.ate > agora).map(({ ate, pct, regenMenosPct }) => ({ ate, pct, ...(regenMenosPct > 0 ? { regenMenosPct } : {}) }));
+}
+/** O % do Tolhimento que vale agora: o da instância mais forte ainda ativa (0 sem nenhuma). */
+export const pctDoTolhimento = (m, agora) => Math.max(0, ...instanciasDoTolhimento(m?.estados?.tolhido, agora).map((i) => i.pct ?? 0));
+/** O "Inimigos Desacelerados por você têm Regeneração de Vida reduzida em X%" que vale agora: o maior das instâncias ativas. */
+export const regenMenosDoTolhimento = (m, agora) => Math.max(0, ...instanciasDoTolhimento(m?.estados?.tolhido, agora).map((i) => i.regenMenosPct ?? 0));
+/** Quanto o passo do bicho Tolhido demora a mais (1 = normal): 1 / (1 − %), até 90%. */
+export function fatorDeTolhimento(m, agora) {
+  const pct = pctDoTolhimento(m, agora);
+  return pct > 0 ? 1 / Math.max(0.1, 1 - pct / 100) : 1;
+}
+
 /** Os estados ATIVOS do bicho agora (o cliente mostra um ícone de cada): `['congelado', 'lento', 'queimando']`. */
 export function ativosDe(m, agora) {
   const e = m?.estados ?? {};
-  const lista = [...['congelado', 'atordoado', 'lento'].filter((n) => ativo(e[n], agora)), ...Dot.ativosDe(m, agora)];
+  // (lote C4: + o `tolhido` — o Tolhimento, só de movimento)
+  const lista = [...['congelado', 'atordoado', 'lento', 'tolhido'].filter((n) => ativo(e[n], agora)), ...Dot.ativosDe(m, agora)];
   // A Eletrização do PoE (`itens-poe/afeccoes.mjs`: o bicho recebe mais dano) usa o ícone de eletrizado.
   if (ativo(e.chocado, agora) && !lista.includes('eletrizado')) lista.push('eletrizado');
   return lista;
@@ -184,11 +226,13 @@ export function tique(hunt, eventos, agora) {
   for (const m of hunt?.monstros ?? []) {
     const est = m.estados;
     if (est && m.hp > 0) {
+      // (revisão G) as lentidões de várias fontes (`porLento`): as vencidas saem e vale a mais forte ativa
+      atualizarLento(est, agora);
       // "Inimigos Ficam Resfriados ao Descongelarem": o Congelamento acabou — o Resfriamento entra (a maior lentidão vale).
       const c = est.congelado;
       if (c?.resfriarAoSair > 0 && c.ate <= agora) {
         const pct = Math.min(E().lento?.maximo ?? 40, c.resfriarAoSair);
-        est.lento = ativo(est.lento, agora) ? { ...est.lento, pct: Math.max(est.lento.pct, pct), ate: Math.max(est.lento.ate, c.ate + RESFRIAMENTO_AO_DESCONGELAR_MS) } : { ate: c.ate + RESFRIAMENTO_AO_DESCONGELAR_MS, pct };
+        porLento(est, c.ate + RESFRIAMENTO_AO_DESCONGELAR_MS, pct, agora);
         delete c.resfriarAoSair;
         eventos?.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'lento' });
       }
@@ -203,6 +247,8 @@ export function tique(hunt, eventos, agora) {
     }
     // O escudo de energia do PoE: o dano que entrou desde o último tique sai primeiro do escudo (`escudoDoMonstro`).
     if (m.esPoe && m.hp > 0) acertarEscudo(m, agora);
+    // (lote G-C, D10) a Corrente Temporal: os efeitos no amaldiçoado ganham o tempo que não passou para eles (`GemasGAC.expirarMaisDevagar`)
+    if (m.maldicoes && m.hp > 0) expirarMaisDevagar(m, agora, (t) => Dot.CONFIG.tipos[t]?.pulsoMs ?? 1000);
     // As regras das maldições do PoE no monstro ("Inimigos Amaldiçoados por você têm Regeneração de Vida reduzida em X%"/"não podem Recuperar
     // Escudo de Energia" — `Reforcos.marcar` guarda na maldição as da ficha de quem conjurou).
     const maldicoes = m.maldicoes ? regrasDasMaldicoes(m, agora) : null;
@@ -219,7 +265,8 @@ export function tique(hunt, eventos, agora) {
       //   - (ciclo 7, lote E) "Inimigos Próximos têm Regeneração de Vida reduzida em X%" — a aura do personagem, `mods-poe.aurasProximas`;
       //   - (lote B1) o debuff da gema — a Bomba Congelante, "Regeneração de Vida reduzida em 75%", pela duração secundária;
       //   - as das maldições ("Inimigos Amaldiçoados por você têm Regeneração de Vida reduzida em X%").
-      const reduzido = (ativo(m.estados?.desacelerado, agora) ? m.estados.desacelerado.regenMenosPct ?? 0 : 0) + (ativo(m.estados?.regenMenosAura, agora) ? m.estados.regenMenosAura.pct ?? 0 : 0)
+      // (revisão do C4, 21/10: o "Desacelerados por você" vale em todo Tolhimento seu — o `regenMenosPct` do `tolhido`, `tolher`; o maior dos dois, sem contar duas vezes)
+      const reduzido = Math.max(ativo(m.estados?.desacelerado, agora) ? m.estados.desacelerado.regenMenosPct ?? 0 : 0, regenMenosDoTolhimento(m, agora)) + (ativo(m.estados?.regenMenosAura, agora) ? m.estados.regenMenosAura.pct ?? 0 : 0)
         + (ativo(m.estados?.regenMenosDebuff, agora) ? m.estados.regenMenosDebuff.pct ?? 0 : 0) + (maldicoes?.regenMenos ?? 0);
       // (lote 69: "Inimigos Envenenados por você não podem Regenerar Vida" — enquanto o veneno dura)
       const envenenado = m.estados?.semRegenEnvenenado && (m.dots ?? []).some((d) => (d.tipo === 'veneno' || d.tipo === 'venenoPoe') && d.falta > 0);

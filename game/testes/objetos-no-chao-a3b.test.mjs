@@ -148,7 +148,8 @@ test('A3b D7: o Tornado anda para a frente 1,5 s e persegue por 4 s, acerta a ca
   assert.equal(acertosEm(ev, m.bs[0]), 4, 'um golpe a cada 0,25 s com o bicho no raio');
   // (revisão do A3b: o "-1 %" da linha é a bandeira `tornado_hinder`; o Tolhimento é o do PoE, 30%)
   assert.equal(o.lentidaoPct, 30);
-  assert.equal(m.bs[0].estados?.lento?.pct, 30, 'o Tolhimento no raio');
+  // (aval do dono, 21/10: o Tolhimento agora é um estado próprio, como no PoE — `estados.tolhido`, não o `lento`)
+  assert.equal(m.bs[0].estados?.tolhido?.pct, 30, 'o Tolhimento no raio');
   correr(m, 600);
   assert.equal(o.mov, 'persegue', 'depois da duração inicial, persegue');
   assert.equal(o.fase, 2);
@@ -524,7 +525,8 @@ test('A3b-2: a Esfera do Vazio fica no lugar mirado, pulsa a cada 0,4 s pela dur
   assert.equal(esf.ate - m.e.hunt.clock, 5000);
   const ev = correr(m, 5100);
   assert.equal(acertosEm(ev, m.bs[0]), 12, '5000 ÷ 400 = 12 pulsos');
-  assert.equal(m.bs[0].estados?.lento?.pct, 39, 'colado nela, o Tolhimento todo');
+  // (aval do dono, 21/10: o Tolhimento agora é um estado próprio, como no PoE — `estados.tolhido`, não o `lento`)
+  assert.equal(m.bs[0].estados?.tolhido?.pct, 39, 'colado nela, o Tolhimento todo');
 });
 
 test('A3b-2: a Tormenta Flamejante — um impacto a cada 0,15 s pela duração, em pontos sorteados da área; o primeiro com 325% mais dano', { skip: SEM }, async () => {

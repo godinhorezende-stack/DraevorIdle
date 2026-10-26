@@ -13,6 +13,7 @@
 //   - "Vincula a um novo Inimigo após ser Ativada, não mais que uma vez a cada N segundos" (a da gema e a da árvore) e "É Ativado uma vez
 //     quando Vinculada, então é Destruída".
 import { ligado } from './catalogo.mjs';
+import { naoConvocavelDasLinhas } from './gemas-gac.mjs';
 
 export const PADRAO = { maximo: 3, porInimigo: 1, alcance: 3, vinculadaMs: 5000, soltaMs: 6000, intervaloMs: 1000 };
 
@@ -41,6 +42,8 @@ export function daGema(linhas = []) {
     soltaMs: solta ? segundos(solta[1]) : PADRAO.soltaMs,
     trocaMs: troca ? segundos(troca[1]) : null,
     porInimigoExtra: mais ? Number(mais[1]) : 0,
+    // (lote G-A, dono 25/10) a Runa do Armagedom da Volatilidade: "Não pode ser Convocada" (brand_cannot_be_recalled — a Convocar Runas a deixa onde está)
+    ...(naoConvocavelDasLinhas(t) ? { naoConvocavel: true } : {}),
   };
 }
 
@@ -84,6 +87,7 @@ export function conjurar(hunt, ficha, { acao, slot, x, y, z = hunt?.z ?? 0, prop
     intervaloMs: Math.max(50, Math.round(intervaloMs ?? props.intervaloMs)), unica: !!props.unica,
     vinculadaMs: Math.round(props.vinculadaMs * fatorDaDuracao), soltaMs: Math.round(props.soltaMs * fatorDaDuracao), vinculadaPassou: 0, soltaPassou: 0,
     ...(props.trocaMs != null ? { trocaMs: props.trocaMs } : {}), ...(props.porInimigoExtra ? { porInimigoExtra: props.porInimigoExtra } : {}),
+    ...(props.naoConvocavel ? { naoConvocavel: true } : {}),
   };
   lista.push(r);
   hunt.runas = lista;
