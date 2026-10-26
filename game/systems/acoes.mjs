@@ -7431,7 +7431,7 @@ export function tiqueDasRunas(estado, hunt, personagem, eventos = [], agora = hu
  *  - a DISSIPAÇÃO: +1 de Energia (até 20) e o pulso com o "mais" e o raio por Energia depois da primeira (`GemasGBD.pulsoDaDissipacao`);
  *  - D15, a CONDUÇÃO: +1 de Energia no vinculado e 1 nos vizinhos a até 1 casa dele que ainda não têm — o golpe é ao se desvincular (`conducaoDesvinculada`);
  *  - D15, a TEMPESTUOSA: os feixes no vinculado e nos N − 1 vivos mais perto dele a até 3 casas, um acerto em cada (`GemasGBD.alvosDosFeixes`);
- *  - D16, o ARCANISTA: as magias ligadas a ela saem no vinculado (`ativarGatilhos` 'arcanista'), com o "menos Dano", o "mais com Acertos contra o Vinculado" e o "menos
+ *  - D16, o ARCANISTA: as magias ligadas a ela saem DA CASA da Runa (a do vinculado — dono, 26/10), nele (`ativarGatilhos` 'arcanista'), com o "menos Dano", o "mais com Acertos contra o Vinculado" e o "menos
  *    Área" do nível.
  */
 function ativarRunaGBD(estado, hunt, personagem, r, alvo, plantada, eventos, agora) {
@@ -7478,7 +7478,10 @@ function ativarRunaGBD(estado, hunt, personagem, r, alvo, plantada, eventos, ago
   const arc = GemasPoe.arcanistaDaGema(slug, nivel, q);
   if (arc) {
     const mais = GemasGBD.maisDoArcanista(arc, true);
-    ativarGatilhos(estado, hunt, personagem, 'arcanista', { alvo, runa: r.acao, maisAcertoPct: mais.maisAcertoPct, maisAfeccaoPct: mais.maisAfeccaoPct, areaMaisPct: -arc.menosAreaPct }, eventos);
+    // (dono, 26/10: como no PoE — as magias saem da casa da Runa, a do vinculado, e não de você)
+    const pos = hunt.pos;
+    hunt.pos = { ...pos, x: alvo.x, y: alvo.y };
+    try { ativarGatilhos(estado, hunt, personagem, 'arcanista', { alvo, runa: r.acao, maisAcertoPct: mais.maisAcertoPct, maisAfeccaoPct: mais.maisAfeccaoPct, areaMaisPct: -arc.menosAreaPct }, eventos); } finally { hunt.pos = pos; }
     return true;
   }
   return false;
@@ -7506,7 +7509,8 @@ function clamorGBD(estado, hunt, entry, efeitoDaGema, raio, agora) {
     if (mais > 0) { b.afPoe = { ...(b.afPoe ?? {}), 'mais_dano@impelidoClamor': (b.afPoe?.['mais_dano@impelidoClamor'] ?? 0) + mais }; Ficha.invalidar(estado); }
     // o buff dos ALIADOS (o PoB: o Dano de Ataque Adicional igual a X% do dano da sua arma principal — cada tipo dela, "por cada 5 de Poder, até 30"): a foto em `hunt.poeReuniao`,
     // que os companheiros a até o raio do Clamor leem na ficha deles (`Aliados.aplicar`) enquanto ele dura; você não o recebe
-    const pct = GemasGBD.armaDaReuniao(reu, ModsPoe.poderDoClamor(hunt, Ficha.combate(estado)));
+    // (dono, 26/10: "Conta o Poder total de Inimigos e Aliados no Raio" — cada aliado afetado conta o Poder de um inimigo Normal, 1 — `GemasGBD.REUNIAO.poderPorAliado`)
+    const pct = GemasGBD.armaDaReuniao(reu, ModsPoe.poderDoClamor(hunt, Ficha.combate(estado)) + (reu.contaAliados ? aliados * GemasGBD.REUNIAO.poderPorAliado : 0));
     const arma = Ficha.armasEquipadas(estado).find((a) => a.slot === 'weapon');
     if (pct > 0 && arma) {
       const af = {};
@@ -8008,7 +8012,10 @@ function aoLigarGBD(estado, hunt, entry, b, gbd, antes, efeitoDaGema, personagem
   if (gbd.guarda) {
     Ficha.invalidar(estado);
     const f = Ficha.combate(estado);
-    const limite = GemasGBD.limiteDaGuarda(gbd.guarda, { armadura: f.armor ?? 0, gasto: antes?.gasto ?? 0 });
+    // (dono, 26/10) o Manto Arcano: a absorção lê a qualidade de efeito do buff que o lote G-A guarda em `b.efeitoBuffQualPct` ("Efeito do Buff aumentado em X%"); sem o
+    // campo (antes da mescla com o G-A), 0. (O PoB marca o GuardAbsorbLimit como `unscalable`; a decisão é do dono.) O Raio adicional do gasto, abaixo, é o do buff — o G-A o
+    // escala pelo caminho dele, no `afPoe`.
+    const limite = Math.round(GemasGBD.limiteDaGuarda(gbd.guarda, { armadura: f.armor ?? 0, gasto: antes?.gasto ?? 0 }) * (gbd.guarda.gastaPct > 0 ? 1 + (Number(b.efeitoBuffQualPct) || 0) / 100 : 1));
     const reflete = gbd.guarda.reflete ? { ...gbd.guarda.reflete, pct: gbd.guarda.reflete.pct * maisDoPacto } : null;
     GemasGBD.porGuarda(hunt, { acao: entry.id, slug, pct: gbd.guarda.pct, limite, reflete }, agora);
     if (gbd.guarda.raioDoGastoPct > 0 && antes?.gasto > 0) {

@@ -752,6 +752,13 @@ Teste: `testes/area-no-impacto-a3c.test.mjs`. Com o aval do dono: `itens-poe-uni
   1. `gemas-sem-efeito-a2.test.mjs:114-115` espera `perde_vida_pct_s`/`perde_es_pct_s` = 4 na ficha da Fúria Sangrenta; agora (D8) a perda é o degenerativo Físico do motor (`a2.degenVidaPct`/`degenEsPct`), que mata;
   2. `gemas-todas-funcionam-poe.test.mjs:156` (G16): a Runa da Penitência agora só explode com 20 de Energia (D14 — o primeiro uso não fere) e a Runa do Arcanista só fere pelas magias ligadas a ela (o teste usa a gema sozinha).
 - Depois: parcial 151 → 138 nas ativas (implementada e testada 352 → 367); o Mago de Batalha e o General saíram de "implementada" (por engano) para parcial.
+- **As decisões do dono (26/10), no segundo commit:**
+  - os avais: `gemas-sem-efeito-a2` confere o degenerativo Físico da Fúria Sangrenta (4% da Vida + 4% do ES por segundo) no lugar de `perde_vida_pct_s`/`perde_es_pct_s`; o G16 usa a Penitência até a explosão e liga a Bola de Fogo à Runa do Arcanista (os comentários do aval em cada um);
+  - o Clamor de Reunião: cada aliado no raio conta o Poder de um inimigo Normal (1) — `GemasGBD.REUNIAO.poderPorAliado`; a linha "Conta o Poder total de Inimigos e Aliados" ficou feita;
+  - a Runa do Arcanista: as magias ligadas saem da casa da Runa (a do vinculado), como no PoE — a exceção 5 mudou;
+  - as outras 6 escolhas sem fonte ficam aprovadas;
+  - o Manto Arcano: a absorção lê `b.efeitoBuffQualPct` (a qualidade de efeito que o lote G-A guarda no buff) — em `Acoes.aoLigarGBD`; antes da mescla o campo não existe (0). Nota: o PoB marca o GuardAbsorbLimit como `unscalable`.
+  - Testes: `ativas-g-bd` 29/29; os 64 arquivos afetados: 810 testes, 773 passam, 37 pulados, 0 falhas.
 
 ### O Escudo Tempestuoso (25/10, a decisão do dono)
 

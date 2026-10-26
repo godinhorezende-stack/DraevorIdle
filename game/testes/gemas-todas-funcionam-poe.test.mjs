@@ -35,6 +35,8 @@ const DANO_POR_OUTRA = { Vaal_Venom_Gyre: 'Whirling_Blades', Corrupting_Fever: '
 // (lote B2, com o aval do dono 20/10: a Explosão de Lâminas do Descarrego detona as lâminas do SEU Vórtice de Lâminas — sem lâmina não sai: a montagem usa o Vórtice
 // ANTES, encaixado junto e no slot 2; o dano conferido é o do Descarrego)
 const USAR_ANTES = { Blade_Blast_of_Unloading: 'Blade_Vortex' };
+// (lote G-D, com o aval do dono 26/10: a Runa do Arcanista só fere pelas magias LIGADAS a ela — a montagem liga a Bola de Fogo e confere o dano dela)
+const LIGADA_A = { Arcanist_Brand: 'Fireball' };
 
 let J;
 let gerarPeca;
@@ -126,6 +128,8 @@ function usar({ e, b }, slug) {
   }
   // (a Mina detona com você parado e o inimigo perto; a Armadilha, com o inimigo a 1 casa; o gêiser e a torre, no tempo)
   for (let i = 0; i < 6; i++) { e.hunt.clock += 400; ev.push(...Acoes.tiqueDasPlantadas(e, e.hunt, PERSONAGEM, [])); ev.push(...Acoes.tiqueDasRunas(e, e.hunt, PERSONAGEM, [])); }
+  // (lote G-D, com o aval do dono 26/10: a Runa da Penitência põe 1 de Energia por Ativação e só explode com 20 — a montagem usa as Ativações até a explosão)
+  if (slug === 'Penance_Brand') for (let i = 0; i < 40 && e.hunt.runas?.length; i++) { e.hunt.clock += 100; ev.push(...Acoes.tiqueDasRunas(e, e.hunt, PERSONAGEM, [])); }
   // (lote B2, com o aval do dono 20/10: a Explosão Voltáxica solta 2,5 s × a Duração depois do uso — a montagem espera mais 200 ms, além dos 2,4 s acima)
   if (slug === 'Voltaxic_Burst') { e.hunt.clock += 200; ev.push(...Acoes.tiqueDasPlantadas(e, e.hunt, PERSONAGEM, [])); }
   // (lote G20a, com o aval do dono: o TOTEM — o seu uso o coloca; o dano é o do totem usando a habilidade, uma vez, no alvo)
@@ -165,7 +169,7 @@ test('G16: toda gema ativa "funciona" faz no jogo o que o status promete (o dano
     let feito = null;
     const erros = [];
     for (const armas of ARMAS) {
-      const m = montar(slug, armas, slug === 'Brand_Recall' ? ['Storm_Brand'] : DANO_POR_OUTRA[slug] ? [DANO_POR_OUTRA[slug]] : USAR_ANTES[slug] ? [USAR_ANTES[slug]] : []);
+      const m = montar(slug, armas, slug === 'Brand_Recall' ? ['Storm_Brand'] : DANO_POR_OUTRA[slug] ? [DANO_POR_OUTRA[slug]] : USAR_ANTES[slug] ? [USAR_ANTES[slug]] : LIGADA_A[slug] ? [LIGADA_A[slug]] : []);
       if (!m) continue;
       let u;
       try { u = usar(m, slug); } catch (err) { u = { ok: false, erro: `exceção: ${err.message}` }; }

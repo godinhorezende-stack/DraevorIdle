@@ -53,10 +53,10 @@
 //   - o ESCUDO TEMPESTUOSO (o dono, 25/10): um buff que reserva 25% da Mana (manaReservationPercent 25, como no PoE), +25% de chance de Bloquear Dano Mágico com
 //     escudo e Imunidade a Eletrização; ao bloquear, o raio sai no atacante e ricocheteia (chanceToTriggerCounterattackOnBlock 100, number_of_chains 1).
 //
-// EXCEÇÕES (as escolhas sem fonte do lote, para o dono confirmar): (1) a Guarda Vaal não entra na recarga compartilhada (a recarga dela são as almas); (2) a
+// EXCEÇÕES (as escolhas sem fonte do lote — aprovadas pelo dono em 26/10; e o Clamor de Reunião: cada aliado conta o Poder de um inimigo Normal, 1): (1) a Guarda Vaal não entra na recarga compartilhada (a recarga dela são as almas); (2) a
 // Carapaça trocada por outra Guarda reflete o que absorveu, como ao vencer; (3) o golpe da Condução ao se desvincular é um acerto em cada inimigo com Energia (a
 // área não repete nos vizinhos); (4) a Runa Tempestuosa mira os vivos mais perto da RUNA (o vinculado); (5) as magias da Runa do Arcanista saem do lugar do
-// vinculado, mirando ele; (6) o raio da explosão do Clamor Infernal e o da Combustão são os 2,2 m do poedb.
+// vinculado (a casa da Runa), mirando ele; (6) o raio da explosão do Clamor Infernal e o da Combustão são os 2,2 m do poedb.
 //
 // (Sem dependência da caçada nem dos outros módulos do PoE: só as linhas, os números e o estado JSON da caçada.)
 
@@ -436,8 +436,10 @@ const LINHA_REU_ALIADOS = /^Conta o Poder total de Inimigos e Aliados no Raio$/i
 export function reuniaoDasLinhas(slug, linhas = []) {
   if (slug !== 'Rallying_Cry') return null;
   const m = linhas.map((l) => LINHA_REU_ARMA.exec(norm(l))).find(Boolean);
-  return { armaPct: m ? Number(m[1]) : 0, porPoder: m ? Number(m[2]) : 5, maxPoder: m ? Number(m[3]) : 30, lacaiosMaisPct: achar(linhas, LINHA_REU_LACAIOS) ?? 0, porAliadoPct: achar(linhas, LINHA_REU_POR_ALIADO) ?? 0, porAliadoMax: achar(linhas, LINHA_REU_POR_ALIADO, 2) ?? 0 };
+  return { armaPct: m ? Number(m[1]) : 0, porPoder: m ? Number(m[2]) : 5, maxPoder: m ? Number(m[3]) : 30, lacaiosMaisPct: achar(linhas, LINHA_REU_LACAIOS) ?? 0, porAliadoPct: achar(linhas, LINHA_REU_POR_ALIADO) ?? 0, porAliadoMax: achar(linhas, LINHA_REU_POR_ALIADO, 2) ?? 0, contaAliados: tem(linhas, LINHA_REU_ALIADOS) };
 }
+/** (dono, 26/10) cada aliado no raio do Clamor de Reunião conta o Poder de um inimigo Normal */
+export const REUNIAO = Object.freeze({ poderPorAliado: 1 });
 /** O % da arma do buff do Clamor de Reunião com `poder`: X × ⌊min(poder, máx) / 5⌋. */
 export const armaDaReuniao = (d, poder) => (d ? d.armaPct * Math.floor(Math.min(Math.max(0, poder), d.maxPoder) / Math.max(1, d.porPoder)) : 0);
 /** O "mais" do ataque Impelido pelo Clamor de Reunião com `aliados` afetados (até o máximo). */
@@ -461,7 +463,7 @@ const FEITAS = [
   [LINHA_ARC_MENOS, /^Arcanist_Brand$/], [LINHA_ARC_MAIS, /^Arcanist_Brand$/], [LINHA_ARC_AREA, /^Arcanist_Brand$/], [LINHA_ARC_ATIVA, /^Arcanist_Brand$/], [LINHA_ARC_FREQ, /^Arcanist_Brand$/],
   [LINHA_INF_FOGO, /^Infernal_Cry$/], [LINHA_INF_COMBUSTAO, /^Infernal_Cry$/], [LINHA_INF_EXPLODE, /^Infernal_Cry$/], [LINHA_INF_PENALIDADE, /^Infernal_Cry$/],
   [LINHA_BMC_CRIT, /^Battlemages_Cry$/],
-  [LINHA_REU_ARMA, /^Rallying_Cry$/], [LINHA_REU_POR_ALIADO, /^Rallying_Cry$/],
+  [LINHA_REU_ARMA, /^Rallying_Cry$/], [LINHA_REU_POR_ALIADO, /^Rallying_Cry$/], [LINHA_REU_ALIADOS, /^Rallying_Cry$/],
   // (o Impelir dos Clamores do lote — `GemasPoe.impelidosDaGema`)
   [/^Impele (?:os próximos|o próximo) \d+ Ataques?\b/i, /^(Infernal_Cry|Battlemages_Cry|Rallying_Cry)$/],
   [/^Causa [\d.]+ a [\d.]+ de Dano de Raio$/i, /^Tempest_Shield$/], [/^Ricocheteia \+?\d+ Vezes$/i, /^Tempest_Shield$/],

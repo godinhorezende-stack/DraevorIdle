@@ -100,7 +100,7 @@ test('G-BD: os números das linhas no nível 20, como o PoB e o poedb', { skip: 
   assert.deepEqual(G.arcanistaDaGema('Arcanist_Brand', 20), { menosPct: 63, contraVinculadoPct: 59, menosAreaPct: 40, freqPct: 0 });
   assert.equal(G.arcanistaDaGema('Arcanist_Brand', 20, 20).freqPct, 10);
   assert.deepEqual(G.infernalDaGema('Infernal_Cry', 20), { combustao: true, explodePct: 8, penalidadeMs: 3400 });
-  assert.deepEqual(G.reuniaoDaGema('Rallying_Cry', 20), { armaPct: 4, porPoder: 5, maxPoder: 30, lacaiosMaisPct: 100, porAliadoPct: 5, porAliadoMax: 25 });
+  assert.deepEqual(G.reuniaoDaGema('Rallying_Cry', 20), { armaPct: 4, porPoder: 5, maxPoder: 30, lacaiosMaisPct: 100, porAliadoPct: 5, porAliadoMax: 25, contaAliados: true });
 });
 
 test('G-BD: as colunas herdadas saem (o 0.6 do plano) e a duração é a do PoE', { skip: SEM }, () => {
@@ -540,4 +540,43 @@ test('G-BD: as gemas do lote saem de parcial (o que fica são as linhas da quali
     const r = G.REGISTRO.get(s);
     assert.ok(r.motivosNoJogo.every((m) => /Duração do Efeito de Habilidades aumentada|Efeito do Buff aumentado/.test(m)), `${s}: ${r.motivosNoJogo.join(' | ')}`);
   }
+});
+
+// ---------------------------------------------------------------- as decisões do dono (26/10)
+
+test('G-D (dono, 26/10): no Clamor de Reunião cada aliado conta o Poder de um inimigo Normal (1)', { skip: SEM }, async () => {
+  const { e, b } = await montar('Rallying_Cry', { arma: 'One_Hand_Swords/Rusted_Sword' });
+  b.raridade = 'normal';
+  const pos = e.hunt.pos;
+  // 1 de Poder do inimigo Normal + 4 aliados = 5: um degrau de 4% da arma
+  e.hunt.lacaios = [1, 2, 3, 4].map((k) => ({ hp: 10, maxHp: 10, x: pos.x + (k % 2 ? 1 : -1), y: pos.y + (k > 2 ? 1 : -1), tipo: 'lacaio' }));
+  assert.ok(usar(e, b).ok);
+  const arma = Ficha.armasEquipadas(e).find((a) => a.slot === 'weapon');
+  assert.equal(e.hunt.poeReuniao.af.phys_add_max, Math.round((arma.max * 4) / 100));
+  assert.equal(e.hunt.buffs[id('Rallying_Cry')].afPoe['mais_dano@impelidoClamor'], 20, '4 aliados × 5%');
+  // sem os aliados, o Poder 1 não chega ao degrau
+  const s2 = await montar('Rallying_Cry', { arma: 'One_Hand_Swords/Rusted_Sword' });
+  s2.b.raridade = 'normal';
+  assert.ok(usar(s2.e, s2.b).ok);
+  assert.equal(s2.e.hunt.poeReuniao, undefined);
+});
+
+test('G-D (dono, 26/10): as magias da Runa do Arcanista saem da casa da Runa (a do vinculado), não de você', { skip: SEM }, async () => {
+  const { e, b } = await montar(['Arcanist_Brand', 'Fireball'], { dx: 3 });
+  const ev = usar(e, b, 0).eventos ?? [];
+  const tiro = ev.find((x) => x.t === 'shot' && x.sk === id('Fireball'));
+  assert.ok(tiro, 'a Bola de Fogo saiu');
+  assert.deepEqual([tiro.x, tiro.y], [b.x, b.y], 'da casa do vinculado');
+  assert.ok(golpesEm(ev, b).length > 0);
+  assert.deepEqual([e.hunt.pos.x, e.hunt.pos.y], [b.x - 3, b.y], 'você não sai do lugar');
+});
+
+test('G-B (dono, 26/10): a absorção do Manto Arcano lê a qualidade de efeito do buff (`b.efeitoBuffQualPct`, do lote G-A)', { skip: SEM }, async () => {
+  const { e, b } = await montar('Arcane_Cloak');
+  e.mana = 8000;
+  // (o G-A grava o campo no buff ao ligá-lo; antes da mescla ele não existe, e o limite é o gasto × (1 + 0) — `Acoes.aoLigarGBD` o lê)
+  assert.ok(usar(e, b).ok);
+  assert.equal(e.hunt.buffs[id('Arcane_Cloak')].efeitoBuffQualPct, undefined);
+  const gasto = Math.floor(8000 * 0.64);
+  assert.equal(e.hunt.poeGuarda.limite, gasto, 'sem o campo, o limite é o gasto');
 });

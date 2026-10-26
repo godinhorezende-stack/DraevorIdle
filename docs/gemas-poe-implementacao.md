@@ -39,7 +39,7 @@ Só os ataques:
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 420 linhas distintas (62 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 419 linhas distintas (62 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
 - Testes que citam a gema: 433/562 ativas, 119/262 suportes.
@@ -201,7 +201,6 @@ Só os ataques:
 | 1 | Concede aos Lacaios +# % de Chance de Bloquear Dano Mágico |
 | 1 | Consumir um cadáver com habilidades reforçadas tem #% de chance de conceder uma alma por poder |
 | 1 | Consumir um cadáver com habilidades reforçadas tem +#% de chance de conceder uma alma por poder |
-| 1 | Conta o Poder total de Inimigos e Aliados no Raio |
 | 1 | Conta o Poder total de Inimigos e Cadáveres no Alcance |
 | 1 | Converte # % do Dano Físico para um Elemento aleatório |
 | 1 | Convoca # Espíritos Sagrados Máximo de # Espíritos Sagrados |
@@ -741,7 +740,6 @@ Só os ataques:
   - efeito não simulado: +1 ao Máximo de Zumbis Evocados
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Rallying_Cry** (Clamor Agrupador) — parcial
-  - efeito não simulado: Conta o Poder total de Inimigos e Aliados no Raio
   - efeito não simulado: Buff tem 100 % mais Efeito em seus Lacaios
 - **Reave_of_Refraction** (Devastação da Refração) — parcial
   - efeito não simulado: Converte 100 % do Dano Físico para um Elemento aleatório

@@ -45,7 +45,7 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 420,
+   "linhasDistintas": 419,
    "emDuasOuMais": 62
   },
   "imagens": {
@@ -1326,7 +1326,6 @@
    "arquetipo": "clamor",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Conta o Poder total de Inimigos e Aliados no Raio",
     "efeito não simulado: Buff tem 100 % mais Efeito em seus Lacaios"
    ],
    "idle": [],
@@ -11446,12 +11445,6 @@
    "linha": "Consumir um cadáver com habilidades reforçadas tem +#% de chance de conceder uma alma por poder",
    "gemas": [
     "Greater_Devour_Support"
-   ]
-  },
-  {
-   "linha": "Conta o Poder total de Inimigos e Aliados no Raio",
-   "gemas": [
-    "Rallying_Cry"
    ]
   },
   {
