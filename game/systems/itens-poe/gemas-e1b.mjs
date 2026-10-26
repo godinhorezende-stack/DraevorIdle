@@ -108,6 +108,70 @@ export function magoDeBatalhaDasLinhas(slug, linhas = []) {
   return { menosPct: achar(linhas, LINHA_MAGO_MENOS) ?? 0 };
 }
 
+// ---------------------------------------------------------------- as decisões do dono (26/10)
+
+// (dono, 26/10) as Armadilhas de Urso: "Trava o inimigo no lugar" — o inimigo acertado fica Imobilizado (não anda; ataca) por 3 s × a Duração da Habilidade (a base:
+// a duração dela, 3 s + a qualidade; a dos Espetos, sem duração própria, os mesmos 3 s)
+const LINHA_TRAVA = /^Trava o inimigo no lugar$/i;
+export const TRAVA = Object.freeze({ baseMs: 3000 });
+/** A Imobilização das Armadilhas de Urso: { ms } (antes da Duração da Habilidade) — `duracaoS`, a duração da gema (a base), ou null. */
+export function travaDasLinhas(slug, linhas = [], duracaoS = null) {
+  if (!/^Bear_Trap(_of_Skewers)?$/.test(slug) || !tem(linhas, LINHA_TRAVA)) return null;
+  return { ms: slug === 'Bear_Trap' && duracaoS > 0 ? Math.round(duracaoS * 1000) : TRAVA.baseMs };
+}
+/** O bicho está Imobilizado agora (não anda — `hunt/monstros`)? */
+export const imobilizado = (m, agora) => (m?.estados?.imobilizado?.ate ?? 0) > agora;
+/** Imobiliza o bicho até `ate` (fica o fim maior). */
+export function imobilizar(m, ate) {
+  if (!m || !(m.hp > 0)) return false;
+  const e = (m.estados ??= {});
+  e.imobilizado = { ate: Math.max(e.imobilizado?.ate ?? 0, ate) };
+  return true;
+}
+
+// (dono, 26/10) a Lança-Chamas: um acerto a cada 0,1 s (o hitTimeOverride do PoB na boa posição) na área em volta da Armadilha, pela duração (3,5 s; a da Estabilidade, 2 s)
+// × a Duração da Habilidade; o número de chamas não muda a frequência (o PoB não o usa)
+const LINHA_CHAMAS = /^Tem (\d+) chamas$/i;
+const LINHA_CHAMAS_Q = /^Possui \+?([\d.]+) Chamas$/i;
+export const CHAMAS = Object.freeze({ intervaloMs: 100 });
+/** A Lança-Chamas: { intervaloMs, duracaoMs, areas: 1, chamas } (o objeto que pulsa — o da Espiral, `acoes.tiqueDasTorres`), ou null. */
+export function chamasDasLinhas(slug, linhas = [], daQualidade = [], duracaoS = null) {
+  if (!/^Flamethrower_Trap/.test(slug)) return null;
+  const n = achar(linhas, LINHA_CHAMAS);
+  if (!n) return null;
+  return { intervaloMs: CHAMAS.intervaloMs, duracaoMs: Math.round((duracaoS > 0 ? duracaoS : 3.5) * 1000), areas: 1, chamas: n + Math.floor(somar(daQualidade, LINHA_CHAMAS_Q) + 1e-9) };
+}
+
+// (dono, 26/10 — o PoB, SeismicTrapAltX) a Sísmica dos Poços: N ondas (3, + a qualidade), cada uma acerta cada inimigo na área da Armadilha com a chance da sobreposição
+// do PoB: (raio da onda + raio do inimigo − 1)² ÷ raio total² = (9 + 3 − 1)² ÷ 18² = 121/324 ≈ 37,3% (o tamanho do inimigo padrão do PoB: Medium, 3)
+const LINHA_ONDAS = /^Libera (\d+) ondas?$/i;
+const LINHA_ONDAS_Q = /^Libera \+([\d.]+) ondas?$/i;
+export const ONDAS = Object.freeze({ raioDaOnda: 9, raioTotal: 18, raioDoInimigo: 3 });
+export const chanceDaOnda = (o = ONDAS) => Math.min(1, ((o.raioDaOnda + o.raioDoInimigo - 1) ** 2) / (o.raioTotal ** 2));
+/** As ondas da Sísmica dos Poços: { n, chance }, ou null. */
+export function ondasDasLinhas(slug, linhas = [], daQualidade = []) {
+  if (slug !== 'Seismic_Trap_of_Swells') return null;
+  const n = achar(linhas, LINHA_ONDAS);
+  if (!n) return null;
+  return { n: n + Math.floor(somar(daQualidade, LINHA_ONDAS_Q) + 1e-9), chance: chanceDaOnda() };
+}
+
+// (dono, 26/10) o Clamor de Reunião: "Buff tem 100% mais Efeito em seus Lacaios" — o Dano de Ataque Adicional do buff (a foto `hunt.poeReuniao`) vale nos SEUS lacaios no raio
+// do Clamor, × (1 + 100%), no golpe de ataque deles
+/** As partes adicionais do buff do Clamor de Reunião no golpe do lacaio `l`: [{ el, min, max }] (vazio fora do raio ou sem o buff). */
+export function reuniaoNoLacaio(hunt, l, agora = hunt?.clock ?? 0) {
+  const reu = hunt?.poeReuniao;
+  if (!reu || !(reu.ate > agora) || !hunt.pos || !l || (l.z ?? hunt.z ?? 0) !== (reu.z ?? 0)) return [];
+  if (Math.max(Math.abs(l.x - hunt.pos.x), Math.abs(l.y - hunt.pos.y)) > (reu.raio ?? 0)) return [];
+  const f = 1 + (Number(reu.lacaiosMaisPct) || 0) / 100;
+  const af = reu.af ?? {};
+  const partes = [];
+  const por = (el, a, b) => { if ((Number(a) || 0) > 0 || (Number(b) || 0) > 0) partes.push({ el, min: (Number(a) || 0) * f, max: (Number(b) || 0) * f }); };
+  por('physical', af.phys_add_min, af.phys_add_max);
+  for (const el of ['fire', 'ice', 'energy', 'chaos']) por(el, af[`added_${el}_dmg_min`], af[`added_${el}_dmg_max`]);
+  return partes;
+}
+
 // ---------------------------------------------------------------- as Minas
 
 const LINHA_MINA_DANO_Q = /^Cada mina aplica Dano aumentado em \+([\d.]+) % aos Inimigos próximos máximo de ([\d.]+) ?%$/i;
@@ -170,5 +234,12 @@ const FEITAS = [
   [LINHA_IGNORA_RES, /^Vaal_Impurity_of_(Fire|Ice|Lightning)$/],
   [LINHA_FEIXES, /^Siphoning_Trap(_of_Pain)?$/],
   [LINHA_MAGO_ATIVA, /^Battlemages_Cry$/], [LINHA_MAGO_MENOS, /^Battlemages_Cry$/],
+  // (as decisões do dono, 26/10)
+  [LINHA_TRAVA, /^Bear_Trap(_of_Skewers)?$/],
+  [LINHA_CHAMAS, /^Flamethrower_Trap(_of_Stability)?$/], [LINHA_CHAMAS_Q, /^Flamethrower_Trap(_of_Stability)?$/],
+  [/^Raio Base terciário igual a [\d.]+ metros?$/i, /^Ice_Trap$/],
+  [LINHA_ONDAS, /^Seismic_Trap_of_Swells$/], [LINHA_ONDAS_Q, /^Seismic_Trap_of_Swells$/],
+  [/^Sacrifica \+?[\d.]+ % da Vida do Esqueleto para causar a mesma quantidade de Dano de Caos$/i, /^Dark_Bargain$/],
+  [/^Buff tem [\d.]+ % mais Efeito em seus Lacaios$/i, /^Rallying_Cry$/],
 ];
 export const ehLinhaE1b = (slug, l) => FEITAS.some(([re, s]) => s.test(slug) && re.test(norm(l)));

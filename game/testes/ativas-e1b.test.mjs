@@ -222,3 +222,74 @@ test('E1b: o Clamor do Mago de Batalha — as magias ligadas saem nos ataques Im
   assert.equal(gat.length, 1, 'a Bola de Fogo ativada');
   assert.equal(e.hunt.impelidos.n, 4, 'o Impelir gasto');
 });
+
+// ---------------------------------------------------------------- as decisões do dono (26/10)
+
+test('E1b (dono 26/10): as gemas que saem de parcial pelas decisões', { skip: SEM }, () => {
+  for (const s of ['Bear_Trap_of_Skewers', 'Flamethrower_Trap', 'Flamethrower_Trap_of_Stability', 'Ice_Trap', 'Seismic_Trap_of_Swells', 'Dark_Bargain', 'Rallying_Cry']) assert.deepEqual([G.doSlug(s)?.statusNoJogo, G.doSlug(s)?.motivosNoJogo], ['funciona', []], s);
+  // o Arauto Agonizante: a Virulência no máximo vira nota (o Rastejador segue como motivo)
+  const ag = G.doSlug('Herald_of_Agony');
+  assert.ok(ag.notas?.some((n) => /Virulência fica no máximo/.test(n)));
+  assert.ok(!ag.motivosNoJogo.some((m) => /Virulência/.test(m)));
+});
+
+test('E1b (dono 26/10): as Armadilhas de Urso Imobilizam por 3 s × a Duração', { skip: SEM }, async () => {
+  assert.deepEqual(G.travaDaGema('Bear_Trap', 20, 0), { ms: 3000 });
+  assert.deepEqual(G.travaDaGema('Bear_Trap_of_Skewers', 20, 0), { ms: 3000 });
+  assert.equal(G.travaDaGema('Fire_Trap', 20, 0), null);
+  const { e, b } = await montar('Bear_Trap_of_Skewers');
+  usar(e, b);
+  assert.ok(E1b.imobilizado(b, e.hunt.clock), 'Imobilizado');
+  assert.ok(Math.abs(b.estados.imobilizado.ate - e.hunt.clock - 3000) <= 1000, String(b.estados.imobilizado.ate - e.hunt.clock));
+  assert.equal(E1b.imobilizado(b, b.estados.imobilizado.ate), false, 'acaba');
+});
+
+test('E1b (dono 26/10): a Lança-Chamas pulsa a cada 0,1 s pela duração (3,5 s; a da Estabilidade, 2 s)', { skip: SEM }, async () => {
+  assert.deepEqual(G.chamasDaGema('Flamethrower_Trap', 20, 0), { intervaloMs: 100, duracaoMs: 3500, areas: 1, chamas: 4 });
+  const est = G.chamasDaGema('Flamethrower_Trap_of_Stability', 20, 20);
+  assert.equal(est.duracaoMs, 2000);
+  assert.equal(est.chamas, 6);
+  const { e, b } = await montar('Flamethrower_Trap');
+  const ev = usar(e, b).eventos;
+  const torre = e.hunt.poeTorres?.[0];
+  assert.ok(torre, 'o objeto das chamas');
+  assert.equal(torre.intervaloMs, 100);
+  assert.ok(soma(golpesEm(ev, b)) > 0, 'o primeiro pulso fere');
+});
+
+test('E1b (dono 26/10): a Sísmica dos Poços — 3 ondas (+1 na qualidade 20), cada uma com a chance de sobreposição do PoB (121/324)', { skip: SEM }, async () => {
+  assert.deepEqual(G.ondasDaGema('Seismic_Trap_of_Swells', 20, 0), { n: 3, chance: 121 / 324 });
+  assert.equal(G.ondasDaGema('Seismic_Trap_of_Swells', 20, 20).n, 4);
+  assert.ok(Math.abs(E1b.chanceDaOnda() - 0.37346) < 1e-4);
+  // o sorteio 0,3 (< 37,3%): as 3 ondas acertam; o 0,5: nenhuma
+  const a = await montar('Seismic_Trap_of_Swells');
+  const acertos = golpesEm(usar(a.e, a.b, 0, 0.3).eventos, a.b);
+  assert.equal(acertos.length, 3, String(acertos));
+  const n = await montar('Seismic_Trap_of_Swells');
+  assert.equal(golpesEm(usar(n.e, n.b, 0, 0.5).eventos, n.b).length, 0);
+});
+
+test('E1b (dono 26/10): a Barganha Sombria com Esqueleto — sacrifica 12% da Vida máxima dele (sem matar) e fere em volta dele', { skip: SEM }, async () => {
+  const { e, b } = await montar('Dark_Bargain', { dx: 3 });
+  const esq = { uid: 'esq1', nome: 'Esqueleto', tipo: 'lacaio', hp: 1000, maxHp: 1000, x: b.x - 1, y: b.y, z: e.hunt.z ?? 0 };
+  e.hunt.lacaios = [esq];
+  const r = usar(e, b);
+  assert.ok(r.ok, r.erro);
+  assert.equal(esq.hp, 880, 'o sacrifício: 12% de 1000');
+  assert.ok(soma(golpesEm(r.eventos, b)) > 0, 'o inimigo perto do Esqueleto leva');
+  // o sacrifício não mata
+  esq.hp = 50;
+  e.hunt.cooldowns = {};
+  delete e.hunt.conjurando;
+  e.hunt.clock += 5000;
+  usar(e, b);
+  assert.equal(esq.hp, 1);
+});
+
+test('E1b (dono 26/10): o Clamor de Reunião — o buff nos seus lacaios no raio com 100% mais efeito', { skip: SEM }, () => {
+  const hunt = { clock: 1000, pos: { x: 0, y: 0 }, z: 0, poeReuniao: { ate: 5000, raio: 3, z: 0, af: { phys_add_min: 10, phys_add_max: 20, added_fire_dmg_min: 5, added_fire_dmg_max: 6 }, lacaiosMaisPct: 100 } };
+  assert.deepEqual(E1b.reuniaoNoLacaio(hunt, { x: 2, y: 0 }), [{ el: 'physical', min: 20, max: 40 }, { el: 'fire', min: 10, max: 12 }]);
+  assert.deepEqual(E1b.reuniaoNoLacaio(hunt, { x: 5, y: 0 }), [], 'fora do raio');
+  hunt.clock = 6000;
+  assert.deepEqual(E1b.reuniaoNoLacaio(hunt, { x: 2, y: 0 }), [], 'o buff vencido');
+});

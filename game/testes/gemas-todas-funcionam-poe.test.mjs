@@ -102,6 +102,8 @@ function usar({ e, b }, slug) {
   const estagios = G.estagiosDaGema(slug, 20);
   const vezes = estagios?.modo === 'carrega' ? estagios.max : 1;
   const ev = [];
+  // (lote E1b, com o aval do dono 26/10: o ESTANDARTE só se planta com Valor, como no PoE — o teste dá o Valor máximo antes de plantar o Desafiador e o Horrendo)
+  if (/_Banner$/.test(slug)) e.hunt.valor = { n: 50, ultimo: e.hunt.clock };
   // (lote B2, com o aval do dono: a gema usada ANTES — o Vórtice de Lâminas do Descarrego; os eventos dela não contam no dano)
   if (USAR_ANTES[slug]) {
     const r0 = Acoes.disparar(e, e.hunt, PERSONAGEM, 1, b, { manual: true });

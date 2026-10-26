@@ -863,7 +863,24 @@ O código mora em `game/systems/itens-poe/gemas-gac.mjs` (os dados e as contas p
   1. `ativas-c1.test.mjs:83` esperava o "Receba 20% do Dano Físico como Dano de Gelo Extra" da Cadência como não feito; agora é feito (motivos `[]`);
   2. `gemas-todas-funcionam-poe.test.mjs:160` (G16): o Estandarte Desafiador e o Horrendo viraram "funciona" e o teste os usa sem Valor (SEM_VALOR — no PoE o Estandarte só se planta com Valor); o teste precisaria dar Valor antes.
 - **As decisões do dono (pendentes):** a Armadilha de Urso (e a dos Espetos) "Trava o inimigo no lugar" (a duração: a do PoE é "baseada no dano", sem fórmula no PoB); as chamas da Lança-Chamas (o PoB: um acerto a cada 0,1 s na boa posição, 0,3 s na ruim, sem usar o número de chamas); o raio terciário da Armadilha Glacial (três explosões concêntricas, ou só a maior); as ondas da Sísmica dos Poços (cada onda em todos, ou a chance de sobreposição do PoB ~37%, ou uma casa sorteada); a Virulência do Arauto Agonizante (o ganho e a perda no tempo sem números no PoB); a Barganha Sombria com Esqueleto (a área no Esqueleto, a cadeia, a Vida máxima ou atual, se mata).
-- **Ficou de fora (mecânica nova grande ou da sessão dos lacaios):** a Absolvição (o Sentinela ao acertar Raro/Único e a recarga dos lacaios — a invocação do Sentinela não existe), o Clamor do General (Guerreiros Ilusórios dos cadáveres), o Clamor de Reunião nos lacaios, o Vínculo Intuitivo (os acertos do aliado ativam as suas magias), a Armadilha Conversora (converter o inimigo) e o Rastejador do Arauto Agonizante.
+- **Ficou de fora (mecânica nova grande ou da sessão dos lacaios):** a Absolvição (o Sentinela ao acertar Raro/Único e a recarga dos lacaios — a invocação do Sentinela não existe), o Clamor do General (Guerreiros Ilusórios dos cadáveres), o Vínculo Intuitivo (os acertos do aliado ativam as suas magias), a Armadilha Conversora (converter o inimigo) e o Rastejador do Arauto Agonizante.
+- **As decisões do dono (26/10), no segundo commit:**
+  - os avais: `ativas-c1.test.mjs:83` aceita a Cadência sem motivo; o G16 dá o Valor antes de plantar o Desafiador e o Horrendo (o comentário do aval em cada um);
+  - as Armadilhas de Urso (a base e a dos Espetos) Imobilizam o acertado por 3 s × a Duração da Habilidade (`estados.imobilizado` — não anda, ataca; `hunt/monstros`); a base usa a duração dela (3 s + a qualidade);
+  - a Lança-Chamas e a da Estabilidade: um acerto a cada 0,1 s (o PoB) na área em volta da Armadilha, pela duração (3,5 s / 2 s) × a Duração — o objeto que pulsa da Espiral (`hunt.poeTorres`); o número de chamas não muda a frequência;
+  - a Armadilha Glacial: só o maior raio (o PoB) — o terciário fica como feito;
+  - a Sísmica dos Poços: 3 ondas (+1 na qualidade 20); cada onda acerta cada inimigo na área da Armadilha com a chance de sobreposição do PoB, (9 + 3 − 1)² ÷ 18² = 121/324 ≈ 37,3% (o tamanho Medium, o padrão do PoB);
+  - o Arauto Agonizante: a Virulência no máximo (como o PoB mostra) sai de parcial e fica como nota (`notas` no registro, no relatório); o Rastejador segue parcial;
+  - a Barganha Sombria com Esqueleto (o PoB): o Esqueleto vivo mais perto do alvo no alcance e a cadeia aos 2 seguintes (a até 3 casas do anterior); cada um sacrifica 12% (+ a qualidade) da Vida MÁXIMA dele, sem morrer (fica com 1), e o acerto da gema sai em cada inimigo a até 2,6 m dele, com a Vida sacrificada como Caos base; o uso não fere na hora;
+  - o Clamor de Reunião: o Dano de Ataque Adicional do buff vale nos seus lacaios no raio, × (1 + 100%), no golpe de ataque deles, cada parte pela resistência dela (`GemasE1b.reuniaoNoLacaio`, uma linha em `cacadas.mjs`);
+  - o Tolhimento: "Minas Desaceleram…" e "Totens Desaceleram…" passaram da lentidão para o Tolhimento do PoE (`Estados.tolher`, os 30% da Desaceleração, só no passo).
+  - Placar: parcial 84 → 77 nas ativas (implementada e testada 421 → 428). `ativas-e1b` com 19 casos.
+  - Testes: os 318 arquivos afetados (os do primeiro commit + os de lacaio, totem, Tolhimento e monstros): 3.287 testes, 2.824 passam, 458 pulados, 5 falham — 4 pela regra do PoE (as decisões do dono; não editados) e 1 intermitente:
+    1. `armas-plantadas-poe.test.mjs:252` espera o `lento` da Mina; agora é o `tolhido`;
+    2. `zerar-arvore-lote70.test.mjs:126` espera o `lento` { ate: 9000, pct: 30 } do Totem; agora é o `tolhido` (30%, 4 s);
+    3. `ativas-pr2.test.mjs:78` espera a Barganha Sombria parcial pela parte dos Esqueletos; agora ela é feita (motivos `[]`);
+    4. `zerar-arvore-lote75.test.mjs:74` espera a Virulência como motivo (parcial); agora ela é nota (só o Rastejador fica de motivo);
+    5. `canalizacao-estagios-poe.test.mjs:78` (as Lâminas Velozes, 1,2308 contra 1,2 ± 0,03) falhou na bateria e passa sozinho — o próprio teste diz que o dano do personagem de teste cresce ~1% a cada uso.
 
 ## Pendências conhecidas (por ordem de prioridade)
 

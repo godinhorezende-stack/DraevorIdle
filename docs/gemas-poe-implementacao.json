@@ -2,9 +2,9 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 421,
+   "implementada e testada": 428,
    "implementada, sem teste próprio": 44,
-   "parcial": 84,
+   "parcial": 77,
    "limitação do modelo idle": 12,
    "não se aplica": 1
   },
@@ -31,9 +31,9 @@
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 145,
+    "implementada e testada": 148,
     "implementada, sem teste próprio": 24,
-    "parcial": 33,
+    "parcial": 30,
     "limitação do modelo idle": 7
    }
   },
@@ -45,8 +45,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 352,
-   "emDuasOuMais": 47
+   "linhasDistintas": 345,
+   "emDuasOuMais": 43
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -60,7 +60,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 459,
+   "ativasCitadas": 463,
    "suportesCitados": 119,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -1293,10 +1293,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "clamor",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Buff tem 100 % mais Efeito em seus Lacaios"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2526,7 +2524,6 @@
    "arquetipo": "armadilha",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Trava o inimigo no lugar",
     "efeito não simulado: Inimigos recebem 25 % de aumento de Dano dos Acertos de Minas ou Armadilhas",
     "efeito não simulado: Inimigos possuem 80 % menos Velocidade de Movimento no início do Debuff"
    ],
@@ -2541,10 +2538,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Trava o inimigo no lugar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3655,8 +3650,10 @@
    "ausentes": [],
    "idle": [],
    "outros": [
-    "a Virulência fica no máximo (40 + a qualidade + a \"Virulência Máxima\") enquanto o Arauto está ligado e você Envenenou com ele há até 4 s, como o PoB: o ganho por Veneno e a perda com o tempo do PoE não são simulados",
     "o Rastejador ataca como um lacaio de perto do jogo (o Morteiro e o Espinho da Cauda do PoE não são simulados)"
+   ],
+   "notas": [
+    "a Virulência fica no máximo (40 + a qualidade + a \"Virulência Máxima\") enquanto o Arauto está ligado e você Envenenou com ele há até 4 s, como o PoB mostra (dono, 26/10)"
    ],
    "icone": true,
    "iconeHabilidade": true
@@ -4132,10 +4129,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Tem 4 chamas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4147,11 +4142,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Tem 5 chamas",
-    "efeito não simulado: Possui 1 Chamas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4163,10 +4155,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Raio Base terciário igual a 0.6 metros"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4273,11 +4263,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Libera 3 onda",
-    "efeito não simulado: Libera +1 onda"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6714,11 +6701,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "ricochete",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Sacrifica 12 % da Vida do Esqueleto para causar a mesma quantidade de Dano de Caos",
-    "efeito não simulado: Sacrifica +2 % da Vida do Esqueleto para causar a mesma quantidade de Dano de Caos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -10557,20 +10541,6 @@
    ]
   },
   {
-   "linha": "Libera # onda",
-   "gemas": [
-    "Seismic_Trap",
-    "Seismic_Trap_of_Swells"
-   ]
-  },
-  {
-   "linha": "Libera +# onda",
-   "gemas": [
-    "Seismic_Trap",
-    "Seismic_Trap_of_Swells"
-   ]
-  },
-  {
    "linha": "Máximo de # anomalias",
    "gemas": [
     "Greater_Kinetic_Instability_Support",
@@ -10596,20 +10566,6 @@
    "gemas": [
     "Vaal_Absolution",
     "Vaal_Domination"
-   ]
-  },
-  {
-   "linha": "Tem # chamas",
-   "gemas": [
-    "Flamethrower_Trap",
-    "Flamethrower_Trap_of_Stability"
-   ]
-  },
-  {
-   "linha": "Trava o inimigo no lugar",
-   "gemas": [
-    "Bear_Trap",
-    "Bear_Trap_of_Skewers"
    ]
   },
   {
@@ -10936,12 +10892,6 @@
    "linha": "Buff concede # % mais Dano Físico",
    "gemas": [
     "Herald_of_Purity"
-   ]
-  },
-  {
-   "linha": "Buff tem # % mais Efeito em seus Lacaios",
-   "gemas": [
-    "Rallying_Cry"
    ]
   },
   {
@@ -12151,6 +12101,18 @@
    ]
   },
   {
+   "linha": "Libera # onda",
+   "gemas": [
+    "Seismic_Trap"
+   ]
+  },
+  {
+   "linha": "Libera +# onda",
+   "gemas": [
+    "Seismic_Trap"
+   ]
+  },
+  {
    "linha": "Libera ondas a cada # segundos",
    "gemas": [
     "Seismic_Trap"
@@ -12271,12 +12233,6 @@
    ]
   },
   {
-   "linha": "Possui # Chamas",
-   "gemas": [
-    "Flamethrower_Trap_of_Stability"
-   ]
-  },
-  {
    "linha": "Primeira Mina é Detonada Instantaneamente Minas recebem # % mais Velocidade de Detonação para cada Mina anteior na Sequência de Detonação",
    "gemas": [
     "Detonate_Mines"
@@ -12319,12 +12275,6 @@
    ]
   },
   {
-   "linha": "Raio Base terciário igual a # metros",
-   "gemas": [
-    "Ice_Trap"
-   ]
-  },
-  {
    "linha": "Receba uma Carga de Tolerância quando você Atordoar um Inimigo com um Acerto Corpo a Corpo com Habilidades Suportadas",
    "gemas": [
     "Endurance_Charge_on_Melee_Stun_Support"
@@ -12334,18 +12284,6 @@
    "linha": "Robôs Rastejantes concedem # % mais Dano de Armadilhas e Minas",
    "gemas": [
     "Summon_Skitterbots"
-   ]
-  },
-  {
-   "linha": "Sacrifica # % da Vida do Esqueleto para causar a mesma quantidade de Dano de Caos",
-   "gemas": [
-    "Dark_Bargain"
-   ]
-  },
-  {
-   "linha": "Sacrifica +# % da Vida do Esqueleto para causar a mesma quantidade de Dano de Caos",
-   "gemas": [
-    "Dark_Bargain"
    ]
   },
   {

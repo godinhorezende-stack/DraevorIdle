@@ -1566,6 +1566,16 @@ export const dotEhMagico = (slug) => textosDaGema(slug, 1).linhas.some((l) => /M
 export const linhasDaQualidadeDe = (slug, qualidade = 0) => (qualidade > 0 ? linhasDaQualidade(POR_SLUG.get(slug), qualidade / 20) : []);
 // ---- (lote E1b, 26/10) os leitores no nível das linhas do lote (gemas-e1b.mjs), com cache ----
 const E1B = new Map();
+/** (dono, 26/10) As notas das escolhas do dono (o relatório as mostra; a gema não fica parcial por elas). */
+const NOTAS_E1B = {
+  Herald_of_Agony: ['a Virulência fica no máximo (40 + a qualidade + a "Virulência Máxima") enquanto o Arauto está ligado e você Envenenou com ele há até 4 s, como o PoB mostra (dono, 26/10)'],
+};
+/** A Imobilização das Armadilhas de Urso (GemasE1b.travaDasLinhas): { ms } antes da Duração, ou null. */
+export const travaDaGema = (slug, nivel = 1, qualidade = 0) => comCache(E1B, `trava|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasE1b.travaDasLinhas(slug, textosDaGema(slug, nivel).linhas, compilada(slug, nivel, qualidade)?.stats?.duracao ?? null));
+/** A Lança-Chamas (GemasE1b.chamasDasLinhas): o objeto que pulsa, ou null. */
+export const chamasDaGema = (slug, nivel = 1, qualidade = 0) => comCache(E1B, `chamas|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasE1b.chamasDasLinhas(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats?.duracao ?? null));
+/** As ondas da Sísmica dos Poços (GemasE1b.ondasDasLinhas): { n, chance }, ou null. */
+export const ondasDaGema = (slug, nivel = 1, qualidade = 0) => comCache(E1B, `ondas|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasE1b.ondasDasLinhas(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade)));
 /** A conversão para um elemento aleatório da gema (a Devastação da Refração): [{ para: 'aleatorio', pct }] ou []. */
 export const conversaoAleatoriaDaGema = (slug, nivel = 1) => comCache(E1B, `conv|${slug}@${nivel | 0}`, () => GemasE1b.conversaoAleatoriaDasLinhas(textosDaGema(slug, nivel).linhas));
 /** O "X% de Chance de uma Armadilha ser Ativada uma vez adicional" da gema (o nível + a qualidade). */
@@ -1828,7 +1838,8 @@ function avaliarNoJogo(h, formato) {
     for (const m of MOTIVOS_A2[h.slug] ?? []) motivos.push(m);
     // (lote 75 — dono, 17/10: "No máximo, como o PoB")
     // (lote E1b, 26/10: a queima do Arauto das Cinzas sai com as condições de CADA vizinho — acoes.queimaduraDoArautoDasCinzas, a ficha do golpe por alvo)
-    if (h.slug === 'Herald_of_Agony') motivos.push('a Virulência fica no máximo (40 + a qualidade + a "Virulência Máxima") enquanto o Arauto está ligado e você Envenenou com ele há até 4 s, como o PoB: o ganho por Veneno e a perda com o tempo do PoE não são simulados', 'o Rastejador ataca como um lacaio de perto do jogo (o Morteiro e o Espinho da Cauda do PoE não são simulados)');
+    // (dono, 26/10: a Virulência no máximo, como o PoB mostra, sai de parcial — fica como nota, NOTAS_E1B)
+    if (h.slug === 'Herald_of_Agony') motivos.push('o Rastejador ataca como um lacaio de perto do jogo (o Morteiro e o Espinho da Cauda do PoE não são simulados)');
   } else {
     // (lote A1, dono 19/10: o deslocamento existe — `deslocamentoDaGema`, `Acoes.planoDoDeslocamento`; só a gema de movimento sem os dados dele fica)
     if (h.arquetipo === 'movimento' && !DESLOCAMENTO[h.slug]) motivos.push('o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área');
@@ -2070,7 +2081,9 @@ export async function iniciar({ registrarGema, registrarReforco } = {}) {
     ACTION_CATALOG.spells.push(entry);
     REGISTRO.set(g.slug, { itemId, acao: entry.id, arquetipo: h.arquetipo, formato, elemento, ataque: !!h.ataque, buff: entry.poeGema.buff, molde: entry.poeGema.molde, statusNoJogo: status, motivosNoJogo: motivos, nivelMax: prog.nivelMaximo(g), gema: g,
       // (lote A3) as notas das linhas que não se aplicam
-      ...(linhasQueNaoSeAplicam(hq.linhas?.naoImplementadas).length && !NAO_SE_APLICA[g.slug] ? { linhasNaoSeAplicam: linhasQueNaoSeAplicam(hq.linhas.naoImplementadas) } : {}), ...(NAO_SE_APLICA[g.slug] ? { naoSeAplica: NAO_SE_APLICA[g.slug] } : {}) });
+      ...(linhasQueNaoSeAplicam(hq.linhas?.naoImplementadas).length && !NAO_SE_APLICA[g.slug] ? { linhasNaoSeAplicam: linhasQueNaoSeAplicam(hq.linhas.naoImplementadas) } : {}), ...(NAO_SE_APLICA[g.slug] ? { naoSeAplica: NAO_SE_APLICA[g.slug] } : {}),
+      // (lote E1b, dono 26/10) as notas das escolhas do dono (o que vale como o PoB, sem ser pendência)
+      ...(NOTAS_E1B[g.slug] ? { notas: NOTAS_E1B[g.slug] } : {}) });
     porStatus[status] = (porStatus[status] ?? 0) + 1;
     registrarGema?.({ itemId, entry, gema: g, tabelaDeXp: gemaDaTabelaDeXp(g), categoria: entry.poeGema.buff || entry.poeGema.vinculo ? 'reforco' : 'ataque', castTime: entry.poeGema.ataque ? 0 : Math.round((h.stats.tempoUso ?? 0) * 1000), levelMinimo: g.nivelReq ?? 1 });
     if (entry.poeGema.buff) registrarReforco?.(entry.id, { dur: buffNoNivel(g.slug, 1).dur, tipo: `poe-${h.arquetipo}`, efeitos: [] });
