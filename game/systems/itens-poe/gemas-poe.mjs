@@ -1680,7 +1680,9 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
     else motivos.push(`efeito não aplicado no jogo: ${t?.para ?? t}`);
   }
   // A MALDIÇÃO: quem você atinge sofre mais dano (resistência reduzida, dano recebido) ou causa menos.
-  const durMarca = Math.round((st.duracao ?? 6) * 1000);
+  // (revisão G, 26/10) a Marca não tem duração-base no PoB: o "base_skill_effect_duration" da Alquimista (4 s) é o dos SOLOS (`SOLO_DO_ALQUIMISTA`), não o da Marca
+  const ehMarca = (POR_SLUG.get(slug)?.tags ?? doSlug(slug)?.gema?.tags ?? []).includes('Marca');
+  const durMarca = Math.round(((ehMarca ? null : st.duracao) ?? 6) * 1000);
   for (const [el, v] of Object.entries(m.resist ?? {})) if (v < 0 && ELEMENTO[el]) efeitos.push({ efeito: 'marcaVulneravel', pct: -v, tipos: [ELEMENTO[el]], durMarca });
   if (m.danoRecebido) efeitos.push({ efeito: 'marcaVulneravel', pct: m.danoRecebido, tipos: ['physical', 'fire', 'ice', 'energy', 'chaos', 'earth', 'death', 'holy'], durMarca });
   // (lote G18b: o dano sofrido de um tipo — a Vulnerabilidade, o Orgulho: só o Físico)
@@ -1708,7 +1710,7 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
   // Efeito / Efeito de Aura por Valor consumido", do nível — `porValor`, `mods-poe.plantarEstandarte`).
   const estandarte = /_Banner$/.test(slug);
   const comDuracao = vaalComDuracao || estandarte;
-  const dur = ['aura', 'arauto'].includes(h.arquetipo) && !comDuracao ? 60000 : Math.round(Math.max(comDuracao ? 1 : 2, st.duracao ?? (estandarte ? 10 : 6)) * 1000);
+  const dur = ['aura', 'arauto'].includes(h.arquetipo) && !comDuracao ? 60000 : Math.round(Math.max(comDuracao ? 1 : 2, (ehMarca ? null : st.duracao) ?? (estandarte ? 10 : 6)) * 1000);
   const porValor = estandarte ? (() => {
     const linhas = textosDaGema(slug, nivel).linhas;
     const achar = (re) => Number(linhas.map((l) => re.exec(l)?.[1]).find((x) => x != null)) || 0;
@@ -2140,7 +2142,10 @@ export function adds(estado) {
     return (1 + (doEquipamento(dono, `efeito_buff_gema:${String(tipo ?? '').replace(/^poe-/, '')}`) + doEquipamento(dono, 'efeito_buff_gema:todos') + (daGema ? doEquipamento(dono, daGema) : 0) + porTag + estandarte + (Number(b?.efeitoAuraPct) || 0) + (Number(b?.efeitoBuffQualPct) || 0) - porArauto) / 100) * mais * maisArauto;
   };
   // (lote G14: a aura "que não afeta você" — a Generosidade — não entra na sua soma; nos companheiros, sim)
-  for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (b.afPoe && b.ate > agora && !b.soAliados) { const f = efeitoDe(b.tipo, id, estado, b); for (const [k, v] of Object.entries(b.afPoe)) total[k] = (total[k] ?? 0) + v * f; }
+  // (revisão G, 26/10) o buff do CLAMOR: o `@impelidoClamor` dele vira `@impelidoClamor_<slug>` — só no ataque Impelido por ESTE Clamor (o PoB: SeismicExertedAttacks,
+  // RallyingCryExertDamageBonus…), não no Impelido por outro (`condicoes-poe.fichaDoGolpe`, `acoes.comOsAlvosDaGema`)
+  const doClamor = (k, id) => { const i = k.indexOf('@'); if (i < 0) return k; const slug = id.startsWith(PREFIXO) ? id.slice(PREFIXO.length) : id; return `${k.slice(0, i + 1)}${k.slice(i + 1).split('+').map((c) => (c === 'impelidoClamor' ? `impelidoClamor_${slug}` : c)).join('+')}`; };
+  for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (b.afPoe && b.ate > agora && !b.soAliados) { const f = efeitoDe(b.tipo, id, estado, b); for (const [k0, v] of Object.entries(b.afPoe)) { const k = b.tipo === 'poe-clamor' ? doClamor(k0, id) : k0; total[k] = (total[k] ?? 0) + v * f; } }
   // (11/10) As AURAS dos COMPANHEIROS de grupo na mesma sala, a até o raio da aura deles (`raio` em casas, com o "Efeito em Área de Habilidades
   // de Aura aumentado" de quem lançou): valem em você como no PoE ("você e Aliados"). Cada aura uma vez: a sua, se você também tem a mesma.
   // (13/10, a Ichimonji: "Buffs de Auras Aliadas não afetam você" — o seu; "Os Buffs das Suas Auras não afetam aliados" — o do companheiro.)

@@ -281,7 +281,7 @@ const LINHA_RUINA_SUPORTA = /^Essa Gema só pode Suportar Gemas de Habilidade qu
 /** (D13) Os números do PoB que o poedb não traz: a duração-base, o "+% de Duração por Maldição", o efeito das ligadas (o final e o da qualidade) e o "mais" da Condenação. */
 export const RUINA = Object.freeze({
   Bane: { duracaoMs: 2000, duracaoPorMaldicaoPct: 100, efeitoLigadasMaisPct: -25, efeitoLigadasPorQualidade: 1, maisPorMaldicaoPct: null, duracaoPorQualidadeMs: 0 },
-  Bane_of_Condemnation: { duracaoMs: 1000, duracaoPorMaldicaoPct: 0, efeitoLigadasMaisPct: 0, efeitoLigadasPorQualidade: 0, maisPorMaldicaoPct: 100, duracaoPorQualidadeMs: 10 },
+  Bane_of_Condemnation: { duracaoMs: 1000, duracaoPorMaldicaoPct: 0, efeitoLigadasMaisPct: -25, efeitoLigadasPorQualidade: 0, maisPorMaldicaoPct: 100, duracaoPorQualidadeMs: 10 },
 });
 /**
  * A RUÍNA da gema no nível: `{ duracaoMs, duracaoPorMaldicaoPct, maisPorMaldicaoPct, efeitoLigadasPct, efeitoLigadasMaisPct, nivelMax }`, ou null.
@@ -297,8 +297,11 @@ export function ruinaDaGema(slug, linhas = [], qualidade = 0) {
     nivelMax: achar(linhas, LINHA_RUINA_NIVEL) ?? achar(linhas, LINHA_RUINA_SUPORTA) ?? 70,
   };
 }
-/** (D13) O dano e a duração da Ruína com `n` maldições aplicadas: `{ fatorDano, duracaoIncPct }` (o "mais" por maldição multiplica; a duração soma ao "aumentado"). */
-export const ruinaComMaldicoes = (r, n) => ({ fatorDano: Math.pow(1 + (r?.maisPorMaldicaoPct ?? 0) / 100, Math.max(0, n)), duracaoIncPct: (r?.duracaoPorMaldicaoPct ?? 0) * Math.max(0, n) });
+/**
+ * (D13) O dano e a duração da Ruína com `n` maldições aplicadas: `{ fatorDano, duracaoIncPct }`. O "mais" por maldição é UM só "mais" escalado por `n` (o PoB:
+ * `MORE` com o Multiplier `CurseApplied` — 1 + v·n/100, sem potência); a duração soma ao "aumentado".
+ */
+export const ruinaComMaldicoes = (r, n) => ({ fatorDano: 1 + ((r?.maisPorMaldicaoPct ?? 0) * Math.max(0, n)) / 100, duracaoIncPct: (r?.duracaoPorMaldicaoPct ?? 0) * Math.max(0, n) });
 
 // ---------------------------------------------------------------- os clamores (D2)
 
@@ -339,8 +342,7 @@ export const intimidaDasLinhas = (linhas = []) => linhas.some((l) => LINHA_INTIM
 // ---------------------------------------------------------------- as Runas
 
 const LINHA_NAO_CONVOCAVEL = /^Não pode ser Convocada$/i;
-const LINHA_FEIXE_AO_VINCULADO = /^Envia um feixe ao Inimigo Vinculado$/i;
-/** (a Runa do Armagedom da Volatilidade) "Não pode ser Convocada" — a Convocar Runas a deixa (`runas-vinculadas.daGema` → `naoConvocavel`). */
+/** (a Runa do Armagedom da Volatilidade) "Não pode ser Convocada" — a Convocar Runas a deixa (`runas-vinculadas.daGema` → `naoConvocavel`; a fonte única da linha). */
 export const naoConvocavelDasLinhas = (linhas = []) => linhas.some((l) => LINHA_NAO_CONVOCAVEL.test(norm(l)));
 
 // ---------------------------------------------------------------- a qualidade das guardas
@@ -357,7 +359,8 @@ export function ehLinhaGAC(slug, l, arquetipo = null) {
   const t = norm(l);
   if (arquetipo === 'maldicao' && LINHAS_DA_MALDICAO.some((re) => re.test(t))) return true;
   if (arquetipo === 'clamor' && (LINHA_IMPELE.test(t) || LINHA_ALVOS_DO_IMPELIDO.test(t) || LINHA_INTIMIDA.test(t) || LINHA_EMPURRA.test(t) || LINHA_DISTANCIA_EMPURRAO.test(t))) return true;
-  if (arquetipo === 'marca' && (LINHA_NAO_CONVOCAVEL.test(t) || (slug === 'Storm_Brand_of_Indecision' && LINHA_FEIXE_AO_VINCULADO.test(t)))) return true;
+  // (revisão G: a linha do feixe da Runa Tempestuosa da Indecisão é do G-D — `GemasGBD.ehLinhaGBD`, com o leitor `feixesDasLinhas`)
+  if (arquetipo === 'marca' && LINHA_NAO_CONVOCAVEL.test(t)) return true;
   if (arquetipo === 'guarda' && (LINHA_DURACAO_DO_EFEITO_Q.test(t) || LINHA_EFEITO_DO_BUFF_Q.test(t))) return true;
   if (ehDetonacao(slug) && [LINHA_HEX_ACERTO, LINHA_HEX_AFECCAO, LINHA_HEX_MENOR, LINHA_HEX_MAIOR, LINHA_HEX_TODOS, LINHA_HEX_REMOVER].some((re) => re.test(t))) return true;
   if (ehRuina(slug) && [LINHA_RUINA_MAIS, LINHA_RUINA_NIVEL, LINHA_RUINA_SUPORTA].some((re) => re.test(t))) return true;

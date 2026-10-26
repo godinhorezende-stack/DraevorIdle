@@ -289,7 +289,8 @@ test('G-C: a Ruína — os números do PoB e o dano/duração por maldição', {
   assert.equal(r.efeitoLigadasPct, 20);
   assert.equal(r.nivelMax, 70);
   const x = GAC.ruinaComMaldicoes(r, 2);
-  assert.ok(perto(x.fatorDano, 1.42 * 1.42));
+  // (aval do dono, 26/10 — revisão G: o "mais" por maldição é linear como no PoB — um MORE × CurseApplied: 1 + 42% × 2, não 1,42²)
+  assert.ok(perto(x.fatorDano, 1.84));
   assert.equal(x.duracaoIncPct, 200);
   assert.equal(G.ruinaNoNivel('Bane_of_Condemnation', 20).maisPorMaldicaoPct, 100);
 });

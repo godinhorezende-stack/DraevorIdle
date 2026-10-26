@@ -86,6 +86,7 @@ import * as ItensPoeJogo from './itens-poe/jogo.mjs';
 import * as Mapas from './itens-poe/mapas.mjs';
 import * as MapasAreas from './itens-poe/mapas-areas.mjs';
 import * as MapaAberto from './itens-poe/mapa-aberto.mjs';
+import * as GemasGBD from './itens-poe/gemas-gbd.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
 export { nomeDaHunt, huntsJogaveis, gradeDaHunt, aquecerGrades } from './hunt/terreno.mjs';
@@ -2467,14 +2468,14 @@ export function efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo, ctx = {}) {
     if (lista.length > E.maximo) lista.splice(0, lista.length - E.maximo);
     ev('empalado');
   }
-  if (sorte(p.chances.cinzas)) { ModsPoe.porNoAlvo(alvo, 'cinzas', agora + 4000); ev('cinzas'); }
+  if (sorte(p.chances.cinzas)) { ModsPoe.porNoAlvo(alvo, 'cinzas', agora + 4000, agora); ev('cinzas'); }
   if (sorte(p.chances.cegar)) { e.cego = { ate: agora + ModsPoe.NO_ACERTO.cegar.duracaoMs }; ev('cego'); }
   if (sorte(p.chances.provocar)) { e.provocado = { ate: agora + ModsPoe.NO_ACERTO.provocar.duracaoMs, deLacaio: true }; ev('provocado'); }
   // (lote 69) "Lacaios têm X% de chance de Empurrar Inimigos ao Acertar com Ataques" (o empurrão do jogo: para longe de você)
   if (!ctx.magia && sorte(p.chances.empurrar) && ModsPoe.empurrar(hunt, alvo)) ev('empurrado');
   if (sorte(p.chances.desacelerar)) {
     const ate = agora + ModsPoe.NO_ACERTO.desacelerar.duracaoMs;
-    e.lento = e.lento && e.lento.ate > agora ? { ate: Math.max(e.lento.ate, ate), pct: Math.max(e.lento.pct, 30) } : { ate, pct: 30 };
+    GemasGBD.porLento(e, ate, 30, agora);
     ev('lento');
   }
   const dot = (tipoDot, porSegundo, duracaoMs) => {
@@ -2568,12 +2569,12 @@ export function aoBloquearDoLacaio(hunt, l, bicho, eventos, agora, rng = Math.ra
       }
       case 'alvo':
         if (!vivo(bicho) || !nomeDoEstado || !sorte(v)) break;
-        ModsPoe.porNoAlvo(bicho, nomeDoEstado, ate);
+        ModsPoe.porNoAlvo(bicho, nomeDoEstado, ate, agora);
         eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: nomeDoEstado });
         break;
       case 'proximos':
         if (!sorte(v)) break;
-        for (const m of hunt.monstros ?? []) if (vivo(m) && distancia(m, l) <= 3) ModsPoe.porNoAlvo(m, nomeDoEstado, ate);
+        for (const m of hunt.monstros ?? []) if (vivo(m) && distancia(m, l) <= 3) ModsPoe.porNoAlvo(m, nomeDoEstado, ate, agora);
         break;
       case 'recargaEs': if (sorte(v)) l.esEspera = 0; break;
       case 'esDaArmadura': if (l.maxEs > 0) l.es = Math.min(l.maxEs, (l.es ?? 0) + (LacaiosPoe.armaduraDoLacaio(l, agora) * v) / 100); break;
@@ -2642,6 +2643,8 @@ export function magiaNoLacaio({ estado, hunt, bicho, l, a, eventos, agora, ficha
   return d;
 }
 Poderes.definirMagiaNoLacaio(magiaNoLacaio);
+// (revisão G, 26/10) o Escudo Tempestuoso também ao bloquear uma MAGIA (o gancho de `Poderes.dispararMagia` — antes nunca registrado)
+Poderes.definirAoBloquearMagia(({ estado, hunt, personagem, bicho, eventos, agora }) => Acoes.escudoTempestuoso(estado, hunt, personagem, bicho, eventos, agora));
 
 // O empalamento solto passa pela Redução de Dano Físico do monstro (`mods-poe.aoAcertar`): a resistência física e a redução de dano dele.
 ModsPoe.definirReducaoFisica((hunt, alvo, valor) => resistido(hunt, alvo, 'physical', valor, null, { armadura: false }));

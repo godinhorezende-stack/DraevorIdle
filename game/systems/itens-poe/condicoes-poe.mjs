@@ -21,6 +21,7 @@ import * as Aliados from './aliados.mjs';
 import { raioQueCresce } from './gemas-b1.mjs';
 // (lotes G-A e G-C, dono 25/10: a Precisão a menos do Enfraquecer, o Impelir restrito)
 import * as GemasGAC from './gemas-gac.mjs';
+import { renovarLento } from './gemas-gbd.mjs';
 
 /** "Recentemente" no PoE: nos últimos 4 segundos. */
 export const RECENTE_MS = 4000;
@@ -182,7 +183,9 @@ export function fisicoPorEmpalamento(ficha, alvo, agora) {
 export function renovarFrioEChoque(bicho, agora) {
   const e = bicho?.estados;
   if (!e) return;
-  for (const k of ['lento', 'chocado']) if (e[k]?.ate > agora) e[k].ate = Math.max(e[k].ate, agora + (e[k].dur ?? 2000));
+  // (revisão G: o lento com as instâncias de cada fonte — cada uma volta à duração cheia dela, `GemasGBD.renovarLento`)
+  renovarLento(e, agora);
+  if (e.chocado?.ate > agora) e.chocado.ate = Math.max(e.chocado.ate, agora + (e.chocado.dur ?? 2000));
   for (const x of e.chocadosPilha ?? []) if (x.ate > agora) x.ate = Math.max(x.ate, agora + (x.dur ?? 2000));
 }
 /**
@@ -1678,7 +1681,8 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
     const daEmboscada = !naoImpelivel && !t.has('totem') && !!estado?.hunt?.emboscada?.golpe && (estado.hunt.emboscada.ate ?? 0) > agora;
     if (daEmboscada) { t.add('impelido'); t.add('impelidoEmboscada'); }
     // (lote G-A, D2: o Impelir do Sísmico só vale nas Pancadas, o do Ancestral só nos Golpes — `GemasGAC.impeleEste`)
-    else if (!naoImpelivel && !semNoDeslocamento && !t.has('totem') && (estado?.hunt?.impelidos?.n ?? 0) > 0 && (estado.hunt.impelidos.ate ?? Infinity) > agora && GemasGAC.impeleEste(estado.hunt.impelidos, [...t])) { t.add('impelido'); t.add('impelidoClamor'); }
+    else if (!naoImpelivel && !semNoDeslocamento && !t.has('totem') && (estado?.hunt?.impelidos?.n ?? 0) > 0 && (estado.hunt.impelidos.ate ?? Infinity) > agora && GemasGAC.impeleEste(estado.hunt.impelidos, [...t])) { t.add('impelido'); t.add('impelidoClamor'); if (estado.hunt.impelidos.de) t.add(`impelidoClamor_${estado.hunt.impelidos.de}`); }
+    // (revisão G, 26/10: `impelidoClamor_<slug>` — DE QUAL Clamor é o Impelir; os bônus do buff de cada Clamor só valem no ataque Impelido por ele — `GemasPoe.adds`)
     if (estado?.hunt?.poeTerceiroGolpe) t.add('terceiroGolpe');
     if (ficha.mao === 'secundaria' || ficha.mao === 'ambas') t.add('maoSecundaria');
     if (ficha.mao !== 'secundaria') t.add('maoPrincipal');

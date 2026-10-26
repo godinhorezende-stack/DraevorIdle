@@ -18,6 +18,7 @@ import { CONFIG as ATRIBUTOS } from '../personagem/atributos.mjs';
 import { regrasDasMaldicoes } from './reforcos.mjs';
 // (lote G-C, dono 25/10 — D10: "os outros efeitos expiram mais devagar" no amaldiçoado pela Corrente Temporal)
 import { expirarMaisDevagar } from '../itens-poe/gemas-gac.mjs';
+import { atualizarLento, porLento } from '../itens-poe/gemas-gbd.mjs';
 
 const E = () => CONFIG.estados ?? {};
 const ativo = (s, agora) => !!s && s.ate > agora;
@@ -82,7 +83,8 @@ export function aplicar(bicho, efeito, dano, agora, rng = Math.random, salaDeBos
       const l = estados.lento;
       // Vale a MAIOR lentidão (não a última) e nunca encurta o que já corre.
       // (`dur`: a duração cheia do que vale — as Forças Profanadas a renovam ao amaldiçoar, `ModsPoe.renovarFrioEChoque`)
-      estados.lento = ativo(l, agora) ? { ate: Math.max(l.ate, ate), pct: Math.max(l.pct, pct), dur: ate >= l.ate ? ate - agora : l.dur } : { ate, pct, dur: ate - agora };
+      // (revisão G, dono 26/10: cada fonte com a sua duração — `porLento`; vale a mais forte ativa)
+      porLento(estados, ate, pct, agora, { dur: ate - agora });
       postos.push('lento');
     }
   }
@@ -224,11 +226,13 @@ export function tique(hunt, eventos, agora) {
   for (const m of hunt?.monstros ?? []) {
     const est = m.estados;
     if (est && m.hp > 0) {
+      // (revisão G) as lentidões de várias fontes (`porLento`): as vencidas saem e vale a mais forte ativa
+      atualizarLento(est, agora);
       // "Inimigos Ficam Resfriados ao Descongelarem": o Congelamento acabou — o Resfriamento entra (a maior lentidão vale).
       const c = est.congelado;
       if (c?.resfriarAoSair > 0 && c.ate <= agora) {
         const pct = Math.min(E().lento?.maximo ?? 40, c.resfriarAoSair);
-        est.lento = ativo(est.lento, agora) ? { ...est.lento, pct: Math.max(est.lento.pct, pct), ate: Math.max(est.lento.ate, c.ate + RESFRIAMENTO_AO_DESCONGELAR_MS) } : { ate: c.ate + RESFRIAMENTO_AO_DESCONGELAR_MS, pct };
+        porLento(est, c.ate + RESFRIAMENTO_AO_DESCONGELAR_MS, pct, agora);
         delete c.resfriarAoSair;
         eventos?.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'lento' });
       }

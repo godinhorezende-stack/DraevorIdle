@@ -356,6 +356,8 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   const doAtaque = projetil ? Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100) : 1;
   // (lote G-B — D7: + a Armadura Ártica Vaal, "90% menos Dano de Acertos" — `GemasGBD.fatorDoGeloVaal`)
   let dano = Math.round(bruto * (1 - prevenido) * menosEmArea * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * (1 + (Number(ficha.afPoe?.dano_magico_recebido_inc) || 0) / 100) * Math.max(0, 1 - (Number(ficha.afPoe?.menos_dano_acertos) || 0) / 100) * doAtaque * GemasGBD.fatorDoGeloVaal(hunt, agora) + fixosDoGolpe);
+  // (revisão G, 26/10 — D6) o Chamado Imortal Vaal: todo dano impedido ANTES de qualquer absorção (a Égide, o Escudo Gélido, a Guarda e o Vínculo não gastam), como no golpe
+  if (dano > 0 && GemasGBD.imortal(hunt, agora)) dano = 0;
   const danoDoAcerto = dano;
   // (lote 32, P046: a vida do Desafio antes do acerto)
   if (dano > 0) ModsPoe.antesDeSerAcertado(estado, hunt, ficha);
@@ -411,7 +413,8 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // (PoE, 12/10) O que os modificadores de monstro e de mapa fazem no acerto além do dano (`mobs/mecanicas.aoAcertarJogador`); a magia física
   // de projétil é um Ataque (Mutilar e Empalar são só dos Ataques).
   // (lote G-B — D7) a magia com dano no gelo da Armadura Ártica Vaal conta; no terceiro acerto, o gelo quebra
-  if (dano > 0 && GemasGBD.contarAcertoNoGelo(hunt, agora)) GemasGBD.quebrarGelo(hunt, agora);
+  // (revisão G: todo acerto com dano conta — o de antes das absorções; o que o Chamado Imortal impediu, não)
+  if (danoDoAcerto > 0 && GemasGBD.contarAcertoNoGelo(hunt, agora)) GemasGBD.quebrarGelo(hunt, agora);
   if (aoAcertarJogador && bruto > 0) aoAcertarJogador(estado, hunt, personagem, bicho, { dano: danoDoAcerto, bruto: Object.values(brutas).reduce((t, x) => t + x, 0), partes, brutas, critico: critDoMob.critico, ataque: projetilDeAtaque, eventos });
   if (dano <= 0) return 0;
   if (a.elemento === 'lifedrain') bicho.hp = Math.min(bicho.maxHp, bicho.hp + dano);

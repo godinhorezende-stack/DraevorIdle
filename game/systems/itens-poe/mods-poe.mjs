@@ -9,6 +9,7 @@ import { RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantad
 import * as Plantadas from './armas-plantadas.mjs';
 // (lotes G-A e G-C, dono 25/10: as Marcas no acerto — as Cargas, as Cargas de Frasco — e a Punição em quem acerta você)
 import * as GemasGAC from './gemas-gac.mjs';
+import { porLento } from './gemas-gbd.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -162,9 +163,7 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
     }
   }
   const lentidao = (pct, ms) => {
-    const l = e.lento;
-    const ate = agora + ms;
-    e.lento = ativo(l, agora) ? { ate: Math.max(l.ate, ate), pct: Math.max(l.pct, pct) } : { ate, pct };
+    porLento(e, agora + ms, pct, agora);
   };
   if (sorte(v('chance_mutilar'))) {
     e.mutilado = { ate: agora + NO_ACERTO.mutilar.duracaoMs };
@@ -387,7 +386,7 @@ export function aoPorAfeccoes(estado, hunt, alvo, ficha, postos = [], { eventos 
   const lentoDaEletrizacao = valor(ficha, 'eletrizados_lentos');
   if (lentoDaEletrizacao > 0 && postos.includes('eletrizado') && alvo?.estados?.chocado) {
     const e = alvo.estados;
-    e.lento = { ate: Math.max(e.lento?.ate ?? 0, e.chocado.ate), pct: Math.max(e.lento?.ate > (hunt?.clock ?? 0) ? e.lento.pct ?? 0 : 0, lentoDaEletrizacao) };
+    porLento(e, e.chocado.ate, lentoDaEletrizacao, hunt?.clock ?? 0);
   }
   const metros = valor(ficha, 'eletrizacao_espalha_m');
   const s = alvo?.estados?.chocado;
@@ -445,7 +444,7 @@ export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorp
   const debilitarMs = bicho ? GemasGAC.debilitarAoAcertar(bicho, agora) : 0;
   if (debilitarMs > 0) {
     const e = (bicho.estados ??= {});
-    if (!((e.debilitado?.ate ?? 0) >= agora + debilitarMs)) ESTADOS_NO_ALVO.debilitado(e, agora + debilitarMs);
+    if (!((e.debilitado?.ate ?? 0) >= agora + debilitarMs)) ESTADOS_NO_ALVO.debilitado(e, agora + debilitarMs, agora);
   }
   if (dano > 0) marcar(hunt, 'dano', agora);
   // (lote D) "Acertado por um Ataque Recentemente" (o golpe dos monstros que não é magia — 14/10: o projétil de ataque também, `ataque`).
@@ -747,11 +746,13 @@ export function definirReducaoFisica(fn) { reducaoFisica = fn; }
 /** (lote 72) Quantos Definhar o bicho tem agora (o `definhado` acumula até 15). */
 const definhadosNoAlvo = (alvo, agora) => (ativo(alvo?.estados?.definhado, agora) ? alvo.estados.definhado.n ?? 1 : 0);
 const ESTADOS_NO_ALVO = {
-  cego: (e, ate) => (e.cego = { ate }), mutilado: (e, ate) => { e.mutilado = { ate }; e.lento = { ate, pct: Math.max(e.lento?.pct ?? 0, 30) }; },
-  intimidado: (e, ate) => (e.intimidado = { ate }), debilitado: (e, ate) => { e.debilitado = { ate }; e.lento = { ate, pct: Math.max(e.lento?.pct ?? 0, 20) }; },
-  cinzas: (e, ate) => { e.cinzas = { ate }; e.lento = { ate, pct: Math.max(e.lento?.pct ?? 0, 20) }; }, causticado: (e, ate) => (e.causticado = { ate, pct: 10 }),
-  fragilizado: (e, ate) => (e.fragilizado = { ate, pct: 6 }), exaurido: (e, ate) => (e.exaurido = { ate, pct: 10 }), lento: (e, ate) => (e.lento = { ate, pct: Math.max(e.lento?.pct ?? 0, 30) }),
-  provocado: (e, ate) => (e.provocado = { ate }), resfriado: (e, ate) => (e.lento = { ate, pct: Math.max(e.lento?.pct ?? 0, 10) }),
+  // (revisão G, 26/10: a lentidão de cada estado pelo `porLento` — vale a mais forte enquanto dura, sem uma fonte apagar, encurtar ou herdar o `pct` da outra; `agora`, o
+  // relógio de quem põe)
+  cego: (e, ate) => (e.cego = { ate }), mutilado: (e, ate, agora) => { e.mutilado = { ate }; porLento(e, ate, 30, agora); },
+  intimidado: (e, ate) => (e.intimidado = { ate }), debilitado: (e, ate, agora) => { e.debilitado = { ate }; porLento(e, ate, 20, agora); },
+  cinzas: (e, ate, agora) => { e.cinzas = { ate }; porLento(e, ate, 20, agora); }, causticado: (e, ate) => (e.causticado = { ate, pct: 10 }),
+  fragilizado: (e, ate) => (e.fragilizado = { ate, pct: 6 }), exaurido: (e, ate) => (e.exaurido = { ate, pct: 10 }), lento: (e, ate, agora) => porLento(e, ate, 30, agora),
+  provocado: (e, ate) => (e.provocado = { ate }), resfriado: (e, ate, agora) => porLento(e, ate, 10, agora),
   // (lote 57) Inervado (PoE: "Unnerve" — 10% mais dano de Magias recebido: `condicoes-poe`), "Inimigos próximos são enervados" (o Limitado pelo Destino)
   inervado: (e, ate) => (e.inervado = { ate: Math.max(e.inervado?.ate ?? 0, ate) }),
   // (14/10) Eletrizado sem acerto (o Pacto Cadavérico): 15% mais dano recebido — não troca uma Eletrização mais forte
@@ -771,7 +772,7 @@ const ESTADOS_NO_ALVO = {
 };
 const SEGUNDOS_PADRAO = 4;
 /** Põe um estado do PoE (`cego`, `cinzas`, `definhado`…) no alvo até `ate` — o mesmo das auras e dos eventos (o dos lacaios usa). */
-export const porNoAlvo = (alvo, nome, ate) => ESTADOS_NO_ALVO[nome]?.((alvo.estados ??= {}), ate);
+export const porNoAlvo = (alvo, nome, ate, agora) => ESTADOS_NO_ALVO[nome]?.((alvo.estados ??= {}), ate, agora);
 /**
  * (11/10) Põe o estado com os mods do personagem: o DEFINHAMENTO — "Definhamentos infligidos por você expiram X% mais lentamente" (a duração ÷
  * (1 − X%)) e "X% de chance de, quando você infligir Definhamento, infligir até um máximo de 15 Debuffs de Definhamento ao invés".
@@ -779,11 +780,11 @@ export const porNoAlvo = (alvo, nome, ate) => ESTADOS_NO_ALVO[nome]?.((alvo.esta
 function porComMods(fazer, nome, e, ate, agora, ficha, rng) {
   // (lote 33, P009) Causticar, Fragilizar e Exaurir: × o "Efeito de Afecções Não-Danificadoras" (o número fixo do jogo é o de base)
   if (AFECCOES_NAO_DANO.has(nome)) {
-    fazer(e, ate);
+    fazer(e, ate, agora);
     if (e[nome]?.pct) e[nome].pct *= fatorNaoDano(ficha?.afPoe);
     return;
   }
-  if (nome !== 'definhado') return fazer(e, ate);
+  if (nome !== 'definhado') return fazer(e, ate, agora);
   const lento = Math.min(90, Math.max(0, valor(ficha, 'definhamento_expira_lento')));
   fazer(e, agora + Math.round((ate - agora) / (1 - lento / 100)));
   if (e.definhado && rng() * 100 < valor(ficha, 'definhamento_maximo_chance')) e.definhado.n = 15;
@@ -1473,7 +1474,7 @@ export function aurasProximas(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
       const e = (m.estados ??= {});
       if (resMenos.length) e.auraRes = { ate: agora + 1000, pct: Object.fromEntries(resMenos) };
       if (elemFragil > 0) e.auraElemFragil = { ate: agora + 1000, pct: elemFragil };
-      if (acaoMax > 0 && acaoMax < 100) e.lento = { ate: Math.max(e.lento?.ate ?? 0, agora + 1000), pct: Math.max(e.lento?.ate > agora ? e.lento.pct : 0, 100 - acaoMax) };
+      if (acaoMax > 0 && acaoMax < 100) porLento(e, agora + 1000, 100 - acaoMax, agora);
     }
   }
   // (lote F) O tempo que cada Raro/Único passou na sua Presença (`mais_dano_presenca` — `fichaDoGolpe`): soma o tempo do tique.
@@ -1528,7 +1529,7 @@ export function aurasProximas(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
       for (const m of hunt.monstros ?? []) {
         if (!(m.hp > 0) || m.dummy || !recentes.some((c) => Math.max(Math.abs(m.x - c.x), Math.abs(m.y - c.y)) <= 3)) continue;
         const e = (m.estados ??= {});
-        ESTADOS_NO_ALVO.resfriado(e, agora + 1000);
+        ESTADOS_NO_ALVO.resfriado(e, agora + 1000, agora);
         ESTADOS_NO_ALVO.eletrizado(e, agora + 1000);
       }
     }
@@ -1547,11 +1548,11 @@ export function aurasProximas(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
     if (m.hp <= 0 || m.dummy || Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) > 3) continue;
     const e = (m.estados ??= {});
     for (const a of auras) {
-      ESTADOS_NO_ALVO[a]?.(e, agora + 1000);
+      ESTADOS_NO_ALVO[a]?.(e, agora + 1000, agora);
       // (lote 33, P009: a aura "Inimigos Próximos são Causticados" — × o "Efeito de Afecções Não-Danificadoras")
       if (AFECCOES_NAO_DANO.has(a) && e[a]?.pct) e[a].pct *= fatorNaoDano(ficha.afPoe);
     }
-    if (lento) e.lento = { ate: Math.max(e.lento?.ate ?? 0, agora + 1000), pct: Math.max(e.lento?.ate > agora ? e.lento.pct ?? 0 : 0, lento) };
+    if (lento) porLento(e, agora + 1000, lento, agora);
     if (Object.keys(res).length) e.resAura = { ...res, ate: agora + 1000 };
     if (Object.keys(igual).length) e.resIgual = { ...igual, ate: agora + 1000 };
   }

@@ -262,6 +262,44 @@ export function quebrarGelo(hunt, agora = hunt?.clock ?? 0) {
   hunt.poeFichaMudou = true;
   return true;
 }
+/**
+ * (revisão G, 26/10 — o dono: "guarde TODAS, cada uma com a sua duração, e vale a mais forte ativa", o modelo do `tolhido`) Põe uma LENTIDÃO de `pct` até `ate` no
+ * `e.lento`: cada fonte é uma instância com a sua duração (`lista`, com mais de uma); vale a de maior `pct` ainda ativa — a mais fraca segue depois que a forte acaba, até o
+ * fim dela. Sai só a instância que outra cobre (`pct` e fim maiores ou iguais). `e.lento.ate` é o fim da última (o estado está ativo enquanto alguma está) e `e.lento.pct`
+ * o da mais forte ativa (refeito a cada tique dos monstros — `atualizarLento`). `extra`: os campos da instância (o `dur` das Forças Profanadas). `agora` desconhecido:
+ * as de antes contam como ativas (o tique tira as vencidas).
+ */
+const instanciasDoLento = (l, agora) => (l ? (l.lista ?? [l]).filter((i) => (i.ate ?? 0) > agora).map(({ ate, pct, dur }) => ({ ate, pct: pct ?? 0, ...(dur != null ? { dur } : {}) })) : []);
+function montarLento(base, lista) {
+  const { lista: _l, ate: _a, pct: _p, dur: _d, depois: _x, ...marcas } = base ?? {};
+  if (!lista.length) return null;
+  const forte = lista[0];
+  return lista.length > 1 ? { ...marcas, ate: Math.max(...lista.map((i) => i.ate)), pct: forte.pct, ...(forte.dur != null ? { dur: forte.dur } : {}), lista } : { ...marcas, ...forte };
+}
+export function porLento(e, ate, pct, agora = -Infinity, extra = {}) {
+  const novo = { ate, pct, ...extra };
+  const todos = [...instanciasDoLento(e.lento, agora), novo];
+  const cobre = (j, i) => j.pct >= i.pct && j.ate >= i.ate;
+  const lista = todos.filter((i, k) => !todos.some((j, l) => l !== k && cobre(j, i) && (!cobre(i, j) || l > k))).sort((x, y) => y.pct - x.pct || y.ate - x.ate);
+  e.lento = montarLento(e.lento, lista);
+  return e.lento;
+}
+/** (revisão G) A cada tique: as instâncias vencidas saem e o `pct` passa a ser o da mais forte ainda ativa. */
+export function atualizarLento(e, agora) {
+  const l = e?.lento;
+  if (!l?.lista) return;
+  const lista = instanciasDoLento(l, agora).sort((x, y) => y.pct - x.pct || y.ate - x.ate);
+  if (lista.length) e.lento = montarLento(l, lista);
+}
+/** (revisão G) A lentidão que vale agora (o `pct` da instância mais forte ativa; 0 sem nenhuma). */
+export const pctDoLento = (e, agora) => Math.max(0, ...instanciasDoLento(e?.lento, agora).map((i) => i.pct));
+/** (revisão G — as Forças Profanadas) Cada instância do lento volta à duração cheia dela (`dur`; sem ela, `padraoMs`). */
+export function renovarLento(e, agora, padraoMs = 2000) {
+  const l = e?.lento;
+  if (!(l?.ate > agora)) return;
+  for (const i of l.lista ?? []) if (i.ate > agora) i.ate = Math.max(i.ate, agora + (i.dur ?? l.dur ?? padraoMs));
+  l.ate = Math.max(l.ate, agora + (l.dur ?? padraoMs), ...(l.lista ?? []).map((i) => i.ate));
+}
 /** (a Armadura Ártica) quem acerta você fica Resfriado (o `lento` do jogo, `pct` de Velocidade de Ação) por `ms` — com o buff dela ligado. Devolve se resfriou. */
 export function resfriarQuemAcerta(hunt, bicho, agora = hunt?.clock ?? 0) {
   if (!bicho || !(bicho.hp > 0) || bicho.dummy) return false;
@@ -269,7 +307,7 @@ export function resfriarQuemAcerta(hunt, bicho, agora = hunt?.clock ?? 0) {
   if (!b) return false;
   const e = (bicho.estados ??= {});
   const ate = agora + b.gbd.artica.resfriaMs;
-  e.lento = { ate: Math.max(e.lento?.ate > agora ? e.lento.ate : 0, ate), pct: Math.max(e.lento?.ate > agora ? e.lento.pct ?? 0 : 0, b.gbd.artica.resfriaPct) };
+  porLento(e, ate, b.gbd.artica.resfriaPct, agora);
   return true;
 }
 /** Um acerto com dano em você no gelo: conta; no máximo, o gelo QUEBRA — devolve true (quem chama tira o buff e o Congelado). */
@@ -483,5 +521,9 @@ export const SEM_AF_NO_BUFF = new Set(['Arcane_Cloak', 'Pact_of_KTash', 'Righteo
 export const EFEITO_SEM_DANO = new Set(['Arcanist_Brand']);
 /** As gemas do lote cuja duração é a do PoE (sem o piso de 2 s dos buffs do jogo): as Guardas e o Fogo Justo Vaal. */
 export const DURACAO_EXATA = new Set(['Steelskin', 'Molten_Shell', 'Vaal_Molten_Shell', 'Arcane_Cloak', 'Immortal_Call', 'Vaal_Immortal_Call', 'Vaal_Arctic_Armour', 'Vaal_Righteous_Fire']);
-/** As gemas do lote que ficam LIGADAS até desligar (o Fogo Justo da Devoção: "O efeito termina quando você chegar a 1 de vida"). */
-export const LIGADAS_GBD = new Set(['Righteous_Fire_of_Arcane_Devotion']);
+/**
+ * As gemas do lote que ficam LIGADAS até desligar — o segundo clique com ela ligada a desliga, como no PoE (o Fogo Justo da Devoção: "O efeito termina quando você chegar a
+ * 1 de vida"; revisão G, dono 26/10: + o Fogo Justo comum — a queima dele fica para a sessão das auras). O Fogo Justo Vaal não: é um buff de duração (4 s), e o uso de novo
+ * enquanto ativo é recusado.
+ */
+export const LIGADAS_GBD = new Set(['Righteous_Fire_of_Arcane_Devotion', 'Righteous_Fire']);

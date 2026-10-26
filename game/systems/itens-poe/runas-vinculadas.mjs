@@ -13,6 +13,7 @@
 //   - "Vincula a um novo Inimigo após ser Ativada, não mais que uma vez a cada N segundos" (a da gema e a da árvore) e "É Ativado uma vez
 //     quando Vinculada, então é Destruída".
 import { ligado } from './catalogo.mjs';
+import { naoConvocavelDasLinhas } from './gemas-gac.mjs';
 
 export const PADRAO = { maximo: 3, porInimigo: 1, alcance: 3, vinculadaMs: 5000, soltaMs: 6000, intervaloMs: 1000 };
 
@@ -42,7 +43,7 @@ export function daGema(linhas = []) {
     trocaMs: troca ? segundos(troca[1]) : null,
     porInimigoExtra: mais ? Number(mais[1]) : 0,
     // (lote G-A, dono 25/10) a Runa do Armagedom da Volatilidade: "Não pode ser Convocada" (brand_cannot_be_recalled — a Convocar Runas a deixa onde está)
-    ...(t.some((l) => /^Não pode ser Convocada$/i.test(l.trim())) ? { naoConvocavel: true } : {}),
+    ...(naoConvocavelDasLinhas(t) ? { naoConvocavel: true } : {}),
   };
 }
 

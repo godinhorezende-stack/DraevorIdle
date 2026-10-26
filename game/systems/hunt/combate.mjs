@@ -1299,10 +1299,12 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // ("ao sofrer um Golpe Crítico": "Ganha até o máximo de Cargas de Tolerância ao sofrer um Golpe Crítico".)
   if (critDoMob.critico) ModsPoe.evento(estado, hunt, 'serAcertadoCritico', ficha, { alvo: bicho, eventos, personagem });
   registrarGolpe(() => ({ origem: 'mob', atacante: bicho.name, alvo: personagem.nome, tipo: 'physical', danoAntesDaResistencia: Math.round(bruto), resistenciaDoAlvo: Math.min(100, ficha.protection.physical ?? 0), danoAposResistencia: protegido, armadura: armorDoPersonagem(estado), danoFinal: final, vidaRestante: Math.max(0, estado.hp - Math.max(0, final)) }));
+  // (lote G-B — D7) o acerto com dano no gelo da Armadura Ártica Vaal: no terceiro, o gelo quebra (o buff e o Congelado saem)
+  // (revisão G, 26/10: todo acerto com dano conta — também o que a Égide, a Guarda, o Vínculo ou o Escudo de Energia absorveram inteiro; o que o Chamado Imortal
+  // impediu, não — o `danoDoAcerto` é o de depois dele e antes das absorções)
+  if (danoDoAcerto > 0 && GemasGBD.contarAcertoNoGelo(hunt, hunt.clock ?? 0) && GemasGBD.quebrarGelo(hunt, hunt.clock ?? 0)) Ficha.invalidar(estado);
   if (final > 0) {
     estado.hp = Math.max(0, estado.hp - final);
-    // (lote G-B — D7) o acerto com dano no gelo da Armadura Ártica Vaal: no terceiro, o gelo quebra (o buff e o Congelado saem)
-    if (GemasGBD.contarAcertoNoGelo(hunt, hunt.clock ?? 0) && GemasGBD.quebrarGelo(hunt, hunt.clock ?? 0)) Ficha.invalidar(estado);
     // O sangue no boneco — sem isto o golpe só existia no número que sobe,
     // nunca na tela (mesmo id real do OTServ que `round()` usa no bicho).
     // O efeito do golpe na tela: o do cadastro do bicho (aba Mobs → Ataques e efeitos) ou o sangue de sempre.
@@ -1566,7 +1568,9 @@ export function round(estado, personagem) {
        * `segundo`: o golpe EXTRA (chance `ficha.ataqueDuplo`, no máximo UM por golpe — o extra nunca rola o duplo de novo). Ele rola a
        * precisão, o crítico e a resistência dele, mas não gasta nada, não treina, não dá roubo de vida/mana nem charm.
        */
-      const golpear = (segundo, alvo = alvoDoTique) => {
+      // (revisão G) os alvos a mais do golpe Impelido pelo Clamor Ancestral (o golpe principal os anota; o tique os golpeia depois dele)
+      let alvosDoImpelido = 0;
+      const golpear = (segundo, alvo = alvoDoTique, extraDoImpelido = false) => {
         // A ficha DESTE golpe (PoE): os mods condicionais pelas tags do golpe básico (ataque, corpo a corpo/projétil, físico, arco) e pelo
         // alvo, e os sorteios do golpe (dano dobrado, ignorar a redução física) — `itens-poe/mods-poe.mjs`. Sem o PoE, a mesma ficha.
         // PoE com duas armas: os golpes ALTERNAM entre a mão principal e a secundária — a mão é escolhida AQUI (o golpe que erra também usou
@@ -1575,17 +1579,26 @@ export function round(estado, personagem) {
         // (lote A1b, dono 19/10: D-b) a EMBOSCADA também no golpe básico corpo a corpo com arma de uma mão: Impelido por ela (a tag `impelido`), com o
         // crítico dela ("+25% de Chance de Golpe Crítico" na base, "+138% de Multiplicador"); o golpe a gasta e não gasta o Impelir do Clamor
         const tagsDoBasico = ModsPoe.tagsDoGolpeBasico(estado, categoriaDaArma(arma));
-        const emboscada = !segundo && tagsDoBasico.includes('corpo') ? Acoes.emboscadaNoGolpe(estado, hunt) : null;
+        const emboscada = !segundo && !extraDoImpelido && tagsDoBasico.includes('corpo') ? Acoes.emboscadaNoGolpe(estado, hunt) : null;
         if (emboscada) emboscada.golpe = true;
         const fichaDaMao = daSecundaria ? Ficha.fichaDaMao(fichaDoPersonagem, 'secundaria') : fichaDoPersonagem;
         const ficha = ModsPoe.fichaDoGolpe(emboscada ? Acoes.comAtributosDoUso(fichaDaMao, { crit_base_golpe: emboscada.critPontos, crit_dmg: emboscada.critMultPct }) : fichaDaMao, tagsDoBasico, { alvo, estado });
         if (emboscada && hunt.emboscada === emboscada) delete hunt.emboscada;
         // (PoE: o golpe Impelido por um Clamor gasta um — a tag `impelido` já está na ficha deste golpe.)
         // (lote G-A, D2: o Impelir do Sísmico não vale no golpe básico — `GemasGAC.impeleEste`)
-        if (!segundo && !emboscada && hunt.impelidos?.n > 0 && GemasGAC.impeleEste(hunt.impelidos, tagsDoBasico)) hunt.impelidos.n--;
+        // (revisão G, 26/10: o golpe básico Impelido tem os efeitos do Clamor, como o uso da gema — a Combustão do Infernal no corpo a corpo e os alvos a mais do Ancestral;
+        // o golpe nos alvos a mais não gasta outro; o Impelir vencido não conta)
+        const im = hunt.impelidos;
+        if (!segundo && !emboscada && !extraDoImpelido && im?.n > 0 && (im.ate ?? Infinity) > (hunt.clock ?? 0) && GemasGAC.impeleEste(im, tagsDoBasico)) {
+          if (itensPoeLigado() && im.de === 'Infernal_Cry' && tagsDoBasico.includes('corpo')) eventos.push(...Acoes.combustao(estado, hunt, personagem, null, alvo, hunt.clock ?? 0));
+          if (itensPoeLigado() && im.alvosExtra > 0 && tagsDoBasico.includes('corpo')) alvosDoImpelido = im.alvosExtra;
+          im.n--;
+        }
         // (lote G-C, dono 25/10) a Marca do Atirador no golpe básico de longe (o projétil da arma): "sofrem Dano aumentado em X% de Acertos de Projéteis" — no golpe da arma
         const doAtirador = itensPoeLigado() && categoriaDaArma(arma) === 'distancia' ? GemasGAC.fatorDoProjetil(alvo, hunt.clock ?? 0) : 1;
-        const fatorDoGolpe = (segundo ? Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct / 100 : 1) * doAtirador;
+        // (revisão G) a Punição: "Inimigos Amaldiçoados sofrem Dano aumentado em X% enquanto em Vida Baixa" — todo dano (o PoB: DamageTaken INC, Condition LowLife), também o golpe básico
+        const daVidaBaixa = itensPoeLigado() ? GemasGAC.fatorDaVidaBaixa(alvo, hunt.clock ?? 0, ModsPoe.VIDA_BAIXA) : 1;
+        const fatorDoGolpe = (segundo ? Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct / 100 : 1) * doAtirador * daVidaBaixa;
         // (lote G20b: o golpe de longe é um projétil de ataque seu, acerte ou erre — a Balista Focada ataca depois dele, `cacadas.tiqueDosLacaios`)
         if (!segundo && categoriaDaArma(arma) === 'distancia') hunt.poeProjetilDeAtaqueEm = hunt.clock ?? 0;
         // Accuracy: o golpe pode errar o bicho (a perícia treina igual, como no Tibia).
@@ -1729,7 +1742,12 @@ export function round(estado, personagem) {
         for (const x of [{ ...marcou, bicho: alvo }, ...(marcou.espalhou ?? [])]) if (x.amaldicoouSemMaldicao) ModsPoe.evento(estado, hunt, 'amaldicoarSemMaldicao', ficha, { alvo: x.bicho, eventos, personagem });
         return true;
       };
-      if (!golpear(false)) return { eventos, bateu };
+      const acertouOPrincipal = golpear(false);
+      // (revisão G) "Golpes Impelidos focam em N Inimigos adicionais" (o Ancestral): os vivos mais perto do alvo, ao alcance da arma, com o mesmo golpe
+      const extrasDoImpelido = alvosDoImpelido;
+      alvosDoImpelido = 0;
+      if (extrasDoImpelido > 0) for (const outro of ModsPoe.alvosDosProjeteisExtras(hunt, alvo, extrasDoImpelido, alcanceDaArma(arma, estado))) if (outro.hp > 0) golpear(false, outro, true);
+      if (!acertouOPrincipal) { if (extrasDoImpelido > 0) processarMortes(estado, personagem, eventos); return { eventos, bateu }; }
       // PoE: os projéteis a mais e a perfuração do golpe básico de longe ("Ataques com Arco disparam N Flechas adicionais", "Projéteis
       // Perfuram N Alvos adicionais"): cada um acerta OUTRO bicho (os mais perto do alvo, ao alcance), com o golpe inteiro.
       if (itensPoeLigado() && categoriaDaArma(arma) === 'distancia') {

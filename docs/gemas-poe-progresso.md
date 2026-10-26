@@ -819,7 +819,7 @@ O código mora em `game/systems/itens-poe/gemas-gac.mjs` (os dados e as contas p
   - o Clamor de Reunião: cada aliado no raio conta o Poder de um inimigo Normal (1) — `GemasGBD.REUNIAO.poderPorAliado`; a linha "Conta o Poder total de Inimigos e Aliados" ficou feita;
   - a Runa do Arcanista: as magias ligadas saem da casa da Runa (a do vinculado), como no PoE — a exceção 5 mudou;
   - as outras 6 escolhas sem fonte ficam aprovadas;
-  - o Manto Arcano: a absorção lê `b.efeitoBuffQualPct` (a qualidade de efeito que o lote G-A guarda no buff) — em `Acoes.aoLigarGBD`; antes da mescla o campo não existe (0). Nota: o PoB marca o GuardAbsorbLimit como `unscalable`.
+  - o Manto Arcano: no G-B a absorção lia `b.efeitoBuffQualPct` (a qualidade de efeito do lote G-A); no merge com o G-A (26/10, o dono) isso voltou para o PoB — o limite da absorção NÃO escala (GuardAbsorbLimit `unscalable`), e a qualidade vale no Raio adicional (ver o merge, abaixo).
   - Testes: `ativas-g-bd` 29/29; os 64 arquivos afetados: 810 testes, 773 passam, 37 pulados, 0 falhas.
 
 ### O Escudo Tempestuoso (25/10, a decisão do dono)
@@ -828,6 +828,24 @@ O código mora em `game/systems/itens-poe/gemas-gac.mjs` (os dados e as contas p
 - Ao bloquear (o golpe e a magia — `Poderes.definirAoBloquearMagia`), com escudo, o raio sai no atacante e ricocheteia +1 (o PoB: chanceToTriggerCounterattackOnBlock 100, number_of_chains 1): o acerto da gema pelo caminho do uso (`plantada` 'contragolpe' — o dano, os suportes, o crítico e o ricochete dela), sem custo. Sem escudo, não sai.
 - **A tradução não mudou** (os três blocos): nenhuma linha nova em `traducao.json`; a `VERSAO_DA_TRADUCAO` fica em 73 (as linhas novas das gemas são do poedb ou do PoB, já em pt, e não passam pela tradução dos itens).
 - **O merge com o G-A e o G-C (26/10):** a duração da guarda soma a qualidade do G-A ("Duração do Efeito") e as cargas do Chamado; o Impelir guarda o `so` e os `alvosExtra` do G-A e o `de` do G-D (a Combustão do Infernal só no ataque que o `GemasGAC.impeleEste` aceita); o Manto Arcano segue o PoB — o limite da absorção não escala com o efeito do buff (a qualidade do G-A vale no Raio adicional).
+
+### Revisão adversarial do lote G (26/10)
+
+- **A Ruína:** o "mais" por maldição é um só "mais" escalado (o PoB: `MORE` × `CurseApplied` — 1 + 42% × n; a Condenação 1 + 100% × n), não a potência; a Condenação tem o −25% final nas ligadas; o valor contra Raro/Único das ligadas (o `pctRaro` da Corrente Temporal) leva o −25% uma vez só; as maldições Feitiço ligadas que a Ruína suporta só saem por ela (`Gemas.gruposComGatilho`, 'ruina' — o `cannot_cast_curses` do PoB) e, com a Blasfêmia no grupo, a Ruína não as suporta.
+- **A Marca do Alquimista** dura 6 s como as outras Marcas (os 4 s do PoB são os dos solos).
+- **A Detonação de Feitiços:** as razões do sortudo, do crítico sem resistência e da penetração usam a mesma resistência do Caos da base (a menor/maior).
+- **O golpe básico:** a Punição (o "+X% em Vida Baixa") vale nele; o Impelido pelo Ancestral acerta mais 2 inimigos e o pelo Infernal ativa a Combustão; o Impelir vencido não é gasto.
+- **O Escudo Tempestuoso** sai também ao bloquear magia (o gancho `Poderes.definirAoBloquearMagia`, registrado na caçada).
+- **A Armadura Ártica Vaal:** todo acerto com dano conta para o gelo (também o absorvido pela Égide, pela Guarda, pelo Vínculo ou pelo Escudo de Energia; não o impedido pelo Chamado Imortal); o frasco que tira o Congelado quebra o gelo e o buff sai (o PoB: "When the ice breaks, the buff is also removed").
+- **Os Fogos Justos:** o Vaal e o da Devoção têm cada um o seu registro (`hunt.poeFogoJusto`, `hunt.poeFogoJustoDevocao`) e podem ficar ligados juntos.
+- **O Chamado Imortal Vaal:** na magia, impede o dano antes da Égide, do Escudo Gélido, da Guarda e do Vínculo; a Guarda nova que o troca tira o "não pode morrer".
+- **A Runa do Arcanista:** o "mais Dano com Acertos contra o Vinculado" só no vinculado; os outros atingidos levam só o "menos Dano".
+- **O Impelir:** o mesmo Clamor renova pelo máximo; outro troca (o `de`); os bônus do buff de cada Clamor (`@impelidoClamor`) só valem no ataque Impelido por ele (`impelidoClamor_<slug>`).
+- **A lentidão de várias fontes** (dono, 26/10 — o modelo do `tolhido`): o `lento` do monstro guarda TODAS as fontes, cada uma com a sua duração (`lista`), e vale a de maior % ainda ativa (`GemasGBD.porLento`; o tique tira as vencidas e refaz o % — `atualizarLento`; as Forças Profanadas renovam cada uma — `renovarLento`). Todos os que põem lentidão no monstro passam por ele (o Resfriamento do jogo, o Resfriar da Armadura Ártica, o Debilitado, o Mutilado, as Cinzas, a Desaceleração, as auras, os frascos, os totens, a Eletrização que deixa Lento).
+- **O segundo clique desliga** o Fogo Justo da Devoção e o comum (dono, 26/10 — `GemasGBD.LIGADAS_GBD`; a queima do comum fica para a sessão das auras); o Vaal é de duração e o uso de novo enquanto ativo é recusado.
+- **O aval do dono (26/10):** `ativas-g-ac.test.mjs:292` passou a pedir 1,84 (o "mais" linear), com o comentário do aval.
+- A linha do feixe da Runa Tempestuosa da Indecisão ficou só no G-D; o "Não pode ser Convocada" tem uma fonte só (`GemasGAC.naoConvocavelDasLinhas`, usada pela `runas-vinculadas`).
+- Teste novo: `game/testes/ativas-g-revisao.test.mjs` (19 casos).
 
 ## Pendências conhecidas (por ordem de prioridade)
 
