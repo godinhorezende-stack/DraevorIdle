@@ -579,6 +579,10 @@ const magiaDoArcanista = (def) => def?.tipo === 'ativa' && !ehArcanista(def) && 
 // (revisão G, 26/10 — D13) a RUÍNA (o PoB, SupportDarkRitual: `cannot_cast_curses`, `addSkillTypes` Triggered, `excludeSkillTypes` AuraAffectsEnemies): as maldições
 // Feitiço ligadas a ela que exigem até o nível 70 só saem pela Ruína (não se conjuram à mão nem pela automação); com a Blasfêmia no grupo (a maldição vira aura) a Ruína
 // não as suporta. O nível exigido: o da tabela da gema no nível dela (`poeXp.req`, o "RequerNível" do poedb).
+// (lote E1b, 26/10) o CLAMOR DO MAGO DE BATALHA (o PoB, BattlemagesCrySupport): as magias ligadas a ele saem nos ataques Impelidos por ele (Acoes.ativarGatilhos
+// 'magoDeBatalha'); as mesmas regras do Arcanista (ativáveis, sem Armadilha, Mina, Totem, as que reservam e as Vaal) e sem as de Canalização
+const ehMagoDeBatalha = (def) => def?.tipo === 'ativa' && def.poe?.slug === 'Battlemages_Cry';
+const magiaDoMagoDeBatalha = (def) => magiaDoArcanista(def) && !def.tags.includes('poe:Canalização');
 const ehRuinaDef = (def) => def?.tipo === 'ativa' && /^Bane(_of_Condemnation)?$/.test(def.poe?.slug ?? '');
 export const NIVEL_MAX_DA_RUINA = 70;
 const exigeNoNivel = (def, nivel) => { const r = def?.poeXp?.req ?? []; return r.length ? (r[Math.min(r.length, Math.max(1, nivel | 0)) - 1] ?? 1) : (def?.levelMinimo ?? 1); };
@@ -744,6 +748,9 @@ export function gruposComGatilho(estado) {
       // (lote G-D — D16) a Runa do Arcanista: as magias do grupo saem nas Ativações dela (o tique das Runas)
       const arc = noGrupo.find((y) => ehArcanista(y.def));
       const doArcanista = arc ? noGrupo.filter((y) => magiaDoArcanista(y.def)).map((y) => y.def.acao) : [];
+      const mago = noGrupo.find((y) => ehMagoDeBatalha(y.def));
+      const doMago = mago ? noGrupo.filter((y) => magiaDoMagoDeBatalha(y.def)).map((y) => y.def.acao) : [];
+      if (doMago.length) saida.push({ chave: `${slot}:${mago.i}`, nome: mago.def.nome, nivel: mago.g.nivel + bonus, gatilho: { quando: 'magoDeBatalha' }, ataques: [], magias: doMago, magoDeBatalha: mago.def.acao });
       if (doArcanista.length) saida.push({ chave: `${slot}:${arc.i}`, nome: arc.def.nome, nivel: arc.g.nivel + bonus, gatilho: { quando: 'arcanista' }, ataques: [], magias: doArcanista, arcanista: arc.def.acao });
       // (revisão G — D13) a Ruína: as maldições Feitiço ligadas só saem por ela (`Acoes.maldicoesDaRuina`); o `quando` 'ruina' não é evento de nenhum despachante
       const ruina = noGrupo.find((y) => ehRuinaDef(y.def));

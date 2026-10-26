@@ -71,7 +71,10 @@ test('a GEMA: Arauto (não lacaio); o buff com a chance de Envenenar e o mais do
   assert.deepEqual(b.efeitos, []);
   assert.equal(b.dur, 60000);
   assert.equal(g.statusNoJogo, 'parcial');
-  assert.ok(g.motivosNoJogo.some((m) => /Virulência fica no máximo/.test(m)));
+  // (com o aval do dono, 26/10 — lote E1b: a Virulência no máximo, como o PoB, é NOTA — `notas` no registro —; só o Rastejador fica de motivo)
+  assert.ok(g.notas.some((m) => /Virulência fica no máximo/.test(m)));
+  assert.ok(!g.motivosNoJogo.some((m) => /Virulência/.test(m)));
+  assert.ok(g.motivosNoJogo.some((m) => /Rastejador/.test(m)));
   assert.ok(!g.motivosNoJogo.some((m) => /efeito não simulado/.test(m) && /Virulência|Rastejador/.test(m)));
 });
 

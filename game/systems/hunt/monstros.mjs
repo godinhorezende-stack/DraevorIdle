@@ -16,6 +16,8 @@ import * as Reforcos from '../skills/reforcos.mjs';
 import { fatorDoPassoAprisionado } from '../itens-poe/gemas-pr4.mjs';
 // (lote G-C, dono 25/10 — D10: a Corrente Temporal, a velocidade de ação do amaldiçoado)
 import { fatorDeAcao } from '../itens-poe/gemas-gac.mjs';
+// (lote E1b, dono 26/10: o Imobilizado das Armadilhas de Urso não anda)
+import { imobilizado } from '../itens-poe/gemas-e1b.mjs';
 
 export const BESTIARY = CATALOGO.bestiary;
 
@@ -321,7 +323,7 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
     // (lote A2, dono 19/10) o bicho FUGINDO (a Chance de Fugir, o Pacifismo — `Acoes.fugir`, 2 s): em vez de perseguir, dá o passo que mais o afasta
     // de você (as casas andáveis em volta dele, sem outro bicho nem você — a exceção (6) do dono, `itens-poe/gemas-a2.mjs`)
     if (Estados.fugindo(m, hunt.clock ?? agora)) {
-      if (!pronto(m) || !Estados.podeAgir(m, agora)) continue;
+      if (!pronto(m) || !Estados.podeAgir(m, agora) || imobilizado(m, agora)) continue;
       const perto = bfsDistancias(grade, m, 1);
       // (revisão do A2: as regras do passo normal — sem pisar nos outros jogadores da sala, e a Paralisia no tempo do passo)
       aliadosDaFuga ??= aliadosPorCasa(hunt);
@@ -355,7 +357,7 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
     }
     if (!m.perseguindo || !pronto(m)) continue;
     // Congelado ou atordoado (supports Freeze/Stun): não anda.
-    if (!Estados.podeAgir(m, agora)) continue;
+    if (!Estados.podeAgir(m, agora) || imobilizado(m, agora)) continue;
     let destino = melhorPasso(m, reto, VIZINHANCA_4);
     if (!destino) {
       comDiagonal ??= bfsDistancias(grade, hunt.pos, ALCANCE_DE_PERSEGUICAO + 4);
