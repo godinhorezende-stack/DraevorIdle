@@ -711,6 +711,68 @@ Teste: `testes/area-no-impacto-a3c.test.mjs`. Com o aval do dono: `itens-poe-uni
   2. a Parede de Gelo segura só os bichos (aprovado pelo dono, 25/10: fica assim);
   3. o uso das gemas de objeto (o Orbe, a Hidroesfera, as Paredes) ainda mostra na tela a área do molde no uso, sem acerto.
 
+### G-A — as maldições, as marcas e os clamores baratos (25/10, as recomendações do plano "ativas 3" aceitas)
+
+O código mora em `game/systems/itens-poe/gemas-gac.mjs` (os dados e as contas puras, sem import nenhum). Quem usa é `gemas-poe.mjs` (o status e o buff no nível), `skills/reforcos.mjs` (a maldição no monstro), `acoes.mjs` (o uso) e os leitores no combate.
+
+- **As Marcas no acerto:** a qualidade do Senhor da Guerra, do Assassino e do Caçador ("5% de chance de concederem uma Carga de Tolerância/Poder/Frenesi quando Acertados"). Vale em todo acerto seu no marcado (`ModsPoe.aoAcertar`), com o efeito da maldição.
+- **A Marca do Caçador** (D4): os −20% de Redução de Dano Físico entram SOMADOS à armadura e à redução adicional do monstro (`resistencia.fracaoFisicaDoPoe`). A soma pode ficar negativa, e aí o monstro sofre mais.
+- **O Enfraquecer:** "−19% de Precisão" no amaldiçoado (`condicoes-poe.doBicho`).
+- **A qualidade das maldições:**
+  - o "Efeito de Maldições aumentado em 10%" do Desespero e o "Efeito da Marca aumentado em 10%" da Alquimista entram no efeito da maldição da gema;
+  - o "Duração de Maldições aumentada em 20%" do Enfraquecer e da Corrente Temporal entra na duração dela no monstro (`acoes.efeitosDaMaldicao`).
+- **Os clamores:**
+  - o "Impele…" agora é lido como linha feita. O Impelir já existia;
+  - **o Impelir restrito (D2):** o Sísmico só Impele Pancadas e o Ancestral só Golpes. O golpe básico corpo a corpo conta como Golpe, porque no PoB é MeleeSingleTarget. Os outros clamores Impelem qualquer ataque. Um clamor de outro tipo troca o Impelir;
+  - o Ancestral: "Golpes Impelidos focam em 2 Inimigos adicionais";
+  - o Sísmico: o "Ponto de Atordoamento aumentado em 15% por cada 5 de Poder" (o seu `ponto_atordoamento_inc`) e o "50% mais Área de Efeito" do ataque Impelido por ele;
+  - o Intimidador: quem ele provoca fica Intimidado enquanto estiver provocado.
+- **As Runas:**
+  - a do Armagedom da Volatilidade "Não pode ser Convocada": a Convocar Runas a deixa onde está;
+  - a Runa Tempestuosa da Indecisão: o feixe vai ao vinculado. A Ativação já saía no lugar dele.
+- **A qualidade das guardas:**
+  - "Duração do Efeito de Habilidades aumentada em 20%" (a Concha Derretida e a Vaal, o Chamado Imortal Vaal, as Armaduras Árticas): a duração do buff, somada aos outros "aumentados";
+  - "Efeito do Buff aumentado em 20%" (o Manto Arcano): o efeito dos atributos do buff (`GemasPoe.adds`, o `efeitoBuffQualPct` do buff). A absorção dele é do G-B.
+- **Já feitos antes:** o Sangue e Areia e a Postura padrão (D1, no C3). A coluna da Vaal_Righteous_Fire (0.7) já diz 19% no nível 20, então nada mudou.
+- **O empurrão do Sísmico (dono, 26/10):** a "pequena Área" são os inimigos a até 1 casa do alvo do uso (sem alvo, de você). Eles são empurrados para longe de você 1 casa × (1 + 200%) = 3 casas, na casa andável e livre (o chefe não se move), e interrompidos: o próximo golpe deles recomeça agora (`Acoes.empurraoDoClamor`). O Sísmico saiu de parcial.
+
+### G-C — as maldições que mudam o alvo e os Feitiços (25/10, as recomendações do plano "ativas 3" aceitas)
+
+- **A Corrente Temporal** (D10):
+  - a lentidão é um multiplicador próprio na velocidade de AÇÃO do monstro: 29% no Normal e no Mágico, 18% no Raro e no Único. Vale no passo e no intervalo do golpe (`GemasGAC.fatorDeAcao`) e fica separada do `lento` e do `tolhido`;
+  - "os outros efeitos expiram 25% mais devagar": a cada tique, os estados com fim, os danos contínuos e as OUTRAS maldições no amaldiçoado ganham 25% do tempo que passou (`estados.tique` → `expirarMaisDevagar`). Os contínuos ganham também o dano desse tempo, então o dano por segundo fica igual.
+- **A Punição:**
+  - "+58% de Dano sofrido enquanto em Vida Baixa" (50% da vida, o `VIDA_BAIXA`) vale em todo tipo (`Reforcos.vulnerabilidade`);
+  - quem acerta você fica Debilitado por 2 s (+1 s na qualidade 20), com o Debilitado do jogo (`ModsPoe.aoSerAcertado`).
+- **A Marca do Atirador:**
+  - "+29% de Dano sofrido de Acertos de Projéteis" (+5% na qualidade 20) só nos acertos: nas gemas e na parte Física do golpe básico de longe;
+  - o projétil que acerta o marcado se divide em 2, uma vez só (`golpes-secundarios`, `divisaoNoAlvo`).
+- **A Marca do Alquimista** (D12):
+  - o acerto que Incendeia o marcado cria o Solo Ardente com 26% do dano por segundo do Incêndio mais forte nele;
+  - o que Envenena cria o Solo Cáustico com 79% do Veneno mais forte;
+  - os dois têm 1 casa de raio e duram 4 s. Cada um sai no máximo 1 vez por segundo (`Acoes.soloDaAlquimista`);
+  - "1 Carga de Frasco quando você Acertar o marcado", no máximo 1 a cada 3 s (`FrascosPoe.ganharCargas`).
+- **A Detonação de Feitiços ×3** (D11): virou magia de área com dano (`ARQUETIPO_GAC`). Antes não causava dano nenhum.
+  - "Enfeitiçado" é ter um Feitiço seu (uma maldição que não é Marca) ANTES do uso;
+  - +200% mais Dano com Acertos e +90% mais com Afecções (a da Contradição: 300% e 120%);
+  - a área (3,2 m; a do Caos, 2,8 m) só sai se o alvo estava Enfeitiçado. Sem isso, só o alvo leva;
+  - o acerto consome um Feitiço sorteado dos que já estavam nele. A qualidade dá 0,5% por ponto de chance de não consumir (o PoB; o poedb veio sem o número). A do Caos nunca consome;
+  - o Caos do acerto é resistido pela menor resistência entre Fogo, Gelo, Raio e Caos (a da Contradição: a maior);
+  - "Todos os Danos podem Incendiar, Congelar e Eletrizar".
+- **A Ruína ×2** (D13): virou magia de área com o debuff de Caos.
+  - ela aplica as maldições Feitiço LIGADAS a ela no mesmo grupo (`Gemas.ativasDoMesmoGrupo`) que exigem até o nível 70, com o "−25% final" e o "+1% de efeito por qualidade" (os dois do PoB) e sem a área da maldição;
+  - por maldição, o debuff causa 42% mais (o da Condenação, 100%) e dura +100% (só a Ruína);
+  - a duração-base é a do PoB: 2 s (a da Condenação, 1 s +0,01 s por qualidade). O raio da Condenação é 1,2 m;
+  - quantas contam: as ligadas, até o limite de maldições.
+- **A tradução não mudou:** nenhuma linha nova em `traducao.json`; a `VERSAO_DA_TRADUCAO` fica em 73.
+- Teste novo: `game/testes/ativas-g-ac.test.mjs` (22 casos com os 2 do empurrão do Sísmico, os sorteios travados).
+- Testes: os 127 arquivos afetados (`ativas-*`, `gemas-*`, `suportes-*`, os de maldição/clamor/Impelir, `precisao-a5b`, `itens-poe-gemas*`, `gemas-todas-funcionam-poe`, `eficacia-ataque-poe`, `runas-vinculadas-poe` e os de frascos, projéteis e redução física): 1.461 testes, 1.391 passam, 1 falha, 69 pulados (com a correção do `naoConvocavel` em `runas-vinculadas-poe`, que quebrava um `deepEqual` e foi refeita no código, não no teste). O teste existente quebra por uma regra legítima do PoE e ficou para o aval do dono, sem edição: `ativas-status-qualidade-poe.test.mjs:80`. Ele esperava o "Duração de Maldições aumentada em 20 %" do Enfraquecer nos motivos; agora a linha é feita, e o Enfraquecer na qualidade 20 dura 11,8 s × 1,2 = 14,16 s. Com o aval do dono (26/10), o teste passou a pedir o Enfraquecer completo ("funciona"), com o comentário do aval.
+- Depois: parcial 151 → 133 nas ativas (implementada e testada 352 → 370); 109 → 109 nos suportes. Com o empurrão do Sísmico (26/10): 132 parciais, 371 implementadas e testadas; os 38 arquivos afetados (os de clamor, Impelir e empurrão, `ativas-g-ac`, `ativas-status-qualidade-poe`, `gemas-todas-funcionam-poe`, `itens-poe-gemas`): 424 testes, 423 passam, 1 pulado, 0 falhas.
+- **Pendências:**
+  1. a Corrente Temporal não desacelera as magias dos monstros (os poderes), igual ao `lento`; e o "expira mais devagar" não estende os buffs do próprio monstro nem as tabelas aninhadas (os estágios do debuff, os lentos por fonte);
+  2. os solos da Alquimista e os alvos a mais do Ancestral não valem no golpe básico (só nas gemas);
+  3. ~~o efeito da qualidade do Manto Arcano na absorção~~ — resolvido no merge com o G-B (26/10, o dono): a absorção NÃO escala (o PoB: `unscalable`); a qualidade vale no Raio do buff.
+
 ### G-B — as guardas (25/10, as recomendações D5–D9 do plano `plano-ativas-3.md` aceitas)
 
 - Arquivos: `gemas-gbd.mjs` (os dados, as contas puras e o estado da caçada sem ficha), `gemas-poe.mjs` (os leitores `daGemaGBD`…, o status, o buff, a leitura da coleção), `gemas-a2.mjs` (a Eficácia da Onda Arcana, o Emblema do aliado), `acoes.mjs` (o uso — `antesDoBuffGBD`, `aoLigarGBD`, `trocarGuarda`, `recargaDoGBD` — e o `tiqueDasGemasGBD`), `hunt/combate.mjs` e `poderes.mjs` (o acerto em você), `cacadas.mjs` (o tique).
@@ -765,6 +827,7 @@ Teste: `testes/area-no-impacto-a3c.test.mjs`. Com o aval do dono: `itens-poe-uni
 - O arquétipo virou `guarda` (`GemasGBD.ARQUETIPO_GBD`): um buff que reserva 25% da Mana pelo caminho de sempre (`Reserva.pedida`, a reserva da gema — os modificadores de reserva valem), ligado até desligar. Dá +25% de chance de Bloquear Dano Mágico com escudo e Imunidade a Eletrização.
 - Ao bloquear (o golpe e a magia — `Poderes.definirAoBloquearMagia`), com escudo, o raio sai no atacante e ricocheteia +1 (o PoB: chanceToTriggerCounterattackOnBlock 100, number_of_chains 1): o acerto da gema pelo caminho do uso (`plantada` 'contragolpe' — o dano, os suportes, o crítico e o ricochete dela), sem custo. Sem escudo, não sai.
 - **A tradução não mudou** (os três blocos): nenhuma linha nova em `traducao.json`; a `VERSAO_DA_TRADUCAO` fica em 73 (as linhas novas das gemas são do poedb ou do PoB, já em pt, e não passam pela tradução dos itens).
+- **O merge com o G-A e o G-C (26/10):** a duração da guarda soma a qualidade do G-A ("Duração do Efeito") e as cargas do Chamado; o Impelir guarda o `so` e os `alvosExtra` do G-A e o `de` do G-D (a Combustão do Infernal só no ataque que o `GemasGAC.impeleEste` aceita); o Manto Arcano segue o PoB — o limite da absorção não escala com o efeito do buff (a qualidade do G-A vale no Raio adicional).
 
 ## Pendências conhecidas (por ordem de prioridade)
 

@@ -2,9 +2,9 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 367,
+   "implementada e testada": 391,
    "implementada, sem teste próprio": 44,
-   "parcial": 138,
+   "parcial": 114,
    "limitação do modelo idle": 12,
    "não se aplica": 1
   },
@@ -24,16 +24,16 @@
   "variantes": {
    "vaal": {
     "total": 52,
-    "implementada e testada": 30,
-    "parcial": 15,
+    "implementada e testada": 33,
+    "parcial": 12,
     "implementada, sem teste próprio": 6,
     "limitação do modelo idle": 1
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 130,
+    "implementada e testada": 134,
     "implementada, sem teste próprio": 24,
-    "parcial": 48,
+    "parcial": 44,
     "limitação do modelo idle": 7
    }
   },
@@ -45,8 +45,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 419,
-   "emDuasOuMais": 62
+   "linhasDistintas": 380,
+   "emDuasOuMais": 53
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -60,7 +60,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 433,
+   "ativasCitadas": 440,
    "suportesCitados": 119,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -578,11 +578,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "clamor",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Inimigos Provocados por este Clamor são Intimidados",
-    "efeito não simulado: Impele o próximo 2 Ataque de Golpe Corpo a Corpo que você executar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -969,11 +966,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "clamor",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Impele os próximos 8 Ataques de Golpe Corpo a Corpo que você executar",
-    "efeito não simulado: Golpes Impelidos focam em 2 Inimigos adicionais"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1079,10 +1073,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "guarda",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Duração do Efeito de Habilidades aumentada em 20 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1094,14 +1086,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "clamor",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 200 % de aumento da Distância do Empurrão",
-    "efeito não simulado: Empurra e Interrompe Inimigos em uma pequena Área",
-    "efeito não simulado: Buff concede Ponto de Atordoamento aumentado em 15 % por cada 5 de Poder, contando um máximo de 25 de Poder",
-    "efeito não simulado: Impele os próximos 6 Ataques de Pancada Corpo a Corpo que você executar",
-    "efeito não simulado: Ataques Impelidos têm 50 % mais Área de Efeito"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1139,10 +1125,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "guarda",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Duração do Efeito de Habilidades aumentada em 20 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1154,10 +1138,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "maldicao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Inimigos Amaldiçoados têm 5 % de chance de concederem uma Carga de Tolerância quando Acertados"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1293,13 +1275,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "maldicao",
-   "estado": "parcial",
-   "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: Inimigos Amaldiçoados sofrem Dano aumentado em 58 % enquanto em Vida Baixa",
-    "efeito não simulado: Inimigos Amaldiçoados são Debilitados por 2 Segundos quando Acertarem",
-    "efeito não simulado: Inimigos Amaldiçoados são Debilitados por +1 Segundos quando Acertarem"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2003,10 +1980,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "guarda",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Duração do Efeito de Habilidades aumentada em 20 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2709,13 +2684,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "maldicao",
-   "estado": "parcial",
-   "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: Inimigos Amaldiçoados sofrem Dano aumentado em 29 % de Acertos de Projéteis",
-    "efeito não simulado: Projéteis que Acertarem Inimigos Amaldiçoados se Dividem na direção de 2 alvos adicionais",
-    "efeito não simulado: Inimigos Amaldiçoados sofrem Dano aumentado em 5 % de Acertos de Projéteis"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3579,10 +3549,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "guarda",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Duração do Efeito de Habilidades aumentada em 20 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3740,11 +3708,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "maldicao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Inimigos Amaldiçoados têm -20 % de Reducão de Dano Físico",
-    "efeito não simulado: Inimigos Amaldiçoados têm 5 % de chance de concederem uma Carga de Frenesi quando Acertados"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3756,10 +3721,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "guarda",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Duração do Efeito de Habilidades aumentada em 20 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3771,13 +3734,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "maldicao",
-   "estado": "parcial",
-   "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: Solo Ardente causa 26 % do Dano de Fogo por Segundo do Incêndio mais forte no Inimigo Solo Cáustico causa 79 % do Dano de Caos por Segundo do Envenenamento mais forte no Inimigo Pode criar cada efeito de Solo não mais que uma vez por segundo",
-    "efeito não simulado: Ganha 1 Cargas de Frasco quando você Acertar um Inimigo Amaldiçoado, não mais que uma vez a cada 3 segundos",
-    "efeito não simulado: Efeito da Marca aumentado em 10 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3856,14 +3814,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "maldicao",
-   "estado": "parcial",
-   "ausentes": [
-    "a lentidão da maldição ainda não existe no jogo",
-    "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: Outros efeitos em inimigos Amaldiçoados expiram 25 % mais devagar",
-    "efeito não simulado: Inimigos Raros e Únicos Amaldiçoados tem 18 % menos Velocidade de Ação",
-    "efeito não simulado: Duração de Maldições aumentada em 20 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6163,10 +6115,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "guarda",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Efeito do Buff aumentado em 20 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6178,10 +6128,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "maldicao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Inimigos Amaldiçoados têm 5 % de chance de concederem uma Carga de Poder quando Acertados"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6468,14 +6416,9 @@
    "nome": "Banir",
    "variante": "normal",
    "ataque": false,
-   "arquetipo": "maldicao",
-   "estado": "parcial",
-   "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: 42 % mais Dano por Maldição aplicada",
-    "efeito não simulado: Só aplica Feitiços de Gemas de Habilidades Maldição que exigem Nível 70 ou menor",
-    "efeito não simulado: Essa Gema só pode Suportar Gemas de Habilidade que requerem Nível 70 ou menos"
-   ],
+   "arquetipo": "area",
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6486,13 +6429,9 @@
    "nome": "Banimento da Condenação",
    "variante": "alternativa",
    "ataque": false,
-   "arquetipo": "maldicao",
-   "estado": "parcial",
-   "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: Só aplica Feitiços de Gemas de Habilidades Maldição que exigem Nível 70 ou menor",
-    "efeito não simulado: Essa Gema só pode Suportar Gemas de Habilidade que requerem Nível 70 ou menos"
-   ],
+   "arquetipo": "area",
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6517,10 +6456,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "maldicao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Efeito de Maldições aumentado em 10 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6573,11 +6510,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "maldicao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Inimigos Amaldiçoados possuem uma redução de 19 % de Precisão",
-    "efeito não simulado: Duração de Maldições aumentada em 20 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6741,10 +6675,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "marca",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Não pode ser Convocada"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7083,17 +7015,9 @@
    "nome": "Feitiço Explosivo",
    "variante": "normal",
    "ataque": false,
-   "arquetipo": "maldicao",
-   "estado": "parcial",
-   "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: Todos os Danos podem Incendiar, Congelar e Eletrizar",
-    "efeito não simulado: Dano de Caos com Acertos é Resistido pela Resistência mais baixa",
-    "efeito não simulado: 90 % mais Dano com Afecções se o Inimigo estiver Enfeitiçado",
-    "efeito não simulado: 200 % mais Dano com Acertos se o Inimigo estiver Enfeitiçado",
-    "efeito não simulado: % de chance de remover um Feitiço após Causar Dano",
-    "efeito não simulado: 0 % de chance de remover um Feitiço após Causar Dano"
-   ],
+   "arquetipo": "area",
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7104,17 +7028,9 @@
    "nome": "Feitiço Explosivo da Contradição",
    "variante": "alternativa",
    "ataque": false,
-   "arquetipo": "maldicao",
-   "estado": "parcial",
-   "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: Todos os Danos podem Incendiar, Congelar e Eletrizar",
-    "efeito não simulado: Dano de Caos com Acertos é Resistido pela maior Resistência ao invés",
-    "efeito não simulado: 120 % mais Dano com Afecções se o Inimigo estiver Enfeitiçado",
-    "efeito não simulado: 300 % mais Dano com Acertos se o Inimigo estiver Enfeitiçado",
-    "efeito não simulado: % de chance de remover um Feitiço após Causar Dano",
-    "efeito não simulado: 0 % de chance de remover um Feitiço após Causar Dano"
-   ],
+   "arquetipo": "area",
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7125,11 +7041,9 @@
    "nome": "Feitiço Explosivo da Devastação",
    "variante": "alternativa",
    "ataque": false,
-   "arquetipo": "maldicao",
-   "estado": "parcial",
-   "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo"
-   ],
+   "arquetipo": "area",
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -10438,26 +10352,8 @@
    ]
   },
   {
-   "linha": "nenhum efeito do buff tem equivalente no jogo",
-   "gemas": [
-    "Alchemists_Mark",
-    "Bane",
-    "Bane_of_Condemnation",
-    "Flesh_and_Stone",
-    "Hexblast",
-    "Hexblast_of_Contradiction",
-    "Hexblast_of_Havoc",
-    "Punishment",
-    "Righteous_Fire",
-    "Snipers_Mark",
-    "Temporal_Chains",
-    "War_Banner"
-   ]
-  },
-  {
    "linha": "Efeito do Buff aumentado em # %",
    "gemas": [
-    "Arcane_Cloak",
     "Summon_Carrion_Golem",
     "Summon_Chaos_Golem",
     "Summon_Flame_Golem",
@@ -10477,16 +10373,6 @@
     "Lightning_Spire_Trap_of_Zapping",
     "Lightning_Trap",
     "Lightning_Trap_of_Sparking"
-   ]
-  },
-  {
-   "linha": "Duração do Efeito de Habilidades aumentada em # %",
-   "gemas": [
-    "Molten_Shell",
-    "Old_Arctic_Armour",
-    "Vaal_Arctic_Armour",
-    "Vaal_Immortal_Call",
-    "Vaal_Molten_Shell"
    ]
   },
   {
@@ -10591,6 +10477,14 @@
    ]
   },
   {
+   "linha": "nenhum efeito do buff tem equivalente no jogo",
+   "gemas": [
+    "Flesh_and_Stone",
+    "Righteous_Fire",
+    "War_Banner"
+   ]
+  },
+  {
    "linha": "sem dano direto: nenhum efeito no combate",
    "gemas": [
     "Conversion_Trap",
@@ -10621,27 +10515,6 @@
    ]
   },
   {
-   "linha": "# % de chance de remover um Feitiço após Causar Dano",
-   "gemas": [
-    "Hexblast",
-    "Hexblast_of_Contradiction"
-   ]
-  },
-  {
-   "linha": "# % mais Dano com Acertos se o Inimigo estiver Enfeitiçado",
-   "gemas": [
-    "Hexblast",
-    "Hexblast_of_Contradiction"
-   ]
-  },
-  {
-   "linha": "# % mais Dano com Afecções se o Inimigo estiver Enfeitiçado",
-   "gemas": [
-    "Hexblast",
-    "Hexblast_of_Contradiction"
-   ]
-  },
-  {
    "linha": "# a # de Dano de Fogo adicionado contra Inimigos Queimando",
    "gemas": [
     "Fire_Trap",
@@ -10653,13 +10526,6 @@
    "gemas": [
     "Fissure_Support",
     "Pyre_Support"
-   ]
-  },
-  {
-   "linha": "% de chance de remover um Feitiço após Causar Dano",
-   "gemas": [
-    "Hexblast",
-    "Hexblast_of_Contradiction"
    ]
   },
   {
@@ -10730,20 +10596,6 @@
    "gemas": [
     "Summon_Reaper",
     "Summon_Reaper_of_Eviscerating"
-   ]
-  },
-  {
-   "linha": "Duração de Maldições aumentada em # %",
-   "gemas": [
-    "Enfeeble",
-    "Temporal_Chains"
-   ]
-  },
-  {
-   "linha": "Essa Gema só pode Suportar Gemas de Habilidade que requerem Nível # ou menos",
-   "gemas": [
-    "Bane",
-    "Bane_of_Condemnation"
    ]
   },
   {
@@ -10866,24 +10718,10 @@
    ]
   },
   {
-   "linha": "Só aplica Feitiços de Gemas de Habilidades Maldição que exigem Nível # ou menor",
-   "gemas": [
-    "Bane",
-    "Bane_of_Condemnation"
-   ]
-  },
-  {
    "linha": "Tem # chamas",
    "gemas": [
     "Flamethrower_Trap",
     "Flamethrower_Trap_of_Stability"
-   ]
-  },
-  {
-   "linha": "Todos os Danos podem Incendiar, Congelar e Eletrizar",
-   "gemas": [
-    "Hexblast",
-    "Hexblast_of_Contradiction"
    ]
   },
   {
@@ -10908,12 +10746,6 @@
    ]
   },
   {
-   "linha": "# % de aumento da Distância do Empurrão",
-   "gemas": [
-    "Seismic_Cry"
-   ]
-  },
-  {
    "linha": "# % de chance de convocar um Lacaio extra",
    "gemas": [
     "Summon_Raging_Spirit"
@@ -10935,12 +10767,6 @@
    "linha": "# % mais Dano de Projétil",
    "gemas": [
     "Siege_Ballista_of_Trarthus"
-   ]
-  },
-  {
-   "linha": "# % mais Dano por Maldição aplicada",
-   "gemas": [
-    "Bane"
    ]
   },
   {
@@ -11049,12 +10875,6 @@
    "linha": "a imunidade a afecções ainda não existe no jogo",
    "gemas": [
     "Purity_of_Elements"
-   ]
-  },
-  {
-   "linha": "a lentidão da maldição ainda não existe no jogo",
-   "gemas": [
-    "Temporal_Chains"
    ]
   },
   {
@@ -11172,12 +10992,6 @@
    ]
   },
   {
-   "linha": "Ataques Impelidos têm # % mais Área de Efeito",
-   "gemas": [
-    "Seismic_Cry"
-   ]
-  },
-  {
    "linha": "Ataques reforçados ativam Rajada de Vento ao atingir, limitado a uma vez a cada # metros percorridos",
    "gemas": [
     "Windburst_Support"
@@ -11277,12 +11091,6 @@
    "linha": "Buff concede # % mais Dano Físico",
    "gemas": [
     "Herald_of_Purity"
-   ]
-  },
-  {
-   "linha": "Buff concede Ponto de Atordoamento aumentado em # % por cada # de Poder, contando um máximo de # de Poder",
-   "gemas": [
-    "Seismic_Cry"
    ]
   },
   {
@@ -11514,18 +11322,6 @@
    ]
   },
   {
-   "linha": "Dano de Caos com Acertos é Resistido pela maior Resistência ao invés",
-   "gemas": [
-    "Hexblast_of_Contradiction"
-   ]
-  },
-  {
-   "linha": "Dano de Caos com Acertos é Resistido pela Resistência mais baixa",
-   "gemas": [
-    "Hexblast"
-   ]
-  },
-  {
    "linha": "Dano e Resfriamentos Perduram por uma Duração Base de # segundos",
    "gemas": [
     "Frigid_Bond_Support"
@@ -11574,12 +11370,6 @@
    ]
   },
   {
-   "linha": "Efeito da Marca aumentado em # %",
-   "gemas": [
-    "Alchemists_Mark"
-   ]
-  },
-  {
    "linha": "Efeito das Marcas de Habilidades Suportadas aumentado em #%",
    "gemas": [
     "Mark_On_Hit_Support"
@@ -11592,12 +11382,6 @@
    ]
   },
   {
-   "linha": "Efeito de Maldições aumentado em # %",
-   "gemas": [
-    "Despair"
-   ]
-  },
-  {
    "linha": "Efeito em Área de Habilidades Maldição Suportadas reduzido em #%",
    "gemas": [
     "Hexpass_Support"
@@ -11607,12 +11391,6 @@
    "linha": "Empala Inimigos ao Acertar",
    "gemas": [
     "Bear_Trap_of_Skewers"
-   ]
-  },
-  {
-   "linha": "Empurra e Interrompe Inimigos em uma pequena Área",
-   "gemas": [
-    "Seismic_Cry"
    ]
   },
   {
@@ -11784,12 +11562,6 @@
    ]
   },
   {
-   "linha": "Ganha # Cargas de Frasco quando você Acertar um Inimigo Amaldiçoado, não mais que uma vez a cada # segundos",
-   "gemas": [
-    "Alchemists_Mark"
-   ]
-  },
-  {
    "linha": "Ganha # de Gula ao conjurar magias reforçadas",
    "gemas": [
     "Gluttony_Support"
@@ -11895,12 +11667,6 @@
    "linha": "Golpes Finais das Habilidades de Golpe Suportadas com Armas Corpo a Corpo contra Monstros Raros concedem um de seus Modificadores por # segundos",
    "gemas": [
     "Behead_Support"
-   ]
-  },
-  {
-   "linha": "Golpes Impelidos focam em # Inimigos adicionais",
-   "gemas": [
-    "Ancestral_Cry"
    ]
   },
   {
@@ -12300,24 +12066,6 @@
    ]
   },
   {
-   "linha": "Impele o próximo # Ataque de Golpe Corpo a Corpo que você executar",
-   "gemas": [
-    "Intimidating_Cry"
-   ]
-  },
-  {
-   "linha": "Impele os próximos # Ataques de Golpe Corpo a Corpo que você executar",
-   "gemas": [
-    "Ancestral_Cry"
-   ]
-  },
-  {
-   "linha": "Impele os próximos # Ataques de Pancada Corpo a Corpo que você executar",
-   "gemas": [
-    "Seismic_Cry"
-   ]
-  },
-  {
    "linha": "Incêndios causados por Habilidades Suportadas se espalham para outros Inimigos dentro de # metros",
    "gemas": [
     "Ignite_Proliferation_Support"
@@ -12342,75 +12090,9 @@
    ]
   },
   {
-   "linha": "Inimigos Amaldiçoados possuem uma redução de # % de Precisão",
-   "gemas": [
-    "Enfeeble"
-   ]
-  },
-  {
-   "linha": "Inimigos Amaldiçoados são Debilitados por # Segundos quando Acertarem",
-   "gemas": [
-    "Punishment"
-   ]
-  },
-  {
-   "linha": "Inimigos Amaldiçoados são Debilitados por +# Segundos quando Acertarem",
-   "gemas": [
-    "Punishment"
-   ]
-  },
-  {
-   "linha": "Inimigos Amaldiçoados sofrem Dano aumentado em # % de Acertos de Projéteis",
-   "gemas": [
-    "Snipers_Mark"
-   ]
-  },
-  {
-   "linha": "Inimigos Amaldiçoados sofrem Dano aumentado em # % enquanto em Vida Baixa",
-   "gemas": [
-    "Punishment"
-   ]
-  },
-  {
-   "linha": "Inimigos Amaldiçoados têm # % de chance de concederem uma Carga de Frenesi quando Acertados",
-   "gemas": [
-    "Poachers_Mark"
-   ]
-  },
-  {
-   "linha": "Inimigos Amaldiçoados têm # % de chance de concederem uma Carga de Poder quando Acertados",
-   "gemas": [
-    "Assassins_Mark"
-   ]
-  },
-  {
-   "linha": "Inimigos Amaldiçoados têm # % de chance de concederem uma Carga de Tolerância quando Acertados",
-   "gemas": [
-    "Warlords_Mark"
-   ]
-  },
-  {
-   "linha": "Inimigos Amaldiçoados têm # % de Reducão de Dano Físico",
-   "gemas": [
-    "Poachers_Mark"
-   ]
-  },
-  {
    "linha": "Inimigos possuem # % menos Velocidade de Movimento no início do Debuff",
    "gemas": [
     "Bear_Trap"
-   ]
-  },
-  {
-   "linha": "Inimigos Provocados por este Clamor são Intimidados",
-   "gemas": [
-    "Intimidating_Cry"
-   ]
-  },
-  {
-   "linha": "Inimigos Raros e Únicos Amaldiçoados tem # % menos Velocidade de Ação",
-   "gemas": [
-    "Temporal_Chains"
    ]
   },
   {
@@ -12750,12 +12432,6 @@
    ]
   },
   {
-   "linha": "Não pode ser Convocada",
-   "gemas": [
-    "Armageddon_Brand_of_Volatility"
-   ]
-  },
-  {
    "linha": "Não pode ser Evadido",
    "gemas": [
     "Vaal_Smite"
@@ -12777,12 +12453,6 @@
    "linha": "Oferendas reforçadas ativam Invocar Nascidos da Colmeia ao usar",
    "gemas": [
     "Hiveborn_Support"
-   ]
-  },
-  {
-   "linha": "Outros efeitos em inimigos Amaldiçoados expiram # % mais devagar",
-   "gemas": [
-    "Temporal_Chains"
    ]
   },
   {
@@ -12819,12 +12489,6 @@
    "linha": "Projéteis Perfuram todos Alvos",
    "gemas": [
     "Windburst_Support"
-   ]
-  },
-  {
-   "linha": "Projéteis que Acertarem Inimigos Amaldiçoados se Dividem na direção de # alvos adicionais",
-   "gemas": [
-    "Snipers_Mark"
    ]
   },
   {
@@ -12939,12 +12603,6 @@
    "linha": "Sangue Corrompido infligido por estandartes reforçados tem uma duração base de # segundos",
    "gemas": [
     "Bloodsoaked_Banner_Support"
-   ]
-  },
-  {
-   "linha": "Solo Ardente causa # % do Dano de Fogo por Segundo do Incêndio mais forte no Inimigo Solo Cáustico causa # % do Dano de Caos por Segundo do Envenenamento mais forte no Inimigo Pode criar cada efeito de Solo não mais que uma vez por segundo",
-   "gemas": [
-    "Alchemists_Mark"
    ]
   },
   {

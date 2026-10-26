@@ -19,6 +19,8 @@ import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { quemRecebeAMaldicao } from './vinculos.mjs';
 import * as Aliados from './aliados.mjs';
 import { raioQueCresce } from './gemas-b1.mjs';
+// (lotes G-A e G-C, dono 25/10: a Precisão a menos do Enfraquecer, o Impelir restrito)
+import * as GemasGAC from './gemas-gac.mjs';
 
 /** "Recentemente" no PoE: nos últimos 4 segundos. */
 export const RECENTE_MS = 4000;
@@ -1675,7 +1677,8 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
     const naoImpelivel = t.has('naoImpelivel');
     const daEmboscada = !naoImpelivel && !t.has('totem') && !!estado?.hunt?.emboscada?.golpe && (estado.hunt.emboscada.ate ?? 0) > agora;
     if (daEmboscada) { t.add('impelido'); t.add('impelidoEmboscada'); }
-    else if (!naoImpelivel && !semNoDeslocamento && !t.has('totem') && (estado?.hunt?.impelidos?.n ?? 0) > 0 && (estado.hunt.impelidos.ate ?? Infinity) > agora) { t.add('impelido'); t.add('impelidoClamor'); }
+    // (lote G-A, D2: o Impelir do Sísmico só vale nas Pancadas, o do Ancestral só nos Golpes — `GemasGAC.impeleEste`)
+    else if (!naoImpelivel && !semNoDeslocamento && !t.has('totem') && (estado?.hunt?.impelidos?.n ?? 0) > 0 && (estado.hunt.impelidos.ate ?? Infinity) > agora && GemasGAC.impeleEste(estado.hunt.impelidos, [...t])) { t.add('impelido'); t.add('impelidoClamor'); }
     if (estado?.hunt?.poeTerceiroGolpe) t.add('terceiroGolpe');
     if (ficha.mao === 'secundaria' || ficha.mao === 'ambas') t.add('maoSecundaria');
     if (ficha.mao !== 'secundaria') t.add('maoPrincipal');
@@ -2404,6 +2407,9 @@ export function doBicho(bicho, agora, { contraOutro = false, ficha = null } = {}
   // (ciclo 7) "Inimigo Marcado tem Precisão reduzida em X%".
   const precisaoMenos = regraDaMarca(bicho, agora, 'precisaoMenos');
   if (precisaoMenos) precisaoFator *= Math.max(0, 1 - precisaoMenos / 100);
+  // (lote G-A) o Enfraquecer: "Inimigos Amaldiçoados possuem uma redução de X% de Precisão" (`GemasGAC.precisaoMenos`)
+  const daMaldicao = GemasGAC.precisaoMenos(bicho, agora);
+  if (daMaldicao > 0) precisaoFator *= Math.max(0, 1 - daMaldicao / 100);
   // "Inimigos Resfriados pelos seus Acertos reduz o Dano causado pela metade do Efeito de Resfriamento" (o Modelador do Inverno).
   if (ativo(e.lento, agora) && e.lento.reduzDano) danoFator *= Math.max(0, 1 - e.lento.pct / 200);
   // Coberto de Gelo (PoE): 50% menos chance de crítico (o +20% de dano de Gelo recebido está em `fatorRecebidoPeloBicho`).

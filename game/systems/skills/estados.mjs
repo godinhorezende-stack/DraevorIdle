@@ -16,6 +16,8 @@ import * as R from '../regras.mjs';
 import * as Dot from '../combate/dot.mjs';
 import { CONFIG as ATRIBUTOS } from '../personagem/atributos.mjs';
 import { regrasDasMaldicoes } from './reforcos.mjs';
+// (lote G-C, dono 25/10 — D10: "os outros efeitos expiram mais devagar" no amaldiçoado pela Corrente Temporal)
+import { expirarMaisDevagar } from '../itens-poe/gemas-gac.mjs';
 
 const E = () => CONFIG.estados ?? {};
 const ativo = (s, agora) => !!s && s.ate > agora;
@@ -241,6 +243,8 @@ export function tique(hunt, eventos, agora) {
     }
     // O escudo de energia do PoE: o dano que entrou desde o último tique sai primeiro do escudo (`escudoDoMonstro`).
     if (m.esPoe && m.hp > 0) acertarEscudo(m, agora);
+    // (lote G-C, D10) a Corrente Temporal: os efeitos no amaldiçoado ganham o tempo que não passou para eles (`GemasGAC.expirarMaisDevagar`)
+    if (m.maldicoes && m.hp > 0) expirarMaisDevagar(m, agora, (t) => Dot.CONFIG.tipos[t]?.pulsoMs ?? 1000);
     // As regras das maldições do PoE no monstro ("Inimigos Amaldiçoados por você têm Regeneração de Vida reduzida em X%"/"não podem Recuperar
     // Escudo de Energia" — `Reforcos.marcar` guarda na maldição as da ficha de quem conjurou).
     const maldicoes = m.maldicoes ? regrasDasMaldicoes(m, agora) : null;

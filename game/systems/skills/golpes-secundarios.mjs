@@ -147,7 +147,7 @@ export function resolver(args) {
   return r;
 }
 
-function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alcance, area = false, rumo = null, rng = Math.random, andavel = null, areaNoImpacto = null, cinetica = null }) {
+function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alcance, area = false, rumo = null, rng = Math.random, andavel = null, areaNoImpacto = null, cinetica = null, divisaoNoAlvo = null }) {
   const golpes = [];
   const explosoes = [];
   const emitidos = [];
@@ -326,6 +326,12 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
       if (p.estilhas) soltarEstilhas(atual);
       // (lote A3, D5) a DIVISÃO no primeiro acerto (o projétil segue o caminho dele)
       if (p.dividir > 0) dividir(p, atual, p.pct);
+      // (lote G-C, dono 25/10) a Marca do Atirador: "Projéteis que Acertarem Inimigos Amaldiçoados se Dividem na direção de N alvos adicionais" — o projétil que acerta
+      // o marcado se divide (uma vez; os filhos da divisão não se dividem de novo — `divisaoNoAlvo`, de `acoes`)
+      else if (divisaoNoAlvo && tipoAtual !== 'divisao' && !p.dividiuNaMarca) {
+        const n = Math.max(0, Math.round(Number(divisaoNoAlvo(atual)) || 0));
+        if (n > 0) { p.dividiuNaMarca = true; p.dividir = n; dividir(p, atual, p.pct); }
+      }
       // (revisão do PR3, 21/10 — o PoB, act_int.lua IceSpear: `PierceChance` 100 na skillPart 1, "First Form") a 1ª forma da Lança Gélida atravessa: o acerto a
       // menos de `perfuraNaPrimeiraForma` casas de quem lançou (a 2ª forma começa ali — `GemasPR3.SEGUNDA_FORMA`) atravessa sem gastar a perfuração dos suportes;
       // da 2ª forma em diante, só a dos suportes (a D10 do A3)

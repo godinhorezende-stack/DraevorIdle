@@ -571,12 +571,14 @@ test('G-D (dono, 26/10): as magias da Runa do Arcanista saem da casa da Runa (a 
   assert.deepEqual([e.hunt.pos.x, e.hunt.pos.y], [b.x - 3, b.y], 'você não sai do lugar');
 });
 
-test('G-B (dono, 26/10): a absorção do Manto Arcano lê a qualidade de efeito do buff (`b.efeitoBuffQualPct`, do lote G-A)', { skip: SEM }, async () => {
-  const { e, b } = await montar('Arcane_Cloak');
+test('G-B (merge com o G-A): a qualidade de efeito do Manto Arcano vale no Raio do buff, não no limite da absorção (o PoB: unscalable)', { skip: SEM }, async () => {
+  const { e, b } = await montar('Arcane_Cloak', { qualidade: 20 });
   e.mana = 8000;
-  // (o G-A grava o campo no buff ao ligá-lo; antes da mescla ele não existe, e o limite é o gasto × (1 + 0) — `Acoes.aoLigarGBD` o lê)
   assert.ok(usar(e, b).ok);
-  assert.equal(e.hunt.buffs[id('Arcane_Cloak')].efeitoBuffQualPct, undefined);
   const gasto = Math.floor(8000 * 0.64);
-  assert.equal(e.hunt.poeGuarda.limite, gasto, 'sem o campo, o limite é o gasto');
+  const buff = e.hunt.buffs[id('Arcane_Cloak')];
+  assert.equal(buff.efeitoBuffQualPct, 20, 'a qualidade do G-A no buff');
+  assert.equal(e.hunt.poeGuarda.limite, gasto, 'o limite é o gasto, sem o efeito do buff');
+  const v = Math.round(gasto * 0.1);
+  assert.ok(Math.abs((G.adds(e).added_energy_dmg_max ?? 0) - v * 1.2) <= 1, 'o Raio adicional × 1,2');
 });
