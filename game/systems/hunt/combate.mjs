@@ -106,7 +106,8 @@ function morrerOsMortos(estado, personagem, eventos, lista) {
     // (+ "Inimigos Mortos pelos seus Acertos são destruídos": nenhum morto deixa cadáver.)
     // (+ lote 71, o Cremador: "Inimigos Incendiados Mortos por seus Acertos são destruídos" — o golpe fatal foi um acerto seu e ele queimava.)
     const cremado = ModsPoe.valor(Ficha.combate(estado), 'incendiados_mortos_destruidos') > 0 && QuemFeriu.abateSeu(m) && QuemFeriu.tagsDoAbate(m).includes('acerto') && (m.dots ?? []).some((d) => d.tipo === 'queimadura' && d.falta > 0);
-    if (!m.boss && !cremado && !(m.maldicoes && Reforcos.regrasDasMaldicoes(m, hunt.clock ?? 0).destruir) && !(ModsPoe.valor(Ficha.combate(estado), 'mortos_destruidos') > 0)) {
+    // (lote S1, 26/10: + o morto que o Devorar consumiu — `Acoes.abatesDoSuporteS1`)
+    if (!m.boss && !cremado && !m.poeDevorado && !(m.maldicoes && Reforcos.regrasDasMaldicoes(m, hunt.clock ?? 0).destruir) && !(ModsPoe.valor(Ficha.combate(estado), 'mortos_destruidos') > 0)) {
       // (PoE, 12/10: o cadáver guarda os Empalamentos do morto — o Convocar o Aço os chama "de inimigos, vivos ou mortos".)
       const empalado = (m.estados?.empalado ?? []).filter((x) => x.ate > (hunt.clock ?? 0) && x.acertos > 0);
       const doAco = empalado.length ? { empalado, ...(m.estados?.empalarBloqueadoAte ? { empalarBloqueadoAte: m.estados.empalarBloqueadoAte } : {}) } : {};

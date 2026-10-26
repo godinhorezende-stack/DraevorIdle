@@ -324,7 +324,8 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   // Poder — `CargasPoe.maximo`; act_str.lua:9593) e a detonação ao chegar ao máximo
   const porPoder = totem ? t.linhas.reduce((n, l) => n + (Number(/^\+([\d.]+) à quantidade máxima de totens invocados por carga de poder máxima$/i.exec(l)?.[1]) || 0), 0) : 0;
   if (porPoder) maximo += porPoder * CargasPoe.maximo(af ?? {}, 'poder');
-  maximo = Math.max(1, Math.round(maximo * (1 + porTipo('max_lacaio_pct') / 100)));
+  // (lote S1: + o da Congregação — "+X% para o número máximo de lacaios de habilidades reforçadas", `efeito.maxLacaioPct`)
+  maximo = Math.max(1, Math.round(maximo * (1 + (porTipo('max_lacaio_pct') + (totem ? 0 : efeito?.maxLacaioPct ?? 0)) / 100)));
   // (lote G20c) os efeitos próprios do totem (a gema de totem; o totem de um suporte não tem) e a velocidade por totem máximo da Balista de Cerco
   const doTotem = totem && !doSuporte ? efeitosDoTotem(slug, [...t.linhas, ...GemasPoe.linhasDaQualidadeDe(slug, efeito?.qualidade ?? 0)]) : {};
   // As OFERENDAS (Osso, Carne, Espírito) e a CONVOCAÇÃO não invocam: dão bônus aos lacaios em campo / chamam todos para perto.
@@ -402,7 +403,7 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
       // (lote 44: + as resistências de base do lacaio no PoB — 40% elementais e 20% de Caos na maioria)
       // (lote 67: + a Resistência a Caos e a regeneração dos TOTENS — "Totens ganham +25% de Resistência a Caos", "Totens Regeneram 2% de Vida")
       res: m0(totem ? 'totem_res' : 'minion_res'), resCaos: mn('minion_chaos_res') + (totem ? m0('totem_res_caos') : 0) + (pob?.res.chaos ?? 0), danoRecebidoPct: mn('lacaios_dano_recebido'), regenPct: mn('minion_regen_pct') + porTipo('lacaio_regen_pct') + (totem ? m0('totem_regen_pct') : 0), regen: mn('minion_regen'),
-      roubo: mn('minion_leech'), movimentoPct: mn('minion_move') + porTipo('lacaio_mov'), dotMulti: mn('minion_dot_multi'), degenPct: porTipo('lacaio_degen'),
+      roubo: mn('minion_leech'), movimentoPct: mn('minion_move') + porTipo('lacaio_mov') + (totem ? 0 : efeito?.lacaioMovPct ?? 0), dotMulti: mn('minion_dot_multi'), degenPct: porTipo('lacaio_degen'),
       bloqueio: mn('minion_block'), resFogo: mn('minion_fire_res') + (pob?.res.fire ?? 0), resGelo: mn('minion_ice_res') + (pob?.res.ice ?? 0), resRaio: mn('minion_energy_res') + (pob?.res.energy ?? 0),
       // (lote 69, as Ramificadoras: + por TIPO — "Zumbis Erguidos têm X% de chance de Provocar", "Esqueletos Convocados têm X% de chance de Definhar" —
       // e Empurrar com Ataques)

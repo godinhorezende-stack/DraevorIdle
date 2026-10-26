@@ -847,6 +847,56 @@ O código mora em `game/systems/itens-poe/gemas-gac.mjs` (os dados e as contas p
 - A linha do feixe da Runa Tempestuosa da Indecisão ficou só no G-D; o "Não pode ser Convocada" tem uma fonte só (`GemasGAC.naoConvocavelDasLinhas`, usada pela `runas-vinculadas`).
 - Teste novo: `game/testes/ativas-g-revisao.test.mjs` (19 casos).
 
+### S1 — os suportes com 1 ou 2 linhas faltando (26/10)
+
+- Fila: 60 suportes parciais com 1 ou 2 linhas não feitas. Fonte: o PoB (`sup_int.lua`; os de Força e Destreza não estão na cópia do PoB, então valem as linhas do poedb salvo em `gemas-poe.json`).
+- Arquivos: `systems/itens-poe/suportes-poe.mjs` (as regras novas, antes das gerais; a Onda de Choque em `PROPRIAS_A2`; a recuperação da recarga que soma antes de virar tempo; a recarga do gatilho), `systems/itens-poe/linhas-das-gemas.mjs` (as linhas locais novas), `systems/acoes.mjs` (o uso, o acerto, o abate, o custo e a área), `systems/skills/gemas.mjs` (o grupo do Toque Maldito), `systems/combate/controle.mjs` (o atordoamento canalizando), `systems/hunt/combate.mjs` (o morto devorado não deixa cadáver), `systems/itens-poe/lacaios-poe.mjs` (a Congregação, mínimo).
+- **Feitos (40 suportes saem de "parcial"):**
+  - linhas locais do uso: o Cegar (a chance "ao acertar" e "X% da duração da Cegueira aumentada"), a qualidade da Mutilação, o Esmagar da Brutalidade Desperta, o Intimidar do Dano Físico Corpo a Corpo Desperto, o "Enervar" (o Unnerve do PoE, o `inervado`) da Destruição Controlada Desperta;
+  - o "mais por Carga": a Carga de Poder no Crítico (4% mais por Carga de Poder, o MORE do PoB) e a Carga de Tolerância no Atordoamento Corpo a Corpo (4% por Tolerância);
+  - as cargas do uso: Poder no Golpe Crítico (54% + 10% da qualidade), Tolerância ao Atordoar com Acerto Corpo a Corpo (`Acoes.cargasDoUsoS1`), Frenesi ao Matar um Inimigo Congelado (a Mordida Congelante — `Acoes.abatesDoSuporteS1`);
+  - a Mordida Congelante: o "X a Y de Gelo adicional por Carga de Frenesi" e o "Dano aumentado em 2% por Carga de Frenesi" agora escalam com as cargas (antes somavam fixo);
+  - a Sede de Sangue: o Físico adicionado igual a 2% da Vida máxima em Vida Baixa (× a eficácia) e a qualidade só em Vida Baixa (antes, sempre);
+  - o Devorar: o golpe fatal recupera 366 de Vida e 40 de Mana por morto, marca o "Consumiu um cadáver Recentemente" (a qualidade de 80% passou a depender disso) e o morto não deixa cadáver;
+  - a Aniquilação: o morto explode com 35% + 5% da qualidade de chance (um décimo da Vida máxima dele, de um elemento sorteado);
+  - a Empunhadura de Ferro (o Bônus da Força no ataque de projétil) e a Vontade de Ferro (o Bônus da Força em todo o dano mágico, como "aumentado");
+  - o Arquimago e o Mago do Gelo: o dano adicionado igual a 14% da Mana não reservada / 26% da reservada (× a eficácia) e o custo base de Mana a mais (5%, antes dos multiplicadores);
+  - o Sacrificar (20% da Vida atual, Caos adicionado igual a 54% do sacrificado) e o Sacrifício Vaal (tudo menos 1 da Vida e todo o Escudo de Energia);
+  - a Segunda Ventania (a recuperação reduzida soma com a da qualidade antes de virar tempo; +1 uso de recarga só na habilidade não instantânea) e o Conjurar no Acerto Crítico Desperto (a recarga do gatilho ÷ 1,52);
+  - a Runa Repentina: a frequência de Ativação "mais" (44% + 5%) e as durações −65% MAIS (antes −130% no "aumentado", que zerava a duração);
+  - a Propagação Maior (Ricochetes × 1,5, para baixo), a Proliferação Elemental e a de Incêndio (as afecções postas copiadas a 1 casa), a Dose Letal (2 Venenos a mais no não envenenado);
+  - a Cascata Mágica, a Desperta e a Maior (as cópias da área encostadas na frente e atrás; nas duas últimas também dos lados — `Acoes.cascataMagicaS1`);
+  - o Incêndio Controlado (por Incêndio infligido pela habilidade nos últimos 4 s: 14% mais Incêndio até 364% e 3% menos dano até 78%) e o Superaquecimento (consome a Fortificação: +8% de dano das afecções por 3 consumidas);
+  - a Decadência (a Podridão: 1230 de Caos por segundo por 8 s, pela conta do degenerativo do uso), o Campo Minado (+3 Minas no limite), a qualidade da Invenção (duração da Armadilha/Mina +20%);
+  - a Congregação (+38% no máximo de lacaios, a velocidade de movimento deles), a Comunhão (20 a 30 de Físico por lacaio permanente), o Arauto Desdenhoso (o buff do Arauto suportado sem os atributos);
+  - o Conjurar ao Canalizar Desperto (canalizando a suportada, o atordoamento dos monstros não pega) e o Toque Maldito (as maldições do grupo saem nos acertos das outras ativas dele e não se conjuram à mão — `Acoes.maldicoesDoToqueS1`);
+  - o Chamado Ancestral, o Desperto e o Maior: o raio dos alvos extras ("15%/40% mais distante").
+- **Erros achados e corrigidos no caminho:**
+  1. os alvos extras dos Golpes corpo a corpo das gemas (o Chamado Ancestral, o Impelido pelo Clamor Ancestral, a maestria dos Golpes) iam para o `alvosExtras` e ninguém os lia no golpe corpo a corpo: agora os N vivos mais perto do alvo, a até o alcance do golpe a partir de você, levam o mesmo golpe;
+  2. a Carga de Poder no Crítico dava 4% mais fixo; a Mordida Congelante somava o adicionado "por Carga de Frenesi" fixo e o "aumentado por Carga" fixo; a Sede de Sangue e o Devorar davam a qualidade condicional sempre; a Runa Repentina zerava a duração;
+  3. a Onda de Choque mandava a "Velocidade de Recarga aumentada" e o "Dano Corpo a Corpo aumentado" da onda para a habilidade suportada; agora são da onda (a mesma de `Acoes.ondaDoVazio`, com os 4 usos da recarga recuperados um por vez).
+- **Escolhas sem fonte (para o dono confirmar):**
+  1. a Cascata Mágica: as cópias encostam na área (o passo é o lado do quadrado dela, 2 × o raio + 1), na linha de você até o centro (sem direção, a do uso); quem está em mais de uma leva mais de um acerto;
+  2. a Proliferação: no mínimo 1 casa (1,5 m e 2 m viram 1 casa); a afecção espalhada é a mesma (dano e tempo que falta) e não espalha de novo;
+  3. o Devorar: uma recuperação por morto do uso; o cadáver consumido é o do próprio morto;
+  4. o Superaquecimento: o "+8% de dano com afecções" é um "mais" das afecções do uso;
+  5. o Incêndio Controlado: cada acerto que Incendeia conta um Incêndio (Recentemente = 4 s); o "menos Dano" vale no acerto e nas afecções;
+  6. o Chamado Ancestral: o raio dos alvos extras é o alcance do golpe × (1 + X%), em casas (a fração como chance);
+  7. a Decadência: a Podridão dura 8 s fixos (não escala com a Duração) e uma por inimigo (a mais forte vale; reaplicar renova);
+  8. a Comunhão: "lacaio permanente" é o lacaio vivo sem duração (os totens fora);
+  9. a recarga da Onda de Choque não usa a recuperação de recarga do personagem (como a da Excepcional do Vazio).
+- **Decisões pendentes do dono (não feitas):**
+  1. o Esforço Excessivo ("10% mais Dano por cada Clamor que os Impelir"): no jogo um ataque é Impelido por um Clamor de cada vez. Opções: (a) 10% × 1 (o "mais" de um Clamor, somado aos 14% — 24% no total); (b) fazer o Impelir de vários Clamores ao mesmo tempo, como no PoE (10% × N). O teste `afeccoes-acerto-poe.test.mjs:87` pede que a linha fique não feita;
+  2. a Tentação Vaal: "1300 de dano físico por segundo, em vez de aplicar impedimento de ganho de almas" — o jogo não tem o impedimento e o poedb não diz a duração; opções: a duração da recarga da gema Vaal, ou um número do dono;
+  3. o Devastador: o "Área de Efeito aumentada perto do totem" não tem o valor nos dados do PoB;
+  4. o Excomungar ("excomungam os inimigos ao atingir corpo a corpo por 3 segundos"): o efeito do Excomungado não está nos dados salvos (PoB nem poedb); falta a regra;
+  5. as Maquinações ("por fundamental"): o termo não está nos dados; falta saber o que conta.
+- **Fora (por quê):** os de lacaio que mexem no motor dos lacaios (a Carne Fresca: Fúria Desperta e Adrenalina; o Predador: a Presa) e os de Armadilha/Mina com mecânica nova (a área de ativação das Armadilhas Múltiplas e Agrupadas; a reserva da Cadeia Explosiva e do Alto Impacto; o dano dobrado perto das Minas) ficam para o E1a e o E1b; o Solo Maldito, a Blasfêmia Sobrenatural (Insanidade), o Decapitar (os modificadores do Raro), o Cristal em Queda (habilidade nova) e o Conjurar ao Perder Salvaguarda (o jogo não tem Salvaguarda) são mecânica nova grande; a Torre Óssea, a Onda de Choque, a do Vazio e a Tormenta do Vazio seguem com a nota do acerto sem golpe.
+- **A tradução não mudou:** nenhuma linha nova em `traducao.json`; a `VERSAO_DA_TRADUCAO` fica em 73.
+- Teste novo: `game/testes/suportes-s1.test.mjs` (13 casos, os sorteios travados).
+- Testes: os 67 arquivos afetados (`suportes-*`, `gemas-*`, `ativas-*`, `itens-poe-gemas*`, `gemas-todas-funcionam-poe`, `eficacia-ataque-poe`, `afeccoes-acerto-poe`, `repeticoes-estagios-a4`, os de runas, cargas, controle, lacaios, cadáveres, maldições, clamores, canalização e recarga): 873 testes, 836 passam, 36 pulados, 1 falha — pela regra do PoE, sem edição: `itens-poe-gemas.test.mjs:211` pede `parcial > 100` nos suportes; agora são 69 (funciona 193). Os de projéteis, totens, deslocamento, precisão e combate: 142 testes, 134 passam, 8 pulados.
+- Placar dos suportes: parcial 109 → 69; implementada e testada 102 → 142; implementada, sem teste próprio 51 → 51.
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.

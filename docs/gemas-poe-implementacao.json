@@ -17,8 +17,8 @@
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 102,
-   "parcial": 109,
+   "implementada e testada": 142,
+   "parcial": 69,
    "implementada, sem teste próprio": 51
   },
   "variantes": {
@@ -45,8 +45,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 380,
-   "emDuasOuMais": 53
+   "linhasDistintas": 331,
+   "emDuasOuMais": 47
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -61,7 +61,7 @@
   },
   "testes": {
    "ativasCitadas": 440,
-   "suportesCitados": 119,
+   "suportesCitados": 156,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
@@ -7895,10 +7895,8 @@
   {
    "slug": "Ancestral_Call_Support",
    "nome": "Chamado Ancestral",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Alvos Extras das Habilidades Suportadas podem ser encontrados 15% mais distânte"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -7972,10 +7970,8 @@
   {
    "slug": "Maim_Support",
    "nome": "Mutilação",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm Efeito da Mutilação aumentado em 20%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8046,31 +8042,24 @@
   {
    "slug": "Endurance_Charge_on_Melee_Stun_Support",
    "nome": "Carga de Tolerância ao Atordoar Corpo a Corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: 4% mais Dano por Carga de Tolerância",
-    "não simulado: Receba uma Carga de Tolerância quando você Atordoar um Inimigo com um Acerto Corpo a Corpo com Habilidades Suportadas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Iron_Grip_Support",
    "nome": "Empunhadura de Ferro",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Bônus de Dano da Força é aplicado ao Dano de Ataque dos Projéteis assim como às Habilidades Suportadas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Iron_Will_Support",
    "nome": "Vontade de Ferro",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Bônus de dano da Força também é aplicado à todo Dano Mágico para Magias Suportadas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8095,7 +8084,7 @@
    "nome": "Onda de Choque",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Habilidades Suportadas Ativam Onda de Choque no Acerto Corpo a Corpo"
+    "não simulado: a onda usa o físico médio da arma × o \"Dano de Ataque: X% de base\" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma)"
    ],
    "outros": [],
    "icone": true
@@ -8131,11 +8120,8 @@
   {
    "slug": "Bloodthirst_Support",
    "nome": "Sede de Sangue",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Ataques Suportados causam Dano Físico com Armas Adicional igual a 2% da Vida Máxima enquanto em Vida Baixa",
-    "não simulado: Ataques Suportados causam Dano Físico com Armas Adicional igual a\\n2% da Vida Máxima enquanto em Vida Baixa"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8150,11 +8136,8 @@
   {
    "slug": "Controlled_Blaze_Support",
    "nome": "Incêndio Controlado",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Cada Habilidade Suportada causa 14% mais Dano com Incêndio por cada Incêndio infligido com ela Recentemente, máximo de 364%",
-    "não simulado: Cada Habilidade Suportada causa 3% menos Dano por cada Incêndio infligido com ela Recentemente, máximo de 78%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8392,11 +8375,8 @@
   {
    "slug": "Annihilation_Support",
    "nome": "Aniquilação (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Golpes fatais com habilidades reforçadas fazem com que os inimigos tenham 35% de chance de explodir e causarem um décimo da própria vida máxima como dano de um elemento aleatório",
-    "não simulado: Golpes fatais com habilidades reforçadas fazem com que os inimigos tenham +5% de chance de explodir e causarem um décimo da própria vida máxima como dano de um elemento aleatório"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8411,20 +8391,16 @@
   {
    "slug": "Awakened_Ancestral_Call_Support",
    "nome": "Suporte Desperto: Chamado Ancestral",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Alvos Extras das Habilidades Suportadas podem ser encontrados 15% mais distânte"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Awakened_Brutality_Support",
    "nome": "Suporte Desperto: Brutalidade",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 10% de chance de Esmagar Inimigos por 4 segundos ao Acertar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8471,10 +8447,8 @@
   {
    "slug": "Awakened_Melee_Physical_Damage_Support",
    "nome": "Suporte Desperto: Dano Físico Corpo a Corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 10% de chance de Intimidar Inimigos por 4 segundos ao Acertar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8550,10 +8524,8 @@
   {
    "slug": "Greater_Ancestral_Call_Support",
    "nome": "Convocação Ancestral Maior (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Alvos Extras das Habilidades Suportadas podem ser encontrados 40% mais distânte"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8568,10 +8540,8 @@
   {
    "slug": "Overheat_Support",
    "nome": "Superaquecimento (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades reforçadas consomem toda a Fortificação ao usar, causando +8% de dano com afecções por 3 de Fortificação consumida"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8710,11 +8680,8 @@
   {
    "slug": "Blind_Support",
    "nome": "Cegar",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 10% de chance de Cegar inimigos ao acertar",
-    "não simulado: Habilidades Suportadas têm 38% da duração da Cegueira aumentada"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8936,10 +8903,8 @@
   {
    "slug": "Ice_Bite_Support",
    "nome": "Mordida Congelante",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 69% de chance de ganhar uma Carga de Frenesi ao Matar um Inimigo Congelado"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8962,11 +8927,8 @@
   {
    "slug": "Second_Wind_Support",
    "nome": "Segunda Ventania",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm Velocidade de Recuperação da Recarga reduzida em 5%",
-    "não simulado: Habilidades Não-Instantâneas Suportadas têm +1 Usos de Tempo do Recarga"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9129,10 +9091,8 @@
   {
    "slug": "Awakened_Cast_On_Critical_Strike_Support",
    "nome": "Suporte Desperto: Conjurar no Acerto Crítico",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Magias Suportadas têm Recuperação da Recarga aumentada em 52%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9241,10 +9201,8 @@
   {
    "slug": "Greater_Chain_Support",
    "nome": "Propagação Maior (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades reforçadas se propagam 50% mais vezes"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9259,20 +9217,16 @@
   {
    "slug": "Invention_Support",
    "nome": "Invenção (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm Duração da Armadilha aumentada em 20% Habilidades reforçadas têm a duração de mina aumentada em 20%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Lethal_Dose_Support",
    "nome": "Dose Letal (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Envenenar inimigos não envenenados com habilidades reforçadas inflige 2 envenenamentos adicionais"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9334,10 +9288,8 @@
   {
    "slug": "Elemental_Proliferation_Support",
    "nome": "Proliferação Elemental",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Afecções Elementais infligidas por Habilidades Suportadas se espalham para outros inimigos dentro de 1.5 metros"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9374,10 +9326,8 @@
   {
    "slug": "Spell_Cascade_Support",
    "nome": "Cascata Mágica",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades de Efeito em Área Suportadas também afetam áreas na frente e atrás da área alvo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9418,10 +9368,8 @@
   {
    "slug": "Devour_Support",
    "nome": "Devorar",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Golpes Abatedores com Habilidades Suportadas Consomem cadáveres para Recuperar 366 de Vida e 40 de Mana"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9575,9 +9523,7 @@
    "estado": "parcial",
    "ausentes": [
     "não simulado: Habilidades Suportadas têm 34% de Velocidade de Ataque de Lacaios aumentada",
-    "não simulado: Habilidades Suportadas têm 34% de Velocidade de Conjuração de Lacaios aumentada",
-    "não simulado: Habilidades Suportadas têm 44% de Velocidade de Movimento de Lacaios aumentada",
-    "não simulado: Habilidades Suportadas têm 10% de Velocidade de Movimento de Lacaios aumentada"
+    "não simulado: Habilidades Suportadas têm 34% de Velocidade de Conjuração de Lacaios aumentada"
    ],
    "outros": [],
    "icone": true
@@ -9601,11 +9547,8 @@
   {
    "slug": "Power_Charge_On_Critical_Support",
    "nome": "Carga de Poder no Crítico",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 54% de chance de ganhar uma Carga de Poder com Golpes Críticos",
-    "não simulado: Habilidades Suportadas têm 10% de chance de ganhar uma Carga de Poder com Golpes Críticos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9659,11 +9602,8 @@
   {
    "slug": "Archmage_Support",
    "nome": "Arquimago",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas ganham Dano de Raio Adicional igual a 14% da Mana Máxima não Reservada",
-    "não simulado: Habilidades reforçadas ganham custo de mana base equivalente a 5% do mana máximo não reservado"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9729,8 +9669,7 @@
    "ausentes": [
     "não simulado: Duração Base do Frenesi Faminto é de 5.9 segundos",
     "não simulado: Lacaios de Habilidades Suportadas tem 44% de chance de conceder Frenesi Faminto à você no Acerto",
-    "não simulado: Lacaios de Habilidades Suportadas são Agressivos",
-    "não simulado: Habilidades Suportadas têm 10% de Velocidade de Movimento de Lacaios aumentada"
+    "não simulado: Lacaios de Habilidades Suportadas são Agressivos"
    ],
    "outros": [],
    "icone": true
@@ -9809,7 +9748,6 @@
    "estado": "parcial",
    "ausentes": [
     "não simulado: Lacaios de Habilidades Suportadas tem 20% de chance de Provocar ao Acertar",
-    "não simulado: Habilidades Suportadas têm 29% de Velocidade de Movimento de Lacaios aumentada",
     "não simulado: Lacaios de Habilidades Suportadas sofrem 24% menos Dano",
     "não simulado: Lacaios de Habilidades Suportadas são Defensivos",
     "não simulado: Lacaios de Habilidades Suportadas sofrem 5% menos Dano"
@@ -9828,21 +9766,16 @@
   {
    "slug": "Sacrifice_Support",
    "nome": "Sacrificar",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Magias Suportadas Sacrificam 20% da sua Vida atual quando Conjuradas para ganhar Dano de Caos adicional igual a 54% da Vida Sacrificada"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Swiftbrand_Support",
    "nome": "Runa Repentina",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 44% mais frequência de Ativação",
-    "não simulado: Habilidades Suportadas têm 5% mais frequência de Ativação"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9873,10 +9806,8 @@
   {
    "slug": "Decay_Support",
    "nome": "Decadência",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas infligem Podridão ao Acertar, causando 1230 de Dano de Caos por segundo durante 8 segundos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9909,21 +9840,16 @@
   {
    "slug": "Hextouch_Support",
    "nome": "Toque Maldito",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas aplicam Maldições Suportadas em Acertos",
-    "não simulado: Você não pode Conjurar Magias Maldição Suportadas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Ignite_Proliferation_Support",
    "nome": "Proliferação de Incêndio",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Incêndios causados por Habilidades Suportadas se espalham para outros Inimigos dentro de 2 metros"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9946,10 +9872,8 @@
   {
    "slug": "Minefield_Support",
    "nome": "Campo Minado",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas podem ter até 3 Minas Remotas adicionais plantadas de uma vez"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10004,20 +9928,16 @@
   {
    "slug": "Awakened_Cast_While_Channelling_Support",
    "nome": "Suporte Desperto: Conjurar ao Canalizar",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Ignora Atordoamentos enquanto Usando Habilidades Suportadas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Awakened_Controlled_Destruction_Support",
    "nome": "Suporte Desperto: Destruição Controlada",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 10% de chance de Enervar Inimigos por 4 segundos ao Acertar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10042,8 +9962,6 @@
    "nome": "Suporte Desperto: Toque Maldito",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Habilidades Suportadas aplicam Maldições Suportadas em Acertos",
-    "não simulado: Você não pode Conjurar Magias Maldição Suportadas",
     "não simulado: Feitiços aplicados por habilidades de maldição reforçadas têm 34% de chance de afetar inimigos imunes a feitiços"
    ],
    "outros": [],
@@ -10076,11 +9994,8 @@
   {
    "slug": "Awakened_Spell_Cascade_Support",
    "nome": "Suporte Desperto: Cascata Mágica",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades de Efeito em Área Suportadas também afetam áreas na frente, atrás, e dos lados da área alvo",
-    "não simulado: Habilidades de Efeito em Área Suportadas também afetam áreas na frente, atrás,\\ne dos lados da área alvo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10111,11 +10026,8 @@
   {
    "slug": "Congregation_Support",
    "nome": "Congregação (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: +38% para o número máximo de lacaios de habilidades reforçadas",
-    "não simulado: Habilidades Suportadas têm 10% de Velocidade de Movimento de Lacaios aumentada"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10155,11 +10067,8 @@
   {
    "slug": "Frostmage_Support",
    "nome": "Mago do Gelo (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades reforçadas ganham dano de frio adicionado equivalente a 26% do mana máximo reservado",
-    "não simulado: Habilidades reforçadas ganham custo de mana base equivalente a 5% do mana máximo reservado"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10180,7 +10089,6 @@
    "nome": "Devorar Maior (Reforço)",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Golpes Abatedores com Habilidades Suportadas Consomem cadáveres para Recuperar 484 de Vida e 48 de Mana",
     "não simulado: Consumir um cadáver com habilidades reforçadas tem 4% de chance de conceder uma alma por poder",
     "não simulado: Consumir um cadáver com habilidades reforçadas tem +1% de chance de conceder uma alma por poder"
    ],
@@ -10202,11 +10110,8 @@
   {
    "slug": "Greater_Spell_Cascade_Support",
    "nome": "Sequência Mágica Maior (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades de Efeito em Área Suportadas também afetam áreas na frente, atrás, e dos lados da área alvo",
-    "não simulado: Habilidades de Efeito em Área Suportadas também afetam áreas na frente, atrás,\\ne dos lados da área alvo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10276,10 +10181,8 @@
   {
    "slug": "Communion_Support",
    "nome": "Comunhão (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Magias reforçadas causam de 20 a 30 de dano físico adicionado para cada lacaio permanente"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10299,20 +10202,16 @@
   {
    "slug": "Scornful_Herald_Support",
    "nome": "Arauto Desdenhoso (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades de arauto reforçadas não têm efeito bônus"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Vaal_Sacrifice_Support",
    "nome": "Sacrifício Vaal (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades reforçadas sacrificam tudo, menos 1, da sua vida e escudo de energia ao usar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10403,15 +10302,6 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas têm #% de Velocidade de Movimento de Lacaios aumentada",
-   "gemas": [
-    "Congregation_Support",
-    "Feeding_Frenzy_Support",
-    "Meat_Shield_Support",
-    "Minion_Speed_Support"
-   ]
-  },
-  {
    "linha": "Velocidade de Movimento dos Lacaios aumentada em # %",
    "gemas": [
     "Animate_Guardian",
@@ -10426,14 +10316,6 @@
     "Bone_Offering",
     "Flesh_Offering",
     "Spirit_Offering"
-   ]
-  },
-  {
-   "linha": "Alvos Extras das Habilidades Suportadas podem ser encontrados #% mais distânte",
-   "gemas": [
-    "Ancestral_Call_Support",
-    "Awakened_Ancestral_Call_Support",
-    "Greater_Ancestral_Call_Support"
    ]
   },
   {
@@ -10536,6 +10418,13 @@
    ]
   },
   {
+   "linha": "a onda usa o físico médio da arma × o \"Dano de Ataque: X% de base\" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma)",
+   "gemas": [
+    "Shockwave_Support",
+    "Void_Shockwave_Support"
+   ]
+  },
+  {
    "linha": "Aplica feixes aos # Inimigos próximos",
    "gemas": [
     "Siphoning_Trap",
@@ -10610,34 +10499,6 @@
    "gemas": [
     "Summon_Carrion_Golem",
     "Summon_Carrion_Golem_of_Scavenging"
-   ]
-  },
-  {
-   "linha": "Golpes Abatedores com Habilidades Suportadas Consomem cadáveres para Recuperar # de Vida e # de Mana",
-   "gemas": [
-    "Devour_Support",
-    "Greater_Devour_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades de Efeito em Área Suportadas também afetam áreas na frente, atrás, e dos lados da área alvo",
-   "gemas": [
-    "Awakened_Spell_Cascade_Support",
-    "Greater_Spell_Cascade_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades de Efeito em Área Suportadas também afetam áreas na frente, atrás,\\ne dos lados da área alvo",
-   "gemas": [
-    "Awakened_Spell_Cascade_Support",
-    "Greater_Spell_Cascade_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas aplicam Maldições Suportadas em Acertos",
-   "gemas": [
-    "Awakened_Hextouch_Support",
-    "Hextouch_Support"
    ]
   },
   {
@@ -10739,13 +10600,6 @@
    ]
   },
   {
-   "linha": "Você não pode Conjurar Magias Maldição Suportadas",
-   "gemas": [
-    "Awakened_Hextouch_Support",
-    "Hextouch_Support"
-   ]
-  },
-  {
    "linha": "# % de chance de convocar um Lacaio extra",
    "gemas": [
     "Summon_Raging_Spirit"
@@ -10818,12 +10672,6 @@
    ]
   },
   {
-   "linha": "#% mais Dano por Carga de Tolerância",
-   "gemas": [
-    "Endurance_Charge_on_Melee_Stun_Support"
-   ]
-  },
-  {
    "linha": "+# % mais Dano em Área",
    "gemas": [
     "Vaal_Smite"
@@ -10854,12 +10702,6 @@
    ]
   },
   {
-   "linha": "+#% para o número máximo de lacaios de habilidades reforçadas",
-   "gemas": [
-    "Congregation_Support"
-   ]
-  },
-  {
    "linha": "a explosão da tempestade usa o físico médio da arma × o \"Dano de Ataque: X% de base\" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); a Cegueira dentro dela (a descrição) não é aplicada",
    "gemas": [
     "Voidstorm_Support"
@@ -10875,12 +10717,6 @@
    "linha": "a imunidade a afecções ainda não existe no jogo",
    "gemas": [
     "Purity_of_Elements"
-   ]
-  },
-  {
-   "linha": "a onda usa o físico médio da arma × o \"Dano de Ataque: X% de base\" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma)",
-   "gemas": [
-    "Void_Shockwave_Support"
    ]
   },
   {
@@ -10905,12 +10741,6 @@
    "linha": "Adrenalina de Combate concede #% mais Velocidade de Ataque às Habilidades de Deslocamento não Suportadas por Combate Próximo",
    "gemas": [
     "Close_Combat_Support"
-   ]
-  },
-  {
-   "linha": "Afecções Elementais infligidas por Habilidades Suportadas se espalham para outros inimigos dentro de # metros",
-   "gemas": [
-    "Elemental_Proliferation_Support"
    ]
   },
   {
@@ -11004,18 +10834,6 @@
    ]
   },
   {
-   "linha": "Ataques Suportados causam Dano Físico com Armas Adicional igual a #% da Vida Máxima enquanto em Vida Baixa",
-   "gemas": [
-    "Bloodthirst_Support"
-   ]
-  },
-  {
-   "linha": "Ataques Suportados causam Dano Físico com Armas Adicional igual a\\n#% da Vida Máxima enquanto em Vida Baixa",
-   "gemas": [
-    "Bloodthirst_Support"
-   ]
-  },
-  {
    "linha": "Ativa a Habilidade Suportada quando você Acertar um Inimigo Raro ou Único com um Ataque",
    "gemas": [
     "Mark_On_Hit_Support"
@@ -11076,18 +10894,6 @@
    ]
   },
   {
-   "linha": "Bônus de Dano da Força é aplicado ao Dano de Ataque dos Projéteis assim como às Habilidades Suportadas",
-   "gemas": [
-    "Iron_Grip_Support"
-   ]
-  },
-  {
-   "linha": "Bônus de dano da Força também é aplicado à todo Dano Mágico para Magias Suportadas",
-   "gemas": [
-    "Iron_Will_Support"
-   ]
-  },
-  {
    "linha": "Buff concede # % mais Dano Físico",
    "gemas": [
     "Herald_of_Purity"
@@ -11097,18 +10903,6 @@
    "linha": "Buff tem # % mais Efeito em seus Lacaios",
    "gemas": [
     "Rallying_Cry"
-   ]
-  },
-  {
-   "linha": "Cada Habilidade Suportada causa #% mais Dano com Incêndio por cada Incêndio infligido com ela Recentemente, máximo de #%",
-   "gemas": [
-    "Controlled_Blaze_Support"
-   ]
-  },
-  {
-   "linha": "Cada Habilidade Suportada causa #% menos Dano por cada Incêndio infligido com ela Recentemente, máximo de #%",
-   "gemas": [
-    "Controlled_Blaze_Support"
    ]
   },
   {
@@ -11412,12 +11206,6 @@
    ]
   },
   {
-   "linha": "Envenenar inimigos não envenenados com habilidades reforçadas inflige # envenenamentos adicionais",
-   "gemas": [
-    "Lethal_Dose_Support"
-   ]
-  },
-  {
    "linha": "Espectros têm Duração Base de # segundos Espectros não viajam entre as Áreas",
    "gemas": [
     "Raise_Spectre_of_Transience"
@@ -11652,45 +11440,15 @@
    ]
   },
   {
-   "linha": "Golpes fatais com habilidades reforçadas fazem com que os inimigos tenham #% de chance de explodir e causarem um décimo da própria vida máxima como dano de um elemento aleatório",
-   "gemas": [
-    "Annihilation_Support"
-   ]
-  },
-  {
-   "linha": "Golpes fatais com habilidades reforçadas fazem com que os inimigos tenham +#% de chance de explodir e causarem um décimo da própria vida máxima como dano de um elemento aleatório",
-   "gemas": [
-    "Annihilation_Support"
-   ]
-  },
-  {
    "linha": "Golpes Finais das Habilidades de Golpe Suportadas com Armas Corpo a Corpo contra Monstros Raros concedem um de seus Modificadores por # segundos",
    "gemas": [
     "Behead_Support"
    ]
   },
   {
-   "linha": "Habilidades de arauto reforçadas não têm efeito bônus",
-   "gemas": [
-    "Scornful_Herald_Support"
-   ]
-  },
-  {
    "linha": "Habilidades de Aura Suportadas não tem Reserva",
    "gemas": [
     "Guardians_Blessing_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades de Efeito em Área Suportadas também afetam áreas na frente e atrás da área alvo",
-   "gemas": [
-    "Spell_Cascade_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Não-Instantâneas Suportadas têm +# Usos de Tempo do Recarga",
-   "gemas": [
-    "Second_Wind_Support"
    ]
   },
   {
@@ -11718,12 +11476,6 @@
    ]
   },
   {
-   "linha": "Habilidades reforçadas consomem toda a Fortificação ao usar, causando +#% de dano com afecções por # de Fortificação consumida",
-   "gemas": [
-    "Overheat_Support"
-   ]
-  },
-  {
    "linha": "Habilidades reforçadas excomungam os inimigos ao atingir corpo a corpo por # segundos",
    "gemas": [
     "Excommunicate_Support"
@@ -11736,24 +11488,6 @@
    ]
   },
   {
-   "linha": "Habilidades reforçadas ganham custo de mana base equivalente a #% do mana máximo não reservado",
-   "gemas": [
-    "Archmage_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades reforçadas ganham custo de mana base equivalente a #% do mana máximo reservado",
-   "gemas": [
-    "Frostmage_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades reforçadas ganham dano de frio adicionado equivalente a #% do mana máximo reservado",
-   "gemas": [
-    "Frostmage_Support"
-   ]
-  },
-  {
    "linha": "Habilidades reforçadas infligem Chama Santificada ao atingir corpo a corpo",
    "gemas": [
     "Hallow_Support"
@@ -11763,18 +11497,6 @@
    "linha": "Habilidades reforçadas podem conjurar # glifos adicionais",
    "gemas": [
     "Foulgrasp_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades reforçadas sacrificam tudo, menos #, da sua vida e escudo de energia ao usar",
-   "gemas": [
-    "Vaal_Sacrifice_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades reforçadas se propagam #% mais vezes",
-   "gemas": [
-    "Greater_Chain_Support"
    ]
   },
   {
@@ -11823,12 +11545,6 @@
    "linha": "Habilidades Suportadas Ativam Explosão Prismática ao Acertar",
    "gemas": [
     "Prismatic_Burst_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas Ativam Onda de Choque no Acerto Corpo a Corpo",
-   "gemas": [
-    "Shockwave_Support"
    ]
   },
   {
@@ -11892,18 +11608,6 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas ganham Dano de Raio Adicional igual a #% da Mana Máxima não Reservada",
-   "gemas": [
-    "Archmage_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas infligem Podridão ao Acertar, causando # de Dano de Caos por segundo durante # segundos",
-   "gemas": [
-    "Decay_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas não podem aplicar Auras em você a menos que você tenha Lacaios de uma Habilidade Suportada",
    "gemas": [
     "Guardians_Blessing_Support"
@@ -11919,12 +11623,6 @@
    "linha": "Habilidades Suportadas penetram #% da Resistência Elemental enquanto cada Ressonância estiver em ao menos #",
    "gemas": [
     "Trinity_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas podem ter até # Minas Remotas adicionais plantadas de uma vez",
-   "gemas": [
-    "Minefield_Support"
    ]
   },
   {
@@ -11952,48 +11650,6 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas têm #% da duração da Cegueira aumentada",
-   "gemas": [
-    "Blind_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% de chance de Cegar inimigos ao acertar",
-   "gemas": [
-    "Blind_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% de chance de Enervar Inimigos por # segundos ao Acertar",
-   "gemas": [
-    "Awakened_Controlled_Destruction_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% de chance de Esmagar Inimigos por # segundos ao Acertar",
-   "gemas": [
-    "Awakened_Brutality_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% de chance de ganhar uma Carga de Frenesi ao Matar um Inimigo Congelado",
-   "gemas": [
-    "Ice_Bite_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% de chance de ganhar uma Carga de Poder com Golpes Críticos",
-   "gemas": [
-    "Power_Charge_On_Critical_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% de chance de Intimidar Inimigos por # segundos ao Acertar",
-   "gemas": [
-    "Awakened_Melee_Physical_Damage_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas têm #% de Velocidade de Ataque de Lacaios aumentada",
    "gemas": [
     "Minion_Speed_Support"
@@ -12003,12 +11659,6 @@
    "linha": "Habilidades Suportadas têm #% de Velocidade de Conjuração de Lacaios aumentada",
    "gemas": [
     "Minion_Speed_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% mais frequência de Ativação",
-   "gemas": [
-    "Swiftbrand_Support"
    ]
   },
   {
@@ -12030,45 +11680,15 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas têm Duração da Armadilha aumentada em #% Habilidades reforçadas têm a duração de mina aumentada em #%",
-   "gemas": [
-    "Invention_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas têm Duração do Atordoamento aumentada em #% por Traumatismo",
    "gemas": [
     "Trauma_Support"
    ]
   },
   {
-   "linha": "Habilidades Suportadas têm Efeito da Mutilação aumentado em #%",
-   "gemas": [
-    "Maim_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas têm Efeito das Auras reduzido em #%",
    "gemas": [
     "Guardians_Blessing_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm Velocidade de Recuperação da Recarga reduzida em #%",
-   "gemas": [
-    "Second_Wind_Support"
-   ]
-  },
-  {
-   "linha": "Ignora Atordoamentos enquanto Usando Habilidades Suportadas",
-   "gemas": [
-    "Awakened_Cast_While_Channelling_Support"
-   ]
-  },
-  {
-   "linha": "Incêndios causados por Habilidades Suportadas se espalham para outros Inimigos dentro de # metros",
-   "gemas": [
-    "Ignite_Proliferation_Support"
    ]
   },
   {
@@ -12354,27 +11974,9 @@
    ]
   },
   {
-   "linha": "Magias reforçadas causam de # a # de dano físico adicionado para cada lacaio permanente",
-   "gemas": [
-    "Communion_Support"
-   ]
-  },
-  {
    "linha": "Magias Suportadas causam # % menos Dano",
    "gemas": [
     "Intuitive_Link"
-   ]
-  },
-  {
-   "linha": "Magias Suportadas Sacrificam #% da sua Vida atual quando Conjuradas para ganhar Dano de Caos adicional igual a #% da Vida Sacrificada",
-   "gemas": [
-    "Sacrifice_Support"
-   ]
-  },
-  {
-   "linha": "Magias Suportadas têm Recuperação da Recarga aumentada em #%",
-   "gemas": [
-    "Awakened_Cast_On_Critical_Strike_Support"
    ]
   },
   {
@@ -12525,12 +12127,6 @@
    "linha": "Raio Base terciário igual a # metros",
    "gemas": [
     "Ice_Trap"
-   ]
-  },
-  {
-   "linha": "Receba uma Carga de Tolerância quando você Atordoar um Inimigo com um Acerto Corpo a Corpo com Habilidades Suportadas",
-   "gemas": [
-    "Endurance_Charge_on_Melee_Stun_Support"
    ]
   },
   {
