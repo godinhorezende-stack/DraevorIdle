@@ -191,9 +191,9 @@ export function aplicarNoJogador({ estado, hunt, bicho, dano, elemento, eventos,
   const parteCaos = dano > 0 ? Math.min(dano, Math.max(0, caos != null ? Math.round(caos * (dano / Math.max(1e-9, dano + direto))) : Math.round(dano * ModsPoe.fracaoCaosDoTipo(ficha, elemento)))) : 0;
   if (parteCaos > 0 && ModsPoe.caosAtravessaOEscudo(ficha)) dano = Defesa.absorverComOCaos(estado, ficha, dano, parteCaos, eventos, base);
   // ("Dano Físico sofrido ignora o Escudo de Energia".)
-  else if (elemento === 'physical' && ModsPoe.valor(ficha, 'fisico_ignora_escudo') > 0) estado.esEspera = Defesa.esperaDaRecarga(ficha);
+  else if (elemento === 'physical' && ModsPoe.valor(ficha, 'fisico_ignora_escudo') > 0) Defesa.reiniciarEspera(estado, ficha);
   else dano = Defesa.absorver(estado, ficha, dano, eventos, base);
-  if (direto > 0) { dano += direto; estado.esEspera = Defesa.esperaDaRecarga(ficha); }
+  if (direto > 0) { dano += direto; Defesa.reiniciarEspera(estado, ficha); }
   // (o "X% do Dano de Acertos é sofrido na Vida do seu Totem mais próximo antes da sua" sai no `Arvore.danoRecebido`, logo abaixo.)
   if (dano > 0 && temEscudo && (estado.mana ?? 0) > 0) {
     const daMana = Math.min(estado.mana, dano);
@@ -307,7 +307,14 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // (O MAPA do endgame: o dano extra por elemento em % do dano da magia — `bicho.danoExtraPct`.)
   // (ciclo 7, lote E: "Dano de Raio dos Inimigos Acertando você enquanto você estiver Eletrizado é Azarado"; "O Dano dos Inimigos Acertando
   // você é Azarado" — `dano_recebido_azarado`: o menor de dois sorteios.)
-  const azarado = ModsPoe.valor(ficha, 'dano_recebido_azarado') > 0 || (a.elemento === 'energy' && ModsPoe.valor(ficha, 'raio_azarado_eletrizado') > 0 && (hunt.efeitosDoJogador?.dots ?? []).some((d) => d.tipo === 'choque' && d.falta > 0));
+  // (lote E1b, 26/10) a Graça Vaal: "Dano Mágico Suprimido causado em você é Azarado" — com ela, a supressão é sorteada ANTES do dano (o mesmo sorteio, a mesma
+  // chance), e a magia suprimida rola o dano duas vezes e fica o menor; sem ela, o sorteio fica onde sempre esteve (abaixo)
+  const sortearSupressao = () => {
+    const s = ModsPoe.valor(ficha, 'supressao_sortuda') > 0 ? Math.min(Math.random(), Math.random()) : Math.random();
+    return (ficha.supressaoDeMagia ?? 0) > 0 && s < ficha.supressaoDeMagia;
+  };
+  const supressaoAntes = ModsPoe.valor(ficha, 'suprimido_azarado') > 0 ? sortearSupressao() : null;
+  const azarado = supressaoAntes === true || ModsPoe.valor(ficha, 'dano_recebido_azarado') > 0 || (a.elemento === 'energy' && ModsPoe.valor(ficha, 'raio_azarado_eletrizado') > 0 && (hunt.efeitosDoJogador?.dots ?? []).some((d) => d.tipo === 'choque' && d.falta > 0));
   // ("-N de Dano Físico sofrido por Ataques de Projéteis": o fixo a menos no projétil físico do bicho.)
   const daMagia = Math.max(0, (azarado ? Math.min(rolar(a.elemento, a.min, a.max), rolar(a.elemento, a.min, a.max)) : rolar(a.elemento, a.min, a.max)) * forcaDaMagia * elemFator(a.elemento) + (projetil && a.elemento === 'physical' ? ModsPoe.valor(ficha, 'fisico_sofrido_projetil') : 0));
   const extraDoMapa = AtributosDoMob.danoExtraPctDoBicho(bicho).reduce((n, x) => n + somarParte(x.elemento, daMagia * (x.pct / 100), daMagia * (x.pct / 100) * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento)), 0);
@@ -323,8 +330,7 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // A SUPRESSÃO DE FEITIÇO do PoE: a magia suprimida causa 50% menos dano (`ficha.supressaoDeMagia`, a chance) — sorteada ANTES das
   // afecções: "Dano Mágico Suprimido não pode infligir Afecções Elementais em você" (a árvore) as tira da magia suprimida.
   // (+ ciclo 7, lote F: "Chance de Suprimir Dano Mágico é Sortuda" — o melhor de dois sorteios.)
-  const sorteioDaSupressao = ModsPoe.valor(ficha, 'supressao_sortuda') > 0 ? Math.min(Math.random(), Math.random()) : Math.random();
-  const suprimiu = (ficha.supressaoDeMagia ?? 0) > 0 && sorteioDaSupressao < ficha.supressaoDeMagia;
+  const suprimiu = supressaoAntes ?? sortearSupressao();
   // (+ 12/10: "Inimigos em seus Feixes de Vínculo não podem aplicar Afecções Elementais" — `Vinculos.noFeixe`.)
   const semElementais = (suprimiu && (Number(ficha.afPoe?.suprimido_sem_afeccao_elemental) || 0) > 0) || Vinculos.noFeixe(hunt, bicho);
   // Os EFEITOS da magia (`efeitos` do ataque): dano contínuo no jogador pelo motor `combate/dot.mjs`.
@@ -350,7 +356,9 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // (o fixo por golpe — "-N de Dano X sofrido dos Acertos": de cada tipo que o golpe tem, sem passar do dano daquele tipo; 14/10: o "de Ataque"
   // no projétil — o ataque de projétil do bicho — e o "de Magia" no resto: a Casca do Warden)
   const deAtaque = { ataque: projetil, magia: !projetil };
-  const fixosDoGolpe = Object.entries(partes).reduce((n, [el, v]) => n + Math.max(-Math.max(0, v), ModsPoe.fixoRecebido(ficha, el, deAtaque)), 0);
+  // (lote E1b, 26/10: + o Estandarte Desafiador — "−X de Dano sofrido de cada Tipo de Dano dos Acertos Suprimidos": na magia suprimida, por tipo, somado aos outros fixos)
+  const fixoSuprimido = suprimiu ? ModsPoe.valor(ficha, 'suprimido_fixo') : 0;
+  const fixosDoGolpe = Object.entries(partes).reduce((n, [el, v]) => n + Math.max(-Math.max(0, v), ModsPoe.fixoRecebido(ficha, el, deAtaque) + fixoSuprimido), 0);
   // (lote 30, P029: + "Sofre X% menos Dano de Acertos" — a magia do monstro é um acerto)
   // (lote 32, P031: o projétil do bicho é um ATAQUE — "X% menos/mais Dano de Ataque sofrido" (o Dançarino do Vento), como no golpe corpo a corpo)
   const doAtaque = projetil ? Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100) : 1;

@@ -2,17 +2,17 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 391,
+   "implementada e testada": 421,
    "implementada, sem teste próprio": 44,
-   "parcial": 114,
+   "parcial": 84,
    "limitação do modelo idle": 12,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 167,
+   "implementada e testada": 171,
    "implementada, sem teste próprio": 18,
-   "parcial": 18,
+   "parcial": 14,
    "limitação do modelo idle": 7
   },
   "suportes": {
@@ -24,16 +24,16 @@
   "variantes": {
    "vaal": {
     "total": 52,
-    "implementada e testada": 33,
-    "parcial": 12,
+    "implementada e testada": 39,
+    "parcial": 6,
     "implementada, sem teste próprio": 6,
     "limitação do modelo idle": 1
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 134,
+    "implementada e testada": 145,
     "implementada, sem teste próprio": 24,
-    "parcial": 44,
+    "parcial": 33,
     "limitação do modelo idle": 7
    }
   },
@@ -45,8 +45,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 380,
-   "emDuasOuMais": 53
+   "linhasDistintas": 352,
+   "emDuasOuMais": 47
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -60,7 +60,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 440,
+   "ativasCitadas": 459,
    "suportesCitados": 119,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -992,10 +992,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Estandarte concede -12 de Dano sofrido de cada Tipo de Dano dos Acertos Suprimidos a Você e Aliados"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1037,12 +1035,10 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "arauto",
-   "estado": "parcial",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
-   "outros": [
-    "a queima do excesso de dano é a mesma em todos os vizinhos do morto (as condições de cada alvo não entram)"
-   ],
+   "outros": [],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -1177,10 +1173,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "clamor",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Ataques Impelidos ativam as Magias Suportadas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1205,10 +1199,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Estandarte faz com que você e Aliados Recuperem 34 de Vida ao Bloquear"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1316,11 +1308,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Efeito das Auras aumentado em 76 %",
-    "efeito não simulado: Resistência à Fogo de Inimigos Próximos é Ignorada por Acertos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1609,10 +1598,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Receba 15 % do Dano Físico como Dano de Gelo Extra"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1624,10 +1611,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Receba 20 % do Dano Físico como Dano de Gelo Extra"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2196,10 +2181,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 30 % menos Velocidade de Arremesso de Armadilhas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2560,8 +2543,7 @@
    "arquetipo": "armadilha",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Trava o inimigo no lugar",
-    "efeito não simulado: Empala Inimigos ao Acertar"
+    "efeito não simulado: Trava o inimigo no lugar"
    ],
    "idle": [],
    "outros": [],
@@ -3054,10 +3036,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 286 a 429 de Dano de Fogo adicionado contra Inimigos Queimando"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3069,11 +3049,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 50 % de Chance de uma Armadilha ser Ativada uma vez adicional",
-    "efeito não simulado: 881 a 1316 de Dano de Fogo adicionado contra Inimigos Queimando"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3254,10 +3231,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Converte 100 % do Dano Físico para um Elemento aleatório"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3355,11 +3330,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Lança até 1 armadilhas a mais ao usar duas armas",
-    "efeito não simulado: 25 % menos velocidade de lançar armadilhas com arma de duas mãos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "linhasNaoSeAplicam": [
@@ -3827,11 +3799,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Você e aliados próximos têm +15 % de chance de Evadirem Acertos de Ataques",
-    "efeito não simulado: Dano Mágico Suprimido causado em você é Azarado"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3856,11 +3825,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Efeito das Auras aumentado em 76 %",
-    "efeito não simulado: Resistência à Gelo de Inimigos Próximos é Ignorada por Acertos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4199,8 +4165,7 @@
    "arquetipo": "armadilha",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Raio Base terciário igual a 0.6 metros",
-    "efeito não simulado: 15 % de Chance de uma Armadilha ser Ativada uma vez adicional"
+    "efeito não simulado: Raio Base terciário igual a 0.6 metros"
    ],
    "idle": [],
    "outros": [],
@@ -4213,10 +4178,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 15 % de Chance de uma Armadilha ser Ativada uma vez adicional"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4934,10 +4897,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "mina",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Cada mina aplica Dano aumentado em +1 % aos Inimigos próximos máximo de 150 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5326,12 +5287,10 @@
    "arquetipo": "armadilha",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Aplica feixes aos 10 Inimigos próximos",
     "efeito não simulado: Concede 324.4 de Regeneração de Vida por segundo caso um Inimigo esteja afetado",
     "efeito não simulado: Concede 17.2 de Regeneração de Mana por segundo se qualquer Inimigo está afetado",
     "efeito não simulado: Concede 32.4 de Regeneração de Vida por segundo para cada Inimigo afetado",
-    "efeito não simulado: Concede 1.7 de Regeneração de Mana por segundo para cada Inimigo afetado",
-    "efeito não simulado: Aplica feixes aos +4 Inimigos próximos"
+    "efeito não simulado: Concede 1.7 de Regeneração de Mana por segundo para cada Inimigo afetado"
    ],
    "idle": [],
    "outros": [],
@@ -5344,10 +5303,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Aplica feixes aos 18 Inimigos próximos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5410,10 +5367,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Suas Habilidades e de seus aliados próximos não Custam Mana"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5748,10 +5703,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "mina",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Efeito das Auras aumentado em 20 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5828,10 +5781,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 15 % de Chance de uma Armadilha ser Ativada uma vez adicional"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5843,11 +5794,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Projéteis Ricocheteiam ao colidirem com o terreno",
-    "efeito não simulado: 15 % de Chance de uma Armadilha ser Ativada uma vez adicional"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6245,10 +6193,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "arauto",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Tempestades Acertam Inimigos com Frequência aumentada em 20 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6469,10 +6415,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Você e Aliados próximos ganham 30 % de Velocidade de Recarga de Escudo de Energia aumentada"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6562,10 +6506,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "a imunidade a afecções ainda não existe no jogo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6603,10 +6545,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: A Recarga do seu Escudo de Energia e dos seus aliados próximos não é impedida por Dano"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6618,11 +6558,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Efeito das Auras aumentado em 76 %",
-    "efeito não simulado: Resistência à Raio de Inimigos Próximos é Ignorada por Acertos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6647,10 +6584,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Você e Aliados não-Lacaios Próximos têm 10 % de chance de criarem Solo Sagrado ao Acertar um Inimigo Raro ou Único, durando 8 segundos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7146,10 +7081,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 15 % de Chance de uma Armadilha ser Ativada uma vez adicional"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7213,10 +7146,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "mina",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Aura de Exposição ao Fogo aplica -15 % à resistência a dano de fogo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7228,10 +7159,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "mina",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Aura de Exposição ao Fogo aplica -25 % à resistência a dano de fogo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -10365,17 +10294,6 @@
    ]
   },
   {
-   "linha": "# % de Chance de uma Armadilha ser Ativada uma vez adicional",
-   "gemas": [
-    "Fire_Trap_of_Blasting",
-    "Ice_Trap",
-    "Ice_Trap_of_Hollowness",
-    "Lightning_Spire_Trap_of_Zapping",
-    "Lightning_Trap",
-    "Lightning_Trap_of_Sparking"
-   ]
-  },
-  {
    "linha": "+# ao Máximo de Armas Animadas",
    "gemas": [
     "Animate_Weapon",
@@ -10391,15 +10309,6 @@
     "Summon_Skeletons_of_Archers",
     "Summon_Skeletons_of_Mages",
     "Vaal_Summon_Skeletons"
-   ]
-  },
-  {
-   "linha": "Efeito das Auras aumentado em # %",
-   "gemas": [
-    "Icicle_Mine_of_Sabotage",
-    "Vaal_Impurity_of_Fire",
-    "Vaal_Impurity_of_Ice",
-    "Vaal_Impurity_of_Lightning"
    ]
   },
   {
@@ -10515,13 +10424,6 @@
    ]
   },
   {
-   "linha": "# a # de Dano de Fogo adicionado contra Inimigos Queimando",
-   "gemas": [
-    "Fire_Trap",
-    "Fire_Trap_of_Blasting"
-   ]
-  },
-  {
    "linha": "#% do Dano Físico Convertido para Dano de Fogo",
    "gemas": [
     "Fissure_Support",
@@ -10536,24 +10438,10 @@
    ]
   },
   {
-   "linha": "Aplica feixes aos # Inimigos próximos",
-   "gemas": [
-    "Siphoning_Trap",
-    "Siphoning_Trap_of_Pain"
-   ]
-  },
-  {
    "linha": "as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente)",
    "gemas": [
     "Shrapnel_Ballista",
     "Shrapnel_Ballista_of_Steel"
-   ]
-  },
-  {
-   "linha": "Aura de Exposição ao Fogo aplica # % à resistência a dano de fogo",
-   "gemas": [
-    "Pyroclast_Mine",
-    "Pyroclast_Mine_of_Sabotage"
    ]
   },
   {
@@ -10697,13 +10585,6 @@
    ]
   },
   {
-   "linha": "Receba # % do Dano Físico como Dano de Gelo Extra",
-   "gemas": [
-    "Ice_Crash",
-    "Ice_Crash_of_Cadence"
-   ]
-  },
-  {
    "linha": "Sentinelas Ascendidos causam # % mais Dano",
    "gemas": [
     "Vaal_Absolution",
@@ -10788,18 +10669,6 @@
    ]
   },
   {
-   "linha": "# % menos Velocidade de Arremesso de Armadilhas",
-   "gemas": [
-    "Explosive_Trap_of_Magnitude"
-   ]
-  },
-  {
-   "linha": "# % menos velocidade de lançar armadilhas com arma de duas mãos",
-   "gemas": [
-    "Spectral_Helix_of_Trarthus"
-   ]
-  },
-  {
    "linha": "# metros de raio",
    "gemas": [
     "Prismatic_Burst_Support"
@@ -10872,21 +10741,9 @@
    ]
   },
   {
-   "linha": "a imunidade a afecções ainda não existe no jogo",
-   "gemas": [
-    "Purity_of_Elements"
-   ]
-  },
-  {
    "linha": "a onda usa o físico médio da arma × o \"Dano de Ataque: X% de base\" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma)",
    "gemas": [
     "Void_Shockwave_Support"
-   ]
-  },
-  {
-   "linha": "A Recarga do seu Escudo de Energia e dos seus aliados próximos não é impedida por Dano",
-   "gemas": [
-    "Vaal_Discipline"
    ]
   },
   {
@@ -10938,12 +10795,6 @@
    ]
   },
   {
-   "linha": "Aplica feixes aos +# Inimigos próximos",
-   "gemas": [
-    "Siphoning_Trap"
-   ]
-  },
-  {
    "linha": "Após atacar, os totens desaparecem",
    "gemas": [
     "Siege_Ballista_of_Trarthus"
@@ -10983,12 +10834,6 @@
    "linha": "Ataques com habilidades reforçadas, cujo maior tipo de dano é caos, elétrico ou físico, fazem você ganhar # de Ressonância Profana dos outros tipos por segundo durante # segundos\\nPerde # de Ressonância Profana por segundo para cada tipo que não ganhar",
    "gemas": [
     "Unholy_Trinity_Support"
-   ]
-  },
-  {
-   "linha": "Ataques Impelidos ativam as Magias Suportadas",
-   "gemas": [
-    "Battlemages_Cry"
    ]
   },
   {
@@ -11109,12 +10954,6 @@
    "linha": "Cada Habilidade Suportada causa #% menos Dano por cada Incêndio infligido com ela Recentemente, máximo de #%",
    "gemas": [
     "Controlled_Blaze_Support"
-   ]
-  },
-  {
-   "linha": "Cada mina aplica Dano aumentado em +# % aos Inimigos próximos máximo de # %",
-   "gemas": [
-    "Stormblast_Mine"
    ]
   },
   {
@@ -11262,12 +11101,6 @@
    ]
   },
   {
-   "linha": "Converte # % do Dano Físico para um Elemento aleatório",
-   "gemas": [
-    "Reave_of_Refraction"
-   ]
-  },
-  {
    "linha": "Convoca # Espíritos Sagrados Máximo de # Espíritos Sagrados",
    "gemas": [
     "Sacred_Wisps_Support"
@@ -11334,12 +11167,6 @@
    ]
   },
   {
-   "linha": "Dano Mágico Suprimido causado em você é Azarado",
-   "gemas": [
-    "Vaal_Grace"
-   ]
-  },
-  {
    "linha": "Definhado dura # segundos",
    "gemas": [
     "Withering_Touch_Support"
@@ -11385,12 +11212,6 @@
    "linha": "Efeito em Área de Habilidades Maldição Suportadas reduzido em #%",
    "gemas": [
     "Hexpass_Support"
-   ]
-  },
-  {
-   "linha": "Empala Inimigos ao Acertar",
-   "gemas": [
-    "Bear_Trap_of_Skewers"
    ]
   },
   {
@@ -11466,21 +11287,9 @@
    ]
   },
   {
-   "linha": "Estandarte concede # de Dano sofrido de cada Tipo de Dano dos Acertos Suprimidos a Você e Aliados",
-   "gemas": [
-    "Defiance_Banner"
-   ]
-  },
-  {
    "linha": "Estandarte concede Precisão aumentada em # % a Você e Aliados",
    "gemas": [
     "War_Banner"
-   ]
-  },
-  {
-   "linha": "Estandarte faz com que você e Aliados Recuperem # de Vida ao Bloquear",
-   "gemas": [
-    "Dread_Banner"
    ]
   },
   {
@@ -12342,12 +12151,6 @@
    ]
   },
   {
-   "linha": "Lança até # armadilhas a mais ao usar duas armas",
-   "gemas": [
-    "Spectral_Helix_of_Trarthus"
-   ]
-  },
-  {
    "linha": "Libera ondas a cada # segundos",
    "gemas": [
     "Seismic_Trap"
@@ -12492,12 +12295,6 @@
    ]
   },
   {
-   "linha": "Projéteis Ricocheteiam ao colidirem com o terreno",
-   "gemas": [
-    "Lightning_Trap_of_Sparking"
-   ]
-  },
-  {
    "linha": "Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade Arqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados",
    "gemas": [
     "Mirage_Archer_Support"
@@ -12531,24 +12328,6 @@
    "linha": "Receba uma Carga de Tolerância quando você Atordoar um Inimigo com um Acerto Corpo a Corpo com Habilidades Suportadas",
    "gemas": [
     "Endurance_Charge_on_Melee_Stun_Support"
-   ]
-  },
-  {
-   "linha": "Resistência à Fogo de Inimigos Próximos é Ignorada por Acertos",
-   "gemas": [
-    "Vaal_Impurity_of_Fire"
-   ]
-  },
-  {
-   "linha": "Resistência à Gelo de Inimigos Próximos é Ignorada por Acertos",
-   "gemas": [
-    "Vaal_Impurity_of_Ice"
-   ]
-  },
-  {
-   "linha": "Resistência à Raio de Inimigos Próximos é Ignorada por Acertos",
-   "gemas": [
-    "Vaal_Impurity_of_Lightning"
    ]
   },
   {
@@ -12618,21 +12397,9 @@
    ]
   },
   {
-   "linha": "Suas Habilidades e de seus aliados próximos não Custam Mana",
-   "gemas": [
-    "Vaal_Clarity"
-   ]
-  },
-  {
    "linha": "Suas Habilidades Não-Bênção que Reservam Mana são Desabilitadas enquanto você tiver uma Aura da Habilidade Suportada em você",
    "gemas": [
     "Eternal_Blessing_Support"
-   ]
-  },
-  {
-   "linha": "Tempestades Acertam Inimigos com Frequência aumentada em # %",
-   "gemas": [
-    "Herald_of_Thunder"
    ]
   },
   {
@@ -12675,24 +12442,6 @@
    "linha": "Velocidade de rotação aumentada em # % se em Empunhadura Dupla",
    "gemas": [
     "Blade_Trap"
-   ]
-  },
-  {
-   "linha": "Você e Aliados não-Lacaios Próximos têm # % de chance de criarem Solo Sagrado ao Acertar um Inimigo Raro ou Único, durando # segundos",
-   "gemas": [
-    "Zealotry"
-   ]
-  },
-  {
-   "linha": "Você e Aliados próximos ganham # % de Velocidade de Recarga de Escudo de Energia aumentada",
-   "gemas": [
-    "Discipline"
-   ]
-  },
-  {
-   "linha": "Você e aliados próximos têm +# % de chance de Evadirem Acertos de Ataques",
-   "gemas": [
-    "Vaal_Grace"
    ]
   },
   {
