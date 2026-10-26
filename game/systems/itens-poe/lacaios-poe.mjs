@@ -20,6 +20,9 @@ import { slugDoNome, fatorDaArea, casasPelaArea, almasDoLacaio, DEVORADOR_DE_ALM
 import { PARAMETROS } from '../combate/formulas.mjs';
 import { chanceDeEsquiva } from '../personagem/atributos.mjs';
 import * as CargasPoe from './cargas.mjs';
+// (lote E1a, 26/10: as linhas que faltavam nos lacaios — a qualidade, o Ceifador, o Golem da Carniça… — `gemas-e1a.mjs`)
+import * as GemasE1a from './gemas-e1a.mjs';
+export { aplicarCeifador, fatorDoCeifador, fatorPorNaoGolemPerto } from './gemas-e1a.mjs';
 import { readFileSync } from 'node:fs';
 
 const BESTIARY = CATALOGO.bestiary;
@@ -273,8 +276,12 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   // (lote G20b: o totem do SUPORTE não lê as linhas da habilidade — a "Duração base" e o "Máximo de" dela não são do totem; a duração é a do
   // suporte, "Totem dura N segundos")
   if (doSuporte) duracao = efeito.totemDuracaoMs ?? null;
+  // (lote E1a: o "Convoca N …" de cada tipo soma — a Vaal Convocar Esqueletos chama soldados, arqueiros, magos e o general de uma vez —, sem as colunas
+  // mal rotuladas do poedb — `GemasE1a.COLUNA_MAL_ROTULADA_E1A`)
+  let convoca = null;
   for (const l of doSuporte ? [] : t.linhas) {
     let m;
+    if (GemasE1a.COLUNA_MAL_ROTULADA_E1A[slug]?.test(l)) continue;
     if ((m = l.match(/^Rastejador Agonizante possui (\d+(?:\.\d+)?) ?% de aumento da Velocidade de Ataque por Virulência/i))) velV += Number(m[1]) * V;
     if ((m = l.match(/^Rastejador Agonizante causa Dano Físico aumentado em (\d+(?:\.\d+)?) ?% por Virulência/i))) incV += Number(m[1]) * V;
     if ((m = l.match(/^O Rastejador da Agonia possui de (\d+) a (\d+) de Dano Físico Adicional por Virulência/i))) somadoV = [Number(m[1]) * V, Number(m[2]) * V];
@@ -298,12 +305,19 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
     if ((m = l.match(/^Máximo de (\d+) (.+?) (?:Evocad|Convocad|Erguid|Invocad|Animad)/i))) { maximo = Number(m[1]); nome = singular(m[2]); }
     else if ((m = l.match(/^Máximo de (.+?) (?:Evocad|Convocad|Erguid|Invocad)\S*: (\d+)/i))) { maximo = Number(m[2]); nome = singular(m[1]); }
     else if ((m = l.match(/^\+(\d+) ao número máximo de Totens/i))) maximo += Number(m[1]);
-    else if ((m = l.match(/^Convoca (\d+) (.+)$/i))) { porUso = Number(m[1]); if (nome === 'Lacaio') nome = singular(m[2]); }
+    else if ((m = l.match(/^Convoca (\d+) (.+)$/i))) { convoca = (convoca ?? 0) + Number(m[1]); if (nome === 'Lacaio') nome = singular(m[2]); }
     else if ((m = l.match(/^(?:Duração base é de|Totem dura) (\d+(?:\.\d+)?) segundos?/i))) duracao = Number(m[1]) * 1000;
     else if ((m = l.match(/Lacaios? têm (\d+(?:\.\d+)?) ?% mais Vida/i))) maisVida += Number(m[1]);
     else if ((m = l.match(/Lacaios? causam? (\d+(?:\.\d+)?) ?% mais Dano/i))) maisDano += Number(m[1]);
     else if ((m = l.match(/são de Nível (\d+)/i))) nivel = Number(m[1]);
   }
+  if (convoca != null) porUso = convoca;
+  // (lote E1a) a QUALIDADE do lacaio (o máximo, o movimento, a recarga, o Efeito do Buff do golem, a regeneração, o lacaio extra, o Efeito da Oferenda) e o
+  // que o NÍVEL ainda não lia (o "menos Vida", o "Anima até N Armas", o Ceifador, o Golem da Carniça) — `GemasE1a`
+  const e1aQ = !totem && !doSuporte ? GemasE1a.daQualidadeDoLacaio([...t.linhas.filter((l) => !GemasE1a.COLUNA_MAL_ROTULADA_E1A[slug]?.test(l)), ...GemasPoe.linhasDaQualidadeDe(slug, efeito?.qualidade ?? 0)]) : GemasE1a.daQualidadeDoLacaio([]);
+  const e1aN = !totem && !doSuporte ? GemasE1a.doNivelDoLacaio(t.linhas) : GemasE1a.doNivelDoLacaio([]);
+  if (e1aN.animaAte) porUso = e1aN.animaAte;
+  maximo += e1aQ.maximo;
   if (totem) maximo += efeito?.totensExtras ?? 0;
   // (18/10, lote G20a) + o "+N ao número máximo de Totens Convocados" da QUALIDADE (o Vínculo Abrasador: 0,1 por % — act_str.lua:9511)
   if (totem) for (const l of GemasPoe.linhasDaQualidadeDe(slug, efeito?.qualidade ?? 0)) { const m = /^\+([\d.]+) ao número máximo de Totens/i.exec(l); if (m) maximo += Math.floor(Number(m[1])); }
@@ -329,7 +343,8 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   const doTotem = totem && !doSuporte ? efeitosDoTotem(slug, [...t.linhas, ...GemasPoe.linhasDaQualidadeDe(slug, efeito?.qualidade ?? 0)]) : {};
   // As OFERENDAS (Osso, Carne, Espírito) e a CONVOCAÇÃO não invocam: dão bônus aos lacaios em campo / chamam todos para perto.
   const en = r.gema.en ?? '';
-  if (/Offering/i.test(en)) return { tipo: 'oferenda', nome: t.nome, duracaoMs: duracao ?? 4000, bonus: bonusDaOferenda(t.linhas) };
+  // (lote E1a: + o "Efeito da Oferenda aumentado em X%" da qualidade — `offering_spells_effect_+%`)
+  if (/Offering/i.test(en)) return { tipo: 'oferenda', nome: t.nome, duracaoMs: duracao ?? 4000, bonus: GemasE1a.oferendaComEfeito(bonusDaOferenda(t.linhas), e1aQ.efeitoDaOferendaPct) };
   if (/^Convocation/i.test(en)) return { tipo: 'convocacao', nome: t.nome, curaPct: Number(t.linhas.map((l) => l.match(/Regenera (\d+(?:\.\d+)?) ?% da Vida por segundo/i)).find(Boolean)?.[1] ?? 0) };
   const n = nivel ?? Math.max(1, t.requer);
   // (lote 44) a força do PoE: a tabela de aliados × o multiplicador do lacaio no PoB (`forcaDoPob`); o golpe de quem usa a arma e o lacaio sem
@@ -352,7 +367,7 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   const st = totem ? GemasPoe.compilada(slug, nivelDaGema, efeito?.qualidade ?? 0)?.stats ?? {} : null;
   const vida = totem
     ? Math.max(1, Math.round(Math.floor(POB.tabelas.vida[Math.max(1, Math.min(POB.tabelas.vida.length, n)) - 1] * multDaVidaDoTotem(slug)) * Math.max(0.01, 1 + ((st.totemVidaInc ?? 0) + (efeito?.totemVidaPct ?? 0) + m0('totem_life') + porTipo('lacaio_vida')) / 100) * Math.max(0, 1 + (st.totemVidaMais ?? 0) / 100) * Math.max(0, 1 + porTipo('lacaio_vida_mais') / 100)))
-    : Math.max(10, Math.round((f.vida + porTipo('lacaio_vida_fixa') + m0('minion_vida_fixa')) * (1 + maisVida / 100) * (1 + ((efeito?.lacaioVidaPct ?? 0) + m0('minion_life') + porTipo('lacaio_vida')) / 100) * Math.max(0, 1 + porTipo('lacaio_vida_mais') / 100)));
+    : Math.max(10, Math.round((f.vida + porTipo('lacaio_vida_fixa') + m0('minion_vida_fixa')) * (1 + maisVida / 100) * (1 + ((efeito?.lacaioVidaPct ?? 0) + m0('minion_life') + porTipo('lacaio_vida')) / 100) * Math.max(0, 1 + porTipo('lacaio_vida_mais') / 100) * Math.max(0, 1 - e1aN.menosVidaPct / 100)));
   // ("Lacaios ganham X% do Dano Físico / Elemental como Dano de Caos/Fogo Extra" — dono, 11/10: os únicos: o extra entra no golpe do lacaio
   // do tipo certo — o físico no lacaio físico, o elemental no de Fogo/Gelo/Raio —, sem a resistência do outro elemento.)
   const fisico = (elemento ?? 'physical') === 'physical';
@@ -401,8 +416,9 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
       danoIncPct: (efeito?.lacaioDanoPct ?? 0) + mn('minion_dmg') + porTipo('lacaio_dano') + incV,
       // (lote 44: + as resistências de base do lacaio no PoB — 40% elementais e 20% de Caos na maioria)
       // (lote 67: + a Resistência a Caos e a regeneração dos TOTENS — "Totens ganham +25% de Resistência a Caos", "Totens Regeneram 2% de Vida")
-      res: m0(totem ? 'totem_res' : 'minion_res'), resCaos: mn('minion_chaos_res') + (totem ? m0('totem_res_caos') : 0) + (pob?.res.chaos ?? 0), danoRecebidoPct: mn('lacaios_dano_recebido'), regenPct: mn('minion_regen_pct') + porTipo('lacaio_regen_pct') + (totem ? m0('totem_regen_pct') : 0), regen: mn('minion_regen'),
-      roubo: mn('minion_leech'), movimentoPct: mn('minion_move') + porTipo('lacaio_mov'), dotMulti: mn('minion_dot_multi'), degenPct: porTipo('lacaio_degen'),
+      // (lote E1a: + a regeneração, o movimento e a recarga da QUALIDADE da gema — `e1aQ`)
+      res: m0(totem ? 'totem_res' : 'minion_res'), resCaos: mn('minion_chaos_res') + (totem ? m0('totem_res_caos') : 0) + (pob?.res.chaos ?? 0), danoRecebidoPct: mn('lacaios_dano_recebido'), regenPct: mn('minion_regen_pct') + porTipo('lacaio_regen_pct') + (totem ? m0('totem_regen_pct') : 0) + e1aQ.regenPct, regen: mn('minion_regen'),
+      roubo: mn('minion_leech'), movimentoPct: mn('minion_move') + porTipo('lacaio_mov') + e1aQ.movimentoPct, dotMulti: mn('minion_dot_multi'), degenPct: porTipo('lacaio_degen'),
       bloqueio: mn('minion_block'), resFogo: mn('minion_fire_res') + (pob?.res.fire ?? 0), resGelo: mn('minion_ice_res') + (pob?.res.ice ?? 0), resRaio: mn('minion_energy_res') + (pob?.res.energy ?? 0),
       // (lote 69, as Ramificadoras: + por TIPO — "Zumbis Erguidos têm X% de chance de Provocar", "Esqueletos Convocados têm X% de chance de Definhar" —
       // e Empurrar com Ataques)
@@ -420,7 +436,7 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
       // (ciclo 7, a árvore) o crítico, a área, a recarga, o bloqueio mágico, a redução física, o escudo, o máximo das resistências, a
       // recuperação, os buffs ao matar, o dano dobrado, ignorar a redução física, a penetração nos amaldiçoados, a vida na morte de outro
       // lacaio, o dreno para o dono — `aplicarNoLacaio`, `golpeDoLacaio`, `danoNoLacaio`, `aoMatarDoLacaio`.
-      critInc: mn('minion_crit_inc') + (/mag[oa]|mage|espectro|spectre/i.test(`${nome} ${t.nome}`) ? mn('minion_crit_magico') : 0), critMult: mn('minion_crit_mult'), areaPct: mn('minion_area'), recargaPct: mn('minion_cdr') + porTipo('lacaio_cdr'),
+      critInc: mn('minion_crit_inc') + (/mag[oa]|mage|espectro|spectre/i.test(`${nome} ${t.nome}`) ? mn('minion_crit_magico') : 0), critMult: mn('minion_crit_mult'), areaPct: mn('minion_area'), recargaPct: mn('minion_cdr') + porTipo('lacaio_cdr') + e1aQ.recargaPct,
       bloqueioMagico: mn('minion_spell_block'), reducaoFisica: mn('minion_phys_red') + (totem ? m0('totem_phys_red') : 0), esDaVidaPct: mn('minion_es_da_vida'), resMax: mn('minion_res_max'),
       // (lote 86, dono 19/10: a Égide Necromântica, parte A) o máximo de UMA resistência (o do escudo — `tetoDaResDoLacaio`); os efeitos AO
       // BLOQUEAR do escudo (Causticar/Enfraquecer/Exaurir e os eventos `ev:bloquear*` — `cacadas.aoBloquearDoLacaio`) e o "se Bloqueou
@@ -470,6 +486,10 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
     afDono: Object.keys(afDono).length ? afDono : null, porLacaioFisico, golem: /golem/i.test(`${nome} ${en}`),
     ...(totem ? { efeitosDoTotem: doTotem } : {}),
     ...(porPoder ? { detonaNoMaximo: true } : {}),
+    // (lote E1a) o que vai no lacaio (`acoes.invocarLacaios`): o Efeito do Buff do golem, o Ceifador e o "mais Dano por Lacaio Não-Golem próximo" do Golem da
+    // Carniça; e a chance de um lacaio extra no uso (o Espírito Furioso)
+    ...(e1aQ.efeitoDoBuffPct > 0 || e1aN.ceifador || e1aN.maisPorNaoGolem ? { e1a: { ...(e1aQ.efeitoDoBuffPct > 0 ? { efeitoDoBuffPct: e1aQ.efeitoDoBuffPct } : {}), ...(e1aN.ceifador ? { ceifador: e1aN.ceifador } : {}), ...(e1aN.maisPorNaoGolem ? { maisPorNaoGolem: e1aN.maisPorNaoGolem } : {}) } } : {}),
+    ...(e1aQ.chanceDeLacaioExtra > 0 ? { chanceDeLacaioExtra: e1aQ.chanceDeLacaioExtra } : {}),
     tipo: totem ? 'totem' : 'lacaio', nome: totem ? (/totem/i.test(t.nome) ? t.nome : `Totem de ${t.nome}`) : nome, maximo: Math.max(1, maximo), porUso: Math.max(1, Math.min(porUso, maximo)), duracaoMs: duracao, nivel: n,
     vida, dano: { min: Math.max(1, Math.round(golpe * (1 - spread))), max: Math.max(1, Math.round(golpe * (1 + spread))) }, intervaloMs: Math.round(f.tempo * 1000), elemento,
     // (lote 44: o lacaio que no PoE não pode sofrer dano — os Robôs Rastejantes, o Armamento Sagrado; lote 75: + o tipo da gema
@@ -681,7 +701,8 @@ export function golpeDoLacaio(l, alvo, fichaDoDono, tipo, agora, rng = Math.rand
   const incendiado = p.danoContraIncendiadosPct > 0 && (alvo?.dots ?? []).some((d) => d.tipo === 'queimadura' && d.falta > 0);
   const contraIncendiado = incendiado ? (1 + ((p.danoIncPct ?? 0) + p.danoContraIncendiadosPct) / 100) / (1 + (p.danoIncPct ?? 0) / 100) : 1;
   const dobrado = (p.danoDobrado ?? 0) + (l.hp >= l.maxHp ? p.danoDobradoVidaCheia ?? 0 : 0);
-  const fator = (dobrado > 0 && rng() * 100 < dobrado ? 2 : 1) * aumentado * contraIncendiado;
+  // (lote E1a: + o "menos Dano" do Ceifador vivo nos outros lacaios e o "mais Dano por Lacaio Não-Golem próximo" do Golem da Carniça — `GemasE1a`)
+  const fator = (dobrado > 0 && rng() * 100 < dobrado ? 2 : 1) * aumentado * contraIncendiado * GemasE1a.fatorDoCeifador(l, lacaios) * GemasE1a.fatorPorNaoGolemPerto(l, lacaios);
   const caosExtra = tipo === 'physical' && buffDoLacaio(l, 'poderProfano', agora) ? 1 : 0;
   return { fator, ficha, caosExtra, fogoExtra };
 }

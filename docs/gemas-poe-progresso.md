@@ -847,6 +847,38 @@ O código mora em `game/systems/itens-poe/gemas-gac.mjs` (os dados e as contas p
 - A linha do feixe da Runa Tempestuosa da Indecisão ficou só no G-D; o "Não pode ser Convocada" tem uma fonte só (`GemasGAC.naoConvocavelDasLinhas`, usada pela `runas-vinculadas`).
 - Teste novo: `game/testes/ativas-g-revisao.test.mjs` (19 casos).
 
+### E1a — os lacaios e os totens com 1 ou 2 linhas de fora (26/10, a fila da aba que fechou)
+
+A fila: 41 gemas ativas (lacaios e totens). As regras novas estão em `game/systems/itens-poe/gemas-e1a.mjs`. Quem as usa: `lacaios-poe.oQueInvoca`, o tique dos lacaios (`cacadas`), `acoes.invocarLacaios`, `GemasPoe.adds` e o status. A fonte é o PoB (act_int/act_str/act_dex.lua, Minions.lua).
+
+- **A qualidade do lacaio** (até aqui o lacaio só lia as linhas do nível):
+  - "+N ao Máximo de Zumbis / Esqueletos / Armas Animadas": o máximo sobe ⌊N⌋;
+  - "Velocidade de Movimento dos Lacaios aumentada" (o Guardião Animado e os Robôs, que a trazem no nível): o passo a mais (`poe.movimentoPct`);
+  - "Lacaios têm Recuperação da Recarga aumentada" (as 6 variantes das Hordas, o Golpe Dominador, a Relíquia da Convicção, a Dominação e a Absolvição Vaal, o Arauto da Pureza): entra em `poe.recargaPct`. Ela encurta as magias do espectro e agora também a habilidade com recarga do lacaio: o golpe em área a cada N acertos sai (1 + X%) vezes mais (`l.cargaDaArea`). Sem a recuperação, continua a cada N acertos, como antes. Isso vale também para o `minion_cdr` da árvore;
+  - "Efeito do Buff aumentado em 20%" (os 7 Golens — `golem_buff_effect_+%`): multiplica tudo o que o golem dá a você (`GemasPoe.adds`, somado ao das peças), inclusive o dano adicionado por lacaio não-golem do Golem da Carniça;
+  - "Lacaios Regeneram 3% de Vida por segundo" (o Golem da Carniça do Saque): `poe.regenPct`;
+  - "30% de chance de convocar um Lacaio extra" (o Espírito Furioso): um a mais no uso;
+  - "Efeito da Oferenda aumentado" (as três Oferendas — `offering_spells_effect_+%`): o bônus × (1 + X%).
+- **O nível:**
+  - o Golem de Pedra da Proteção tem 50% menos Vida;
+  - a Animar Arma Vaal anima 10 por uso ("Anima até N Armas");
+  - **o Ceifador** (e o dos Revenantes): enquanto vive, os seus outros lacaios causam 29% menos Dano (o golpe e as magias do espectro) e têm 29% menos Vida máxima (`aplicarCeifador`: a vida volta quando ele some; a atual acompanha na proporção). Os totens e o mercenário não entram;
+  - **o Golem da Carniça:** 5% mais Dano (só nele — `type = "SummonedCarrionGolem"`) por lacaio não-golem a até 4 casas dele (o "próximo" de sempre do jogo), até 50%;
+  - a Animar Arma dos Braços Distantes já atacava de longe (o arco, pelo nome);
+- **A Vaal Convocar Esqueletos pelo PoB:** 21 soldados + 9 arqueiros + 5 magos + 1 general por uso (antes era 3: valia a última coluna "Convoca"), com máximo de 36 no nível 20. As colunas "Convoca N Guerreiros Esqueleto" e "+N ao Máximo de Esqueletos Convocados" do poedb não existem no PoB (`COLUNA_MAL_ROTULADA_E1A`).
+- **Os totens:** a Velocidade de Projéteis da gema (o Flamejante Sagrado 40%, o da Ira 128% mais, a Balista Estilhaçante 40%) entra no tiro do totem. Desde o G20a o totem usa o caminho do seu uso (`velocidadeDoProjetil`), então a exceção do lote A3 em `ehLinhaDeAlvos` saiu.
+- **Ficam de fora** (é preciso mecânica nova ou uma decisão do dono):
+  - a provocação do Totem Chamariz (a IA dos monstros mirando o totem);
+  - a Balista de Artilharia ×3 (as flechas em linha, a cruz, o foco);
+  - o acerto repetido da Balista Estilhaçante ×2 (o PoB usa uma configuração, `ShrapnelBallistaProjectileOverlap`, padrão 1);
+  - os 25% de Sentinela ao acertar Raro/Único do Golpe Dominador ×2 (o jogo ainda não domina monstros);
+  - o Efeito do Buff da Relíquia Sagrada (o buff é o da Nova da Relíquia, que não existe);
+  - o "+1 s por Cadáver extra" da Oferenda Espiritual (a Oferenda não consome cadáveres no jogo);
+  - o efeito de Definhamento do Golem Caótico do Turbilhão (o golem não definha no jogo; o PoB também não simula: "Minions applying Wither from a skill does not work yet").
+- **Placar das ativas:** parcial 114 → 83; limitação do idle 12 → 41; implementada e testada 391 → 393. As 30 gemas da fila ficaram sem linha de fora. Saíram também linhas de gemas de outras filas com o mesmo texto: o Ceifador dos Revenantes ficou completo; a Recuperação da Recarga da Dominação Vaal, da Absolvição Vaal e do Arauto da Pureza; o +1 Zumbi do Zumbi da Pancada; o Efeito da Oferenda da Óssea e da Carnal; o movimento dos Robôs; o Ceifador da Evisceração.
+- **A tradução não mudou** (nenhuma linha nova; `VERSAO_DA_TRADUCAO` fica em 73).
+- **Teste novo:** `game/testes/ativas-e1a.test.mjs` (10 casos). Os 120 arquivos afetados (`ativas-*`, `gemas-*`, `suportes-*`, os de lacaio e de totem, `itens-poe-gemas`, `gemas-todas-funcionam-poe`, `eficacia-ataque-poe`): 1399 testes, 1363 passam, 33 pulados e 3 falharam. Um falhava pela Área do Golem Flamejante, que saiu do lote e ficou como pendência (`itens-poe-gemas.test.mjs:338`). Os outros dois são a regra do PoE e esperam o aval do dono, sem edição: `projeteis-a3.test.mjs:414` e `totens-uso-poe.test.mjs:185` ainda esperam "efeito não simulado: 128 % mais Velocidade de Projétil" no Totem Flamejante Sagrado da Ira, que agora vale no tiro do totem (velocidade × 2,28).
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.

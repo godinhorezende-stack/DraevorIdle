@@ -2759,6 +2759,8 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
   // (a revisão do lote 87) o relógio deste tique (o `agora` dos lacaios: a lentidão, o próximo golpe) — a magia do monstro no lacaio
   // (`magiaNoLacaio`, que recebe o da caçada) põe a lentidão nele
   hunt.agoraDosLacaios = agora;
+  // (lote E1a) o "menos Vida Máxima" do Ceifador vivo nos outros lacaios (e a vida de volta quando ele some — `LacaiosPoe.aplicarCeifador`)
+  LacaiosPoe.aplicarCeifador(hunt.lacaios);
   for (const l of hunt.lacaios) {
     const aliado = l.mercenario ? aliadoDoMercenario : aliadoBase;
     if (l.hp <= 0 || (l.ate && agora >= l.ate)) {
@@ -3060,7 +3062,15 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     // O golpe em ÁREA a cada N acertos (a pancada do zumbi, o golem de pedra, a explosão do golem de chamas): 60% em volta do alvo.
     // (a revisão do lote 87: o golpe principal que errou não conta — `errouOPrincipal`)
     if (!errouOPrincipal) l.acertos = (l.acertos ?? 0) + 1;
-    if (!errouOPrincipal && est.area && l.acertos % est.area.cada === 0) {
+    // (lote E1a) o golpe em área é a habilidade com RECARGA do lacaio (a pancada do golem, a explosão da relíquia): com "Lacaios têm Recuperação da Recarga
+    // aumentada em X%" ele sai (1 + X%) vezes mais — cada acerto carrega 1 + X% e a área sai a cada N de carga (sem a recuperação, a cada N acertos, como antes)
+    const recargaDaArea = l.poe?.recargaPct ?? 0;
+    let saiArea = false;
+    if (!errouOPrincipal && est.area && recargaDaArea > 0) {
+      l.cargaDaArea = (l.cargaDaArea ?? 0) + Math.max(0.1, 1 + recargaDaArea / 100);
+      if (l.cargaDaArea >= est.area.cada) { l.cargaDaArea -= est.area.cada; saiArea = true; }
+    } else if (!errouOPrincipal && est.area) saiArea = l.acertos % est.area.cada === 0;
+    if (saiArea) {
       // (ciclo 7) "Lacaios têm Efeito em Área aumentado em X%": o raio (lote 36: 1 casa × √(1 + X%), a fração como chance).
       const raioDaArea = LacaiosPoe.raioDaAreaDoLacaio(l);
       eventos.push({ t: 'explosao', id: est.area.efeito, x: alvo.x, y: alvo.y, lado: 1 + 2 * raioDaArea });
@@ -3120,7 +3130,8 @@ function magiasDoEspectro(hunt, l, agora, ficha, estado = null) {
     else eventos.push({ t: 'fx', id: efeito, uid: alvo.uid, x: alvo.x, y: alvo.y });
     const atingidos = casas.length > 1 ? vivos.filter((m) => casas.some((c) => c.x === m.x && c.y === m.y)) : [alvo];
     const golpear = (m, pct) => {
-      const bruto = ((Math.min(a.min, a.max) + Math.random() * Math.abs(a.max - a.min)) * l.espectro.fator * pct) / 100;
+      // (lote E1a: + o "menos Dano" do Ceifador vivo — o espectro é um lacaio não-Ceifador)
+      const bruto = ((Math.min(a.min, a.max) + Math.random() * Math.abs(a.max - a.min)) * l.espectro.fator * pct * LacaiosPoe.fatorDoCeifador(l, hunt.lacaios)) / 100;
       const d = Math.max(1, Math.round(resistido(hunt, m, tipo, bruto, ficha)));
       m.hp -= d;
       QuemFeriu.carimbar(m, QuemFeriu.LACAIO); // (o espectro)

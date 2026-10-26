@@ -8,10 +8,10 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 391 |
+| implementada e testada | 393 |
 | implementada, sem teste próprio | 44 |
-| limitação do modelo idle | 12 |
-| parcial | 114 |
+| limitação do modelo idle | 41 |
+| parcial | 83 |
 | não se aplica | 1 |
 
 Só os ataques:
@@ -33,45 +33,37 @@ Só os ataques:
 
 ### Variantes
 
-- Vaal (52): implementada e testada 33 · parcial 12 · implementada, sem teste próprio 6 · limitação do modelo idle 1
-- Alternativas (209): implementada e testada 134 · implementada, sem teste próprio 24 · parcial 44 · limitação do modelo idle 7
+- Vaal (52): implementada e testada 33 · parcial 10 · implementada, sem teste próprio 6 · limitação do modelo idle 3
+- Alternativas (209): implementada e testada 135 · implementada, sem teste próprio 24 · parcial 28 · limitação do modelo idle 22
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 380 linhas distintas (53 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 363 linhas distintas (42 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 440/562 ativas, 119/262 suportes.
+- Testes que citam a gema: 466/562 ativas, 119/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
 
 | Gemas | Linha |
 |---|---|
-| 12 | Lacaios têm Recuperação da Recarga aumentada em # % |
-| 8 | Efeito do Buff aumentado em # % |
 | 6 | # % de Chance de uma Armadilha ser Ativada uma vez adicional |
-| 4 | +# ao Máximo de Armas Animadas |
-| 4 | +# ao Máximo de Esqueletos Convocados |
 | 4 | Efeito das Auras aumentado em # % |
 | 4 | Habilidades Suportadas têm #% de Velocidade de Movimento de Lacaios aumentada |
-| 4 | Velocidade de Movimento dos Lacaios aumentada em # % |
 | 3 | # segundos adicionais de Duração Base por Cadáver extra consumido |
 | 3 | Alvos Extras das Habilidades Suportadas podem ser encontrados #% mais distânte |
 | 3 | as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:##; no jogo ainda são projéteis no alvo) |
-| 3 | Efeito da Oferenda aumentado em # % |
 | 3 | Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida |
 | 3 | Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção |
 | 3 | Habilidades Suportadas também contam como Habilidades Bênção\nVocê só pode ter uma Aura de suas Habilidades Bênção |
 | 3 | nenhum efeito do buff tem equivalente no jogo |
 | 3 | sem dano direto: nenhum efeito no combate |
-| 3 | Velocidade de Projéteis aumentada em # % |
 | 2 | # % de chance de Convocar um Sentinela da Absolvição ao Acertar um Inimigo Raro ou Único |
 | 2 | # % de chance de invocar uma Sentinela da Dominação normal ao atingir um monstro raro ou único |
 | 2 | # a # de Dano de Fogo adicionado contra Inimigos Queimando |
 | 2 | #% do Dano Físico Convertido para Dano de Fogo |
-| 2 | +# ao Máximo de Zumbis Evocados |
 | 2 | Aplica feixes aos # Inimigos próximos |
 | 2 | as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente) |
 | 2 | Aura de Exposição ao Fogo aplica # % à resistência a dano de fogo |
@@ -79,10 +71,7 @@ Só os ataques:
 | 2 | Causa # a # de Dano de Raio |
 | 2 | Causa # explosões menores Explosões menores têm entre # % de redução e # % de aumento do raio base, aleatoriamente |
 | 2 | Causa +# explosões menores |
-| 2 | Ceifador faz com que seus Lacaios Não-Ceifadores causem # % menos Dano |
-| 2 | Ceifador faz com que seus Lacaios Não-Ceifadores tenham # % menos Vida Máxima |
 | 2 | Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética |
-| 2 | Golens causam # % mais Dano por Lacaio Não-Golem próximo deles, até # % |
 | 2 | Golpes Abatedores com Habilidades Suportadas Consomem cadáveres para Recuperar # de Vida e # de Mana |
 | 2 | Habilidades de Efeito em Área Suportadas também afetam áreas na frente, atrás, e dos lados da área alvo |
 | 2 | Habilidades de Efeito em Área Suportadas também afetam áreas na frente, atrás,\ne dos lados da área alvo |
@@ -102,11 +91,9 @@ Só os ataques:
 | 2 | Trava o inimigo no lugar |
 | 2 | Velocidade de Movimento dos Lacaios está no Máximo |
 | 2 | Você não pode Conjurar Magias Maldição Suportadas |
-| 1 | # % de chance de convocar um Lacaio extra |
 | 1 | # % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único |
 | 1 | # % mais Área de Efeito se Consumindo um Lacaio |
 | 1 | # % mais Dano de Projétil |
-| 1 | # % mais Velocidade de Projétil |
 | 1 | # % menos Dano de Afecções |
 | 1 | # % menos Dano em Área |
 | 1 | # % menos Velocidade de Arremesso de Armadilhas |
@@ -132,7 +119,6 @@ Só os ataques:
 | 1 | Afecções Elementais infligidas por Habilidades Suportadas se espalham para outros inimigos dentro de # metros |
 | 1 | Alcance do Posicionamento de Totens aumentado em # % |
 | 1 | Alvos sofrem #% mais Dano do Sangramento por Rompimento das Habilidades Suportadas neles |
-| 1 | Anima até # Armas |
 | 1 | Ao atingir # de Gula, perde toda a Gula e ganha Regurgitação por # segundos |
 | 1 | Aplica feixes aos +# Inimigos próximos |
 | 1 | Após atacar, os totens desaparecem |
@@ -169,8 +155,6 @@ Só os ataques:
 | 1 | Causa # a # de Dano de Fogo |
 | 1 | Causa # a # de Dano de Gelo |
 | 1 | Causa Dano de Fogo base igual a #% da Vida Máxima dos Totens |
-| 1 | Ceifadores fazem com que seus Lacaios não-Ceifadores tenham # % menos Dano |
-| 1 | Ceifadores fazem com que seus Lacaios não-Ceifadores tenham # % menos Vida Máxima |
 | 1 | Chão amaldiçoado de habilidades reforçadas ativam Sapo Explosivo a cada # segundo |
 | 1 | Clamores reforçados criam um chão consagrado com duração de # segundos |
 | 1 | Clamores reforçados têm #% de área de efeito |
@@ -208,6 +192,7 @@ Só os ataques:
 | 1 | Duração Base do Frenesi Faminto é de # segundos |
 | 1 | Efeito das Marcas de Habilidades Suportadas aumentado em #% |
 | 1 | Efeito das Marcas de Habilidades Suportadas reduzido em #% |
+| 1 | Efeito do Buff aumentado em # % |
 | 1 | Efeito em Área de Habilidades Maldição Suportadas reduzido em #% |
 | 1 | Empala Inimigos ao Acertar |
 | 1 | Enquanto na Postura da Areia, Buff faz com que você sofra até # % menos Dano dos Inimigos na Aura |
@@ -356,18 +341,16 @@ Só os ataques:
 | 1 | Lacaios de Habilidades Suportadas tem #% de chance de Provocar ao Acertar |
 | 1 | Lacaios de Habilidades Suportadas têm +#% ao máximo de todas as Resistências Elementais |
 | 1 | Lacaios de Habilidades Suportadas têm +#% de todas as Resistências Elementais |
-| 1 | Lacaios Regeneram # % de Vida por segundo |
 | 1 | Lacaios Relâmpagos Vivos atacam # vezes antes de desaparecerem |
 | 1 | Lacaios Relâmpagos Vivos atacam +# vezes antes de desaparecerem |
 | 1 | Lacaios têm # % de chance de agravar sangramento em alvos atingidos com ataques |
 | 1 | Lacaios têm # % de chance de causar Dano Dobrado |
-| 1 | Lacaios têm # % menos Vida Máxima |
 | 1 | Lacaios têm #% de chance de cobrir os inimigos de gelo ao atingir |
 | 1 | Lacaios têm Chance de Acerto Crítico aumentada em # % |
 | 1 | Lacaios têm efeito de definhamento aumentado em # % |
 | 1 | Lacaios têm Efeito Eletrizante aumentado em # % |
 | 1 | Lacaios tem Efeito Resfriante aumentado em # % |
-| 1 | Lâminas Persistêntes Animadas se tornam Arcos |
+| 1 | Lacaios têm Recuperação da Recarga aumentada em # % |
 | 1 | Lança até # armadilhas a mais ao usar duas armas |
 | 1 | Libera ondas a cada # segundos |
 | 1 | Magias reforçadas causam de # a # de dano físico adicionado para cada lacaio permanente |
@@ -437,21 +420,15 @@ Só os ataques:
   - efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %
 - **Absolution_of_Inspiring** (Absolvição da Inspiração) — parcial
   - efeito não simulado: 25 % de chance de Convocar um Sentinela da Absolvição ao Acertar um Inimigo Raro ou Único
-- **Animate_Guardian** (Animar Guardião) — parcial
-  - efeito não simulado: Velocidade de Movimento dos Lacaios aumentada em 40 %
+- **Animate_Guardian** (Animar Guardião) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Animate_Guardian_of_Smiting** (Guardião Animado do Castigo) — parcial
-  - efeito não simulado: Velocidade de Movimento dos Lacaios aumentada em 40 %
+- **Animate_Guardian_of_Smiting** (Guardião Animado do Castigo) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Animate_Weapon** (Animar Arma) — parcial
-  - efeito não simulado: +2 ao Máximo de Armas Animadas
+- **Animate_Weapon** (Animar Arma) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Animate_Weapon_of_Ranged_Arms** (Animar Arma dos Braços Distantes) — parcial
-  - efeito não simulado: Lâminas Persistêntes Animadas se tornam Arcos
-  - efeito não simulado: +2 ao Máximo de Armas Animadas
+- **Animate_Weapon_of_Ranged_Arms** (Animar Arma dos Braços Distantes) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Animate_Weapon_of_Self_Reflection** (Animar Arma da Auto-reflexão) — parcial
-  - efeito não simulado: +1 ao Máximo de Armas Animadas
+- **Animate_Weapon_of_Self_Reflection** (Animar Arma da Auto-reflexão) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Artillery_Ballista** (Balista de Artilharia) — parcial
   - efeito não simulado: as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:751-769; no jogo ainda são projéteis no alvo)
@@ -496,7 +473,6 @@ Só os ataques:
 - **Bone_Offering** (Oferenda Óssea) — parcial
   - efeito não simulado: 1 segundos adicionais de Duração Base por Cadáver extra consumido
   - efeito não simulado: Concede aos Lacaios +34 % de Chance de Bloquear Dano Mágico
-  - efeito não simulado: Efeito da Oferenda aumentado em 10 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Conversion_Trap** (Armadilha Conversora) — parcial
   - sem dano direto: nenhum efeito no combate
@@ -517,7 +493,6 @@ Só os ataques:
   - efeito não simulado: Você e Aliados próximos ganham 30 % de Velocidade de Recarga de Escudo de Energia aumentada
 - **Dominating_Blow** (Golpe Dominador) — parcial
   - efeito não simulado: 25 % de chance de invocar uma Sentinela da Dominação normal ao atingir um monstro raro ou único
-  - efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Dominating_Blow_of_Inspiring** (Golpe Dominador da Inspiração) — parcial
   - efeito não simulado: 25 % de chance de invocar uma Sentinela da Dominação normal ao atingir um monstro raro ou único
@@ -552,7 +527,6 @@ Só os ataques:
   - efeito não simulado: 1 segundos adicionais de Duração Base por Cadáver extra consumido
   - efeito não simulado: Aumenta a Velocidade de Conjuração dos Lacaios em 30 %
   - efeito não simulado: Aumenta a Velocidade de Movimento dos Lacaios em 29 %
-  - efeito não simulado: Efeito da Oferenda aumentado em 10 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Generals_Cry** (Clamor do General) — parcial
   - efeito não simulado: Conta o Poder total de Inimigos e Cadáveres no Alcance
@@ -567,14 +541,9 @@ Só os ataques:
   - efeito não simulado: 20 % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único
   - efeito não simulado: Buff concede 12 % mais Dano Físico
   - efeito não simulado: Lacaios causam 95 % de Dano Físico
-  - efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Herald_of_Thunder** (Arauto Trovejante) — parcial
   - efeito não simulado: Tempestades Acertam Inimigos com Frequência aumentada em 20 %
-- **Holy_Flame_Totem** (Totem Flamejante Sagrado) — parcial
-  - efeito não simulado: Velocidade de Projéteis aumentada em 40 %
-- **Holy_Flame_Totem_of_Ire** (Totem Flamejante Sagrado da Ira) — parcial
-  - efeito não simulado: 128 % mais Velocidade de Projétil
 - **Holy_Strike** (Golpe Sagrado) — parcial
   - efeito não simulado: +2.1 metros para o alcance do golpe corpo a corpo do lacaio
   - efeito não simulado: Este ataque e lacaios convertem 50 % do dano físico em dano elétrico
@@ -626,8 +595,7 @@ Só os ataques:
   - efeito não simulado: Velocidade de Movimento dos Lacaios está no Máximo
   - efeito não simulado: Lacaios têm Chance de Acerto Crítico aumentada em 1180 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Raise_Zombie** (Evocar Zumbi) — parcial
-  - efeito não simulado: +1 ao Máximo de Zumbis Evocados
+- **Raise_Zombie** (Evocar Zumbi) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Raise_Zombie_of_Falling** (Evocar Zumbi da Queda) — parcial
   - efeito não simulado: +200 ao número máximo de Zumbis
@@ -637,7 +605,6 @@ Só os ataques:
 - **Raise_Zombie_of_Slamming** (Evocar Zumbi da Pancada) — parcial
   - efeito não simulado: Ataque de Impacto dos Zumbis Erguidos tem Efeito em Área aumentado em 76 %
   - efeito não simulado: Golpe de Impacto de Zumbis Evocados tem a Velocidade de Recarga aumentada em %
-  - efeito não simulado: +1 ao Máximo de Zumbis Evocados
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Rallying_Cry** (Clamor Agrupador) — parcial
   - efeito não simulado: Buff tem 100 % mais Efeito em seus Lacaios
@@ -658,10 +625,8 @@ Só os ataques:
   - efeito não simulado: Libera +1 onda
 - **Shrapnel_Ballista** (Balista Estilhaçante) — parcial
   - efeito não simulado: as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente)
-  - efeito não simulado: Velocidade de Projéteis aumentada em 40 %
 - **Shrapnel_Ballista_of_Steel** (Balista de Cerco do Aço) — parcial
   - efeito não simulado: as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente)
-  - efeito não simulado: Velocidade de Projéteis aumentada em 40 %
 - **Siege_Ballista_of_Trarthus** (Balista de Cerco de Trarthus) — parcial
   - efeito não simulado: Alcance do Posicionamento de Totens aumentado em 300 %
   - efeito não simulado: Invoca 1 Totens de Balista em círculo que usam esta habilidade
@@ -690,111 +655,76 @@ Só os ataques:
   - efeito não simulado: 25 % menos velocidade de lançar armadilhas com arma de duas mãos
 - **Spirit_Offering** (Oferenda Espiritual) — parcial
   - efeito não simulado: 1 segundos adicionais de Duração Base por Cadáver extra consumido
-  - efeito não simulado: Efeito da Oferenda aumentado em 10 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Stormblast_Mine** (Mina da Tormenta Explosiva) — parcial
   - efeito não simulado: Cada mina aplica Dano aumentado em +1 % aos Inimigos próximos máximo de 150 %
-- **Summon_Carrion_Golem** (Convocar Golem da Carniça) — parcial
-  - efeito não simulado: Golens causam 5 % mais Dano por Lacaio Não-Golem próximo deles, até 50 %
-  - efeito não simulado: Efeito do Buff aumentado em 20 %
+- **Summon_Carrion_Golem** (Convocar Golem da Carniça) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Summon_Carrion_Golem_of_Hordes** (Convocar Golem da Carniça das Hordas) — parcial
-  - efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %
+- **Summon_Carrion_Golem_of_Hordes** (Convocar Golem da Carniça das Hordas) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Summon_Carrion_Golem_of_Scavenging** (Convocar Golem da Carniça do Saque) — parcial
-  - efeito não simulado: Golens causam 5 % mais Dano por Lacaio Não-Golem próximo deles, até 50 %
-  - efeito não simulado: Lacaios Regeneram 3 % de Vida por segundo
+- **Summon_Carrion_Golem_of_Scavenging** (Convocar Golem da Carniça do Saque) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Summon_Chaos_Golem** (Convocar Golem Caótico) — parcial
-  - efeito não simulado: Efeito do Buff aumentado em 20 %
+- **Summon_Chaos_Golem** (Convocar Golem Caótico) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Summon_Chaos_Golem_of_Hordes** (Convocar Golem Caótico das Hordas) — parcial
-  - efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %
+- **Summon_Chaos_Golem_of_Hordes** (Convocar Golem Caótico das Hordas) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Summon_Chaos_Golem_of_the_Maelstr%C3%B6m** (Convocar Golem Caótico do Turbilhão) — parcial
   - efeito não simulado: Lacaios têm efeito de definhamento aumentado em 20 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Summon_Flame_Golem** (Convocar Golem Flamejante) — parcial
-  - efeito não simulado: Efeito do Buff aumentado em 20 %
+- **Summon_Flame_Golem** (Convocar Golem Flamejante) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Summon_Flame_Golem_of_Hordes** (Convocar Golem Flamejante das Hordas) — parcial
-  - efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %
+- **Summon_Flame_Golem_of_Hordes** (Convocar Golem Flamejante das Hordas) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Summon_Flame_Golem_of_the_Meteor** (Convocar Golem Flamejante do Meteoro) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Summon_Holy_Relic** (Convocar Relíquia Sagrada) — parcial
   - efeito não simulado: Efeito do Buff aumentado em 40 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Summon_Holy_Relic_of_Conviction** (Convocar Relíquia Sagrada da Convicção) — parcial
-  - efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 20 %
+- **Summon_Holy_Relic_of_Conviction** (Convocar Relíquia Sagrada da Convicção) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Summon_Ice_Golem** (Convocar Golem Glacial) — parcial
-  - efeito não simulado: Efeito do Buff aumentado em 20 %
+- **Summon_Ice_Golem** (Convocar Golem Glacial) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Summon_Ice_Golem_of_Hordes** (Convocar Golem Glacial das Hordas) — parcial
-  - efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %
+- **Summon_Ice_Golem_of_Hordes** (Convocar Golem Glacial das Hordas) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Summon_Ice_Golem_of_Shattering** (Convocar Golem Glacial do Despedaçamento) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Summon_Lightning_Golem** (Convocar Golem Relampejante) — parcial
-  - efeito não simulado: Efeito do Buff aumentado em 20 %
+- **Summon_Lightning_Golem** (Convocar Golem Relampejante) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Summon_Lightning_Golem_of_Hordes** (Convocar Golem Elétrico das Hordas) — parcial
-  - efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %
+- **Summon_Lightning_Golem_of_Hordes** (Convocar Golem Elétrico das Hordas) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Summon_Raging_Spirit** (Convocar Espírito Furioso) — parcial
-  - efeito não simulado: 30 % de chance de convocar um Lacaio extra
+- **Summon_Raging_Spirit** (Convocar Espírito Furioso) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Summon_Raging_Spirit_of_Enormity** (Convocar Espírito Furioso da Enormidade) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Summon_Reaper** (Convocar Ceifador) — parcial
-  - efeito não simulado: Ceifador faz com que seus Lacaios Não-Ceifadores causem 29 % menos Dano
-  - efeito não simulado: Ceifador faz com que seus Lacaios Não-Ceifadores tenham 29 % menos Vida Máxima
+- **Summon_Reaper** (Convocar Ceifador) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Summon_Reaper_of_Eviscerating** (Convocar Ceifador da Evisceração) — parcial
-  - efeito não simulado: Ceifador faz com que seus Lacaios Não-Ceifadores causem 29 % menos Dano
-  - efeito não simulado: Ceifador faz com que seus Lacaios Não-Ceifadores tenham 29 % menos Vida Máxima
   - efeito não simulado: Lacaios têm 40 % de chance de agravar sangramento em alvos atingidos com ataques
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Summon_Reaper_of_Revenants** (Convocar Ceifador dos Fantasmas) — parcial
-  - efeito não simulado: Ceifadores fazem com que seus Lacaios não-Ceifadores tenham 29 % menos Dano
-  - efeito não simulado: Ceifadores fazem com que seus Lacaios não-Ceifadores tenham 29 % menos Vida Máxima
-  - efeito não simulado: Velocidade de Movimento dos Lacaios aumentada em 40 %
+- **Summon_Reaper_of_Revenants** (Convocar Ceifador dos Fantasmas) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Summon_Skeletons** (Convocar Esqueleto) — parcial
-  - efeito não simulado: +1 ao Máximo de Esqueletos Convocados
+- **Summon_Skeletons** (Convocar Esqueleto) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Summon_Skeletons_of_Archers** (Convocar Esqueleto dos Arqueiros) — parcial
-  - efeito não simulado: +1 ao Máximo de Esqueletos Convocados
+- **Summon_Skeletons_of_Archers** (Convocar Esqueleto dos Arqueiros) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Summon_Skeletons_of_Mages** (Convocar Esqueleto dos Magos) — parcial
-  - efeito não simulado: +1 ao Máximo de Esqueletos Convocados
+- **Summon_Skeletons_of_Mages** (Convocar Esqueleto dos Magos) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Summon_Skitterbots** (Convocar Robôs Rastejantes) — parcial
-  - efeito não simulado: Velocidade de Movimento dos Lacaios aumentada em 76 %
   - efeito não simulado: Lacaios tem Efeito Resfriante aumentado em 19 %
   - efeito não simulado: Lacaios têm Efeito Eletrizante aumentado em 19 %
   - efeito não simulado: Robôs Rastejantes concedem 10 % mais Dano de Armadilhas e Minas
-  - efeito não simulado: Velocidade de Movimento dos Lacaios aumentada em 40 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Summon_Stone_Golem** (Convocar Golem Pedregulho) — parcial
-  - efeito não simulado: Efeito do Buff aumentado em 20 %
+- **Summon_Stone_Golem** (Convocar Golem Pedregulho) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Summon_Stone_Golem_of_Hordes** (Convocar Golem de Pedra das Hordas) — parcial
-  - efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %
+- **Summon_Stone_Golem_of_Hordes** (Convocar Golem de Pedra das Hordas) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Summon_Stone_Golem_of_Safeguarding** (Convocar Golem de Pedra da Proteção) — parcial
-  - efeito não simulado: Lacaios têm 50 % menos Vida Máxima
-  - efeito não simulado: Efeito do Buff aumentado em 20 %
+- **Summon_Stone_Golem_of_Safeguarding** (Convocar Golem de Pedra da Proteção) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Vaal_Absolution** (Absolvição Vaal) — parcial
   - efeito não simulado: Sentinelas Ascendidos causam 300 % mais Dano
   - efeito não simulado: Sentinelas Ascendidos sofrem 70 % menos Dano
-  - efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Vaal_Animate_Weapon** (Animar Arma Vaal) — parcial
-  - efeito não simulado: Anima até 10 Armas
-  - efeito não simulado: +2 ao Máximo de Armas Animadas
+- **Vaal_Animate_Weapon** (Animar Arma Vaal) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Vaal_Clarity** (Clareza Vaal) — parcial
   - efeito não simulado: Suas Habilidades e de seus aliados próximos não Custam Mana
@@ -803,7 +733,6 @@ Só os ataques:
 - **Vaal_Domination** (Dominação Vaal) — parcial
   - efeito não simulado: Sentinelas Ascendidos causam 300 % mais Dano
   - efeito não simulado: Sentinelas Ascendidos sofrem 70 % menos Dano
-  - efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Vaal_Double_Strike** (Golpe Duplo Vaal) — limitação do modelo idle
   - _idle:_ limitação do idle: os clones do Golpe Duplo Vaal não andam no jogo — o "Clones possuem X% de aumento da Velocidade de Movimento" não tem onde valer (D4.4)
@@ -828,9 +757,7 @@ Só os ataques:
   - efeito não simulado: Raio acerta 30 alvos dentro de 10 metros
   - efeito não simulado: Aura faz com que Castigo ataque +1 alvos com relâmpagos
   - efeito não simulado: +10 % mais Dano em Área
-- **Vaal_Summon_Skeletons** (Convocar Esqueletos Vaal) — parcial
-  - efeito não simulado: +7 ao Máximo de Esqueletos Convocados
-  - efeito não simulado: +1 ao Máximo de Esqueletos Convocados
+- **Vaal_Summon_Skeletons** (Convocar Esqueletos Vaal) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **War_Banner** (Estandarte da Guerra) — parcial
   - nenhum efeito do buff tem equivalente no jogo
