@@ -30,6 +30,7 @@ import * as R from './regras.mjs';
 import * as Areas from '../engine/areas.mjs';
 import * as GemasA2 from './itens-poe/gemas-a2.mjs';
 import * as Passivas from './passivas/arvore.mjs';
+import { companheirismoDe } from './itens-poe/suportes-s2a.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata', 'arvore');
 const CATALOGOS = {};
@@ -347,7 +348,7 @@ export function aoBloquear(estado, eventos, pos, quem) {
  * "Dano recebido" da árvore, a Última muralha, o escudo da Fonte viva e o
  * Não cai nunca. Devolve o que sobra para a vida.
  */
-export function danoRecebido(estado, final, eventos, pos, quem, { ficha = null, elemento = null } = {}) {
+export function danoRecebido(estado, final, eventos, pos, quem, { ficha = null, elemento = null, ataque = false } = {}) {
   if (!(final > 0)) return final;
   const b = bonus(estado);
   let v = final * (1 - Math.min(0.9, b.absorb ?? 0)) * (1 + (b.danoRecebido ?? 0));
@@ -386,6 +387,10 @@ export function danoRecebido(estado, final, eventos, pos, quem, { ficha = null, 
   const vaal = hunt?.pos ? (hunt.lacaios ?? []).find((x) => x.hp > 0 && x.auraDoTotem?.absorvePct > 0 && Math.max(Math.abs(x.x - hunt.pos.x), Math.abs(x.y - hunt.pos.y)) <= x.auraDoTotem.raio) : null;
   if (vaal) desviar(vaal.auraDoTotem.absorvePct, (x) => x === vaal);
   desviar(Number(af.dano_nos_espectros_pct) || 0, (x) => !!x.espectro);
+  // (lote S2A, 27/10, o Companheirismo: "Lacaios … sofrem X% do dano de ataque da própria vida antes de você, se eles forem seus únicos lacaios" — só o ATAQUE que
+  // acerta você; o mais perto dos lacaios da habilidade suportada)
+  const companheiros = ataque ? companheirismoDe(hunt) : null;
+  if (companheiros?.absorvePct > 0) desviar(companheiros.absorvePct, (x) => x.companheirismoS2A?.acao === companheiros.acao);
   // (14/10, a Cruzada Radiante: "X% do Dano dos Acertos é sofrido na vida do seu Sentinela do Resplendor antes da sua")
   desviar(Number(af.sentinela_absorve) || 0, (x) => !!x.sentinela);
   // (14/10, o Guarda-costas Leal do Luminary: "Se a vida do seu mercenário for maior que a sua, 20% do Dano dos Acertos é sofrido na vida do seu

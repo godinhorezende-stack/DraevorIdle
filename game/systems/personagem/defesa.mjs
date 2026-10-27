@@ -87,7 +87,15 @@ export function esAtual(estado, ficha) {
 // o Caos que atravessa o escudo também — revisão PR2, 21/10.)
 function recargaProtegida(estado, ficha) {
   const agora = estado.hunt?.clock ?? 0;
+  // (lote E1b, 26/10: + a Disciplina Vaal — "A Recarga do seu Escudo de Energia … não é impedida por Dano", sempre — reiniciarEspera)
+  if (recargaNuncaInterrompida(ficha)) return true;
   return (Number(ficha?.afPoe?.recarga_nao_interrompida) || 0) > 0 && !(estado.esEspera > 0) && estado.esRecargaDesde != null && agora - estado.esRecargaDesde <= RECENTE_MS;
+}
+/** (lote E1b, 26/10) A Disciplina Vaal ligada: o dano não impede a recarga do Escudo de Energia (energy_shield_recharge_not_delayed_by_damage). */
+export const recargaNuncaInterrompida = (ficha) => (Number(ficha?.afPoe?.recarga_es_nunca_interrompida) || 0) > 0;
+/** O dano que não passa pelo Escudo (o Caos, o Físico que o ignora…) reinicia a espera da recarga — salvo a Disciplina Vaal. */
+export function reiniciarEspera(estado, ficha) {
+  if (!recargaNuncaInterrompida(ficha)) estado.esEspera = esperaDaRecarga(ficha);
 }
 // (ciclo 7, lote H) "X% de Dano é removido da Mana antes da Vida" (a Mente sobre a Matéria do PoE): do que passou do escudo — e do Caos que o atravessa (revisão
 // PR2, 21/10: no PoE o Caos ignora só o Escudo, não a Mana). Devolve o que sobra para a Vida.

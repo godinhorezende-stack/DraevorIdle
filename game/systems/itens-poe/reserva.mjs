@@ -53,14 +53,19 @@ export function fator(ficha, efeitoDaGema, recurso, arquetipo = null, tipos = nu
     // A maldição em aura (Blasfêmia) e a postura (a tag "Stance" da gema).
     + (deMana && arquetipo === 'maldicao' ? ModsPoe.valor(ficha, 'eficiencia_reserva_maldicao') : 0)
     + (deMana && tipos?.has?.('Stance') ? ModsPoe.valor(ficha, 'eficiencia_reserva_postura') : 0)
-    + (deMana && arquetipo === 'feiticeiro' ? ModsPoe.valor(ficha, 'eficiencia_reserva_feiticeiro') : 0);
+    + (deMana && arquetipo === 'feiticeiro' ? ModsPoe.valor(ficha, 'eficiencia_reserva_feiticeiro') : 0)
+    // (lote D2: a Mina que reserva o custo — a Cadeia Explosiva, o Alto Impacto — tem a "Eficácia da Reserva das Habilidades que arremessam Minas")
+    + (arquetipo === 'mina' ? ModsPoe.valor(ficha, 'eficiencia_reserva_minas') : 0);
   return mult / Math.max(0.1, 1 + eficacia / 100);
 }
 
-/** Quanto a reserva `r` (`{ recurso, pct?, fixo?, fator }`) tranca agora — a % sobre a máxima de AGORA (subiu de level, trocou de peça). */
+/**
+ * Quanto a reserva `r` (`{ recurso, pct?, fixo?, fator }`) tranca agora — a % sobre a máxima de AGORA (subiu de level, trocou de peça).
+ * (revisão F2, dono 27/10: a da Mina — `minasDe`, a ação — é a de uma × as Minas dela plantadas agora, como o PoB; `minasAMais`: as que vão sair — o "cabe?")
+ */
 export function valor(estado, r) {
   const maxima = r.recurso === 'vida' ? estado.maxHp ?? 0 : estado.maxMana ?? 0;
-  return Math.ceil((r.pct ? (maxima * r.pct) / 100 : r.fixo ?? 0) * (r.fator ?? 1));
+  return ModsPoe.valorDaReserva(estado?.hunt, r, maxima);
 }
 
 /** As reservas ligadas agora (as auras da caçada): `{ mana, vida }` — nunca mais que a máxima (a vida deixa sempre 1). */

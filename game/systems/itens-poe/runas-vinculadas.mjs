@@ -69,15 +69,17 @@ export const vinculadasA = (hunt, uid) => ativas(hunt).filter((r) => r.alvo === 
 export const resta = (r) => (r.alvo != null ? r.vinculadaMs - r.vinculadaPassou : r.soltaMs - r.soltaPassou);
 
 /** As Runas estão todas em campo e nenhuma acaba em 1 s? (o automático não conjura outra à toa) */
-export const cheias = (hunt, ficha) => ativas(hunt).length >= maximo(ficha) && ativas(hunt).every((r) => resta(r) > 1000);
+// (lote R3C: `extra` — as Runas a mais da habilidade, a Constrição Pérfida: "podem conjurar 2 glifos adicionais")
+export const cheias = (hunt, ficha, extra = 0) => ativas(hunt).length >= maximo(ficha) + (Number(extra) || 0) && ativas(hunt).every((r) => resta(r) > 1000);
 
 /**
  * Conjura uma Runa no lugar (`x`, `y`) — com a gema (`props`: `daGema`), o intervalo já com a velocidade de conjuração (`intervaloMs`) e
  * as durações com a Duração de Habilidades (`fatorDaDuracao`). Passou do máximo: a mais velha sai. Devolve a Runa (solta: o tique a vincula).
  */
-export function conjurar(hunt, ficha, { acao, slot, x, y, z = hunt?.z ?? 0, props, intervaloMs, fatorDaDuracao = 1, agora = hunt?.clock ?? 0, custo = null }) {
+export function conjurar(hunt, ficha, { acao, slot, x, y, z = hunt?.z ?? 0, props, intervaloMs, fatorDaDuracao = 1, agora = hunt?.clock ?? 0, custo = null, maximoExtra = 0 }) {
   const lista = [...ativas(hunt)];
-  while (lista.length >= maximo(ficha)) lista.shift();
+  // (lote R3C: + as Runas a mais do suporte da habilidade — a Constrição Pérfida, +2)
+  while (lista.length >= maximo(ficha) + Math.max(0, Number(maximoExtra) || 0)) lista.shift();
   hunt.runasN = (hunt.runasN ?? 0) + 1;
   const r = {
     // (lote 74: o custo pago ao conjurar — `custo` e em quê, `custoEm`: 'mana' (com a parte em Vida, `parteEmVidaPct`), 'vida' ou 'es'; a

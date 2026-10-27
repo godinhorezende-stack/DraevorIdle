@@ -74,8 +74,9 @@ test('PR2: as gemas do lote saem de parcial; a Barganha Sombria fica só com a p
     const r = G.REGISTRO.get(s);
     assert.deepEqual([s, r.statusNoJogo, r.motivosNoJogo], [s, 'funciona', []]);
   }
+  // (com o aval do dono, 26/10 — lote E1b: a parte dos Esqueletos foi feita como o PoB — a área no Esqueleto, a cadeia, a Vida máxima — e a Barganha fica completa)
   const db = G.REGISTRO.get('Dark_Bargain').motivosNoJogo;
-  assert.ok(db.length && db.every((m) => /da Vida do Esqueleto/.test(m)), JSON.stringify(db));
+  assert.deepEqual(db, []);
 });
 
 // ---------------------------------------------------------------- o Ritual Proibido

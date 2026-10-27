@@ -16,6 +16,11 @@ import * as Reforcos from '../skills/reforcos.mjs';
 import { fatorDoPassoAprisionado } from '../itens-poe/gemas-pr4.mjs';
 // (lote G-C, dono 25/10 — D10: a Corrente Temporal, a velocidade de ação do amaldiçoado)
 import { fatorDeAcao } from '../itens-poe/gemas-gac.mjs';
+// (lote E1b, dono 26/10: o Imobilizado das Armadilhas de Urso não anda)
+import { imobilizado } from '../itens-poe/gemas-e1b.mjs';
+// (lote E2B, 26/10: o passo do debuff da Armadilha de Urso — o −80% que cai até 0)
+import { fatorDoPassoDoUrso } from '../itens-poe/gemas-e2b.mjs';
+import * as GemasR3D from '../itens-poe/gemas-r3d.mjs';
 
 export const BESTIARY = CATALOGO.bestiary;
 
@@ -252,6 +257,12 @@ export function passoDoBicho(m, diagonal = false) {
  * A caçada passa aqui a grade DOS BICHOS (sem as casas seguras): a BFS não passa por elas e nenhum passo cai nelas. Com o jogador numa
  * delas (`semPerseguir`), ninguém o persegue: a IA larga a perseguição em vez de ficar rondando a borda à espera dele.
  */
+/** (R3, dono 27/10) As casas das torres de osso vivas no andar de agora (`Set` de "x,y"), ou null sem nenhuma. */
+export function torresNoCaminho(hunt, agora) {
+  const relogio = hunt?.clock ?? agora;
+  const vivas = (hunt?.a2?.torres ?? []).filter((t) => t.ate > relogio && (t.z ?? 0) === (hunt.z ?? 0));
+  return vivas.length ? new Set(vivas.map((t) => `${t.x},${t.y}`)) : null;
+}
 export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percepcao = ALCANCE_DE_PERCEPCAO } = {}) {
   if (semPerseguir) {
     for (const m of hunt.monstros) m.perseguindo = false;
@@ -266,7 +277,12 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
   // neste tique — bem mais barato do que um BFS por bicho.
   // Dois mapas de distância (só reto e com diagonal), reaproveitados por todo
   // bicho perseguindo neste tique — bem mais barato do que um BFS por bicho.
-  const reto = perseguindo ? bfsDistancias(grade, hunt.pos, ALCANCE_DE_PERSEGUICAO + 6, null, VIZINHANCA_4) : null;
+  /*
+   * (R3, dono 27/10) As TORRES DE OSSO da Torre Óssea (`hunt.a2.torres`, enquanto duram, no andar de agora) são OBSTÁCULO no passo dos monstros: a BFS não passa por elas e
+   * nenhum passo cai nelas. Quem já está numa casa de torre sai normalmente (a casa dele fica sem distância e qualquer vizinha com caminho vale) — ninguém fica preso.
+   */
+  const torres = torresNoCaminho(hunt, agora);
+  const reto = perseguindo ? bfsDistancias(grade, hunt.pos, ALCANCE_DE_PERSEGUICAO + 6, null, VIZINHANCA_4, torres) : null;
   let comDiagonal = null;
   /*
    * ---- Quem está em cada casa, sem varrer todo mundo ----
@@ -295,6 +311,7 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
   const livre = (m, viz) => {
     if (viz.x === hunt.pos.x && viz.y === hunt.pos.y) return false; // não pisa no jogador
     if (aliados.has(`${viz.x},${viz.y}`)) return false;
+    if (torres?.has(`${viz.x},${viz.y}`)) return false;
     const outro = ocupada.get(`${viz.x},${viz.y}`);
     return !outro || outro === m;
   };
@@ -321,7 +338,7 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
     // (lote A2, dono 19/10) o bicho FUGINDO (a Chance de Fugir, o Pacifismo — `Acoes.fugir`, 2 s): em vez de perseguir, dá o passo que mais o afasta
     // de você (as casas andáveis em volta dele, sem outro bicho nem você — a exceção (6) do dono, `itens-poe/gemas-a2.mjs`)
     if (Estados.fugindo(m, hunt.clock ?? agora)) {
-      if (!pronto(m) || !Estados.podeAgir(m, agora)) continue;
+      if (!pronto(m) || !Estados.podeAgir(m, agora) || imobilizado(m, agora)) continue;
       const perto = bfsDistancias(grade, m, 1);
       // (revisão do A2: as regras do passo normal — sem pisar nos outros jogadores da sala, e a Paralisia no tempo do passo)
       aliadosDaFuga ??= aliadosPorCasa(hunt);
@@ -329,7 +346,7 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
       let melhor = d;
       for (const [dx, dy] of VIZINHANCA_8) {
         const v = { x: m.x + dx, y: m.y + dy };
-        if (perto.em(v.x, v.y) == null || (v.x === hunt.pos.x && v.y === hunt.pos.y) || aliadosDaFuga.has(`${v.x},${v.y}`) || (ocupada ? (ocupada.get(`${v.x},${v.y}`) ?? m) !== m : hunt.monstros.some((o) => o !== m && o.hp > 0 && o.x === v.x && o.y === v.y))) continue;
+        if (perto.em(v.x, v.y) == null || (v.x === hunt.pos.x && v.y === hunt.pos.y) || aliadosDaFuga.has(`${v.x},${v.y}`) || torres?.has(`${v.x},${v.y}`) || (ocupada ? (ocupada.get(`${v.x},${v.y}`) ?? m) !== m : hunt.monstros.some((o) => o !== m && o.hp > 0 && o.x === v.x && o.y === v.y))) continue;
         const dv = distancia(hunt.pos, v);
         if (dv > melhor) { melhor = dv; destino = v; }
       }
@@ -342,7 +359,30 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
       m.y = destino.y;
       m.dir = fy < 0 ? 0 : fy > 0 ? 2 : fx > 0 ? 1 : 3;
       m.andouEm = hunt.clock ?? 0;
-      m.moveMs = passoDoBicho(m, fx !== 0 && fy !== 0) * (Charms.paralisado(m, agora) ? Charms.FATOR_DA_PARALISIA : 1) * Estados.fatorDeLentidao(m, agora) * Reforcos.fatorDeDesaceleracao(m, agora) * Estados.fatorDeTolhimento(m, agora) * fatorDoPassoAprisionado(m.poeAprisionado) * fatorDeAcao(m, agora);
+      m.moveMs = passoDoBicho(m, fx !== 0 && fy !== 0) * (Charms.paralisado(m, agora) ? Charms.FATOR_DA_PARALISIA : 1) * Estados.fatorDeLentidao(m, agora) * Reforcos.fatorDeDesaceleracao(m, agora) * Estados.fatorDeTolhimento(m, agora) * fatorDoPassoAprisionado(m.poeAprisionado) * fatorDoPassoDoUrso(m, agora) * fatorDeAcao(m, agora);
+      m.proximoPasso = agora + m.moveMs;
+      continue;
+    }
+    // (lote R3D, 27/10) PROVOCADO pelo Totem Chamariz (`GemasR3D.iscaDoMonstro`): vai até o totem e fica colado nele (bate nele — `cacadas.tiqueDosLacaios`), não em você
+    const isca = GemasR3D.iscaDoMonstro(hunt, m, hunt.clock ?? agora);
+    if (isca) {
+      m.perseguindo = true;
+      if (distancia(isca, m) <= 1) { m.dir = Math.abs(isca.x - m.x) > Math.abs(isca.y - m.y) ? (isca.x > m.x ? 1 : 3) : isca.y > m.y ? 2 : isca.y < m.y ? 0 : m.dir; continue; }
+      if (!pronto(m) || !Estados.podeAgir(m, agora) || imobilizado(m, agora)) continue;
+      const perto = bfsDistancias(grade, m, 1);
+      aliadosDaFuga ??= aliadosPorCasa(hunt);
+      const vizinhas = VIZINHANCA_8.map(([dx, dy]) => ({ x: m.x + dx, y: m.y + dy })).filter((v) => perto.em(v.x, v.y) != null && !(v.x === hunt.pos.x && v.y === hunt.pos.y) && !aliadosDaFuga.has(`${v.x},${v.y}`) && !torres?.has(`${v.x},${v.y}`) && !(hunt.lacaios ?? []).some((l) => l.hp > 0 && l.x === v.x && l.y === v.y) && (ocupada ? (ocupada.get(`${v.x},${v.y}`) ?? m) === m : !hunt.monstros.some((o) => o !== m && o.hp > 0 && o.x === v.x && o.y === v.y)));
+      const destino = GemasR3D.passoAteAIsca(m, isca, vizinhas);
+      if (!destino) continue;
+      ocupada?.delete(`${m.x},${m.y}`);
+      ocupada?.set(`${destino.x},${destino.y}`, m);
+      const fx = Math.sign(destino.x - m.x);
+      const fy = Math.sign(destino.y - m.y);
+      m.x = destino.x;
+      m.y = destino.y;
+      m.dir = fy < 0 ? 0 : fy > 0 ? 2 : fx > 0 ? 1 : 3;
+      m.andouEm = hunt.clock ?? 0;
+      m.moveMs = passoDoBicho(m, fx !== 0 && fy !== 0) * (Charms.paralisado(m, agora) ? Charms.FATOR_DA_PARALISIA : 1) * Estados.fatorDeLentidao(m, agora) * Reforcos.fatorDeDesaceleracao(m, agora) * Estados.fatorDeTolhimento(m, agora) * fatorDoPassoAprisionado(m.poeAprisionado) * fatorDoPassoDoUrso(m, agora) * fatorDeAcao(m, agora);
       m.proximoPasso = agora + m.moveMs;
       continue;
     }
@@ -355,10 +395,10 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
     }
     if (!m.perseguindo || !pronto(m)) continue;
     // Congelado ou atordoado (supports Freeze/Stun): não anda.
-    if (!Estados.podeAgir(m, agora)) continue;
+    if (!Estados.podeAgir(m, agora) || imobilizado(m, agora)) continue;
     let destino = melhorPasso(m, reto, VIZINHANCA_4);
     if (!destino) {
-      comDiagonal ??= bfsDistancias(grade, hunt.pos, ALCANCE_DE_PERSEGUICAO + 4);
+      comDiagonal ??= bfsDistancias(grade, hunt.pos, ALCANCE_DE_PERSEGUICAO + 4, null, VIZINHANCA_8, torres);
       destino = melhorPasso(m, comDiagonal, VIZINHANCA_8);
     }
     if (!destino) continue;
@@ -376,7 +416,7 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
     // + lento (support Slow): o passo demora mais.
     // + Desacelerado pela maldição do PoE ("Inimigos Amaldiçoados por você são Desacelerados" — `Reforcos.fatorDeDesaceleracao`).
     // (lote C4, dono 21/10: + o Tolhimento do PoE — `Estados.fatorDeTolhimento`, só no passo)
-    m.moveMs = passoDoBicho(m, dx !== 0 && dy !== 0) * (Charms.paralisado(m, agora) ? Charms.FATOR_DA_PARALISIA : 1) * Estados.fatorDeLentidao(m, agora) * Reforcos.fatorDeDesaceleracao(m, agora) * Estados.fatorDeTolhimento(m, agora) * fatorDoPassoAprisionado(m.poeAprisionado) * fatorDeAcao(m, agora);
+    m.moveMs = passoDoBicho(m, dx !== 0 && dy !== 0) * (Charms.paralisado(m, agora) ? Charms.FATOR_DA_PARALISIA : 1) * Estados.fatorDeLentidao(m, agora) * Reforcos.fatorDeDesaceleracao(m, agora) * Estados.fatorDeTolhimento(m, agora) * fatorDoPassoAprisionado(m.poeAprisionado) * fatorDoPassoDoUrso(m, agora) * fatorDeAcao(m, agora);
     m.proximoPasso = agora + m.moveMs;
   }
 }
