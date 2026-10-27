@@ -87,8 +87,8 @@ test('G18a: as linhas das ativas vão a chaves que o jogo lê (nenhuma chave mor
   // (as gemas cujos estágios não existem no jogo ficam parciais, com a linha não feita — antes pareciam feitas)
   // (lote A4, com o aval do dono: o Atirar, a Ira Divina e a Rajada de Chamas Vaal saíram da lista — os estágios delas foram feitos)
   for (const s of []) assert.ok(G.doSlug(s).motivosNoJogo.some((m) => /por Estágio|por estágio/.test(m)), `${s}: ${G.doSlug(s).motivosNoJogo.join(' | ')}`);
-  // (a Troca de Corpos do Sacrifício não acerta: o "menos Dano de Afecções" dela fica não feito)
-  assert.ok(G.doSlug('Bodyswap_of_Sacrifice').motivosNoJogo.some((m) => /menos Dano de Afecções/.test(m)));
+  // (aval do dono 27/10: a Troca de Corpos do Sacrifício agora é de área e acerta — lote E2A —; o "50% menos Dano de Afecções" vale, e os motivos ficam [])
+  assert.deepEqual(G.doSlug('Bodyswap_of_Sacrifice').motivosNoJogo, []);
 });
 
 test('G18a: o Punho Esmagador — o Sangramento sai 60% menor em relação ao acerto (o Golpe Pesado de referência, com a Chance de Sangramento)', { skip: SEM }, async () => {
@@ -154,10 +154,11 @@ test('G18a: o Golpe Vulcânico — o golpe direto a 100%, os projéteis secundá
   assert.ok(p.every((x) => perto(x / d, 0.4 * 7)), `os projéteis do quinto uso a ×2,8 do direto: ${usos[4]}`);
 });
 
-test('G18a: o Fogo Justo — o "mais Dano Mágico" sem a queima em você seria de graça: fica não feito até a queima existir (a revisão do lote)', { skip: SEM }, () => {
+test('G18a: o Fogo Justo — o "mais Dano Mágico" vale agora que a queima em você existe (lote E2B)', { skip: SEM }, () => {
+  // (aval do dono 27/10: a queima existe — lote E2B —, e o buff dá os 39 de mais_dano_acerto@magia)
   const r = G.doSlug('Righteous_Fire');
-  assert.ok(r.motivosNoJogo.some((m) => /Concede [\d.]+ % mais Dano Mágico/.test(m)), r.motivosNoJogo.join(' | '));
-  assert.equal(G.buffNoNivel('Righteous_Fire', 20).af['mais_dano_acerto@magia'], undefined);
+  assert.ok(!r.motivosNoJogo.some((m) => /Concede [\d.]+ % mais Dano Mágico/.test(m)), r.motivosNoJogo.join(' | '));
+  assert.equal(G.buffNoNivel('Righteous_Fire', 20).af['mais_dano_acerto@magia'], 39);
 });
 
 test('G18a: o Incinerar — a onda final ×6 só no acerto; o Incêndio dela ×3,5 (250% mais com Incêndio) e sempre Incendeia', { skip: SEM }, async () => {

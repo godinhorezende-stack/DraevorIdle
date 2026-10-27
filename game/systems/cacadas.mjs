@@ -2275,7 +2275,8 @@ function passoDoFamiliar(hunt, grade, f, agora, ate, { pararEm, longe = 3 }) {
   // (PoE: "Lacaios têm X% da Velocidade de Movimento aumentada" — a fração vira a chance de um passo a mais no tique.)
   // (lote 69: + o "Lacaios Criados Recentemente têm Velocidade de Movimento aumentada" — `LacaiosPoe.movimentoDoLacaio`)
   // (lote E2A: + o movimento da Oferenda Carnal no lacaio, no relógio dela — o do tique)
-  const movimentoPct = LacaiosPoe.movimentoDoLacaio(f, hunt.clock ?? 0, f.oferenda && f.oferenda.ate > agora ? f.oferenda.velMovPct ?? 0 : 0) + SuportesS2B.movDoLacaio(hunt, f, hunt.clock ?? 0);
+  // (lote D1, decisão do dono 27/10: o teto dos Espectros — +75% no total — vale também com a Adrenalina e o Frenesi Faminto)
+  const movimentoPct = Math.min(f.poe?.movTetoPct ?? Infinity, LacaiosPoe.movimentoDoLacaio(f, hunt.clock ?? 0, f.oferenda && f.oferenda.ate > agora ? f.oferenda.velMovPct ?? 0 : 0) + SuportesS2B.movDoLacaio(hunt, f, hunt.clock ?? 0));
   const passos = (d > longe ? 2 : 1) + (movimentoPct > 0 && Math.random() * 100 < movimentoPct ? 1 : 0);
   let deu = 0;
   for (let k = 0; k < passos; k++) {

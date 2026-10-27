@@ -2,17 +2,17 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 445,
+   "implementada e testada": 448,
    "implementada, sem teste próprio": 44,
-   "parcial": 20,
-   "limitação do modelo idle": 52,
+   "parcial": 15,
+   "limitação do modelo idle": 54,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 176,
+   "implementada e testada": 178,
    "implementada, sem teste próprio": 18,
-   "parcial": 6,
+   "parcial": 4,
    "limitação do modelo idle": 10
   },
   "suportes": {
@@ -30,10 +30,10 @@
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 153,
+    "implementada e testada": 154,
     "implementada, sem teste próprio": 24,
-    "parcial": 6,
-    "limitação do modelo idle": 26
+    "parcial": 4,
+    "limitação do modelo idle": 27
    }
   },
   "compatibilidade": {
@@ -44,8 +44,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 132,
-   "emDuasOuMais": 13
+   "linhasDistintas": 121,
+   "emDuasOuMais": 12
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -59,7 +59,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 504,
+   "ativasCitadas": 505,
    "suportesCitados": 186,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -994,12 +994,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: Enquanto na Postura de Sangue, Aura faz com que os Inimigos sofram até 20 % mais Dano Físico dos Acertos",
-    "efeito não simulado: Enquanto na Postura da Areia, Buff faz com que você sofra até 19 % menos Dano dos Inimigos na Aura"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2762,11 +2758,13 @@
    "ausentes": [
     "sem dano direto: nenhum efeito no combate",
     "efeito não simulado: Somente uma Mina deste tipo pode ser Detonada em cada Sequência de Detonação",
-    "efeito não simulado: Minas não podem ser Re-armadas",
     "efeito não simulado: Detonação da Mina é Instantânea"
    ],
    "idle": [],
    "outros": [],
+   "linhasNaoSeAplicam": [
+    "não se aplica: \"Minas não podem ser Re-armadas\" (Mina de Fumaça) — o jogo não tem Re-armar Minas (aval do dono 27/10)"
+   ],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -2854,14 +2852,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Gira 4 vezes",
-    "efeito não simulado: Velocidade de rotação aumentada em 25 % se em Empunhadura Dupla",
-    "efeito não simulado: Gira +1 vezes se em Empunhadura Dupla",
-    "efeito não simulado: Armadilha dura +1 segundo Gira",
-    "efeito não simulado: +1 vez"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2886,10 +2878,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Gira 1 vez"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7003,10 +6993,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Velocidade de Movimento dos Lacaios está no Máximo"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -7020,10 +7008,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Velocidade de Movimento dos Lacaios está no Máximo"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -9916,13 +9902,6 @@
    ]
   },
   {
-   "linha": "Velocidade de Movimento dos Lacaios está no Máximo",
-   "gemas": [
-    "Raise_Spectre",
-    "Raise_Spectre_of_Transience"
-   ]
-  },
-  {
    "linha": "# % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único",
    "gemas": [
     "Herald_of_Purity"
@@ -9947,12 +9926,6 @@
    ]
   },
   {
-   "linha": "+# vez",
-   "gemas": [
-    "Blade_Trap"
-   ]
-  },
-  {
    "linha": "a explosão da tempestade usa o físico médio da arma × o \"Dano de Ataque: X% de base\" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); a Cegueira dentro dela (a descrição) não é aplicada",
    "gemas": [
     "Voidstorm_Support"
@@ -9974,12 +9947,6 @@
    "linha": "A Habilidade Explosiva da Relíquia Sagrada concede # de Vida regenerada por segundo aos Lacaios",
    "gemas": [
     "Summon_Holy_Relic"
-   ]
-  },
-  {
-   "linha": "Armadilha dura +# segundo Gira",
-   "gemas": [
-    "Blade_Trap"
    ]
   },
   {
@@ -10175,18 +10142,6 @@
    ]
   },
   {
-   "linha": "Enquanto na Postura da Areia, Buff faz com que você sofra até # % menos Dano dos Inimigos na Aura",
-   "gemas": [
-    "Flesh_and_Stone"
-   ]
-  },
-  {
-   "linha": "Enquanto na Postura de Sangue, Aura faz com que os Inimigos sofram até # % mais Dano Físico dos Acertos",
-   "gemas": [
-    "Flesh_and_Stone"
-   ]
-  },
-  {
    "linha": "Espíritos Sagrados têm #% de chance de usar a Habilidade Ativadora quando voc#e disparar um Projétil com tal Habilidade",
    "gemas": [
     "Sacred_Wisps_Support"
@@ -10226,24 +10181,6 @@
    "linha": "Flechas caem em duas linhas perpendiculares",
    "gemas": [
     "Artillery_Ballista_of_Cross_Strafe"
-   ]
-  },
-  {
-   "linha": "Gira # vez",
-   "gemas": [
-    "Blade_Trap_of_Laceration"
-   ]
-  },
-  {
-   "linha": "Gira # vezes",
-   "gemas": [
-    "Blade_Trap"
-   ]
-  },
-  {
-   "linha": "Gira +# vezes se em Empunhadura Dupla",
-   "gemas": [
-    "Blade_Trap"
    ]
   },
   {
@@ -10523,12 +10460,6 @@
    ]
   },
   {
-   "linha": "Minas não podem ser Re-armadas",
-   "gemas": [
-    "Smoke_Mine"
-   ]
-  },
-  {
    "linha": "Minas usando Habilidades Suportadas sempre focam na sua localização",
    "gemas": [
     "Locus_Mine_Support"
@@ -10538,12 +10469,6 @@
    "linha": "Modificadores ao Dano Mágico são aplicados ao efeito de Dano Degenerativo das Habilidades Suportadas",
    "gemas": [
     "Frigid_Bond_Support"
-   ]
-  },
-  {
-   "linha": "nenhum efeito do buff tem equivalente no jogo",
-   "gemas": [
-    "Flesh_and_Stone"
    ]
   },
   {
@@ -10628,12 +10553,6 @@
    "linha": "Usar habilidades vaal reforçadas inflige Tentação Vaal em você, causando # de dano físico por segundo, em vez de aplicar impedimento de ganho de almas",
    "gemas": [
     "Vaal_Temptation_Support"
-   ]
-  },
-  {
-   "linha": "Velocidade de rotação aumentada em # % se em Empunhadura Dupla",
-   "gemas": [
-    "Blade_Trap"
    ]
   }
  ],

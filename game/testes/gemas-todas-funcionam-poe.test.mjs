@@ -34,7 +34,9 @@ const BUFF = new Set(['aura', 'arauto', 'clamor', 'maldicao', 'guarda', 'vinculo
 const DANO_POR_OUTRA = { Vaal_Venom_Gyre: 'Whirling_Blades', Corrupting_Fever: 'Fireball', Pact_of_Beidat: 'Fireball' };
 // (lote B2, com o aval do dono 20/10: a Explosão de Lâminas do Descarrego detona as lâminas do SEU Vórtice de Lâminas — sem lâmina não sai: a montagem usa o Vórtice
 // ANTES, encaixado junto e no slot 2; o dano conferido é o do Descarrego)
-const USAR_ANTES = { Blade_Blast_of_Unloading: 'Blade_Vortex' };
+// (aval do dono 27/10: a Detonar Minas detona as SUAS Minas — a montagem planta uma Mina da Tormenta Explosiva antes, ANDANDO, para que ela espere a detonação
+// em vez de detonar sozinha com você parado e o inimigo perto; o dano conferido é o da detonação)
+const USAR_ANTES = { Blade_Blast_of_Unloading: 'Blade_Vortex', Detonate_Mines: 'Stormblast_Mine' };
 // (lote G-D, com o aval do dono 26/10: a Runa do Arcanista só fere pelas magias LIGADAS a ela — a montagem liga a Bola de Fogo e confere o dano dela)
 const LIGADA_A = { Arcanist_Brand: 'Fireball' };
 
@@ -106,6 +108,7 @@ function usar({ e, b }, slug) {
   if (/_Banner$/.test(slug)) e.hunt.valor = { n: 50, ultimo: e.hunt.clock };
   // (lote B2, com o aval do dono: a gema usada ANTES — o Vórtice de Lâminas do Descarrego; os eventos dela não contam no dano)
   if (USAR_ANTES[slug]) {
+    if (slug === 'Detonate_Mines') e.hunt.poeRecente = { ...(e.hunt.poeRecente ?? {}), moveu: e.hunt.clock + 2000 };
     const r0 = Acoes.disparar(e, e.hunt, PERSONAGEM, 1, b, { manual: true });
     if (!r0.ok) return { ok: false, erro: `${USAR_ANTES[slug]}: ${r0.motivo ?? r0.erro}` };
     if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM); }

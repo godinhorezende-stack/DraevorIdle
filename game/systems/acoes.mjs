@@ -110,6 +110,8 @@ import * as GemasE1b from './itens-poe/gemas-e1b.mjs';
 import * as GemasE2a from './itens-poe/gemas-e2a.mjs';
 // (lote E2B, 26/10: as Armadilhas que pedem mecânica nova, o Fogo Justo base — itens-poe/gemas-e2b.mjs)
 import * as GemasE2b from './itens-poe/gemas-e2b.mjs';
+// (lote D1, 27/10: os giros da Armadilha de Lâminas e o Carne e Pedra — `itens-poe/gemas-d1.mjs`)
+import * as GemasD1 from './itens-poe/gemas-d1.mjs';
 // (lote S2A, 27/10: os suportes com mecânica nova — o acerto, o uso pago, o abate, o Ímpeto de Combate)
 import * as SuportesS2A from './itens-poe/suportes-s2a-jogo.mjs';
 // (lote S2B, 27/10: os suportes da segunda metade das parciais)
@@ -5886,7 +5888,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         // (lote A2: os números da mecânica própria — `GemasA2` — e a duração, para quem renova: a Fúria Sangrenta ao matar)
         ...(doPoe.a2 ? { a2: doPoe.a2, durMs: Math.round(doPoe.dur * fatorDeDuracao(estado, entry, efeitoDaGema)) } : {}),
         // (lote C3, dono 25/10 — D3.1) o Sangue e Areia liga na Postura de SANGUE (o PoE: "Você fica automaticamente em Postura de Sangue"); o clique de novo alterna
-        ...(GemasC3.ehGemaDePostura(entry.poeGema?.slug) ? { postura: 'sangue' } : {}), ...(tagsDoBuff.includes('guarda') ? { guarda: true, ...(tagsDoBuff.includes('vaal') ? { vaal: true } : {}) } : {}), fator: plantado ? 1 + plantado.efeitoMais / 100 : 1,
+        // (lote D1, 27/10: + o Carne e Pedra — ligar começa na Postura em que você está: a de Sangue sem outra gema de Postura ligada)
+        ...(GemasC3.ehGemaDePostura(entry.poeGema?.slug) ? { postura: ModsPoe.posturaDe(hunt, agora) } : {}), ...(tagsDoBuff.includes('guarda') ? { guarda: true, ...(tagsDoBuff.includes('vaal') ? { vaal: true } : {}) } : {}), fator: plantado ? 1 + plantado.efeitoMais / 100 : 1,
         // (17/10, lote G14) o suporte de aura: "têm Efeito das Auras aumentado em X%" (Arrogância, Generosidade…) e "Auras Suportadas não afetam
         // você" (Generosidade — só os aliados: `GemasPoe.adds`)
         // (lote E1b, 26/10: + o "Efeito das Auras aumentado" da PRÓPRIA gema — as Impurezas Vaal — somado ao dos suportes; e a resistência que os acertos ignoram no raio)
@@ -7838,7 +7841,10 @@ function plantarArmas(estado, hunt, personagem, slot, entry, action, lugar, efei
   const slug = entry.poeGema.slug;
   // (17/10, lote G3: a duração e o tempo de detonação do SUPORTE que a transforma em Armadilha/Mina — "Armadilha dura 4 segundo", "Tempo Base de
   // Detonação de Minas de 0.25 segundos" —; sem eles, os da gema)
-  const dur0 = Plantadas.duracaoMs(ficha, tipo, efeitoDaGema?.plantaDuracaoMs > 0 ? efeitoDaGema.plantaDuracaoMs / 1000 : GemasPoe.compilada(slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0)?.stats?.duracaoObjeto ?? null);
+  // (lote D1, 27/10: + a duração da qualidade da Armadilha de Lâminas — "Armadilha dura +1 segundo" na qualidade 20, `GemasD1.duracaoDaQualidadeMs`)
+  const baseDaGemaS = GemasPoe.compilada(slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0)?.stats?.duracaoObjeto ?? null;
+  const qualD1S = GemasD1.duracaoDaQualidadeMs(slug, efeitoDaGema?.qualidade ?? 0) / 1000;
+  const dur0 = Plantadas.duracaoMs(ficha, tipo, efeitoDaGema?.plantaDuracaoMs > 0 ? efeitoDaGema.plantaDuracaoMs / 1000 : baseDaGemaS != null ? baseDaGemaS + qualD1S : null);
   // (lote S1: + a "Duração da Armadilha/Mina aumentada" do suporte — a qualidade da Invenção —, somada à das peças)
   const incDaFicha = Number(ficha?.afPoe?.[tipo === 'mina' ? 'duracao_mina' : 'duracao_armadilha']) || 0;
   const dur = efeitoDaGema?.plantaDuracaoIncPct ? Math.round((dur0 * Math.max(0.1, 1 + (incDaFicha + efeitoDaGema.plantaDuracaoIncPct) / 100)) / Math.max(0.1, 1 + incDaFicha / 100)) : dur0;
@@ -8264,6 +8270,15 @@ function tiqueDasTorres(estado, hunt, personagem, eventos, agora) {
     while (t.proxima <= Math.min(agora, t.ate) && (estado.hp ?? 0) > 0) {
       t.proxima += t.intervaloMs;
       // (lote E2B, 26/10 — o PoB) o pulso da Armadilha Sísmica: N ondas; cada uma acerta cada inimigo na área da Armadilha com a chance da sobreposição (121/324)
+      // (lote D1, decisão do dono 27/10) o giro da Armadilha de Lâminas: um acerto em cada inimigo na área
+      if (t.girosD1) {
+        for (const m of Plantadas.inimigosPerto(hunt, t, t.girosD1.raio)) {
+          if (!(m.hp > 0) || (estado.hp ?? 0) <= 0) continue;
+          const o = dispararSemMarcar(estado, hunt, personagem, t.slot, m, { plantada: { ...t.plantada, soNoAlvo: true } });
+          if (o?.ok) eventos.push(...(o.eventos ?? []));
+        }
+        continue;
+      }
       if (t.ondasE2b) {
         for (let k = 0; k < t.ondasE2b.n; k++) for (const m of Plantadas.inimigosPerto(hunt, t, t.ondasE2b.raio)) {
           if (!(m.hp > 0) || !(Math.random() < t.ondasE2b.chance)) continue;
@@ -8332,6 +8347,8 @@ export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora 
   if (itensPoeLigado() && hunt?.plantadas?.length) auraDasMinasDaGema(estado, hunt, agora);
   // (lote E2B, 26/10: a Regeneração da Sifão de Gelo pelos inimigos afetados e o Solo Eletrizado da Relampejante Vaal — `tiqueDoE2b`)
   if (itensPoeLigado() && (hunt?.poeSifaoE2b || hunt?.poeSolosE2b?.length)) tiqueDoE2b(estado, hunt, agora);
+  // (lote D1, 27/10: a aura do Carne e Pedra ligado marca os inimigos nela — `tiqueDoCarneEPedraD1`)
+  if (itensPoeLigado() && hunt?.buffs?.[`${GemasPoe.PREFIXO}${GemasD1.CARNE_E_PEDRA.slug}`]) tiqueDoCarneEPedraD1(estado, hunt, agora);
   if (itensPoeLigado() && hunt?.poeTorres?.length) tiqueDasTorres(estado, hunt, personagem, eventos, agora);
   // (lote G12: os gêiseres da Cremação, no mesmo tique)
   if (itensPoeLigado() && hunt?.poeGeiseres?.length) tiqueDosGeiseres(estado, hunt, personagem, eventos, agora);
@@ -8407,6 +8424,13 @@ export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora 
     // (lote E2B, 26/10 — o PoB) a Armadilha Sísmica: ativada, pulsa a cada 0,9 s ÷ a Velocidade de Arremesso pela duração (os pulsos, ⌊duração × frequência⌋); cada
     // pulso, as ondas dela (`tiqueDasTorres`, `ondasE2b`) — sem acerto na ativação
     if (p.tipo === 'armadilha' && sismicaNaAtivacao(estado, hunt, personagem, p, eventos, agora)) continue;
+    // (lote D1, decisão do dono 27/10 — o PoB) a Armadilha de Lâminas (e a da Laceração): ativada, gira N vezes, 0,25 s por giro; cada giro acerta uma vez cada inimigo
+    // na área (`tiqueDasTorres`, `girosD1`); a ativação é uma — o evento, as Armadilhas Carregadas e a chance de ativar de novo (outra Armadilha girando)
+    if (p.tipo === 'armadilha' && laminasNaAtivacaoD1(estado, hunt, personagem, p, eventos, agora)) {
+      ativouArmadilha(p, alvo);
+      if (Plantadas.ativaDeNovo(ficha, p.tipo) && laminasNaAtivacaoD1(estado, hunt, personagem, { ...p, id: `${p.id}-2` }, eventos, agora)) ativouArmadilha(p, alvo, { cargas: false });
+      continue;
+    }
     // (lote E1b, dono 26/10 — o PoB) a Sísmica dos Poços: N ondas; cada uma acerta cada inimigo na área da Armadilha com a chance da sobreposição (121/324) — sem a
     // área inteira de uma vez
     const efOndas = Gemas.efeitoNaSkill(estado, p.acao);
@@ -8521,6 +8545,44 @@ function sismicaNaAtivacao(estado, hunt, personagem, p, eventos, agora) {
   if (entry.efeito) eventos.push({ t: 'area', id: entry.efeito, x: p.x, y: p.y, casas: Areas.paraTela(Areas.quadrado({ x: p.x, y: p.y }, raio), p) });
   return true;
 }
+// ---------------------------------------------------------------- o LOTE D1 (27/10: as decisões do dono — `itens-poe/gemas-d1.mjs`)
+
+/**
+ * (lote D1, decisão do dono 27/10 — o PoB, BladeTrap/BladeTrapAltY) a ATIVAÇÃO da Armadilha de Lâminas e da da Laceração: o objeto que gira (`hunt.poeTorres` com
+ * `girosD1`) — N giros (a rotação total do PoB: 4 na base, + 0,05 por qualidade, + 1 em Empunhadura Dupla; 1 na Laceração; a fração, a chance de mais um), um a cada
+ * 0,25 s (÷ 1,25 em Empunhadura Dupla), o primeiro um giro depois da ativação; cada giro acerta uma vez cada inimigo na área (o raio da gema × √ da Área). true se é
+ * a Armadilha de Lâminas.
+ */
+function laminasNaAtivacaoD1(estado, hunt, personagem, p, eventos, agora) {
+  const slug = String(p.acao).replace(GemasPoe.PREFIXO, '');
+  if (!GemasD1.LAMINAS.test(slug)) return false;
+  const entry = POR_ID.get(p.acao);
+  const ef = Gemas.efeitoNaSkill(estado, p.acao);
+  const ficha = Ficha.combate(estado);
+  const d = GemasPoe.girosDaGema(slug, ef?.nivel ?? 1, ef?.qualidade ?? 0, ModsPoe.condicoesDe(estado, ficha.afPoe, null).has('duasArmas'));
+  if (!d || !entry) return false;
+  const giros = GemasD1.girosNaAtivacao(d);
+  if (!(giros > 0)) return true;
+  const raioM = GemasPoe.areaNoNivel(slug, ef?.nivel ?? 1, ef?.qualidade ?? 0).raioM ?? 1.6;
+  const raio = Math.max(1, casasDoRaio(raioM * Math.sqrt(fatorDaAreaE2b(estado, entry, ef))));
+  (hunt.poeTorres ??= []).push({ id: `laminas-${p.id}`, slot: p.slot, acao: p.acao, x: p.x, y: p.y, z: p.z, ate: agora + d.intervaloMs * giros, proxima: agora + d.intervaloMs, intervaloMs: d.intervaloMs, areas: 0, girosD1: { raio, giros }, plantada: { ...p } });
+  if (entry.efeito) eventos.push({ t: 'area', id: entry.efeito, x: p.x, y: p.y, casas: Areas.paraTela(Areas.quadrado({ x: p.x, y: p.y }, raio), p) });
+  return true;
+}
+/**
+ * (lote D1, decisão do dono 27/10 — o PoB, FleshAndStone) a AURA do Carne e Pedra ligado: marca os inimigos no raio dela em volta de você (`GemasD1.marcarNaAura`) — na
+ * Postura de Sangue, o Físico dos acertos que eles sofrem a mais; na da Areia, o dano dos acertos deles em você a menos —, com o Efeito da Aura do suporte (`efeitoAuraPct`).
+ */
+function tiqueDoCarneEPedraD1(estado, hunt, agora) {
+  const id = `${GemasPoe.PREFIXO}${GemasD1.CARNE_E_PEDRA.slug}`;
+  const b = hunt.buffs?.[id];
+  if (!b || !(b.ate > agora) || !hunt.pos) return;
+  const d = GemasPoe.carneEPedraDaGema(GemasD1.CARNE_E_PEDRA.slug, Gemas.efeitoNaSkill(estado, id)?.nivel ?? 1);
+  if (!d) return;
+  const efeito = (b.fator ?? 1) * Math.max(0, 1 + (Number(b.efeitoAuraPct) || 0) / 100);
+  GemasD1.marcarNaAura(hunt.monstros, hunt.pos, hunt.z ?? 0, { ...b, postura: ModsPoe.posturaDe(hunt, agora) }, d, efeito, agora);
+}
+
 /**
  * (lote E2B) o que a ATIVAÇÃO de uma Armadilha do lote faz depois do acerto (`r`):
  *  - as Armadilhas Explosivas: as N explosões menores em casas sorteadas da área secundária (o raio secundário × √ da Área), cada uma com o raio menor × (1 ± 30%) × √ da
@@ -8682,6 +8744,8 @@ export function ativarGatilhos(estado, hunt, personagem, evento, { acao = null, 
 function trocarPosturaNoUso(estado, hunt, entry, action, agora) {
   const b = hunt.buffs[entry.id];
   const postura = GemasC3.trocarPostura(b, agora);
+  // (lote D1, 27/10) a Postura é uma só: a outra gema de Postura ligada (o Sangue e Areia, o Carne e Pedra) troca junto
+  for (const x of Object.values(hunt.buffs ?? {})) if (x && x !== b && x.postura && x.ate > agora) x.postura = postura;
   const ef = Gemas.efeitoNaSkill(estado, entry.id);
   const recarga = Math.max(0, Math.round(temposDaGemaPoe(estado, entry, ef).recarga ?? 0));
   if (recarga > 0) (hunt.cooldowns ??= {})[action.id] = { ate: agora + recarga, total: recarga };

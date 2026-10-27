@@ -24,6 +24,8 @@ import * as GemasGAC from './gemas-gac.mjs';
 import { renovarLento } from './gemas-gbd.mjs';
 // (lote E2B, 26/10: o dano sofrido do debuff da Armadilha de Urso nos acertos de Armadilha e Mina)
 import { danoDoUrso } from './gemas-e2b.mjs';
+// (lote D1, 27/10: o Carne e Pedra — o dano sofrido nas duas Posturas)
+import { fatorDaAreia, fatorDoSangue } from './gemas-d1.mjs';
 // (lote S2B, 27/10: o Passe Enfeitiçado — "Inimigos afetados por feitiços … não podem causar golpes críticos")
 import { semCriticoPeloFeitico } from './suportes-s2b.mjs';
 
@@ -146,7 +148,8 @@ export const efeitoDaAreaFria = (h, b, agora = h?.clock ?? 0) => Math.max(0, ...
  * ele guarda em `postura` — ligar começa na de Sangue; usar de novo alterna, `GemasC3.trocarPostura`. Antes, o buff ligado era sempre a de Areia, e os bônus de Sangue
  * nunca valiam.) Sem o buff, a de Sangue (o lembrete: "Você está automaticamente em Postura de Sangue").
  */
-const buffDaPostura = (h, agora) => Object.entries(h?.buffs ?? {}).find(([id, b]) => b && b.ate > agora && /Blood_and_Sand/.test(id))?.[1] ?? null;
+// (lote D1, 27/10: + o Carne e Pedra — a outra gema de Postura do PoE; as duas ficam na mesma Postura, `acoes.trocarPosturaNoUso`)
+const buffDaPostura = (h, agora) => Object.entries(h?.buffs ?? {}).find(([id, b]) => b && b.ate > agora && /Blood_and_Sand|Flesh_and_Stone/.test(id))?.[1] ?? null;
 export const posturaDe = (h, agora = h?.clock ?? 0) => (buffDaPostura(h, agora)?.postura === 'areia' ? 'areia' : 'sangue');
 /**
  * (lote C3, dono 25/10) Você está numa Tempestade de Lâminas SANGRENTA sua (`hunt.poeObjetos` — `GemasC3`, a Tempestade de Lâminas): "12% mais Velocidade de Ataque
@@ -2409,6 +2412,9 @@ export function doBicho(bicho, agora, { contraOutro = false, ficha = null } = {}
   // (lote F) "Inimigos Próximos Resfriados causam Dano reduzido em X% com Acertos" (de quem leva o golpe — `ficha`).
   if (ativo(e.lento, agora) && ficha) danoFator *= Math.max(0, 1 - (Number(ficha.afPoe?.resfriados_dano_red) || 0) / 100);
   if (contraOutro && ativo(e.provocado, agora)) danoFator *= 1 - NO_ACERTO.provocar.danoMenosPct / 100;
+  // (lote D1, decisão do dono 27/10 — o PoB, FleshAndStone: DamageTakenWhenHit MORE) o Carne e Pedra na Postura da Areia: você sofre Y% menos Dano dos acertos do inimigo
+  // na aura — o valor cheio, sem a queda pela distância; só em você (não no lacaio)
+  if (!contraOutro) danoFator *= fatorDaAreia(bicho, agora);
   if (ativo(e.cego, agora)) {
     // (O "Efeito do Cegamento aumentado" de quem cegou: `e.cego.efeito`.)
     precisaoFator *= 1 - (NO_ACERTO.cegar.precisaoMenosPct * (e.cego.efeito ?? 1)) / 100;
@@ -3295,6 +3301,9 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   // de Armadilha ou Mina (as tags do golpe)
   const doUrso = danoDoUrso(alvo, agora);
   if (doUrso > 0 && (ficha?.tagsDoGolpe ?? []).some((t) => t === 'armadilha' || t === 'mina')) f *= 1 + doUrso / 100;
+  // (lote D1, decisão do dono 27/10 — o PoB, FleshAndStone: PhysicalDamageTaken MORE, ModFlag.Hit) o Carne e Pedra na Postura de Sangue: o inimigo na aura sofre X% mais
+  // Dano Físico dos Acertos — o valor cheio, sem a queda pela distância
+  if (tipo === 'physical') f *= fatorDoSangue(alvo, agora);
   // (12/10) "Inimigos sofrem Dano aumentado em X% para cada uma de suas Runas Vinculadas a eles" (`runas-vinculadas.marcarNosInimigos`).
   if (alvo.runasVinculadas > 0) f *= 1 + (alvo.runasVinculadas * (Number(ficha?.afPoe?.dano_por_runa_vinculada) || 0)) / 100;
   // ("Cada Totem aplica Dano aumentado em X% sofrido pelos Inimigos próximos a ele" — `mods-poe.aurasProximas`.)
