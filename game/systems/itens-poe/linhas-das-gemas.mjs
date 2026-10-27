@@ -74,6 +74,8 @@ const REGRAS = [
   [new RegExp(`^Velocidade de Ataque aumentada em ${N} ?% caso tenha mudado de Postura Recentemente$`, 'i'), (m) => ({ 'atk_speed@mudouPosturaRecente': num(m[1]) })],
   [new RegExp(`^${N} ?% mais Velocidade de Ataque enquanto estiver em uma Tempestade de Lâminas Sangrentas$`, 'i'), (m) => ({ 'atk_speed_mais@emTempestadeSangrenta': num(m[1]) })],
   [new RegExp(`^${N} ?% mais Dano com a Arma Principal$`), (m) => ({ 'mais_dano@maoPrincipal': num(m[1]) })],
+  // (lote E2A, 26/10: a qualidade da Balista de Cerco de Trarthus — active_skill_projectile_damage_+%_final, só no acerto/afecção do projétil)
+  [new RegExp(`^${N} ?% mais Dano de Projétil$`), (m) => ({ 'mais_dano@projetil': num(m[1]) })],
   // As frases de gema que as peças escrevem de outro jeito: a duração da habilidade, a velocidade de conjuração (a da gema soma como a "com
   // Habilidades de X" — `cast_speed_tag`), o efeito do Empalamento.
   [new RegExp(`^Duração do Efeito de Habilidades? aumentada em ${N} ?%$`), (m) => ({ duracao_habilidades: num(m[1]) })],

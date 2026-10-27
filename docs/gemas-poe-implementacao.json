@@ -2,18 +2,18 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 432,
+   "implementada e testada": 434,
    "implementada, sem teste próprio": 44,
-   "parcial": 41,
-   "limitação do modelo idle": 44,
+   "parcial": 31,
+   "limitação do modelo idle": 52,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 173,
+   "implementada e testada": 174,
    "implementada, sem teste próprio": 18,
-   "parcial": 10,
-   "limitação do modelo idle": 9
+   "parcial": 8,
+   "limitação do modelo idle": 10
   },
   "suportes": {
    "total": 262,
@@ -25,16 +25,16 @@
    "vaal": {
     "total": 52,
     "implementada e testada": 39,
-    "parcial": 4,
-    "implementada, sem teste próprio": 6,
-    "limitação do modelo idle": 3
+    "parcial": 2,
+    "limitação do modelo idle": 5,
+    "implementada, sem teste próprio": 6
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 150,
+    "implementada e testada": 152,
     "implementada, sem teste próprio": 24,
-    "parcial": 12,
-    "limitação do modelo idle": 23
+    "parcial": 7,
+    "limitação do modelo idle": 26
    }
   },
   "compatibilidade": {
@@ -45,8 +45,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 277,
-   "emDuasOuMais": 23
+   "linhasDistintas": 251,
+   "emDuasOuMais": 20
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -60,7 +60,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 490,
+   "ativasCitadas": 498,
    "suportesCitados": 156,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -178,9 +178,7 @@
    "arquetipo": "lacaio",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: +2.1 metros para o alcance do golpe corpo a corpo do lacaio",
-    "efeito não simulado: Este ataque e lacaios convertem 50 % do dano físico em dano elétrico",
-    "efeito não simulado: +0.5 metros para o alcance do golpe corpo a corpo do lacaio"
+    "efeito não simulado: Este ataque e lacaios convertem 50 % do dano físico em dano elétrico"
    ],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
@@ -904,11 +902,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Sentinelas Ascendidos causam 300 % mais Dano",
-    "efeito não simulado: Sentinelas Ascendidos sofrem 70 % menos Dano"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -1724,11 +1719,8 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Sentinelas Ascendidos causam 300 % mais Dano",
-    "efeito não simulado: Sentinelas Ascendidos sofrem 70 % menos Dano"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -3248,13 +3240,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "totem",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Alcance do Posicionamento de Totens aumentado em 300 %",
-    "efeito não simulado: Invoca 1 Totens de Balista em círculo que usam esta habilidade",
-    "efeito não simulado: Após atacar, os totens desaparecem",
-    "efeito não simulado: 20 % mais Dano de Projétil"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4745,11 +4732,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Ataque de Impacto dos Zumbis Erguidos tem Efeito em Área aumentado em 76 %",
-    "efeito não simulado: Golpe de Impacto de Zumbis Evocados tem a Velocidade de Recarga aumentada em %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -4763,12 +4747,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: +200 ao número máximo de Zumbis",
-    "efeito não simulado: Não requer um cadáver",
-    "efeito não simulado: Lacaios têm 15 % de chance de causar Dano Dobrado"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -5146,18 +5126,10 @@
    "nome": "Troca de Corpos do Sacrifício",
    "variante": "alternativa",
    "ataque": false,
-   "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Esta Magia causa 210 a 315 , mais 4 % da sua Vida Máxima, como Dano de Fogo base",
-    "efeito não simulado: Explosões causam Dano de Fogo base igual a 29 % da Vida máxima do Lacaio",
-    "efeito não simulado: 300 % mais Área de Efeito se Consumindo um Lacaio",
-    "efeito não simulado: Explosões causam Dano de Fogo base igual a 5 % da Vida máxima do Lacaio",
-    "efeito não simulado: 50 % menos Dano de Afecções"
-   ],
-   "idle": [
-    "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
-   ],
+   "arquetipo": "area",
+   "estado": "implementada e testada",
+   "ausentes": [],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -5402,10 +5374,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Concede aos Lacaios +34 % de Chance de Bloquear Dano Mágico"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -5510,11 +5480,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Aumenta a Velocidade de Conjuração dos Lacaios em 30 %",
-    "efeito não simulado: Aumenta a Velocidade de Movimento dos Lacaios em 29 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -6170,12 +6137,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Lacaios tem Efeito Resfriante aumentado em 19 %",
-    "efeito não simulado: Lacaios têm Efeito Eletrizante aumentado em 19 %",
-    "efeito não simulado: Robôs Rastejantes concedem 10 % mais Dano de Armadilhas e Minas"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -7088,9 +7051,7 @@
    "arquetipo": "lacaio",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Lacaios possuem +30 % de todas Resistências Elementais",
-    "efeito não simulado: Velocidade de Movimento dos Lacaios está no Máximo",
-    "efeito não simulado: Lacaios possuem +20 % de todas Resistências Elementais"
+    "efeito não simulado: Velocidade de Movimento dos Lacaios está no Máximo"
    ],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
@@ -7107,10 +7068,7 @@
    "arquetipo": "lacaio",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Espectros têm Duração Base de 30 segundos Espectros não viajam entre as Áreas",
-    "efeito não simulado: Lacaios possuem +30 % de todas Resistências Elementais",
-    "efeito não simulado: Velocidade de Movimento dos Lacaios está no Máximo",
-    "efeito não simulado: Lacaios têm Chance de Acerto Crítico aumentada em 1180 %"
+    "efeito não simulado: Velocidade de Movimento dos Lacaios está no Máximo"
    ],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
@@ -7259,10 +7217,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Lacaios têm 40 % de chance de agravar sangramento em alvos atingidos com ataques"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -10175,13 +10131,6 @@
    ]
   },
   {
-   "linha": "Lacaios possuem +# % de todas Resistências Elementais",
-   "gemas": [
-    "Raise_Spectre",
-    "Raise_Spectre_of_Transience"
-   ]
-  },
-  {
    "linha": "Máximo de # anomalias",
    "gemas": [
     "Greater_Kinetic_Instability_Support",
@@ -10196,20 +10145,6 @@
    ]
   },
   {
-   "linha": "Sentinelas Ascendidos causam # % mais Dano",
-   "gemas": [
-    "Vaal_Absolution",
-    "Vaal_Domination"
-   ]
-  },
-  {
-   "linha": "Sentinelas Ascendidos sofrem # % menos Dano",
-   "gemas": [
-    "Vaal_Absolution",
-    "Vaal_Domination"
-   ]
-  },
-  {
    "linha": "Velocidade de Movimento dos Lacaios está no Máximo",
    "gemas": [
     "Raise_Spectre",
@@ -10220,24 +10155,6 @@
    "linha": "# % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único",
    "gemas": [
     "Herald_of_Purity"
-   ]
-  },
-  {
-   "linha": "# % mais Área de Efeito se Consumindo um Lacaio",
-   "gemas": [
-    "Bodyswap_of_Sacrifice"
-   ]
-  },
-  {
-   "linha": "# % mais Dano de Projétil",
-   "gemas": [
-    "Siege_Ballista_of_Trarthus"
-   ]
-  },
-  {
-   "linha": "# % menos Dano de Afecções",
-   "gemas": [
-    "Bodyswap_of_Sacrifice"
    ]
   },
   {
@@ -10274,18 +10191,6 @@
    "linha": "+# ao número máximo de Guerreiros Ilusórios",
    "gemas": [
     "Generals_Cry"
-   ]
-  },
-  {
-   "linha": "+# ao número máximo de Zumbis",
-   "gemas": [
-    "Raise_Zombie_of_Falling"
-   ]
-  },
-  {
-   "linha": "+# metros para o alcance do golpe corpo a corpo do lacaio",
-   "gemas": [
-    "Holy_Strike"
    ]
   },
   {
@@ -10337,12 +10242,6 @@
    ]
   },
   {
-   "linha": "Alcance do Posicionamento de Totens aumentado em # %",
-   "gemas": [
-    "Siege_Ballista_of_Trarthus"
-   ]
-  },
-  {
    "linha": "Alvos sofrem #% mais Dano do Sangramento por Rompimento das Habilidades Suportadas neles",
    "gemas": [
     "Rupture_Support"
@@ -10352,12 +10251,6 @@
    "linha": "Ao atingir # de Gula, perde toda a Gula e ganha Regurgitação por # segundos",
    "gemas": [
     "Gluttony_Support"
-   ]
-  },
-  {
-   "linha": "Após atacar, os totens desaparecem",
-   "gemas": [
-    "Siege_Ballista_of_Trarthus"
    ]
   },
   {
@@ -10376,12 +10269,6 @@
    "linha": "Arqueiro Ilusório utiliza Habilidades Suportadas com #% menos Velocidade de Ataque",
    "gemas": [
     "Mirage_Archer_Support"
-   ]
-  },
-  {
-   "linha": "Ataque de Impacto dos Zumbis Erguidos tem Efeito em Área aumentado em # %",
-   "gemas": [
-    "Raise_Zombie_of_Slamming"
    ]
   },
   {
@@ -10436,18 +10323,6 @@
    "linha": "Ativa Invocar Relâmpago Vivo quando uma habilidade\\nde reforço causa dano elétrico com o acerto",
    "gemas": [
     "Living_Lightning_Support"
-   ]
-  },
-  {
-   "linha": "Aumenta a Velocidade de Conjuração dos Lacaios em # %",
-   "gemas": [
-    "Flesh_Offering"
-   ]
-  },
-  {
-   "linha": "Aumenta a Velocidade de Movimento dos Lacaios em # %",
-   "gemas": [
-    "Flesh_Offering"
    ]
   },
   {
@@ -10574,12 +10449,6 @@
    "linha": "Concede # de Regeneração de Vida por segundo para cada Inimigo afetado",
    "gemas": [
     "Siphoning_Trap"
-   ]
-  },
-  {
-   "linha": "Concede aos Lacaios +# % de Chance de Bloquear Dano Mágico",
-   "gemas": [
-    "Bone_Offering"
    ]
   },
   {
@@ -10739,12 +10608,6 @@
    ]
   },
   {
-   "linha": "Espectros têm Duração Base de # segundos Espectros não viajam entre as Áreas",
-   "gemas": [
-    "Raise_Spectre_of_Transience"
-   ]
-  },
-  {
    "linha": "Espíritos Sagrados têm #% de chance de usar a Habilidade Ativadora quando voc#e disparar um Projétil com tal Habilidade",
    "gemas": [
     "Sacred_Wisps_Support"
@@ -10775,12 +10638,6 @@
    ]
   },
   {
-   "linha": "Esta Magia causa # a # , mais # % da sua Vida Máxima, como Dano de Fogo base",
-   "gemas": [
-    "Bodyswap_of_Sacrifice"
-   ]
-  },
-  {
    "linha": "Estandarte concede # % mais Dano Físico com Habilidades Corpo a Corpo a Você e Aliados",
    "gemas": [
     "War_Banner"
@@ -10808,12 +10665,6 @@
    "linha": "Estímulo dura # segundos",
    "gemas": [
     "Innervate_Support"
-   ]
-  },
-  {
-   "linha": "Explosões causam Dano de Fogo base igual a # % da Vida máxima do Lacaio",
-   "gemas": [
-    "Bodyswap_of_Sacrifice"
    ]
   },
   {
@@ -10946,12 +10797,6 @@
    "linha": "Glifos reforçados ativam Constrição Pérfida ao serem recuperados",
    "gemas": [
     "Foulgrasp_Support"
-   ]
-  },
-  {
-   "linha": "Golpe de Impacto de Zumbis Evocados tem a Velocidade de Recarga aumentada em %",
-   "gemas": [
-    "Raise_Zombie_of_Slamming"
    ]
   },
   {
@@ -11273,12 +11118,6 @@
    ]
   },
   {
-   "linha": "Invoca # Totens de Balista em círculo que usam esta habilidade",
-   "gemas": [
-    "Siege_Ballista_of_Trarthus"
-   ]
-  },
-  {
    "linha": "Lacaios causam # % de Dano Físico",
    "gemas": [
     "Herald_of_Purity"
@@ -11423,45 +11262,15 @@
    ]
   },
   {
-   "linha": "Lacaios têm # % de chance de agravar sangramento em alvos atingidos com ataques",
-   "gemas": [
-    "Summon_Reaper_of_Eviscerating"
-   ]
-  },
-  {
-   "linha": "Lacaios têm # % de chance de causar Dano Dobrado",
-   "gemas": [
-    "Raise_Zombie_of_Falling"
-   ]
-  },
-  {
    "linha": "Lacaios têm #% de chance de cobrir os inimigos de gelo ao atingir",
    "gemas": [
     "Hiveborn_Support"
    ]
   },
   {
-   "linha": "Lacaios têm Chance de Acerto Crítico aumentada em # %",
-   "gemas": [
-    "Raise_Spectre_of_Transience"
-   ]
-  },
-  {
    "linha": "Lacaios têm efeito de definhamento aumentado em # %",
    "gemas": [
     "Summon_Chaos_Golem_of_the_Maelstr%C3%B6m"
-   ]
-  },
-  {
-   "linha": "Lacaios têm Efeito Eletrizante aumentado em # %",
-   "gemas": [
-    "Summon_Skitterbots"
-   ]
-  },
-  {
-   "linha": "Lacaios tem Efeito Resfriante aumentado em # %",
-   "gemas": [
-    "Summon_Skitterbots"
    ]
   },
   {
@@ -11555,12 +11364,6 @@
    ]
   },
   {
-   "linha": "Não requer um cadáver",
-   "gemas": [
-    "Raise_Zombie_of_Falling"
-   ]
-  },
-  {
    "linha": "o totem provoca os monstros em volta a atacá-lo (act_str.lua:##)",
    "gemas": [
     "Decoy_Totem"
@@ -11624,12 +11427,6 @@
    "linha": "Raio acerta # alvos dentro de # metros",
    "gemas": [
     "Vaal_Smite"
-   ]
-  },
-  {
-   "linha": "Robôs Rastejantes concedem # % mais Dano de Armadilhas e Minas",
-   "gemas": [
-    "Summon_Skitterbots"
    ]
   },
   {
