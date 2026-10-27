@@ -87,6 +87,8 @@ import * as ItensPoeJogo from './itens-poe/jogo.mjs';
 import * as Mapas from './itens-poe/mapas.mjs';
 import * as MapasAreas from './itens-poe/mapas-areas.mjs';
 import * as MapaAberto from './itens-poe/mapa-aberto.mjs';
+// (o LOOP DE MAPAS: o próximo da fila abre pelo Dispositivo — importação circular, usada só dentro das funções)
+import * as MapasDispositivo from './mapas-dispositivo.mjs';
 import * as GemasGBD from './itens-poe/gemas-gbd.mjs';
 import * as Testador from './personagem/testador.mjs';
 
@@ -278,7 +280,7 @@ export function temAusenciaParaSimular(estado, agora = Date.now()) {
  * Sem pedaço nenhum no meio, o login faz exatamente o que fazia.
  */
 function avancarAusencia(estado, personagem, agora, final) {
-  const hunt = estado.hunt;
+  let hunt = estado.hunt;
   if (!hunt?.offlineDesde) return null;
   const desde = hunt.offlineDesde;
   if (!hunt.ausencia) {
@@ -307,7 +309,7 @@ function avancarAusencia(estado, personagem, agora, final) {
     hunt.sessao = a.fora;
     // A caçada automática corre sozinha; na online, fora da tela, também — é
     // o que o original faz ("Caçando offline").
-    const modo = hunt.modo;
+    let modo = hunt.modo;
     hunt.modo = 'auto';
     const fim = Math.min(ate, fimDaSimulacao);
     let t = hunt.offlineDesde;
@@ -316,6 +318,19 @@ function avancarAusencia(estado, personagem, agora, final) {
       // A caçada ACABOU no meio (o mapa do endgame concluído, a sala do boss): a ausência para aqui — não há caçada para continuar nem
       // para projetar (antes o laço seguia sem caçada e a projeção repetia o loot dela por horas).
       if (estado.hunt !== hunt) {
+        /*
+         * (27/10) O LOOP DE MAPAS abriu o próximo mapa da fila (o concluído acabou e `seguirLoop` entrou no seguinte): a ausência continua
+         * nele — o mesmo relatório (`fora`), o mesmo relógio offline — até a fila acabar, o mapa falhar ou os 30 min simulados passarem
+         * (o mapa não se projeta: o que passar espera a volta, como o mapa de sempre).
+         */
+        const novo = estado.hunt;
+        if (novo?.mapa && !novo.ausencia && estado.mapas?.loop?.atual?.mapaId === novo.mapa.id) {
+          Object.assign(novo, { ausencia: a, offlineDesde: t, ultimoTique: t, sessao: a.fora, modo: 'auto', rumo: null, destino: null });
+          novo.proximoPassoEm = novo.proximoGolpeEm = novo.proximoPassoMonstroEm = 0;
+          modo = estado.mapas.loop.mode ?? 'auto';
+          hunt = novo;
+          continue;
+        }
         a.acabou = true;
         a.parouEm = t;
         break;
@@ -1090,7 +1105,9 @@ function concluirMapa(estado, hunt, estados) {
     if (quem.mapas?.aberto?.id === hunt.mapa.id) MapaAberto.encerrar(quem, 'concluido');
     else MapaAberto.contarConclusao(quem, hunt.mapa.tier);
     if (h) h.fimEm = (h.clock ?? 0) + pausa;
-    quem.avisoDaHunt = `${nome} concluído! Voltando para a cidade.`;
+    // (o do LOOP DE MAPAS: o próximo da fila abre no fim da pausa — `tiqueDaCacada`)
+    const doLoop = quem.mapas?.loop?.pendente && quem.mapas.loop.ultimo === hunt.mapa.id;
+    quem.avisoDaHunt = doLoop ? `${nome} concluído! O loop abre o próximo mapa.` : `${nome} concluído! Voltando para a cidade.`;
   }
 }
 
@@ -1689,6 +1706,12 @@ function tiqueDaCacada(estado, personagem, agora) {
   // Boss derrotado: depois da faixa de vitória, volta para a cidade.
   if (hunt.fimEm && (hunt.clock ?? 0) >= hunt.fimEm) {
     estado.hunt = null;
+    // (27/10) O LOOP DE MAPAS: acabou a pausa do mapa do loop concluído — o próximo da fila abre pelo Dispositivo (o mesmo `abrir` do botão).
+    const loop = hunt.mapa ? estado.mapas?.loop : null;
+    if (loop?.pendente && loop.ultimo === hunt.mapa.id) {
+      const r = MapasDispositivo.seguirLoop(estado);
+      estado.avisoDaHunt = r.ok ? r.notice : `O loop de mapas parou: ${r.erro}`;
+    }
     return [];
   }
   // Sala de boss: os 25 minutos acabaram, volta para a cidade.

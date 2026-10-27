@@ -12,6 +12,7 @@ import { ligado } from './itens-poe/catalogo.mjs';
 import * as Mapas from './itens-poe/mapas.mjs';
 import * as MapasAreas from './itens-poe/mapas-areas.mjs';
 import * as MapaAberto from './itens-poe/mapa-aberto.mjs';
+import * as MapasLoop from './itens-poe/mapas-loop.mjs';
 import * as Campanha from './campanha.mjs';
 import * as Cacadas from './cacadas.mjs';
 
@@ -44,14 +45,17 @@ export function assinatura(peca) {
   return (h >>> 0).toString(36);
 }
 
-/** Os mapas que `estado` carrega (mochila e bolsa), para a tela: `[{ onde, indice, assinatura, id, tier, nivel, raridade, nome, peca }]`. */
+/**
+ * Os mapas que `estado` carrega (mochila e bolsa), para a tela: `[{ onde, indice, assinatura, chave, id, tier, nivel, raridade, nome, peca }]`
+ * (`chave`: a dos iguais — a tela junta num cartão "×N" e o loop usa — `MapasLoop.chaveDoMapa`).
+ */
 export function mapasCarregados(estado) {
   const saida = [];
   for (const onde of ONDES) {
     (estado?.[onde] ?? []).forEach((peca, indice) => {
       if (!Mapas.ehMapa(peca)) return;
       const tier = Mapas.tierDaPeca(peca);
-      saida.push({ onde, indice, assinatura: assinatura(peca), id: peca.id, tier, nivel: Mapas.nivelDoTier(tier), raridade: peca.poe.raridade ?? 'normal', nome: peca.poe.nome ?? `Mapa (Nível ${tier})`, peca });
+      saida.push({ onde, indice, assinatura: assinatura(peca), chave: MapasLoop.chaveDoMapa(peca), id: peca.id, tier, nivel: Mapas.nivelDoTier(tier), raridade: peca.poe.raridade ?? 'normal', nome: peca.poe.nome ?? `Mapa (Nível ${tier})`, peca });
     });
   }
   return saida.sort((a, b) => b.tier - a.tier || a.onde.localeCompare(b.onde) || a.indice - b.indice);
@@ -117,7 +121,58 @@ export function abandonar(estado) {
   return { ok: true };
 }
 
-/** O dispositivo para a tela (vai junto com a campanha): liberado, o motivo, o mapa aberto, os mapas carregados e as estatísticas. */
+/*
+ * ---- O LOOP DE MAPAS (dono, 27/10 — a fila em `itens-poe/mapas-loop.mjs`) ----
+ * O jogador marca um ou vários grupos de mapas iguais (quantos de cada: todos, ou um número) e inicia: abre o primeiro da fila. Cada mapa
+ * do loop CONCLUÍDO (limpou 100%) deixa o próximo pendente, e ele abre quando a caçada do concluído acaba (passada a pausa do aviso — o
+ * tique, online e offline, chama `seguirLoop`), até a fila acabar. Abrir é SEMPRE o `abrir` acima (as mesmas travas: o dispositivo
+ * liberado, nenhum outro mapa aberto, a peça conferida pela assinatura). Falhou (os portais), abandonou ou saiu por conta própria: para.
+ */
+
+/** Começa o loop (`grupos`: `[{ chave, quantos }]` — os da tela) e abre o primeiro mapa. `antes()`: o de `abrir`. `{ ok, erro?, notice? }`. */
+export function iniciarLoop(estado, { grupos, mode } = {}, { antes = null } = {}) {
+  const fechado = motivoFechado(estado);
+  if (fechado) return { ok: false, erro: fechado };
+  if (MapaAberto.doPersonagem(estado).aberto) return { ok: false, erro: 'Você já tem um mapa aberto: termine-o (ou abandone-o) antes de começar o loop.' };
+  if (MapasLoop.doPersonagem(estado)) return { ok: false, erro: 'O loop de mapas já está rodando: pare-o antes de começar outro.' };
+  const r = MapasLoop.criar(estado, grupos, { mode });
+  if (!r.ok) return r;
+  return seguirLoop(estado, { antes });
+}
+
+/**
+ * Abre o próximo mapa da fila (o loop pendente): pelo mesmo `abrir` do botão. Sem mapa na fila, o loop acaba (concluído); o `abrir` recusou
+ * (outro mapa aberto, o dispositivo fechou…), o loop para com o porquê. `{ ok, erro?, notice?, acabou? }`.
+ */
+export function seguirLoop(estado, { antes = null } = {}) {
+  const loop = MapasLoop.doPersonagem(estado);
+  if (!loop?.pendente) return { ok: false, erro: 'Nenhum loop de mapas esperando o próximo.' };
+  const prox = MapasLoop.proxima(estado);
+  if (!prox) {
+    const n = loop.feitos;
+    const notice = `Loop de mapas concluído: ${n} mapa${n === 1 ? '' : 's'}.`;
+    MapasLoop.parar(estado, notice, { concluiu: true });
+    return { ok: true, acabou: true, notice };
+  }
+  const r = abrir(estado, { onde: prox.onde, indice: prox.indice, assinatura: assinatura(prox.peca), mode: loop.mode }, { antes });
+  if (!r.ok) {
+    MapasLoop.parar(estado, `O loop parou: ${r.erro}`);
+    return r;
+  }
+  MapasLoop.marcarAberto(estado, prox.grupo, estado.mapas.aberto.id);
+  loop.seguir = true;
+  const tela = MapasLoop.paraTela(estado);
+  return { ok: true, notice: `Loop de mapas: ${prox.peca.poe?.nome ?? `Mapa (Nível ${prox.grupo.tier})`} (${tela.numero} de ${tela.total}).` };
+}
+
+/** Para o loop (o mapa aberto continua aberto: só a fila acaba). `{ ok, erro?, notice? }`. */
+export function pararLoop(estado) {
+  if (!MapasLoop.doPersonagem(estado)) return { ok: false, erro: 'O loop de mapas não está rodando.' };
+  MapasLoop.parar(estado, 'Você parou o loop.');
+  return { ok: true, notice: 'Loop de mapas parado: o mapa aberto continua aberto.' };
+}
+
+/** O dispositivo para a tela (vai junto com a campanha): liberado, o motivo, o mapa aberto, os mapas carregados, o loop e as estatísticas. */
 export function paraTela(estado) {
   if (!ligado()) return null;
   const st = MapaAberto.doPersonagem(estado);
@@ -129,6 +184,7 @@ export function paraTela(estado) {
     portais: MapaAberto.portaisPorMapa(),
     aberto: MapaAberto.abertoParaTela(estado),
     mapas: mapasCarregados(estado),
+    loop: MapasLoop.paraTela(estado),
     estatisticas: { concluidos: st.concluidos, falhos: st.falhos, mortes: st.mortes, maiorTier: st.maiorTier, porTier: st.porTier, ultimo: st.ultimo },
     tiers: Mapas.TIERS,
   };

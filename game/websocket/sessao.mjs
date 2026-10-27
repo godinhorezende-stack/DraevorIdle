@@ -1521,6 +1521,20 @@ export class Sessao {
         this.aplicar(r);
         return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
       }
+      // O LOOP DE MAPAS (27/10): os grupos marcados na tela (`[{ chave, quantos }]`) viram a fila no estado do personagem e o primeiro abre
+      // pelo mesmo caminho do "Abrir mapa"; os próximos abrem sozinhos a cada mapa concluído (`Cacadas` → `MapasDispositivo.seguirLoop`).
+      case 'iniciarLoopDeMapas': {
+        const grupos = Array.isArray(m.grupos) ? m.grupos.map((g) => ({ chave: g?.chave, quantos: g?.quantos })) : [];
+        const r = MapasDispositivo.iniciarLoop(this.estado, { grupos, mode: m.mode }, { antes: () => Party.antesDeSairDaCacada(this) });
+        if (this.estado.mapas?.loop) delete this.estado.mapas.loop.seguir;
+        this.aplicar(r);
+        if (r.ok && this.estado.hunt) Party.seguirOLider(this);
+        return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
+      }
+      case 'pararLoopDeMapas': {
+        this.aplicar(MapasDispositivo.pararLoop(this.estado));
+        return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
+      }
       // O portal do boss do ato (aberto na última fase concluída): valida no servidor e leva para a arena, sem recarga.
       case 'portalDoBoss':
         return this.entrarNoPortalDoBoss();
@@ -2867,6 +2881,13 @@ export class Sessao {
         if (this.estado.avisoDaHunt) {
           this.avisoPendente = this.estado.avisoDaHunt;
           delete this.estado.avisoDaHunt;
+        }
+        // O LOOP DE MAPAS abriu o próximo mapa neste tique: quem segue o líder vem junto (como no "Abrir mapa") e a tela do Dispositivo
+        // recebe a fila nova.
+        if (this.estado.mapas?.loop?.seguir) {
+          delete this.estado.mapas.loop.seguir;
+          if (this.estado.hunt) Party.seguirOLider(this);
+          this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
         }
         // "Seguir" ligado e a fase completa: a próxima fase, no mesmo modo.
         // Só com a aba aberta: o char trazido sem aba (party) é offline, fica em loop.

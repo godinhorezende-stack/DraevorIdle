@@ -2,7 +2,13 @@
 // Só desenha o que o servidor mandou (`campanha.mapas`): liberado ou não, o mapa aberto (portais, se está guardado), os mapas que você
 // carrega (tier, nível da área, raridade, afixos, quantidade/raridade de itens, tamanho do grupo) e as estatísticas. Quem decide tudo é o
 // servidor: abrir manda a peça que a tela mostrou (`onde`, `indice`, `assinatura`) e ele confere de novo.
+//
+// (27/10, dono: "organizar melhor — uma aba por mapa, os iguais com ×N, e o loop de mapas; deixe isso profissional") Os mapas iguais viram
+// UM cartão com o selo "×N" (o "Abrir mapa" abre o primeiro deles), separados em ABAS por tier (Todos, T1…T16 que você tem, Únicos) — a
+// parte pura em `mapas-grupos.mjs`. Cada cartão tem a caixa do LOOP (quantos usar: todos, ou um número); "Iniciar loop" manda os grupos
+// marcados e o servidor abre um depois do outro a cada mapa concluído (a fila mora no personagem — `systems/itens-poe/mapas-loop.mjs`).
 import { iconeDeBotao } from './world-arte.mjs';
+import { agruparMapas, abasDosMapas, abaValida, gruposDaAba, rotuloDoGrupo, resumoDaSelecao } from './mapas-grupos.mjs';
 
 const el = (tag, classe, ...filhos) => {
   const n = document.createElement(tag);
@@ -22,6 +28,35 @@ const pct = (v) => `${v > 0 ? '+' : ''}${v}%`;
 const tempo = (ms) => {
   const s = Math.max(0, Math.round(ms / 1000));
   return s >= 3600 ? `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}min` : s >= 60 ? `${Math.floor(s / 60)}min ${s % 60}s` : `${s}s`;
+};
+
+/*
+ * A memória da tela entre os redesenhos (a campanha chega de novo a cada 8 s): a aba escolhida (também no navegador, como a dificuldade da
+ * campanha — `world.mjs`) e os grupos marcados para o loop (`chave → quantos | null`).
+ */
+const CHAVE_DA_ABA = 'draevor.mapas.v1';
+const MEMORIA = { aba: null, selecao: new Map() };
+const lerAba = () => {
+  if (MEMORIA.aba) return MEMORIA.aba;
+  try {
+    MEMORIA.aba = JSON.parse(globalThis.localStorage?.getItem(CHAVE_DA_ABA) ?? '{}')?.aba ?? null;
+  } catch {
+    /* sem armazenamento (janela privada): fica só na memória */
+  }
+  return MEMORIA.aba ?? 'todos';
+};
+const lembrarAba = (aba) => {
+  MEMORIA.aba = aba;
+  try {
+    globalThis.localStorage?.setItem(CHAVE_DA_ABA, JSON.stringify({ aba }));
+  } catch {
+    /* sem armazenamento: a tela funciona igual */
+  }
+};
+/** (os testes) Esquece a aba e a seleção. */
+export const esquecerMemoria = () => {
+  MEMORIA.aba = null;
+  MEMORIA.selecao.clear();
 };
 
 /** "Nível 68 – 83": a faixa dos níveis de área dos mapas (do T1 ao último tier configurado), como a da dificuldade da campanha. */
@@ -126,21 +161,113 @@ export function desenharDispositivo(body, { mapas, faixaDaCampanha = null, h }) 
   }
   corpo.append(topo);
 
-  // ---- os mapas que você carrega
+  // ---- o LOOP de mapas rodando: em que mapa está, a fila e o "Parar loop"
+  const loop = mapas.loop?.ativo ? mapas.loop : null;
+  if (loop) {
+    const cartao = el('section', 'mp-cartao mp-loop');
+    const feito = loop.total ? Math.round((100 * loop.feitos) / loop.total) : 0;
+    const estado = loop.pendente ? 'Abrindo o próximo mapa…' : a && !a.naCacada ? 'Esperando a sua volta ao mapa: o loop segue quando ele for concluído.' : 'Em andamento: o próximo abre sozinho ao concluir este.';
+    const barra = el('div', 'mp-loop-barra', el('i', null));
+    barra.firstChild.style.width = `${feito}%`;
+    barra.setAttribute('aria-label', `${loop.feitos} de ${loop.total} mapas concluídos`);
+    const parar = botao('mp-desistir mp-parar', 'Parar loop', () => {
+      parar.disabled = true;
+      h.send({ t: 'pararLoopDeMapas' });
+    });
+    cartao.append(
+      el('i', 'mp-loop-ico', iconeDeBotao('loop')),
+      el('div', 'mp-info',
+        el('span', 'mp-rotulo', 'Loop de mapas'),
+        el('h4', 'mp-nome', `Loop: ${loop.numero} de ${loop.total}`, el('small', 'mp-loop-fila', ` — ${loop.grupos.map((g) => g.rotulo).join(', ')}`)),
+        barra,
+        el('span', 'mp-linha', `${loop.feitos} concluído${loop.feitos === 1 ? '' : 's'} · ${estado}`)),
+      el('div', 'mp-acoes', parar));
+    corpo.append(cartao);
+  }
+
+  // ---- os mapas que você carrega: os iguais juntos ("×N"), em abas por tier
+  const grupos = agruparMapas(mapas.mapas);
+  const abasDaLista = abasDosMapas(grupos);
+  // A seleção do loop só guarda os grupos que ainda existem.
+  for (const chave of [...MEMORIA.selecao.keys()]) if (!grupos.some((g) => g.chave === chave)) MEMORIA.selecao.delete(chave);
   const lista = el('section', 'mp-lista');
-  lista.append(el('h4', 'mp-titulo', `Seus mapas (${mapas.mapas.length})`));
-  if (!mapas.mapas.length) lista.append(el('p', 'mp-nota', 'Nenhum mapa com você. Eles caem dentro dos mapas (do tier da área ou um acima; o chefe garante um) e do chefe do Ato 10.'));
-  const grade = el('div', 'mp-grade');
-  for (const m of mapas.mapas) {
-    const c = el('article', `mp-mapa r-${m.raridade}`);
+  corpo.append(lista);
+  const desenharLista = () => {
+    lista.textContent = '';
+    const aba = abaValida(abasDaLista, lerAba());
+    const cab = el('header', 'mp-lista-cab', el('h4', 'mp-titulo', `Seus mapas (${mapas.mapas.length})`));
+    if (mapas.loop?.fim && !loop) cab.append(el('span', `mp-loop-fim${mapas.loop.fim.concluiu ? ' ok' : ''}`, mapas.loop.fim.motivo));
+    lista.append(cab);
+    if (!mapas.mapas.length) {
+      lista.append(el('p', 'mp-nota', 'Nenhum mapa com você. Eles caem dentro dos mapas (do tier da área ou um acima; o chefe garante um) e do chefe do Ato 10.'));
+      return;
+    }
+    // as abas: Todos, os tiers que você tem (com quantos) e os Únicos
+    const nav = el('nav', 'mp-abas');
+    nav.setAttribute('aria-label', 'Mapas por tier');
+    for (const t of abasDaLista) {
+      const b = botao(`mp-aba${t.id === aba ? ' ativa' : ''}${t.id === 'unicos' ? ' unicos' : ''}`, null, () => {
+        lembrarAba(t.id);
+        desenharLista();
+      });
+      b.setAttribute('aria-pressed', t.id === aba ? 'true' : 'false');
+      b.append(el('b', null, t.rotulo), el('small', null, `×${t.qtd}`));
+      nav.append(b);
+    }
+    lista.append(nav);
+    const daAba = gruposDaAba(grupos, aba);
+    const grade = el('div', 'mp-grade');
+    for (const g of daAba) grade.append(cartaoDoGrupo(g));
+    lista.append(grade);
+    lista.append(barraDoLoop(daAba));
+  };
+
+  /** Um cartão por grupo de mapas iguais: o selo ×N, os afixos, a caixa do loop (com quantos) e o "Abrir mapa" (abre o primeiro). */
+  function cartaoDoGrupo(g) {
+    const m = g.mapas[0];
+    const marcado = MEMORIA.selecao.has(g.chave);
+    const c = el('article', `mp-mapa r-${g.raridade}${marcado ? ' marcado' : ''}`);
     const fig = el('div', 'mp-fig');
     const ic = h.itemCanvas(m.id, 40);
     h.tipFor(ic, m.id, null, null, m.peca);
-    fig.append(ic, el('span', 'mp-tier', `T${m.tier}`));
-    c.append(el('header', null, fig, el('div', 'mp-info',
-      el('h5', `mp-nome r-${m.raridade}`, m.nome),
-      el('span', 'mp-linha', `${RARIDADE[m.raridade] ?? m.raridade} · área nível ${m.nivel}${m.onde === 'pouch' ? ' · na bolsa' : ''}`))));
+    fig.append(ic, el('span', 'mp-tier', g.raridade === 'unico' ? 'Ú' : `T${g.tier}`));
+    const onde = g.naBolsa === g.qtd ? ' · na bolsa' : g.naBolsa ? ` · ${g.naBolsa} na bolsa` : '';
+    const cab = el('header', null, fig, el('div', 'mp-info',
+      el('h5', `mp-nome r-${g.raridade}`, m.nome),
+      el('span', 'mp-linha', `${RARIDADE[g.raridade] ?? g.raridade} · área nível ${g.nivel}${onde}`)));
+    cab.append(el('span', `mp-qtd${g.qtd > 1 ? ' varios' : ''}`, `×${g.qtd}`));
+    c.append(cab);
     c.append(resumoDaPeca(m.peca));
+    // o rodapé: a caixa do loop (e quantos usar) e o abrir
+    const pe = el('footer', 'mp-pe');
+    const caixa = el('input', 'mp-caixa');
+    caixa.type = 'checkbox';
+    caixa.checked = marcado;
+    caixa.disabled = !!loop;
+    caixa.onchange = () => {
+      if (caixa.checked) MEMORIA.selecao.set(g.chave, MEMORIA.selecao.get(g.chave) ?? null);
+      else MEMORIA.selecao.delete(g.chave);
+      desenharLista();
+    };
+    const marcar = el('label', 'mp-marcar', caixa, el('span', null, 'Loop'));
+    pe.append(marcar);
+    if (marcado && g.qtd > 1) {
+      const qtd = el('input', 'mp-quantos');
+      qtd.type = 'number';
+      qtd.min = '1';
+      qtd.max = String(g.qtd);
+      qtd.placeholder = 'todos';
+      const q = MEMORIA.selecao.get(g.chave);
+      qtd.value = q == null ? '' : String(q);
+      qtd.title = 'Quantos mapas deste grupo o loop usa (vazio: todos, inclusive os iguais que caírem no caminho)';
+      qtd.setAttribute('aria-label', 'Quantos usar');
+      qtd.onchange = () => {
+        const n = Math.floor(Number(qtd.value));
+        MEMORIA.selecao.set(g.chave, n >= 1 ? Math.min(n, g.qtd) : null);
+        desenharLista();
+      };
+      pe.append(el('label', 'mp-usar', el('span', null, 'usar'), qtd));
+    }
     const abrir = botao('w2-entrar mp-abrir', a ? 'Há um mapa aberto' : 'Abrir mapa', () => {
       abrir.disabled = true;
       avisar('');
@@ -148,11 +275,44 @@ export function desenharDispositivo(body, { mapas, faixaDaCampanha = null, h }) 
       h.fechar();
     });
     abrir.disabled = !!a;
-    c.append(abrir);
-    grade.append(c);
+    pe.append(abrir);
+    c.append(pe);
+    return c;
   }
-  lista.append(grade);
-  corpo.append(lista);
+
+  /** A barra do loop no pé da lista: o que está marcado, "Marcar a aba", "Limpar" e "Iniciar loop". */
+  function barraDoLoop(daAba) {
+    const sel = resumoDaSelecao(grupos, MEMORIA.selecao);
+    const barra = el('div', 'mp-barra-loop');
+    const texto = loop
+      ? 'Um loop já está rodando.'
+      : sel.grupos.length
+        ? `${sel.grupos.length} grupo${sel.grupos.length === 1 ? '' : 's'} · ${sel.mapas} mapa${sel.mapas === 1 ? '' : 's'} no loop`
+        : 'Marque os mapas para o loop: eles abrem um depois do outro, a cada mapa concluído.';
+    barra.append(el('span', 'mp-barra-texto', texto));
+    const marcarAba = botao('mp-sel', 'Marcar a aba', () => {
+      for (const g of daAba) if (!MEMORIA.selecao.has(g.chave)) MEMORIA.selecao.set(g.chave, null);
+      desenharLista();
+    });
+    marcarAba.disabled = !!loop || !daAba.length;
+    const limpar = botao('mp-sel', 'Limpar', () => {
+      MEMORIA.selecao.clear();
+      desenharLista();
+    });
+    limpar.disabled = !!loop || !sel.grupos.length;
+    const iniciar = botao('w2-entrar mp-iniciar', loop ? 'Loop rodando' : a ? 'Há um mapa aberto' : 'Iniciar loop', () => {
+      iniciar.disabled = true;
+      avisar('');
+      h.send({ t: 'iniciarLoopDeMapas', grupos: sel.grupos, mode: 'auto' });
+      MEMORIA.selecao.clear();
+      h.fechar();
+    });
+    iniciar.disabled = !!a || !!loop || !sel.grupos.length;
+    if (a && !loop) iniciar.title = 'Termine (ou abandone) o mapa aberto antes de começar o loop.';
+    barra.append(el('div', 'mp-barra-acoes', marcarAba, limpar, iniciar));
+    return barra;
+  }
+  desenharLista();
 
   // ---- as estatísticas
   const e = mapas.estatisticas ?? {};
