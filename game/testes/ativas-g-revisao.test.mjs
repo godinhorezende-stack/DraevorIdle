@@ -311,7 +311,10 @@ test('revisão G (16): outro Clamor troca o Impelir — Infernal → Intimidador
   assert.ok(usar(e, b, 1).ok);
   assert.deepEqual([e.hunt.impelidos.n, e.hunt.impelidos.de], [G.impelidosDaGema('Intimidating_Cry', 20), 'Intimidating_Cry']);
   const r = golpeBasico(e, b);
-  assert.ok(!r.eventos.some((x) => x.fonte === 'combustao'), 'o Impelido pelo Intimidador não ativa a Combustão');
+  // (aval do dono, 26/10 — lote S1: vários Clamores impelem o mesmo ataque, cada um com a sua carga; o Infernal continua impelindo junto com o Intimidador, e a
+  // Combustão sai. Antes: o Intimidador trocava o Impelir e o golpe saía sem a Combustão)
+  assert.ok(e.hunt.impelidos.outros?.some((x) => x.de === 'Infernal_Cry' && x.n > 0), 'o Impelir do Infernal segue, junto');
+  assert.ok(r.eventos.some((x) => x.fonte === 'combustao'), 'o Infernal ainda impele: a Combustão sai');
 });
 
 test('revisão G (18): os bônus do buff de um Clamor só valem no ataque Impelido por ele (o Dano Dobrado do Intimidador não vale no Impelido pelo Infernal)', { skip: SEM }, async () => {
@@ -323,7 +326,8 @@ test('revisão G (18): os bônus do buff de um Clamor só valem no ataque Impeli
   assert.ok(usar(e, b, 1).ok);
   assert.ok(e.hunt.buffs[id('Intimidating_Cry')]?.ate > e.hunt.clock, 'o buff do Intimidador segue');
   assert.equal(e.hunt.impelidos.de, 'Infernal_Cry');
-  assert.equal(dobrado(), 0, 'Impelido pelo Infernal: o do Intimidador não vale');
+  // (aval do dono, 26/10 — lote S1: vários Clamores impelem o mesmo ataque; o Intimidador ainda impele este, junto com o Infernal, e o bônus do buff dele vale. Antes: 0)
+  assert.equal(dobrado(), 100, 'Impelido pelos dois: o do Intimidador vale');
 });
 
 test('revisão G (19): a lentidão de duas fontes — o Resfriar da Armadura Ártica (30%, 0,5 s) e o Debilitado da Punição (20%) — vale a mais forte ativa', { skip: SEM }, async () => {

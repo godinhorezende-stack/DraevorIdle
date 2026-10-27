@@ -21,6 +21,7 @@ const Afixos = await import('../systems/afixos.mjs');
 const Registro = await import('../systems/combate/registro.mjs');
 const Areas = await import('../engine/areas.mjs');
 const Runas = await import('../systems/itens-poe/runas-vinculadas.mjs');
+const GemasR3D = await import('../systems/itens-poe/gemas-r3d.mjs');
 
 /** As armas tentadas (a primeira que a gema aceita): a varinha, o arco, a espada com escudo, a maça de duas mãos, a adaga, o cajado. */
 const ARMAS = [['Wands/Driftwood_Wand'], ['Bows/Crude_Bow'], ['One_Hand_Swords/Rusted_Sword', 'Shields/Splintered_Tower_Shield'], ['Two_Hand_Maces/Driftwood_Maul'], ['Daggers/Sai'], ['Staves/Gnarled_Branch']];
@@ -34,7 +35,9 @@ const BUFF = new Set(['aura', 'arauto', 'clamor', 'maldicao', 'guarda', 'vinculo
 const DANO_POR_OUTRA = { Vaal_Venom_Gyre: 'Whirling_Blades', Corrupting_Fever: 'Fireball', Pact_of_Beidat: 'Fireball' };
 // (lote B2, com o aval do dono 20/10: a Explosão de Lâminas do Descarrego detona as lâminas do SEU Vórtice de Lâminas — sem lâmina não sai: a montagem usa o Vórtice
 // ANTES, encaixado junto e no slot 2; o dano conferido é o do Descarrego)
-const USAR_ANTES = { Blade_Blast_of_Unloading: 'Blade_Vortex' };
+// (aval do dono 27/10: a Detonar Minas detona as SUAS Minas — a montagem planta uma Mina da Tormenta Explosiva antes, ANDANDO, para que ela espere a detonação
+// em vez de detonar sozinha com você parado e o inimigo perto; o dano conferido é o da detonação)
+const USAR_ANTES = { Blade_Blast_of_Unloading: 'Blade_Vortex', Detonate_Mines: 'Stormblast_Mine' };
 // (lote G-D, com o aval do dono 26/10: a Runa do Arcanista só fere pelas magias LIGADAS a ela — a montagem liga a Bola de Fogo e confere o dano dela)
 const LIGADA_A = { Arcanist_Brand: 'Fireball' };
 
@@ -102,8 +105,11 @@ function usar({ e, b }, slug) {
   const estagios = G.estagiosDaGema(slug, 20);
   const vezes = estagios?.modo === 'carrega' ? estagios.max : 1;
   const ev = [];
+  // (lote E1b, com o aval do dono 26/10: o ESTANDARTE só se planta com Valor, como no PoE — o teste dá o Valor máximo antes de plantar o Desafiador e o Horrendo)
+  if (/_Banner$/.test(slug)) e.hunt.valor = { n: 50, ultimo: e.hunt.clock };
   // (lote B2, com o aval do dono: a gema usada ANTES — o Vórtice de Lâminas do Descarrego; os eventos dela não contam no dano)
   if (USAR_ANTES[slug]) {
+    if (slug === 'Detonate_Mines') e.hunt.poeRecente = { ...(e.hunt.poeRecente ?? {}), moveu: e.hunt.clock + 2000 };
     const r0 = Acoes.disparar(e, e.hunt, PERSONAGEM, 1, b, { manual: true });
     if (!r0.ok) return { ok: false, erro: `${USAR_ANTES[slug]}: ${r0.motivo ?? r0.erro}` };
     if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM); }
@@ -154,9 +160,18 @@ function usar({ e, b }, slug) {
   // o Definhamento ou o Tolhimento)
   // (o relógio já andou os tiques acima: vale o debuff que o uso pôs, mesmo que já tenha acabado)
   const debuff = (b.dots ?? []).length > 0 || ['definhado', 'tolhido'].some((k) => !!b.estados?.[k]);
-  return { ok: true, dano, debuff, buff: !!e.hunt.buffs?.[G.doSlug(slug).acao] || !!e.hunt.vinculos?.length, deslocou, febre: (b.dots ?? []).some((d) => d.chave === 'Corrupting_Fever' && d.falta > 0) };
+  // (aval do dono 27/10, R3: as gemas que NÃO causam dano no PoE — base_deal_no_damage — são conferidas pelo efeito delas: o Totem Chamariz provoca os monstros em volta (o
+  // pulso que a caçada roda a cada tique — `GemasR3D.provocarEmVolta`); a Mina de Fumaça teleporta você ou Cega quem está na nuvem; a Armadilha Conversora converte)
+  for (const l of (e.hunt.lacaios ?? []).filter((x) => x.provocaR3D && x.hp > 0)) GemasR3D.provocarEmVolta(e.hunt.monstros, l, e.hunt.z, e.hunt.clock);
+  GemasR3D.cegarNasNuvens(e.hunt, e.hunt.clock);
+  const provocou = (e.hunt.monstros ?? []).some((m) => !!m.estados?.provocado);
+  const cegou = (e.hunt.monstros ?? []).some((m) => (m.estados?.cego?.ate ?? 0) > 0);
+  const converteu = (e.hunt.lacaios ?? []).some((l) => l.tipo === 'convertido');
+  return { ok: true, dano, debuff, provocou, cegou, converteu, buff: !!e.hunt.buffs?.[G.doSlug(slug).acao] || !!e.hunt.vinculos?.length, deslocou, febre: (b.dots ?? []).some((d) => d.chave === 'Corrupting_Fever' && d.falta > 0) };
 }
 
+// (aval do dono 27/10, R3) as gemas que não causam dano no PoE (base_deal_no_damage): o critério próprio de cada uma
+const SEM_DANO_NO_POE = { Decoy_Totem: (u) => u.provocou, Smoke_Mine: (u) => u.deslocou || u.cegou, Conversion_Trap: (u) => u.converteu };
 test('G16: toda gema ativa "funciona" faz no jogo o que o status promete (o dano, ou o buff ligado)', { skip: SEM, timeout: 600_000 }, async () => {
   J = await import('../systems/itens-poe/jogo.mjs');
   ({ gerarPeca } = await import('../systems/itens-poe/gerar.mjs'));
@@ -180,8 +195,8 @@ test('G16: toda gema ativa "funciona" faz no jogo o que o status promete (o dano
       // (lote A1b, com o aval do dono: a Emboscada colada no alvo não se move e não causa dano — o efeito dela é o buff, `hunt.emboscada`)
       // (lote B2, com o aval do dono: a Febre Corrompedora — o Sangue Corrompido no alvo, pelo acerto da outra gema)
       // (lote C4, com o aval do dono 21/10: a magia sem acerto é conferida pelo debuff — `GemasPoe.magiaSemAcerto`)
-      if (slug === 'Corrupting_Fever' ? u.febre : buff ? u.buff : G.magiaSemAcerto(slug, 20) ? u.debuff : u.dano > 0 || (r.arquetipo === 'movimento' && semDano && u.deslocou) || (slug === 'Ambush' && !!m.e.hunt.emboscada)) { feito = armas[0]; break; }
-      erros.push(`${armas[0]}: saiu sem ${buff ? 'buff' : 'dano'}`);
+      if (SEM_DANO_NO_POE[slug] ? SEM_DANO_NO_POE[slug](u) : slug === 'Corrupting_Fever' ? u.febre : buff ? u.buff : G.magiaSemAcerto(slug, 20) ? u.debuff : u.dano > 0 || (r.arquetipo === 'movimento' && semDano && u.deslocou) || (slug === 'Ambush' && !!m.e.hunt.emboscada)) { feito = armas[0]; break; }
+      erros.push(`${armas[0]}: saiu sem ${SEM_DANO_NO_POE[slug] ? 'o efeito' : buff ? 'buff' : 'dano'}`);
     }
     if (!feito) falhas.push(`${slug} (${r.arquetipo}) — ${erros.slice(0, 3).join(' · ')}`);
   }

@@ -8155,6 +8155,24 @@
       "unidade": "",
       "combate": true,
       "efeito": "o Físico adicionado ao acerto num alvo (\"Adiciona X a Y de Dano Físico contra Inimigos Sangrando\", a Marca do Caçador): no golpe básico (condicoes-poe.fichaDoGolpe → danoSomado) e na gema (acoes, ajusteDoAlvo.somado, × a eficácia)"
+    },
+    "suprimido_azarado": {
+      "nome": "Dano Mágico Suprimido causado em você é Azarado (Graça Vaal)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "poderes.magiaDoBicho: a magia suprimida rola o dano duas vezes e fica o menor (lote E1b, 26/10)"
+    },
+    "suprimido_fixo": {
+      "nome": "Dano sofrido de cada Tipo de Dano dos Acertos Suprimidos (Estandarte Desafiador)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "poderes.magiaDoBicho: o fixo por tipo na magia suprimida, sem passar do dano daquele tipo (lote E1b, 26/10)"
+    },
+    "recarga_es_nunca_interrompida": {
+      "nome": "A Recarga do Escudo de Energia não é impedida por Dano (Disciplina Vaal)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "personagem/defesa.absorver: o dano não reinicia a espera da recarga (lote E1b, 26/10)"
     }
   }
 }

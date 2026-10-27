@@ -83,8 +83,11 @@ test('G17: o efeito dos suportes pelo que cada "mais" atinge (o PoB)', { skip: S
   assert.deepEqual([vol.maisMaxAtaquePct, vol.maisMinAtaquePct, vol.maisDanoPct], [58, -69, undefined]);
   assert.equal(efeito('Behead_Support', TAGS('Ataque', 'Corpo a Corpo'))['af:mais_dano@alvoVidaBaixa'], 49);
   assert.equal(efeito('Controlled_Destruction_Support', TAGS('Magia')).maisDanoAcertoPct, 39);
-  // (o "por cada …" sem regra própria não vira um "mais" fixo: o Sobre-esforço fica parcial, com a linha do Clamor não feita)
-  assert.ok(SP.efeitoNoNivel('Overexertion_Support', 20, 0, TAGS('Ataque')).naoFeitas.some((l) => /por cada Clamor/.test(l)));
+  // (o "por cada …" não vira um "mais" fixo. Aval do dono, 26/10 — lote S1: o Esforço Excessivo como no PoE — um ataque pode ser Impelido por vários Clamores ao mesmo
+  // tempo; a linha "10% mais Dano por cada Clamor que os Impelir" é feita, × os Clamores que impelem o ataque — `impelidoPorClamorMaisPct`, não um "mais" fixo)
+  const sobre = SP.efeitoNoNivel('Overexertion_Support', 20, 0, TAGS('Ataque'));
+  assert.ok(!sobre.naoFeitas.some((l) => /por cada Clamor/.test(l)));
+  assert.deepEqual([sobre.efeito.impelidoPorClamorMaisPct, sobre.efeito['af:mais_dano@impelido']], [10, 14]);
 });
 
 test('G17: as Afecções Mortais — o acerto da Bola de Fogo cai 80%, o Incêndio dela sobe 44%', { skip: SEM }, async () => {
