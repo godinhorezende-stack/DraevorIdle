@@ -55,6 +55,8 @@ export const RE = Object.freeze({
   duracaoEspectro: new RegExp(`^Espectros têm Duração Base de ${N} segundos?(?: Espectros não viajam entre as Áreas)?$`, 'i'),
   critInc: new RegExp(`^Lacaios têm Chance de Acerto Crítico aumentada em ${N} %$`, 'i'),
   maxEspectrosQ: new RegExp(`^Máximo de ${N} Espectros Erguidos$`, 'i'),
+  // (lote D1, decisão do dono 27/10) "Velocidade de Movimento dos Lacaios está no Máximo" — o teto do passo (`ESPECTRO.movTetoPct`)
+  movMaximo: /^Velocidade de Movimento dos Lacaios está no Máximo$/i,
   // o Ceifador da Evisceração
   agravar: new RegExp(`^Lacaios têm ${N} % de chance de agravar sangramento em alvos atingidos com ataques$`, 'i'),
   // os Zumbis
@@ -102,6 +104,11 @@ export function casasDoAnel(centro, de, andavel = null, ocupadas = null) {
   return livres.length ? livres : [{ x: centro.x, y: centro.y }];
 }
 
+/**
+ * (lote D1, decisão do dono 27/10) os Espectros: "Velocidade de Movimento dos Lacaios está no Máximo" é o movement_velocity_cap −53 do PoB sobre a base 128
+ * (`Misc.lua`) — o teto de +75% no aumento total do passo do lacaio (128 − 53).
+ */
+export const ESPECTRO = Object.freeze({ movTetoPct: 128 - 53 });
 /** O Golpe Sagrado: o active_skill_minion_damage_+%_final do PoB por nível (1 a 40 — act_str.lua:6260-6299). */
 export const HOLY_STRIKE_MAIS_DANO = Object.freeze([-60, -48, -36, -24, -12, 0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288, 294, 300, 306, 312, 318, 324, 330, 336, 342, 348]);
 /** A Queda do Zumbi (o PoB): 2,5× o golpe (baseMultiplier), 1 s até o impacto (hitTimeOverride = 1 ÷ a velocidade de convocação). */
@@ -127,6 +134,8 @@ export function doLacaioE2a(slug, linhas = [], daQualidade = [], nivel = 1) {
     if (crit) r.critIncPct = crit;
     const extra = Math.floor(somar(daQualidade, RE.maxEspectrosQ) + 1e-9);
     if (extra) r.maximoExtra = extra;
+    // (lote D1, decisão do dono 27/10) o teto do passo: +75% no aumento total
+    if (tem(linhas, RE.movMaximo)) r.movTetoPct = ESPECTRO.movTetoPct;
   }
   // (o "X% mais Velocidade de Movimento dos Lacaios" — o Espectro e a Relíquia Sagrada)
   const movMais = somar(linhas, RE.movMais);
@@ -211,8 +220,11 @@ export function lacaioDoSacrificio(lacaios, voce, ponto, alcance) {
   return (lacaios ?? []).filter((l) => l?.hp > 0 && l.tipo === 'lacaio' && !l.intocavel && !l.mercenario && !l.queda && d(voce, l) <= alcance).sort((a, b) => d(a, ponto) - d(b, ponto))[0] ?? null;
 }
 
-/** O passo do lacaio com o "mais" e o teto: o aumento total (%) = (1 + aumentado) × (1 + mais) − 1. */
-export const movimentoComMais = (aumentadoPct, maisPct) => ((1 + (Number(aumentadoPct) || 0) / 100) * (1 + (Number(maisPct) || 0) / 100) - 1) * 100;
+/** O passo do lacaio com o "mais" e o teto: o aumento total (%) = (1 + aumentado) × (1 + mais) − 1; (lote D1) com `tetoPct`, no máximo o teto. */
+export const movimentoComMais = (aumentadoPct, maisPct, tetoPct = null) => {
+  const total = ((1 + (Number(aumentadoPct) || 0) / 100) * (1 + (Number(maisPct) || 0) / 100) - 1) * 100;
+  return tetoPct != null ? Math.min(Number(tetoPct), total) : total;
+};
 
 /**
  * Os ROBÔS RASTEJANTES na invocação: o i-ésimo robô (0 = o Resfriante, 1 = o Eletrizante) — `{ elemento, nome, auraNaoDano: { tipo, pct, raioM }, afDono }` (o buff
@@ -259,7 +271,7 @@ export function ehLinhaE2a(slug, l, arquetipo = 'lacaio') {
   if (arquetipo === 'totem') return s === 'Siege_Ballista_of_Trarthus' && [RE.posicionamento, RE.anel, RE.desaparecem].some((re) => re.test(t));
   if (arquetipo !== 'lacaio') return false;
   if (/^(?:Bone|Flesh)_Offering$/.test(s) && [RE.conjOferenda, RE.movOferenda, RE.bloqueioMagicoOferenda].some((re) => re.test(t))) return true;
-  if (/^Raise_Spectre/.test(s) && [RE.resElem, RE.critInc, RE.maxEspectrosQ].some((re) => re.test(t))) return true;
+  if (/^Raise_Spectre/.test(s) && [RE.resElem, RE.critInc, RE.maxEspectrosQ, RE.movMaximo].some((re) => re.test(t))) return true;
   if (s === 'Raise_Spectre_of_Transience' && RE.duracaoEspectro.test(t)) return true;
   if (s === 'Summon_Reaper_of_Eviscerating' && RE.agravar.test(t)) return true;
   if (s === 'Raise_Zombie_of_Slamming' && [RE.impactoArea, RE.impactoRecarga, RE.impactoRecargaSemNumero].some((re) => re.test(t))) return true;

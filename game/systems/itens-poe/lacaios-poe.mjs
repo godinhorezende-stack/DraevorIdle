@@ -186,7 +186,7 @@ const singular = (t) => String(t).trim().split(/\s+/).map((p) => (/ões$|ãos$/i
 
 /**
  * O que a gema invoca no `nivel`: `{ tipo: 'lacaio'|'totem', nome, maximo, porUso, duracaoMs, nivel, vida, dano: {min,max}, intervaloMs, desenho }`.
- * `efeito` (o dos suportes ligados): `lacaioVidaPct`, `lacaioDanoPct`, `totensExtras`, `duracaoPct`.
+ * `efeito` (o dos suportes ligados): `lacaioVidaPct`, `lacaioDanoPct` (o aumentado, soma), `lacaioMaisDanoPct` (o mais/menos, multiplica), `totensExtras`, `duracaoPct`.
  */
 /**
  * (18/10, lote G20a) O multiplicador de VIDA do tipo de totem no PoB (`totemLifeMult[skillTotemId]` — Misc.lua:214; o id em act_str/act_dex.lua): ×1,2
@@ -414,7 +414,7 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
   // (lote 43, P040: + do escudo da Égide Necromântica — o "Dano Mágico aumentado" no lacaio que conjura, o dano do elemento dele)
   const conjura = /mag[oa]|mage|espectro|spectre/i.test(`${nome} ${t.nome}`);
   const doEscudo = (conjura ? m0('minion_dano_magico') : 0) + m0(`minion_dano_${elemento ?? 'physical'}`);
-  const golpe = f.dano * (1 + maisDano / 100) * (1 + ((efeito?.lacaioDanoPct ?? 0) + m0('minion_dmg') + porTipo('lacaio_dano') + doEscudo + incV) / 100) * Math.max(0, 1 + porTipo('lacaio_mais_dano') / 100) * extra;
+  const golpe = f.dano * (1 + maisDano / 100) * (1 + ((efeito?.lacaioDanoPct ?? 0) + m0('minion_dmg') + porTipo('lacaio_dano') + doEscudo + incV) / 100) * Math.max(0, 1 + porTipo('lacaio_mais_dano') / 100) * Math.max(0, 1 + (efeito?.lacaioMaisDanoPct ?? 0) / 100) * extra;
   // O dano SOMADO aos lacaios das peças ("Lacaios causam X a Y de Dano de Fogo adicional"): no golpe deles, como o dano adicionado da gema.
   for (const el of ['physical', 'fire', 'ice', 'energy', 'chaos']) somado = [somado[0] + m0(`minion_added_${el}_min`), somado[1] + m0(`minion_added_${el}_max`)];
   // (+ o do TIPO: "Golens têm X a Y de Dano Físico de Ataques Adicional".)
@@ -466,7 +466,7 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
       bloqueio: mn('minion_block'), resFogo: mn('minion_fire_res') + (pob?.res.fire ?? 0) + (e2a.resElemPct ?? 0), resGelo: mn('minion_ice_res') + (pob?.res.ice ?? 0) + (e2a.resElemPct ?? 0), resRaio: mn('minion_energy_res') + (pob?.res.energy ?? 0) + (e2a.resElemPct ?? 0),
       // (lote E2A) o "mais" do movimento (o Espectro, a Relíquia — `movimentoDoLacaio`), a Pancada do Zumbi (a área e a recarga só dela), o agravar do Ceifador da
       // Evisceração e o "menos Dano sofrido" das Sentinelas Ascendidas (`danoNoLacaio`)
-      ...(e2a.movMaisPct ? { movMaisPct: e2a.movMaisPct } : {}), ...(e2a.impactoAreaPct ? { impactoAreaPct: e2a.impactoAreaPct } : {}), ...(e2a.impactoRecargaPct ? { impactoRecargaPct: e2a.impactoRecargaPct } : {}),
+      ...(e2a.movMaisPct ? { movMaisPct: e2a.movMaisPct } : {}), ...(e2a.movTetoPct != null ? { movTetoPct: e2a.movTetoPct } : {}), ...(e2a.impactoAreaPct ? { impactoAreaPct: e2a.impactoAreaPct } : {}), ...(e2a.impactoRecargaPct ? { impactoRecargaPct: e2a.impactoRecargaPct } : {}),
       ...(e2a.agravarPct ? { agravarPct: e2a.agravarPct } : {}), ...(e2a.menosDanoRecebidoPct ? { menosDanoRecebidoPct: e2a.menosDanoRecebidoPct } : {}),
       // (lote 69, as Ramificadoras: + por TIPO — "Zumbis Erguidos têm X% de chance de Provocar", "Esqueletos Convocados têm X% de chance de Definhar" —
       // e Empurrar com Ataques)
@@ -664,7 +664,8 @@ export const velocidadeDoLacaio = (l, agora) => (buffDoLacaio(l, 'agressividade'
 // e o "X% mais Velocidade de Movimento dos Lacaios" da gema — `poe.movMaisPct`, que multiplica: (1 + aumentado) × (1 + mais) − 1)
 export const movimentoDoLacaio = (l, agora, oferendaPct = 0) => {
   const aumentado = (l?.poe?.movimentoPct ?? 0) + (l?.poe?.movimentoRecentePct > 0 && criadoRecentemente(l, agora) ? l.poe.movimentoRecentePct : 0) + (Number(oferendaPct) || 0);
-  return l?.poe?.movMaisPct ? GemasE2a.movimentoComMais(aumentado, l.poe.movMaisPct) : aumentado;
+  // (lote D1, decisão do dono 27/10: + o teto dos Espectros — "Velocidade de Movimento dos Lacaios está no Máximo", +75% no total — `poe.movTetoPct`)
+  return l?.poe?.movMaisPct || l?.poe?.movTetoPct != null ? GemasE2a.movimentoComMais(aumentado, l?.poe?.movMaisPct ?? 0, l?.poe?.movTetoPct ?? null) : aumentado;
 };
 /**
  * (11/10) A LENTIDÃO nos lacaios e totens: o golpe de um Elite/Chefe pode deixá-los lentos, como faz com você (`combate/controle.json`: a chance

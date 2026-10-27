@@ -8,20 +8,20 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 445 |
+| implementada e testada | 448 |
 | implementada, sem teste próprio | 44 |
-| limitação do modelo idle | 52 |
-| parcial | 20 |
+| limitação do modelo idle | 54 |
+| parcial | 15 |
 | não se aplica | 1 |
 
 Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 176 |
+| implementada e testada | 178 |
 | implementada, sem teste próprio | 18 |
 | limitação do modelo idle | 10 |
-| parcial | 6 |
+| parcial | 4 |
 
 ### Gemas de suporte (262)
 
@@ -34,15 +34,15 @@ Só os ataques:
 ### Variantes
 
 - Vaal (52): implementada e testada 41 · limitação do modelo idle 5 · implementada, sem teste próprio 6
-- Alternativas (209): implementada e testada 153 · implementada, sem teste próprio 24 · parcial 6 · limitação do modelo idle 26
+- Alternativas (209): implementada e testada 154 · implementada, sem teste próprio 24 · parcial 4 · limitação do modelo idle 27
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 132 linhas distintas (13 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 121 linhas distintas (12 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 504/562 ativas, 186/262 suportes.
+- Testes que citam a gema: 505/562 ativas, 186/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
@@ -61,17 +61,14 @@ Só os ataques:
 | 2 | Habilidades suportadas criam Solo Maldito com uma Duração base de # segundos Feitiços de Habilidades Suportadas não tem Duração Inimigos em Solo Maldito das Habilidades Suportadas são Amaldiçoados com tal Feitiço Limite de # área de Solo Maldito |
 | 2 | Máximo de # anomalias |
 | 2 | sem dano direto: nenhum efeito no combate |
-| 2 | Velocidade de Movimento dos Lacaios está no Máximo |
 | 1 | # % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único |
 | 1 | #% de chance de renovar a Duração do Modificador recebido em até # segundos quando você Acertar um Inimigo Raro ou Único com Habilidades Suportadas |
 | 1 | #% mais Dano em Área |
 | 1 | +# ao número máximo de Guerreiros Ilusórios |
-| 1 | +# vez |
 | 1 | a explosão da tempestade usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); a Cegueira dentro dela (a descrição) não é aplicada |
 | 1 | a explosão das torres usa o físico médio da arma × #–#% pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); as torres não bloqueiam o caminho dos monstros |
 | 1 | A Habilidade Explosiva da Relíquia Sagrada concede # de Vida regenerada por segundo aos Aliados |
 | 1 | A Habilidade Explosiva da Relíquia Sagrada concede # de Vida regenerada por segundo aos Lacaios |
-| 1 | Armadilha dura +# segundo Gira |
 | 1 | Arqueiro Ilusório dura # segundos |
 | 1 | Arqueiro Ilusório utiliza Habilidades Suportadas com #% menos Velocidade de Ataque |
 | 1 | Ataques reforçados ativam Rajada de Vento ao atingir, limitado a uma vez a cada # metros percorridos |
@@ -104,8 +101,6 @@ Só os ataques:
 | 1 | Dispara # projéteis |
 | 1 | Dispara até # Flechas em alvos diferentes |
 | 1 | Efeito do Buff aumentado em # % |
-| 1 | Enquanto na Postura da Areia, Buff faz com que você sofra até # % menos Dano dos Inimigos na Aura |
-| 1 | Enquanto na Postura de Sangue, Aura faz com que os Inimigos sofram até # % mais Dano Físico dos Acertos |
 | 1 | Espíritos Sagrados têm #% de chance de usar a Habilidade Ativadora quando voc#e disparar um Projétil com tal Habilidade |
 | 1 | Espíritos Sagrados têm #% de chance de usar a Habilidade Ativadora quando voc#e disparar um\nProjétil com tal Habilidade |
 | 1 | Espíritos Sagrados têm +#% de chance de usar a Habilidade Ativadora quando você disparar um Projétil com tal habilidade enquanto um Inimigo Raro ou Único estiver em sua Presença |
@@ -113,9 +108,6 @@ Só os ataques:
 | 1 | Esta habilidade é ativada quando uma habilidade de reforço causa dano elétrico com o acerto |
 | 1 | Este ataque e lacaios convertem # % do dano físico em dano elétrico |
 | 1 | Flechas caem em duas linhas perpendiculares |
-| 1 | Gira # vez |
-| 1 | Gira # vezes |
-| 1 | Gira +# vezes se em Empunhadura Dupla |
 | 1 | Glifos reforçados ativam Constrição Pérfida ao serem recuperados |
 | 1 | Habilidades de Aura Suportadas não tem Reserva |
 | 1 | Habilidades dos Lacaios Ricocheteiam +# Vezes |
@@ -162,10 +154,8 @@ Só os ataques:
 | 1 | Máximo de # mãos |
 | 1 | Máximo de # Nascido(s) da Colmeia |
 | 1 | Minas de Habilidades Suportadas não podem ser Detonadas enquanto dentro de # metros de você |
-| 1 | Minas não podem ser Re-armadas |
 | 1 | Minas usando Habilidades Suportadas sempre focam na sua localização |
 | 1 | Modificadores ao Dano Mágico são aplicados ao efeito de Dano Degenerativo das Habilidades Suportadas |
-| 1 | nenhum efeito do buff tem equivalente no jogo |
 | 1 | o totem provoca os monstros em volta a atacá-lo (act_str.lua:##) |
 | 1 | Oferendas reforçadas ativam Invocar Nascidos da Colmeia ao usar |
 | 1 | perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB) |
@@ -180,7 +170,6 @@ Só os ataques:
 | 1 | Um lacaio próximo ganha uma alma para cada # de vida que você gasta em custos iniciais com magias reforçadas |
 | 1 | Um lacaio próximo ganha uma alma para cada # de vida que você gasta em custos\niniciais com magias reforçadas |
 | 1 | Usar habilidades vaal reforçadas inflige Tentação Vaal em você, causando # de dano físico por segundo, em vez de aplicar impedimento de ganho de almas |
-| 1 | Velocidade de rotação aumentada em # % se em Empunhadura Dupla |
 
 ## Gemas de habilidade pendentes
 
@@ -207,14 +196,6 @@ Só os ataques:
 - **Artillery_Ballista_of_Focus_Fire** (Balista de Artilharia do Fogo Concentrado) — parcial
   - efeito não simulado: as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:751-769; no jogo ainda são projéteis no alvo)
   - efeito não simulado: Dispara até 5 Flechas em alvos diferentes
-- **Blade_Trap** (Armadilha de Lâminas) — parcial
-  - efeito não simulado: Gira 4 vezes
-  - efeito não simulado: Velocidade de rotação aumentada em 25 % se em Empunhadura Dupla
-  - efeito não simulado: Gira +1 vezes se em Empunhadura Dupla
-  - efeito não simulado: Armadilha dura +1 segundo Gira
-  - efeito não simulado: +1 vez
-- **Blade_Trap_of_Laceration** (Armadilha de Lâminas da Laceração) — parcial
-  - efeito não simulado: Gira 1 vez
 - **Blink_Arrow** (Flecha Ilusória) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Blink_Arrow_of_Bombarding_Clones** (Flecha Ilusória dos Clones Bombardeiros) — limitação do modelo idle
@@ -233,10 +214,6 @@ Só os ataques:
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Dominating_Blow_of_Inspiring** (Golpe Dominador da Inspiração) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Flesh_and_Stone** (Carne e Pedra) — parcial
-  - nenhum efeito do buff tem equivalente no jogo
-  - efeito não simulado: Enquanto na Postura de Sangue, Aura faz com que os Inimigos sofram até 20 % mais Dano Físico dos Acertos
-  - efeito não simulado: Enquanto na Postura da Areia, Buff faz com que você sofra até 19 % menos Dano dos Inimigos na Aura
 - **Flesh_Offering** (Oferenda Carnal) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Generals_Cry** (Clamor do General) — parcial
@@ -264,11 +241,9 @@ Só os ataques:
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Plague_Bearer** (Infestador) — limitação do modelo idle
   - _idle:_ sai sozinha, na barra: Incuba e, no Valor Máximo da Praga com um inimigo a até 2 casas, Infesta até o Valor acabar; o raio da Infestação é de 2 casas (o PoE não publica o raio base)
-- **Raise_Spectre** (Evocar Espectro) — parcial
-  - efeito não simulado: Velocidade de Movimento dos Lacaios está no Máximo
+- **Raise_Spectre** (Evocar Espectro) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Raise_Spectre_of_Transience** (Evocar Espectro da Transitoriedade) — parcial
-  - efeito não simulado: Velocidade de Movimento dos Lacaios está no Máximo
+- **Raise_Spectre_of_Transience** (Evocar Espectro da Transitoriedade) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Raise_Zombie** (Evocar Zumbi) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
@@ -279,7 +254,6 @@ Só os ataques:
 - **Smoke_Mine** (Mina de Fumaça) — parcial
   - sem dano direto: nenhum efeito no combate
   - efeito não simulado: Somente uma Mina deste tipo pode ser Detonada em cada Sequência de Detonação
-  - efeito não simulado: Minas não podem ser Re-armadas
   - efeito não simulado: Detonação da Mina é Instantânea
 - **Spirit_Offering** (Oferenda Espiritual) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
@@ -514,6 +488,8 @@ Só os ataques:
 
 - **Spectral_Throw_of_Materialising** (Arremesso Espectral da Materialização) — implementada e testada
   - não se aplica: "Desaceleração do Projétil reduzida" (Arremesso Espectral da Materialização) só muda a trajetória — o PoB não a usa na conta
+- **Smoke_Mine** (Mina de Fumaça) — parcial
+  - não se aplica: "Minas não podem ser Re-armadas" (Mina de Fumaça) — o jogo não tem Re-armar Minas (aval do dono 27/10)
 - **Spectral_Helix** (Hélice Espectral) — implementada e testada
   - não se aplica: "Gira por N rotações" (Hélice Espectral) só muda a trajetória da espiral — o PoB não a usa na conta, e o projétil do jogo acerta no tique
 - **Spectral_Helix_of_Trarthus** (Hélice Espectral de Trarthus) — implementada e testada

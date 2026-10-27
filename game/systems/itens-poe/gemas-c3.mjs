@@ -54,7 +54,8 @@ const piso = (x) => Math.floor(x + 1e-9);
 
 /** (D3.1) O "Recentemente" da troca de Postura (o PoE: 4 s) e a gema que a troca. */
 export const POSTURA = Object.freeze({ slug: 'Blood_and_Sand', recenteMs: 4000 });
-export const ehGemaDePostura = (slug) => slug === POSTURA.slug;
+// (lote D1, 27/10: + o Carne e Pedra — a outra gema de Postura do PoE: o clique com ela ligada também alterna; as duas ficam na mesma Postura)
+export const ehGemaDePostura = (slug) => slug === POSTURA.slug || slug === 'Flesh_and_Stone';
 /**
  * (D3.1) A TROCA de Postura no buff `b` do Sangue e Areia (ligado): Sangue → Areia → Sangue. Guarda o instante (`trocouEm`). Devolve a Postura nova.
  * (O buff novo — `acoes`, ao ligar — começa na de Sangue, sem troca: no PoE, "Changing Stance occurs by activating a Stance skill while it's toggled on".)
