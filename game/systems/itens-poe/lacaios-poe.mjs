@@ -968,7 +968,8 @@ export function aoMatarDoLacaio(l, agora, rng = Math.random) {
     if (nome === 'devoradorDeAlmas' && buffDoLacaio(l, nome, agora)) continue;
     if (!(chance > 0 && rng() * 100 < chance)) continue;
     (l.buffs ??= {})[nome] = Math.max(l.buffs[nome] ?? 0, agora + seg * 1000);
-    if (nome === 'devoradorDeAlmas') l.almas = { n: 0, em: agora };
+    // (lote D2: as almas da Transfusão que o lacaio já tem ficam — `almas.livre`)
+    if (nome === 'devoradorDeAlmas' && !l.almas?.livre) l.almas = { n: 0, em: agora };
   }
 }
 /** Um lacaio morreu: os outros recuperam X% da vida ("Lacaios Recuperam X% de Vida na Morte de Lacaios"). */
