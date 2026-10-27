@@ -2,17 +2,17 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 432,
+   "implementada e testada": 443,
    "implementada, sem teste próprio": 44,
-   "parcial": 41,
+   "parcial": 30,
    "limitação do modelo idle": 44,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 173,
+   "implementada e testada": 175,
    "implementada, sem teste próprio": 18,
-   "parcial": 10,
+   "parcial": 8,
    "limitação do modelo idle": 9
   },
   "suportes": {
@@ -24,16 +24,16 @@
   "variantes": {
    "vaal": {
     "total": 52,
-    "implementada e testada": 39,
-    "parcial": 4,
+    "implementada e testada": 41,
+    "parcial": 2,
     "implementada, sem teste próprio": 6,
     "limitação do modelo idle": 3
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 150,
+    "implementada e testada": 151,
     "implementada, sem teste próprio": 24,
-    "parcial": 12,
+    "parcial": 11,
     "limitação do modelo idle": 23
    }
   },
@@ -45,8 +45,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 277,
-   "emDuasOuMais": 23
+   "linhasDistintas": 248,
+   "emDuasOuMais": 19
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -60,7 +60,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 490,
+   "ativasCitadas": 496,
    "suportesCitados": 156,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -286,12 +286,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 20 % menos Dano em Área",
-    "efeito não simulado: Raio acerta 1 alvo dentro de 5 metros",
-    "efeito não simulado: 0 % menos Dano em Área"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -368,13 +364,8 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Não pode ser Evadido",
-    "efeito não simulado: Raio acerta 30 alvos dentro de 10 metros",
-    "efeito não simulado: Aura faz com que Castigo ataque +1 alvos com relâmpagos",
-    "efeito não simulado: +10 % mais Dano em Área"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -544,12 +535,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: Estandarte concede Precisão aumentada em 8 % a Você e Aliados",
-    "efeito não simulado: Estandarte concede 4 % mais Dano Físico com Habilidades Corpo a Corpo a Você e Aliados"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2118,12 +2105,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Raio Base da explosão menor igual a 3 metros",
-    "efeito não simulado: Causa 7 explosões menores Explosões menores têm entre 1 % de redução e 30 % de aumento do raio base, aleatoriamente",
-    "efeito não simulado: Causa +2 explosões menores"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2135,12 +2118,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Raio Base da explosão menor igual a 3 metros",
-    "efeito não simulado: Causa 7 explosões menores Explosões menores têm entre 1 % de redução e 30 % de aumento do raio base, aleatoriamente",
-    "efeito não simulado: Causa +2 explosões menores"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2488,11 +2467,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Inimigos recebem 25 % de aumento de Dano dos Acertos de Minas ou Armadilhas",
-    "efeito não simulado: Inimigos possuem 80 % menos Velocidade de Movimento no início do Debuff"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2921,9 +2897,7 @@
    "arquetipo": "armadilha",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Gira 1 vez",
-    "efeito não simulado: Sangramentos inflingidos por esta Habilidade causam Dano 50 % mais rápido",
-    "efeito não simulado: Sangramentos inflingidos por esta Habilidade causam Dano 10 % mais rápido"
+    "efeito não simulado: Gira 1 vez"
    ],
    "idle": [],
    "outros": [],
@@ -4203,12 +4177,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Libera ondas a cada 0.9 segundos",
-    "efeito não simulado: Libera 5 onda",
-    "efeito não simulado: Libera +1 onda"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5220,13 +5190,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Concede 324.4 de Regeneração de Vida por segundo caso um Inimigo esteja afetado",
-    "efeito não simulado: Concede 17.2 de Regeneração de Mana por segundo se qualquer Inimigo está afetado",
-    "efeito não simulado: Concede 32.4 de Regeneração de Vida por segundo para cada Inimigo afetado",
-    "efeito não simulado: Concede 1.7 de Regeneração de Mana por segundo para cada Inimigo afetado"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5913,12 +5878,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Projéteis deixam Solo Eletrizado",
-    "efeito não simulado: Solo Eletrizado causa 15 % de Dano sofrido aumentado",
-    "efeito não simulado: Solo Eletrizado causa 5 % de Dano sofrido aumentado"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6138,14 +6099,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: Causa 70 % do seu Escudo de Energia Máximo como Dano Base de Fogo por segundo",
-    "efeito não simulado: Você Queima por 90 % de sua Vida máxima por segundo como Dano de Fogo",
-    "efeito não simulado: Você Queima por 70 % do seu Escudo de Energia máximo por segundo como Dano de Fogo",
-    "efeito não simulado: Concede 39 % mais Dano Mágico"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7580,12 +7535,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "mina",
-   "estado": "parcial",
-   "ausentes": [
-    "sem dano direto: nenhum efeito no combate",
-    "efeito não simulado: Primeira Mina é Detonada Instantaneamente Minas recebem 10 % mais Velocidade de Detonação para cada Mina anteior na Sequência de Detonação",
-    "efeito não simulado: Minas tem Velocidade de Detonação aumentada em 20 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -10082,22 +10033,6 @@
    ]
   },
   {
-   "linha": "nenhum efeito do buff tem equivalente no jogo",
-   "gemas": [
-    "Flesh_and_Stone",
-    "Righteous_Fire",
-    "War_Banner"
-   ]
-  },
-  {
-   "linha": "sem dano direto: nenhum efeito no combate",
-   "gemas": [
-    "Conversion_Trap",
-    "Detonate_Mines",
-    "Smoke_Mine"
-   ]
-  },
-  {
    "linha": "# % de chance de Convocar um Sentinela da Absolvição ao Acertar um Inimigo Raro ou Único",
    "gemas": [
     "Absolution",
@@ -10130,20 +10065,6 @@
    "gemas": [
     "Foulgrasp_Support",
     "Prismatic_Burst_Support"
-   ]
-  },
-  {
-   "linha": "Causa # explosões menores Explosões menores têm entre # % de redução e # % de aumento do raio base, aleatoriamente",
-   "gemas": [
-    "Explosive_Trap",
-    "Explosive_Trap_of_Shrapnel"
-   ]
-  },
-  {
-   "linha": "Causa +# explosões menores",
-   "gemas": [
-    "Explosive_Trap",
-    "Explosive_Trap_of_Shrapnel"
    ]
   },
   {
@@ -10189,10 +10110,10 @@
    ]
   },
   {
-   "linha": "Raio Base da explosão menor igual a # metros",
+   "linha": "sem dano direto: nenhum efeito no combate",
    "gemas": [
-    "Explosive_Trap",
-    "Explosive_Trap_of_Shrapnel"
+    "Conversion_Trap",
+    "Smoke_Mine"
    ]
   },
   {
@@ -10241,12 +10162,6 @@
    ]
   },
   {
-   "linha": "# % menos Dano em Área",
-   "gemas": [
-    "Smite"
-   ]
-  },
-  {
    "linha": "# metros de raio",
    "gemas": [
     "Prismatic_Burst_Support"
@@ -10262,12 +10177,6 @@
    "linha": "#% mais Dano em Área",
    "gemas": [
     "Windburst_Support"
-   ]
-  },
-  {
-   "linha": "+# % mais Dano em Área",
-   "gemas": [
-    "Vaal_Smite"
    ]
   },
   {
@@ -10451,12 +10360,6 @@
    ]
   },
   {
-   "linha": "Aura faz com que Castigo ataque +# alvos com relâmpagos",
-   "gemas": [
-    "Vaal_Smite"
-   ]
-  },
-  {
    "linha": "Auras das Habilidades Suportadas têm uma duração base de # segundos",
    "gemas": [
     "Divine_Blessing_Support"
@@ -10472,12 +10375,6 @@
    "linha": "Cada Mina das Habilidades Suportadas aplicadas #% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de #%",
    "gemas": [
     "High-Impact_Mine_Support"
-   ]
-  },
-  {
-   "linha": "Causa # % do seu Escudo de Energia Máximo como Dano Base de Fogo por segundo",
-   "gemas": [
-    "Righteous_Fire"
    ]
   },
   {
@@ -10544,36 +10441,6 @@
    "linha": "Cobre Inimigos em Cinzas ao Acertar",
    "gemas": [
     "Pyre_Support"
-   ]
-  },
-  {
-   "linha": "Concede # % mais Dano Mágico",
-   "gemas": [
-    "Righteous_Fire"
-   ]
-  },
-  {
-   "linha": "Concede # de Regeneração de Mana por segundo para cada Inimigo afetado",
-   "gemas": [
-    "Siphoning_Trap"
-   ]
-  },
-  {
-   "linha": "Concede # de Regeneração de Mana por segundo se qualquer Inimigo está afetado",
-   "gemas": [
-    "Siphoning_Trap"
-   ]
-  },
-  {
-   "linha": "Concede # de Regeneração de Vida por segundo caso um Inimigo esteja afetado",
-   "gemas": [
-    "Siphoning_Trap"
-   ]
-  },
-  {
-   "linha": "Concede # de Regeneração de Vida por segundo para cada Inimigo afetado",
-   "gemas": [
-    "Siphoning_Trap"
    ]
   },
   {
@@ -10778,18 +10645,6 @@
    "linha": "Esta Magia causa # a # , mais # % da sua Vida Máxima, como Dano de Fogo base",
    "gemas": [
     "Bodyswap_of_Sacrifice"
-   ]
-  },
-  {
-   "linha": "Estandarte concede # % mais Dano Físico com Habilidades Corpo a Corpo a Você e Aliados",
-   "gemas": [
-    "War_Banner"
-   ]
-  },
-  {
-   "linha": "Estandarte concede Precisão aumentada em # % a Você e Aliados",
-   "gemas": [
-    "War_Banner"
    ]
   },
   {
@@ -11231,18 +11086,6 @@
    ]
   },
   {
-   "linha": "Inimigos possuem # % menos Velocidade de Movimento no início do Debuff",
-   "gemas": [
-    "Bear_Trap"
-   ]
-  },
-  {
-   "linha": "Inimigos recebem # % de aumento de Dano dos Acertos de Minas ou Armadilhas",
-   "gemas": [
-    "Bear_Trap"
-   ]
-  },
-  {
    "linha": "Inimigos sofrem de Insanidade Perversa se estiverem sob a influência de auras de habilidades reforçadas por mais de # segundos",
    "gemas": [
     "Eldritch_Blasphemy_Support"
@@ -11471,24 +11314,6 @@
    ]
   },
   {
-   "linha": "Libera # onda",
-   "gemas": [
-    "Seismic_Trap"
-   ]
-  },
-  {
-   "linha": "Libera +# onda",
-   "gemas": [
-    "Seismic_Trap"
-   ]
-  },
-  {
-   "linha": "Libera ondas a cada # segundos",
-   "gemas": [
-    "Seismic_Trap"
-   ]
-  },
-  {
    "linha": "Magias Suportadas causam # % menos Dano",
    "gemas": [
     "Intuitive_Link"
@@ -11531,12 +11356,6 @@
    ]
   },
   {
-   "linha": "Minas tem Velocidade de Detonação aumentada em # %",
-   "gemas": [
-    "Detonate_Mines"
-   ]
-  },
-  {
    "linha": "Minas usando Habilidades Suportadas sempre focam na sua localização",
    "gemas": [
     "Locus_Mine_Support"
@@ -11549,15 +11368,15 @@
    ]
   },
   {
-   "linha": "Não pode ser Evadido",
-   "gemas": [
-    "Vaal_Smite"
-   ]
-  },
-  {
    "linha": "Não requer um cadáver",
    "gemas": [
     "Raise_Zombie_of_Falling"
+   ]
+  },
+  {
+   "linha": "nenhum efeito do buff tem equivalente no jogo",
+   "gemas": [
+    "Flesh_and_Stone"
    ]
   },
   {
@@ -11585,18 +11404,6 @@
    ]
   },
   {
-   "linha": "Primeira Mina é Detonada Instantaneamente Minas recebem # % mais Velocidade de Detonação para cada Mina anteior na Sequência de Detonação",
-   "gemas": [
-    "Detonate_Mines"
-   ]
-  },
-  {
-   "linha": "Projéteis deixam Solo Eletrizado",
-   "gemas": [
-    "Vaal_Lightning_Trap"
-   ]
-  },
-  {
    "linha": "Projéteis Perfuram todos Alvos",
    "gemas": [
     "Windburst_Support"
@@ -11615,18 +11422,6 @@
    ]
   },
   {
-   "linha": "Raio acerta # alvo dentro de # metros",
-   "gemas": [
-    "Smite"
-   ]
-  },
-  {
-   "linha": "Raio acerta # alvos dentro de # metros",
-   "gemas": [
-    "Vaal_Smite"
-   ]
-  },
-  {
    "linha": "Robôs Rastejantes concedem # % mais Dano de Armadilhas e Minas",
    "gemas": [
     "Summon_Skitterbots"
@@ -11636,12 +11431,6 @@
    "linha": "Sangramento expira #% mais rápido por Rompimento das Habilidades Suportadas nos alvos",
    "gemas": [
     "Rupture_Support"
-   ]
-  },
-  {
-   "linha": "Sangramentos inflingidos por esta Habilidade causam Dano # % mais rápido",
-   "gemas": [
-    "Blade_Trap_of_Laceration"
    ]
   },
   {
@@ -11666,12 +11455,6 @@
    "linha": "Sangue Corrompido infligido por estandartes reforçados tem uma duração base de # segundos",
    "gemas": [
     "Bloodsoaked_Banner_Support"
-   ]
-  },
-  {
-   "linha": "Solo Eletrizado causa # % de Dano sofrido aumentado",
-   "gemas": [
-    "Vaal_Lightning_Trap"
    ]
   },
   {
@@ -11726,18 +11509,6 @@
    "linha": "Velocidade de rotação aumentada em # % se em Empunhadura Dupla",
    "gemas": [
     "Blade_Trap"
-   ]
-  },
-  {
-   "linha": "Você Queima por # % de sua Vida máxima por segundo como Dano de Fogo",
-   "gemas": [
-    "Righteous_Fire"
-   ]
-  },
-  {
-   "linha": "Você Queima por # % do seu Escudo de Energia máximo por segundo como Dano de Fogo",
-   "gemas": [
-    "Righteous_Fire"
    ]
   }
  ],

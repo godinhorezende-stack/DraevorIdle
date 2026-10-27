@@ -22,6 +22,8 @@ import { raioQueCresce } from './gemas-b1.mjs';
 // (lotes G-A e G-C, dono 25/10: a Precisão a menos do Enfraquecer, o Impelir restrito)
 import * as GemasGAC from './gemas-gac.mjs';
 import { renovarLento } from './gemas-gbd.mjs';
+// (lote E2B, 26/10: o dano sofrido do debuff da Armadilha de Urso nos acertos de Armadilha e Mina)
+import { danoDoUrso } from './gemas-e2b.mjs';
 
 /** "Recentemente" no PoE: nos últimos 4 segundos. */
 export const RECENTE_MS = 4000;
@@ -1742,7 +1744,7 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   // (+ lote G17: o "não pode" — o Foco Elemental e a Sede de Sangue, nas linhas dos suportes)
   // (lote A5, dono 20/10: + o máximo da Eletrização, o −X% de Fogo dos Incendiados, o "Eletriza ao resfriar / Resfria ao eletrizar" do Coursing Current e o Resfriamento Ósseo —
   // as linhas da gema e dos suportes que as afecções do golpe leem)
-  const temAfeccao = Object.keys(s).some((k) => /^(chance_|dot_|dano_dot_|ailment_|poison_|bleed_|ignite_|duracao_|efeito_|envenena|pode:|nao_pode:|congelamento_como|eletrizacao_como|resfriamento_como|eletrizacao_maximo|res_menos_|eletriza_ao_|resfria_ao_|resfriado_fragil_gelo)/.test(k));
+  const temAfeccao = Object.keys(s).some((k) => /^(chance_|dot_|dano_dot_|ailment_|poison_|bleed_|ignite_|duracao_|efeito_|envenena|pode:|nao_pode:|congelamento_como|eletrizacao_como|resfriamento_como|eletrizacao_maximo|res_menos_|eletriza_ao_|resfria_ao_|resfriado_fragil_gelo|sangramento_mais_rapido)/.test(k));
   // Os sorteios do golpe: "Dano Dobrado"/"Triplicado" e "ignorar a Redução de Dano Físico" (a chance sem condição + a do golpe).
   const chance = (k) => (Number(ficha.afPoe[k]) || 0) + (s[k] ?? 0);
   const triplo = chance('chance_dano_triplo') > 0 && rng() * 100 < chance('chance_dano_triplo');
@@ -3278,6 +3280,10 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   // (lote E) "Cada Mina aplica Dano sofrido aumentado em X% aos Inimigos próximos a ela, até Y%" (`mods-poe.aoAcertar` acumula no alvo da
   // Mina) e "Inimigos que você Provocar recebem Dano aumentado em X%".
   if (ativo(e.minaFragil, agora)) f *= 1 + (e.minaFragil.pct ?? 0) / 100;
+  // (lote E2B, 26/10 — o PoB, BearTrap: TrapMineDamageTaken) "Inimigos recebem 25% de aumento de Dano dos Acertos de Minas ou Armadilhas" — o debuff de Urso, só no acerto
+  // de Armadilha ou Mina (as tags do golpe)
+  const doUrso = danoDoUrso(alvo, agora);
+  if (doUrso > 0 && (ficha?.tagsDoGolpe ?? []).some((t) => t === 'armadilha' || t === 'mina')) f *= 1 + doUrso / 100;
   // (12/10) "Inimigos sofrem Dano aumentado em X% para cada uma de suas Runas Vinculadas a eles" (`runas-vinculadas.marcarNosInimigos`).
   if (alvo.runasVinculadas > 0) f *= 1 + (alvo.runasVinculadas * (Number(ficha?.afPoe?.dano_por_runa_vinculada) || 0)) / 100;
   // ("Cada Totem aplica Dano aumentado em X% sofrido pelos Inimigos próximos a ele" — `mods-poe.aurasProximas`.)

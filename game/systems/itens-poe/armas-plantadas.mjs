@@ -171,16 +171,18 @@ export const movendo = (hunt, agora = hunt?.clock ?? 0) => agora - (hunt?.poeRec
  * seguinte depois do tempo de detonação dela ÷ (1 + "Velocidade de Detonação aumentada") ÷ (1 + 10% × as anteriores). (Lote 45: cada uso do
  * atalho respeita a recarga de 0,2 s do Detonar Minas — `hunt.poeDetonarEm`.) Devolve as Minas que detonam agora: `[{ p, alvo }]`.
  */
-export function minasQueDetonam(hunt, ficha, agora = hunt?.clock ?? 0) {
+// (lote E2B, 26/10: `velocidadeExtraPct` — a qualidade da gema Detonar Minas encaixada, "Minas tem Velocidade de Detonação aumentada em X%"; `manual` — o uso da gema
+// Detonar Minas na barra: detona andando e sem inimigo perto, como o atalho do PoE)
+export function minasQueDetonam(hunt, ficha, agora = hunt?.clock ?? 0, { velocidadeExtraPct = 0, manual = false } = {}) {
   const M = PADRAO.mina;
   const minas = plantadas(hunt, 'mina', agora);
   if (!minas.length) return [];
-  const pode = !movendo(hunt, agora) || v(ficha, 'detonar_minas_movendo') > 0;
+  const pode = manual || !movendo(hunt, agora) || v(ficha, 'detonar_minas_movendo') > 0;
   const fora = minas.filter((p) => p.detonaEm == null);
-  if (pode && fora.length && agora >= (hunt.poeDetonarEm ?? -Infinity) + M.recargaMs && minas.some((p) => inimigoPerto(hunt, p, M.raioDeDetonacao))) {
+  if (pode && fora.length && agora >= (hunt.poeDetonarEm ?? -Infinity) + M.recargaMs && (manual || minas.some((p) => inimigoPerto(hunt, p, M.raioDeDetonacao)))) {
     hunt.poeDetonarEm = agora;
     const naSequencia = minas.filter((p) => p.detonaEm != null).length;
-    const velocidade = Math.max(0.1, 1 + v(ficha, 'velocidade_detonacao') / 100);
+    const velocidade = Math.max(0.1, 1 + (v(ficha, 'velocidade_detonacao') + (Number(velocidadeExtraPct) || 0)) / 100);
     let t = Math.max(agora, ...minas.filter((p) => p.detonaEm != null).map((p) => p.detonaEm));
     fora.sort((a, b) => a.desde - b.desde).forEach((p, i) => {
       const anteriores = naSequencia + i;

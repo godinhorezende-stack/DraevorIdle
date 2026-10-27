@@ -8,20 +8,20 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 432 |
+| implementada e testada | 443 |
 | implementada, sem teste próprio | 44 |
 | limitação do modelo idle | 44 |
-| parcial | 41 |
+| parcial | 30 |
 | não se aplica | 1 |
 
 Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 173 |
+| implementada e testada | 175 |
 | implementada, sem teste próprio | 18 |
 | limitação do modelo idle | 9 |
-| parcial | 10 |
+| parcial | 8 |
 
 ### Gemas de suporte (262)
 
@@ -33,16 +33,16 @@ Só os ataques:
 
 ### Variantes
 
-- Vaal (52): implementada e testada 39 · parcial 4 · implementada, sem teste próprio 6 · limitação do modelo idle 3
-- Alternativas (209): implementada e testada 150 · implementada, sem teste próprio 24 · parcial 12 · limitação do modelo idle 23
+- Vaal (52): implementada e testada 41 · parcial 2 · implementada, sem teste próprio 6 · limitação do modelo idle 3
+- Alternativas (209): implementada e testada 151 · implementada, sem teste próprio 24 · parcial 11 · limitação do modelo idle 23
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 277 linhas distintas (23 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 248 linhas distintas (19 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 490/562 ativas, 156/262 suportes.
+- Testes que citam a gema: 496/562 ativas, 156/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
@@ -53,22 +53,18 @@ Só os ataques:
 | 3 | Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida |
 | 3 | Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção |
 | 3 | Habilidades Suportadas também contam como Habilidades Bênção\nVocê só pode ter uma Aura de suas Habilidades Bênção |
-| 3 | nenhum efeito do buff tem equivalente no jogo |
-| 3 | sem dano direto: nenhum efeito no combate |
 | 2 | # % de chance de Convocar um Sentinela da Absolvição ao Acertar um Inimigo Raro ou Único |
 | 2 | #% do Dano Físico Convertido para Dano de Fogo |
 | 2 | a onda usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma) |
 | 2 | Causa # a # de Dano de Caos |
 | 2 | Causa # a # de Dano de Raio |
-| 2 | Causa # explosões menores Explosões menores têm entre # % de redução e # % de aumento do raio base, aleatoriamente |
-| 2 | Causa +# explosões menores |
 | 2 | Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética |
 | 2 | Habilidades suportadas criam Solo Maldito com uma Duração base de # segundos Feitiços de Habilidades Suportadas não tem Duração Inimigos em Solo Maldito das Habilidades Suportadas são Amaldiçoados com tal Feitiço Limite de # área de Solo Maldito |
 | 2 | Habilidades Suportadas têm Efeito em Área da Ativação de Armadilhas aumentado em #% |
 | 2 | Lacaios de Habilidades Suportadas têm Chance de Golpe Crítico aumentada em #% |
 | 2 | Lacaios possuem +# % de todas Resistências Elementais |
 | 2 | Máximo de # anomalias |
-| 2 | Raio Base da explosão menor igual a # metros |
+| 2 | sem dano direto: nenhum efeito no combate |
 | 2 | Sentinelas Ascendidos causam # % mais Dano |
 | 2 | Sentinelas Ascendidos sofrem # % menos Dano |
 | 2 | Velocidade de Movimento dos Lacaios está no Máximo |
@@ -76,11 +72,9 @@ Só os ataques:
 | 1 | # % mais Área de Efeito se Consumindo um Lacaio |
 | 1 | # % mais Dano de Projétil |
 | 1 | # % menos Dano de Afecções |
-| 1 | # % menos Dano em Área |
 | 1 | # metros de raio |
 | 1 | #% de chance de renovar a Duração do Modificador recebido em até # segundos quando você Acertar um Inimigo Raro ou Único com Habilidades Suportadas |
 | 1 | #% mais Dano em Área |
-| 1 | +# % mais Dano em Área |
 | 1 | +# ao número máximo de Guerreiros Ilusórios |
 | 1 | +# ao número máximo de Zumbis |
 | 1 | +# metros para o alcance do golpe corpo a corpo do lacaio |
@@ -111,11 +105,9 @@ Só os ataques:
 | 1 | Ativa Invocar Relâmpago Vivo quando uma habilidade\nde reforço causa dano elétrico com o acerto |
 | 1 | Aumenta a Velocidade de Conjuração dos Lacaios em # % |
 | 1 | Aumenta a Velocidade de Movimento dos Lacaios em # % |
-| 1 | Aura faz com que Castigo ataque +# alvos com relâmpagos |
 | 1 | Auras das Habilidades Suportadas têm uma duração base de # segundos |
 | 1 | Buff concede # % mais Dano Físico |
 | 1 | Cada Mina das Habilidades Suportadas aplicadas #% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de #% |
-| 1 | Causa # % do seu Escudo de Energia Máximo como Dano Base de Fogo por segundo |
 | 1 | Causa # a # de Dano de Fogo |
 | 1 | Causa # a # de Dano de Gelo |
 | 1 | Causa Dano de Fogo base igual a #% da Vida Máxima dos Totens |
@@ -127,11 +119,6 @@ Só os ataques:
 | 1 | Clamores Suportados infligem # Debuffs de Sangue Corrompido no primeiro inimigo Acertado por cada Ataque que Impelirem |
 | 1 | Clamores Suportados infligem # Debuffs de Sangue Corrompido no primeiro\ninimigo Acertado por cada Ataque que Impelirem |
 | 1 | Cobre Inimigos em Cinzas ao Acertar |
-| 1 | Concede # % mais Dano Mágico |
-| 1 | Concede # de Regeneração de Mana por segundo para cada Inimigo afetado |
-| 1 | Concede # de Regeneração de Mana por segundo se qualquer Inimigo está afetado |
-| 1 | Concede # de Regeneração de Vida por segundo caso um Inimigo esteja afetado |
-| 1 | Concede # de Regeneração de Vida por segundo para cada Inimigo afetado |
 | 1 | Concede aos Lacaios +# % de Chance de Bloquear Dano Mágico |
 | 1 | Consumir um cadáver com habilidades reforçadas tem #% de chance de conceder uma alma por poder |
 | 1 | Consumir um cadáver com habilidades reforçadas tem +#% de chance de conceder uma alma por poder |
@@ -166,8 +153,6 @@ Só os ataques:
 | 1 | Esta habilidade é ativada por habilidades de ataque reforçadas |
 | 1 | Esta habilidade é ativada quando uma habilidade de reforço causa dano elétrico com o acerto |
 | 1 | Esta Magia causa # a # , mais # % da sua Vida Máxima, como Dano de Fogo base |
-| 1 | Estandarte concede # % mais Dano Físico com Habilidades Corpo a Corpo a Você e Aliados |
-| 1 | Estandarte concede Precisão aumentada em # % a Você e Aliados |
 | 1 | Estandartes reforçados infligem Sangue Corrompido a cada segundo aos inimigos dentro de sua área |
 | 1 | Este ataque e lacaios convertem # % do dano físico em dano elétrico |
 | 1 | Estímulo dura # segundos |
@@ -241,8 +226,6 @@ Só os ataques:
 | 1 | Inervação dura # segundos |
 | 1 | Inflige Definhando por # segundos ao Acertar |
 | 1 | Inimigos afetados por feitiços de habilidades de maldição reforçadas não podem causar golpes críticos |
-| 1 | Inimigos possuem # % menos Velocidade de Movimento no início do Debuff |
-| 1 | Inimigos recebem # % de aumento de Dano dos Acertos de Minas ou Armadilhas |
 | 1 | Inimigos sofrem de Insanidade Perversa se estiverem sob a influência de auras de habilidades reforçadas por mais de # segundos |
 | 1 | Intensidade de Chama Santificada infligida por habilidades reforçadas aumentada em #% |
 | 1 | Invervação concede # a # de Dano de Raio |
@@ -281,9 +264,6 @@ Só os ataques:
 | 1 | Lacaios têm Efeito Eletrizante aumentado em # % |
 | 1 | Lacaios tem Efeito Resfriante aumentado em # % |
 | 1 | Lacaios têm Recuperação da Recarga aumentada em # % |
-| 1 | Libera # onda |
-| 1 | Libera +# onda |
-| 1 | Libera ondas a cada # segundos |
 | 1 | Magias Suportadas causam # % menos Dano |
 | 1 | Máximo de # Arqueiro Ilusório Convocado |
 | 1 | Máximo de # Lacaios Relâmpagos Vivos |
@@ -291,30 +271,23 @@ Só os ataques:
 | 1 | Máximo de # Nascido(s) da Colmeia |
 | 1 | Minas de Habilidades Suportadas não podem ser Detonadas enquanto dentro de # metros de você |
 | 1 | Minas não podem ser Re-armadas |
-| 1 | Minas tem Velocidade de Detonação aumentada em # % |
 | 1 | Minas usando Habilidades Suportadas sempre focam na sua localização |
 | 1 | Modificadores ao Dano Mágico são aplicados ao efeito de Dano Degenerativo das Habilidades Suportadas |
-| 1 | Não pode ser Evadido |
 | 1 | Não requer um cadáver |
+| 1 | nenhum efeito do buff tem equivalente no jogo |
 | 1 | o totem provoca os monstros em volta a atacá-lo (act_str.lua:##) |
 | 1 | Oferendas reforçadas ativam Invocar Nascidos da Colmeia ao usar |
 | 1 | Perca todas as Cargas de Inspiração após Gastar um total de # de Mana em Custos Diretos e Efeitos das Habilidades Suportadas |
 | 1 | perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB) |
-| 1 | Primeira Mina é Detonada Instantaneamente Minas recebem # % mais Velocidade de Detonação para cada Mina anteior na Sequência de Detonação |
-| 1 | Projéteis deixam Solo Eletrizado |
 | 1 | Projéteis Perfuram todos Alvos |
 | 1 | Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade Arqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados |
 | 1 | Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade\nArqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados |
-| 1 | Raio acerta # alvo dentro de # metros |
-| 1 | Raio acerta # alvos dentro de # metros |
 | 1 | Robôs Rastejantes concedem # % mais Dano de Armadilhas e Minas |
 | 1 | Sangramento expira #% mais rápido por Rompimento das Habilidades Suportadas nos alvos |
-| 1 | Sangramentos inflingidos por esta Habilidade causam Dano # % mais rápido |
 | 1 | Sangue Corrompido infligido por Clamores Suportados causam # de Dano Físico base por segundo |
 | 1 | Sangue Corrompido infligido por Clamores Suportados tem uma Duração Base de # segundos |
 | 1 | Sangue Corrompido infligido por estandartes reforçados causam # de dano físico base por segundo por bravura consumida |
 | 1 | Sangue Corrompido infligido por estandartes reforçados tem uma duração base de # segundos |
-| 1 | Solo Eletrizado causa # % de Dano sofrido aumentado |
 | 1 | Somente uma Mina deste tipo pode ser Detonada em cada Sequência de Detonação |
 | 1 | Suas Habilidades Não-Bênção que Reservam Mana são Desabilitadas enquanto você tiver uma Aura da Habilidade Suportada em você |
 | 1 | Totens com esta Habilidade a Ativam quando Acertados por um Inimigo |
@@ -324,8 +297,6 @@ Só os ataques:
 | 1 | Um lacaio próximo ganha uma alma para cada # de vida que você gasta em custos\niniciais com magias reforçadas |
 | 1 | Usar habilidades vaal reforçadas inflige Tentação Vaal em você, causando # de dano físico por segundo, em vez de aplicar impedimento de ganho de almas |
 | 1 | Velocidade de rotação aumentada em # % se em Empunhadura Dupla |
-| 1 | Você Queima por # % de sua Vida máxima por segundo como Dano de Fogo |
-| 1 | Você Queima por # % do seu Escudo de Energia máximo por segundo como Dano de Fogo |
 
 ## Gemas de habilidade pendentes
 
@@ -352,9 +323,6 @@ Só os ataques:
 - **Artillery_Ballista_of_Focus_Fire** (Balista de Artilharia do Fogo Concentrado) — parcial
   - efeito não simulado: as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:751-769; no jogo ainda são projéteis no alvo)
   - efeito não simulado: Dispara até 5 Flechas em alvos diferentes
-- **Bear_Trap** (Armadilha de Urso) — parcial
-  - efeito não simulado: Inimigos recebem 25 % de aumento de Dano dos Acertos de Minas ou Armadilhas
-  - efeito não simulado: Inimigos possuem 80 % menos Velocidade de Movimento no início do Debuff
 - **Blade_Trap** (Armadilha de Lâminas) — parcial
   - efeito não simulado: Gira 4 vezes
   - efeito não simulado: Velocidade de rotação aumentada em 25 % se em Empunhadura Dupla
@@ -363,8 +331,6 @@ Só os ataques:
   - efeito não simulado: +1 vez
 - **Blade_Trap_of_Laceration** (Armadilha de Lâminas da Laceração) — parcial
   - efeito não simulado: Gira 1 vez
-  - efeito não simulado: Sangramentos inflingidos por esta Habilidade causam Dano 50 % mais rápido
-  - efeito não simulado: Sangramentos inflingidos por esta Habilidade causam Dano 10 % mais rápido
 - **Blink_Arrow** (Flecha Ilusória) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Blink_Arrow_of_Bombarding_Clones** (Flecha Ilusória dos Clones Bombardeiros) — limitação do modelo idle
@@ -387,22 +353,10 @@ Só os ataques:
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Decoy_Totem** (Totem Chamariz) — parcial
   - efeito não simulado: o totem provoca os monstros em volta a atacá-lo (act_str.lua:2416-2432)
-- **Detonate_Mines** (Detonar Minas) — parcial
-  - sem dano direto: nenhum efeito no combate
-  - efeito não simulado: Primeira Mina é Detonada Instantaneamente Minas recebem 10 % mais Velocidade de Detonação para cada Mina anteior na Sequência de Detonação
-  - efeito não simulado: Minas tem Velocidade de Detonação aumentada em 20 %
 - **Dominating_Blow** (Golpe Dominador) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Dominating_Blow_of_Inspiring** (Golpe Dominador da Inspiração) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Explosive_Trap** (Armadilha Explosiva) — parcial
-  - efeito não simulado: Raio Base da explosão menor igual a 3 metros
-  - efeito não simulado: Causa 7 explosões menores Explosões menores têm entre 1 % de redução e 30 % de aumento do raio base, aleatoriamente
-  - efeito não simulado: Causa +2 explosões menores
-- **Explosive_Trap_of_Shrapnel** (Armadilha Explosiva dos Estilhaços) — parcial
-  - efeito não simulado: Raio Base da explosão menor igual a 3 metros
-  - efeito não simulado: Causa 7 explosões menores Explosões menores têm entre 1 % de redução e 30 % de aumento do raio base, aleatoriamente
-  - efeito não simulado: Causa +2 explosões menores
 - **Flesh_and_Stone** (Carne e Pedra) — parcial
   - nenhum efeito do buff tem equivalente no jogo
   - efeito não simulado: Enquanto na Postura de Sangue, Aura faz com que os Inimigos sofram até 20 % mais Dano Físico dos Acertos
@@ -460,30 +414,11 @@ Só os ataques:
   - efeito não simulado: Ataque de Impacto dos Zumbis Erguidos tem Efeito em Área aumentado em 76 %
   - efeito não simulado: Golpe de Impacto de Zumbis Evocados tem a Velocidade de Recarga aumentada em %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Righteous_Fire** (Círculo Ardente) — parcial
-  - nenhum efeito do buff tem equivalente no jogo
-  - efeito não simulado: Causa 70 % do seu Escudo de Energia Máximo como Dano Base de Fogo por segundo
-  - efeito não simulado: Você Queima por 90 % de sua Vida máxima por segundo como Dano de Fogo
-  - efeito não simulado: Você Queima por 70 % do seu Escudo de Energia máximo por segundo como Dano de Fogo
-  - efeito não simulado: Concede 39 % mais Dano Mágico
-- **Seismic_Trap** (Armadilha Císmica) — parcial
-  - efeito não simulado: Libera ondas a cada 0.9 segundos
-  - efeito não simulado: Libera 5 onda
-  - efeito não simulado: Libera +1 onda
 - **Siege_Ballista_of_Trarthus** (Balista de Cerco de Trarthus) — parcial
   - efeito não simulado: Alcance do Posicionamento de Totens aumentado em 300 %
   - efeito não simulado: Invoca 1 Totens de Balista em círculo que usam esta habilidade
   - efeito não simulado: Após atacar, os totens desaparecem
   - efeito não simulado: 20 % mais Dano de Projétil
-- **Siphoning_Trap** (Armadilha Sifão de Gelo) — parcial
-  - efeito não simulado: Concede 324.4 de Regeneração de Vida por segundo caso um Inimigo esteja afetado
-  - efeito não simulado: Concede 17.2 de Regeneração de Mana por segundo se qualquer Inimigo está afetado
-  - efeito não simulado: Concede 32.4 de Regeneração de Vida por segundo para cada Inimigo afetado
-  - efeito não simulado: Concede 1.7 de Regeneração de Mana por segundo para cada Inimigo afetado
-- **Smite** (Castigo) — parcial
-  - efeito não simulado: 20 % menos Dano em Área
-  - efeito não simulado: Raio acerta 1 alvo dentro de 5 metros
-  - efeito não simulado: 0 % menos Dano em Área
 - **Smoke_Mine** (Mina de Fumaça) — parcial
   - sem dano direto: nenhum efeito no combate
   - efeito não simulado: Somente uma Mina deste tipo pode ser Detonada em cada Sequência de Detonação
@@ -567,21 +502,8 @@ Só os ataques:
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Vaal_Double_Strike** (Golpe Duplo Vaal) — limitação do modelo idle
   - _idle:_ limitação do idle: os clones do Golpe Duplo Vaal não andam no jogo — o "Clones possuem X% de aumento da Velocidade de Movimento" não tem onde valer (D4.4)
-- **Vaal_Lightning_Trap** (Armadilha Relampejante Vaal) — parcial
-  - efeito não simulado: Projéteis deixam Solo Eletrizado
-  - efeito não simulado: Solo Eletrizado causa 15 % de Dano sofrido aumentado
-  - efeito não simulado: Solo Eletrizado causa 5 % de Dano sofrido aumentado
-- **Vaal_Smite** (Castigo Vaal) — parcial
-  - efeito não simulado: Não pode ser Evadido
-  - efeito não simulado: Raio acerta 30 alvos dentro de 10 metros
-  - efeito não simulado: Aura faz com que Castigo ataque +1 alvos com relâmpagos
-  - efeito não simulado: +10 % mais Dano em Área
 - **Vaal_Summon_Skeletons** (Convocar Esqueletos Vaal) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **War_Banner** (Estandarte da Guerra) — parcial
-  - nenhum efeito do buff tem equivalente no jogo
-  - efeito não simulado: Estandarte concede Precisão aumentada em 8 % a Você e Aliados
-  - efeito não simulado: Estandarte concede 4 % mais Dano Físico com Habilidades Corpo a Corpo a Você e Aliados
 
 ## Gemas de suporte pendentes
 
