@@ -318,6 +318,26 @@ export function impeleEste(impelidos, tags = []) {
   if (t.has(so)) return true;
   return so === 'golpe' && t.has('corpo') && !t.has('habilidade');
 }
+/**
+ * (lote S1, dono 26/10: "o Esforço Excessivo como no PoE — um ataque pode ser Impelido por vários Clamores ao mesmo tempo") TODOS os Impelir de agora, um por Clamor:
+ * o principal (`hunt.impelidos`, o do último Clamor — `{ n, ate, de?, so?, alvosExtra? }`) e os dos outros Clamores (`hunt.impelidos.outros`), com carga e não vencidos.
+ */
+export function impelirDeAgora(impelidos, agora = -Infinity) {
+  return [impelidos, ...(impelidos?.outros ?? [])].filter((x) => x && x.n > 0 && (x.ate ?? Infinity) > agora);
+}
+/** (lote S1) Os Impelir que alcançam o ataque com estas `tags` (cada Clamor impele só o que ele alcança — `impeleEste`). Cada um gasta a SUA carga. */
+export const impelemEste = (impelidos, tags = [], agora = -Infinity) => impelirDeAgora(impelidos, agora).filter((x) => impeleEste(x, tags));
+/**
+ * (lote S1) Guarda o Impelir de um Clamor (`novo`): o MESMO Clamor (o `de` e o `so`) renova pelo máximo; outro vira o principal e o anterior, ainda com carga, passa aos
+ * `outros` — os dois impelem juntos (antes o novo trocava o anterior).
+ */
+export function porImpelir(hunt, novo, agora = -Infinity) {
+  const todos = impelirDeAgora(hunt.impelidos, agora);
+  const mesmo = todos.find((x) => (x.de ?? null) === (novo.de ?? null) && (x.so ?? null) === (novo.so ?? null));
+  const outros = todos.filter((x) => x !== mesmo && (x.de ?? null) !== (novo.de ?? null)).map(({ outros: _o, ...x }) => x);
+  hunt.impelidos = { ...novo, n: Math.max(mesmo?.n ?? 0, novo.n), ...(outros.length ? { outros } : {}) };
+  return hunt.impelidos;
+}
 const LINHA_IMPELE = /^Impele (?:os próximos|o próximo) \d+ Ataques? de .+ que você executar$/i;
 const LINHA_ALVOS_DO_IMPELIDO = /^Golpes Impelidos focam em (\d+) Inimigos adicionais$/i;
 const LINHA_INTIMIDA = /^Inimigos Provocados por este Clamor são Intimidados$/i;

@@ -76,6 +76,8 @@ export function tentar(hunt, bicho, ficha, agora = hunt?.clock ?? 0, rng = Math.
   if (semAfeccaoElemental && (efeito === 'congelado' || efeito === 'lento')) return null;
   // ("Não pode ser Atordoado por Dano Mágico Suprimido".)
   if (semAtordoamento && efeito === 'atordoado') return null;
+  // (lote S1, 26/10: o Conjurar ao Canalizar Desperto — "Ignora Atordoamentos enquanto Usando Habilidades Suportadas": canalizando a habilidade suportada)
+  if (efeito === 'atordoado' && hunt?.canalizacao?.ignoraAtordoamento && agora <= (hunt.canalizacao.ate ?? 0) + 250) return null;
   // (PoE: "Inimigos Amaldiçoados não podem infligir Afecções Elementais em Você" — o Congelamento e o Resfriamento do monstro amaldiçoado.)
   if ((efeito === 'congelado' || efeito === 'lento') && Number(ficha?.afPoe?.amaldicoados_sem_afeccao_elemental) > 0 && ModsPoe.amaldicoadoPorVoce(bicho, agora)) return null;
   // PoE (`itens-poe/mods-poe.mjs → controleNoJogador`): evitar e imunidade, a duração em você, a Recuperação de Atordoamentos, o efeito do

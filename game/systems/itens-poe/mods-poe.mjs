@@ -10,6 +10,8 @@ import * as Plantadas from './armas-plantadas.mjs';
 // (lotes G-A e G-C, dono 25/10: as Marcas no acerto — as Cargas, as Cargas de Frasco — e a Punição em quem acerta você)
 import * as GemasGAC from './gemas-gac.mjs';
 import { porLento } from './gemas-gbd.mjs';
+// (lote S2B, 27/10: o Exemplar conta os seus críticos de ataque)
+import { notarCriticoDeAtaque } from './suportes-s2b.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -72,6 +74,8 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
     marcarCriticoDaHabilidade(hunt, habilidade, agora);
     // (Os frascos com "chance de ganhar uma Carga de Frasco ao causar um Golpe Crítico" — `frascos.tique`.)
     if (hunt) hunt.poeCriticosParaFrascos = (hunt.poeCriticosParaFrascos ?? 0) + 1;
+    // (lote S2B: o Exemplar — "toda vez que você causar um golpe crítico recentemente com um ataque": os seus críticos de ATAQUE dos últimos 4 s)
+    if (tags.has('ataque')) notarCriticoDeAtaque(hunt, agora);
   }
   const e = (alvo.estados ??= {});
   // (13/10, o Mestre do Metal: "Você e Aliados próximos causam de 6 a 12 de Dano Físico adicional para cada Empalar no Inimigo" — lote 31,

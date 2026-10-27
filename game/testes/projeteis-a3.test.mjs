@@ -410,6 +410,6 @@ test('as linhas que não se aplicam (só a trajetória) saem dos motivos e ficam
   assert.ok(G.doSlug('Ice_Spear').linhasNaoSeAplicam?.some((n) => /^não se aplica:/.test(n)));
   assert.ok(!G.doSlug('Spectral_Throw_of_Materialising').motivosNoJogo.length, G.doSlug('Spectral_Throw_of_Materialising').motivosNoJogo.join(' | '));
   assert.ok(!G.doSlug('Kinetic_Bolt').motivosNoJogo.some((m) => /mudam de direção/.test(m)));
-  // (a velocidade de projétil da gema de totem fica para o ramo do totem)
-  assert.ok(G.doSlug('Holy_Flame_Totem_of_Ire').motivosNoJogo.includes('efeito não simulado: 128 % mais Velocidade de Projétil'));
+  // (aval do dono, 26/10 — lote E1a: a velocidade de projétil da gema de totem vale no tiro do totem, que sai pelo seu uso desde o G20a; a linha saiu dos motivos)
+  assert.ok(!G.doSlug('Holy_Flame_Totem_of_Ire').motivosNoJogo.includes('efeito não simulado: 128 % mais Velocidade de Projétil'));
 });

@@ -277,6 +277,8 @@ test('NECROMANTE: "Suas Habilidades de Oferenda também afetam você", com "X% d
   // Na caçada: a Oferenda usada (com um lacaio em campo) passa a valer em você.
   const o = cacada({ classe: 'Witch', base: 'Wands/Driftwood_Wand', gema: 'Flesh_Offering', af: { oferenda_em_voce: 1, oferenda_efeito_reduzido: reduzido } });
   o.h.lacaios = [{ uid: 'l1', tipo: 'lacaio', hp: 100, maxHp: 100, x: o.h.pos.x, y: o.h.pos.y + 1 }];
+  // (aval do dono, 26/10 — lote E1a: as Oferendas do PoE consomem cadáveres a até 4 casas; sem cadáver, não saem — um cadáver perto)
+  o.h.cadaveres = [{ x: o.h.pos.x + 1, y: o.h.pos.y + 1, z: o.h.z ?? 0, key: 'x' }];
   usar(o, 0);
   assert.ok(o.h.oferendaEmVoce?.ate > o.h.clock && o.h.oferendaEmVoce.velAtaquePct > 0, 'a Oferenda vale em você');
 });

@@ -579,7 +579,13 @@ const magiaDoArcanista = (def) => def?.tipo === 'ativa' && !ehArcanista(def) && 
 // (revisão G, 26/10 — D13) a RUÍNA (o PoB, SupportDarkRitual: `cannot_cast_curses`, `addSkillTypes` Triggered, `excludeSkillTypes` AuraAffectsEnemies): as maldições
 // Feitiço ligadas a ela que exigem até o nível 70 só saem pela Ruína (não se conjuram à mão nem pela automação); com a Blasfêmia no grupo (a maldição vira aura) a Ruína
 // não as suporta. O nível exigido: o da tabela da gema no nível dela (`poeXp.req`, o "RequerNível" do poedb).
+// (lote E1b, 26/10) o CLAMOR DO MAGO DE BATALHA (o PoB, BattlemagesCrySupport): as magias ligadas a ele saem nos ataques Impelidos por ele (Acoes.ativarGatilhos
+// 'magoDeBatalha'); as mesmas regras do Arcanista (ativáveis, sem Armadilha, Mina, Totem, as que reservam e as Vaal) e sem as de Canalização
+const ehMagoDeBatalha = (def) => def?.tipo === 'ativa' && def.poe?.slug === 'Battlemages_Cry';
+const magiaDoMagoDeBatalha = (def) => magiaDoArcanista(def) && !def.tags.includes('poe:Canalização');
 const ehRuinaDef = (def) => def?.tipo === 'ativa' && /^Bane(_of_Condemnation)?$/.test(def.poe?.slug ?? '');
+// (lote S1, 26/10) o Toque Maldito (Hextouch): o suporte no grupo faz as maldições que ele suporta saírem nos acertos das outras ativas do grupo
+const ehToqueMaldito = (def) => def?.tipo === 'support' && /^Hextouch_Support$/.test(def.poe?.slug ?? '');
 export const NIVEL_MAX_DA_RUINA = 70;
 const exigeNoNivel = (def, nivel) => { const r = def?.poeXp?.req ?? []; return r.length ? (r[Math.min(r.length, Math.max(1, nivel | 0)) - 1] ?? 1) : (def?.levelMinimo ?? 1); };
 const maldicaoDaRuina = (def, nivel) => def?.tipo === 'ativa' && !ehRuinaDef(def) && ACOES.get(def.acao)?.poeGema?.arquetipo === 'maldicao' && !!def.tags?.includes('poe:Feitiço') && exigeNoNivel(def, nivel) <= NIVEL_MAX_DA_RUINA;
@@ -744,11 +750,19 @@ export function gruposComGatilho(estado) {
       // (lote G-D — D16) a Runa do Arcanista: as magias do grupo saem nas Ativações dela (o tique das Runas)
       const arc = noGrupo.find((y) => ehArcanista(y.def));
       const doArcanista = arc ? noGrupo.filter((y) => magiaDoArcanista(y.def)).map((y) => y.def.acao) : [];
+      const mago = noGrupo.find((y) => ehMagoDeBatalha(y.def));
+      const doMago = mago ? noGrupo.filter((y) => magiaDoMagoDeBatalha(y.def)).map((y) => y.def.acao) : [];
+      if (doMago.length) saida.push({ chave: `${slot}:${mago.i}`, nome: mago.def.nome, nivel: mago.g.nivel + bonus, gatilho: { quando: 'magoDeBatalha' }, ataques: [], magias: doMago, magoDeBatalha: mago.def.acao });
       if (doArcanista.length) saida.push({ chave: `${slot}:${arc.i}`, nome: arc.def.nome, nivel: arc.g.nivel + bonus, gatilho: { quando: 'arcanista' }, ataques: [], magias: doArcanista, arcanista: arc.def.acao });
       // (revisão G — D13) a Ruína: as maldições Feitiço ligadas só saem por ela (`Acoes.maldicoesDaRuina`); o `quando` 'ruina' não é evento de nenhum despachante
       const ruina = noGrupo.find((y) => ehRuinaDef(y.def));
       const daRuina = ruina && !noGrupo.some((y) => ehBlasfemia(y.def)) ? noGrupo.filter((y) => maldicaoDaRuina(y.def, y.g.nivel + bonus + extrasDaGemaPoe(estado, peca, y.def, y.i).nivel)).map((y) => y.def.acao) : [];
       if (daRuina.length) saida.push({ chave: `${slot}:${ruina.i}`, nome: ruina.def.nome, nivel: ruina.g.nivel + bonus, gatilho: { quando: 'ruina' }, ataques: [], magias: daRuina, ruina: ruina.def.acao });
+      // (lote S1, 26/10) o Toque Maldito: "Habilidades Suportadas aplicam Maldições Suportadas em Acertos" e "Você não pode Conjurar Magias Maldição Suportadas" — as
+      // maldições do grupo saem nos acertos das outras ativas dele (`Acoes.maldicoesDoToqueS1`); o `quando` 'toque' não é evento de nenhum despachante
+      const toque = noGrupo.find((y) => ehToqueMaldito(y.def));
+      const doToque = toque ? noGrupo.filter((y) => y.def.tipo === 'ativa' && ACOES.get(y.def.acao)?.poeGema?.arquetipo === 'maldicao' && compativel(toque.def.suporte, y.def.tags)).map((y) => y.def.acao) : [];
+      if (doToque.length) saida.push({ chave: `${slot}:${toque.i}`, nome: toque.def.nome, nivel: toque.g.nivel + bonus, gatilho: { quando: 'toque' }, ataques: noGrupo.filter((y) => y.def.tipo === 'ativa' && !doToque.includes(y.def.acao)).map((y) => y.def.acao), magias: doToque, toqueMaldito: true });
       const atirar = noGrupo.find((y) => ehAtirar(y.def));
       const doAtirar = atirar ? noGrupo.filter((y) => suportadaDoAtirar(y.def)).map((y) => y.def.acao) : [];
       if (doAtirar.length) saida.push({ chave: `${slot}:${atirar.i}`, nome: atirar.def.nome, nivel: atirar.g.nivel + bonus, gatilho: { quando: 'snipe' }, ataques: [atirar.def.acao], magias: doAtirar, atirar: atirar.def.acao });
@@ -762,7 +776,8 @@ export function gruposComGatilho(estado) {
         saida.push({
           chave: `${slot}:${x.i}`, nome: x.def.nome, nivel: x.g.nivel + bonus, gatilho: gat,
           ataques: (canal ? ativas.filter(canaliza) : ativas.filter((y) => y.def.tags?.includes('poe:Ataque'))).map((y) => y.def.acao),
-          magias: ativas.filter((y) => y.def.tags?.includes('poe:Magia') && !y.def.tags?.includes('poe:Ataque') && !(canal && canaliza(y)) && compativel(x.def.suporte, y.def.tags)).map((y) => y.def.acao),
+          // (lote S2A, 27/10: a Flecha Forjada com Mana ATIVA os Ataques de Arco suportados — `Acoes.manaForjadaS2A`)
+          magias: ativas.filter((y) => (gat?.quando === 'manaForjada' ? y.def.tags?.includes('poe:Arco') && y.def.tags?.includes('poe:Ataque') : y.def.tags?.includes('poe:Magia') && !y.def.tags?.includes('poe:Ataque')) && !(canal && canaliza(y)) && compativel(x.def.suporte, y.def.tags)).map((y) => y.def.acao),
         });
       }
     }
