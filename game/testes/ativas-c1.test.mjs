@@ -79,8 +79,8 @@ test('C1: as gemas do lote saem de parcial (as linhas do PoE têm leitor)', { sk
     const r = G.REGISTRO.get(s);
     assert.deepEqual([s, r.statusNoJogo, r.motivosNoJogo], [s, 'funciona', []]);
   }
-  // (a Cadência: só o "Físico como Gelo Extra" da qualidade, que é da família 5 — o A6)
-  assert.deepEqual(G.REGISTRO.get('Ice_Crash_of_Cadence').motivosNoJogo, ['efeito não simulado: Receba 20 % do Dano Físico como Dano de Gelo Extra']);
+  // (a Cadência: o "Físico como Gelo Extra" da qualidade passou a ser feito no lote E1b — com o aval do dono, 26/10: a Pancada de Gelo da Cadência fica sem motivo)
+  assert.deepEqual(G.REGISTRO.get('Ice_Crash_of_Cadence').motivosNoJogo, []);
 });
 
 // ---------------------------------------------------------------- as Cutiladas
