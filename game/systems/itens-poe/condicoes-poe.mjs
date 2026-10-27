@@ -3306,7 +3306,8 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   if (doUrso > 0 && (ficha?.tagsDoGolpe ?? []).some((t) => t === 'armadilha' || t === 'mina')) f *= 1 + doUrso / 100;
   // (lote D1, decisão do dono 27/10 — o PoB, FleshAndStone: PhysicalDamageTaken MORE, ModFlag.Hit) o Carne e Pedra na Postura de Sangue: o inimigo na aura sofre X% mais
   // Dano Físico dos Acertos — o valor cheio, sem a queda pela distância
-  if (tipo === 'physical') f *= fatorDoSangue(alvo, agora);
+  // (revisão F1: só no ACERTO — o pulso do dano contínuo, `fatorRecebidoNoDot`, vem com a ficha `dot`)
+  if (tipo === 'physical' && !ficha?.dot) f *= fatorDoSangue(alvo, agora);
   // (12/10) "Inimigos sofrem Dano aumentado em X% para cada uma de suas Runas Vinculadas a eles" (`runas-vinculadas.marcarNosInimigos`).
   if (alvo.runasVinculadas > 0) f *= 1 + (alvo.runasVinculadas * (Number(ficha?.afPoe?.dano_por_runa_vinculada) || 0)) / 100;
   // ("Cada Totem aplica Dano aumentado em X% sofrido pelos Inimigos próximos a ele" — `mods-poe.aurasProximas`.)
@@ -3342,7 +3343,7 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
  * "increased Damage taken" do Shock). Fica de fora o que é do atacante (a ficha do golpe: o "mais" do tipo, os "contra Inimigos X"), o que é só de Acerto, de Ataque
  * (o Intimidado) ou de Magia (o Inervado). A Exposição já está na resistência (`hunt/resistencia`), que o pulso usa.
  */
-const FICHA_DO_DOT = Object.freeze({ afPoe: Object.freeze({}), tagsDoGolpe: Object.freeze([]) });
+const FICHA_DO_DOT = Object.freeze({ afPoe: Object.freeze({}), tagsDoGolpe: Object.freeze([]), dot: true });
 /*
  * (revisão do C4, 21/10 — o PoB: o Definhado é `6 × (1 + WitherEffect)` no `enemyDB ChaosDamageTaken`, CalcPerform.lua; os "Inimigos … sofrem Dano aumentado" são
  * `EnemyModifier DamageTaken`, ModParser.lua — sem flag de Acerto: valem no dano contínuo, CalcOffence.lua) as chaves do ATACANTE que são dano SOFRIDO pelo inimigo (não
@@ -3361,7 +3362,7 @@ export function fatorRecebidoNoDot(alvo, tipo, agora, sofrido = null) {
   const e = alvo.estados ?? {};
   const pilha = (e.chocadosPilha ?? []).filter((x) => x.ate > agora);
   const eletrizacao = pilha.length ? 1 + pilha.reduce((t, x) => t + (x.pct ?? 0), 0) / 100 : ativo(e.chocado, agora) ? 1 + (e.chocado.pct ?? 0) / 100 : 1;
-  return fatorRecebidoPeloBicho(alvo, tipo, sofrido ? { afPoe: sofrido, tagsDoGolpe: FICHA_DO_DOT.tagsDoGolpe } : FICHA_DO_DOT, agora) * eletrizacao;
+  return fatorRecebidoPeloBicho(alvo, tipo, sofrido ? { afPoe: sofrido, tagsDoGolpe: FICHA_DO_DOT.tagsDoGolpe, dot: true } : FICHA_DO_DOT, agora) * eletrizacao;
 }
 /** As chaves com escala do ALVO (`resfriamentoNoAlvo:N`, `eletrizacaoNoAlvo:N`), guardadas por soma (`afPoe`). */
 const ESCALAS_DO_ALVO = /^(resfriamentoNoAlvo|eletrizacaoNoAlvo)(:|$)/;

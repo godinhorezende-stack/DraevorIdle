@@ -214,10 +214,13 @@ export function trocaDoSacrificio(slug, linhas = [], daQualidade = [], stats = {
   }
   return null;
 }
-/** O lacaio que a Troca de Corpos do Sacrifício consome: o danificável (não o totem, o intocável, o mercenário, o que ainda cai) a até `alcance` de você, o mais perto de `ponto`. */
-export function lacaioDoSacrificio(lacaios, voce, ponto, alcance) {
+/**
+ * O lacaio que a Troca de Corpos do Sacrifício consome: o danificável (não o totem, o intocável, o mercenário, o que ainda cai) a até `alcance` de você, o mais perto de `ponto`.
+ * (revisão F1: como o cadáver da Troca de Corpos comum — a até `SACRIFICIO.lacaioPertoCasas` (3) casas do ponto e no mesmo andar `z`, quando dado)
+ */
+export function lacaioDoSacrificio(lacaios, voce, ponto, alcance, z = null) {
   const d = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
-  return (lacaios ?? []).filter((l) => l?.hp > 0 && l.tipo === 'lacaio' && !l.intocavel && !l.mercenario && !l.queda && d(voce, l) <= alcance).sort((a, b) => d(a, ponto) - d(b, ponto))[0] ?? null;
+  return (lacaios ?? []).filter((l) => l?.hp > 0 && l.tipo === 'lacaio' && !l.intocavel && !l.mercenario && !l.queda && d(voce, l) <= alcance && d(l, ponto) <= SACRIFICIO.lacaioPertoCasas && (z == null || l.z == null || l.z === z)).sort((a, b) => d(a, ponto) - d(b, ponto))[0] ?? null;
 }
 
 /** O passo do lacaio com o "mais" e o teto: o aumento total (%) = (1 + aumentado) × (1 + mais) − 1; (lote D1) com `tetoPct`, no máximo o teto. */

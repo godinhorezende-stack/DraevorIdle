@@ -1551,7 +1551,8 @@ export function afeccoesComAGema(afeccoes, slug, nivel, qualidade = 0) {
   // (lote G18b: com a qualidade — o Golpe Selvagem: "20% de chance de Congelar, Eletrizar e Incendiar" na qualidade 20; "Não Pode aplicar
   // Eletrizar" (−1) é o "não pode", não uma chance negativa)
   const ch = compilada(slug, nivel, qualidade)?.stats?.chances ?? {};
-  const extra = Object.entries(ch).filter(([k, v]) => v && AFECCAO_NO_JOGO[k]);
+  // (revisão F1) a chance de Eletrizar do Castigo é da aura dele (`buffNoNivel`), não do golpe
+  const extra = Object.entries(ch).filter(([k, v]) => v && AFECCAO_NO_JOGO[k] && !(k === 'eletrizar' && GemasE2b.ehCastigo(slug)));
   // (lote G-C, D11) a Detonação de Feitiços: "Todos os Danos podem Incendiar, Congelar e Eletrizar" (o Caos dela também)
   if (afeccoes && detonacaoNoNivel(slug, nivel, qualidade)?.todasAfeccoes) afeccoes = GemasGAC.comTodasAsAfeccoes(afeccoes);
   if (!afeccoes || !extra.length) return afeccoes;
@@ -1725,6 +1726,9 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
     const x = atributosDoBuff(l);
     if (x) for (const [k, v] of Object.entries(x)) af[k] = (af[k] ?? 0) + v;
   }
+  // (revisão F1) o Castigo e o Castigo Vaal: "Aura concede X % de chance de Eletrizar" é da AURA (o PoB: EnemyShockChance BASE com effectType Aura — vale para
+  // você e os aliados na área, com o Efeito de Aura), não do golpe da gema (`afeccoesComAGema` a tira de lá)
+  if (GemasE2b.ehCastigo(slug) && st.chances?.eletrizar > 0) af.chance_shock = (af.chance_shock ?? 0) + st.chances.eletrizar;
   if (b.armadura) af.armor_flat = (af.armor_flat ?? 0) + Math.round(b.armadura);
   if (b.evasao) af.evasion = (af.evasion ?? 0) + Math.round(b.evasao);
   if (b.escudo) af.energy_shield = (af.energy_shield ?? 0) + Math.round(b.escudo);
@@ -2183,6 +2187,37 @@ function addsDaCanalizacao(hunt) {
   if (menos) r.dano_recebido_mais = -menos;
   return Object.keys(r).length ? r : null;
 }
+/**
+ * O fator do Efeito do buff `b` (id `id`, tipo `tipo`) de `dono` em `estado` — o Efeito de Aura/Buff da árvore e das peças (`efeito_buff_gema:<arquétipo>`, `:todos`, o da
+ * gema pelo nome e pela tag), o do Estandarte, o do suporte ligado (`b.efeitoAuraPct`), o da qualidade (`b.efeitoBuffQualPct`) e os "mais". (revisão F1: antes só dentro de
+ * `adds`; o Carne e Pedra usa a mesma conta na marca dos inimigos — decisão do dono, como o PoB). `emVoce: false`: o efeito fora de você (nos inimigos) — sem o
+ * "reduzido em você por Arauto" do Emissário do Propósito.
+ */
+export function efeitoDoBuff(estado, tipo, id, b = null, dono = estado, { emVoce = true } = {}) {
+  const hunt = estado?.hunt;
+  const agora = hunt?.clock ?? 0;
+  const g = String(id ?? '').startsWith(PREFIXO) ? REGISTRO.get(String(id).slice(PREFIXO.length))?.gema : null;
+  const daGema = g?.nome ? `efeito_buff_gema:${slugDoNome(g.nome)}` : null;
+  // (ciclo 7) + pela TAG da gema ("Habilidades de Vínculo têm Efeito do Buff aumentado" — o Vínculo não tem arquétipo próprio)
+  const porTag = (g?.tags ?? []).filter((t) => TAGS_DE_BUFF[t]).reduce((n, t) => n + doEquipamento(dono, `efeito_buff_gema:${TAGS_DE_BUFF[t]}`), 0);
+  // (ciclo 7, lote G) o ESTANDARTE: "Habilidades de Estandarte têm Efeito de Aura aumentado"; (11/10) e o "X% mais Efeito de Aura por Valor
+  // consumido" do Estandarte plantado (`estandarte.efeitoMais` — `mods-poe.plantarEstandarte`), que multiplica.
+  const estandarte = /_Banner/.test(String(id)) ? doEquipamento(dono, 'efeito_buff_gema:estandarte') : 0;
+  // (13/10, o Ego Supremo: "Habilidades Aura têm 1% mais Efeito de Aura por cada 2% de Mana máxima que Reservarem" — a reserva DESTA aura,
+  // na máxima de agora; multiplica.)
+  const porReserva = b?.reserva && b.reserva.recurso !== 'vida' && tipo === 'poe-aura' ? doEquipamento(dono, 'aura_efeito_por_reserva') : 0;
+  const reservaPct = porReserva > 0 && (dono?.maxMana ?? 0) > 0 ? (100 * Math.ceil((b.reserva.pct ? (dono.maxMana * b.reserva.pct) / 100 : b.reserva.fixo ?? 0) * (b.reserva.fator ?? 1))) / dono.maxMana : 0;
+  const mais = (1 + Math.max(0, Number(b?.estandarte?.efeitoMais) || 0) / 100) * (porReserva > 0 ? 1 + Math.floor(reservaPct / porReserva) / 100 : 1);
+  // (17/10, lote G14: + o "Efeito das Auras aumentado" do suporte ligado à aura — `b.efeitoAuraPct`)
+  // (lote 72, o Emissário do Propósito) "Auras das suas Habilidades têm Efeito reduzido em X% em você para cada Arauto te afetando, até Y%":
+  // só as suas auras, em você.
+  const menosPorArauto = tipo === 'poe-aura' && dono === estado && emVoce ? doEquipamento(dono, 'aura_em_voce_menos_por_arauto') : 0;
+  const arautos = menosPorArauto > 0 ? Object.values(hunt?.buffs ?? {}).filter((x) => x?.tipo === 'poe-arauto' && x.ate > agora).length : 0;
+  const porArauto = arautos > 0 ? Math.min(doEquipamento(dono, 'aura_em_voce_menos_por_arauto_max') || Infinity, menosPorArauto * arautos) : 0;
+  // (lote 80, o Mensageiro Solitário: "50% mais Efeito dos Buffs de Arautos em você" — multiplica)
+  const maisArauto = tipo === 'poe-arauto' && dono === estado ? 1 + doEquipamento(dono, 'efeito_buff_arauto_mais') / 100 : 1;
+  return (1 + (doEquipamento(dono, `efeito_buff_gema:${String(tipo ?? '').replace(/^poe-/, '')}`) + doEquipamento(dono, 'efeito_buff_gema:todos') + (daGema ? doEquipamento(dono, daGema) : 0) + porTag + estandarte + (Number(b?.efeitoAuraPct) || 0) + (Number(b?.efeitoBuffQualPct) || 0) - porArauto) / 100) * mais * maisArauto;
+}
 export function adds(estado) {
   const hunt = estado?.hunt;
   const daCanalizacao = addsDaCanalizacao(hunt);
@@ -2193,29 +2228,7 @@ export function adds(estado) {
   // de UMA gema ("Ira possui 20% de aumento do Efeito de Aura", "Efeito do Buff da Armadura Ártica aumentado": `efeito_buff_gema:<nome da gema>`,
   // os implícitos eldritch e os únicos — 09/10).)
   // (11/10: o efeito é o do DONO da aura — `dono` — porque a aura de um companheiro de grupo também vale aqui)
-  const efeitoDe = (tipo, id, dono = estado, b = null) => {
-    const g = String(id ?? '').startsWith(PREFIXO) ? REGISTRO.get(String(id).slice(PREFIXO.length))?.gema : null;
-    const daGema = g?.nome ? `efeito_buff_gema:${slugDoNome(g.nome)}` : null;
-    // (ciclo 7) + pela TAG da gema ("Habilidades de Vínculo têm Efeito do Buff aumentado" — o Vínculo não tem arquétipo próprio)
-    const porTag = (g?.tags ?? []).filter((t) => TAGS_DE_BUFF[t]).reduce((n, t) => n + doEquipamento(dono, `efeito_buff_gema:${TAGS_DE_BUFF[t]}`), 0);
-    // (ciclo 7, lote G) o ESTANDARTE: "Habilidades de Estandarte têm Efeito de Aura aumentado"; (11/10) e o "X% mais Efeito de Aura por Valor
-    // consumido" do Estandarte plantado (`estandarte.efeitoMais` — `mods-poe.plantarEstandarte`), que multiplica.
-    const estandarte = /_Banner/.test(String(id)) ? doEquipamento(dono, 'efeito_buff_gema:estandarte') : 0;
-    // (13/10, o Ego Supremo: "Habilidades Aura têm 1% mais Efeito de Aura por cada 2% de Mana máxima que Reservarem" — a reserva DESTA aura,
-    // na máxima de agora; multiplica.)
-    const porReserva = b?.reserva && b.reserva.recurso !== 'vida' && tipo === 'poe-aura' ? doEquipamento(dono, 'aura_efeito_por_reserva') : 0;
-    const reservaPct = porReserva > 0 && (dono?.maxMana ?? 0) > 0 ? (100 * Math.ceil((b.reserva.pct ? (dono.maxMana * b.reserva.pct) / 100 : b.reserva.fixo ?? 0) * (b.reserva.fator ?? 1))) / dono.maxMana : 0;
-    const mais = (1 + Math.max(0, Number(b?.estandarte?.efeitoMais) || 0) / 100) * (porReserva > 0 ? 1 + Math.floor(reservaPct / porReserva) / 100 : 1);
-    // (17/10, lote G14: + o "Efeito das Auras aumentado" do suporte ligado à aura — `b.efeitoAuraPct`)
-    // (lote 72, o Emissário do Propósito) "Auras das suas Habilidades têm Efeito reduzido em X% em você para cada Arauto te afetando, até Y%":
-    // só as suas auras, em você.
-    const menosPorArauto = tipo === 'poe-aura' && dono === estado ? doEquipamento(dono, 'aura_em_voce_menos_por_arauto') : 0;
-    const arautos = menosPorArauto > 0 ? Object.values(hunt.buffs ?? {}).filter((x) => x?.tipo === 'poe-arauto' && x.ate > agora).length : 0;
-    const porArauto = arautos > 0 ? Math.min(doEquipamento(dono, 'aura_em_voce_menos_por_arauto_max') || Infinity, menosPorArauto * arautos) : 0;
-    // (lote 80, o Mensageiro Solitário: "50% mais Efeito dos Buffs de Arautos em você" — multiplica)
-    const maisArauto = tipo === 'poe-arauto' && dono === estado ? 1 + doEquipamento(dono, 'efeito_buff_arauto_mais') / 100 : 1;
-    return (1 + (doEquipamento(dono, `efeito_buff_gema:${String(tipo ?? '').replace(/^poe-/, '')}`) + doEquipamento(dono, 'efeito_buff_gema:todos') + (daGema ? doEquipamento(dono, daGema) : 0) + porTag + estandarte + (Number(b?.efeitoAuraPct) || 0) + (Number(b?.efeitoBuffQualPct) || 0) - porArauto) / 100) * mais * maisArauto;
-  };
+  const efeitoDe = (tipo, id, dono = estado, b = null) => efeitoDoBuff(estado, tipo, id, b, dono);
   // (lote G14: a aura "que não afeta você" — a Generosidade — não entra na sua soma; nos companheiros, sim)
   // (revisão G, 26/10) o buff do CLAMOR: o `@impelidoClamor` dele vira `@impelidoClamor_<slug>` — só no ataque Impelido por ESTE Clamor (o PoB: SeismicExertedAttacks,
   // RallyingCryExertDamageBonus…), não no Impelido por outro (`condicoes-poe.fichaDoGolpe`, `acoes.comOsAlvosDaGema`)

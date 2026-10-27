@@ -43,6 +43,7 @@
 import * as Acoes from './acoes.mjs';
 import * as R from './regras.mjs';
 import * as RegrasDeUso from './skills/regras-de-uso.mjs';
+import * as GemasE2b from './itens-poe/gemas-e2b.mjs';
 
 /** Os índices da barra que são da fileira de ataque, em ordem (11..21). */
 export const SLOTS_DO_COMBO = Acoes.PAPEL_DO_SLOT.map((papel, i) => (papel === 'attack' ? i : -1)).filter((i) => i >= 0);
@@ -53,7 +54,12 @@ export const SLOTS_DO_COMBO = Acoes.PAPEL_DO_SLOT.map((papel, i) => (papel === '
  * arautos, clamores, guardas, maldições e lacaios ('suporte') continuam no sustento (`cacadas`), todo tique, pela ordem da barra.
  */
 const BARRA_DO_POE = Acoes.PAPEL_DO_SLOT.length > 0 && Acoes.PAPEL_DO_SLOT.every((papel) => papel === 'skill');
-const ehDeAtaque = (id) => !!id && (Acoes.POR_ID_PUBLICO(id)?.papeis ?? []).includes('attack');
+// O Castigo e o Castigo Vaal (E2b): na entrada são 'suporte' (a gema tem buff — a aura vem ao acertar), mas o uso é o ATAQUE corpo a corpo
+// (`Acoes.dispararSemMarcar` faz a troca); o combo os trata como ataque, senão o sustento os dispara todo tique fora da fileira (revisão F1).
+const ehDeAtaque = (id) => {
+  const e = id ? Acoes.POR_ID_PUBLICO(id) : null;
+  return !!e && ((e.papeis ?? []).includes('attack') || (!!e.poeGema?.buff && GemasE2b.ehCastigo(e.poeGema.slug)));
+};
 /** Os slots da fileira de ataque deste personagem, em ordem (fixos fora do PoE; no PoE, os que têm habilidade de ataque). */
 export function slotsDoCombo(estado) {
   if (!BARRA_DO_POE) return SLOTS_DO_COMBO;
