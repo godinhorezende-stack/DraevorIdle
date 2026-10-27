@@ -74,6 +74,8 @@ import * as GemasD1 from './gemas-d1.mjs';
 // (lote R3B, 27/10: as Sentinelas, a Nova da Relíquia, o Golpe Sagrado como ataque e o Clamor do General — gemas-r3b.mjs)
 import * as GemasR3B from './gemas-r3b.mjs';
 import * as GemasR3D from './gemas-r3d.mjs';
+// (rodada 4, lote L: o motor das habilidades dos lacaios pelo PoB — a gema que segue o PoB perde o motivo "o lacaio ataca do jeito do tipo dele")
+import * as LacaiosHabilidades from './lacaios-habilidades.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
 const ARQ_GEMAS = new URL('../../gamedata/itens-poe/gemas-poe.json', import.meta.url);
@@ -1845,13 +1847,16 @@ function avaliarNoJogo(h, formato) {
   if (h.slug === 'Brand_Recall') return { status: 'funciona', motivos: [] };
   // LACAIOS (`lacaios-poe.mjs`): invocam de verdade, com o máximo, a duração e os bônus da gema; o que ainda é simplificado vai nos motivos.
   if (h.arquetipo === 'lacaio') {
-    const motivos = ['o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro'];
+    // (rodada 4, lote L — dono, 27/10: "quero resolver") o lacaio que usa as HABILIDADES dele do PoB (`LacaiosHabilidades`: o principal, as com recarga, o início e a Vida
+    // Baixa, pelo golpe do lacaio), o Espectro com a força do monstro erguido pelo PoB, e as gemas que não invocam (as Oferendas, a Convocação) não têm mais o motivo
+    const motivos = LacaiosHabilidades.segueOPob(h.slug) ? [] : ['o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro'];
     // (lote E1a: + as linhas da qualidade e do nível que o lote faz — `GemasE1a.ehLinhaE1a`)
     for (const l of h.linhas?.naoImplementadas ?? []) if ((!ehLinhaDeLacaio(l) || daQualidade.has(l)) && !ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !GemasE1a.ehLinhaE1a(h.slug, l) && !GemasE2a.ehLinhaE2a(h.slug, l) && !GemasR3B.ehLinhaR3B(h.slug, l) && !GemasR3D.ehLinhaR3D(h.slug, l)) motivos.push(`efeito não simulado: ${l}`);
     // (17/10, lote G18: o "mais/menos Dano de Afecções" que o compilador lê vale no ACERTO da gema; a de lacaio não acerta — a Troca de Corpos do
     // Sacrifício —, então a linha fica não feita)
     for (const l of h.linhas?.aplicadas ?? []) if (/% (?:mais|menos) Dano (?:de|com) (?:Afecções|Sangramento)$/i.test(l)) motivos.push(`efeito não simulado: ${l}`);
-    return { status: 'parcial', motivos };
+    // (rodada 4, lote L: sem motivo — o lacaio segue o PoB e todas as linhas são feitas —, funciona)
+    return { status: motivos.length ? 'parcial' : 'funciona', motivos };
   }
   // (18/10, lote G20a) o TOTEM: invoca (o máximo, a duração, a vida pelo PoB e o tempo de posicionamento — `LacaiosPoe.oQueInvoca`,
   // `Acoes.temposDaGemaPoe`) e usa a habilidade da gema pelo caminho do SEU uso (`Acoes.usarComoTotem`) — as linhas do uso contam como numa gema de
@@ -1930,7 +1935,8 @@ function avaliarNoJogo(h, formato) {
   // (lotes G-B e G-D: o que a mecânica do lote ainda não faz — `GemasGBD.MOTIVOS_GBD`)
   for (const m of GemasGBD.MOTIVOS_GBD[h.slug] ?? []) motivos.push(m);
   // (lote R3B: o que o lote ainda não faz ou a limitação do idle — `GemasR3B.MOTIVOS_R3B`: o Armamento do Golpe Sagrado ataca do jeito do tipo dele)
-  for (const m of GemasR3B.MOTIVOS_R3B[h.slug] ?? []) motivos.push(m);
+  // (rodada 4, lote L: o lacaio dessas gemas usa as habilidades do PoB — `LacaiosHabilidades.segueOPob` —: o motivo do lacaio sai)
+  for (const m of GemasR3B.MOTIVOS_R3B[h.slug] ?? []) if (!(LacaiosHabilidades.segueOPob(h.slug) && /^o lacaio ataca do jeito do tipo dele/.test(m))) motivos.push(m);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 /**
