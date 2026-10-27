@@ -2300,6 +2300,16 @@ export function sorteado(chance, sortudo, azarado, rng = Math.random, tres = fal
  * Quanto do recurso (`vida`/`mana`) está RESERVADO agora: as auras ligadas da caçada (`hunt.buffs[].reserva`, a mesma conta de
  * `itens-poe/reserva.valor`) e, na vida, a "Reserva X% da Vida" das peças (`reserva_vida_pct` — `total`: a soma; sem ela, a ficha da caçada).
  */
+/**
+ * (revisão F2, dono 27/10 — como o PoB, CalcPerform.lua `activeMineCount`) Quantas Minas da gema `acao` arremessadas com a reserva do custo (a Cadeia Explosiva, o
+ * Alto Impacto: `p.reserva`) estão plantadas agora — a reserva dela é o custo base de UMA × esse número; sem mina plantada, nada reservado.
+ */
+export const minasDaReserva = (h, acao, agora = h?.clock ?? 0) => (h?.plantadas ?? []).filter((p) => p.tipo === 'mina' && p.reserva && p.acao === acao && p.ate > agora).length;
+/** (revisão F2) Quanto a reserva `r` de um buff tranca: a % da máxima ou o fixo, × o fator, arredondado para cima; a da Mina, × as plantadas dela (`minasDaReserva`). */
+export function valorDaReserva(h, r, maxima, agora = h?.clock ?? 0) {
+  const uma = Math.ceil((r.pct ? (maxima * r.pct) / 100 : r.fixo ?? 0) * (r.fator ?? 1));
+  return r.minasDe ? uma * (minasDaReserva(h, r.minasDe, agora) + (Number(r.minasAMais) || 0)) : uma;
+}
 export function reservadoAgora(estado, recurso, total = null) {
   const h = estado?.hunt;
   const agora = h?.clock ?? 0;
@@ -2307,7 +2317,7 @@ export function reservadoAgora(estado, recurso, total = null) {
   let n = 0;
   for (const b of Object.values(h?.buffs ?? {})) {
     if (!b?.reserva || !(b.ate > agora) || (b.reserva.recurso === 'vida') !== (recurso === 'vida')) continue;
-    n += Math.ceil((b.reserva.pct ? (maxima * b.reserva.pct) / 100 : b.reserva.fixo ?? 0) * (b.reserva.fator ?? 1));
+    n += valorDaReserva(h, b.reserva, maxima, agora);
   }
   const pct = recurso === 'vida' ? Number((total ?? fichaDa(h)?.afPoe)?.reserva_vida_pct) || 0 : 0;
   if (pct > 0) n += Math.ceil((maxima * pct) / 100);
@@ -2492,9 +2502,21 @@ function usosDaFicha(ficha) {
 export const DEVORADOR_DE_ALMAS = Object.freeze({ porAlmaPct: 5, maximo: 45, raioCasas: 3, perdaMs: 500 });
 export function almasDoLacaio(l, agora) {
   // (lote D2, dono 27/10: as almas da Transfusão — `almas.livre` — valem mesmo sem o buff do Devorador)
-  if (!l?.almas || (!((l.buffs?.devoradorDeAlmas ?? 0) > agora) && !l.almas.livre)) return 0;
+  // (revisão F2: `livre` é QUANTAS são da Transfusão — sem o buff, só elas valem; as do Devorador acabam com ele)
+  if (!l?.almas) return 0;
+  if ((l.buffs?.devoradorDeAlmas ?? 0) > agora) return almasDecaidas(l, agora);
+  return almasLivresDoLacaio(l, agora);
+}
+const almasDecaidas = (l, agora) => {
   const parado = agora - (l.almas.em ?? agora) - RECENTE_MS;
   return Math.max(0, l.almas.n - (parado > 0 ? Math.floor(parado / DEVORADOR_DE_ALMAS.perdaMs) : 0));
+};
+/** (revisão F2) As almas da Transfusão do lacaio agora (`almas.livre`: quantas; `true` — o formato antigo — todas), já com a perda. */
+export function almasLivresDoLacaio(l, agora) {
+  const livre = l?.almas?.livre;
+  if (!livre) return 0;
+  const total = almasDecaidas(l, agora);
+  return livre === true ? total : Math.min(total, Number(livre) || 0);
 }
 /** Um inimigo morreu (`morto`, por quem for): cada lacaio com o Devorador de Almas a até 3 casas consome a alma. Devolve quantos consumiram. */
 export function almaParaOsLacaios(lacaios, morto, agora) {
@@ -2502,7 +2524,8 @@ export function almaParaOsLacaios(lacaios, morto, agora) {
   let n = 0;
   for (const l of lacaios ?? []) {
     if (!(l?.hp > 0) || !((l.buffs?.devoradorDeAlmas ?? 0) > agora) || Math.max(Math.abs(l.x - morto.x), Math.abs(l.y - morto.y)) > DEVORADOR_DE_ALMAS.raioCasas) continue;
-    l.almas = { n: Math.min(DEVORADOR_DE_ALMAS.maximo, almasDoLacaio(l, agora) + 1), em: agora, ...(l.almas?.livre ? { livre: true } : {}) };
+    const livres = almasLivresDoLacaio(l, agora);
+    l.almas = { n: Math.min(DEVORADOR_DE_ALMAS.maximo, almasDoLacaio(l, agora) + 1), em: agora, ...(livres > 0 ? { livre: livres } : {}) };
     n++;
   }
   return n;

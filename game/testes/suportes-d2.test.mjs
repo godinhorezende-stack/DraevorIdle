@@ -191,12 +191,15 @@ test('D2: de ponta a ponta — o Golpe Fundido Vaal com a Tentação Vaal: o uso
   assert.equal(d.falta, 4500);
 });
 
-test('D2: a Mina da Cadeia Explosiva reserva o custo base da gema enquanto estiver na barra (como a aura); cada mina sai sem custo', { skip: SEM }, async () => {
+// (revisão F2, decisão nova do dono 27/10 — revoga a do D2: a reserva é como a do PoB, o custo base × as Minas da gema plantadas AGORA — CalcPerform.lua, activeMineCount)
+test('D2: a Mina da Cadeia Explosiva reserva o custo base da gema por Mina plantada (o PoB); sem mina plantada, nada; cada mina sai sem custo', { skip: SEM }, async () => {
   const s = await montar(['Fireball', 'Blastchain_Mine_Support']);
   const e = s.e;
   const acao = G.doSlug('Fireball').acao;
   const base = G.custoNoNivel('Fireball', 20);
   const manaAntes = e.mana;
+  // (você andando: as minas ficam plantadas — parado, com o inimigo colado, elas detonam na hora)
+  (e.hunt.poeRecente ??= {}).moveu = Number.MAX_SAFE_INTEGER;
   const { r } = usar(e, s.b);
   assert.ok(r.ok, JSON.stringify(r));
   const b = e.hunt.buffs[acao];
@@ -208,13 +211,30 @@ test('D2: a Mina da Cadeia Explosiva reserva o custo base da gema enquanto estiv
   const esperado = Math.ceil(base * 0.65 / (1 + eficacia / 100));
   assert.equal(Reserva.reservadas(e).mana, esperado, `${base} × 65% (o Multiplicador de Custo & Reserva) ÷ a eficácia`);
   assert.equal(e.mana, Math.min(manaAntes, e.maxMana - esperado), 'a mina sai sem custo: só a parte reservada sai da mana');
-  // (a segunda mina: sem custo, a reserva não soma)
-  usar(e, s.b);
-  assert.equal(e.mana, Math.min(manaAntes, e.maxMana - esperado));
-  assert.equal(Reserva.reservadas(e).mana, esperado);
+  assert.equal(Plantadas.plantadas(e.hunt, 'mina').length, 1);
+  // (a segunda mina, 1 s depois — a primeira dura 5 s: sem custo; a reserva vira a de duas)
+  usar(e, s.b, 0.5, 1000);
+  assert.equal(Plantadas.plantadas(e.hunt, 'mina').length, 2);
+  assert.equal(Reserva.reservadas(e).mana, 2 * esperado);
+  assert.equal(e.mana, Math.min(manaAntes, e.maxMana - 2 * esperado));
   // (a gema fora da barra: a reserva sai)
   e.actions[0] = null;
   Acoes.desligarAurasForaDaBarra(e, e.hunt);
+  assert.equal(Reserva.reservadas(e).mana, 0);
+});
+
+test('D2 (revisão F2): as Minas detonadas saem da reserva — sem mina plantada, nada reservado (o buff segue ligado)', { skip: SEM }, async () => {
+  const s = await montar(['Fireball', 'Blastchain_Mine_Support']);
+  const e = s.e;
+  const acao = G.doSlug('Fireball').acao;
+  (e.hunt.poeRecente ??= {}).moveu = Number.MAX_SAFE_INTEGER;
+  assert.ok(usar(e, s.b).r.ok);
+  assert.ok(Reserva.reservadas(e).mana > 0);
+  // (parado, com o inimigo colado: a sequência detona as plantadas)
+  e.hunt.poeRecente.moveu = -Infinity;
+  for (let i = 0; i < 20 && Plantadas.plantadas(e.hunt, 'mina').length; i++) { e.hunt.clock += 500; travado(0.5, () => Acoes.tiqueDasPlantadas(e, e.hunt, PERSONAGEM, [], e.hunt.clock)); }
+  assert.equal(Plantadas.plantadas(e.hunt, 'mina').length, 0);
+  assert.ok(e.hunt.buffs[acao]?.reserva);
   assert.equal(Reserva.reservadas(e).mana, 0);
 });
 

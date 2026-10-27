@@ -5,7 +5,7 @@ import * as ModsPoe from './mods-poe.mjs';
 import * as QuemFeriu from '../hunt/quem-feriu.mjs';
 import * as Dot from '../combate/dot.mjs';
 import { porRompimento, inspiracaoAposGastar, fonteAposGastar, fatorDoImpeto, INSPIRACAO, raroOuUnico, renovarDoDecapitar, transfusaoAposGastar, lacaioProximo } from './suportes-s2a.mjs';
-import { almasDoLacaio, DEVORADOR_DE_ALMAS } from './condicoes-poe.mjs';
+import { almasDoLacaio, almasLivresDoLacaio, DEVORADOR_DE_ALMAS } from './condicoes-poe.mjs';
 // (lote D2) as contas puras que `acoes.mjs` usa direto
 export { impedimentoDasProps, dobroDasMinasNoAlvo, fatorDoDobroDasMinas } from './suportes-s2a.mjs';
 
@@ -43,6 +43,8 @@ export function noAcertoS2A(hunt, bicho, ef, { crit = false, corpo = false, post
   if (ef.impetoMs > 0 && !doTotem) {
     ModsPoe.ganharBuff(hunt, 'impetoDeCombate', (ef.impetoMs * fatorDur) / 1000, agora);
     hunt.poeImpetoVelS2A = Math.max(hunt.poeImpetoVelS2A ?? 0, ef.impetoVelPct ?? 0);
+    // (revisão F2: quantas vezes o Ímpeto foi ganho — o Deslocamento só tira o que já existia antes do uso dele, `tirarImpeto(hunt, antes)`)
+    hunt.poeImpetoGanhosS2A = (hunt.poeImpetoGanhosS2A ?? 0) + 1;
   }
   return saida;
 }
@@ -84,7 +86,7 @@ export function doUsoS2A(estado, hunt, ef, { vida = 0, mana = 0, fatorDur = 1, t
     const t = transfusaoAposGastar(hunt.poeTransfusaoS2A, vida, e.transfusaoVidaPorAlma);
     hunt.poeTransfusaoS2A = t.gasto;
     const l = t.almas > 0 ? lacaioProximo(hunt, DEVORADOR_DE_ALMAS.raioCasas) : null;
-    if (l) l.almas = { n: Math.min(DEVORADOR_DE_ALMAS.maximo, almasDoLacaio(l, agora) + t.almas), em: agora, livre: true };
+    if (l) l.almas = { n: Math.min(DEVORADOR_DE_ALMAS.maximo, almasDoLacaio(l, agora) + t.almas), em: agora, livre: Math.min(DEVORADOR_DE_ALMAS.maximo, almasLivresDoLacaio(l, agora) + t.almas) };
   }
   if (e.fonteDeVidaApos > 0 && vida > 0) {
     const f = fonteAposGastar(hunt.poeFonteDeVidaS2A, vida, e.fonteDeVidaApos);
@@ -101,8 +103,10 @@ export function fatorDoImpetoNoUso(hunt, { deslocamento, ataque, ef }, agora = h
   return fatorDoImpeto({ ate, velPct: hunt.poeImpetoVelS2A ?? 0 }, { deslocamento, ataque, suportadoPeloCombate: ef?.impetoMs > 0 }, agora);
 }
 /** Usar uma Habilidade de Deslocamento tira o Ímpeto de Combate ("dura 2 segundos ou até que você utilize uma Habilidade de Deslocamento"). */
-export function tirarImpeto(hunt) {
+export function tirarImpeto(hunt, ganhosAntes = null) {
   if (!hunt?.poeBuffs?.impetoDeCombate) return false;
+  // (revisão F2) o Ímpeto ganho no acerto deste mesmo uso de Deslocamento fica (no PoE, usar tira o antigo e o acerto dá um novo)
+  if (ganhosAntes != null && (hunt.poeImpetoGanhosS2A ?? 0) !== ganhosAntes) return false;
   delete hunt.poeBuffs.impetoDeCombate;
   delete hunt.poeImpetoVelS2A;
   hunt.poeFichaMudou = true;
@@ -141,15 +145,17 @@ export function sangueDoImpelir(hunt, des) {
 /** O Estandarte Ensanguentado no tique: o plantado inflige 1 acúmulo por segundo em cada inimigo vivo na área dele (`estandarte.sangue`). */
 export function tiqueS2A(hunt, eventos = [], agora = hunt?.clock ?? 0) {
   if (!ligado() || !hunt) return 0;
-  const p = ModsPoe.estandartePlantado(hunt, agora);
-  const s = p?.estandarte?.sangue;
-  if (!s) return 0;
+  // (revisão F2: cada estandarte plantado com o suporte — não só o primeiro buff `_Banner`; com dois plantados, o suportado pode ser o segundo)
   let n = 0;
-  while (s.proximo <= agora) {
-    s.proximo += 1000;
-    for (const m of hunt.monstros ?? []) {
-      if (!(m.hp > 0) || m.dummy || (m.z ?? hunt.z ?? 0) !== (p.estandarte.z ?? hunt.z ?? 0) || Math.max(Math.abs(m.x - p.estandarte.x), Math.abs(m.y - p.estandarte.y)) > (p.raio ?? 1)) continue;
-      n += porSangueCorrompido(m, s, 1, agora, eventos);
+  for (const [id, p] of Object.entries(hunt.buffs ?? {})) {
+    const s = p?.estandarte?.sangue;
+    if (!s || !(p.ate > agora) || !/_Banner/.test(id)) continue;
+    while (s.proximo <= agora) {
+      s.proximo += 1000;
+      for (const m of hunt.monstros ?? []) {
+        if (!(m.hp > 0) || m.dummy || (m.z ?? hunt.z ?? 0) !== (p.estandarte.z ?? hunt.z ?? 0) || Math.max(Math.abs(m.x - p.estandarte.x), Math.abs(m.y - p.estandarte.y)) > (p.raio ?? 1)) continue;
+        n += porSangueCorrompido(m, s, 1, agora, eventos);
+      }
     }
   }
   return n;

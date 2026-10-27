@@ -2674,7 +2674,11 @@ export function desligarAurasForaDaBarra(estado, hunt) {
   const umArauto = !!ficha && ModsPoe.valor(ficha, 'so_um_arauto') > 0;
   // (revisão do A2: o Cajado Impregnado de Mana sai sem cajado — RequiresStaff)
   const cajado = CAJADOS.test(String(estado.equipment?.weapon?.poe?.classe ?? ''));
-  return Reserva.desligarAsQueSairam(hunt, (id) => !(id === GemasA2.ACAO.cajado && !cajado) && (estado.actions ?? []).some((a) => a?.id === id && a.enabled !== false) && ativas.has(id) && !auraDesabilitada(POR_ID.get(id), so, POR_ID.get(id)?.poeGema?.arquetipo === 'maldicao' && !!hunt.buffs?.[id]?.reserva) && !(umArauto && arautoExcedente(hunt, id, ficha))) || saiuA2;
+  // (revisão F2) a reserva da Mina (`poe-reserva-mina`) sai também quando a gema perde o suporte que a dá (a Cadeia Explosiva, o Alto Impacto); as plantadas deixam de contar
+  const semReservaDaMina = (id) => hunt.buffs?.[id]?.tipo === 'poe-reserva-mina' && !(Gemas.efeitoNaSkill(estado, id)?.reservaDoCusto > 0);
+  const saiu = Reserva.desligarAsQueSairam(hunt, (id) => !(id === GemasA2.ACAO.cajado && !cajado) && (estado.actions ?? []).some((a) => a?.id === id && a.enabled !== false) && ativas.has(id) && !auraDesabilitada(POR_ID.get(id), so, POR_ID.get(id)?.poeGema?.arquetipo === 'maldicao' && !!hunt.buffs?.[id]?.reserva) && !(umArauto && arautoExcedente(hunt, id, ficha)) && !semReservaDaMina(id));
+  if (saiu) for (const p of hunt.plantadas ?? []) if (p.reserva && !hunt.buffs?.[p.acao]) delete p.reserva;
+  return saiu || saiuA2;
 }
 /**
  * (lote 80, o Mensageiro Solitário) "Você só pode ter um Arauto": o Arauto `id` passa do limite — há outro ligado (o mais antigo fica: o 2º não liga
@@ -4744,7 +4748,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   }
   /*
    * (lote D2, dono 27/10) as Minas da Cadeia Explosiva e de Alto Impacto (e a Local): "Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida" —
-   * a gema suportada RESERVA o custo base (o da gema no nível; da Vida com o custo em Vida) enquanto estiver na barra, como a aura (`hunt.buffs[id].reserva`, que sai
+   * a gema suportada RESERVA o custo base (o da gema no nível; da Vida com o custo em Vida) × as Minas dela plantadas agora (revisão F2: o PoB) (`hunt.buffs[id].reserva`, que sai
    * com a gema fora da barra — `desligarAurasForaDaBarra`), × o "Multiplicador de Custo & Reserva" dos suportes ÷ a Eficácia da Reserva (a geral, a do recurso e a "das
    * Habilidades que arremessam Minas"); cada mina sai sem custo. O seu arremesso (o do totem e o ativado, não): liga no primeiro, se couber.
    */
@@ -4752,8 +4756,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const recurso = reservaEmVida || GemasPoe.recursoDoCusto(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) === 'vida' ? 'vida' : 'mana';
     const fixo = custoDaSkill(entry, efeitoDaGema, estado);
     if (!(fixo > 0)) return null;
-    const r = { recurso, fixo, fator: Reserva.fator(fichaDoCusto, efeitoDaGema, recurso, 'mina', null, entry.poeGema.slug) };
-    return { ...r, valor: Reserva.valor(estado, r) };
+    // (revisão F2, dono 27/10 — o PoB, `activeMineCount`: a reserva é a de uma Mina × as plantadas dela; o "cabe?" conta a que vai sair)
+    const r = { recurso, fixo, fator: Reserva.fator(fichaDoCusto, efeitoDaGema, recurso, 'mina', null, entry.poeGema.slug), minasDe: entry.id };
+    return { ...r, valor: Reserva.valor(estado, { ...r, minasAMais: 1 }) };
   })() : null;
   if (reservaDaMina && !Reserva.cabe(estado, entry.id, reservaDaMina)) {
     return { ok: false, erro: `Sem ${reservaDaMina.recurso} livre para reservar: ${entry.name} reserva ${reservaDaMina.valor}.`, motivo: 'RESERVA' };
@@ -4810,6 +4815,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (lote A1, dono 19/10) o DESLOCAMENTO da gema de movimento (`planoDoDeslocamento`): para onde ela leva, antes de gastar nada; sem destino, não
   // sai (o alvo longe demais do salto, ou perto demais para a viagem). Não vale no ativado por gatilho, na plantada nem no totem.
   const desloc = itensPoeLigado() && entry.poeGema && !gatilho && !plantada && !doTotem ? GemasPoe.deslocamentoDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
+  // (revisão F2) os Ímpetos de Combate ganhos até aqui — o deste uso, ganho no acerto dele, não sai no fim (`SuportesS2A.tirarImpeto`)
+  const impetoGanhosAntes = hunt.poeImpetoGanhosS2A ?? 0;
   // (lote A1b, dono 19/10: D-c) o Teleporte na fila parte do destino do último da fila (`aglomera`)
   // (revisão do A1b: o hunt de verdade por baixo — `Object.create` —, para o plano ver a party, o guia e os aliados, que não são enumeráveis)
   const huntDoPlano = aglomera ? Object.assign(Object.create(hunt), { pos: { ...hunt.pos, x: aglomera.deslocamento.para.x, y: aglomera.deslocamento.para.y }, conjurando: null }) : hunt;
@@ -5737,8 +5744,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (lote D2) a reserva da Mina (`reservaDaMina`): liga no arremesso (o fixo e o fator de agora: o nível e os suportes)
   if (reservaDaMina) {
     const antes = hunt.buffs?.[entry.id];
-    (hunt.buffs ??= {})[entry.id] = { ate: Reserva.LIGADA_ATE, desde: antes?.reserva ? antes.desde ?? agora : agora, tipo: 'poe-reserva-mina', reserva: { recurso: reservaDaMina.recurso, fixo: reservaDaMina.fixo, fator: reservaDaMina.fator } };
-    Reserva.cortarNoLivre(estado);
+    (hunt.buffs ??= {})[entry.id] = { ate: Reserva.LIGADA_ATE, desde: antes?.reserva ? antes.desde ?? agora : agora, tipo: 'poe-reserva-mina', reserva: { recurso: reservaDaMina.recurso, fixo: reservaDaMina.fixo, fator: reservaDaMina.fator, minasDe: entry.id } };
   }
   // (lote 72) "se você Gastou Vida Recentemente": o Custo pago em Vida (inteiro, em parte ou a Vida a mais).
   if (vidaAMais || pagaComVida || parteEmVida) ModsPoe.marcar(hunt, 'gastouVida');
@@ -6020,6 +6026,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const provoca = doPoe?.efeitos.find((e) => e.efeito === 'provocar');
       SuportesS2A.sangueNoRaio(hunt, hunt.pos, raioDoClamor(estado, entry, provoca?.raio ?? 3), sangue, efeitoDaGema.sangueClamorN ?? 1, agora, eventos);
       if (efeitoDaGema.sangueImpelirN > 0) (hunt.poeSangueDoImpelirS2A ??= {})[entry.poeGema.slug] = { ...sangue, n: efeitoDaGema.sangueImpelirN };
+      else if (hunt.poeSangueDoImpelirS2A) delete hunt.poeSangueDoImpelirS2A[entry.poeGema.slug];
+    } else if (buff.tipo === 'poe-clamor' && entry.poeGema && hunt.poeSangueDoImpelirS2A) {
+      // (revisão F2) o mesmo Clamor usado sem o Clamor Corrompedor: os ataques que ESTE uso Impelir não põem o Sangue guardado do uso antigo
+      delete hunt.poeSangueDoImpelirS2A[entry.poeGema.slug];
     }
     // (lote 72, a Palavra Sagrada) "Seus clamores infligem Chama Santificada": nos inimigos no raio do Clamor.
     const doClamor = doPoe?.efeitos.find((e) => e.efeito === 'provocar');
@@ -6086,7 +6096,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (PoE, 12/10) O ARREMESSO da Armadilha/Mina: planta no lugar mirado (o alvo) e já vê as plantadas — com o alvo em cima, a Armadilha
     // ativa na hora; com inimigo perto e você parado, a Mina detona (a sequência). O resto fica plantado até ativar ou acabar a duração.
     const lugar = mira && entry.miraNoChao ? mira : alvo ? { x: alvo.x, y: alvo.y } : { x, y };
-    eventos.push(...plantarArmas(estado, hunt, personagem, slot, entry, action, lugar, efeitoDaGema, agora));
+    eventos.push(...plantarArmas(estado, hunt, personagem, slot, entry, action, lugar, efeitoDaGema, agora, { reservaDaMina: !!reservaDaMina }));
+    // (revisão F2) a reserva da Mina cresce com as plantadas: corta a mana (ou a vida) na parte livre já com as deste arremesso
+    if (reservaDaMina) Reserva.cortarNoLivre(estado);
   } else if (Runas.ehRuna(entry) && !plantada) {
     // (PoE, 12/10) A RUNA: conjurada no lugar mirado, vincula ao alvo e é Ativada na hora — e depois a cada N segundos, enquanto vinculada
     // (`tiqueDasRunas`).
@@ -7593,9 +7605,12 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // (lote A5b: no primeiro que o golpe acertou)
       const primeiroAcertado = atingidos.find(acertouNoUso);
       if (corpoACorpo && primeiroAcertado) rajadaVulcanica(estado, hunt, primeiroAcertado, eventos);
-      // (lote S2A, 27/10) o Marcar ao Acertar: o seu Ataque que acertou um Inimigo Raro ou Único Ativa as Marcas suportadas (qualquer ataque — o do totem, não)
-      const raroAcertado = !doTotem && itensPoeLigado() ? atingidos.find((b) => acertouNoUso(b) && GemasC1.raroOuUnico(b)) : null;
-      if (raroAcertado) ativarGatilhos(estado, hunt, personagem, 'acertoRaro', { alvo: raroAcertado.hp > 0 ? raroAcertado : vivoAinda }, eventos);
+    }
+    // (lote S2A, 27/10) o Marcar ao Acertar: o seu Ataque que acertou um Inimigo Raro ou Único Ativa as Marcas suportadas (qualquer ataque — o do totem, não)
+    // (revisão F2: também o Ataque ativado — fora do `!gatilho` dos outros gatilhos; o golpe básico chama `acertoRaroNoGolpe`)
+    if (entry.poeGema?.ataque && !doTotem && itensPoeLigado()) {
+      const raroAcertado = atingidos.find((b) => acertouNoUso(b) && GemasC1.raroOuUnico(b));
+      if (raroAcertado) ativarGatilhos(estado, hunt, personagem, 'acertoRaro', { alvo: raroAcertado.hp > 0 ? raroAcertado : atingidos.find((b) => b.hp > 0) ?? null }, eventos);
     }
     // (lote S2A, 27/10) a Flecha Forjada com Mana: a Mana que este Ataque de Arco seu gastou conta para os grupos dela que não o suportam (`manaForjadaS2A`)
     if (itensPoeLigado() && !gatilho && !plantada && !doTotem && manaGastaS2A > 0 && entry.poeGema?.ataque && tagsPoeDaSkill(entry).includes('arco')) manaForjadaS2A(estado, hunt, personagem, entry, manaGastaS2A, atingidos.find((b) => b.hp > 0) ?? alvo, eventos);
@@ -7690,7 +7705,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   const porInimigo = desloc?.recargaPorInimigo ? [...doDeslocamento].reduce((n, b) => n + (b.boss || ['raro', 'elite', 'unico', 'boss'].includes(b.raridade) ? desloc.recargaPorInimigo.raro : desloc.recargaPorInimigo.normal), 0) : 0;
   const tempoPoe = entry.poeGema ? temposDaGemaPoe(estado, entry, efeitoDaGema, fichaDaRecarga, { recuperacaoExtraPct: porInimigo }) : null;
   // (lote S2A, 27/10) usar uma Habilidade de Deslocamento tira o Ímpeto de Combate (depois do tempo deste uso, que ainda o tem)
-  if (desloc && itensPoeLigado()) SuportesS2A.tirarImpeto(hunt);
+  if (desloc && itensPoeLigado()) SuportesS2A.tirarImpeto(hunt, impetoGanhosAntes);
   // (lote A1b, dono 19/10) o Teleporte Gélido da Explosão Invernal: "Tempo de Conjuração desta Magia é adicionado à sua Recarga se Ativada" (por gatilho)
   // (lote B1, dono 20/10: + o Condutor Elétrico — a mesma linha; o leitor é a linha da gema, `GemasPoe.conjuracaoNaRecargaSeAtivada`)
   const conjuracaoNaRecarga = gatilho && !gatilho.soltarMiragem && !plantada && tempoPoe && entry.poeGema && (entry.poeGema.slug === 'Frostblink_of_Wintry_Blast' || GemasPoe.conjuracaoNaRecargaSeAtivada(entry.poeGema.slug)) ? tempoPoe.conjuracaoMs ?? 0 : 0;
@@ -7925,7 +7940,7 @@ function maisDaPlantada(plantada, efeito, agora) {
   return ((1 + cadeia / 100) * (1 + invencao / 100) - 1) * 100;
 }
 
-function plantarArmas(estado, hunt, personagem, slot, entry, action, lugar, efeitoDaGema, agora) {
+function plantarArmas(estado, hunt, personagem, slot, entry, action, lugar, efeitoDaGema, agora, { reservaDaMina = false } = {}) {
   const tipo = Plantadas.tipoDaGema(entry, efeitoDaGema);
   const ficha = Ficha.combate(estado);
   const slug = entry.poeGema.slug;
@@ -7946,6 +7961,8 @@ function plantarArmas(estado, hunt, personagem, slot, entry, action, lugar, efei
   const extrasDaGema = tipo === 'armadilha' ? GemasPoe.arremessoDaGema(slug, efeitoDaGema?.nivel ?? 1, ModsPoe.condicoesDe(estado, ficha.afPoe, null)).extras : 0;
   for (const c of Plantadas.casasDoArremesso(lugar.x, lugar.y, Plantadas.extrasDoArremesso(ficha, tipo, Math.random, efeitoDaGema) + extrasDaGema)) {
     const p = Plantadas.plantar(hunt, ficha, { tipo, acao: action.id, slot, x: c.x, y: c.y, z: hunt.z ?? 0, duracaoMs: dur, detonacaoMs, agora, maximoExtra: tipo === 'armadilha' ? efeitoDaGema?.maxArmadilhasExtra ?? 0 : efeitoDaGema?.maxMinasExtra ?? 0 });
+    // (revisão F2) a Mina arremessada com a reserva do custo (a Cadeia Explosiva, o Alto Impacto) conta na reserva enquanto plantada (`ModsPoe.minasDaReserva`)
+    if (reservaDaMina && tipo === 'mina') p.reserva = true;
     // (lote S2A, 27/10) as Armadilhas Múltiplas e as Agrupadas: "Efeito em Área da Ativação de Armadilhas aumentado em X%" — o raio de ativação (1 casa) × √(1 + X%), a
     // fração como a chance de uma casa a mais, sorteada ao plantar
     if (tipo === 'armadilha' && efeitoDaGema?.ativacaoArmadilhaIncPct) {
@@ -8780,6 +8797,18 @@ export function magoDeBatalhaNoImpelido(estado, hunt, personagem, impelem, alvo,
   const mago = GemasPoe.magoDeBatalhaDaGema('Battlemages_Cry', Gemas.efeitoNaSkill(estado, `${GemasPoe.PREFIXO}Battlemages_Cry`)?.nivel ?? 1);
   if (mago) ativarGatilhos(estado, hunt, personagem, 'magoDeBatalha', { alvo, maisAcertoPct: -mago.menosPct, maisAfeccaoPct: -mago.menosPct }, eventos);
   return eventos;
+}
+/** (revisão F2) O Clamor Corrompedor no golpe básico Impelido (`hunt/combate.mjs`): o Sangue dos Clamores `des` e a aplicação no acertado. */
+export const sangueDoImpelirS2A = (hunt, des) => SuportesS2A.sangueDoImpelir(hunt, des);
+export function porSangueDoImpelirS2A(bicho, lista, agora, eventos = []) {
+  let k = 0;
+  for (const sg of lista ?? []) k += SuportesS2A.porSangueCorrompido(bicho, sg, sg.n, agora, eventos);
+  return k;
+}
+/** (revisão F2) O golpe básico que acertou um Inimigo Raro ou Único: o Marcar ao Acertar ("quando você Acertar um Inimigo Raro ou Único com um Ataque"). */
+export function acertoRaroNoGolpe(estado, hunt, personagem, alvo, eventos = []) {
+  if (!itensPoeLigado() || !alvo || !GemasC1.raroOuUnico(alvo)) return 0;
+  return ativarGatilhos(estado, hunt, personagem, 'acertoRaro', { alvo }, eventos);
 }
 export function ativarGatilhos(estado, hunt, personagem, evento, { acao = null, alvo = null, vezes = 1, maisAcertoPct = 0, maisAfeccaoPct = 0, runa = null, areaMaisPct = 0, vinculadoUid = null, contraVinculadoPct = 0, soChave = null } = {}, eventos = []) {
   const cds = (hunt.cooldowns ??= {});
