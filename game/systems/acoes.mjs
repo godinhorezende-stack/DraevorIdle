@@ -29,7 +29,7 @@ import { valor as valorPoe, slugDoNome, NO_ACERTO } from './itens-poe/condicoes-
 import { resistido, resistenciaDe, resistenciaEfetivaDe } from './hunt/resistencia.mjs';
 import { registrarGolpe } from './combate/registro.mjs';
 import * as Dot from './combate/dot.mjs';
-import { salaDe } from './hunt/sala.mjs';
+import { salaDe, tirarMonstro } from './hunt/sala.mjs';
 import * as Controle from './combate/controle.mjs';
 import * as AtributosDoMob from './mobs/atributos.mjs';
 import * as Defesa from './personagem/defesa.mjs';
@@ -1105,6 +1105,8 @@ export function rajadaVulcanica(estado, hunt, alvo, eventos = [], rng = Math.ran
  * os eventos "ao acertar" e as afecções. A queima do Arauto das Cinzas é DANO DEGENERATIVO (não acerto): `queimaduraDoArautoDasCinzas`.
  */
 const ARAUTO_GLACIAL = 'poe-gema:Herald_of_Ice';
+/** (correções R3) O elemento do jogo de cada nome da Arena (`GemasPoe.conversoesDosSuportes` devolve `fogo`, `gelo`…). */
+const EL_DA_ARENA_R3 = { fisico: 'physical', fogo: 'fire', gelo: 'ice', raio: 'energy', caos: 'chaos' };
 const ARAUTO_DAS_CINZAS = 'poe-gema:Herald_of_Ash';
 /** O buff do Arauto `id` está ligado? */
 const arautoLigado = (hunt, id) => { const b = hunt?.buffs?.[id]; return !!b && b.tipo === 'poe-arauto' && b.ate > (hunt.clock ?? 0); };
@@ -1152,7 +1154,7 @@ export function acertoDoArauto(estado, hunt, id, m, bruto, elemento, { tags = nu
   // (o Físico global, o de cada tipo — o elemental da própria arma junto — e o dos suportes) × a eficácia dela; a conversão própria (`ativado.conversao`) e as da ficha; o
   // "aumentado" de cada tipo + o da própria habilidade (`ativado.incPct` — a qualidade dela); o "mais" dela (`ativado.maisPct` — as repetições, os estágios, a Área)
   if (ativado && itensPoeLigado()) {
-    const p = GemasR3A.partesDoAtivado({ arma: armaSemAdicionado(fichaBase), fisicoAdicionado: fichaBase.fisicoAdicionado, danoSomado: f.danoSomado, somadoDoSuporte: GemasR3A.somadoDoEfeito(ef), basePct: ativado.danoPct ?? 100, eficaciaPct: ativado.eficaciaPct ?? ativado.danoPct ?? 100, conversao: ativado.conversao ?? null, rng });
+    const p = GemasR3A.partesDoAtivado({ arma: armaSemAdicionado(fichaBase), fisicoAdicionado: fichaBase.fisicoAdicionado, danoSomado: f.danoSomado, somadoDoSuporte: GemasR3A.somadoDoEfeito(ef), basePct: ativado.danoPct ?? 100, eficaciaPct: ativado.eficaciaPct ?? ativado.danoPct ?? 100, conversao: ativado.conversao ?? null, conversoesExtras: GemasPoe.conversoesDosSuportes(ef).map((c) => ({ para: EL_DA_ARENA_R3[c.para] ?? c.para, pct: c.pct })), outras: (fis, teto) => ModsPoe.extrasDoFisico(f, fis, rng, teto), rng });
     const transformadas = ModsPoe.transformarPartes(f, Object.fromEntries(Object.entries(p).map(([el, v]) => [el, [v, v]])), null) ?? {};
     const daHabilidade = (1 + (Number(ativado.maisPct) || 0) / 100);
     partes = Object.entries(transformadas).map(([el, [v]]) => ({ el, v: v * Math.max(0, 1 + ((f.danoDoElemento?.[el] ?? 0) + (Number(ativado.incPct) || 0)) / 100) * ModsPoe.fatorDoDanoElemental(f, hunt, id, el) * doSuporte * daHabilidade })).filter((x) => x.v > 0);
@@ -1328,14 +1330,15 @@ function explodirAnomaliaR3c(estado, hunt, personagem, a, eventos, rng = Math.ra
   const entry = POR_ID.get(a.acao);
   const ef = entry ? Gemas.efeitoNaSkill(estado, a.acao) : null;
   if (!entry || !ef || !(ef.fluxoAoMatar || ef.fluxoAoCritico)) return 0;
-  const arma = armaSemAdicionado(Ficha.combate(estado));
   const tags = [...new Set([...tagsPoeDaSkill(entry), 'ataque', 'area'])];
   eventos.push({ t: 'explosao', id: EFEITO_DA_EXPLOSAO, x: a.x, y: a.y, lado: 2 * Math.max(0, a.raio) + 1, fonte: 'fluxo-cinetico' });
+  // (correções R3, achado 11 — o PoB: TriggeredSupportKineticInstability é um ataque de varinha) o ATAQUE ATIVADO completo do R3A (`ativado`): a arma × o "Dano de Ataque",
+  // o adicionado × a eficácia, as conversões e o CRÍTICO DA VARINHA (a chance da ficha do golpe com os aumentos — antes só o "+X%" fixo das tags, quase nunca crítico)
+  const ativado = { danoPct: ef.fluxoDanoPct ?? 100, eficaciaPct: (ef.fluxoEficacia ?? 1) * 100 };
   let total = 0;
   for (const m of [...(hunt.monstros ?? [])]) {
     if (!(m.hp > 0) || m.dummy || (m.z ?? hunt.z ?? 0) !== (a.z ?? hunt.z ?? 0) || distanciaChebyshev(m, a) > a.raio) continue;
-    const bruto = ((arma.min + rng() * Math.max(0, arma.max - arma.min)) * (ef.fluxoDanoPct ?? 100)) / 100;
-    total += acertoDoArauto(estado, hunt, a.acao, m, bruto, 'physical', { tags, eventos, rng, fonte: 'fluxo-cinetico', personagem, ataque: true, adicionado: ef.fluxoEficacia ?? 1, poderArcano: ef.fluxoArcanoPct ?? 0 }) ?? 0;
+    total += acertoDoArauto(estado, hunt, a.acao, m, 1, 'physical', { tags, eventos, rng, fonte: 'fluxo-cinetico', personagem, ataque: true, ativado, poderArcano: ef.fluxoArcanoPct ?? 0 }) ?? 0;
   }
   return total;
 }
@@ -1369,6 +1372,11 @@ export function tiqueR3C(estado, hunt, personagem, eventos = [], agora = hunt?.c
   const s = hunt.poeR3c ?? null;
   const passou = s?.tiqueEm != null ? Math.max(0, Math.min(2000, agora - s.tiqueEm)) : 0;
   let temAlgo = false;
+  // (correções R3, achado 13) a conta da Insanidade é por aura E por jogador (`chaveDaAura` — na sala de grupo os monstros são os mesmos); a aura que desligou perde a
+  // conta em todos (`GemasR3c.esquecerAura`) — antes a conta ficava no monstro, e a aura religada dava a Insanidade no primeiro tique
+  const sufixo = personagem?.nome != null ? `@${personagem.nome}` : '';
+  const chaveDaAura = (id) => `${id}${sufixo}`;
+  const aurasNoTique = new Set();
   for (const [id, b] of Object.entries(hunt.buffs ?? {})) {
     if (!b || !(b.ate > agora)) continue;
     if (b.bencaoR3c === 'guardiao') {
@@ -1382,10 +1390,14 @@ export function tiqueR3C(estado, hunt, personagem, eventos = [], agora = hunt?.c
       const ef = Gemas.efeitoNaSkill(estado, id);
       if (ef?.insanidadeAposMs > 0 && ef.maldicaoEmAura > 0) {
         const regras = b.efeitosPoe.find((e) => e.efeito === 'maldicaoRegras');
-        GemasR3c.tiqueDaInsanidade(hunt.monstros, hunt.pos, hunt.z ?? 0, id, Number(regras?.raioCasas) || 0, ef.insanidadeAposMs, agora, rng);
+        aurasNoTique.add(chaveDaAura(id));
+        GemasR3c.tiqueDaInsanidade(hunt.monstros, hunt.pos, hunt.z ?? 0, chaveDaAura(id), Number(regras?.raioCasas) || 0, ef.insanidadeAposMs, agora, rng);
       }
     }
   }
+  if (s?.aurasDaInsanidade?.length) for (const k of s.aurasDaInsanidade) if (!aurasNoTique.has(k)) GemasR3c.esquecerAura(hunt.monstros, k);
+  if (aurasNoTique.size) (hunt.poeR3c ??= {}).aurasDaInsanidade = [...aurasNoTique];
+  else if (s?.aurasDaInsanidade) delete s.aurasDaInsanidade;
   if (temAlgo || s) (hunt.poeR3c ??= {}).tiqueEm = agora;
   if (s?.anomalias?.length) for (const a of GemasR3c.anomaliasQueExplodem(hunt, agora)) explodirAnomaliaR3c(estado, hunt, personagem, a, eventos, rng);
   if (s?.maos?.length) {
@@ -4723,6 +4735,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const x = (a, b) => ((1 + (a ?? 0) / 100) * (1 + (b ?? 0) / 100) - 1) * 100;
     efeitoDaGema = { ...efeitoDaGema, fatorDeDano: (efeitoDaGema.fatorDeDano ?? 1) * (1 + plantada.c3Mais.acertoPct / 100), maisDanoAcertoPct: x(efeitoDaGema.maisDanoAcertoPct, plantada.c3Mais.acertoPct), maisAfeccaoPct: x(efeitoDaGema.maisAfeccaoPct, plantada.c3Mais.afeccaoPct) };
   }
+  // (correções R3, achado 3) a PIRA pede o inimigo incendiado ANTES do acerto ("ao atingir inimigos incendiados"): a fotografia de quem já queimava quando o uso começou —
+  // o que o próprio golpe incendeia não conta
+  const incendiadosAntesR3A = itensPoeLigado() && efeitoDaGema?.piraChancePct ? new Set((hunt?.monstros ?? []).filter((b) => (b.dots ?? []).some((d) => d.tipo === 'queimadura' && d.falta > 0))) : null;
   // (lote B4, dono 25/10) o que o lote B4 muda no uso (`GemasPoe.b4DaGema`, `itens-poe/gemas-b4.mjs`):
   //  - D-B4.6: a INTENSIDADE da Lança Crepitante ("ganha Intensidade quando você Conjurá-la, máximo de 3"; "perde 1 de Intensidade a cada 0.5 segundos enquanto se movendo,
   //    ou imediatamente ao teleportar") pelo mecanismo do Intensificar (`intensidadeAgora`, `ganharIntensidade`): o máximo e a perda da gema, + o teleporte que zera. O
@@ -4986,6 +5001,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     return { ...r, valor: Reserva.valor(estado, { ...r, minasAMais: 1 }) };
   })() : null;
   // (lote R3C) a BÊNÇÃO ETERNA: "Suas Habilidades Não-Bênção que Reservam Mana são Desabilitadas enquanto você tiver uma Aura da Habilidade Suportada em você"
+  // (correções R3, achado 10) "Você só pode ter uma Aura de suas Habilidades Bênção": com outra aura de Bênção ligada, só o uso MANUAL troca (a nova tira a outra —
+  // `GemasR3c.aplicarBencao`); o automático não a conjura — antes as duas se revezavam para sempre (cada uma tirava a outra, e o laço religava a que saiu)
+  if (bencaoR3c && !manual && GemasR3c.bencoesLigadas(hunt).some(([outro]) => outro !== entry.id)) return { ok: false, erro: `${entry.name}: já há uma Aura de Bênção ligada.`, motivo: 'OUTRA_BENCAO' };
   if (itensPoeLigado() && !bencaoR3c && GemasR3c.eternaEmVoce(hunt) && ((reserva && reserva.recurso !== 'vida') || (reservaDaMina && reservaDaMina.recurso !== 'vida'))) return { ok: false, erro: `${entry.name} está Desabilitada (Bênção Eterna).`, motivo: 'AURA_DESABILITADA' };
   if (reservaDaMina && !Reserva.cabe(estado, entry.id, reservaDaMina)) {
     return { ok: false, erro: `Sem ${reservaDaMina.recurso} livre para reservar: ${entry.name} reserva ${reservaDaMina.valor}.`, motivo: 'RESERVA' };
@@ -7906,7 +7924,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       if (efeitoDaGema.cristal && primeiro) eventos.push(...cristalEmQuedaR3A(estado, hunt, personagem, entry, efeitoDaGema, primeiro, agora));
       if (efeitoDaGema.fenda && tagsDoUso.includes('pancada') && (formaNoUso || alvo)) eventos.push(...fendasR3A(estado, hunt, personagem, entry, efeitoDaGema, formaNoUso ?? alvo, agora));
       if (efeitoDaGema.piraChancePct && tagsDoUso.includes('corpo')) {
-        const incendiado = atingidos.find((b) => acertouNoUso(b) && (b.dots ?? []).some((d) => d.tipo === 'queimadura' && d.falta > 0));
+        const incendiado = atingidos.find((b) => acertouNoUso(b) && incendiadosAntesR3A?.has(b));
         if (incendiado) eventos.push(...chamadoDaFogueiraR3A(estado, hunt, personagem, entry, efeitoDaGema, incendiado, agora));
       }
       if (efeitoDaGema.vento && primeiro && entry.poeGema?.ataque) rajadaDeVentoR3A(estado, hunt, personagem, entry, efeitoDaGema, agora);
@@ -8229,7 +8247,7 @@ function plantarArmas(estado, hunt, personagem, slot, entry, action, lugar, efei
   const lentidao = tipo === 'mina' ? Plantadas.segundosDaLentidaoAoPlantar(ficha) : 0;
   // (lote E1b, 26/10: + as Armadilhas a mais da própria gema — "Lança até 1 armadilhas a mais ao usar duas armas", a Hélice de Trarthus)
   const extrasDaGema = tipo === 'armadilha' ? GemasPoe.arremessoDaGema(slug, efeitoDaGema?.nivel ?? 1, ModsPoe.condicoesDe(estado, ficha.afPoe, null)).extras : 0;
-  // (lote R3C, 27/10) a MINA LOCAL: "sempre focam na sua localização" (as Minas caem em você) e "arremessam Minas em um Arco" (as a mais no arco à sua frente —
+  // (lote R3C, 27/10) a MINA LOCAL: "sempre focam na sua localização" (correções R3: a mira da habilidade ao detonar — as Minas caem no lugar mirado) e "arremessam Minas em um Arco" (as a mais no arco à sua frente —
   // `GemasR3c.casasDoArco`); "não podem ser Detonadas enquanto dentro de 3 metros de você" (o raio sorteado ao plantar — `GemasR3c.minaPertoDeVoce`)
   const lugarR3c = tipo === 'mina' && itensPoeLigado() ? GemasR3c.lugarDaMina(efeitoDaGema, lugar, hunt.pos) : lugar;
   const quantasExtras = Plantadas.extrasDoArremesso(ficha, tipo, Math.random, efeitoDaGema) + extrasDaGema;
@@ -8239,6 +8257,8 @@ function plantarArmas(estado, hunt, personagem, slot, entry, action, lugar, efei
     // (revisão F2) a Mina arremessada com a reserva do custo (a Cadeia Explosiva, o Alto Impacto) conta na reserva enquanto plantada (`ModsPoe.minasDaReserva`)
     if (reservaDaMina && tipo === 'mina') p.reserva = true;
     if (tipo === 'mina' && itensPoeLigado() && efeitoDaGema?.minaSemDetonarPertoM > 0 && p) p.semDetonarCasas = GemasR3c.raioSemDetonar(efeitoDaGema);
+    // (correções R3, achado 9) "sempre focam na sua localização": a habilidade que a Mina usa ao detonar mira em você (`GemasR3c.focoDaMina`)
+    if (tipo === 'mina' && itensPoeLigado() && efeitoDaGema?.minaEmVoceR3c > 0 && p) p.focaEmVoceR3c = true;
     // (lote S2A, 27/10) as Armadilhas Múltiplas e as Agrupadas: "Efeito em Área da Ativação de Armadilhas aumentado em X%" — o raio de ativação (1 casa) × √(1 + X%), a
     // fração como a chance de uma casa a mais, sorteada ao plantar
     if (tipo === 'armadilha' && efeitoDaGema?.ativacaoArmadilhaIncPct) {
@@ -8762,6 +8782,8 @@ export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora 
     if (itensPoeLigado() && hunt?.poeTormentas?.length) tiqueDasTormentas(estado, hunt, personagem, eventos, agora);
     // (lote R3A, 27/10: a distância percorrida da Rajada de Vento e os projéteis dela — `tiqueR3A`)
     if (itensPoeLigado() && hunt?.poeR3A) tiqueR3A(estado, hunt, personagem, eventos, agora);
+    // (correções R3: as Sentinelas da Absolvição que a sala de grupo guardou para você — `sentinelasDaSalaR3B`)
+    if (itensPoeLigado() && salaDe(hunt)?.poeR3bSentinelas?.length) sentinelasDaSalaR3B(estado, hunt, personagem, eventos);
     // (lote S2A, 27/10: o Sangue Corrompido do Estandarte Ensanguentado, a cada segundo)
     if (itensPoeLigado() && hunt?.buffs) SuportesS2A.tiqueS2A(hunt, eventos, agora);
     if (itensPoeLigado() && hunt?.poeOrbes?.length) tiqueDoOrbe(estado, hunt, personagem, eventos, agora);
@@ -8869,7 +8891,7 @@ export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora 
     };
     let r = null;
     if (ondas) r = dispararOndas(alvo);
-    else r = dispararSemMarcar(estado, hunt, personagem, p.slot, alvo, { plantada: p });
+    else r = dispararSemMarcar(estado, hunt, personagem, p.slot, alvo, { plantada: p, mira: GemasR3c.focoDaMina(p, hunt.pos) });
     if (r?.ok) eventos.push(...(r.eventos ?? []));
     // (lote E2B, 26/10) o que a ativação faz além do acerto: as explosões menores das Explosivas, o Solo Eletrizado da Relampejante Vaal, a Sifão ligada
     if (r?.ok && p.tipo === 'armadilha') depoisDaAtivacaoE2b(estado, hunt, personagem, p, r, eventos, agora);
@@ -8912,11 +8934,16 @@ function conversoraNaAtivacao(estado, hunt, p, alvo, eventos) {
   const slug = String(p.acao).replace(GemasPoe.PREFIXO, '');
   const st = GemasPoe.compilada(slug, ef?.nivel ?? 1, ef?.qualidade ?? 0)?.stats;
   const duracaoMs = Math.round((st?.duracao ?? 5.3) * 1000 * fatorDeDuracao(estado, entry, ef));
-  const melee = Poderes.poderesDe(alvo.key)?.ataques?.find((a) => a.tipo === 'melee');
-  const golpe = melee ? { min: melee.min, max: melee.max } : { min: R.ataqueDoMonstro(alvo), max: R.ataqueDoMonstro(alvo) };
+  // (correções R3, achado 18) sem golpe corpo a corpo no arquivo (o conjurador, o de longe), o golpe do aliado é a MAIOR habilidade de dano dele (a faixa do arquivo); a regra
+  // da metade da vida (`R.ataqueDoMonstro`) só para o monstro sem arquivo de poderes, como no golpe dele em você. Antes o conjurador batia pela metade da própria vida
+  const ataquesDoBicho = Poderes.poderesDe(alvo.key)?.ataques ?? null;
+  const melee = ataquesDoBicho?.find((a) => a.tipo === 'melee');
+  const maiorMagia = !melee && ataquesDoBicho ? ataquesDoBicho.filter((a) => Math.max(a.min ?? 0, a.max ?? 0) > 0).sort((a, b) => Math.max(b.min, b.max) - Math.max(a.min, a.max))[0] ?? null : null;
+  const golpe = melee ? { min: melee.min, max: melee.max } : maiorMagia ? { min: Math.max(0, Math.min(maiorMagia.min, maiorMagia.max)), max: Math.max(maiorMagia.min, maiorMagia.max) } : ataquesDoBicho ? { min: 0, max: 0 } : { min: R.ataqueDoMonstro(alvo), max: R.ataqueDoMonstro(alvo) };
   const agoraL = hunt.ultimoTique ?? Date.now();
   const l = GemasR3D.aliadoDaConversao(alvo, { uid: `lacaio:conv:${Date.now().toString(36)}${(seqDeLacaio++).toString(36)}`, acao: p.acao, agora: agoraL, duracaoMs, golpe, intervaloMs: 2000 });
-  hunt.monstros = hunt.monstros.filter((m) => m !== alvo);
+  // (correções R3, achado 14: a lista dos monstros muda NO LUGAR — `tirarMonstro`: na sala de grupo ela é a mesma para todos; e o alvo travado nele sai)
+  tirarMonstro(hunt, alvo);
   (hunt.lacaios ??= []).push(l);
   eventos.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: 'convertido' }, { t: 'fx', id: 11, uid: l.uid, x: l.x, y: l.y, sk: p.acao });
   return l;
@@ -9814,7 +9841,8 @@ function tiqueDasTormentas(estado, hunt, personagem, eventos, agora) {
     // (lote R3A: "uma Tormenta do Vazio, que cega os inimigos em seu interior" — a descrição: quem está nela fica Cego, renovado a cada tique)
     for (const m of dentro) {
       const ate = agora + GemasR3A.CEGUEIRA_DA_TORMENTA_MS;
-      if ((m.estados?.cego?.ate ?? 0) > agora) m.estados.cego.ate = Math.max(m.estados.cego.ate, ate);
+      // (correções R3, achado 5: sem `estados`, o relógio negativo não quebra — a guarda olha a Cegueira que existe)
+      if (m.estados?.cego && m.estados.cego.ate > agora) m.estados.cego.ate = Math.max(m.estados.cego.ate, ate);
       else ModsPoe.porNoAlvo(m, 'cego', ate, agora);
     }
     // (R3, dono 27/10 — revoga a decisão de 19/10) a tormenta explode quando VOCÊ entra no raio dela (no mesmo andar), e não quando um inimigo entra; a explosão acerta os
@@ -9835,25 +9863,45 @@ function tiqueDasTormentas(estado, hunt, personagem, eventos, agora) {
  * √ da Área de Efeito — a sua, a das tags do golpe, a dos suportes ligados à suportada (`areaIncPct`/`areaMaisPct` do efeito) e a dela (`extra`) —, ÷ 2; a fração, a
  * chance de uma casa a mais (`GemasR3A.casasDoRaio`).
  */
-function raioDoAtivadoR3A(estado, entry, raioM, tags, { areaIncPct = 0, areaMaisPct = 0 } = {}, rng = Math.random) {
+function raioDoAtivadoR3A(estado, entry, raioM, tags, { areaIncPct = 0, areaMaisPct = 0, efetivo = undefined } = {}, rng = Math.random) {
   const f = Ficha.combate(estado);
   const porTag = ModsPoe.somaPorTags(f, tags ?? []);
-  const ef = entry?.id ? Gemas.efeitoNaSkill(estado, entry.id) : null;
+  // (correções R3: `efetivo` — o efeito dos suportes que suportam a concedida, `efeitoNoAtivadoR3A`)
+  const ef = efetivo !== undefined ? efetivo : entry?.id ? Gemas.efeitoNaSkill(estado, entry.id) : null;
   const fator = ModsPoe.fatorDaArea(ModsPoe.valor(f, 'area_inc') + (porTag.area_inc ?? 0) + (ef?.areaIncPct ?? 0) + areaIncPct, ModsPoe.valor(f, 'area_mais') + (porTag.area_mais ?? 0), ef?.areaMaisPct ?? 0, areaMaisPct);
   return GemasR3A.casasDoRaio(raioM, fator, rng);
 }
-/** (lote R3A) As tags do acerto da habilidade concedida: as da suportada (sem "magia") + as dela. */
-const tagsDoAtivadoR3A = (entry, extra) => [...new Set([...(entry ? tagsPoeDaSkill(entry) : []).filter((t) => t !== 'magia'), ...extra])];
+/**
+ * (lote R3A) As tags do acerto da habilidade concedida: as DELA (`extra`) + `habilidade`/`naoCanalizar` (e `totem`, se quem a ativou é o totem).
+ * (correções R3, achado 2 — o PoE: a habilidade concedida tem as tags dela; a Rajada de Vento é Ataque, Projétil e Área, não corpo a corpo nem golpe) antes ela herdava
+ * todas as tags da suportada (o Golpe Pesado dava "corpo" e "golpe" à Rajada).
+ */
+const tagsDoAtivadoR3A = (entry, extra) => [...new Set([...extra, 'habilidade', 'naoCanalizar', ...(entry && tagsPoeDaSkill(entry).includes('totem') ? ['totem'] : [])])];
+const TAG_POE_DO_ATIVADO = { ataque: 'Ataque', magia: 'Magia', corpo: 'Corpo a Corpo', projetil: 'Projétil', area: 'Área', pancada: 'Impacto', golpe: 'Golpear', fogo: 'Fogo', gelo: 'Gelo', raio: 'Raio', caos: 'Caos', fisico: 'Físico', elemental: 'Elemental', totem: 'Totem' };
+/**
+ * (correções R3, achado 2 — como o F3 nas magias ativadas, `efeitoNaMagiaAtivada`) O efeito dos suportes da habilidade `id` num ATAQUE que ela concede (as `tags` dele):
+ * só os suportes que o suportariam (a regra das tags do suporte — o "Dano Físico Corpo a Corpo" não suporta a Rajada de Vento) e as linhas deles pelas tags dele.
+ */
+export function efeitoNoAtivadoR3A(estado, id, tags) {
+  const ativas = Gemas.skillsAtivas(estado);
+  const a = ativas.get(id);
+  if (!a) return null;
+  const tagsPoe = [...new Set((tags ?? []).map((t) => TAG_POE_DO_ATIVADO[t]).filter(Boolean).map((t) => `poe:${t}`))];
+  const semLista = (s) => { const { indicePoe, ...resto } = s ?? {}; return resto; };
+  const supports = (a.supports ?? []).filter((sp) => Gemas.compativel(semLista(sp.def?.suporte), tagsPoe));
+  const def = { ...a.def, tags: tagsPoe, progressao: null, fatorDeDano: 1 };
+  return Gemas.efeitoNaSkill(estado, id, new Map([[id, { ...a, def, supports }]]));
+}
 /**
  * (lote R3A) Um acerto de ÁREA da habilidade concedida: todos os vivos do andar a até `r` casas de `c` levam o ataque ativado (`acertoDoArauto` com `ativado`). Devolve os
  * acertados (o errado — a precisão — não conta).
  */
-function areaDoAtivadoR3A(estado, hunt, personagem, entry, c, r, { tags, fonte, ativado, cor = null, aoAcertar = null, z = hunt.z ?? 0 }, eventos) {
+function areaDoAtivadoR3A(estado, hunt, personagem, entry, c, r, { tags, fonte, ativado, cor = null, aoAcertar = null, z = hunt.z ?? 0, efetivo = null }, eventos) {
   eventos.push({ t: 'explosao', id: EFEITO_DA_EXPLOSAO, uid: 'player', x: c.x, y: c.y, lado: 2 * r + 1, raio: r, fonte, ...(cor ? { color: cor } : {}) });
   const acertados = [];
   for (const m of [...(hunt.monstros ?? [])]) {
     if (!(m.hp > 0) || m.dummy || (m.z ?? hunt.z ?? 0) !== z || distanciaChebyshev(m, c) > r) continue;
-    if (acertoDoArauto(estado, hunt, entry.id, m, 1, 'physical', { tags, eventos, fonte, personagem, ataque: true, ativado }) === null) continue;
+    if (acertoDoArauto(estado, hunt, entry.id, m, 1, 'physical', { tags, eventos, fonte, personagem, ataque: true, ativado, efetivo: efetivo ?? efeitoNoAtivadoR3A(estado, entry.id, tags) ?? {} }) === null) continue;
     acertados.push(m);
     aoAcertar?.(m);
   }
@@ -9871,8 +9919,9 @@ function cristalEmQuedaR3A(estado, hunt, personagem, entry, ef, alvo, agora) {
   if (!l || !alvo) return eventos;
   st.cristal = l;
   const tags = tagsDoAtivadoR3A(entry, ['ataque', 'area', 'corpo', 'pancada', 'fisico']);
-  const r = raioDoAtivadoR3A(estado, entry, ef.cristalRaioM ?? 2.3, tags);
-  areaDoAtivadoR3A(estado, hunt, personagem, entry, alvo, r, { tags, fonte: 'cristal-em-queda', ativado: { danoPct: ef.cristalDanoPct ?? 100, eficaciaPct: ef.cristalEficaciaPct, incPct: ef.cristalIncPct ?? 0 }, z: alvo.z ?? hunt.z ?? 0 }, eventos);
+  const efetivo = efeitoNoAtivadoR3A(estado, entry.id, tags) ?? {};
+  const r = raioDoAtivadoR3A(estado, entry, ef.cristalRaioM ?? 2.3, tags, { efetivo });
+  areaDoAtivadoR3A(estado, hunt, personagem, entry, alvo, r, { tags, fonte: 'cristal-em-queda', ativado: { danoPct: ef.cristalDanoPct ?? 100, eficaciaPct: ef.cristalEficaciaPct, incPct: ef.cristalIncPct ?? 0 }, z: alvo.z ?? hunt.z ?? 0, efetivo }, eventos);
   return eventos;
 }
 /**
@@ -9888,6 +9937,7 @@ function fendasR3A(estado, hunt, personagem, entry, ef, impacto, agora) {
   st.fendaAte = agora + (ef.fendaRecargaMs ?? 500);
   const tags = tagsDoAtivadoR3A(entry, ['ataque', 'area', 'corpo', 'pancada', 'fogo']);
   const ativado = { danoPct: ef.fendaDanoPct ?? 100, eficaciaPct: ef.fendaEficaciaPct, conversao: ef.fendaConvFogoPct ? { fire: ef.fendaConvFogoPct } : null };
+  const efetivo = efeitoNoAtivadoR3A(estado, entry.id, tags) ?? {};
   const z = impacto.z ?? hunt.z ?? 0;
   for (const [dx, dy] of GemasR3A.direcoesDasFendas(hunt.pos, impacto, ef.fendas ?? 3)) {
     const cs = Areas.reta({ x: impacto.x, y: impacto.y }, { x: impacto.x + dx, y: impacto.y + dy }, Math.max(1, GemasR3A.casasDaFenda(ef.fendaVelM ?? 6)));
@@ -9896,7 +9946,7 @@ function fendasR3A(estado, hunt, personagem, entry, ef, impacto, agora) {
     for (const c of caminho) eventos.push({ t: 'fx', id: EFEITO_DA_EXPLOSAO, uid: 'player', x: c.x, y: c.y, sk: entry.id, fonte: 'fenda' });
     for (const m of [...(hunt.monstros ?? [])]) {
       if (!(m.hp > 0) || m.dummy || (m.z ?? hunt.z ?? 0) !== z || !no.has(`${m.x},${m.y}`)) continue;
-      acertoDoArauto(estado, hunt, entry.id, m, 1, 'physical', { tags, eventos, fonte: 'fenda', personagem, ataque: true, ativado });
+      acertoDoArauto(estado, hunt, entry.id, m, 1, 'physical', { tags, eventos, fonte: 'fenda', personagem, ataque: true, ativado, efetivo });
     }
   }
   return eventos;
@@ -9914,6 +9964,7 @@ function chamadoDaFogueiraR3A(estado, hunt, personagem, entry, ef, alvo, agora, 
   st.piraAte = agora + (ef.piraRecargaMs ?? 1000);
   const tags = tagsDoAtivadoR3A(entry, ['ataque', 'area', 'corpo', 'fogo']);
   const ativado = { danoPct: ef.piraDanoPct ?? 100, eficaciaPct: ef.piraEficaciaPct, conversao: ef.piraConvFogoPct ? { fire: ef.piraConvFogoPct } : null };
+  const efetivo = efeitoNoAtivadoR3A(estado, entry.id, tags) ?? {};
   const andavel = ModsPoe.gradeDoCombate(hunt)?.andavel ?? null;
   const livres = [];
   const k = GemasR3A.PIRA_ALCANCE_CASAS;
@@ -9924,8 +9975,8 @@ function chamadoDaFogueiraR3A(estado, hunt, personagem, entry, ef, alvo, agora, 
   const z = alvo.z ?? hunt.z ?? 0;
   const cinzas = (m) => { if (ef.piraCinzas && m.hp > 0) { ModsPoe.porNoAlvo(m, 'cinzas', agora + GemasR3A.CINZAS_MS, agora); eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'cinzas' }); } };
   for (const c of GemasR3A.casasDosPilares(alvo, livres, Math.max(1, ef.pilares ?? 3), rng)) {
-    const r = raioDoAtivadoR3A(estado, entry, ef.piraRaioM ?? 1.2, tags, {}, rng);
-    areaDoAtivadoR3A(estado, hunt, personagem, entry, c, r, { tags, fonte: 'chamado-da-fogueira', ativado, cor: COR_DO_ELEMENTO.fire ?? '#ff9000', aoAcertar: cinzas, z }, eventos);
+    const r = raioDoAtivadoR3A(estado, entry, ef.piraRaioM ?? 1.2, tags, { efetivo }, rng);
+    areaDoAtivadoR3A(estado, hunt, personagem, entry, c, r, { tags, fonte: 'chamado-da-fogueira', ativado, cor: COR_DO_ELEMENTO.fire ?? '#ff9000', aoAcertar: cinzas, z, efetivo }, eventos);
   }
   return eventos;
 }
@@ -9960,14 +10011,15 @@ function tiqueR3A(estado, hunt, personagem, eventos, agora) {
   for (const p of st.rajadas) {
     const entry = POR_ID.get(p.acao);
     if (!entry) continue;
-    const tagsProj = tagsDoAtivadoR3A(entry, ['ataque', 'projetil', 'fisico']);
+    const tagsProj = tagsDoAtivadoR3A(entry, ['ataque', 'projetil', 'area', 'fisico']);
     const ativado = { danoPct: p.danoPct, eficaciaPct: p.eficaciaPct ?? p.danoPct };
+    let efProj;
     const acertarNaCasa = () => {
       for (const m of [...(hunt.monstros ?? [])]) {
         if (!(m.hp > 0) || m.dummy || (m.z ?? hunt.z ?? 0) !== p.z || m.x !== p.x || m.y !== p.y || p.acertados.includes(m.uid)) continue;
         p.acertados.push(m.uid);
         if (p.acertados.length > 60) p.acertados.shift();
-        acertoDoArauto(estado, hunt, p.acao, m, 1, 'physical', { tags: tagsProj, eventos, fonte: 'rajada-de-vento', personagem, ataque: true, ativado });
+        acertoDoArauto(estado, hunt, p.acao, m, 1, 'physical', { tags: tagsProj, eventos, fonte: 'rajada-de-vento', personagem, ataque: true, ativado, efetivo: (efProj ??= efeitoNoAtivadoR3A(estado, p.acao, tagsProj) ?? {}) });
         if (!p.perfura) { p.ate = Math.min(p.ate, agora); return; }
       }
     };
@@ -9989,9 +10041,10 @@ function tiqueR3A(estado, hunt, personagem, eventos, agora) {
     }
     if (p.ate > agora) { ficam.push(p); continue; }
     // a explosão no fim, com o "40% mais Dano em Área"
-    const tagsArea = tagsDoAtivadoR3A(entry, ['ataque', 'area', 'fisico']);
-    const r = Math.max(0, raioDoAtivadoR3A(estado, entry, p.raioM, tagsArea));
-    areaDoAtivadoR3A(estado, hunt, personagem, entry, { x: p.x, y: p.y }, r, { tags: tagsArea, fonte: 'rajada-de-vento', ativado: { ...ativado, maisPct: p.areaMaisPct }, z: p.z }, eventos);
+    const tagsArea = tagsDoAtivadoR3A(entry, ['ataque', 'projetil', 'area', 'fisico']);
+    const efArea = efeitoNoAtivadoR3A(estado, p.acao, tagsArea) ?? {};
+    const r = Math.max(0, raioDoAtivadoR3A(estado, entry, p.raioM, tagsArea, { efetivo: efArea }));
+    areaDoAtivadoR3A(estado, hunt, personagem, entry, { x: p.x, y: p.y }, r, { tags: tagsArea, fonte: 'rajada-de-vento', ativado: { ...ativado, maisPct: p.areaMaisPct }, z: p.z, efetivo: efArea }, eventos);
   }
   st.rajadas = ficam;
   if (!ficam.length) delete st.rajadas;
@@ -12387,12 +12440,13 @@ export function invocarSentinelaR3B(estado, hunt, slug, onde = null) {
  * A ABSOLVIÇÃO (e a da Inspiração) no uso: a penalidade (3 s × a Duração) nos acertados — quem morre com ela vira Sentinela (`aoMorrerR3B`) — e a chance de convocar uma
  * Sentinela por Raro ou Único acertado (25%). Vale também no uso do totem, da armadilha e da mina (a Sentinela é sua). Devolve os eventos.
  */
-export function absolvicaoNoUsoR3B(estado, hunt, entry, efeitoDaGema, acertados = [], rng = Math.random) {
+// (correções R3, achado 8: `dono` — o nome de quem aplicou a penalidade; na sala de grupo a Sentinela é dele, por quem for o abate — `aoMorrerR3B`)
+export function absolvicaoNoUsoR3B(estado, hunt, entry, efeitoDaGema, acertados = [], rng = Math.random, dono = null) {
   const slug = entry?.poeGema?.slug ?? '';
   if (!itensPoeLigado() || !hunt || !GemasR3B.ABSOLVICAO.test(slug) || !acertados.length) return [];
   const agora = hunt.clock ?? 0;
   const ate = agora + Math.round(GemasR3B.PENALIDADE_ABSOLVICAO_MS * fatorDeDuracao(estado, entry, efeitoDaGema));
-  for (const b of acertados) if (b && !b.dummy) b.r3bAbsolvicao = { ate: Math.max(b.r3bAbsolvicao?.ate ?? 0, ate), acao: entry.id };
+  for (const b of acertados) if (b && !b.dummy) b.r3bAbsolvicao = { ate: Math.max(b.r3bAbsolvicao?.ate ?? 0, ate), acao: entry.id, ...(dono != null ? { dono } : {}) };
   const chance = GemasR3B.chanceDeSentinelaNoRaro(slug, GemasPoe.textosDaGema(slug, efeitoDaGema?.nivel ?? 1).linhas);
   const eventos = [];
   for (const b of acertados) if (chance > 0 && b && !b.dummy && GemasR3B.raroOuUnico(b) && rng() * 100 < chance) eventos.push(...invocarSentinelaR3B(estado, hunt, slug, b));
@@ -12409,7 +12463,19 @@ export function aoMorrerR3B(estado, hunt, personagem, alvo, eventos = []) {
   const agora = hunt.clock ?? 0;
   const abs = alvo.r3bAbsolvicao;
   delete alvo.r3bAbsolvicao;
-  if (abs && abs.ate > agora && !GemasR3B.unico(alvo) && Gemas.skillsAtivas(estado).has(abs.acao)) {
+  // (correções R3, achado 8) na sala de grupo, a penalidade de OUTRO jogador (`abs.dono`): o cadáver é consumido aqui e a Sentinela fica na fila da sala para o dono
+  // (`sentinelasDaSalaR3B`, no tique dele) — antes ela ia para quem processava a morte, ou se perdia
+  if (abs && abs.dono != null && personagem?.nome != null && abs.dono !== personagem.nome) {
+    if (abs.ate > agora && !GemasR3B.unico(alvo)) {
+      const i = (hunt.cadaveres ?? []).findLastIndex((c) => c.x === alvo.x && c.y === alvo.y && c.key === alvo.key && !c.criadoPor);
+      if (i >= 0) {
+        hunt.cadaveres.splice(i, 1);
+        const sala = salaDe(hunt);
+        sala.poeR3bSentinelas = [...(sala.poeR3bSentinelas ?? []), { dono: abs.dono, acao: abs.acao, x: alvo.x, y: alvo.y, z: alvo.z ?? hunt.z ?? 0 }].slice(-20);
+        eventos.push({ t: 'fx', id: 13, x: alvo.x, y: alvo.y, sk: abs.acao });
+      }
+    }
+  } else if (abs && abs.ate > agora && !GemasR3B.unico(alvo) && Gemas.skillsAtivas(estado).has(abs.acao)) {
     const slug = POR_ID.get(abs.acao)?.poeGema?.slug;
     const i = slug ? (hunt.cadaveres ?? []).findLastIndex((c) => c.x === alvo.x && c.y === alvo.y && c.key === alvo.key && !c.criadoPor) : -1;
     if (i >= 0) {
@@ -12418,6 +12484,26 @@ export function aoMorrerR3B(estado, hunt, personagem, alvo, eventos = []) {
     }
   }
   if (QuemFeriu.abateSeu(alvo) && arautoLigado(hunt, acaoR3B(GemasR3B.PUREZA))) eventos.push(...invocarSentinelaR3B(estado, hunt, GemasR3B.PUREZA, alvo));
+  return eventos;
+}
+
+/**
+ * (correções R3, achado 8) As Sentinelas da Absolvição que a sala guardou para VOCÊ (o inimigo com a sua penalidade morreu na caçada de outro jogador): convocadas no seu tique,
+ * no lugar do cadáver, se a gema ainda está ligada. Devolve os eventos.
+ */
+export function sentinelasDaSalaR3B(estado, hunt, personagem, eventos = []) {
+  const sala = salaDe(hunt);
+  const nome = personagem?.nome;
+  if (!itensPoeLigado() || !sala?.poeR3bSentinelas?.length || nome == null) return eventos;
+  const minhas = sala.poeR3bSentinelas.filter((x) => x.dono === nome);
+  if (!minhas.length) return eventos;
+  sala.poeR3bSentinelas = sala.poeR3bSentinelas.filter((x) => x.dono !== nome);
+  if (!sala.poeR3bSentinelas.length) delete sala.poeR3bSentinelas;
+  const ativas = Gemas.skillsAtivas(estado);
+  for (const x of minhas) {
+    const slug = POR_ID.get(x.acao)?.poeGema?.slug;
+    if (slug && ativas.has(x.acao)) eventos.push(...invocarSentinelaR3B(estado, hunt, slug, { x: x.x, y: x.y, z: x.z }));
+  }
   return eventos;
 }
 
@@ -12499,8 +12585,11 @@ function relampagoVivoR3B(estado, hunt, entry, ef, agora) {
   for (let i = 0; i < Math.max(1, ef.relampagoN ?? 1); i++) {
     const vivos = hunt.lacaios.filter((l) => l.r3bRelampago && l.hp > 0 && !(l.ate && t >= l.ate));
     if (vivos.length >= Math.max(1, ef.relampagoMax ?? 8)) vivos.sort((a, b) => (a.desde ?? 0) - (b.desde ?? 0))[0].ate = t;
+    // (correções R3, achado 6 — o PoB, Minions.lua LivingLightningMinion: attackTime 1,17 s) o intervalo é o tempo de ataque do PoB (`lacaioDoGuardian`) ÷ a Velocidade de
+    // Ataque do lacaio; os 0,25 s do SummonedLivingLightningZap são a RECARGA, o piso do intervalo (`cacadas`: o golpe do lacaio nunca sai antes de 250 ms). Antes o
+    // intervalo era os 250 ms, e os 5 ataques saíam em 1,25 s
     const l = lacaioDoGuardian(estado, hunt, t, af, GemasR3B.RELAMPAGO.nome, 'physical', {
-      pob: 'LivingLightningMinion', nivelPob: ef.relampagoNivel ?? 70, r3bRelampago: entry.id, desde: t, ate: t + dur, duracaoMs: dur, intervaloMs: GemasR3B.RELAMPAGO.golpeMs,
+      pob: 'LivingLightningMinion', nivelPob: ef.relampagoNivel ?? 70, r3bRelampago: entry.id, desde: t, ate: t + dur, duracaoMs: dur,
       critChance: GemasR3B.RELAMPAGO.critico, critChanceBase: GemasR3B.RELAMPAGO.critico, conversao: { fire: 0, ice: 0, energy: ef.relampagoConvPct ?? 100, chaos: 0 }, soDano: null,
       r3bAtaques: ef.relampagoAtaques ?? 3, r3bRicochetes: ef.relampagoRicochetes ?? 3, intocavel: true,
     });
@@ -12588,7 +12677,7 @@ export function usoR3B(estado, hunt, personagem, entry, efeitoDaGema, { acertado
   const eventos = [];
   if (!itensPoeLigado() || !hunt?.pos || !entry?.poeGema) return eventos;
   const agora = hunt.clock ?? 0;
-  eventos.push(...absolvicaoNoUsoR3B(estado, hunt, entry, efeitoDaGema, acertados, rng));
+  eventos.push(...absolvicaoNoUsoR3B(estado, hunt, entry, efeitoDaGema, acertados, rng, personagem?.nome ?? null));
   if (doTotem || plantada) return eventos;
   eventos.push(...aoAcertarR3B(estado, hunt, personagem, { ataque: !!entry.poeGema.ataque, acertados }, rng));
   if (entry.poeGema.slug === GemasR3B.GOLPE_SAGRADO && acertados.length) eventos.push(...invocarLacaios(hunt, entry, efeitoDaGema, acertados[0], estado));
@@ -12614,7 +12703,8 @@ export function guerreirosDoClamorR3B(estado, hunt, personagem, entry, efeitoDaG
   const z = hunt.z ?? 0;
   const cadaveres = (hunt.cadaveres ?? []).filter((c) => (c.z == null || c.z === z) && distanciaChebyshev(c, hunt.pos) <= GemasR3B.CASAS_DO_PODER);
   const infinito = ModsPoe.valor(ficha, 'clamor_poder_infinito') > 0;
-  const poder = ModsPoe.poderDoClamor(hunt, ficha) + (infinito ? 0 : cadaveres.length * GemasR3B.PODER_DO_CADAVER * Math.max(0, 1 + ModsPoe.valor(ficha, 'clamor_poder_inc') / 100));
+  // (correções R3, achado 7) o mínimo de Poder da árvore vale sobre o total (inimigos + cadáveres, com o aumentado) — antes os cadáveres eram somados por cima do mínimo
+  const poder = ModsPoe.poderDoClamor(hunt, ficha, infinito ? 0 : cadaveres.length * GemasR3B.PODER_DO_CADAVER);
   const n = GemasR3B.quantosGuerreiros(g, poder);
   if (!n) return eventos;
   const ativas = Gemas.skillsAtivas(estado);

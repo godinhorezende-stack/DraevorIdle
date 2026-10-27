@@ -1414,7 +1414,8 @@ export function golpesDosMonstros(estado, hunt, personagem) {
     }
     if (bicho.boss) BossesUnicos.tique({ estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo: escudo });
     // (lote R3D, 27/10) o monstro PROVOCADO pelo Totem Chamariz mira o totem: as magias dele não saem em você (o chefe único segue com os comportamentos próprios, acima)
-    if (Poderes.temPoderes(bicho) && !bicho.boss?.semPoderesDoBase && !GemasR3D.iscaDoMonstro(hunt, bicho, agora)) Poderes.lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, escudo);
+    // (correções R3, achado 16: as magias de dano dele saem NO TOTEM — `isca` —; antes ele não conjurava nada, e o conjurador provocado ficava parado)
+    if (Poderes.temPoderes(bicho) && !bicho.boss?.semPoderesDoBase) Poderes.lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, escudo, { isca: GemasR3D.iscaDoMonstro(hunt, bicho, agora) ?? null });
   }
   for (const bicho of hunt.monstros) {
     if (bicho.dummy || bicho.hp <= 0 || distancia(hunt.pos, bicho) > 1 || Poderes.semCorpoACorpo(bicho)) continue;

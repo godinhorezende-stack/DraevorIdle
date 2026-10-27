@@ -77,7 +77,11 @@ export const PROPRIAS_R3A = {
  * (`somadoDoSuporte`) × `eficaciaPct`; e a conversão PRÓPRIA da habilidade (`conversao`: `{ fire: 60 }` — a da Fenda, a da Pira), sobre o Físico, antes das outras
  * (quem chama passa as da ficha depois — `ModsPoe.transformarPartes`).
  */
-export function partesDoAtivado({ arma, fisicoAdicionado = null, danoSomado = null, somadoDoSuporte = null, basePct = 100, eficaciaPct = null, conversao = null, rng = Math.random }) {
+// (correções R3, achado 1 — como o golpe normal, `GemasPoe.partesDoAtaque`) + `conversoesExtras` — a conversão do Físico dos SUPORTES (`[{ para: 'fire', pct }]`, já no
+// elemento do jogo): é da habilidade, junto com a própria, no Físico todo; e `outras(fisico, tetoPct)` — `ModsPoe.extrasDoFisico` com a ficha: as conversões das peças e
+// das auras só no Físico que a habilidade deixou (proporcionais se passarem dele) e o "Físico como Extra" sobre o Físico de ANTES da conversão. Antes o Físico das peças,
+// das auras (o Ódio) e dos suportes nunca convertia nos ataques ativados.
+export function partesDoAtivado({ arma, fisicoAdicionado = null, danoSomado = null, somadoDoSuporte = null, basePct = 100, eficaciaPct = null, conversao = null, conversoesExtras = [], outras = null, rng = Math.random }) {
   const rolar = ([a, b]) => (Number(a) || 0) + rng() * Math.max(0, (Number(b) || 0) - (Number(a) || 0));
   const fb = Math.max(0, Number(basePct) || 0) / 100;
   const fe = Math.max(0, Number(eficaciaPct ?? basePct) || 0) / 100;
@@ -87,10 +91,22 @@ export function partesDoAtivado({ arma, fisicoAdicionado = null, danoSomado = nu
   if (fisicoAdicionado) somar('physical', rolar(fisicoAdicionado) * fe);
   for (const [el, faixa] of Object.entries(danoSomado ?? {})) somar(el, rolar(faixa) * fe);
   for (const [el, faixa] of Object.entries(somadoDoSuporte ?? {})) somar(el, rolar(faixa) * fe);
-  for (const [para, pct] of Object.entries(conversao ?? {})) {
-    const v = ((p.physical ?? 0) * Math.min(100, Math.max(0, Number(pct) || 0))) / 100;
-    if (v > 0) { p.physical -= v; p[para] = (p[para] ?? 0) + v; if (!(p.physical > 1e-9)) delete p.physical; }
+  const fis = p.physical ?? 0;
+  if (!(fis > 0)) return p;
+  let resta = 1;
+  for (const { para, pct } of [...Object.entries(conversao ?? {}).map(([para, pct]) => ({ para, pct })), ...(conversoesExtras ?? [])]) {
+    const f = Math.min(resta, Math.max(0, Number(pct) || 0) / 100);
+    if (!(f > 0)) continue;
+    somar(para, fis * f);
+    resta -= f;
   }
+  if (outras) {
+    const o = outras([fis, fis], resta * 100);
+    for (const [el, [a]] of Object.entries(o?.extras ?? {})) somar(el, a);
+    resta = Math.max(0, resta - (Number(o?.convertidoPct) || 0) / 100);
+  }
+  p.physical = fis * resta;
+  if (!(p.physical > 1e-9)) delete p.physical;
   return p;
 }
 

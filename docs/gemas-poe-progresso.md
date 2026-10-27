@@ -1342,6 +1342,46 @@ Testes que as decisões 3 e 4 quebram (fora dos avais; esperam o dono): suportes
 
 Placar (relatório regerado): suportes parcial 6 → 3, não se aplica 0 → 1, implementada e testada 207 → 209; ativas sem mudança (implementada e testada 456, parcial 1, não se aplica 1).
 
+### Correções da revisão (R3) — os lotes R3A–R3D (27/10)
+
+A revisão adversarial da rodada 3 achou 21 problemas (linhas do HEAD cbac91b0). Confirmei todos no código. Corrigi 19 e deixei 2 baixos para o dono. Teste novo: `game/testes/correcoes-r3.test.mjs` (10 testes, sorteios travados), que cobre os altos e os médios.
+
+Corrigidos:
+
+- **1 (alta) — a conversão do Físico no ataque ativado.** `GemasR3A.partesDoAtivado` ganhou `conversoesExtras` (o `af:conv_hab_physical_*` dos suportes) e `outras` (`ModsPoe.extrasDoFisico` com a ficha). A conversão da habilidade vem primeiro (a própria + a dos suportes). As peças e as auras só convertem o que sobrou, proporcionais. O "Físico como Extra" sai do Físico de antes da conversão, como no golpe normal (`GemasPoe.partesDoAtaque`). Exemplo: a Fenda (60%) com 40% das peças dá 100% de Fogo, e o Ódio passa a dar o Gelo extra no Cristal, na Pira e na Rajada.
+- **2 (média) — as tags da habilidade concedida.** `tagsDoAtivadoR3A` usa só as tags dela (+ `habilidade`/`naoCanalizar`, e `totem` quando quem ativa é o totem). `efeitoNoAtivadoR3A` filtra os suportes pelas tags da concedida, como o F3 fez nas magias ativadas. A Rajada de Vento é Ataque, Projétil e Área. O raio usa o mesmo efeito.
+- **3 (média) — a Pira.** Uma fotografia de quem já queimava no começo do uso (`incendiadosAntesR3A`). O inimigo incendiado pelo próprio golpe não conta.
+- **5 (baixa) — a Cegueira da Tormenta.** A decisão do dono (a tormenta explode quando você entra) já mantém a tormenta viva, com a Cegueira renovada em quem está dentro. A guarda não quebra mais sem `estados`.
+- **6 (média) — o Relâmpago Vivo.** O intervalo é o `attackTime` do PoB (1,17 s, Minions.lua) ÷ a Velocidade de Ataque. Os 0,25 s são a recarga do golpe, e o piso geral de 250 ms do golpe do lacaio (`cacadas`) já cobre isso.
+- **7 (baixa) — o Clamor do General.** `ModsPoe.poderDoClamor(hunt, ficha, extra)`: os cadáveres entram antes do aumentado e do mínimo. Exemplo: max(10, 1 + 5) = 10, não 15.
+- **8 (baixa) — a Absolvição na sala de grupo.** A penalidade guarda o `dono`. Quando outro jogador processa a morte, o cadáver é consumido e a Sentinela fica na fila da sala (`poeR3bSentinelas`, até 20). Ela é convocada no tique do dono (`sentinelasDaSalaR3B`).
+- **9 (alta) — a Mina Local.** As Minas caem no lugar mirado, em arco. O "sempre focam na sua localização" passou a ser a mira da habilidade da Mina ao detonar (`GemasR3c.focoDaMina` → `mira`). Antes elas caíam em você e nunca detonavam.
+- **10 (média) — duas Bênçãos.** Com outra aura de Bênção ligada, o uso automático falha (`OUTRA_BENCAO`) e só o manual troca. Antes as duas se revezavam para sempre.
+- **11 (média) — o Fluxo Cinético.** A explosão usa o ataque ativado do R3A (`ativado`): a arma × o Dano de Ataque, o adicionado × a eficácia e o crítico da varinha.
+- **12 (baixa) — a troca de instância.** `novaInstancia` limpa as anomalias, as mãos e os projéteis da Rajada, em você e nos convidados. As recargas ficam.
+- **13 (baixa) — a Insanidade.** A conta passa a ser por aura e por jogador (`id@nome`). Quando a aura desliga, `esquecerAura` limpa a conta (a lista `poeR3c.aurasDaInsanidade`).
+- **14 (alta) — a Armadilha Conversora.** `tirarMonstro` mexe na lista no lugar (na sala de grupo ela é a de todos) e limpa o alvo.
+- **15 (média) — o convertido que morre.** O ponto de spawn dele volta à fila de renascimento.
+- **16 (média) — o Chamariz.** O provocado lança as magias de dano no totem (`Poderes.lancar(..., { isca })` → `magiaNoLacaio`) e nunca em você.
+- **17 (baixa) — o golpe do provocado.** Ele bate no totem com o golpe inteiro e sem o "−10% de Provocado contra outro alvo".
+- **18 (baixa) — o golpe do convertido.** Sem golpe corpo a corpo no arquivo, ele usa a faixa da maior magia dele. A metade da vida só vale para o monstro sem arquivo de poderes.
+- **20 (baixa) — a Mina de Fumaça com a Mina Local.** A "uma por Sequência" é a mais velha que pode detonar.
+- **21 (baixa) — o Espinho da Cauda.** Ele é um ataque (`porVelocidade`): 1,3 s ÷ a Velocidade de Ataque do lacaio, não a Recuperação de Recarga (o PoB, HeraldOfAgonyMinionTailSpike).
+
+Não corrigidos (para o dono):
+
+- **4 (baixa) — uma recarga por habilidade.** Precisa trocar o formato de `hunt.poeR3A` (`cristal`, `fendaAte`, `piraAte`, `vento` → um por habilidade). Os testes suportes-r3a:175-176, 186, 200 e 206-209 leem esses campos e quebrariam, e eu não mexo em teste sem aval.
+- **19 (baixa) — as afecções do convertido.** No PoE elas continuam correndo no aliado. Fazer isso pede rodar os DoTs do monstro dentro do aliado (o dano nele) ou descontar o tempo na volta. Não é simples, então fica para uma decisão.
+
+Testes que as correções quebram (esperam o aval do dono; não mexi):
+
+- gemas-r3b:317 — o `intervaloMs` do Relâmpago Vivo: esperado 250 → novo 1170 (o attackTime do PoB, 1,17 s × 1000; o piso de 250 ms continua no golpe do lacaio).
+- gemas-r3c:169 — `lugarDaMina(e1, {9,9}, {1,2})`: esperado {1,2} (a sua casa) → novo {9,9} (o lugar mirado, achado 9).
+
+Suíte (ativas-*, gemas-*, suportes-*, totens-*, itens-poe-gemas*, combo-poe, eficacia-ataque-poe, repeticoes-estagios-a4, correcoes-r3 e os afetados: plantadas, clamores, lacaios, poderes, grupo): 1010 testes, 962 passam, 43 pulados, 5 falham. As 5 falhas são as 3 que já esperavam o dono e as 2 acima.
+
+Placar (relatório regerado, sem mudança): ativas — implementada e testada 456, parcial 1, não se aplica 1; suportes — implementada e testada 209, parcial 3, não se aplica 1.
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.

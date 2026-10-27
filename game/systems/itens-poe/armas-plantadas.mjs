@@ -185,7 +185,8 @@ export function minasQueDetonam(hunt, ficha, agora = hunt?.clock ?? 0, { velocid
   // (lote R3C: a Mina Local — "não podem ser Detonadas enquanto dentro de 3 metros de você": a perto de você fica fora da sequência e espera)
   const pertoDeVoce = (p) => minaPertoDeVoce(p, hunt.pos, hunt.z ?? 0);
   const naFila = umaPorSequencia ? minas.some((p) => p.detonaEm != null && umaPorSequencia(p)) : false;
-  const umaSo = umaPorSequencia ? minas.filter((p) => p.detonaEm == null && umaPorSequencia(p)).sort((a, b) => a.desde - b.desde)[0] ?? null : null;
+  // (correções R3, achado 20: a "uma por Sequência" é a mais velha que PODE detonar — a perto de você, com a Mina Local, não trava as outras)
+  const umaSo = umaPorSequencia ? minas.filter((p) => p.detonaEm == null && umaPorSequencia(p) && !pertoDeVoce(p)).sort((a, b) => a.desde - b.desde)[0] ?? null : null;
   const fora = minas.filter((p) => p.detonaEm == null && !pertoDeVoce(p) && (!umaPorSequencia || !umaPorSequencia(p) || (!naFila && p === umaSo)));
   if (pode && fora.length && agora >= (hunt.poeDetonarEm ?? -Infinity) + M.recargaMs && (manual || minas.some((p) => inimigoPerto(hunt, p, M.raioDeDetonacao)))) {
     hunt.poeDetonarEm = agora;

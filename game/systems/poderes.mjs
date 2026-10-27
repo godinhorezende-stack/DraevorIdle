@@ -485,7 +485,8 @@ function lacaioMaisPerto(hunt, bicho, dDoJogador) {
   }
   return melhor?.l ?? null;
 }
-export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo) {
+// (correções R3, achado 16: `isca` — o totem que provocou o bicho, o Chamariz: as magias de dano dele vão no totem — `magiaNoLacaio` —, nunca em você)
+export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo, { isca = null } = {}) {
   const p = PODERES[bicho.key];
   if (!p || bicho.hp <= 0 || estado.hp <= 0) return 0;
   // Primeira vez que este bicho (recém-criado ou renascido) lança: cada magia
@@ -498,7 +499,7 @@ export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, t
   }
   let total = 0;
   const alvo = hunt.pos;
-  const noLacaio = magiaNoLacaio ? lacaioMaisPerto(hunt, bicho, distancia(bicho, alvo)) : null;
+  const noLacaio = isca ? (magiaNoLacaio && isca.hp > 0 ? isca : null) : magiaNoLacaio ? lacaioMaisPerto(hunt, bicho, distancia(bicho, alvo)) : null;
   p.ataques.forEach((a, i) => {
     if (a.tipo !== 'magia' || agora < (bicho.proximoPoder[i] ?? 0)) return;
     // Morto no meio do tique (a magia anterior matou): as outras não saem — nem o dano depois
@@ -513,7 +514,7 @@ export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, t
     if (Math.random() * 100 >= a.chance) return;
     // (lote 41, P019) o lacaio mais perto do bicho que você leva a magia de dano
     if (noLacaio && noLacaio.hp > 0 && (a.min > 0 || a.max > 0) && alcanca(a, bicho, noLacaio)) return void magiaNoLacaio({ estado, hunt, bicho, l: noLacaio, a, eventos, agora, ficha });
-    if (!alcanca(a, bicho, alvo)) return;
+    if (isca || !alcanca(a, bicho, alvo)) return;
     total += dispararMagia({ estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo }, a);
   });
   // As curas do boss (`monster.defenses` do arquivo).

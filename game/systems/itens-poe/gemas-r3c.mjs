@@ -192,8 +192,14 @@ export function degenDoGuardiao(lacaios, acoesDoGrupo, pct, ms, agora = 0) {
 
 // ---------------------------------------------------------------- a MINA LOCAL
 
-/** Para onde a Mina Local vai: a sua casa ("sempre focam na sua localização"), ou o lugar mirado. */
-export const lugarDaMina = (ef, mirado, pos) => (ef?.minaEmVoceR3c > 0 && pos ? { x: pos.x, y: pos.y } : mirado);
+/**
+ * Para onde a Mina Local vai: o lugar MIRADO, como toda Mina arremessada.
+ * (correções R3, achado 9 — o poedb: "usarão a habilidade por você quando você as detonar, focando na sua localização") o "sempre focam na sua localização" é a MIRA da
+ * habilidade que a Mina usa ao detonar (`focoDaMina`), não onde ela cai. Antes as Minas caíam em você e, com o "não detonam a até 3 m de você", nunca detonavam.
+ */
+export const lugarDaMina = (ef, mirado, pos) => mirado ?? (pos ? { x: pos.x, y: pos.y } : mirado);
+/** (correções R3, achado 9) A mira da habilidade que a Mina `p` usa ao detonar: a sua casa com a Mina Local (`p.focaEmVoceR3c`); sem ela, null (a mira de sempre). */
+export const focoDaMina = (p, pos) => (p?.focaEmVoceR3c && pos ? { x: pos.x, y: pos.y } : null);
 /**
  * As casas do arremesso EM ARCO (a Mina Local): a primeira no centro; as outras no arco à frente (`dir`: 0 norte, 1 leste, 2 sul, 3 oeste), a 1 casa, do meio para os
  * lados, depois a 2 casas. `n` casas.

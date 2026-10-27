@@ -218,6 +218,7 @@ export const PROPRIAS_R3B = {
  * Os lacaios dos suportes (o PoB): o Relâmpago Vivo — o golpe (SummonedLivingLightningZap: cooldown 0,25 s, +8% de crítico base sobre os 5%); o Nascido da Colmeia — o nome
  * (o PoB: "It That Crawls") e o Cobrir de Gelo dele (a duração de sempre do jogo, 4 s — `mods-poe`, o Coberto de Gelo).
  */
+// (correções R3: `golpeMs` é a RECARGA do golpe — o piso do intervalo, não o intervalo; o intervalo é o attackTime do PoB, 1,17 s)
 export const RELAMPAGO = Object.freeze({ nome: 'Relâmpago Vivo', golpeMs: 250, critico: 13 });
 export const NASCIDO = Object.freeze({ nome: 'Nascido da Colmeia', cobrirDeGeloMs: 4000 });
 /** Os níveis dos lacaios dos suportes (o PoB): o Nascido da Colmeia — base_display_minion_actor_level 72/74/76… pelo nível do suporte. */

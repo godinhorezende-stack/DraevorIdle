@@ -204,7 +204,9 @@ const GOLEM_CAOTICO = {
 };
 const RASTEJADOR = [
   { id: 'HeraldOfAgonyMinionMortar', nome: 'Morteiro', tipo: 'morteiro', recargaMs: 7500, usos: 1, mult: 0.4, projeteis: 6, raioMaisPct: 20, alcance: 3 },
-  { id: 'HeraldOfAgonyMinionTailSpike', nome: 'Espinho da Cauda', tipo: 'espinho', recargaMs: 1300, usos: 1, mult: 1, projeteis: 5, alcance: 5, deLonge: true },
+  // (correções R3, achado 21 — o PoB, minion.lua HeraldOfAgonyMinionTailSpike: sem cooldown, castTime 1,3 s) o Espinho é um ATAQUE: os 1,3 s ÷ a Velocidade de Ataque do lacaio
+  // (`porVelocidade` — `cacadas.habilidadesComRecarga`), não a Recuperação de Recarga
+  { id: 'HeraldOfAgonyMinionTailSpike', nome: 'Espinho da Cauda', tipo: 'espinho', recargaMs: 1300, usos: 1, mult: 1, projeteis: 5, alcance: 5, deLonge: true, porVelocidade: true },
 ];
 /** A eficácia de uma magia de lacaio do PoB no nível `n` (statInterpolation 3 — a mesma de `LacaiosPoe.eficaciaDaMagiaDoPob`). */
 const eficacia = (n, baseEf, incEf) => (3.885209 + 0.360246 * (Math.max(1, n) - 1)) * baseEf * (1 + incEf) ** (Math.max(1, n) - 1);

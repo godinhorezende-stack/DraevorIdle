@@ -557,11 +557,12 @@ export function aoSerAtordoado(estado, hunt, bicho, ficha, { dano = 0, duracaoMs
  * (ciclo 7, lote F) O PODER do Clamor (PoE: cada inimigo perto vale 1, Mágico 2, Raro 10, Único 20): os de até 6 casas, com o "mínimo de N de
  * Poder", o "Poder total contado aumentado" e o "poder infinito" (conta como 1000).
  */
-export function poderDoClamor(hunt, ficha) {
+// (correções R3, achado 7: `extra` — o Poder a mais contado junto com o dos inimigos, os cadáveres do Clamor do General: entra antes do "aumentado" e do mínimo)
+export function poderDoClamor(hunt, ficha, extra = 0) {
   const v = (k) => valor(ficha, k);
   if (v('clamor_poder_infinito') > 0) return 1000;
   const p = hunt?.pos;
-  let poder = 0;
+  let poder = Math.max(0, Number(extra) || 0);
   for (const m of hunt?.monstros ?? []) {
     if (!p || !(m.hp > 0) || m.dummy || Math.max(Math.abs(m.x - p.x), Math.abs(m.y - p.y)) > 6) continue;
     poder += m.boss || m.raridade === 'unico' || m.raridade === 'boss' ? 20 : m.raridade === 'raro' ? 10 : m.raridade === 'magico' ? 2 : 1;

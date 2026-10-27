@@ -39,7 +39,7 @@ import * as Estados from './skills/estados.mjs';
 import * as RegrasDeUso from './skills/regras-de-uso.mjs';
 import * as Bosses from './bosses.mjs';
 import { SPAWNS_CAPTURADOS, spawnsCapturados, mapaRealCapturado, pontosNoMapa, acharHunt, huntOuMapaCustom, nomeDaHunt, temTerrenoReal, gradeDaHunt, spawnsDaHunt, encontrosDaHunt } from './hunt/terreno.mjs';
-import { BESTIARY, criarMonstro, trocarDeAndar, renascer, passoDoBicho, moverMonstros, compactarMonstro, completarMonstro, garantirUidAcimaDe, ALCANCE_DE_PERCEPCAO } from './hunt/monstros.mjs';
+import { BESTIARY, criarMonstro, trocarDeAndar, renascer, passoDoBicho, moverMonstros, compactarMonstro, completarMonstro, garantirUidAcimaDe, ALCANCE_DE_PERCEPCAO, RESPAWN_MS } from './hunt/monstros.mjs';
 import { destinoDaMudanca, andarDaGrade } from './hunt/andares.mjs';
 import { VIZINHANCA_8, proximoPassoAte, casaAndavelMaisProxima, casaLivrePerto, distancia, temCaminho, bfsDistancias } from './hunt/caminho.mjs';
 import { novaSessao, sessaoParaCliente, relatorio, somarSessao } from './hunt/relatorio.mjs';
@@ -1271,6 +1271,9 @@ export function novaInstancia(estado, pronta = null) {
   delete hunt.poeFeixesConcentrados;
   // (lote B4, dono 25/10 — D-B4.6: a Intensidade zera na troca de instância)
   delete hunt.poeIntensidade;
+  // (correções R3, achado 12: as anomalias do Fluxo Cinético e as mãos da Constrição Pérfida — e os projéteis da Rajada de Vento — ficam no mapa velho; as recargas seguem)
+  const limparR3 = (h) => { if (h?.poeR3c) { delete h.poeR3c.anomalias; delete h.poeR3c.maos; } if (h?.poeR3A) delete h.poeR3A.rajadas; };
+  limparR3(hunt);
   if (hunt.areasFrias) hunt.areasFrias = hunt.areasFrias.filter((a) => !a.obj);
   hunt.pos = { x: novo.inicio.x, y: novo.inicio.y, dir: 2 };
   hunt.percurso = novo.grade.percurso ? { passo: waypointMaisPerto(novo.grade.percurso, novo.inicio, 0, novo.grade.percurso.length, novo.andarInicial) } : null;
@@ -1297,7 +1300,7 @@ export function novaInstancia(estado, pronta = null) {
   convidados.forEach((o, i) => chegarNaInstancia(o.hunt, casas[i] ?? novo.inicio, novo.andarInicial));
   // Instância nova = ENTRADA nova para cada um da sala: a sessão de cada um protege até o cliente confirmar (`protecao.mjs`).
   for (const h of [hunt, ...convidados.map((o) => o.hunt)]) h.entrada = Protecao.novaEntrada();
-  for (const h of convidados.map((o) => o.hunt)) { delete h.poeObjetos; if (h.areasFrias) h.areasFrias = h.areasFrias.filter((a) => !a.obj); }
+  for (const h of convidados.map((o) => o.hunt)) { delete h.poeObjetos; limparR3(h); if (h.areasFrias) h.areasFrias = h.areasFrias.filter((a) => !a.obj); }
   // (Cada portal com a entrada nova de quem chega por ele: a tela de cada um pula o seu — ela anima a própria chegada.)
   EventosDeEncontro.empurrar(hunt, [portalDeViagem(novo.inicio, { chegada: true, entrada: hunt.entrada }), ...convidados.map((o, i) => portalDeViagem(casas[i] ?? novo.inicio, { chegada: true, entrada: o.hunt.entrada }))]);
   return true;
@@ -2896,7 +2899,12 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       // (16/10, lote 37: o mercenário morto só volta revivido por ouro — `Acoes.mercenarioMorreu`, a tela dele)
       if (l.mercenario) Acoes.mercenarioMorreu(estado, l);
       // (lote R3D, 27/10) a Armadilha Conversora: no fim da conversão o monstro volta a ser inimigo, com a vida que sobrou, onde está (morto como aliado, não volta)
-      if (l.convertido) { const m = GemasR3D.devolverConvertido(l); if (m) { hunt.monstros.push(m); eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'convertidoFim' }); } }
+      // (correções R3, achado 15: morto como aliado, o ponto de spawn dele volta à fila de renascimento, como numa morte comum — antes sumia de vez)
+      if (l.convertido) {
+        const m = GemasR3D.devolverConvertido(l);
+        if (m) { hunt.monstros.push(m); eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'convertidoFim' }); }
+        else if (l.convertido.monstro?.spawn && !hunt.isBoss) (hunt.respawns ??= []).push({ ...l.convertido.monstro.spawn, volta: (salaDe(hunt).clock ?? 0) + RESPAWN_MS });
+      }
       // (PoE: "se um Lacaio foi Morto Recentemente".)
       if (l.hp <= 0) { ModsPoe.marcar(hunt, 'lacaioMorreu'); lacaioMorreu = true; }
       // (13/10, o Suserano do Primordial: "Golens Convocados são Reconvocados 4 segundos após serem Mortos" — `Acoes.reconvocarGolens`)
@@ -2943,7 +2951,10 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       if (b.hp <= 0 || b.dummy || distancia(b, l) > 1) continue;
       // (lote R3D, 27/10) o monstro PROVOCADO pelo totem (o Chamariz) bate nele no ritmo do golpe dele (não em você — `combate.golpesDosMonstros`); os outros colados, um golpe a
       // cada ~2 s, como sempre
-      if (GemasR3D.iscaDoMonstro(hunt, b, relogio) === l) {
+      // (correções R3, achado 17: o provocado bate no totem com o golpe INTEIRO — `metade` 1 — e sem o "−10% de Provocado contra outro alvo": o alvo é quem o provocou)
+      const provocadoPorEste = GemasR3D.iscaDoMonstro(hunt, b, relogio) === l;
+      const metade = provocadoPorEste ? 1 : 0.5;
+      if (provocadoPorEste) {
         if (!R.jaPode(relogio, b.proximoGolpe) || !Estados.podeAgir(b, relogio)) continue;
         b.proximoGolpe = relogio + AtributosDoMob.intervaloDoGolpe(b, { base: b.boss?.melee?.intervaloMs ?? ATAQUE_DO_MONSTRO_MS, lentidao: Estados.fatorDeLentidao(b, relogio), buffPct: 0 });
       } else if (Math.random() > 0.125) continue;
@@ -2958,8 +2969,8 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       // (lote 86, dono 19/10: o teto de cada elemento — `tetoDaResDoLacaio(l, elemento)`; o do Caos sem o "todas as Elementais")
       const teto = (el) => LacaiosPoe.tetoDaResDoLacaio(l, el);
       // ("Golens Convocados são Imunes ao Dano Elemental": a parte elemental não passa)
-      const extras = l.poe ? AtributosDoMob.danoExtraDoGolpe(b).reduce((n, x) => (l.poe.imuneElemental && ['fire', 'ice', 'energy'].includes(x.elemento) ? n : n + ((x.min + x.max) / 2) * 0.5 * (1 - Math.min(teto(x.elemento), x.elemento === 'chaos' ? l.poe.resCaos : ['fire', 'ice', 'energy'].includes(x.elemento) ? resDoLacaio(l, x.elemento, aliado) : 0) / 100)), 0) : 0;
-      const fatorDoGolpe = Math.max(0, 1 + (l.poe?.danoRecebidoPct ?? 0) / 100) * ModsPoe.doBicho(b, hunt.clock ?? 0, { contraOutro: true }).danoFator;
+      const extras = l.poe ? AtributosDoMob.danoExtraDoGolpe(b).reduce((n, x) => (l.poe.imuneElemental && ['fire', 'ice', 'energy'].includes(x.elemento) ? n : n + ((x.min + x.max) / 2) * metade * (1 - Math.min(teto(x.elemento), x.elemento === 'chaos' ? l.poe.resCaos : ['fire', 'ice', 'energy'].includes(x.elemento) ? resDoLacaio(l, x.elemento, aliado) : 0) / 100)), 0) : 0;
+      const fatorDoGolpe = Math.max(0, 1 + (l.poe?.danoRecebidoPct ?? 0) / 100) * ModsPoe.doBicho(b, hunt.clock ?? 0, { contraOutro: !provocadoPorEste }).danoFator;
       // (14/10, dono: "Depois, num lote próprio") O golpe do bicho no lacaio é o MESMO golpe corpo a corpo que ele dá em você — a faixa do
       // arquivo do monstro, com a chance dele (`Poderes.golpeCorpoACorpo`; 0 = errou); a metade da vida atual dele (`R.ataqueDoMonstro`) fica só
       // para o monstro sem golpe no arquivo. Antes era sempre ela: um chefe com muita vida matava qualquer lacaio de um golpe.
@@ -2973,14 +2984,14 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       // estados do monstro; o dano extra × (1 − o "Dano Extra recebido de Acertos Críticos reduzido" do lacaio))
       const critDoBicho = l.poe ? LacaiosPoe.criticoNoLacaio(l, AtributosDoMob.critico(b), b, relogio) : null;
       const fatorDoCritico = critDoBicho?.critico ? critDoBicho.fator : 1;
-      const { dano: noLacaio, bloqueou, evadiu } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico: golpeDoBicho * 0.5 * fatorDoGolpe * fatorDoCritico, outros: extras * fatorDoGolpe * fatorDoCritico, magia, bloqueioMagicoExtra: (aliado?.bloqueioMagico ?? 0) + (oferenda?.bloqueioMagicoPct ?? 0), precisao, agora, relogio }) : { dano: (golpeDoBicho * 0.5 + extras) * fatorDoGolpe, bloqueou: false };
+      const { dano: noLacaio, bloqueou, evadiu } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico: golpeDoBicho * metade * fatorDoGolpe * fatorDoCritico, outros: extras * fatorDoGolpe * fatorDoCritico, magia, bloqueioMagicoExtra: (aliado?.bloqueioMagico ?? 0) + (oferenda?.bloqueioMagicoPct ?? 0), precisao, agora, relogio }) : { dano: (golpeDoBicho * metade + extras) * fatorDoGolpe, bloqueou: false };
       if (evadiu) { eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#999999', esquiva: true }); continue; }
       // (lote 86: o bloqueio mágico — os efeitos "ao Bloquear" do escudo da Égide; marca o `bloqueouEm`)
       if (bloqueou) { eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#7f9fff', bloqueado: true }); aoBloquearDoLacaio(hunt, l, b, eventos, relogio, Math.random, { magia: true }); continue; }
       // (o Vínculo D'Alma no lacaio: "sofre X% menos Dano" e os 30% do dano no SEU Escudo de Energia antes do dele)
       let sofrido = noLacaio;
       // (lote S2B: o "menos Dano" do Escudo de Carne e a Adrenalina da Carne Fresca — a Redução Física dela só na parte física)
-      if (l.poe?.s2b || l.s2bCarneFrescaAte) sofrido *= SuportesS2B.fatorDoDanoNoLacaio(l, relogio, (golpeDoBicho * 0.5) / Math.max(1e-9, golpeDoBicho * 0.5 + extras));
+      if (l.poe?.s2b || l.s2bCarneFrescaAte) sofrido *= SuportesS2B.fatorDoDanoNoLacaio(l, relogio, (golpeDoBicho * metade) / Math.max(1e-9, golpeDoBicho * metade + extras));
       if (vinculo?.menosDano > 0) sofrido *= Math.max(0, 1 - vinculo.menosDano / 100);
       // (lote S2A, 27/10) o Companheirismo: "sofrem −X% de dano, se eles forem seus únicos lacaios"
       sofrido *= fatorDoCompanheirismo(hunt, l);
@@ -3385,10 +3396,12 @@ function habilidadesComRecarga(estado, hunt, l, agora, ficha, oferenda = null) {
   const vivos = hunt.monstros.filter((m) => m.hp > 0 && !m.dummy && (m.z ?? hunt.z ?? 0) === (l.z ?? hunt.z ?? 0));
   if (!vivos.length) return eventos;
   const relogio = hunt.clock ?? agora;
+  // (correções R3, achado 21: a habilidade que é ATAQUE sem recarga — `porVelocidade`, o Espinho da Cauda — volta pelo tempo dela ÷ a Velocidade de Ataque do lacaio)
+  const tempoDe = (h) => (h.porVelocidade ? Math.max(250, Math.round(h.recargaMs / Math.max(0.1, 1 + ((l.velAtaquePct ?? 0) + LacaiosPoe.velocidadeDoLacaio(l, agora)) / 100))) : LacaiosPoe.recargaDoLacaio(l, h.recargaMs));
   for (const h of l.recargas) {
     // os usos guardados: um volta a cada recarga (a recarga com a recuperação do lacaio)
     if (h.carga == null) h.carga = h.usos ?? 1;
-    while (h.carga < (h.usos ?? 1) && h.prontoEm != null && agora >= h.prontoEm) { h.carga++; h.prontoEm = h.carga < (h.usos ?? 1) ? h.prontoEm + LacaiosPoe.recargaDoLacaio(l, h.recargaMs) : null; }
+    while (h.carga < (h.usos ?? 1) && h.prontoEm != null && agora >= h.prontoEm) { h.carga++; h.prontoEm = h.carga < (h.usos ?? 1) ? h.prontoEm + tempoDe(h) : null; }
     if (h.carga <= 0) continue;
     const perto = vivos.filter((m) => distancia(l, m) <= (h.alcance ?? 5)).sort((a, b) => distancia(l, a) - distancia(l, b));
     // (correções F3: o Escudo de Carne e o Predador também aqui — `SuportesS2B.alvoDoLacaio`; a Ira, sem alvo, sai com qualquer inimigo ao alcance)
@@ -3397,7 +3410,7 @@ function habilidadesComRecarga(estado, hunt, l, agora, ficha, oferenda = null) {
     // (lote R3D) o Espinho da Cauda do Rastejador é o ataque de LONGE: colado num inimigo, o golpe de perto de sempre
     if (h.deLonge && perto.some((m) => distancia(l, m) <= 1)) continue;
     h.carga--;
-    if (h.prontoEm == null) h.prontoEm = agora + LacaiosPoe.recargaDoLacaio(l, h.recargaMs);
+    if (h.prontoEm == null) h.prontoEm = agora + tempoDe(h);
     const critico = LacaiosPoe.criticoDoLacaio(l, oferenda, relogio);
     // (lote R3D, 27/10) a Cascata e as Auras Caóticas do Golem Caótico, o Morteiro e o Espinho da Cauda do Rastejador (`recargaR3D`)
     if (['cascataCaotica', 'auraCaotica', 'morteiro', 'espinho'].includes(h.tipo)) { eventos.push(...recargaR3D(estado, hunt, l, h, alvo, perto, agora, ficha, critico)); continue; }
