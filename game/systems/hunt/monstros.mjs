@@ -20,6 +20,7 @@ import { fatorDeAcao } from '../itens-poe/gemas-gac.mjs';
 import { imobilizado } from '../itens-poe/gemas-e1b.mjs';
 // (lote E2B, 26/10: o passo do debuff da Armadilha de Urso — o −80% que cai até 0)
 import { fatorDoPassoDoUrso } from '../itens-poe/gemas-e2b.mjs';
+import * as GemasR3D from '../itens-poe/gemas-r3d.mjs';
 
 export const BESTIARY = CATALOGO.bestiary;
 
@@ -337,6 +338,29 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
         const dv = distancia(hunt.pos, v);
         if (dv > melhor) { melhor = dv; destino = v; }
       }
+      if (!destino) continue;
+      ocupada?.delete(`${m.x},${m.y}`);
+      ocupada?.set(`${destino.x},${destino.y}`, m);
+      const fx = Math.sign(destino.x - m.x);
+      const fy = Math.sign(destino.y - m.y);
+      m.x = destino.x;
+      m.y = destino.y;
+      m.dir = fy < 0 ? 0 : fy > 0 ? 2 : fx > 0 ? 1 : 3;
+      m.andouEm = hunt.clock ?? 0;
+      m.moveMs = passoDoBicho(m, fx !== 0 && fy !== 0) * (Charms.paralisado(m, agora) ? Charms.FATOR_DA_PARALISIA : 1) * Estados.fatorDeLentidao(m, agora) * Reforcos.fatorDeDesaceleracao(m, agora) * Estados.fatorDeTolhimento(m, agora) * fatorDoPassoAprisionado(m.poeAprisionado) * fatorDoPassoDoUrso(m, agora) * fatorDeAcao(m, agora);
+      m.proximoPasso = agora + m.moveMs;
+      continue;
+    }
+    // (lote R3D, 27/10) PROVOCADO pelo Totem Chamariz (`GemasR3D.iscaDoMonstro`): vai até o totem e fica colado nele (bate nele — `cacadas.tiqueDosLacaios`), não em você
+    const isca = GemasR3D.iscaDoMonstro(hunt, m, hunt.clock ?? agora);
+    if (isca) {
+      m.perseguindo = true;
+      if (distancia(isca, m) <= 1) { m.dir = Math.abs(isca.x - m.x) > Math.abs(isca.y - m.y) ? (isca.x > m.x ? 1 : 3) : isca.y > m.y ? 2 : isca.y < m.y ? 0 : m.dir; continue; }
+      if (!pronto(m) || !Estados.podeAgir(m, agora) || imobilizado(m, agora)) continue;
+      const perto = bfsDistancias(grade, m, 1);
+      aliadosDaFuga ??= aliadosPorCasa(hunt);
+      const vizinhas = VIZINHANCA_8.map(([dx, dy]) => ({ x: m.x + dx, y: m.y + dy })).filter((v) => perto.em(v.x, v.y) != null && !(v.x === hunt.pos.x && v.y === hunt.pos.y) && !aliadosDaFuga.has(`${v.x},${v.y}`) && !(hunt.lacaios ?? []).some((l) => l.hp > 0 && l.x === v.x && l.y === v.y) && (ocupada ? (ocupada.get(`${v.x},${v.y}`) ?? m) === m : !hunt.monstros.some((o) => o !== m && o.hp > 0 && o.x === v.x && o.y === v.y)));
+      const destino = GemasR3D.passoAteAIsca(m, isca, vizinhas);
       if (!destino) continue;
       ocupada?.delete(`${m.x},${m.y}`);
       ocupada?.set(`${destino.x},${destino.y}`, m);

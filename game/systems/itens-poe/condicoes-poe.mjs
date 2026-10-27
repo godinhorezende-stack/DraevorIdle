@@ -3325,7 +3325,10 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   if (inervado && (ficha?.tagsDoGolpe ?? []).includes('magia')) f *= 1.1;
   // (lote 72) o Esconjuro: 10% de dano sofrido aumentado (`esconjurado`)
   if (esconjurado(alvo, ficha?.afPoe, agora)) f *= 1 + ESCONJURO.pct / 100;
-  if (tipo === 'chaos' && ativo(e.definhado, agora)) f *= 1 + 0.06 * Math.max(0, 1 + (Number(ficha?.afPoe?.efeito_definhamento) || 0) / 100) * Math.min(15, e.definhado.n ?? 1);
+  // (lote R3D, 27/10: + o "efeito de definhamento aumentado" dos lacaios — o Definhamento da Aura Caótica Potencializada do Golem do Turbilhão, `efeitoExtraPct`; o maior vale)
+  if (tipo === 'chaos' && ativo(e.definhado, agora)) f *= 1 + 0.06 * Math.max(0, 1 + Math.max(Number(ficha?.afPoe?.efeito_definhamento) || 0, Number(e.definhado.efeitoExtraPct) || 0) / 100) * Math.min(15, e.definhado.n ?? 1);
+  // (lote R3D, 27/10) a Aura Caótica Potencializada: os inimigos nela sofrem X% mais Dano de Caos (chaos_damage_taken_+%, o PoB)
+  if (tipo === 'chaos' && ativo(e.caosSofridoR3D, agora)) f *= 1 + (e.caosSofridoR3D.pct ?? 0) / 100;
   // (lote C4, dono 21/10) o Tolhido pela Praga Vaal: "Inimigos Desacelerados sofrem Dano de Caos aumentado em 30%" (também no pulso do dano contínuo — `fatorRecebidoNoDot`)
   if (tipo === 'chaos' && ativo(e.tolhidoCaos, agora)) f *= 1 + (e.tolhidoCaos.pct ?? 0) / 100;
   // Coberto de Gelo (PoE): +20% de dano de Gelo recebido.

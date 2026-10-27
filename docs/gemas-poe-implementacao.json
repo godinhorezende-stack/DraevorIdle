@@ -2,23 +2,23 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 448,
+   "implementada e testada": 455,
    "implementada, sem teste próprio": 44,
-   "parcial": 15,
-   "limitação do modelo idle": 54,
+   "parcial": 7,
+   "limitação do modelo idle": 55,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 178,
+   "implementada e testada": 181,
    "implementada, sem teste próprio": 18,
-   "parcial": 4,
+   "parcial": 1,
    "limitação do modelo idle": 10
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 186,
-   "parcial": 27,
+   "implementada e testada": 187,
+   "parcial": 26,
    "implementada, sem teste próprio": 49
   },
   "variantes": {
@@ -30,10 +30,10 @@
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 154,
+    "implementada e testada": 156,
     "implementada, sem teste próprio": 24,
-    "parcial": 4,
-    "limitação do modelo idle": 27
+    "parcial": 1,
+    "limitação do modelo idle": 28
    }
   },
   "compatibilidade": {
@@ -44,8 +44,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 105,
-   "emDuasOuMais": 10
+   "linhasDistintas": 93,
+   "emDuasOuMais": 8
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -59,8 +59,8 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 505,
-   "suportesCitados": 194,
+   "ativasCitadas": 509,
+   "suportesCitados": 195,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
@@ -413,10 +413,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "totem",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: o totem provoca os monstros em volta a atacá-lo (act_str.lua:2416-2432)"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2754,12 +2752,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "mina",
-   "estado": "parcial",
-   "ausentes": [
-    "sem dano direto: nenhum efeito no combate",
-    "efeito não simulado: Somente uma Mina deste tipo pode ser Detonada em cada Sequência de Detonação",
-    "efeito não simulado: Detonação da Mina é Instantânea"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "linhasNaoSeAplicam": [
@@ -3553,12 +3547,10 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "arauto",
-   "estado": "parcial",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
-   "outros": [
-    "o Rastejador ataca como um lacaio de perto do jogo (o Morteiro e o Espinho da Cauda do PoE não são simulados)"
-   ],
+   "outros": [],
    "notas": [
     "a Virulência fica no máximo (40 + a qualidade + a \"Virulência Máxima\") enquanto o Arauto está ligado e você Envenenou com ele há até 4 s, como o PoB mostra (dono, 26/10)"
    ],
@@ -3742,10 +3734,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "totem",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:751-769; no jogo ainda são projéteis no alvo)"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3757,11 +3747,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "totem",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:751-769; no jogo ainda são projéteis no alvo)",
-    "efeito não simulado: Flechas caem em duas linhas perpendiculares"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3773,11 +3760,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "totem",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:751-769; no jogo ainda são projéteis no alvo)",
-    "efeito não simulado: Dispara até 5 Flechas em alvos diferentes"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4864,10 +4848,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "sem dano direto: nenhum efeito no combate"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7377,10 +7359,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Lacaios têm efeito de definhamento aumentado em 20 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -7635,13 +7615,8 @@
   {
    "slug": "Flamewood_Support",
    "nome": "Chuva Ardente",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Totens das Habilidades Suportadas ganham a Habilidade Vingança Flamejante e a Ativa quando Acertado por um Inimigo",
-    "não simulado: Causa Dano de Fogo base igual a 137% da Vida Máxima dos Totens",
-    "não simulado: Totens com esta Habilidade a Ativam quando Acertados por um Inimigo",
-    "não simulado: Totens das Habilidades Suportadas ganham a Habilidade\\nVingança Flamejante e a Ativa quando Acertado por um Inimigo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9786,14 +9761,6 @@
  ],
  "linhasFaltando": [
   {
-   "linha": "as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:##; no jogo ainda são projéteis no alvo)",
-   "gemas": [
-    "Artillery_Ballista",
-    "Artillery_Ballista_of_Cross_Strafe",
-    "Artillery_Ballista_of_Focus_Fire"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção",
    "gemas": [
     "Divine_Blessing_Support",
@@ -9849,13 +9816,6 @@
    "gemas": [
     "Greater_Kinetic_Instability_Support",
     "Kinetic_Instability_Support"
-   ]
-  },
-  {
-   "linha": "sem dano direto: nenhum efeito no combate",
-   "gemas": [
-    "Conversion_Trap",
-    "Smoke_Mine"
    ]
   },
   {
@@ -9955,12 +9915,6 @@
    ]
   },
   {
-   "linha": "Causa Dano de Fogo base igual a #% da Vida Máxima dos Totens",
-   "gemas": [
-    "Flamewood_Support"
-   ]
-  },
-  {
    "linha": "Cobre Inimigos em Cinzas ao Acertar",
    "gemas": [
     "Pyre_Support"
@@ -10051,21 +10005,9 @@
    ]
   },
   {
-   "linha": "Detonação da Mina é Instantânea",
-   "gemas": [
-    "Smoke_Mine"
-   ]
-  },
-  {
    "linha": "Dispara # projéteis",
    "gemas": [
     "Windburst_Support"
-   ]
-  },
-  {
-   "linha": "Dispara até # Flechas em alvos diferentes",
-   "gemas": [
-    "Artillery_Ballista_of_Focus_Fire"
    ]
   },
   {
@@ -10108,12 +10050,6 @@
    "linha": "Este ataque e lacaios convertem # % do dano físico em dano elétrico",
    "gemas": [
     "Holy_Strike"
-   ]
-  },
-  {
-   "linha": "Flechas caem em duas linhas perpendiculares",
-   "gemas": [
-    "Artillery_Ballista_of_Cross_Strafe"
    ]
   },
   {
@@ -10297,12 +10233,6 @@
    ]
   },
   {
-   "linha": "Lacaios têm efeito de definhamento aumentado em # %",
-   "gemas": [
-    "Summon_Chaos_Golem_of_the_Maelstr%C3%B6m"
-   ]
-  },
-  {
    "linha": "Lacaios têm Recuperação da Recarga aumentada em # %",
    "gemas": [
     "Absolution"
@@ -10363,12 +10293,6 @@
    ]
   },
   {
-   "linha": "o totem provoca os monstros em volta a atacá-lo (act_str.lua:##)",
-   "gemas": [
-    "Decoy_Totem"
-   ]
-  },
-  {
    "linha": "Oferendas reforçadas ativam Invocar Nascidos da Colmeia ao usar",
    "gemas": [
     "Hiveborn_Support"
@@ -10399,33 +10323,9 @@
    ]
   },
   {
-   "linha": "Somente uma Mina deste tipo pode ser Detonada em cada Sequência de Detonação",
-   "gemas": [
-    "Smoke_Mine"
-   ]
-  },
-  {
    "linha": "Suas Habilidades Não-Bênção que Reservam Mana são Desabilitadas enquanto você tiver uma Aura da Habilidade Suportada em você",
    "gemas": [
     "Eternal_Blessing_Support"
-   ]
-  },
-  {
-   "linha": "Totens com esta Habilidade a Ativam quando Acertados por um Inimigo",
-   "gemas": [
-    "Flamewood_Support"
-   ]
-  },
-  {
-   "linha": "Totens das Habilidades Suportadas ganham a Habilidade Vingança Flamejante e a Ativa quando Acertado por um Inimigo",
-   "gemas": [
-    "Flamewood_Support"
-   ]
-  },
-  {
-   "linha": "Totens das Habilidades Suportadas ganham a Habilidade\\nVingança Flamejante e a Ativa quando Acertado por um Inimigo",
-   "gemas": [
-    "Flamewood_Support"
    ]
   }
  ],

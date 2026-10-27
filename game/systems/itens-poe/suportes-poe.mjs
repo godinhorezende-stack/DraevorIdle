@@ -12,6 +12,7 @@ import { ligado } from './catalogo.mjs';
 import { comNiveisDoPoedb } from './gemas-niveis.mjs';
 import { atributosDaLinha } from './linhas-das-gemas.mjs';
 import { REGRAS_S2A, ehGatilhoDoMarcar, limiarDaFlechaForjada } from './suportes-s2a.mjs';
+import { PROPRIAS_R3D } from './gemas-r3d.mjs';
 
 const ARQ_SUPORTES = new URL('../../gamedata/itens-poe/suportes-poe.json', import.meta.url);
 const ARQ_IDS = new URL('../../gamedata/itens-poe/suportes-poe-ids.json', import.meta.url);
@@ -867,7 +868,8 @@ export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
   const naoFeitas = [];
   // (lote A2) as linhas próprias da Torre Óssea e da Sentinela Divina (`PROPRIAS_A2`): a habilidade concedida pela Torre Óssea — Tomar a Carne — tem
   // os números dela (a duração, os raios, as torres), que as regras gerais leriam como do Clamor suportado
-  const proprias = PROPRIAS_A2[slug];
+  // (lote R3D, 27/10: + as do Chuva Ardente — a Vingança Flamejante do totem, `GemasR3D.PROPRIAS_R3D`)
+  const proprias = PROPRIAS_A2[slug] ?? PROPRIAS_R3D[slug];
   for (const linha of [...t.props, ...t.mods, ...t.qualidade]) {
     if (proprias) {
       const p = proprias.find(([re]) => re.test(linha));
