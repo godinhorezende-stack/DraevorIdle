@@ -45,7 +45,14 @@ export function noNivel(m, nivel) {
   saida.evasao = DefesaPoe.defesaPoeDoSlug(m.slug, saida.nivel).evasao;
   if (m.habilidades?.length) {
     const fd = fator('dano');
-    saida.habilidades = m.habilidades.map((h) => (h.dano ? { ...h, dano: { min: Math.round(h.dano.min * fd), max: Math.round(h.dano.max * fd) } } : h));
+    // O fator de uma habilidade só nos mapas (`mapas.json → instancia.fatorDasHabilidades`, por slug do monstro e interno da habilidade): a
+    // Bomba Viva do General Adus × 0,6 (dono, 27/10). A campanha não passa por aqui.
+    const doMonstro = CONFIG.fatorDasHabilidades?.[m.slug] ?? {};
+    saida.habilidades = m.habilidades.map((h) => {
+      if (!h.dano) return h;
+      const f = fd * (Number(doMonstro[h.interno]) > 0 ? Number(doMonstro[h.interno]) : 1);
+      return { ...h, dano: { min: Math.round(h.dano.min * f), max: Math.round(h.dano.max * f) } };
+    });
   }
   return saida;
 }

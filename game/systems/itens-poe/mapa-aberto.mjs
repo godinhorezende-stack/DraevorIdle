@@ -108,7 +108,8 @@ export function guardarAoSair(estado, { morreu = false, agora = Date.now() } = {
       });
   const porAndar = { [h.z ?? 0]: guardar(h.monstros) };
   for (const [z, lista] of Object.entries(h.outrosAndares ?? {})) porAndar[z] = [...(porAndar[z] ?? []), ...guardar(lista)];
-  a.cacada = { porAndar, instancia: h.instancia ?? null, salvoEm: agora };
+  // (27/10) `relogio`: o relógio da caçada na saída — os prazos dos monstros guardados (o próximo golpe, as magias, os estados) são dele
+  a.cacada = { porAndar, instancia: h.instancia ?? null, salvoEm: agora, relogio: h.clock ?? 0 };
   return { portais: a.portais, falhou: false };
 }
 
@@ -136,8 +137,27 @@ export function retomar(estado, hunt) {
   delete andares[z];
   hunt.outrosAndares = andares;
   if (c.instancia) hunt.instancia = c.instancia;
+  /*
+   * (27/10, dono: "o chefe não dá ataque básico?") A caçada nova começa o relógio em 0, mas os monstros guardados trazem os prazos do
+   * relógio da caçada anterior (`proximoGolpe`, `proximoPoder`, `estados.*.ate`, `dots`…): o chefe esperava o tempo todo da entrada
+   * anterior — 0 golpes e 0 magias por minutos depois de voltar pelo portal. A volta CONTINUA o relógio de onde ele parou (como no PoE: a
+   * instância é a mesma). Guardado antes deste campo: o prazo mais adiantado dos monstros (os golpes e as magias saem logo).
+   */
+  const relogio = Number.isFinite(c.relogio) ? c.relogio : relogioDosPrazos(Object.values(c.porAndar ?? {}).flat());
+  if (relogio > (hunt.clock ?? 0)) hunt.clock = relogio;
   a.cacada = null;
   return true;
+}
+
+/** (27/10) O relógio da caçada de um mapa guardado sem `relogio`: o maior prazo de golpe/magia dos monstros (os do relógio da caçada, não os de parede). */
+function relogioDosPrazos(monstros) {
+  let maior = 0;
+  const ver = (v) => { if (Number.isFinite(v) && v < 1e11 && v > maior) maior = v; };
+  for (const m of monstros) {
+    ver(m?.proximoGolpe);
+    for (const v of Object.values(m?.proximoPoder ?? {})) ver(v);
+  }
+  return maior;
 }
 
 /** O mapa aberto para a tela (sem os monstros guardados). */

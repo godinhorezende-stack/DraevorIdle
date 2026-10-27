@@ -104,6 +104,12 @@
    "escudoDeEnergia": 0.0643
   },
   "pausaAoConcluirMs": 8000,
+  "_notaFatorDasHabilidades": "O FATOR de dano de uma habilidade de um monstro só nos MAPAS (em todo tier em que ele aparecer; a campanha fica como está): `{ <slug do poedb>: { <interno da habilidade>: fator } }`, depois do crescimento por nível. General_Adus / LivingBombLightningAdus × 0,6 (dono, 27/10): no T7 (nível 74, ×1,77 do nível 63) a Bomba Viva ia a 5.805–7.095 de Raio — o maior golpe elemental até o T15, matava com um golpe; com × 0,6 fica 3.483–4.257.",
+  "fatorDasHabilidades": {
+   "General_Adus": {
+    "LivingBombLightningAdus": 0.6
+   }
+  },
   "porTier": [
    {
     "tier": 1,

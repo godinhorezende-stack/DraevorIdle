@@ -30,6 +30,14 @@ const DANO_DO_POEDB_POR_MONSTRO = {
   Doedres_Torment: NUCLEO, Eye_Hatchery: NUCLEO, Stygian_Revenant: NUCLEO, Maligaros_Muse: NUCLEO,
 };
 
+// As linhas do poedb que o importador não lê (o texto da gema do monstro), por interno da habilidade: `convertePct` (o "X% do Dano Físico Convertido
+// em Dano de <Elemento>" — o golpe continua com o dano todo, `min`/`max`; `poderes.dispararMagia` separa a parte convertida). O Terremoto Supercarregado
+// do General Adus (poedb, General_Adus: "50% do Dano Físico Convertido em Dano de Raio" — dono, 27/10). (O "Causa 37,5% menos Dano de Ataque" da
+// mesma gema fica de fora: pendente com o dono.)
+const DO_TEXTO_DO_POEDB = {
+  QuakeSlamGeneralAdusSupercharged: { convertePct: { energy: 50 } },
+};
+
 /** O fator de dano das habilidades: o golpe corpo a corpo do chefe ÷ o "Ataque Padrão" dele no poedb (1 sem ataque padrão). */
 export function fatorDeDano(monstro) {
   const padrao = (monstro.habilidades ?? []).find((h) => /^Ataque Padrão$|^Melee$/i.test(h.nome ?? '') || h.interno === 'Melee');
@@ -45,13 +53,16 @@ export function converter(h, fator = 1, { fatorDoPoedb = null } = {}) {
   if (INVOCACAO.test(nome) && !h.dano) return { tipo: 'invocar', nome: h.nome ?? h.interno, intervaloMs: Math.max(8000, (h.recarga ?? 12) * 1000) };
   if (!h.dano || (MOVIMENTO.test(nome) && !IMPACTO.test(nome))) return null;
   const magia = tags.includes('spell') || !!h.elemento;
+  const texto = DO_TEXTO_DO_POEDB[h.interno] ?? null;
   const f = fatorDoPoedb ?? (DANO_DO_POEDB.has(h.interno) ? 1 : magia ? fator / 0.67 : fator); // as magias não levam o "33% menos dano de ataque" do Único
   const min = Math.max(1, Math.round(h.dano.min * f));
   const max = Math.max(min, Math.round(h.dano.max * f));
   const elemento = ELEMENTOS.has(h.elemento) ? h.elemento : 'physical';
   const intervaloMs = Math.max(4000, Math.round((h.recarga ?? (h.tempo ?? 1.5) * 3) * 1000));
   const emArea = tags.includes('area') || IMPACTO.test(nome);
-  if (!magia && emArea) return { tipo: 'area', nome: h.nome ?? h.interno, elemento, min, max, raio: /flood|upheaval|quake|nova/i.test(nome) ? 3 : 2, avisoMs: 1200, intervaloMs };
+  // (PoE, dono 27/10) o ataque em área é um ATAQUE (a Evasão e o Bloqueio de Ataque valem — `poderes.dispararMagia`); com a tag Melee, corpo a corpo.
+  const doAtaque = { ataque: true, ...(tags.includes('melee') ? { corpoACorpo: true } : {}), ...(texto?.convertePct ? { convertePct: { ...texto.convertePct } } : {}) };
+  if (!magia && emArea) return { tipo: 'area', nome: h.nome ?? h.interno, elemento, min, max, raio: /flood|upheaval|quake|nova/i.test(nome) ? 3 : 2, avisoMs: 1200, intervaloMs, ...doAtaque };
   if (!magia && !emArea) return null; // ataque de alvo único: o corpo a corpo já representa
   return { tipo: 'magia', nome: h.nome ?? h.interno, elemento, min, max, forma: FEIXE.test(nome) ? 'feixe' : emArea ? 'area' : 'alvo', raio: emArea ? 2 : 0, intervaloMs };
 }
@@ -140,12 +151,15 @@ export function validarAjuste(aj) {
   return erros.length ? { ok: false, erros } : { ok: true, ajuste: saida };
 }
 
+/** Os campos de ATAQUE do PoE no golpe (`poderes.dispararMagia`): a tag Attack, a Melee e a conversão do dano físico. */
+const deAtaque = (c) => (c.ataque ? { ataque: true, ...(c.corpoACorpo ? { corpoACorpo: true } : {}), ...(c.convertePct ? { convertePct: { ...c.convertePct } } : {}) } : {});
+
 /** Os COMPORTAMENTOS de boss único (chefe de ato): `invocavel` = as chaves de bestiário que a invocação usa. `ajuste`: o da aba Mobs (ataques e efeitos). */
 export function comportamentos(monstro, invocavel = [], ajuste = null) {
   return comAjuste(monstro, ajuste).flatMap((c) => {
     const visual = { ...(c.efeito != null ? { efeito: c.efeito } : {}), ...(c.tiro != null ? { tiro: c.tiro } : {}) };
     if (c.tipo === 'magia') return [{ tipo: 'magia', nome: c.nome, elemento: c.elemento, min: c.min, max: c.max, forma: c.forma, raio: c.raio, ...(c.comprimento ? { comprimento: c.comprimento } : {}), intervaloMs: c.intervaloMs, chance: 100, alcance: 7, ...visual }];
-    if (c.tipo === 'area') return [{ tipo: 'area-telegrafada', nome: c.nome, elemento: c.elemento, min: c.min, max: c.max, raio: c.raio, avisoMs: c.avisoMs ?? 1200, intervaloMs: c.intervaloMs, chance: 100, ...visual }];
+    if (c.tipo === 'area') return [{ tipo: 'area-telegrafada', nome: c.nome, elemento: c.elemento, min: c.min, max: c.max, raio: c.raio, avisoMs: c.avisoMs ?? 1200, intervaloMs: c.intervaloMs, chance: 100, ...deAtaque(c), ...visual }];
     if (c.tipo === 'invocar' && invocavel.length) return [{ tipo: 'invocar', nome: c.nome, criaturas: [{ key: invocavel[0], qtd: 2 }], maxVivos: 4, intervaloMs: c.intervaloMs, chance: 100 }];
     return [];
   });
@@ -157,6 +171,6 @@ export function poderes(monstro, ajuste = null) {
     if (c.tipo === 'invocar') return [];
     const area = c.tipo === 'area' || c.forma === 'area';
     const feixe = c.forma === 'feixe';
-    return [{ tipo: 'magia', elemento: c.elemento, min: c.min, max: c.max, intervalo: c.intervaloMs, chance: 100, forma: area ? 'area' : feixe ? 'feixe' : 'alvo', raio: area ? c.raio : 0, comprimento: feixe ? c.comprimento || 5 : 0, espalha: 0, alcance: area && c.tipo === 'area' ? 2 : 6, noAlvo: c.tipo === 'area', efeito: c.efeito ?? null, ...(c.tiro != null ? { tiro: c.tiro } : {}), nome: c.nome }];
+    return [{ tipo: 'magia', elemento: c.elemento, min: c.min, max: c.max, ...deAtaque(c), intervalo: c.intervaloMs, chance: 100, forma: area ? 'area' : feixe ? 'feixe' : 'alvo', raio: area ? c.raio : 0, comprimento: feixe ? c.comprimento || 5 : 0, espalha: 0, alcance: area && c.tipo === 'area' ? 2 : 6, noAlvo: c.tipo === 'area', efeito: c.efeito ?? null, ...(c.tiro != null ? { tiro: c.tiro } : {}), nome: c.nome }];
   });
 }
