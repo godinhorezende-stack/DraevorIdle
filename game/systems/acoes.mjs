@@ -125,6 +125,7 @@ import * as GemasR3A from './itens-poe/gemas-r3a.mjs';
 import * as GemasR3B from './itens-poe/gemas-r3b.mjs';
 import { JANELA } from '../websocket/quadro.mjs';
 import * as ItensPoeJogo from './itens-poe/jogo.mjs';
+import * as Testador from './personagem/testador.mjs';
 
 // A BARRA DO PoE (dono, 07/10: "frascos 1 a 5 e mais 8 que podem ser ataques, auras, suporte e etc"): com o PoE ligado a barra tem
 // 8 slots de HABILIDADE numa fileira só (qualquer gema cabe em qualquer um — não há mais os ofícios vida/mana/velocidade/suporte/ataque
@@ -417,7 +418,7 @@ function danoDoTraumatismo(estado, hunt, personagem, valor, eventos) {
   if (ModsPoe.valor(ficha, 'fisico_ignora_escudo') > 0) Defesa.reiniciarEspera(estado, ficha);
   else dano = Defesa.absorver(estado, ficha, dano, eventos, base);
   if (!(dano > 0)) return 0;
-  estado.hp = Math.max(0, (estado.hp ?? 0) - dano);
+  estado.hp = Math.max(Testador.pisoDaVida(estado), (estado.hp ?? 0) - dano);
   eventos.push({ t: 'dmg', ...base, v: dano, color: COR_DO_ELEMENTO.physical ?? '#ff0000', elemento: 'physical', ...(estado.hp <= 0 ? { fatal: true } : {}) });
   return dano;
 }
@@ -869,7 +870,7 @@ function ritualEmVoce(estado, hunt, personagem, slug, nivel, eventos) {
   const base = { uid: 'player', quem: personagem?.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: personagem?.nome, golpe: 'Ritual Proibido' };
   dano = Defesa.absorverComOCaos(estado, ficha, dano, dano, eventos, base);
   if (!(dano > 0)) return 0;
-  estado.hp = Math.max(0, (estado.hp ?? 0) - dano);
+  estado.hp = Math.max(Testador.pisoDaVida(estado), (estado.hp ?? 0) - dano);
   eventos.push({ t: 'dmg', ...base, v: dano, color: COR_DO_ELEMENTO.chaos ?? '#b44dff', elemento: 'chaos', ...(estado.hp <= 0 ? { fatal: true } : {}) });
   return dano;
 }
@@ -8320,7 +8321,7 @@ export function tiqueDosVinculos(estado, hunt, personagem, eventos = [], agora =
   // (lote R3C, 27/10) o Vínculo Frígido: o Gelo e o Resfriamento no feixe (`frigidoNosVinculosR3c`)
   frigidoNosVinculosR3c(estado, hunt, eventos, agora);
   if (morreu && (estado.hp ?? 0) > 0) {
-    estado.hp = 0;
+    estado.hp = Testador.pisoDaVida(estado); // (o personagem de teste fica no piso; o comum zera, como antes)
     eventos.push({ t: 'say', uid: 'player', quem: personagem?.nome, text: 'O alvo vinculado morreu.', x: hunt.pos?.x, y: hunt.pos?.y, color: '#ff5b4f' });
   }
   if (ModsPoe.valor(ficha, 'vinculo_exposicao_proximos') > 0) {

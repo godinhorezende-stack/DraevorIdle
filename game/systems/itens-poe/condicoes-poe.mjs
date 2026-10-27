@@ -29,6 +29,7 @@ import { fatorDaAreia, fatorDoSangue } from './gemas-d1.mjs';
 import { fatorDaInsanidade } from './gemas-r3c.mjs';
 // (lote S2B, 27/10: o Passe Enfeitiçado — "Inimigos afetados por feitiços … não podem causar golpes críticos")
 import { semCriticoPeloFeitico } from './suportes-s2b.mjs';
+import * as Testador from '../personagem/testador.mjs';
 
 /** "Recentemente" no PoE: nos últimos 4 segundos. */
 export const RECENTE_MS = 4000;
@@ -2582,7 +2583,7 @@ export function tiqueDaDissolucao(estado, hunt, ficha, agora = hunt?.clock ?? 0)
     delete hunt.dissolucao;
     return;
   }
-  if ((estado.hp ?? 0) > max - r.reservado) estado.hp = Math.max(0, max - r.reservado);
+  if ((estado.hp ?? 0) > max - r.reservado) estado.hp = Math.max(Testador.pisoDaVida(estado), max - r.reservado);
 }
 export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   if (!ligado() || !hunt) return;

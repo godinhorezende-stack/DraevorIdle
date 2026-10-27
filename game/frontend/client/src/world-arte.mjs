@@ -145,6 +145,8 @@ export function iconeDeBotao(nome) {
     esquerda: [svg('path', { d: 'M15 5 L8 12 L15 19', ...t })],
     direita: [svg('path', { d: 'M9 5 L16 12 L9 19', ...t })],
     seta: [svg('path', { d: 'M4 12 H19 M13 6 L19 12 L13 18', ...t })],
+    // o loop de mapas (o Dispositivo): duas setas em círculo
+    loop: [svg('path', { d: 'M19 9 a7.5 7.5 0 0 0 -13.4 -1.5 M5 15 a7.5 7.5 0 0 0 13.4 1.5', ...t }), svg('path', { d: 'M19 4 V9 H14 M5 20 V15 H10', ...t })],
     // a dica do mapa: o mouse (arrastar), a roda (zoom) e a mão (escolher)
     mouse: [svg('rect', { x: 7, y: 3, width: 10, height: 18, rx: 5, ...t, 'stroke-width': 1.8 }), svg('path', { d: 'M12 3 V9 M7 9 H17', ...t, 'stroke-width': 1.6 })],
     roda: [svg('rect', { x: 7, y: 3, width: 10, height: 18, rx: 5, ...t, 'stroke-width': 1.8 }), svg('path', { d: 'M12 6.5 V10.5', ...t, 'stroke-width': 2.6 })],

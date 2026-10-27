@@ -15,6 +15,7 @@
 // (falhou). Limpou 100%: concluído.
 import { compactarMonstro, completarMonstro, garantirUidAcimaDe } from '../hunt/monstros.mjs';
 import * as Mapas from './mapas.mjs';
+import * as MapasLoop from './mapas-loop.mjs';
 
 /** Os portais de cada mapa aberto (mapas.json → dispositivo.portais; 6, como no PoE). */
 export const portaisPorMapa = () => Math.max(1, Number(Mapas.DADOS.dispositivo?.portais) || 6);
@@ -70,6 +71,8 @@ export function encerrar(estado, resultado, agora = Date.now()) {
   else st.falhos++;
   st.ultimo = { tier: a.tier, resultado, em: agora, duracaoMs: Math.max(0, agora - (a.abertoEm ?? agora)), mortes: a.mortes ?? 0 };
   st.aberto = null;
+  // O LOOP DE MAPAS (`mapas-loop.mjs`): o do loop concluído deixa o próximo pendente; falhou ou abandonado, o loop para.
+  MapasLoop.aoEncerrar(estado, a.id, resultado, agora);
   return st.ultimo;
 }
 
@@ -86,7 +89,11 @@ export function contarConclusao(estado, tier) {
  * volta. `morreu`: gasta um portal (e o chefe do mapa se cura); sem portal sobrando o mapa acaba (`falhou`). Outra caçada: nada.
  * Devolve `{ portais, falhou }` ou null.
  */
-export function guardarAoSair(estado, { morreu = false, agora = Date.now() } = {}) {
+export function guardarAoSair(estado, { morreu = false, manterLoop = false, agora = Date.now() } = {}) {
+  // (27/10) Sair por conta própria (parar, outra caçada) do mapa do LOOP — ou da pausa do concluído — para o loop; morrer não (com portal
+  // sobrando o mapa espera a volta, e o loop segue quando ele for concluído). `manterLoop`: a saída que não é decisão do jogador (o mapa não
+  // carregou a tempo, o erro do servidor) também não para — o loop espera a volta, como depois de morrer.
+  if (!morreu && !manterLoop) MapasLoop.saiu(estado, estado?.hunt?.mapa?.id);
   const a = estado?.mapas?.aberto;
   const h = cacadaDoAberto(estado);
   if (!a || !h) return null;

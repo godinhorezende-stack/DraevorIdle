@@ -14,6 +14,7 @@
 //
 // (Sem uso no nível do módulo dos outros módulos: o `gemas-poe.mjs` importa este — o ciclo só vale dentro das funções.)
 import * as ModsPoe from './condicoes-poe.mjs';
+import * as Testador from '../personagem/testador.mjs';
 
 const PREFIXO = 'poe-gema:';
 export const ACAO = Object.freeze({
@@ -90,7 +91,7 @@ export function tiqueDoSangue(estado, hunt, agora = hunt?.clock ?? 0) {
     if (inteiro > 0) { p.resto -= inteiro; total += inteiro; }
   }
   hunt.a2.sangue = fila.filter((p) => p.ate > agora || (p.resto ?? 0) >= 1);
-  if (total > 0 && (estado.hp ?? 0) > 0) estado.hp = Math.max(0, (estado.hp ?? 0) - total);
+  if (total > 0 && (estado.hp ?? 0) > 0) estado.hp = Math.max(Testador.pisoDaVida(estado), (estado.hp ?? 0) - total);
   return total;
 }
 /**
