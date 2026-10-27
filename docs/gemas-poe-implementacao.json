@@ -17,8 +17,8 @@
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 143,
-   "parcial": 68,
+   "implementada e testada": 159,
+   "parcial": 52,
    "implementada, sem teste próprio": 51
   },
   "variantes": {
@@ -44,8 +44,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 222,
-   "emDuasOuMais": 16
+   "linhasDistintas": 178,
+   "emDuasOuMais": 15
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -60,7 +60,7 @@
   },
   "testes": {
    "ativasCitadas": 504,
-   "suportesCitados": 156,
+   "suportesCitados": 168,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
@@ -7599,12 +7599,8 @@
   {
    "slug": "Hallow_Support",
    "nome": "Santificação (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Intensidade de Chama Santificada infligida por habilidades reforçadas aumentada em 36%",
-    "não simulado: Habilidades reforçadas infligem Chama Santificada ao atingir corpo a corpo",
-    "não simulado: Intensidade de Chama Santificada infligida por habilidades reforçadas aumentada em 10%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -7682,12 +7678,8 @@
   {
    "slug": "Lifetap_Support",
    "nome": "Fonte de Vida",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Ganha Fonte de Vida após Gastar um total de 273 de Vida no Custo Direto e Efeitos das Habilidades Suportadas",
-    "não simulado: Fonte de Vida dura 4 segundos",
-    "não simulado: Fonte de Vida dura +2 segundos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -7832,12 +7824,8 @@
   {
    "slug": "Blessed_Call_Support",
    "nome": "Chamado Abençoado (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Clamores reforçados criam um chão consagrado com duração de 6 segundos",
-    "não simulado: Clamores reforçados têm -40% de área de efeito",
-    "não simulado: Clamores reforçados têm a velocidade de recarga reduzida em 20%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -7868,14 +7856,8 @@
   {
    "slug": "Corrupting_Cry_Support",
    "nome": "Clamor Corrompedor",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Sangue Corrompido infligido por Clamores Suportados causam 691.8 de Dano Físico base por segundo",
-    "não simulado: Clamores Suportados infligem 1 Debuffs de Sangue Corrompido no primeiro inimigo Acertado por cada Ataque que Impelirem",
-    "não simulado: Sangue Corrompido infligido por Clamores Suportados tem uma Duração Base de 2 segundos",
-    "não simulado: Clamores Suportados infligem 4 Debuffs de Sangue Corrompido",
-    "não simulado: Clamores Suportados infligem 1 Debuffs de Sangue Corrompido no primeiro\\ninimigo Acertado por cada Ataque que Impelirem"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -7895,10 +7877,8 @@
   {
    "slug": "Excommunicate_Support",
    "nome": "Excomungar (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades reforçadas excomungam os inimigos ao atingir corpo a corpo por 3 segundos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -7952,13 +7932,8 @@
   {
    "slug": "Inspiration_Support",
    "nome": "Inspiração",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Ganha uma Carga de Inspiração ao Gastar Mana em Custos Diretos ou Efeitos das Habilidades Suportadas",
-    "não simulado: Habilidades Suportadas tem Chance de Golpe Crítico aumentada em 8% por Carga de Inspiração",
-    "não simulado: Perca todas as Cargas de Inspiração após Gastar um total de 800 de Mana em Custos Diretos e Efeitos das Habilidades Suportadas",
-    "não simulado: Ganha uma Carga de Inspiração ao Gastar Mana em\\nCustos Diretos ou Efeitos das Habilidades Suportadas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8007,7 +7982,6 @@
    "nome": "Decapitar",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Golpes Finais das Habilidades de Golpe Suportadas com Armas Corpo a Corpo contra Monstros Raros concedem um de seus Modificadores por 20 segundos",
     "não simulado: 20% de chance de renovar a Duração do Modificador recebido em até 5 segundos quando você Acertar um Inimigo Raro ou Único com Habilidades Suportadas"
    ],
    "outros": [],
@@ -8085,12 +8059,8 @@
   {
    "slug": "Trauma_Support",
    "nome": "Traumatismo",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 10 a 17 de Dano de Ataque Físico Adicional por Traumatismo",
-    "não simulado: Habilidades Suportadas têm Duração do Atordoamento aumentada em 5% por Traumatismo",
-    "não simulado: Ganha 1 Traumatismo na primeira vez que um Ataque Suportado Acertar um Inimigo Sofre 146 de Dano Físico por Traumatismo quando você ganhar Traumatismo das Habilidades Suportadas Traumatismos duram 6.9 segundos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8193,12 +8163,8 @@
   {
    "slug": "Bloodsoaked_Banner_Support",
    "nome": "Estandarte Ensanguentado (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Estandartes reforçados infligem Sangue Corrompido a cada segundo aos inimigos dentro de sua área",
-    "não simulado: Sangue Corrompido infligido por estandartes reforçados causam 26.7 de dano físico base por segundo por bravura consumida",
-    "não simulado: Sangue Corrompido infligido por estandartes reforçados tem uma duração base de 8 segundos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8447,22 +8413,16 @@
   {
    "slug": "Manaforged_Arrows_Support",
    "nome": "Flecha Forjada com Mana",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas causam 1% mais Dano com Acertos e Afecções por cada 1 de Custo de Mana",
-    "não simulado: Habilidades Suportadas Ativam uma vez que o Custo de Mana total em outros Ataques de Arco excederem 300% do seu Custo de Mana",
-    "não simulado: Habilidades Suportadas Ativam uma vez que o Custo de Mana total em outros Ataques\\nde Arco excederem 300% do seu Custo de Mana"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Multiple_Traps_Support",
    "nome": "Múltiplas Armadilhas",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm Efeito em Área da Ativação de Armadilhas aumentado em 20%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8493,12 +8453,8 @@
   {
    "slug": "Close_Combat_Support",
    "nome": "Combate Próximo",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas concedem Ímpeto de Combate ao Acertar Ímpeto de Combate dura 2 segundos ou até que você utilize uma Habilidade de Deslocamento",
-    "não simulado: Adrenalina de Combate concede 20% mais Velocidade de Ataque às Habilidades de Deslocamento não Suportadas por Combate Próximo",
-    "não simulado: Habilidades Suportadas concedem Ímpeto de Combate ao Acertar\\nÍmpeto de Combate dura 2 segundos ou até que você utilize uma Habilidade de Deslocamento"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8719,10 +8675,8 @@
   {
    "slug": "Cluster_Traps_Support",
    "nome": "Grupo de Armadilhas",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm Efeito em Área da Ativação de Armadilhas aumentado em 20%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8745,12 +8699,8 @@
   {
    "slug": "Mark_On_Hit_Support",
    "nome": "Marcar ao Acertar",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Efeito das Marcas de Habilidades Suportadas reduzido em 21%",
-    "não simulado: Ativa a Habilidade Suportada quando você Acertar um Inimigo Raro ou Único com um Ataque",
-    "não simulado: Efeito das Marcas de Habilidades Suportadas aumentado em 5%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8765,12 +8715,8 @@
   {
    "slug": "Rupture_Support",
    "nome": "Rompimento",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Golpes Críticos com Habilidades Suportadas que infligirem Sangramento também infligem Rompimento",
-    "não simulado: Alvos sofrem 29% mais Dano do Sangramento por Rompimento das Habilidades Suportadas neles",
-    "não simulado: Sangramento expira 25% mais rápido por Rompimento das Habilidades Suportadas nos alvos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8785,12 +8731,8 @@
   {
    "slug": "Withering_Touch_Support",
    "nome": "Suporte Toque Definhador",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas possuem 25% de chance de causar Definhado ao Acertar",
-    "não simulado: Definhado dura 2 segundos",
-    "não simulado: Habilidades Suportadas recebem 29% de Dano Físico como Dano de Caos Extra"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8903,12 +8845,8 @@
   {
    "slug": "Companionship_Support",
    "nome": "Companheirismo (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Lacaios de habilidades reforçadas sofrem 15% do dano de ataque da própria vida antes de você, se eles forem seus únicos lacaios",
-    "não simulado: Lacaios de habilidades reforçadas sofrem -28% de dano, se eles forem seus únicos lacaios",
-    "não simulado: Lacaios de habilidades reforçadas sofrem 15% do dano de ataque da própria vida\\nantes de você, se eles forem seus únicos lacaios"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10037,13 +9975,6 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas têm Efeito em Área da Ativação de Armadilhas aumentado em #%",
-   "gemas": [
-    "Cluster_Traps_Support",
-    "Multiple_Traps_Support"
-   ]
-  },
-  {
    "linha": "Lacaios de Habilidades Suportadas têm Chance de Golpe Crítico aumentada em #%",
    "gemas": [
     "Exemplar_Support",
@@ -10144,18 +10075,6 @@
    ]
   },
   {
-   "linha": "Adrenalina de Combate concede #% mais Velocidade de Ataque às Habilidades de Deslocamento não Suportadas por Combate Próximo",
-   "gemas": [
-    "Close_Combat_Support"
-   ]
-  },
-  {
-   "linha": "Alvos sofrem #% mais Dano do Sangramento por Rompimento das Habilidades Suportadas neles",
-   "gemas": [
-    "Rupture_Support"
-   ]
-  },
-  {
    "linha": "Ao atingir # de Gula, perde toda a Gula e ganha Regurgitação por # segundos",
    "gemas": [
     "Gluttony_Support"
@@ -10195,12 +10114,6 @@
    "linha": "Ataques reforçados ativam Rajada de Vento ao atingir, limitado a uma vez a cada # metros percorridos",
    "gemas": [
     "Windburst_Support"
-   ]
-  },
-  {
-   "linha": "Ativa a Habilidade Suportada quando você Acertar um Inimigo Raro ou Único com um Ataque",
-   "gemas": [
-    "Mark_On_Hit_Support"
    ]
   },
   {
@@ -10273,42 +10186,6 @@
    "linha": "Chão amaldiçoado de habilidades reforçadas ativam Sapo Explosivo a cada # segundo",
    "gemas": [
     "Hextoad_Support"
-   ]
-  },
-  {
-   "linha": "Clamores reforçados criam um chão consagrado com duração de # segundos",
-   "gemas": [
-    "Blessed_Call_Support"
-   ]
-  },
-  {
-   "linha": "Clamores reforçados têm #% de área de efeito",
-   "gemas": [
-    "Blessed_Call_Support"
-   ]
-  },
-  {
-   "linha": "Clamores reforçados têm a velocidade de recarga reduzida em #%",
-   "gemas": [
-    "Blessed_Call_Support"
-   ]
-  },
-  {
-   "linha": "Clamores Suportados infligem # Debuffs de Sangue Corrompido",
-   "gemas": [
-    "Corrupting_Cry_Support"
-   ]
-  },
-  {
-   "linha": "Clamores Suportados infligem # Debuffs de Sangue Corrompido no primeiro inimigo Acertado por cada Ataque que Impelirem",
-   "gemas": [
-    "Corrupting_Cry_Support"
-   ]
-  },
-  {
-   "linha": "Clamores Suportados infligem # Debuffs de Sangue Corrompido no primeiro\\ninimigo Acertado por cada Ataque que Impelirem",
-   "gemas": [
-    "Corrupting_Cry_Support"
    ]
   },
   {
@@ -10402,12 +10279,6 @@
    ]
   },
   {
-   "linha": "Definhado dura # segundos",
-   "gemas": [
-    "Withering_Touch_Support"
-   ]
-  },
-  {
    "linha": "Detonação da Mina é Instantânea",
    "gemas": [
     "Smoke_Mine"
@@ -10429,18 +10300,6 @@
    "linha": "Duração Base do Frenesi Faminto é de # segundos",
    "gemas": [
     "Feeding_Frenzy_Support"
-   ]
-  },
-  {
-   "linha": "Efeito das Marcas de Habilidades Suportadas aumentado em #%",
-   "gemas": [
-    "Mark_On_Hit_Support"
-   ]
-  },
-  {
-   "linha": "Efeito das Marcas de Habilidades Suportadas reduzido em #%",
-   "gemas": [
-    "Mark_On_Hit_Support"
    ]
   },
   {
@@ -10504,12 +10363,6 @@
    ]
   },
   {
-   "linha": "Estandartes reforçados infligem Sangue Corrompido a cada segundo aos inimigos dentro de sua área",
-   "gemas": [
-    "Bloodsoaked_Banner_Support"
-   ]
-  },
-  {
    "linha": "Este ataque e lacaios convertem # % do dano físico em dano elétrico",
    "gemas": [
     "Holy_Strike"
@@ -10546,18 +10399,6 @@
    ]
   },
   {
-   "linha": "Fonte de Vida dura # segundos",
-   "gemas": [
-    "Lifetap_Support"
-   ]
-  },
-  {
-   "linha": "Fonte de Vida dura +# segundos",
-   "gemas": [
-    "Lifetap_Support"
-   ]
-  },
-  {
    "linha": "Fúria Arcana concede Velocidade de Conjuração aumentada em #% Fúria Arcana concede Regeneração de Mana aumentada em #%",
    "gemas": [
     "Arcane_Surge_Support"
@@ -10582,18 +10423,6 @@
    ]
   },
   {
-   "linha": "Ganha # Traumatismo na primeira vez que um Ataque Suportado Acertar um Inimigo Sofre # de Dano Físico por Traumatismo quando você ganhar Traumatismo das Habilidades Suportadas Traumatismos duram # segundos",
-   "gemas": [
-    "Trauma_Support"
-   ]
-  },
-  {
-   "linha": "Ganha Fonte de Vida após Gastar um total de # de Vida no Custo Direto e Efeitos das Habilidades Suportadas",
-   "gemas": [
-    "Lifetap_Support"
-   ]
-  },
-  {
    "linha": "Ganha Fúria Arcana após Gastar um total de # de Mana em Custos Diretos e Efeitos de uma Habilidade Suportada",
    "gemas": [
     "Arcane_Surge_Support"
@@ -10603,18 +10432,6 @@
    "linha": "Ganha Invervação ao Matar um Inimigo Eletrizado com Habilidades Suportadas",
    "gemas": [
     "Innervate_Support"
-   ]
-  },
-  {
-   "linha": "Ganha uma Carga de Inspiração ao Gastar Mana em Custos Diretos ou Efeitos das Habilidades Suportadas",
-   "gemas": [
-    "Inspiration_Support"
-   ]
-  },
-  {
-   "linha": "Ganha uma Carga de Inspiração ao Gastar Mana em\\nCustos Diretos ou Efeitos das Habilidades Suportadas",
-   "gemas": [
-    "Inspiration_Support"
    ]
   },
   {
@@ -10654,18 +10471,6 @@
    ]
   },
   {
-   "linha": "Golpes Críticos com Habilidades Suportadas que infligirem Sangramento também infligem Rompimento",
-   "gemas": [
-    "Rupture_Support"
-   ]
-  },
-  {
-   "linha": "Golpes Finais das Habilidades de Golpe Suportadas com Armas Corpo a Corpo contra Monstros Raros concedem um de seus Modificadores por # segundos",
-   "gemas": [
-    "Behead_Support"
-   ]
-  },
-  {
    "linha": "Habilidades de Aura Suportadas não tem Reserva",
    "gemas": [
     "Guardians_Blessing_Support"
@@ -10696,21 +10501,9 @@
    ]
   },
   {
-   "linha": "Habilidades reforçadas excomungam os inimigos ao atingir corpo a corpo por # segundos",
-   "gemas": [
-    "Excommunicate_Support"
-   ]
-  },
-  {
    "linha": "Habilidades reforçadas ganham #% do dano físico como dano de caos adicional por fundamental",
    "gemas": [
     "Machinations_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades reforçadas infligem Chama Santificada ao atingir corpo a corpo",
-   "gemas": [
-    "Hallow_Support"
    ]
   },
   {
@@ -10768,18 +10561,6 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas Ativam uma vez que o Custo de Mana total em outros Ataques de Arco excederem #% do seu Custo de Mana",
-   "gemas": [
-    "Manaforged_Arrows_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas Ativam uma vez que o Custo de Mana total em outros Ataques\\nde Arco excederem #% do seu Custo de Mana",
-   "gemas": [
-    "Manaforged_Arrows_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas Ativarão Convocar Espíritos Sagrados ao Acertar",
    "gemas": [
     "Sacred_Wisps_Support"
@@ -10792,12 +10573,6 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas causam #% mais Dano com Acertos e Afecções por cada # de Custo de Mana",
-   "gemas": [
-    "Manaforged_Arrows_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas causam #% mais Dano Elemental por cada # da sua menor Ressonância",
    "gemas": [
     "Trinity_Support"
@@ -10807,18 +10582,6 @@
    "linha": "Habilidades Suportadas Causam Dano e Resfriam Inimigos entre você e Alvos Vinculados",
    "gemas": [
     "Frigid_Bond_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas concedem Ímpeto de Combate ao Acertar Ímpeto de Combate dura # segundos ou até que você utilize uma Habilidade de Deslocamento",
-   "gemas": [
-    "Close_Combat_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas concedem Ímpeto de Combate ao Acertar\\nÍmpeto de Combate dura # segundos ou até que você utilize uma Habilidade de Deslocamento",
-   "gemas": [
-    "Close_Combat_Support"
    ]
   },
   {
@@ -10846,27 +10609,9 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas possuem #% de chance de causar Definhado ao Acertar",
-   "gemas": [
-    "Withering_Touch_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas recebem #% de Dano Físico como Dano de Caos Extra",
-   "gemas": [
-    "Withering_Touch_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas só podem ser usadas com Varinhas",
    "gemas": [
     "Sacred_Wisps_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm # a # de Dano de Ataque Físico Adicional por Traumatismo",
-   "gemas": [
-    "Trauma_Support"
    ]
   },
   {
@@ -10888,21 +10633,9 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas tem Chance de Golpe Crítico aumentada em #% por Carga de Inspiração",
-   "gemas": [
-    "Inspiration_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas têm Custo de Vida aumentado em #%",
    "gemas": [
     "Transfusion_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm Duração do Atordoamento aumentada em #% por Traumatismo",
-   "gemas": [
-    "Trauma_Support"
    ]
   },
   {
@@ -10933,12 +10666,6 @@
    "linha": "Inimigos sofrem de Insanidade Perversa se estiverem sob a influência de auras de habilidades reforçadas por mais de # segundos",
    "gemas": [
     "Eldritch_Blasphemy_Support"
-   ]
-  },
-  {
-   "linha": "Intensidade de Chama Santificada infligida por habilidades reforçadas aumentada em #%",
-   "gemas": [
-    "Hallow_Support"
    ]
   },
   {
@@ -10987,24 +10714,6 @@
    "linha": "Lacaios das Habilidades Suportadas têm # metros ao Raio de seu Efeito Incendiário",
    "gemas": [
     "Infernal_Legion_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios de habilidades reforçadas sofrem #% de dano, se eles forem seus únicos lacaios",
-   "gemas": [
-    "Companionship_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios de habilidades reforçadas sofrem #% do dano de ataque da própria vida antes de você, se eles forem seus únicos lacaios",
-   "gemas": [
-    "Companionship_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios de habilidades reforçadas sofrem #% do dano de ataque da própria vida\\nantes de você, se eles forem seus únicos lacaios",
-   "gemas": [
-    "Companionship_Support"
    ]
   },
   {
@@ -11194,12 +10903,6 @@
    ]
   },
   {
-   "linha": "Perca todas as Cargas de Inspiração após Gastar um total de # de Mana em Custos Diretos e Efeitos das Habilidades Suportadas",
-   "gemas": [
-    "Inspiration_Support"
-   ]
-  },
-  {
    "linha": "perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)",
    "gemas": [
     "Earthbreaker_Support"
@@ -11221,36 +10924,6 @@
    "linha": "Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade\\nArqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados",
    "gemas": [
     "Mirage_Archer_Support"
-   ]
-  },
-  {
-   "linha": "Sangramento expira #% mais rápido por Rompimento das Habilidades Suportadas nos alvos",
-   "gemas": [
-    "Rupture_Support"
-   ]
-  },
-  {
-   "linha": "Sangue Corrompido infligido por Clamores Suportados causam # de Dano Físico base por segundo",
-   "gemas": [
-    "Corrupting_Cry_Support"
-   ]
-  },
-  {
-   "linha": "Sangue Corrompido infligido por Clamores Suportados tem uma Duração Base de # segundos",
-   "gemas": [
-    "Corrupting_Cry_Support"
-   ]
-  },
-  {
-   "linha": "Sangue Corrompido infligido por estandartes reforçados causam # de dano físico base por segundo por bravura consumida",
-   "gemas": [
-    "Bloodsoaked_Banner_Support"
-   ]
-  },
-  {
-   "linha": "Sangue Corrompido infligido por estandartes reforçados tem uma duração base de # segundos",
-   "gemas": [
-    "Bloodsoaked_Banner_Support"
    ]
   },
   {

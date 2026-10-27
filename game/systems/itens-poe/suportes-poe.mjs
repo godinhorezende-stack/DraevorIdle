@@ -11,6 +11,7 @@ import { readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { ligado } from './catalogo.mjs';
 import { comNiveisDoPoedb } from './gemas-niveis.mjs';
 import { atributosDaLinha } from './linhas-das-gemas.mjs';
+import { REGRAS_S2A, ehGatilhoDoMarcar, limiarDaFlechaForjada } from './suportes-s2a.mjs';
 
 const ARQ_SUPORTES = new URL('../../gamedata/itens-poe/suportes-poe.json', import.meta.url);
 const ARQ_IDS = new URL('../../gamedata/itens-poe/suportes-poe-ids.json', import.meta.url);
@@ -146,6 +147,8 @@ const CARGA_DO_TEXTO = { frenesi: 'frenesi', poder: 'poder', 'tolerância': 'tol
 /** (lote S1) O dano ADICIONADO local do uso (`af:`), aos ataques e às magias, com a escala ("× a Vida máxima", "× as Cargas de Frenesi"…). */
 const adicionadoDe = (el, escala, min, max = min) => Object.fromEntries(['added', 'spell_added'].flatMap((p) => [[`af:${p}_${el}_dmg_min%${escala}`, min], [`af:${p}_${el}_dmg_max%${escala}`, max]]));
 const REGRAS = [
+  // ---- (lote S2A, 27/10: os suportes com mecânica nova — `suportes-s2a.mjs`; antes de todas, que pegavam o começo de algumas) ----
+  ...REGRAS_S2A,
   // ---- (lote S1, 26/10: os suportes com 1 ou 2 linhas faltando — antes das regras gerais, que pegavam o começo de algumas) ----
   // - o "X% mais Dano por Carga" (a Carga de Poder no Crítico — o PoB: support_power_charge_on_crit_damage_+%_final_per_power_charge, Damage MORE × as Cargas de
   //   Poder) e o "Dano aumentado em X% por Carga" (a qualidade da Mordida Congelante): × as cargas de agora (`af:` com a escala da carga — antes, um "mais" fixo);
@@ -644,6 +647,11 @@ function gatilhoDe(s, textos) {
   const atordoado = tudo.match(/(\d+(?:\.\d+)?)% de chance de Ativar Magias Suportadas quando você for Atordoado/i);
   if (atordoado) return { quando: 'atordoado', recargaMs, chance: parseFloat(atordoado[1]) };
   if (/chance de Ativar Magias de Não-Lacaios Suportadas ao Morrer/i.test(tudo)) return { quando: 'morte', recargaMs };
+  // (lote S2A, 27/10) o Marcar ao Acertar: a Marca suportada sai quando você Acerta um Inimigo Raro ou Único com um Ataque (a recarga do suporte, 4 s)
+  if (ehGatilhoDoMarcar(tudo)) return { quando: 'acertoRaro', recargaMs };
+  // (lote S2A) a Flecha Forjada com Mana: os Ataques de Arco suportados saem quando a Mana gasta em OUTROS Ataques de Arco passa de X% do custo deles (a recarga, 0,5 s)
+  const limiarPct = limiarDaFlechaForjada(tudo);
+  if (limiarPct != null) return { quando: 'manaForjada', recargaMs, limiarPct };
   return null;
 }
 

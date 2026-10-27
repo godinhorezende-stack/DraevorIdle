@@ -1231,6 +1231,10 @@ export const BUFFS = {
   crueldade: { nome: 'Crueldade', af: { dano_dot_mais: 40 } },
   // (o suporte Momentum: "Rapidez concede Velocidade de Movimento aumentada em 15% por Momentum perdido" — o valor é o do momento em que veio)
   rapidez: { nome: 'Rapidez', af: (estado) => ({ move_speed: estado?.hunt?.rapidez?.movimentoPct ?? 0 }) },
+  // (lote S2A, 27/10) a Fonte de Vida do suporte (o PoB: Lifetap → FlaskLifeRecovery INC 20) e o Ímpeto de Combate do Combate Próximo (o efeito — o "mais" da
+  // Velocidade de Ataque das Habilidades de Deslocamento não suportadas — é do uso: `suportes-s2a.fatorDoImpeto`)
+  fonteDeVida: { nome: 'Fonte de Vida', af: { frasco_vida_rec: 20 } },
+  impetoDeCombate: { nome: 'Ímpeto de Combate', af: {} },
 };
 /** (14/10) Os 13 altares do sorteio do PoE ("Ganha um buff de altar aleatório" — a lista do Gritos dos Dessecados no poedb). */
 export const ALTARES_DO_SORTEIO = Object.freeze(['altarAceleracao', 'altarBrutal', 'altarCongelanteMaior', 'altarDiamante', 'altarEcoante', 'altarSombrio', 'altarImpenetravel', 'altarMassivo', 'altarReabastecimento', 'altarResistencia', 'altarCarregado', 'altarEletrizanteMaior', 'altarEsqueleticoMaior']);
