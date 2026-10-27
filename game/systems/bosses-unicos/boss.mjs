@@ -157,7 +157,10 @@ function invocar(ctx, c) {
 const ataqueDe = (c, extra = {}) => ({
   tipo: 'magia', elemento: c.elemento, min: Number(c.min), max: Number(c.max), forma: c.forma ?? 'alvo',
   raio: c.raio ?? 0, comprimento: c.comprimento ?? 0, espalha: c.espalha ?? 0, alcance: c.alcance ?? 7, noAlvo: !!c.noAlvo,
-  efeito: c.efeito ?? null, tiro: c.tiro ?? null, golpe: c.nome ?? null, ...extra,
+  efeito: c.efeito ?? null, tiro: c.tiro ?? null, golpe: c.nome ?? null,
+  // (PoE, dono 27/10) o ATAQUE do PoE (a Evasão e o Bloqueio de Ataque) e a conversão do dano físico — `itens-poe/habilidades.mjs`
+  ...(c.ataque ? { ataque: true, ...(c.corpoACorpo ? { corpoACorpo: true } : {}), ...(c.convertePct ? { convertePct: { ...c.convertePct } } : {}) } : {}),
+  ...extra,
 });
 
 function telegrafar(ctx, c) {

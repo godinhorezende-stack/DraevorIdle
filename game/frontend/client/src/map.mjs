@@ -1398,10 +1398,11 @@ export class MapView {
            * tamanhos diferentes para dizer isso seriam uma tabela a decorar.
            * Sem nenhuma marca, um tier 10 de wand era invisível.
            */
-          size: event.crit || event.onslaught ? 15 : 13,
+          // (O golpe que matou — `fatal` — sai maior e fica mais tempo: a cena da morte fica parada para ele, `segurarAMorte` no main.mjs.)
+          size: event.fatal ? 17 : event.crit || event.onslaught ? 15 : 13,
           degrau: degrauDoNumero(deQuem(event)),
           born: now,
-          life: 1000,
+          life: event.fatal ? 1600 : 1000,
           /*
            * Sem deriva horizontal: no client dele a pilha e' uma COLUNA, todos os
            * textos no mesmo x. A deriva existia para dois numeros simultaneos nao

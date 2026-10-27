@@ -13,6 +13,7 @@ import * as Mecanicas from './mobs/mecanicas.mjs';
 import * as Raridade from './mobs/raridade.mjs';
 import * as Atributos from './personagem/atributos.mjs';
 import { CATALOGO, ITEM_CATALOG } from './dados.mjs';
+import * as Morte from './morte.mjs';
 import * as R from './regras.mjs';
 import { VALOR_DA_MOEDA, pesoDoInventario, removerItem } from './inventario.mjs';
 import * as Acoes from './acoes.mjs';
@@ -312,7 +313,7 @@ function avancarAusencia(estado, personagem, agora, final) {
     const fim = Math.min(ate, fimDaSimulacao);
     let t = hunt.offlineDesde;
     for (; t <= fim; t += R.PASSO_MS) {
-      tique(estado, personagem, t);
+      const doTique = tique(estado, personagem, t);
       // A caçada ACABOU no meio (o mapa do endgame concluído, a sala do boss): a ausência para aqui — não há caçada para continuar nem
       // para projetar (antes o laço seguia sem caçada e a projeção repetia o loot dela por horas).
       if (estado.hunt !== hunt) {
@@ -323,6 +324,8 @@ function avancarAusencia(estado, personagem, agora, final) {
       if (estado.hp <= 0) {
         a.morreu = true;
         a.morreuEm = t;
+        // O golpe que matou (quem, qual, quanto e o tipo): vai no relatório da ausência, com a conta da morte.
+        a.golpeFatal = Morte.golpeQueMatou(doTique, personagem?.nome);
         break;
       }
       // A stamina acabou: a caçada offline para aqui (o tique já a gastou).
@@ -401,7 +404,7 @@ function avancarAusencia(estado, personagem, agora, final) {
     report.motivo = 'A stamina acabou e a caçada offline parou: o personagem voltou para a cidade.';
     estado.hunt = null;
   }
-  return { report, morreu: a.morreu, semStamina: !!a.semStamina };
+  return { report, morreu: a.morreu, semStamina: !!a.semStamina, ...(a.morreu && a.golpeFatal ? { golpeFatal: a.golpeFatal } : {}) };
 }
 
 /**

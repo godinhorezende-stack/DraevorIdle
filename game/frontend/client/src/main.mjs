@@ -1416,8 +1416,10 @@ function handle(message) {
     case 'death':
       // Morrer não é viajar: a volta para a cidade não abre o portal de saída.
       morreuEm = Date.now();
-      // A caixa de morte toma a tela; o registro fica no chat para depois.
-      mostrarMorte(message);
+      // A caixa de morte toma a tela; o registro fica no chat para depois. Antes dela, a cena da caçada fica um instante parada com o
+      // número do golpe que matou em cima do personagem (`segurarAMorte`).
+      segurarAMorte(message);
+      if (message.golpeTexto) logSystem(`${message.golpeTexto}.`);
       logSystem(
         `Você foi derrotado: −${(message.lost ?? 0).toLocaleString('pt-BR')} de experiência` +
           (message.goldLost ? ` e −${message.goldLost.toLocaleString('pt-BR')} de ouro` : '') +
@@ -2104,7 +2106,8 @@ function applyState(message) {
    */
   const cenaNova = chaveDaCena({ hunt: message.hunt, city: message.city });
   if (!viagemDoPortal && abrePortal({ antes: cenaNaTela, depois: cenaNova, morreu: Date.now() - morreuEm < 8000, pvp: !!message.hunt?.pvp }) && mapView.snapshot?.player) abrirViagemDoPortal();
-  if (viagemDoPortal) {
+  if (viagemDoPortal || morteNaTela) {
+    // (Também no instante da morte: a cena da caçada fica parada com o golpe que matou — `segurarAMorte`.)
     adiantarMapa(message.hunt ?? message.city);
   } else {
     mapView.setSnapshot(message.hunt ?? message.city, message.character);
@@ -2149,6 +2152,7 @@ function applyState(message) {
   if (message.events?.length) {
     // Efeito de tela com a aba no fundo é desenho para ninguém. (Durante o portal de saída, os da cena nova esperam ela entrar.)
     if (viagemDoPortal) guardarEventosDaViagem(message.events);
+    else if (morteNaTela) guardarEventosDaMorte(message.events);
     else if (!abaEscondida) mapView.addEvents(semMeusPortais(message.events));
     feedEvents(message.events, state.items, state.character?.name);
     acompanharConjuracao(message.events, state.character?.name);
@@ -5086,6 +5090,8 @@ function mostrarMorte(message) {
   painel.append(selo);
 
   painel.append(el('h2', null, message.offline ? 'Você morreu enquanto estava fora' : 'Você morreu'));
+  // Quem matou, com qual golpe e quanto ("Morto por General Adus — Bomba Viva: 3.230 de Raio" — `Morte.textoDoGolpe`, no servidor).
+  if (message.golpeTexto) painel.append(el('p', 'morte-golpe', message.golpeTexto));
   /*
    * Morte OFFLINE: a mesma caixa, e uma linha dizendo a que período o extrato
    * se refere — ele vai do início da ausência até a morte, não até agora.
@@ -7600,6 +7606,45 @@ let confirmacaoTimer = null;
 let chegada = null;
 let chegadaTimer = null;
 const EVENTOS_GUARDADOS_NA_VIAGEM = 80;
+
+/*
+ * ---- O GOLPE QUE MATOU (report do dono, 27/10: "ele morre sem aparecer o dano") ----
+ * O servidor manda o último quadro da caçada, com o golpe, e logo depois o `death` e a cidade. Trocar a cena na hora apagava o número antes
+ * de ele ser desenhado: a cena da caçada fica PARADA por `MORTE_NA_TELA_MS` (o número sobe em cima do personagem), e só então a caixa da
+ * morte abre (com a foto desse instante) e a cidade entra. Os eventos que chegarem no meio esperam a cidade.
+ */
+const MORTE_NA_TELA_MS = 1200;
+let morteNaTela = null;
+
+function segurarAMorte(message) {
+  if (morteNaTela) soltarAMorte();
+  if (message.offline || abaEscondida || !mapView.snapshot?.player) return mostrarMorte(message);
+  morteNaTela = { message, eventos: [], timer: setTimeout(soltarAMorte, MORTE_NA_TELA_MS) };
+}
+
+function guardarEventosDaMorte(eventos) {
+  const lista = morteNaTela.eventos;
+  lista.push(...eventos);
+  if (lista.length > EVENTOS_GUARDADOS_NA_VIAGEM) lista.splice(0, lista.length - EVENTOS_GUARDADOS_NA_VIAGEM);
+}
+
+function soltarAMorte() {
+  const m = morteNaTela;
+  if (!m) return;
+  clearTimeout(m.timer);
+  morteNaTela = null;
+  // A caixa primeiro: a foto dela é deste instante — a caçada, com o golpe na tela.
+  mostrarMorte(m.message);
+  if (viagemDoPortal) return;
+  if (state.hunt || state.city) {
+    mapView.setSnapshot(state.hunt ?? state.city, state.character);
+    cenaNaTela = chaveDaCena({ hunt: state.hunt, city: state.city });
+    atualizarMinimapa(!!state.hunt);
+  }
+  if (m.eventos.length && !abaEscondida) mapView.addEvents(semMeusPortais(m.eventos));
+  if (mapView.faltaOMapa() && $('entrada')?.hidden !== false && $('viagem')?.hidden !== false) mostrarViagem({ hunt: nomeDaCena({ hunt: state.hunt, city: state.city }), motivo: 'carregando' });
+  confirmarCarregamento();
+}
 
 function abrirViagemDoPortal() {
   cancelarChegada();

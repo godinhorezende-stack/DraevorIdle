@@ -112,3 +112,48 @@ export function morrer(estado, descerDeLevel) {
     promocao: c.promocao,
   };
 }
+
+/*
+ * ---- O golpe que matou ----
+ *
+ * Report do dono (27/10): o personagem morria sem aparecer o número do golpe — o evento ia no quadro DEPOIS da morte, já na cidade, por
+ * baixo da caixa "Você morreu". Agora a sessão manda o último quadro da caçada com os eventos e o `death` leva o golpe: quem, qual golpe,
+ * quanto e de que tipo. O evento que zerou a vida vem marcado (`fatal`, em `contraAtaque`/`aplicarNoJogador`); sem a marca (a vida que
+ * zerou por outro caminho), vale o último dano no próprio personagem.
+ */
+const NOME_DO_TIPO = {
+  physical: 'Físico', fire: 'Fogo', ice: 'Gelo', chaos: 'Caos', earth: 'Terra', death: 'Morte', holy: 'Sagrado',
+  lifedrain: 'Dreno de Vida', manadrain: 'Dreno de Mana', drown: 'Afogamento', agony: 'Agonia',
+};
+const NOME_DO_TIPO_NO_POE = { earth: 'Caos', death: 'Caos' };
+export function nomeDoTipo(elemento) {
+  if (!elemento) return null;
+  if (elemento === 'energy') return itensPoeLigado() ? 'Raio' : 'Energia';
+  return (itensPoeLigado() ? NOME_DO_TIPO_NO_POE[elemento] : null) ?? NOME_DO_TIPO[elemento] ?? elemento;
+}
+
+/** O dano que o PRÓPRIO personagem levou (não o do lacaio, nem o que ele causou), de `eventos`. */
+const noPersonagem = (e, nome) => e?.t === 'dmg' && !e.foe && !e.lacaio && e.v > 0 && e.uid === 'player' && (!e.quem || !nome || e.quem === nome);
+
+/** `{de, golpe, v, elemento, tipo, crit}` do golpe que matou, dos eventos do tique da morte — ou null, sem dano no personagem. */
+export function golpeQueMatou(eventos, nome = null) {
+  const lista = (eventos ?? []).filter((e) => noPersonagem(e, nome));
+  const ev = lista.findLast((e) => e.fatal) ?? lista.at(-1);
+  if (!ev) return null;
+  return {
+    de: ev.de ?? null,
+    golpe: ev.golpe ?? null,
+    v: ev.v,
+    elemento: ev.elemento ?? null,
+    tipo: nomeDoTipo(ev.elemento),
+    ...(ev.crit ? { crit: true } : {}),
+  };
+}
+
+/** "Morto por General Adus — Bomba Viva: 3.230 de Raio" (a linha da caixa da morte, do log e do relatório da ausência). */
+export function textoDoGolpe(g) {
+  if (!g) return null;
+  const quem = g.de ? `Morto por ${g.de}` : 'Morto';
+  const golpe = g.golpe && g.golpe !== g.de ? ` — ${g.golpe[0].toUpperCase()}${g.golpe.slice(1)}` : '';
+  return `${quem}${golpe}: ${Number(g.v).toLocaleString('pt-BR')}${g.tipo ? ` de ${g.tipo}` : ' de dano'}${g.crit ? ' (crítico)' : ''}`;
+}
