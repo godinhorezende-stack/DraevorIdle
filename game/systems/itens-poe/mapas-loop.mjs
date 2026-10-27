@@ -16,6 +16,7 @@
 // guarda a chave, não a posição — a peça é procurada de novo na mochila e na bolsa a cada mapa, então a que foi vendida, trocada ou mudou
 // de lugar sai da fila sem quebrar nada. Quem ABRE é o Dispositivo (`mapas-dispositivo.mjs → seguirLoop`), pelo MESMO caminho do botão
 // "Abrir mapa"; aqui só a fila (sem caçada, sem sessão).
+import { createHash } from 'node:crypto';
 import * as Mapas from './mapas.mjs';
 
 const ONDES = ['inventory', 'pouch'];
@@ -26,14 +27,15 @@ const RARIDADES = ['normal', 'magico', 'raro', 'unico'];
  * base (o tier e o nível da área saem dela), a raridade, a qualidade, os textos dos afixos (com os valores — Mágicos e Raros com números
  * diferentes não se juntam), as linhas do único, o corrompido e o identificado (o jogo não tem mapa por identificar: vale o da peça, se um
  * dia existir). Sem o id: é ele que separa duas peças iguais.
+ *
+ * (27/10, revisão) O resumo é um SHA-256 do texto inteiro (antes um hash de 32 bits: dois mapas diferentes do mesmo tier podiam colidir —
+ * a tela os juntava num cartão e o loop abria a peça errada). Curto para ir à tela e voltar, e sem colisão na prática.
  */
 export function chaveDoMapa(peca) {
   const p = peca?.poe ?? {};
   const textos = (lista) => (lista ?? []).map((m) => m?.texto ?? '');
   const texto = JSON.stringify([p.base, p.raridade ?? 'normal', Number(p.qualidade) || 0, textos(p.implicitos), textos(p.prefixos), textos(p.sufixos), textos(p.modificadores), p.unico ?? null, !!p.corrompido, p.identificado !== false]);
-  let h = 5381;
-  for (let i = 0; i < texto.length; i++) h = ((h << 5) + h + texto.charCodeAt(i)) | 0;
-  return `${Mapas.tierDaPeca(peca) ?? 0}:${(h >>> 0).toString(36)}`;
+  return `${Mapas.tierDaPeca(peca) ?? 0}:${createHash('sha256').update(texto).digest('base64url').slice(0, 32)}`;
 }
 
 /** As peças do grupo que `estado` carrega agora (mochila primeiro, depois a bolsa): `[{ onde, indice, peca }]`. */
@@ -142,12 +144,39 @@ export function saiu(estado, mapaId) {
   if (loop.atual?.mapaId === mapaId || (loop.pendente && loop.ultimo === mapaId)) parar(estado, 'Você saiu do mapa: o loop parou.');
 }
 
+/**
+ * (27/10, revisão) A caçada de que o loop depende sumiu SEM passar por `guardarAoSair` nem pelo fim da pausa (a party troca `estado.hunt`
+ * direto: o juntar do "seguir o líder", o "entrar na caçada de alguém", o voltar com o líder). O que fazer, olhando a caçada de agora:
+ *   - 'parar'  — você está em OUTRA caçada (a do mapa do loop ou a da pausa do concluído ficou para trás): como sair por conta própria;
+ *   - 'seguir' — a pausa do concluído acabou na cidade, antes da hora: o próximo da fila abre (como no fim da pausa);
+ *   - null     — está tudo no lugar (no mapa do loop, na pausa dele, ou fora do mapa esperando a volta — como depois de morrer).
+ */
+export function semCacada(estado) {
+  const loop = doPersonagem(estado);
+  if (!loop) return null;
+  const aqui = estado?.hunt ?? null;
+  if (loop.pendente) {
+    if (!loop.ultimo || aqui?.mapa?.id === loop.ultimo) return null;
+    return aqui ? 'parar' : 'seguir';
+  }
+  if (loop.atual && aqui && aqui.mapa?.id !== loop.atual.mapaId) return 'parar';
+  return null;
+}
+
+/** Apaga o aviso do último loop (o "×" do aviso na tela). */
+export function dispensarFim(estado) {
+  if (!estado?.mapas?.loopFim) return false;
+  estado.mapas.loopFim = null;
+  return true;
+}
+
 /** O rótulo curto de um grupo: "T3 Normal ×5" (ou o nome do único). */
 export const rotuloDoGrupo = (g, n) => `${g.raridade === 'unico' ? g.nome : `T${g.tier} ${{ normal: 'Normal', magico: 'Mágico', raro: 'Raro' }[g.raridade] ?? ''}`.trim()}${n != null ? ` ×${n}` : ''}`;
 
 /**
- * O loop para a tela: `{ feitos, total, numero, atual, pendente, grupos: [{ chave, rotulo, nome, tier, raridade, quantos, feitos, restam }] }`
- * (`total`: os feitos, o aberto e o que a fila ainda dá com as peças de agora; `numero`: o mapa da vez) e o fim do último (`fim`).
+ * O loop para a tela: `{ feitos, total, numero, atual, pendente, restam, grupos: [{ chave, rotulo, nome, tier, raridade, quantos, feitos,
+ * restam }] }` (`total`: os feitos, o aberto e o que a fila ainda dá com as peças de agora; `numero`: o mapa da vez; `restam`: os que a fila
+ * ainda abre depois do aberto — 0 na pausa do último: não há próximo) e o fim do último (`fim`).
  */
 export function paraTela(estado) {
   const st = estado?.mapas;
@@ -159,6 +188,7 @@ export function paraTela(estado) {
     return { chave: g.chave, rotulo: rotuloDoGrupo(g, (g.feitos ?? 0) + restam + (loop.atual?.chave === g.chave ? 1 : 0)), nome: g.nome, tier: g.tier, raridade: g.raridade, quantos: g.quantos, feitos: g.feitos ?? 0, restam };
   });
   const emCurso = loop.atual ? 1 : 0;
-  const total = (loop.feitos ?? 0) + emCurso + grupos.reduce((n, g) => n + g.restam, 0);
-  return { ativo: true, feitos: loop.feitos ?? 0, total, numero: Math.min(total, (loop.feitos ?? 0) + 1), atual: loop.atual?.mapaId ?? null, pendente: !!loop.pendente, grupos, fim: null };
+  const restam = grupos.reduce((n, g) => n + g.restam, 0);
+  const total = (loop.feitos ?? 0) + emCurso + restam;
+  return { ativo: true, feitos: loop.feitos ?? 0, total, numero: Math.min(total, (loop.feitos ?? 0) + 1), atual: loop.atual?.mapaId ?? null, pendente: !!loop.pendente, restam, grupos, fim: null };
 }

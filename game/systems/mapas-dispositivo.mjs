@@ -134,6 +134,8 @@ export function iniciarLoop(estado, { grupos, mode } = {}, { antes = null } = {}
   const fechado = motivoFechado(estado);
   if (fechado) return { ok: false, erro: fechado };
   if (MapaAberto.doPersonagem(estado).aberto) return { ok: false, erro: 'Você já tem um mapa aberto: termine-o (ou abandone-o) antes de começar o loop.' };
+  // (o loop que ficou para trás sem a caçada dele não trava o novo — `MapasLoop.semCacada`; a sessão o confere a cada tique)
+  if (MapasLoop.semCacada(estado)) MapasLoop.parar(estado, 'O loop anterior ficou sem caçada: parou.');
   if (MapasLoop.doPersonagem(estado)) return { ok: false, erro: 'O loop de mapas já está rodando: pare-o antes de começar outro.' };
   const r = MapasLoop.criar(estado, grupos, { mode });
   if (!r.ok) return r;
@@ -163,6 +165,31 @@ export function seguirLoop(estado, { antes = null } = {}) {
   loop.seguir = true;
   const tela = MapasLoop.paraTela(estado);
   return { ok: true, notice: `Loop de mapas: ${prox.peca.poe?.nome ?? `Mapa (Nível ${prox.grupo.tier})`} (${tela.numero} de ${tela.total}).` };
+}
+
+/**
+ * (27/10, revisão) Confere o loop contra a caçada de agora (`MapasLoop.semCacada`): a party troca `estado.hunt` sem passar por
+ * `guardarAoSair` nem pelo fim da pausa do concluído, e sem isto o loop ficava "pendente" para sempre (a tela o mostrava rodando, o
+ * "Iniciar loop" recusava). Você foi para outra caçada: o loop PARA, como ao sair por conta própria; a pausa acabou na cidade antes da hora:
+ * o próximo abre. A sessão chama a cada tique (com ou sem caçada). Devolve o aviso para o jogador, ou null (nada mudou).
+ */
+export function conferirLoop(estado) {
+  const o = MapasLoop.semCacada(estado);
+  if (o === 'parar') {
+    MapasLoop.parar(estado, 'Você foi para outra caçada: o loop parou.');
+    return 'Você foi para outra caçada: o loop de mapas parou.';
+  }
+  if (o === 'seguir') {
+    const r = seguirLoop(estado);
+    return r.ok ? r.notice : `O loop de mapas parou: ${r.erro}`;
+  }
+  return null;
+}
+
+/** Apaga o aviso do último loop (por que ele parou). `{ ok }`. */
+export function dispensarFimDoLoop(estado) {
+  MapasLoop.dispensarFim(estado);
+  return { ok: true };
 }
 
 /** Para o loop (o mapa aberto continua aberto: só a fila acaba). `{ ok, erro?, notice? }`. */

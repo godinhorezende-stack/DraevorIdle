@@ -71,3 +71,15 @@ export function resumoDaSelecao(grupos, selecao) {
   }
   return { grupos: saida, mapas };
 }
+
+/**
+ * (27/10, revisão) O que do Dispositivo (`campanha.mapas`) muda a tela: o mapa aberto, os mapas que você carrega, o loop (o "Parar loop", o
+ * "N de M", o porquê de ter parado) e as estatísticas. Entra na assinatura da mensagem `campanha` (`main.mjs`): ela só redesenha quando a
+ * assinatura muda, e sem isto a resposta do servidor trocava os dados e a tela aberta ficava como estava.
+ */
+export function assinaturaDoDispositivo(m) {
+  if (!m) return null;
+  const a = m.aberto;
+  const e = m.estatisticas;
+  return [m.liberado, m.motivo, a && [a.id, a.portais, a.mortes, a.naCacada, a.guardado], (m.mapas ?? []).map((x) => [x.id, x.onde, x.indice, x.chave]), m.loop ?? null, e && [e.concluidos, e.falhos, e.mortes, e.maiorTier]];
+}

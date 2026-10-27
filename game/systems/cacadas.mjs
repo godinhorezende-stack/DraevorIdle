@@ -87,6 +87,7 @@ import * as ItensPoeJogo from './itens-poe/jogo.mjs';
 import * as Mapas from './itens-poe/mapas.mjs';
 import * as MapasAreas from './itens-poe/mapas-areas.mjs';
 import * as MapaAberto from './itens-poe/mapa-aberto.mjs';
+import * as MapasLoop from './itens-poe/mapas-loop.mjs';
 // (o LOOP DE MAPAS: o próximo da fila abre pelo Dispositivo — importação circular, usada só dentro das funções)
 import * as MapasDispositivo from './mapas-dispositivo.mjs';
 import * as GemasGBD from './itens-poe/gemas-gbd.mjs';
@@ -280,7 +281,8 @@ export function temAusenciaParaSimular(estado, agora = Date.now()) {
  * Sem pedaço nenhum no meio, o login faz exatamente o que fazia.
  */
 function avancarAusencia(estado, personagem, agora, final) {
-  let hunt = estado.hunt;
+  // (a caçada que ACABOU num pedaço da consolidação fica em `estado.ausenciaSemCacada` até o login — ver o fim desta função)
+  let hunt = estado.hunt?.offlineDesde ? estado.hunt : (estado.ausenciaSemCacada ?? estado.hunt);
   if (!hunt?.offlineDesde) return null;
   const desde = hunt.offlineDesde;
   if (!hunt.ausencia) {
@@ -403,7 +405,18 @@ function avancarAusencia(estado, personagem, agora, final) {
   hunt.eventos = [];
   hunt.sessao = a.principal;
 
-  if (!final) return { avancou, morreu: a.morreu, semStamina: !!a.semStamina };
+  if (!final) {
+    /*
+     * (27/10, revisão) A caçada ACABOU neste pedaço (o mapa concluído, o loop de mapas que terminou a fila) e `estado.hunt` ficou sem ela:
+     * gravado assim, o fio da ausência (o relatório `fora` desde a saída) se perdia e o login não entregava nada. Ele fica guardado no
+     * personagem — só o que o login precisa, sem os monstros — e o login fecha a ausência por ele, como se a caçada ainda estivesse lá.
+     */
+    if (a.acabou && estado.hunt !== hunt && estado.ausenciaSemCacada !== hunt) {
+      estado.ausenciaSemCacada = { huntId: hunt.huntId, modo: hunt.modo, offlineDesde: hunt.offlineDesde, ausencia: a, sessao: hunt.sessao };
+    }
+    return { avancou, morreu: a.morreu, semStamina: !!a.semStamina };
+  }
+  if (estado.ausenciaSemCacada === hunt) delete estado.ausenciaSemCacada;
 
   // O login: fecha a ausência inteira e entrega o relatório desde a saída.
   const fim = a.morreu ? a.morreuEm : a.semStamina || a.acabou ? a.parouEm : ate;
@@ -1106,8 +1119,9 @@ function concluirMapa(estado, hunt, estados) {
     else MapaAberto.contarConclusao(quem, hunt.mapa.tier);
     if (h) h.fimEm = (h.clock ?? 0) + pausa;
     // (o do LOOP DE MAPAS: o próximo da fila abre no fim da pausa — `tiqueDaCacada`)
+    // (o último da fila: não há próximo — o loop termina no fim da pausa)
     const doLoop = quem.mapas?.loop?.pendente && quem.mapas.loop.ultimo === hunt.mapa.id;
-    quem.avisoDaHunt = doLoop ? `${nome} concluído! O loop abre o próximo mapa.` : `${nome} concluído! Voltando para a cidade.`;
+    quem.avisoDaHunt = doLoop && MapasLoop.proxima(quem) ? `${nome} concluído! O loop abre o próximo mapa.` : `${nome} concluído! Voltando para a cidade.`;
   }
 }
 
@@ -1336,10 +1350,10 @@ export function adotarNaCampanha(estado) {
   return r.erro;
 }
 
-/** `send({t:'stopHunt'})` */
-export function sair(estado) {
+/** `send({t:'stopHunt'})`. `manterLoop`: a saída que não é decisão do jogador (o mapa não carregou a tempo) não para o loop de mapas. */
+export function sair(estado, { manterLoop = false } = {}) {
   // Saindo do SEU mapa aberto: os monstros vivos ficam guardados (volta pelo Dispositivo, sem gastar portal).
-  MapaAberto.guardarAoSair(estado);
+  MapaAberto.guardarAoSair(estado, { manterLoop });
   estado.hunt = null;
   return { ok: true };
 }

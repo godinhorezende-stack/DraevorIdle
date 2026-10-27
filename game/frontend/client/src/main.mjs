@@ -97,6 +97,7 @@ import { aplicarRemendo } from '/packages/shared/src/remendo.mjs';
 import { initMobile, ehCelular } from './mobile.mjs';
 import { initMinimapa, atualizarMinimapa } from './minimapa.mjs';
 import { instalarArrastoDoMouse } from './arrasto-do-mouse.mjs';
+import { assinaturaDoDispositivo } from './mapas-grupos.mjs';
 import { CICLO_PADRAO, CHEGADA_PADRAO, duracao as duracaoDoCiclo, prontoNaChegada, chaveDaCena, nomeDaCena, abrePortal, meuPortalDeViagem } from './portal-ciclo.mjs';
 
 const $ = (id) => document.getElementById(id);
@@ -1391,7 +1392,9 @@ function handle(message) {
     case 'campanha': {
       // O WORLD aberto pergunta de tempos em tempos (a limpeza anda sozinha, até offline): só redesenha se algo MUDOU — a câmera,
       // a seleção e o Ato continuam como estavam, e quem abriu agora ganha o brilho de "descoberta".
-      const assinatura = JSON.stringify([message.campanha?.dificuldades?.map((d) => [d.liberada, d.fases.map((f) => [f.completa, f.liberada, f.limpezas]), d.bosses.map((b) => [b.liberado, b.vencido])]), message.campanha?.mundo, message.campanha?.bossesDerrotados, message.campanha?.aoCompletar]);
+      // (27/10) O Dispositivo de Mapas também (o mapa aberto, os mapas, o LOOP, as estatísticas — `assinaturaDoDispositivo`): sem ele a
+      // resposta do "Parar loop" trocava a campanha e a tela aberta ficava como estava.
+      const assinatura = JSON.stringify([message.campanha?.dificuldades?.map((d) => [d.liberada, d.fases.map((f) => [f.completa, f.liberada, f.limpezas]), d.bosses.map((b) => [b.liberado, b.vencido])]), message.campanha?.mundo, message.campanha?.bossesDerrotados, message.campanha?.aoCompletar, assinaturaDoDispositivo(message.campanha?.mapas)]);
       const igual = assinatura === state.campanhaAssinatura;
       state.campanha = message.campanha;
       state.campanhaAssinatura = assinatura;

@@ -166,7 +166,9 @@ export function desenharDispositivo(body, { mapas, faixaDaCampanha = null, h }) 
   if (loop) {
     const cartao = el('section', 'mp-cartao mp-loop');
     const feito = loop.total ? Math.round((100 * loop.feitos) / loop.total) : 0;
-    const estado = loop.pendente ? 'Abrindo o próximo mapa…' : a && !a.naCacada ? 'Esperando a sua volta ao mapa: o loop segue quando ele for concluído.' : 'Em andamento: o próximo abre sozinho ao concluir este.';
+    // (na pausa do último da fila não há próximo: `restam` 0 — o loop termina quando a pausa acabar)
+    const restam = loop.restam ?? Math.max(0, loop.total - loop.feitos);
+    const estado = loop.pendente ? (restam > 0 ? 'Abrindo o próximo mapa…' : 'Último mapa concluído: o loop termina ao voltar para a cidade.') : a && !a.naCacada ? 'Esperando a sua volta ao mapa: o loop segue quando ele for concluído.' : 'Em andamento: o próximo abre sozinho ao concluir este.';
     const barra = el('div', 'mp-loop-barra', el('i', null));
     barra.firstChild.style.width = `${feito}%`;
     barra.setAttribute('aria-label', `${loop.feitos} de ${loop.total} mapas concluídos`);
@@ -196,7 +198,18 @@ export function desenharDispositivo(body, { mapas, faixaDaCampanha = null, h }) 
     lista.textContent = '';
     const aba = abaValida(abasDaLista, lerAba());
     const cab = el('header', 'mp-lista-cab', el('h4', 'mp-titulo', `Seus mapas (${mapas.mapas.length})`));
-    if (mapas.loop?.fim && !loop) cab.append(el('span', `mp-loop-fim${mapas.loop.fim.concluiu ? ' ok' : ''}`, mapas.loop.fim.motivo));
+    // O porquê do último loop ter parado, com quando (e o "×" para dispensar: o servidor esquece o aviso).
+    const fim = !loop ? mapas.loop?.fim : null;
+    if (fim) {
+      const fora = botao('mp-loop-fim-x', '×', () => {
+        fora.disabled = true;
+        h.send({ t: 'dispensarFimDoLoop' });
+      });
+      fora.title = 'Dispensar o aviso';
+      fora.setAttribute('aria-label', 'Dispensar o aviso do loop');
+      const quando = Number.isFinite(fim.em) ? el('small', null, `há ${tempo(Date.now() - fim.em)}`) : null;
+      cab.append(el('span', `mp-loop-fim${fim.concluiu ? ' ok' : ''}`, el('span', null, fim.motivo), quando, fora));
+    }
     lista.append(cab);
     if (!mapas.mapas.length) {
       lista.append(el('p', 'mp-nota', 'Nenhum mapa com você. Eles caem dentro dos mapas (do tier da área ou um acima; o chefe garante um) e do chefe do Ato 10.'));
@@ -268,13 +281,15 @@ export function desenharDispositivo(body, { mapas, faixaDaCampanha = null, h }) 
       };
       pe.append(el('label', 'mp-usar', el('span', null, 'usar'), qtd));
     }
-    const abrir = botao('w2-entrar mp-abrir', a ? 'Há um mapa aberto' : 'Abrir mapa', () => {
+    // Com o loop rodando, abrir à mão fica travado (na pausa do concluído também: abrir outro mapa encerraria o loop sem você pedir).
+    const abrir = botao('w2-entrar mp-abrir', a ? 'Há um mapa aberto' : loop ? 'Loop rodando' : 'Abrir mapa', () => {
       abrir.disabled = true;
       avisar('');
       h.send({ t: 'abrirMapa', onde: m.onde, indice: m.indice, assinatura: m.assinatura, mode: 'auto' });
       h.fechar();
     });
-    abrir.disabled = !!a;
+    abrir.disabled = !!a || !!loop;
+    if (loop && !a) abrir.title = 'Pare o loop para abrir um mapa à mão.';
     pe.append(abrir);
     c.append(pe);
     return c;

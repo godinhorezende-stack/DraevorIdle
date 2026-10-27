@@ -89,10 +89,11 @@ export function contarConclusao(estado, tier) {
  * volta. `morreu`: gasta um portal (e o chefe do mapa se cura); sem portal sobrando o mapa acaba (`falhou`). Outra caçada: nada.
  * Devolve `{ portais, falhou }` ou null.
  */
-export function guardarAoSair(estado, { morreu = false, agora = Date.now() } = {}) {
+export function guardarAoSair(estado, { morreu = false, manterLoop = false, agora = Date.now() } = {}) {
   // (27/10) Sair por conta própria (parar, outra caçada) do mapa do LOOP — ou da pausa do concluído — para o loop; morrer não (com portal
-  // sobrando o mapa espera a volta, e o loop segue quando ele for concluído).
-  if (!morreu) MapasLoop.saiu(estado, estado?.hunt?.mapa?.id);
+  // sobrando o mapa espera a volta, e o loop segue quando ele for concluído). `manterLoop`: a saída que não é decisão do jogador (o mapa não
+  // carregou a tempo, o erro do servidor) também não para — o loop espera a volta, como depois de morrer.
+  if (!morreu && !manterLoop) MapasLoop.saiu(estado, estado?.hunt?.mapa?.id);
   const a = estado?.mapas?.aberto;
   const h = cacadaDoAberto(estado);
   if (!a || !h) return null;
