@@ -19,7 +19,7 @@
 
 const norm = (t) => String(t).replace(/(\d)%/g, '$1 %').replace(/\\n/g, ' ').replace(/[ㅤ ]/g, ' ').replace(/\s+/g, ' ').trim();
 const achar = (linhas, re, g = 1) => { for (const l of linhas ?? []) { const m = re.exec(norm(l)); if (m) return Number(m[g]); } return null; };
-const ativo = (x, agora) => (x?.ate ?? 0) > agora;
+const ativo = (x, agora) => !!x && (x.ate ?? 0) > agora;
 
 // ---------------------------------------------------------------- a Armadilha de Lâminas
 
