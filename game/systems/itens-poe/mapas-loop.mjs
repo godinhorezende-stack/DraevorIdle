@@ -72,15 +72,32 @@ export function pecasDoGrupo(estado, chave) {
   return saida;
 }
 
+/**
+ * Quantas peças há de cada chave (mochila, bolsa e depósito), numa passada só: `Map<chave, n>`. (27/10, revisão: o `paraTela` contava grupo a
+ * grupo com `pecasDoGrupo`, refazendo o resumo de TODOS os mapas para cada grupo da fila — grupos × mapas a cada envio, com centenas de
+ * mapas no depósito.)
+ */
+export function contagemPorChave(estado) {
+  const n = new Map();
+  for (const { lista } of fontesDeMapas(estado)) {
+    for (const peca of lista) {
+      if (!Mapas.ehMapa(peca)) continue;
+      const chave = chaveDoMapa(peca);
+      n.set(chave, (n.get(chave) ?? 0) + 1);
+    }
+  }
+  return n;
+}
+
 /** O loop de `estado` (ou null). */
 export const doPersonagem = (estado) => estado?.mapas?.loop ?? null;
 
 /**
  * Quantos mapas o grupo ainda dá: os iguais que sobram (todos) ou o que falta do número escolhido (o aberto agora já conta), sem passar das
- * peças que há.
+ * peças que há (`contagem`: a de `contagemPorChave`).
  */
-function restamNoGrupo(estado, g, loop = doPersonagem(estado)) {
-  const ha = pecasDoGrupo(estado, g.chave).length;
+function restamNoGrupo(g, loop, contagem) {
+  const ha = contagem.get(g.chave) ?? 0;
   const usados = (g.feitos ?? 0) + (loop?.atual?.chave === g.chave ? 1 : 0);
   return g.quantos == null ? ha : Math.max(0, Math.min(g.quantos - usados, ha));
 }
@@ -206,8 +223,9 @@ export function paraTela(estado) {
   const loop = st?.loop;
   const fim = st?.loopFim ?? null;
   if (!loop) return fim ? { ativo: false, fim } : null;
+  const contagem = contagemPorChave(estado);
   const grupos = loop.grupos.map((g) => {
-    const restam = restamNoGrupo(estado, g, loop);
+    const restam = restamNoGrupo(g, loop, contagem);
     return { chave: g.chave, rotulo: rotuloDoGrupo(g, (g.feitos ?? 0) + restam + (loop.atual?.chave === g.chave ? 1 : 0)), nome: g.nome, tier: g.tier, raridade: g.raridade, quantos: g.quantos, feitos: g.feitos ?? 0, restam };
   });
   const emCurso = loop.atual ? 1 : 0;

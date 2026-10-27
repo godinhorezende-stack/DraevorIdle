@@ -10,6 +10,7 @@
 //      (`estado.mapas.aberto`, com os 6 portais).
 // Com um mapa aberto não se abre outro (não há consumo em dobro nem dois mapas ao mesmo tempo); volta-se a ele (`voltar`) ou desiste-se
 // dele (`abandonar` — a peça já foi gasta, como no PoE).
+import { createHash } from 'node:crypto';
 import { ligado } from './itens-poe/catalogo.mjs';
 import * as Mapas from './itens-poe/mapas.mjs';
 import * as MapasAreas from './itens-poe/mapas-areas.mjs';
@@ -110,8 +111,14 @@ export function abrir(estado, { onde = 'inventory', indice, assinatura: aDaTela,
   }
   if (pilha) peca.count -= 1;
   else lista.splice(i, 1);
-  // A caixa do depósito: a contagem "N/100" (`tipos`) acompanha a lista, como no `take` do depósito.
-  if (caixa) caixa.tipos = caixa.itens.length;
+  // A caixa do depósito: a contagem "N/100" (`tipos`) acompanha a lista, como no `take` do depósito. E a `rev` da caixa sobe (27/10,
+  // revisão): a peça saiu do MEIO dela sem o jogador mexer (o loop abre sozinho, no tique), as de trás andaram uma casa, e o "tirar" da tela
+  // que ainda mostra a caixa de antes acertaria outra peça do mesmo id (todo mapa do tier tem o mesmo) — `Deposito.comando` recusa o
+  // pedido que traz a `rev` velha.
+  if (caixa) {
+    caixa.tipos = caixa.itens.length;
+    caixa.rev = (Number(caixa.rev) || 0) + 1;
+  }
   return { ok: true, mapa: MapaAberto.abertoParaTela(estado) };
 }
 
@@ -223,10 +230,43 @@ export function pararLoop(estado) {
   return { ok: true, notice: 'Loop de mapas parado: o mapa aberto continua aberto.' };
 }
 
-/** O dispositivo para a tela (vai junto com a campanha): liberado, o motivo, o mapa aberto, os mapas carregados, o loop e as estatísticas. */
-export function paraTela(estado) {
+/**
+ * A lista para a TELA (27/10, revisão): a `peca` inteira (afixos, textos, recompensas: uns 2 KB) vai SÓ no primeiro de cada grupo de iguais
+ * — é o único que a tela desenha (o balão e o resumo do cartão: `mapas-dispositivo.mjs` do client). Com o depósito na lista, centenas de
+ * mapas iguais mandavam centenas de cópias da mesma peça.
+ */
+function mapasParaTela(mapas) {
+  const vistos = new Set();
+  return mapas.map((m) => {
+    if (!vistos.has(m.chave)) {
+      vistos.add(m.chave);
+      return m;
+    }
+    const { peca, ...resto } = m;
+    return resto;
+  });
+}
+
+/**
+ * A VERSÃO da lista de mapas (`mapasCarregados`): muda quando um mapa entra, sai, muda de lugar ou muda de peça (o `onde`, o `indice`, a
+ * `assinatura` e a `chave` de cada um).
+ */
+export function versaoDosMapas(mapas) {
+  return createHash('sha256').update(JSON.stringify((mapas ?? []).map((m) => [m.onde, m.indice, m.assinatura, m.chave]))).digest('base64url').slice(0, 22);
+}
+
+/**
+ * O dispositivo para a tela (vai junto com a campanha): liberado, o motivo, o mapa aberto, os mapas carregados (e a `versaoDosMapas`), o
+ * loop e as estatísticas. `versaoDaTela`: a versão da lista que a tela já tem (o `{t:'campanha'}` que a tela aberta repete a cada 8 s) —
+ * igual à de agora, a lista não vai de novo (`mapas: null`, `mapasIguais: true`; a tela continua com a dela). (27/10, revisão: com o
+ * depósito, a lista podia ter centenas de mapas e ia inteira a cada pergunta.)
+ */
+export function paraTela(estado, { versaoDaTela = null } = {}) {
   if (!ligado()) return null;
   const st = MapaAberto.doPersonagem(estado);
+  const mapas = mapasCarregados(estado);
+  const versao = versaoDosMapas(mapas);
+  const iguais = versaoDaTela != null && String(versaoDaTela) === versao;
   return {
     liberado: liberado(estado),
     motivo: motivoFechado(estado),
@@ -234,7 +274,9 @@ export function paraTela(estado) {
     cidade: cidade(),
     portais: MapaAberto.portaisPorMapa(),
     aberto: MapaAberto.abertoParaTela(estado),
-    mapas: mapasCarregados(estado),
+    mapas: iguais ? null : mapasParaTela(mapas),
+    ...(iguais ? { mapasIguais: true } : {}),
+    versaoDosMapas: versao,
     // Os do Baú da Conta não abrem (é compartilhado entre os personagens): a tela só diz quantos há lá.
     noBauDaConta: mapasNoBauDaConta(estado),
     loop: MapasLoop.paraTela(estado),

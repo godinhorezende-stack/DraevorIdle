@@ -1390,6 +1390,17 @@ function handle(message) {
       receberComparacao(message);
       break;
     case 'campanha': {
+      // (27/10, revisão) A lista de mapas do Dispositivo que não mudou não vem de novo (`mapasIguais`, pela `versaoDosMapas` que a tela
+      // mandou): fica a que a tela já tem. Se ela não for mais aquela versão (outra resposta chegou no meio), pede a lista inteira.
+      const dm = message.campanha?.mapas;
+      if (dm?.mapasIguais) {
+        const antes = state.campanha?.mapas;
+        if (Array.isArray(antes?.mapas) && antes.versaoDosMapas === dm.versaoDosMapas) dm.mapas = antes.mapas;
+        else {
+          send({ t: 'campanha' });
+          break;
+        }
+      }
       // O WORLD aberto pergunta de tempos em tempos (a limpeza anda sozinha, até offline): só redesenha se algo MUDOU — a câmera,
       // a seleção e o Ato continuam como estavam, e quem abriu agora ganha o brilho de "descoberta".
       // (27/10) O Dispositivo de Mapas também (o mapa aberto, os mapas, o LOOP, as estatísticas — `assinaturaDoDispositivo`): sem ele a
