@@ -1395,6 +1395,25 @@ Placar (relatório regerado, sem mudança): ativas — implementada e testada 45
 - Bateria (a de antes + estados, afeccoes-acerto-poe, itens-poe-afeccoes e passivas-poe-afeccoes-nos-monstros): 1055 testes, 1012 passam, 43 pulados, nenhum falha.
 - Placar (relatório regerado, sem mudança): ativas — implementada e testada 456, parcial 1, não se aplica 1; suportes — implementada e testada 209, parcial 3, não se aplica 1.
 
+### T1 (rodada 4) — as "implementadas, sem teste próprio", parte 1 (27/10)
+
+As 31 gemas da fila (15 ativas e 16 suportes) ganharam teste próprio de comportamento em `game/testes/gemas-t1-ativas.test.mjs` e `gemas-t1-suportes.test.mjs`, com o apoio em `gemas-t1-apoio.mjs`. Cada teste confere o número do nível máximo com o poedb salvo (ou com o PoB, quando o poedb diverge) e mede a linha num uso real, com e sem a gema ou o suporte. Os sorteios ficam travados.
+
+Correções que os testes pediram (os dados e as contas ficam em `itens-poe/gemas-t1.mjs`):
+- **Legião Congelada / do Agrupamento.** O golpe é o Arrastão Congelante das Estátuas: o dano-base é a última parte da célula do poedb (184,9% e 332,9%, igual ao baseMultiplier do PoB), 100% Físico→Gelo, 70% da velocidade e área de 2,5 m. Antes valiam 100%, Físico e alvo único.
+- **Ciclone Vaal.** Gira por 5 s × a Duração, com um acerto a cada tempo de ataque. Antes era um acerto só.
+- **Arco Elétrico Vaal.** O buff de 4 s (× a Duração) deixa Sortudo o dano dos Arcos Elétricos. Antes não fazia nada. O estado fica em `hunt.poeArcoSortudo`, um número só, apagado quando vence.
+- **Detonar Morto da Reação em Cadeia.** A cadeia segue de cadáver em cadáver, dentro da área da explosão, até 8. Antes explodia 1.
+- **Pureza Glacial / Elétrica.** A linha da qualidade SOMA à resistência do nível: na q20 dá 41 + 10. Antes substituía e dava 10.
+- **"X% mais/menos Duração" dos suportes (Mais Duração, Menos Duração).** Agora é MAIS e multiplica (`duracaoMaisPct`). Antes somava no aumentado: Mais + Menos davam 0,99 em vez de 1,39 × 0,6. Vale para lacaios, reforços, buffs, Crueldade e Relâmpago Vivo.
+- **"+1 ao Nível das Gemas Elementais / de Lacaios" (Foco Elemental e Dano do Lacaio Despertos).** Agora só vale nas gemas de Fogo/Gelo/Raio, ou nas de Lacaio. Antes valia em qualquer gema: o Golpe Pesado subia para o 21.
+
+Placar: ativas — implementada e testada 456 → 472, sem teste próprio 44 → 28; suportes — implementada e testada 209 → 226, sem teste próprio 49 → 32. Parcial, não se aplica e limitação do idle ficam como estavam.
+
+Bateria (ativas-*, gemas-*, suportes-*, itens-poe-gemas*, gemas-todas-funcionam-poe, eficacia-ataque-poe, mais-menos-exatos-poe, totens-uso-poe, tooltip-dos-buffs, repeticoes-estagios-a4, projeteis-por-projetil-poe, lacaios*, supports-etapa4): 972 testes, 932 passam, 40 pulados, nenhum falha.
+
+Para o dono: o "39% mais Dano Elemental" do Foco Elemental Desperto (e o "mais Dano de <elemento>" dos suportes em geral) só vale quando a ativa tem a tag do elemento, e aí multiplica o golpe inteiro. No Golpe Pesado + Dano Adicional de Fogo, a parte de Fogo (29) não ganha os 39%; pelo PoE ficaria 40. Numa ativa elemental com parte física, a parte física ganha sem dever. É a mesma família da pendência 9.
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.

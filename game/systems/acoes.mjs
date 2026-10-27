@@ -123,6 +123,8 @@ import * as SuportesS2B from './itens-poe/suportes-s2b.mjs';
 import * as GemasR3A from './itens-poe/gemas-r3a.mjs';
 // (lote R3B, 27/10: as Sentinelas, a Nova da Relíquia, o Golpe Sagrado, o Clamor do General e os que usam a SUA habilidade — `itens-poe/gemas-r3b.mjs`)
 import * as GemasR3B from './itens-poe/gemas-r3b.mjs';
+// (lote T1, rodada 4: o Ciclone Vaal, o Arco Elétrico Vaal e a Reação em Cadeia)
+import * as GemasT1 from './itens-poe/gemas-t1.mjs';
 import { JANELA } from '../websocket/quadro.mjs';
 import * as ItensPoeJogo from './itens-poe/jogo.mjs';
 import * as Testador from './personagem/testador.mjs';
@@ -280,7 +282,7 @@ function efeitosDosSuportesNoAcerto(estado, hunt, bicho, ficha, efeito, { crit =
   // (lote G20a: a Crueldade e o Elusivo vão para quem acerta — no acerto do totem, o totem: você não os ganha)
   if (efeito.crueldade > 0 && !doTotem) {
     const tinha = ModsPoe.buffAtivo(estado, 'crueldade');
-    ModsPoe.ganharBuff(hunt, 'crueldade', ((efeito.crueldadeMs ?? 4000) / 1000) * Math.max(0.1, 1 + (efeito.duracaoPct ?? 0) / 100), agora);
+    ModsPoe.ganharBuff(hunt, 'crueldade', ((efeito.crueldadeMs ?? 4000) / 1000) * Math.max(0.1, 1 + (efeito.duracaoPct ?? 0) / 100) * Math.max(0, 1 + (efeito.duracaoMaisPct ?? 0) / 100), agora);
     efeitoDeBuff.crueldade = efeito.crueldadeEfeitoPct ?? 0;
     if (!tinha) Ficha.invalidar(estado);
   }
@@ -5098,6 +5100,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const mais = podem.find((c) => !cadaveresDoUso.includes(c));
       if (mais) cadaveresDoUso = [...cadaveresDoUso, mais];
     }
+    // (lote T1, rodada 4) a Reação em Cadeia: depois do primeiro, os outros cadáveres em cadeia — na área da explosão de um que já explodiu —, até 8 (`GemasT1`)
+    const cadeiaT1 = GemasT1.cadeiaDeCadaveres(entry.poeGema.slug);
+    if (cadeiaT1) cadaveresDoUso = GemasT1.encadearCadaveres(cadaveresDoUso, podem, Math.max(1, Math.round(doCadaver.raioExplosaoM / 2)), cadeiaT1);
     const primeiro = cadaveresDoUso[0];
     const doOrbe = doCadaver.modo === 'consumir' ? vivos.filter((b) => !b.dummy).sort((a, b) => distanciaChebyshev(a, primeiro) - distanciaChebyshev(b, primeiro))[0] : null;
     mira = doOrbe ? { x: doOrbe.x, y: doOrbe.y } : { x: primeiro.x, y: primeiro.y };
@@ -6202,7 +6207,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // O nível, a raridade e a qualidade da gema escalam o efeito (`Reforcos.fatorDaGema`); a duração não muda.
     const fator = Reforcos.fatorDaGema(efeitoDaGema);
     // Skill Duration (support): +% na duração do reforço.
-    const duracao = Math.round(buff.dur * (1 + (efeitoDaGema?.duracaoPct ?? 0) / 100));
+    // (lote T1: × o "mais/menos Duração" dos suportes — `duracaoMaisPct`)
+    const duracao = Math.round(buff.dur * (1 + (efeitoDaGema?.duracaoPct ?? 0) / 100) * Math.max(0, 1 + (efeitoDaGema?.duracaoMaisPct ?? 0) / 100));
     // A gema do PoE: os efeitos e os atributos do NÍVEL dela (`GemasPoe.buffNoNivel`) ficam no buff; a ficha é refeita (atributos novos).
     const doPoe = entry.poeGema?.buff ? GemasPoe.buffNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
     // (A aura que reserva fica LIGADA — sem expirar — e guarda a reserva dela: o recurso, a % ou o fixo, e o fator dos suportes/eficácia.)
@@ -6560,8 +6566,11 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     let naRepeticaoFinal = true;
     let fatorDoAtaque = 100; // 100% no ataque normal; o do 2º golpe do ataque duplo vem de `combate/limites.json`
     let danoVezesMaldicoes = 0;
+    // (lote T1, rodada 4) o Arco Elétrico Vaal liga o buff (4 s × a Duração): com ele, o dano dos Arcos Elétricos é Sortudo — o deste uso também (`GemasT1`)
+    if (itensPoeLigado() && entry.poeGema?.slug === GemasT1.ARCO_VAAL && !doTotem) GemasT1.ligarArcoSortudo(hunt, agora + Math.round((GemasPoe.compilada(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0)?.stats?.duracao ?? 4) * 1000 * fatorDeDuracao(estado, entry, efeitoDaGema)));
+    const arcoSortudoT1 = itensPoeLigado() && !!entry.poeGema && GemasT1.arcoSortudo(hunt, entry.poeGema.slug, agora);
     const sorteDoGolpe = {
-      sempre: new Set(ModsPoe.valor(ficha, 'elemental_sortudo') > 0 ? ['fire', 'ice', 'energy'] : []),
+      sempre: new Set(arcoSortudoT1 ? ['physical', 'fire', 'ice', 'energy', 'chaos'] : ModsPoe.valor(ficha, 'elemental_sortudo') > 0 ? ['fire', 'ice', 'energy'] : []),
       naoCritico: new Set(ModsPoe.valor(ficha, 'raio_nao_critico_sortudo') > 0 ? ['energy'] : []),
     };
     // (PoE, o Vínculo Ancestral: "Você não pode causar Dano com Habilidades por si só" — o acerto das gemas do personagem não fere, nem o dano
@@ -7491,7 +7500,12 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (+ "Ataques executados por você se repetem mais N vezes": os ataques usados pelo personagem — não os ativados por gatilho.)
     // (+ 14/10, o Altar Ecoante: "Habilidades se Repetem 1 Vezes mais" — todas as usadas, não as ativadas por gatilho)
     // (lote A4, dono 19/10: D1/R1: + a repetição própria da gema — a Procissão; o uso dura (1 + r) tempos de uso — `fatorDoTempoDoUso`)
-    const repeticoes = repeticoesDoUso(entry, efeitoDaGema, ficha, { gatilho, plantada });
+    // (lote T1, rodada 4) o Ciclone Vaal: o giro pela duração (× a Duração), um acerto a cada tempo de ataque — os acertos a mais entram como repetições do uso, que
+    // ocupa os tempos deles (`GemasT1.acertosDoCicloneVaal`)
+    const giroDoCicloneVaal = itensPoeLigado() && entry.poeGema?.slug === GemasT1.CICLONE_VAAL && !gatilho && !plantada && !doTotem
+      ? GemasT1.acertosDoCicloneVaal((GemasPoe.compilada(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0)?.stats?.duracao ?? 0) * 1000 * fatorDeDuracao(estado, entry, efeitoDaGema), temposDaGemaPoe(estado, entry, efeitoDaGema).uso) - 1
+      : 0;
+    const repeticoes = repeticoesDoUso(entry, efeitoDaGema, ficha, { gatilho, plantada }) + giroDoCicloneVaal;
     const repDaGema = itensPoeLigado() && entry.poeGema && !plantada ? GemasPoe.repeticoesDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
     // (lote A4, dono 19/10: D3) o Golpe Cintilante Vaal: os 25 golpes nos vivos perto, sorteados; os "ferimentos" somam o dano por inimigo e ele entra no fim
     const cintilante = itensPoeLigado() && entry.poeGema?.slug === 'Vaal_Flicker_Strike' && !gatilho && !plantada && !doTotem && atingidos.length ? GemasA4.GOLPE_CINTILANTE_VAAL : null;
@@ -12596,7 +12610,7 @@ function relampagoVivoR3B(estado, hunt, entry, ef, agora) {
   const af = Ficha.combate(estado).afPoe ?? {};
   hunt.lacaios ??= [];
   const eventos = [];
-  const dur = Math.max(1, Math.round((ef.relampagoMs ?? 5000) * Math.max(0.1, 1 + (ef.duracaoPct ?? 0) / 100)));
+  const dur = Math.max(1, Math.round((ef.relampagoMs ?? 5000) * Math.max(0.1, 1 + (ef.duracaoPct ?? 0) / 100) * Math.max(0, 1 + (ef.duracaoMaisPct ?? 0) / 100)));
   for (let i = 0; i < Math.max(1, ef.relampagoN ?? 1); i++) {
     const vivos = hunt.lacaios.filter((l) => l.r3bRelampago && l.hp > 0 && !(l.ate && t >= l.ate));
     if (vivos.length >= Math.max(1, ef.relampagoMax ?? 8)) vivos.sort((a, b) => (a.desde ?? 0) - (b.desde ?? 0))[0].ate = t;
