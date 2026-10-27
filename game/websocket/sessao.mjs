@@ -1015,7 +1015,8 @@ export class Sessao {
     this.protecao = null;
     const portal = Party.portalDeSaida(this);
     Party.antesDeSairDaCacada(this);
-    this.aplicar(Cacadas.sair(this.estado));
+    // (não é decisão do jogador: o loop de mapas não para — espera a volta, como depois de morrer)
+    this.aplicar(Cacadas.sair(this.estado, { manterLoop: true }));
     portal();
     this.avisoPendente = 'O mapa não carregou a tempo: você voltou para a cidade em segurança. Tente entrar de novo.';
   }
@@ -1519,6 +1520,25 @@ export class Sessao {
       case 'abandonarMapa': {
         const r = MapasDispositivo.abandonar(this.estado);
         this.aplicar(r);
+        return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
+      }
+      // O LOOP DE MAPAS (27/10): os grupos marcados na tela (`[{ chave, quantos }]`) viram a fila no estado do personagem e o primeiro abre
+      // pelo mesmo caminho do "Abrir mapa"; os próximos abrem sozinhos a cada mapa concluído (`Cacadas` → `MapasDispositivo.seguirLoop`).
+      case 'iniciarLoopDeMapas': {
+        const grupos = Array.isArray(m.grupos) ? m.grupos.map((g) => ({ chave: g?.chave, quantos: g?.quantos })) : [];
+        const r = MapasDispositivo.iniciarLoop(this.estado, { grupos, mode: m.mode }, { antes: () => Party.antesDeSairDaCacada(this) });
+        if (this.estado.mapas?.loop) delete this.estado.mapas.loop.seguir;
+        this.aplicar(r);
+        if (r.ok && this.estado.hunt) Party.seguirOLider(this);
+        return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
+      }
+      case 'pararLoopDeMapas': {
+        this.aplicar(MapasDispositivo.pararLoop(this.estado));
+        return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
+      }
+      // O "×" do aviso do último loop (por que ele parou).
+      case 'dispensarFimDoLoop': {
+        MapasDispositivo.dispensarFimDoLoop(this.estado);
         return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
       }
       // O portal do boss do ato (aberto na última fase concluída): valida no servidor e leva para a arena, sem recarga.
@@ -2797,6 +2817,13 @@ export class Sessao {
     // no Postgres) — o erro só é logado; a próxima passagem por aqui tenta de novo.
     if (Date.now() - (this.gravadoEm ?? Date.now()) >= AUTOSAVE_MS) this.gravarAgora().catch((e) => console.error('autosave', this.personagem?.nome, '->', e.message));
     this.gravadoEm ??= Date.now();
+    // (27/10, revisão) O LOOP DE MAPAS contra a caçada de agora: a party troca a caçada sem passar pela saída (o juntar do "seguir o
+    // líder", o voltar com o líder) — você foi para outra, o loop para; a pausa do concluído acabou na cidade, o próximo abre.
+    const doLoop = MapasDispositivo.conferirLoop(this.estado);
+    if (doLoop) {
+      this.avisoPendente = doLoop;
+      this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
+    }
     if (this.estado.hunt) {
       // O destino de um clique na cidade não sobrevive a entrar numa caçada.
       this.estado.destino = null;
@@ -2867,6 +2894,13 @@ export class Sessao {
         if (this.estado.avisoDaHunt) {
           this.avisoPendente = this.estado.avisoDaHunt;
           delete this.estado.avisoDaHunt;
+        }
+        // O LOOP DE MAPAS abriu o próximo mapa neste tique: quem segue o líder vem junto (como no "Abrir mapa") e a tela do Dispositivo
+        // recebe a fila nova.
+        if (this.estado.mapas?.loop?.seguir) {
+          delete this.estado.mapas.loop.seguir;
+          if (this.estado.hunt) Party.seguirOLider(this);
+          this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
         }
         // "Seguir" ligado e a fase completa: a próxima fase, no mesmo modo.
         // Só com a aba aberta: o char trazido sem aba (party) é offline, fica em loop.
@@ -2980,8 +3014,8 @@ export class Sessao {
     const morte = real ? Morte.morrer(this.estado, descerDeLevel) : { lost: 0, goldLost: 0 };
     if (real) Ficha.totais(this.estado).deaths += 1;
     // No SEU mapa aberto: a morte gasta um portal (sem portal, o mapa acaba) e os monstros que ficaram esperam a volta. A saída por erro do
-    // servidor não gasta portal.
-    const doMapa = MapaAberto.guardarAoSair(this.estado, { morreu: real });
+    // servidor não gasta portal (nem para o loop de mapas: ele espera a volta, como depois de morrer).
+    const doMapa = MapaAberto.guardarAoSair(this.estado, { morreu: real, manterLoop: !real });
     if (doMapa) morte.mapa = doMapa;
     this.estado.hunt = null;
     this.estado.hp = this.estado.maxHp;

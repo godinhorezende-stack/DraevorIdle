@@ -329,8 +329,64 @@ h5.mp-nome { font-size: 13.5px; }
 .mp-tierbar i { align-self: end; width: 100%; min-height: 2px; background: #22272c; border-radius: 2px 2px 0 0; }
 .mp-tierbar.feito i { background: linear-gradient(180deg, var(--w-ouro2), var(--w-bronze)); }
 .mp-tierbar small { font-size: 9.5px; color: var(--w-txt3); font-variant-numeric: tabular-nums; }
+/* (27/10) As ABAS por tier, os mapas iguais num cartão "×N" e o LOOP de mapas: abas de metal pequenas (a escolhida acesa em ciano, como a
+   dificuldade), o selo da quantidade em ouro, a caixa do loop no pé do cartão e a barra "Iniciar loop" presa ao pé da lista. */
+.mp-lista-cab { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; }
+.mp-loop-fim { display: inline-flex; align-items: baseline; flex-wrap: wrap; gap: 2px 8px; font-size: 11.5px; color: #e7b3ac; }
+.mp-loop-fim.ok { color: var(--w-ouro2); }
+.mp-loop-fim small { font-size: 10.5px; color: var(--w-txt3); font-variant-numeric: tabular-nums; }
+.mp-loop-fim-x { align-self: center; width: 20px; height: 20px; padding: 0; cursor: pointer; font: 700 13px/1 var(--font-heading, Cinzel, serif); color: var(--w-txt3);
+  background: #0d1012; border: 1px solid #2f3236; border-radius: 2px; transition: color .15s, border-color .15s; }
+.mp-loop-fim-x:hover { color: #dfe6ea; border-color: #4a5258; }
+.mp-loop-fim-x:disabled { opacity: .5; cursor: default; }
+.mp-abas { display: flex; gap: 4px; overflow-x: auto; padding: 2px 1px 4px; scrollbar-width: thin; }
+.mp-aba { flex: none; display: grid; justify-items: center; gap: 0; min-width: 54px; padding: 4px 10px 5px; cursor: pointer; color: #9aa2a8;
+  background: linear-gradient(180deg, #14171a, #0b0d0f); border: 1px solid #2f3236; border-radius: 3px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+  transition: color .15s, border-color .15s, box-shadow .15s; }
+.mp-aba b { font: 700 12.5px var(--font-heading, Cinzel, serif); letter-spacing: .1em; text-transform: uppercase; }
+.mp-aba small { font: 600 10px var(--font-heading, Cinzel, serif); color: #6f777e; font-variant-numeric: tabular-nums; }
+.mp-aba:hover { color: #dfe6ea; border-color: #4a5258; }
+.mp-aba.unicos b { color: var(--mp-unico); }
+.mp-aba.ativa { color: #e6f6fa; background: linear-gradient(180deg, #14394c, #0a1f2b 60%, #081822); border-color: #4fa9c0;
+  box-shadow: 0 0 10px rgba(79, 209, 224, .22), inset 0 0 12px rgba(79, 209, 224, .12); }
+.mp-aba.ativa small { color: #9fdbe7; }
+.mp-mapa header { grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; }
+.mp-qtd { align-self: start; padding: 1px 7px; font: 700 13px var(--font-heading, Cinzel, serif); color: var(--w-txt3); border: 1px solid #2f3236; border-radius: 2px;
+  background: #0d1012; font-variant-numeric: tabular-nums; }
+.mp-qtd.varios { color: #f7e3a6; background: #2a1f0b; border-color: var(--w-bronze2); box-shadow: inset 0 0 8px rgba(217, 179, 90, .18); }
+.mp-mapa.marcado { border-top-color: #3c6f7d; border-right-color: #3c6f7d; border-bottom-color: #3c6f7d; box-shadow: 0 0 0 1px rgba(79, 209, 224, .25), inset 0 0 14px rgba(79, 209, 224, .07); }
+.mp-pe { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 2px; }
+.mp-pe .mp-abrir { flex: 1 1 140px; width: auto; min-height: 36px; font-size: 12.5px; }
+.mp-marcar, .mp-usar { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font: 600 11px var(--font-heading, Cinzel, serif); letter-spacing: .1em;
+  text-transform: uppercase; color: var(--w-txt2); }
+.mp-caixa { width: 16px; height: 16px; margin: 0; accent-color: var(--w-ciano); cursor: pointer; }
+.mp-caixa:disabled { cursor: not-allowed; }
+.mp-quantos { width: 64px; padding: 4px 6px; font-weight: 600; font-size: 12px; font-family: inherit; color: var(--w-txt); background: #0a0c0e; border: 1px solid var(--w-cinza-aco);
+  border-radius: 3px; font-variant-numeric: tabular-nums; }
+.mp-quantos::placeholder { color: var(--w-txt3); }
+.mp-barra-loop { position: sticky; bottom: 0; z-index: 1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; padding: 8px 10px;
+  background: linear-gradient(180deg, #101316f2, #0a0c0ef7); border: 1px solid var(--w-metal); border-radius: 4px; box-shadow: 0 -4px 12px #0009; }
+.mp-barra-texto { font-size: 12px; color: var(--w-txt2); }
+.mp-barra-acoes { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.mp-sel { min-height: 32px; padding: 0 10px; cursor: pointer; border-radius: 3px; font: 600 11px var(--font-heading, Cinzel, serif); letter-spacing: .08em; text-transform: uppercase;
+  color: var(--w-txt2); background: #14171a; border: 1px solid #2f3236; }
+.mp-sel:hover:not(:disabled) { color: #dfe6ea; border-color: #4a5258; }
+.mp-sel:disabled { cursor: not-allowed; opacity: .45; }
+.mp-iniciar { width: auto; min-height: 38px; padding: 0 18px; font-size: 13px; }
+.mp-loop { grid-column: 1 / -1; display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 200px); gap: 12px; align-items: center;
+  border-color: #2d5f6c; box-shadow: inset 0 1px 0 rgba(160, 236, 248, .08), inset 0 0 16px rgba(79, 209, 224, .08); }
+.mp-loop-ico { display: grid; place-items: center; width: 44px; height: 44px; color: var(--w-ciano2); background: radial-gradient(circle, #133542, #0a1418 70%);
+  border: 1px solid #2d5f6c; border-radius: 50%; }
+.mp-loop-ico .w2-ico { width: 24px; height: 24px; }
+.mp-loop-fila { font-weight: 600; font-size: 12px; font-family: inherit; letter-spacing: 0; color: var(--w-txt2); }
+.mp-loop-barra { height: 6px; background: #1b2127; border: 1px solid #22313a; border-radius: 3px; overflow: hidden; }
+.mp-loop-barra i { display: block; height: 100%; background: linear-gradient(90deg, var(--w-ciano), var(--w-ciano2)); box-shadow: 0 0 8px var(--w-ciano-fraco); transition: width .3s; }
 @media (max-width: 760px) {
   .mp-corpo { grid-template-columns: minmax(0, 1fr); }
   .mp-aberto { grid-template-columns: auto minmax(0, 1fr); }
   .mp-aberto .mp-acoes { grid-column: 1 / -1; }
+  .mp-loop { grid-template-columns: auto minmax(0, 1fr); }
+  .mp-loop .mp-acoes { grid-column: 1 / -1; }
+  .mp-barra-loop { flex-direction: column; align-items: stretch; }
+  .mp-barra-acoes .mp-iniciar { flex: 1 1 100%; }
 }
