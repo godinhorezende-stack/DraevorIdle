@@ -107,6 +107,18 @@ export function agravar(bicho, agora, maisAntigosQueMs = 0) {
   return n;
 }
 
+/**
+ * (lote S2A, 27/10) O ROMPIMENTO do bicho no pulso `quando` (o suporte Rompimento — `suportes-s2a.porRompimento`: `estados.rompimento = { fins, maisPct, rapidoPct }`, até
+ * 4 acúmulos de 3 s): `{ n, mais, rapido }` — o "X% mais Dano do Sangramento por Rompimento" e o "Sangramento expira Y% mais rápido por Rompimento" × os acúmulos
+ * vivos —, ou null sem nenhum. Só no modo PoE.
+ */
+export function rompimento(m, quando) {
+  const r = m?.estados?.rompimento;
+  if (!r || !itensPoeLigado()) return null;
+  const n = (r.fins ?? []).filter((t) => t > quando).length;
+  if (!n) return null;
+  return { n, mais: 1 + ((r.maisPct ?? 0) * n) / 100, rapido: 1 + ((r.rapidoPct ?? 0) * n) / 100 };
+}
 /** (lote C4, dono 21/10 — D4.2) As camadas vivas da Praga no pulso `quando` (as que acabam nele ou depois). */
 const camadasNoPulso = (d, quando) => d.camadas.filter((a) => a >= quando).length;
 /**
@@ -145,12 +157,15 @@ export function tique(hunt, eventos, agora) {
       if (!t) continue;
       while (d.falta > 0 && R.jaPode(agora, d.proximo) && d.proximo <= d.ate + t.pulsoMs && m.hp > 0) {
         // (lote C4, dono 21/10 — D4.2) as CAMADAS da Praga: o pulso é o de uma camada × as camadas vivas nele (cada uma com a sua duração — `GemasC4.porCamada`)
-        const porPulso = d.camadas ? (d.porPulsoCamada ?? 0) * camadasNoPulso(d, d.proximo) : d.porPulso;
+        // (lote S2A, 27/10) o ROMPIMENTO no bicho (o suporte Rompimento): o Sangramento expira X% mais rápido por acúmulo (o mesmo dano em menos tempo — o pulso ×) e
+        // causa Y% mais dano por acúmulo (`rompimento`)
+        const rup = d.tipo === 'sangramento' ? rompimento(m, d.proximo) : null;
+        const porPulso = (d.camadas ? (d.porPulsoCamada ?? 0) * camadasNoPulso(d, d.proximo) : d.porPulso) * (rup?.rapido ?? 1);
         if (d.camadas && !(porPulso > 0)) { d.falta = 0; break; }
         const parte = Math.max(1, Math.round(Math.min(d.falta, porPulso)));
         // (o Sangramento no bicho em movimento ou Agravado: × 3 no pulso — `fatorDoMovimento`)
         // (lote C4, dono 21/10: + o dano sofrido aumentado do alvo — `recebidoNoPulso`)
-        const v = resistido(hunt, m, d.elemento, parte * fatorDoMovimento(d, m, agora) * recebidoNoPulso(m, d, agora));
+        const v = resistido(hunt, m, d.elemento, parte * fatorDoMovimento(d, m, agora) * recebidoNoPulso(m, d, agora) * (rup?.mais ?? 1));
         m.hp -= v;
         // (lote 31, S001: o dano contínuo é de quem o pôs — o do lacaio é dele; não é acerto; lote G20a: o do totem é dele)
         QuemFeriu.carimbar(m, d.origem?.fonte === 'lacaio' ? QuemFeriu.LACAIO : d.origem?.fonte === 'totem' ? QuemFeriu.TOTEM : QuemFeriu.VOCE);

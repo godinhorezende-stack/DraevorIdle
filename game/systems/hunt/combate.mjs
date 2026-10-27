@@ -1299,7 +1299,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   }
   // Absorção e "Dano recebido" da árvore, Última muralha, o escudo da Fonte
   // viva e o Não cai nunca (ver `Arvore.danoRecebido`).
-  final = Arvore.danoRecebido(estado, final, eventos, hunt.pos, personagem.nome, { ficha, elemento: 'physical' });
+  // (lote S2A: o golpe do bicho é um ATAQUE — o Companheirismo)
+  final = Arvore.danoRecebido(estado, final, eventos, hunt.pos, personagem.nome, { ficha, elemento: 'physical', ataque: true });
   // As cargas do PoE: "acertado recentemente" e a chance de Tolerância quando acertado.
   if (ficha.cargas && CargasPoe.aoSerAcertado(estado, ficha.cargas).length) Ficha.invalidar(estado);
   // PoE: o "acertado/dano recentemente", o Reflexo aos agressores corpo a corpo, a recuperação do dano sofrido e o congelar quem acerta.

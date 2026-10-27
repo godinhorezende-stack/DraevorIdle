@@ -27,9 +27,9 @@ Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 143 |
+| implementada e testada | 159 |
 | implementada, sem teste próprio | 51 |
-| parcial | 68 |
+| parcial | 52 |
 
 ### Variantes
 
@@ -39,10 +39,10 @@ Só os ataques:
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 277 linhas distintas (23 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 233 linhas distintas (22 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 490/562 ativas, 156/262 suportes.
+- Testes que citam a gema: 490/562 ativas, 168/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
@@ -64,7 +64,6 @@ Só os ataques:
 | 2 | Causa +# explosões menores |
 | 2 | Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética |
 | 2 | Habilidades suportadas criam Solo Maldito com uma Duração base de # segundos Feitiços de Habilidades Suportadas não tem Duração Inimigos em Solo Maldito das Habilidades Suportadas são Amaldiçoados com tal Feitiço Limite de # área de Solo Maldito |
-| 2 | Habilidades Suportadas têm Efeito em Área da Ativação de Armadilhas aumentado em #% |
 | 2 | Lacaios de Habilidades Suportadas têm Chance de Golpe Crítico aumentada em #% |
 | 2 | Lacaios possuem +# % de todas Resistências Elementais |
 | 2 | Máximo de # anomalias |
@@ -91,9 +90,7 @@ Só os ataques:
 | 1 | A Habilidade Explosiva da Relíquia Sagrada concede # de Vida regenerada por segundo aos Lacaios |
 | 1 | Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe # de Ressonância de outros Elementos por # segundos Perde # de Ressonância por segundo para cada Elemento que não estiver ganhando |
 | 1 | Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe # de Ressonância de outros Elementos por # segundos\nPerde # de Ressonância por segundo para cada Elemento que não estiver ganhando |
-| 1 | Adrenalina de Combate concede #% mais Velocidade de Ataque às Habilidades de Deslocamento não Suportadas por Combate Próximo |
 | 1 | Alcance do Posicionamento de Totens aumentado em # % |
-| 1 | Alvos sofrem #% mais Dano do Sangramento por Rompimento das Habilidades Suportadas neles |
 | 1 | Ao atingir # de Gula, perde toda a Gula e ganha Regurgitação por # segundos |
 | 1 | Após atacar, os totens desaparecem |
 | 1 | Armadilha dura +# segundo Gira |
@@ -103,7 +100,6 @@ Só os ataques:
 | 1 | Ataques com habilidades reforçadas, cujo maior tipo de dano é caos, elétrico ou físico, fazem você ganhar # de Ressonância Profana dos outros tipos por segundo durante # segundos Perde # de Ressonância Profana por segundo para cada tipo que não ganhar |
 | 1 | Ataques com habilidades reforçadas, cujo maior tipo de dano é caos, elétrico ou físico, fazem você ganhar # de Ressonância Profana dos outros tipos por segundo durante # segundos\nPerde # de Ressonância Profana por segundo para cada tipo que não ganhar |
 | 1 | Ataques reforçados ativam Rajada de Vento ao atingir, limitado a uma vez a cada # metros percorridos |
-| 1 | Ativa a Habilidade Suportada quando você Acertar um Inimigo Raro ou Único com um Ataque |
 | 1 | Ativa Esta Habilidade quando um Feitiço de Habilidades Suportadas terminar |
 | 1 | Ativa esta magia reforçada quando sua salvaguarda quebra |
 | 1 | Ativa Explosão Destruidora quando um Feitiço de Habilidades Maldição Suportadas terminar |
@@ -120,12 +116,6 @@ Só os ataques:
 | 1 | Causa # a # de Dano de Gelo |
 | 1 | Causa Dano de Fogo base igual a #% da Vida Máxima dos Totens |
 | 1 | Chão amaldiçoado de habilidades reforçadas ativam Sapo Explosivo a cada # segundo |
-| 1 | Clamores reforçados criam um chão consagrado com duração de # segundos |
-| 1 | Clamores reforçados têm #% de área de efeito |
-| 1 | Clamores reforçados têm a velocidade de recarga reduzida em #% |
-| 1 | Clamores Suportados infligem # Debuffs de Sangue Corrompido |
-| 1 | Clamores Suportados infligem # Debuffs de Sangue Corrompido no primeiro inimigo Acertado por cada Ataque que Impelirem |
-| 1 | Clamores Suportados infligem # Debuffs de Sangue Corrompido no primeiro\ninimigo Acertado por cada Ataque que Impelirem |
 | 1 | Cobre Inimigos em Cinzas ao Acertar |
 | 1 | Concede # % mais Dano Mágico |
 | 1 | Concede # de Regeneração de Mana por segundo para cada Inimigo afetado |
@@ -147,13 +137,10 @@ Só os ataques:
 | 1 | Cria +# Pilar de Cinzas |
 | 1 | Dano e Resfriamentos Perduram por uma Duração Base de # segundos |
 | 1 | Dano e Resfriamentos Perduram por uma Duração Base de +# segundos |
-| 1 | Definhado dura # segundos |
 | 1 | Detonação da Mina é Instantânea |
 | 1 | Dispara # projéteis |
 | 1 | Dispara até # Flechas em alvos diferentes |
 | 1 | Duração Base do Frenesi Faminto é de # segundos |
-| 1 | Efeito das Marcas de Habilidades Suportadas aumentado em #% |
-| 1 | Efeito das Marcas de Habilidades Suportadas reduzido em #% |
 | 1 | Efeito do Buff aumentado em # % |
 | 1 | Efeito em Área de Habilidades Maldição Suportadas reduzido em #% |
 | 1 | Enquanto na Postura da Areia, Buff faz com que você sofra até # % menos Dano dos Inimigos na Aura |
@@ -168,7 +155,6 @@ Só os ataques:
 | 1 | Esta Magia causa # a # , mais # % da sua Vida Máxima, como Dano de Fogo base |
 | 1 | Estandarte concede # % mais Dano Físico com Habilidades Corpo a Corpo a Você e Aliados |
 | 1 | Estandarte concede Precisão aumentada em # % a Você e Aliados |
-| 1 | Estandartes reforçados infligem Sangue Corrompido a cada segundo aos inimigos dentro de sua área |
 | 1 | Este ataque e lacaios convertem # % do dano físico em dano elétrico |
 | 1 | Estímulo dura # segundos |
 | 1 | Explosões causam Dano de Fogo base igual a # % da Vida máxima do Lacaio |
@@ -176,18 +162,12 @@ Só os ataques:
 | 1 | Feitiços aplicados por habilidades de maldição reforçadas têm #% de chance de afetar inimigos imunes a feitiços |
 | 1 | Feitiços de Habilidades Suportadas se Transferem para todos os Inimigos dentro de # metros quando o Inimigo Enfeitiçado morrer |
 | 1 | Flechas caem em duas linhas perpendiculares |
-| 1 | Fonte de Vida dura # segundos |
-| 1 | Fonte de Vida dura +# segundos |
 | 1 | Fúria Arcana concede Velocidade de Conjuração aumentada em #% Fúria Arcana concede Regeneração de Mana aumentada em #% |
 | 1 | Fúria Arcana concede Velocidade de Conjuração aumentada em #%\nFúria Arcana concede Regeneração de Mana aumentada em #% |
 | 1 | Fúria Arcana dura # segundos |
 | 1 | Ganha # de Gula ao conjurar magias reforçadas |
-| 1 | Ganha # Traumatismo na primeira vez que um Ataque Suportado Acertar um Inimigo Sofre # de Dano Físico por Traumatismo quando você ganhar Traumatismo das Habilidades Suportadas Traumatismos duram # segundos |
-| 1 | Ganha Fonte de Vida após Gastar um total de # de Vida no Custo Direto e Efeitos das Habilidades Suportadas |
 | 1 | Ganha Fúria Arcana após Gastar um total de # de Mana em Custos Diretos e Efeitos de uma Habilidade Suportada |
 | 1 | Ganha Invervação ao Matar um Inimigo Eletrizado com Habilidades Suportadas |
-| 1 | Ganha uma Carga de Inspiração ao Gastar Mana em Custos Diretos ou Efeitos das Habilidades Suportadas |
-| 1 | Ganha uma Carga de Inspiração ao Gastar Mana em\nCustos Diretos ou Efeitos das Habilidades Suportadas |
 | 1 | Ganha uma instância de Intensidade Sobrecarregada por # segundos após perder # de Intensidade com habilidades reforçadas |
 | 1 | Ganha uma instância de Intensidade Sobrecarregada por # segundos após\nperder # de Intensidade com habilidades reforçadas |
 | 1 | Gira # vez |
@@ -195,16 +175,12 @@ Só os ataques:
 | 1 | Gira +# vezes se em Empunhadura Dupla |
 | 1 | Glifos reforçados ativam Constrição Pérfida ao serem recuperados |
 | 1 | Golpe de Impacto de Zumbis Evocados tem a Velocidade de Recarga aumentada em % |
-| 1 | Golpes Críticos com Habilidades Suportadas que infligirem Sangramento também infligem Rompimento |
-| 1 | Golpes Finais das Habilidades de Golpe Suportadas com Armas Corpo a Corpo contra Monstros Raros concedem um de seus Modificadores por # segundos |
 | 1 | Habilidades de Aura Suportadas não tem Reserva |
 | 1 | Habilidades reforçadas ativam Cristal em Queda ao atingir |
 | 1 | Habilidades reforçadas ativam Fluxo Cinético ao causar golpe crítico |
 | 1 | Habilidades reforçadas ativam Fluxo Cinético no golpe fatal |
 | 1 | Habilidades reforçadas ativam uma fenda no impacto da pancada |
-| 1 | Habilidades reforçadas excomungam os inimigos ao atingir corpo a corpo por # segundos |
 | 1 | Habilidades reforçadas ganham #% do dano físico como dano de caos adicional por fundamental |
-| 1 | Habilidades reforçadas infligem Chama Santificada ao atingir corpo a corpo |
 | 1 | Habilidades reforçadas podem conjurar # glifos adicionais |
 | 1 | Habilidades reforçadas têm #% de chance de ativar Chamado da Fogueira ao atingir inimigos incendiados corpo a corpo |
 | 1 | Habilidades reforçadas têm #% de chance de ignorar a redução de dano físico do inimigo, se cada Ressonância Profana for de, no mínimo, # |
@@ -214,29 +190,19 @@ Só os ataques:
 | 1 | Habilidades reforçadas têm o custo aumentado em #% por fundamental |
 | 1 | Habilidades Suportadas arremessam Minas em um Arco |
 | 1 | Habilidades Suportadas Ativam Explosão Prismática ao Acertar |
-| 1 | Habilidades Suportadas Ativam uma vez que o Custo de Mana total em outros Ataques de Arco excederem #% do seu Custo de Mana |
-| 1 | Habilidades Suportadas Ativam uma vez que o Custo de Mana total em outros Ataques\nde Arco excederem #% do seu Custo de Mana |
 | 1 | Habilidades Suportadas Ativarão Convocar Espíritos Sagrados ao Acertar |
 | 1 | Habilidades Suportadas causam # Dano Base de Gelo por segundo |
-| 1 | Habilidades Suportadas causam #% mais Dano com Acertos e Afecções por cada # de Custo de Mana |
 | 1 | Habilidades Suportadas causam #% mais Dano Elemental por cada # da sua menor Ressonância |
 | 1 | Habilidades Suportadas Causam Dano e Resfriam Inimigos entre você e Alvos Vinculados |
-| 1 | Habilidades Suportadas concedem Ímpeto de Combate ao Acertar Ímpeto de Combate dura # segundos ou até que você utilize uma Habilidade de Deslocamento |
-| 1 | Habilidades Suportadas concedem Ímpeto de Combate ao Acertar\nÍmpeto de Combate dura # segundos ou até que você utilize uma Habilidade de Deslocamento |
 | 1 | Habilidades Suportadas Custam +# de Mana |
 | 1 | Habilidades Suportadas não podem aplicar Auras em você a menos que você tenha Lacaios de uma Habilidade Suportada |
 | 1 | Habilidades Suportadas não tem Reserva |
 | 1 | Habilidades Suportadas penetram #% da Resistência Elemental enquanto cada Ressonância estiver em ao menos # |
-| 1 | Habilidades Suportadas possuem #% de chance de causar Definhado ao Acertar |
-| 1 | Habilidades Suportadas recebem #% de Dano Físico como Dano de Caos Extra |
 | 1 | Habilidades Suportadas só podem ser usadas com Varinhas |
-| 1 | Habilidades Suportadas têm # a # de Dano de Ataque Físico Adicional por Traumatismo |
 | 1 | Habilidades Suportadas têm #% de Velocidade de Ataque de Lacaios aumentada |
 | 1 | Habilidades Suportadas têm #% de Velocidade de Conjuração de Lacaios aumentada |
 | 1 | Habilidades Suportadas têm alcance de Transferência de Feitiços aumentado em #% |
-| 1 | Habilidades Suportadas tem Chance de Golpe Crítico aumentada em #% por Carga de Inspiração |
 | 1 | Habilidades Suportadas têm Custo de Vida aumentado em #% |
-| 1 | Habilidades Suportadas têm Duração do Atordoamento aumentada em #% por Traumatismo |
 | 1 | Habilidades Suportadas têm Efeito das Auras reduzido em #% |
 | 1 | Inervação dura # segundos |
 | 1 | Inflige Definhando por # segundos ao Acertar |
@@ -244,7 +210,6 @@ Só os ataques:
 | 1 | Inimigos possuem # % menos Velocidade de Movimento no início do Debuff |
 | 1 | Inimigos recebem # % de aumento de Dano dos Acertos de Minas ou Armadilhas |
 | 1 | Inimigos sofrem de Insanidade Perversa se estiverem sob a influência de auras de habilidades reforçadas por mais de # segundos |
-| 1 | Intensidade de Chama Santificada infligida por habilidades reforçadas aumentada em #% |
 | 1 | Invervação concede # a # de Dano de Raio |
 | 1 | Invoca # Lacaios Relâmpagos Vivos |
 | 1 | Invoca # Nascido(s) da Colmeia |
@@ -254,9 +219,6 @@ Só os ataques:
 | 1 | Lacaios criados por Habilidades Suportadas ganham Fúria Desperta e Adrenalina por #% de sua Duração, máximo de # segundos Fúria Desperta concede +#% de Chance de Golpe Crítico Fúria Desperta concede +#% de Multiplicador de Golpe Crítico |
 | 1 | Lacaios das Habilidades Suportadas sofrem #% de sua Vida e Escudo de Energia Máximos total como Dano Físico por segundo enquanto você tiver uma Aura de uma Habilidade Suportada em você |
 | 1 | Lacaios das Habilidades Suportadas têm # metros ao Raio de seu Efeito Incendiário |
-| 1 | Lacaios de habilidades reforçadas sofrem #% de dano, se eles forem seus únicos lacaios |
-| 1 | Lacaios de habilidades reforçadas sofrem #% do dano de ataque da própria vida antes de você, se eles forem seus únicos lacaios |
-| 1 | Lacaios de habilidades reforçadas sofrem #% do dano de ataque da própria vida\nantes de você, se eles forem seus únicos lacaios |
 | 1 | Lacaios de habilidades reforçadas têm +#% de multiplicador de golpe crítico toda vez que você causar um golpe crítico recentemente com um ataque, até +#% |
 | 1 | Lacaios de habilidades reforçadas têm a chance de causar golpe crítico aumentada em #% toda vez que você causar um golpe crítico recentemente com um ataque, até #% |
 | 1 | Lacaios de Habilidades Suportadas causam # de Dano de Fogo por segundo aos Inimigos próximos a eles |
@@ -298,7 +260,6 @@ Só os ataques:
 | 1 | Não requer um cadáver |
 | 1 | o totem provoca os monstros em volta a atacá-lo (act_str.lua:##) |
 | 1 | Oferendas reforçadas ativam Invocar Nascidos da Colmeia ao usar |
-| 1 | Perca todas as Cargas de Inspiração após Gastar um total de # de Mana em Custos Diretos e Efeitos das Habilidades Suportadas |
 | 1 | perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB) |
 | 1 | Primeira Mina é Detonada Instantaneamente Minas recebem # % mais Velocidade de Detonação para cada Mina anteior na Sequência de Detonação |
 | 1 | Projéteis deixam Solo Eletrizado |
@@ -308,12 +269,7 @@ Só os ataques:
 | 1 | Raio acerta # alvo dentro de # metros |
 | 1 | Raio acerta # alvos dentro de # metros |
 | 1 | Robôs Rastejantes concedem # % mais Dano de Armadilhas e Minas |
-| 1 | Sangramento expira #% mais rápido por Rompimento das Habilidades Suportadas nos alvos |
 | 1 | Sangramentos inflingidos por esta Habilidade causam Dano # % mais rápido |
-| 1 | Sangue Corrompido infligido por Clamores Suportados causam # de Dano Físico base por segundo |
-| 1 | Sangue Corrompido infligido por Clamores Suportados tem uma Duração Base de # segundos |
-| 1 | Sangue Corrompido infligido por estandartes reforçados causam # de dano físico base por segundo por bravura consumida |
-| 1 | Sangue Corrompido infligido por estandartes reforçados tem uma duração base de # segundos |
 | 1 | Solo Eletrizado causa # % de Dano sofrido aumentado |
 | 1 | Somente uma Mina deste tipo pode ser Detonada em cada Sequência de Detonação |
 | 1 | Suas Habilidades Não-Bênção que Reservam Mana são Desabilitadas enquanto você tiver uma Aura da Habilidade Suportada em você |
@@ -593,38 +549,13 @@ Só os ataques:
 - **Awakened_Hextouch_Support** (Suporte Desperto: Toque Maldito) — parcial
   - não simulado: Feitiços aplicados por habilidades de maldição reforçadas têm 34% de chance de afetar inimigos imunes a feitiços
 - **Behead_Support** (Decapitar) — parcial
-  - não simulado: Golpes Finais das Habilidades de Golpe Suportadas com Armas Corpo a Corpo contra Monstros Raros concedem um de seus Modificadores por 20 segundos
   - não simulado: 20% de chance de renovar a Duração do Modificador recebido em até 5 segundos quando você Acertar um Inimigo Raro ou Único com Habilidades Suportadas
 - **Blastchain_Mine_Support** (Mina da Cadeia Explosiva) — parcial
   - não simulado: Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida
-- **Blessed_Call_Support** (Chamado Abençoado (Reforço)) — parcial
-  - não simulado: Clamores reforçados criam um chão consagrado com duração de 6 segundos
-  - não simulado: Clamores reforçados têm -40% de área de efeito
-  - não simulado: Clamores reforçados têm a velocidade de recarga reduzida em 20%
-- **Bloodsoaked_Banner_Support** (Estandarte Ensanguentado (Reforço)) — parcial
-  - não simulado: Estandartes reforçados infligem Sangue Corrompido a cada segundo aos inimigos dentro de sua área
-  - não simulado: Sangue Corrompido infligido por estandartes reforçados causam 26.7 de dano físico base por segundo por bravura consumida
-  - não simulado: Sangue Corrompido infligido por estandartes reforçados tem uma duração base de 8 segundos
 - **Bonespire_Support** (Torre Óssea (Reforço)) — parcial
   - não simulado: a explosão das torres usa o físico médio da arma × 250–271% pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); as torres não bloqueiam o caminho dos monstros
 - **Cast_on_Ward_Break_Support** (Conjurar ao Perder Salvaguarda (Reforço)) — parcial
   - não simulado: Ativa esta magia reforçada quando sua salvaguarda quebra
-- **Close_Combat_Support** (Combate Próximo) — parcial
-  - não simulado: Habilidades Suportadas concedem Ímpeto de Combate ao Acertar Ímpeto de Combate dura 2 segundos ou até que você utilize uma Habilidade de Deslocamento
-  - não simulado: Adrenalina de Combate concede 20% mais Velocidade de Ataque às Habilidades de Deslocamento não Suportadas por Combate Próximo
-  - não simulado: Habilidades Suportadas concedem Ímpeto de Combate ao Acertar\nÍmpeto de Combate dura 2 segundos ou até que você utilize uma Habilidade de Deslocamento
-- **Cluster_Traps_Support** (Grupo de Armadilhas) — parcial
-  - não simulado: Habilidades Suportadas têm Efeito em Área da Ativação de Armadilhas aumentado em 20%
-- **Companionship_Support** (Companheirismo (Reforço)) — parcial
-  - não simulado: Lacaios de habilidades reforçadas sofrem 15% do dano de ataque da própria vida antes de você, se eles forem seus únicos lacaios
-  - não simulado: Lacaios de habilidades reforçadas sofrem -28% de dano, se eles forem seus únicos lacaios
-  - não simulado: Lacaios de habilidades reforçadas sofrem 15% do dano de ataque da própria vida\nantes de você, se eles forem seus únicos lacaios
-- **Corrupting_Cry_Support** (Clamor Corrompedor) — parcial
-  - não simulado: Sangue Corrompido infligido por Clamores Suportados causam 691.8 de Dano Físico base por segundo
-  - não simulado: Clamores Suportados infligem 1 Debuffs de Sangue Corrompido no primeiro inimigo Acertado por cada Ataque que Impelirem
-  - não simulado: Sangue Corrompido infligido por Clamores Suportados tem uma Duração Base de 2 segundos
-  - não simulado: Clamores Suportados infligem 4 Debuffs de Sangue Corrompido
-  - não simulado: Clamores Suportados infligem 1 Debuffs de Sangue Corrompido no primeiro\ninimigo Acertado por cada Ataque que Impelirem
 - **Crystalfall_Support** (Cristal em Queda (Reforço)) — parcial
   - não simulado: Habilidades reforçadas ativam Cristal em Queda ao atingir
 - **Cursed_Ground_Support** (Solo Maldito) — parcial
@@ -648,8 +579,6 @@ Só os ataques:
   - não simulado: Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção
   - não simulado: Suas Habilidades Não-Bênção que Reservam Mana são Desabilitadas enquanto você tiver uma Aura da Habilidade Suportada em você
   - não simulado: Habilidades Suportadas também contam como Habilidades Bênção\nVocê só pode ter uma Aura de suas Habilidades Bênção
-- **Excommunicate_Support** (Excomungar (Reforço)) — parcial
-  - não simulado: Habilidades reforçadas excomungam os inimigos ao atingir corpo a corpo por 3 segundos
 - **Exemplar_Support** (Exemplar (Reforço)) — parcial
   - não simulado: Lacaios de habilidades reforçadas têm a chance de causar golpe crítico aumentada em 40% toda vez que você causar um golpe crítico recentemente com um ataque, até 200%
   - não simulado: Lacaios de habilidades reforçadas têm +20% de multiplicador de golpe crítico toda vez que você causar um golpe crítico recentemente com um ataque, até +100%
@@ -702,10 +631,6 @@ Só os ataques:
   - não simulado: Habilidades Suportadas não podem aplicar Auras em você a menos que você tenha Lacaios de uma Habilidade Suportada
   - não simulado: Lacaios das Habilidades Suportadas sofrem 14.3% de sua Vida e Escudo de Energia Máximos total como Dano Físico por segundo enquanto você tiver uma Aura de uma Habilidade Suportada em você
   - não simulado: Habilidades Suportadas também contam como Habilidades Bênção\nVocê só pode ter uma Aura de suas Habilidades Bênção
-- **Hallow_Support** (Santificação (Reforço)) — parcial
-  - não simulado: Intensidade de Chama Santificada infligida por habilidades reforçadas aumentada em 36%
-  - não simulado: Habilidades reforçadas infligem Chama Santificada ao atingir corpo a corpo
-  - não simulado: Intensidade de Chama Santificada infligida por habilidades reforçadas aumentada em 10%
 - **Hex_Bloom_Support** (Propagar Feitiço) — parcial
   - não simulado: Habilidades Suportadas têm alcance de Transferência de Feitiços aumentado em 28%
   - não simulado: Feitiços de Habilidades Suportadas se Transferem para todos os Inimigos dentro de 3 metros quando o Inimigo Enfeitiçado morrer
@@ -741,19 +666,10 @@ Só os ataques:
   - não simulado: Invervação concede 8 a 145 de Dano de Raio
   - não simulado: Estímulo dura 8 segundos
   - não simulado: Inervação dura 2 segundos
-- **Inspiration_Support** (Inspiração) — parcial
-  - não simulado: Ganha uma Carga de Inspiração ao Gastar Mana em Custos Diretos ou Efeitos das Habilidades Suportadas
-  - não simulado: Habilidades Suportadas tem Chance de Golpe Crítico aumentada em 8% por Carga de Inspiração
-  - não simulado: Perca todas as Cargas de Inspiração após Gastar um total de 800 de Mana em Custos Diretos e Efeitos das Habilidades Suportadas
-  - não simulado: Ganha uma Carga de Inspiração ao Gastar Mana em\nCustos Diretos ou Efeitos das Habilidades Suportadas
 - **Kinetic_Instability_Support** (Reforço Instabilidade Cinética) — parcial
   - não simulado: Habilidades reforçadas ativam Fluxo Cinético no golpe fatal
   - não simulado: Máximo de 20 anomalias
   - não simulado: Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética
-- **Lifetap_Support** (Fonte de Vida) — parcial
-  - não simulado: Ganha Fonte de Vida após Gastar um total de 273 de Vida no Custo Direto e Efeitos das Habilidades Suportadas
-  - não simulado: Fonte de Vida dura 4 segundos
-  - não simulado: Fonte de Vida dura +2 segundos
 - **Living_Lightning_Support** (Reforço Relâmpago Vivo) — parcial
   - não simulado: Ativa Invocar Relâmpago Vivo quando uma habilidade de reforço causa dano elétrico com o acerto
   - não simulado: Lacaios convertem 100% do Dano Físico para Dano de Raio
@@ -771,14 +687,6 @@ Só os ataques:
 - **Machinations_Support** (Maquinações (Reforço)) — parcial
   - não simulado: Habilidades reforçadas ganham 8% do dano físico como dano de caos adicional por fundamental
   - não simulado: Habilidades reforçadas têm o custo aumentado em 10% por fundamental
-- **Manaforged_Arrows_Support** (Flecha Forjada com Mana) — parcial
-  - não simulado: Habilidades Suportadas causam 1% mais Dano com Acertos e Afecções por cada 1 de Custo de Mana
-  - não simulado: Habilidades Suportadas Ativam uma vez que o Custo de Mana total em outros Ataques de Arco excederem 300% do seu Custo de Mana
-  - não simulado: Habilidades Suportadas Ativam uma vez que o Custo de Mana total em outros Ataques\nde Arco excederem 300% do seu Custo de Mana
-- **Mark_On_Hit_Support** (Marcar ao Acertar) — parcial
-  - não simulado: Efeito das Marcas de Habilidades Suportadas reduzido em 21%
-  - não simulado: Ativa a Habilidade Suportada quando você Acertar um Inimigo Raro ou Único com um Ataque
-  - não simulado: Efeito das Marcas de Habilidades Suportadas aumentado em 5%
 - **Meat_Shield_Support** (Escudo de Carne) — parcial
   - não simulado: Lacaios de Habilidades Suportadas tem 20% de chance de Provocar ao Acertar
   - não simulado: Lacaios de Habilidades Suportadas sofrem 24% menos Dano
@@ -793,8 +701,6 @@ Só os ataques:
   - não simulado: Arqueiro Ilusório utiliza Habilidades Suportadas com 60% menos Velocidade de Ataque
   - não simulado: Arqueiro Ilusório dura 4 segundos
   - não simulado: Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade\nArqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados
-- **Multiple_Traps_Support** (Múltiplas Armadilhas) — parcial
-  - não simulado: Habilidades Suportadas têm Efeito em Área da Ativação de Armadilhas aumentado em 20%
 - **Overloaded_Intensity_Support** (Intensidade Sobrecarregada (Reforço)) — parcial
   - não simulado: Ganha uma instância de Intensidade Sobrecarregada por 10 segundos após perder 6 de Intensidade com habilidades reforçadas
   - não simulado: Habilidades reforçadas têm +1.4% de chance de causar golpe crítico por Intensidade Sobrecarregada
@@ -814,10 +720,6 @@ Só os ataques:
   - não simulado: Cobre Inimigos em Cinzas ao Acertar
   - não simulado: Cria 4 Pilares de Cinzas
   - não simulado: Cria +1 Pilar de Cinzas
-- **Rupture_Support** (Rompimento) — parcial
-  - não simulado: Golpes Críticos com Habilidades Suportadas que infligirem Sangramento também infligem Rompimento
-  - não simulado: Alvos sofrem 29% mais Dano do Sangramento por Rompimento das Habilidades Suportadas neles
-  - não simulado: Sangramento expira 25% mais rápido por Rompimento das Habilidades Suportadas nos alvos
 - **Sacred_Wisps_Support** (Espíritos Sagrados) — parcial
   - não simulado: Habilidades Suportadas Ativarão Convocar Espíritos Sagrados ao Acertar
   - não simulado: Habilidades Suportadas só podem ser usadas com Varinhas
@@ -832,10 +734,6 @@ Só os ataques:
   - não simulado: Um lacaio próximo ganha uma alma para cada 200 de vida que você gasta em custos iniciais com magias reforçadas
   - não simulado: Um lacaio próximo ganha uma alma para cada 200 de vida que você gasta em custos\niniciais com magias reforçadas
   - não simulado: Habilidades Suportadas têm Custo de Vida aumentado em 10%
-- **Trauma_Support** (Traumatismo) — parcial
-  - não simulado: Habilidades Suportadas têm 10 a 17 de Dano de Ataque Físico Adicional por Traumatismo
-  - não simulado: Habilidades Suportadas têm Duração do Atordoamento aumentada em 5% por Traumatismo
-  - não simulado: Ganha 1 Traumatismo na primeira vez que um Ataque Suportado Acertar um Inimigo Sofre 146 de Dano Físico por Traumatismo quando você ganhar Traumatismo das Habilidades Suportadas Traumatismos duram 6.9 segundos
 - **Trinity_Support** (Suporte Trindade) — parcial
   - não simulado: Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe 25 de Ressonância de outros Elementos por 2 segundos Perde 5 de Ressonância por segundo para cada Elemento que não estiver ganhando
   - não simulado: Habilidades Suportadas causam 3% mais Dano Elemental por cada 5 da sua menor Ressonância
@@ -858,10 +756,6 @@ Só os ataques:
   - não simulado: Dispara 3 projéteis
   - não simulado: 40% mais Dano em Área
   - não simulado: Esta habilidade é ativada por habilidades de ataque reforçadas
-- **Withering_Touch_Support** (Suporte Toque Definhador) — parcial
-  - não simulado: Habilidades Suportadas possuem 25% de chance de causar Definhado ao Acertar
-  - não simulado: Definhado dura 2 segundos
-  - não simulado: Habilidades Suportadas recebem 29% de Dano Físico como Dano de Caos Extra
 
 ## Não se aplicam ao jogo
 

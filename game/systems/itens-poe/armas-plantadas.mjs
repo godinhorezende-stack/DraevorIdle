@@ -147,7 +147,8 @@ export function armadilhasQueAtivam(hunt, ficha, agora = hunt?.clock ?? 0) {
   const fila = [];
   const na = new Set();
   for (const p of todas) {
-    const alvo = inimigoPerto(hunt, p, A.raioDeAtivacao);
+    // (lote S2A, 27/10: o raio de ativação da própria Armadilha — o "Efeito em Área da Ativação de Armadilhas aumentado" dos suportes, `p.raioDeAtivacao`)
+    const alvo = inimigoPerto(hunt, p, p.raioDeAtivacao ?? A.raioDeAtivacao);
     if (alvo) { fila.push({ p, alvo }); na.add(p); }
   }
   if (fila.length && v(ficha, 'armadilhas_ativam_proximas') > 0) {

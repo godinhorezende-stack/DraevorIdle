@@ -89,6 +89,7 @@ import * as MapaAberto from './itens-poe/mapa-aberto.mjs';
 import * as GemasGBD from './itens-poe/gemas-gbd.mjs';
 // (lote E1b, dono 26/10: o Clamor de Reunião nos lacaios)
 import { reuniaoNoLacaio } from './itens-poe/gemas-e1b.mjs';
+import { fatorDoCompanheirismo } from './itens-poe/suportes-s2a.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
 export { nomeDaHunt, huntsJogaveis, gradeDaHunt, aquecerGrades } from './hunt/terreno.mjs';
@@ -2631,6 +2632,8 @@ export function magiaNoLacaio({ estado, hunt, bicho, l, a, eventos, agora, ficha
   let sofrido = dano;
   if (vinculo?.menosDano > 0) sofrido *= Math.max(0, 1 - vinculo.menosDano / 100);
   if (aliado?.fortificacao > 0) sofrido *= Math.max(0, 1 - aliado.fortificacao / 100);
+  // (lote S2A, 27/10) o Companheirismo: "sofrem −X% de dano, se eles forem seus únicos lacaios"
+  sofrido *= fatorDoCompanheirismo(hunt, l);
   if (vinculo?.escudoPct > 0 && (estado.es ?? 0) > 0) { const parte = Math.min(estado.es, (sofrido * vinculo.escudoPct) / 100); estado.es -= parte; sofrido -= parte; }
   if (!(sofrido > 0)) return 0;
   const d = Math.max(1, Math.round(sofrido));
@@ -2832,6 +2835,8 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       // (o Vínculo D'Alma no lacaio: "sofre X% menos Dano" e os 30% do dano no SEU Escudo de Energia antes do dele)
       let sofrido = noLacaio;
       if (vinculo?.menosDano > 0) sofrido *= Math.max(0, 1 - vinculo.menosDano / 100);
+      // (lote S2A, 27/10) o Companheirismo: "sofrem −X% de dano, se eles forem seus únicos lacaios"
+      sofrido *= fatorDoCompanheirismo(hunt, l);
       // ("Aliados Próximos contam como tendo Fortificação igual a sua": 1% menos dano de acertos por Fortificação)
       if (aliado?.fortificacao > 0) sofrido *= Math.max(0, 1 - aliado.fortificacao / 100);
       if (vinculo?.escudoPct > 0 && (estado.es ?? 0) > 0) { const parte = Math.min(estado.es, (sofrido * vinculo.escudoPct) / 100); estado.es -= parte; sofrido -= parte; }
