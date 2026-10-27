@@ -856,6 +856,8 @@ export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
       else if (k === 'areaMaisPct') e.areaMaisPct = ((1 + (e.areaMaisPct ?? 0) / 100) * Math.max(0, 1 + valor / 100) - 1) * 100;
       // (lote A3, dono 19/10) o "X% mais/menos Velocidade de Projétil" dos suportes também multiplica (`Acoes.velocidadeDoProjetil`)
       else if (k === 'velProjetilMaisPct') e.velProjetilMaisPct = ((1 + (e.velProjetilMaisPct ?? 0) / 100) * Math.max(0, 1 + valor / 100) - 1) * 100;
+      // (27/10) o "X% mais/menos Dano" dos lacaios também multiplica entre os suportes (`LacaiosPoe.oQueInvoca`)
+      else if (k === 'lacaioMaisDanoPct') e.lacaioMaisDanoPct = ((1 + (e.lacaioMaisDanoPct ?? 0) / 100) * Math.max(0, 1 + valor / 100) - 1) * 100;
       else e[k] = (e[k] ?? 0) + valor;
     }
     e.supports.push(sp.def.nome);
