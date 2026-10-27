@@ -118,6 +118,8 @@ import * as SuportesS2A from './itens-poe/suportes-s2a-jogo.mjs';
 import * as SuportesS2B from './itens-poe/suportes-s2b.mjs';
 // (lote R3A, 27/10) o ataque ativado completo e as habilidades concedidas por suporte (o Cristal em Queda, a Fenda, a Pira, a Rajada de Vento)
 import * as GemasR3A from './itens-poe/gemas-r3a.mjs';
+// (lote R3B, 27/10: as Sentinelas, a Nova da Relíquia, o Golpe Sagrado, o Clamor do General e os que usam a SUA habilidade — `itens-poe/gemas-r3b.mjs`)
+import * as GemasR3B from './itens-poe/gemas-r3b.mjs';
 import { JANELA } from '../websocket/quadro.mjs';
 import * as ItensPoeJogo from './itens-poe/jogo.mjs';
 
@@ -942,10 +944,11 @@ export function drenoDosDebuffs(estado, hunt, personagem, eventos) {
  */
 const GUARDIAN = Object.freeze({ sentinelaNome: 'Sentinela do Resplendor', sentinelaVoltaMs: 750, queimaPctPorS: 20, reliquiaDoPob: { fire: 'GuardianRelicFire', ice: 'GuardianRelicCold', energy: 'GuardianRelicLightning' }, auraDaReliquia: { fire: 'Anger', ice: 'Hatred', energy: 'Wrath' }, nomeDaReliquia: { fire: 'Relíquia de Fogo', ice: 'Relíquia de Gelo', energy: 'Relíquia de Raio' } });
 function lacaioDoGuardian(estado, hunt, agora, af, nome, elemento, extra) {
-  const nivel = Math.min(85, Math.max(1, estado.level ?? 1));
   // (lote 44, dono: "Aplicar o PoB") `extra.pob`: o tipo do lacaio no Path of Building — a vida, o golpe e o tempo de ataque da tabela de
   // aliados × o multiplicador dele, e as defesas de base (`LacaiosPoe.forcaDoPob`); sem ele, a força de um monstro comum do nível.
-  const { pob: idDoPob, ...resto } = extra ?? {};
+  // (lote R3B: `extra.nivelPob` — o nível do lacaio do suporte no PoB, o Relâmpago Vivo e o Nascido da Colmeia; sem ele, o seu, até 85)
+  const { pob: idDoPob, nivelPob, ...resto } = extra ?? {};
+  const nivel = nivelPob > 0 ? Math.round(nivelPob) : Math.min(85, Math.max(1, estado.level ?? 1));
   const f0 = LacaiosPoe.forcaDoNivel(nivel);
   const p = idDoPob ? LacaiosPoe.forcaDoPob(idDoPob, nivel) : null;
   const f = p ? { vida: p.vida, dano: p.dano ?? f0.dano, tempo: p.tempo ?? f0.tempo } : f0;
@@ -2724,15 +2727,11 @@ export function desligarAurasForaDaBarra(estado, hunt) {
 export function arautoExcedente(hunt, id, ficha) {
   if (!(ModsPoe.valor(ficha, 'so_um_arauto') > 0) || !ehArauto(POR_ID.get(id))) return false;
   const agora = hunt?.clock ?? 0;
-  // (o Arauto da Pureza é Arauto no PoE, mas no jogo é lacaio: ligado = as Sentinelas dele em campo. Ela só sai sem outro Arauto ligado, então
-  // com Sentinela em campo o Arauto de buff é o excedente — as Sentinelas contam o tempo em outro relógio, não dá para comparar o `desde`)
-  if (id === PUREZA) return Object.values(hunt?.buffs ?? {}).some((b) => b?.tipo === 'poe-arauto' && b.ate > agora);
-  if ((hunt?.lacaios ?? []).some((l) => l?.acao === PUREZA && l.hp > 0)) return true;
+  // (lote R3B, 27/10: o Arauto da Pureza é ARAUTO de buff, como no PoE — as Sentinelas são o efeito dele; antes, no jogo, ele era lacaio e tinha a regra à parte)
   const meu = hunt?.buffs?.[id];
   return Object.entries(hunt?.buffs ?? {}).some(([o, b]) => o !== id && b?.tipo === 'poe-arauto' && b.ate > agora && (!meu || (b.desde ?? 0) < (meu.desde ?? 0)));
 }
-const PUREZA = 'poe-gema:Herald_of_Purity';
-/** A gema é de Arauto (o arquétipo; a Pureza, pelo slug — no jogo ela é lacaio). */
+/** A gema é de Arauto (o arquétipo; lote R3B: a Pureza também é arauto — o slug fica como reserva). */
 const ehArauto = (entry) => entry?.poeGema?.arquetipo === 'arauto' || /^Herald_of_/.test(entry?.poeGema?.slug ?? '');
 /**
  * (lote 56, a Visão Sublime) "Habilidades de Aura diferentes de <Aura> são Desabilitadas": as auras permitidas pela ficha (`aura_unica:<o nome da
@@ -3388,6 +3387,8 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
     for (const l of hunt.lacaios) if (l.hp > 0 && l.tipo === 'lacaio') { l.oferenda = { ...q.bonus, ate: agora + duracaoMs }; eventos.push({ t: 'fx', id: 13, uid: l.uid, x: l.x, y: l.y, sk: entry.id }); }
     // (PoE, o Necromante: "Suas Habilidades de Oferenda também afetam você" — `condicoes-poe.adds`, com o "redução do Efeito em você".)
     if (estado && ModsPoe.valor(Ficha.combate(estado), 'oferenda_em_voce') > 0) { hunt.oferendaEmVoce = { ...q.bonus, ate: (hunt.clock ?? agora) + duracaoMs }; Ficha.invalidar(estado); }
+    // (lote R3B, 27/10) o Nascido da Colmeia: a Oferenda suportada que saiu ativa a invocação (`colmeiaNaOferendaR3B`)
+    if (efeito?.colmeia) eventos.push(...colmeiaNaOferendaR3B(estado, hunt, entry, efeito));
     return eventos;
   }
   // A CONVOCAÇÃO: todos os lacaios para perto do dono (na casa dele: o próximo passo os espalha) e a cura.
@@ -3432,6 +3433,8 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
       afDono: q.afDono ?? null, porLacaioFisico: q.porLacaioFisico ?? null, golem: !!q.golem, acertos: 0, poe: q.poe ?? null,
       // (lote 44) o lacaio que no PoE não pode sofrer dano (o PoB) e o tipo dele no PoB
       ...(q.intocavel ? { intocavel: true } : {}), ...(q.pob ? { pob: q.pob } : {}),
+      // (lote R3B) a Relíquia Sagrada não ataca: a Nova dela sai no seu acerto com ataque (`novaDaReliquiaR3B`)
+      ...(GemasR3B.lacaioSemAtaque(slug) ? { semAtaque: true } : {}),
       // (revisão E1a — dono, 27/10) as habilidades com recarga (o Orbe e a Ira do Golem de Relâmpago; a Cascata e o Salto da Carniça — `cacadas.habilidadesComRecarga`)
       ...(q.recargas ? { recargas: q.recargas.map((h) => ({ ...h })) } : {}),
       ...(q.tipo === 'totem' && alvo ? { mira: { x: alvo.x, y: alvo.y } } : {}),
@@ -4516,6 +4519,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   //    golpe do objeto dela (a explosão, que é o dano do uso)
   const b2 = itensPoeLigado() && entry.poeGema && !entry.poeGema.buff ? GemasPoe.b2DaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
   if (b2?.raioEmCaosPct > 0 && efeitoDaGema) efeitoDaGema = { ...efeitoDaGema, 'af:conv_hab_energy_chaos': (efeitoDaGema['af:conv_hab_energy_chaos'] ?? 0) + b2.raioEmCaosPct };
+  // (lote R3B, 27/10) o Golpe Sagrado: "Este ataque e lacaios convertem 50% do dano físico em dano elétrico" — a conversão do Físico do ataque (a do Armamento: `lacaios-poe`)
+  const convR3B = itensPoeLigado() && entry.poeGema && !entry.poeGema.buff ? GemasR3B.conversaoDoAtaque(entry.poeGema.slug, GemasPoe.textosDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1).linhas) : null;
+  if (convR3B?.energy > 0 && efeitoDaGema) efeitoDaGema = { ...efeitoDaGema, 'af:conv_hab_physical_energy': (efeitoDaGema['af:conv_hab_physical_energy'] ?? 0) + convR3B.energy };
   // (lote B3, dono 21/10) o que o lote B3 muda no uso (`GemasPoe.b3DaGema`, `itens-poe/gemas-b3.mjs`): a Conflagração, a Cremação da Exumação e a do Vulcão, a Troca de
   // Corpos, a Chuva de Lâminas de Trarthus
   const b3 = itensPoeLigado() && entry.poeGema && !entry.poeGema.buff ? GemasPoe.b3DaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
@@ -4733,6 +4739,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   if (efeitoDaGema?.soArcoVarinha && !/^(Bows|Wands)$/.test(classeDaArma)) return { ok: false, erro: 'Só com Arcos e Varinhas (Rajada).', motivo: 'ARMA' };
   // (lote A3, dono 19/10) "Habilidades Suportadas só podem ser usadas com Arcos" (a Nova de Flechas)
   if (efeitoDaGema?.soArco && classeDaArma !== 'Bows') return { ok: false, erro: 'Só com Arcos (Nova de Flechas).', motivo: 'ARMA' };
+  // (lote R3B, 27/10) "Habilidades Suportadas só podem ser usadas com Varinhas" (os Espíritos Sagrados)
+  if (efeitoDaGema?.soVarinha && classeDaArma !== 'Wands') return { ok: false, erro: 'Só com Varinhas (Espíritos Sagrados).', motivo: 'ARMA' };
   // (lote A4, dono 19/10) "Habilidades Suportadas só podem ser usadas com Machados, Maças, Cetros ou Cajados" (a Onda de Choque do Vazio; lote A5, dono 20/10: + a
   // Fissura e o Trauma — a regra geral dos suportes; + "só com Maças, Cetros ou Cajados" — a Onda de Choque — e "só com Machados e Espadas" — o Combate
   // Próximo. D6: com duas armas, só a mão principal, como a Lâmina Noturna)
@@ -6054,6 +6062,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (lote G-A, dono 26/10) o Clamor Sísmico: "Empurra e Interrompe Inimigos em uma pequena Área" — os inimigos a até 1 casa do alvo, empurrados (3 casas com os +200%)
     // e interrompidos (`empurraoDoClamor`)
     if (buff.tipo === 'poe-clamor' && entry.poeGema && itensPoeLigado()) empurraoDoClamor(hunt, entry, efeitoDaGema, alvo, agora, eventos);
+    // (lote R3B, 27/10) o Clamor do General: os Guerreiros Ilusórios usam os Ataques ligados a ele (`guerreirosDoClamorR3B`)
+    if (buff.tipo === 'poe-clamor' && entry.poeGema && itensPoeLigado()) eventos.push(...guerreirosDoClamorR3B(estado, hunt, personagem, entry, efeitoDaGema));
     // (lote A2, dono 19/10) a Torre Óssea no Clamor suportado: "Clamores reforçados ativam Tomar a Carne ao usar" — as torres em volta de você
     if (efeitoDaGema?.torresOsseas > 0 && buff.tipo === 'poe-clamor' && itensPoeLigado()) eventos.push(...torresOsseas(hunt, entry, efeitoDaGema, agora));
     // (lote S2A, 27/10) o Chamado Abençoado: "Clamores reforçados criam um chão consagrado com duração de 6 segundos" — o Solo Sagrado em volta de você (× a Duração)
@@ -6185,7 +6195,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       ...(emboscadaDoUso ? { crit_base_golpe: emboscadaDoUso.critPontos, crit_dmg: emboscadaDoUso.critMultPct } : {}), ...(atordoamentoDaInvestida ? { enemy_stun_threshold_red: atordoamentoDaInvestida } : {}),
     });
     const mao = maoDaGemaDeAtaque(entry, fichaDaGema, hunt);
-    const { min, max, daPericia, mult, sobrecarga, fatorDaGema, ficha, partes, porAfeccao, ehMagia: ehMagiaDaConta, sintonia, multFisico, eficacia: eficaciaDoAdicionado, soAcertoDaFicha, multDosTipos } = contaDoDano(estado, entry, efeitoDaGema, mao?.ficha ?? fichaDaGema, mao?.arma ?? null, { ativada: !!gatilho && !plantada, custaVida: pagaComVida || parteEmVida > 0, maisDano: ((1 + ((gatilho?.maisDano ?? 0) + maisDaPlantada(plantada, efeitoDaGema, agora)) / 100) * (1 + (estagioDoUso?.maisPct ?? 0) / 100) * (doCadaver?.modo === 'consumir' ? cadaveresDoUso.length : 1) - 1) * 100, critMais: estagioDoUso?.critMaisPct ?? 0, elementoSorteado: plantada?.elementoSorteado ?? elementoDoAcerto ?? null });
+    const { min, max, daPericia, mult, sobrecarga, fatorDaGema, ficha, partes, porAfeccao, ehMagia: ehMagiaDaConta, sintonia, multFisico, eficacia: eficaciaDoAdicionado, soAcertoDaFicha, multDosTipos } = contaDoDano(estado, entry, efeitoDaGema, mao?.ficha ?? fichaDaGema, mao?.arma ?? null, { ativada: !!gatilho && !plantada && !gatilho.comoNaoAtivada, custaVida: pagaComVida || parteEmVida > 0, maisDano: ((1 + ((gatilho?.maisDano ?? 0) + maisDaPlantada(plantada, efeitoDaGema, agora)) / 100) * (1 + (estagioDoUso?.maisPct ?? 0) / 100) * (doCadaver?.modo === 'consumir' ? cadaveresDoUso.length : 1) - 1) * 100, critMais: estagioDoUso?.critMaisPct ?? 0, elementoSorteado: plantada?.elementoSorteado ?? elementoDoAcerto ?? null });
     // (lote C1, dono 20/10) o Acerto Elemental: o elemento deste uso vira o "anterior" (o próximo não o repete)
     if (elementoDoAcerto) { (hunt.poeElementoAnterior ??= {})[entry.id] = elementoDoAcerto; if (hunt.poeElementoPendente) delete hunt.poeElementoPendente[entry.id]; }
     // (lote B2, dono 20/10) o que o lote B2 faz no golpe deste uso:
@@ -7658,6 +7668,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (14/10, o Convocar Fantasma: o golpe fatal e o acerto no Raro/Único das habilidades suportadas)
     // (lote A5b: o acerto no Raro/Único — quem o golpe errou não conta)
     if (efeitoDaGema && atingidos.length) convocarFantasmas(estado, hunt, efeitoDaGema, atingidos.filter(acertouNoUso));
+    // (lote R3B, 27/10) a Absolvição, a Pureza, a Nova da Relíquia, o Golpe Sagrado, o Relâmpago Vivo, o Arqueiro Ilusório e os Espíritos Sagrados (`usoR3B`)
+    if (itensPoeLigado() && entry.poeGema) eventos.push(...usoR3B(estado, hunt, personagem, entry, efeitoDaGema, { acertados: atingidos.filter(acertouNoUso), alvo, partes, doTotem, gatilho, plantada }));
     // (lote A5, dono 20/10) "Recupera X% de Vida quando Habilidades Suportadas Matam um Inimigo" (o Golpe de Misericórdia e o Abater o Fraco): X% da Vida máxima
     // por inimigo que este uso matou — o abate seu (`QuemFeriu.abateSeu`; o do totem não é seu)
     if (!doTotem && efeitoDaGema?.vidaAoMatarPct > 0 && atingidos.length) vidaAoMatarDoSuporte(estado, hunt, personagem, efeitoDaGema.vidaAoMatarPct, atingidos, eventos);
@@ -12002,4 +12014,367 @@ export function tirarEscudoSePreciso(estado, hunt, personagem, alvo) {
   for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (b.tipo === 'shield') delete hunt.buffs[id];
   const quemTira = POR_ID.get(Object.keys(Reforcos.CANCELA).find((id) => Reforcos.CANCELA[id] === 'shield'));
   return [{ t: 'say', uid: 'player', quem: personagem?.nome, text: quemTira?.words ?? 'exana vita', x: hunt.pos.x, y: hunt.pos.y, color: '#f36500' }];
+}
+
+// ================================================================ (lote R3B, 27/10) as Sentinelas, a Nova da Relíquia, o Golpe Sagrado, o Clamor do General
+// e os que usam a SUA habilidade (o Arqueiro Ilusório, os Espíritos Sagrados), o Relâmpago Vivo e o Nascido da Colmeia — as regras em `itens-poe/gemas-r3b.mjs`.
+/**
+ * O estado do lote na caçada: `hunt.poeR3B = { recargas, espelhos, espiritos, regenEm }` — as recargas com usos (a Nova, o Relâmpago Vivo, a Colmeia — uma chave
+ * fixa por habilidade/lacaio), o Arqueiro Ilusório (no máximo o do suporte) e os Espíritos Sagrados (no máximo 2 por habilidade). Os vencidos saem no tique
+ * (`tiqueR3B`); a caçada nova começa sem ele.
+ */
+const estadoR3B = (hunt) => (hunt.poeR3B ??= { recargas: {}, espelhos: [], espiritos: [] });
+const acaoR3B = (slug) => `${GemasPoe.PREFIXO}${slug}`;
+/** O relógio dos lacaios (`desde`, `ate`, o próximo golpe — `invocarLacaios`). */
+const relogioDosLacaiosR3B = (hunt) => hunt.ultimoTique ?? Date.now();
+/** A habilidade ativada por outra "coisa" do lote: sem custo, sem recarga, como se não fosse Ativada (o Arqueiro "pode usar Ataques Ativados como se não fossem"). */
+const gatilhoR3B = (acao, extra = {}) => ({ acao: { id: acao, enabled: true, minMana: 0, minTargets: 1, conditions: [] }, semCusto: true, ignorarRecarga: true, comoNaoAtivada: true, ...extra });
+/**
+ * Roda `fn` com a SUA posição trocada por `pos` (o Arqueiro e o Guerreiro Ilusório: a habilidade sai do lugar deles; null: a sua) e a recarga da habilidade `acao`
+ * preservada (o uso deles não é o seu — a recarga, se houver, é a do seu uso).
+ */
+function doLugarR3B(hunt, pos, acao, fn) {
+  const seu = hunt.pos;
+  const cd = hunt.cooldowns?.[acao];
+  if (pos) hunt.pos = { ...seu, x: pos.x, y: pos.y };
+  try { return fn(); } finally {
+    hunt.pos = seu;
+    if (hunt.cooldowns) { if (cd) hunt.cooldowns[acao] = cd; else delete hunt.cooldowns[acao]; }
+  }
+}
+/** As casas ocupadas agora (os monstros e os lacaios vivos) — onde o lacaio do lote não nasce. */
+const ocupadasR3B = (hunt) => new Set([...(hunt.monstros ?? []).filter((m) => m.hp > 0).map((m) => `${m.x},${m.y}`), ...(hunt.lacaios ?? []).filter((x) => x.hp > 0).map((x) => `${x.x},${x.y}`)]);
+
+/**
+ * Convoca a Sentinela da gema `slug` (a Absolvição, o Arauto da Pureza) ao lado de `onde` — ou RENOVA a duração e a vida da que acaba antes, se você já tem o máximo
+ * (a descrição das duas gemas). A Sentinela da Absolvição converte o Físico como a magia ("Esta Magia e Lacaios Convertem 50%"). Devolve os eventos.
+ */
+export function invocarSentinelaR3B(estado, hunt, slug, onde = null) {
+  if (!itensPoeLigado() || !hunt?.pos) return [];
+  const entry = POR_ID.get(acaoR3B(slug));
+  if (!entry?.poeGema) return [];
+  const ef = Gemas.efeitoNaSkill(estado, entry.id);
+  if (!ef) return [];
+  const q = LacaiosPoe.oQueInvoca(slug, ef.nivel ?? 1, ef, Ficha.combate(estado)?.afPoe ?? null);
+  if (!q || q.proibido || q.tipo !== 'lacaio') return [];
+  const agora = relogioDosLacaiosR3B(hunt);
+  hunt.lacaios ??= [];
+  const vivos = hunt.lacaios.filter((l) => l.gema === slug && l.hp > 0 && !(l.ate && agora >= l.ate));
+  const d = GemasR3B.convocarOuRenovar(vivos, q.maximo);
+  if (d.renovar) {
+    const l = d.renovar;
+    if (q.duracaoMs) l.ate = agora + q.duracaoMs;
+    l.hp = l.maxHp;
+    return [{ t: 'fx', id: 11, uid: l.uid, x: l.x, y: l.y, sk: entry.id }];
+  }
+  const antes = new Set(hunt.lacaios);
+  const eventos = invocarLacaios(hunt, entry, ef, null, estado, { semUso: true });
+  const conv = GemasR3B.conversaoDaSentinela(slug, GemasPoe.textosDaGema(slug, ef.nivel ?? 1).linhas);
+  const andavel = ModsPoe.gradeDoCombate(hunt)?.andavel ?? null;
+  const ocupadas = ocupadasR3B(hunt);
+  const novos = new Map();
+  for (const l of hunt.lacaios) {
+    if (antes.has(l) || l.gema !== slug) continue;
+    if (onde) {
+      const c = GemasR3B.casasEmVolta(onde, 1, andavel, ocupadas)[0] ?? onde;
+      l.x = c.x;
+      l.y = c.y;
+      ocupadas.add(`${c.x},${c.y}`);
+    }
+    if (conv) { const c0 = l.conversao ?? {}; l.conversao = { fire: c0.fire ?? 0, ice: c0.ice ?? 0, energy: (c0.energy ?? 0) + (conv.energy ?? 0), chaos: c0.chaos ?? 0 }; l.soDano ??= null; }
+    novos.set(l.uid, l);
+  }
+  return eventos.map((ev) => (novos.has(ev.uid) ? { ...ev, x: novos.get(ev.uid).x, y: novos.get(ev.uid).y } : ev));
+}
+
+/**
+ * A ABSOLVIÇÃO (e a da Inspiração) no uso: a penalidade (3 s × a Duração) nos acertados — quem morre com ela vira Sentinela (`aoMorrerR3B`) — e a chance de convocar uma
+ * Sentinela por Raro ou Único acertado (25%). Vale também no uso do totem, da armadilha e da mina (a Sentinela é sua). Devolve os eventos.
+ */
+export function absolvicaoNoUsoR3B(estado, hunt, entry, efeitoDaGema, acertados = [], rng = Math.random) {
+  const slug = entry?.poeGema?.slug ?? '';
+  if (!itensPoeLigado() || !hunt || !GemasR3B.ABSOLVICAO.test(slug) || !acertados.length) return [];
+  const agora = hunt.clock ?? 0;
+  const ate = agora + Math.round(GemasR3B.PENALIDADE_ABSOLVICAO_MS * fatorDeDuracao(estado, entry, efeitoDaGema));
+  for (const b of acertados) if (b && !b.dummy) b.r3bAbsolvicao = { ate: Math.max(b.r3bAbsolvicao?.ate ?? 0, ate), acao: entry.id };
+  const chance = GemasR3B.chanceDeSentinelaNoRaro(slug, GemasPoe.textosDaGema(slug, efeitoDaGema?.nivel ?? 1).linhas);
+  const eventos = [];
+  for (const b of acertados) if (chance > 0 && b && !b.dummy && GemasR3B.raroOuUnico(b) && rng() * 100 < chance) eventos.push(...invocarSentinelaR3B(estado, hunt, slug, b));
+  return eventos;
+}
+
+/**
+ * A MORTE de um inimigo (`combate.matarMonstro`): o não-Único com a penalidade da Absolvição tem o cadáver consumido e vira uma Sentinela (por quem for o abate — "Se
+ * um inimigo não-único morrer enquanto afetado"; sem cadáver — destruído —, nada); o abate SEU com o Arauto da Pureza ligado convoca uma Sentinela da Pureza. Devolve
+ * os eventos (em `eventos`).
+ */
+export function aoMorrerR3B(estado, hunt, personagem, alvo, eventos = []) {
+  if (!itensPoeLigado() || !hunt || !alvo || alvo.dummy) return eventos;
+  const agora = hunt.clock ?? 0;
+  const abs = alvo.r3bAbsolvicao;
+  delete alvo.r3bAbsolvicao;
+  if (abs && abs.ate > agora && !GemasR3B.unico(alvo) && Gemas.skillsAtivas(estado).has(abs.acao)) {
+    const slug = POR_ID.get(abs.acao)?.poeGema?.slug;
+    const i = slug ? (hunt.cadaveres ?? []).findLastIndex((c) => c.x === alvo.x && c.y === alvo.y && c.key === alvo.key && !c.criadoPor) : -1;
+    if (i >= 0) {
+      hunt.cadaveres.splice(i, 1);
+      eventos.push({ t: 'fx', id: 13, x: alvo.x, y: alvo.y, sk: abs.acao }, ...invocarSentinelaR3B(estado, hunt, slug, alvo));
+    }
+  }
+  if (QuemFeriu.abateSeu(alvo) && arautoLigado(hunt, acaoR3B(GemasR3B.PUREZA))) eventos.push(...invocarSentinelaR3B(estado, hunt, GemasR3B.PUREZA, alvo));
+  return eventos;
+}
+
+/**
+ * O SEU acerto (o uso de uma habilidade sua — não o do totem nem o da plantada — e o golpe básico): o Arauto da Pureza ligado tem 20% de chance de convocar uma Sentinela
+ * por Raro ou Único acertado; o acerto com ATAQUE faz a Relíquia Sagrada soltar a Nova (a recarga dela). Devolve os eventos.
+ */
+export function aoAcertarR3B(estado, hunt, personagem, { ataque = false, acertados = [] } = {}, rng = Math.random) {
+  const eventos = [];
+  if (!itensPoeLigado() || !hunt?.pos || !acertados.length) return eventos;
+  const pureza = acaoR3B(GemasR3B.PUREZA);
+  if (arautoLigado(hunt, pureza)) {
+    const ef = Gemas.efeitoNaSkill(estado, pureza);
+    const chance = GemasR3B.chanceDeSentinelaNoRaro(GemasR3B.PUREZA, GemasPoe.textosDaGema(GemasR3B.PUREZA, ef?.nivel ?? 1).linhas);
+    for (const b of acertados) if (chance > 0 && b && !b.dummy && GemasR3B.raroOuUnico(b) && rng() * 100 < chance) eventos.push(...invocarSentinelaR3B(estado, hunt, GemasR3B.PUREZA, b));
+  }
+  if (ataque) eventos.push(...novaDaReliquiaR3B(estado, hunt, rng));
+  return eventos;
+}
+
+/**
+ * A NOVA da Relíquia Sagrada (o seu acerto com ataque, a recarga de 0,3 s): o Dano Físico da magia do lacaio (o nível dele, × o aumentado/mais dos lacaios, o crítico de
+ * 5% com o dos lacaios, o "menos" do Ceifador) nos inimigos no raio em volta da Relíquia; e o Boon (4 s × a Duração): a Vida regenerada por segundo a VOCÊ (no raio) e aos
+ * lacaios no raio, × (1 + o Efeito do Buff da qualidade). Devolve os eventos.
+ */
+export function novaDaReliquiaR3B(estado, hunt, rng = Math.random) {
+  const eventos = [];
+  if (!itensPoeLigado() || !hunt?.pos) return eventos;
+  const agora = relogioDosLacaiosR3B(hunt);
+  const relogio = hunt.clock ?? 0;
+  const l = (hunt.lacaios ?? []).find((x) => x.gema === GemasR3B.RELIQUIA && x.hp > 0 && !(x.ate && agora >= x.ate));
+  if (!l) return eventos;
+  const entry = POR_ID.get(acaoR3B(GemasR3B.RELIQUIA));
+  const ef = entry ? Gemas.efeitoNaSkill(estado, entry.id) : null;
+  if (!ef) return eventos;
+  const nova = GemasR3B.novaDasLinhas(GemasPoe.textosDaGema(GemasR3B.RELIQUIA, ef.nivel ?? 1).linhas, GemasPoe.linhasDaQualidadeDe(GemasR3B.RELIQUIA, ef.qualidade ?? 0), ef.nivel ?? 1, l.nivel ?? 1);
+  if (!nova || !GemasR3B.gastarUso(estadoR3B(hunt), 'nova', nova.recargaMs, 1, relogio)) return eventos;
+  const raio = GemasR3B.casasDoRaio(nova.raioM * Math.sqrt(Math.max(0.01, 1 + (l.poe?.areaPct ?? 0) / 100)), rng);
+  eventos.push({ t: 'explosao', id: entry.efeito ?? 13, x: l.x, y: l.y, lado: 1 + 2 * raio, sk: entry.id });
+  const ficha = Ficha.combate(estado);
+  const z = hunt.z ?? 0;
+  if (!Protecao.imune(hunt)) for (const m of hunt.monstros ?? []) {
+    if (!(m.hp > 0) || m.dummy || (m.z ?? z) !== z || distanciaChebyshev(m, l) > raio) continue;
+    const crit = rng() * 100 < Math.min(100, nova.crit * (1 + (l.poe?.critInc ?? 0) / 100));
+    const mult = crit ? LacaiosPoe.criticoDoLacaio(l, null, relogio).mult : 1;
+    const bruto = (nova.min + rng() * Math.max(0, nova.max - nova.min)) * (l.poe?.fatorDoDano ?? 1) * mult * LacaiosPoe.fatorDoCeifador(l, hunt.lacaios);
+    const d = Math.max(1, Math.round(resistido(hunt, m, 'physical', bruto, ficha)));
+    m.hp -= d;
+    QuemFeriu.carimbar(m, QuemFeriu.LACAIO);
+    eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: d, foe: true, lacaio: true, crit, alvo: m.name, habilidade: 'RelicTriggeredNova', color: COR_DO_ELEMENTO.physical ?? '#ff0000' });
+  }
+  const f = Math.max(0, 1 + nova.efeitoPct / 100);
+  const dur = Math.max(1, Math.round(nova.duracaoMs * fatorDeDuracao(estado, entry, ef)));
+  if (nova.regenAliados > 0 && distanciaChebyshev(hunt.pos, l) <= raio) {
+    (hunt.poeTemporarios ??= {})['reliquiaSagrada:life_regen'] = { stat: 'life_regen', valor: nova.regenAliados * f, ate: relogio + dur };
+    Ficha.invalidar(estado);
+  }
+  if (nova.regenLacaios > 0) for (const x of hunt.lacaios ?? []) if (x.hp > 0 && x.tipo === 'lacaio' && !x.mercenario && distanciaChebyshev(x, l) <= raio) x.r3bRegen = { porS: nova.regenLacaios * f, ate: relogio + dur };
+  return eventos;
+}
+
+/** O uso causou Dano de Raio no acerto? (as partes do golpe — `contaDoDano`; sem partes, o elemento da habilidade) */
+const causouRaioR3B = (partes, entry) => (partes?.length ? partes.some((p) => p.elemento === 'energy' && (p.max ?? 0) > 0) : entry?.element === 'energy');
+/** O uso é de FLECHA (a habilidade de Arco com Projétil, com um Arco na mão). */
+const ehFlechaR3B = (estado, entry) => tagsPoeDaSkill(entry).includes('arco') && tagsPoeDaSkill(entry).includes('projetil') && String(estado.equipment?.weapon?.poe?.classe ?? '') === 'Bows';
+
+/**
+ * O RELÂMPAGO VIVO: o acerto da suportada com Dano de Raio ativa a invocação (a recarga: 0,2 s com 5 usos); cada um (o nível = o RequerNível do suporte, o do PoB) converte
+ * 100% do Físico em Raio, não pode ser atingido, ataca N vezes (`r3bAtaques` — `cacadas`) com o golpe que Ricocheteia (`r3bRicochetes`) e some; no máximo, o mais velho
+ * some. Devolve os eventos.
+ */
+function relampagoVivoR3B(estado, hunt, entry, ef, agora) {
+  if (!GemasR3B.gastarUso(estadoR3B(hunt), `relampago:${entry.id}`, ef.relampagoRecargaMs ?? 200, ef.relampagoUsos ?? 1, agora)) return [];
+  const t = relogioDosLacaiosR3B(hunt);
+  const af = Ficha.combate(estado).afPoe ?? {};
+  hunt.lacaios ??= [];
+  const eventos = [];
+  const dur = Math.max(1, Math.round((ef.relampagoMs ?? 5000) * Math.max(0.1, 1 + (ef.duracaoPct ?? 0) / 100)));
+  for (let i = 0; i < Math.max(1, ef.relampagoN ?? 1); i++) {
+    const vivos = hunt.lacaios.filter((l) => l.r3bRelampago && l.hp > 0 && !(l.ate && t >= l.ate));
+    if (vivos.length >= Math.max(1, ef.relampagoMax ?? 8)) vivos.sort((a, b) => (a.desde ?? 0) - (b.desde ?? 0))[0].ate = t;
+    const l = lacaioDoGuardian(estado, hunt, t, af, GemasR3B.RELAMPAGO.nome, 'physical', {
+      pob: 'LivingLightningMinion', nivelPob: ef.relampagoNivel ?? 70, r3bRelampago: entry.id, desde: t, ate: t + dur, duracaoMs: dur, intervaloMs: GemasR3B.RELAMPAGO.golpeMs,
+      critChance: GemasR3B.RELAMPAGO.critico, critChanceBase: GemasR3B.RELAMPAGO.critico, conversao: { fire: 0, ice: 0, energy: ef.relampagoConvPct ?? 100, chaos: 0 }, soDano: null,
+      r3bAtaques: ef.relampagoAtaques ?? 3, r3bRicochetes: ef.relampagoRicochetes ?? 3, intocavel: true,
+    });
+    LacaiosPoe.aplicarNoLacaio(l);
+    hunt.lacaios.push(l);
+    eventos.push({ t: 'fx', id: 11, uid: l.uid, x: l.x, y: l.y, sk: entry.id });
+  }
+  return eventos;
+}
+
+/**
+ * O NASCIDO DA COLMEIA: a Oferenda suportada que saiu ativa a invocação (a recarga, 5 s): N lacaios (o nível do PoB pelo nível do suporte) em casas livres no raio de 4,5 m
+ * em volta de você (a fração da casa é a chance de mais uma), 10 s, todo o Físico em Gelo, com a chance de Cobrir de Gelo ao acertar; no máximo, o mais velho some.
+ */
+export function colmeiaNaOferendaR3B(estado, hunt, entry, ef, rng = Math.random) {
+  if (!itensPoeLigado() || !estado || !ef?.colmeia || !hunt?.pos) return [];
+  if (!GemasR3B.gastarUso(estadoR3B(hunt), `colmeia:${entry.id}`, ef.colmeiaRecargaMs ?? 5000, 1, hunt.clock ?? 0)) return [];
+  const t = relogioDosLacaiosR3B(hunt);
+  const af = Ficha.combate(estado).afPoe ?? {};
+  hunt.lacaios ??= [];
+  const eventos = [];
+  const raio = Math.max(1, GemasR3B.casasDoRaio(ef.colmeiaRaioM ?? 4.5, rng));
+  const casas = GemasR3B.casasEmVolta(hunt.pos, raio, ModsPoe.gradeDoCombate(hunt)?.andavel ?? null, ocupadasR3B(hunt));
+  const dur = Math.max(1, Math.round(ef.colmeiaMs ?? 10000));
+  for (let i = 0; i < Math.max(1, ef.colmeiaN ?? 3); i++) {
+    const vivos = hunt.lacaios.filter((l) => l.r3bColmeia && l.hp > 0 && !(l.ate && t >= l.ate));
+    if (vivos.length >= Math.max(1, ef.colmeiaMax ?? 12)) vivos.sort((a, b) => (a.desde ?? 0) - (b.desde ?? 0))[0].ate = t;
+    const c = casas.length ? casas.splice(Math.floor(rng() * casas.length), 1)[0] : hunt.pos;
+    const l = lacaioDoGuardian(estado, hunt, t, af, GemasR3B.NASCIDO.nome, 'physical', {
+      pob: 'Hiveborn', nivelPob: ef.colmeiaNivel ?? 72, r3bColmeia: entry.id, desde: t, ate: t + dur, duracaoMs: dur, x: c.x, y: c.y, conversao: { fire: 0, ice: 100, energy: 0, chaos: 0 }, soDano: null,
+    });
+    if (l.poe) l.poe.chances = { ...(l.poe.chances ?? {}), cobrirGelo: ef.colmeiaGeloPct ?? 0 };
+    LacaiosPoe.aplicarNoLacaio(l);
+    hunt.lacaios.push(l);
+    eventos.push({ t: 'fx', id: 11, uid: l.uid, x: l.x, y: l.y, sk: entry.id });
+  }
+  return eventos;
+}
+
+/** O ARQUEIRO ILUSÓRIO: o acerto com flecha da suportada o convoca (no seu lugar, 4 s), se não houver o máximo dele; ele usa a habilidade sozinho (`tiqueR3B`). */
+function arqueiroIlusorioR3B(hunt, entry, ef, agora, eventos) {
+  const s = estadoR3B(hunt);
+  s.espelhos = (s.espelhos ?? []).filter((m) => m.ate > agora);
+  if (s.espelhos.length >= Math.max(1, ef.arqueiroMax ?? 1)) return;
+  s.espelhos.push({ acao: entry.id, x: hunt.pos.x, y: hunt.pos.y, z: hunt.z ?? 0, ate: agora + Math.max(1, ef.arqueiroMs ?? 4000), proximoEm: agora });
+  eventos.push({ t: 'fx', id: 11, x: hunt.pos.x, y: hunt.pos.y, sk: entry.id });
+}
+
+/**
+ * Os ESPÍRITOS SAGRADOS: quando você dispara um Projétil da suportada, cada Espírito dela em campo tem a chance (25%, +25% com um Raro ou Único na sua Presença) de usar a
+ * habilidade também, com o "X% menos Dano" (só no uso dele); o acerto da suportada convoca os Espíritos (2, máximo 2, 10 s — os que estavam renovam). Devolve os eventos.
+ */
+function espiritosSagradosR3B(estado, hunt, personagem, entry, ef, alvo, acertados, agora, rng) {
+  const eventos = [];
+  const s = estadoR3B(hunt);
+  s.espiritos = (s.espiritos ?? []).filter((w) => w.ate > agora);
+  const meus = s.espiritos.filter((w) => w.acao === entry.id);
+  if (meus.length && tagsPoeDaSkill(entry).includes('projetil')) {
+    const z = hunt.z ?? 0;
+    const raroPerto = (hunt.monstros ?? []).some((b) => b.hp > 0 && !b.dummy && (b.z ?? z) === z && GemasR3B.raroOuUnico(b) && distanciaChebyshev(b, hunt.pos) <= GemasR3B.CASAS_DA_PRESENCA);
+    const chance = GemasR3B.chanceDoEspirito(ef, raroPerto);
+    const alcance = entry.range || ALCANCE_PADRAO;
+    for (let k = 0; k < meus.length; k++) {
+      if (!(rng() * 100 < chance)) continue;
+      const vivo = alvo?.hp > 0 ? alvo : (hunt.monstros ?? []).filter((b) => b.hp > 0 && !b.dummy && (b.z ?? z) === z && distanciaChebyshev(b, hunt.pos) <= alcance).sort((a, b) => distanciaChebyshev(a, hunt.pos) - distanciaChebyshev(b, hunt.pos))[0];
+      if (!vivo) break;
+      const r = doLugarR3B(hunt, null, entry.id, () => dispararSemMarcar(estado, hunt, personagem, null, vivo, { gatilho: gatilhoR3B(entry.id, { maisDano: -(ef.espiritosMenosDanoPct ?? 0), r3b: 'espirito' }) }));
+      if (r?.ok) eventos.push({ t: 'gatilho', quem: personagem?.nome, suporte: 'Espírito Sagrado', skill: entry.name }, ...(r.eventos ?? []));
+    }
+  }
+  if (acertados.length) {
+    const ate = agora + Math.max(1, ef.espiritosMs ?? 10000);
+    const n = Math.min(Math.max(1, ef.espiritosMax ?? 2), meus.length + Math.max(1, ef.espiritosN ?? 2));
+    s.espiritos = [...s.espiritos.filter((w) => w.acao !== entry.id), ...Array.from({ length: n }, () => ({ acao: entry.id, ate }))];
+  }
+  return eventos;
+}
+
+/**
+ * O que o lote faz no USO de uma habilidade sua (`dispararSemMarcar`, depois dos acertos): a Absolvição (a penalidade e a chance no Raro — também a do totem e a da
+ * plantada); o seu acerto (`aoAcertarR3B` — a Pureza, a Nova); o Golpe Sagrado convoca o Armamento ao acertar; o Relâmpago Vivo; e — só no seu uso, não no do Arqueiro, do
+ * Espírito ou do Guerreiro (`gatilho`) — o Arqueiro Ilusório e os Espíritos Sagrados. Devolve os eventos.
+ */
+export function usoR3B(estado, hunt, personagem, entry, efeitoDaGema, { acertados = [], alvo = null, partes = null, doTotem = false, gatilho = null, plantada = null } = {}, rng = Math.random) {
+  const eventos = [];
+  if (!itensPoeLigado() || !hunt?.pos || !entry?.poeGema) return eventos;
+  const agora = hunt.clock ?? 0;
+  eventos.push(...absolvicaoNoUsoR3B(estado, hunt, entry, efeitoDaGema, acertados, rng));
+  if (doTotem || plantada) return eventos;
+  eventos.push(...aoAcertarR3B(estado, hunt, personagem, { ataque: !!entry.poeGema.ataque, acertados }, rng));
+  if (entry.poeGema.slug === GemasR3B.GOLPE_SAGRADO && acertados.length) eventos.push(...invocarLacaios(hunt, entry, efeitoDaGema, acertados[0], estado));
+  if (efeitoDaGema?.relampagoVivo && acertados.length && causouRaioR3B(partes, entry)) eventos.push(...relampagoVivoR3B(estado, hunt, entry, efeitoDaGema, agora));
+  if (gatilho) return eventos;
+  if (efeitoDaGema?.arqueiroIlusorio && acertados.length && ehFlechaR3B(estado, entry)) arqueiroIlusorioR3B(hunt, entry, efeitoDaGema, agora, eventos);
+  if (efeitoDaGema?.espiritosSagrados) eventos.push(...espiritosSagradosR3B(estado, hunt, personagem, entry, efeitoDaGema, alvo, acertados, agora, rng));
+  return eventos;
+}
+
+/**
+ * O CLAMOR DO GENERAL no uso: o Poder dos inimigos e dos CADÁVERES no alcance (6 casas — o do Clamor, `ModsPoe.poderDoClamor`; cada cadáver vale 1, × o "Poder total
+ * contado aumentado"); os Guerreiros Ilusórios (2 por 5 de Poder, até o máximo) usam, cada um, UM dos Ataques corpo a corpo sem recarga ligados ao Clamor (revezando),
+ * uma vez, do lado do inimigo mais perto do cadáver de onde saem (sem cadáver, de você), com o "X% menos Dano" do Clamor. Devolve os eventos.
+ */
+export function guerreirosDoClamorR3B(estado, hunt, personagem, entry, efeitoDaGema) {
+  const eventos = [];
+  const slug = entry?.poeGema?.slug;
+  if (!itensPoeLigado() || slug !== GemasR3B.CLAMOR_DO_GENERAL || !hunt?.pos || Protecao.imune(hunt)) return eventos;
+  const g = GemasR3B.guerreirosDasLinhas(GemasPoe.textosDaGema(slug, efeitoDaGema?.nivel ?? 1).linhas, GemasPoe.linhasDaQualidadeDe(slug, efeitoDaGema?.qualidade ?? 0));
+  if (!g) return eventos;
+  const ficha = Ficha.combate(estado);
+  const z = hunt.z ?? 0;
+  const cadaveres = (hunt.cadaveres ?? []).filter((c) => (c.z == null || c.z === z) && distanciaChebyshev(c, hunt.pos) <= GemasR3B.CASAS_DO_PODER);
+  const infinito = ModsPoe.valor(ficha, 'clamor_poder_infinito') > 0;
+  const poder = ModsPoe.poderDoClamor(hunt, ficha) + (infinito ? 0 : cadaveres.length * GemasR3B.PODER_DO_CADAVER * Math.max(0, 1 + ModsPoe.valor(ficha, 'clamor_poder_inc') / 100));
+  const n = GemasR3B.quantosGuerreiros(g, poder);
+  if (!n) return eventos;
+  const ativas = Gemas.skillsAtivas(estado);
+  const ataques = Gemas.ativasDoMesmoGrupo(estado, entry.id).map((x) => POR_ID.get(x.def.acao)).filter((e) => e?.poeGema?.ataque && ativas.has(e.id) && tagsPoeDaSkill(e).includes('corpo') && !(GemasPoe.doSlug(e.poeGema.slug)?.gema?.props ?? []).some((p) => /^Recarga:/i.test(p)));
+  if (!ataques.length) return eventos;
+  const andavel = ModsPoe.gradeDoCombate(hunt)?.andavel ?? null;
+  for (let i = 0; i < n; i++) {
+    const de = cadaveres.length ? cadaveres[i % cadaveres.length] : hunt.pos;
+    const vivos = (hunt.monstros ?? []).filter((b) => b.hp > 0 && !b.dummy && (b.z ?? z) === z && distanciaChebyshev(b, hunt.pos) <= GemasR3B.CASAS_DO_PODER);
+    if (!vivos.length) break;
+    const alvo = vivos.sort((a, b) => distanciaChebyshev(a, de) - distanciaChebyshev(b, de))[0];
+    const atk = ataques[i % ataques.length];
+    const lugar = GemasR3B.casasEmVolta(alvo, 1, andavel, ocupadasR3B(hunt))[0] ?? { x: alvo.x, y: alvo.y };
+    eventos.push({ t: 'fx', id: 11, x: lugar.x, y: lugar.y, sk: entry.id });
+    const r = doLugarR3B(hunt, lugar, atk.id, () => dispararSemMarcar(estado, hunt, personagem, null, alvo, { gatilho: gatilhoR3B(atk.id, { maisDano: -g.menosPct, r3b: 'guerreiro' }) }));
+    if (r?.ok) eventos.push({ t: 'gatilho', quem: personagem?.nome, suporte: 'Guerreiro Ilusório', skill: atk.name }, ...(r.eventos ?? []));
+  }
+  return eventos;
+}
+
+/**
+ * O TIQUE do lote (`cacadas.tique`): a Vida regenerada do Boon da Relíquia nos lacaios (pelo tempo que passou, até o fim dele), o Arqueiro Ilusório usando a habilidade (o
+ * inimigo vivo mais perto dele no alcance dela; o tempo entre os usos é o seu tempo de uso ÷ (1 − 60%)) e os vencidos saindo. Devolve os eventos.
+ */
+export function tiqueR3B(estado, hunt, personagem, agora = hunt?.clock ?? 0) {
+  const eventos = [];
+  if (!itensPoeLigado() || !hunt?.pos) return eventos;
+  const comRegen = (hunt.lacaios ?? []).filter((l) => l.r3bRegen);
+  if (comRegen.length || hunt.poeR3B?.regenEm != null) {
+    const s = estadoR3B(hunt);
+    const ms = Math.max(0, Math.min(1000, agora - (s.regenEm ?? agora)));
+    for (const l of comRegen) {
+      const vale = Math.max(0, Math.min(ms, l.r3bRegen.ate - (agora - ms)));
+      if (vale > 0 && l.hp > 0) LacaiosPoe.curarLacaio(l, (l.r3bRegen.porS * vale) / 1000);
+      if (l.r3bRegen.ate <= agora) delete l.r3bRegen;
+    }
+    if (comRegen.length) s.regenEm = agora;
+    else delete s.regenEm;
+  }
+  const s = hunt.poeR3B;
+  if (!s) return eventos;
+  if (s.espiritos?.length) s.espiritos = s.espiritos.filter((w) => w.ate > agora);
+  if (!s.espelhos?.length) return eventos;
+  const z = hunt.z ?? 0;
+  s.espelhos = s.espelhos.filter((m) => m.ate > agora && (m.z ?? 0) === z);
+  for (const m of s.espelhos) {
+    if (agora < (m.proximoEm ?? 0)) continue;
+    const entry = POR_ID.get(m.acao);
+    const ef = entry ? Gemas.efeitoNaSkill(estado, m.acao) : null;
+    if (!ef?.arqueiroIlusorio || Protecao.imune(hunt) || (estado.hp ?? 0) <= 0) { m.proximoEm = agora + 250; continue; }
+    const alcance = entry.range || ALCANCE_PADRAO;
+    const alvo = (hunt.monstros ?? []).filter((b) => b.hp > 0 && !b.dummy && (b.z ?? z) === z && distanciaChebyshev(m, b) <= alcance).sort((a, b) => distanciaChebyshev(m, a) - distanciaChebyshev(m, b))[0];
+    if (!alvo) { m.proximoEm = agora + 250; continue; }
+    const r = doLugarR3B(hunt, m, m.acao, () => dispararSemMarcar(estado, hunt, personagem, null, alvo, { gatilho: gatilhoR3B(m.acao, { maisDano: -(ef.arqueiroMenosDanoPct ?? 0), r3b: 'arqueiro' }) }));
+    m.proximoEm = agora + GemasR3B.intervaloDoArqueiro(temposDaGemaPoe(estado, entry, ef).uso ?? 1000, ef.arqueiroMenosVelPct ?? 60);
+    if (r?.ok) eventos.push({ t: 'gatilho', quem: personagem?.nome, suporte: 'Arqueiro Ilusório', skill: entry.name }, ...(r.eventos ?? []));
+  }
+  return eventos;
 }
