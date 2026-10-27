@@ -4,7 +4,10 @@ import { ligado } from './catalogo.mjs';
 import * as ModsPoe from './mods-poe.mjs';
 import * as QuemFeriu from '../hunt/quem-feriu.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { porRompimento, inspiracaoAposGastar, fonteAposGastar, fatorDoImpeto, INSPIRACAO } from './suportes-s2a.mjs';
+import { porRompimento, inspiracaoAposGastar, fonteAposGastar, fatorDoImpeto, INSPIRACAO, raroOuUnico, renovarDoDecapitar, transfusaoAposGastar, lacaioProximo } from './suportes-s2a.mjs';
+import { almasDoLacaio, DEVORADOR_DE_ALMAS } from './condicoes-poe.mjs';
+// (lote D2) as contas puras que `acoes.mjs` usa direto
+export { impedimentoDasProps, dobroDasMinasNoAlvo, fatorDoDobroDasMinas } from './suportes-s2a.mjs';
 
 const vezes = (a, b) => ((1 + (a ?? 0) / 100) * (1 + (b ?? 0) / 100) - 1) * 100;
 
@@ -32,6 +35,10 @@ export function noAcertoS2A(hunt, bicho, ef, { crit = false, corpo = false, post
   if (bicho.hp > 0 && crit && ef.rompimento > 0 && postos.includes('sangrando')) {
     porRompimento(bicho, { maisPct: ef.rompimentoMaisPct ?? 0, rapidoPct: ef.rompimentoRapidoPct ?? 0 }, agora);
     ev('rompido');
+  }
+  // (lote D2, dono 27/10) o Decapitar: o acerto num Raro ou Único tem 20% de chance de somar até 5 s ao modificador que ele deu (sem passar dos 20 s)
+  if (ef.decapitarRenovarPct > 0 && !doTotem && raroOuUnico(bicho) && hunt.poeTemporarios && rng() * 100 < ef.decapitarRenovarPct) {
+    renovarDoDecapitar(hunt.poeTemporarios, { somaMs: ef.decapitarRenovarMs ?? 5000, tetoMs: Math.round((ef.decapitarS ?? 20) * 1000) }, agora);
   }
   if (ef.impetoMs > 0 && !doTotem) {
     ModsPoe.ganharBuff(hunt, 'impetoDeCombate', (ef.impetoMs * fatorDur) / 1000, agora);
@@ -70,6 +77,14 @@ export function doUsoS2A(estado, hunt, ef, { vida = 0, mana = 0, fatorDur = 1, t
       if (e.inspiracaoElementalMaisPct > 0) e['af:mais_dano_elemental'] = vezes(e['af:mais_dano_elemental'], e.inspiracaoElementalMaisPct * n);
     }
     if (mana > 0) hunt.poeInspiracaoS2A = inspiracaoAposGastar(hunt.poeInspiracaoS2A, mana, e.inspiracaoPerdeEm ?? 0);
+  }
+  // (lote D2, dono 27/10) a Transfusão: a cada 200 de Vida gasta no custo inicial das magias suportadas, uma alma (a do Devorador de Almas: +5% de velocidade de ataque e de
+  // conjuração por alma, até 45, perde 1 a cada 0,5 s sem alma nova) no lacaio mais perto a até 3 casas — mesmo sem o Devorador (`almas.livre`)
+  if (e.transfusaoVidaPorAlma > 0 && vida > 0) {
+    const t = transfusaoAposGastar(hunt.poeTransfusaoS2A, vida, e.transfusaoVidaPorAlma);
+    hunt.poeTransfusaoS2A = t.gasto;
+    const l = t.almas > 0 ? lacaioProximo(hunt, DEVORADOR_DE_ALMAS.raioCasas) : null;
+    if (l) l.almas = { n: Math.min(DEVORADOR_DE_ALMAS.maximo, almasDoLacaio(l, agora) + t.almas), em: agora, livre: true };
   }
   if (e.fonteDeVidaApos > 0 && vida > 0) {
     const f = fonteAposGastar(hunt.poeFonteDeVidaS2A, vida, e.fonteDeVidaApos);
@@ -150,7 +165,20 @@ export function abatesS2A(estado, hunt, ef, atingidos, { golpeCorpo = false, ago
   for (const b of atingidos ?? []) {
     if (!b || b.hp > 0 || b.dummy || b.poeDecapitadoS2A || !QuemFeriu.abateSeu(b)) continue;
     b.poeDecapitadoS2A = true;
-    ganhos.push(...ModsPoe.aprenderDoRaro(estado, hunt, { afPoe: { aprendizado_inspirado_n: 1, aprendizado_inspirado_s: ef.decapitarS } }, b, agora, rng));
+    const ids = ModsPoe.aprenderDoRaro(estado, hunt, { afPoe: { aprendizado_inspirado_n: 1, aprendizado_inspirado_s: ef.decapitarS } }, b, agora, rng);
+    // (lote D2: o modificador que o Decapitar deu — o que a renovação dele estende)
+    for (const id of ids) for (const [k, t] of Object.entries(hunt.poeTemporarios ?? {})) if (k.startsWith(`aprendizado:${id}:`)) t.decapitar = true;
+    ganhos.push(...ids);
   }
   return ganhos;
+}
+
+/**
+ * (lote D2, dono 27/10) a TENTAÇÃO VAAL: o seu uso da habilidade Vaal suportada inflige em você o Dano Físico degenerativo do suporte (1300 por segundo — o motor do dano
+ * contínuo em você: os modificadores de dano degenerativo sofrido, o Escudo de Energia e a Vida; pode matar) pelo tempo do Impedimento de Ganho de Almas da gema
+ * (`impedimentoMs` — a Tentação vem "em vez de" ele). Devolve o estado posto, ou null.
+ */
+export function tentacaoVaalNoUso(hunt, ef, { vaal = false, impedimentoMs = 0, agora = hunt?.clock ?? 0 } = {}) {
+  if (!ligado() || !hunt || !vaal || !(ef?.tentacaoVaalPorS > 0) || !(impedimentoMs > 0)) return null;
+  return Dot.aplicarNoJogador(hunt, { tipo: 'degenFisico', total: (ef.tentacaoVaalPorS * impedimentoMs) / 1000, duracaoMs: impedimentoMs, chave: 'tentacaoVaal', origem: { fonte: 'proprio', mob: 'Tentação Vaal' } }, agora);
 }

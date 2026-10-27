@@ -53,7 +53,9 @@ export function fator(ficha, efeitoDaGema, recurso, arquetipo = null, tipos = nu
     // A maldição em aura (Blasfêmia) e a postura (a tag "Stance" da gema).
     + (deMana && arquetipo === 'maldicao' ? ModsPoe.valor(ficha, 'eficiencia_reserva_maldicao') : 0)
     + (deMana && tipos?.has?.('Stance') ? ModsPoe.valor(ficha, 'eficiencia_reserva_postura') : 0)
-    + (deMana && arquetipo === 'feiticeiro' ? ModsPoe.valor(ficha, 'eficiencia_reserva_feiticeiro') : 0);
+    + (deMana && arquetipo === 'feiticeiro' ? ModsPoe.valor(ficha, 'eficiencia_reserva_feiticeiro') : 0)
+    // (lote D2: a Mina que reserva o custo — a Cadeia Explosiva, o Alto Impacto — tem a "Eficácia da Reserva das Habilidades que arremessam Minas")
+    + (arquetipo === 'mina' ? ModsPoe.valor(ficha, 'eficiencia_reserva_minas') : 0);
   return mult / Math.max(0.1, 1 + eficacia / 100);
 }
 

@@ -1754,7 +1754,9 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   // Os sorteios do golpe: "Dano Dobrado"/"Triplicado" e "ignorar a Redução de Dano Físico" (a chance sem condição + a do golpe).
   const chance = (k) => (Number(ficha.afPoe[k]) || 0) + (s[k] ?? 0);
   const triplo = chance('chance_dano_triplo') > 0 && rng() * 100 < chance('chance_dano_triplo');
-  const dobro = !triplo && chance('chance_dano_dobrado') > 0 && rng() * 100 < chance('chance_dano_dobrado');
+  // (lote D2, dono 27/10: + a chance das Minas de Alto Impacto perto do alvo — `minaDobro`, o golpe com alvo)
+  const doAltoImpacto = alvo && ativo(alvo.estados?.minaDobro, agora) ? alvo.estados.minaDobro.pct ?? 0 : 0;
+  const dobro = !triplo && chance('chance_dano_dobrado') + doAltoImpacto > 0 && rng() * 100 < chance('chance_dano_dobrado') + doAltoImpacto;
   const ignora = chance('ignora_reducao_fisica') > 0 && rng() * 100 < chance('ignora_reducao_fisica');
   const invertida = chance('chance_res_invertida') > 0 && rng() * 100 < chance('chance_res_invertida');
   // (lote S2B: a Tríade Profana — "X% de chance de ignorar a resistência a dano de caos e elétrico do inimigo", sorteado por acerto)
@@ -2483,7 +2485,8 @@ function usosDaFicha(ficha) {
  */
 export const DEVORADOR_DE_ALMAS = Object.freeze({ porAlmaPct: 5, maximo: 45, raioCasas: 3, perdaMs: 500 });
 export function almasDoLacaio(l, agora) {
-  if (!((l?.buffs?.devoradorDeAlmas ?? 0) > agora) || !l.almas) return 0;
+  // (lote D2, dono 27/10: as almas da Transfusão — `almas.livre` — valem mesmo sem o buff do Devorador)
+  if (!l?.almas || (!((l.buffs?.devoradorDeAlmas ?? 0) > agora) && !l.almas.livre)) return 0;
   const parado = agora - (l.almas.em ?? agora) - RECENTE_MS;
   return Math.max(0, l.almas.n - (parado > 0 ? Math.floor(parado / DEVORADOR_DE_ALMAS.perdaMs) : 0));
 }
@@ -2493,7 +2496,7 @@ export function almaParaOsLacaios(lacaios, morto, agora) {
   let n = 0;
   for (const l of lacaios ?? []) {
     if (!(l?.hp > 0) || !((l.buffs?.devoradorDeAlmas ?? 0) > agora) || Math.max(Math.abs(l.x - morto.x), Math.abs(l.y - morto.y)) > DEVORADOR_DE_ALMAS.raioCasas) continue;
-    l.almas = { n: Math.min(DEVORADOR_DE_ALMAS.maximo, almasDoLacaio(l, agora) + 1), em: agora };
+    l.almas = { n: Math.min(DEVORADOR_DE_ALMAS.maximo, almasDoLacaio(l, agora) + 1), em: agora, ...(l.almas?.livre ? { livre: true } : {}) };
     n++;
   }
   return n;

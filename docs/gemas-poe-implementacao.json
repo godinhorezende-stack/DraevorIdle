@@ -17,8 +17,8 @@
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 175,
-   "parcial": 36,
+   "implementada e testada": 179,
+   "parcial": 32,
    "implementada, sem teste próprio": 51
   },
   "variantes": {
@@ -44,8 +44,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 132,
-   "emDuasOuMais": 13
+   "linhasDistintas": 126,
+   "emDuasOuMais": 12
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -60,7 +60,7 @@
   },
   "testes": {
    "ativasCitadas": 504,
-   "suportesCitados": 186,
+   "suportesCitados": 189,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
@@ -7980,10 +7980,8 @@
   {
    "slug": "Behead_Support",
    "nome": "Decapitar",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: 20% de chance de renovar a Duração do Modificador recebido em até 5 segundos quando você Acertar um Inimigo Raro ou Único com Habilidades Suportadas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8250,12 +8248,8 @@
   {
    "slug": "Transfusion_Support",
    "nome": "Transfusão (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Um lacaio próximo ganha uma alma para cada 200 de vida que você gasta em custos iniciais com magias reforçadas",
-    "não simulado: Um lacaio próximo ganha uma alma para cada 200 de vida que você gasta em custos\\niniciais com magias reforçadas",
-    "não simulado: Habilidades Suportadas têm Custo de Vida aumentado em 10%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8264,7 +8258,7 @@
    "nome": "Tentação Vaal (Reforço)",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Usar habilidades vaal reforçadas inflige Tentação Vaal em você, causando 1300 de dano físico por segundo, em vez de aplicar impedimento de ganho de almas"
+    "não simulado: o impedimento de ganho de almas que a Tentação substitui (o jogo não tem o Impedimento de Ganho de Almas: as almas das gemas Vaal são a recarga)"
    ],
    "outros": [],
    "icone": true
@@ -8402,7 +8396,6 @@
    "nome": "Mina Local",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida",
     "não simulado: Minas de Habilidades Suportadas não podem ser Detonadas enquanto dentro de 3 metros de você",
     "não simulado: Minas usando Habilidades Suportadas sempre focam na sua localização",
     "não simulado: Habilidades Suportadas arremessam Minas em um Arco"
@@ -8994,10 +8987,8 @@
   {
    "slug": "Blastchain_Mine_Support",
    "nome": "Mina da Cadeia Explosiva",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9309,11 +9300,8 @@
   {
    "slug": "High-Impact_Mine_Support",
    "nome": "Mina de Alto Impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida",
-    "não simulado: Cada Mina das Habilidades Suportadas aplicadas 2% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de 100%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9836,14 +9824,6 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida",
-   "gemas": [
-    "Blastchain_Mine_Support",
-    "High-Impact_Mine_Support",
-    "Locus_Mine_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção",
    "gemas": [
     "Divine_Blessing_Support",
@@ -9926,12 +9906,6 @@
    "linha": "# % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único",
    "gemas": [
     "Herald_of_Purity"
-   ]
-  },
-  {
-   "linha": "#% de chance de renovar a Duração do Modificador recebido em até # segundos quando você Acertar um Inimigo Raro ou Único com Habilidades Suportadas",
-   "gemas": [
-    "Behead_Support"
    ]
   },
   {
@@ -10028,12 +10002,6 @@
    "linha": "Buff concede # % mais Dano Físico",
    "gemas": [
     "Herald_of_Purity"
-   ]
-  },
-  {
-   "linha": "Cada Mina das Habilidades Suportadas aplicadas #% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de #%",
-   "gemas": [
-    "High-Impact_Mine_Support"
    ]
   },
   {
@@ -10367,12 +10335,6 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas têm Custo de Vida aumentado em #%",
-   "gemas": [
-    "Transfusion_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas têm Efeito das Auras reduzido em #%",
    "gemas": [
     "Guardians_Blessing_Support"
@@ -10547,6 +10509,12 @@
    ]
   },
   {
+   "linha": "o impedimento de ganho de almas que a Tentação substitui (o jogo não tem o Impedimento de Ganho de Almas: as almas das gemas Vaal são a recarga)",
+   "gemas": [
+    "Vaal_Temptation_Support"
+   ]
+  },
+  {
    "linha": "o totem provoca os monstros em volta a atacá-lo (act_str.lua:##)",
    "gemas": [
     "Decoy_Totem"
@@ -10610,24 +10578,6 @@
    "linha": "Totens das Habilidades Suportadas ganham a Habilidade\\nVingança Flamejante e a Ativa quando Acertado por um Inimigo",
    "gemas": [
     "Flamewood_Support"
-   ]
-  },
-  {
-   "linha": "Um lacaio próximo ganha uma alma para cada # de vida que você gasta em custos iniciais com magias reforçadas",
-   "gemas": [
-    "Transfusion_Support"
-   ]
-  },
-  {
-   "linha": "Um lacaio próximo ganha uma alma para cada # de vida que você gasta em custos\\niniciais com magias reforçadas",
-   "gemas": [
-    "Transfusion_Support"
-   ]
-  },
-  {
-   "linha": "Usar habilidades vaal reforçadas inflige Tentação Vaal em você, causando # de dano físico por segundo, em vez de aplicar impedimento de ganho de almas",
-   "gemas": [
-    "Vaal_Temptation_Support"
    ]
   },
   {

@@ -30,12 +30,13 @@ export const restante = (m, tipo) => dosDoTipo(m, tipo).reduce((n, d) => n + d.f
  * Põe um efeito no bicho. `total`: o dano que o efeito paga ao todo (antes da resistência); `origem`: `{ fonte, habilidade?, atacante? }`.
  * Devolve o nome do ESTADO posto (`'queimando'`, `'envenenado'`...) ou null se não entrou (mais fraco que o que já vale, sem dano...).
  */
-export function aplicar(bicho, { tipo, total, origem = null, duracaoMs = null, chave = null, agravado = false, semMovimento = false }, agora) {
+export function aplicar(bicho, { tipo, total, origem = null, duracaoMs = null, chave = null, agravado = false, semMovimento = false, isolarChave = false }, agora) {
   const t = CONFIG.tipos[tipo];
   if (!t || !(total > 0) || bicho.hp <= 0) return null;
   const dots = (bicho.dots ??= []);
   // `chave` (o dano degenerativo de uma habilidade: a gema): só briga com o da MESMA chave — duas habilidades diferentes acumulam, como no PoE.
-  const mesmos = dots.filter((d) => d.tipo === tipo && (chave == null || d.chave === chave) && ativo(d, agora));
+  // (lote D2: `isolarChave` — no jogador, o sem chave também não briga com o de chave: a Tentação Vaal e a Fúria Sangrenta valem as duas)
+  const mesmos = dots.filter((d) => d.tipo === tipo && (chave == null ? !(isolarChave && d.chave != null) : d.chave === chave) && ativo(d, agora));
   // `duracaoMs`: a duração própria da fonte (um modificador de mob pode ter a dele); sem ela, a do tipo.
   const duracao = duracaoMs ?? t.duracaoMs;
   const novo = () => ({
@@ -211,8 +212,9 @@ const doJogador = (hunt) => (hunt.efeitosDoJogador ??= { hp: 1, dots: [] });
  * Um mob põe um efeito de dano contínuo no JOGADOR: as MESMAS regras de acumulação dos bichos (maior / empilha / renova), no relógio da
  * caçada. `origem`: `{ fonte: 'mob', mob, uid }`. Devolve o estado posto ou null.
  */
-export function aplicarNoJogador(hunt, { tipo, total, origem = null, duracaoMs = null }, agora) {
-  return aplicar(doJogador(hunt), { tipo, total, origem, duracaoMs }, agora);
+export function aplicarNoJogador(hunt, { tipo, total, origem = null, duracaoMs = null, chave = null }, agora) {
+  // (lote D2: + a `chave` — o degenerativo de uma fonte própria, a Tentação Vaal, não briga com o da Fúria Sangrenta)
+  return aplicar(doJogador(hunt), { tipo, total, origem, duracaoMs, chave, isolarChave: true }, agora);
 }
 
 /**

@@ -27,9 +27,9 @@ Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 175 |
+| implementada e testada | 179 |
 | implementada, sem teste próprio | 51 |
-| parcial | 36 |
+| parcial | 32 |
 
 ### Variantes
 
@@ -39,10 +39,10 @@ Só os ataques:
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 132 linhas distintas (13 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 126 linhas distintas (12 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 504/562 ativas, 186/262 suportes.
+- Testes que citam a gema: 504/562 ativas, 189/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
@@ -50,7 +50,6 @@ Só os ataques:
 | Gemas | Linha |
 |---|---|
 | 3 | as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:##; no jogo ainda são projéteis no alvo) |
-| 3 | Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida |
 | 3 | Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção |
 | 3 | Habilidades Suportadas também contam como Habilidades Bênção\nVocê só pode ter uma Aura de suas Habilidades Bênção |
 | 2 | # % de chance de Convocar um Sentinela da Absolvição ao Acertar um Inimigo Raro ou Único |
@@ -63,7 +62,6 @@ Só os ataques:
 | 2 | sem dano direto: nenhum efeito no combate |
 | 2 | Velocidade de Movimento dos Lacaios está no Máximo |
 | 1 | # % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único |
-| 1 | #% de chance de renovar a Duração do Modificador recebido em até # segundos quando você Acertar um Inimigo Raro ou Único com Habilidades Suportadas |
 | 1 | #% mais Dano em Área |
 | 1 | +# ao número máximo de Guerreiros Ilusórios |
 | 1 | +# vez |
@@ -80,7 +78,6 @@ Só os ataques:
 | 1 | Ativa Invocar Relâmpago Vivo quando uma habilidade\nde reforço causa dano elétrico com o acerto |
 | 1 | Auras das Habilidades Suportadas têm uma duração base de # segundos |
 | 1 | Buff concede # % mais Dano Físico |
-| 1 | Cada Mina das Habilidades Suportadas aplicadas #% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de #% |
 | 1 | Causa # a # de Dano de Caos |
 | 1 | Causa # a # de Dano de Raio |
 | 1 | Causa Dano de Fogo base igual a #% da Vida Máxima dos Totens |
@@ -136,7 +133,6 @@ Só os ataques:
 | 1 | Habilidades Suportadas não podem aplicar Auras em você a menos que você tenha Lacaios de uma Habilidade Suportada |
 | 1 | Habilidades Suportadas não tem Reserva |
 | 1 | Habilidades Suportadas só podem ser usadas com Varinhas |
-| 1 | Habilidades Suportadas têm Custo de Vida aumentado em #% |
 | 1 | Habilidades Suportadas têm Efeito das Auras reduzido em #% |
 | 1 | Inflige Definhando por # segundos ao Acertar |
 | 1 | Inimigos sofrem de Insanidade Perversa se estiverem sob a influência de auras de habilidades reforçadas por mais de # segundos |
@@ -166,6 +162,7 @@ Só os ataques:
 | 1 | Minas usando Habilidades Suportadas sempre focam na sua localização |
 | 1 | Modificadores ao Dano Mágico são aplicados ao efeito de Dano Degenerativo das Habilidades Suportadas |
 | 1 | nenhum efeito do buff tem equivalente no jogo |
+| 1 | o impedimento de ganho de almas que a Tentação substitui (o jogo não tem o Impedimento de Ganho de Almas: as almas das gemas Vaal são a recarga) |
 | 1 | o totem provoca os monstros em volta a atacá-lo (act_str.lua:##) |
 | 1 | Oferendas reforçadas ativam Invocar Nascidos da Colmeia ao usar |
 | 1 | perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB) |
@@ -177,9 +174,6 @@ Só os ataques:
 | 1 | Totens com esta Habilidade a Ativam quando Acertados por um Inimigo |
 | 1 | Totens das Habilidades Suportadas ganham a Habilidade Vingança Flamejante e a Ativa quando Acertado por um Inimigo |
 | 1 | Totens das Habilidades Suportadas ganham a Habilidade\nVingança Flamejante e a Ativa quando Acertado por um Inimigo |
-| 1 | Um lacaio próximo ganha uma alma para cada # de vida que você gasta em custos iniciais com magias reforçadas |
-| 1 | Um lacaio próximo ganha uma alma para cada # de vida que você gasta em custos\niniciais com magias reforçadas |
-| 1 | Usar habilidades vaal reforçadas inflige Tentação Vaal em você, causando # de dano físico por segundo, em vez de aplicar impedimento de ganho de almas |
 | 1 | Velocidade de rotação aumentada em # % se em Empunhadura Dupla |
 
 ## Gemas de habilidade pendentes
@@ -356,10 +350,6 @@ Só os ataques:
 
 ## Gemas de suporte pendentes
 
-- **Behead_Support** (Decapitar) — parcial
-  - não simulado: 20% de chance de renovar a Duração do Modificador recebido em até 5 segundos quando você Acertar um Inimigo Raro ou Único com Habilidades Suportadas
-- **Blastchain_Mine_Support** (Mina da Cadeia Explosiva) — parcial
-  - não simulado: Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida
 - **Bonespire_Support** (Torre Óssea (Reforço)) — parcial
   - não simulado: a explosão das torres usa o físico médio da arma × 250–271% pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); as torres não bloqueiam o caminho dos monstros
 - **Cast_on_Ward_Break_Support** (Conjurar ao Perder Salvaguarda (Reforço)) — parcial
@@ -425,9 +415,6 @@ Só os ataques:
   - não simulado: Chão amaldiçoado de habilidades reforçadas ativam Sapo Explosivo a cada 0.8 segundo
   - não simulado: Causa 2504 a 3757 de Dano de Caos
   - não simulado: Inflige Definhando por 2 segundos ao Acertar
-- **High-Impact_Mine_Support** (Mina de Alto Impacto) — parcial
-  - não simulado: Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida
-  - não simulado: Cada Mina das Habilidades Suportadas aplicadas 2% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de 100%
 - **Hiveborn_Support** (Nascido da Colmeia (Reforço)) — parcial
   - não simulado: Oferendas reforçadas ativam Invocar Nascidos da Colmeia ao usar
   - não simulado: Máximo de 12 Nascido(s) da Colmeia
@@ -454,7 +441,6 @@ Só os ataques:
   - não simulado: Ativa Invocar Relâmpago Vivo quando uma habilidade\nde reforço causa dano elétrico com o acerto
   - não simulado: Lacaios Relâmpagos Vivos atacam +2 vezes antes de desaparecerem
 - **Locus_Mine_Support** (Mina Local) — parcial
-  - não simulado: Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida
   - não simulado: Minas de Habilidades Suportadas não podem ser Detonadas enquanto dentro de 3 metros de você
   - não simulado: Minas usando Habilidades Suportadas sempre focam na sua localização
   - não simulado: Habilidades Suportadas arremessam Minas em um Arco
@@ -489,12 +475,8 @@ Só os ataques:
   - não simulado: Espíritos Sagrados têm 25% de chance de usar a Habilidade Ativadora quando voc6e disparar um\nProjétil com tal Habilidade
 - **Shockwave_Support** (Onda de Choque) — parcial
   - não simulado: a onda usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma)
-- **Transfusion_Support** (Transfusão (Reforço)) — parcial
-  - não simulado: Um lacaio próximo ganha uma alma para cada 200 de vida que você gasta em custos iniciais com magias reforçadas
-  - não simulado: Um lacaio próximo ganha uma alma para cada 200 de vida que você gasta em custos\niniciais com magias reforçadas
-  - não simulado: Habilidades Suportadas têm Custo de Vida aumentado em 10%
 - **Vaal_Temptation_Support** (Tentação Vaal (Reforço)) — parcial
-  - não simulado: Usar habilidades vaal reforçadas inflige Tentação Vaal em você, causando 1300 de dano físico por segundo, em vez de aplicar impedimento de ganho de almas
+  - não simulado: o impedimento de ganho de almas que a Tentação substitui (o jogo não tem o Impedimento de Ganho de Almas: as almas das gemas Vaal são a recarga)
 - **Void_Shockwave_Support** (Onda de Choque do Vazio (Reforço)) — parcial
   - não simulado: a onda usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma)
 - **Voidstorm_Support** (Tormenta do Vazio (Reforço)) — parcial

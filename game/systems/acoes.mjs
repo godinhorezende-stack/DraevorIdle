@@ -4683,6 +4683,22 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   if (reserva && !Reserva.cabe(estado, entry.id, reserva)) {
     return { ok: false, erro: `Sem ${reserva.recurso} livre para reservar: ${entry.name} reserva ${reserva.valor}.`, motivo: 'RESERVA' };
   }
+  /*
+   * (lote D2, dono 27/10) as Minas da Cadeia Explosiva e de Alto Impacto (e a Local): "Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida" —
+   * a gema suportada RESERVA o custo base (o da gema no nível; da Vida com o custo em Vida) enquanto estiver na barra, como a aura (`hunt.buffs[id].reserva`, que sai
+   * com a gema fora da barra — `desligarAurasForaDaBarra`), × o "Multiplicador de Custo & Reserva" dos suportes ÷ a Eficácia da Reserva (a geral, a do recurso e a "das
+   * Habilidades que arremessam Minas"); cada mina sai sem custo. O seu arremesso (o do totem e o ativado, não): liga no primeiro, se couber.
+   */
+  const reservaDaMina = itensPoeLigado() && entry.poeGema && efeitoDaGema?.reservaDoCusto > 0 && !reserva && !doTotem && !plantada && !gatilho ? (() => {
+    const recurso = reservaEmVida || GemasPoe.recursoDoCusto(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) === 'vida' ? 'vida' : 'mana';
+    const fixo = custoDaSkill(entry, efeitoDaGema, estado);
+    if (!(fixo > 0)) return null;
+    const r = { recurso, fixo, fator: Reserva.fator(fichaDoCusto, efeitoDaGema, recurso, 'mina', null, entry.poeGema.slug) };
+    return { ...r, valor: Reserva.valor(estado, r) };
+  })() : null;
+  if (reservaDaMina && !Reserva.cabe(estado, entry.id, reservaDaMina)) {
+    return { ok: false, erro: `Sem ${reservaDaMina.recurso} livre para reservar: ${entry.name} reserva ${reservaDaMina.valor}.`, motivo: 'RESERVA' };
+  }
   // (A MINA do PoE reserva mana enquanto está armada — no jogo, a reserva dela é o custo de cada uma: a Eficácia da Reserva de mana, a geral
   // e a "das Habilidades que arremessam Minas" o reduzem.)
   const eficaciaDaMina = entry.poeGema?.arquetipo === 'mina' ? ModsPoe.valor(fichaDoCusto, 'eficiencia_reserva') + ModsPoe.valor(fichaDoCusto, 'eficiencia_reserva_mana') + ModsPoe.valor(fichaDoCusto, 'eficiencia_reserva_minas') : 0;
@@ -4692,7 +4708,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (o Vínculo não paga ao conjurar: custa por segundo, enquanto vincula — `tiqueDosVinculos`)
   // (revisão E1b: + o "não custa Mana" sem tag — a Clareza Vaal, `sem_custo_mana`: o custo ZERO antes de qualquer aumentado, mais ou custo fixo, como o
   // "ManaCost MORE −100, unscalable" do PoB, act_int.lua:2739-2741)
-  const custoDeMana = entry.kind === 'item' || gatilho?.semCusto || reserva || Vinculos.ehVinculo(entry) || (doCustoPorTag.sem_custo_mana ?? 0) + ModsPoe.valor(fichaDoCusto, 'sem_custo_mana') > 0 ? 0 : Math.max(0, Math.round((custoDaSkill(entry, efeitoDaGema, estado) * (1 + (fichaDoCusto.custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100) * Math.max(0, 1 + (ModsPoe.valor(fichaDoCusto, 'custo_mana_inc') + (doCustoPorTag.custo_mana_inc ?? 0)) / 100) * Math.max(0, 1 + ((doCustoPorTag.custo_mana_mais ?? 0) + ModsPoe.valor(fichaDoCusto, 'custo_mana_mais')) / 100) * (gatilho?.custoMult ?? 1)) / Math.max(0.1, 1 + (ModsPoe.valor(fichaDoCusto, 'eficiencia_custo_mana') + (doCustoPorTag.eficiencia_custo_mana ?? 0)) / 100) / Math.max(0.1, 1 + eficaciaDaMina / 100) + ModsPoe.valor(fichaDoCusto, 'custo_mana_fixo') + (doCustoPorTag.custo_mana_fixo ?? 0)));
+  // (lote D2: + a Mina que reserva o custo — `reservaDaMina` — sai sem custo; + o "Custo de Vida aumentado" da Transfusão, no "aumentado" do custo que sai da Vida)
+  const custoVidaInc = efeitoDaGema?.custoEmVida ? Number(efeitoDaGema.custoVidaIncPct) || 0 : 0;
+  const custoDeMana = entry.kind === 'item' || gatilho?.semCusto || reserva || reservaDaMina || Vinculos.ehVinculo(entry) || (doCustoPorTag.sem_custo_mana ?? 0) + ModsPoe.valor(fichaDoCusto, 'sem_custo_mana') > 0 ? 0 : Math.max(0, Math.round((custoDaSkill(entry, efeitoDaGema, estado) * (1 + (fichaDoCusto.custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100) * Math.max(0, 1 + (ModsPoe.valor(fichaDoCusto, 'custo_mana_inc') + (doCustoPorTag.custo_mana_inc ?? 0) + custoVidaInc) / 100) * Math.max(0, 1 + ((doCustoPorTag.custo_mana_mais ?? 0) + ModsPoe.valor(fichaDoCusto, 'custo_mana_mais')) / 100) * (gatilho?.custoMult ?? 1)) / Math.max(0.1, 1 + (ModsPoe.valor(fichaDoCusto, 'eficiencia_custo_mana') + (doCustoPorTag.eficiencia_custo_mana ?? 0)) / 100) / Math.max(0.1, 1 + eficaciaDaMina / 100) + ModsPoe.valor(fichaDoCusto, 'custo_mana_fixo') + (doCustoPorTag.custo_mana_fixo ?? 0)));
   // Life Cost (support): o custo sai da VIDA, e não da mana (sem deixar o personagem a menos de 1).
   // Magia Sanguínea (keystone do PoE): as habilidades custam Vida em vez de Mana.
   // (lote A2: + a gema cujo custo É de Vida — "Custo: 29 Vida", a Fúria Sangrenta — ou de Escudo de Energia — "Custo: 624 Escudo de Energia", a
@@ -5657,6 +5675,12 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       sessao.supplies += preco;
     }
   }
+  // (lote D2) a reserva da Mina (`reservaDaMina`): liga no arremesso (o fixo e o fator de agora: o nível e os suportes)
+  if (reservaDaMina) {
+    const antes = hunt.buffs?.[entry.id];
+    (hunt.buffs ??= {})[entry.id] = { ate: Reserva.LIGADA_ATE, desde: antes?.reserva ? antes.desde ?? agora : agora, tipo: 'poe-reserva-mina', reserva: { recurso: reservaDaMina.recurso, fixo: reservaDaMina.fixo, fator: reservaDaMina.fator } };
+    Reserva.cortarNoLivre(estado);
+  }
   // (lote 72) "se você Gastou Vida Recentemente": o Custo pago em Vida (inteiro, em parte ou a Vida a mais).
   if (vidaAMais || pagaComVida || parteEmVida) ModsPoe.marcar(hunt, 'gastouVida');
   if (vidaAMais) estado.hp = Math.max(1, (estado.hp ?? 0) - vidaAMais);
@@ -5757,6 +5781,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   const vidaGastaNoUso = (vidaAMais || 0) + (pagaComVida ? custoDeMana : 0) + (parteEmVida || 0);
   if (vidaGastaNoUso > 0) vidaGastaB2(hunt, vidaGastaNoUso, agora);
   //  - (lote S2A, 27/10) o uso pago por você: o adicionado e o atordoamento por Traumatismo do suporte, as Cargas de Inspiração e a Fonte de Vida (`doUsoS2A`)
+  // (lote D2, dono 27/10) a Tentação Vaal: o seu uso da Vaal suportada põe em você o degenerativo dela pelo Impedimento de Ganho de Almas da gema
+  if (itensPoeLigado() && efeitoDaGema?.tentacaoVaalPorS > 0 && entry.poeGema && !doTotem && !plantada) {
+    SuportesS2A.tentacaoVaalNoUso(hunt, efeitoDaGema, { vaal: tagsPoeDaSkill(entry).includes('vaal'), impedimentoMs: SuportesS2A.impedimentoDasProps(GemasPoe.textosDaGema(entry.poeGema.slug, efeitoDaGema.nivel ?? 1).props), agora });
+  }
   if (itensPoeLigado() && efeitoDaGema && !doTotem && !plantada) efeitoDaGema = SuportesS2A.doUsoS2A(estado, hunt, efeitoDaGema, { vida: vidaGastaNoUso, mana: manaGastaS2A, fatorDur: fatorDeDuracao(estado, entry, efeitoDaGema), traumas: efeitoDaGema.traumaFisicoMin > 0 || efeitoDaGema.traumaAtordoamentoPct > 0 ? GemasC2.traumasAgora(hunt, agora) : 0, custoDeMana, agora });
   //  - o Descarrego detonou as lâminas do Vórtice
   if (vorticeDoDescarrego) { vorticeDoDescarrego.laminas = []; vorticeDoDescarrego.ate = Math.min(vorticeDoDescarrego.ate, agora); }
@@ -6288,6 +6316,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const porVeneno = (bicho) => (efeitoDaGema?.maisAcertoPorVenenoPct > 0 ? 1 + (efeitoDaGema.maisAcertoPorVenenoPct * Math.min(efeitoDaGema.maisAcertoPorVenenoMax ?? Infinity, (bicho.dots ?? []).filter((d) => (d.tipo === 'venenoPoe' || d.tipo === 'veneno') && d.falta > 0).length)) / 100 : 1);
     // (a Sede de Sangue: "X% mais Dano Físico Corpo a Corpo contra inimigos Sangrando" — só no acerto; o Eco de Magia Maior: "+X% de dano mágico por
     // repetição" — só no acerto da magia, X a mais por repetição)
+    // (lote D2, dono 27/10) o Dano Dobrado das Minas de Alto Impacto no alvo (`minaDobro`): por acerto, por cima do sorteio do uso
+    const dobroDasMinas = (bicho) => (itensPoeLigado() && bicho?.estados?.minaDobro?.ate > agora ? SuportesS2A.fatorDoDobroDasMinas(bicho.estados.minaDobro.pct, { jaDobrado: !!ficha.danoDobradoNoGolpe, jaPct: ModsPoe.valor(ficha, 'chance_dano_dobrado') }) : 1);
     const contraSangrando = (bicho) => (efeitoDaGema?.maisAcertoContraSangrandoPct > 0 && (bicho.dots ?? []).some((d) => d.tipo === 'sangramento' && d.falta > 0) ? 1 + efeitoDaGema.maisAcertoContraSangrandoPct / 100 : 1);
     const porRepeticao = () => Math.max(0, 1 + (repeticaoAtual * (efeitoDaGema?.repeticaoMaisPorPct ?? 0)) / 100);
     // (lote C1: o Frenesi dá a carga uma vez por ataque — a repetição em que ela já saiu; revisão do C1: o uso e cada repetição)
@@ -6337,7 +6367,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // O golpe da gema do PoE com MAIS DE UM elemento (ou de outro elemento que o da skill): cada parte com o "aumentado", a marca de
       // vulnerável e a resistência do elemento dela; o golpe leva o elemento da maior parte (a cor, o registro, as mecânicas do mob).
       // (lote A3c: o acerto da área no impacto tem o dano do projétil que a causou — `golpe.doImpacto`, a fonte do impacto)
-      const fator = (semDanoProprio || semAcertoDaGema ? 0 : 1) * (dobroNaFinal ? 2 : 1) * (impiedoso ? 1 + (efeitoDaGema.impiedosoMaisDanoPct ?? 0) / 100 : 1) * (reocorrendo ? Math.max(0, 1 - (efeitoDaGema.selosMenosDanoPct ?? 0) / 100) : 1) * maisDaIntensidade * maisDoMaximizado() * maisDaRepeticao() * porRepeticao() * porVeneno(bicho) * contraSangrando(bicho) * fatorDoPerto(bicho) * maisDaInvestida * contraResfriado(bicho) * contraEletrizado(bicho) * contraIncendiado(bicho) * doProjetilDaGema(golpe?.tipo === 'impacto' ? golpe.doImpacto : fonte) * fatorDoAco(bicho) * fatorDoProjetil(bicho, golpe) * fatorDoAprisionado(bicho, fonte) * fatorDaProximidade(bicho) * (fatorDaGema * (1 + ((porAfeccao ?? 0) * GemasPoe.afeccoesElementaisEm(bicho, agora)) / 100) * pct * fatorDoAtaque) / 10000;
+      const fator = (semDanoProprio || semAcertoDaGema ? 0 : 1) * (dobroNaFinal ? 2 : 1) * (impiedoso ? 1 + (efeitoDaGema.impiedosoMaisDanoPct ?? 0) / 100 : 1) * (reocorrendo ? Math.max(0, 1 - (efeitoDaGema.selosMenosDanoPct ?? 0) / 100) : 1) * maisDaIntensidade * maisDoMaximizado() * maisDaRepeticao() * porRepeticao() * porVeneno(bicho) * contraSangrando(bicho) * fatorDoPerto(bicho) * maisDaInvestida * contraResfriado(bicho) * contraEletrizado(bicho) * contraIncendiado(bicho) * doProjetilDaGema(golpe?.tipo === 'impacto' ? golpe.doImpacto : fonte) * fatorDoAco(bicho) * fatorDoProjetil(bicho, golpe) * fatorDoAprisionado(bicho, fonte) * fatorDaProximidade(bicho) * dobroDasMinas(bicho) * (fatorDaGema * (1 + ((porAfeccao ?? 0) * GemasPoe.afeccoesElementaisEm(bicho, agora)) / 100) * pct * fatorDoAtaque) / 10000;
       // (O dano SORTUDO do PoE — rola duas vezes e fica o maior: "Dano Elemental com Acertos é Sortudo enquanto você estiver Eletrizado" em
       // todo golpe — `sorteDoGolpe.sempre`; "Dano de Raio com Golpes Não-Críticos é Sortudo" só no não crítico — `sorteDoGolpe.naoCritico`.)
       // (17/10, lote G17) o que no PoB vale SÓ NO ACERTO e o jogo põe no `fator`: o "mais/menos Dano com Acertos" e os de Mágico/Projétil/Corpo a
@@ -8305,6 +8335,16 @@ function auraDasMinasDaGema(estado, hunt, agora) {
     const e1b = GemasPoe.auraDaMinaE1bDaGema(slugP, efP?.nivel ?? 1, efP?.qualidade ?? 0);
     porGema.set(p.acao, base || e1b ? { ...(base ?? {}), ...(e1b ? { e1b } : {}) } : null);
   }
+  // (lote D2, dono 27/10) a Mina de ALTO IMPACTO: "Cada Mina … aplicadas 2% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de
+  // 100%" — cada mina plantada da gema suportada, nos inimigos a até 3 casas dela (× o "Efeito de Auras das Minas", como as outras auras de Mina); `minaDobro` no inimigo,
+  // lido no acerto (`SuportesS2A.fatorDoDobroDasMinas`, `fichaDoGolpe`)
+  const dobroPorAcao = new Map();
+  const dasMinasDobro = [];
+  for (const p of minas) {
+    if (!dobroPorAcao.has(p.acao)) { const ef = Gemas.efeitoNaSkill(estado, p.acao); dobroPorAcao.set(p.acao, ef?.minaDobroPct > 0 ? { porMina: ef.minaDobroPct, teto: ef.minaDobroTeto ?? 100 } : null); }
+    const d = dobroPorAcao.get(p.acao);
+    if (d) dasMinasDobro.push({ x: p.x, y: p.y, z: p.z, porMina: d.porMina, teto: d.teto, efeito: Math.max(0, 1 + efeitoDaFicha / 100) });
+  }
   for (const b of hunt.monstros ?? []) {
     if (!(b.hp > 0) || b.dummy) continue;
     const soma = { minaCritico: { pct: 0, teto: 0 }, minaFragil: { pct: 0, teto: 0 } };
@@ -8320,6 +8360,7 @@ function auraDasMinasDaGema(estado, hunt, agora) {
       if (d.e1b?.exposicaoFogoPct) exposicaoFogo = Math.max(exposicaoFogo, d.e1b.exposicaoFogoPct * efeitoAura);
     }
     if (exposicaoFogo > 0) ModsPoe.porExposicao(b, 'fire', exposicaoFogo, 500, agora);
+    if (dasMinasDobro.length) { const pct = SuportesS2A.dobroDasMinasNoAlvo(b, dasMinasDobro); if (pct > 0) (b.estados ??= {}).minaDobro = { ate: agora + 500, pct }; }
     for (const [campo, c] of Object.entries(soma)) if (c.pct > 0) {
       const ja = b.estados?.[campo]?.ate > agora ? b.estados[campo].pct ?? 0 : 0;
       (b.estados ??= {})[campo] = { ate: agora + 500, pct: Math.max(ja, Math.min(c.teto, c.pct)) };

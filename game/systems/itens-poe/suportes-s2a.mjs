@@ -45,6 +45,15 @@
 //     Espectros antes de você") e eles sofrem "−28% de dano" (o "aumentado" negativo, × no dano que chega neles);
 //   - o DECAPITAR: o golpe final da Habilidade de Golpe suportada com arma corpo a corpo num Raro dá um dos Modificadores dele por 20 s (o mesmo sorteio do
 //     Aprendizado Inspirado — `ModsPoe.aprenderDoRaro`: só os modificadores que têm um equivalente em você; o mesmo modificador renova o tempo).
+//
+// (lote D2, decisões do dono 27/10)
+//   - o DECAPITAR renova: o acerto da suportada num Raro ou Único tem 20% de chance de SOMAR até 5 s ao modificador que ele deu, sem passar dos 20 s;
+//   - a TRANSFUSÃO: a cada 200 de Vida gasta no custo inicial, uma alma (a do Devorador de Almas: +5% de velocidade de ataque e conjuração por alma, até 45, perde 1 a
+//     cada 0,5 s sem alma nova) no lacaio mais perto a até 3 casas, mesmo sem o Devorador; o "Custo de Vida aumentado" da qualidade no custo em Vida;
+//   - a TENTAÇÃO VAAL: o Dano Físico degenerativo do suporte em você pelo tempo do Impedimento de Ganho de Almas da gema Vaal (a Tentação vem "em vez de" ele; o jogo não
+//     tem o impedimento — as almas são a recarga —, então essa parte da linha fica não feita);
+//   - as MINAS da Cadeia Explosiva e de Alto Impacto (e a Local): a reserva do custo base enquanto a gema estiver na barra (como a aura), cada mina sem custo; o ALTO
+//     IMPACTO: 2% de chance de Dano Dobrado por mina a até 3 casas do inimigo, até 100%.
 
 const N = '(-?\\d+(?:[.,]\\d+)?)';
 const num = (x) => parseFloat(String(x).replace(',', '.'));
@@ -119,6 +128,26 @@ export const REGRAS_S2A = [
   [new RegExp(`^Lacaios de habilidades reforçadas sofrem ${N}% de dano, se eles forem seus únicos lacaios$`, 'i'), (m) => ({ companheirismoDanoPct: num(m[1]) })],
   // o Decapitar
   [new RegExp(`^Golpes Finais das Habilidades de Golpe Suportadas com Armas Corpo a Corpo contra Monstros Raros concedem um de seus Modificadores por ${N} segundos?$`, 'i'), (m) => ({ decapitarS: num(m[1]) })],
+  // ---- (lote D2, decisões do dono 27/10) ----
+  // o Decapitar: "20% de chance de renovar a Duração do Modificador recebido em até 5 segundos quando você Acertar um Inimigo Raro ou Único" — 20% por acerto de
+  // SOMAR até 5 s ao tempo que falta (sem passar dos 20 s do modificador)
+  [new RegExp(`^${N}% de chance de renovar a Duração do Modificador recebido em até ${N} segundos? quando você Acertar um Inimigo Raro ou Único com Habilidades Suportadas$`, 'i'),
+    (m) => ({ decapitarRenovarPct: num(m[1]), decapitarRenovarMs: Math.round(num(m[2]) * 1000) })],
+  // a Transfusão: "Um lacaio próximo ganha uma alma para cada 200 de vida que você gasta em custos iniciais com magias reforçadas" (a cópia com o "\n" literal não
+  // soma) e o "Custo de Vida aumentado" da qualidade (as suportadas custam Vida ao invés de Mana: o "aumentado" do custo delas)
+  [new RegExp(`^Um lacaio próximo ganha uma alma para cada ${N} de vida que você gasta em custos iniciais com magias reforçadas$`, 'i'), (m) => ({ transfusaoVidaPorAlma: num(m[1]) })],
+  [/^Um lacaio próximo ganha uma alma para cada \d+(?:\.\d+)? de vida que você gasta em custos\\n/i, () => ({})],
+  [new RegExp(`^Habilidades Suportadas têm Custo de Vida aumentado em ${N}%$`, 'i'), (m) => ({ custoVidaIncPct: num(m[1]) })],
+  // a Tentação Vaal: "Usar habilidades vaal reforçadas inflige Tentação Vaal em você, causando 1300 de dano físico por segundo, em vez de aplicar impedimento de ganho de
+  // almas" — o degenerativo Físico em você pelo tempo do Impedimento de Ganho de Almas da gema Vaal (`impedimentoDasProps`)
+  [new RegExp(`^Usar habilidades vaal reforçadas inflige Tentação Vaal em você, causando ${N} de dano físico por segundo, em vez de aplicar impedimento de ganho de almas$`, 'i'),
+    (m) => ({ tentacaoVaalPorS: num(m[1]) })],
+  // as Minas da Cadeia Explosiva, de Alto Impacto (e a Local): "Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida" — a gema reserva o custo
+  // base enquanto estiver na barra (como a aura), e cada mina sai sem custo
+  [/^Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida$/i, () => ({ reservaDoCusto: 1 })],
+  // a Mina de Alto Impacto: "Cada Mina … aplicadas 2% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de 100%" (3 casas)
+  [new RegExp(`^Cada Mina das Habilidades Suportadas aplicadas ${N}% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de ${N}%$`, 'i'),
+    (m) => ({ minaDobroPct: num(m[1]), minaDobroTeto: num(m[2]) })],
 ];
 
 /** O gatilho do Marcar ao Acertar (`suportes-poe.gatilhoDe`): "Ativa a Habilidade Suportada quando você Acertar um Inimigo Raro ou Único com um Ataque". */
@@ -189,4 +218,81 @@ export function fatorDoCompanheirismo(hunt, l) {
 export function fatorDoImpeto(impeto, { deslocamento, ataque, suportadoPeloCombate }, agora) {
   if (!impeto || !(impeto.ate > agora) || !deslocamento || !ataque || suportadoPeloCombate) return 1;
   return 1 + Math.max(0, impeto.velPct ?? 0) / 100;
+}
+
+// ---------------------------------------------------------------- (lote D2, decisões do dono 27/10) as contas puras
+
+/** O Inimigo Raro ou Único (o mesmo critério das outras gemas: a raridade Rara/Única, o chefe). */
+export const raroOuUnico = (b) => !!b && (/raro|unico/.test(String(b.raridade ?? b.raridadePoe ?? '')) || !!b.boss || !!b.chefe);
+
+/**
+ * O DECAPITAR renova os modificadores que ele deu (`hunt.poeTemporarios`, as entradas com `decapitar`): soma `somaMs` ao tempo que falta de cada um vivo, sem passar de
+ * `tetoMs` a partir de agora (os 20 s do modificador). Devolve quantos renovou.
+ */
+export function renovarDoDecapitar(temporarios, { somaMs = 0, tetoMs = 0 } = {}, agora = 0) {
+  let n = 0;
+  for (const t of Object.values(temporarios ?? {})) {
+    if (!t?.decapitar || !(t.ate > agora)) continue;
+    const novo = Math.min(t.ate + somaMs, agora + tetoMs);
+    if (novo > t.ate) { t.ate = novo; n++; }
+  }
+  return n;
+}
+
+/** A TRANSFUSÃO: a Vida gasta no custo inicial soma (`gastoAntes`); a cada `porAlma`, uma alma. `{ gasto, almas }` (o que sobra fica para a próxima). */
+export function transfusaoAposGastar(gastoAntes, vida, porAlma) {
+  const gasto = Math.max(0, gastoAntes ?? 0) + Math.max(0, vida ?? 0);
+  if (!(porAlma > 0)) return { gasto, almas: 0 };
+  const almas = Math.floor(gasto / porAlma);
+  return { gasto: gasto - almas * porAlma, almas };
+}
+/** "Um lacaio próximo": o lacaio vivo mais perto de você a até `raio` casas (os totens e o mercenário não são lacaios no PoE), ou null. */
+export function lacaioProximo(hunt, raio = 3) {
+  const p = hunt?.pos;
+  if (!p) return null;
+  let melhor = null;
+  let dMelhor = Infinity;
+  for (const l of hunt.lacaios ?? []) {
+    if (!(l?.hp > 0) || l.tipo === 'totem' || l.mercenario || (l.z ?? hunt.z ?? 0) !== (hunt.z ?? 0)) continue;
+    const d = Math.max(Math.abs(l.x - p.x), Math.abs(l.y - p.y));
+    if (d <= raio && d < dMelhor) { melhor = l; dMelhor = d; }
+  }
+  return melhor;
+}
+
+/** O IMPEDIMENTO DE GANHO DE ALMAS da gema Vaal ("Impedimento de Ganho de Almas: 3 Seg", as propriedades do nível), em ms, ou 0. */
+export function impedimentoDasProps(props) {
+  for (const p of props ?? []) {
+    const m = /^Impedimento de Ganho de Almas:\s*(\d+(?:[.,]\d+)?)\s*Seg/i.exec(String(p));
+    if (m) return Math.round(num(m[1]) * 1000);
+  }
+  return 0;
+}
+
+/** A Mina de Alto Impacto: as casas de "Inimigos próximos a ela" (decisão do dono 27/10). */
+export const ALTO_IMPACTO = Object.freeze({ raioCasas: 3 });
+/**
+ * A chance de Dano Dobrado das Minas de Alto Impacto no inimigo `b`: `porMina` × o efeito das auras das Minas, por mina a até 3 casas, até o `teto`. `minas`:
+ * `[{ x, y, z, porMina, teto, efeito }]`.
+ */
+export function dobroDasMinasNoAlvo(b, minas) {
+  let pct = 0;
+  let teto = 0;
+  for (const p of minas ?? []) {
+    if ((b.z != null && p.z != null && b.z !== p.z) || Math.max(Math.abs(b.x - p.x), Math.abs(b.y - p.y)) > ALTO_IMPACTO.raioCasas) continue;
+    pct += p.porMina * (p.efeito ?? 1);
+    teto = Math.max(teto, p.teto ?? 100);
+  }
+  return Math.min(teto, pct);
+}
+/**
+ * O Dano Dobrado das Minas neste acerto (a chance no alvo, `pct`), por cima do sorteio do uso: se o uso já saiu Dobrado/Triplicado, nada; senão, a chance que falta para a
+ * soma das duas (`jaPct`: a do uso — as chances de Dano Dobrado do PoE somam). Devolve 2 ou 1.
+ */
+export function fatorDoDobroDasMinas(pct, { jaDobrado = false, jaPct = 0 } = {}, rng = Math.random) {
+  if (!(pct > 0) || jaDobrado) return 1;
+  const a = Math.min(100, Math.max(0, jaPct));
+  if (a >= 100) return 1;
+  const falta = (Math.min(100, a + pct) - a) / (100 - a);
+  return rng() < falta ? 2 : 1;
 }
