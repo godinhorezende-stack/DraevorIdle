@@ -530,13 +530,22 @@ export function openHunts() {
  * (`systems/campanha.mjs`): a tela pede a campanha (`{t:'campanha'}`) e
  * desenha o que chegou.
  */
+/**
+ * Pede a campanha ao servidor com a versão da lista de mapas do Dispositivo que a tela já tem (27/10, revisão): igual, a lista não vem de
+ * novo (`MapasDispositivo.paraTela` → `mapasIguais`; `main.mjs` mantém a de antes). Com o depósito, ela podia ter centenas de mapas.
+ */
+function pedirCampanha() {
+  const m = ctx.state.campanha?.mapas;
+  ctx.send({ t: 'campanha', ...(Array.isArray(m?.mapas) && m.versaoDosMapas ? { versaoDosMapas: m.versaoDosMapas } : {}) });
+}
+
 function campanhaCards(body) {
   const { state, send } = ctx;
   // Pede de novo ao abrir (o progresso anda caçando) — com folga, para o
   // redesenho que a resposta provoca não virar um pedido em laço.
   if (!state.campanha || Date.now() - (ctx.tabs.campanhaPedidaEm ?? 0) > 5000) {
     ctx.tabs.campanhaPedidaEm = Date.now();
-    send({ t: 'campanha' });
+    pedirCampanha();
   }
   const campanha = state.campanha;
   if (!campanha) return void body.append(el('p', 'empty', 'carregando a campanha...'));
@@ -613,7 +622,7 @@ function campanhaCards(body) {
           ctx.tabs.worldPoll = null;
           return;
         }
-        send({ t: 'campanha' });
+        pedirCampanha();
       }, 8000);
     }
     // A aba MAPAS (o Dispositivo de Mapas do endgame — só no jogo oficial, quando o servidor manda `campanha.mapas`).
@@ -15701,6 +15710,9 @@ function renderLocker(body) {
             send({
               t: 'depot', action: 'take', id: entry.id,
               count: quantos ?? entry.count, caixa: caixa.indice, pos: inicio + n,
+              // A `rev` da caixa que esta tela mostra: o Dispositivo de Mapas tira mapa do meio dela sozinho (o loop) e a
+              // posição velha cairia noutra peça — o servidor recusa (`Deposito.comando`).
+              rev: caixa.rev ?? 0,
             }),
         })
       );

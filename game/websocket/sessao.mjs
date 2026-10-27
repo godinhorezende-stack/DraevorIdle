@@ -536,6 +536,28 @@ export class Sessao {
     return this.aplicar(r);
   }
 
+  /**
+   * (27/10, revisão) A linha "N mapas no Baú da Conta" do Dispositivo conta a cópia `estado.bauDaConta`, que só era relida no login e nos
+   * comandos do depósito: outro personagem da conta mexia no baú e o número ficava velho. O pedido da campanha relê do banco — no máximo a
+   * cada 30 s (a tela aberta pergunta a cada 8 s) e só com o Dispositivo liberado. A cópia só é trocada se ninguém a trocou durante a
+   * leitura (um comando do depósito no meio já pôs a dele, mais nova). Sem nada a reler, null (a resposta sai na hora); senão, a promessa.
+   */
+  relerBauDaContaParaOsMapas() {
+    if (!MapasDispositivo.liberado(this.estado) || !this.conta?.id) return null;
+    const agora = Date.now();
+    if (agora - (this.bauDaContaRelidoEm ?? 0) < 30_000) return null;
+    this.bauDaContaRelidoEm = agora;
+    const estado = this.estado;
+    const antes = estado.bauDaConta;
+    return B.lerBauDaConta(this.conta.id).then(
+      (linha) => {
+        if (this.estado === estado && estado.bauDaConta === antes) estado.bauDaConta = Deposito.caixaDaConta(linha);
+      },
+      // sem o banco agora: fica a cópia de antes (só o texto da tela)
+      () => {},
+    );
+  }
+
   /** `send({t:'depot', ...})` — o Baú da Conta é da CONTA: lido do banco agora (outro personagem da conta pode ter mexido) e gravado de volta na hora. */
   async despacharDepot(m) {
     const daConta = Deposito.caixaDaConta(await B.lerBauDaConta(this.conta.id));
@@ -1167,9 +1189,13 @@ export class Sessao {
         return this.contaChar(m);
       // A campanha inteira (as dificuldades, as 48 fases com o progresso e os bosses dos atos): a lista de hunts pede ao abrir.
       // Sem personagem em jogo (a tela de escolha — onde o arquivado do Draevor fica) não há campanha a mostrar.
-      case 'campanha':
+      case 'campanha': {
         if (!this.estado) return;
-        return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
+        // `versaoDosMapas`: a da lista de mapas que a tela já tem (a tela aberta pergunta a cada 8 s) — igual, a lista não vai de novo.
+        const responder = () => this.estado && this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado, { versaoDaTela: m.versaoDosMapas ?? null }) });
+        const relendo = this.relerBauDaContaParaOsMapas();
+        return relendo ? relendo.then(responder) : responder();
+      }
       case 'walk':
         return this.andar(m);
       case 'walkTo':
@@ -3058,9 +3084,9 @@ export class Sessao {
  * ele e tocam `tique()` à mão — o relógio nunca entra no meio de um teste.
  */
 /** A campanha para a tela, com o DISPOSITIVO DE MAPAS junto (o endgame do PoE — a aba Mapas e o atalho da cidade do Ato 10). */
-function campanhaComMapas(estado) {
+function campanhaComMapas(estado, opcoes = {}) {
   const campanha = Campanha.paraCliente(estado);
-  const mapas = MapasDispositivo.paraTela(estado);
+  const mapas = MapasDispositivo.paraTela(estado, opcoes);
   return mapas ? { ...campanha, mapas } : campanha;
 }
 

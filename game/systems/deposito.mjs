@@ -220,6 +220,10 @@ export function comando(estado, m, contaCaixa = null) {
     return { ok: true };
   }
   if (m.action === 'take') {
+    // (27/10, revisão) A `rev` da caixa que a tela mostrava: o Dispositivo de Mapas tira peça do MEIO da caixa sem o jogador mexer (o loop
+    // abre sozinho, no tique — `mapas-dispositivo.mjs → abrir` sobe a `rev`), e a posição velha cairia noutra peça do mesmo id (todo mapa do
+    // tier tem o mesmo). Pedido sem `rev` (os antigos) segue como antes.
+    if (m.rev != null && Number(m.rev) !== (Number(caixa.rev) || 0)) return { ok: false, erro: `A ${caixa.nome} mudou (um mapa saiu dela pelo Dispositivo de Mapas): confira e tente de novo.` };
     const id = Number(m.id);
     const i = Number.isInteger(m.pos) && caixa.itens[m.pos]?.id === id ? m.pos : caixa.itens.findIndex((p) => p.id === id);
     if (i < 0) return { ok: false, erro: 'Essa peça não está na caixa.' };

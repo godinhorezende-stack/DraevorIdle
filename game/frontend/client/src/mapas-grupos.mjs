@@ -6,20 +6,41 @@
 const RARIDADE = { normal: 'Normal', magico: 'Mágico', raro: 'Raro', unico: 'Único' };
 
 /**
- * Junta os mapas iguais, na ordem em que o servidor mandou (do tier maior para o menor): `[{ chave, tier, nivel, raridade, nome, mapas,
- * qtd, naBolsa }]`. O primeiro de cada grupo é o que o "Abrir mapa" abre. Sem `chave` (servidor antigo), cada peça fica sozinha.
+ * De onde vem um mapa da lista (`origem` do servidor; sem ela, pelo `onde`): 'mochila', 'bolsa' ou 'deposito' (as caixas do depósito —
+ * `depot:N` — e as Chegadas: dono 27/10, "utilizar mapas do baú também").
+ */
+export const origemDoMapa = (m) => m?.origem ?? (m?.onde === 'pouch' ? 'bolsa' : m?.onde === 'chegadas' || String(m?.onde ?? '').startsWith('depot:') ? 'deposito' : 'mochila');
+
+/**
+ * Junta os mapas iguais (a mesma chave, venham da mochila, da bolsa ou do depósito), na ordem em que o servidor mandou (do tier maior para
+ * o menor; no tier, a mochila, a bolsa e o depósito): `[{ chave, tier, nivel, raridade, nome, mapas, qtd, naBolsa, noBau }]`. O primeiro de
+ * cada grupo é o que o "Abrir mapa" abre. Sem `chave` (servidor antigo), cada peça fica sozinha.
  */
 export function agruparMapas(mapas) {
   const grupos = new Map();
   for (const m of mapas ?? []) {
     const chave = m.chave ?? `${m.onde}:${m.indice}:${m.assinatura}`;
     let g = grupos.get(chave);
-    if (!g) grupos.set(chave, (g = { chave, tier: m.tier, nivel: m.nivel, raridade: m.raridade, nome: m.nome, mapas: [], qtd: 0, naBolsa: 0 }));
+    if (!g) grupos.set(chave, (g = { chave, tier: m.tier, nivel: m.nivel, raridade: m.raridade, nome: m.nome, mapas: [], qtd: 0, naBolsa: 0, noBau: 0 }));
     g.mapas.push(m);
     g.qtd++;
-    if (m.onde === 'pouch') g.naBolsa++;
+    const origem = origemDoMapa(m);
+    if (origem === 'bolsa') g.naBolsa++;
+    else if (origem === 'deposito') g.noBau++;
   }
   return [...grupos.values()];
+}
+
+/**
+ * De onde vêm os mapas do grupo, para a linha do cartão: '' (todos na mochila), ' · na bolsa' / ' · no baú' (todos de um lugar só) ou as
+ * contas (' · 3 no baú · 1 na bolsa' — o que está na mochila não se diz, como antes).
+ */
+export function ondeDoGrupo(g) {
+  const naBolsa = g?.naBolsa ?? 0;
+  const noBau = g?.noBau ?? 0;
+  if (naBolsa === g?.qtd && naBolsa) return ' · na bolsa';
+  if (noBau === g?.qtd && noBau) return ' · no baú';
+  return [noBau ? `${noBau} no baú` : null, naBolsa ? `${naBolsa} na bolsa` : null].filter(Boolean).map((t) => ` · ${t}`).join('');
 }
 
 /** A aba de um grupo: o tier (`t3`), ou `unicos` para os mapas únicos (que têm a aba deles). */
@@ -81,5 +102,5 @@ export function assinaturaDoDispositivo(m) {
   if (!m) return null;
   const a = m.aberto;
   const e = m.estatisticas;
-  return [m.liberado, m.motivo, a && [a.id, a.portais, a.mortes, a.naCacada, a.guardado], (m.mapas ?? []).map((x) => [x.id, x.onde, x.indice, x.chave]), m.loop ?? null, e && [e.concluidos, e.falhos, e.mortes, e.maiorTier]];
+  return [m.liberado, m.motivo, a && [a.id, a.portais, a.mortes, a.naCacada, a.guardado], (m.mapas ?? []).map((x) => [x.id, x.onde, x.indice, x.chave]), m.noBauDaConta ?? 0, m.loop ?? null, e && [e.concluidos, e.falhos, e.mortes, e.maiorTier]];
 }

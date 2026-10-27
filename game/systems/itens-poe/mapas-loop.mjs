@@ -13,13 +13,12 @@
 //   estado.mapas.loopFim = null | { motivo, feitos, concluiu, em }  // por que o último loop parou (a tela mostra)
 //
 // Os GRUPOS são as peças iguais (`chaveDoMapa`: a mesma base/tier, raridade, qualidade, afixos, o único e o estado de corrompido): o loop
-// guarda a chave, não a posição — a peça é procurada de novo na mochila e na bolsa a cada mapa, então a que foi vendida, trocada ou mudou
-// de lugar sai da fila sem quebrar nada. Quem ABRE é o Dispositivo (`mapas-dispositivo.mjs → seguirLoop`), pelo MESMO caminho do botão
+// guarda a chave, não a posição — a peça é procurada de novo na mochila, na bolsa e no depósito a cada mapa, então a que foi vendida,
+// trocada ou mudou de lugar sai da fila sem quebrar nada. Quem ABRE é o Dispositivo (`mapas-dispositivo.mjs → seguirLoop`), pelo MESMO caminho do botão
 // "Abrir mapa"; aqui só a fila (sem caçada, sem sessão).
 import { createHash } from 'node:crypto';
 import * as Mapas from './mapas.mjs';
 
-const ONDES = ['inventory', 'pouch'];
 const RARIDADES = ['normal', 'magico', 'raro', 'unico'];
 
 /**
@@ -38,15 +37,56 @@ export function chaveDoMapa(peca) {
   return `${Mapas.tierDaPeca(peca) ?? 0}:${createHash('sha256').update(texto).digest('base64url').slice(0, 32)}`;
 }
 
-/** As peças do grupo que `estado` carrega agora (mochila primeiro, depois a bolsa): `[{ onde, indice, peca }]`. */
+/**
+ * (dono, 27/10: "é possível utilizar mapas do baú também? hoje só o que está no inventário") ONDE o Dispositivo procura mapas, na ordem em
+ * que usa: a mochila, a bolsa e o DEPÓSITO do personagem — as caixas numeradas (da menor para a maior) e por último as Chegadas. Como no
+ * PoE, o Dispositivo pega do baú direto, sem passar pela mochila. O BAÚ DA CONTA fica de fora: é o mesmo para todos os personagens da conta
+ * (dois personagens abrindo a mesma peça ao mesmo tempo) — nem está em `estado.deposito` (`Deposito.garantir` o tira; ele mora em
+ * `estado.bauDaConta`), e a caixa marcada `compartilhada` é recusada aqui de novo.
+ *
+ * `[{ onde, origem, lista, caixa }]` — `onde`: o que a tela manda de volta ('inventory', 'pouch', 'depot:<índice da caixa>' ou 'chegadas');
+ * `origem`: 'mochila' | 'bolsa' | 'deposito'; `lista`: o array de onde a peça sai; `caixa`: a caixa do depósito (ou null). Só o que EXISTE no
+ * estado vira fonte: um `onde` inventado (uma caixa que não há, a da conta) não acha nada.
+ */
+export function fontesDeMapas(estado) {
+  const fontes = [
+    { onde: 'inventory', origem: 'mochila', lista: estado?.inventory ?? [], caixa: null },
+    { onde: 'pouch', origem: 'bolsa', lista: estado?.pouch ?? [], caixa: null },
+  ];
+  const caixas = (Array.isArray(estado?.deposito) ? estado.deposito : []).filter((c) => c && !c.compartilhada && Number.isInteger(c.indice) && Array.isArray(c.itens));
+  const numeradas = caixas.filter((c) => !c.chegadas).sort((a, b) => a.indice - b.indice);
+  for (const c of numeradas) fontes.push({ onde: `depot:${c.indice}`, origem: 'deposito', lista: c.itens, caixa: c });
+  const chegadas = caixas.find((c) => c.chegadas);
+  if (chegadas) fontes.push({ onde: 'chegadas', origem: 'deposito', lista: chegadas.itens, caixa: chegadas });
+  return fontes;
+}
+
+/** As peças do grupo que `estado` tem agora (a mochila primeiro, depois a bolsa, depois o depósito — `fontesDeMapas`): `[{ onde, indice, peca }]`. */
 export function pecasDoGrupo(estado, chave) {
   const saida = [];
-  for (const onde of ONDES) {
-    (estado?.[onde] ?? []).forEach((peca, indice) => {
+  for (const { onde, lista } of fontesDeMapas(estado)) {
+    lista.forEach((peca, indice) => {
       if (Mapas.ehMapa(peca) && chaveDoMapa(peca) === chave) saida.push({ onde, indice, peca });
     });
   }
   return saida;
+}
+
+/**
+ * Quantas peças há de cada chave (mochila, bolsa e depósito), numa passada só: `Map<chave, n>`. (27/10, revisão: o `paraTela` contava grupo a
+ * grupo com `pecasDoGrupo`, refazendo o resumo de TODOS os mapas para cada grupo da fila — grupos × mapas a cada envio, com centenas de
+ * mapas no depósito.)
+ */
+export function contagemPorChave(estado) {
+  const n = new Map();
+  for (const { lista } of fontesDeMapas(estado)) {
+    for (const peca of lista) {
+      if (!Mapas.ehMapa(peca)) continue;
+      const chave = chaveDoMapa(peca);
+      n.set(chave, (n.get(chave) ?? 0) + 1);
+    }
+  }
+  return n;
 }
 
 /** O loop de `estado` (ou null). */
@@ -54,10 +94,10 @@ export const doPersonagem = (estado) => estado?.mapas?.loop ?? null;
 
 /**
  * Quantos mapas o grupo ainda dá: os iguais que sobram (todos) ou o que falta do número escolhido (o aberto agora já conta), sem passar das
- * peças que há.
+ * peças que há (`contagem`: a de `contagemPorChave`).
  */
-function restamNoGrupo(estado, g, loop = doPersonagem(estado)) {
-  const ha = pecasDoGrupo(estado, g.chave).length;
+function restamNoGrupo(g, loop, contagem) {
+  const ha = contagem.get(g.chave) ?? 0;
   const usados = (g.feitos ?? 0) + (loop?.atual?.chave === g.chave ? 1 : 0);
   return g.quantos == null ? ha : Math.max(0, Math.min(g.quantos - usados, ha));
 }
@@ -183,8 +223,9 @@ export function paraTela(estado) {
   const loop = st?.loop;
   const fim = st?.loopFim ?? null;
   if (!loop) return fim ? { ativo: false, fim } : null;
+  const contagem = contagemPorChave(estado);
   const grupos = loop.grupos.map((g) => {
-    const restam = restamNoGrupo(estado, g, loop);
+    const restam = restamNoGrupo(g, loop, contagem);
     return { chave: g.chave, rotulo: rotuloDoGrupo(g, (g.feitos ?? 0) + restam + (loop.atual?.chave === g.chave ? 1 : 0)), nome: g.nome, tier: g.tier, raridade: g.raridade, quantos: g.quantos, feitos: g.feitos ?? 0, restam };
   });
   const emCurso = loop.atual ? 1 : 0;
