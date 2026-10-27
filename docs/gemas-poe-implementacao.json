@@ -2,36 +2,32 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 489,
+   "implementada e testada": 501,
    "limitação do modelo idle": 58,
-   "implementada, sem teste próprio": 13,
-   "não se aplica": 1,
-   "parcial": 1
+   "parcial": 2,
+   "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 196,
+   "implementada e testada": 199,
    "limitação do modelo idle": 10,
-   "implementada, sem teste próprio": 4
+   "parcial": 1
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 245,
-   "implementada, sem teste próprio": 16,
+   "implementada e testada": 261,
    "não se aplica": 1
   },
   "variantes": {
    "vaal": {
     "total": 52,
-    "implementada e testada": 47,
-    "limitação do modelo idle": 4,
-    "implementada, sem teste próprio": 1
+    "implementada e testada": 48,
+    "limitação do modelo idle": 4
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 171,
-    "limitação do modelo idle": 29,
-    "implementada, sem teste próprio": 9
+    "implementada e testada": 180,
+    "limitação do modelo idle": 29
    }
   },
   "compatibilidade": {
@@ -42,7 +38,7 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 1,
+   "linhasDistintas": 2,
    "emDuasOuMais": 0
   },
   "imagens": {
@@ -57,8 +53,8 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 541,
-   "suportesCitados": 246,
+   "ativasCitadas": 554,
+   "suportesCitados": 262,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
@@ -2064,7 +2060,7 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -2340,7 +2336,7 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -2844,7 +2840,7 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "armadilha",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -3078,8 +3074,10 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "chuva",
-   "estado": "implementada, sem teste próprio",
-   "ausentes": [],
+   "estado": "parcial",
+   "ausentes": [
+    "efeito não simulado: as flechas em sequência numa linha de você até o alvo, cada uma com a área de 1 m (o comprimento da linha e o espaçamento das flechas não estão no PoB nem no poedb — decisão do dono)"
+   ],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3373,7 +3371,7 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -4224,7 +4222,7 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -4710,7 +4708,7 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -5259,7 +5257,7 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "ricochete",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -5490,7 +5488,7 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "mina",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -5752,7 +5750,7 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -6209,7 +6207,7 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "maldicao",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -6677,7 +6675,7 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -6872,7 +6870,7 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -7646,7 +7644,7 @@
   {
    "slug": "Stun_Support",
    "nome": "Atordoar",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -7926,7 +7924,7 @@
   {
    "slug": "Cast_on_Melee_Kill_Support",
    "nome": "Conjurar ao Matar Corpo a Corpo",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8030,7 +8028,7 @@
   {
    "slug": "Awakened_Empower_Support",
    "nome": "Suporte Desperto: Maximizar",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8070,7 +8068,7 @@
   {
    "slug": "Awakened_Multistrike_Support",
    "nome": "Suporte Desperto: Ataques Múltiplos",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8414,7 +8412,7 @@
   {
    "slug": "Cold_Penetration_Support",
    "nome": "Penetração de Gelo",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8502,7 +8500,7 @@
   {
    "slug": "Swift_Affliction_Support",
    "nome": "Sofrimento Veloz",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8614,7 +8612,7 @@
   {
    "slug": "Awakened_Added_Cold_Damage_Support",
    "nome": "Suporte Desperto: Dano Adicional de Gelo",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8654,7 +8652,7 @@
   {
    "slug": "Awakened_Deadly_Ailments_Support",
    "nome": "Suporte Desperto: Afecções Mortais",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8686,7 +8684,7 @@
   {
    "slug": "Awakened_Swift_Affliction_Support",
    "nome": "Suporte Desperto: Sofrimento Veloz",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8897,7 +8895,7 @@
   {
    "slug": "Increased_Critical_Strikes_Support",
    "nome": "Golpes Críticos Aumentados",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -9065,7 +9063,7 @@
   {
    "slug": "Added_Chaos_Damage_Support",
    "nome": "Dano Adicional de Caos",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -9289,7 +9287,7 @@
   {
    "slug": "Immolate_Support",
    "nome": "Imolação",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -9353,7 +9351,7 @@
   {
    "slug": "Awakened_Blasphemy_Support",
    "nome": "Suporte Desperto: Blasfêmia",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -9401,7 +9399,7 @@
   {
    "slug": "Awakened_Increased_Area_of_Effect_Support",
    "nome": "Suporte Desperto: Área de Efeito Aumentada",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -9449,7 +9447,7 @@
   {
    "slug": "Awakened_Unleash_Support",
    "nome": "Suporte Desperto: Libertar",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -9537,7 +9535,7 @@
   {
    "slug": "Greater_Unleash_Support",
    "nome": "Desencadeamento Maior (Reforço)",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -9624,6 +9622,12 @@
   }
  ],
  "linhasFaltando": [
+  {
+   "linha": "as flechas em sequência numa linha de você até o alvo, cada uma com a área de # m (o comprimento da linha e o espaçamento das flechas não estão no PoB nem no poedb — decisão do dono)",
+   "gemas": [
+    "Rain_of_Arrows_of_Artillery"
+   ]
+  },
   {
    "linha": "o Pacto (o PoB: o uso não causa dano — fortalece as próximas # magias de canalização com #% mais dano e, enquanto você canaliza uma delas, o Flagelo Celestial cai a cada # s, até #; e a Aflição, sem dado no PoB nem no poedb) — no jogo ele é uma canalização com o dano do Flagelo (decisão do dono)",
    "gemas": [

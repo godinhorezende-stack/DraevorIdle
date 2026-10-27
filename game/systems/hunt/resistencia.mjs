@@ -21,6 +21,8 @@ import * as ModsPoe from '../itens-poe/condicoes-poe.mjs';
 import { reducaoFisicaMenos, resistenciaDoCaos } from '../itens-poe/gemas-gac.mjs';
 // (lote E1b, 26/10: a resistência ignorada pelos acertos no raio das Impurezas Vaal)
 import { resIgnoradaNoAlvo } from '../itens-poe/gemas-e1b.mjs';
+// (lote T3, 27/10: a resistência que as maldições tiram — "Inimigos Amaldiçoados possuem −X% de Resistências")
+import { resMenosDasMaldicoes } from '../itens-poe/gemas-t3.mjs';
 
 /** A resistência (em %) do bicho ao `tipo`, com o teto do boss e o piso da fraqueza (antes do teto de resistência e da penetração). */
 export function resistenciaDe(hunt, alvo, tipo) {
@@ -44,7 +46,9 @@ export function resistenciaDe(hunt, alvo, tipo) {
   const daEspecie = zerada ? 0 : igual != null ? igual : (BESTIARY[alvo?.key]?.elements?.[tipo] ?? 0) + (alvo?.resist?.[tipo] ?? 0);
   // (+ o Esmagado do PoE: −15 na redução física; + lote F: "Inimigos Próximos possuem −X% de Resistência a <tipo>" — a aura da árvore.)
   const esmagado = (tipo === 'physical' ? ModsPoe.esmagado(alvo, agora) : 0) + ModsPoe.resMenosDaAura(alvo, agora, tipo);
-  const r = daEspecie + daAura + BuffsDeMob.resistencia(alvo, agora, tipo) - vulneravel - causticado - esmagado + ModsPoe.equilibrio(alvo, agora, tipo);
+  // (lote T3, 27/10: − a das maldições — a Fraqueza Elemental, a Inflamabilidade, o Desespero…, com o "efeito aumentado" delas e o do Solo Profano)
+  const daMaldicao = resMenosDasMaldicoes(alvo, tipo, agora, ModsPoe.noSoloProfano(alvo, agora) ? 1 + ModsPoe.SOLO_PROFANO.efeitoMaldicaoPct / 100 : 1);
+  const r = daEspecie + daAura + BuffsDeMob.resistencia(alvo, agora, tipo) - vulneravel - causticado - esmagado - daMaldicao + ModsPoe.equilibrio(alvo, agora, tipo);
   const comBoss = hunt?.isBoss ? Math.min(R.RESISTENCIA_MAXIMA_DE_BOSS, r) : r;
   // A fraqueza só vai até o piso (`fraquezaMaxima`); o teto de cima fica para `resistenciaEfetivaDe`.
   return Math.max(-Limites.LIMITES.resistenciaDoMob.fraquezaMaxima, comBoss);

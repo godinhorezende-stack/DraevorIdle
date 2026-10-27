@@ -78,6 +78,7 @@ import * as GemasR3D from './gemas-r3d.mjs';
 import * as GemasT1 from './gemas-t1.mjs';
 // (lote T2, rodada 4 — 27/10: as correções pelo PoB das gemas que estavam sem teste próprio)
 import * as GemasT2 from './gemas-t2.mjs';
+import * as GemasT3 from './gemas-t3.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
 const ARQ_GEMAS = new URL('../../gamedata/itens-poe/gemas-poe.json', import.meta.url);
@@ -112,7 +113,9 @@ const MOLDES = {
 /** O formato de cada arquétipo da arena (o `carga` dos objetos: armadilha e mina valem pelo que soltam). */
 const FORMATO = { projetil: 'projetil', area: 'chao', chuva: 'chao', orbe: 'chao', marca: 'chao', armadilha: 'chao', mina: 'chao', nova: 'nova', impacto: 'onda', canalizacao: 'feixe', ricochete: 'cadeia' };
 /** (17/10, lote G10) O formato de gemas que o arquétipo erra: a Rajada de Chamas canaliza uma EXPLOSÃO no lugar mirado (não o feixe). */
-const FORMATO_PROPRIO = { Flameblast: 'chao' };
+// (lote T3, 27/10: a Mina de Gelo dispara PROJÉTEIS nos inimigos ao detonar — o PoB, IcicleMine: projectile, sem área de dano; antes a detonação era uma área de 3 casas
+// que acertava todos; a Tempestade Relampejante: a flecha cai no alvo e "causa dano na área" — o PoB: is_area_damage, o raio da gema; antes acertava só o alvo)
+const FORMATO_PROPRIO = { Flameblast: 'chao', Icicle_Mine: 'projetil', Thunderstorm: 'chao' };
 const BUFF = new Set(['aura', 'arauto', 'guarda', 'clamor', 'maldicao']);
 const SEM_NO_JOGO = { generico: 'a gema não tem comportamento de combate reconhecido' };
 /**
@@ -370,7 +373,12 @@ export function compilada(slug, nivel = 1, qualidade = 0) {
     if (h1 && c?.conversao) h1 = { ...h1, stats: { ...h1.stats, conversao: [...c.conversao, ...(h1.stats.conversao ?? [])] } };
     // (lote T1, rodada 4) a Legião Congelada: o golpe é o Arrastão Congelante das Estátuas — o dano-base dele (a última parte da célula do poedb), o Gelo, a velocidade
     // e a área (`GemasT1.corrigirCompilada`)
-    const h2 = GemasT1.corrigirCompilada(slug, h1, (g.linhas?.[Math.min(n, g.linhas.length) - 1] ?? [])[(g.colunas ?? []).indexOf('Base Damage')]);
+    let h2 = GemasT1.corrigirCompilada(slug, h1, (g.linhas?.[Math.min(n, g.linhas.length) - 1] ?? [])[(g.colunas ?? []).indexOf('Base Damage')]);
+    // (lote T3, 27/10) a Tempestade Relampejante (60% do Físico em Raio) — `GemasT3.correcaoDaCompilada`; a Legião Congelada fica com a do T1 (as duas faziam
+    // a mesma correção: aplicar as duas dobraria a conversão)
+    const colBase = g.colunas?.indexOf('Base Damage') ?? -1;
+    const t3 = h2 && !GemasT3.LEGIAO.re.test(slug) ? GemasT3.correcaoDaCompilada(slug, colBase >= 0 ? g.linhas?.[Math.min(n, g.linhas.length) - 1]?.[colBase] : null) : null;
+    if (t3) h2 = { ...h2, stats: { ...h2.stats, ...(t3.efetividade ? { efetividade: t3.efetividade } : {}), ...(t3.conversao ? { conversao: [...(h2.stats.conversao ?? []), ...t3.conversao] } : {}) } };
     CACHE.set(k, h2 && ARQUETIPO_PROPRIO[slug] ? { ...h2, arquetipo: ARQUETIPO_PROPRIO[slug] } : h2);
   }
   return CACHE.get(k);
@@ -1014,8 +1022,10 @@ export function estagiosDaGema(slug, nivel = 1, qualidade = 0) {
   const q = Math.max(0, Number(qualidade) || 0);
   const k = `${slug}@${h.nivel}@${q}`;
   if (ESTAGIOS.has(k)) return ESTAGIOS.get(k);
+  // (lote T3, 27/10: o raio "por Estágio" conta após o primeiro em TODA Rajada de Chamas — o PoB: FlameblastStageAfterFirst, FlameblastofCelerityStageAfterFirst —, não só na
+  // Vaal; a da Celeridade: 1 m + 0,7 m × 2 = 2,4 m nos 3 estágios, não 3,1 m)
   const e = { max: 0, mais: 0, maisAmbos: 0, maisAfeccao: 0, critMais: 0, velMais: 0, raioM: h.stats.raioPorEstagio ?? 0, raioMaxM: null, final: 0, finalIncendio: 0, finalIncendeia: false, golpesFinais: /^Blade_Flurry/.test(slug), porMs: 0,
-    maxEscrito: null, maxExtra: 0, maisNoMax: 0, critMultNoMax: 0, maisAcertoAposPrimeiro: 0, maisAfeccaoAposPrimeiro: 0, menosMovimentoPct: 0, cadaUsos: 0, areaMaisPorEstagioPct: 0, raioAposPrimeiro: slug === 'Vaal_Flameblast' };
+    maxEscrito: null, maxExtra: 0, maisNoMax: 0, critMultNoMax: 0, maisAcertoAposPrimeiro: 0, maisAfeccaoAposPrimeiro: 0, menosMovimentoPct: 0, cadaUsos: 0, areaMaisPorEstagioPct: 0, raioAposPrimeiro: /Flameblast/.test(slug) };
   for (const l of [...textosDaGema(slug, nivel).linhas, ...(q ? linhasDaQualidade(POR_SLUG.get(slug), q / 20) : [])]) {
     for (const [re, f] of LINHAS_DE_ESTAGIO) { const m = re.exec(l); if (m) f(m, e); }
     const t = String(l).replace(/(\d)%/g, '$1 %').replace(/\s+/g, ' ').trim();
@@ -1119,8 +1129,19 @@ export const snipeDaGema = (slug, nivel = 1) => comCache(A4, `sni|${slug}@${nive
 const A3B = new Map();
 /** O objeto que o uso da gema deixa (`GemasA3b.objetoDaGema`): a bola, o tornado, a espiral, o olho, o marcador, o chão, as lâminas, a captura. */
 // (lote B1, dono 20/10 — D-B1.10: + o marcador da Invocar Tormenta, `GemasB1.tormentaDasLinhas`; lote B2: + a Explosão Voltáxica e a Tormenta Flamejante Vaal)
-export const objetoDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A3B, `obj|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA3b.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasB1.tormentaDasLinhas(slug, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasPR1.objetoDasLinhas(slug, textosDaGema(slug, nivel).linhas) ?? GemasB2.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasB3.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasC3.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasB4.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}, nivel));
+export const objetoDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A3B, `obj|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA3b.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasB1.tormentaDasLinhas(slug, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasPR1.objetoDasLinhas(slug, textosDaGema(slug, nivel).linhas) ?? GemasB2.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasB3.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasC3.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasB4.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}, nivel) ?? objetoT3(slug, nivel, qualidade));
 /** (D2) O que a gema faz com os seus Disparos Congelantes (a Nova Glacial dos Disparos, o Vórtice da Projeção). */
+/**
+ * (lote T3, 27/10) O objeto das gemas do lote T3 (`GemasT3.objetoDaGemaT3`): as Estátuas da Legião Congelada, os orbes do Confinamento, a tempestade da Tempestade
+ * Relampejante; e o MARCADOR da Invocar Tormenta de Trarthus — o mesmo da comum (`GemasB1.tormentaDasLinhas`: o raio cai depois da duração, 2 s), sem a chance da qualidade.
+ */
+function objetoT3(slug, nivel, qualidade) {
+  const st = compilada(slug, nivel, qualidade)?.stats ?? {};
+  if (slug === GemasT3.TRARTHUS.slug) return { tipo: 'tormenta', semAcerto: true, atrasoMs: Math.round((st.duracao ?? 2) * 1000), naHoraPct: 0 };
+  return GemasT3.objetoDaGemaT3(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), st);
+}
+/** (lote T3) Os Atiradores Ilusórios do Tiro Gélido Vaal no nível (`GemasT3.atiradoresDasLinhas`): `{ n, duracaoMs }` ou null. */
+export const atiradoresDaGema = (slug, nivel = 1) => GemasT3.atiradoresDasLinhas(slug, textosDaGema(slug, nivel).linhas, compilada(slug, nivel)?.stats ?? {});
 export const consomeDisparosDaGema = (slug, nivel = 1) => comCache(A3B, `con|${slug}@${nivel | 0}`, () => GemasA3b.consomeDisparos(slug, textosDaGema(slug, nivel).linhas));
 /** Os esporos da Flecha Flagelante. */
 export const esporosDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A4, `esp|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA4.esporosDasLinhas(slug, ...linhasA4(slug, nivel, qualidade)));
@@ -1780,7 +1801,9 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
   // (revisão G, 26/10) a Marca não tem duração-base no PoB: o "base_skill_effect_duration" da Alquimista (4 s) é o dos SOLOS (`SOLO_DO_ALQUIMISTA`), não o da Marca
   const ehMarca = (POR_SLUG.get(slug)?.tags ?? doSlug(slug)?.gema?.tags ?? []).includes('Marca');
   const durMarca = Math.round(((ehMarca ? null : st.duracao) ?? 6) * 1000);
-  for (const [el, v] of Object.entries(m.resist ?? {})) if (v < 0 && ELEMENTO[el]) efeitos.push({ efeito: 'marcaVulneravel', pct: -v, tipos: [ELEMENTO[el]], durMarca });
+  // (lote T3, 27/10: a resistência reduzida da maldição — "Inimigos Amaldiçoados possuem −X% de Resistências Elementais" — é a RESISTÊNCIA do bicho a menos (`res`: o
+  // `Resistencia.resistenciaDe` a tira — `GemasT3.resMenosDasMaldicoes`), não um "sofre X% mais dano": contra 50% de resistência, −30 dá × 1,6, não × 1,3)
+  for (const [el, v] of Object.entries(m.resist ?? {})) if (v < 0 && ELEMENTO[el]) efeitos.push({ efeito: 'marcaVulneravel', pct: -v, tipos: [ELEMENTO[el]], durMarca, res: true });
   if (m.danoRecebido) efeitos.push({ efeito: 'marcaVulneravel', pct: m.danoRecebido, tipos: ['physical', 'fire', 'ice', 'energy', 'chaos', 'earth', 'death', 'holy'], durMarca });
   // (lote G18b: o dano sofrido de um tipo — a Vulnerabilidade, o Orgulho: só o Físico)
   // (o Orgulho: do mínimo ao máximo em N s na aura — `pctMax`, `rampaMs`)
@@ -1846,7 +1869,7 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
  * os dois não se separarem — `h`: a gema compilada com `slug`, `arquetipo` e `nivel`; `q`: a qualidade.
  */
 function ehLinhaFeita(h, l, q) {
-  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasPR3.ehLinhaPR3(h.slug, l) && !GemasPR4.ehLinhaPR4(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l) && !GemasB3.ehLinhaB3(h.slug, l) && !GemasC4.ehLinhaC4(h.slug, l) && !GemasC3.ehLinhaC3(h.slug, l) && !GemasB4.ehLinhaB4(h.slug, l) && !GemasGAC.ehLinhaGAC(h.slug, l, h.arquetipo) && !GemasGBD.ehLinhaGBD(h.slug, l) && !GemasE1a.ehLinhaE1a(h.slug, l, h.arquetipo) && !GemasE1b.ehLinhaE1b(h.slug, l) && !GemasE2a.ehLinhaE2a(h.slug, l, h.arquetipo) && !GemasE2b.ehLinhaE2b(h.slug, l) && !GemasD1.ehLinhaD1(h.slug, l) && !GemasR3B.ehLinhaR3B(h.slug, l) && !GemasR3D.ehLinhaR3D(h.slug, l) && !GemasT2.ehLinhaT2(h.slug, l));
+  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasPR3.ehLinhaPR3(h.slug, l) && !GemasPR4.ehLinhaPR4(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l) && !GemasB3.ehLinhaB3(h.slug, l) && !GemasC4.ehLinhaC4(h.slug, l) && !GemasC3.ehLinhaC3(h.slug, l) && !GemasB4.ehLinhaB4(h.slug, l) && !GemasGAC.ehLinhaGAC(h.slug, l, h.arquetipo) && !GemasGBD.ehLinhaGBD(h.slug, l) && !GemasE1a.ehLinhaE1a(h.slug, l, h.arquetipo) && !GemasE1b.ehLinhaE1b(h.slug, l) && !GemasE2a.ehLinhaE2a(h.slug, l, h.arquetipo) && !GemasE2b.ehLinhaE2b(h.slug, l) && !GemasD1.ehLinhaD1(h.slug, l) && !GemasR3B.ehLinhaR3B(h.slug, l) && !GemasR3D.ehLinhaR3D(h.slug, l) && !GemasT2.ehLinhaT2(h.slug, l) && !GemasT3.ehLinhaT3(h.slug, l));
 }
 function avaliarNoJogo(h, formato) {
   const st = h.stats;
@@ -1915,6 +1938,8 @@ function avaliarNoJogo(h, formato) {
     for (const m of DESCRICAO_DO_MOVIMENTO[h.slug] ?? []) motivos.push(`efeito não simulado: ${m}`);
     // (lote A3: o que o projétil da gema faz só no PoB, sem linha — fica para o lote A3b)
     for (const m of PROJETIL_SEM_LINHA[h.slug] ?? []) motivos.push(`efeito não simulado: ${m}`);
+    // (lote T3, 27/10: o que a gema faz só na descrição e que pede o número do dono — `GemasT3.MOTIVOS_T3`)
+    for (const m of GemasT3.MOTIVOS_T3[h.slug] ?? []) motivos.push(`efeito não simulado: ${m}`);
     // Projéteis adicionais, perfuração, ricochetes, difusão e divisão do feixe: aplicados pelo nível da gema (`alvosNoNivel`).
     // (09/10) O dano degenerativo da gema se aplica no acerto (`acoes`: `degenerativoNoNivel`); o "% da Vida por segundo" do Fogo Justo, ainda não.
     if (st.dotPctVida) motivos.push('o dano por % da Vida por segundo (Fogo Justo) ainda não se aplica');
