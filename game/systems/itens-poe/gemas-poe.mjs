@@ -71,6 +71,8 @@ import * as GemasE2a from './gemas-e2a.mjs';
 import * as GemasE2b from './gemas-e2b.mjs';
 // (lote D1, 27/10: as decisões do dono sobre as parciais dos lotes E2A e E2B — gemas-d1.mjs)
 import * as GemasD1 from './gemas-d1.mjs';
+// (lote R3B, 27/10: as Sentinelas, a Nova da Relíquia, o Golpe Sagrado como ataque e o Clamor do General — gemas-r3b.mjs)
+import * as GemasR3B from './gemas-r3b.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
 const ARQ_GEMAS = new URL('../../gamedata/itens-poe/gemas-poe.json', import.meta.url);
@@ -120,7 +122,7 @@ const SEM_NO_JOGO = { generico: 'a gema não tem comportamento de combate reconh
 // reserva, quando a gema reserva — `reserva.pedida`) — com a mecânica própria de cada uma (`itens-poe/gemas-a2.mjs`). O Emblema do Poder, o Escudo
 // Gélido e a Parede de Força também: o uso põe o objeto no chão e liga o buff enquanto ele dura.
 const DO_LOTE_A2 = ['Blood_Rage', 'Berserk', 'Petrified_Blood', 'Temporal_Rift', 'Automation', 'Energy_Blade', 'Frost_Shield', 'Mana-Infused_Staff', 'Sigil_of_Power', 'Wall_of_Force'];
-const ARQUETIPO_PROPRIO = { Plague_Bearer: 'praga', Spellslinger: 'feiticeiro', Herald_of_Agony: 'arauto', Old_Phase_Run: 'guarda', Withering_Step: 'guarda', ...Object.fromEntries(DO_LOTE_A2.map((s) => [s, 'guarda'])), ...GemasB4.ARQUETIPO_B4, ...GemasGAC.ARQUETIPO_GAC, ...GemasGBD.ARQUETIPO_GBD, ...GemasE2a.ARQUETIPO_E2A };
+const ARQUETIPO_PROPRIO = { Plague_Bearer: 'praga', Spellslinger: 'feiticeiro', Herald_of_Agony: 'arauto', Old_Phase_Run: 'guarda', Withering_Step: 'guarda', ...Object.fromEntries(DO_LOTE_A2.map((s) => [s, 'guarda'])), ...GemasB4.ARQUETIPO_B4, ...GemasGAC.ARQUETIPO_GAC, ...GemasGBD.ARQUETIPO_GBD, ...GemasE2a.ARQUETIPO_E2A, ...GemasR3B.ARQUETIPO_R3B };
 /**
  * (lote A2, dono 19/10: "o Portal passa a não se aplica") A gema que NÃO SE APLICA ao jogo, com a nota do porquê — o relatório a mostra assim
  * (`tools/relatorio-gemas-poe.mjs`). Ela segue sem efeito (a skill avisa — `poeGema.bloqueio`).
@@ -1818,7 +1820,7 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
  * os dois não se separarem — `h`: a gema compilada com `slug`, `arquetipo` e `nivel`; `q`: a qualidade.
  */
 function ehLinhaFeita(h, l, q) {
-  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasPR3.ehLinhaPR3(h.slug, l) && !GemasPR4.ehLinhaPR4(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l) && !GemasB3.ehLinhaB3(h.slug, l) && !GemasC4.ehLinhaC4(h.slug, l) && !GemasC3.ehLinhaC3(h.slug, l) && !GemasB4.ehLinhaB4(h.slug, l) && !GemasGAC.ehLinhaGAC(h.slug, l, h.arquetipo) && !GemasGBD.ehLinhaGBD(h.slug, l) && !GemasE1a.ehLinhaE1a(h.slug, l, h.arquetipo) && !GemasE1b.ehLinhaE1b(h.slug, l) && !GemasE2a.ehLinhaE2a(h.slug, l, h.arquetipo) && !GemasE2b.ehLinhaE2b(h.slug, l) && !GemasD1.ehLinhaD1(h.slug, l));
+  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasPR3.ehLinhaPR3(h.slug, l) && !GemasPR4.ehLinhaPR4(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l) && !GemasB3.ehLinhaB3(h.slug, l) && !GemasC4.ehLinhaC4(h.slug, l) && !GemasC3.ehLinhaC3(h.slug, l) && !GemasB4.ehLinhaB4(h.slug, l) && !GemasGAC.ehLinhaGAC(h.slug, l, h.arquetipo) && !GemasGBD.ehLinhaGBD(h.slug, l) && !GemasE1a.ehLinhaE1a(h.slug, l, h.arquetipo) && !GemasE1b.ehLinhaE1b(h.slug, l) && !GemasE2a.ehLinhaE2a(h.slug, l, h.arquetipo) && !GemasE2b.ehLinhaE2b(h.slug, l) && !GemasD1.ehLinhaD1(h.slug, l) && !GemasR3B.ehLinhaR3B(h.slug, l));
 }
 function avaliarNoJogo(h, formato) {
   const st = h.stats;
@@ -1838,7 +1840,7 @@ function avaliarNoJogo(h, formato) {
   if (h.arquetipo === 'lacaio') {
     const motivos = ['o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro'];
     // (lote E1a: + as linhas da qualidade e do nível que o lote faz — `GemasE1a.ehLinhaE1a`)
-    for (const l of h.linhas?.naoImplementadas ?? []) if ((!ehLinhaDeLacaio(l) || daQualidade.has(l)) && !ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !GemasE1a.ehLinhaE1a(h.slug, l) && !GemasE2a.ehLinhaE2a(h.slug, l)) motivos.push(`efeito não simulado: ${l}`);
+    for (const l of h.linhas?.naoImplementadas ?? []) if ((!ehLinhaDeLacaio(l) || daQualidade.has(l)) && !ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !GemasE1a.ehLinhaE1a(h.slug, l) && !GemasE2a.ehLinhaE2a(h.slug, l) && !GemasR3B.ehLinhaR3B(h.slug, l)) motivos.push(`efeito não simulado: ${l}`);
     // (17/10, lote G18: o "mais/menos Dano de Afecções" que o compilador lê vale no ACERTO da gema; a de lacaio não acerta — a Troca de Corpos do
     // Sacrifício —, então a linha fica não feita)
     for (const l of h.linhas?.aplicadas ?? []) if (/% (?:mais|menos) Dano (?:de|com) (?:Afecções|Sangramento)$/i.test(l)) motivos.push(`efeito não simulado: ${l}`);
@@ -1920,6 +1922,8 @@ function avaliarNoJogo(h, formato) {
   for (const m of GemasC4.MOTIVOS_C4[h.slug] ?? []) motivos.push(m);
   // (lotes G-B e G-D: o que a mecânica do lote ainda não faz — `GemasGBD.MOTIVOS_GBD`)
   for (const m of GemasGBD.MOTIVOS_GBD[h.slug] ?? []) motivos.push(m);
+  // (lote R3B: o que o lote ainda não faz ou a limitação do idle — `GemasR3B.MOTIVOS_R3B`: o Armamento do Golpe Sagrado ataca do jeito do tipo dele)
+  for (const m of GemasR3B.MOTIVOS_R3B[h.slug] ?? []) motivos.push(m);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 /**

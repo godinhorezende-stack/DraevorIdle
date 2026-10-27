@@ -8,10 +8,10 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 448 |
+| implementada e testada | 449 |
 | implementada, sem teste próprio | 44 |
-| limitação do modelo idle | 54 |
-| parcial | 15 |
+| limitação do modelo idle | 59 |
+| parcial | 9 |
 | não se aplica | 1 |
 
 Só os ataques:
@@ -20,29 +20,29 @@ Só os ataques:
 |---|---|
 | implementada e testada | 178 |
 | implementada, sem teste próprio | 18 |
-| limitação do modelo idle | 10 |
-| parcial | 4 |
+| limitação do modelo idle | 11 |
+| parcial | 3 |
 
 ### Gemas de suporte (262)
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 184 |
+| implementada e testada | 188 |
 | implementada, sem teste próprio | 51 |
-| parcial | 27 |
+| parcial | 23 |
 
 ### Variantes
 
 - Vaal (52): implementada e testada 41 · limitação do modelo idle 5 · implementada, sem teste próprio 6
-- Alternativas (209): implementada e testada 154 · implementada, sem teste próprio 24 · parcial 4 · limitação do modelo idle 27
+- Alternativas (209): implementada e testada 154 · implementada, sem teste próprio 24 · limitação do modelo idle 28 · parcial 3
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 105 linhas distintas (10 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 67 linhas distintas (9 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 505/562 ativas, 192/262 suportes.
+- Testes que citam a gema: 506/562 ativas, 196/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
@@ -52,37 +52,23 @@ Só os ataques:
 | 3 | as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:##; no jogo ainda são projéteis no alvo) |
 | 3 | Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção |
 | 3 | Habilidades Suportadas também contam como Habilidades Bênção\nVocê só pode ter uma Aura de suas Habilidades Bênção |
-| 2 | # % de chance de Convocar um Sentinela da Absolvição ao Acertar um Inimigo Raro ou Único |
 | 2 | #% de Poder Arcano |
 | 2 | #% do Dano Físico Convertido para Dano de Fogo |
 | 2 | a onda usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma) |
 | 2 | Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética |
 | 2 | Máximo de # anomalias |
 | 2 | sem dano direto: nenhum efeito no combate |
-| 1 | # % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único |
 | 1 | #% mais Dano em Área |
-| 1 | +# ao número máximo de Guerreiros Ilusórios |
 | 1 | a explosão da tempestade usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); a Cegueira dentro dela (a descrição) não é aplicada |
 | 1 | a explosão das torres usa o físico médio da arma × #–#% pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); as torres não bloqueiam o caminho dos monstros |
-| 1 | A Habilidade Explosiva da Relíquia Sagrada concede # de Vida regenerada por segundo aos Aliados |
-| 1 | A Habilidade Explosiva da Relíquia Sagrada concede # de Vida regenerada por segundo aos Lacaios |
-| 1 | Arqueiro Ilusório dura # segundos |
-| 1 | Arqueiro Ilusório utiliza Habilidades Suportadas com #% menos Velocidade de Ataque |
 | 1 | Ataques reforçados ativam Rajada de Vento ao atingir, limitado a uma vez a cada # metros percorridos |
 | 1 | Ativa esta magia reforçada quando sua salvaguarda quebra |
-| 1 | Ativa Invocar Relâmpago Vivo quando uma habilidade de reforço causa dano elétrico com o acerto |
-| 1 | Ativa Invocar Relâmpago Vivo quando uma habilidade\nde reforço causa dano elétrico com o acerto |
 | 1 | Auras das Habilidades Suportadas têm uma duração base de # segundos |
-| 1 | Buff concede # % mais Dano Físico |
 | 1 | Causa # a # de Dano de Raio |
 | 1 | Causa Dano de Fogo base igual a #% da Vida Máxima dos Totens |
 | 1 | Cobre Inimigos em Cinzas ao Acertar |
 | 1 | Consumir um cadáver com habilidades reforçadas tem #% de chance de conceder uma alma por poder |
 | 1 | Consumir um cadáver com habilidades reforçadas tem +#% de chance de conceder uma alma por poder |
-| 1 | Conta o Poder total de Inimigos e Cadáveres no Alcance |
-| 1 | Convoca # Espíritos Sagrados Máximo de # Espíritos Sagrados |
-| 1 | Convoca # Espíritos Sagrados\nMáximo de # Espíritos Sagrados |
-| 1 | Convoca um Sentinela da Pureza quando você Matar um Inimigo |
 | 1 | Cria # fendas |
 | 1 | Cria # mãos adicionais |
 | 1 | Cria # mãos por glifo |
@@ -94,17 +80,10 @@ Só os ataques:
 | 1 | Detonação da Mina é Instantânea |
 | 1 | Dispara # projéteis |
 | 1 | Dispara até # Flechas em alvos diferentes |
-| 1 | Efeito do Buff aumentado em # % |
-| 1 | Espíritos Sagrados têm #% de chance de usar a Habilidade Ativadora quando voc#e disparar um Projétil com tal Habilidade |
-| 1 | Espíritos Sagrados têm #% de chance de usar a Habilidade Ativadora quando voc#e disparar um\nProjétil com tal Habilidade |
-| 1 | Espíritos Sagrados têm +#% de chance de usar a Habilidade Ativadora quando você disparar um Projétil com tal habilidade enquanto um Inimigo Raro ou Único estiver em sua Presença |
 | 1 | Esta habilidade é ativada por habilidades de ataque reforçadas |
-| 1 | Esta habilidade é ativada quando uma habilidade de reforço causa dano elétrico com o acerto |
-| 1 | Este ataque e lacaios convertem # % do dano físico em dano elétrico |
 | 1 | Flechas caem em duas linhas perpendiculares |
 | 1 | Glifos reforçados ativam Constrição Pérfida ao serem recuperados |
 | 1 | Habilidades de Aura Suportadas não tem Reserva |
-| 1 | Habilidades dos Lacaios Ricocheteiam +# Vezes |
 | 1 | Habilidades reforçadas ativam Cristal em Queda ao atingir |
 | 1 | Habilidades reforçadas ativam Fluxo Cinético ao causar golpe crítico |
 | 1 | Habilidades reforçadas ativam Fluxo Cinético no golpe fatal |
@@ -114,41 +93,24 @@ Só os ataques:
 | 1 | Habilidades reforçadas têm #% de chance de ativar Chamado da Fogueira ao atingir inimigos incendiados corpo a corpo |
 | 1 | Habilidades reforçadas têm o custo aumentado em #% por fundamental |
 | 1 | Habilidades Suportadas arremessam Minas em um Arco |
-| 1 | Habilidades Suportadas Ativarão Convocar Espíritos Sagrados ao Acertar |
 | 1 | Habilidades Suportadas causam # Dano Base de Gelo por segundo |
-| 1 | Habilidades Suportadas causam #% menos Dano quando usadas por Espíritos Sagrados |
 | 1 | Habilidades Suportadas Causam Dano e Resfriam Inimigos entre você e Alvos Vinculados |
 | 1 | Habilidades Suportadas Custam +# de Mana |
 | 1 | Habilidades Suportadas não podem aplicar Auras em você a menos que você tenha Lacaios de uma Habilidade Suportada |
 | 1 | Habilidades Suportadas não tem Reserva |
-| 1 | Habilidades Suportadas só podem ser usadas com Varinhas |
 | 1 | Habilidades Suportadas têm Efeito das Auras reduzido em #% |
 | 1 | Inimigos sofrem de Insanidade Perversa se estiverem sob a influência de auras de habilidades reforçadas por mais de # segundos |
-| 1 | Invoca # Lacaios Relâmpagos Vivos |
-| 1 | Invoca # Nascido(s) da Colmeia |
-| 1 | Lacaios causam # % de Dano Físico |
-| 1 | Lacaios convertem #% do Dano Físico para Dano de Raio |
 | 1 | Lacaios das Habilidades Suportadas sofrem #% de sua Vida e Escudo de Energia Máximos total como Dano Físico por segundo enquanto você tiver uma Aura de uma Habilidade Suportada em você |
-| 1 | Lacaios Relâmpagos Vivos atacam # vezes antes de desaparecerem |
-| 1 | Lacaios Relâmpagos Vivos atacam +# vezes antes de desaparecerem |
-| 1 | Lacaios têm #% de chance de cobrir os inimigos de gelo ao atingir |
 | 1 | Lacaios têm efeito de definhamento aumentado em # % |
-| 1 | Lacaios têm Recuperação da Recarga aumentada em # % |
 | 1 | Magias Suportadas causam # % menos Dano |
-| 1 | Máximo de # Arqueiro Ilusório Convocado |
-| 1 | Máximo de # Lacaios Relâmpagos Vivos |
 | 1 | Máximo de # mãos |
-| 1 | Máximo de # Nascido(s) da Colmeia |
 | 1 | Minas de Habilidades Suportadas não podem ser Detonadas enquanto dentro de # metros de você |
 | 1 | Minas usando Habilidades Suportadas sempre focam na sua localização |
 | 1 | Modificadores ao Dano Mágico são aplicados ao efeito de Dano Degenerativo das Habilidades Suportadas |
 | 1 | o impedimento de ganho de almas que a Tentação substitui (o jogo não tem o Impedimento de Ganho de Almas: as almas das gemas Vaal são a recarga) |
 | 1 | o totem provoca os monstros em volta a atacá-lo (act_str.lua:##) |
-| 1 | Oferendas reforçadas ativam Invocar Nascidos da Colmeia ao usar |
 | 1 | perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB) |
 | 1 | Projéteis Perfuram todos Alvos |
-| 1 | Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade Arqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados |
-| 1 | Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade\nArqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados |
 | 1 | Somente uma Mina deste tipo pode ser Detonada em cada Sequência de Detonação |
 | 1 | Suas Habilidades Não-Bênção que Reservam Mana são Desabilitadas enquanto você tiver uma Aura da Habilidade Suportada em você |
 | 1 | Totens com esta Habilidade a Ativam quando Acertados por um Inimigo |
@@ -157,11 +119,10 @@ Só os ataques:
 
 ## Gemas de habilidade pendentes
 
-- **Absolution** (Absolvição) — parcial
-  - efeito não simulado: 25 % de chance de Convocar um Sentinela da Absolvição ao Acertar um Inimigo Raro ou Único
-  - efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %
-- **Absolution_of_Inspiring** (Absolvição da Inspiração) — parcial
-  - efeito não simulado: 25 % de chance de Convocar um Sentinela da Absolvição ao Acertar um Inimigo Raro ou Único
+- **Absolution** (Absolvição) — limitação do modelo idle
+  - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
+- **Absolution_of_Inspiring** (Absolvição da Inspiração) — limitação do modelo idle
+  - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Animate_Guardian** (Animar Guardião) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Animate_Guardian_of_Smiting** (Guardião Animado do Castigo) — limitação do modelo idle
@@ -200,19 +161,11 @@ Só os ataques:
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Flesh_Offering** (Oferenda Carnal) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Generals_Cry** (Clamor do General) — parcial
-  - efeito não simulado: Conta o Poder total de Inimigos e Cadáveres no Alcance
-  - efeito não simulado: +1 ao número máximo de Guerreiros Ilusórios
 - **Herald_of_Agony** (Arauto Agonizante) — parcial (nota: a Virulência fica no máximo (40 + a qualidade + a "Virulência Máxima") enquanto o Arauto está ligado e você Envenenou com ele há até 4 s, como o PoB mostra (dono, 26/10))
   - o Rastejador ataca como um lacaio de perto do jogo (o Morteiro e o Espinho da Cauda do PoE não são simulados)
-- **Herald_of_Purity** (Arauto da Pureza) — parcial
-  - efeito não simulado: Convoca um Sentinela da Pureza quando você Matar um Inimigo
-  - efeito não simulado: 20 % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único
-  - efeito não simulado: Buff concede 12 % mais Dano Físico
-  - efeito não simulado: Lacaios causam 95 % de Dano Físico
+- **Herald_of_Purity** (Arauto da Pureza) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Holy_Strike** (Golpe Sagrado) — parcial
-  - efeito não simulado: Este ataque e lacaios convertem 50 % do dano físico em dano elétrico
+- **Holy_Strike** (Golpe Sagrado) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Intuitive_Link** (Vínculo Intuitivo) — parcial
   - efeito não simulado: Magias Suportadas causam 44 % menos Dano
@@ -260,10 +213,7 @@ Só os ataques:
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Summon_Flame_Golem_of_the_Meteor** (Convocar Golem Flamejante do Meteoro) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Summon_Holy_Relic** (Convocar Relíquia Sagrada) — parcial
-  - efeito não simulado: A Habilidade Explosiva da Relíquia Sagrada concede 154.6 de Vida regenerada por segundo aos Aliados
-  - efeito não simulado: A Habilidade Explosiva da Relíquia Sagrada concede 985 de Vida regenerada por segundo aos Lacaios
-  - efeito não simulado: Efeito do Buff aumentado em 40 %
+- **Summon_Holy_Relic** (Convocar Relíquia Sagrada) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Summon_Holy_Relic_of_Conviction** (Convocar Relíquia Sagrada da Convicção) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
@@ -372,27 +322,11 @@ Só os ataques:
   - não simulado: Habilidades Suportadas não podem aplicar Auras em você a menos que você tenha Lacaios de uma Habilidade Suportada
   - não simulado: Lacaios das Habilidades Suportadas sofrem 14.3% de sua Vida e Escudo de Energia Máximos total como Dano Físico por segundo enquanto você tiver uma Aura de uma Habilidade Suportada em você
   - não simulado: Habilidades Suportadas também contam como Habilidades Bênção\nVocê só pode ter uma Aura de suas Habilidades Bênção
-- **Hiveborn_Support** (Nascido da Colmeia (Reforço)) — parcial
-  - não simulado: Oferendas reforçadas ativam Invocar Nascidos da Colmeia ao usar
-  - não simulado: Máximo de 12 Nascido(s) da Colmeia
-  - não simulado: Invoca 5 Nascido(s) da Colmeia
-  - não simulado: Lacaios têm 20% de chance de cobrir os inimigos de gelo ao atingir
-  - não simulado: Máximo de 2 Nascido(s) da Colmeia
 - **Kinetic_Instability_Support** (Reforço Instabilidade Cinética) — parcial
   - não simulado: Habilidades reforçadas ativam Fluxo Cinético no golpe fatal
   - não simulado: 150% de Poder Arcano
   - não simulado: Máximo de 20 anomalias
   - não simulado: Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética
-- **Living_Lightning_Support** (Reforço Relâmpago Vivo) — parcial
-  - não simulado: Ativa Invocar Relâmpago Vivo quando uma habilidade de reforço causa dano elétrico com o acerto
-  - não simulado: Lacaios convertem 100% do Dano Físico para Dano de Raio
-  - não simulado: Máximo de 8 Lacaios Relâmpagos Vivos
-  - não simulado: Invoca 1 Lacaios Relâmpagos Vivos
-  - não simulado: Lacaios Relâmpagos Vivos atacam 3 vezes antes de desaparecerem
-  - não simulado: Esta habilidade é ativada quando uma habilidade de reforço causa dano elétrico com o acerto
-  - não simulado: Habilidades dos Lacaios Ricocheteiam +3 Vezes
-  - não simulado: Ativa Invocar Relâmpago Vivo quando uma habilidade\nde reforço causa dano elétrico com o acerto
-  - não simulado: Lacaios Relâmpagos Vivos atacam +2 vezes antes de desaparecerem
 - **Locus_Mine_Support** (Mina Local) — parcial
   - não simulado: Minas de Habilidades Suportadas não podem ser Detonadas enquanto dentro de 3 metros de você
   - não simulado: Minas usando Habilidades Suportadas sempre focam na sua localização
@@ -400,27 +334,12 @@ Só os ataques:
 - **Machinations_Support** (Maquinações (Reforço)) — parcial
   - não simulado: Habilidades reforçadas ganham 8% do dano físico como dano de caos adicional por fundamental
   - não simulado: Habilidades reforçadas têm o custo aumentado em 10% por fundamental
-- **Mirage_Archer_Support** (Arqueiro Ilusório) — parcial
-  - não simulado: Máximo de 1 Arqueiro Ilusório Convocado
-  - não simulado: Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade Arqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados
-  - não simulado: Arqueiro Ilusório utiliza Habilidades Suportadas com 60% menos Velocidade de Ataque
-  - não simulado: Arqueiro Ilusório dura 4 segundos
-  - não simulado: Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade\nArqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados
 - **Pyre_Support** (Pira (Reforço)) — parcial
   - não simulado: Habilidades reforçadas têm 50% de chance de ativar Chamado da Fogueira ao atingir inimigos incendiados corpo a corpo
   - não simulado: 100% do Dano Físico Convertido para Dano de Fogo
   - não simulado: Cobre Inimigos em Cinzas ao Acertar
   - não simulado: Cria 4 Pilares de Cinzas
   - não simulado: Cria +1 Pilar de Cinzas
-- **Sacred_Wisps_Support** (Espíritos Sagrados) — parcial
-  - não simulado: Habilidades Suportadas causam 51% menos Dano quando usadas por Espíritos Sagrados
-  - não simulado: Habilidades Suportadas Ativarão Convocar Espíritos Sagrados ao Acertar
-  - não simulado: Habilidades Suportadas só podem ser usadas com Varinhas
-  - não simulado: Convoca 2 Espíritos Sagrados Máximo de 2 Espíritos Sagrados
-  - não simulado: Espíritos Sagrados têm 25% de chance de usar a Habilidade Ativadora quando voc6e disparar um Projétil com tal Habilidade
-  - não simulado: Espíritos Sagrados têm +25% de chance de usar a Habilidade Ativadora quando você disparar um Projétil com tal habilidade enquanto um Inimigo Raro ou Único estiver em sua Presença
-  - não simulado: Convoca 2 Espíritos Sagrados\nMáximo de 2 Espíritos Sagrados
-  - não simulado: Espíritos Sagrados têm 25% de chance de usar a Habilidade Ativadora quando voc6e disparar um\nProjétil com tal Habilidade
 - **Shockwave_Support** (Onda de Choque) — parcial
   - não simulado: a onda usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma)
 - **Vaal_Temptation_Support** (Tentação Vaal (Reforço)) — parcial

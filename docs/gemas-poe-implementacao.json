@@ -2,23 +2,23 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 448,
+   "implementada e testada": 449,
    "implementada, sem teste próprio": 44,
-   "parcial": 15,
-   "limitação do modelo idle": 54,
+   "limitação do modelo idle": 59,
+   "parcial": 9,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
    "implementada e testada": 178,
    "implementada, sem teste próprio": 18,
-   "parcial": 4,
-   "limitação do modelo idle": 10
+   "limitação do modelo idle": 11,
+   "parcial": 3
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 184,
-   "parcial": 27,
+   "implementada e testada": 188,
+   "parcial": 23,
    "implementada, sem teste próprio": 51
   },
   "variantes": {
@@ -32,8 +32,8 @@
     "total": 209,
     "implementada e testada": 154,
     "implementada, sem teste próprio": 24,
-    "parcial": 4,
-    "limitação do modelo idle": 27
+    "limitação do modelo idle": 28,
+    "parcial": 3
    }
   },
   "compatibilidade": {
@@ -44,8 +44,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 105,
-   "emDuasOuMais": 10
+   "linhasDistintas": 67,
+   "emDuasOuMais": 9
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -59,8 +59,8 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 505,
-   "suportesCitados": 192,
+   "ativasCitadas": 506,
+   "suportesCitados": 196,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
@@ -174,11 +174,9 @@
    "nome": "Golpe Sagrado",
    "variante": "normal",
    "ataque": true,
-   "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Este ataque e lacaios convertem 50 % do dano físico em dano elétrico"
-   ],
+   "arquetipo": "corpo_a_corpo",
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -610,12 +608,11 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 25 % de chance de Convocar um Sentinela da Absolvição ao Acertar um Inimigo Raro ou Único",
-    "efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %"
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
+   "idle": [
+    "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
-   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -626,11 +623,11 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 25 % de chance de Convocar um Sentinela da Absolvição ao Acertar um Inimigo Raro ou Único"
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
+   "idle": [
+    "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
-   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -1019,14 +1016,9 @@
    "nome": "Arauto da Pureza",
    "variante": "normal",
    "ataque": false,
-   "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Convoca um Sentinela da Pureza quando você Matar um Inimigo",
-    "efeito não simulado: 20 % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único",
-    "efeito não simulado: Buff concede 12 % mais Dano Físico",
-    "efeito não simulado: Lacaios causam 95 % de Dano Físico"
-   ],
+   "arquetipo": "arauto",
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -1183,11 +1175,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "clamor",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Conta o Poder total de Inimigos e Cadáveres no Alcance",
-    "efeito não simulado: +1 ao número máximo de Guerreiros Ilusórios"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5009,12 +4998,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: A Habilidade Explosiva da Relíquia Sagrada concede 154.6 de Vida regenerada por segundo aos Aliados",
-    "efeito não simulado: A Habilidade Explosiva da Relíquia Sagrada concede 985 de Vida regenerada por segundo aos Lacaios",
-    "efeito não simulado: Efeito do Buff aumentado em 40 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -8286,14 +8271,8 @@
   {
    "slug": "Mirage_Archer_Support",
    "nome": "Arqueiro Ilusório",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Máximo de 1 Arqueiro Ilusório Convocado",
-    "não simulado: Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade Arqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados",
-    "não simulado: Arqueiro Ilusório utiliza Habilidades Suportadas com 60% menos Velocidade de Ataque",
-    "não simulado: Arqueiro Ilusório dura 4 segundos",
-    "não simulado: Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade\\nArqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9106,18 +9085,8 @@
   {
    "slug": "Living_Lightning_Support",
    "nome": "Reforço Relâmpago Vivo",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Ativa Invocar Relâmpago Vivo quando uma habilidade de reforço causa dano elétrico com o acerto",
-    "não simulado: Lacaios convertem 100% do Dano Físico para Dano de Raio",
-    "não simulado: Máximo de 8 Lacaios Relâmpagos Vivos",
-    "não simulado: Invoca 1 Lacaios Relâmpagos Vivos",
-    "não simulado: Lacaios Relâmpagos Vivos atacam 3 vezes antes de desaparecerem",
-    "não simulado: Esta habilidade é ativada quando uma habilidade de reforço causa dano elétrico com o acerto",
-    "não simulado: Habilidades dos Lacaios Ricocheteiam +3 Vezes",
-    "não simulado: Ativa Invocar Relâmpago Vivo quando uma habilidade\\nde reforço causa dano elétrico com o acerto",
-    "não simulado: Lacaios Relâmpagos Vivos atacam +2 vezes antes de desaparecerem"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9172,17 +9141,8 @@
   {
    "slug": "Sacred_Wisps_Support",
    "nome": "Espíritos Sagrados",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas causam 51% menos Dano quando usadas por Espíritos Sagrados",
-    "não simulado: Habilidades Suportadas Ativarão Convocar Espíritos Sagrados ao Acertar",
-    "não simulado: Habilidades Suportadas só podem ser usadas com Varinhas",
-    "não simulado: Convoca 2 Espíritos Sagrados Máximo de 2 Espíritos Sagrados",
-    "não simulado: Espíritos Sagrados têm 25% de chance de usar a Habilidade Ativadora quando voc6e disparar um Projétil com tal Habilidade",
-    "não simulado: Espíritos Sagrados têm +25% de chance de usar a Habilidade Ativadora quando você disparar um Projétil com tal habilidade enquanto um Inimigo Raro ou Único estiver em sua Presença",
-    "não simulado: Convoca 2 Espíritos Sagrados\\nMáximo de 2 Espíritos Sagrados",
-    "não simulado: Espíritos Sagrados têm 25% de chance de usar a Habilidade Ativadora quando voc6e disparar um\\nProjétil com tal Habilidade"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9716,14 +9676,8 @@
   {
    "slug": "Hiveborn_Support",
    "nome": "Nascido da Colmeia (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Oferendas reforçadas ativam Invocar Nascidos da Colmeia ao usar",
-    "não simulado: Máximo de 12 Nascido(s) da Colmeia",
-    "não simulado: Invoca 5 Nascido(s) da Colmeia",
-    "não simulado: Lacaios têm 20% de chance de cobrir os inimigos de gelo ao atingir",
-    "não simulado: Máximo de 2 Nascido(s) da Colmeia"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9810,13 +9764,6 @@
    ]
   },
   {
-   "linha": "# % de chance de Convocar um Sentinela da Absolvição ao Acertar um Inimigo Raro ou Único",
-   "gemas": [
-    "Absolution",
-    "Absolution_of_Inspiring"
-   ]
-  },
-  {
    "linha": "#% de Poder Arcano",
    "gemas": [
     "Greater_Kinetic_Instability_Support",
@@ -9859,21 +9806,9 @@
    ]
   },
   {
-   "linha": "# % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único",
-   "gemas": [
-    "Herald_of_Purity"
-   ]
-  },
-  {
    "linha": "#% mais Dano em Área",
    "gemas": [
     "Windburst_Support"
-   ]
-  },
-  {
-   "linha": "+# ao número máximo de Guerreiros Ilusórios",
-   "gemas": [
-    "Generals_Cry"
    ]
   },
   {
@@ -9889,30 +9824,6 @@
    ]
   },
   {
-   "linha": "A Habilidade Explosiva da Relíquia Sagrada concede # de Vida regenerada por segundo aos Aliados",
-   "gemas": [
-    "Summon_Holy_Relic"
-   ]
-  },
-  {
-   "linha": "A Habilidade Explosiva da Relíquia Sagrada concede # de Vida regenerada por segundo aos Lacaios",
-   "gemas": [
-    "Summon_Holy_Relic"
-   ]
-  },
-  {
-   "linha": "Arqueiro Ilusório dura # segundos",
-   "gemas": [
-    "Mirage_Archer_Support"
-   ]
-  },
-  {
-   "linha": "Arqueiro Ilusório utiliza Habilidades Suportadas com #% menos Velocidade de Ataque",
-   "gemas": [
-    "Mirage_Archer_Support"
-   ]
-  },
-  {
    "linha": "Ataques reforçados ativam Rajada de Vento ao atingir, limitado a uma vez a cada # metros percorridos",
    "gemas": [
     "Windburst_Support"
@@ -9925,27 +9836,9 @@
    ]
   },
   {
-   "linha": "Ativa Invocar Relâmpago Vivo quando uma habilidade de reforço causa dano elétrico com o acerto",
-   "gemas": [
-    "Living_Lightning_Support"
-   ]
-  },
-  {
-   "linha": "Ativa Invocar Relâmpago Vivo quando uma habilidade\\nde reforço causa dano elétrico com o acerto",
-   "gemas": [
-    "Living_Lightning_Support"
-   ]
-  },
-  {
    "linha": "Auras das Habilidades Suportadas têm uma duração base de # segundos",
    "gemas": [
     "Divine_Blessing_Support"
-   ]
-  },
-  {
-   "linha": "Buff concede # % mais Dano Físico",
-   "gemas": [
-    "Herald_of_Purity"
    ]
   },
   {
@@ -9976,30 +9869,6 @@
    "linha": "Consumir um cadáver com habilidades reforçadas tem +#% de chance de conceder uma alma por poder",
    "gemas": [
     "Greater_Devour_Support"
-   ]
-  },
-  {
-   "linha": "Conta o Poder total de Inimigos e Cadáveres no Alcance",
-   "gemas": [
-    "Generals_Cry"
-   ]
-  },
-  {
-   "linha": "Convoca # Espíritos Sagrados Máximo de # Espíritos Sagrados",
-   "gemas": [
-    "Sacred_Wisps_Support"
-   ]
-  },
-  {
-   "linha": "Convoca # Espíritos Sagrados\\nMáximo de # Espíritos Sagrados",
-   "gemas": [
-    "Sacred_Wisps_Support"
-   ]
-  },
-  {
-   "linha": "Convoca um Sentinela da Pureza quando você Matar um Inimigo",
-   "gemas": [
-    "Herald_of_Purity"
    ]
   },
   {
@@ -10069,45 +9938,9 @@
    ]
   },
   {
-   "linha": "Efeito do Buff aumentado em # %",
-   "gemas": [
-    "Summon_Holy_Relic"
-   ]
-  },
-  {
-   "linha": "Espíritos Sagrados têm #% de chance de usar a Habilidade Ativadora quando voc#e disparar um Projétil com tal Habilidade",
-   "gemas": [
-    "Sacred_Wisps_Support"
-   ]
-  },
-  {
-   "linha": "Espíritos Sagrados têm #% de chance de usar a Habilidade Ativadora quando voc#e disparar um\\nProjétil com tal Habilidade",
-   "gemas": [
-    "Sacred_Wisps_Support"
-   ]
-  },
-  {
-   "linha": "Espíritos Sagrados têm +#% de chance de usar a Habilidade Ativadora quando você disparar um Projétil com tal habilidade enquanto um Inimigo Raro ou Único estiver em sua Presença",
-   "gemas": [
-    "Sacred_Wisps_Support"
-   ]
-  },
-  {
    "linha": "Esta habilidade é ativada por habilidades de ataque reforçadas",
    "gemas": [
     "Windburst_Support"
-   ]
-  },
-  {
-   "linha": "Esta habilidade é ativada quando uma habilidade de reforço causa dano elétrico com o acerto",
-   "gemas": [
-    "Living_Lightning_Support"
-   ]
-  },
-  {
-   "linha": "Este ataque e lacaios convertem # % do dano físico em dano elétrico",
-   "gemas": [
-    "Holy_Strike"
    ]
   },
   {
@@ -10126,12 +9959,6 @@
    "linha": "Habilidades de Aura Suportadas não tem Reserva",
    "gemas": [
     "Guardians_Blessing_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades dos Lacaios Ricocheteiam +# Vezes",
-   "gemas": [
-    "Living_Lightning_Support"
    ]
   },
   {
@@ -10189,21 +10016,9 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas Ativarão Convocar Espíritos Sagrados ao Acertar",
-   "gemas": [
-    "Sacred_Wisps_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas causam # Dano Base de Gelo por segundo",
    "gemas": [
     "Frigid_Bond_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas causam #% menos Dano quando usadas por Espíritos Sagrados",
-   "gemas": [
-    "Sacred_Wisps_Support"
    ]
   },
   {
@@ -10231,12 +10046,6 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas só podem ser usadas com Varinhas",
-   "gemas": [
-    "Sacred_Wisps_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas têm Efeito das Auras reduzido em #%",
    "gemas": [
     "Guardians_Blessing_Support"
@@ -10249,51 +10058,9 @@
    ]
   },
   {
-   "linha": "Invoca # Lacaios Relâmpagos Vivos",
-   "gemas": [
-    "Living_Lightning_Support"
-   ]
-  },
-  {
-   "linha": "Invoca # Nascido(s) da Colmeia",
-   "gemas": [
-    "Hiveborn_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios causam # % de Dano Físico",
-   "gemas": [
-    "Herald_of_Purity"
-   ]
-  },
-  {
-   "linha": "Lacaios convertem #% do Dano Físico para Dano de Raio",
-   "gemas": [
-    "Living_Lightning_Support"
-   ]
-  },
-  {
    "linha": "Lacaios das Habilidades Suportadas sofrem #% de sua Vida e Escudo de Energia Máximos total como Dano Físico por segundo enquanto você tiver uma Aura de uma Habilidade Suportada em você",
    "gemas": [
     "Guardians_Blessing_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios Relâmpagos Vivos atacam # vezes antes de desaparecerem",
-   "gemas": [
-    "Living_Lightning_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios Relâmpagos Vivos atacam +# vezes antes de desaparecerem",
-   "gemas": [
-    "Living_Lightning_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios têm #% de chance de cobrir os inimigos de gelo ao atingir",
-   "gemas": [
-    "Hiveborn_Support"
    ]
   },
   {
@@ -10303,39 +10070,15 @@
    ]
   },
   {
-   "linha": "Lacaios têm Recuperação da Recarga aumentada em # %",
-   "gemas": [
-    "Absolution"
-   ]
-  },
-  {
    "linha": "Magias Suportadas causam # % menos Dano",
    "gemas": [
     "Intuitive_Link"
    ]
   },
   {
-   "linha": "Máximo de # Arqueiro Ilusório Convocado",
-   "gemas": [
-    "Mirage_Archer_Support"
-   ]
-  },
-  {
-   "linha": "Máximo de # Lacaios Relâmpagos Vivos",
-   "gemas": [
-    "Living_Lightning_Support"
-   ]
-  },
-  {
    "linha": "Máximo de # mãos",
    "gemas": [
     "Foulgrasp_Support"
-   ]
-  },
-  {
-   "linha": "Máximo de # Nascido(s) da Colmeia",
-   "gemas": [
-    "Hiveborn_Support"
    ]
   },
   {
@@ -10369,12 +10112,6 @@
    ]
   },
   {
-   "linha": "Oferendas reforçadas ativam Invocar Nascidos da Colmeia ao usar",
-   "gemas": [
-    "Hiveborn_Support"
-   ]
-  },
-  {
    "linha": "perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)",
    "gemas": [
     "Earthbreaker_Support"
@@ -10384,18 +10121,6 @@
    "linha": "Projéteis Perfuram todos Alvos",
    "gemas": [
     "Windburst_Support"
-   ]
-  },
-  {
-   "linha": "Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade Arqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados",
-   "gemas": [
-    "Mirage_Archer_Support"
-   ]
-  },
-  {
-   "linha": "Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade\\nArqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados",
-   "gemas": [
-    "Mirage_Archer_Support"
    ]
   },
   {

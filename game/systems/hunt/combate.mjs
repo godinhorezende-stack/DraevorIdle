@@ -875,6 +875,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     Acoes.aoMorrerC4(hunt, alvo, eventos);
     // (lote G-D, dono 25/10) a morte de quem tinha a penalidade do Clamor Infernal: explode — `Acoes.aoMorrerGBD`
     Acoes.aoMorrerGBD(estado, hunt, personagem, alvo, eventos);
+    // (lote R3B, 27/10) a morte com a penalidade da Absolvição (a Sentinela no cadáver) e o abate seu com o Arauto da Pureza — `Acoes.aoMorrerR3B`
+    Acoes.aoMorrerR3B(estado, hunt, personagem, alvo, eventos);
   }
   if (!itensPoeLigado() || QuemFeriu.abateSeu(alvo)) {
     const f = Ficha.combate(estado);
@@ -1698,6 +1700,8 @@ export function round(estado, personagem) {
         const dosAtributos = [...(poe ? [] : elementalDosAtributos(estado, hunt, alvo, ficha, semResistencia, { crit: critico, onslaught, dobraNoCritico })), ...danoSomadoDoPoe(estado, hunt, alvo, fichaDasPartes, { crit: critico, onslaught, dobraNoCritico })];
         // (14/10, a Rajada Vulcânica: o golpe básico corpo a corpo que acerta — `Acoes.rajadaVulcanica`)
         if (poe && !segundo && categoriaDaArma(arma) !== 'distancia') Acoes.rajadaVulcanica(estado, hunt, alvo, eventos);
+        // (lote R3B, 27/10: o golpe básico é um ATAQUE seu — a Nova da Relíquia Sagrada e a Sentinela da Pureza no Raro/Único, `Acoes.aoAcertarR3B`)
+        if (poe && !segundo) eventos.push(...Acoes.aoAcertarR3B(estado, hunt, personagem, { ataque: true, acertados: [alvo] }));
         // Mil mãos, Flecha que atravessa, Chuva de flechas (ver `Arvore.depoisDoGolpe`).
         // O 2º golpe do ataque duplo não repete o que vem DEPOIS do golpe (árvore, roubo de vida e mana, vida/mana por acerto, charms).
         const extra = segundo ? 0 : Arvore.depoisDoGolpe(estado, hunt, alvo, golpe, categoriaDaArma(arma) === 'distancia' ? 'distancia' : 'corpo', eventos);

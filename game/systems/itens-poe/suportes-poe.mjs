@@ -12,6 +12,8 @@ import { ligado } from './catalogo.mjs';
 import { comNiveisDoPoedb } from './gemas-niveis.mjs';
 import { atributosDaLinha } from './linhas-das-gemas.mjs';
 import { REGRAS_S2A, ehGatilhoDoMarcar, limiarDaFlechaForjada } from './suportes-s2a.mjs';
+// (lote R3B, 27/10: as linhas próprias do Arqueiro Ilusório, dos Espíritos Sagrados, do Relâmpago Vivo e do Nascido da Colmeia — `gemas-r3b.mjs`)
+import { PROPRIAS_R3B, completarEfeito as completarEfeitoR3B } from './gemas-r3b.mjs';
 
 const ARQ_SUPORTES = new URL('../../gamedata/itens-poe/suportes-poe.json', import.meta.url);
 const ARQ_IDS = new URL('../../gamedata/itens-poe/suportes-poe-ids.json', import.meta.url);
@@ -856,7 +858,8 @@ const PROPRIAS_A2 = {
 const NAO_FEITAS_S2B = [];
 const NAO_FEITAS_S2B_DO = {
   Kinetic_Instability_Support: [/de Poder Arcano$/i], Greater_Kinetic_Instability_Support: [/de Poder Arcano$/i],
-  Living_Lightning_Support: [/^Habilidades dos Lacaios Ricocheteiam/i], Sacred_Wisps_Support: [/menos Dano quando usadas por Espíritos Sagrados$/i],
+  // (lote R3B, 27/10: o "Ricocheteiam +3" dos Relâmpagos Vivos e o "menos Dano quando usadas por Espíritos Sagrados" saíram daqui — os lacaios e os Espíritos existem,
+  // `PROPRIAS_R3B`)
 };
 /** O efeito do suporte no nível, para esta ativa: `{ efeito, naoFeitas }`. */
 export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
@@ -867,11 +870,12 @@ export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
   const naoFeitas = [];
   // (lote A2) as linhas próprias da Torre Óssea e da Sentinela Divina (`PROPRIAS_A2`): a habilidade concedida pela Torre Óssea — Tomar a Carne — tem
   // os números dela (a duração, os raios, as torres), que as regras gerais leriam como do Clamor suportado
-  const proprias = PROPRIAS_A2[slug];
+  // (lote R3B: + as do Arqueiro Ilusório, dos Espíritos Sagrados, do Relâmpago Vivo e do Nascido da Colmeia — `PROPRIAS_R3B`; o 3º argumento diz se a linha é da qualidade)
+  const proprias = PROPRIAS_A2[slug] ?? PROPRIAS_R3B[slug];
   for (const linha of [...t.props, ...t.mods, ...t.qualidade]) {
     if (proprias) {
       const p = proprias.find(([re]) => re.test(linha));
-      if (p) { p[1](linha.match(p[0]), efeito); continue; }
+      if (p) { p[1](linha.match(p[0]), efeito, t.qualidade.includes(linha)); continue; }
     }
     // (lote S2B) as linhas que as regras gerais leriam sem a condição e que o jogo ainda não faz (o "mais Dano … às suas Presas" do Predador: a Presa não existe)
     if (NAO_FEITAS_S2B.some((re) => re.test(linha)) || NAO_FEITAS_S2B_DO[slug]?.some((re) => re.test(linha))) { naoFeitas.push(linha); continue; }
@@ -890,6 +894,8 @@ export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
   }
   // (lote 44, P064) o nível do Suporte: Convocar Fantasma — o Poder Fantasmal de cada Fantasma é o desse nível (a tabela do PoB)
   if (efeito.fantasmaAoMatarPct > 0 || efeito.fantasmaRaroPct > 0) efeito.fantasmaNivel = nivel;
+  // (lote R3B) o nível dos lacaios do Relâmpago Vivo e do Nascido da Colmeia e os totais com a qualidade (`GemasR3B.completarEfeito`)
+  if (PROPRIAS_R3B[slug]) completarEfeitoR3B(slug, efeito, nivel, Number(linhaDoNivel(s, nivel)[s.colunas.indexOf('RequerNível')]) || s.nivelReq || 1);
   // (lote S1) a recuperação da recarga "aumentada/reduzida" das linhas soma ANTES de virar o % do tempo (a Segunda Ventania: −X% do nível e +Y% da qualidade)
   if (efeito.recuperacaoRecargaPct != null) {
     if (efeito.recuperacaoRecargaPct) efeito.recargaPct = (efeito.recargaPct ?? 0) + tempoDaVelocidade(efeito.recuperacaoRecargaPct);

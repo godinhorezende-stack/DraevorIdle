@@ -81,6 +81,8 @@ import * as Reforcos from './skills/reforcos.mjs';
 import * as LacaiosPoe from './itens-poe/lacaios-poe.mjs';
 // (lote S2B, 27/10: os suportes de lacaio da segunda metade das parciais — o crítico, a Adrenalina, o Frenesi Faminto, o Escudo de Carne, o Exército Elemental)
 import * as SuportesS2B from './itens-poe/suportes-s2b.mjs';
+// (lote R3B, 27/10: o golpe do Relâmpago Vivo — o ricochete e os ataques contados — e o Cobrir de Gelo do Nascido da Colmeia)
+import * as GemasR3B from './itens-poe/gemas-r3b.mjs';
 import * as Protecao from './protecao.mjs';
 import * as Areas from '../engine/areas.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
@@ -2242,6 +2244,11 @@ export function tique(estado, personagem, agora = Date.now()) {
   if (itensPoeLigado()) eventos.push(...Acoes.tiqueDaPraga(estado, hunt, passou, hunt.clock ?? 0));
   // (lote 75) o Arauto da Agonia: o Rastejador vem ao Envenenar e some sem Virulência (`Acoes.tiqueDoArautoDaAgonia`)
   if (itensPoeLigado()) eventos.push(...Acoes.tiqueDoArautoDaAgonia(estado, hunt, hunt.clock ?? 0));
+  // (lote R3B, 27/10) o Boon da Relíquia nos lacaios e o Arqueiro Ilusório usando a sua habilidade (`Acoes.tiqueR3B`); quem morreu no uso dele morre agora
+  if (itensPoeLigado() && (hunt.poeR3B || hunt.lacaios?.some((l) => l.r3bRegen))) {
+    const doR3B = Acoes.tiqueR3B(estado, hunt, personagem, hunt.clock ?? 0);
+    if (doR3B.length) { eventos.push(...doR3B); processarMortes(estado, personagem, eventos); }
+  }
   // Os LACAIOS e os TOTENS das gemas do PoE (`acoes.invocarLacaios`).
   if (hunt.lacaios?.length) eventos.push(...tiqueDosLacaios(estado, hunt, personagem, grade, agora));
 
@@ -2485,6 +2492,8 @@ export function efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo, ctx = {}) {
     ev('empalado');
   }
   if (sorte(p.chances.cinzas)) { ModsPoe.porNoAlvo(alvo, 'cinzas', agora + 4000, agora); ev('cinzas'); }
+  // (lote R3B, 27/10) o Nascido da Colmeia: "Lacaios têm 20% de chance de cobrir os inimigos de gelo ao atingir" (o Coberto de Gelo do jogo, 4 s)
+  if (sorte(p.chances.cobrirGelo)) { ModsPoe.porNoAlvo(alvo, 'cobertoGelo', agora + GemasR3B.NASCIDO.cobrirDeGeloMs, agora); ev('cobertoGelo'); }
   if (sorte(p.chances.cegar)) { e.cego = { ate: agora + ModsPoe.NO_ACERTO.cegar.duracaoMs }; ev('cego'); }
   if (sorte(p.chances.provocar)) { e.provocado = { ate: agora + ModsPoe.NO_ACERTO.provocar.duracaoMs, deLacaio: true }; ev('provocado'); }
   // (lote 69) "Lacaios têm X% de chance de Empurrar Inimigos ao Acertar com Ataques" (o empurrão do jogo: para longe de você)
@@ -3168,6 +3177,10 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     if (deLonge) eventos.push({ t: 'shot', id: tiro, x: l.x, y: l.y, tx: alvo.x, ty: alvo.y });
     // (o bruto do golpe principal: o golpe em área a cada N acertos sai dele)
     const bruto = golpear(alvo, 100) ?? 0;
+    // (lote R3B, 27/10) o RELÂMPAGO VIVO: o golpe Ricocheteia (+3 — `GemasR3B.saltosDoRicochete`, o salto de 2 casas das cadeias do PoE) e o lacaio some depois dos
+    // ataques dele (não é morte: o `ate`)
+    if (l.r3bRicochetes > 0) for (const b of GemasR3B.saltosDoRicochete(alvo, hunt.monstros.filter((m) => m.hp > 0 && !m.dummy), l.r3bRicochetes, 2)) golpear(b, 100);
+    if (l.r3bAtaques != null && --l.r3bAtaques <= 0) l.ate = agora;
     // (dono, 11/10: "faça os totens e lacaios também") O lacaio de longe: os PROJÉTEIS a mais dos suportes ligados na gema que o invocou
     // (Projéteis Múltiplos, Perfuração, Bifurcação, Corrente, Retorno), pelo mesmo motor do disparo do personagem — todos saem.
     const r = deLonge ? Acoes.projeteisDoLacaio(estado, l.acao, { origem: { x: l.x, y: l.y }, alvo, vivos: hunt.monstros.filter((m) => m.hp > 0 && !m.dummy), alcance: l.alcanceDeAtaque }) : null;
