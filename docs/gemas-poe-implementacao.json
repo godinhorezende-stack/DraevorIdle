@@ -17,8 +17,8 @@
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 186,
-   "parcial": 27,
+   "implementada e testada": 193,
+   "parcial": 20,
    "implementada, sem teste próprio": 49
   },
   "variantes": {
@@ -44,8 +44,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 105,
-   "emDuasOuMais": 10
+   "linhasDistintas": 89,
+   "emDuasOuMais": 8
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -60,7 +60,7 @@
   },
   "testes": {
    "ativasCitadas": 505,
-   "suportesCitados": 194,
+   "suportesCitados": 197,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
@@ -7784,10 +7784,8 @@
   {
    "slug": "Shockwave_Support",
    "nome": "Onda de Choque",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: a onda usa o físico médio da arma × o \"Dano de Ataque: X% de base\" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma)"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8157,7 +8155,7 @@
    "nome": "Torre Óssea (Reforço)",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: a explosão das torres usa o físico médio da arma × 250–271% pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); as torres não bloqueiam o caminho dos monstros"
+    "não simulado: as torres de osso não bloqueiam o caminho dos monstros (o caminho dos bichos não tem obstáculo temporário)"
    ],
    "outros": [],
    "icone": true
@@ -8165,10 +8163,8 @@
   {
    "slug": "Crystalfall_Support",
    "nome": "Cristal em Queda (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades reforçadas ativam Cristal em Queda ao atingir"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8183,13 +8179,8 @@
   {
    "slug": "Fissure_Support",
    "nome": "Fenda (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades reforçadas ativam uma fenda no impacto da pancada",
-    "não simulado: 60% do Dano Físico Convertido para Dano de Fogo",
-    "não simulado: Cria 3 fendas",
-    "não simulado: Cria +1 fendas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8220,14 +8211,8 @@
   {
    "slug": "Pyre_Support",
    "nome": "Pira (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades reforçadas têm 50% de chance de ativar Chamado da Fogueira ao atingir inimigos incendiados corpo a corpo",
-    "não simulado: 100% do Dano Físico Convertido para Dano de Fogo",
-    "não simulado: Cobre Inimigos em Cinzas ao Acertar",
-    "não simulado: Cria 4 Pilares de Cinzas",
-    "não simulado: Cria +1 Pilar de Cinzas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8252,10 +8237,8 @@
   {
    "slug": "Void_Shockwave_Support",
    "nome": "Onda de Choque do Vazio (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: a onda usa o físico médio da arma × o \"Dano de Ataque: X% de base\" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma)"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8608,14 +8591,8 @@
   {
    "slug": "Windburst_Support",
    "nome": "Reforço Rajada de Vento",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Ataques reforçados ativam Rajada de Vento ao atingir, limitado a uma vez a cada 10 metros percorridos",
-    "não simulado: Projéteis Perfuram todos Alvos",
-    "não simulado: Dispara 3 projéteis",
-    "não simulado: 40% mais Dano em Área",
-    "não simulado: Esta habilidade é ativada por habilidades de ataque reforçadas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8899,10 +8876,8 @@
   {
    "slug": "Voidstorm_Support",
    "nome": "Tormenta do Vazio (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: a explosão da tempestade usa o físico médio da arma × o \"Dano de Ataque: X% de base\" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); a Cegueira dentro dela (a descrição) não é aplicada"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9824,20 +9799,6 @@
    ]
   },
   {
-   "linha": "#% do Dano Físico Convertido para Dano de Fogo",
-   "gemas": [
-    "Fissure_Support",
-    "Pyre_Support"
-   ]
-  },
-  {
-   "linha": "a onda usa o físico médio da arma × o \"Dano de Ataque: X% de base\" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma)",
-   "gemas": [
-    "Shockwave_Support",
-    "Void_Shockwave_Support"
-   ]
-  },
-  {
    "linha": "Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética",
    "gemas": [
     "Greater_Kinetic_Instability_Support",
@@ -9865,27 +9826,9 @@
    ]
   },
   {
-   "linha": "#% mais Dano em Área",
-   "gemas": [
-    "Windburst_Support"
-   ]
-  },
-  {
    "linha": "+# ao número máximo de Guerreiros Ilusórios",
    "gemas": [
     "Generals_Cry"
-   ]
-  },
-  {
-   "linha": "a explosão da tempestade usa o físico médio da arma × o \"Dano de Ataque: X% de base\" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); a Cegueira dentro dela (a descrição) não é aplicada",
-   "gemas": [
-    "Voidstorm_Support"
-   ]
-  },
-  {
-   "linha": "a explosão das torres usa o físico médio da arma × #–#% pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); as torres não bloqueiam o caminho dos monstros",
-   "gemas": [
-    "Bonespire_Support"
    ]
   },
   {
@@ -9913,9 +9856,9 @@
    ]
   },
   {
-   "linha": "Ataques reforçados ativam Rajada de Vento ao atingir, limitado a uma vez a cada # metros percorridos",
+   "linha": "as torres de osso não bloqueiam o caminho dos monstros (o caminho dos bichos não tem obstáculo temporário)",
    "gemas": [
-    "Windburst_Support"
+    "Bonespire_Support"
    ]
   },
   {
@@ -9961,12 +9904,6 @@
    ]
   },
   {
-   "linha": "Cobre Inimigos em Cinzas ao Acertar",
-   "gemas": [
-    "Pyre_Support"
-   ]
-  },
-  {
    "linha": "Consumir um cadáver com habilidades reforçadas tem #% de chance de conceder uma alma por poder",
    "gemas": [
     "Greater_Devour_Support"
@@ -10003,12 +9940,6 @@
    ]
   },
   {
-   "linha": "Cria # fendas",
-   "gemas": [
-    "Fissure_Support"
-   ]
-  },
-  {
    "linha": "Cria # mãos adicionais",
    "gemas": [
     "Foulgrasp_Support"
@@ -10018,24 +9949,6 @@
    "linha": "Cria # mãos por glifo",
    "gemas": [
     "Foulgrasp_Support"
-   ]
-  },
-  {
-   "linha": "Cria # Pilares de Cinzas",
-   "gemas": [
-    "Pyre_Support"
-   ]
-  },
-  {
-   "linha": "Cria +# fendas",
-   "gemas": [
-    "Fissure_Support"
-   ]
-  },
-  {
-   "linha": "Cria +# Pilar de Cinzas",
-   "gemas": [
-    "Pyre_Support"
    ]
   },
   {
@@ -10054,12 +9967,6 @@
    "linha": "Detonação da Mina é Instantânea",
    "gemas": [
     "Smoke_Mine"
-   ]
-  },
-  {
-   "linha": "Dispara # projéteis",
-   "gemas": [
-    "Windburst_Support"
    ]
   },
   {
@@ -10090,12 +9997,6 @@
    "linha": "Espíritos Sagrados têm +#% de chance de usar a Habilidade Ativadora quando você disparar um Projétil com tal habilidade enquanto um Inimigo Raro ou Único estiver em sua Presença",
    "gemas": [
     "Sacred_Wisps_Support"
-   ]
-  },
-  {
-   "linha": "Esta habilidade é ativada por habilidades de ataque reforçadas",
-   "gemas": [
-    "Windburst_Support"
    ]
   },
   {
@@ -10135,12 +10036,6 @@
    ]
   },
   {
-   "linha": "Habilidades reforçadas ativam Cristal em Queda ao atingir",
-   "gemas": [
-    "Crystalfall_Support"
-   ]
-  },
-  {
    "linha": "Habilidades reforçadas ativam Fluxo Cinético ao causar golpe crítico",
    "gemas": [
     "Greater_Kinetic_Instability_Support"
@@ -10153,12 +10048,6 @@
    ]
   },
   {
-   "linha": "Habilidades reforçadas ativam uma fenda no impacto da pancada",
-   "gemas": [
-    "Fissure_Support"
-   ]
-  },
-  {
    "linha": "Habilidades reforçadas ganham #% do dano físico como dano de caos adicional por fundamental",
    "gemas": [
     "Machinations_Support"
@@ -10168,12 +10057,6 @@
    "linha": "Habilidades reforçadas podem conjurar # glifos adicionais",
    "gemas": [
     "Foulgrasp_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades reforçadas têm #% de chance de ativar Chamado da Fogueira ao atingir inimigos incendiados corpo a corpo",
-   "gemas": [
-    "Pyre_Support"
    ]
   },
   {
@@ -10378,12 +10261,6 @@
    "linha": "perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)",
    "gemas": [
     "Earthbreaker_Support"
-   ]
-  },
-  {
-   "linha": "Projéteis Perfuram todos Alvos",
-   "gemas": [
-    "Windburst_Support"
    ]
   },
   {

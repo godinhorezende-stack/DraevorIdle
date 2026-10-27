@@ -27,9 +27,9 @@ Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 186 |
+| implementada e testada | 193 |
 | implementada, sem teste próprio | 49 |
-| parcial | 27 |
+| parcial | 20 |
 
 ### Variantes
 
@@ -39,10 +39,10 @@ Só os ataques:
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 105 linhas distintas (10 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 89 linhas distintas (8 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 505/562 ativas, 194/262 suportes.
+- Testes que citam a gema: 505/562 ativas, 197/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
@@ -54,21 +54,16 @@ Só os ataques:
 | 3 | Habilidades Suportadas também contam como Habilidades Bênção\nVocê só pode ter uma Aura de suas Habilidades Bênção |
 | 2 | # % de chance de Convocar um Sentinela da Absolvição ao Acertar um Inimigo Raro ou Único |
 | 2 | #% de Poder Arcano |
-| 2 | #% do Dano Físico Convertido para Dano de Fogo |
-| 2 | a onda usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma) |
 | 2 | Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética |
 | 2 | Máximo de # anomalias |
 | 2 | sem dano direto: nenhum efeito no combate |
 | 1 | # % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único |
-| 1 | #% mais Dano em Área |
 | 1 | +# ao número máximo de Guerreiros Ilusórios |
-| 1 | a explosão da tempestade usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); a Cegueira dentro dela (a descrição) não é aplicada |
-| 1 | a explosão das torres usa o físico médio da arma × #–#% pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); as torres não bloqueiam o caminho dos monstros |
 | 1 | A Habilidade Explosiva da Relíquia Sagrada concede # de Vida regenerada por segundo aos Aliados |
 | 1 | A Habilidade Explosiva da Relíquia Sagrada concede # de Vida regenerada por segundo aos Lacaios |
 | 1 | Arqueiro Ilusório dura # segundos |
 | 1 | Arqueiro Ilusório utiliza Habilidades Suportadas com #% menos Velocidade de Ataque |
-| 1 | Ataques reforçados ativam Rajada de Vento ao atingir, limitado a uma vez a cada # metros percorridos |
+| 1 | as torres de osso não bloqueiam o caminho dos monstros (o caminho dos bichos não tem obstáculo temporário) |
 | 1 | Ativa esta magia reforçada quando sua salvaguarda quebra |
 | 1 | Ativa Invocar Relâmpago Vivo quando uma habilidade de reforço causa dano elétrico com o acerto |
 | 1 | Ativa Invocar Relâmpago Vivo quando uma habilidade\nde reforço causa dano elétrico com o acerto |
@@ -76,42 +71,32 @@ Só os ataques:
 | 1 | Buff concede # % mais Dano Físico |
 | 1 | Causa # a # de Dano de Raio |
 | 1 | Causa Dano de Fogo base igual a #% da Vida Máxima dos Totens |
-| 1 | Cobre Inimigos em Cinzas ao Acertar |
 | 1 | Consumir um cadáver com habilidades reforçadas tem #% de chance de conceder uma alma por poder |
 | 1 | Consumir um cadáver com habilidades reforçadas tem +#% de chance de conceder uma alma por poder |
 | 1 | Conta o Poder total de Inimigos e Cadáveres no Alcance |
 | 1 | Convoca # Espíritos Sagrados Máximo de # Espíritos Sagrados |
 | 1 | Convoca # Espíritos Sagrados\nMáximo de # Espíritos Sagrados |
 | 1 | Convoca um Sentinela da Pureza quando você Matar um Inimigo |
-| 1 | Cria # fendas |
 | 1 | Cria # mãos adicionais |
 | 1 | Cria # mãos por glifo |
-| 1 | Cria # Pilares de Cinzas |
-| 1 | Cria +# fendas |
-| 1 | Cria +# Pilar de Cinzas |
 | 1 | Dano e Resfriamentos Perduram por uma Duração Base de # segundos |
 | 1 | Dano e Resfriamentos Perduram por uma Duração Base de +# segundos |
 | 1 | Detonação da Mina é Instantânea |
-| 1 | Dispara # projéteis |
 | 1 | Dispara até # Flechas em alvos diferentes |
 | 1 | Efeito do Buff aumentado em # % |
 | 1 | Espíritos Sagrados têm #% de chance de usar a Habilidade Ativadora quando voc#e disparar um Projétil com tal Habilidade |
 | 1 | Espíritos Sagrados têm #% de chance de usar a Habilidade Ativadora quando voc#e disparar um\nProjétil com tal Habilidade |
 | 1 | Espíritos Sagrados têm +#% de chance de usar a Habilidade Ativadora quando você disparar um Projétil com tal habilidade enquanto um Inimigo Raro ou Único estiver em sua Presença |
-| 1 | Esta habilidade é ativada por habilidades de ataque reforçadas |
 | 1 | Esta habilidade é ativada quando uma habilidade de reforço causa dano elétrico com o acerto |
 | 1 | Este ataque e lacaios convertem # % do dano físico em dano elétrico |
 | 1 | Flechas caem em duas linhas perpendiculares |
 | 1 | Glifos reforçados ativam Constrição Pérfida ao serem recuperados |
 | 1 | Habilidades de Aura Suportadas não tem Reserva |
 | 1 | Habilidades dos Lacaios Ricocheteiam +# Vezes |
-| 1 | Habilidades reforçadas ativam Cristal em Queda ao atingir |
 | 1 | Habilidades reforçadas ativam Fluxo Cinético ao causar golpe crítico |
 | 1 | Habilidades reforçadas ativam Fluxo Cinético no golpe fatal |
-| 1 | Habilidades reforçadas ativam uma fenda no impacto da pancada |
 | 1 | Habilidades reforçadas ganham #% do dano físico como dano de caos adicional por fundamental |
 | 1 | Habilidades reforçadas podem conjurar # glifos adicionais |
-| 1 | Habilidades reforçadas têm #% de chance de ativar Chamado da Fogueira ao atingir inimigos incendiados corpo a corpo |
 | 1 | Habilidades reforçadas têm o custo aumentado em #% por fundamental |
 | 1 | Habilidades Suportadas arremessam Minas em um Arco |
 | 1 | Habilidades Suportadas Ativarão Convocar Espíritos Sagrados ao Acertar |
@@ -146,7 +131,6 @@ Só os ataques:
 | 1 | o totem provoca os monstros em volta a atacá-lo (act_str.lua:##) |
 | 1 | Oferendas reforçadas ativam Invocar Nascidos da Colmeia ao usar |
 | 1 | perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB) |
-| 1 | Projéteis Perfuram todos Alvos |
 | 1 | Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade Arqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados |
 | 1 | Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade\nArqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados |
 | 1 | Somente uma Mina deste tipo pode ser Detonada em cada Sequência de Detonação |
@@ -315,11 +299,9 @@ Só os ataques:
 ## Gemas de suporte pendentes
 
 - **Bonespire_Support** (Torre Óssea (Reforço)) — parcial
-  - não simulado: a explosão das torres usa o físico médio da arma × 250–271% pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); as torres não bloqueiam o caminho dos monstros
+  - não simulado: as torres de osso não bloqueiam o caminho dos monstros (o caminho dos bichos não tem obstáculo temporário)
 - **Cast_on_Ward_Break_Support** (Conjurar ao Perder Salvaguarda (Reforço)) — parcial
   - não simulado: Ativa esta magia reforçada quando sua salvaguarda quebra
-- **Crystalfall_Support** (Cristal em Queda (Reforço)) — parcial
-  - não simulado: Habilidades reforçadas ativam Cristal em Queda ao atingir
 - **Divine_Blessing_Support** (Bênção Divina) — parcial
   - não simulado: Habilidades Suportadas Custam +233 de Mana
   - não simulado: Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção
@@ -334,11 +316,6 @@ Só os ataques:
   - não simulado: Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção
   - não simulado: Suas Habilidades Não-Bênção que Reservam Mana são Desabilitadas enquanto você tiver uma Aura da Habilidade Suportada em você
   - não simulado: Habilidades Suportadas também contam como Habilidades Bênção\nVocê só pode ter uma Aura de suas Habilidades Bênção
-- **Fissure_Support** (Fenda (Reforço)) — parcial
-  - não simulado: Habilidades reforçadas ativam uma fenda no impacto da pancada
-  - não simulado: 60% do Dano Físico Convertido para Dano de Fogo
-  - não simulado: Cria 3 fendas
-  - não simulado: Cria +1 fendas
 - **Flamewood_Support** (Chuva Ardente) — parcial
   - não simulado: Totens das Habilidades Suportadas ganham a Habilidade Vingança Flamejante e a Ativa quando Acertado por um Inimigo
   - não simulado: Causa Dano de Fogo base igual a 137% da Vida Máxima dos Totens
@@ -406,12 +383,6 @@ Só os ataques:
   - não simulado: Arqueiro Ilusório utiliza Habilidades Suportadas com 60% menos Velocidade de Ataque
   - não simulado: Arqueiro Ilusório dura 4 segundos
   - não simulado: Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade\nArqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados
-- **Pyre_Support** (Pira (Reforço)) — parcial
-  - não simulado: Habilidades reforçadas têm 50% de chance de ativar Chamado da Fogueira ao atingir inimigos incendiados corpo a corpo
-  - não simulado: 100% do Dano Físico Convertido para Dano de Fogo
-  - não simulado: Cobre Inimigos em Cinzas ao Acertar
-  - não simulado: Cria 4 Pilares de Cinzas
-  - não simulado: Cria +1 Pilar de Cinzas
 - **Sacred_Wisps_Support** (Espíritos Sagrados) — parcial
   - não simulado: Habilidades Suportadas causam 51% menos Dano quando usadas por Espíritos Sagrados
   - não simulado: Habilidades Suportadas Ativarão Convocar Espíritos Sagrados ao Acertar
@@ -421,20 +392,8 @@ Só os ataques:
   - não simulado: Espíritos Sagrados têm +25% de chance de usar a Habilidade Ativadora quando você disparar um Projétil com tal habilidade enquanto um Inimigo Raro ou Único estiver em sua Presença
   - não simulado: Convoca 2 Espíritos Sagrados\nMáximo de 2 Espíritos Sagrados
   - não simulado: Espíritos Sagrados têm 25% de chance de usar a Habilidade Ativadora quando voc6e disparar um\nProjétil com tal Habilidade
-- **Shockwave_Support** (Onda de Choque) — parcial
-  - não simulado: a onda usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma)
 - **Vaal_Temptation_Support** (Tentação Vaal (Reforço)) — parcial
   - não simulado: o impedimento de ganho de almas que a Tentação substitui (o jogo não tem o Impedimento de Ganho de Almas: as almas das gemas Vaal são a recarga)
-- **Void_Shockwave_Support** (Onda de Choque do Vazio (Reforço)) — parcial
-  - não simulado: a onda usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma)
-- **Voidstorm_Support** (Tormenta do Vazio (Reforço)) — parcial
-  - não simulado: a explosão da tempestade usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); a Cegueira dentro dela (a descrição) não é aplicada
-- **Windburst_Support** (Reforço Rajada de Vento) — parcial
-  - não simulado: Ataques reforçados ativam Rajada de Vento ao atingir, limitado a uma vez a cada 10 metros percorridos
-  - não simulado: Projéteis Perfuram todos Alvos
-  - não simulado: Dispara 3 projéteis
-  - não simulado: 40% mais Dano em Área
-  - não simulado: Esta habilidade é ativada por habilidades de ataque reforçadas
 
 ## Não se aplicam ao jogo
 

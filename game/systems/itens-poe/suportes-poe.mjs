@@ -12,6 +12,7 @@ import { ligado } from './catalogo.mjs';
 import { comNiveisDoPoedb } from './gemas-niveis.mjs';
 import { atributosDaLinha } from './linhas-das-gemas.mjs';
 import { REGRAS_S2A, ehGatilhoDoMarcar, limiarDaFlechaForjada } from './suportes-s2a.mjs';
+import { PROPRIAS_R3A } from './gemas-r3a.mjs';
 
 const ARQ_SUPORTES = new URL('../../gamedata/itens-poe/suportes-poe.json', import.meta.url);
 const ARQ_IDS = new URL('../../gamedata/itens-poe/suportes-poe-ids.json', import.meta.url);
@@ -867,7 +868,8 @@ export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
   const naoFeitas = [];
   // (lote A2) as linhas próprias da Torre Óssea e da Sentinela Divina (`PROPRIAS_A2`): a habilidade concedida pela Torre Óssea — Tomar a Carne — tem
   // os números dela (a duração, os raios, as torres), que as regras gerais leriam como do Clamor suportado
-  const proprias = PROPRIAS_A2[slug];
+  // (lote R3A: + as habilidades concedidas pelo Cristal em Queda, pela Fenda, pela Pira e pela Rajada de Vento — `PROPRIAS_R3A`)
+  const proprias = PROPRIAS_A2[slug] ?? PROPRIAS_R3A[slug];
   for (const linha of [...t.props, ...t.mods, ...t.qualidade]) {
     if (proprias) {
       const p = proprias.find(([re]) => re.test(linha));
@@ -934,11 +936,10 @@ function avaliar(s) {
 const DESCRICAO_NAO_FEITA = {
   // (lote A2) a Torre Óssea: a explosão é o físico MÉDIO da sua arma × o "Dano de Ataque: X% de base" da Tomar a Carne, pelo acerto das habilidades sem
   // golpe — os modificadores do golpe da arma (o crítico dela, os locais) não entram
-  Bonespire_Support: ['não simulado: a explosão das torres usa o físico médio da arma × 250–271% pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); as torres não bloqueiam o caminho dos monstros'],
-  // (lote A4, dono 19/10) as Excepcionais do Vazio: o acerto da onda e da tempestade é o das habilidades sem golpe (como a Torre Óssea)
-  Shockwave_Support: ['não simulado: a onda usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma)'],
-  Void_Shockwave_Support: ['não simulado: a onda usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma)'],
-  Voidstorm_Support: ['não simulado: a explosão da tempestade usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); a Cegueira dentro dela (a descrição) não é aplicada'],
+  // (lote R3A, 27/10) a explosão das torres, a onda e a tempestade são o ATAQUE ATIVADO completo (`Acoes.acertoDoArauto` com `ativado` — a arma com os locais, o crítico
+  // dela, o adicionado × a eficácia, a Área); a Cegueira dentro da Tormenta é feita. Fica: as torres não bloqueiam o caminho dos monstros (o jogo não tem obstáculo
+  // temporário no caminho dos bichos — a exceção do idle pede o aval do dono)
+  Bonespire_Support: ['não simulado: as torres de osso não bloqueiam o caminho dos monstros (o caminho dos bichos não tem obstáculo temporário)'],
   // (lote D2, dono 27/10) a Tentação Vaal: o dano de 1300/s em você é feito (`SuportesS2A.tentacaoVaalNoUso`); o "em vez de aplicar impedimento de ganho de almas" fica — o jogo
   // não tem o Impedimento de Ganho de Almas (as almas das Vaal são a recarga), então não há o que a Tentação substitua nem ganho de almas para bloquear enquanto ela dura
   Vaal_Temptation_Support: ['não simulado: o impedimento de ganho de almas que a Tentação substitui (o jogo não tem o Impedimento de Ganho de Almas: as almas das gemas Vaal são a recarga)'],
