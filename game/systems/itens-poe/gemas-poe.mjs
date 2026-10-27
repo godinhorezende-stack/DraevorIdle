@@ -74,6 +74,8 @@ import * as GemasD1 from './gemas-d1.mjs';
 // (lote R3B, 27/10: as Sentinelas, a Nova da Relíquia, o Golpe Sagrado como ataque e o Clamor do General — gemas-r3b.mjs)
 import * as GemasR3B from './gemas-r3b.mjs';
 import * as GemasR3D from './gemas-r3d.mjs';
+// (lote T2, rodada 4 — 27/10: as correções pelo PoB das gemas que estavam sem teste próprio)
+import * as GemasT2 from './gemas-t2.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
 const ARQ_GEMAS = new URL('../../gamedata/itens-poe/gemas-poe.json', import.meta.url);
@@ -123,7 +125,7 @@ const SEM_NO_JOGO = { generico: 'a gema não tem comportamento de combate reconh
 // reserva, quando a gema reserva — `reserva.pedida`) — com a mecânica própria de cada uma (`itens-poe/gemas-a2.mjs`). O Emblema do Poder, o Escudo
 // Gélido e a Parede de Força também: o uso põe o objeto no chão e liga o buff enquanto ele dura.
 const DO_LOTE_A2 = ['Blood_Rage', 'Berserk', 'Petrified_Blood', 'Temporal_Rift', 'Automation', 'Energy_Blade', 'Frost_Shield', 'Mana-Infused_Staff', 'Sigil_of_Power', 'Wall_of_Force'];
-const ARQUETIPO_PROPRIO = { Plague_Bearer: 'praga', Spellslinger: 'feiticeiro', Herald_of_Agony: 'arauto', Old_Phase_Run: 'guarda', Withering_Step: 'guarda', ...Object.fromEntries(DO_LOTE_A2.map((s) => [s, 'guarda'])), ...GemasB4.ARQUETIPO_B4, ...GemasGAC.ARQUETIPO_GAC, ...GemasGBD.ARQUETIPO_GBD, ...GemasE2a.ARQUETIPO_E2A, ...GemasR3B.ARQUETIPO_R3B };
+const ARQUETIPO_PROPRIO = { Plague_Bearer: 'praga', Spellslinger: 'feiticeiro', Herald_of_Agony: 'arauto', Old_Phase_Run: 'guarda', Withering_Step: 'guarda', ...Object.fromEntries(DO_LOTE_A2.map((s) => [s, 'guarda'])), ...GemasB4.ARQUETIPO_B4, ...GemasGAC.ARQUETIPO_GAC, ...GemasGBD.ARQUETIPO_GBD, ...GemasE2a.ARQUETIPO_E2A, ...GemasR3B.ARQUETIPO_R3B, ...GemasT2.ARQUETIPO_T2 };
 /**
  * (lote A2, dono 19/10: "o Portal passa a não se aplica") A gema que NÃO SE APLICA ao jogo, com a nota do porquê — o relatório a mostra assim
  * (`tools/relatorio-gemas-poe.mjs`). Ela segue sem efeito (a skill avisa — `poeGema.bloqueio`).
@@ -345,6 +347,11 @@ const CORRECAO_DO_POB = {
     efetividade: [0.713, 0.726, 0.737, 0.749, 0.76, 0.772, 0.782, 0.792, 0.803, 0.813, 0.822, 0.831, 0.841, 0.85, 0.858, 0.866, 0.874, 0.882, 0.89, 0.897, 0.904, 0.911, 0.918, 0.925, 0.931, 0.937, 0.943, 0.949, 0.954, 0.96, 0.963, 0.965, 0.967, 0.969, 0.972, 0.974, 0.976, 0.979, 0.981, 0.983],
     semProjeteisAdicionais: true,
   },
+  // (lote T2, 27/10) a Flecha Cáustica Vaal veio com a coluna "Base Damage" de 64,4% (a tabela velha, sem a página dela em gemas-niveis-poedb.json): o PoB
+  // (act_dex.lua:3794, baseMultiplier) e a propriedade do poedb ("Dano de Ataque: (280 — 400)% de base") dão 280% → 400% — o golpe saía com 1/6 do dano
+  Vaal_Caustic_Arrow: {
+    efetividade: [2.8, 2.863, 2.926, 2.989, 3.053, 3.116, 3.179, 3.242, 3.305, 3.368, 3.432, 3.495, 3.558, 3.621, 3.684, 3.747, 3.811, 3.874, 3.937, 4, 4.063, 4.126, 4.189, 4.253, 4.316, 4.379, 4.442, 4.505, 4.568, 4.632, 4.663, 4.695, 4.726, 4.758, 4.789, 4.821, 4.853, 4.884, 4.916, 4.947],
+  },
 };
 export function compilada(slug, nivel = 1, qualidade = 0) {
   const g = POR_SLUG.get(slug);
@@ -354,8 +361,11 @@ export function compilada(slug, nivel = 1, qualidade = 0) {
   const k = `${slug}@${n}@${q}`;
   if (!CACHE.has(k)) {
     const h = COMPILADOR.compilarHabilidade(g, n, q > 0 ? linhasDaQualidade(g, q / 20) : []);
-    const c = CORRECAO_DO_POB[slug];
-    const h2 = h && c?.efetividade ? { ...h, stats: { ...h.stats, efetividade: c.efetividade[Math.min(c.efetividade.length, n) - 1] } } : h;
+    const c = CORRECAO_DO_POB[slug] ?? GemasT2.CORRECAO_DO_POB_T2[slug];
+    let h2 = h && c?.efetividade ? { ...h, stats: { ...h.stats, efetividade: c.efetividade[Math.min(c.efetividade.length, n) - 1] } } : h;
+    // (lote T2, 27/10) a CONVERSÃO que está só nos constantStats do PoB (o Golpe Relampejante: "skill_physical_damage_%_to_convert_to_lightning" 50) — a da gema, antes das
+    // outras (`converterOFisico`); o poedb não a lista nas linhas
+    if (h2 && c?.conversao) h2 = { ...h2, stats: { ...h2.stats, conversao: [...c.conversao, ...(h2.stats.conversao ?? [])] } };
     CACHE.set(k, h2 && ARQUETIPO_PROPRIO[slug] ? { ...h2, arquetipo: ARQUETIPO_PROPRIO[slug] } : h2);
   }
   return CACHE.get(k);
@@ -607,6 +617,9 @@ export function alvosNoNivel(slug, nivel = 1, qualidade = 0) {
   for (const linha of linhas) for (const [re, fazer] of REGRAS_DE_ALVOS) { if (CORRECAO_DO_POB[slug]?.semProjeteisAdicionais && /^Dispara \d+ Projéteis adicionais$/i.test(linha)) continue; const m = linha.match(re); if (m) fazer(m, a); }
   // (lote A3 — D3: o que está só na descrição e no PoB do projétil)
   for (const [re, d] of DESCRICAO_DO_PROJETIL) if (re.test(slug)) { Object.assign(a, d); a.perfurar = Math.max(a.perfurar, d.perfurar ?? 0); }
+  // (lote T2, 27/10) os ricochetes da QUALIDADE que estão só no PoB (o Golpe Relampejante do Arco: qualityStats "number_of_chains" 0,1 por ponto — +2 com 20)
+  const t2 = GemasT2.CORRECAO_DO_POB_T2[slug];
+  if (t2?.saltosPorQualidade && q > 0) a.saltos += Math.floor(q * t2.saltosPorQualidade + 1e-9);
   ALVOS.set(k, a);
   return a;
 }
@@ -1042,6 +1055,8 @@ export const ehLinhaDaSequencia = (l) => LINHA_DA_SEQUENCIA.test(l);
 export function sequenciaDaGema(slug, nivel = 1, qualidade = 0) {
   // (lote B3, dono 21/10: + a Cascata Glacial — `cascata` —, a Retribuição Divina — `ondas`, o raio do estouro pela coluna do poedb — e a Chuva Cinética do Impacto —
   // `chuvaRetangular` — `GemasB3.sequenciaDasLinhas`)
+  // (lote T2, 27/10: + a Chuva Cinética — o mesmo retângulo da do Impacto, pelas linhas do PoB — `GemasT2.chuvaDasLinhas`)
+  if (slug === GemasT2.CHUVA_CINETICA) return GemasT2.chuvaDasLinhas(slug, textosDaGema(slug, nivel).linhas);
   if (/^(Glacial_Cascade|Divine_Retribution$|Kinetic_Rain_of_Impact$)/.test(slug)) return GemasB3.sequenciaDasLinhas(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), { raioDoEstouroM: slug === 'Divine_Retribution' ? ultimoDaColuna(slug, nivel, /^Raio do Estouro/i) : null });
   if (!/^Sunder/.test(slug)) {
     const a4 = /^(Bladefall|Ice_Crash|Earthshatter)/.test(slug) ? GemasA4.sequenciaDasLinhas(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade)) : null;
@@ -1738,8 +1753,9 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
   if (b.velAtaque) af.atk_speed = (af.atk_speed ?? 0) + b.velAtaque;
   if (b.velConj) af.cast_speed = (af.cast_speed ?? 0) + b.velConj;
   if (b.velMov) af.move_speed = (af.move_speed ?? 0) + b.velMov;
-  if (b.regen) af.life_regen = (af.life_regen ?? 0) + Math.round(b.regen);
-  if (b.regenMana) af.mana_regen = (af.mana_regen ?? 0) + Math.round(b.regenMana);
+  // (lote T2, 27/10: a Regeneração por segundo com a casa decimal do poedb — a Vitalidade no 20 dá 193,2, não 193)
+  if (b.regen) af.life_regen = (af.life_regen ?? 0) + Math.round(b.regen * 10) / 10;
+  if (b.regenMana) af.mana_regen = (af.mana_regen ?? 0) + Math.round(b.regenMana * 10) / 10;
   if (b.menosDanoRecebido) af.dmg_reduction = (af.dmg_reduction ?? 0) + b.menosDanoRecebido;
   // (lote 75, o Arauto da Agonia) a chance de Envenenar em todos os acertos e o "mais" do Veneno, enquanto o buff está ligado
   if (b.chanceVeneno) af.chance_poison = (af.chance_poison ?? 0) + b.chanceVeneno;
@@ -1825,7 +1841,7 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
  * os dois não se separarem — `h`: a gema compilada com `slug`, `arquetipo` e `nivel`; `q`: a qualidade.
  */
 function ehLinhaFeita(h, l, q) {
-  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasPR3.ehLinhaPR3(h.slug, l) && !GemasPR4.ehLinhaPR4(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l) && !GemasB3.ehLinhaB3(h.slug, l) && !GemasC4.ehLinhaC4(h.slug, l) && !GemasC3.ehLinhaC3(h.slug, l) && !GemasB4.ehLinhaB4(h.slug, l) && !GemasGAC.ehLinhaGAC(h.slug, l, h.arquetipo) && !GemasGBD.ehLinhaGBD(h.slug, l) && !GemasE1a.ehLinhaE1a(h.slug, l, h.arquetipo) && !GemasE1b.ehLinhaE1b(h.slug, l) && !GemasE2a.ehLinhaE2a(h.slug, l, h.arquetipo) && !GemasE2b.ehLinhaE2b(h.slug, l) && !GemasD1.ehLinhaD1(h.slug, l) && !GemasR3B.ehLinhaR3B(h.slug, l) && !GemasR3D.ehLinhaR3D(h.slug, l));
+  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasPR3.ehLinhaPR3(h.slug, l) && !GemasPR4.ehLinhaPR4(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l) && !GemasB3.ehLinhaB3(h.slug, l) && !GemasC4.ehLinhaC4(h.slug, l) && !GemasC3.ehLinhaC3(h.slug, l) && !GemasB4.ehLinhaB4(h.slug, l) && !GemasGAC.ehLinhaGAC(h.slug, l, h.arquetipo) && !GemasGBD.ehLinhaGBD(h.slug, l) && !GemasE1a.ehLinhaE1a(h.slug, l, h.arquetipo) && !GemasE1b.ehLinhaE1b(h.slug, l) && !GemasE2a.ehLinhaE2a(h.slug, l, h.arquetipo) && !GemasE2b.ehLinhaE2b(h.slug, l) && !GemasD1.ehLinhaD1(h.slug, l) && !GemasR3B.ehLinhaR3B(h.slug, l) && !GemasR3D.ehLinhaR3D(h.slug, l) && !GemasT2.ehLinhaT2(h.slug, l));
 }
 function avaliarNoJogo(h, formato) {
   const st = h.stats;
@@ -1927,6 +1943,8 @@ function avaliarNoJogo(h, formato) {
   for (const m of GemasC4.MOTIVOS_C4[h.slug] ?? []) motivos.push(m);
   // (lotes G-B e G-D: o que a mecânica do lote ainda não faz — `GemasGBD.MOTIVOS_GBD`)
   for (const m of GemasGBD.MOTIVOS_GBD[h.slug] ?? []) motivos.push(m);
+  // (lote T2, 27/10: o que o teste do lote achou diferente do PoE e espera a decisão do dono — `GemasT2.MOTIVOS_T2`)
+  for (const m of GemasT2.MOTIVOS_T2[h.slug] ?? []) motivos.push(m);
   // (lote R3B: o que o lote ainda não faz ou a limitação do idle — `GemasR3B.MOTIVOS_R3B`: o Armamento do Golpe Sagrado ataca do jeito do tipo dele)
   for (const m of GemasR3B.MOTIVOS_R3B[h.slug] ?? []) motivos.push(m);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
@@ -2105,7 +2123,8 @@ export async function iniciar({ registrarGema, registrarReforco } = {}) {
   if (!ligado() || !existsSync(ARQ_GEMAS)) return (INICIADO = { gemas: 0, porStatus: {} });
   // (09/10) A tabela por nível de cada gema pela do poedb (a Experiência, os requisitos e as colunas que faltavam — `gemas-niveis.mjs`).
   // (lotes G-B e G-D: as linhas fixas do PoB que o poedb não trouxe e as colunas herdadas da gema base fora — `GemasGBD.completarPeloPoB`)
-  GEMAS = GemasGBD.completarPeloPoB(comNiveisDoPoedb(JSON.parse(readFileSync(ARQ_GEMAS, 'utf8'))));
+  // (lote T2, 27/10: + a Chuva Cinética, que o poedb salvo trouxe sem as linhas — `GemasT2.completarPeloPoBT2`)
+  GEMAS = GemasT2.completarPeloPoBT2(GemasGBD.completarPeloPoB(comNiveisDoPoedb(JSON.parse(readFileSync(ARQ_GEMAS, 'utf8')))));
   for (const g of GEMAS) POR_SLUG.set(g.slug, g);
   const comp = await import('./compilador-de-gemas/compilador.mjs');
   const prog = await import('./compilador-de-gemas/progressao.mjs');

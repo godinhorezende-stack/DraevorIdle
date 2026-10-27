@@ -1395,6 +1395,34 @@ Placar (relatório regerado, sem mudança): ativas — implementada e testada 45
 - Bateria (a de antes + estados, afeccoes-acerto-poe, itens-poe-afeccoes e passivas-poe-afeccoes-nos-monstros): 1055 testes, 1012 passam, 43 pulados, nenhum falha.
 - Placar (relatório regerado, sem mudança): ativas — implementada e testada 456, parcial 1, não se aplica 1; suportes — implementada e testada 209, parcial 3, não se aplica 1.
 
+### T2 (rodada 4, 27/10) — as gemas "implementada, sem teste próprio" (parte 2)
+
+Cada gema da fila (15 ativas, 16 suportes) ganhou um teste que a usa numa caçada, com os sorteios travados, e confere o número do nível 20 com o poedb ou o PoB. Os Despertos foram testados no nível 5, as Excepcionais no 3 e o Iluminar Desperto no 4. Sempre que deu, o efeito foi medido com e sem a gema. Arquivos: `testes/gemas-t2.test.mjs` (buffs e maldição), `gemas-t2-ataques`, `gemas-t2-magias`, `gemas-t2-suportes` e o apoio `gemas-t2-apoio.mjs`. As correções ficam no módulo novo `systems/itens-poe/gemas-t2.mjs`, com ganchos pequenos em gemas-poe, suportes-poe, acoes e afeccoes.
+
+Bugs que os testes acharam (corrigidos pela regra do PoE):
+
+- **Flecha Cáustica Vaal**: o golpe saía com 64,4% do dano. Essa era a coluna "Base Damage" da tabela velha, e o certo é 400% (o PoB e a própria propriedade do poedb). Agora ela usa `CORRECAO_DO_POB`. Outras 8 Vaal têm a mesma divergência (ver "de fora").
+- **Golpe Relampejante (a família)**: faltava a conversão de 50% do Físico em Raio (`skill_physical_damage_%_to_convert_to_lightning`). O poedb não a lista. A do Arco ganhou também o 10% mais Dano por ricochete da gema (70% no 20), o projétil que ricocheteia com 50% menos e os +2 ricochetes da qualidade 20.
+- **Punctura e Punctura do Estilhaço**: o Sangramento durava os 5 s do comum. Pelo PoB (`bleed_duration_is_skill_duration`), dura a duração da habilidade: 8 s e 6 s, mais os modificadores de duração.
+- **Chuva Cinética**: o poedb salvo veio sem as linhas, e no jogo ela era um tiro de 25% num alvo só. Agora segue o PoB: 8 projéteis (+2 com qualidade 20) no retângulo de 9 × 4,5 m (o modelo da do Impacto), explosão de 1,2 m, 200% de Poder Arcano, e cada projétil ativa a Anomalia Cinética (150%, 1,2 m, 6 s, até 30). A anomalia usa a mecânica das anomalias do R3C.
+- **Vitalidade**: a Regeneração era arredondada para 193. Agora é 193,2, com a casa decimal do poedb.
+- **Dano com Vida Cheia**: o "34% mais Dano com Vida Cheia" valia sempre. Agora só vale com a Vida no máximo.
+- **Dreno de Mana**: o dreno era a cura instantânea do Draevor e valia em qualquer habilidade. Agora é o Dreno do PoE (`af:mana_leech`, só ataques). A qualidade "Dano aumentado enquanto Drenando Mana" valia sempre e agora pede o dreno ativo.
+- **Propagar Dano Desperto**: a célula "37, 1" do poedb era lida pelo fim, e a propagação perdia só 1% do dano. Agora perde 37% no nível 5. A correção está em `substituir`: o valor da mesma posição do número do texto no nível 1. Nenhum outro suporte mudou.
+- **Eco Mágico Maior**: o "área de efeito aumentada em X% por repetição" era um +X% fixo em todo o uso. Agora a repetição k recebe k × X%, e o primeiro uso nenhum.
+- **"+1 ao Nível das Gemas de … Suportadas"** nas de Raio, de Gelo, de Maldição, de Lacaios e nas Elementais: o nível subia em qualquer gema suportada (o Dano Adicional de Raio Desperto subia a Cutilada). O de Golpe agora reconhece a tag "Golpear".
+
+Decisões do dono (os testes registram o que o jogo faz hoje):
+
+- **Pacto de Lycia** ficou PARCIAL. No jogo é uma canalização com o dano do Flagelo Celestial (130–2467 de Raio). No PoE é um Pacto: recarga 4 s, o uso não causa dano e fortalece as próximas 3 canalizações com 40% mais dano. Enquanto você canaliza, o Flagelo cai a cada 0,3 s (até 10), com 1,2 m e 7,5% de crítico. Há ainda uma Aflição, mas o PoB e o poedb não dizem o que ela faz.
+- **Aço Estraçalhador**: os 3 projéteis acertam, mas o cone em área do PoB ("AoE Radius 28", a parte "Cone AoE") não existe.
+- **Tiro Cinético da Fragmentação**: "vários destes projéteis podem acertar o mesmo alvo" (`projectiles_can_shotgun`) não existe. Cada projétil acerta um inimigo diferente.
+- **Bomba Congelante da Instabilidade**: explode no uso, como toda a família das Bombas, e os 1,5 s até a explosão não existem.
+
+Testes: os 5 arquivos novos têm 45 testes, todos passam. Bateria (ativas-*, gemas-*, suportes-*, itens-poe-gemas*, eficacia-ataque-poe e os afetados: afecções, passivas, únicos, parciais, tooltips, totens, plantadas, lacaios, mapas): 1441 testes, 1384 passam, 57 pulados (regra do Draevor clássico), nenhum falha. Nenhum teste existente quebrou.
+
+Placar: ativas — implementada e testada 456 → 470, sem teste próprio 44 → 29, parcial 1 → 2 (Pacto de Lycia); suportes — implementada e testada 209 → 226, sem teste próprio 49 → 32.
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.

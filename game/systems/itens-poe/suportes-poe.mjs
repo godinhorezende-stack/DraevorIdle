@@ -18,6 +18,8 @@ import { PROPRIAS_R3B, completarEfeito as completarEfeitoR3B } from './gemas-r3b
 // (lote R3C, 27/10: as Bênçãos, a Mina Local, a Blasfêmia Sobrenatural, a Constrição Pérfida, as Instabilidades Cinéticas e o Vínculo Frígido — `gemas-r3c.mjs`)
 import { PROPRIAS_R3C, ajustarEfeitoR3c } from './gemas-r3c.mjs';
 import { PROPRIAS_R3D } from './gemas-r3d.mjs';
+// (lote T2, rodada 4 — 27/10: as linhas com condição que as regras gerais davam sem ela)
+import { REGRAS_T2 } from './gemas-t2.mjs';
 
 const ARQ_SUPORTES = new URL('../../gamedata/itens-poe/suportes-poe.json', import.meta.url);
 const ARQ_IDS = new URL('../../gamedata/itens-poe/suportes-poe-ids.json', import.meta.url);
@@ -55,6 +57,16 @@ const substituir = (cab, celula, doNivel1 = null) => {
       usados.add(k);
       return v[k];
     });
+  }
+  // (lote T2, 27/10) Célula com MAIS valores que o texto tem números, e o número do texto está na célula do nível 1 numa posição que não é a do fim (o Propagar Dano
+  // Desperto: "39, 1" para "causam 39% menos Dano Propagado" — o 1 é outro stat; antes saía "1% menos" e a propagação quase não perdia dano): o valor da MESMA posição
+  if (base && base.length === v.length && v.length > doTexto.length && doTexto.length && doTexto.every((t) => base.some((b) => numero(b) === numero(t)))) {
+    const usados = new Set();
+    const k0 = doTexto.map((t) => base.findIndex((b, i) => numero(b) === numero(t) && !usados.has(i) && usados.add(i)));
+    if (k0.some((k, i) => k !== v.length - doTexto.length + i)) {
+      let j = 0;
+      return cab.replace(NUM, (o) => (j < k0.length ? v[k0[j++]] : o));
+    }
   }
   // Célula com mais valores que o cabeçalho tem números ("100, 528" para "sofrer 528 de Dano"): os do FIM são os do texto.
   const vagas = (cab.match(/#/g) ?? cab.match(NUM) ?? []).length;
@@ -156,6 +168,8 @@ const ESP = '(?:\\\\n|\\s)+';
 const REGRAS = [
   // ---- (lote S2A, 27/10: os suportes com mecânica nova — `suportes-s2a.mjs`; antes de todas, que pegavam o começo de algumas) ----
   ...REGRAS_S2A,
+  // ---- (lote T2, 27/10: o Dano com Vida Cheia, a qualidade do Dreno de Mana e a área por repetição do Eco Mágico Maior — `gemas-t2.REGRAS_T2`) ----
+  ...REGRAS_T2,
   // ---- (lote S2B, 27/10: a segunda metade das parciais — `suportes-s2b.mjs`; antes das gerais, que pegavam o começo de algumas e davam o "mais" sem a condição) ----
   // - os LACAIOS: a Velocidade do Lacaio (ataque e conjuração — `LacaiosPoe.oQueInvoca`), o crítico da qualidade do Exemplar e da Carne Fresca, o Exemplar ("toda vez que
   //   você causar um golpe crítico recentemente com um ataque, até X"), a Carne Fresca (a Fúria Desperta e a Adrenalina), o Exército Elemental (as resistências, o máximo,
@@ -693,8 +707,11 @@ const REGRAS = [
   // Nível das gemas suportadas (Fortalecer...).
   // (lote A5, dono 20/10: + "1 do Nível das Gemas de Habilidade de Caos Suportadas" — o Manipulação do Vazio Desperto: "do Nível", e só nas de Caos)
   [new RegExp(`^\\+?${N} (?:ao|do) N[iíï]vel (?:de|das) Gemas de (?:Habilidade )?(\\S+)? ?(?:de )?(?:Habilidades? )?(\\S+)? ?Suportadas`, 'i'), (m, t, a) => {
-    const so = /Físicas/i.test(t) ? 'Físico' : /de Fogo/i.test(t) ? 'Fogo' : /de Caos/i.test(t) ? 'Caos' : /Aura/i.test(t) ? 'Aura' : /Golpes/i.test(t) ? 'Golpe' : null;
-    return !so || temTag(a, so) ? { nivelExtra: Math.floor(num(m[1])) } : null;
+    // (lote T2, 27/10: + as de Raio, de Gelo, de Maldição, de Lacaios e as Elementais — antes o "+1 ao Nível" delas valia em QUALQUER gema suportada: o Dano Adicional
+    // de Raio Desperto subia a Cutilada; e o Golpe do PoE é a tag "Golpear")
+    const so = /Físicas/i.test(t) ? ['Físico'] : /de Fogo/i.test(t) ? ['Fogo'] : /de Caos/i.test(t) ? ['Caos'] : /de Raio/i.test(t) ? ['Raio'] : /de Gelo/i.test(t) ? ['Gelo'] : /Elementais/i.test(t) ? ['Fogo', 'Gelo', 'Raio']
+      : /Maldição/i.test(t) ? ['Maldição'] : /Lacaios/i.test(t) ? ['Lacaio'] : /Aura/i.test(t) ? ['Aura'] : /Golpes/i.test(t) ? ['Golpe', 'Golpear'] : null;
+    return !so || so.some((x) => temTag(a, x)) ? { nivelExtra: Math.floor(num(m[1])) } : null;
   }],
   // Repetições (Eco de Magia, Golpe Múltiplo): a skill sai de novo na hora.
   [new RegExp(`Repetem ${N} vez(?:es)? adiciona`, 'i'), (m) => ({ repeticoes: num(m[1]) })],

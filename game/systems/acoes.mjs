@@ -115,6 +115,8 @@ import * as GemasD1 from './itens-poe/gemas-d1.mjs';
 // (lote R3C, 27/10: as Bênçãos, a Mina Local, a Insanidade Perversa, a Constrição Pérfida, o Fluxo Cinético e o Vínculo Frígido)
 import * as GemasR3c from './itens-poe/gemas-r3c.mjs';
 import * as GemasR3D from './itens-poe/gemas-r3d.mjs';
+// (lote T2, rodada 4 — 27/10: as correções das gemas que estavam sem teste próprio)
+import * as GemasT2 from './itens-poe/gemas-t2.mjs';
 // (lote S2A, 27/10: os suportes com mecânica nova — o acerto, o uso pago, o abate, o Ímpeto de Combate)
 import * as SuportesS2A from './itens-poe/suportes-s2a-jogo.mjs';
 // (lote S2B, 27/10: os suportes da segunda metade das parciais)
@@ -403,6 +405,18 @@ export function fatorDeDuracao(estado, entry, efeitoDaGema, incExtra = 0) {
   const mais = ModsPoe.valor(f, 'duracao_mais') + (ModsPoe.somaPorTags(f, tagsPoeDaSkill(entry)).duracao_mais ?? 0);
   // (lote S1: + o "X% menos Duração" MAIS dos suportes — a Runa Repentina, `duracaoMaisPct`)
   return Math.max(0.1, 1 + ((efeitoDaGema?.duracaoPct ?? 0) + duracaoDasPecas(estado, entry) + incExtra) / 100) * Math.max(0, 1 + mais / 100) * Math.max(0, 1 + (efeitoDaGema?.duracaoMaisPct ?? 0) / 100);
+}
+
+/**
+ * (lote T2, 27/10) As afecções do acerto da Punctura com o Sangramento na duração da HABILIDADE (o PoB: bleed_duration_is_skill_duration): a base é a da gema (8 s; 6 s
+ * na do Estilhaço), o "aumentado" de duração da habilidade (o da gema, o das peças) soma ao do Sangramento e o "mais" multiplica — `afeccoes.aoAcertar`.
+ */
+function sangramentoDaHabilidadeT2(estado, entry, efeitoDaGema, afeccoes) {
+  const dur = GemasPoe.compilada(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0)?.stats?.duracao;
+  if (!(dur > 0)) return afeccoes;
+  const inc = (efeitoDaGema?.duracaoPct ?? 0) + duracaoDasPecas(estado, entry);
+  const mais = fatorDeDuracao(estado, entry, efeitoDaGema) / Math.max(0.1, 1 + inc / 100);
+  return { ...afeccoes, sangramentoBaseMs: dur * 1000, sangramentoDurHabInc: inc, sangramentoDurHabFator: mais };
 }
 
 /**
@@ -1330,18 +1344,32 @@ function anomaliasDoFluxoR3c(estado, hunt, entry, ef, { mortos = [], critico = n
 function explodirAnomaliaR3c(estado, hunt, personagem, a, eventos, rng = Math.random) {
   const entry = POR_ID.get(a.acao);
   const ef = entry ? Gemas.efeitoNaSkill(estado, a.acao) : null;
-  if (!entry || !ef || !(ef.fluxoAoMatar || ef.fluxoAoCritico)) return 0;
+  // (lote T2, 27/10: + a Anomalia Cinética da Chuva Cinética — `a.chuvaT2`, o "Dano de Ataque" e o Poder Arcano dela)
+  const t2 = a.chuvaT2 ?? null;
+  if (!entry || !ef || !(t2 || ef.fluxoAoMatar || ef.fluxoAoCritico)) return 0;
   const tags = [...new Set([...tagsPoeDaSkill(entry), 'ataque', 'area'])];
   eventos.push({ t: 'explosao', id: EFEITO_DA_EXPLOSAO, x: a.x, y: a.y, lado: 2 * Math.max(0, a.raio) + 1, fonte: 'fluxo-cinetico' });
   // (correções R3, achado 11 — o PoB: TriggeredSupportKineticInstability é um ataque de varinha) o ATAQUE ATIVADO completo do R3A (`ativado`): a arma × o "Dano de Ataque",
   // o adicionado × a eficácia, as conversões e o CRÍTICO DA VARINHA (a chance da ficha do golpe com os aumentos — antes só o "+X%" fixo das tags, quase nunca crítico)
-  const ativado = { danoPct: ef.fluxoDanoPct ?? 100, eficaciaPct: (ef.fluxoEficacia ?? 1) * 100 };
+  const ativado = t2 ? { danoPct: t2.danoPct, eficaciaPct: t2.danoPct } : { danoPct: ef.fluxoDanoPct ?? 100, eficaciaPct: (ef.fluxoEficacia ?? 1) * 100 };
   let total = 0;
   for (const m of [...(hunt.monstros ?? [])]) {
     if (!(m.hp > 0) || m.dummy || (m.z ?? hunt.z ?? 0) !== (a.z ?? hunt.z ?? 0) || distanciaChebyshev(m, a) > a.raio) continue;
-    total += acertoDoArauto(estado, hunt, a.acao, m, 1, 'physical', { tags, eventos, rng, fonte: 'fluxo-cinetico', personagem, ataque: true, ativado, poderArcano: ef.fluxoArcanoPct ?? 0 }) ?? 0;
+    total += acertoDoArauto(estado, hunt, a.acao, m, 1, 'physical', { tags, eventos, rng, fonte: t2 ? 'anomalia-cinetica' : 'fluxo-cinetico', personagem, ataque: true, ativado, poderArcano: t2 ? t2.arcanoPct : ef.fluxoArcanoPct ?? 0 }) ?? 0;
   }
   return total;
+}
+/**
+ * (lote T2, 27/10) A ANOMALIA CINÉTICA da Chuva Cinética no lugar `c` da queda de um projétil (o PoB: KineticRainKineticInstability — 6 s × a Duração, o raio 1,2 m × √ da
+ * Área com a fração sorteada, até 30 — a mais velha sai): a lista e a explosão são as das anomalias do Fluxo Cinético (`GemasR3c.criarAnomalia`, `tiqueR3C`).
+ */
+function anomaliaDaChuvaT2(estado, hunt, entry, ef, d, c, agora) {
+  const ficha = Ficha.combate(estado);
+  const porTag = ModsPoe.somaPorTags(ficha, ['ataque', 'area']);
+  const fator = ModsPoe.fatorDaArea(ModsPoe.valor(ficha, 'area_inc') + (porTag.area_inc ?? 0) + (ef?.areaIncPct ?? 0), ModsPoe.valor(ficha, 'area_mais') + (porTag.area_mais ?? 0), ef?.areaMaisPct ?? 0);
+  const a = GemasR3c.criarAnomalia(hunt, { acao: entry.id, c: { x: c.x, y: c.y }, z: c.z ?? hunt.z ?? 0, raio: GemasR3c.casasDe(d.raioM, fator), ms: Math.round(d.duracaoMs * fatorDeDuracao(estado, entry, ef)), teto: d.teto }, agora);
+  if (a) a.chuvaT2 = { danoPct: d.danoPct, arcanoPct: d.arcanoPct };
+  return a;
 }
 /**
  * (lote R3C) A CONSTRIÇÃO PÉRFIDA: convocar as Runas (a gema Convocar Runas) com o suporte cria as mãos — 2 por Runa convocada da habilidade (+ as da qualidade), até 30
@@ -4712,6 +4740,13 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (lote R3B, 27/10) o Golpe Sagrado: "Este ataque e lacaios convertem 50% do dano físico em dano elétrico" — a conversão do Físico do ataque (a do Armamento: `lacaios-poe`)
   const convR3B = itensPoeLigado() && entry.poeGema && !entry.poeGema.buff ? GemasR3B.conversaoDoAtaque(entry.poeGema.slug, GemasPoe.textosDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1).linhas) : null;
   if (convR3B?.energy > 0 && efeitoDaGema) efeitoDaGema = { ...efeitoDaGema, 'af:conv_hab_physical_energy': (efeitoDaGema['af:conv_hab_physical_energy'] ?? 0) + convR3B.energy };
+  // (lote T2, 27/10) o Golpe Relampejante do Arco: 10% mais Dano por ricochete da gema (acerto e afecção) e o projétil — os acertos que ricocheteiam — com 50% menos
+  // (`GemasT2.golpeDoArco`; o `projetilMaisT2Pct` no `fatorDoProjetil`)
+  const arcoT2 = itensPoeLigado() && entry.poeGema && efeitoDaGema ? GemasT2.golpeDoArco(entry.poeGema.slug, GemasPoe.alvosNoNivel(entry.poeGema.slug, efeitoDaGema.nivel ?? 1, efeitoDaGema.qualidade ?? 0).saltos) : null;
+  if (arcoT2) {
+    const x = (a) => ((1 + (a ?? 0) / 100) * (1 + arcoT2.maisPct / 100) - 1) * 100;
+    efeitoDaGema = { ...efeitoDaGema, fatorDeDano: (efeitoDaGema.fatorDeDano ?? 1) * (1 + arcoT2.maisPct / 100), maisDanoAcertoPct: x(efeitoDaGema.maisDanoAcertoPct), maisAfeccaoPct: x(efeitoDaGema.maisAfeccaoPct), projetilMaisT2Pct: arcoT2.projetilMaisPct };
+  }
   // (lote B3, dono 21/10) o que o lote B3 muda no uso (`GemasPoe.b3DaGema`, `itens-poe/gemas-b3.mjs`): a Conflagração, a Cremação da Exumação e a do Vulcão, a Troca de
   // Corpos, a Chuva de Lâminas de Trarthus
   const b3 = itensPoeLigado() && entry.poeGema && !entry.poeGema.buff ? GemasPoe.b3DaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
@@ -5659,11 +5694,14 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         const naArea = quem(ret);
         const n = Math.max(1, Math.round(efeitoDaGema?.projeteisBase ?? 1) + Math.max(0, Math.round(efeitoDaGema?.alvosExtras ?? 0)));
         const raioM = GemasPoe.areaNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0).raioM ?? 1.2;
+        // (lote T2, 27/10) a Chuva Cinética: cada projétil que cai ativa a Anomalia Cinética no lugar (`GemasT2.anomaliaDaChuva`; a explosão é a das anomalias do R3C)
+        const anomaliaT2 = !plantada && !doTotem ? GemasT2.anomaliaDaChuva(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : null;
         for (let k = 0; k < n && naArea.length; k++) {
           const c = naArea[k % naArea.length];
           const cs = Areas.quadrado(c, emCasas(raioM));
           cs.forEach(naCasa);
           for (const b of quem(cs)) { golpesDaSequencia.push({ bicho: b, pct: 100 }); unicos.add(b); }
+          if (anomaliaT2) anomaliaDaChuvaT2(estado, hunt, entry, efeitoDaGema, anomaliaT2, c, agora);
         }
       }
       atingidos = [...unicos];
@@ -6602,7 +6640,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // projétil do uso)
       const doUso = ((golpe?.atravessados ?? 0) >= 1 && efeitoDaGema?.atravessouMaisPct ? 1 + efeitoDaGema.atravessouMaisPct / 100 : 1)
         * (intensidade > 0 && efeitoDaGema?.intensidadeMaisProjetilPct ? 1 + (intensidade * efeitoDaGema.intensidadeMaisProjetilPct) / 100 : 1)
-        * (efeitoDaGema?.porProjetilAnteriorPct && golpe?.ordem > 0 ? 1 + (efeitoDaGema.porProjetilAnteriorPct * golpe.ordem) / 100 : 1);
+        * (efeitoDaGema?.porProjetilAnteriorPct && golpe?.ordem > 0 ? 1 + (efeitoDaGema.porProjetilAnteriorPct * golpe.ordem) / 100 : 1)
+        // (lote T2, 27/10) o projétil do Golpe Relampejante do Arco — o acerto que ricocheteou — causa 50% menos com acertos e afecções (o corpo a corpo, no alvo, não)
+        * (efeitoDaGema?.projetilMaisT2Pct && (golpe?.ricochetes ?? 0) > 0 ? Math.max(0, 1 + efeitoDaGema.projetilMaisT2Pct / 100) : 1);
       // (lote 73, o Acompanhamento: "… aumentado em X% por cada propagação restante, até Y%" — os ricochetes que faltam; o acerto direto tem todos)
       const restantes = golpe ? golpe.restantes ?? 0 : Math.max(0, Math.round(Number(efeitoDaGema?.encadear) || 0));
       const porRestante = restantes > 0 ? Math.min(ModsPoe.valor(ficha, 'proj_inc_por_ricochete_restante_max') || Infinity, restantes * ModsPoe.valor(ficha, 'proj_inc_por_ricochete_restante')) : 0;
@@ -7102,7 +7142,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         const ataque = entry.poeGema ? !!entry.poeGema.ataque : tagsDoAcerto.includes('physical') && (tagsDoAcerto.includes('melee') || tagsDoAcerto.includes('ranged'));
         // A gema do PoE soma as chances dela (incendiar, congelar, eletrizar, envenenar, sangrar) no nível em que está.
         // (lote C4, dono 21/10: + as regras do Veneno da gema — a Víbora da Mamba, o Golpe Pestilento — `GemasC4.comOVenenoDaGema`)
-        const afeccoes = entry.poeGema ? GemasC4.comOVenenoDaGema(GemasPoe.afeccoesComAGema(ficha.afeccoes, entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0), c4?.veneno) : ficha.afeccoes;
+        const afeccoes0 = entry.poeGema ? GemasC4.comOVenenoDaGema(GemasPoe.afeccoesComAGema(ficha.afeccoes, entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0), c4?.veneno) : ficha.afeccoes;
+        // (lote T2, 27/10) a Punctura: "bleed_duration_is_skill_duration" — o Sangramento dura a duração da habilidade (8 s / 6 s da gema, com os modificadores de duração
+        // da habilidade somados aos do Sangramento; o "mais" de duração por cima) — `GemasT2.sangramentoDaHabilidade`, `afeccoes.aoAcertar`
+        const afeccoes = afeccoes0 && entry.poeGema && GemasT2.sangramentoDaHabilidade(entry.poeGema.slug) ? sangramentoDaHabilidadeT2(estado, entry, efeitoDaGema, afeccoes0) : afeccoes0;
         // (o Golpe Impiedoso: "X% mais Dano com Afecções causadas por Acertos Corpo a Corpo")
         // (17/10, lote G17) O DANO das afecções (Incêndio, Sangramento, Veneno) sai do acerto SEM o "mais/menos Dano com Acertos" dos suportes (as
         // Afecções Mortais: 80% menos no acerto, a afecção inteira) e COM o "mais Dano de Afecções" e o de cada uma — `fatoresDoDano`. A força das
@@ -7702,7 +7745,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const areaFinal = naRepeticaoFinal && areaNoUso && ehMagiaDaConta ? ModsPoe.valor(ficha, 'repeticao_final_area') : 0;
       // (lote 46: a repetição não é Maximizada — sem a área dos Impactos Maximizados)
       const semMaximizado = maximizado && areaNoUso ? efeitoDaGema.maximizadoAreaIncPct ?? 0 : 0;
-      if (areaFinal > 0 || semMaximizado > 0) atingidos = Areas.dentro(areaNoUso(areaFinal - semMaximizado), vivos.filter((b) => b.hp > 0));
+      // (lote T2, 27/10) o Eco Mágico Maior: "área de efeito aumentada em X% por repetição" — a k-ésima repetição com k × X% (`GemasT2.areaDaRepeticao`)
+      const areaRepT2 = areaNoUso ? GemasT2.areaDaRepeticao(efeitoDaGema, repeticaoAtual) : 0;
+      if (areaFinal > 0 || semMaximizado > 0 || areaRepT2 > 0) atingidos = Areas.dentro(areaNoUso(areaFinal - semMaximizado + areaRepT2), vivos.filter((b) => b.hp > 0));
       escalaDoUso = escalaDaPrimeira;
       atacar(true);
       escalaDoUso = 100;
