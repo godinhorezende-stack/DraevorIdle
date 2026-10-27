@@ -151,11 +151,14 @@ export function aplicarCeifador(lacaios) {
     const f = Math.max(0.01, 1 - menos / 100);
     const antes = l.fatorDoCeifador ?? 1;
     if (Math.abs(antes - f) < 1e-9) return;
-    const base = l.maxHp / antes;
+    // (revisão E1a: a vida de BASE fica guardada sem arredondar — refazê-la do maxHp já arredondado desviava ±1 a cada ciclo; o PoB é um "mais" final
+    // simples: com o Ceifador morto, a vida volta exata)
+    const base = (l.vidaSemCeifador ??= l.maxHp / antes);
     const proporcao = l.maxHp > 0 ? l.hp / l.maxHp : 1;
     l.maxHp = Math.max(1, Math.round(base * f));
     l.hp = Math.max(1, Math.min(l.maxHp, Math.round(l.maxHp * proporcao)));
     l.fatorDoCeifador = f;
+    if (Math.abs(f - 1) < 1e-9) delete l.vidaSemCeifador;
   });
 }
 /** "Próximo" do lacaio: a até 4 casas (o de sempre do jogo). */
@@ -175,6 +178,8 @@ const LINHAS_DO_LACAIO_E1A = [RE.maximo, RE.movimento, RE.recarga, RE.regen, RE.
  * Explosiva dá aos Aliados e aos Lacaios — a Nova não existe no jogo). Voltam a aparecer como "efeito não simulado".
  */
 export const ehLinhaDeLacaioNaoFeita = (l) => /^A Habilidade Explosiva da Relíquia Sagrada concede/i.test(String(l ?? ''));
+// (revisão E1a — dono, 27/10: a Recuperação da Recarga dos Lacaios do Golem de Relâmpago e do da Carniça das Hordas encurta as habilidades com recarga deles — o Orbe da
+// Tempestade e a Ira; a Cascata e o Salto Esmagador —, que o jogo passou a ter: `LacaiosPoe.HABILIDADES_COM_RECARGA`. A linha fica feita.)
 /** (o "Efeito do Buff" só nos Golens — a Relíquia Sagrada tem o dela, da Nova, que ainda não existe) */
 const GOLEM = /^Summon_\w*Golem/;
 /**

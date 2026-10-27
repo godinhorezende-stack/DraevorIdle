@@ -285,7 +285,9 @@ const BUFF_PROPRIO = [
   [new RegExp(`^Você e aliados próximos têm \\+${N} ?% de chance de Evadirem Acertos de Ataques$`, 'i'), (m) => ({ chance_evadir: num(m[1]) })],
   [/^Dano Mágico Suprimido causado em você é Azarado$/i, () => ({ suprimido_azarado: 1 })],
   // a Clareza Vaal: "Suas Habilidades e de seus aliados próximos não Custam Mana" (no_mana_cost — o custo de Mana × 0)
-  [/^Suas Habilidades e de seus aliados próximos não Custam Mana$/i, () => ({ custo_mana_inc: -100 })],
+  // (revisão E1b: um custo ZERO de verdade — no PoB, ManaCost MORE −100 `unscalable`, act_int.lua:2739-2741: o efeito da aura não o escala e nenhum aumentado,
+  // mais ou custo fixo o desfaz. A flag `sem_custo_mana` — escalada pelo efeito da aura, segue > 0 —; antes, um "aumentado" de −100% que vazava)
+  [/^Suas Habilidades e de seus aliados próximos não Custam Mana$/i, () => ({ sem_custo_mana: 1 })],
   // a Disciplina Vaal: "A Recarga do seu Escudo de Energia e dos seus aliados próximos não é impedida por Dano" (energy_shield_recharge_not_delayed_by_damage)
   [/^A Recarga do seu Escudo de Energia e dos seus aliados próximos não é impedida por Dano$/i, () => ({ recarga_es_nunca_interrompida: 1 })],
   // a Pureza Elementar: "Imunes a todas as Afecções Elementais" (as quatro do jogo)

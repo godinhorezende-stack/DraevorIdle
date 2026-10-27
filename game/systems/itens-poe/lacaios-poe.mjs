@@ -240,7 +240,9 @@ function eventosDeBloqueioDoLacaio(af) {
   }
   return saida;
 }
-export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
+export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grupo = null) {
+  // (revisão E1a/S1: `grupo` — um dos tipos de uma invocação MISTA, a Vaal Convocar Esqueletos: `{ pob, nome }`, o lacaio do PoB e o nome desse tipo —
+  // `GRUPOS_DO_POB`; uso interno, o próprio `oQueInvoca` monta os `grupos`)
   // `af`: a soma do DONO (`ficha.afPoe`) — os mods do PoE dos lacaios e totens (vida, dano, velocidade, dano somado, máximos…).
   const m0 = (k) => Number(af?.[k]) || 0;
   const r = GemasPoe.doSlug(slug);
@@ -280,6 +282,11 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   // mal rotuladas do poedb — `GemasE1a.COLUNA_MAL_ROTULADA_E1A`)
   let convoca = null;
   let dominio = null;
+  // (revisão E1a: a "Duração Base Secundária" — o Golpe Dominador: a Sentinela vive a duração SECUNDÁRIA, 30 s; os 3 s da base são a penalidade no inimigo.
+  // O PoB: base_secondary_skill_effect_duration 30000, act_str.lua:2975 — "summoned for a longer secondary duration")
+  let duracaoSecundaria = null;
+  // (revisão E1a: os TIPOS de uma invocação mista — "Convoca 9 Esqueletos Arqueiros por vez" —, para os `grupos`)
+  const porTipoConvoca = [];
   for (const l of doSuporte ? [] : t.linhas) {
     let m;
     if (GemasE1a.COLUNA_MAL_ROTULADA_E1A[slug]?.test(l)) continue;
@@ -291,7 +298,9 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
     if (/Acertos dos Lacaios são sempre Golpes Críticos/i.test(l)) semprecritico = true;
     if ((m = l.match(/Lacaios têm \+(\d+) ?% de Multiplicador de Acerto Crítico/i))) critMult += Number(m[1]);
     if ((m = l.match(/Ataques de Lacaios causam (\d+) a (\d+) de Dano Físico adicional/i))) somado = [somado[0] + Number(m[1]), somado[1] + Number(m[2])];
-    if ((m = l.match(/Ataques dos Lacaios têm (\d+) ?% de chance de infligir Sangramento/i))) sangrar = Number(m[1]);
+    // (revisão E1a: soma — as linhas BASE do mesmo stat somam no PoB, `bleed_on_hit_with_attacks_%`)
+    if ((m = l.match(/Ataques dos Lacaios têm (\d+) ?% de chance de infligir Sangramento/i))) sangrar += Number(m[1]);
+    if ((m = l.match(/^Duração Base Secundária é de (\d+(?:\.\d+)?) segundos?/i))) duracaoSecundaria = Number(m[1]) * 1000;
     if ((m = l.match(/Lacaios causam (\d+(?:\.\d+)?) ?% menos Dano/i))) maisDano -= Number(m[1]);
     // O GOLEM ao dono (enquanto vive).
     if ((m = l.match(/^Golens aumentam (\d+(?:\.\d+)?) ?% de Dano/i))) soma('dmg_vs_monsters', Number(m[1]));
@@ -311,7 +320,7 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
     else if ((m = l.match(/^Máximo de (\d+) (.+?) (?:Evocad|Convocad|Erguid|Invocad|Animad)/i))) { maximo = Number(m[1]); nome = singular(m[2]); }
     else if ((m = l.match(/^Máximo de (.+?) (?:Evocad|Convocad|Erguid|Invocad)\S*: (\d+)/i))) { maximo = Number(m[2]); nome = singular(m[1]); }
     else if ((m = l.match(/^\+(\d+) ao número máximo de Totens/i))) maximo += Number(m[1]);
-    else if ((m = l.match(/^Convoca (\d+) (.+)$/i))) { convoca = (convoca ?? 0) + Number(m[1]); if (nome === 'Lacaio') nome = singular(m[2]); }
+    else if ((m = l.match(/^Convoca (\d+) (.+)$/i))) { convoca = (convoca ?? 0) + Number(m[1]); porTipoConvoca.push({ n: Number(m[1]), texto: m[2] }); if (nome === 'Lacaio') nome = singular(m[2]); }
     else if ((m = l.match(/^(?:Duração base é de|Totem dura) (\d+(?:\.\d+)?) segundos?/i))) duracao = Number(m[1]) * 1000;
     else if ((m = l.match(/Lacaios? têm (\d+(?:\.\d+)?) ?% mais Vida/i))) maisVida += Number(m[1]);
     // (dono, 26/10: o "mais Dano com Sangramento" do Ceifador vale só no Sangramento — `maisSangramentoPct`, `GemasE1a.doNivelDoLacaio`)
@@ -320,6 +329,10 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   }
   if (convoca != null) porUso = convoca;
   if (dominio != null) maximo = dominio;
+  if (duracaoSecundaria != null && !totem && !doSuporte) duracao = duracaoSecundaria;
+  // (revisão E1a) a Sangramento da QUALIDADE soma à do nível (o PoB, SummonReaper: qualityStats bleed_on_hit_with_attacks_% 1 — o mesmo stat BASE: 50 + 20 = 70)
+  if (!totem && !doSuporte) for (const l of GemasPoe.linhasDaQualidadeDe(slug, efeito?.qualidade ?? 0)) { const m = /^Ataques dos Lacaios têm (\d+(?:\.\d+)?) ?% de chance de infligir Sangramento/i.exec(l); if (m) sangrar += Number(m[1]); }
+  if (grupo?.nome) nome = grupo.nome;
   // (lote E1a) a QUALIDADE do lacaio (o máximo, o movimento, a recarga, o Efeito do Buff do golem, a regeneração, o lacaio extra, o Efeito da Oferenda) e o
   // que o NÍVEL ainda não lia (o "menos Vida", o "Anima até N Armas", o Ceifador, o Golem da Carniça) — `GemasE1a`
   const e1aQ = !totem && !doSuporte ? GemasE1a.daQualidadeDoLacaio([...t.linhas.filter((l) => !GemasE1a.COLUNA_MAL_ROTULADA_E1A[slug]?.test(l)), ...GemasPoe.linhasDaQualidadeDe(slug, efeito?.qualidade ?? 0)]) : GemasE1a.daQualidadeDoLacaio([]);
@@ -359,7 +372,7 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   const n = nivel ?? Math.max(1, t.requer);
   // (lote 44) a força do PoE: a tabela de aliados × o multiplicador do lacaio no PoB (`forcaDoPob`); o golpe de quem usa a arma e o lacaio sem
   // tipo no PoB, a de um monstro comum do nível.
-  const pob = totem ? null : forcaDoPob(lacaioDoPob(slug), n);
+  const pob = totem ? null : forcaDoPob(grupo?.pob ?? lacaioDoPob(slug), n);
   // (lote 75) a CONVERSÃO do lacaio no PoB que o importador não lê (o Rastejador Agonizante: Físico, com 40% convertidos em Caos — Minions.lua)
   const conv = CONVERSAO_DO_POB[pob?.id] ?? null;
   const elemento = conv ? 'physical' : r.elemento;
@@ -414,7 +427,7 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   // A RESTRIÇÃO das peças ("Você não pode ter Lacaios não-Golens / Não-Espectrais", "…que não sejam animados"): o lacaio de outro tipo não vem.
   const permitidos = Object.entries(af ?? {}).filter(([k, v]) => /^so_lacaio:\w+$/.test(k) && v > 0).map(([k]) => k.split(':')[1]);
   const proibido = !totem && permitidos.length && !permitidos.some((tp) => PALAVRA_DO_TIPO[tp]?.test(texto)) ? `Um item equipado não deixa ter este lacaio (só: ${permitidos.join(', ')}).` : null;
-  return {
+  const resultado = {
     estilo, velAtaquePct, critChance: (semprecritico ? 100 : 5) * (1 + m0('minion_crit_inc') / 100), critChanceBase: semprecritico ? 100 : 5, critMult: 1.5 + critMult / 100, somado, sangrar: Math.max(sangrar, m0('minion_chance_sangrar')),
     ...(Object.values(conversao).some((v) => v > 0) || soDano ? { conversao, soDano } : {}),
     ...(proibido ? { proibido } : {}),
@@ -507,9 +520,43 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
     // (lote 44: o lacaio que no PoE não pode sofrer dano — os Robôs Rastejantes, o Armamento Sagrado; lote 75: + o tipo da gema
     // "MinionsAreUndamagable", o Rastejador Agonizante)
     ...(pob?.imune || (r.gema?.tipos ?? []).includes('MinionsAreUndamagable') ? { intocavel: true } : {}), ...(pob ? { pob: pob.id } : {}),
+    // (revisão E1a — dono, 27/10) as habilidades com recarga do lacaio no PoB (os golens de Relâmpago e da Carniça — `HABILIDADES_COM_RECARGA`)
+    ...(pob && HABILIDADES_COM_RECARGA[pob.id] ? { recargas: habilidadesComRecargaDoPob(pob.id, n) } : {}),
     // O desenho pelo nome do lacaio e o da gema ("Golem" + "Convocar Golem de Chamas").
     desenho: desenhoDe(`${nome} ${t.nome}`, elemento, totem),
   };
+  // (revisão E1a) a invocação MISTA (a Vaal Convocar Esqueletos: soldados, arqueiros, magos e o general, cada um com o lacaio dele no PoB — a minionList
+  // RaisedSkeletonMeleeVaal / RaisedSkeletonArcherVaal / RaisedSkeletonCaster, act_int.lua:20010): os `grupos`, na ordem das linhas, cada um com a força,
+  // o jeito de atacar e o nome do tipo (`acoes.invocarLacaios` → `grupoDoUso`). O máximo, a duração e o resto são os da gema.
+  const tipos = !grupo && !totem && !doSuporte ? GRUPOS_DO_POB.find(([re]) => re.test(slug))?.[1] : null;
+  if (tipos) {
+    const grupos = [];
+    for (const { n: qtd, texto } of porTipoConvoca) {
+      const tp = tipos.find(([re]) => re.test(texto));
+      if (!tp || !(qtd > 0)) continue;
+      const sub = oQueInvoca(slug, nivelDaGema, efeito, af, { pob: tp[1], nome: tp[2] });
+      if (sub) grupos.push({ n: qtd, q: sub });
+    }
+    if (grupos.length) resultado.grupos = grupos;
+  }
+  return resultado;
+}
+/**
+ * (revisão E1a) Os tipos de uma invocação mista: a linha "Convoca N <tipo>" → o lacaio do PoB e o nome. O GENERAL não tem tipo próprio no PoB (a
+ * minionList só tem os três; `number_of_leader_skeletons_to_summon` 1): vai como o soldado corpo a corpo, com o nome dele.
+ */
+const GRUPOS_DO_POB = [
+  [/^Vaal_Summon_Skeletons/, [
+    [/Soldad/i, 'RaisedSkeletonMeleeVaal', 'Esqueleto Soldado'], [/Arqueir/i, 'RaisedSkeletonArcherVaal', 'Esqueleto Arqueiro'],
+    [/Mag[oa]/i, 'RaisedSkeletonCaster', 'Esqueleto Mago'], [/Genera/i, 'RaisedSkeletonMeleeVaal', 'Esqueleto General'],
+  ]],
+];
+/** (revisão E1a) O lacaio de índice `i` de um uso com `grupos` (os primeiros N do 1º grupo, os seguintes do 2º…); além da soma (o lacaio extra), o 1º. */
+export function grupoDoUso(q, i) {
+  if (!q?.grupos?.length) return q;
+  let k = i;
+  for (const g of q.grupos) { if (k < g.n) return g.q; k -= g.n; }
+  return q.grupos[0].q;
 }
 
 /**
@@ -721,6 +768,41 @@ export function golpeDoLacaio(l, alvo, fichaDoDono, tipo, agora, rng = Math.rand
 /** A área do golpe em área do lacaio, em casas de raio: 1 × √(1 + o "Efeito em Área" dele), a fração como chance — como a das gemas (lote 36). */
 export function raioDaAreaDoLacaio(l, rng = Math.random) {
   return Math.max(1, 1 + casasPelaArea(1, fatorDaArea(l?.poe?.areaPct ?? 0), rng));
+}
+/**
+ * (revisão E1a — dono, 27/10: "crie as habilidades com recarga do PoE, pelo PoB") As HABILIDADES COM RECARGA dos golens (Minions.lua → Skills/minion.lua), por
+ * cima do golpe comum; a "Recuperação da Recarga dos Lacaios" as encurta (`recargaDoLacaio`):
+ *   - o Golem de Relâmpago (SummonedLightningGolem): o Orbe da Tempestade (LightningGolemArcSummoned — magia de Raio, recarga 8 s, 2 usos guardados, 6% de crítico;
+ *     0,2 a 1,8 × a eficácia) e a Ira (LightningGolemWrath — aura de 4 s, recarga 12 s: Dano de Raio adicionado aos Ataques, 0,2 a 1,8 × a eficácia, e às Magias,
+ *     0,12 a 1,08, seus e dos lacaios no raio; não causa dano);
+ *   - o Golem da Carniça (SummonedCarrionGolem): a Cascata (BoneGolemCascade — ataque em área, 65% do golpe, recarga 6 s) e o Salto Esmagador (BoneGolemLeapSlam —
+ *     ataque em área, 225% do golpe, recarga 4 s).
+ * A eficácia da magia é a do PoB (statInterpolation 3): (3,885209 + 0,360246 × (N − 1)) × baseEffectiveness × (1 + incrementalEffectiveness)^(N − 1), N o nível do
+ * lacaio. (Fora: o Consumir Cadáver e a Cascata Fortalecida da Carniça — sem dano/sem recarga própria; o Orbe é um acerto no alvo quando sai — o jogo não tem o
+ * objeto que dura 8 s.)
+ */
+export const HABILIDADES_COM_RECARGA = {
+  SummonedLightningGolem: [
+    { id: 'LightningGolemArcSummoned', nome: 'Orbe da Tempestade', tipo: 'magia', elemento: 'energy', recargaMs: 8000, usos: 2, crit: 6, base: [0.2, 1.8], baseEf: 0.78420001268387, incEf: 0.028500000014901, alcance: 5 },
+    { id: 'LightningGolemWrath', nome: 'Ira', tipo: 'aura', recargaMs: 12000, usos: 1, duracaoMs: 4000, ataque: [0.2, 1.8], magia: [0.12, 1.08], baseEf: 0.16249999403954, incEf: 0.019999999552965 },
+  ],
+  SummonedCarrionGolem: [
+    { id: 'BoneGolemCascade', nome: 'Cascata', tipo: 'ataqueArea', recargaMs: 6000, usos: 1, mult: 0.65, alcance: 3 },
+    { id: 'BoneGolemLeapSlam', nome: 'Salto Esmagador', tipo: 'ataqueArea', recargaMs: 4000, usos: 1, mult: 2.25, alcance: 4 },
+  ],
+};
+/** A eficácia de uma magia de lacaio do PoB no nível `n` (statInterpolation 3). */
+export const eficaciaDaMagiaDoPob = (n, baseEf, incEf) => (3.885209 + 0.360246 * (Math.max(1, n) - 1)) * baseEf * (1 + incEf) ** (Math.max(1, n) - 1);
+/** As habilidades com recarga do lacaio `pobId` no nível `n`, com os números prontos (o dano das magias e da aura, pelo PoB). */
+export function habilidadesComRecargaDoPob(pobId, n) {
+  const lista = HABILIDADES_COM_RECARGA[pobId];
+  if (!lista) return null;
+  return lista.map((h) => {
+    const ef = h.baseEf ? eficaciaDaMagiaDoPob(n, h.baseEf, h.incEf) : 0;
+    const par = (b) => [Math.round(b[0] * ef), Math.round(b[1] * ef)];
+    return { id: h.id, nome: h.nome, tipo: h.tipo, recargaMs: h.recargaMs, usos: h.usos, ...(h.elemento ? { elemento: h.elemento } : {}), ...(h.crit ? { crit: h.crit } : {}), ...(h.mult ? { mult: h.mult } : {}),
+      ...(h.alcance ? { alcance: h.alcance } : {}), ...(h.duracaoMs ? { duracaoMs: h.duracaoMs } : {}), ...(h.base ? { dano: par(h.base) } : {}), ...(h.ataque ? { ataque: par(h.ataque), magia: par(h.magia) } : {}) };
+  });
 }
 /** O intervalo de uma magia/habilidade do lacaio com a "Recuperação da Recarga" dele. */
 export const recargaDoLacaio = (l, ms) => Math.round(ms / Math.max(0.1, 1 + (l?.poe?.recargaPct ?? 0) / 100));

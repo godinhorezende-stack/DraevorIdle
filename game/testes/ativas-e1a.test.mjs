@@ -41,6 +41,8 @@ const FEITAS = ['Holy_Flame_Totem', 'Holy_Flame_Totem_of_Ire', 'Animate_Guardian
   'Summon_Carrion_Golem_of_Scavenging', 'Summon_Chaos_Golem', 'Summon_Chaos_Golem_of_Hordes', 'Summon_Lightning_Golem', 'Summon_Lightning_Golem_of_Hordes'];
 
 test('E1a — status: as 30 gemas sem "efeito não simulado"; as que dependem de mecânica nova ou do dono seguem com a linha delas', { skip: SEM }, () => {
+  // (aval do dono, 27/10 — revisão E1a, achado 3: o Golem de Relâmpago e o da Carniça das Hordas seguem em FEITAS porque o jogo passou a ter as habilidades com recarga
+  // deles — o Orbe e a Ira; a Cascata e o Salto —, que a Recuperação da Recarga encurta: `LacaiosPoe.HABILIDADES_COM_RECARGA`)
   for (const s of FEITAS) assert.deepEqual(naoSimuladas(s), [], s);
   assert.equal(G.statusNoJogo().Holy_Flame_Totem.status, 'funciona');
   // as que ficam (o dono decide ou é mecânica nova): a linha delas segue, e só ela

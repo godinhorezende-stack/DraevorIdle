@@ -1604,6 +1604,8 @@ export function round(estado, personagem) {
           if (itensPoeLigado() && impelem.some((im) => im.de === 'Infernal_Cry') && tagsDoBasico.includes('corpo')) eventos.push(...Acoes.combustao(estado, hunt, personagem, null, alvo, hunt.clock ?? 0));
           const extras = impelem.reduce((t, im) => t + (Number(im.alvosExtra) || 0), 0);
           if (itensPoeLigado() && extras > 0 && tagsDoBasico.includes('corpo')) alvosDoImpelido = extras;
+          // (revisão E1b/S1: + o Clamor do Mago de Batalha — o golpe básico Impelido por ele também ativa as magias suportadas, como o uso de uma gema de ataque)
+          Acoes.magoDeBatalhaNoImpelido(estado, hunt, personagem, impelem, alvo, eventos);
           for (const im of impelem) im.n--;
         }
         // (lote G-C, dono 25/10) a Marca do Atirador no golpe básico de longe (o projétil da arma): "sofrem Dano aumentado em X% de Acertos de Projéteis" — no golpe da arma
@@ -1764,8 +1766,10 @@ export function round(estado, personagem) {
       // Perfuram N Alvos adicionais"): cada um acerta OUTRO bicho (os mais perto do alvo, ao alcance), com o golpe inteiro.
       if (itensPoeLigado() && categoriaDaArma(arma) === 'distancia') {
         const fichaDoTiro = ModsPoe.fichaDoGolpe(fichaDoPersonagem, ModsPoe.tagsDoGolpeBasico(estado, 'distancia'), { estado });
+        // (revisão S1: as flechas a mais são o MESMO ataque — `extraDoImpelido`: não gastam outro Impelir de cada Clamor; no PoE, um ataque com vários projéteis é um
+        // ataque Impelido só)
         for (const outro of ModsPoe.alvosDosProjeteisExtras(hunt, alvo, ModsPoe.projeteisDoGolpeBasico(fichaDoTiro), alcanceDaArma(arma, estado))) {
-          if (outro.hp > 0) golpear(false, outro);
+          if (outro.hp > 0) golpear(false, outro, true);
         }
       }
       if (alvo.hp > 0 && Math.random() < (fichaDoPersonagem.ataqueDuplo ?? 0)) golpear(true);

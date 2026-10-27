@@ -353,7 +353,8 @@ test('S1 (dono, 26/10): um Impelir por Clamor — dois Clamores impelem o mesmo 
   e.hunt.impelidos = { n: 3, ate: agora + 20_000, de: 'Intimidating_Cry', outros: [{ n: 6, ate: agora + 20_000, de: 'Seismic_Cry', so: 'pancada' }] };
   const entry = Acoes.POR_ID_PUBLICO(G.doSlug('Ground_Slam').acao);
   const comClamores = Acoes.comOsAlvosDaGema(entry, GS.efeitoNaSkill(e, entry.id), e);
-  assert.equal(comClamores['af:mais_dano@impelido'], 14 + 10 * 2, 'os 14% do Impelido + 10% por cada um dos 2 Clamores');
+  // (aval do dono, 27/10 — revisão S1, achado 16: os dois "mais" do Esforço Excessivo são stats final distintos no PoE e multiplicam — (1,14 × 1,2 − 1) × 100 = 36,8)
+  assert.ok(Math.abs(comClamores['af:mais_dano@impelido'] - (1.14 * 1.2 - 1) * 100) < 1e-9, 'os 14% do Impelido × 10% por cada um dos 2 Clamores');
   usar(e, b);
   assert.deepEqual([e.hunt.impelidos.n, e.hunt.impelidos.outros[0].n], [2, 5], 'cada Clamor gastou uma carga');
 });

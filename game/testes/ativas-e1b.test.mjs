@@ -137,7 +137,9 @@ test('E1b: as auras — os atributos do buff (a Disciplina, a Graça Vaal, a Cla
   assert.deepEqual(L.atributosDoBuff('Você e Aliados próximos ganham 30 % de Velocidade de Recarga de Escudo de Energia aumentada'), { es_recharge: 30 });
   assert.deepEqual(L.atributosDoBuff('Você e aliados próximos têm +15 % de chance de Evadirem Acertos de Ataques'), { chance_evadir: 15 });
   assert.deepEqual(L.atributosDoBuff('Dano Mágico Suprimido causado em você é Azarado'), { suprimido_azarado: 1 });
-  assert.deepEqual(L.atributosDoBuff('Suas Habilidades e de seus aliados próximos não Custam Mana'), { custo_mana_inc: -100 });
+  // (aval do dono, 27/10 — revisão E1b, achado 8: a Clareza Vaal é um custo ZERO de verdade, a flag `sem_custo_mana`, como o "ManaCost MORE −100 unscalable" do PoB;
+  // o −100 de "aumentado" vazava com qualquer custo aumentado ou fixo)
+  assert.deepEqual(L.atributosDoBuff('Suas Habilidades e de seus aliados próximos não Custam Mana'), { sem_custo_mana: 1 });
   assert.deepEqual(L.atributosDoBuff('A Recarga do seu Escudo de Energia e dos seus aliados próximos não é impedida por Dano'), { recarga_es_nunca_interrompida: 1 });
   assert.deepEqual(L.atributosDoBuff('Você e Aliados não-Lacaios Próximos têm 10 % de chance de criarem Solo Sagrado ao Acertar um Inimigo Raro ou Único, durando 8 segundos'), { 'ev:acertar:soloSagrado:8@alvoRaro': 10, 'ev:acertar:soloSagrado:8@alvoUnico': 10 });
   assert.deepEqual(L.atributosDoBuff('Estandarte faz com que você e Aliados Recuperem 34 de Vida ao Bloquear'), { 'ev:bloquear:vida': 34 });
@@ -147,7 +149,8 @@ test('E1b: as auras — os atributos do buff (a Disciplina, a Graça Vaal, a Cla
   assert.deepEqual(pe.motivos, []);
   assert.equal(G.buffNoNivel('Discipline', 20, 0).af.es_recharge, 30);
   assert.equal(G.buffNoNivel('Vaal_Grace', 20, 0).af.chance_evadir, 15);
-  assert.equal(G.buffNoNivel('Vaal_Clarity', 20, 0).af.custo_mana_inc, -100);
+  // (aval do dono, 27/10 — revisão E1b, achado 8)
+  assert.equal(G.buffNoNivel('Vaal_Clarity', 20, 0).af.sem_custo_mana, 1);
 });
 
 test('E1b: as Impurezas Vaal — o efeito da aura da gema e a resistência POSITIVA ignorada pelos acertos no raio', { skip: SEM }, () => {
