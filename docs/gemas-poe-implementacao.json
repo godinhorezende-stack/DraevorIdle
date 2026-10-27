@@ -2,35 +2,36 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 475,
+   "implementada e testada": 489,
    "limitação do modelo idle": 58,
-   "implementada, sem teste próprio": 28,
-   "não se aplica": 1
+   "implementada, sem teste próprio": 13,
+   "não se aplica": 1,
+   "parcial": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 189,
+   "implementada e testada": 196,
    "limitação do modelo idle": 10,
-   "implementada, sem teste próprio": 11
+   "implementada, sem teste próprio": 4
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 229,
-   "implementada, sem teste próprio": 32,
+   "implementada e testada": 245,
+   "implementada, sem teste próprio": 16,
    "não se aplica": 1
   },
   "variantes": {
    "vaal": {
     "total": 52,
-    "implementada e testada": 45,
+    "implementada e testada": 47,
     "limitação do modelo idle": 4,
-    "implementada, sem teste próprio": 3
+    "implementada, sem teste próprio": 1
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 163,
+    "implementada e testada": 171,
     "limitação do modelo idle": 29,
-    "implementada, sem teste próprio": 17
+    "implementada, sem teste próprio": 9
    }
   },
   "compatibilidade": {
@@ -41,7 +42,7 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 0,
+   "linhasDistintas": 1,
    "emDuasOuMais": 0
   },
   "imagens": {
@@ -56,8 +57,8 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 526,
-   "suportesCitados": 230,
+   "ativasCitadas": 541,
+   "suportesCitados": 246,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
@@ -590,7 +591,7 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -1946,7 +1947,7 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -2313,7 +2314,7 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -2527,7 +2528,7 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -3025,7 +3026,7 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -3129,7 +3130,7 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -3690,7 +3691,7 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -4557,7 +4558,7 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -4865,7 +4866,7 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -5431,7 +5432,7 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "nova",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -5658,7 +5659,7 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -6169,7 +6170,7 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "maldicao",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -6637,7 +6638,7 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -6792,8 +6793,8 @@
    "nome": "Chuva Cinética",
    "variante": "normal",
    "ataque": true,
-   "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "arquetipo": "chuva",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -7511,8 +7512,10 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "implementada, sem teste próprio",
-   "ausentes": [],
+   "estado": "parcial",
+   "ausentes": [
+    "efeito não simulado: o Pacto (o PoB: o uso não causa dano — fortalece as próximas 3 magias de canalização com 40% mais dano e, enquanto você canaliza uma delas, o Flagelo Celestial cai a cada 0,3 s, até 10; e a Aflição, sem dado no PoB nem no poedb) — no jogo ele é uma canalização com o dano do Flagelo (decisão do dono)"
+   ],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7675,7 +7678,7 @@
   {
    "slug": "Damage_on_Full_Life_Support",
    "nome": "Dano com Vida Cheia",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -7883,7 +7886,7 @@
   {
    "slug": "Pulverise_Support",
    "nome": "Pulverizar",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8011,7 +8014,7 @@
   {
    "slug": "Awakened_Burning_Damage_Support",
    "nome": "Suporte Desperto: Dano Incendiário",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8059,7 +8062,7 @@
   {
    "slug": "Awakened_Melee_Splash_Support",
    "nome": "Suporte Desperto: Propagar Dano",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8275,7 +8278,7 @@
   {
    "slug": "Multiple_Projectiles_Support",
    "nome": "Projéteis Múltiplos (Reforço)",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8475,7 +8478,7 @@
   {
    "slug": "Mana_Leech_Support",
    "nome": "Dreno de Mana",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8563,7 +8566,7 @@
   {
    "slug": "Greater_Volley_Support",
    "nome": "Grande Rajada",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8635,7 +8638,7 @@
   {
    "slug": "Awakened_Chain_Support",
    "nome": "Suporte Desperto: Ricochete",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8675,7 +8678,7 @@
   {
    "slug": "Awakened_Greater_Multiple_Projectiles_Support",
    "nome": "Suporte Desperto: Projéteis Múltiplos Melhorado",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8814,7 +8817,7 @@
   {
    "slug": "Enlighten_Support",
    "nome": "Iluminar",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8998,7 +9001,7 @@
   {
    "slug": "Minion_Life_Support",
    "nome": "Vida do Lacaio",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -9182,7 +9185,7 @@
   {
    "slug": "Lightning_Penetration_Support",
    "nome": "Penetração de Raio",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -9342,7 +9345,7 @@
   {
    "slug": "Awakened_Added_Lightning_Damage_Support",
    "nome": "Suporte Desperto: Dano Adicional de Raio",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -9382,7 +9385,7 @@
   {
    "slug": "Awakened_Enlighten_Support",
    "nome": "Suporte Desperto: Iluminar",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -9438,7 +9441,7 @@
   {
    "slug": "Awakened_Unbound_Ailments_Support",
    "nome": "Suporte Desperto: Afecções Libertas",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -9526,7 +9529,7 @@
   {
    "slug": "Greater_Spell_Echo_Support",
    "nome": "Eco Mágico Maior (Reforço)",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -9620,6 +9623,13 @@
    "icone": true
   }
  ],
- "linhasFaltando": [],
+ "linhasFaltando": [
+  {
+   "linha": "o Pacto (o PoB: o uso não causa dano — fortalece as próximas # magias de canalização com #% mais dano e, enquanto você canaliza uma delas, o Flagelo Celestial cai a cada # s, até #; e a Aflição, sem dado no PoB nem no poedb) — no jogo ele é uma canalização com o dano do Flagelo (decisão do dono)",
+   "gemas": [
+    "Pact_of_Lycia"
+   ]
+  }
+ ],
  "iconesRepetidos": []
 }

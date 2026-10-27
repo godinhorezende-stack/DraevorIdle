@@ -8,46 +8,47 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 475 |
-| implementada, sem teste próprio | 28 |
+| implementada e testada | 489 |
+| implementada, sem teste próprio | 13 |
 | limitação do modelo idle | 58 |
+| parcial | 1 |
 | não se aplica | 1 |
 
 Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 189 |
-| implementada, sem teste próprio | 11 |
+| implementada e testada | 196 |
+| implementada, sem teste próprio | 4 |
 | limitação do modelo idle | 10 |
 
 ### Gemas de suporte (262)
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 229 |
-| implementada, sem teste próprio | 32 |
+| implementada e testada | 245 |
+| implementada, sem teste próprio | 16 |
 | não se aplica | 1 |
 
 ### Variantes
 
-- Vaal (52): implementada e testada 45 · limitação do modelo idle 4 · implementada, sem teste próprio 3
-- Alternativas (209): implementada e testada 163 · limitação do modelo idle 29 · implementada, sem teste próprio 17
+- Vaal (52): implementada e testada 47 · limitação do modelo idle 4 · implementada, sem teste próprio 1
+- Alternativas (209): implementada e testada 171 · limitação do modelo idle 29 · implementada, sem teste próprio 9
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 0 linhas distintas (0 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 1 linhas distintas (0 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 526/562 ativas, 230/262 suportes.
+- Testes que citam a gema: 541/562 ativas, 246/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
 
 | Gemas | Linha |
 |---|---|
-
+| 1 | o Pacto (o PoB: o uso não causa dano — fortalece as próximas # magias de canalização com #% mais dano e, enquanto você canaliza uma delas, o Flagelo Celestial cai a cada # s, até #; e a Aflição, sem dado no PoB nem no poedb) — no jogo ele é uma canalização com o dano do Flagelo (decisão do dono) |
 
 ## Gemas de habilidade pendentes
 
@@ -91,6 +92,8 @@ Só os ataques:
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Mirror_Arrow_of_Prismatic_Clones** (Flecha Espelhada dos Clones Prismáticos) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
+- **Pact_of_Lycia** (Pacto de Lycia) — parcial
+  - efeito não simulado: o Pacto (o PoB: o uso não causa dano — fortalece as próximas 3 magias de canalização com 40% mais dano e, enquanto você canaliza uma delas, o Flagelo Celestial cai a cada 0,3 s, até 10; e a Aflição, sem dado no PoB nem no poedb) — no jogo ele é uma canalização com o dano do Flagelo (decisão do dono)
 - **Raise_Spectre** (Evocar Espectro) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Raise_Spectre_of_Transience** (Evocar Espectro da Transitoriedade) — limitação do modelo idle
@@ -194,7 +197,7 @@ Só os ataques:
   - não se aplica: "Velocidade de Movimento do Orbe aumentada em X%" (Morto Volátil) só muda a trajetória do orbe até o inimigo — o PoB não a usa na conta, e o orbe do jogo acerta no uso
 - **Kinetic_Bolt** (Tiro Cinético) — implementada e testada
   - não se aplica: "Projéteis mudam de direção N vezes" (Raio Cinético) só muda a trajetória — o projétil não acerta de novo a cada mudança
-- **Kinetic_Bolt_of_Fragmentation** (Tiro Cinético da Fragmentação) — implementada, sem teste próprio
+- **Kinetic_Bolt_of_Fragmentation** (Tiro Cinético da Fragmentação) — implementada e testada
   - não se aplica: "Projéteis mudam de direção N vezes" (Raio Cinético) só muda a trajetória — o projétil não acerta de novo a cada mudança
 - **Ice_Spear** (Lança Gélida) — implementada e testada
   - não se aplica: "A Segunda forma possui X% mais Velocidade de Projétil" (Lança de Gelo) só muda a trajetória da segunda forma — o PoB não a usa na conta, e o projétil do jogo acerta no tique
@@ -203,4 +206,4 @@ Só os ataques:
 
 ## Implementadas sem teste próprio
 
-Added_Chaos_Damage_Support, Arc_of_Oscillating, Awakened_Added_Cold_Damage_Support, Awakened_Added_Lightning_Damage_Support, Awakened_Blasphemy_Support, Awakened_Burning_Damage_Support, Awakened_Chain_Support, Awakened_Deadly_Ailments_Support, Awakened_Empower_Support, Awakened_Enlighten_Support, Awakened_Greater_Multiple_Projectiles_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Melee_Splash_Support, Awakened_Multistrike_Support, Awakened_Swift_Affliction_Support, Awakened_Unbound_Ailments_Support, Awakened_Unleash_Support, Blade_Trap_of_Greatswords, Cast_on_Melee_Kill_Support, Caustic_Arrow_of_Poison, Cold_Penetration_Support, Conductivity, Damage_on_Full_Life_Support, Elemental_Weakness, Enlighten_Support, Ethereal_Knives_of_the_Massacre, Firestorm_of_Meteors, Flameblast_of_Celerity, Frost_Bomb_of_Instability, Greater_Spell_Echo_Support, Greater_Unleash_Support, Greater_Volley_Support, Ice_Nova_of_Deep_Freeze, Icicle_Mine_of_Fanning, Immolate_Support, Increased_Critical_Strikes_Support, Kinetic_Bolt_of_Fragmentation, Kinetic_Rain, Lightning_Penetration_Support, Lightning_Spire_Trap_of_Overloading, Lightning_Strike_of_Arcing, Mana_Leech_Support, Minion_Life_Support, Multiple_Projectiles_Support, Pact_of_Lycia, Pulverise_Support, Puncture_of_Shanking, Rain_of_Arrows_of_Artillery, Scorching_Ray_of_Immolation, Shattering_Steel, Spark_of_the_Nova, Storm_Call_of_Trarthus, Stun_Support, Swift_Affliction_Support, Thunderstorm, Vaal_Caustic_Arrow, Vaal_Haste, Vaal_Ice_Shot, Vitality, Volatile_Dead_of_Confinement
+Added_Chaos_Damage_Support, Arc_of_Oscillating, Awakened_Added_Cold_Damage_Support, Awakened_Blasphemy_Support, Awakened_Deadly_Ailments_Support, Awakened_Empower_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Multistrike_Support, Awakened_Swift_Affliction_Support, Awakened_Unleash_Support, Blade_Trap_of_Greatswords, Cast_on_Melee_Kill_Support, Cold_Penetration_Support, Elemental_Weakness, Ethereal_Knives_of_the_Massacre, Flameblast_of_Celerity, Greater_Unleash_Support, Icicle_Mine_of_Fanning, Immolate_Support, Increased_Critical_Strikes_Support, Lightning_Spire_Trap_of_Overloading, Rain_of_Arrows_of_Artillery, Spark_of_the_Nova, Storm_Call_of_Trarthus, Stun_Support, Swift_Affliction_Support, Thunderstorm, Vaal_Ice_Shot, Volatile_Dead_of_Confinement

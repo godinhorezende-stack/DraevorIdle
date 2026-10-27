@@ -89,6 +89,8 @@ export function daSoma(af = {}) {
     danoDegenDoElemento: { chaos: n('dot_dmg_inc_caos'), physical: n('dot_dmg_inc_fisico'), ice: n('dot_dmg_inc_gelo') },
     duracaoIncendio: n('duracao_incendio') + n('duracao_afeccoes_elementais'),
     duracaoSangramento: n('duracao_sangramento'),
+    // (lote T2, 27/10) a Punctura: o Sangramento dura a duração da habilidade — a base dela, + os modificadores de duração da habilidade (`acoes.comAsLinhasDaGema`)
+    sangramentoBaseMs: n('sangramento_base_ms'), sangramentoDurHabInc: n('sangramento_dur_hab_inc'), sangramentoDurHabFator: Number(af.sangramento_dur_hab_fator) > 0 ? Number(af.sangramento_dur_hab_fator) : 1,
     duracaoCongelamento: n('duracao_congelamento') + n('duracao_afeccoes_elementais'),
     duracaoEletrizacao: n('duracao_eletrizacao') + n('duracao_afeccoes_elementais'),
     efeitoResfriamento: n('efeito_resfriamento'),
@@ -304,7 +306,9 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
   // (lote A1b, dono 19/10: D-f) "X% de chance de Causticar Inimigos": a Causticação pela chance, no acerto com Fogo (sem repetir a do Warden)
   if (fogo > 0 && a.chanceCausticar > 0 && !postos.includes('causticado') && sorte(a.chanceCausticar)) causticar();
   // (+ "+X% de Multiplicador … para Sangramentos por Empalamento no Inimigo"; a Dança Carmesim: as pilhas e o "X% menos Dano com Sangramento")
-  if (fisico > 0 && sorte(chance('sangramento'))) dot('sangramento', BASE.sangramento.porSegundo, duracaoDe(BASE.sangramento.duracaoMs, a.duracaoSangramento ?? 0), fisico, multiplicadorBase + (a.multiplicadorSangramento ?? 0) + empalamentos * (a.multiplicadorSangramentoPorEmpalamento ?? 0) + (crit ? a.multiplicadorSangramentoCritico ?? 0 : 0), (a.danoSangramento ?? 0) + aumDoSuporte('sangramento'), { mais: comSuporte('sangramento', -(a.sangramentoMenos ?? 0)), chave: chaveDoSangramento(), agravado: !!a.sangramentoAgravado && !a.sangramentoSemMovimento, semMovimento: !!a.sangramentoSemMovimento });
+  // (lote T2: a Punctura — a duração da habilidade no lugar dos 5 s, × o "mais" de duração da habilidade)
+  const durSangramento = a.sangramentoBaseMs > 0 ? Math.round(duracaoDe(a.sangramentoBaseMs, (a.duracaoSangramento ?? 0) + (a.sangramentoDurHabInc ?? 0)) * (a.sangramentoDurHabFator ?? 1)) : duracaoDe(BASE.sangramento.duracaoMs, a.duracaoSangramento ?? 0);
+  if (fisico > 0 && sorte(chance('sangramento'))) dot('sangramento', BASE.sangramento.porSegundo, durSangramento, fisico, multiplicadorBase + (a.multiplicadorSangramento ?? 0) + empalamentos * (a.multiplicadorSangramentoPorEmpalamento ?? 0) + (crit ? a.multiplicadorSangramentoCritico ?? 0 : 0), (a.danoSangramento ?? 0) + aumDoSuporte('sangramento'), { mais: comSuporte('sangramento', -(a.sangramentoMenos ?? 0)), chave: chaveDoSangramento(), agravado: !!a.sangramentoAgravado && !a.sangramentoSemMovimento, semMovimento: !!a.sangramentoSemMovimento });
   // Veneno: do dano Físico e de Caos (ou de TODO o dano, com "Todo o Dano … pode Envenenar").
   const todos = ['physical', 'fire', 'ice', 'energy', 'chaos'].reduce((x, el) => x + dano(el), 0);
   const baseDoVeneno = a.naoPode?.veneno ? 0 : a.qualquerDanoEnvenena ? todos : dano('physical') + caos + (a.pode?.veneno ?? []).filter((el) => !['physical', 'chaos'].includes(el)).reduce((x, el) => x + dano(el), 0);
