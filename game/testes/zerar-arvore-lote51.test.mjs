@@ -91,7 +91,8 @@ test('o CALAFRIO DA CORRUPÇÃO: o inimigo Estilhaçado (morto Congelado) anda U
   assert.equal(h.cooldowns[id].ate, 110000);
   // (o morto que não estava Congelado não é estilhaço)
   ModsPoe.evento(e, h, 'matar', Ficha.combate(e), { alvo: { uid: 'y', hp: 0, estados: {} }, rng: () => 0 });
-  assert.equal(h.cooldowns[id].ate, antes - 200);
+  // (aval do dono 27/10, lote P4: o valor com o impedimento — a mesma causa da linha acima)
+  assert.equal(h.cooldowns[id].ate, 110000);
 });
 
 test('os lacaios AGRESSIVOS: o bicho a 3 casas além do alcance de sempre vira alvo; sem a linha, não', { skip: SEM }, () => {

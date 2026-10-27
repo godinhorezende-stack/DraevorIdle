@@ -1430,6 +1430,7 @@ Testes que mudam pela regra nova (não mexi; esperam o aval do dono):
 - **Ficam falhando** (nenhum aval cobre; não mexi):
   - zerar-arvore-lote51:94 (a linha 93 de antes, logo depois da 90): `antes - 200` depois do morto não Congelado. Com o impedimento, o `antes` é 110000 e o valor fica 110000; o teste espera 109800. É a mesma causa da linha 90.
   - totens-suportes-poe:164 (G20b): exige que o Devastador tenha o motivo "Área de Efeito aumentada para Habilidades Corpo a Corpo". O motivo saiu por ordem do dono.
+- **Os 2 que ficavam falhando** (aval do dono 27/10, depois do commit e42ee352): zerar-arvore-lote51:94 agora espera 110000, o valor com o impedimento. totens-suportes-poe:164 agora confere que o Devastador está 'funciona', sem motivos, e que o efeito tem `devastadorAreaCorpoPct` 15. Resultado: zerar-arvore-lote51 7/7 e totens-suportes-poe 6/6. A bateria do lote segue com 867 testes: 834 passam, 33 pulados, nenhum falha.
 - Placar (relatório regerado): ativas 562 · testada 460 · sem teste 43 · limitação 58 · não se aplica 1; suportes 262 · testada 212 · sem teste 49 · **parcial 0** · não se aplica 1.
 - Testes: gemas-p4 10/10. Dos 6 do aval: vinculos-poe 10/10, suportes-d2 12/12, ativas-c4 15/15, arvore-principal-poe 7/7, gemas-todas-funcionam-poe 4/4 e zerar-arvore-lote51 6/7 (a linha 94). Totens: especificos 7/7, uso 13/13 e suportes 5/6 (a linha 164). Bateria (ativas-*, gemas-*, suportes-*, itens-poe-gemas*, eficacia-ataque-poe; 58 arquivos): 867 testes, 834 passam, 33 pulados (regra do Draevor clássico), nenhum falha.
 

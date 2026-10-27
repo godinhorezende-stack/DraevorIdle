@@ -160,6 +160,8 @@ test('G20b: o Devastador põe um totem ancestral que só usa a habilidade com vo
 
 test('G20b: o status — o Totem de Magia, o Totem Balista, os Totens Múltiplos e a Balista Focada "funciona"; o Devastador lista a área sem número no PoB', { skip: SEM }, () => {
   for (const s of ['Spell_Totem_Support', 'Ballista_Totem_Support', 'Multiple_Totems_Support', 'Focused_Ballista_Support']) assert.equal(SP.doSlug(s).statusNoJogo ?? SP.doSlug(s).status, 'funciona', `${s}: ${(SP.doSlug(s).motivos ?? []).join(' | ')}`);
+  // (aval do dono 27/10, lote P4: o Devastador tem os 15% de Área perto do totem — 'funciona', sem motivos, com o efeito no suporte)
   const dev = SP.doSlug('Earthbreaker_Support');
-  assert.ok((dev.motivos ?? []).some((m) => /Área de Efeito aumentada para Habilidades Corpo a Corpo/.test(m)));
+  assert.deepEqual([dev.status, dev.motivos], ['funciona', []]);
+  assert.equal(SP.efeitoNoNivel('Earthbreaker_Support', 20, 0, { tags: ['poe:Ataque', 'poe:Corpo a Corpo', 'poe:Impacto', 'poe:Área'] }).efeito.devastadorAreaCorpoPct, 15);
 });
