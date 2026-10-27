@@ -1857,7 +1857,8 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
     f.critChance = Math.min(teto, Math.max(0, (ficha.critPontos + baseDoGolpe) * (1 + ((ficha.critInc ?? 0) + critInc) / 100) * (ficha.critMais ?? 1)));
     // (a chance refeita volta a ser Sortuda só se a da ficha era — `critSortudo`; senão o sorteio do golpe rola duas vezes)
     if (ficha.critSortudo) f.critChance = Math.min(teto, 1 - (1 - Math.min(1, f.critChance)) ** 2);
-    if (ficha.critMagiaPoe) f.critMagiaPoe = { ...ficha.critMagiaPoe, aumentada: ficha.critMagiaPoe.aumentada + critInc };
+    // (lote T3, 27/10: + a base do golpe na das magias do PoE — o "+X% de Chance de Crítico" dos suportes, `crit_base_golpe`, soma à base da gema antes dos aumentos)
+    if (ficha.critMagiaPoe) f.critMagiaPoe = { ...ficha.critMagiaPoe, aumentada: ficha.critMagiaPoe.aumentada + critInc, fixa: (ficha.critMagiaPoe.fixa ?? 0) + baseDoGolpe };
     if (ficha.critChanceMagia != null) f.critChanceMagia = Math.min(teto, Math.max(0, (ficha.critPontos + baseDoGolpe) * (1 + ((ficha.critInc ?? 0) + (ficha.critIncMagia ?? 0) + critInc) / 100) * (ficha.critMais ?? 1)));
   }
   if (s.crit_chance) f.critChance = Math.min(ficha.critTeto ?? 1, (f.critChance ?? 0) + s.crit_chance / 100);
@@ -1866,6 +1867,8 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
     const m = Math.max(0, 1 + s.crit_mais_pct / 100);
     f.critChance = Math.min(ficha.critTeto ?? 1, (f.critChance ?? 0) * m);
     if (f.critChanceMagia != null) f.critChanceMagia = Math.min(ficha.critTeto ?? 1, f.critChanceMagia * m);
+    // (lote T3, 27/10: e na das magias do PoE — a conta da gema refaz a chance pelo `critMagiaPoe`; antes o "mais" deste golpe se perdia nela)
+    if (f.critMagiaPoe) f.critMagiaPoe = { ...f.critMagiaPoe, mais: (f.critMagiaPoe.mais ?? 1) * m };
   }
   // (O multiplicador FIXO — "Seu Multiplicador de Acerto Crítico é N%" — e o "Golpes Críticos não causam Dano extra" não somam o do golpe.)
   const multFixo = Number(ficha.afPoe?.crit_multi_fixo) > 0 || Number(ficha.afPoe?.critico_sem_dano_extra) > 0;

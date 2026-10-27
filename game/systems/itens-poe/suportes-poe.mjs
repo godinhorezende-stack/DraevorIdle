@@ -12,6 +12,7 @@ import { ligado } from './catalogo.mjs';
 import { comNiveisDoPoedb } from './gemas-niveis.mjs';
 import { atributosDaLinha } from './linhas-das-gemas.mjs';
 import { REGRAS_S2A, ehGatilhoDoMarcar, limiarDaFlechaForjada } from './suportes-s2a.mjs';
+import { REGRAS_T3 } from './suportes-t3.mjs';
 import { PROPRIAS_R3A } from './gemas-r3a.mjs';
 // (lote R3B, 27/10: as linhas próprias do Arqueiro Ilusório, dos Espíritos Sagrados, do Relâmpago Vivo e do Nascido da Colmeia — `gemas-r3b.mjs`)
 import { PROPRIAS_R3B, completarEfeito as completarEfeitoR3B } from './gemas-r3b.mjs';
@@ -106,7 +107,11 @@ export function textosDoNivel(s, nivel = 1, qualidade = 0) {
     else add(m.includes('—') ? interpolar(m, (n - 1) / passos) : m);
   }
   const q = Math.max(0, Math.min(20, qualidade || 0)) / 20;
-  return { mods: out, qualidade: (s.qualidade ?? []).map((t) => interpolar(t, q)), props: s.props.map((p) => interpolar(p, (n - 1) / passos)) };
+  // (lote T3, 27/10: a RESERVA pela coluna "Mana" da tabela do nível, quando ela existe — a Blasfêmia Desperta: a faixa da propriedade, "(34—32)%", é a dos níveis 1 a 5
+  // ("Nível: (1—5)"), e a interpolação de 20 passos dava 32% no nível 20; a tabela do poedb diz 28%)
+  const manaDaTabela = /%$/.test(String(linha[s.colunas.indexOf('Mana')] ?? '')) ? String(linha[s.colunas.indexOf('Mana')]) : null;
+  const prop = (p) => (manaDaTabela && /^(?:Sobreposição de )?Reserva: /.test(p) ? p.replace(/\([\d.]+\s*—\s*[\d.]+\)%|[\d.]+%/, manaDaTabela) : interpolar(p, (n - 1) / passos));
+  return { mods: out, qualidade: (s.qualidade ?? []).map((t) => interpolar(t, q)), props: s.props.map(prop) };
 }
 
 // ---------------------------------------------------------------- as linhas → os efeitos do motor
@@ -157,6 +162,8 @@ const ESP = '(?:\\\\n|\\s)+';
 const REGRAS = [
   // ---- (lote S2A, 27/10: os suportes com mecânica nova — `suportes-s2a.mjs`; antes de todas, que pegavam o começo de algumas) ----
   ...REGRAS_S2A,
+  // ---- (lote T3, 27/10: as correções que os testes do lote acharam — `suportes-t3.mjs`: o adicionado da Imolação só contra o alvo Queimando) ----
+  ...REGRAS_T3,
   // ---- (lote S2B, 27/10: a segunda metade das parciais — `suportes-s2b.mjs`; antes das gerais, que pegavam o começo de algumas e davam o "mais" sem a condição) ----
   // - os LACAIOS: a Velocidade do Lacaio (ataque e conjuração — `LacaiosPoe.oQueInvoca`), o crítico da qualidade do Exemplar e da Carne Fresca, o Exemplar ("toda vez que
   //   você causar um golpe crítico recentemente com um ataque, até X"), a Carne Fresca (a Fúria Desperta e a Adrenalina), o Exército Elemental (as resistências, o máximo,

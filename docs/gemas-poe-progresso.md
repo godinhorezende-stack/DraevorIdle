@@ -1434,6 +1434,38 @@ Testes que mudam pela regra nova (não mexi; esperam o aval do dono):
 - Placar (relatório regerado): ativas 562 · testada 460 · sem teste 43 · limitação 58 · não se aplica 1; suportes 262 · testada 212 · sem teste 49 · **parcial 0** · não se aplica 1.
 - Testes: gemas-p4 10/10. Dos 6 do aval: vinculos-poe 10/10, suportes-d2 12/12, ativas-c4 15/15, arvore-principal-poe 7/7, gemas-todas-funcionam-poe 4/4 e zerar-arvore-lote51 6/7 (a linha 94). Totens: especificos 7/7, uso 13/13 e suportes 5/6 (a linha 164). Bateria (ativas-*, gemas-*, suportes-*, itens-poe-gemas*, eficacia-ataque-poe; 58 arquivos): 867 testes, 834 passam, 33 pulados (regra do Draevor clássico), nenhum falha.
 
+## T3 — rodada 4 (27/10: as "sem teste próprio", parte 3)
+
+31 gemas da fila T3 (14 ativas e 17 suportes) que estavam "implementada, sem teste próprio". Testes novos: `game/testes/gemas-t3-ativas.test.mjs` (14) e `game/testes/gemas-t3-suportes.test.mjs` (15), com o apoio `game/testes/apoio-t3.mjs` (a montagem, o uso com o sorteio travado e a célula da tabela do poedb salvo). Cada teste confere o número do nível 20 (o das Excepcionais no máximo delas) com a tabela do poedb e mede o efeito num uso real, com e sem a gema ou o suporte. Módulos novos: `systems/itens-poe/gemas-t3.mjs` e `systems/itens-poe/suportes-t3.mjs`.
+
+O que os testes acharam e foi corrigido pela regra do PoE:
+- **Imolação**: o Fogo adicional valia sempre. Agora só contra o alvo Queimando, pelo caminho do "Fogo adicionado contra Inimigos Queimando" da Armadilha Flamejante.
+- **Golpes Críticos Aumentados** (e as outras linhas de crítico dos suportes): o "117% aumentada" virava +5,85 pontos. Agora (base + 2%) × (1 + 117% + aumentos), e o "X% menos Chance" multiplica. Nas magias do PoE, a base e o "mais" do golpe entram no `critMagiaPoe`.
+- **"X% menos/mais Duração"** dos suportes (Menos Duração, Sofrimento Veloz e o Desperto, Mais Duração): somava como "reduzida". Agora multiplica (`duracaoMaisPct`), também no buff, no reforço, nos lacaios, na Crueldade e no Relâmpago Vivo.
+- **"+N ao Nível de Gemas de <tipo>"** (Dano Adicional de Gelo Desperto, Blasfêmia Desperta e as de Raio, Elementais, Maldição e Lacaios): o nível subia em qualquer gema ligada. Agora só na gema com a tag.
+- **Blasfêmia Desperta**: a Reserva no nível 20 é 28%, pela coluna "Mana" da tabela. Antes saía 32%, pela faixa da propriedade.
+- **Legião Congelada**: era um golpe da arma a 100%, Físico, que gastava 1 uso. Agora o uso gasta todos os usos prontos, uma Estátua por uso. Cada Estátua bate uma vez em volta do alvo (2,5 m) com 332,9% (o último número da célula "Base Damage") e todo o Físico em Gelo.
+- **Mortos Voláteis do Confinamento**: cada cadáver consumido solta um orbe que detona no lugar dele depois de 1,5 s × a Duração (2,8 m). Antes o orbe batia na hora, no inimigo mais perto.
+- **Invocar Tormenta de Trarthus**: agora tem o marcador da comum (o raio cai 2 s depois e leva os outros marcadores junto) e a poça de sangue fervente no chão pela duração secundária (4 s). Antes o raio caía na hora e o degenerativo grudava no acertado por 2 s.
+- **Tempestade Relampejante**: a flecha agora acerta a área de 2,3 m com 60% do Físico em Raio. A tempestade fica no alvo (10 s, até 3) e Cega quem está nela. Com você dentro, ganha 1 estágio a cada 0,25 s, até 4. Se você sai no máximo (até 1,5 s depois de chegar nele), ela explode com 300% mais Dano e 30% mais Área por estágio e Ativa a Rajada Relampejante: 5 projéteis que perfuram, eficácia 1,39, e cada um explode 3 s depois (1,5 m, 40% mais Dano em Área). Se você sai antes do máximo, ela se dissipa.
+- **Tiro Gélido Vaal**: os 6 Atiradores Ilusórios existem agora (6 s × a Duração). A cada Tiro de Gelo seu, cada um usa o Tiro Gélido Vaal no alvo, sem custo, sem recarga e com um projétil só.
+- **Arco Elétrico da Oscilação**: cada salto agora solta um arco secundário noutro inimigo perto, que não ricocheteia (× 1).
+- **Armadilha de Lâminas da Espada Grande**: agora gira pela duração (3,5 s, 4 s na qualidade 20), um giro a cada 0,25 s, cada giro acertando quem está na área. Antes batia só na ativação.
+- **Armadilha de Torre Elétrica** (todas): cada área cai num inimigo e acerta quem está a 1 m dele, × √ da Área (o "Impact Area" do PoB). Antes cada área era a forma inteira em volta da torre, e todos perto dela levavam as 8 áreas.
+- **Mina de Gelo** (todas): a detonação dispara projéteis nos inimigos: 3, + 1 a cada 2 Minas anteriores na da Ventilação. Antes era uma área de 3 casas.
+- **Rajada de Chamas** (todas): o "+X m por Estágio" conta depois do primeiro (o PoB: StageAfterFirst). A da Celeridade tem 2,4 m nos 3 estágios, não 3,1 m.
+- **Maldições que reduzem resistência** (a Fraqueza Elemental e as outras): o −X sai da resistência do bicho (`GemasT3.resMenosDasMaldicoes` → `Resistencia.resistenciaDe`). Antes virava "sofre X% mais dano". Contra 50% de resistência, −30 dá × 1,6, não × 1,3.
+
+Fica **parcial**, esperando o dono: a Chuva de Flechas da Artilharia (`GemasT3.MOTIVOS_T3`). As flechas caem em sequência numa linha de você até o alvo, cada uma com área de 1 m. Nem o PoB nem o poedb dão o comprimento da linha nem o espaçamento das 22 flechas. No jogo ela segue como as outras Chuvas.
+
+Testes que mudam pela regra nova (não mexi; esperam o aval do dono):
+- passivas-poe-maldicoes-dreno:123-125 — a Inflamabilidade medida por `Reforcos.vulnerabilidade(b, 'fire')`: esperado 1 + base/100 → agora 1. A resistência a menos é `resMenosDasMaldicoes(b, 'fire', t)`: base antes de Y% da duração, base × (1 + X%) depois, 0 vencida.
+- passivas-poe-maldicoes-dreno:214 — "uma hora depois, ainda amaldiçoado" por `vulnerabilidade > 1`: agora 1. O equivalente é `resMenosDasMaldicoes(b, 'fire', 3_600_000) > 0` (a maldição segue em `b.maldicoes`).
+
+Placar: antes, ativas 562 · testada 460 · sem teste 43 · limitação 58 · não se aplica 1, e suportes 262 · testada 212 · sem teste 49 · não se aplica 1. Depois, ativas · testada 473 · sem teste 29 · limitação 58 · parcial 1 (a Artilharia) · não se aplica 1, e suportes · testada 230 · sem teste 31 · não se aplica 1.
+
+Bateria (ativas-*, gemas-*, suportes-*, totens-*, itens-poe-gemas*, eficacia-ataque-poe, gemas-todas-funcionam-poe e os afetados: maldições, crítico, estágios, áreas, cadáveres, minas, reserva, lacaios; 96 arquivos): 1197 testes, 1160 passam, 35 pulados, 2 falham (as duas acima). O canalizacao-estagios-poe:78 falhou uma vez sozinho (1,2308 contra 1,2 ± 0,03, o "acúmulo" que o próprio teste comenta) e passou nas 3 vezes seguintes.
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.

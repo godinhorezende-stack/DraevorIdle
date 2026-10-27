@@ -433,7 +433,8 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
   if (!totem) velAtaquePct += /mag[oa]|mage|espectro|spectre/i.test(`${nome} ${t.nome}`) ? efeito?.lacaioVelConjPct ?? 0 : efeito?.lacaioVelAtaquePct ?? 0;
   // (lote 49, as únicas de joia: "Velocidade de Conjuração dos Esqueletos", "…de Ataque e Conjuração dos Golens" — no lacaio que conjura)
   if (conjura) velAtaquePct += porTipo('lacaio_vel_conj');
-  if (duracao) duracao = Math.round(duracao * (1 + (totem ? porTipo('lacaio_duracao') : (efeito?.duracaoPct ?? 0) + porTipo('lacaio_duracao') + m0('minion_duracao')) / 100));
+  // (lote T3: × o "mais/menos Duração" dos suportes — `duracaoMaisPct`)
+  if (duracao) duracao = Math.round(duracao * (1 + (totem ? porTipo('lacaio_duracao') : (efeito?.duracaoPct ?? 0) + porTipo('lacaio_duracao') + m0('minion_duracao')) / 100) * (totem ? 1 : Math.max(0, 1 + (Number(efeito?.duracaoMaisPct) || 0) / 100)));
   if (!totem || r.ataque) velAtaquePct += porTipo('lacaio_vel_ataque');
   // (ciclo 7, lote F) "Magias Conjuradas por Totens têm X% de Velocidade de Conjuração aumentada" (o totem de uma gema de Magia).
   if (totem && (r.gema?.tags ?? []).includes('Magia')) velAtaquePct += m0('totem_vel_magia');

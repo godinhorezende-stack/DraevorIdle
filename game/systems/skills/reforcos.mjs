@@ -120,7 +120,7 @@ export function amaldicoar(bicho, id, efeitosPoe, { agora = Date.now(), dur = 60
   if (!bicho || bicho.hp <= 0 || bicho.dummy) return false;
   const efeitos = [];
   for (const e of efeitosPoe ?? []) {
-    if (e.efeito === 'marcaVulneravel') efeitos.push({ tipo: 'vulneravel', pct: e.pct, tipos: e.tipos });
+    if (e.efeito === 'marcaVulneravel') efeitos.push({ tipo: 'vulneravel', pct: e.pct, tipos: e.tipos, ...(e.res ? { res: true } : {}) });
     if (e.efeito === 'marcaEnfraquece') efeitos.push({ tipo: 'enfraquecido', pct: e.pct, ...(e.pctRaro != null ? { pctRaro: e.pctRaro } : {}) });
   }
   if (!efeitos.length) return false;
@@ -205,7 +205,7 @@ export function marcarCom(hunt, bicho, lista, agora = hunt?.clock ?? Date.now(),
       const efeitos = [];
       let dur = 0;
       for (const e of def.efeitos ?? []) {
-        if (e.efeito === 'marcaVulneravel') efeitos.push({ tipo: 'vulneravel', pct: e.pct * fator, tipos: e.tipos });
+        if (e.efeito === 'marcaVulneravel') efeitos.push({ tipo: 'vulneravel', pct: e.pct * fator, tipos: e.tipos, ...(e.res ? { res: true } : {}) });
         if (e.efeito === 'marcaEnfraquece') efeitos.push({ tipo: 'enfraquecido', pct: e.pct * fator, ...(e.pctRaro != null ? { pctRaro: e.pctRaro * fator } : {}) });
         // (lotes G-A e G-C) os do lote: `gac:<tipo>` (`GemasGAC.efeitoNoBicho`)
         const gac = GemasGAC.efeitoNoBicho(e, fator);
@@ -310,7 +310,8 @@ export function vulnerabilidade(bicho, tipo, agora) {
   let f = m && m.ate > agora && m.tipos.includes(tipo) ? 1 + m.pct / 100 : 1;
   // (lote 57: + o Solo Profano — "maldições têm efeito aumentado em 10% sobre eles")
   const profano = noSoloProfano(bicho, agora) ? 1 + SOLO_PROFANO.efeitoMaldicaoPct / 100 : 1;
-  for (const c of maldicoesAtivas(bicho, agora)) for (const e of c.efeitos) if (e.tipo === 'vulneravel' && e.tipos.includes(tipo)) f *= 1 + (e.pct * fatorDoExpirou(c, agora) * profano) / 100;
+  // (lote T3, 27/10: a resistência reduzida da maldição — `res` — não é dano sofrido: sai na resistência do bicho, `Resistencia.resistenciaDe`)
+  for (const c of maldicoesAtivas(bicho, agora)) for (const e of c.efeitos) if (e.tipo === 'vulneravel' && !e.res && e.tipos.includes(tipo)) f *= 1 + (e.pct * fatorDoExpirou(c, agora) * profano) / 100;
   // (lote G-C) a Punição: "Inimigos Amaldiçoados sofrem Dano aumentado em X% enquanto em Vida Baixa" (todo tipo)
   return f * GemasGAC.fatorDaVidaBaixa(bicho, agora, VIDA_BAIXA);
 }
@@ -380,7 +381,8 @@ export function descrever(id, efeitoDaGema = null) {
   const def = REFORCOS[id];
   if (!def) return null;
   const fator = fatorDaGema(efeitoDaGema);
-  const duracaoMs = Math.round(def.dur * (1 + (efeitoDaGema?.duracaoPct ?? 0) / 100));
+  // (lote T3: × o "mais/menos Duração" dos suportes — `duracaoMaisPct`)
+  const duracaoMs = Math.round(def.dur * (1 + (efeitoDaGema?.duracaoPct ?? 0) / 100) * Math.max(0, 1 + (Number(efeitoDaGema?.duracaoMaisPct) || 0) / 100));
   const linhas = [];
   if (def.tipo === 'shield') linhas.push('O dano que você sofre sai da sua mana antes de sair da vida');
   if (def.mult) linhas.push(`+${num((velocidadeEscalada(def.mult, fator) - 1) * 100)}% de velocidade de movimento`);
