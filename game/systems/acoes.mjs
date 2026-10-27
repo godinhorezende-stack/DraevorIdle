@@ -1186,7 +1186,7 @@ export function acertoDoArauto(estado, hunt, id, m, bruto, elemento, { tags = nu
  * magia — os modificadores de dano mágico valem —, o dano adicionado às magias × a eficácia dela, o crítico de base dela e os suportes da habilidade que a ativou) em
  * todos os vivos a até o raio do `centro` (os metros ÷ 2, × √ da Área: a sua, a dos suportes da habilidade e a da própria magia; a fração, a chance de uma casa a mais).
  */
-function magiaAtivadaS2B(estado, hunt, personagem, id, centro, { min, max, elemento, raioM, areaIncPct = 0, critBase = 0, eficacia = 1, maisPct = 0, tags, fonte, cor }, eventos, rng = Math.random) {
+function magiaAtivadaS2B(estado, hunt, personagem, id, centro, { min, max, elemento, raioM, areaIncPct = 0, critBase = 0, eficacia = 1, maisPct = 0, tags, fonte, cor, aoAcertar = null }, eventos, rng = Math.random) {
   const ef = Gemas.efeitoNaSkill(estado, id);
   const fichaBase = Ficha.combate(estado);
   const porTag = ModsPoe.somaPorTags(fichaBase, tags);
@@ -1196,7 +1196,10 @@ function magiaAtivadaS2B(estado, hunt, personagem, id, centro, { min, max, eleme
   let total = 0;
   for (const m of [...(hunt.monstros ?? [])]) {
     if (!(m.hp > 0) || m.dummy || (m.z ?? hunt.z ?? 0) !== (centro.z ?? hunt.z ?? 0) || Math.max(Math.abs(m.x - centro.x), Math.abs(m.y - centro.y)) > raio) continue;
-    total += acertoDoArauto(estado, hunt, id, m, min + rng() * Math.max(0, max - min), elemento, { tags, eventos, rng, fonte, personagem, critBase, adicionadoMagia: eficacia, soElemento: elemento, maisPct }) ?? 0;
+    const d = acertoDoArauto(estado, hunt, id, m, min + rng() * Math.max(0, max - min), elemento, { tags, eventos, rng, fonte, personagem, critBase, adicionadoMagia: eficacia, soElemento: elemento, maisPct }) ?? 0;
+    total += d;
+    // (lote D3: o que a magia faz em quem acerta — o Definhando do Sapo Explosivo)
+    if (d > 0) aoAcertar?.(m);
   }
   return total;
 }
@@ -1225,6 +1228,8 @@ export function prismaNoAcerto(estado, hunt, personagem, entry, ef, alvo, rng = 
  * monstro (o dano de Caos dela, 2 m × a Área + a qualidade dela, a eficácia e o crítico dela), na recarga dela ("0.15 seg (3 Times)": 3 usos guardados).
  */
 export function tiqueDosFeiticosS2B(estado, hunt, personagem, eventos = [], agora = hunt?.clock ?? 0, rng = Math.random) {
+  // (lote D3, dono 27/10: o Solo Maldito — quem entra fica amaldiçoado, quem sai perde; o Sapo Explosivo do Sapo Enfeitiçado)
+  tiqueDoSoloMalditoD3(estado, hunt, personagem, eventos, agora, rng);
   const fim = SuportesS2B.feiticosQueTerminaram(hunt, agora);
   for (const { bicho, id } of fim) {
     const ef = Gemas.efeitoNaSkill(estado, id);
@@ -1232,6 +1237,58 @@ export function tiqueDosFeiticosS2B(estado, hunt, personagem, eventos = [], agor
     if (!SuportesS2B.gastarUso(hunt, `doom:${id}`, ef.doomRecargaMs ?? 150, ef.doomUsos ?? 1, agora)) continue;
     magiaAtivadaS2B(estado, hunt, personagem, id, bicho, { min: ef.doomMin, max: ef.doomMax, elemento: 'chaos', raioM: ef.doomRaioM ?? 2, areaIncPct: ef.doomAreaIncPct ?? 0, critBase: ef.doomCrit ?? 5, eficacia: ef.doomEficacia ?? 1,
       tags: ['magia', 'area', 'caos', 'habilidade'], fonte: 'explosao-destruidora', cor: COR_DO_ELEMENTO.chaos }, eventos, rng);
+  }
+  return eventos;
+}
+/**
+ * (lote D3, decisão do dono 27/10) Cria o SOLO MALDITO do Feitiço suportado (o Solo Maldito, o Sapo Enfeitiçado) ao ligar o buff: no `alvo` vivo; sem ele, no inimigo vivo mais
+ * perto de você; sem nenhum, não cria. O raio é o da maldição (`maldicaoRegras.raioCasas`), a duração 34 s / 14 s × a Duração da habilidade; o novo tira o velho.
+ */
+function criarSoloMalditoD3(estado, hunt, entry, ef, alvo, agora) {
+  const vivo = (b) => b && b.hp > 0 && !b.dummy && (b.z ?? hunt.z ?? 0) === (hunt.z ?? 0);
+  let centro = vivo(alvo) ? alvo : null;
+  if (!centro) for (const b of hunt.monstros ?? []) if (vivo(b) && (!centro || distanciaChebyshev(b, hunt.pos) < distanciaChebyshev(centro, hunt.pos))) centro = b;
+  if (!centro) return null;
+  const buff = hunt.buffs[entry.id];
+  const regras = buff.efeitosPoe.find((e) => e.efeito === 'maldicaoRegras');
+  return SuportesS2B.criarSoloMaldito(hunt, { id: entry.id, centro, casas: regras?.raioCasas ?? 0, ms: Math.round(ef.soloMalditoMs * fatorDeDuracao(estado, entry, ef)), efeitos: buff.efeitosPoe, fator: buff.fator ?? 1, lancado: buff.desde ?? agora,
+    sapoMs: ef.sapoIntervaloMs > 0 && ef.sapoMax > 0 ? ef.sapoIntervaloMs : 0 }, agora);
+}
+/**
+ * (lote D3, decisão do dono 27/10) O tique do SOLO MALDITO: quem está dentro fica amaldiçoado pelo Feitiço (sem duração — `Reforcos.marcarCom` com `solo`; o limite, os à prova
+ * e as regras valem); quem sai perde (sem a Explosão Destruidora — só o fim da duração e a morte a ativam); o solo acabou (ou foi trocado), todos perdem. O SAPO ENFEITIÇADO:
+ * a cada intervalo (0,8 s), o Sapo Explosivo salta no amaldiçoado do solo mais perto do centro e explode (o Caos dela, 2,3 m × a Área, 5% de crítico, a eficácia 400%, e
+ * Definhando por 2 s em quem acerta).
+ */
+function tiqueDoSoloMalditoD3(estado, hunt, personagem, eventos, agora, rng = Math.random) {
+  const s = hunt?.poeS2B;
+  if (!s?.solo && !s?.soloN) return eventos;
+  const solo = SuportesS2B.soloAgora(hunt, agora);
+  if (s.solo && !solo) delete s.solo;
+  const dentro = [];
+  for (const b of hunt.monstros ?? []) {
+    if (!b?.maldicoes && !solo) continue;
+    const ok = solo && b.hp > 0 && !b.dummy && SuportesS2B.noSolo(solo, b);
+    for (const [k, m] of Object.entries(b.maldicoes ?? {})) if (m?.solo && !(ok && k === solo.id && m.solo === solo.n)) delete b.maldicoes[k];
+    if (!ok) continue;
+    if (!b.maldicoes?.[solo.id]) {
+      const def = { ...(Reforcos.REFORCOS[solo.id] ?? {}), tipo: 'poe-maldicao', efeitos: solo.efeitos };
+      const r = Reforcos.marcarCom(hunt, b, [{ id: solo.id, def, fator: solo.fator ?? 1, lancado: solo.lancado ?? agora, emAura: false }], agora, { solo: solo.n });
+      if (r.amaldicoouSemMaldicao || b.maldicoes?.[solo.id]) eventos.push({ t: 'estado', uid: b.uid, x: b.x, y: b.y, estado: 'amaldicoado' });
+    }
+    if (b.maldicoes?.[solo.id]?.solo === solo.n) dentro.push(b);
+  }
+  // o Sapo Explosivo
+  if (solo?.sapoMs > 0 && agora >= (solo.sapoEm ?? 0)) {
+    solo.sapoEm = agora + solo.sapoMs;
+    const ef = Gemas.efeitoNaSkill(estado, solo.id);
+    const alvo = dentro.sort((a, b) => distanciaChebyshev(a, solo) - distanciaChebyshev(b, solo))[0];
+    if (alvo && ef?.sapoMax > 0) {
+      const ficha = Ficha.combate(estado);
+      magiaAtivadaS2B(estado, hunt, personagem, solo.id, alvo, { min: ef.sapoMin, max: ef.sapoMax, elemento: 'chaos', raioM: ef.sapoRaioM ?? 2.3, critBase: ef.sapoCrit ?? 5, eficacia: ef.sapoEficacia ?? 1,
+        tags: ['magia', 'area', 'caos', 'habilidade'], fonte: 'sapo-explosivo', cor: COR_DO_ELEMENTO.chaos,
+        aoAcertar: (m) => { if (m.hp > 0 && ef.sapoDefinharMs > 0) ModsPoe.porNoAlvoComMods(m, 'definhado', agora + ef.sapoDefinharMs, agora, ficha, rng); } }, eventos, rng);
+    }
   }
   return eventos;
 }
@@ -5895,6 +5952,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         ...(reserva ? { reserva: { recurso: reserva.recurso, ...(reserva.pct ? { pct: reserva.pct } : { fixo: reserva.fixo }), fator: reserva.fator } } : {}) }
       : { ate: agora + duracao, tipo: buff.tipo, fator, ...(buff.mult ? { mult: Reforcos.velocidadeEscalada(buff.mult, fator) } : {}) };
     if (doPoe) Ficha.invalidar(estado);
+    // (lote D3, dono 27/10) o SOLO MALDITO e o SAPO ENFEITIÇADO: ligar o Feitiço cria o solo no alvo atual (sem alvo, no inimigo mais perto), com o raio da maldição, por
+    // 34 s (14 s no Sapo) × a Duração; o Feitiço só pega no solo (`tiqueDosFeiticosS2B`)
+    if (itensPoeLigado() && efeitoDaGema?.soloMalditoMs > 0 && entry.poeGema?.arquetipo === 'maldicao' && hunt.buffs?.[entry.id]?.efeitosPoe) criarSoloMalditoD3(estado, hunt, entry, efeitoDaGema, alvo, agora);
     // (lote S2A, 27/10) o Estandarte Ensanguentado plantado: o Sangue Corrompido de cada segundo na área dele, com o Físico base × o Valor consumido (`SuportesS2A.tiqueS2A`)
     if (itensPoeLigado() && plantado && efeitoDaGema?.sangueEstandarte > 0 && hunt.buffs?.[entry.id]?.estandarte) hunt.buffs[entry.id].estandarte.sangue = { ...sangueDoSuporteS2A(estado, entry, efeitoDaGema, (efeitoDaGema.sangueEstandartePorValor ?? 0) * (plantado.valor ?? 0), efeitoDaGema.sangueEstandarteMs ?? 8000), proximo: agora };
     // (lote A1b, dono 19/10: D-e) a Corrida de Fase guarda o buff secundário — o próximo uso de qualquer habilidade sua o troca (`trocarCorridaDeFase`)

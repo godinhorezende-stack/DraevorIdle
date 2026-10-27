@@ -127,6 +127,8 @@ function morrerOsMortos(estado, personagem, eventos, lista) {
     if (m.poeFusiveis || m.poeConchas) Acoes.guardarRestosPR4(hunt, m);
     // (lote S2B, 27/10) o Propagar Feitiço: os Feitiços suportados do morto passam aos vivos a até o raio (`SuportesS2B.transferirFeiticos`)
     if (m.maldicoes) for (const b of SuportesS2B.transferirFeiticos(hunt, m, hunt.clock ?? 0)) eventos.push({ t: 'estado', uid: b.uid, x: b.x, y: b.y, estado: 'amaldicoado' });
+    // (lote D3, dono 27/10) a Destruição Iminente também na MORTE do amaldiçoado com o Feitiço nele (a Explosão Destruidora no lugar dele, no tique)
+    if (m.maldicoes) SuportesS2B.feiticosNaMorte(hunt, m, hunt.clock ?? 0);
     matarMonstro(estado, hunt, personagem, m, eventos);
   }
 }

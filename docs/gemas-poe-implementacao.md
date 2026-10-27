@@ -27,9 +27,9 @@ Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 175 |
+| implementada e testada | 180 |
 | implementada, sem teste próprio | 51 |
-| parcial | 36 |
+| parcial | 31 |
 
 ### Variantes
 
@@ -39,10 +39,10 @@ Só os ataques:
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 132 linhas distintas (13 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 122 linhas distintas (12 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 504/562 ativas, 186/262 suportes.
+- Testes que citam a gema: 504/562 ativas, 189/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
@@ -58,7 +58,6 @@ Só os ataques:
 | 2 | #% do Dano Físico Convertido para Dano de Fogo |
 | 2 | a onda usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma) |
 | 2 | Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética |
-| 2 | Habilidades suportadas criam Solo Maldito com uma Duração base de # segundos Feitiços de Habilidades Suportadas não tem Duração Inimigos em Solo Maldito das Habilidades Suportadas são Amaldiçoados com tal Feitiço Limite de # área de Solo Maldito |
 | 2 | Máximo de # anomalias |
 | 2 | sem dano direto: nenhum efeito no combate |
 | 2 | Velocidade de Movimento dos Lacaios está no Máximo |
@@ -81,10 +80,8 @@ Só os ataques:
 | 1 | Auras das Habilidades Suportadas têm uma duração base de # segundos |
 | 1 | Buff concede # % mais Dano Físico |
 | 1 | Cada Mina das Habilidades Suportadas aplicadas #% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de #% |
-| 1 | Causa # a # de Dano de Caos |
 | 1 | Causa # a # de Dano de Raio |
 | 1 | Causa Dano de Fogo base igual a #% da Vida Máxima dos Totens |
-| 1 | Chão amaldiçoado de habilidades reforçadas ativam Sapo Explosivo a cada # segundo |
 | 1 | Cobre Inimigos em Cinzas ao Acertar |
 | 1 | Consumir um cadáver com habilidades reforçadas tem #% de chance de conceder uma alma por poder |
 | 1 | Consumir um cadáver com habilidades reforçadas tem +#% de chance de conceder uma alma por poder |
@@ -138,19 +135,12 @@ Só os ataques:
 | 1 | Habilidades Suportadas só podem ser usadas com Varinhas |
 | 1 | Habilidades Suportadas têm Custo de Vida aumentado em #% |
 | 1 | Habilidades Suportadas têm Efeito das Auras reduzido em #% |
-| 1 | Inflige Definhando por # segundos ao Acertar |
 | 1 | Inimigos sofrem de Insanidade Perversa se estiverem sob a influência de auras de habilidades reforçadas por mais de # segundos |
 | 1 | Invoca # Lacaios Relâmpagos Vivos |
 | 1 | Invoca # Nascido(s) da Colmeia |
 | 1 | Lacaios causam # % de Dano Físico |
 | 1 | Lacaios convertem #% do Dano Físico para Dano de Raio |
 | 1 | Lacaios das Habilidades Suportadas sofrem #% de sua Vida e Escudo de Energia Máximos total como Dano Físico por segundo enquanto você tiver uma Aura de uma Habilidade Suportada em você |
-| 1 | Lacaios das Habilidades Suportadas têm # metros ao Raio de seu Efeito Incendiário |
-| 1 | Lacaios de Habilidades Suportadas causam # de Dano de Fogo por segundo aos Inimigos próximos a eles |
-| 1 | Lacaios de Habilidades Suportadas causam #% mais Dano com Acertos e Afecções às suas Presas |
-| 1 | Lacaios de Habilidades Suportadas são Defensivos |
-| 1 | Lacaios de Habilidades Suportadas sempre focam em Presas se possível |
-| 1 | Lacaios de Habilidades Suportadas sofrem #% de sua Vida Máxima como Dano de Fogo por segundo |
 | 1 | Lacaios Relâmpagos Vivos atacam # vezes antes de desaparecerem |
 | 1 | Lacaios Relâmpagos Vivos atacam +# vezes antes de desaparecerem |
 | 1 | Lacaios têm #% de chance de cobrir os inimigos de gelo ao atingir |
@@ -366,8 +356,6 @@ Só os ataques:
   - não simulado: Ativa esta magia reforçada quando sua salvaguarda quebra
 - **Crystalfall_Support** (Cristal em Queda (Reforço)) — parcial
   - não simulado: Habilidades reforçadas ativam Cristal em Queda ao atingir
-- **Cursed_Ground_Support** (Solo Maldito) — parcial
-  - não simulado: Habilidades suportadas criam Solo Maldito com uma Duração base de 34 segundos Feitiços de Habilidades Suportadas não tem Duração Inimigos em Solo Maldito das Habilidades Suportadas são Amaldiçoados com tal Feitiço Limite de 1 área de Solo Maldito
 - **Divine_Blessing_Support** (Bênção Divina) — parcial
   - não simulado: Habilidades Suportadas Custam +233 de Mana
   - não simulado: Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção
@@ -420,11 +408,6 @@ Só os ataques:
   - não simulado: Habilidades Suportadas não podem aplicar Auras em você a menos que você tenha Lacaios de uma Habilidade Suportada
   - não simulado: Lacaios das Habilidades Suportadas sofrem 14.3% de sua Vida e Escudo de Energia Máximos total como Dano Físico por segundo enquanto você tiver uma Aura de uma Habilidade Suportada em você
   - não simulado: Habilidades Suportadas também contam como Habilidades Bênção\nVocê só pode ter uma Aura de suas Habilidades Bênção
-- **Hextoad_Support** (Sapo Enfeitiçado (Reforço)) — parcial
-  - não simulado: Habilidades suportadas criam Solo Maldito com uma Duração base de 14 segundos Feitiços de Habilidades Suportadas não tem Duração Inimigos em Solo Maldito das Habilidades Suportadas são Amaldiçoados com tal Feitiço Limite de 1 área de Solo Maldito
-  - não simulado: Chão amaldiçoado de habilidades reforçadas ativam Sapo Explosivo a cada 0.8 segundo
-  - não simulado: Causa 2504 a 3757 de Dano de Caos
-  - não simulado: Inflige Definhando por 2 segundos ao Acertar
 - **High-Impact_Mine_Support** (Mina de Alto Impacto) — parcial
   - não simulado: Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida
   - não simulado: Cada Mina das Habilidades Suportadas aplicadas 2% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de 100%
@@ -434,10 +417,6 @@ Só os ataques:
   - não simulado: Invoca 5 Nascido(s) da Colmeia
   - não simulado: Lacaios têm 20% de chance de cobrir os inimigos de gelo ao atingir
   - não simulado: Máximo de 2 Nascido(s) da Colmeia
-- **Infernal_Legion_Support** (Legião Infernal) — parcial
-  - não simulado: Lacaios de Habilidades Suportadas sofrem 40% de sua Vida Máxima como Dano de Fogo por segundo
-  - não simulado: Lacaios de Habilidades Suportadas causam 2468.6 de Dano de Fogo por segundo aos Inimigos próximos a eles
-  - não simulado: Lacaios das Habilidades Suportadas têm 0.5 metros ao Raio de seu Efeito Incendiário
 - **Kinetic_Instability_Support** (Reforço Instabilidade Cinética) — parcial
   - não simulado: Habilidades reforçadas ativam Fluxo Cinético no golpe fatal
   - não simulado: 150% de Poder Arcano
@@ -461,17 +440,12 @@ Só os ataques:
 - **Machinations_Support** (Maquinações (Reforço)) — parcial
   - não simulado: Habilidades reforçadas ganham 8% do dano físico como dano de caos adicional por fundamental
   - não simulado: Habilidades reforçadas têm o custo aumentado em 10% por fundamental
-- **Meat_Shield_Support** (Escudo de Carne) — parcial
-  - não simulado: Lacaios de Habilidades Suportadas são Defensivos
 - **Mirage_Archer_Support** (Arqueiro Ilusório) — parcial
   - não simulado: Máximo de 1 Arqueiro Ilusório Convocado
   - não simulado: Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade Arqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados
   - não simulado: Arqueiro Ilusório utiliza Habilidades Suportadas com 60% menos Velocidade de Ataque
   - não simulado: Arqueiro Ilusório dura 4 segundos
   - não simulado: Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade\nArqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados
-- **Predator_Support** (Predador) — parcial
-  - não simulado: Lacaios de Habilidades Suportadas causam 24% mais Dano com Acertos e Afecções às suas Presas
-  - não simulado: Lacaios de Habilidades Suportadas sempre focam em Presas se possível
 - **Pyre_Support** (Pira (Reforço)) — parcial
   - não simulado: Habilidades reforçadas têm 50% de chance de ativar Chamado da Fogueira ao atingir inimigos incendiados corpo a corpo
   - não simulado: 100% do Dano Físico Convertido para Dano de Fogo
