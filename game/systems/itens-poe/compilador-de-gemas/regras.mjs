@@ -256,8 +256,10 @@ export const REGRAS = [
   [r(`(?:recebem ${N} % de aumento de Velocidade de Movimento|Velocidade de Movimento aumentada em ${N})`), (s, m) => (s.buff.velMov += num(m[1] || m[2]))],
   // (17/10, lote G18b: a Chance de Acerto Crítico "aumentada" é AUMENTADO, não pontos — a Precisão dava +58 pontos —: linha de buff/local, `crit_chance_inc`)
   [r(`(?:recebem ${N} % de aumento da Chance de Acerto Crítico|Chance de Acerto Crítico(?: com Magias)? aumentad[oa] em ${N})`), () => false],
-  [r(`ganham \\+?${N} % (?:em todas Resistências Elementais|de Resistência a todos os Elementos)`), (s, m) => TODOS.forEach((e) => (s.buff.resist[e] = num(m[1])))],
-  [r(`ganham ${N} % de Resistência a ${EL} adicional`), (s, m) => (s.buff.resist[el(m[2])] = num(m[1]))],
+  // (lote T1, rodada 4: a resistência do buff SOMA — a linha da qualidade das Purezas, "ganham (0 — 10)% de Resistência a Gelo adicional", entra depois da do nível;
+  // antes a substituía e a Pureza Glacial q20 dava 10% em vez de 41 + 10)
+  [r(`ganham \\+?${N} % (?:em todas Resistências Elementais|de Resistência a todos os Elementos)`), (s, m) => TODOS.forEach((e) => (s.buff.resist[e] = (s.buff.resist[e] ?? 0) + num(m[1])))],
+  [r(`ganham ${N} % de Resistência a ${EL} adicional`), (s, m) => (s.buff.resist[el(m[2])] = (s.buff.resist[el(m[2])] ?? 0) + num(m[1]))],
   [r(`ganham ${N} % de Resistência máxima`), () => false],
   [r(`(?:ganham|Buff concede) \\+?${N} (?:de )?Armadura`), (s, m) => (s.buff.armadura += num(m[1]))],
   [r(`ganham ${N} (?:%? ?mais |de )?Evasão`), (s, m) => (s.buff.evasao += num(m[1]))],

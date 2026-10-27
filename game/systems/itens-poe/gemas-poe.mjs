@@ -74,6 +74,8 @@ import * as GemasD1 from './gemas-d1.mjs';
 // (lote R3B, 27/10: as Sentinelas, a Nova da Relíquia, o Golpe Sagrado como ataque e o Clamor do General — gemas-r3b.mjs)
 import * as GemasR3B from './gemas-r3b.mjs';
 import * as GemasR3D from './gemas-r3d.mjs';
+// (lote T1, rodada 4: a Legião Congelada — o Arrastão das Estátuas)
+import * as GemasT1 from './gemas-t1.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
 const ARQ_GEMAS = new URL('../../gamedata/itens-poe/gemas-poe.json', import.meta.url);
@@ -355,7 +357,10 @@ export function compilada(slug, nivel = 1, qualidade = 0) {
   if (!CACHE.has(k)) {
     const h = COMPILADOR.compilarHabilidade(g, n, q > 0 ? linhasDaQualidade(g, q / 20) : []);
     const c = CORRECAO_DO_POB[slug];
-    const h2 = h && c?.efetividade ? { ...h, stats: { ...h.stats, efetividade: c.efetividade[Math.min(c.efetividade.length, n) - 1] } } : h;
+    const h1 = h && c?.efetividade ? { ...h, stats: { ...h.stats, efetividade: c.efetividade[Math.min(c.efetividade.length, n) - 1] } } : h;
+    // (lote T1, rodada 4) a Legião Congelada: o golpe é o Arrastão Congelante das Estátuas — o dano-base dele (a última parte da célula do poedb), o Gelo, a velocidade
+    // e a área (`GemasT1.corrigirCompilada`)
+    const h2 = GemasT1.corrigirCompilada(slug, h1, (g.linhas?.[Math.min(n, g.linhas.length) - 1] ?? [])[(g.colunas ?? []).indexOf('Base Damage')]);
     CACHE.set(k, h2 && ARQUETIPO_PROPRIO[slug] ? { ...h2, arquetipo: ARQUETIPO_PROPRIO[slug] } : h2);
   }
   return CACHE.get(k);

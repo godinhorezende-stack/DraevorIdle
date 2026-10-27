@@ -380,7 +380,7 @@ export function descrever(id, efeitoDaGema = null) {
   const def = REFORCOS[id];
   if (!def) return null;
   const fator = fatorDaGema(efeitoDaGema);
-  const duracaoMs = Math.round(def.dur * (1 + (efeitoDaGema?.duracaoPct ?? 0) / 100));
+  const duracaoMs = Math.round(def.dur * (1 + (efeitoDaGema?.duracaoPct ?? 0) / 100) * Math.max(0, 1 + (efeitoDaGema?.duracaoMaisPct ?? 0) / 100));
   const linhas = [];
   if (def.tipo === 'shield') linhas.push('O dano que você sofre sai da sua mana antes de sair da vida');
   if (def.mult) linhas.push(`+${num((velocidadeEscalada(def.mult, fator) - 1) * 100)}% de velocidade de movimento`);

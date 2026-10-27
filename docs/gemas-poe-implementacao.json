@@ -2,35 +2,35 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 460,
-   "implementada, sem teste próprio": 43,
+   "implementada e testada": 475,
    "limitação do modelo idle": 58,
+   "implementada, sem teste próprio": 28,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 182,
-   "implementada, sem teste próprio": 18,
-   "limitação do modelo idle": 10
+   "implementada e testada": 189,
+   "limitação do modelo idle": 10,
+   "implementada, sem teste próprio": 11
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 212,
-   "implementada, sem teste próprio": 49,
+   "implementada e testada": 229,
+   "implementada, sem teste próprio": 32,
    "não se aplica": 1
   },
   "variantes": {
    "vaal": {
     "total": 52,
-    "implementada e testada": 43,
+    "implementada e testada": 45,
     "limitação do modelo idle": 4,
-    "implementada, sem teste próprio": 5
+    "implementada, sem teste próprio": 3
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 156,
-    "implementada, sem teste próprio": 24,
-    "limitação do modelo idle": 29
+    "implementada e testada": 163,
+    "limitação do modelo idle": 29,
+    "implementada, sem teste próprio": 17
    }
   },
   "compatibilidade": {
@@ -56,8 +56,8 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 511,
-   "suportesCitados": 213,
+   "ativasCitadas": 526,
+   "suportesCitados": 230,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
@@ -107,7 +107,7 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -1752,7 +1752,7 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -1765,7 +1765,7 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -2300,7 +2300,7 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -2501,7 +2501,7 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -2973,7 +2973,7 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -3090,7 +3090,7 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "chuva",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -3651,7 +3651,7 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -4275,7 +4275,7 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "canalizacao",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -4722,7 +4722,7 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -5271,7 +5271,7 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -5541,7 +5541,7 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -6299,7 +6299,7 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -6689,7 +6689,7 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -7485,7 +7485,7 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -7651,7 +7651,7 @@
   {
    "slug": "Bloodlust_Support",
    "nome": "Violência",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -7859,7 +7859,7 @@
   {
    "slug": "Less_Duration_Support",
    "nome": "Menos Duração",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -7875,7 +7875,7 @@
   {
    "slug": "More_Duration_Support",
    "nome": "Mais Duração",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -7987,7 +7987,7 @@
   {
    "slug": "Awakened_Added_Fire_Damage_Support",
    "nome": "Suporte Desperto: Dano Adicional de Fogo",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8043,7 +8043,7 @@
   {
    "slug": "Awakened_Generosity_Support",
    "nome": "Suporte Desperto: Generosidade",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8123,7 +8123,7 @@
   {
    "slug": "Greater_Multistrike_Support",
    "nome": "Ataques Múltiplos Maiores (Reforço)",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8443,7 +8443,7 @@
   {
    "slug": "Fork_Support",
    "nome": "Difundir",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8515,7 +8515,7 @@
   {
    "slug": "Barrage_Support",
    "nome": "Barragem",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8619,7 +8619,7 @@
   {
    "slug": "Awakened_Arrow_Nova_Support",
    "nome": "Suporte Desperto: Nova de Flechas",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8667,7 +8667,7 @@
   {
    "slug": "Awakened_Fork_Support",
    "nome": "Suporte Desperto: Difundir",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8691,7 +8691,7 @@
   {
    "slug": "Awakened_Vicious_Projectiles_Support",
    "nome": "Suporte Desperto: Projéteis Perigosos",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8974,7 +8974,7 @@
   {
    "slug": "Increased_Critical_Damage_Support",
    "nome": "Dano Crítico Aumentado",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -9110,7 +9110,7 @@
   {
    "slug": "Elemental_Penetration_Support",
    "nome": "Penetração Elemental",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -9334,7 +9334,7 @@
   {
    "slug": "Awakened_Added_Chaos_Damage_Support",
    "nome": "Suporte Desperto: Dano Adicional de Caos",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -9374,7 +9374,7 @@
   {
    "slug": "Awakened_Elemental_Focus_Support",
    "nome": "Suporte Desperto: Foco Elemental",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -9414,7 +9414,7 @@
   {
    "slug": "Awakened_Minion_Damage_Support",
    "nome": "Suporte Desperto: Dano do Lacaio",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -9462,7 +9462,7 @@
   {
    "slug": "Cooldown_Recovery_Support",
    "nome": "Recuperação de Recarga (Reforço)",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true

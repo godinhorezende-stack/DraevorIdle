@@ -686,7 +686,9 @@ const REGRAS = [
   // Afecções ao acertar.
   [new RegExp(`têm ${N}% de chance de Congelar`, 'i'), (m) => ({ congelarChance: num(m[1]) })],
   // Duração, recarga, drenagem.
-  [new RegExp(`têm ${N}% (mais|menos) Duração`, 'i'), (m) => ({ duracaoPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  // (lote T1, rodada 4: o "X% mais/menos Duração" é MAIS — multiplica o aumentado, como no PoE: a Mais Duração é support_more_duration_skill_effect_duration_+%_final;
+  // antes somava no aumentado, `duracaoPct` — `Acoes.fatorDeDuracao` e os outros que leem a duração multiplicam o `duracaoMaisPct`)
+  [new RegExp(`têm ${N}% (mais|menos) Duração`, 'i'), (m) => ({ duracaoMaisPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
   [new RegExp(`Duração (?:de Habilidade )?aumentada em ${N}%`, 'i'), (m) => ({ duracaoPct: num(m[1]) })],
   [new RegExp(`Velocidade de Recarga aumentada em ${N}%`, 'i'), (m) => ({ recargaPct: tempoDaVelocidade(num(m[1])) })],
   [new RegExp(`${N}% do Dano .*Drenado como Vida`, 'i'), (m) => ({ leechVidaPct: num(m[1]) })],
@@ -695,6 +697,10 @@ const REGRAS = [
   // (lote A5, dono 20/10: + "1 do Nível das Gemas de Habilidade de Caos Suportadas" — o Manipulação do Vazio Desperto: "do Nível", e só nas de Caos)
   [new RegExp(`^\\+?${N} (?:ao|do) N[iíï]vel (?:de|das) Gemas de (?:Habilidade )?(\\S+)? ?(?:de )?(?:Habilidades? )?(\\S+)? ?Suportadas`, 'i'), (m, t, a) => {
     const so = /Físicas/i.test(t) ? 'Físico' : /de Fogo/i.test(t) ? 'Fogo' : /de Caos/i.test(t) ? 'Caos' : /Aura/i.test(t) ? 'Aura' : /Golpes/i.test(t) ? 'Golpe' : null;
+    // (lote T1, rodada 4: "…Gemas de Habilidade Elementais Suportadas" — o Foco Elemental Desperto — só nas gemas de Fogo, Gelo ou Raio, e "…de Lacaios" só nas de
+    // Lacaio; antes o +1 valia em qualquer gema — o Golpe Pesado subia de nível com o Foco Elemental Desperto)
+    if (/Elementais/i.test(t) && !['Fogo', 'Gelo', 'Raio'].some((x) => temTag(a, x))) return null;
+    if (/de Lacaios/i.test(t) && !temTag(a, 'Lacaio')) return null;
     return !so || temTag(a, so) ? { nivelExtra: Math.floor(num(m[1])) } : null;
   }],
   // Repetições (Eco de Magia, Golpe Múltiplo): a skill sai de novo na hora.
