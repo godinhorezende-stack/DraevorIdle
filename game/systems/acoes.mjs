@@ -112,6 +112,8 @@ import * as GemasE2a from './itens-poe/gemas-e2a.mjs';
 import * as GemasE2b from './itens-poe/gemas-e2b.mjs';
 // (lote D1, 27/10: os giros da Armadilha de Lâminas e o Carne e Pedra — `itens-poe/gemas-d1.mjs`)
 import * as GemasD1 from './itens-poe/gemas-d1.mjs';
+// (lote R3C, 27/10: as Bênçãos, a Mina Local, a Insanidade Perversa, a Constrição Pérfida, o Fluxo Cinético e o Vínculo Frígido)
+import * as GemasR3c from './itens-poe/gemas-r3c.mjs';
 // (lote S2A, 27/10: os suportes com mecânica nova — o acerto, o uso pago, o abate, o Ímpeto de Combate)
 import * as SuportesS2A from './itens-poe/suportes-s2a-jogo.mjs';
 // (lote S2B, 27/10: os suportes da segunda metade das parciais)
@@ -174,7 +176,8 @@ const custoDoCatalogo = (entry) => Math.round((entry.mana ?? 0) * (Gemas.defDaGe
 // (A aura do PoE que RESERVA não tem custo: ela tranca a mana enquanto está ligada — `itens-poe/reserva.mjs`.)
 // (E a maldição com a Blasfêmia, que vira aura e reserva.)
 const custoDaSkill = (entry, efeitoDaGema, estado = null) => (entry.poeGema
-  ? entry.poeGema.buff && (Reserva.daGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) || Reserva.ehMaldicaoEmAura(entry, efeitoDaGema)) ? 0 : GemasPoe.custoNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) + custoBaseDoSuporte(estado, efeitoDaGema)
+  // (lote R3C: a aura com a Bênção Divina — "Habilidades Suportadas Custam +N de Mana": a reserva vira esse custo base; a Eterna e a do Guardião, sem custo)
+  ? entry.poeGema.buff && (Reserva.daGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) || Reserva.ehMaldicaoEmAura(entry, efeitoDaGema)) ? (GemasR3c.bencaoDaAura(entry.poeGema.arquetipo, entry.poeGema.slug, efeitoDaGema)?.custoMana ?? 0) : GemasPoe.custoNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) + custoBaseDoSuporte(estado, efeitoDaGema)
   : custoDoCatalogo(entry));
 /**
  * (lote S1, 26/10) O custo de Mana BASE a mais dos suportes (o Arquimago: "custo de mana base equivalente a 5% do mana máximo não reservado"; o Mago do Gelo: "…do mana
@@ -1112,7 +1115,7 @@ const tagsDoArauto = (entry, extra = []) => [...new Set([...tagsPoeDaSkill(entry
  * Um ACERTO do Arauto `id` no bicho `m`: `bruto` (o dano no nível, antes dos aumentos) do `elemento`. `semEletrizar`: a tempestade "Não Pode
  * aplicar Eletrizar". Devolve o dano dado.
  */
-export function acertoDoArauto(estado, hunt, id, m, bruto, elemento, { tags = null, eventos = [], rng = Math.random, semEletrizar = false, fonte = null, personagem = null, critBase = 0, afeccoesExtra = null, ataque = false, adicionado = null, adicionadoMagia = null, conversaoFisico = null, soElemento = null, maisPct = 0, efetivo = null, ativado = null } = {}) {
+export function acertoDoArauto(estado, hunt, id, m, bruto, elemento, { tags = null, eventos = [], rng = Math.random, semEletrizar = false, fonte = null, personagem = null, critBase = 0, afeccoesExtra = null, ataque = false, adicionado = null, adicionadoMagia = null, conversaoFisico = null, soElemento = null, maisPct = 0, efetivo = null, ativado = null, poderArcano = 0 } = {}) {
   const entry = POR_ID.get(id);
   if (!entry || !m || !(m.hp > 0) || m.dummy || !(bruto > 0)) return 0;
   const agora = hunt.clock ?? 0;
@@ -1120,7 +1123,8 @@ export function acertoDoArauto(estado, hunt, id, m, bruto, elemento, { tags = nu
   const t = tags ?? tagsDoArauto(entry);
   // (correções F3: `efetivo` — o efeito dos suportes já recalculado para outra habilidade, a magia ativada da Explosão Prismática e da Destruição Iminente)
   const ef = efetivo ?? Gemas.efeitoNaSkill(estado, id);
-  const f = ModsPoe.fichaDoGolpe(fichaBase, t, { alvo: m, estado });
+  // (lote R3C: `poderArcano` — o "150% de Poder Arcano" do Fluxo Cinético: os aumentos de Dano Mágico valem no dano deste ataque, a X% do valor — `fichaDoGolpe`)
+  const f = ModsPoe.fichaDoGolpe(poderArcano > 0 ? { ...fichaBase, afPoe: { ...(fichaBase.afPoe ?? {}), poder_arcano: (Number(fichaBase.afPoe?.poder_arcano) || 0) + poderArcano } } : fichaBase, t, { alvo: m, estado });
   // (lote A5b, dono 20/10) o acerto de ATAQUE que sai por aqui (a Onda de Choque e a Tormenta das Excepcionais do Vazio, a explosão da Torre Óssea) rola o
   // acerto como as gemas de ataque: a precisão do uso (as linhas da gema e dos suportes, a tag `habilidade`) contra a evasão do alvo. Errou: o evento do erro
   // e `null` (quem chama não o conta como acertado). Os Arautos e a Onda Arcana (sem `ataque`) não rolam
@@ -1282,6 +1286,131 @@ export function tiqueDosFeiticosS2B(estado, hunt, personagem, eventos = [], agor
   }
   return eventos;
 }
+// ---------------------------------------------------------------- (lote R3C, 27/10 — `itens-poe/gemas-r3c.mjs`)
+
+/**
+ * (lote R3C) O FLUXO CINÉTICO (as Instabilidades Cinéticas): cada inimigo que o ataque de varinha suportado matou (a comum: "no golpe fatal") ou o acertado do golpe
+ * crítico (a Maior: "ao causar golpe crítico", na recarga dela — 0,15 s com 6 usos) cria uma anomalia no lugar dele (o raio: 1,2 m × √ da Área, a fração sorteada;
+ * 6 s × a Duração; até 20 — a mais velha sai). A explosão sai no tique (`tiqueR3C`).
+ */
+function anomaliasDoFluxoR3c(estado, hunt, entry, ef, { mortos = [], critico = null }, agora) {
+  const ficha = Ficha.combate(estado);
+  const porTag = ModsPoe.somaPorTags(ficha, ['ataque', 'area']);
+  const fator = ModsPoe.fatorDaArea(ModsPoe.valor(ficha, 'area_inc') + (porTag.area_inc ?? 0) + (ef?.areaIncPct ?? 0), ModsPoe.valor(ficha, 'area_mais') + (porTag.area_mais ?? 0), ef?.areaMaisPct ?? 0);
+  const ms = Math.round((ef.fluxoDuracaoMs ?? 6000) * fatorDeDuracao(estado, entry, ef));
+  const criar = (c, maior) => GemasR3c.criarAnomalia(hunt, { acao: entry.id, c, z: c.z ?? hunt.z ?? 0, raio: GemasR3c.casasDe(ef.fluxoRaioM ?? 1.2, fator), ms, teto: ef.fluxoTeto ?? 20, maior }, agora);
+  if (ef.fluxoAoMatar) for (const b of mortos) criar(b, false);
+  if (ef.fluxoAoCritico && critico && GemasR3c.gastarUso(hunt, `fluxo:${entry.id}`, ef.fluxoRecargaMs ?? 150, ef.fluxoUsos ?? 1, agora)) criar(critico, true);
+}
+/**
+ * (lote R3C) A EXPLOSÃO da anomalia `a`: um acerto de ATAQUE em todos os vivos a até o raio dela — o golpe da varinha (o Físico da arma × o "Dano de Ataque: X% de base"
+ * do Fluxo), o dano adicionado × a eficácia dele, os 150% de Poder Arcano (os aumentos de Dano Mágico) e os suportes da habilidade que a criou.
+ */
+function explodirAnomaliaR3c(estado, hunt, personagem, a, eventos, rng = Math.random) {
+  const entry = POR_ID.get(a.acao);
+  const ef = entry ? Gemas.efeitoNaSkill(estado, a.acao) : null;
+  if (!entry || !ef || !(ef.fluxoAoMatar || ef.fluxoAoCritico)) return 0;
+  const arma = armaSemAdicionado(Ficha.combate(estado));
+  const tags = [...new Set([...tagsPoeDaSkill(entry), 'ataque', 'area'])];
+  eventos.push({ t: 'explosao', id: EFEITO_DA_EXPLOSAO, x: a.x, y: a.y, lado: 2 * Math.max(0, a.raio) + 1, fonte: 'fluxo-cinetico' });
+  let total = 0;
+  for (const m of [...(hunt.monstros ?? [])]) {
+    if (!(m.hp > 0) || m.dummy || (m.z ?? hunt.z ?? 0) !== (a.z ?? hunt.z ?? 0) || distanciaChebyshev(m, a) > a.raio) continue;
+    const bruto = ((arma.min + rng() * Math.max(0, arma.max - arma.min)) * (ef.fluxoDanoPct ?? 100)) / 100;
+    total += acertoDoArauto(estado, hunt, a.acao, m, bruto, 'physical', { tags, eventos, rng, fonte: 'fluxo-cinetico', personagem, ataque: true, adicionado: ef.fluxoEficacia ?? 1, poderArcano: ef.fluxoArcanoPct ?? 0 }) ?? 0;
+  }
+  return total;
+}
+/**
+ * (lote R3C) A CONSTRIÇÃO PÉRFIDA: convocar as Runas (a gema Convocar Runas) com o suporte cria as mãos — 2 por Runa convocada da habilidade (+ as da qualidade), até 30
+ * vivas, em casas sorteadas a até 4 m × √ da Área de você, por 8 s × a Duração —, na recarga dela (1 s). `porAcao`: `{ acao: quantas Runas }`. Devolve as criadas.
+ */
+export function maosNaConvocacaoR3c(estado, hunt, porAcao, agora = hunt?.clock ?? 0, rng = Math.random) {
+  const novas = [];
+  for (const [acao, n] of Object.entries(porAcao ?? {})) {
+    const entry = POR_ID.get(acao);
+    const ef = entry ? Gemas.efeitoNaSkill(estado, acao) : null;
+    if (!ef?.maosR3c || !(n > 0) || !hunt?.pos) continue;
+    if (!GemasR3c.gastarUso(hunt, `maos:${acao}`, ef.maosRecargaMs ?? 1000, 1, agora)) continue;
+    const ficha = Ficha.combate(estado);
+    const porTag = ModsPoe.somaPorTags(ficha, ['magia', 'area']);
+    const fator = ModsPoe.fatorDaArea(ModsPoe.valor(ficha, 'area_inc') + (porTag.area_inc ?? 0) + (ef.areaIncPct ?? 0), ModsPoe.valor(ficha, 'area_mais') + (porTag.area_mais ?? 0), ef.areaMaisPct ?? 0);
+    novas.push(...GemasR3c.criarMaos(hunt, { acao, centro: hunt.pos, z: hunt.z ?? 0, raio: GemasR3c.casasDe(ef.maosRaioM ?? 4, fator, rng), raio2: Math.max(1, GemasR3c.casasDe(ef.maosRaio2M ?? 1.5, fator, rng)), n: n * (ef.maosPorRuna ?? 2) + (ef.maosExtras ?? 0), ms: Math.round((ef.maosDuracaoMs ?? 8000) * fatorDeDuracao(estado, entry, ef)), teto: ef.maosTeto ?? 30 }, agora, rng));
+  }
+  return novas;
+}
+/**
+ * (lote R3C, 27/10) O TIQUE do lote:
+ *  - a BÊNÇÃO DO GUARDIÃO: a aura vale em você só com um lacaio vivo de uma habilidade do mesmo grupo (`GemasR3c.guardiaoEmVoce`); com ela em você, esses lacaios sofrem
+ *    o X% da Vida + Escudo de Energia por segundo como Físico (`GemasR3c.degenDoGuardiao`);
+ *  - a BLASFÊMIA SOBRENATURAL: os inimigos na aura da maldição suportada há mais de 5 s ficam com a Insanidade Perversa (`GemasR3c.tiqueDaInsanidade`);
+ *  - as ANOMALIAS do Fluxo Cinético que explodem (um inimigo perto) e as MÃOS da Constrição Pérfida que detonam (a magia de Raio do suporte).
+ */
+export function tiqueR3C(estado, hunt, personagem, eventos = [], agora = hunt?.clock ?? 0, rng = Math.random) {
+  if (!hunt) return eventos;
+  const s = hunt.poeR3c ?? null;
+  const passou = s?.tiqueEm != null ? Math.max(0, Math.min(2000, agora - s.tiqueEm)) : 0;
+  let temAlgo = false;
+  for (const [id, b] of Object.entries(hunt.buffs ?? {})) {
+    if (!b || !(b.ate > agora)) continue;
+    if (b.bencaoR3c === 'guardiao') {
+      temAlgo = true;
+      const grupo = Gemas.ativasDoMesmoGrupo(estado, id).map((x) => x.def?.acao).filter(Boolean);
+      if (GemasR3c.guardiaoEmVoce(hunt, b, grupo, agora)) Ficha.invalidar(estado);
+      const pct = Gemas.efeitoNaSkill(estado, id)?.guardiaoDegenPct ?? 0;
+      if (!b.soAliados && passou > 0) for (const { l } of GemasR3c.degenDoGuardiao(hunt.lacaios, grupo, pct, passou, agora)) if (l.hp <= 0) eventos.push({ t: 'fx', id: 3, x: l.x, y: l.y });
+    }
+    if (b.efeitosPoe && hunt.pos && hunt.monstros?.length) {
+      const ef = Gemas.efeitoNaSkill(estado, id);
+      if (ef?.insanidadeAposMs > 0 && ef.maldicaoEmAura > 0) {
+        const regras = b.efeitosPoe.find((e) => e.efeito === 'maldicaoRegras');
+        GemasR3c.tiqueDaInsanidade(hunt.monstros, hunt.pos, hunt.z ?? 0, id, Number(regras?.raioCasas) || 0, ef.insanidadeAposMs, agora, rng);
+      }
+    }
+  }
+  if (temAlgo || s) (hunt.poeR3c ??= {}).tiqueEm = agora;
+  if (s?.anomalias?.length) for (const a of GemasR3c.anomaliasQueExplodem(hunt, agora)) explodirAnomaliaR3c(estado, hunt, personagem, a, eventos, rng);
+  if (s?.maos?.length) {
+    for (const h of GemasR3c.maosQueDetonam(hunt, agora)) {
+      const ef = Gemas.efeitoNaSkill(estado, h.acao);
+      if (!ef?.maosR3c || !(ef.maosMax > 0)) continue;
+      magiaAtivadaS2B(estado, hunt, personagem, h.acao, h, { min: ef.maosMin ?? 0, max: ef.maosMax, elemento: 'energy', raioM: ef.maosRaio2M ?? 1.5, critBase: ef.maosCrit ?? 6, eficacia: ef.maosEficacia ?? 1.1,
+        tags: ['magia', 'area', 'raio', 'elemental', 'habilidade'], fonte: 'constricao-perfida', cor: COR_DO_ELEMENTO.energy }, eventos, rng);
+    }
+  }
+  return eventos;
+}
+/**
+ * (lote R3C) O VÍNCULO FRÍGIDO no tique dos Vínculos: a cada 0,5 s, o feixe entre você e cada alvo do Vínculo suportado (as casas da reta) — os inimigos nele levam o Gelo
+ * degenerativo da gema (por segundo, pela conta do degenerativo com os modificadores de Dano Mágico — `spell_damage_modifiers_apply_to_skill_dot`) e o Resfriamento sem
+ * acerto (10% × o Efeito do Resfriamento), os dois por 3 s (+ a qualidade) × a Duração (uma queima da gema por inimigo: a chave dela).
+ */
+function frigidoNosVinculosR3c(estado, hunt, eventos, agora) {
+  if (!itensPoeLigado() || !hunt?.vinculos?.length) { if (hunt?.poeR3c?.frigidoEm) delete hunt.poeR3c.frigidoEm; return; }
+  const em = ((hunt.poeR3c ??= {}).frigidoEm ??= {});
+  for (const lk of hunt.vinculos) {
+    const entry = POR_ID.get(lk.acao);
+    const ef = entry ? Gemas.efeitoNaSkill(estado, lk.acao) : null;
+    if (!ef?.frigidoR3c || !(ef.frigidoDps > 0) || !hunt.pos) continue;
+    if (agora < (em[lk.acao] ?? -Infinity) + GemasR3c.FRIGIDO_PULSO_MS) continue;
+    em[lk.acao] = agora;
+    const ficha = Ficha.combate(estado);
+    const durMs = Math.max(1, Math.round((ef.frigidoMs ?? 3000) * fatorDeDuracao(estado, entry, ef)));
+    const { fatorDaGema, ficha: fichaDoGolpe, soAcertoDaFicha } = contaDoDano(estado, entry, ef, ficha, null);
+    const total = totalDoDegenerativo({ elemento: 'ice', dps: ef.frigidoDps }, durMs, { efeitoDaGema: ef, ficha: fichaDoGolpe, fatorDaGema, soAcertoDaFicha, dotMagico: ef.frigidoMagico > 0 });
+    const lento = GemasR3c.RESFRIAMENTO_SEM_ACERTO_PCT * Math.max(0, 1 + (ModsPoe.valor(ficha, 'efeito_resfriamento') || 0) / 100);
+    const casas = new Set();
+    for (const a of lk.alvos ?? []) { const p = Vinculos.posicao(a, Vinculos.resolver(hunt, a)); if (p) for (const c of GemasR3c.casasDoFeixe(hunt.pos, p)) casas.add(c); }
+    for (const m of GemasR3c.inimigosNoFeixe(hunt.monstros, casas, hunt.z ?? 0)) {
+      const posto = total > 0 ? Dot.aplicar(m, { tipo: GemasPoe.DEGEN_DO_ELEMENTO.ice, total, duracaoMs: durMs, chave: `frigido:${lk.acao}`, origem: { fonte: 'voce', habilidade: lk.acao } }, agora) : null;
+      if (posto) eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: posto });
+      GemasGBD.porLento((m.estados ??= {}), agora + durMs, lento, agora);
+    }
+  }
+  const ativos = new Set(hunt.vinculos.map((lk) => lk.acao));
+  for (const k of Object.keys(em)) if (!ativos.has(k)) delete em[k];
+}
+
 /**
  * (lote D3, decisão do dono 27/10) Cria o SOLO MALDITO do Feitiço suportado (o Solo Maldito, o Sapo Enfeitiçado) ao ligar o buff: no `alvo` vivo; sem ele, no inimigo vivo mais
  * perto de você; sem nenhum, não cria. O raio é o da maldição (`maldicaoRegras.raioCasas`), a duração 34 s / 14 s × a Duração da habilidade; o novo tira o velho.
@@ -2699,7 +2828,8 @@ export function desligarAurasForaDaBarra(estado, hunt) {
   // do dono, `itens-poe/gemas-a2.mjs`)
   // (lote G-D, dono 25/10: + o Fogo Justo da Devoção ligado — `b.gbd.fogoJusto`)
   const ligadasA2 = Object.entries(hunt?.buffs ?? {}).filter(([, b]) => (b?.a2 || b?.gbd?.fogoJusto) && !b.reserva && b.ate >= Reserva.LIGADA_ATE);
-  let saiuA2 = false;
+  // (lote R3C) as auras de BÊNÇÃO (sem reserva) saem com a gema fora da barra ou sem a Bênção; com a Eterna em você, as não-Bênção que reservam Mana saem
+  let saiuA2 = itensPoeLigado() ? desligarBencoesR3c(estado, hunt) : false;
   if (ligadasA2.length) {
     const ativas = Gemas.skillsAtivas(estado);
     // (revisão do A2: o Berserk desligado assim também liga a recarga — `encerrarBuffA2`; a Lâmina de Energia sai sem espada)
@@ -2719,6 +2849,23 @@ export function desligarAurasForaDaBarra(estado, hunt) {
   const saiu = Reserva.desligarAsQueSairam(hunt, (id) => !(id === GemasA2.ACAO.cajado && !cajado) && (estado.actions ?? []).some((a) => a?.id === id && a.enabled !== false) && ativas.has(id) && !auraDesabilitada(POR_ID.get(id), so, POR_ID.get(id)?.poeGema?.arquetipo === 'maldicao' && !!hunt.buffs?.[id]?.reserva) && !(umArauto && arautoExcedente(hunt, id, ficha)) && !semReservaDaMina(id));
   if (saiu) for (const p of hunt.plantadas ?? []) if (p.reserva && !hunt.buffs?.[p.acao]) delete p.reserva;
   return saiu || saiuA2;
+}
+/**
+ * (lote R3C, 27/10) As auras de BÊNÇÃO ligadas (sem reserva — `GemasR3c.aplicarBencao`): saem com a gema fora da barra, desligada no slot ou sem a Bênção ligada; e,
+ * com a aura da Bênção Eterna em você, as suas não-Bênção que reservam Mana saem (a Eterna as desabilita). Devolve true se alguma saiu.
+ */
+function desligarBencoesR3c(estado, hunt) {
+  const bencoes = GemasR3c.bencoesLigadas(hunt);
+  if (!bencoes.length) return false;
+  const ativas = Gemas.skillsAtivas(estado);
+  let saiu = false;
+  for (const [id] of bencoes) {
+    const entry = POR_ID.get(id);
+    const segue = (estado.actions ?? []).some((a) => a?.id === id && a.enabled !== false) && ativas.has(id) && !!GemasR3c.bencaoDaAura(entry?.poeGema?.arquetipo, entry?.poeGema?.slug, Gemas.efeitoNaSkill(estado, id));
+    if (!segue) { delete hunt.buffs[id]; saiu = true; }
+  }
+  if (GemasR3c.eternaEmVoce(hunt)) for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (GemasR3c.reservaManaNaoBencao(b)) { delete hunt.buffs[id]; saiu = true; }
+  return saiu;
 }
 /**
  * (lote 80, o Mensageiro Solitário) "Você só pode ter um Arauto": o Arauto `id` passa do limite — há outro ligado (o mais antigo fica: o 2º não liga
@@ -4784,7 +4931,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
    */
   // (+ "Habilidades de maldição com aura reservam vida em vez de mana": a maldição em aura — a Blasfêmia.)
   const reservaEmVida = !!efeitoDaGema?.custoEmVida || temHabilidade(estado, 'magiaSanguinea') || ModsPoe.valor(fichaDoCusto, 'keystone_magia_sanguinea') > 0 || (Reserva.ehMaldicaoEmAura(entry, efeitoDaGema) && ModsPoe.valor(fichaDoCusto, 'maldicao_aura_reserva_vida') > 0);
-  const reserva = Reserva.pedida(estado, entry, efeitoDaGema, fichaDoCusto, reservaEmVida);
+  // (lote R3C, 27/10) as BÊNÇÃOS: a aura suportada não reserva (a Divina custa e dura; a Eterna e a do Guardião ficam ligadas sem reserva — `GemasR3c.aplicarBencao`)
+  const bencaoR3c = itensPoeLigado() && entry.poeGema?.buff ? GemasR3c.bencaoDaAura(entry.poeGema.arquetipo, entry.poeGema.slug, efeitoDaGema) : null;
+  const reserva = bencaoR3c ? null : Reserva.pedida(estado, entry, efeitoDaGema, fichaDoCusto, reservaEmVida);
   // (lote 56, a Visão Sublime: "Habilidades de Aura diferentes de <Aura> são Desabilitadas")
   if (itensPoeLigado() && auraDesabilitada(entry, auraPermitida(fichaDoCusto), Reserva.ehMaldicaoEmAura(entry, efeitoDaGema))) return { ok: false, erro: `${entry.name} está Desabilitada.`, motivo: 'AURA_DESABILITADA' };
   // (lote 80, o Mensageiro Solitário: "Você só pode ter um Arauto")
@@ -4806,6 +4955,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const r = { recurso, fixo, fator: Reserva.fator(fichaDoCusto, efeitoDaGema, recurso, 'mina', null, entry.poeGema.slug), minasDe: entry.id };
     return { ...r, valor: Reserva.valor(estado, { ...r, minasAMais: 1 }) };
   })() : null;
+  // (lote R3C) a BÊNÇÃO ETERNA: "Suas Habilidades Não-Bênção que Reservam Mana são Desabilitadas enquanto você tiver uma Aura da Habilidade Suportada em você"
+  if (itensPoeLigado() && !bencaoR3c && GemasR3c.eternaEmVoce(hunt) && ((reserva && reserva.recurso !== 'vida') || (reservaDaMina && reservaDaMina.recurso !== 'vida'))) return { ok: false, erro: `${entry.name} está Desabilitada (Bênção Eterna).`, motivo: 'AURA_DESABILITADA' };
   if (reservaDaMina && !Reserva.cabe(estado, entry.id, reservaDaMina)) {
     return { ok: false, erro: `Sem ${reservaDaMina.recurso} livre para reservar: ${entry.name} reserva ${reservaDaMina.valor}.`, motivo: 'RESERVA' };
   }
@@ -5651,7 +5802,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   if (cancela && !temBuff(hunt, cancela)) return { ok: false, erro: 'Não há o que cancelar.', motivo: cancela === 'shield' ? 'SEM_ESCUDO' : 'SEM_REFORCO' };
   // (PoE, 12/10) As RUNAS: com todas em campo (3 — `itens-poe/runas-vinculadas.mjs`) e nenhuma acabando, o automático não conjura outra (ela
   // tiraria a mais velha, ainda Ativando); o clique conjura.
-  if (Runas.ehRuna(entry) && !manual && !gatilho && !concluir && Runas.cheias(hunt, Ficha.combate(estado))) {
+  if (Runas.ehRuna(entry) && !manual && !gatilho && !concluir && Runas.cheias(hunt, Ficha.combate(estado), efeitoDaGema?.runasExtrasR3c ?? 0)) {
     return { ok: false, erro: `Já estão todas as Runas em campo (${Runas.ativas(hunt).length}/${Runas.maximo(Ficha.combate(estado))}).`, motivo: 'RUNAS_COMPLETAS' };
   }
   // (lote 74) a Convocar Runas sem Runa em campo: o automático não a gasta (o clique usa).
@@ -6035,6 +6186,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         ...(reserva ? { reserva: { recurso: reserva.recurso, ...(reserva.pct ? { pct: reserva.pct } : { fixo: reserva.fixo }), fator: reserva.fator } } : {}) }
       : { ate: agora + duracao, tipo: buff.tipo, fator, ...(buff.mult ? { mult: Reforcos.velocidadeEscalada(buff.mult, fator) } : {}) };
     if (doPoe) Ficha.invalidar(estado);
+    // (lote R3C, 27/10) a BÊNÇÃO na aura ligada: a duração da Divina, a marca, "só uma Aura de Bênção" e a Eterna desligando as não-Bênção que reservam Mana
+    if (bencaoR3c && hunt.buffs?.[entry.id]) GemasR3c.aplicarBencao(hunt, entry.id, hunt.buffs[entry.id], bencaoR3c, agora, fatorDeDuracao(estado, entry, efeitoDaGema), Reserva.LIGADA_ATE);
     // (lote D3, dono 27/10) o SOLO MALDITO e o SAPO ENFEITIÇADO: ligar o Feitiço cria o solo no alvo atual (sem alvo, no inimigo mais perto), com o raio da maldição, por
     // 34 s (14 s no Sapo) × a Duração; o Feitiço só pega no solo (`tiqueDosFeiticosS2B`)
     if (itensPoeLigado() && efeitoDaGema?.soloMalditoMs > 0 && !(efeitoDaGema?.maldicaoEmAura > 0) && entry.poeGema?.arquetipo === 'maldicao' && hunt.buffs?.[entry.id]?.efeitosPoe) criarSoloMalditoD3(estado, hunt, entry, efeitoDaGema, alvo, agora);
@@ -7691,6 +7844,11 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const primeiro = atingidos.find(acertouNoUso);
       if (primeiro) eventos.push(...prismaNoAcerto(estado, hunt, personagem, entry, efeitoDaGema, primeiro));
     }
+    // (lote R3C, 27/10) as INSTABILIDADES CINÉTICAS: o golpe fatal (a comum) / o golpe crítico (a Maior, a recarga com usos) do ataque de varinha suportado (não o
+    // ativado — "Não pode suportar habilidades ativadas") cria a anomalia do Fluxo Cinético no lugar do alvo (`anomaliasDoFluxoR3c`)
+    if (itensPoeLigado() && (efeitoDaGema?.fluxoAoMatar || efeitoDaGema?.fluxoAoCritico) && !gatilho && !plantada && !doTotem && entry.poeGema?.ataque && atingidos.length && ehAtaqueDeVarinha(estado, entry)) {
+      anomaliasDoFluxoR3c(estado, hunt, entry, efeitoDaGema, { mortos: atingidos.filter((b) => b && b.hp <= 0 && !b.dummy && QuemFeriu.abateSeu(b)), critico: houveCritico ? atingidos.find(acertouNoUso) ?? alvo : null }, agora);
+    }
     // (lote A4, dono 19/10) as Excepcionais do Vazio: a Onda de Choque no acerto corpo a corpo (no primeiro acertado) e a Tormenta onde o ataque cai
     if (itensPoeLigado() && efeitoDaGema?.ondaDoVazio && !gatilho && !plantada && !doTotem && atingidos.some(acertouNoUso) && tagsPoeDaSkill(entry).includes('corpo')) eventos.push(...ondaDoVazio(estado, hunt, entry, efeitoDaGema, atingidos.find(acertouNoUso), personagem, agora));
     if (itensPoeLigado() && efeitoDaGema?.tormentaDoVazio && !gatilho && !plantada && !doTotem && (formaNoUso || alvo)) porTormentaDoVazio(hunt, entry, efeitoDaGema, formaNoUso ?? alvo, agora);
@@ -8025,10 +8183,16 @@ function plantarArmas(estado, hunt, personagem, slot, entry, action, lugar, efei
   const lentidao = tipo === 'mina' ? Plantadas.segundosDaLentidaoAoPlantar(ficha) : 0;
   // (lote E1b, 26/10: + as Armadilhas a mais da própria gema — "Lança até 1 armadilhas a mais ao usar duas armas", a Hélice de Trarthus)
   const extrasDaGema = tipo === 'armadilha' ? GemasPoe.arremessoDaGema(slug, efeitoDaGema?.nivel ?? 1, ModsPoe.condicoesDe(estado, ficha.afPoe, null)).extras : 0;
-  for (const c of Plantadas.casasDoArremesso(lugar.x, lugar.y, Plantadas.extrasDoArremesso(ficha, tipo, Math.random, efeitoDaGema) + extrasDaGema)) {
+  // (lote R3C, 27/10) a MINA LOCAL: "sempre focam na sua localização" (as Minas caem em você) e "arremessam Minas em um Arco" (as a mais no arco à sua frente —
+  // `GemasR3c.casasDoArco`); "não podem ser Detonadas enquanto dentro de 3 metros de você" (o raio sorteado ao plantar — `GemasR3c.minaPertoDeVoce`)
+  const lugarR3c = tipo === 'mina' && itensPoeLigado() ? GemasR3c.lugarDaMina(efeitoDaGema, lugar, hunt.pos) : lugar;
+  const quantasExtras = Plantadas.extrasDoArremesso(ficha, tipo, Math.random, efeitoDaGema) + extrasDaGema;
+  const casasDoUso = tipo === 'mina' && itensPoeLigado() && efeitoDaGema?.minaEmArcoR3c > 0 ? GemasR3c.casasDoArco(lugarR3c, hunt.pos?.dir ?? 2, 1 + quantasExtras) : Plantadas.casasDoArremesso(lugarR3c.x, lugarR3c.y, quantasExtras);
+  for (const c of casasDoUso) {
     const p = Plantadas.plantar(hunt, ficha, { tipo, acao: action.id, slot, x: c.x, y: c.y, z: hunt.z ?? 0, duracaoMs: dur, detonacaoMs, agora, maximoExtra: tipo === 'armadilha' ? efeitoDaGema?.maxArmadilhasExtra ?? 0 : efeitoDaGema?.maxMinasExtra ?? 0 });
     // (revisão F2) a Mina arremessada com a reserva do custo (a Cadeia Explosiva, o Alto Impacto) conta na reserva enquanto plantada (`ModsPoe.minasDaReserva`)
     if (reservaDaMina && tipo === 'mina') p.reserva = true;
+    if (tipo === 'mina' && itensPoeLigado() && efeitoDaGema?.minaSemDetonarPertoM > 0 && p) p.semDetonarCasas = GemasR3c.raioSemDetonar(efeitoDaGema);
     // (lote S2A, 27/10) as Armadilhas Múltiplas e as Agrupadas: "Efeito em Área da Ativação de Armadilhas aumentado em X%" — o raio de ativação (1 casa) × √(1 + X%), a
     // fração como a chance de uma casa a mais, sorteada ao plantar
     if (tipo === 'armadilha' && efeitoDaGema?.ativacaoArmadilhaIncPct) {
@@ -8087,6 +8251,8 @@ export function tiqueDosVinculos(estado, hunt, personagem, eventos = [], agora =
   const ficha = Ficha.combate(estado);
   for (const lk of hunt.vinculos) fotoDoVinculo(estado, hunt, ficha, lk);
   const { morreu } = Vinculos.tique(estado, hunt, ficha.afPoe, agora);
+  // (lote R3C, 27/10) o Vínculo Frígido: o Gelo e o Resfriamento no feixe (`frigidoNosVinculosR3c`)
+  frigidoNosVinculosR3c(estado, hunt, eventos, agora);
   if (morreu && (estado.hp ?? 0) > 0) {
     estado.hp = 0;
     eventos.push({ t: 'say', uid: 'player', quem: personagem?.nome, text: 'O alvo vinculado morreu.', x: hunt.pos?.x, y: hunt.pos?.y, color: '#ff5b4f' });
@@ -8182,7 +8348,7 @@ export function conjurarRuna(estado, hunt, personagem, slot, entry, action, luga
   const castSpeed = (ficha.castSpeed ?? 0) + (ModsPoe.somaPorTags(ficha, tagsPoeDaSkill(entry)).cast_speed_tag ?? 0) + (efeitoDaGema?.velConjuracaoPct ?? 0) + (GemasPoe.arcanistaDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0)?.freqPct ?? 0);
   const fatorDaDuracao = fatorDeDuracao(estado, entry, efeitoDaGema);
   // (lote S1: + a Runa Repentina — "X% mais frequência de Ativação", o "mais" do PoB: o intervalo ÷ (1 + X%))
-  const conjurar = () => Runas.vincular(hunt, ficha, Runas.conjurar(hunt, ficha, { acao: action.id, slot, x: lugar.x, y: lugar.y, z: hunt.z ?? 0, props, intervaloMs: props.intervaloMs / Math.max(0.1, 1 + castSpeed / 100) / Math.max(0.1, 1 + (efeitoDaGema?.freqAtivacaoMaisPct ?? 0) / 100), fatorDaDuracao, agora, custo }), agora, { preferido: alvo });
+  const conjurar = () => Runas.vincular(hunt, ficha, Runas.conjurar(hunt, ficha, { acao: action.id, slot, x: lugar.x, y: lugar.y, z: hunt.z ?? 0, props, intervaloMs: props.intervaloMs / Math.max(0.1, 1 + castSpeed / 100) / Math.max(0.1, 1 + (efeitoDaGema?.freqAtivacaoMaisPct ?? 0) / 100), fatorDaDuracao, agora, custo, maximoExtra: efeitoDaGema?.runasExtrasR3c ?? 0 }), agora, { preferido: alvo });
   conjurar();
   // (lote 73, o Notável) "Habilidades que criam Runas têm X% de chance de criarem uma Runa adicional": a outra no mesmo lugar (ela procura o
   // inimigo dela — o alvo já tem a vaga ocupada).
@@ -8206,7 +8372,10 @@ export function convocarRunas(estado, hunt, personagem, efeitoDaGema, agora = hu
   const pctDoCusto = Number(/Gasta (\d+)\s*% do Custo da Runa/.exec(linhas)?.[1]) || 20;
   const alcancePct = daGema + ModsPoe.valor(ficha, 'convocar_runas_alcance');
   const porUid = new Map((hunt.monstros ?? []).map((b) => [b.uid, b]));
+  // (lote R3C) as Runas convocadas de cada habilidade (a Constrição Pérfida: as mãos — `maosNaConvocacaoR3c`)
+  const convocadasR3c = {};
   for (const r of [...hunt.runas]) {
+    if (!r.naoConvocavel) convocadasR3c[r.acao] = (convocadasR3c[r.acao] ?? 0) + 1;
     // (lote G-A) a Runa que "Não pode ser Convocada" (a do Armagedom da Volatilidade) fica onde está: nem é Ativada nem vem
     if (r.naoConvocavel) continue;
     const alvo = r.alvo != null ? porUid.get(r.alvo) : null;
@@ -8236,6 +8405,7 @@ export function convocarRunas(estado, hunt, personagem, efeitoDaGema, agora = hu
     }
     Runas.convocar(r, hunt.pos, agora, alcancePct, hunt.z ?? 0);
   }
+  if (itensPoeLigado()) maosNaConvocacaoR3c(estado, hunt, convocadasR3c, agora);
   Runas.marcarNosInimigos(hunt);
   return eventos;
 }
@@ -8564,6 +8734,8 @@ export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora 
     if (itensPoeLigado() && hunt?.monstros?.length) tiqueDasGemasB2(estado, hunt, personagem, eventos, agora);
     // (lote S2B, 27/10: a Explosão Destruidora dos Feitiços que terminaram — `tiqueDosFeiticosS2B`)
     if (itensPoeLigado() && hunt?.monstros?.length) tiqueDosFeiticosS2B(estado, hunt, personagem, eventos, agora);
+    // (lote R3C, 27/10: a Bênção do Guardião, a Insanidade Perversa, as anomalias do Fluxo Cinético e as mãos da Constrição Pérfida — `tiqueR3C`)
+    if (itensPoeLigado() && (hunt?.buffs || hunt?.poeR3c)) tiqueR3C(estado, hunt, personagem, eventos, agora);
     // (lote B3, dono 21/10: as flechas presas da Conflagração que você ativou chegando perto, a Chuva de Lâminas de Trarthus ligada — `tiqueDasGemasB3`)
     if (itensPoeLigado() && (hunt?.poeTrarthus || hunt?.poeObjetos?.length)) tiqueDasGemasB3(estado, hunt, personagem, eventos, agora);
     // (lote PR4, dono 25/10: as flechas grudadas, as conchas, as cordas, a energia estática — `tiqueDasGemasPR4`)

@@ -145,7 +145,8 @@ const raroOuUnico = (b) => /raro|unico/.test(b?.raridade ?? b?.raridadePoe ?? ''
 /** (D10) A VELOCIDADE DE AÇÃO do monstro pela Corrente Temporal: o fator do passo e do intervalo do golpe (1 = normal) — o Raro/Único leva o valor dele. */
 export function fatorDeAcao(bicho, agora) {
   const raro = raroOuUnico(bicho);
-  const pct = Math.min(90, maior(efeitosNoBicho(bicho, agora, 'acao'), (x) => (raro ? x.e.pctRaro ?? x.e.pct : x.e.pct)));
+  // (lote R3C: + a Insanidade Perversa — "10% reduced Action Speed", o PoB CalcSetup — soma com a da maldição; sem import, a regra do módulo: `GemasR3c.INSANIDADE`)
+  const pct = Math.min(90, maior(efeitosNoBicho(bicho, agora, 'acao'), (x) => (raro ? x.e.pctRaro ?? x.e.pct : x.e.pct)) + ((bicho?.estados?.insanidadeR3c?.ate ?? 0) > agora ? 10 : 0));
   return pct > 0 ? 1 / Math.max(0.1, 1 - pct / 100) : 1;
 }
 

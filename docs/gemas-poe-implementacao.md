@@ -27,9 +27,9 @@ Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 197 |
+| implementada e testada | 206 |
 | implementada, sem teste próprio | 49 |
-| parcial | 16 |
+| parcial | 7 |
 
 ### Variantes
 
@@ -39,10 +39,10 @@ Só os ataques:
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 51 linhas distintas (7 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 21 linhas distintas (2 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 506/562 ativas, 201/262 suportes.
+- Testes que citam a gema: 506/562 ativas, 209/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
@@ -50,53 +50,23 @@ Só os ataques:
 | Gemas | Linha |
 |---|---|
 | 3 | as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:##; no jogo ainda são projéteis no alvo) |
-| 3 | Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção |
-| 3 | Habilidades Suportadas também contam como Habilidades Bênção\nVocê só pode ter uma Aura de suas Habilidades Bênção |
-| 2 | #% de Poder Arcano |
-| 2 | Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética |
-| 2 | Máximo de # anomalias |
 | 2 | sem dano direto: nenhum efeito no combate |
 | 1 | as torres de osso não bloqueiam o caminho dos monstros (o caminho dos bichos não tem obstáculo temporário) |
 | 1 | Ativa esta magia reforçada quando sua salvaguarda quebra |
-| 1 | Auras das Habilidades Suportadas têm uma duração base de # segundos |
-| 1 | Causa # a # de Dano de Raio |
 | 1 | Causa Dano de Fogo base igual a #% da Vida Máxima dos Totens |
 | 1 | Consumir um cadáver com habilidades reforçadas tem #% de chance de conceder uma alma por poder |
 | 1 | Consumir um cadáver com habilidades reforçadas tem +#% de chance de conceder uma alma por poder |
-| 1 | Cria # mãos adicionais |
-| 1 | Cria # mãos por glifo |
-| 1 | Dano e Resfriamentos Perduram por uma Duração Base de # segundos |
-| 1 | Dano e Resfriamentos Perduram por uma Duração Base de +# segundos |
 | 1 | Detonação da Mina é Instantânea |
 | 1 | Dispara até # Flechas em alvos diferentes |
 | 1 | Flechas caem em duas linhas perpendiculares |
-| 1 | Glifos reforçados ativam Constrição Pérfida ao serem recuperados |
-| 1 | Habilidades de Aura Suportadas não tem Reserva |
-| 1 | Habilidades reforçadas ativam Fluxo Cinético ao causar golpe crítico |
-| 1 | Habilidades reforçadas ativam Fluxo Cinético no golpe fatal |
 | 1 | Habilidades reforçadas ganham #% do dano físico como dano de caos adicional por fundamental |
-| 1 | Habilidades reforçadas podem conjurar # glifos adicionais |
 | 1 | Habilidades reforçadas têm o custo aumentado em #% por fundamental |
-| 1 | Habilidades Suportadas arremessam Minas em um Arco |
-| 1 | Habilidades Suportadas causam # Dano Base de Gelo por segundo |
-| 1 | Habilidades Suportadas Causam Dano e Resfriam Inimigos entre você e Alvos Vinculados |
-| 1 | Habilidades Suportadas Custam +# de Mana |
-| 1 | Habilidades Suportadas não podem aplicar Auras em você a menos que você tenha Lacaios de uma Habilidade Suportada |
-| 1 | Habilidades Suportadas não tem Reserva |
-| 1 | Habilidades Suportadas têm Efeito das Auras reduzido em #% |
-| 1 | Inimigos sofrem de Insanidade Perversa se estiverem sob a influência de auras de habilidades reforçadas por mais de # segundos |
-| 1 | Lacaios das Habilidades Suportadas sofrem #% de sua Vida e Escudo de Energia Máximos total como Dano Físico por segundo enquanto você tiver uma Aura de uma Habilidade Suportada em você |
 | 1 | Lacaios têm efeito de definhamento aumentado em # % |
 | 1 | Magias Suportadas causam # % menos Dano |
-| 1 | Máximo de # mãos |
-| 1 | Minas de Habilidades Suportadas não podem ser Detonadas enquanto dentro de # metros de você |
-| 1 | Minas usando Habilidades Suportadas sempre focam na sua localização |
-| 1 | Modificadores ao Dano Mágico são aplicados ao efeito de Dano Degenerativo das Habilidades Suportadas |
 | 1 | o impedimento de ganho de almas que a Tentação substitui (o jogo não tem o Impedimento de Ganho de Almas: as almas das gemas Vaal são a recarga) |
 | 1 | o totem provoca os monstros em volta a atacá-lo (act_str.lua:##) |
 | 1 | perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB) |
 | 1 | Somente uma Mina deste tipo pode ser Detonada em cada Sequência de Detonação |
-| 1 | Suas Habilidades Não-Bênção que Reservam Mana são Desabilitadas enquanto você tiver uma Aura da Habilidade Suportada em você |
 | 1 | Totens com esta Habilidade a Ativam quando Acertados por um Inimigo |
 | 1 | Totens das Habilidades Suportadas ganham a Habilidade Vingança Flamejante e a Ativa quando Acertado por um Inimigo |
 | 1 | Totens das Habilidades Suportadas ganham a Habilidade\nVingança Flamejante e a Ativa quando Acertado por um Inimigo |
@@ -252,62 +222,16 @@ Só os ataques:
   - não simulado: as torres de osso não bloqueiam o caminho dos monstros (o caminho dos bichos não tem obstáculo temporário)
 - **Cast_on_Ward_Break_Support** (Conjurar ao Perder Salvaguarda (Reforço)) — parcial
   - não simulado: Ativa esta magia reforçada quando sua salvaguarda quebra
-- **Divine_Blessing_Support** (Bênção Divina) — parcial
-  - não simulado: Habilidades Suportadas Custam +233 de Mana
-  - não simulado: Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção
-  - não simulado: Auras das Habilidades Suportadas têm uma duração base de 10.9 segundos
-  - não simulado: Habilidades Suportadas também contam como Habilidades Bênção\nVocê só pode ter uma Aura de suas Habilidades Bênção
 - **Earthbreaker_Support** (Devastador) — parcial
   - não simulado: perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)
-- **Eldritch_Blasphemy_Support** (Blasfêmia Sobrenatural (Reforço)) — parcial
-  - não simulado: Inimigos sofrem de Insanidade Perversa se estiverem sob a influência de auras de habilidades reforçadas por mais de 5 segundos
-- **Eternal_Blessing_Support** (Bênção Eterna) — parcial
-  - não simulado: Habilidades Suportadas não tem Reserva
-  - não simulado: Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção
-  - não simulado: Suas Habilidades Não-Bênção que Reservam Mana são Desabilitadas enquanto você tiver uma Aura da Habilidade Suportada em você
-  - não simulado: Habilidades Suportadas também contam como Habilidades Bênção\nVocê só pode ter uma Aura de suas Habilidades Bênção
 - **Flamewood_Support** (Chuva Ardente) — parcial
   - não simulado: Totens das Habilidades Suportadas ganham a Habilidade Vingança Flamejante e a Ativa quando Acertado por um Inimigo
   - não simulado: Causa Dano de Fogo base igual a 137% da Vida Máxima dos Totens
   - não simulado: Totens com esta Habilidade a Ativam quando Acertados por um Inimigo
   - não simulado: Totens das Habilidades Suportadas ganham a Habilidade\nVingança Flamejante e a Ativa quando Acertado por um Inimigo
-- **Foulgrasp_Support** (Constrição Pérfida (Reforço)) — parcial
-  - não simulado: Habilidades reforçadas podem conjurar 2 glifos adicionais
-  - não simulado: Glifos reforçados ativam Constrição Pérfida ao serem recuperados
-  - não simulado: Causa 165 a 1482 de Dano de Raio
-  - não simulado: Máximo de 30 mãos
-  - não simulado: Cria 2 mãos por glifo
-  - não simulado: Cria 2 mãos adicionais
-- **Frigid_Bond_Support** (Vínculo Frígido) — parcial
-  - não simulado: Habilidades Suportadas Causam Dano e Resfriam Inimigos entre você e Alvos Vinculados
-  - não simulado: Habilidades Suportadas causam 4335.8 Dano Base de Gelo por segundo
-  - não simulado: Dano e Resfriamentos Perduram por uma Duração Base de 3 segundos
-  - não simulado: Modificadores ao Dano Mágico são aplicados ao efeito de Dano Degenerativo das Habilidades Suportadas
-  - não simulado: Dano e Resfriamentos Perduram por uma Duração Base de +2 segundos
 - **Greater_Devour_Support** (Devorar Maior (Reforço)) — parcial
   - não simulado: Consumir um cadáver com habilidades reforçadas tem 4% de chance de conceder uma alma por poder
   - não simulado: Consumir um cadáver com habilidades reforçadas tem +1% de chance de conceder uma alma por poder
-- **Greater_Kinetic_Instability_Support** (Instabilidade Cinética Maior (Reforço)) — parcial
-  - não simulado: Habilidades reforçadas ativam Fluxo Cinético ao causar golpe crítico
-  - não simulado: 150% de Poder Arcano
-  - não simulado: Máximo de 20 anomalias
-  - não simulado: Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética
-- **Guardians_Blessing_Support** (Bênção do Guardião) — parcial
-  - não simulado: Habilidades Suportadas têm Efeito das Auras reduzido em 27%
-  - não simulado: Habilidades de Aura Suportadas não tem Reserva
-  - não simulado: Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção
-  - não simulado: Habilidades Suportadas não podem aplicar Auras em você a menos que você tenha Lacaios de uma Habilidade Suportada
-  - não simulado: Lacaios das Habilidades Suportadas sofrem 14.3% de sua Vida e Escudo de Energia Máximos total como Dano Físico por segundo enquanto você tiver uma Aura de uma Habilidade Suportada em você
-  - não simulado: Habilidades Suportadas também contam como Habilidades Bênção\nVocê só pode ter uma Aura de suas Habilidades Bênção
-- **Kinetic_Instability_Support** (Reforço Instabilidade Cinética) — parcial
-  - não simulado: Habilidades reforçadas ativam Fluxo Cinético no golpe fatal
-  - não simulado: 150% de Poder Arcano
-  - não simulado: Máximo de 20 anomalias
-  - não simulado: Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética
-- **Locus_Mine_Support** (Mina Local) — parcial
-  - não simulado: Minas de Habilidades Suportadas não podem ser Detonadas enquanto dentro de 3 metros de você
-  - não simulado: Minas usando Habilidades Suportadas sempre focam na sua localização
-  - não simulado: Habilidades Suportadas arremessam Minas em um Arco
 - **Machinations_Support** (Maquinações (Reforço)) — parcial
   - não simulado: Habilidades reforçadas ganham 8% do dano físico como dano de caos adicional por fundamental
   - não simulado: Habilidades reforçadas têm o custo aumentado em 10% por fundamental

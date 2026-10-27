@@ -17,8 +17,8 @@
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 197,
-   "parcial": 16,
+   "implementada e testada": 206,
+   "parcial": 7,
    "implementada, sem teste próprio": 49
   },
   "variantes": {
@@ -44,8 +44,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 51,
-   "emDuasOuMais": 7
+   "linhasDistintas": 21,
+   "emDuasOuMais": 2
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -60,7 +60,7 @@
   },
   "testes": {
    "ativasCitadas": 506,
-   "suportesCitados": 201,
+   "suportesCitados": 209,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
@@ -7833,13 +7833,8 @@
   {
    "slug": "Divine_Blessing_Support",
    "nome": "Bênção Divina",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas Custam +233 de Mana",
-    "não simulado: Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção",
-    "não simulado: Auras das Habilidades Suportadas têm uma duração base de 10.9 segundos",
-    "não simulado: Habilidades Suportadas também contam como Habilidades Bênção\\nVocê só pode ter uma Aura de suas Habilidades Bênção"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -7886,15 +7881,8 @@
   {
    "slug": "Guardians_Blessing_Support",
    "nome": "Bênção do Guardião",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm Efeito das Auras reduzido em 27%",
-    "não simulado: Habilidades de Aura Suportadas não tem Reserva",
-    "não simulado: Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção",
-    "não simulado: Habilidades Suportadas não podem aplicar Auras em você a menos que você tenha Lacaios de uma Habilidade Suportada",
-    "não simulado: Lacaios das Habilidades Suportadas sofrem 14.3% de sua Vida e Escudo de Energia Máximos total como Dano Físico por segundo enquanto você tiver uma Aura de uma Habilidade Suportada em você",
-    "não simulado: Habilidades Suportadas também contam como Habilidades Bênção\\nVocê só pode ter uma Aura de suas Habilidades Bênção"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -7981,13 +7969,8 @@
   {
    "slug": "Eternal_Blessing_Support",
    "nome": "Bênção Eterna",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas não tem Reserva",
-    "não simulado: Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção",
-    "não simulado: Suas Habilidades Não-Bênção que Reservam Mana são Desabilitadas enquanto você tiver uma Aura da Habilidade Suportada em você",
-    "não simulado: Habilidades Suportadas também contam como Habilidades Bênção\\nVocê só pode ter uma Aura de suas Habilidades Bênção"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8342,12 +8325,8 @@
   {
    "slug": "Locus_Mine_Support",
    "nome": "Mina Local",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Minas de Habilidades Suportadas não podem ser Detonadas enquanto dentro de 3 metros de você",
-    "não simulado: Minas usando Habilidades Suportadas sempre focam na sua localização",
-    "não simulado: Habilidades Suportadas arremessam Minas em um Arco"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9047,13 +9026,8 @@
   {
    "slug": "Kinetic_Instability_Support",
    "nome": "Reforço Instabilidade Cinética",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades reforçadas ativam Fluxo Cinético no golpe fatal",
-    "não simulado: 150% de Poder Arcano",
-    "não simulado: Máximo de 20 anomalias",
-    "não simulado: Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9324,14 +9298,8 @@
   {
    "slug": "Frigid_Bond_Support",
    "nome": "Vínculo Frígido",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas Causam Dano e Resfriam Inimigos entre você e Alvos Vinculados",
-    "não simulado: Habilidades Suportadas causam 4335.8 Dano Base de Gelo por segundo",
-    "não simulado: Dano e Resfriamentos Perduram por uma Duração Base de 3 segundos",
-    "não simulado: Modificadores ao Dano Mágico são aplicados ao efeito de Dano Degenerativo das Habilidades Suportadas",
-    "não simulado: Dano e Resfriamentos Perduram por uma Duração Base de +2 segundos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9546,25 +9514,16 @@
   {
    "slug": "Eldritch_Blasphemy_Support",
    "nome": "Blasfêmia Sobrenatural (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Inimigos sofrem de Insanidade Perversa se estiverem sob a influência de auras de habilidades reforçadas por mais de 5 segundos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Foulgrasp_Support",
    "nome": "Constrição Pérfida (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades reforçadas podem conjurar 2 glifos adicionais",
-    "não simulado: Glifos reforçados ativam Constrição Pérfida ao serem recuperados",
-    "não simulado: Causa 165 a 1482 de Dano de Raio",
-    "não simulado: Máximo de 30 mãos",
-    "não simulado: Cria 2 mãos por glifo",
-    "não simulado: Cria 2 mãos adicionais"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9598,13 +9557,8 @@
   {
    "slug": "Greater_Kinetic_Instability_Support",
    "nome": "Instabilidade Cinética Maior (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades reforçadas ativam Fluxo Cinético ao causar golpe crítico",
-    "não simulado: 150% de Poder Arcano",
-    "não simulado: Máximo de 20 anomalias",
-    "não simulado: Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9723,43 +9677,6 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção",
-   "gemas": [
-    "Divine_Blessing_Support",
-    "Eternal_Blessing_Support",
-    "Guardians_Blessing_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas também contam como Habilidades Bênção\\nVocê só pode ter uma Aura de suas Habilidades Bênção",
-   "gemas": [
-    "Divine_Blessing_Support",
-    "Eternal_Blessing_Support",
-    "Guardians_Blessing_Support"
-   ]
-  },
-  {
-   "linha": "#% de Poder Arcano",
-   "gemas": [
-    "Greater_Kinetic_Instability_Support",
-    "Kinetic_Instability_Support"
-   ]
-  },
-  {
-   "linha": "Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética",
-   "gemas": [
-    "Greater_Kinetic_Instability_Support",
-    "Kinetic_Instability_Support"
-   ]
-  },
-  {
-   "linha": "Máximo de # anomalias",
-   "gemas": [
-    "Greater_Kinetic_Instability_Support",
-    "Kinetic_Instability_Support"
-   ]
-  },
-  {
    "linha": "sem dano direto: nenhum efeito no combate",
    "gemas": [
     "Conversion_Trap",
@@ -9776,18 +9693,6 @@
    "linha": "Ativa esta magia reforçada quando sua salvaguarda quebra",
    "gemas": [
     "Cast_on_Ward_Break_Support"
-   ]
-  },
-  {
-   "linha": "Auras das Habilidades Suportadas têm uma duração base de # segundos",
-   "gemas": [
-    "Divine_Blessing_Support"
-   ]
-  },
-  {
-   "linha": "Causa # a # de Dano de Raio",
-   "gemas": [
-    "Foulgrasp_Support"
    ]
   },
   {
@@ -9809,30 +9714,6 @@
    ]
   },
   {
-   "linha": "Cria # mãos adicionais",
-   "gemas": [
-    "Foulgrasp_Support"
-   ]
-  },
-  {
-   "linha": "Cria # mãos por glifo",
-   "gemas": [
-    "Foulgrasp_Support"
-   ]
-  },
-  {
-   "linha": "Dano e Resfriamentos Perduram por uma Duração Base de # segundos",
-   "gemas": [
-    "Frigid_Bond_Support"
-   ]
-  },
-  {
-   "linha": "Dano e Resfriamentos Perduram por uma Duração Base de +# segundos",
-   "gemas": [
-    "Frigid_Bond_Support"
-   ]
-  },
-  {
    "linha": "Detonação da Mina é Instantânea",
    "gemas": [
     "Smoke_Mine"
@@ -9851,99 +9732,15 @@
    ]
   },
   {
-   "linha": "Glifos reforçados ativam Constrição Pérfida ao serem recuperados",
-   "gemas": [
-    "Foulgrasp_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades de Aura Suportadas não tem Reserva",
-   "gemas": [
-    "Guardians_Blessing_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades reforçadas ativam Fluxo Cinético ao causar golpe crítico",
-   "gemas": [
-    "Greater_Kinetic_Instability_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades reforçadas ativam Fluxo Cinético no golpe fatal",
-   "gemas": [
-    "Kinetic_Instability_Support"
-   ]
-  },
-  {
    "linha": "Habilidades reforçadas ganham #% do dano físico como dano de caos adicional por fundamental",
    "gemas": [
     "Machinations_Support"
    ]
   },
   {
-   "linha": "Habilidades reforçadas podem conjurar # glifos adicionais",
-   "gemas": [
-    "Foulgrasp_Support"
-   ]
-  },
-  {
    "linha": "Habilidades reforçadas têm o custo aumentado em #% por fundamental",
    "gemas": [
     "Machinations_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas arremessam Minas em um Arco",
-   "gemas": [
-    "Locus_Mine_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas causam # Dano Base de Gelo por segundo",
-   "gemas": [
-    "Frigid_Bond_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas Causam Dano e Resfriam Inimigos entre você e Alvos Vinculados",
-   "gemas": [
-    "Frigid_Bond_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas Custam +# de Mana",
-   "gemas": [
-    "Divine_Blessing_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas não podem aplicar Auras em você a menos que você tenha Lacaios de uma Habilidade Suportada",
-   "gemas": [
-    "Guardians_Blessing_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas não tem Reserva",
-   "gemas": [
-    "Eternal_Blessing_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm Efeito das Auras reduzido em #%",
-   "gemas": [
-    "Guardians_Blessing_Support"
-   ]
-  },
-  {
-   "linha": "Inimigos sofrem de Insanidade Perversa se estiverem sob a influência de auras de habilidades reforçadas por mais de # segundos",
-   "gemas": [
-    "Eldritch_Blasphemy_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios das Habilidades Suportadas sofrem #% de sua Vida e Escudo de Energia Máximos total como Dano Físico por segundo enquanto você tiver uma Aura de uma Habilidade Suportada em você",
-   "gemas": [
-    "Guardians_Blessing_Support"
    ]
   },
   {
@@ -9956,30 +9753,6 @@
    "linha": "Magias Suportadas causam # % menos Dano",
    "gemas": [
     "Intuitive_Link"
-   ]
-  },
-  {
-   "linha": "Máximo de # mãos",
-   "gemas": [
-    "Foulgrasp_Support"
-   ]
-  },
-  {
-   "linha": "Minas de Habilidades Suportadas não podem ser Detonadas enquanto dentro de # metros de você",
-   "gemas": [
-    "Locus_Mine_Support"
-   ]
-  },
-  {
-   "linha": "Minas usando Habilidades Suportadas sempre focam na sua localização",
-   "gemas": [
-    "Locus_Mine_Support"
-   ]
-  },
-  {
-   "linha": "Modificadores ao Dano Mágico são aplicados ao efeito de Dano Degenerativo das Habilidades Suportadas",
-   "gemas": [
-    "Frigid_Bond_Support"
    ]
   },
   {
@@ -10004,12 +9777,6 @@
    "linha": "Somente uma Mina deste tipo pode ser Detonada em cada Sequência de Detonação",
    "gemas": [
     "Smoke_Mine"
-   ]
-  },
-  {
-   "linha": "Suas Habilidades Não-Bênção que Reservam Mana são Desabilitadas enquanto você tiver uma Aura da Habilidade Suportada em você",
-   "gemas": [
-    "Eternal_Blessing_Support"
    ]
   },
   {

@@ -15,6 +15,8 @@ import { REGRAS_S2A, ehGatilhoDoMarcar, limiarDaFlechaForjada } from './suportes
 import { PROPRIAS_R3A } from './gemas-r3a.mjs';
 // (lote R3B, 27/10: as linhas próprias do Arqueiro Ilusório, dos Espíritos Sagrados, do Relâmpago Vivo e do Nascido da Colmeia — `gemas-r3b.mjs`)
 import { PROPRIAS_R3B, completarEfeito as completarEfeitoR3B } from './gemas-r3b.mjs';
+// (lote R3C, 27/10: as Bênçãos, a Mina Local, a Blasfêmia Sobrenatural, a Constrição Pérfida, as Instabilidades Cinéticas e o Vínculo Frígido — `gemas-r3c.mjs`)
+import { PROPRIAS_R3C, ajustarEfeitoR3c } from './gemas-r3c.mjs';
 
 const ARQ_SUPORTES = new URL('../../gamedata/itens-poe/suportes-poe.json', import.meta.url);
 const ARQ_IDS = new URL('../../gamedata/itens-poe/suportes-poe-ids.json', import.meta.url);
@@ -873,7 +875,8 @@ export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
   // os números dela (a duração, os raios, as torres), que as regras gerais leriam como do Clamor suportado
   // (lote R3B: + as do Arqueiro Ilusório, dos Espíritos Sagrados, do Relâmpago Vivo e do Nascido da Colmeia — `PROPRIAS_R3B`; o 3º argumento diz se a linha é da qualidade)
   // (lote R3A: + as habilidades concedidas pelo Cristal em Queda, pela Fenda, pela Pira e pela Rajada de Vento — `PROPRIAS_R3A`)
-  const proprias = PROPRIAS_A2[slug] ?? PROPRIAS_R3A[slug] ?? PROPRIAS_R3B[slug];
+  // (lote R3C: + as linhas próprias dos suportes do lote — `gemas-r3c.PROPRIAS_R3C`)
+  const proprias = PROPRIAS_A2[slug] ?? PROPRIAS_R3A[slug] ?? PROPRIAS_R3B[slug] ?? PROPRIAS_R3C[slug];
   for (const linha of [...t.props, ...t.mods, ...t.qualidade]) {
     if (proprias) {
       const p = proprias.find(([re]) => re.test(linha));
@@ -906,6 +909,8 @@ export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
   // (18/10, lote G20b) o DEVASTADOR: "um totem ancestral que usa a habilidade por você ENQUANTO VOCÊ ESTIVER PERTO dele" (a descrição; sem linha) — a
   // distância de ativação é a do PoB, `ancestor_totem_parent_activiation_range` 70 = 7 m (other.lua:1499)
   if (slug === 'Earthbreaker_Support' && efeito.viraTotem) efeito.ativacaoM = 7;
+  // (lote R3C) o sinal do "Efeito das Auras" da Bênção do Guardião pelo nível
+  ajustarEfeitoR3c(slug, nivel, efeito);
   return { efeito, naoFeitas };
 }
 
