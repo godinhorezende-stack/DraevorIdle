@@ -26,6 +26,8 @@ import * as GemasE1a from './gemas-e1a.mjs';
 import * as GemasE2a from './gemas-e2a.mjs';
 import * as GemasR3D from './gemas-r3d.mjs';
 import * as SuportesS2B from './suportes-s2b.mjs';
+// (rodada 4, lote L: o motor das habilidades dos lacaios pelo PoB — o principal, as recargas, o início e a Vida Baixa de cada lacaio)
+import * as LacaiosHabilidades from './lacaios-habilidades.mjs';
 export { aplicarCeifador, fatorDoCeifador, fatorPorNaoGolemPerto, danoDoGolemDaCarnica, desviarParaOGolemDePedra } from './gemas-e1a.mjs';
 import { readFileSync } from 'node:fs';
 
@@ -394,7 +396,10 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
   // (lote E2A: o Armamento do Golpe Sagrado bate com a cópia da sua arma — Físico, com 50% convertidos em Raio — `e2a.conversaoRaioPct`)
   const elemento = conv || e2a.conversaoRaioPct ? 'physical' : r.elemento;
   const f0 = forcaDoNivel(n);
-  const f = pob ? { vida: pob.vida, dano: pob.dano ?? f0.dano, tempo: pob.tempo ?? f0.tempo } : f0;
+  // (rodada 4, lote L) as HABILIDADES do lacaio pelo PoB (`LacaiosHabilidades.doLacaio`): o tempo do golpe é o da habilidade principal (a magia: o `castTime` dela;
+  // o ataque: o `attackTime` do lacaio com o "mais" de velocidade dele — o Espírito Furioso, +40%); a Pancada do Zumbi da Pancada leva a área e a recarga da gema
+  const hab = !totem && !doSuporte && pob ? LacaiosHabilidades.doLacaio(slug, pob.id, n, { ZombieSlam: { areaPct: e2a.impactoAreaPct ?? 0, recargaPct: e2a.impactoRecargaPct ?? 0 } }) : null;
+  const f = pob ? { vida: pob.vida, dano: pob.dano ?? f0.dano, tempo: hab?.principal.length ? hab.principal[0].tempoMs / 1000 : pob.tempo ?? f0.tempo } : f0;
   const spread = pob?.spread ?? 0.2;
   // (+ a "Vida máxima dos Lacaios aumentada" / "Vida do Totem aumentada" e o "Lacaios causam Dano aumentado" das peças do PoE.)
   // (+ os do TIPO de lacaio: "Golens possuem X% menos Vida", "Espíritos Furiosos Convocados causam Dano aumentado", "Zumbis têm X% da Vida
@@ -423,6 +428,9 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
   for (const el of ['physical', 'fire', 'ice', 'energy', 'chaos']) somado = [somado[0] + m0(`minion_added_${el}_min`), somado[1] + m0(`minion_added_${el}_max`)];
   // (+ o do TIPO: "Golens têm X a Y de Dano Físico de Ataques Adicional".)
   somado = [somado[0] + porTipo('lacaio_somado_min'), somado[1] + porTipo('lacaio_somado_max')];
+  // (rodada 4, lote L: + o Físico adicionado aos ataques que o lacaio tem no PoB — o Espírito Furioso, 4 a 5 —, com o aumentado/mais do golpe, como dano base)
+  const somadoDoPob = hab ? LacaiosHabilidades.DADOS.lacaios[pob.id]?.somado : null;
+  if (somadoDoPob) somado = [somado[0] + (somadoDoPob[0] * golpe) / f.dano, somado[1] + (somadoDoPob[1] * golpe) / f.dano];
   // (lote 75: + o adicionado por Virulência, com o aumentado e o mais do golpe — no PoE o dano adicionado também os recebe)
   if (somadoV[1] > 0) somado = [somado[0] + (somadoV[0] * golpe) / f.dano, somado[1] + (somadoV[1] * golpe) / f.dano];
   velAtaquePct += velV;
@@ -439,7 +447,9 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
   // (ciclo 7, lote F) "Magias Conjuradas por Totens têm X% de Velocidade de Conjuração aumentada" (o totem de uma gema de Magia).
   if (totem && (r.gema?.tags ?? []).includes('Magia')) velAtaquePct += m0('totem_vel_magia');
   if (doTotem.velPorMaximo) velAtaquePct += doTotem.velPorMaximo * Math.max(1, maximo);
-  const estilo = estiloDoLacaio(`${nome} ${t.nome} ${en}`, elemento);
+  // (rodada 4, lote L: o lacaio do motor ataca pela habilidade principal do PoB — o alcance, a magia, o elemento; sem o golpe em área "a cada N acertos", que vira a
+  // habilidade com recarga dele)
+  const estilo = hab ? LacaiosHabilidades.estiloDaPrincipal(hab, pob.id) : estiloDoLacaio(`${nome} ${t.nome} ${en}`, elemento);
   // (lote 44: o tempo de ataque do PoB já é o do tipo — o "rápido" do Espírito Furioso não multiplica de novo)
   if (pob?.tempo) delete estilo.rapido;
   // A CONVERSÃO do dano Físico do golpe (dono, 11/10: os únicos): "Lacaios convertem X% do Dano Físico para Dano de Gelo" (por Encaixe da cor,
@@ -567,7 +577,15 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
     ...(() => { const rec = pob ? GemasR3D.recargasDoLacaio(slug, pob.id, n, { definhaPct: GemasPoe.linhasDaQualidadeDe(slug, efeito?.qualidade ?? 0).reduce((t, l) => t + (Number(/definhamento aumentado em ([\d.]+)/i.exec(l)?.[1]) || 0), 0) }) : null; return rec ? { recargas: rec } : {}; })(),
     // O desenho pelo nome do lacaio e o da gema ("Golem" + "Convocar Golem de Chamas").
     desenho: desenhoDe(`${nome} ${t.nome}`, elemento, totem),
+    // (rodada 4, lote L) as habilidades do PoB do lacaio (`LacaiosHabilidades`): o principal (lido no tique — `cacadas`), a arma (a SUA — `acoes.invocarLacaios`)
+    ...(hab ? { habPob: { principal: hab.principal, ...(hab.fixa ? { fixa: true } : {}), ...(hab.semGolpe ? { semGolpe: true } : {}), ...(hab.arma ? { arma: hab.arma } : {}) } } : {}),
+    // (rodada 4, lote L) a vida de base (antes dos modificadores): o Espectro pelo PoB troca a base e mantém os modificadores (`acoes.invocarLacaios`)
+    ...(!totem ? { vidaBase: f.vida } : {}),
   };
+  // (rodada 4, lote L) + as habilidades com recarga do motor (a Pancada do Zumbi, as do Golem Flamejante, do Glacial e do Pétreo, as das Sentinelas e do Juiz…), o
+  // Meteoro do início e as da Vida Baixa, depois das que outro lote já faz (`HABILIDADES_COM_RECARGA`, `GemasR3D.recargasDoLacaio`)
+  const doMotor = LacaiosHabilidades.recargasDoMotor(hab);
+  if (doMotor.length) resultado.recargas = [...(resultado.recargas ?? []), ...doMotor];
   // (revisão E1a) a invocação MISTA (a Vaal Convocar Esqueletos: soldados, arqueiros, magos e o general, cada um com o lacaio dele no PoB — a minionList
   // RaisedSkeletonMeleeVaal / RaisedSkeletonArcherVaal / RaisedSkeletonCaster, act_int.lua:20010): os `grupos`, na ordem das linhas, cada um com a força,
   // o jeito de atacar e o nome do tipo (`acoes.invocarLacaios` → `grupoDoUso`). O máximo, a duração e o resto são os da gema.

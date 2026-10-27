@@ -1513,6 +1513,46 @@ Placar: antes, ativas 562 · testada 460 · sem teste 43 · limitação 58 · n�
 
 Bateria (ativas-*, gemas-*, suportes-*, totens-*, itens-poe-gemas*, eficacia-ataque-poe, gemas-todas-funcionam-poe e os afetados: maldições, crítico, estágios, áreas, cadáveres, minas, reserva, lacaios; 96 arquivos): 1197 testes, 1160 passam, 35 pulados, 2 falham (as duas acima). O canalizacao-estagios-poe:78 falhou uma vez sozinho (1,2308 contra 1,2 ± 0,03, o "acúmulo" que o próprio teste comenta) e passou nas 3 vezes seguintes.
 
+## L — rodada 4: as habilidades dos lacaios pelo PoB (27/10: "quero resolver")
+
+As 58 gemas de lacaio estavam em "limitação do modelo idle" pelo motivo "o lacaio ataca do jeito do tipo dele". Agora cada lacaio usa as HABILIDADES dele do PoB, por um motor comum: `systems/itens-poe/lacaios-habilidades.mjs`.
+
+- **Os dados:** `tools/importar-pob-habilidades-lacaios.mjs` gera `gamedata/itens-poe/pob-habilidades-lacaios.json`. Ele lê três arquivos do PoB:
+  - `Minions.lua`: a `skillList`, o `attackRange`, a arma (o arco faz do ataque padrão um projétil) e os mods do golpe (a conversão do Físico, o Físico adicionado e o "mais" de velocidade).
+  - `Skills/minion.lua`: as 78 habilidades inteiras (flags, tipos, `castTime`, eficácia, stats constantes, stats do nível e cada nível).
+  - `Misc.lua`: as tabelas de vida e de dano de monstro, para o Espectro.
+- **O motor:** cada gema tem a variante dela (pela descrição no poedb). O lacaio recebe quatro grupos de habilidade:
+  - o **principal**: o golpe que ele repete. Pode ter variantes: o mago fica com um elemento sorteado na invocação, e a Sentinela da Pureza alterna o golpe e o golpe em área.
+  - as **com recarga**: entram nas `recargas` do lacaio com `tipo: 'pob'`, ao lado das que outros lotes já faziam. Saem pela recarga e pelos usos guardados do PoB, com a Recuperação da Recarga do lacaio. O lacaio no meio de outra ação não começa outra.
+  - a do **início**: o Meteoro do Golem do Meteoro, uma vez.
+  - a da **Vida Baixa**: o Golem do Despedaçamento explode, solta a nova e some.
+
+  As habilidades com Ultimate também saem pelo **uso da gema** (o Ceifador avança e solta o Ultimate). Os números vêm do PoB, no nível do lacaio:
+  - **ataque:** o golpe da tabela × o `baseMultiplier` × o "+% final" (interpolação 2 no Ceifador). O tempo é o `attackTime` com os "mais" de velocidade.
+  - **magia:** o dano base do nível × a eficácia (statInterpolation 3). O tempo é o `castTime` com o "+% final". O crítico é o da linha do nível.
+  - **raio:** o do PoB × o "+% final" do raio × √ do "+% final" da área. Na grade, metros ÷ 2, com a fração como chance.
+  - **também:** os projéteis, o alcance, as chances (Congelar, Incendiar, Eletrizar, Provocar), o "não pode ser crítico" e o Fogo no chão do Meteoro.
+- **O golpe do lacaio** virou uma função (`cacadas.golpeDoLacaioNoBicho`, antes uma função interna do tique). O principal do motor e as habilidades com recarga saem por ela. Por isso valem as auras, o crítico, os suportes S2B, as afecções, o erro do ataque, a Ira, a Reunião e o resto.
+- **As famílias:**
+
+  | Família | O que usa |
+  |---|---|
+  | Zumbis | O golpe e a Pancada (150%, recarga de 6 s, raio de 1,8 m × 1,25). No Zumbi da Pancada, a gema dá +76% de área e de recarga só na Pancada. |
+  | Esqueletos | O guerreiro bate de perto. O arqueiro usa o arco (5 casas). O mago tem a magia de projétil de um elemento, com o dano base do PoB. Na Vaal, cada tipo usa o dele. |
+  | Espectro | Os multiplicadores do monstro erguido passam para as tabelas de aliado do nível do Espectro. As magias sobem pela tabela de dano de monstro. |
+  | Golens | Flamejante: o Imolar, a Onda (2 s) e a Bola de Magma (6 s, 3 usos); o do Meteoro tem o Meteoro e não tem a Bola de Magma. Glacial: o Ciclone (2 acertos em volta) e a Lança (4 s); o Despedaçamento explode na Vida Baixa. Pétreo: a Pancada (200%, raio +200%, 33% de Provocar) e o Rolamento. Relâmpago: o projétil de magia. Carniça: o Combo, com 160% e a média da série do PoB. Caótico: o golpe. |
+  | Sentinelas | Pureza: o golpe, o golpe em área e a Pancada da Cruzada (5 s). Domínio: a Investida, sem crítico e com +30% no alcance máximo, e a Pancada. Vaal: o golpe de 300% e a Pancada em área de 350%. |
+  | Juízes | A Absolvição em área e a Fortalecida. A Vaal tem a Explosão. |
+  | Espírito Furioso | 100% do Físico em Fogo, +40% mais velocidade e 4 a 5 de Físico adicionado (os mods dele no PoB). |
+  | Ceifador | O golpe de 50% × o "+% final" do nível. O da Evisceração não ataca sozinho: só solta o Ultimate no uso. |
+  | Sua arma | O clone das Flechas (175%), o Armamento do Golpe Sagrado e a cópia da Auto-reflexão usam a faixa e o tempo da sua arma principal. |
+  | Sem lacaio que ataque | A Queda, a Relíquia e os Robôs não atacam no PoE (lotes E2A e R3B). As Oferendas e a Convocação não invocam. |
+- **Placar** (relatório regerado):
+  - antes: ativas 562 · testada 460 · sem teste 43 · limitação 58 · não se aplica 1.
+  - depois: ativas 562 · testada 513 · sem teste 43 · limitação 5 · não se aplica 1. Ataques: 192 testados, 18 sem teste. Suportes sem mudança.
+- **Ficam como limitação, esperando o dono** (5): Animar Arma, Animar Arma Vaal, Animar Arma dos Braços Distantes, Animar Guardião e Animar Guardião do Castigo. No PoE o lacaio é um ITEM animado (a arma no chão, a armadura). O idle não tem esse item.
+- **Testes:** o arquivo novo é `testes/lacaios-pob.test.mjs`, com 12 testes, uma família por bloco. Ele confere que todo lacaio do motor bate no alvo, e que o zumbi, o mago, o golem e o espírito invocados pelo uso da gema batem com as habilidades do PoB.
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.

@@ -39,6 +39,8 @@ import * as Treino from './treino.mjs';
 import * as R from './regras.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import * as LacaiosPoe from './itens-poe/lacaios-poe.mjs';
+// (rodada 4, lote L: o motor das habilidades dos lacaios pelo PoB — a arma do lacaio, o Espectro)
+import * as LacaiosHabilidades from './itens-poe/lacaios-habilidades.mjs';
 // (lote E1a, 26/10: os cadáveres das Oferendas e a Sentinela a mais do Golpe Dominador — `gemas-e1a.mjs`)
 import * as GemasE1a from './itens-poe/gemas-e1a.mjs';
 import * as Virulencia from './itens-poe/virulencia.mjs';
@@ -3591,6 +3593,9 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
   const q = LacaiosPoe.oQueInvoca(slug, efeito?.nivel ?? 1, efeito, estado ? Ficha.combate(estado)?.afPoe ?? null : null);
   // (a restrição de uma peça — "Você não pode ter Lacaios não-Golens": o de outro tipo não vem)
   if (!q || q.proibido) return [];
+  // (rodada 4, lote L) o Ceifador já em campo: o uso da gema o faz avançar até o alvo e soltar o Ultimate no próximo tique, em vez de invocar outro
+  // (`LacaiosHabilidades.pedirUltimate` — a descrição da gema no poedb)
+  if (itensPoeLigado() && LacaiosHabilidades.pedirUltimate(hunt, slug, alvo)) return [];
   const agora = hunt.ultimoTique ?? Date.now();
   const eventos = [];
   hunt.lacaios ??= [];
@@ -3657,6 +3662,8 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
       ...(GemasR3B.lacaioSemAtaque(slug) ? { semAtaque: true } : {}),
       // (revisão E1a — dono, 27/10) as habilidades com recarga (o Orbe e a Ira do Golem de Relâmpago; a Cascata e o Salto da Carniça — `cacadas.habilidadesComRecarga`)
       ...(q.recargas ? { recargas: q.recargas.map((h) => ({ ...h })) } : {}),
+      // (rodada 4, lote L) as habilidades do PoB do lacaio (o principal — `cacadas`; `LacaiosHabilidades`)
+      ...(q.habPob ? { habPob: q.habPob } : {}),
       ...(q.tipo === 'totem' && alvo ? { mira: { x: alvo.x, y: alvo.y } } : {}),
       ...(focada ? { focada: true } : {}),
       // (lote E2A) a balista do anel dispara uma vez e some (`cacadas`)
@@ -3690,11 +3697,22 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
       if (corpo) {
         const p = Poderes.poderesDe(corpo.key);
         const maior = Math.max(1, ...(p?.ataques ?? []).map((a) => Math.max(a.min ?? 0, a.max ?? 0)));
+        // (rodada 4, lote L) o Espectro pelo PoB (`LacaiosHabilidades.espectroPeloPob`): o monstro erguido leva os multiplicadores de vida e de dano dele para as tabelas
+        // de aliado do nível do Espectro, com o tempo de ataque dele; as magias sobem do nível do monstro para o do Espectro — × o "aumentado/mais" do lacaio
+        const doPob = itensPoeLigado() ? LacaiosHabilidades.espectroPeloPob(CATALOGO.bestiary?.[corpo.key]?.poe, CATALOGO.bestiary?.[corpo.key]?.hp, l.nivel ?? 1) : null;
+        const fatorDoDano = l.poe?.fatorDoDano ?? 1;
+        if (doPob) {
+          const vida = Math.max(10, Math.round(doPob.vida * (q.vida / Math.max(1, q.vidaBase ?? q.vida))));
+          Object.assign(l, { hp: vida, maxHp: vida, dano: { min: Math.max(1, Math.round(doPob.golpe * fatorDoDano * 0.8)), max: Math.max(1, Math.round(doPob.golpe * fatorDoDano * 1.2)) }, intervaloMs: doPob.tempoMs });
+        }
         Object.assign(l, { look: corpo.look, lookItem: corpo.lookItem ?? 0, colors: corpo.colors ?? null, nome: `Espectro de ${corpo.nome ?? corpo.name}`,
           // As magias do monstro com o dano na força do espectro (o maior golpe dele vira 1,5× o golpe de um lacaio do nível).
-          espectro: { key: corpo.key, fator: (l.dano.max * 1.5) / maior }, proximoPoder: {} });
+          // (rodada 4, lote L: pelo PoB — as do monstro no nível do Espectro, `fatorDasMagias`, × o "aumentado/mais" dele)
+          espectro: { key: corpo.key, fator: doPob ? doPob.fatorDasMagias * fatorDoDano : (l.dano.max * 1.5) / maior }, proximoPoder: {} });
       }
     }
+    // (rodada 4, lote L) o golpe da SUA arma no lacaio que a usa no PoE (o clone das Flechas, o Armamento, a cópia da Auto-reflexão — `LacaiosHabilidades.aoInvocar`)
+    if (l.habPob?.arma && estado && itensPoeLigado()) LacaiosHabilidades.aoInvocar(l, { armas: Ficha.armasEquipadas(estado) });
     // (ciclo 7) os mods da árvore no lacaio recém-invocado: o Escudo de Energia ("ganham X% da Vida Máxima como Escudo de Energia").
     LacaiosPoe.aplicarNoLacaio(l);
     // (lote S2B) a Carne Fresca: a Fúria Desperta e a Adrenalina por 10% da duração do lacaio (no relógio da caçada)
@@ -5957,7 +5975,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const agoraL = hunt.ultimoTique ?? Date.now();
     const venceLogo = desta.some((l) => l.ate && l.ate - agoraL < 1000);
     if (q?.proibido) return { ok: false, erro: q.proibido, motivo: 'LACAIO_PROIBIDO' };
-    if (q && q.maximo && desta.length >= q.maximo && !venceLogo) return { ok: false, erro: `Já estão todos em campo (${desta.length}/${q.maximo}).`, motivo: 'LACAIOS_COMPLETOS' };
+    // (rodada 4, lote L: o Ceifador em campo — o uso o faz soltar o Ultimate, `LacaiosHabilidades.pedirUltimate`)
+    const ultimate = itensPoeLigado() && LacaiosHabilidades.temUltimate(entry.poeGema.slug) && desta.length > 0;
+    if (q && q.maximo && desta.length >= q.maximo && !venceLogo && !ultimate) return { ok: false, erro: `Já estão todos em campo (${desta.length}/${q.maximo}).`, motivo: 'LACAIOS_COMPLETOS' };
     // A Oferenda e a Convocação agem nos lacaios que estão em campo: sem nenhum, não saem.
     if (q && (q.tipo === 'oferenda' || q.tipo === 'convocacao') && !(hunt.lacaios ?? []).some((l) => l.hp > 0 && l.tipo === 'lacaio')) return { ok: false, erro: 'Nenhum lacaio em campo.', motivo: 'SEM_LACAIOS' };
     // (dono, 26/10) a Oferenda consome cadáveres: sem nenhum a até 4 casas, não sai
