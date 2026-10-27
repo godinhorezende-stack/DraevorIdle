@@ -78,6 +78,8 @@ import * as Reserva from './itens-poe/reserva.mjs';
 import * as Poderes from './poderes.mjs';
 import * as Reforcos from './skills/reforcos.mjs';
 import * as LacaiosPoe from './itens-poe/lacaios-poe.mjs';
+// (lote S2B, 27/10: os suportes de lacaio da segunda metade das parciais — o crítico, a Adrenalina, o Frenesi Faminto, o Escudo de Carne, o Exército Elemental)
+import * as SuportesS2B from './itens-poe/suportes-s2b.mjs';
 import * as Protecao from './protecao.mjs';
 import * as Areas from '../engine/areas.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
@@ -2266,7 +2268,7 @@ function passoDoFamiliar(hunt, grade, f, agora, ate, { pararEm, longe = 3 }) {
   const ocupado = (c) => bloqueadas.has(`${c.x},${c.y}`);
   // (PoE: "Lacaios têm X% da Velocidade de Movimento aumentada" — a fração vira a chance de um passo a mais no tique.)
   // (lote 69: + o "Lacaios Criados Recentemente têm Velocidade de Movimento aumentada" — `LacaiosPoe.movimentoDoLacaio`)
-  const movimentoPct = LacaiosPoe.movimentoDoLacaio(f, hunt.clock ?? 0);
+  const movimentoPct = LacaiosPoe.movimentoDoLacaio(f, hunt.clock ?? 0) + SuportesS2B.movDoLacaio(hunt, f, hunt.clock ?? 0);
   const passos = (d > longe ? 2 : 1) + (movimentoPct > 0 && Math.random() * 100 < movimentoPct ? 1 : 0);
   let deu = 0;
   for (let k = 0; k < passos; k++) {
@@ -2629,6 +2631,8 @@ export function magiaNoLacaio({ estado, hunt, bicho, l, a, eventos, agora, ficha
     return 0;
   }
   let sofrido = dano;
+  // (lote S2B: o "menos Dano" do Escudo de Carne e a Adrenalina da Carne Fresca)
+  if (l.poe?.s2b || l.s2bCarneFrescaAte) sofrido *= SuportesS2B.fatorDoDanoNoLacaio(l, relogio, fisico / Math.max(1e-9, fisico + outros));
   if (vinculo?.menosDano > 0) sofrido *= Math.max(0, 1 - vinculo.menosDano / 100);
   if (aliado?.fortificacao > 0) sofrido *= Math.max(0, 1 - aliado.fortificacao / 100);
   if (vinculo?.escudoPct > 0 && (estado.es ?? 0) > 0) { const parte = Math.min(estado.es, (sofrido * vinculo.escudoPct) / 100); estado.es -= parte; sofrido -= parte; }
@@ -2831,6 +2835,8 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       if (bloqueou) { eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#7f9fff', bloqueado: true }); aoBloquearDoLacaio(hunt, l, b, eventos, relogio, Math.random, { magia: true }); continue; }
       // (o Vínculo D'Alma no lacaio: "sofre X% menos Dano" e os 30% do dano no SEU Escudo de Energia antes do dele)
       let sofrido = noLacaio;
+      // (lote S2B: o "menos Dano" do Escudo de Carne e a Adrenalina da Carne Fresca — a Redução Física dela só na parte física)
+      if (l.poe?.s2b || l.s2bCarneFrescaAte) sofrido *= SuportesS2B.fatorDoDanoNoLacaio(l, relogio, (golpeDoBicho * 0.5) / Math.max(1e-9, golpeDoBicho * 0.5 + extras));
       if (vinculo?.menosDano > 0) sofrido *= Math.max(0, 1 - vinculo.menosDano / 100);
       // ("Aliados Próximos contam como tendo Fortificação igual a sua": 1% menos dano de acertos por Fortificação)
       if (aliado?.fortificacao > 0) sofrido *= Math.max(0, 1 - aliado.fortificacao / 100);
@@ -2949,7 +2955,7 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     if (!R.jaPode(agora, l.proximoGolpe)) continue;
     // A velocidade: a do monstro do nível × o jeito (o espírito é rápido) ÷ os bônus (a gema, a Oferenda de Carne, a Agressividade).
     // (lote 32, P028: a Oferenda Carnal — a velocidade de Conjuração no lacaio que conjura)
-    const vel = 1 + ((l.velAtaquePct ?? 0) + ((est.magia ? oferenda?.velConjPct : oferenda?.velAtaquePct) ?? 0) + LacaiosPoe.velocidadeDoLacaio(l, agora) + (aliado?.velPct ?? 0)) / 100;
+    const vel = 1 + ((l.velAtaquePct ?? 0) + ((est.magia ? oferenda?.velConjPct : oferenda?.velAtaquePct) ?? 0) + LacaiosPoe.velocidadeDoLacaio(l, agora) + (aliado?.velPct ?? 0) + SuportesS2B.velDoLacaio(hunt, l, relogio)) / 100;
     // ("Tempo de ataque base dos lacaios não espectrais é equivalente ao tempo de ataque da arma da sua mão principal": a base é a da arma.)
     const fichaDoDono = Ficha.combate(estado);
     const daArma = ModsPoe.valor(fichaDoDono, 'lacaio_tempo_da_arma') > 0 && !/espectro|spectre/i.test(l.nome ?? '') ? Ficha.intervaloBaseDoGolpe(fichaDoDono.arma) : null;
@@ -2958,7 +2964,8 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     // O ELEMENTO do golpe (o mago varia entre fogo, gelo e raio) e o desenho dele.
     const tipoBase = est.magia ? est.elementos[Math.floor(Math.random() * est.elementos.length)] : est.elemento ?? l.elemento ?? 'physical';
     // (A conversão do dano dos únicos: as partes por elemento; o `tipo` do golpe — a cor, as chances que dependem do elemento — é a maior.)
-    const partes = partesDoGolpeDoLacaio(l, tipoBase);
+    // (lote S2B: + o "X% mais Dano Elemental" do Exército Elemental nas partes elementais)
+    const partes = SuportesS2B.partesDoLacaio(l, partesDoGolpeDoLacaio(l, tipoBase));
     if (!partes.length) continue;
     const tipo = partes.reduce((a, b) => (b.f > a.f ? b : a)).tipo;
     const PROJETIL = { fire: 4, ice: 37, energy: 36, chaos: 11, physical: 12 };
@@ -2978,7 +2985,9 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       }
       // O CRÍTICO do lacaio (a gema: "sempre crítico", "+X% de multiplicador"; a Oferenda de Espírito; ciclo 7: os da árvore).
       // (lote 86: + o crítico do escudo da Égide "se (não) Bloqueou Recentemente" — pelo relógio da caçada)
-      const critico0 = LacaiosPoe.criticoDoLacaio(l, oferenda, hunt.clock ?? agora);
+      // (lote S2B: + o Exemplar, a Fúria Desperta e o "mais" da Adrenalina, do Frenesi Faminto e do Escudo de Carne — `SuportesS2B.noGolpeDoLacaio`)
+      const doLote = SuportesS2B.noGolpeDoLacaio(hunt, l, b, relogio);
+      const critico0 = SuportesS2B.comCriticoDoLote(l, LacaiosPoe.criticoDoLacaio(l, oferenda, hunt.clock ?? agora), doLote);
       // (o Vínculo Destrutivo no lacaio: "+X% de Multiplicador" e a chance de crítico igual à sua)
       const critico = vinculo ? { chance: vinculo.critPct > 0 ? vinculo.critPct : critico0.chance, mult: critico0.mult + vinculo.critMult / 100 } : critico0;
       const crit = Math.random() * 100 < critico.chance;
@@ -2988,7 +2997,7 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       const doAliado = aliado ? ((1 + ((l.poe?.danoIncPct ?? 0) + aliado.danoIncPct) / 100) / (1 + (l.poe?.danoIncPct ?? 0) / 100)) * Math.max(0, 1 + aliado.maisDanoPct / 100) : 1;
       // (dono, 26/10: + o dano físico adicionado do Golem da Carniça nos lacaios não-golem — `LacaiosPoe.danoDoGolemDaCarnica`, × o Efeito do Buff do golem)
       const [carnMin, carnMax] = LacaiosPoe.danoDoGolemDaCarnica(l, hunt.lacaios, (g) => GemasPoe.fatorDoBuffDoGolem(estado, g));
-      const bruto = ((l.dano.min + Math.random() * Math.max(0, l.dano.max - l.dano.min) + (l.somado?.[0] ?? 0) + Math.random() * Math.max(0, (l.somado?.[1] ?? 0) - (l.somado?.[0] ?? 0)) + carnMin + Math.random() * Math.max(0, carnMax - carnMin)) * (crit ? critico.mult : 1) * doGolpe.fator * doAliado * pct) / 100;
+      const bruto = ((l.dano.min + Math.random() * Math.max(0, l.dano.max - l.dano.min) + (l.somado?.[0] ?? 0) + Math.random() * Math.max(0, (l.somado?.[1] ?? 0) - (l.somado?.[0] ?? 0)) + carnMin + Math.random() * Math.max(0, carnMax - carnMin)) * (crit ? critico.mult : 1) * doGolpe.fator * doAliado * doLote.fator * pct) / 100;
       const antes = l.poe ? { envenenado: (b.dots ?? []).some((d) => (d.tipo === 'veneno' || d.tipo === 'venenoPoe') && d.falta > 0), raroOuUnico: ['raro', 'unico'].includes(b.raridade ?? b.raridadePoe) || !!b.boss || !!b.chefe } : null;
       // (o Vínculo Flamejante no lacaio: o Fogo adicional, com o crítico e a parte do golpe)
       const fogoDoVinculo = vinculo?.fogo?.[1] > 0 ? ((vinculo.fogo[0] + Math.random() * Math.max(0, vinculo.fogo[1] - vinculo.fogo[0])) * (crit ? critico.mult : 1) * pct) / 100 : 0;
@@ -3015,6 +3024,8 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       if (est.magia && l.poe?.poderProfanoAoAcertarMagia > 0 && Math.random() * 100 < l.poe.poderProfanoAoAcertarMagia) (l.buffs ??= {}).poderProfano = Math.max(l.buffs.poderProfano ?? 0, agora + 4000);
       // PoE: o roubo de vida dos lacaios e as chances deles (Cegar, Provocar, Desacelerar, Envenenar, Incendiar) — `itens-poe/lacaios-poe.mjs`.
       if (l.poe) eventos.push(...efeitosDoLacaioNoAcerto(hunt, l, b, dano, tipo, { ...antes, estado, ficha, personagem, magia: !!est.magia }));
+      // (lote S2B: a Exposição do Exército Elemental e o Frenesi Faminto em você)
+      if (l.poe?.s2b) eventos.push(...SuportesS2B.aoAcertarDoLacaio(hunt, l, b, tipo, relogio, { porExposicao: ModsPoe.porExposicao }));
       eventos.push({ t: 'fx', id: est.magia ? IMPACTO[tipo] : est.impacto ?? IMPACTO[tipo] ?? 10, uid: b.uid, x: b.x, y: b.y });
       eventos.push({ t: 'dmg', uid: b.uid, x: b.x, y: b.y, v: dano, foe: true, lacaio: true, crit, alvo: b.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
       if (hunt.sessao) hunt.sessao.danoDosLacaios = (hunt.sessao.danoDosLacaios ?? 0) + dano;

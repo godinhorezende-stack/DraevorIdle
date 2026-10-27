@@ -106,6 +106,8 @@ import * as GemasGBD from './itens-poe/gemas-gbd.mjs';
 import * as GemasGAC from './itens-poe/gemas-gac.mjs';
 // (lote E1b, 26/10: as Armadilhas, as Minas e as auras do lote — itens-poe/gemas-e1b.mjs)
 import * as GemasE1b from './itens-poe/gemas-e1b.mjs';
+// (lote S2B, 27/10: os suportes da segunda metade das parciais)
+import * as SuportesS2B from './itens-poe/suportes-s2b.mjs';
 import { JANELA } from '../websocket/quadro.mjs';
 import * as ItensPoeJogo from './itens-poe/jogo.mjs';
 
@@ -1094,7 +1096,7 @@ const tagsDoArauto = (entry, extra = []) => [...new Set([...tagsPoeDaSkill(entry
  * Um ACERTO do Arauto `id` no bicho `m`: `bruto` (o dano no nível, antes dos aumentos) do `elemento`. `semEletrizar`: a tempestade "Não Pode
  * aplicar Eletrizar". Devolve o dano dado.
  */
-export function acertoDoArauto(estado, hunt, id, m, bruto, elemento, { tags = null, eventos = [], rng = Math.random, semEletrizar = false, fonte = null, personagem = null, critBase = 0, afeccoesExtra = null, ataque = false, adicionado = null, adicionadoMagia = null, conversaoFisico = null } = {}) {
+export function acertoDoArauto(estado, hunt, id, m, bruto, elemento, { tags = null, eventos = [], rng = Math.random, semEletrizar = false, fonte = null, personagem = null, critBase = 0, afeccoesExtra = null, ataque = false, adicionado = null, adicionadoMagia = null, conversaoFisico = null, soElemento = null, maisPct = 0 } = {}) {
   const entry = POR_ID.get(id);
   if (!entry || !m || !(m.hp > 0) || m.dummy || !(bruto > 0)) return 0;
   const agora = hunt.clock ?? 0;
@@ -1134,8 +1136,12 @@ export function acertoDoArauto(estado, hunt, id, m, bruto, elemento, { tags = nu
     for (const [para, pct] of Object.entries(conversaoFisico ?? {})) { const v = ((p.physical ?? 0) * Math.min(100, pct)) / 100; if (v > 0) { p.physical -= v; p[para] = (p[para] ?? 0) + v; } }
     const transformadas = ModsPoe.transformarPartes(f, Object.fromEntries(Object.entries(p).map(([el, v]) => [el, [v, v]])), null) ?? {};
     partes = Object.entries(transformadas).map(([el, [v]]) => ({ el, v: v * Math.max(0, 1 + (f.danoDoElemento?.[el] ?? 0) / 100) * ModsPoe.fatorDoDanoElemental(f, hunt, id, el) * doSuporte })).filter((x) => x.v > 0);
+    // (lote S2B: a Explosão Prismática — "Causa 100% menos Dano de cada Tipo de Dano não escolhido": só o elemento sorteado, o adicionado também)
+    if (soElemento) partes = partes.filter((x) => x.el === soElemento);
   }
-  const comAumento = partes ? partes.reduce((t, x) => t + x.v, 0) : bruto * Math.max(0, 1 + (f.danoDoElemento?.[elemento] ?? 0) / 100) * ModsPoe.fatorDoDanoElemental(f, hunt, id, elemento) * doSuporte;
+  // (lote S2B: `maisPct` — o aumentado da própria magia ativada, a qualidade da Explosão Prismática e da Explosão Destruidora, como o `doSuporte`)
+  if (partes && maisPct) for (const x of partes) x.v *= 1 + maisPct / 100;
+  const comAumento = partes ? partes.reduce((t, x) => t + x.v, 0) : bruto * Math.max(0, 1 + (f.danoDoElemento?.[elemento] ?? 0) / 100) * ModsPoe.fatorDoDanoElemental(f, hunt, id, elemento) * doSuporte * (1 + maisPct / 100);
   // o crítico: a gema não tem — só o "+X% de Chance de Golpe Crítico" fixo das tags, × os "aumentados"
   const porTag = ModsPoe.somaPorTags(fichaBase, t);
   const nunca = ModsPoe.valor(f, 'nunca_critico') > 0;
@@ -1165,6 +1171,60 @@ export function acertoDoArauto(estado, hunt, id, m, bruto, elemento, { tags = nu
     ModsPoe.aoPorAfeccoes(estado, hunt, m, f, postos, { eventos, personagem });
   }
   return dano;
+}
+/**
+ * (lote S2B, 27/10) Uma MAGIA ATIVADA por suporte com o dano dela (a Explosão Prismática, a Explosão Destruidora): o acerto de magia (`acertoDoArauto` com as tags da
+ * magia — os modificadores de dano mágico valem —, o dano adicionado às magias × a eficácia dela, o crítico de base dela e os suportes da habilidade que a ativou) em
+ * todos os vivos a até o raio do `centro` (os metros ÷ 2, × √ da Área: a sua, a dos suportes da habilidade e a da própria magia; a fração, a chance de uma casa a mais).
+ */
+function magiaAtivadaS2B(estado, hunt, personagem, id, centro, { min, max, elemento, raioM, areaIncPct = 0, critBase = 0, eficacia = 1, maisPct = 0, tags, fonte, cor }, eventos, rng = Math.random) {
+  const ef = Gemas.efeitoNaSkill(estado, id);
+  const fichaBase = Ficha.combate(estado);
+  const porTag = ModsPoe.somaPorTags(fichaBase, tags);
+  const base = Math.max(1, Math.round(raioM / 2));
+  const raio = base + ModsPoe.casasPelaArea(base, ModsPoe.fatorDaArea(ModsPoe.valor(fichaBase, 'area_inc') + (porTag.area_inc ?? 0) + (ef?.areaIncPct ?? 0) + areaIncPct, ModsPoe.valor(fichaBase, 'area_mais') + (porTag.area_mais ?? 0), ef?.areaMaisPct ?? 0), rng);
+  eventos.push({ t: 'explosao', uid: centro.uid, x: centro.x, y: centro.y, raio, fonte, color: cor });
+  let total = 0;
+  for (const m of [...(hunt.monstros ?? [])]) {
+    if (!(m.hp > 0) || m.dummy || (m.z ?? hunt.z ?? 0) !== (centro.z ?? hunt.z ?? 0) || Math.max(Math.abs(m.x - centro.x), Math.abs(m.y - centro.y)) > raio) continue;
+    total += acertoDoArauto(estado, hunt, id, m, min + rng() * Math.max(0, max - min), elemento, { tags, eventos, rng, fonte, personagem, critBase, adicionadoMagia: eficacia, soElemento: elemento, maisPct }) ?? 0;
+  }
+  return total;
+}
+const TAG_DO_ELEMENTO_S2B = { fire: 'fogo', ice: 'gelo', energy: 'raio', chaos: 'caos', physical: 'fisico' };
+/**
+ * (lote S2B, 27/10) A EXPLOSÃO PRISMÁTICA (o suporte: "Habilidades Suportadas Ativam Explosão Prismática ao Acertar"): a recarga dela (0,8 s ÷ (1 + a "Velocidade de Recarga
+ * aumentada" dela) — o PoB: `base_cooldown_speed_+%` da PrismaticBurst), o elemento sorteado pelos seus atributos (`SuportesS2B.elementoDoPrisma`) e o dano dele, no raio
+ * em volta do acertado (1,3 m + o "+X metros de raio"). Devolve os eventos.
+ */
+export function prismaNoAcerto(estado, hunt, personagem, entry, ef, alvo, rng = Math.random) {
+  const eventos = [];
+  if (!hunt || !alvo || !ef?.prisma) return eventos;
+  const recargaMs = Math.round((ef.prismaRecargaMs ?? 800) / Math.max(0.1, 1 + (ef.prismaRecargaIncPct ?? 0) / 100));
+  if (!SuportesS2B.gastarUso(hunt, `prisma:${entry.id}`, recargaMs, 1, hunt.clock ?? 0)) return eventos;
+  const at = Ficha.combate(estado).atributos ?? {};
+  const el = SuportesS2B.elementoDoPrisma(at.str, at.dex, at.int, rng);
+  const faixas = { fire: [ef.prismaMin_fire, ef.prismaMax_fire], ice: [ef.prismaMin_ice, ef.prismaMax_ice], energy: [ef.prismaMin_energy, ef.prismaMax_energy] };
+  const [min, max] = (faixas[el] ?? []).map((x) => x ?? 0);
+  if (!(max > 0)) return eventos;
+  magiaAtivadaS2B(estado, hunt, personagem, entry.id, alvo, { min, max, elemento: el, raioM: ef.prismaRaioM ?? 1.3, critBase: ef.prismaCrit ?? 5, eficacia: ef.prismaEficacia ?? 1, maisPct: ef.prismaIncPct ?? 0,
+    tags: ['magia', 'area', 'elemental', TAG_DO_ELEMENTO_S2B[el], 'habilidade'], fonte: 'prisma', cor: COR_DO_ELEMENTO[el] }, eventos, rng);
+  return eventos;
+}
+/**
+ * (lote S2B, 27/10) A DESTRUIÇÃO IMINENTE: cada Feitiço seu suportado que TERMINOU (a duração acabou — `SuportesS2B.feiticosQueTerminaram`) ativa a Explosão Destruidora no
+ * monstro (o dano de Caos dela, 2 m × a Área + a qualidade dela, a eficácia e o crítico dela), na recarga dela ("0.15 seg (3 Times)": 3 usos guardados).
+ */
+export function tiqueDosFeiticosS2B(estado, hunt, personagem, eventos = [], agora = hunt?.clock ?? 0, rng = Math.random) {
+  const fim = SuportesS2B.feiticosQueTerminaram(hunt, agora);
+  for (const { bicho, id } of fim) {
+    const ef = Gemas.efeitoNaSkill(estado, id);
+    if (!(ef?.doomBlast > 0) || !(ef.doomMax > 0)) continue;
+    if (!SuportesS2B.gastarUso(hunt, `doom:${id}`, ef.doomRecargaMs ?? 150, ef.doomUsos ?? 1, agora)) continue;
+    magiaAtivadaS2B(estado, hunt, personagem, id, bicho, { min: ef.doomMin, max: ef.doomMax, elemento: 'chaos', raioM: ef.doomRaioM ?? 2, areaIncPct: ef.doomAreaIncPct ?? 0, critBase: ef.doomCrit ?? 5, eficacia: ef.doomEficacia ?? 1,
+      tags: ['magia', 'area', 'caos', 'habilidade'], fonte: 'explosao-destruidora', cor: COR_DO_ELEMENTO.chaos }, eventos, rng);
+  }
+  return eventos;
 }
 /**
  * (lote 81) A EXPLOSÃO do Arauto Glacial: o inimigo que você Estilhaça (morto Congelado — ou pelo golpe que o congelaria: dono, "Golpe fatal
@@ -2635,9 +2695,15 @@ export function efeitosDaMaldicao(efeitos, efeitoDaGema, estado = null, entry = 
   // (a Blasfêmia: a maldição em aura também conta como Habilidade Aura — "Efeito em Área de Habilidades de Aura" — e a área da própria Blasfêmia)
   const porTag = raioM ? ModsPoe.somaPorTags(f, [...tagsPoeDaSkill(entry), ...(efeitoDaGema?.maldicaoEmAura ? ['aura'] : [])]) : null;
   const raioCasas = raioM ? (raioM / 2) * Math.sqrt(ModsPoe.fatorDaArea(valorPoe(f, 'area_inc') + (porTag.area_inc ?? 0) + (areaDaGema.areaIncPct ?? 0) + (Number(efeitoDaGema?.areaIncPct) || 0) + (Number(efeitoDaGema?.areaMaldicaoPct) || 0), valorPoe(f, 'area_mais') + (porTag.area_mais ?? 0), Number(efeitoDaGema?.areaMaisPct) || 0)) : 0;
+  // (lote S2B, 27/10) as regras dos suportes do lote no Feitiço (`SuportesS2B.regrasDoFeitico`): o Passe Enfeitiçado ("afetam inimigos imunes a feitiços"; "não podem
+  // causar golpes críticos"), o Toque Maldito Desperto (34% de chance nos imunes), o Propagar Feitiço (a transferência na morte) e a Destruição Iminente — guardadas na
+  // maldição do monstro (`Reforcos.marcar`)
+  const limiteDoFeitico = marca ? 1 : 1 + Math.max(0, valorPoe(f, 'maldicoes_adicionais'));
+  const s2b = ehFeitico && !marca ? SuportesS2B.regrasDoFeitico(efeitoDaGema) : null;
   return [...saida, {
-    efeito: 'maldicaoRegras', limite: marca ? 1 : 1 + Math.max(0, valorPoe(f, 'maldicoes_adicionais')), nome: GemasPoe.doSlug(entry.poeGema.slug)?.gema?.nome ?? null,
-    ...(marca ? { marca: true } : {}), ...(ehFeitico ? { feitico: true } : {}), ...(valorPoe(f, 'feitico_afeta_aprova') > 0 || valorPoe(f, `feitico_afeta_aprova:${entry.poeGema.slug}`) > 0 ? { afetaAProva: true } : {}),
+    efeito: 'maldicaoRegras', limite: limiteDoFeitico, nome: GemasPoe.doSlug(entry.poeGema.slug)?.gema?.nome ?? null,
+    ...(marca ? { marca: true } : {}), ...(ehFeitico ? { feitico: true } : {}), ...(valorPoe(f, 'feitico_afeta_aprova') > 0 || valorPoe(f, `feitico_afeta_aprova:${entry.poeGema.slug}`) > 0 || s2b?.afetaAProva ? { afetaAProva: true } : {}),
+    ...(s2b ? { s2b: { ...s2b, limite: limiteDoFeitico } } : {}),
     ...(expirou.length ? { expirou } : {}), ...(desacelera ? { desacelera } : {}), ...(regenMenos ? { regenMenos } : {}), ...(lentoApos ? { lentoApos } : {}), ...(danoApos ? { danoApos } : {}),
     ...(valorPoe(f, 'amaldicoado_sem_recarga_es') > 0 ? { semRecargaEs: true } : {}), ...(valorPoe(f, 'amaldicoado_destruido') > 0 ? { destruir: true } : {}),
     ...(Object.keys(daMarca).length ? { daMarca } : {}), ...(raioCasas > 0 ? { raioCasas } : {}),
@@ -3226,6 +3292,8 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
     }
     // (ciclo 7) os mods da árvore no lacaio recém-invocado: o Escudo de Energia ("ganham X% da Vida Máxima como Escudo de Energia").
     LacaiosPoe.aplicarNoLacaio(l);
+    // (lote S2B) a Carne Fresca: a Fúria Desperta e a Adrenalina por 10% da duração do lacaio (no relógio da caçada)
+    SuportesS2B.aoInvocar(l, hunt.clock ?? 0);
     // (lote A2, dono 19/10) a Sentinela Divina: a sentinela nasce com uma aura templária sorteada (o raio da aura de lacaio do jogo — 2 casas) e a
     // área dos lacaios suportados cresce
     if (efeito?.auraTemplaria > 0 && /sentinela|sentinel/i.test(`${l.nome} ${GemasPoe.doSlug(slug)?.gema?.en ?? ''}`)) {
@@ -4729,6 +4797,14 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     if (pactoAgora.projeteis > 0) efeitoDaGema = { ...efeitoDaGema, alvosExtras: (efeitoDaGema.alvosExtras ?? 0) + pactoAgora.projeteis, emCirculo: true, doPontoDoAlvo: false };
     if (pactoAgora.feixes > 0 && efeitoDaGema.cadeiaPoe) efeitoDaGema = { ...efeitoDaGema, cadeiaPoe: { ...efeitoDaGema.cadeiaPoe, saltos: (efeitoDaGema.cadeiaPoe.saltos ?? 0) + pactoAgora.feixes } };
   }
+  // (lote S2B, 27/10) o que os suportes do lote dão a ESTE uso (`SuportesS2B.doUso`): a Fúria Arcana ("35% mais Dano Mágico enquanto você possuir Fúria Arcana"), a Trindade e
+  // a Tríade Profana (as Ressonâncias agora), a Gula (a Regurgitação: em círculo, com os projéteis a mais) e a Intensidade Sobrecarregada (o crítico por instância); o seu uso
+  // (o totem, a armadilha, a mina e o ativado por gatilho não contam). O que muda depois que o uso sai (a Gula, a Intensidade perdida) é do `aposPagar`, abaixo
+  const s2bDoUso = itensPoeLigado() && entry.poeGema && efeitoDaGema && !doTotem && !plantada && !tipoPlantado && !gatilho
+    ? { magia: !entry.poeGema.ataque && tagsPoeDaSkill(entry).includes('magia'), projetil: tagsPoeDaSkill(entry).includes('projetil'), furiaArcana: ModsPoe.buffAtivo(estado, 'furiaArcana'),
+      perdaDeIntensidade: efeitoDaGema.intensidadeMax > 0 ? Math.max(0, (hunt.poeIntensidade?.[entry.id]?.n ?? 0) - intensidade) : 0 }
+    : null;
+  if (s2bDoUso) efeitoDaGema = SuportesS2B.doUso(hunt, entry.id, efeitoDaGema, s2bDoUso, hunt.clock ?? 0);
   // (lote G-D, dono 25/10 — D17) o PACTO DE K'TASH fortalece esta magia Vaal que causa dano (`hunt.poeKtash`, `GemasGBD.ktashFortalece`): "+29% de dano" — o MORE do PoB, no
   // acerto e nas afecções (como o de Beidat); gasta quando o uso sai e devolve as almas — a recarga volta pronta (`recargaDoGBD`). O totem, a armadilha, a mina e a ativada
   // por gatilho não contam
@@ -5499,6 +5575,18 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       ModsPoe.evento(estado, hunt, 'gastarMana', Ficha.combate(estado), { personagem, quantidade: manaGasta, eventos: [] });
       // (lote A2) o Emblema do Poder: a mana gasta na área dele dá os estágios
       if (GemasA2.aoGastarManaNoEmblema(hunt, manaGasta, hunt.clock ?? 0)) Ficha.invalidar(estado);
+      // (lote S2B, 27/10) a FÚRIA ARCANA do suporte: a mana gasta no custo desta habilidade; no total, o buff — o MAIOR entre o do suporte e o da Fúria Arcana comum
+      // (o PoB: MAX), a diferença como bônus temporário (`hunt.poeTemporarios`, a mesma duração)
+      const arcana = itensPoeLigado() && efeitoDaGema?.furiaArcanaLimiar > 0 && !doTotem && !plantada ? SuportesS2B.gastarManaArcana(hunt, entry.id, manaGasta, efeitoDaGema) : null;
+      if (arcana) {
+        const ate = (hunt.clock ?? 0) + arcana.ms;
+        ModsPoe.ganharBuff(hunt, 'furiaArcana', arcana.ms / 1000, hunt.clock ?? 0);
+        const base = ModsPoe.BUFFS.furiaArcana.af;
+        const t = (hunt.poeTemporarios ??= {});
+        if (arcana.castPct > (base.cast_speed ?? 0)) t['s2b:furiaArcana:cast'] = { stat: 'cast_speed', valor: arcana.castPct - (base.cast_speed ?? 0), ate };
+        if (arcana.regenPct > (base.mana_regen_pct ?? 0)) t['s2b:furiaArcana:regen'] = { stat: 'mana_regen_pct', valor: arcana.regenPct - (base.mana_regen_pct ?? 0), ate };
+        Ficha.invalidar(estado);
+      }
     }
     // PoE: "X% de chance de, quando pagar o Custo de uma Habilidade, ganhar a mesma quantidade de Mana".
     if (Math.random() * 100 < ModsPoe.valor(Ficha.combate(estado), 'chance_devolver_custo')) estado.mana = Math.min(estado.maxMana ?? estado.mana, estado.mana + custoDeMana);
@@ -5511,6 +5599,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   const eventos = [];
   // (lote S1, 26/10) o SACRIFICAR e o SACRIFÍCIO VAAL no uso que você paga (`sacrificioDoUsoS1`)
   if (itensPoeLigado() && efeitoDaGema && !doTotem && !plantada) efeitoDaGema = doUsoS1(estado, entry, efeitoDaGema, agora);
+  // (lote S2B, 27/10) o uso saiu: a Gula e a Intensidade perdida (`SuportesS2B.aposPagar`)
+  if (s2bDoUso) SuportesS2B.aposPagar(hunt, entry.id, efeitoDaGema, s2bDoUso, hunt.clock ?? 0);
   // (lote PR2, dono 20/10 — D1) o RITUAL PROIBIDO fere você a cada conjuração (pela resistência a Caos; pode matar); o do totem e o da armadilha/mina, não
   // (exceção 1 do lote)
   if (itensPoeLigado() && entry.poeGema && !doTotem && !plantada && !tipoPlantado && GemasPoe.ritualDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1)) ritualEmVoce(estado, hunt, personagem, entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, eventos);
@@ -6336,6 +6426,13 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         chanceCritica: chance, critico: crit, danoFinal: dano, vidaRestante: Math.max(0, bicho.hp),
         detalhe: { min, max, daPericia, multiplicador: mult, fatorDaGema, porcentagemDoGolpe: pct, fatorDoAtaque, ataqueDuplo: fatorDoAtaque !== 100, ...(pedacos ? { porElemento: Object.fromEntries(pedacos.map((p) => [p.elemento, Math.round(p.dano)])) } : {}) },
       }));
+      // (lote S2B, 27/10) a TRINDADE e a TRÍADE PROFANA: o maior tipo de dano DESTE acerto (antes da resistência) dá a Ressonância dos outros dois (por 2 s) — o seu
+      // acerto (o do totem, da armadilha e da mina não; o suporte não os suporta)
+      if (dano > 0 && efeitoDaGema && (efeitoDaGema.trindade || efeitoDaGema.profana) && !doTotem && !plantada) {
+        const partesDoAcerto = pedacos ?? [{ elemento: tipo, dano: bruto }];
+        if (efeitoDaGema.trindade) SuportesS2B.noAcerto(hunt, 'trindade', partesDoAcerto, agora);
+        if (efeitoDaGema.profana) SuportesS2B.noAcerto(hunt, 'profana', partesDoAcerto, agora);
+      }
       // (lote A5, dono 20/10 — f34 D8) a Onda de Convicção: depois do acerto, a Exposição no elemento (Fogo, Gelo ou Raio) que mais causou dano, depois da
       // resistência — o próprio acerto não a aproveita
       if (exposicaoDoUso && !exposicaoDoUso.antes && dano > 0) {
@@ -7266,6 +7363,16 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     if (!doTotem && efeitoDaGema?.vidaAoMatarPct > 0 && atingidos.length) vidaAoMatarDoSuporte(estado, hunt, personagem, efeitoDaGema.vidaAoMatarPct, atingidos, eventos);
     // (lote S1, 26/10) o abate do uso suportado: a Carga de Frenesi ao Matar um Inimigo Congelado (a Mordida Congelante) e o Devorar
     if (!doTotem && efeitoDaGema && atingidos.length) abatesDoSuporteS1(estado, hunt, personagem, efeitoDaGema, atingidos, eventos);
+    // (lote S2B, 27/10) a INERVAÇÃO: o golpe fatal seu num inimigo Eletrizado dá o buff (o dano de Raio adicionado — `hunt.poeTemporarios`, a duração renova)
+    if (!doTotem && !plantada && efeitoDaGema?.inervacao && atingidos.length) {
+      const t = SuportesS2B.inervacaoAoMatar(efeitoDaGema, atingidos.filter((b) => b && b.hp <= 0 && !b.dummy && QuemFeriu.abateSeu(b)), hunt.clock ?? 0);
+      if (t) { Object.assign((hunt.poeTemporarios ??= {}), t); Ficha.invalidar(estado); }
+    }
+    // (lote S2B, 27/10) a EXPLOSÃO PRISMÁTICA: o ataque suportado que acertou ativa a magia (a recarga dela), no primeiro acertado (`prismaNoAcerto`)
+    if (itensPoeLigado() && efeitoDaGema?.prisma && !gatilho && !plantada && !doTotem && entry.poeGema?.ataque) {
+      const primeiro = atingidos.find(acertouNoUso);
+      if (primeiro) eventos.push(...prismaNoAcerto(estado, hunt, personagem, entry, efeitoDaGema, primeiro));
+    }
     // (lote A4, dono 19/10) as Excepcionais do Vazio: a Onda de Choque no acerto corpo a corpo (no primeiro acertado) e a Tormenta onde o ataque cai
     if (itensPoeLigado() && efeitoDaGema?.ondaDoVazio && !gatilho && !plantada && !doTotem && atingidos.some(acertouNoUso) && tagsPoeDaSkill(entry).includes('corpo')) eventos.push(...ondaDoVazio(estado, hunt, entry, efeitoDaGema, atingidos.find(acertouNoUso), personagem, agora));
     if (itensPoeLigado() && efeitoDaGema?.tormentaDoVazio && !gatilho && !plantada && !doTotem && (formaNoUso || alvo)) porTormentaDoVazio(hunt, entry, efeitoDaGema, formaNoUso ?? alvo, agora);
@@ -8071,6 +8178,8 @@ export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora 
   if (itensPoeLigado() && (hunt?.poeImolacao || hunt?.poeCorrentes?.length || hunt?.poeObjetos?.length)) tiqueDoC2(estado, hunt, personagem, eventos, agora, explosaoDeRunas);
   // (lote B2, dono 20/10: o debuff do Golpe Infernal que expira, o Sangue Fervendo do Ceifar Vaal — `tiqueDasGemasB2`)
   if (itensPoeLigado() && hunt?.monstros?.length) tiqueDasGemasB2(estado, hunt, personagem, eventos, agora);
+  // (lote S2B, 27/10: a Explosão Destruidora dos Feitiços que terminaram — `tiqueDosFeiticosS2B`)
+  if (itensPoeLigado() && hunt?.monstros?.length) tiqueDosFeiticosS2B(estado, hunt, personagem, eventos, agora);
   // (lote B3, dono 21/10: as flechas presas da Conflagração que você ativou chegando perto, a Chuva de Lâminas de Trarthus ligada — `tiqueDasGemasB3`)
   if (itensPoeLigado() && (hunt?.poeTrarthus || hunt?.poeObjetos?.length)) tiqueDasGemasB3(estado, hunt, personagem, eventos, agora);
   // (lote PR4, dono 25/10: as flechas grudadas, as conchas, as cordas, a energia estática — `tiqueDasGemasPR4`)

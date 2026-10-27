@@ -43,6 +43,8 @@ import * as Bosses from '../bosses.mjs';
 import * as Poderes from '../poderes.mjs';
 import * as BossesUnicos from '../bosses-unicos/boss.mjs';
 import * as Reforcos from '../skills/reforcos.mjs';
+// (lote S2B, 27/10: o Propagar Feitiço na morte)
+import * as SuportesS2B from '../itens-poe/suportes-s2b.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Gemas from '../gemas.mjs';
 import * as Charms from '../charms.mjs';
@@ -123,6 +125,8 @@ function morrerOsMortos(estado, personagem, eventos, lista) {
     }
     // (revisão das gemas PR4: as flechas da Flecha Explosiva e a Concha esgotada explodem na morte — os restos ficam na sala para o tique)
     if (m.poeFusiveis || m.poeConchas) Acoes.guardarRestosPR4(hunt, m);
+    // (lote S2B, 27/10) o Propagar Feitiço: os Feitiços suportados do morto passam aos vivos a até o raio (`SuportesS2B.transferirFeiticos`)
+    if (m.maldicoes) for (const b of SuportesS2B.transferirFeiticos(hunt, m, hunt.clock ?? 0)) eventos.push({ t: 'estado', uid: b.uid, x: b.x, y: b.y, estado: 'amaldicoado' });
     matarMonstro(estado, hunt, personagem, m, eventos);
   }
 }

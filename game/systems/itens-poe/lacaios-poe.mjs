@@ -22,6 +22,7 @@ import { chanceDeEsquiva } from '../personagem/atributos.mjs';
 import * as CargasPoe from './cargas.mjs';
 // (lote E1a, 26/10: as linhas que faltavam nos lacaios — a qualidade, o Ceifador, o Golem da Carniça… — `gemas-e1a.mjs`)
 import * as GemasE1a from './gemas-e1a.mjs';
+import * as SuportesS2B from './suportes-s2b.mjs';
 export { aplicarCeifador, fatorDoCeifador, fatorPorNaoGolemPerto, danoDoGolemDaCarnica, desviarParaOGolemDePedra } from './gemas-e1a.mjs';
 import { readFileSync } from 'node:fs';
 
@@ -396,6 +397,8 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   // (lote G20a: no totem, só os modificadores DE TOTEM — os de lacaio não valem nele; a duração é a TotemDuration do PoB, sem a "Duração de Habilidade"
   // — CalcOffence.lua:1624; "Ataques utilizados por Totens têm X% de Velocidade de Ataque aumentada" só no totem de ataque)
   if (!totem) velAtaquePct += m0('minion_atk_speed') + (/mag[oa]|mage|espectro|spectre/i.test(`${nome} ${t.nome}`) ? m0('minion_cast_speed') : 0);
+  // (lote S2B: + a Velocidade do Lacaio — "34% de Velocidade de Ataque / de Conjuração de Lacaios aumentada": a de conjuração no lacaio que conjura, a de ataque nos outros)
+  if (!totem) velAtaquePct += /mag[oa]|mage|espectro|spectre/i.test(`${nome} ${t.nome}`) ? efeito?.lacaioVelConjPct ?? 0 : efeito?.lacaioVelAtaquePct ?? 0;
   // (lote 49, as únicas de joia: "Velocidade de Conjuração dos Esqueletos", "…de Ataque e Conjuração dos Golens" — no lacaio que conjura)
   if (conjura) velAtaquePct += porTipo('lacaio_vel_conj');
   if (duracao) duracao = Math.round(duracao * (1 + (totem ? porTipo('lacaio_duracao') : (efeito?.duracaoPct ?? 0) + porTipo('lacaio_duracao') + m0('minion_duracao')) / 100));
@@ -427,12 +430,13 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
       // (lote 44: + as resistências de base do lacaio no PoB — 40% elementais e 20% de Caos na maioria)
       // (lote 67: + a Resistência a Caos e a regeneração dos TOTENS — "Totens ganham +25% de Resistência a Caos", "Totens Regeneram 2% de Vida")
       // (lote E1a: + a regeneração, o movimento e a recarga da QUALIDADE da gema — `e1aQ`)
-      res: m0(totem ? 'totem_res' : 'minion_res'), resCaos: mn('minion_chaos_res') + (totem ? m0('totem_res_caos') : 0) + (pob?.res.chaos ?? 0), danoRecebidoPct: mn('lacaios_dano_recebido'), regenPct: mn('minion_regen_pct') + porTipo('lacaio_regen_pct') + (totem ? m0('totem_regen_pct') : 0) + e1aQ.regenPct, regen: mn('minion_regen'),
+      // (lote S2B: + o Exército Elemental — "+X% de todas as Resistências Elementais" e "X% ao máximo de todas as Resistências Elementais")
+      res: m0(totem ? 'totem_res' : 'minion_res') + (totem ? 0 : efeito?.lacaioResPct ?? 0), resCaos: mn('minion_chaos_res') + (totem ? m0('totem_res_caos') : 0) + (pob?.res.chaos ?? 0), danoRecebidoPct: mn('lacaios_dano_recebido'), regenPct: mn('minion_regen_pct') + porTipo('lacaio_regen_pct') + (totem ? m0('totem_regen_pct') : 0) + e1aQ.regenPct, regen: mn('minion_regen'),
       roubo: mn('minion_leech'), movimentoPct: mn('minion_move') + porTipo('lacaio_mov') + e1aQ.movimentoPct + (totem ? 0 : efeito?.lacaioMovPct ?? 0), dotMulti: mn('minion_dot_multi'), degenPct: porTipo('lacaio_degen'),
       bloqueio: mn('minion_block'), resFogo: mn('minion_fire_res') + (pob?.res.fire ?? 0), resGelo: mn('minion_ice_res') + (pob?.res.ice ?? 0), resRaio: mn('minion_energy_res') + (pob?.res.energy ?? 0),
       // (lote 69, as Ramificadoras: + por TIPO — "Zumbis Erguidos têm X% de chance de Provocar", "Esqueletos Convocados têm X% de chance de Definhar" —
       // e Empurrar com Ataques)
-      chances: { cegar: mn('minion_chance_cegar'), provocar: semProvocar ? 0 : mn('minion_chance_provocar') + porTipo('lacaio_provocar'), desacelerar: mn('minion_chance_desacelerar'), envenenar: mn('minion_chance_envenenar'), incendiar: mn('minion_chance_incendiar') + porTipo('lacaio_incendiar'),
+      chances: { cegar: mn('minion_chance_cegar'), provocar: semProvocar ? 0 : mn('minion_chance_provocar') + porTipo('lacaio_provocar') + (totem ? 0 : efeito?.lacaioProvocarPct ?? 0), desacelerar: mn('minion_chance_desacelerar'), envenenar: mn('minion_chance_envenenar'), incendiar: mn('minion_chance_incendiar') + porTipo('lacaio_incendiar'),
         definhar: mn('minion_chance_definhar') + porTipo('lacaio_definhar'), cinzas: porTipo('lacaio_cinzas'), empurrar: mn('minion_chance_empurrar'),
         // (lote 28) o Rasgacarne único: "Lacaios têm X% de chance de empalar ao atingir com ataques por joia Olho Medonho encaixada".
         empalar: mn('minion_chance_empalar') },
@@ -446,8 +450,9 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
       // (ciclo 7, a árvore) o crítico, a área, a recarga, o bloqueio mágico, a redução física, o escudo, o máximo das resistências, a
       // recuperação, os buffs ao matar, o dano dobrado, ignorar a redução física, a penetração nos amaldiçoados, a vida na morte de outro
       // lacaio, o dreno para o dono — `aplicarNoLacaio`, `golpeDoLacaio`, `danoNoLacaio`, `aoMatarDoLacaio`.
-      critInc: mn('minion_crit_inc') + (/mag[oa]|mage|espectro|spectre/i.test(`${nome} ${t.nome}`) ? mn('minion_crit_magico') : 0), critMult: mn('minion_crit_mult'), areaPct: mn('minion_area'), recargaPct: mn('minion_cdr') + porTipo('lacaio_cdr') + e1aQ.recargaPct,
-      bloqueioMagico: mn('minion_spell_block'), reducaoFisica: mn('minion_phys_red') + (totem ? m0('totem_phys_red') : 0), esDaVidaPct: mn('minion_es_da_vida'), resMax: mn('minion_res_max'),
+      // (lote S2B: + a qualidade do Exemplar e da Carne Fresca — "Lacaios … têm Chance de Golpe Crítico aumentada em X%")
+      critInc: mn('minion_crit_inc') + (/mag[oa]|mage|espectro|spectre/i.test(`${nome} ${t.nome}`) ? mn('minion_crit_magico') : 0) + (totem ? 0 : efeito?.lacaioCritIncPct ?? 0), critMult: mn('minion_crit_mult'), areaPct: mn('minion_area'), recargaPct: mn('minion_cdr') + porTipo('lacaio_cdr') + e1aQ.recargaPct,
+      bloqueioMagico: mn('minion_spell_block'), reducaoFisica: mn('minion_phys_red') + (totem ? m0('totem_phys_red') : 0), esDaVidaPct: mn('minion_es_da_vida'), resMax: mn('minion_res_max') + (totem ? 0 : efeito?.lacaioResMaxPct ?? 0),
       // (lote 86, dono 19/10: a Égide Necromântica, parte A) o máximo de UMA resistência (o do escudo — `tetoDaResDoLacaio`); os efeitos AO
       // BLOQUEAR do escudo (Causticar/Enfraquecer/Exaurir e os eventos `ev:bloquear*` — `cacadas.aoBloquearDoLacaio`) e o "se Bloqueou
       // Recentemente" (a armadura — `danoNoLacaio`; a penetração e o Fogo adicional — `golpeDoLacaio`; o bloqueio Sortudo — `cacadas`)
@@ -476,7 +481,11 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
       // (lote 50, o Poder Primordial: "Dano dos Golens aumentado em X% se convocados nos últimos N segundos" — `golpeDoLacaio`, por `l.desde`)
       danoRecentePct: porTipo('lacaio_dano_recente'), danoRecenteMs: porTipo('lacaio_dano_recente_s') * 1000,
       // (lote 51) "Lacaios Convocados são Agressivos" — a busca de alvo mais longe (`cacadas.CASAS_DO_AGRESSIVO`)
-      agressivo: m0('lacaios_agressivos') > 0,
+      // (lote S2B: + o Frenesi Faminto — "Lacaios de Habilidades Suportadas são Agressivos")
+      agressivo: m0('lacaios_agressivos') > 0 || (!totem && efeito?.lacaioAgressivo > 0),
+      // (lote S2B) o que os suportes do lote dão ao lacaio no combate (`SuportesS2B.doLacaio`: o Exemplar, a Carne Fresca, o Exército Elemental, o Escudo de Carne, o
+      // Frenesi Faminto — `cacadas.tiqueDosLacaios`)
+      ...(!totem && SuportesS2B.doLacaio(efeito) ? { s2b: SuportesS2B.doLacaio(efeito) } : {}),
       // (lote 52, a Harmonia Primordial: "Dano do Golem aumentado em X% por cada Tipo de Golem Convocado por você" — `golpeDoLacaio`, nos Golens)
       danoPorTipoDeGolemPct: m0('golem_dano_por_tipo'),
       bloqueioInc: mn('minion_block_inc'), evitarAfeccoes: mn('minion_evitar_afeccoes'), reflexoFisico: mn('minion_reflexo_fisico'), esRecargaInicio: mn('minion_es_recarga_inicio'),

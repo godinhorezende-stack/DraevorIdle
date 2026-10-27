@@ -22,6 +22,8 @@ import { raioQueCresce } from './gemas-b1.mjs';
 // (lotes G-A e G-C, dono 25/10: a Precisão a menos do Enfraquecer, o Impelir restrito)
 import * as GemasGAC from './gemas-gac.mjs';
 import { renovarLento } from './gemas-gbd.mjs';
+// (lote S2B, 27/10: o Passe Enfeitiçado — "Inimigos afetados por feitiços … não podem causar golpes críticos")
+import { semCriticoPeloFeitico } from './suportes-s2b.mjs';
 
 /** "Recentemente" no PoE: nos últimos 4 segundos. */
 export const RECENTE_MS = 4000;
@@ -1749,6 +1751,8 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   const dobro = !triplo && chance('chance_dano_dobrado') > 0 && rng() * 100 < chance('chance_dano_dobrado');
   const ignora = chance('ignora_reducao_fisica') > 0 && rng() * 100 < chance('ignora_reducao_fisica');
   const invertida = chance('chance_res_invertida') > 0 && rng() * 100 < chance('chance_res_invertida');
+  // (lote S2B: a Tríade Profana — "X% de chance de ignorar a resistência a dano de caos e elétrico do inimigo", sorteado por acerto)
+  const ignoraCaosRaio = chance('s2b_ignora_res_caos_raio') > 0 && rng() * 100 < chance('s2b_ignora_res_caos_raio');
   const f = { ...ficha };
   f.tagsDoGolpe = [...t];
   // (lote A5b, dono 20/10: a PRECISÃO deste golpe — o "+X de Precisão" e o "X% de Precisão aumentada" com as tags dele: a gema e os suportes (a Precisão
@@ -1781,6 +1785,7 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   if (Object.keys(maisDoElemento).length) f.maisDoElemento = maisDoElemento;
   if (ignora) f.ignoraReducaoFisica = true;
   if (invertida) f.resInvertida = true;
+  if (ignoraCaosRaio) f.ignoraResDe = ['chaos', 'energy'];
   // O "aumentado" de UM elemento com condição ("Dano de Gelo aumentado com Habilidades de Ataque"), a penetração de um elemento, o dano
   // somado com condição ("contra Inimigos Resfriados") e o roubo com condição ("contra Inimigos Eletrizados").
   const doElemento = { physical: (s.phys_dmg ?? 0), fire: s.fire_dmg ?? 0, ice: s.ice_dmg ?? 0, energy: s.energy_dmg ?? 0, chaos: s.chaos_dmg ?? 0 };
@@ -3045,6 +3050,8 @@ export function criticoDoBicho(base, bicho, ficha, agora, rng = Math.random) {
   // (ciclo 7) "Inimigos Marcados não podem causar Golpes Críticos"; (lote D) "Acertos contra você Não podem ser Golpes Críticos se você foi
   // Atordoado Recentemente" (`sem_critico_recebido@atordoadoRecente`).
   if (regraDaMarca(bicho, agora, 'semCritico') > 0 || Number(ficha?.afPoe?.sem_critico_recebido) > 0) return { critico: false, fator: 1 };
+  // (lote S2B: o Passe Enfeitiçado — o Feitiço seu suportado no monstro)
+  if (semCriticoPeloFeitico(bicho, agora)) return { critico: false, fator: 1 };
   // ("Inimigos Próximos não podem causar Acertos Críticos": a aura põe `semCritico` nos de perto — `mods-poe.aurasProximas`.)
   if (ativo(bicho?.estados?.semCritico, agora)) return { critico: false, fator: 1 };
   // (lote 50, a Defesa Imprudente: "Acertos tem Chance de Acerto Crítico aumentada em X% contra você" — `crit_recebido_inc`)

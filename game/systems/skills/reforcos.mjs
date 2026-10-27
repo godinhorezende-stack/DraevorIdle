@@ -17,6 +17,8 @@ import { fatorDosLentosPorFonte } from '../itens-poe/gemas-b2.mjs';
 // (lotes G-A e G-C, dono 25/10: os efeitos das maldições do lote no amaldiçoado — a Corrente Temporal, a Punição, as Marcas)
 import * as GemasGAC from '../itens-poe/gemas-gac.mjs';
 import { VIDA_BAIXA } from '../itens-poe/condicoes-poe.mjs';
+// (lote S2B, 27/10: a Destruição Iminente — o Feitiço que venceu antes do tique)
+import { antesDeApagar } from '../itens-poe/suportes-s2b.mjs';
 
 const DADOS = JSON.parse(readFileSync(new URL('../../gamedata/gemas/reforcos.json', import.meta.url), 'utf8'));
 
@@ -213,9 +215,11 @@ export function marcarCom(hunt, bicho, lista, agora = hunt?.clock ?? Date.now())
       const amaldicoarCom = (bicho) => {
         // À PROVA DE MALDIÇÕES (o "Infeitiçável" do PoE): o Feitiço não pega — a Marca, sim; e o "Seus Feitiços podem afetar Inimigos a Prova
         // de Maldições" (a Ocultista) passa.
-        if (bicho.aProvaDeMaldicoes && regras.feitico && !regras.afetaAProva) return false;
+        // (lote S2B: + o Toque Maldito Desperto — "34% de chance de afetar inimigos imunes a feitiços")
+        if (bicho.aProvaDeMaldicoes && regras.feitico && !regras.afetaAProva && !(regras.s2b?.afetaAProvaPct > 0 && Math.random() * 100 < regras.s2b.afetaAProvaPct)) return false;
         const maldicoes = (bicho.maldicoes ??= {});
-        for (const [k, m] of Object.entries(maldicoes)) if (!(m?.ate > agora)) delete maldicoes[k];
+        // (lote S2B: o Feitiço da Destruição Iminente que venceu fica pendente para a Explosão Destruidora — `SuportesS2B.antesDeApagar`)
+        for (const [k, m] of Object.entries(maldicoes)) if (!(m?.ate > agora)) { antesDeApagar(hunt, bicho, k, m, agora); delete maldicoes[k]; }
         // já amaldiçoado por ESTA: a maldição corre a duração dela (não renova a cada acerto — o "expirou X%" e a duração valem)
         if (maldicoes[id]) return false;
         // o LIMITE: a nova tira a lançada há mais tempo DO MESMO GRUPO (as Marcas têm o limite delas, à parte) — se ela mesma foi lançada
@@ -236,6 +240,8 @@ export function marcarCom(hunt, bicho, lista, agora = hunt?.clock ?? Date.now())
           ...(regras.regenMenos ? { regenMenos: regras.regenMenos } : {}), ...(regras.semRecargaEs ? { semRecargaEs: true } : {}), ...(regras.destruir ? { destruir: true } : {}),
           // (ciclo 7) as regras da árvore no Inimigo Marcado (`acoes.efeitosDaMaldicao` → `daMarca`)
           ...(regras.daMarca ? { daMarca: regras.daMarca } : {}),
+          // (lote S2B) as regras dos suportes do lote no Feitiço: "não podem causar golpes críticos", a transferência na morte, a Explosão Destruidora
+          ...(regras.s2b ? { s2b: regras.s2b } : {}),
           ...(contra ? { contra: { golpe: contra.golpe ?? {}, morte: contra.morte ?? {}, atordoar: contra.atordoar ?? {}, fator } } : {}) };
         // "100% de chance de Refletir Feitiços": o Feitiço posto nele volta para VOCÊ (os mesmos efeitos, pela duração dele — `afDaMaldicaoNoJogador`).
         if (regras.feitico && bicho.refleteFeiticos > 0 && Math.random() * 100 < bicho.refleteFeiticos) {

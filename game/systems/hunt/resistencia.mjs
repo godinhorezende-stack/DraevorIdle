@@ -77,6 +77,8 @@ export function resistenciaEfetivaDe(hunt, alvo, tipo, ficha = null) {
   // (lote E1b, 26/10) as Impurezas Vaal: "Resistência a <El> de Inimigos Próximos é Ignorada por Acertos" — o acerto (com a ficha de quem acerta; o dano degenerativo
   // vem sem ela) no bicho a até o raio da aura ignora a resistência POSITIVA (a negativa fica, como no "Golpes Críticos ignoram as Resistências" do jogo)
   if (ficha && res > 0 && resIgnoradaNoAlvo(hunt, alvo, tipo)) res = 0;
+  // (lote S2B, 27/10) a Tríade Profana: o acerto que sorteou "ignorar a resistência a dano de caos e elétrico" (`ficha.ignoraResDe` — `ModsPoe.fichaDoGolpe`): a positiva vai a 0
+  if (res > 0 && ficha?.ignoraResDe?.includes(tipo)) res = 0;
   return Limites.resistenciaEfetiva(Limites.resistenciaDoMob(res), pen);
 }
 

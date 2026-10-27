@@ -145,7 +145,64 @@ const ELEMENTO_DO_TEXTO = { fogo: 'fire', gelo: 'ice', raio: 'energy', 'físico'
 const CARGA_DO_TEXTO = { frenesi: 'frenesi', poder: 'poder', 'tolerância': 'tolerancia' };
 /** (lote S1) O dano ADICIONADO local do uso (`af:`), aos ataques e às magias, com a escala ("× a Vida máxima", "× as Cargas de Frenesi"…). */
 const adicionadoDe = (el, escala, min, max = min) => Object.fromEntries(['added', 'spell_added'].flatMap((p) => [[`af:${p}_${el}_dmg_min%${escala}`, min], [`af:${p}_${el}_dmg_max%${escala}`, max]]));
+const ESP = '(?:\\\\n|\\s)+';
 const REGRAS = [
+  // ---- (lote S2B, 27/10: a segunda metade das parciais — `suportes-s2b.mjs`; antes das gerais, que pegavam o começo de algumas e davam o "mais" sem a condição) ----
+  // - os LACAIOS: a Velocidade do Lacaio (ataque e conjuração — `LacaiosPoe.oQueInvoca`), o crítico da qualidade do Exemplar e da Carne Fresca, o Exemplar ("toda vez que
+  //   você causar um golpe crítico recentemente com um ataque, até X"), a Carne Fresca (a Fúria Desperta e a Adrenalina), o Exército Elemental (as resistências, o máximo,
+  //   o "mais Dano Elemental" só nas partes elementais e a Exposição), o Escudo de Carne (a Provocação, o "menos Dano" recebido — o nível e a qualidade somam no MESMO
+  //   "mais" do PoB, `support_minion_defensive_stance_minion_damage_taken_+%_final` — e o "mais Dano" contra os inimigos perto de você) e o Frenesi Faminto;
+  [new RegExp(`têm ${N}% de Velocidade de Ataque de Lacaios aumentada$`, 'i'), (m) => ({ lacaioVelAtaquePct: num(m[1]) })],
+  [new RegExp(`têm ${N}% de Velocidade de Conjuração de Lacaios aumentada$`, 'i'), (m) => ({ lacaioVelConjPct: num(m[1]) })],
+  [new RegExp(`^Lacaios de Habilidades Suportadas têm Chance de Golpe Crítico aumentada em ${N}%$`, 'i'), (m) => ({ lacaioCritIncPct: num(m[1]) })],
+  [new RegExp(`^Lacaios de habilidades reforçadas têm a chance de causar golpe crítico aumentada em ${N}% toda vez que você causar um golpe crítico recentemente com um ataque, até ${N}%$`, 'i'), (m) => ({ exemplarCritIncPor: num(m[1]), exemplarCritIncMax: num(m[2]) })],
+  [new RegExp(`^Lacaios de habilidades reforçadas têm \\+${N}% de multiplicador de golpe crítico toda vez que você causar um golpe crítico recentemente com um ataque, até \\+${N}%$`, 'i'), (m) => ({ exemplarMultPor: num(m[1]), exemplarMultMax: num(m[2]) })],
+  [new RegExp(`^Lacaios criados por Habilidades Suportadas ganham Fúria Desperta e Adrenalina por ${N}% de sua Duração, máximo de ${N} segundos${ESP}Fúria Desperta concede \\+${N}% de Chance de Golpe Crítico${ESP}Fúria Desperta concede \\+${N}% de Multiplicador de Golpe Crítico$`, 'i'),
+    (m) => ({ carneFrescaPct: num(m[1]), carneFrescaMaxMs: Math.round(num(m[2]) * 1000), furiaDespertaCrit: num(m[3]), furiaDespertaMult: num(m[4]) })],
+  [new RegExp(`^Lacaios de Habilidades Suportadas têm \\+${N}% de todas as Resistências Elementais$`, 'i'), (m) => ({ lacaioResPct: num(m[1]) })],
+  [new RegExp(`^Lacaios de Habilidades Suportadas têm \\+?${N}% ao máximo de todas as Resistências Elementais$`, 'i'), (m) => ({ lacaioResMaxPct: num(m[1]) })],
+  [new RegExp(`^Lacaios de Habilidades Suportadas infligem Exposição no Acerto, aplicando -${N}% à Resistência Elemental que combine com o maior tipo de Dano sofrido pelo Inimigo$`, 'i'), (m) => ({ lacaioExposicaoPct: num(m[1]) })],
+  [new RegExp(`^Lacaios de Habilidades Suportadas causam ${N}% mais Dano Elemental$`, 'i'), (m) => ({ lacaioMaisElementalPct: num(m[1]) })],
+  [new RegExp(`^Lacaios de Habilidades Suportadas tem ${N}% de chance de Provocar ao Acertar$`, 'i'), (m) => ({ lacaioProvocarPct: num(m[1]) })],
+  [new RegExp(`^Lacaios de Habilidades Suportadas sofrem ${N}% (menos|mais) Dano$`, 'i'), (m) => ({ lacaioMenosDanoRecebidoPct: (m[2].toLowerCase() === 'menos' ? 1 : -1) * num(m[1]) })],
+  [new RegExp(`^Lacaios das Habilidades Suportadas causam ${N}% mais Dano com Acertos e Afecções aos Inimigos Próximos a você$`, 'i'), (m) => ({ lacaioMaisPertoDeVocePct: num(m[1]) })],
+  [new RegExp(`^Duração Base do Frenesi Faminto é de ${N} segundos$`, 'i'), (m) => ({ frenesiFamintoMs: Math.round(num(m[1]) * 1000) })],
+  [new RegExp(`^Lacaios de Habilidades Suportadas tem ${N}% de chance de conceder Frenesi Faminto à você no Acerto$`, 'i'), (m) => ({ frenesiFamintoPct: num(m[1]) })],
+  [/^Lacaios de Habilidades Suportadas são Agressivos$/i, () => ({ lacaioAgressivo: 1 })],
+  // - a FÚRIA ARCANA do suporte: a mana gasta no custo da habilidade (`Acoes`, o pagamento), o que o buff dá (o MAIOR com o da Fúria Arcana comum — o PoB) e o "35% mais Dano
+  //   Mágico enquanto você possuir Fúria Arcana" (só com ela — antes, sempre);
+  [new RegExp(`^Ganha Fúria Arcana após Gastar um total de ${N} de Mana em Custos Diretos e Efeitos de uma Habilidade Suportada$`, 'i'), (m) => ({ furiaArcanaLimiar: num(m[1]) })],
+  [new RegExp(`^Fúria Arcana concede Velocidade de Conjuração aumentada em ${N}%${ESP}Fúria Arcana concede Regeneração de Mana aumentada em ${N}%$`, 'i'), (m, t) => (/\\n/.test(t) ? {} : { furiaArcanaCastPct: num(m[1]), furiaArcanaRegenPct: num(m[2]) })],
+  [new RegExp(`^Fúria Arcana dura ${N} segundos$`, 'i'), (m) => ({ furiaArcanaMs: Math.round(num(m[1]) * 1000) })],
+  [new RegExp(`^Habilidades Suportadas causam ${N}% mais Dano Mágico enquanto você possuir Fúria Arcana$`, 'i'), (m) => ({ furiaArcanaMaisMagicoPct: num(m[1]) })],
+  // - a INERVAÇÃO: ao matar um Eletrizado com a suportada, o dano de Raio adicionado (aos ataques e às magias) pela duração (8 s + a da qualidade — o PoB soma as duas);
+  [/^Ganha Invervação ao Matar um Inimigo Eletrizado com Habilidades Suportadas$/i, () => ({ inervacao: 1 })],
+  [new RegExp(`^Invervação concede ${N} a ${N} de Dano de Raio$`, 'i'), (m) => ({ inervacaoMin: num(m[1]), inervacaoMax: num(m[2]) })],
+  [new RegExp(`^(?:Estímulo|Inervação) dura ${N} segundos$`, 'i'), (m) => ({ inervacaoMs: Math.round(num(m[1]) * 1000) })],
+  // - a TRINDADE e a TRÍADE PROFANA: as Ressonâncias (`SuportesS2B.noAcerto`, `doUso`); o "+7% de dano por 10 da menor" agora escala (antes, 7% mais fixo);
+  [new RegExp(`^Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe ${N} de Ressonância de outros Elementos por ${N} segundos${ESP}Perde ${N} de Ressonância por segundo para cada Elemento que não estiver ganhando$`, 'i'), (m, t) => (/\\n/.test(t) ? {} : { trindade: 1 })],
+  [new RegExp(`^Habilidades Suportadas causam ${N}% mais Dano Elemental por cada 5 da sua menor Ressonância$`, 'i'), (m) => ({ trindadeMaisPor5: num(m[1]) })],
+  [new RegExp(`^Habilidades Suportadas penetram ${N}% da Resistência Elemental enquanto cada Ressonância estiver em ao menos 25$`, 'i'), (m) => ({ trindadePen: num(m[1]) })],
+  [new RegExp(`^Ataques com habilidades reforçadas, cujo maior tipo de dano é caos, elétrico ou físico, fazem você ganhar ${N} de Ressonância Profana dos outros tipos por segundo durante ${N} segundos${ESP}Perde ${N} de Ressonância Profana por segundo para cada tipo que não ganhar$`, 'i'), (m, t) => (/\\n/.test(t) ? {} : { profana: 1 })],
+  [new RegExp(`^Habilidades reforçadas causam \\+${N}% de dano por 10 da menor Ressonância Profana$`, 'i'), (m) => ({ profanaMaisPor10: num(m[1]) })],
+  [new RegExp(`^Habilidades reforçadas têm ${N}% de chance de ignorar a resistência a dano de caos e elétrico do inimigo, se cada Ressonância Profana for de, no mínimo, 25$`, 'i'), (m) => ({ profanaIgnoraResPct: num(m[1]) })],
+  [new RegExp(`^Habilidades reforçadas têm ${N}% de chance de ignorar a redução de dano físico do inimigo, se cada Ressonância Profana for de, no mínimo, 25$`, 'i'), (m) => ({ profanaIgnoraFisicoPct: num(m[1]) })],
+  // - a GULA: 1 de Gula por magia conjurada; em 10, a Regurgitação (4 s): os projéteis em círculo e os 7 a mais (`SuportesS2B.doUso`);
+  [new RegExp(`^Ganha ${N} de Gula ao conjurar magias reforçadas$`, 'i'), (m) => ({ gulaPorUso: num(m[1]) })],
+  [new RegExp(`^Ao atingir ${N} de Gula, perde toda a Gula e ganha Regurgitação por ${N} segundos$`, 'i'), (m) => ({ gulaLimite: num(m[1]), regurgitaMs: Math.round(num(m[2]) * 1000) })],
+  [new RegExp(`^Enquanto você tiver Regurgitação, as magias reforçadas disparam projéteis em círculo${ESP}Enquanto você tiver Regurgitação, as magias reforçadas disparam ${N} projéteis adicionais$`, 'i'), (m, t) => (/\\n/.test(t) ? {} : { regurgitaProjeteis: num(m[1]) })],
+  // - a INTENSIDADE SOBRECARREGADA: uma instância (10 s) a cada 6 de Intensidade perdida, e o crítico por instância (`SuportesS2B.doUso`);
+  [new RegExp(`^Ganha uma instância de Intensidade Sobrecarregada por ${N} segundos após${ESP}perder ${N} de Intensidade com habilidades reforçadas$`, 'i'), (m, t) => (/\\n/.test(t) ? {} : { sobrecargaMs: Math.round(num(m[1]) * 1000), sobrecargaPerda: num(m[2]) })],
+  [new RegExp(`^Habilidades reforçadas têm \\+${N}% de chance de causar golpe crítico por Intensidade Sobrecarregada$`, 'i'), (m) => ({ sobrecargaCritPor: num(m[1]) })],
+  [new RegExp(`^Habilidades reforçadas têm \\+${N}% de multiplicador de golpe crítico por Intensidade Sobrecarregada$`, 'i'), (m) => ({ sobrecargaMultPor: num(m[1]) })],
+  // - os FEITIÇOS: o Passe Enfeitiçado e o Toque Maldito Desperto (os inimigos "Anti-Maldições"), "não podem causar golpes críticos", a área reduzida do Passe e o Propagar
+  //   Feitiço (a transferência na morte, o alcance aumentado — `SuportesS2B.regrasDoFeitico`);
+  [/^Feitiços aplicados por habilidades de maldição reforçadas afetam inimigos imunes a feitiços$/i, () => ({ feiticoAfetaAProva: 1 })],
+  [new RegExp(`^Feitiços aplicados por habilidades de maldição reforçadas têm ${N}% de chance de afetar inimigos imunes a feitiços$`, 'i'), (m) => ({ feiticoAfetaAProvaPct: num(m[1]) })],
+  [/^Inimigos afetados por feitiços de habilidades de maldição reforçadas não podem causar golpes críticos$/i, () => ({ amaldicoadoSemCritico: 1 })],
+  [new RegExp(`^Efeito em Área de Habilidades Maldição Suportadas reduzido em ${N}%$`, 'i'), (m) => ({ areaMaldicaoPct: -num(m[1]) })],
+  [new RegExp(`têm alcance de Transferência de Feitiços aumentado em ${N}%$`, 'i'), (m) => ({ feiticoTransfereIncPct: num(m[1]) })],
+  [new RegExp(`^Feitiços de Habilidades Suportadas se Transferem para todos os Inimigos dentro de ${N} metros quando o Inimigo Enfeitiçado morrer$`, 'i'), (m) => ({ feiticoTransfereM: num(m[1]) })],
   // ---- (lote S1, 26/10: os suportes com 1 ou 2 linhas faltando — antes das regras gerais, que pegavam o começo de algumas) ----
   // - o "X% mais Dano por Carga" (a Carga de Poder no Crítico — o PoB: support_power_charge_on_crit_damage_+%_final_per_power_charge, Damage MORE × as Cargas de
   //   Poder) e o "Dano aumentado em X% por Carga" (a qualidade da Mordida Congelante): × as cargas de agora (`af:` com a escala da carga — antes, um "mais" fixo);
@@ -721,10 +778,46 @@ const PROPRIAS_A2 = {
     [new RegExp(`^Dano Corpo a Corpo aumentado em ${N}%$`, 'i'), (m, e) => { e.ondaIncPct = (e.ondaIncPct ?? 0) + num(m[1]); }],
     [/^Tempo de Uso:|^Eficácia do Dano Adicionado:/i, () => {}],
   ],
+  // (lote S2B, 27/10) a EXPLOSÃO PRISMÁTICA e a DESTRUIÇÃO IMINENTE: a magia que o suporte ativa tem os números dela (o dano, o raio — o PoB: 13 e 20 unidades de base,
+  // 1,3 m e 2 m; a Prismática + "0.9 metros de raio" —, a recarga, o crítico, a eficácia e a qualidade — "Dano Elemental aumentado" / "Área de Efeito aumentada" são da
+  // magia ativada no PoB, `PrismaticBurst`/`DoomBlast`.qualityStats), que as regras gerais davam à suportada (o "100% menos Dano de cada Tipo não escolhido" zerava o
+  // dano da suportada). `Acoes.prismaNoAcerto`, `Acoes.tiqueDosFeiticosS2B`.
+  Prismatic_Burst_Support: [
+    [/^Habilidades Suportadas Ativam Explosão Prismática ao Acertar$/i, (m, e) => { e.prisma = 1; }],
+    [new RegExp(`^Causa ${N} a ${N} de Dano de (Gelo|Raio|Fogo)$`, 'i'), (m, e) => { const el = ELEMENTO_DO_TEXTO[m[3].toLowerCase()]; e[`prismaMin_${el}`] = num(m[1]); e[`prismaMax_${el}`] = num(m[2]); }],
+    [new RegExp(`^\\+?${N} metros de raio$`, 'i'), (m, e) => { e.prismaRaioM = 1.3 + num(m[1]); }],
+    [/^Causa 100% menos Dano de cada Tipo de Dano não escolhido$/i, () => {}],
+    [new RegExp(`^Velocidade de Recarga aumentada em ${N}%$`, 'i'), (m, e) => { e.prismaRecargaIncPct = (e.prismaRecargaIncPct ?? 0) + num(m[1]); }],
+    [new RegExp(`^Recarga: ${N} seg`, 'i'), (m, e) => { e.prismaRecargaMs = Math.round(num(m[1]) * 1000); }],
+    [new RegExp(`^Chance de Crítico: ${N}%$`, 'i'), (m, e) => { e.prismaCrit = num(m[1]); }],
+    [new RegExp(`^Eficácia do Dano Adicionado: ${N}%$`, 'i'), (m, e) => { e.prismaEficacia = num(m[1]) / 100; }],
+    [new RegExp(`^Dano Elemental aumentado em ${N}%$`, 'i'), (m, e) => { e.prismaIncPct = (e.prismaIncPct ?? 0) + num(m[1]); }],
+    [/^Tempo de Conjuração:/i, () => {}],
+  ],
+  Impending_Doom_Support: [
+    [/^Ativa Explosão Destruidora quando um Feitiço de Habilidades Maldição Suportadas terminar$/i, (m, e) => { e.doomBlast = 1; e.doomRaioM = 2; }],
+    [/^Ativa Esta Habilidade quando um Feitiço de Habilidades Suportadas terminar$/i, () => {}],
+    [new RegExp(`^Causa ${N} a ${N} de Dano de Caos$`, 'i'), (m, e) => { e.doomMin = num(m[1]); e.doomMax = num(m[2]); }],
+    [new RegExp(`^Recarga: ${N} seg(?:\\s*\\((\\d+) Times\\))?`, 'i'), (m, e) => { e.doomRecargaMs = Math.round(num(m[1]) * 1000); e.doomUsos = m[2] ? Number(m[2]) : 1; }],
+    [new RegExp(`^Chance de Crítico: ${N}%$`, 'i'), (m, e) => { e.doomCrit = num(m[1]); }],
+    [new RegExp(`^Eficácia do Dano Adicionado: ${N}%$`, 'i'), (m, e) => { e.doomEficacia = num(m[1]) / 100; }],
+    [new RegExp(`^Área de Efeito aumentada em ${N}%$`, 'i'), (m, e) => { e.doomAreaIncPct = (e.doomAreaIncPct ?? 0) + num(m[1]); }],
+    [/^Tempo de Conjuração:/i, () => {}],
+  ],
   Divine_Sentinel_Support: [
     [new RegExp(`^Lacaios de habilidades reforçadas têm a área de efeito aumentada em ${N}%$`, 'i'), (m, e) => { e.areaLacaioPct = (e.areaLacaioPct ?? 0) + num(m[1]); }],
     [/^Sentinelas invocadas de habilidades reforçadas têm uma aura templária$/i, (m, e) => { e.auraTemplaria = 1; }],
   ],
+};
+/**
+ * (lote S2B, 27/10) As linhas que as regras gerais leriam como da SUPORTADA e são de quem o jogo ainda não tem (ficam não feitas, sem efeito): o "mais Dano … às suas
+ * Presas" do Predador (a Presa); o "Poder Arcano" do Fluxo Cinético das Instabilidades Cinéticas (a habilidade ativada); o "Ricocheteiam" dos Relâmpagos Vivos (os
+ * lacaios do suporte); o "menos Dano quando usadas por Espíritos Sagrados" (só no uso dos Espíritos — antes, a suportada saía sempre com 51% menos).
+ */
+const NAO_FEITAS_S2B = [/às suas Presas$/i];
+const NAO_FEITAS_S2B_DO = {
+  Kinetic_Instability_Support: [/de Poder Arcano$/i], Greater_Kinetic_Instability_Support: [/de Poder Arcano$/i],
+  Living_Lightning_Support: [/^Habilidades dos Lacaios Ricocheteiam/i], Sacred_Wisps_Support: [/menos Dano quando usadas por Espíritos Sagrados$/i],
 };
 /** O efeito do suporte no nível, para esta ativa: `{ efeito, naoFeitas }`. */
 export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
@@ -741,6 +834,8 @@ export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
       const p = proprias.find(([re]) => re.test(linha));
       if (p) { p[1](linha.match(p[0]), efeito); continue; }
     }
+    // (lote S2B) as linhas que as regras gerais leriam sem a condição e que o jogo ainda não faz (o "mais Dano … às suas Presas" do Predador: a Presa não existe)
+    if (NAO_FEITAS_S2B.some((re) => re.test(linha)) || NAO_FEITAS_S2B_DO[slug]?.some((re) => re.test(linha))) { naoFeitas.push(linha); continue; }
     const regra = REGRAS.find(([re]) => re.test(linha));
     if (!regra) {
       // (17/10, lote G3) sem regra própria: a linha como modificador LOCAL do uso suportado ("Habilidades Suportadas têm 30% de chance de Mutilar
