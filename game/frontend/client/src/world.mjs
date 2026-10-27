@@ -424,9 +424,22 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     const cabe = larguraUtil >= 700 && altura >= 340 && !(window.innerHeight < 460 && window.innerWidth > window.innerHeight);
     raiz.classList.toggle('larga', cabe);
     raiz.style.setProperty('--w2-h', cabe ? `${Math.floor(altura)}px` : 'auto');
+    // (hotfix 27/10, "cortado") a conta acima pode errar por alguns px (a fonte Cinzel que chega depois e engorda as abas, o zoom do navegador):
+    // aí a janela rolava e as abas do topo saíam cortadas. O que ainda sobrar de rolagem sai do mapa, que é o que estica.
+    if (cabe) {
+      const excesso = body.scrollHeight - body.clientHeight;
+      if (excesso > 0) raiz.style.setProperty('--w2-h', `${Math.floor(altura - excesso)}px`);
+      body.scrollTop = 0;
+    }
     atualizarSetas();
   };
   window.addEventListener('resize', medir);
+  // A fonte do título e as abas mudam de altura quando a fonte chega: mede de novo (uma vez, no fim da carga).
+  document.fonts?.ready?.then(() => medir());
+  if (typeof ResizeObserver === 'function') {
+    const obs = new ResizeObserver(() => (raiz.isConnected ? medir() : obs.disconnect()));
+    for (const n of [dif, faixa, rodape]) obs.observe(n);
+  }
   body.scrollTop = 0;
   medir();
 
