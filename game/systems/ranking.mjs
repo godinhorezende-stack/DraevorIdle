@@ -22,6 +22,8 @@ import * as Treino from './treino.mjs';
 import * as Promocao from './promocao.mjs';
 import * as Guildas from './guildas.mjs';
 import { sqlDoPoe } from './personagem/legado.mjs';
+// O personagem de teste (`estado.testador`) fica fora de todo ranking (dono, 27/10).
+import { ehTestador, sqlSemTestador } from './personagem/testador.mjs';
 import { ligado } from './itens-poe/catalogo.mjs';
 
 export const TAMANHO = 25;
@@ -71,7 +73,7 @@ function consulta(cat) {
              (estado::jsonb #>> '{promovido}')::boolean AS promovido,
              estado::jsonb ->> 'outfit' AS outfit
         FROM personagens
-       WHERE ${sqlDoPoe(banco.dialeto)}
+       WHERE ${sqlDoPoe(banco.dialeto)} AND ${sqlSemTestador(banco.dialeto)}
        ORDER BY valor DESC, level DESC, nome
        LIMIT ${TAMANHO}`
         : `SELECT nome, vocacao, classe,
@@ -80,7 +82,7 @@ function consulta(cat) {
              json_extract(estado, '$.promovido') AS promovido,
              json_extract(estado, '$.outfit') AS outfit
         FROM personagens
-       WHERE ${sqlDoPoe(banco.dialeto)}
+       WHERE ${sqlDoPoe(banco.dialeto)} AND ${sqlSemTestador(banco.dialeto)}
        ORDER BY valor DESC, level DESC, nome
        LIMIT ${TAMANHO}`;
     consultas.set(cat, banco.prepare(sql));
@@ -145,6 +147,10 @@ export async function topo(cat) {
   for (const s of vivas.values()) {
     const e = s.estado;
     if (!e || !s.personagem) continue;
+    if (ehTestador(e)) {
+      porNome.delete(s.personagem.nome);
+      continue;
+    }
     porNome.set(s.personagem.nome, {
       name: s.personagem.nome,
       vocation: e.vocation,

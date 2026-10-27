@@ -102,6 +102,7 @@ import * as Manutencao from '../systems/modo-de-manutencao.mjs';
 import * as Presentes from '../systems/presentes.mjs';
 import * as GemasDeSkill from '../systems/skills/gemas.mjs';
 import * as RegrasDeUso from '../systems/skills/regras-de-uso.mjs';
+import * as Testador from '../systems/personagem/testador.mjs';
 import { readFileSync } from 'node:fs';
 const TASK_TOKEN_REAL = JSON.parse(readFileSync(new URL('../gamedata/task-token-real.json', import.meta.url), 'utf8'));
 
@@ -2872,6 +2873,8 @@ export class Sessao {
         if (!this.semAba && this.estado.hp > 0) this.seguirParaAProximaFase();
         // Caça Automática + portal do boss aberto (limpeza confirmada pelo servidor): entra sozinha, uma tentativa só por portal.
         if (!this.semAba && this.estado.hp > 0) this.entrarAutomaticoNoPortal();
+        // O personagem de teste não morre: a vida fica no piso dele (`personagem/testador.mjs`; o tique já segura — isto é o cinto).
+        Testador.segurarVida(this.estado);
         // A caixa "Você morreu" do client (`mostrarMorte`), no formato do `death` original.
         // Cair no duelo não é morte: é derrota, sem perder nada (ver `Arena.caiu`).
         if (this.estado.hp <= 0 && !Arena.caiu(this)) {

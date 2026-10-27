@@ -80,6 +80,7 @@ import * as GemasDeSkill from '../skills/gemas.mjs';
 import * as CargasPoe from '../itens-poe/cargas.mjs';
 import * as FrascosPoe from '../itens-poe/frascos.mjs';
 import * as Protecao from '../protecao.mjs';
+import * as Testador from '../personagem/testador.mjs';
 
 /** Depois de qualquer dano de ação (magia/runa) — mata e dá loot de quem chegou a 0. */
 export function processarMortes(estado, personagem, eventos) {
@@ -1304,7 +1305,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // impediu, não — o `danoDoAcerto` é o de depois dele e antes das absorções)
   if (danoDoAcerto > 0 && GemasGBD.contarAcertoNoGelo(hunt, hunt.clock ?? 0) && GemasGBD.quebrarGelo(hunt, hunt.clock ?? 0)) Ficha.invalidar(estado);
   if (final > 0) {
-    estado.hp = Math.max(0, estado.hp - final);
+    // (o personagem de teste não morre: a vida para no piso dele — `personagem/testador.mjs`)
+    estado.hp = Math.max(Testador.pisoDaVida(estado), estado.hp - final);
     // O sangue no boneco — sem isto o golpe só existia no número que sobe,
     // nunca na tela (mesmo id real do OTServ que `round()` usa no bicho).
     // O efeito do golpe na tela: o do cadastro do bicho (aba Mobs → Ataques e efeitos) ou o sangue de sempre.

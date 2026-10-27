@@ -88,6 +88,7 @@ import * as Mapas from './itens-poe/mapas.mjs';
 import * as MapasAreas from './itens-poe/mapas-areas.mjs';
 import * as MapaAberto from './itens-poe/mapa-aberto.mjs';
 import * as GemasGBD from './itens-poe/gemas-gbd.mjs';
+import * as Testador from './personagem/testador.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
 export { nomeDaHunt, huntsJogaveis, gradeDaHunt, aquecerGrades } from './hunt/terreno.mjs';
@@ -1672,7 +1673,17 @@ export function zerarAnalisador(estado) {
   return { ok: true };
 }
 
+/**
+ * Um tique da caçada (online, offline e nas threads do tique). No fim, o personagem de teste que teria morrido fica no piso da vida
+ * (`personagem/testador.mjs`): a sessão e a caçada offline, que conferem a morte depois daqui, nunca o veem com a vida zerada.
+ */
 export function tique(estado, personagem, agora = Date.now()) {
+  const eventos = tiqueDaCacada(estado, personagem, agora);
+  Testador.segurarVida(estado);
+  return eventos;
+}
+
+function tiqueDaCacada(estado, personagem, agora) {
   const hunt = estado.hunt;
   if (!hunt) return [];
   // Boss derrotado: depois da faixa de vitória, volta para a cidade.
