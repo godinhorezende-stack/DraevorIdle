@@ -1320,6 +1320,10 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
       de: bicho.name,
       golpe: 'corpo a corpo',
       color: '#ff0000',
+      // O tipo do golpe (o de maior parte, depois das resistências) e a marca do golpe que zerou a vida — a caixa da morte diz quem matou,
+      // com o quê e quanto (`Morte.golpeQueMatou`).
+      elemento: Object.entries({ ...partes, physical: fisicoProtegido + (partes.physical ?? 0) }).reduce((a, b) => (b[1] > a[1] ? b : a), ['physical', -1])[0],
+      ...(estado.hp <= 0 ? { fatal: true } : {}),
       ...(critDoMob.critico ? { crit: true } : {}),
     });
     // Parry e Numb (charms defensivos).
