@@ -16,6 +16,10 @@ import * as Reforcos from '../skills/reforcos.mjs';
 import { fatorDoPassoAprisionado } from '../itens-poe/gemas-pr4.mjs';
 // (lote G-C, dono 25/10 — D10: a Corrente Temporal, a velocidade de ação do amaldiçoado)
 import { fatorDeAcao } from '../itens-poe/gemas-gac.mjs';
+// (lote E1b, dono 26/10: o Imobilizado das Armadilhas de Urso não anda)
+import { imobilizado } from '../itens-poe/gemas-e1b.mjs';
+// (lote E2B, 26/10: o passo do debuff da Armadilha de Urso — o −80% que cai até 0)
+import { fatorDoPassoDoUrso } from '../itens-poe/gemas-e2b.mjs';
 
 export const BESTIARY = CATALOGO.bestiary;
 
@@ -321,7 +325,7 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
     // (lote A2, dono 19/10) o bicho FUGINDO (a Chance de Fugir, o Pacifismo — `Acoes.fugir`, 2 s): em vez de perseguir, dá o passo que mais o afasta
     // de você (as casas andáveis em volta dele, sem outro bicho nem você — a exceção (6) do dono, `itens-poe/gemas-a2.mjs`)
     if (Estados.fugindo(m, hunt.clock ?? agora)) {
-      if (!pronto(m) || !Estados.podeAgir(m, agora)) continue;
+      if (!pronto(m) || !Estados.podeAgir(m, agora) || imobilizado(m, agora)) continue;
       const perto = bfsDistancias(grade, m, 1);
       // (revisão do A2: as regras do passo normal — sem pisar nos outros jogadores da sala, e a Paralisia no tempo do passo)
       aliadosDaFuga ??= aliadosPorCasa(hunt);
@@ -342,7 +346,7 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
       m.y = destino.y;
       m.dir = fy < 0 ? 0 : fy > 0 ? 2 : fx > 0 ? 1 : 3;
       m.andouEm = hunt.clock ?? 0;
-      m.moveMs = passoDoBicho(m, fx !== 0 && fy !== 0) * (Charms.paralisado(m, agora) ? Charms.FATOR_DA_PARALISIA : 1) * Estados.fatorDeLentidao(m, agora) * Reforcos.fatorDeDesaceleracao(m, agora) * Estados.fatorDeTolhimento(m, agora) * fatorDoPassoAprisionado(m.poeAprisionado) * fatorDeAcao(m, agora);
+      m.moveMs = passoDoBicho(m, fx !== 0 && fy !== 0) * (Charms.paralisado(m, agora) ? Charms.FATOR_DA_PARALISIA : 1) * Estados.fatorDeLentidao(m, agora) * Reforcos.fatorDeDesaceleracao(m, agora) * Estados.fatorDeTolhimento(m, agora) * fatorDoPassoAprisionado(m.poeAprisionado) * fatorDoPassoDoUrso(m, agora) * fatorDeAcao(m, agora);
       m.proximoPasso = agora + m.moveMs;
       continue;
     }
@@ -355,7 +359,7 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
     }
     if (!m.perseguindo || !pronto(m)) continue;
     // Congelado ou atordoado (supports Freeze/Stun): não anda.
-    if (!Estados.podeAgir(m, agora)) continue;
+    if (!Estados.podeAgir(m, agora) || imobilizado(m, agora)) continue;
     let destino = melhorPasso(m, reto, VIZINHANCA_4);
     if (!destino) {
       comDiagonal ??= bfsDistancias(grade, hunt.pos, ALCANCE_DE_PERSEGUICAO + 4);
@@ -376,7 +380,7 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
     // + lento (support Slow): o passo demora mais.
     // + Desacelerado pela maldição do PoE ("Inimigos Amaldiçoados por você são Desacelerados" — `Reforcos.fatorDeDesaceleracao`).
     // (lote C4, dono 21/10: + o Tolhimento do PoE — `Estados.fatorDeTolhimento`, só no passo)
-    m.moveMs = passoDoBicho(m, dx !== 0 && dy !== 0) * (Charms.paralisado(m, agora) ? Charms.FATOR_DA_PARALISIA : 1) * Estados.fatorDeLentidao(m, agora) * Reforcos.fatorDeDesaceleracao(m, agora) * Estados.fatorDeTolhimento(m, agora) * fatorDoPassoAprisionado(m.poeAprisionado) * fatorDeAcao(m, agora);
+    m.moveMs = passoDoBicho(m, dx !== 0 && dy !== 0) * (Charms.paralisado(m, agora) ? Charms.FATOR_DA_PARALISIA : 1) * Estados.fatorDeLentidao(m, agora) * Reforcos.fatorDeDesaceleracao(m, agora) * Estados.fatorDeTolhimento(m, agora) * fatorDoPassoAprisionado(m.poeAprisionado) * fatorDoPassoDoUrso(m, agora) * fatorDeAcao(m, agora);
     m.proximoPasso = agora + m.moveMs;
   }
 }

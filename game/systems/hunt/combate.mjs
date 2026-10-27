@@ -3,6 +3,9 @@
 import * as QuemFeriu from './quem-feriu.mjs';
 import * as Mecanicas from '../mobs/mecanicas.mjs';
 import * as Vinculos from '../itens-poe/vinculos.mjs';
+// (dono, 26/10: a proteção do Golem de Pedra no acerto corpo a corpo)
+import * as LacaiosPoe from '../itens-poe/lacaios-poe.mjs';
+import * as GemasPoe from '../itens-poe/gemas-poe.mjs';
 import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { ITEM_CATALOG, CATALOGO } from '../dados.mjs';
 import * as Progressao from '../progressao.mjs';
@@ -40,6 +43,8 @@ import * as Bosses from '../bosses.mjs';
 import * as Poderes from '../poderes.mjs';
 import * as BossesUnicos from '../bosses-unicos/boss.mjs';
 import * as Reforcos from '../skills/reforcos.mjs';
+// (lote S2B, 27/10: o Propagar Feitiço na morte)
+import * as SuportesS2B from '../itens-poe/suportes-s2b.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Gemas from '../gemas.mjs';
 import * as Charms from '../charms.mjs';
@@ -106,7 +111,8 @@ function morrerOsMortos(estado, personagem, eventos, lista) {
     // (+ "Inimigos Mortos pelos seus Acertos são destruídos": nenhum morto deixa cadáver.)
     // (+ lote 71, o Cremador: "Inimigos Incendiados Mortos por seus Acertos são destruídos" — o golpe fatal foi um acerto seu e ele queimava.)
     const cremado = ModsPoe.valor(Ficha.combate(estado), 'incendiados_mortos_destruidos') > 0 && QuemFeriu.abateSeu(m) && QuemFeriu.tagsDoAbate(m).includes('acerto') && (m.dots ?? []).some((d) => d.tipo === 'queimadura' && d.falta > 0);
-    if (!m.boss && !cremado && !(m.maldicoes && Reforcos.regrasDasMaldicoes(m, hunt.clock ?? 0).destruir) && !(ModsPoe.valor(Ficha.combate(estado), 'mortos_destruidos') > 0)) {
+    // (lote S1, 26/10: + o morto que o Devorar consumiu — `Acoes.abatesDoSuporteS1`)
+    if (!m.boss && !cremado && !m.poeDevorado && !(m.maldicoes && Reforcos.regrasDasMaldicoes(m, hunt.clock ?? 0).destruir) && !(ModsPoe.valor(Ficha.combate(estado), 'mortos_destruidos') > 0)) {
       // (PoE, 12/10: o cadáver guarda os Empalamentos do morto — o Convocar o Aço os chama "de inimigos, vivos ou mortos".)
       const empalado = (m.estados?.empalado ?? []).filter((x) => x.ate > (hunt.clock ?? 0) && x.acertos > 0);
       const doAco = empalado.length ? { empalado, ...(m.estados?.empalarBloqueadoAte ? { empalarBloqueadoAte: m.estados.empalarBloqueadoAte } : {}) } : {};
@@ -119,6 +125,8 @@ function morrerOsMortos(estado, personagem, eventos, lista) {
     }
     // (revisão das gemas PR4: as flechas da Flecha Explosiva e a Concha esgotada explodem na morte — os restos ficam na sala para o tique)
     if (m.poeFusiveis || m.poeConchas) Acoes.guardarRestosPR4(hunt, m);
+    // (lote S2B, 27/10) o Propagar Feitiço: os Feitiços suportados do morto passam aos vivos a até o raio (`SuportesS2B.transferirFeiticos`)
+    if (m.maldicoes) for (const b of SuportesS2B.transferirFeiticos(hunt, m, hunt.clock ?? 0)) eventos.push({ t: 'estado', uid: b.uid, x: b.x, y: b.y, estado: 'amaldicoado' });
     matarMonstro(estado, hunt, personagem, m, eventos);
   }
 }
@@ -1261,6 +1269,12 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
     const tomou = GemasGBD.absorverNaGuarda(hunt, final, hunt.clock ?? 0);
     if (tomou > 0) { final -= tomou; eventos.push({ t: 'dmg', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, v: tomou, foe: false, de: bicho.name, golpe: 'corpo a corpo', color: '#ffd27f', guarda: true }); }
   }
+  // (dono, 26/10 — o Golem de Pedra da Proteção: "Golens concedem 15% do Dano Corpo a Corpo sofrido na Vida do seu Golem de Pedra antes da sua" — antes do Escudo de
+  // Energia e da Vida, × o Efeito do Buff do golem; até a vida dele — `LacaiosPoe.desviarParaOGolemDePedra`)
+  if (final > 0 && hunt.lacaios?.length) {
+    const { tomou, golem } = LacaiosPoe.desviarParaOGolemDePedra(hunt, final, (g) => GemasPoe.fatorDoBuffDoGolem(estado, g));
+    if (tomou > 0) { final -= tomou; eventos.push({ t: 'dmg', uid: golem.uid, x: golem.x, y: golem.y, v: tomou, foe: false, lacaio: true, color: '#ff8a8a' }); }
+  }
   // (PoE, 12/10: o Vínculo D'Alma de um companheiro em você — "30% do Dano de Acertos contra o alvo é sofrido no seu Escudo de Energia antes do
   // dele": essa parte sai do Escudo de quem vincula.)
   final = Vinculos.desviarParaOEscudo(estado, final);
@@ -1273,7 +1287,7 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // (revisão PR2, dono 21/10: o Escudo Gélido e o Vínculo também levam a parte deles do Físico que ignora o Escudo — a mesma proporção do Caos)
   const depoisDosDesvios = depoisDaEgide > 0 ? final / depoisDaEgide : 0;
   const fisicoDireto = ModsPoe.valor(ficha, 'fisico_ignora_escudo') > 0 ? Math.min(final, Math.round((fisicoProtegido - caosFisico) * fatorFinal * depoisDosDesvios)) : 0;
-  if (fisicoDireto > 0) estado.esEspera = Defesa.esperaDaRecarga(ficha);
+  if (fisicoDireto > 0) Defesa.reiniciarEspera(estado, ficha);
   // (dono, 20/10 — o lote PR2: "o Caos dos monstros atravessa o Escudo de Energia, como no PoE") a parte de Caos do golpe — a do monstro (`danoExtra`, o
   // `danoExtraPct` do mapa), depois das resistências e do fator final — vai direto à Vida, salvo as exceções do PoE (`Defesa.absorverComOCaos`); no limite
   // do que sobrou do golpe depois da Égide, do Escudo Gélido e do Vínculo
@@ -1289,7 +1303,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   }
   // Absorção e "Dano recebido" da árvore, Última muralha, o escudo da Fonte
   // viva e o Não cai nunca (ver `Arvore.danoRecebido`).
-  final = Arvore.danoRecebido(estado, final, eventos, hunt.pos, personagem.nome, { ficha, elemento: 'physical' });
+  // (lote S2A: o golpe do bicho é um ATAQUE — o Companheirismo)
+  final = Arvore.danoRecebido(estado, final, eventos, hunt.pos, personagem.nome, { ficha, elemento: 'physical', ataque: true });
   // As cargas do PoE: "acertado recentemente" e a chance de Tolerância quando acertado.
   if (ficha.cargas && CargasPoe.aoSerAcertado(estado, ficha.cargas).length) Ficha.invalidar(estado);
   // PoE: o "acertado/dano recentemente", o Reflexo aos agressores corpo a corpo, a recuperação do dano sofrido e o congelar quem acerta.
@@ -1592,11 +1607,15 @@ export function round(estado, personagem) {
         // (lote G-A, D2: o Impelir do Sísmico não vale no golpe básico — `GemasGAC.impeleEste`)
         // (revisão G, 26/10: o golpe básico Impelido tem os efeitos do Clamor, como o uso da gema — a Combustão do Infernal no corpo a corpo e os alvos a mais do Ancestral;
         // o golpe nos alvos a mais não gasta outro; o Impelir vencido não conta)
-        const im = hunt.impelidos;
-        if (!segundo && !emboscada && !extraDoImpelido && im?.n > 0 && (im.ate ?? Infinity) > (hunt.clock ?? 0) && GemasGAC.impeleEste(im, tagsDoBasico)) {
-          if (itensPoeLigado() && im.de === 'Infernal_Cry' && tagsDoBasico.includes('corpo')) eventos.push(...Acoes.combustao(estado, hunt, personagem, null, alvo, hunt.clock ?? 0));
-          if (itensPoeLigado() && im.alvosExtra > 0 && tagsDoBasico.includes('corpo')) alvosDoImpelido = im.alvosExtra;
-          im.n--;
+        // (lote S1, dono 26/10: um Impelir por Clamor — cada Clamor que alcança o golpe o impele e gasta a sua carga)
+        const impelem = !segundo && !emboscada && !extraDoImpelido ? GemasGAC.impelemEste(hunt.impelidos, tagsDoBasico, hunt.clock ?? 0) : [];
+        if (impelem.length) {
+          if (itensPoeLigado() && impelem.some((im) => im.de === 'Infernal_Cry') && tagsDoBasico.includes('corpo')) eventos.push(...Acoes.combustao(estado, hunt, personagem, null, alvo, hunt.clock ?? 0));
+          const extras = impelem.reduce((t, im) => t + (Number(im.alvosExtra) || 0), 0);
+          if (itensPoeLigado() && extras > 0 && tagsDoBasico.includes('corpo')) alvosDoImpelido = extras;
+          // (revisão E1b/S1: + o Clamor do Mago de Batalha — o golpe básico Impelido por ele também ativa as magias suportadas, como o uso de uma gema de ataque)
+          Acoes.magoDeBatalhaNoImpelido(estado, hunt, personagem, impelem, alvo, eventos);
+          for (const im of impelem) im.n--;
         }
         // (lote G-C, dono 25/10) a Marca do Atirador no golpe básico de longe (o projétil da arma): "sofrem Dano aumentado em X% de Acertos de Projéteis" — no golpe da arma
         const doAtirador = itensPoeLigado() && categoriaDaArma(arma) === 'distancia' ? GemasGAC.fatorDoProjetil(alvo, hunt.clock ?? 0) : 1;
@@ -1756,8 +1775,10 @@ export function round(estado, personagem) {
       // Perfuram N Alvos adicionais"): cada um acerta OUTRO bicho (os mais perto do alvo, ao alcance), com o golpe inteiro.
       if (itensPoeLigado() && categoriaDaArma(arma) === 'distancia') {
         const fichaDoTiro = ModsPoe.fichaDoGolpe(fichaDoPersonagem, ModsPoe.tagsDoGolpeBasico(estado, 'distancia'), { estado });
+        // (revisão S1: as flechas a mais são o MESMO ataque — `extraDoImpelido`: não gastam outro Impelir de cada Clamor; no PoE, um ataque com vários projéteis é um
+        // ataque Impelido só)
         for (const outro of ModsPoe.alvosDosProjeteisExtras(hunt, alvo, ModsPoe.projeteisDoGolpeBasico(fichaDoTiro), alcanceDaArma(arma, estado))) {
-          if (outro.hp > 0) golpear(false, outro);
+          if (outro.hp > 0) golpear(false, outro, true);
         }
       }
       if (alvo.hp > 0 && Math.random() < (fichaDoPersonagem.ataqueDuplo ?? 0)) golpear(true);
