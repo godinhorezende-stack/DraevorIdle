@@ -3383,7 +3383,8 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
       ...(q.conversao ? { conversao: q.conversao, soDano: q.soDano ?? null } : {}),
       // A IA do familiar (`cacadas`): perto do dono, batendo no alvo; o totem não anda e usa a skill a até `alcanceDeAtaque` casas.
       // (lote E2A: + o "+X metros para o alcance do golpe corpo a corpo do lacaio" do Golpe Sagrado — `q.alcanceExtraM`, em casas, a fração sorteada ao invocar)
-      perto: 2, alcance: 0, alcanceDeAtaque: q.tipo === 'totem' ? alcanceDoTotem(entry, estado) : Math.max(1, q.estilo?.alcance ?? 1) + (q.alcanceExtraM > 0 ? casasDoRaio(q.alcanceExtraM) : 0), proximoGolpe: agora + 400, proximoPassoEm: 0,
+      // (revisão F1: o extra fica em `alcanceExtraCorpoACorpo` — o golpe segue corpo a corpo, sem o tiro nem os projéteis do lacaio de longe, `cacadas`)
+      perto: 2, alcance: 0, ...(() => { const extra = q.tipo !== 'totem' && q.alcanceExtraM > 0 ? casasDoRaio(q.alcanceExtraM) : 0; return { alcanceDeAtaque: q.tipo === 'totem' ? alcanceDoTotem(entry, estado) : Math.max(1, q.estilo?.alcance ?? 1) + extra, ...(extra > 0 ? { alcanceExtraCorpoACorpo: extra } : {}) }; })(), proximoGolpe: agora + 400, proximoPassoEm: 0,
       // As HABILIDADES próprias (`LacaiosPoe.oQueInvoca`): o jeito de atacar, a velocidade, o crítico, o dano adicionado, o sangramento e o
       // bônus do golem ao dono (enquanto ele vive — `GemasPoe.adds`).
       estilo: q.estilo ?? null, velAtaquePct: q.velAtaquePct ?? 0, critChance: q.critChance ?? 5, ...(q.critChanceBase != null ? { critChanceBase: q.critChanceBase } : {}), critMult: q.critMult ?? 1.5, somado: q.somado ?? [0, 0], sangrar: q.sangrar ?? 0,
@@ -5430,7 +5431,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const ponto = { x: formaNoUso.x, y: formaNoUso.y };
       const alcance = entry.range || ALCANCE_PADRAO;
       // (lote E2A, 26/10) a do SACRIFÍCIO: um lacaio danificável no lugar do cadáver — sem alvo, os lacaios primeiro (`GemasE2a.lacaioDoSacrificio`)
-      const lacaioDaTroca = t.lacaio ? GemasE2a.lacaioDoSacrificio(hunt.lacaios, hunt.pos, ponto, alcance) : null;
+      const lacaioDaTroca = t.lacaio ? GemasE2a.lacaioDoSacrificio(hunt.lacaios, hunt.pos, ponto, alcance, hunt.z ?? 0) : null;
       const cad = t.lacaio ? lacaioDaTroca : (hunt.cadaveres ?? []).filter((c) => (c.z == null || c.z === (hunt.z ?? 0)) && distanciaChebyshev(c, ponto) <= GemasB3.TROCA_DE_CORPOS.cadaverPertoCasas && distanciaChebyshev(hunt.pos, c) <= alcance)
         .sort((a, b) => distanciaChebyshev(a, ponto) - distanciaChebyshev(b, ponto))[0] ?? null;
       const grade = gradeDoJogador(hunt);
@@ -6081,7 +6082,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (lote E2B, 26/10) a gema DETONAR MINAS na barra não planta: começa a Sequência de Detonação das suas Minas agora — andando e sem inimigo perto, como o atalho do PoE
     // (a primeira na hora; cada seguinte 10% mais rápida por Mina anterior — `Plantadas.minasQueDetonam`)
     hunt.poeDetonarManualE2b = agora;
-    eventos.push(...tiqueDasPlantadas(estado, hunt, personagem, [], agora));
+    eventos.push(...tiqueDasPlantadas(estado, hunt, personagem, [], agora, { soPlantadas: true }));
   } else if (tipoPlantado && !plantada) {
     // (PoE, 12/10) O ARREMESSO da Armadilha/Mina: planta no lugar mirado (o alvo) e já vê as plantadas — com o alvo em cima, a Armadilha
     // ativa na hora; com inimigo perto e você parado, a Mina detona (a sequência). O resto fica plantado até ativar ou acabar a duração.
@@ -8364,7 +8365,8 @@ function tiqueDasTorres(estado, hunt, personagem, eventos, agora) {
       if (t.girosD1) {
         for (const m of Plantadas.inimigosPerto(hunt, t, t.girosD1.raio)) {
           if (!(m.hp > 0) || (estado.hp ?? 0) <= 0) continue;
-          const o = dispararSemMarcar(estado, hunt, personagem, t.slot, m, { plantada: { ...t.plantada, soNoAlvo: true } });
+          // (revisão F1: cada giro / onda é `onda` — não é uma ativação; o "ativada por um Inimigo" sai uma vez, em `tiqueDasPlantadas` / `ativouArmadilha`)
+          const o = dispararSemMarcar(estado, hunt, personagem, t.slot, m, { plantada: { ...t.plantada, soNoAlvo: true, onda: true } });
           if (o?.ok) eventos.push(...(o.eventos ?? []));
         }
         continue;
@@ -8372,7 +8374,8 @@ function tiqueDasTorres(estado, hunt, personagem, eventos, agora) {
       if (t.ondasE2b) {
         for (let k = 0; k < t.ondasE2b.n; k++) for (const m of Plantadas.inimigosPerto(hunt, t, t.ondasE2b.raio)) {
           if (!(m.hp > 0) || !(Math.random() < t.ondasE2b.chance)) continue;
-          const o = dispararSemMarcar(estado, hunt, personagem, t.slot, m, { plantada: { ...t.plantada, soNoAlvo: true } });
+          // (revisão F1: cada giro / onda é `onda` — não é uma ativação; o "ativada por um Inimigo" sai uma vez, em `tiqueDasPlantadas` / `ativouArmadilha`)
+          const o = dispararSemMarcar(estado, hunt, personagem, t.slot, m, { plantada: { ...t.plantada, soNoAlvo: true, onda: true } });
           if (o?.ok) eventos.push(...(o.eventos ?? []));
         }
         continue;
@@ -8444,40 +8447,44 @@ function auraDasMinasDaGema(estado, hunt, agora) {
 }
 
 // (revisão C2, dono 21/10: `explosaoDeRunas: false` — a caçada do modo PoE faz a Explosão de Runas no laço da barra, em cada volta — `cacadas`)
-export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora = hunt?.clock ?? 0, { explosaoDeRunas = true } = {}) {
-  if (itensPoeLigado() && hunt?.plantadas?.length) auraDasMinasDaGema(estado, hunt, agora);
-  // (lote E2B, 26/10: a Regeneração da Sifão de Gelo pelos inimigos afetados e o Solo Eletrizado da Relampejante Vaal — `tiqueDoE2b`)
-  if (itensPoeLigado() && (hunt?.poeSifaoE2b || hunt?.poeSolosE2b?.length)) tiqueDoE2b(estado, hunt, agora);
-  // (lote D1, 27/10: a aura do Carne e Pedra ligado marca os inimigos nela — `tiqueDoCarneEPedraD1`)
-  if (itensPoeLigado() && hunt?.buffs?.[`${GemasPoe.PREFIXO}${GemasD1.CARNE_E_PEDRA.slug}`]) tiqueDoCarneEPedraD1(estado, hunt, agora);
-  if (itensPoeLigado() && hunt?.poeTorres?.length) tiqueDasTorres(estado, hunt, personagem, eventos, agora);
-  // (lote G12: os gêiseres da Cremação, no mesmo tique)
-  if (itensPoeLigado() && hunt?.poeGeiseres?.length) tiqueDosGeiseres(estado, hunt, personagem, eventos, agora);
-  // (lote A4, dono 19/10: as estacas do Estilhaçar a Terra e o Orbe Invernal, no mesmo tique)
-  if (itensPoeLigado() && hunt?.poeEstacas?.length) tiqueDasEstacas(estado, hunt, personagem, eventos, agora);
-  if (itensPoeLigado() && hunt?.poeTormentas?.length) tiqueDasTormentas(estado, hunt, personagem, eventos, agora);
-  // (lote S2A, 27/10: o Sangue Corrompido do Estandarte Ensanguentado, a cada segundo)
-  if (itensPoeLigado() && hunt?.buffs) SuportesS2A.tiqueS2A(hunt, eventos, agora);
-  if (itensPoeLigado() && hunt?.poeOrbes?.length) tiqueDoOrbe(estado, hunt, personagem, eventos, agora);
-  // (lote A1: o Solo Ardente do Avanço Flamejante, no mesmo tique)
-  if (itensPoeLigado() && hunt?.solosDoJogador?.length) tiqueDosSolosDoJogador(hunt, eventos, agora);
-  // (lote A3b, dono 19/10: os OBJETOS no chão ou no tempo — a bola, o tornado, a espiral, o olho, o chão —, no mesmo tique)
-  // (lote B4, dono 25/10: as flechas da Chuva Tempestuosa, o Orbe Trovejante, o Campo Galvânico, a Hidroesfera e as Paredes — antes dos objetos, que
-  // tiram os vencidos — `tiqueDasGemasB4`)
-  if (itensPoeLigado() && hunt?.poeObjetos?.length) tiqueDasGemasB4(estado, hunt, personagem, eventos, agora);
-  if (itensPoeLigado() && hunt?.poeObjetos?.length) tiqueDosObjetos(estado, hunt, personagem, eventos, agora);
-  // (lote C3, dono 25/10: a Fúria da Tempestade Furiosa do Berserker; a explosão dos orbes da Tormenta Explosiva quando a canalização para)
-  if (itensPoeLigado() && hunt?.poeObjetos?.length) tiqueDoC3(estado, hunt, personagem, eventos, agora);
-  // (lote C2, dono 20/10: a Imolação que acabou e as correntes da Corrente com Gancho de Trarthus, no mesmo tique)
-  if (itensPoeLigado() && (hunt?.poeImolacao || hunt?.poeCorrentes?.length || hunt?.poeObjetos?.length)) tiqueDoC2(estado, hunt, personagem, eventos, agora, explosaoDeRunas);
-  // (lote B2, dono 20/10: o debuff do Golpe Infernal que expira, o Sangue Fervendo do Ceifar Vaal — `tiqueDasGemasB2`)
-  if (itensPoeLigado() && hunt?.monstros?.length) tiqueDasGemasB2(estado, hunt, personagem, eventos, agora);
-  // (lote S2B, 27/10: a Explosão Destruidora dos Feitiços que terminaram — `tiqueDosFeiticosS2B`)
-  if (itensPoeLigado() && hunt?.monstros?.length) tiqueDosFeiticosS2B(estado, hunt, personagem, eventos, agora);
-  // (lote B3, dono 21/10: as flechas presas da Conflagração que você ativou chegando perto, a Chuva de Lâminas de Trarthus ligada — `tiqueDasGemasB3`)
-  if (itensPoeLigado() && (hunt?.poeTrarthus || hunt?.poeObjetos?.length)) tiqueDasGemasB3(estado, hunt, personagem, eventos, agora);
-  // (lote PR4, dono 25/10: as flechas grudadas, as conchas, as cordas, a energia estática — `tiqueDasGemasPR4`)
-  if (itensPoeLigado() && (hunt?.poeEstatico || hunt?.poeConcentrados || hunt?.poeFeixesConcentrados || hunt?.monstros?.length || salaDe(hunt)?.poeRestosPR4?.length)) tiqueDasGemasPR4(estado, hunt, personagem, eventos, agora);
+export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora = hunt?.clock ?? 0, { explosaoDeRunas = true, soPlantadas = false } = {}) {
+  // (revisão F1) `soPlantadas`: só as Armadilhas e Minas plantadas — o uso da gema Detonar Minas (no meio do disparo) não roda de novo os tiques do chão
+  // (torres, objetos, as runas do C2…), que a caçada já roda uma vez por tique, com a trava da uma ação por vez
+  if (!soPlantadas) {
+    if (itensPoeLigado() && hunt?.plantadas?.length) auraDasMinasDaGema(estado, hunt, agora);
+    // (lote E2B, 26/10: a Regeneração da Sifão de Gelo pelos inimigos afetados e o Solo Eletrizado da Relampejante Vaal — `tiqueDoE2b`)
+    if (itensPoeLigado() && (hunt?.poeSifaoE2b || hunt?.poeSolosE2b?.length)) tiqueDoE2b(estado, hunt, agora);
+    // (lote D1, 27/10: a aura do Carne e Pedra ligado marca os inimigos nela — `tiqueDoCarneEPedraD1`)
+    if (itensPoeLigado() && hunt?.buffs?.[`${GemasPoe.PREFIXO}${GemasD1.CARNE_E_PEDRA.slug}`]) tiqueDoCarneEPedraD1(estado, hunt, agora);
+    if (itensPoeLigado() && hunt?.poeTorres?.length) tiqueDasTorres(estado, hunt, personagem, eventos, agora);
+    // (lote G12: os gêiseres da Cremação, no mesmo tique)
+    if (itensPoeLigado() && hunt?.poeGeiseres?.length) tiqueDosGeiseres(estado, hunt, personagem, eventos, agora);
+    // (lote A4, dono 19/10: as estacas do Estilhaçar a Terra e o Orbe Invernal, no mesmo tique)
+    if (itensPoeLigado() && hunt?.poeEstacas?.length) tiqueDasEstacas(estado, hunt, personagem, eventos, agora);
+    if (itensPoeLigado() && hunt?.poeTormentas?.length) tiqueDasTormentas(estado, hunt, personagem, eventos, agora);
+    // (lote S2A, 27/10: o Sangue Corrompido do Estandarte Ensanguentado, a cada segundo)
+    if (itensPoeLigado() && hunt?.buffs) SuportesS2A.tiqueS2A(hunt, eventos, agora);
+    if (itensPoeLigado() && hunt?.poeOrbes?.length) tiqueDoOrbe(estado, hunt, personagem, eventos, agora);
+    // (lote A1: o Solo Ardente do Avanço Flamejante, no mesmo tique)
+    if (itensPoeLigado() && hunt?.solosDoJogador?.length) tiqueDosSolosDoJogador(hunt, eventos, agora);
+    // (lote A3b, dono 19/10: os OBJETOS no chão ou no tempo — a bola, o tornado, a espiral, o olho, o chão —, no mesmo tique)
+    // (lote B4, dono 25/10: as flechas da Chuva Tempestuosa, o Orbe Trovejante, o Campo Galvânico, a Hidroesfera e as Paredes — antes dos objetos, que
+    // tiram os vencidos — `tiqueDasGemasB4`)
+    if (itensPoeLigado() && hunt?.poeObjetos?.length) tiqueDasGemasB4(estado, hunt, personagem, eventos, agora);
+    if (itensPoeLigado() && hunt?.poeObjetos?.length) tiqueDosObjetos(estado, hunt, personagem, eventos, agora);
+    // (lote C3, dono 25/10: a Fúria da Tempestade Furiosa do Berserker; a explosão dos orbes da Tormenta Explosiva quando a canalização para)
+    if (itensPoeLigado() && hunt?.poeObjetos?.length) tiqueDoC3(estado, hunt, personagem, eventos, agora);
+    // (lote C2, dono 20/10: a Imolação que acabou e as correntes da Corrente com Gancho de Trarthus, no mesmo tique)
+    if (itensPoeLigado() && (hunt?.poeImolacao || hunt?.poeCorrentes?.length || hunt?.poeObjetos?.length)) tiqueDoC2(estado, hunt, personagem, eventos, agora, explosaoDeRunas);
+    // (lote B2, dono 20/10: o debuff do Golpe Infernal que expira, o Sangue Fervendo do Ceifar Vaal — `tiqueDasGemasB2`)
+    if (itensPoeLigado() && hunt?.monstros?.length) tiqueDasGemasB2(estado, hunt, personagem, eventos, agora);
+    // (lote S2B, 27/10: a Explosão Destruidora dos Feitiços que terminaram — `tiqueDosFeiticosS2B`)
+    if (itensPoeLigado() && hunt?.monstros?.length) tiqueDosFeiticosS2B(estado, hunt, personagem, eventos, agora);
+    // (lote B3, dono 21/10: as flechas presas da Conflagração que você ativou chegando perto, a Chuva de Lâminas de Trarthus ligada — `tiqueDasGemasB3`)
+    if (itensPoeLigado() && (hunt?.poeTrarthus || hunt?.poeObjetos?.length)) tiqueDasGemasB3(estado, hunt, personagem, eventos, agora);
+    // (lote PR4, dono 25/10: as flechas grudadas, as conchas, as cordas, a energia estática — `tiqueDasGemasPR4`)
+    if (itensPoeLigado() && (hunt?.poeEstatico || hunt?.poeConcentrados || hunt?.poeFeixesConcentrados || hunt?.monstros?.length || salaDe(hunt)?.poeRestosPR4?.length)) tiqueDasGemasPR4(estado, hunt, personagem, eventos, agora);
+  }
   if (!hunt?.plantadas?.length || !itensPoeLigado()) return eventos;
   const ficha = Ficha.combate(estado);
   // (revisão E1b) a ATIVAÇÃO da Armadilha por um inimigo, uma vez por ativação, nos caminhos que não passam pelo disparo comum (a torre e a Lança-Chamas, que
@@ -8524,7 +8531,7 @@ export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora 
     }
     // (lote E2B, 26/10 — o PoB) a Armadilha Sísmica: ativada, pulsa a cada 0,9 s ÷ a Velocidade de Arremesso pela duração (os pulsos, ⌊duração × frequência⌋); cada
     // pulso, as ondas dela (`tiqueDasTorres`, `ondasE2b`) — sem acerto na ativação
-    if (p.tipo === 'armadilha' && sismicaNaAtivacao(estado, hunt, personagem, p, eventos, agora)) continue;
+    if (p.tipo === 'armadilha' && sismicaNaAtivacao(estado, hunt, personagem, p, eventos, agora)) { ativouArmadilha(p, alvo); continue; }
     // (lote D1, decisão do dono 27/10 — o PoB) a Armadilha de Lâminas (e a da Laceração): ativada, gira N vezes, 0,25 s por giro; cada giro acerta uma vez cada inimigo
     // na área (`tiqueDasTorres`, `girosD1`); a ativação é uma — o evento, as Armadilhas Carregadas e a chance de ativar de novo (outra Armadilha girando)
     if (p.tipo === 'armadilha' && laminasNaAtivacaoD1(estado, hunt, personagem, p, eventos, agora)) {
@@ -8680,7 +8687,9 @@ function tiqueDoCarneEPedraD1(estado, hunt, agora) {
   if (!b || !(b.ate > agora) || !hunt.pos) return;
   const d = GemasPoe.carneEPedraDaGema(GemasD1.CARNE_E_PEDRA.slug, Gemas.efeitoNaSkill(estado, id)?.nivel ?? 1);
   if (!d) return;
-  const efeito = (b.fator ?? 1) * Math.max(0, 1 + (Number(b.efeitoAuraPct) || 0) / 100);
+  // (revisão F1 — decisão do dono: todo o Efeito de Aura, como o PoB — o da árvore e das peças, o da gema pelo nome/tag, a qualidade e o suporte ligado; a mesma conta
+  // das outras auras, `GemasPoe.efeitoDoBuff`)
+  const efeito = (b.fator ?? 1) * Math.max(0, GemasPoe.efeitoDoBuff(estado, b.tipo ?? 'poe-aura', id, b, estado, { emVoce: false }));
   GemasD1.marcarNaAura(hunt.monstros, hunt.pos, hunt.z ?? 0, { ...b, postura: ModsPoe.posturaDe(hunt, agora) }, d, efeito, agora);
 }
 

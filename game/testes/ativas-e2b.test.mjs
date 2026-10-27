@@ -73,8 +73,8 @@ const FEITAS = ['Smite', 'Vaal_Smite', 'Detonate_Mines', 'War_Banner', 'Explosiv
 
 test('E2B: as gemas do lote ficam completas (funciona, sem motivo)', { skip: SEM }, () => {
   for (const s of FEITAS) assert.deepEqual([G.doSlug(s)?.statusNoJogo, G.doSlug(s)?.motivosNoJogo], ['funciona', []], s);
-  // a Laceração: o Sangramento mais rápido sai; o giro fica (decisão do dono)
-  assert.deepEqual(G.doSlug('Blade_Trap_of_Laceration').motivosNoJogo, ['efeito não simulado: Gira 1 vez']);
+  // a Laceração: o Sangramento mais rápido sai; o giro: feito no D1 (decisão do dono) — aval do dono (revisão F1): sem motivo
+  assert.deepEqual(G.doSlug('Blade_Trap_of_Laceration').motivosNoJogo, []);
 });
 
 test('E2B: as Armadilhas Explosivas — os raios pela posição da coluna (1,8 m; a menor 1,3 m) e as explosões menores (7, + 0,1 por qualidade)', { skip: SEM }, () => {

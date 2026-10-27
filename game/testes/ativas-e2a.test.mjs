@@ -41,8 +41,8 @@ test('E2A — status: as 8 gemas sem "efeito não simulado"; as que seguem ficam
     assert.deepEqual(naoSimuladas(s), [], s);
     assert.equal(G.statusNoJogo()[s].motivos.length, 1, s);
   }
-  // o teto do movimento do Espectro (movement_velocity_cap) é decisão do dono: a linha segue, só ela
-  for (const s of ['Raise_Spectre', 'Raise_Spectre_of_Transience']) assert.deepEqual(naoSimuladas(s), ['efeito não simulado: Velocidade de Movimento dos Lacaios está no Máximo'], s);
+  // o teto do movimento do Espectro (movement_velocity_cap): feito no D1 (decisão do dono) — aval do dono (revisão F1): sem motivo
+  for (const s of ['Raise_Spectre', 'Raise_Spectre_of_Transience']) assert.deepEqual(naoSimuladas(s), [], s);
   // o Golpe Sagrado: o golpe do jogador ainda não existe (a gema só invoca) — a conversão "Este ataque e lacaios" segue
   assert.deepEqual(naoSimuladas('Holy_Strike'), ['efeito não simulado: Este ataque e lacaios convertem 50 % do dano físico em dano elétrico']);
   // só nas gemas do lote

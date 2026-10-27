@@ -199,7 +199,7 @@ export function eletrizarNoSolo(monstros, solos, agora, renovaMs = 500) {
     if (!(s.ate > agora)) continue;
     const casas = s.casasSet ?? (s.casasSet = new Set(s.casas));
     for (const m of monstros ?? []) {
-      if (!(m.hp > 0) || m.dummy || (m.z ?? s.z ?? 0) !== (s.z ?? 0) || !casas.has(`${m.x},${m.y}`)) continue;
+      if (!(m.hp > 0) || m.dummy || m.imuneChoque || (m.z ?? s.z ?? 0) !== (s.z ?? 0) || !casas.has(`${m.x},${m.y}`)) continue;
       const e = (m.estados ??= {});
       const ch = e.chocado;
       if (ativo(ch, agora) && (ch.pct ?? 0) > s.efeitoPct) continue;
