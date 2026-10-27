@@ -1797,6 +1797,9 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   if (ignora) f.ignoraReducaoFisica = true;
   if (invertida) f.resInvertida = true;
   if (ignoraCaosRaio) f.ignoraResDe = ['chaos', 'energy'];
+  // (correções F3) as chances "por acerto" (a Tríade Profana; o "ignorar a Redução de Dano Físico"): o sorteio daqui vale no primeiro alvo do uso; cada outro alvo
+  // sorteia de novo (`resortearPorAcerto`) — antes, todos os alvos do mesmo uso dividiam o mesmo sorteio
+  if (chance('s2b_ignora_res_caos_raio') > 0 || chance('ignora_reducao_fisica') > 0) f.chancesPorAcerto = { caosRaio: chance('s2b_ignora_res_caos_raio'), fisico: chance('ignora_reducao_fisica') };
   // O "aumentado" de UM elemento com condição ("Dano de Gelo aumentado com Habilidades de Ataque"), a penetração de um elemento, o dano
   // somado com condição ("contra Inimigos Resfriados") e o roubo com condição ("contra Inimigos Eletrizados").
   const doElemento = { physical: (s.phys_dmg ?? 0), fire: s.fire_dmg ?? 0, ice: s.ice_dmg ?? 0, energy: s.energy_dmg ?? 0, chaos: s.chaos_dmg ?? 0 };
@@ -2327,6 +2330,21 @@ export const ativo = (s, agora) => !!s && s.ate > agora;
 export const fatorDeDanoDobrado = (ficha, rng = Math.random) => (ligado() && rng() * 100 < valor(ficha, 'chance_dano_dobrado') ? 2 : 1);
 
 /** O golpe ignora a redução de dano Físico do alvo? (a chance do "Acertos … ignoram a Redução de Dano Físico"). */
+/**
+ * (correções F3) Sorteia de novo, na `ficha` do uso (e nas `outras` fichas dele já copiadas), as chances "por acerto" de `fichaDoGolpe` (`chancesPorAcerto`): a Tríade Profana
+ * ("X% de chance de ignorar a resistência a dano de caos e elétrico") e o "ignorar a Redução de Dano Físico". Para o 2º alvo em diante do mesmo uso.
+ */
+export function resortearPorAcerto(ficha, outras = [], rng = Math.random) {
+  const c = ficha?.chancesPorAcerto;
+  if (!c) return;
+  const caosRaio = c.caosRaio > 0 && rng() * 100 < c.caosRaio ? ['chaos', 'energy'] : undefined;
+  const fisico = c.fisico > 0 && rng() * 100 < c.fisico ? true : undefined;
+  for (const f of new Set([ficha, ...outras])) {
+    if (!f) continue;
+    if (c.caosRaio > 0) f.ignoraResDe = caosRaio;
+    if (c.fisico > 0) f.ignoraReducaoFisica = fisico;
+  }
+}
 export const ignoraReducaoFisica = (ficha, rng = Math.random) => ligado() && rng() * 100 < valor(ficha, 'ignora_reducao_fisica');
 
 /**

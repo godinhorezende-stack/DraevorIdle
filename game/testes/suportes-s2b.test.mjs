@@ -79,10 +79,9 @@ const FEITOS = ['Unholy_Trinity_Support', 'Arcane_Surge_Support', 'Prismatic_Bur
 test('S2B: os suportes feitos saem de "parcial"; o Escudo de Carne fica só com os Defensivos e o Predador com a Presa', { skip: SEM }, () => {
   const falhas = FEITOS.filter((s) => SP.doSlug(s)?.status !== 'funciona').map((s) => `${s}: ${SP.doSlug(s)?.status} ${(SP.doSlug(s)?.motivos ?? []).join(' | ')}`);
   assert.deepEqual(falhas, [], falhas.join('\n'));
-  assert.deepEqual(SP.doSlug('Meat_Shield_Support').motivos, ['não simulado: Lacaios de Habilidades Suportadas são Defensivos']);
-  const pred = SP.doSlug('Predator_Support').motivos;
-  assert.equal(pred.length, 2);
-  assert.ok(pred.some((m) => /às suas Presas/.test(m)) && pred.some((m) => /focam em Presas/.test(m)), pred.join(' | '));
+  // (lote D3, dono 27/10 — aval do dono: os Defensivos do Escudo de Carne e a Presa do Predador foram feitos, os dois saem sem motivos)
+  assert.deepEqual(SP.doSlug('Meat_Shield_Support').motivos, []);
+  assert.equal(SP.doSlug('Predator_Support').motivos.length, 0, SP.doSlug('Predator_Support').motivos.join(' | '));
 });
 
 test('S2B: os números no nível 20 (Excepcionais no 3), com a qualidade 20 — e o que deixou de ir para a suportada', { skip: SEM }, () => {

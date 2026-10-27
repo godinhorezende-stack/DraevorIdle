@@ -415,6 +415,9 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
   const conjura = /mag[oa]|mage|espectro|spectre/i.test(`${nome} ${t.nome}`);
   const doEscudo = (conjura ? m0('minion_dano_magico') : 0) + m0(`minion_dano_${elemento ?? 'physical'}`);
   const golpe = f.dano * (1 + maisDano / 100) * (1 + ((efeito?.lacaioDanoPct ?? 0) + m0('minion_dmg') + porTipo('lacaio_dano') + doEscudo + incV) / 100) * Math.max(0, 1 + porTipo('lacaio_mais_dano') / 100) * Math.max(0, 1 + (efeito?.lacaioMaisDanoPct ?? 0) / 100) * extra;
+  // (correções F3) o fator do dano de FOGO não-golpe do lacaio (a queima da Legião Infernal): só os modificadores genéricos e os de Fogo — sem o extra do golpe, o Dano Físico
+  // do escudo e o aumentado por Virulência (o PoB: a área de Fogo da Legião escala com o dano genérico, o de Fogo e o de dano contínuo do lacaio)
+  const fatorDoFogo = (1 + maisDano / 100) * Math.max(0, 1 + ((efeito?.lacaioDanoPct ?? 0) + m0('minion_dmg') + porTipo('lacaio_dano') + m0('minion_dano_fire')) / 100) * Math.max(0, 1 + porTipo('lacaio_mais_dano') / 100) * Math.max(0, 1 + (efeito?.lacaioMaisDanoPct ?? 0) / 100);
   // O dano SOMADO aos lacaios das peças ("Lacaios causam X a Y de Dano de Fogo adicional"): no golpe deles, como o dano adicionado da gema.
   for (const el of ['physical', 'fire', 'ice', 'energy', 'chaos']) somado = [somado[0] + m0(`minion_added_${el}_min`), somado[1] + m0(`minion_added_${el}_max`)];
   // (+ o do TIPO: "Golens têm X a Y de Dano Físico de Ataques Adicional".)
@@ -501,6 +504,7 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
       // (lote 86) o "aumentado" e o "mais" do dano do lacaio que a invocação já pôs no `dano` (golpe ÷ a força de base): o Fogo adicional "se
       // Bloqueou Recentemente" é escalado por ele no golpe (`cacadas`), como o resto do golpe
       fatorDoDano: f.dano > 0 ? golpe / f.dano : 1,
+      fatorDoFogo,
       // (lote 87, dono 19/10: a parte B, "Todos os lacaios (PoE)") a PRECISÃO do golpe de ataque (a do PoB — a tabela × o `accuracy` —, + "Lacaios
       // tem +N de Precisão" e o do escudo da Égide; × o aumentado), o golpe de magia (nunca erra), o atordoamento (o limiar do PoB, imune, a
       // recuperação de atordoamento e de bloqueio) e o "Dano Extra recebido de Acertos Críticos reduzido" — `precisaoDoLacaio`,
