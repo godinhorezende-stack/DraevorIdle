@@ -17,6 +17,7 @@ import { PROPRIAS_R3A } from './gemas-r3a.mjs';
 import { PROPRIAS_R3B, completarEfeito as completarEfeitoR3B } from './gemas-r3b.mjs';
 // (lote R3C, 27/10: as Bênçãos, a Mina Local, a Blasfêmia Sobrenatural, a Constrição Pérfida, as Instabilidades Cinéticas e o Vínculo Frígido — `gemas-r3c.mjs`)
 import { PROPRIAS_R3C, ajustarEfeitoR3c } from './gemas-r3c.mjs';
+import { PROPRIAS_R3D } from './gemas-r3d.mjs';
 
 const ARQ_SUPORTES = new URL('../../gamedata/itens-poe/suportes-poe.json', import.meta.url);
 const ARQ_IDS = new URL('../../gamedata/itens-poe/suportes-poe-ids.json', import.meta.url);
@@ -876,7 +877,8 @@ export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
   // (lote R3B: + as do Arqueiro Ilusório, dos Espíritos Sagrados, do Relâmpago Vivo e do Nascido da Colmeia — `PROPRIAS_R3B`; o 3º argumento diz se a linha é da qualidade)
   // (lote R3A: + as habilidades concedidas pelo Cristal em Queda, pela Fenda, pela Pira e pela Rajada de Vento — `PROPRIAS_R3A`)
   // (lote R3C: + as linhas próprias dos suportes do lote — `gemas-r3c.PROPRIAS_R3C`)
-  const proprias = PROPRIAS_A2[slug] ?? PROPRIAS_R3A[slug] ?? PROPRIAS_R3B[slug] ?? PROPRIAS_R3C[slug];
+  // (lote R3D, 27/10: + as do Chuva Ardente — a Vingança Flamejante do totem, `GemasR3D.PROPRIAS_R3D`)
+  const proprias = PROPRIAS_A2[slug] ?? PROPRIAS_R3A[slug] ?? PROPRIAS_R3B[slug] ?? PROPRIAS_R3C[slug] ?? PROPRIAS_R3D[slug];
   for (const linha of [...t.props, ...t.mods, ...t.qualidade]) {
     if (proprias) {
       const p = proprias.find(([re]) => re.test(linha));

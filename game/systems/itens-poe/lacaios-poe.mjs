@@ -24,6 +24,7 @@ import * as CargasPoe from './cargas.mjs';
 import * as GemasE1a from './gemas-e1a.mjs';
 // (lote E2A, 26/10: as linhas difíceis dos lacaios — os Espectros, os Zumbis da Pancada e da Queda, o Golpe Sagrado, as Sentinelas Ascendidas, os Robôs — `gemas-e2a.mjs`)
 import * as GemasE2a from './gemas-e2a.mjs';
+import * as GemasR3D from './gemas-r3d.mjs';
 import * as SuportesS2B from './suportes-s2b.mjs';
 export { aplicarCeifador, fatorDoCeifador, fatorPorNaoGolemPerto, danoDoGolemDaCarnica, desviarParaOGolemDePedra } from './gemas-e1a.mjs';
 import { readFileSync } from 'node:fs';
@@ -560,6 +561,9 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
     ...(pob?.imune || (r.gema?.tipos ?? []).includes('MinionsAreUndamagable') ? { intocavel: true } : {}), ...(pob ? { pob: pob.id } : {}),
     // (revisão E1a — dono, 27/10) as habilidades com recarga do lacaio no PoB (os golens de Relâmpago e da Carniça — `HABILIDADES_COM_RECARGA`)
     ...(pob && HABILIDADES_COM_RECARGA[pob.id] ? { recargas: habilidadesComRecargaDoPob(pob.id, n) } : {}),
+    // (lote R3D, 27/10) + as do Golem Caótico (a Cascata e a Aura Caótica; a Potencializada no do Turbilhão, com o "efeito de definhamento aumentado" da qualidade) e as do
+    // Rastejador do Arauto da Agonia (o Morteiro e o Espinho da Cauda) — `GemasR3D.recargasDoLacaio`
+    ...(() => { const rec = pob ? GemasR3D.recargasDoLacaio(slug, pob.id, n, { definhaPct: GemasPoe.linhasDaQualidadeDe(slug, efeito?.qualidade ?? 0).reduce((t, l) => t + (Number(/definhamento aumentado em ([\d.]+)/i.exec(l)?.[1]) || 0), 0) }) : null; return rec ? { recargas: rec } : {}; })(),
     // O desenho pelo nome do lacaio e o da gema ("Golem" + "Convocar Golem de Chamas").
     desenho: desenhoDe(`${nome} ${t.nome}`, elemento, totem),
   };

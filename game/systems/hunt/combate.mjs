@@ -85,6 +85,7 @@ import * as GemasDeSkill from '../skills/gemas.mjs';
 import * as CargasPoe from '../itens-poe/cargas.mjs';
 import * as FrascosPoe from '../itens-poe/frascos.mjs';
 import * as Protecao from '../protecao.mjs';
+import * as GemasR3D from '../itens-poe/gemas-r3d.mjs';
 
 /** Depois de qualquer dano de ação (magia/runa) — mata e dá loot de quem chegou a 0. */
 export function processarMortes(estado, personagem, eventos) {
@@ -1412,10 +1413,13 @@ export function golpesDosMonstros(estado, hunt, personagem) {
       escudo = Acoes.temBuff(hunt, 'shield');
     }
     if (bicho.boss) BossesUnicos.tique({ estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo: escudo });
-    if (Poderes.temPoderes(bicho) && !bicho.boss?.semPoderesDoBase) Poderes.lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, escudo);
+    // (lote R3D, 27/10) o monstro PROVOCADO pelo Totem Chamariz mira o totem: as magias dele não saem em você (o chefe único segue com os comportamentos próprios, acima)
+    if (Poderes.temPoderes(bicho) && !bicho.boss?.semPoderesDoBase && !GemasR3D.iscaDoMonstro(hunt, bicho, agora)) Poderes.lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, escudo);
   }
   for (const bicho of hunt.monstros) {
     if (bicho.dummy || bicho.hp <= 0 || distancia(hunt.pos, bicho) > 1 || Poderes.semCorpoACorpo(bicho)) continue;
+    // (lote R3D, 27/10) provocado pelo Totem Chamariz: bate no totem (`cacadas.tiqueDosLacaios`), não em você
+    if (GemasR3D.iscaDoMonstro(hunt, bicho, agora)) continue;
     if (estado.hp <= 0) break;
     if (!R.jaPode(agora, bicho.proximoGolpe)) continue;
     // Congelado ou atordoado: não bate; lento: bate mais devagar (supports Freeze/Stun/Slow). (lote A2: fugindo, não bate)

@@ -114,6 +114,7 @@ import * as GemasE2b from './itens-poe/gemas-e2b.mjs';
 import * as GemasD1 from './itens-poe/gemas-d1.mjs';
 // (lote R3C, 27/10: as Bênçãos, a Mina Local, a Insanidade Perversa, a Constrição Pérfida, o Fluxo Cinético e o Vínculo Frígido)
 import * as GemasR3c from './itens-poe/gemas-r3c.mjs';
+import * as GemasR3D from './itens-poe/gemas-r3d.mjs';
 // (lote S2A, 27/10: os suportes com mecânica nova — o acerto, o uso pago, o abate, o Ímpeto de Combate)
 import * as SuportesS2A from './itens-poe/suportes-s2a-jogo.mjs';
 // (lote S2B, 27/10: os suportes da segunda metade das parciais)
@@ -1250,6 +1251,23 @@ function magiaAtivadaS2B(estado, hunt, personagem, id, centro, { min, max, eleme
   return total;
 }
 const TAG_DO_ELEMENTO_S2B = { fire: 'fogo', ice: 'gelo', energy: 'raio', chaos: 'caos', physical: 'fisico' };
+/**
+ * (lote R3D, 27/10 — o poedb: o Chuva Ardente) A VINGANÇA FLAMEJANTE do totem `l` acertado por `atacante`: fora da recarga (1 s), a magia cai no atacante — Fogo base igual a
+ * X% da Vida Máxima do totem, na área de "O raio Base é de X metros" × √ da Área, 5% de crítico; é magia de área do totem (`magiaAtivadaS2B`: os seus modificadores de Dano
+ * Mágico/Fogo/Área e os suportes da habilidade que a suportariam). Os acertos são do totem (o abate, o evento). Devolve os eventos.
+ */
+export function vingancaFlamejante(estado, hunt, personagem, l, atacante, agora = hunt?.clock ?? 0) {
+  const eventos = [];
+  if (!estado || !hunt || !l?.vingancaR3D || !atacante || !(atacante.hp > 0) || Protecao.imune(hunt)) return eventos;
+  const base = GemasR3D.dispararVinganca(l, agora);
+  if (!(base > 0)) return eventos;
+  const antes = new Map((hunt.monstros ?? []).map((m) => [m, m.hp]));
+  magiaAtivadaS2B(estado, hunt, personagem, l.acao, { x: atacante.x, y: atacante.y, z: atacante.z ?? hunt.z ?? 0, uid: atacante.uid }, { min: base, max: base, elemento: 'fire', raioM: l.vingancaR3D.raioM, critBase: GemasR3D.VINGANCA.critBase, eficacia: GemasR3D.VINGANCA.eficacia, tags: GemasR3D.VINGANCA.tags, fonte: 'Vingança Flamejante', cor: COR_DO_ELEMENTO.fire }, eventos);
+  // (os acertos são do TOTEM: o abate é dele, como o golpe dele — `QuemFeriu.TOTEM`)
+  for (const [m, hp] of antes) if (m.hp < hp) QuemFeriu.carimbar(m, QuemFeriu.TOTEM);
+  for (const ev of eventos) if (ev.t === 'dmg' && ev.foe) ev.lacaio = true;
+  return eventos;
+}
 /**
  * (lote S2B, 27/10) A EXPLOSÃO PRISMÁTICA (o suporte: "Habilidades Suportadas Ativam Explosão Prismática ao Acertar"): a recarga dela (0,8 s ÷ (1 + a "Velocidade de Recarga
  * aumentada" dela) — o PoB: `base_cooldown_speed_+%` da PrismaticBurst), o elemento sorteado pelos seus atributos (`SuportesS2B.elementoDoPrisma`) e o dano dele, no raio
@@ -3633,6 +3651,15 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
     if (efeito?.areaLacaioPct > 0 && l.poe) l.poe = { ...l.poe, areaPct: (l.poe.areaPct ?? 0) + efeito.areaLacaioPct };
     // (lote S2A, 27/10) o Companheirismo: o lacaio leva os números do suporte e a habilidade de origem (`suportes-s2a.companheirismoDe`)
     if (q.tipo !== 'totem' && (efeito?.companheirismoAbsorvePct > 0 || efeito?.companheirismoDanoPct)) l.companheirismoS2A = { acao: entry.id, absorvePct: efeito.companheirismoAbsorvePct ?? 0, danoPct: efeito.companheirismoDanoPct ?? 0 };
+    // (lote R3D, 27/10) o TOTEM CHAMARIZ: o raio da provocação (6 m × √ da Área — a sua, a da gema e a dos suportes; a fração sorteada ao pôr — `GemasR3D.raioDoChamariz`);
+    // o CHUVA ARDENTE: a Vingança Flamejante do totem suportado (`GemasR3D.vingancaDoEfeito`, `vingancaFlamejante`)
+    if (q.tipo === 'totem' && GemasR3D.ehChamariz(slug)) {
+      const f = fichaDoTotem ?? (estado ? Ficha.combate(estado) : null);
+      const porTag = f ? ModsPoe.somaPorTags(f, tagsPoeDaSkill(entry)) : {};
+      l.provocaR3D = { raio: GemasR3D.raioDoChamariz(ModsPoe.fatorDaArea((f ? ModsPoe.valor(f, 'area_inc') : 0) + (porTag.area_inc ?? 0) + (efeito?.areaIncPct ?? 0), (f ? ModsPoe.valor(f, 'area_mais') : 0) + (porTag.area_mais ?? 0), efeito?.areaMaisPct ?? 0)) };
+    }
+    const vinganca = q.tipo === 'totem' ? GemasR3D.vingancaDoEfeito(efeito) : null;
+    if (vinganca) l.vingancaR3D = { ...vinganca, prontaEm: -Infinity };
     hunt.lacaios.push(l);
     // (lote G20c) o Solo Sagrado do Flamejante Sagrado em volta dele, enquanto ele viver (`dono`), com a imunidade a maldições
     if (q.efeitosDoTotem?.soloSagradoM) (hunt.solosSagrados ??= []).push({ x: l.x, y: l.y, raio: Math.max(1, casasDoRaio(q.efeitosDoTotem.soloSagradoM)), ate: l.ate ?? Infinity, dono: l.uid, imuneMaldicao: true });
@@ -5246,6 +5273,22 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       if (plantada.emitir) atingidos = [alvo];
       // (lote B3, dono 21/10: + as casas dadas pelo objeto — as lâminas da rajada da Chuva de Lâminas de Trarthus, cada inimigo um acerto)
       else casas = Array.isArray(plantada.casas) ? plantada.casas : Areas.quadrado({ x: plantada.x, y: plantada.y }, Math.max(0, plantada.raio ?? 1));
+    } else if (plantada?.tipo === 'totem' && itensPoeLigado() && entry.poeGema && GemasR3D.formaDaArtilharia(entry.poeGema.slug) && alvo?.hp > 0) {
+      // (lote R3D, 27/10 — o PoB, act_dex.lua ArtilleryBallista/AltX/AltY) a BALISTA DE ARTILHARIA: as flechas caem em linha centrada no alvo (o Fogo Cruzado: em duas
+      // linhas perpendiculares; o Fogo Concentrado: cada uma num inimigo diferente ao alcance do totem), cada uma com dano em área; cada inimigo leva UM acerto
+      // (`OneShotProj`). As flechas: as da gema ("Dispara 6 Flechas", "até 5" no Fogo Concentrado) + os adicionais (a qualidade, os suportes, as peças e os do totem)
+      const slugA = entry.poeGema.slug;
+      const forma = GemasR3D.formaDaArtilharia(slugA);
+      const totem = (hunt.lacaios ?? []).find((t) => t.uid === plantada.uid);
+      const base = forma === 'foco' ? GemasR3D.flechasDaArtilharia(GemasPoe.textosDaGema(slugA, efeitoDaGema?.nivel ?? 1).linhas) : efeitoDaGema?.projeteisBase ?? GemasR3D.flechasDaArtilharia(GemasPoe.textosDaGema(slugA, efeitoDaGema?.nivel ?? 1).linhas);
+      const doTotemExtra = Math.max(0, Math.round(ModsPoe.valor(Ficha.combate(estado), 'totem_projeteis_extra')));
+      const n = Math.max(1, (base || 1) + Math.max(0, Math.floor(efeitoDaGema?.alvosExtras ?? 0)) + doTotemExtra);
+      const impactos = GemasR3D.impactosDaArtilharia(forma, { x: plantada.x, y: plantada.y }, alvo, n, { vivos, alcance: Math.max(4, totem?.alcanceDeAtaque ?? 4) });
+      const raio = GemasR3D.raioDoImpacto(ModsPoe.fatorDaArea(efeitoDaGema?.areaIncPct ?? 0, efeitoDaGema?.areaMaisPct ?? 0));
+      const r3d = GemasR3D.atingidosDaArtilharia(impactos, raio, vivos);
+      atingidos = r3d.atingidos;
+      casas = r3d.casas;
+      formaNoUso = { x: alvo.x, y: alvo.y, dir: null };
     } else if (doTotem) {
       // (lote G20a) o TOTEM (`hunt.pos` é a casa dele — `usarComoTotem`), que já escolheu o alvo ao alcance (`cacadas.tiqueDosLacaios`): a área no
       // alvo (a de mirar no chão), virada para ele (a direcional: o lado com mais bichos, começando pelo do alvo, como no seu uso) ou em volta do
@@ -8741,6 +8784,8 @@ export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora 
     // (lote PR4, dono 25/10: as flechas grudadas, as conchas, as cordas, a energia estática — `tiqueDasGemasPR4`)
     if (itensPoeLigado() && (hunt?.poeEstatico || hunt?.poeConcentrados || hunt?.poeFeixesConcentrados || hunt?.monstros?.length || salaDe(hunt)?.poeRestosPR4?.length)) tiqueDasGemasPR4(estado, hunt, personagem, eventos, agora);
   }
+  // (lote R3D, 27/10) as nuvens da Mina de Fumaça: Cegam quem está dentro enquanto duram (`GemasR3D.cegarNasNuvens`)
+  if (hunt?.poeNuvensR3D?.length) for (const m of GemasR3D.cegarNasNuvens(hunt, agora)) eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'cego' });
   if (!hunt?.plantadas?.length || !itensPoeLigado()) return eventos;
   const ficha = Ficha.combate(estado);
   // (revisão E1b) a ATIVAÇÃO da Armadilha por um inimigo, uma vez por ativação, nos caminhos que não passam pelo disparo comum (a torre e a Lança-Chamas, que
@@ -8758,10 +8803,16 @@ export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora 
     }
   };
   // (lote E2B, 26/10: + a gema Detonar Minas — a qualidade dela na Velocidade de Detonação, com ela encaixada; o uso dela na barra detona andando e sem inimigo perto)
-  const doDetonar = hunt.plantadas.some((x) => x.tipo === 'mina') ? { velocidadeExtraPct: detonacaoDaGemaE2b(estado), manual: hunt.poeDetonarManualE2b === agora } : undefined;
+  // (lote R3D, 27/10: + a Mina de Fumaça — "Somente uma Mina deste tipo pode ser Detonada em cada Sequência de Detonação" e "Detonação da Mina é Instantânea")
+  const ehFumacaP = (x) => GemasR3D.ehFumaca(String(x.acao ?? '').replace(GemasPoe.PREFIXO, ''));
+  const doDetonar = hunt.plantadas.some((x) => x.tipo === 'mina') ? { velocidadeExtraPct: detonacaoDaGemaE2b(estado), manual: hunt.poeDetonarManualE2b === agora, umaPorSequencia: ehFumacaP, instantanea: ehFumacaP } : undefined;
   for (const { p, alvo } of [...Plantadas.armadilhasQueAtivam(hunt, ficha, agora), ...Plantadas.minasQueDetonam(hunt, ficha, agora, doDetonar)]) {
     if ((estado.hp ?? 0) <= 0) break;
     Plantadas.tirar(hunt, p);
+    // (lote R3D, 27/10) a Armadilha Conversora: o inimigo que a ativou vira seu aliado (`conversoraNaAtivacao`); a Mina de Fumaça: o teleporte, as nuvens e o buff (`fumacaNaDetonacao`)
+    const slugR3D = String(p.acao ?? '').replace(GemasPoe.PREFIXO, '');
+    if (p.tipo === 'armadilha' && GemasR3D.ehConversora(slugR3D)) { conversoraNaAtivacao(estado, hunt, p, alvo, eventos); ativouArmadilha(p, alvo); continue; }
+    if (p.tipo === 'mina' && GemasR3D.ehFumaca(slugR3D)) { fumacaNaDetonacao(estado, hunt, p, eventos, agora); continue; }
     // (lote G11) a Torre Elétrica: a ativação cria a torre (os golpes saem no tique — `tiqueDasTorres`)
     const efTorre = Gemas.efeitoNaSkill(estado, p.acao);
     // (lote E1b, dono 26/10: + a Lança-Chamas — o mesmo objeto que pulsa, a cada 0,1 s na área em volta da Armadilha, pela duração × a Duração da Habilidade)
@@ -8842,6 +8893,55 @@ export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora 
     }
   }
   return eventos;
+}
+
+// ---------------------------------------------------------------- o LOTE R3D (27/10: a Armadilha Conversora e a Mina de Fumaça — `itens-poe/gemas-r3d.mjs`)
+
+/**
+ * (lote R3D — o PoB, act_int.lua ConversionTrap; o wiki) A ARMADILHA CONVERSORA ativada por `alvo`: o inimigo Normal, Mágico ou Raro (não o Único nem o chefe) vira seu
+ * ALIADO pela duração da habilidade (a Duração da Habilidade e o "+X segundos" da qualidade valem): sai dos inimigos e luta por você com o golpe corpo a corpo dele (a faixa
+ * do arquivo do monstro), a vida e as afecções que tinha (`GemasR3D.aliadoDaConversao`); no fim volta a ser inimigo (`cacadas.tiqueDosLacaios`).
+ */
+function conversoraNaAtivacao(estado, hunt, p, alvo, eventos) {
+  if (!GemasR3D.podeConverter(alvo) || !(hunt.monstros ?? []).includes(alvo)) return null;
+  const entry = POR_ID.get(p.acao);
+  const ef = Gemas.efeitoNaSkill(estado, p.acao);
+  const slug = String(p.acao).replace(GemasPoe.PREFIXO, '');
+  const st = GemasPoe.compilada(slug, ef?.nivel ?? 1, ef?.qualidade ?? 0)?.stats;
+  const duracaoMs = Math.round((st?.duracao ?? 5.3) * 1000 * fatorDeDuracao(estado, entry, ef));
+  const melee = Poderes.poderesDe(alvo.key)?.ataques?.find((a) => a.tipo === 'melee');
+  const golpe = melee ? { min: melee.min, max: melee.max } : { min: R.ataqueDoMonstro(alvo), max: R.ataqueDoMonstro(alvo) };
+  const agoraL = hunt.ultimoTique ?? Date.now();
+  const l = GemasR3D.aliadoDaConversao(alvo, { uid: `lacaio:conv:${Date.now().toString(36)}${(seqDeLacaio++).toString(36)}`, acao: p.acao, agora: agoraL, duracaoMs, golpe, intervaloMs: 2000 });
+  hunt.monstros = hunt.monstros.filter((m) => m !== alvo);
+  (hunt.lacaios ??= []).push(l);
+  eventos.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: 'convertido' }, { t: 'fx', id: 11, uid: l.uid, x: l.x, y: l.y, sk: p.acao });
+  return l;
+}
+/**
+ * (lote R3D — o PoB, act_dex.lua SmokeMine) A MINA DE FUMAÇA detonada: a nuvem de fumaça onde você está e você TELEPORTA para a Mina (a casa dela, se ninguém estiver nela; no
+ * mesmo andar), com outra nuvem lá (o raio de 1,8 m × √ da Área, a fração como chance; a duração secundária, 1 s, × a Duração da Habilidade) — as nuvens Cegam quem está dentro
+ * (`GemasR3D.cegarNasNuvens`); e o buff de "Velocidade de Movimento aumentada" (o nível + a qualidade) pela duração da habilidade, com os aumentos da Duração de Minas.
+ */
+function fumacaNaDetonacao(estado, hunt, p, eventos, agora) {
+  const entry = POR_ID.get(p.acao);
+  const ef = Gemas.efeitoNaSkill(estado, p.acao);
+  const slug = String(p.acao).replace(GemasPoe.PREFIXO, '');
+  const d = GemasR3D.fumacaDasLinhas(GemasPoe.textosDaGema(slug, ef?.nivel ?? 1).linhas, GemasPoe.linhasDaQualidadeDe(slug, ef?.qualidade ?? 0));
+  const ficha = Ficha.combate(estado);
+  const porTag = entry ? ModsPoe.somaPorTags(ficha, tagsPoeDaSkill(entry)) : {};
+  const fator = ModsPoe.fatorDaArea(ModsPoe.valor(ficha, 'area_inc') + (porTag.area_inc ?? 0) + (ef?.areaIncPct ?? 0), ModsPoe.valor(ficha, 'area_mais') + (porTag.area_mais ?? 0), ef?.areaMaisPct ?? 0);
+  const nuvem = (c) => (hunt.poeNuvensR3D ??= []).push({ x: c.x, y: c.y, z: hunt.z ?? 0, raio: GemasR3D.casasDosMetros(GemasR3D.FUMACA.raioM * Math.sqrt(fator)), ate: agora + Math.round(d.nuvemMs * fatorDeDuracao(estado, entry, ef)) });
+  nuvem(hunt.pos);
+  eventos.push({ t: 'fx', id: EFEITO_DO_TELEPORTE, uid: 'player', x: hunt.pos.x, y: hunt.pos.y });
+  if ((p.z ?? hunt.z ?? 0) === (hunt.z ?? 0) && !casaOcupada(hunt, p.x, p.y) && (p.x !== hunt.pos.x || p.y !== hunt.pos.y)) moverNoDeslocamento(hunt, { x: p.x, y: p.y }, agora);
+  nuvem(hunt.pos);
+  eventos.push({ t: 'fx', id: EFEITO_DO_TELEPORTE, uid: 'player', x: hunt.pos.x, y: hunt.pos.y });
+  if (d.movPct > 0) {
+    (hunt.poeTemporarios ??= {})['fumacaR3D:move_speed'] = { stat: 'move_speed', valor: d.movPct, ate: agora + Math.round(d.buffMs * fatorDeDuracao(estado, entry, ef, ModsPoe.valor(ficha, 'duracao_mina'))) };
+    Ficha.invalidar(estado);
+  }
+  for (const m of GemasR3D.cegarNasNuvens(hunt, agora)) eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'cego' });
 }
 
 // ---------------------------------------------------------------- o LOTE E2B (26/10: as Armadilhas que pedem mecânica nova — `itens-poe/gemas-e2b.mjs`)

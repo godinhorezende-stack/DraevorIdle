@@ -8,68 +8,55 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 449 |
+| implementada e testada | 456 |
 | implementada, sem teste próprio | 44 |
-| limitação do modelo idle | 59 |
-| parcial | 9 |
+| limitação do modelo idle | 60 |
+| parcial | 1 |
 | não se aplica | 1 |
 
 Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 178 |
+| implementada e testada | 181 |
 | implementada, sem teste próprio | 18 |
 | limitação do modelo idle | 11 |
-| parcial | 3 |
 
 ### Gemas de suporte (262)
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 206 |
+| implementada e testada | 207 |
 | implementada, sem teste próprio | 49 |
-| parcial | 7 |
+| parcial | 6 |
 
 ### Variantes
 
 - Vaal (52): implementada e testada 41 · limitação do modelo idle 5 · implementada, sem teste próprio 6
-- Alternativas (209): implementada e testada 154 · implementada, sem teste próprio 24 · limitação do modelo idle 28 · parcial 3
+- Alternativas (209): implementada e testada 156 · implementada, sem teste próprio 24 · limitação do modelo idle 29
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 21 linhas distintas (2 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 9 linhas distintas (0 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 506/562 ativas, 209/262 suportes.
+- Testes que citam a gema: 510/562 ativas, 210/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
 
 | Gemas | Linha |
 |---|---|
-| 3 | as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:##; no jogo ainda são projéteis no alvo) |
-| 2 | sem dano direto: nenhum efeito no combate |
 | 1 | as torres de osso não bloqueiam o caminho dos monstros (o caminho dos bichos não tem obstáculo temporário) |
 | 1 | Ativa esta magia reforçada quando sua salvaguarda quebra |
-| 1 | Causa Dano de Fogo base igual a #% da Vida Máxima dos Totens |
 | 1 | Consumir um cadáver com habilidades reforçadas tem #% de chance de conceder uma alma por poder |
 | 1 | Consumir um cadáver com habilidades reforçadas tem +#% de chance de conceder uma alma por poder |
-| 1 | Detonação da Mina é Instantânea |
-| 1 | Dispara até # Flechas em alvos diferentes |
-| 1 | Flechas caem em duas linhas perpendiculares |
 | 1 | Habilidades reforçadas ganham #% do dano físico como dano de caos adicional por fundamental |
 | 1 | Habilidades reforçadas têm o custo aumentado em #% por fundamental |
-| 1 | Lacaios têm efeito de definhamento aumentado em # % |
 | 1 | Magias Suportadas causam # % menos Dano |
 | 1 | o impedimento de ganho de almas que a Tentação substitui (o jogo não tem o Impedimento de Ganho de Almas: as almas das gemas Vaal são a recarga) |
-| 1 | o totem provoca os monstros em volta a atacá-lo (act_str.lua:##) |
 | 1 | perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB) |
-| 1 | Somente uma Mina deste tipo pode ser Detonada em cada Sequência de Detonação |
-| 1 | Totens com esta Habilidade a Ativam quando Acertados por um Inimigo |
-| 1 | Totens das Habilidades Suportadas ganham a Habilidade Vingança Flamejante e a Ativa quando Acertado por um Inimigo |
-| 1 | Totens das Habilidades Suportadas ganham a Habilidade\nVingança Flamejante e a Ativa quando Acertado por um Inimigo |
 
 ## Gemas de habilidade pendentes
 
@@ -87,14 +74,6 @@ Só os ataques:
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Animate_Weapon_of_Self_Reflection** (Animar Arma da Auto-reflexão) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Artillery_Ballista** (Balista de Artilharia) — parcial
-  - efeito não simulado: as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:751-769; no jogo ainda são projéteis no alvo)
-- **Artillery_Ballista_of_Cross_Strafe** (Balista de Artilharia do Fogo Cruzado) — parcial
-  - efeito não simulado: as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:751-769; no jogo ainda são projéteis no alvo)
-  - efeito não simulado: Flechas caem em duas linhas perpendiculares
-- **Artillery_Ballista_of_Focus_Fire** (Balista de Artilharia do Fogo Concentrado) — parcial
-  - efeito não simulado: as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:751-769; no jogo ainda são projéteis no alvo)
-  - efeito não simulado: Dispara até 5 Flechas em alvos diferentes
 - **Blink_Arrow** (Flecha Ilusória) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Blink_Arrow_of_Bombarding_Clones** (Flecha Ilusória dos Clones Bombardeiros) — limitação do modelo idle
@@ -103,20 +82,14 @@ Só os ataques:
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Bone_Offering** (Oferenda Óssea) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Conversion_Trap** (Armadilha Conversora) — parcial
-  - sem dano direto: nenhum efeito no combate
 - **Convocation** (Convocação) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Decoy_Totem** (Totem Chamariz) — parcial
-  - efeito não simulado: o totem provoca os monstros em volta a atacá-lo (act_str.lua:2416-2432)
 - **Dominating_Blow** (Golpe Dominador) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Dominating_Blow_of_Inspiring** (Golpe Dominador da Inspiração) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Flesh_Offering** (Oferenda Carnal) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Herald_of_Agony** (Arauto Agonizante) — parcial (nota: a Virulência fica no máximo (40 + a qualidade + a "Virulência Máxima") enquanto o Arauto está ligado e você Envenenou com ele há até 4 s, como o PoB mostra (dono, 26/10))
-  - o Rastejador ataca como um lacaio de perto do jogo (o Morteiro e o Espinho da Cauda do PoE não são simulados)
 - **Herald_of_Purity** (Arauto da Pureza) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Holy_Strike** (Golpe Sagrado) — limitação do modelo idle
@@ -142,10 +115,6 @@ Só os ataques:
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Raise_Zombie_of_Slamming** (Evocar Zumbi da Pancada) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Smoke_Mine** (Mina de Fumaça) — parcial
-  - sem dano direto: nenhum efeito no combate
-  - efeito não simulado: Somente uma Mina deste tipo pode ser Detonada em cada Sequência de Detonação
-  - efeito não simulado: Detonação da Mina é Instantânea
 - **Spirit_Offering** (Oferenda Espiritual) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Summon_Carrion_Golem** (Convocar Golem da Carniça) — limitação do modelo idle
@@ -158,8 +127,7 @@ Só os ataques:
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Summon_Chaos_Golem_of_Hordes** (Convocar Golem Caótico das Hordas) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Summon_Chaos_Golem_of_the_Maelstr%C3%B6m** (Convocar Golem Caótico do Turbilhão) — parcial
-  - efeito não simulado: Lacaios têm efeito de definhamento aumentado em 20 %
+- **Summon_Chaos_Golem_of_the_Maelstr%C3%B6m** (Convocar Golem Caótico do Turbilhão) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Summon_Flame_Golem** (Convocar Golem Flamejante) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
@@ -224,11 +192,6 @@ Só os ataques:
   - não simulado: Ativa esta magia reforçada quando sua salvaguarda quebra
 - **Earthbreaker_Support** (Devastador) — parcial
   - não simulado: perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)
-- **Flamewood_Support** (Chuva Ardente) — parcial
-  - não simulado: Totens das Habilidades Suportadas ganham a Habilidade Vingança Flamejante e a Ativa quando Acertado por um Inimigo
-  - não simulado: Causa Dano de Fogo base igual a 137% da Vida Máxima dos Totens
-  - não simulado: Totens com esta Habilidade a Ativam quando Acertados por um Inimigo
-  - não simulado: Totens das Habilidades Suportadas ganham a Habilidade\nVingança Flamejante e a Ativa quando Acertado por um Inimigo
 - **Greater_Devour_Support** (Devorar Maior (Reforço)) — parcial
   - não simulado: Consumir um cadáver com habilidades reforçadas tem 4% de chance de conceder uma alma por poder
   - não simulado: Consumir um cadáver com habilidades reforçadas tem +1% de chance de conceder uma alma por poder
@@ -246,7 +209,7 @@ Só os ataques:
 
 - **Spectral_Throw_of_Materialising** (Arremesso Espectral da Materialização) — implementada e testada
   - não se aplica: "Desaceleração do Projétil reduzida" (Arremesso Espectral da Materialização) só muda a trajetória — o PoB não a usa na conta
-- **Smoke_Mine** (Mina de Fumaça) — parcial
+- **Smoke_Mine** (Mina de Fumaça) — implementada e testada
   - não se aplica: "Minas não podem ser Re-armadas" (Mina de Fumaça) — o jogo não tem Re-armar Minas (aval do dono 27/10)
 - **Spectral_Helix** (Hélice Espectral) — implementada e testada
   - não se aplica: "Gira por N rotações" (Hélice Espectral) só muda a trajetória da espiral — o PoB não a usa na conta, e o projétil do jogo acerta no tique

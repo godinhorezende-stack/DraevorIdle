@@ -175,14 +175,18 @@ export const movendo = (hunt, agora = hunt?.clock ?? 0) => agora - (hunt?.poeRec
  */
 // (lote E2B, 26/10: `velocidadeExtraPct` — a qualidade da gema Detonar Minas encaixada, "Minas tem Velocidade de Detonação aumentada em X%"; `manual` — o uso da gema
 // Detonar Minas na barra: detona andando e sem inimigo perto, como o atalho do PoE)
-export function minasQueDetonam(hunt, ficha, agora = hunt?.clock ?? 0, { velocidadeExtraPct = 0, manual = false } = {}) {
+// (lote R3D, 27/10 — o PoB, SmokeMine: `disable_mine_detonation_cascade`, `mine_detonates_instantly`) `umaPorSequencia(p)`: a Mina que só uma do tipo entra em cada Sequência de
+// Detonação (a mais velha; as outras esperam a próxima); `instantanea(p)`: a Mina que detona na hora, sem o tempo de detonação dela na Sequência
+export function minasQueDetonam(hunt, ficha, agora = hunt?.clock ?? 0, { velocidadeExtraPct = 0, manual = false, umaPorSequencia = null, instantanea = null } = {}) {
   const M = PADRAO.mina;
   const minas = plantadas(hunt, 'mina', agora);
   if (!minas.length) return [];
   const pode = manual || !movendo(hunt, agora) || v(ficha, 'detonar_minas_movendo') > 0;
   // (lote R3C: a Mina Local — "não podem ser Detonadas enquanto dentro de 3 metros de você": a perto de você fica fora da sequência e espera)
   const pertoDeVoce = (p) => minaPertoDeVoce(p, hunt.pos, hunt.z ?? 0);
-  const fora = minas.filter((p) => p.detonaEm == null && !pertoDeVoce(p));
+  const naFila = umaPorSequencia ? minas.some((p) => p.detonaEm != null && umaPorSequencia(p)) : false;
+  const umaSo = umaPorSequencia ? minas.filter((p) => p.detonaEm == null && umaPorSequencia(p)).sort((a, b) => a.desde - b.desde)[0] ?? null : null;
+  const fora = minas.filter((p) => p.detonaEm == null && !pertoDeVoce(p) && (!umaPorSequencia || !umaPorSequencia(p) || (!naFila && p === umaSo)));
   if (pode && fora.length && agora >= (hunt.poeDetonarEm ?? -Infinity) + M.recargaMs && (manual || minas.some((p) => inimigoPerto(hunt, p, M.raioDeDetonacao)))) {
     hunt.poeDetonarEm = agora;
     const naSequencia = minas.filter((p) => p.detonaEm != null).length;
@@ -192,6 +196,7 @@ export function minasQueDetonam(hunt, ficha, agora = hunt?.clock ?? 0, { velocid
       const anteriores = naSequencia + i;
       // (17/10, lote G3: as Minas anteriores na Sequência de Detonação — a Explosão em Cadeia, "X% mais Dano para cada Mina anterior")
       p.anteriores = anteriores;
+      if (instantanea?.(p)) { p.detonaEm = Math.min(t, agora); return; }
       if (anteriores > 0) t += Math.round((p.detonacaoMs ?? M.detonacaoMs) / velocidade / (1 + (M.maisPorAnteriorPct * anteriores) / 100));
       p.detonaEm = t;
     });

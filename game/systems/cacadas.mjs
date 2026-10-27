@@ -52,7 +52,7 @@ import { waypointMaisPerto, passoNoPercurso } from './hunt/percurso.mjs';
 import { proximoMonstroForaDeAlcance, metaDoLure, atualizarLure } from './hunt/lure.mjs';
 import { aliadosPorCasa } from './hunt/aliados.mjs';
 import * as Defesa from './personagem/defesa.mjs';
-import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, round, golpesDosMonstros, contextoDoDrop, pagarRecompensaDeAto, nivelDoDropPoe, raridadeDoDrop, naSalaDaPartilha } from './hunt/combate.mjs';
+import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, ATAQUE_DO_MONSTRO_MS, round, golpesDosMonstros, contextoDoDrop, pagarRecompensaDeAto, nivelDoDropPoe, raridadeDoDrop, naSalaDaPartilha } from './hunt/combate.mjs';
 import { gerarItem, aceitaAtributos } from './itens/gerar.mjs';
 import * as Campanha from './campanha.mjs';
 import { bossUnico } from './bosses-unicos/catalogo.mjs';
@@ -83,6 +83,7 @@ import * as LacaiosPoe from './itens-poe/lacaios-poe.mjs';
 import * as SuportesS2B from './itens-poe/suportes-s2b.mjs';
 // (lote R3B, 27/10: o golpe do Relâmpago Vivo — o ricochete e os ataques contados — e o Cobrir de Gelo do Nascido da Colmeia)
 import * as GemasR3B from './itens-poe/gemas-r3b.mjs';
+import * as GemasR3D from './itens-poe/gemas-r3d.mjs';
 import * as Protecao from './protecao.mjs';
 import * as Areas from '../engine/areas.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
@@ -2666,6 +2667,8 @@ export function magiaNoLacaio({ estado, hunt, bicho, l, a, eventos, agora, ficha
   const d = Math.max(1, Math.round(sofrido));
   l.hp -= d;
   eventos.push({ t: 'dmg', uid: l.uid, x: l.x, y: l.y, v: d, foe: false, lacaio: true, de: bicho.name, color: '#ff8a8a', ...(critDoBicho?.critico ? { critico: true } : {}) });
+  // (lote R3D, 27/10) o Chuva Ardente: a magia que acerta o totem também ativa a Vingança Flamejante
+  if (l.vingancaR3D) eventos.push(...Acoes.vingancaFlamejante(estado, hunt, null, l, bicho, relogio));
   const recupera = l.mercenario && l.hp > 0 && l.hp < (estado.hp ?? 0) ? Number(ficha.afPoe?.mercenario_recupera_pct) || 0 : 0;
   if (recupera > 0) (l.recoup ??= []).push({ porMs: (d * recupera) / 100 / ModsPoe.RECUPERACAO_MS, ate: relogio + ModsPoe.RECUPERACAO_MS });
   // (lote 87, dono 19/10: B2) a magia do Elite/Chefe também pode deixar o lacaio lento, atordoá-lo ou congelá-lo — como a sua em você
@@ -2863,6 +2866,8 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
   LacaiosPoe.aplicarCeifador(hunt.lacaios);
   // (lote D3, dono 27/10) a PRESA do Predador: marcada sozinha a cada 0,8 s (o Raro/Único mais perto de você; sem nenhum, o seu alvo atual)
   if (itensPoeLigado() && !Protecao.imune(hunt)) SuportesS2B.tiqueDaPresa(hunt, hunt.lacaios, alvoAtual(hunt), relogio);
+  // (lote R3D, 27/10) as Auras Caóticas dos golens (`tiqueDasAurasCaoticas`)
+  if (hunt.poeAurasCaoticasR3D?.length) eventos.push(...tiqueDasAurasCaoticas(hunt, relogio));
   for (const l of hunt.lacaios) {
     const aliado = l.mercenario ? aliadoDoMercenario : aliadoBase;
     if (l.hp <= 0 || (l.ate && agora >= l.ate)) {
@@ -2873,6 +2878,8 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       if (l.aranha || l.fantasma) Ficha.invalidar(estado);
       // (16/10, lote 37: o mercenário morto só volta revivido por ouro — `Acoes.mercenarioMorreu`, a tela dele)
       if (l.mercenario) Acoes.mercenarioMorreu(estado, l);
+      // (lote R3D, 27/10) a Armadilha Conversora: no fim da conversão o monstro volta a ser inimigo, com a vida que sobrou, onde está (morto como aliado, não volta)
+      if (l.convertido) { const m = GemasR3D.devolverConvertido(l); if (m) { hunt.monstros.push(m); eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'convertidoFim' }); } }
       // (PoE: "se um Lacaio foi Morto Recentemente".)
       if (l.hp <= 0) { ModsPoe.marcar(hunt, 'lacaioMorreu'); lacaioMorreu = true; }
       // (13/10, o Suserano do Primordial: "Golens Convocados são Reconvocados 4 segundos após serem Mortos" — `Acoes.reconvocarGolens`)
@@ -2916,7 +2923,13 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     }
     // (14/10: os Robôs Ativadores não tomam dano — `intocavel`)
     for (const b of l.intocavel ? [] : hunt.monstros) {
-      if (b.hp <= 0 || b.dummy || distancia(b, l) > 1 || Math.random() > 0.125) continue;
+      if (b.hp <= 0 || b.dummy || distancia(b, l) > 1) continue;
+      // (lote R3D, 27/10) o monstro PROVOCADO pelo totem (o Chamariz) bate nele no ritmo do golpe dele (não em você — `combate.golpesDosMonstros`); os outros colados, um golpe a
+      // cada ~2 s, como sempre
+      if (GemasR3D.iscaDoMonstro(hunt, b, relogio) === l) {
+        if (!R.jaPode(relogio, b.proximoGolpe) || !Estados.podeAgir(b, relogio)) continue;
+        b.proximoGolpe = relogio + AtributosDoMob.intervaloDoGolpe(b, { base: b.boss?.melee?.intervaloMs ?? ATAQUE_DO_MONSTRO_MS, lentidao: Estados.fatorDeLentidao(b, relogio), buffPct: 0 });
+      } else if (Math.random() > 0.125) continue;
       // (lote 41, P019: o golpe corpo a corpo é ATAQUE — as magias do bicho vão de verdade no lacaio, `Poderes.lancar` → `magiaNoLacaio`; antes,
       // o golpe de um conjurador contava como magia)
       const magia = false;
@@ -2961,6 +2974,8 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       const d = Math.max(1, Math.round(sofrido));
       l.hp -= d;
       eventos.push({ t: 'dmg', uid: l.uid, x: l.x, y: l.y, v: d, foe: false, lacaio: true, de: b.name, color: '#ff8a8a', ...(critDoBicho?.critico ? { critico: true } : {}) });
+      // (lote R3D, 27/10) o Chuva Ardente: o totem acertado ativa a Vingança Flamejante no atacante (`Acoes.vingancaFlamejante`)
+      if (l.vingancaR3D) eventos.push(...Acoes.vingancaFlamejante(estado, hunt, personagem, l, b, relogio));
       // (lote 43, P040: "Reflete N de Dano Físico a Atacantes Corpo a Corpo" do escudo da Égide Necromântica — no bicho que bateu no lacaio)
       if (l.poe?.reflexoFisico > 0 && b.hp > 0) {
         const r = Math.max(1, Math.round(resistido(hunt, b, 'physical', l.poe.reflexoFisico, ficha)));
@@ -3013,6 +3028,8 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
         l.proximoGolpe = agora + Acoes.FEIXE_MS;
         eventos.push(...Acoes.feixeDoVinculo(estado, hunt, l, hunt.clock ?? 0));
       }
+      // (lote R3D, 27/10) o TOTEM CHAMARIZ: a cada tique, os monstros no raio dele ficam provocados por ele (`GemasR3D.provocarEmVolta`) — andam até ele e batem nele
+      if (l.provocaR3D && !Protecao.imune(hunt)) for (const m of GemasR3D.provocarEmVolta(hunt.monstros, l, hunt.z, relogio)) eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'provocado' });
       if (GemasPoe.totemSemGolpe(l.gema)) continue;
       if (!R.jaPode(agora, l.proximoGolpe) || Protecao.imune(hunt)) continue;
       // (lote G20b) a BALISTA FOCADA: só ataca depois de um projétil de ataque SEU desde o último ataque dela (`hunt.poeProjetilDeAtaqueEm`)
@@ -3358,11 +3375,15 @@ function habilidadesComRecarga(estado, hunt, l, agora, ficha, oferenda = null) {
     if (h.carga <= 0) continue;
     const perto = vivos.filter((m) => distancia(l, m) <= (h.alcance ?? 5)).sort((a, b) => distancia(l, a) - distancia(l, b));
     // (correções F3: o Escudo de Carne e o Predador também aqui — `SuportesS2B.alvoDoLacaio`; a Ira, sem alvo, sai com qualquer inimigo ao alcance)
-    const alvo = h.tipo === 'aura' ? perto[0] : SuportesS2B.alvoDoLacaio(hunt, l, perto, relogio);
+    const alvo = h.tipo === 'aura' || h.tipo === 'auraCaotica' ? perto[0] : SuportesS2B.alvoDoLacaio(hunt, l, perto, relogio);
     if (!alvo) continue;
+    // (lote R3D) o Espinho da Cauda do Rastejador é o ataque de LONGE: colado num inimigo, o golpe de perto de sempre
+    if (h.deLonge && perto.some((m) => distancia(l, m) <= 1)) continue;
     h.carga--;
     if (h.prontoEm == null) h.prontoEm = agora + LacaiosPoe.recargaDoLacaio(l, h.recargaMs);
     const critico = LacaiosPoe.criticoDoLacaio(l, oferenda, relogio);
+    // (lote R3D, 27/10) a Cascata e as Auras Caóticas do Golem Caótico, o Morteiro e o Espinho da Cauda do Rastejador (`recargaR3D`)
+    if (['cascataCaotica', 'auraCaotica', 'morteiro', 'espinho'].includes(h.tipo)) { eventos.push(...recargaR3D(estado, hunt, l, h, alvo, perto, agora, ficha, critico)); continue; }
     if (h.tipo === 'aura') {
       hunt.poeIraDoGolem = { ate: relogio + (h.duracaoMs ?? 4000), uid: l.uid, raio: RAIO_DA_IRA, ataque: h.ataque, magia: h.magia };
       eventos.push({ t: 'fx', id: 48, uid: l.uid, x: l.x, y: l.y });
@@ -3399,6 +3420,108 @@ function habilidadesComRecarga(estado, hunt, l, agora, ficha, oferenda = null) {
       m.hp -= d;
       QuemFeriu.carimbar(m, QuemFeriu.LACAIO);
       eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: d, foe: true, lacaio: true, alvo: m.name, habilidade: h.id, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
+    }
+  }
+  return eventos;
+}
+/**
+ * (lote R3D, 27/10 — o PoB, minion.lua) As habilidades com recarga do lote (`GemasR3D.recargasDoLacaio`):
+ *   - `cascataCaotica` (a Cascata do Golem Caótico): os espinhos em série do lacaio ao alvo (6, 1 casa entre eles), cada um uma área de 1 casa; cada inimigo leva um acerto de
+ *     magia por espinho que o pega — o dano do PoB (Físico convertido em Caos) × o aumentado/mais do lacaio, com o crítico da magia (5%) e o multiplicador do lacaio;
+ *   - `auraCaotica` (a Aura Caótica e a Potencializada): a aura em volta do golem pela duração (`hunt.poeAurasCaoticasR3D`, o tique em `tiqueDasAurasCaoticas`);
+ *   - `morteiro` (o Morteiro do Rastejador): os N projéteis distribuídos pelos inimigos ao alcance, cada um com o golpe do lacaio × o multiplicador numa área (o raio da área
+ *     do lacaio × √ do "+20% final"); quem está em mais de uma área leva mais de um acerto;
+ *   - `espinho` (o Espinho da Cauda): o ataque de longe — 1 + 4 projéteis em inimigos diferentes ao alcance (o alvo primeiro), o golpe do lacaio em cada um; o golpe de perto
+ *     espera o tempo do ataque (é um ataque só).
+ */
+function recargaR3D(estado, hunt, l, h, alvo, perto, agora, ficha, critico) {
+  const eventos = [];
+  const relogio = hunt.clock ?? agora;
+  const vivos = hunt.monstros.filter((m) => m.hp > 0 && !m.dummy && (m.z ?? hunt.z ?? 0) === (l.z ?? hunt.z ?? 0));
+  if (h.tipo === 'auraCaotica') {
+    const lista = (hunt.poeAurasCaoticasR3D ?? []).filter((a) => a.uid !== l.uid && a.ate > relogio);
+    lista.push({ uid: l.uid, ate: relogio + (h.duracaoMs ?? 5000), em: relogio, porSegundo: h.porSegundo ?? 0, raio: GemasR3D.raioDaAuraCaotica(h, ModsPoe.fatorDaArea(l.poe?.areaPct ?? 0)), ...(h.definha ? { definha: true, definhaPct: h.definhaPct ?? 0 } : {}), ...(h.caosSofridoPct ? { caosSofridoPct: h.caosSofridoPct } : {}) });
+    hunt.poeAurasCaoticasR3D = lista;
+    eventos.push({ t: 'fx', id: 17, uid: l.uid, x: l.x, y: l.y });
+    return eventos;
+  }
+  const partes = SuportesS2B.partesDoLacaio(l, partesDoGolpeDoLacaio(l, l.elemento ?? 'physical'));
+  const golpe = (m, mult) => {
+    if (!(m.hp > 0)) return;
+    const crit = Math.random() * 100 < critico.chance;
+    const doGolpe = LacaiosPoe.golpeDoLacaio(l, m, ficha, partes[0]?.tipo ?? 'physical', agora, Math.random, hunt.lacaios, relogio);
+    const bruto = (l.dano.min + Math.random() * Math.max(0, l.dano.max - l.dano.min)) * mult * (crit ? critico.mult : 1) * doGolpe.fator * SuportesS2B.noGolpeDoLacaio(hunt, l, m, relogio).fator;
+    const tipo = partes.length ? partes.reduce((a, b) => (b.f > a.f ? b : a)).tipo : 'physical';
+    const d = Math.max(1, Math.round(partes.reduce((n, x) => n + resistido(hunt, m, x.tipo, bruto * x.f, doGolpe.ficha), 0)));
+    m.hp -= d;
+    QuemFeriu.carimbar(m, QuemFeriu.LACAIO);
+    if (m.hp <= 0) LacaiosPoe.aoMatarDoLacaio(l, agora);
+    eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: d, foe: true, lacaio: true, crit, alvo: m.name, habilidade: h.id, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
+    if (hunt.sessao) hunt.sessao.danoDosLacaios = (hunt.sessao.danoDosLacaios ?? 0) + d;
+  };
+  if (h.tipo === 'cascataCaotica') {
+    const casas = Areas.reta({ x: l.x, y: l.y }, alvo, h.espinhos ?? 6);
+    for (const c of casas) {
+      eventos.push({ t: 'explosao', id: 17, x: c.x, y: c.y, lado: 3 });
+      for (const m of vivos) {
+        if (!(m.hp > 0) || Math.max(Math.abs(m.x - c.x), Math.abs(m.y - c.y)) > 1) continue;
+        const chance = (h.crit ?? 5) * (1 + (l.poe?.critInc ?? 0) / 100);
+        const crit = Math.random() * 100 < chance;
+        const bruto = (h.dano[0] + Math.random() * Math.max(0, h.dano[1] - h.dano[0])) * (l.poe?.fatorDoDano ?? 1) * (crit ? critico.mult : 1) * LacaiosPoe.fatorDoCeifador(l, hunt.lacaios) * SuportesS2B.noGolpeDoLacaio(hunt, l, m, relogio).fator;
+        const d = Math.max(1, Math.round(resistido(hunt, m, 'chaos', bruto, ficha)));
+        m.hp -= d;
+        QuemFeriu.carimbar(m, QuemFeriu.LACAIO);
+        if (m.hp <= 0) LacaiosPoe.aoMatarDoLacaio(l, agora);
+        eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: d, foe: true, lacaio: true, crit, alvo: m.name, habilidade: h.id, color: Acoes.COR_DO_ELEMENTO.chaos ?? '#b44dff' });
+        if (hunt.sessao) hunt.sessao.danoDosLacaios = (hunt.sessao.danoDosLacaios ?? 0) + d;
+      }
+    }
+    return eventos;
+  }
+  if (h.tipo === 'morteiro') {
+    const raio = Math.max(0, Math.round(LacaiosPoe.raioDaAreaDoLacaio(l) * Math.sqrt(1 + (h.raioMaisPct ?? 0) / 100)));
+    for (const c of GemasR3D.distribuir(perto, h.projeteis ?? 6)) {
+      eventos.push({ t: 'shot', id: 11, x: l.x, y: l.y, tx: c.x, ty: c.y });
+      eventos.push({ t: 'explosao', id: 17, x: c.x, y: c.y, lado: 1 + 2 * raio });
+      for (const m of vivos) if (m.hp > 0 && Math.max(Math.abs(m.x - c.x), Math.abs(m.y - c.y)) <= raio) golpe(m, h.mult ?? 0.4);
+    }
+    return eventos;
+  }
+  // o Espinho da Cauda: os projéteis em inimigos diferentes (o alvo primeiro); o golpe de perto espera o tempo deste ataque
+  for (const m of [...new Set([alvo, ...perto])].slice(0, h.projeteis ?? 5)) {
+    eventos.push({ t: 'shot', id: 11, x: l.x, y: l.y, tx: m.x, ty: m.y });
+    golpe(m, h.mult ?? 1);
+  }
+  l.proximoGolpe = Math.max(l.proximoGolpe ?? 0, agora + (h.recargaMs ?? 1300));
+  return eventos;
+}
+/**
+ * (lote R3D, 27/10) O tique das AURAS CAÓTICAS dos golens (`hunt.poeAurasCaoticasR3D`): enquanto o golem vive e a aura dura, o Caos por segundo dela (× o aumentado/mais do
+ * golem — "spell_damage_modifiers_apply_to_skill_dot") nos inimigos a até o raio dele, pelo tempo que passou, pela resistência a Caos e pelo que eles sofrem a mais no dano
+ * contínuo; a Potencializada ainda Definha (um acúmulo por segundo, sem expirar enquanto ela dura) e faz sofrer 6% mais Dano de Caos. As vencidas (e a do golem morto) saem.
+ */
+export function tiqueDasAurasCaoticas(hunt, agora = hunt?.clock ?? 0) {
+  const eventos = [];
+  if (!hunt?.poeAurasCaoticasR3D?.length) return eventos;
+  hunt.poeAurasCaoticasR3D = hunt.poeAurasCaoticasR3D.filter((a) => a.ate > agora && (hunt.lacaios ?? []).some((l) => l.uid === a.uid && l.hp > 0));
+  if (!hunt.poeAurasCaoticasR3D.length) { delete hunt.poeAurasCaoticasR3D; return eventos; }
+  if (Protecao.imune(hunt)) return eventos;
+  for (const a of hunt.poeAurasCaoticasR3D) {
+    const l = hunt.lacaios.find((x) => x.uid === a.uid);
+    const dt = Math.max(0, agora - (a.em ?? agora));
+    a.em = agora;
+    const raio = Math.floor(a.raio) + (Math.random() < a.raio % 1 ? 1 : 0);
+    for (const m of hunt.monstros) {
+      if (!(m.hp > 0) || m.dummy || (m.z ?? hunt.z ?? 0) !== (l.z ?? hunt.z ?? 0) || distancia(m, l) > raio) continue;
+      if (a.caosSofridoPct) (m.estados ??= {}).caosSofridoR3D = { ate: agora + 500, pct: a.caosSofridoPct };
+      if (a.definha) GemasR3D.definharNaAura(m, { ate: a.ate, agora, extraPct: a.definhaPct ?? 0 });
+      if (!(dt > 0)) continue;
+      const v = Math.round(resistido(hunt, m, 'chaos', ((a.porSegundo * (l.poe?.fatorDoDano ?? 1) * dt) / 1000) * ModsPoe.fatorRecebidoNoDot(m, 'chaos', agora), null));
+      if (!(v > 0)) continue;
+      m.hp -= v;
+      QuemFeriu.carimbar(m, QuemFeriu.LACAIO);
+      eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v, foe: true, lacaio: true, alvo: m.name, color: Acoes.COR_DO_ELEMENTO.chaos ?? '#b44dff' });
+      if (hunt.sessao) hunt.sessao.danoDosLacaios = (hunt.sessao.danoDosLacaios ?? 0) + v;
     }
   }
   return eventos;
