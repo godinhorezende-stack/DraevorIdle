@@ -22,6 +22,7 @@ import { raioQueCresce } from './gemas-b1.mjs';
 // (lotes G-A e G-C, dono 25/10: a Precisão a menos do Enfraquecer, o Impelir restrito)
 import * as GemasGAC from './gemas-gac.mjs';
 import { renovarLento } from './gemas-gbd.mjs';
+import * as Testador from '../personagem/testador.mjs';
 
 /** "Recentemente" no PoE: nos últimos 4 segundos. */
 export const RECENTE_MS = 4000;
@@ -2493,7 +2494,7 @@ export function tiqueDaDissolucao(estado, hunt, ficha, agora = hunt?.clock ?? 0)
     delete hunt.dissolucao;
     return;
   }
-  if ((estado.hp ?? 0) > max - r.reservado) estado.hp = Math.max(0, max - r.reservado);
+  if ((estado.hp ?? 0) > max - r.reservado) estado.hp = Math.max(Testador.pisoDaVida(estado), max - r.reservado);
 }
 export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   if (!ligado() || !hunt) return;

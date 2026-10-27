@@ -10,6 +10,7 @@ import * as Plantadas from './armas-plantadas.mjs';
 // (lotes G-A e G-C, dono 25/10: as Marcas no acerto — as Cargas, as Cargas de Frasco — e a Punição em quem acerta você)
 import * as GemasGAC from './gemas-gac.mjs';
 import { porLento } from './gemas-gbd.mjs';
+import * as Testador from '../personagem/testador.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -1227,7 +1228,7 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     }
     // `fumaca` = a CHANCE de criar uma Nuvem de Fumaça: no PoE ela Cega quem está dentro — como o frasco, os a até 3 casas, por 4 s.
     case 'fumaca': return aplicarAcao(estado, hunt, { ...ev, acao: 'proximos', param: 'cego:4' }, ficha, ctx);
-    case 'dano': return perder('hp', 0, v);
+    case 'dano': return perder('hp', Testador.pisoDaVida(estado), v);
     case 'vidaFaltaPct': return curar('hp', estado.maxHp ?? 0, (((estado.maxHp ?? 0) - (estado.hp ?? 0)) * v) / 100);
     case 'perdeMana': return perder('mana', 0, v);
     case 'perdeUmaCarga': { if (!sorte(v)) return; const c = hunt.cargasPoe?.[ev.param]; if (c?.n > 0) { c.n--; if (!c.n) delete hunt.cargasPoe[ev.param]; } return; }
@@ -1239,7 +1240,7 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
       eventos?.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: d, foe: true, alvo: alvo.name, color: '#c0c0c0', reflexo: true });
       return;
     }
-    case 'danoPctVida': return perder('hp', 0, ((estado.maxHp ?? 0) * v) / 100);
+    case 'danoPctVida': return perder('hp', Testador.pisoDaVida(estado), ((estado.maxHp ?? 0) * v) / 100);
     // `explodirChance:<pct da vida>[:<tipo>]` = a CHANCE (%) de o morto explodir ("Inimigos Queimando mortos por você têm X% de chance de
     // Explodirem, causando um décimo de sua Vida máxima como Dano de Fogo"); o tipo do dano (lote 31 — sem ele, Fogo).
     case 'explodirChance': {

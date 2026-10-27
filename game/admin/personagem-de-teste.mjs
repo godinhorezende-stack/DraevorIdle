@@ -22,9 +22,11 @@
 // IDEMPOTENTE: só põe o que falta; a segunda vez não muda nada (e não grava). `testadorPreparado` guarda a data da primeira preparação.
 //
 // ONLINE: o servidor guarda o personagem online NA MEMÓRIA e grava por cima a cada 30 s (o autosave, `websocket/sessao.mjs`) e ao sair —
-// gravar aqui com ele online seria desfeito. O banco não diz quem está online; o autosave atualiza `visto_em`, então gravação há menos de
-// JANELA_ONLINE_MS é tratada como online (ou acabou de sair) e a ferramenta recusa. DESLOGUE o personagem e espere 2 minutos antes de
-// --gravar. A gravação é condicional (só se o estado no banco ainda é o lido): se a caçada offline gravou no meio, nada é gravado e é só
+// gravar aqui com ele online seria desfeito. O banco NÃO diz quem está online. O que dá para ler, e a ferramenta recusa se for de menos de
+// JANELA_ONLINE_MS: (1) `visto_em` do personagem — o autosave o atualiza, mas ENTRAR no jogo não (o primeiro autosave vem até 30 s
+// depois); (2) o login da CONTA — a tabela `sessoes` guarda, por login com senha, a hora em que o token foi criado (`criada`; voltar com
+// o token salvo não cria outro). Nenhum dos dois pega todo caso (ex.: entrou pelo token salvo há menos de 30 s), por isso: DESLOGUE o
+// personagem e espere 2 MINUTOS antes de --gravar (o aviso sai no topo da saída). A gravação é condicional (só se o estado no banco ainda é o lido): se a caçada offline gravou no meio, nada é gravado e é só
 // rodar de novo.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -233,12 +235,28 @@ export function preparar(estado, { todas = false, agora = Date.now() } = {}) {
 const linhaPorNome = (nome) => banco.prepare('SELECT id, conta, nome, visto_em, estado FROM personagens WHERE nome = ?').get(nome);
 const linhaPorId = (id) => banco.prepare('SELECT id, conta, nome, visto_em, estado FROM personagens WHERE id = ?').get(id);
 
-/** Por que não dá para gravar agora (online ou acabou de sair), ou null. */
-export function motivoOnline(linha, agora = Date.now()) {
+/** O último login com senha da conta do personagem (`sessoes.criada`), ou 0. */
+async function loginDaConta(linha) {
+  if (!linha?.conta) return 0;
+  const r = await banco.prepare('SELECT MAX(criada) AS criada FROM sessoes WHERE conta = ?').get(linha.conta);
+  return Number(r?.criada) || 0;
+}
+
+/** O aviso do topo da saída: a detecção de online não é completa. */
+export const AVISO_ONLINE = 'ATENÇÃO: DESLOGUE o personagem e espere 2 MINUTOS antes de --gravar. O banco não diz quem está online (só a última gravação do autosave e o último login da conta); com ele online, o autosave do servidor desfaz o que for gravado aqui.';
+
+/** Por que não dá para gravar agora (online ou acabou de sair), ou null. `loginEm`: o último login da conta (`sessoes.criada`). */
+export function motivoOnline(linha, agora = Date.now(), { loginEm = 0 } = {}) {
   const visto = Number(linha?.visto_em) || 0;
+  const espera = (desde) => Math.ceil((JANELA_ONLINE_MS - (agora - desde)) / 1000);
   if (visto && agora - visto < JANELA_ONLINE_MS) {
     const s = Math.round((agora - visto) / 1000);
-    return `${linha.nome} foi gravado pelo servidor há ${s} s: parece ONLINE (ou acabou de sair). Deslogue o personagem e rode de novo daqui a ${Math.ceil((JANELA_ONLINE_MS - (agora - visto)) / 1000)} s — senão o autosave da sessão desfaz o que for gravado aqui.`;
+    return `${linha.nome} foi gravado pelo servidor há ${s} s: parece ONLINE (ou acabou de sair). Deslogue o personagem e rode de novo daqui a ${espera(visto)} s — senão o autosave da sessão desfaz o que for gravado aqui.`;
+  }
+  const login = Number(loginEm) || 0;
+  if (login && agora - login < JANELA_ONLINE_MS) {
+    const s = Math.round((agora - login) / 1000);
+    return `a conta de ${linha.nome} fez login há ${s} s: o personagem pode estar ONLINE (entrar no jogo só é gravado no primeiro autosave). Deslogue e rode de novo daqui a ${espera(login)} s.`;
   }
   return null;
 }
@@ -273,10 +291,10 @@ export async function executar({ nome, gravar = false, todas = false, pastaDeBac
   const a = resumo(estado, { todas });
   const r = preparar(estado, { todas, agora });
   const d = resumo(estado, { todas });
-  const linhas = [`${linha.nome} (id ${linha.id})`, tabela(a, d), '', r.feito.length ? `Muda: ${r.feito.join('; ')}.` : 'Nada a mudar: o personagem já está preparado.'];
+  const linhas = [AVISO_ONLINE, '', `${linha.nome} (id ${linha.id})`, tabela(a, d), '', r.feito.length ? `Muda: ${r.feito.join('; ')}.` : 'Nada a mudar: o personagem já está preparado.'];
   if (!r.mudou) return { ok: true, linhas, gravou: false, mudou: false };
   if (!gravar) return { ok: true, linhas: [...linhas, '(nada foi gravado — rode com --gravar para gravar)'], gravou: false, mudou: true };
-  const online = motivoOnline(linha, agora);
+  const online = motivoOnline(linha, agora, { loginEm: await loginDaConta(linha) });
   if (online) return { ok: false, erro: online, linhas };
   const backup = salvarBackup(linha, pastaDeBackup, agora);
   const gravou = await regravarSeNaoMudou(linha.id, estado, linha.estado);
@@ -298,9 +316,9 @@ export async function restaurar({ arquivo, gravar = false, pastaDeBackup = PASTA
   if (!linha || linha.nome !== b.nome) return { ok: false, erro: `o personagem do backup (${b.nome}, id ${b.id}) não existe mais com esse nome` };
   const a = resumo(JSON.parse(linha.estado));
   const d = resumo(b.estado);
-  const linhas = [`${linha.nome} (id ${linha.id}) — volta ao backup de ${b.salvoEm}`, tabela(a, d)];
+  const linhas = [AVISO_ONLINE, '', `${linha.nome} (id ${linha.id}) — volta ao backup de ${b.salvoEm}`, tabela(a, d)];
   if (!gravar) return { ok: true, linhas: [...linhas, '(nada foi gravado — rode com --gravar para voltar)'], gravou: false };
-  const online = motivoOnline(linha, agora);
+  const online = motivoOnline(linha, agora, { loginEm: await loginDaConta(linha) });
   if (online) return { ok: false, erro: online, linhas };
   const backup = salvarBackup(linha, pastaDeBackup, agora);
   const gravou = await regravarSeNaoMudou(linha.id, b.estado, linha.estado);

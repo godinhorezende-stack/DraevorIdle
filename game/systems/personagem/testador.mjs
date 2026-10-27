@@ -1,7 +1,7 @@
 // O PERSONAGEM DE TESTE (dono, 27/10: "coloque meu char ADM GODINES no lv máximo, mas não entra no ranking e ele não pode morrer —
 // chega a 0 de vida e não morre, mas toma dano para testar as coisas").
 //
-// A marca é `estado.testador === true`, posta só pela ferramenta de admin (`admin/personagem-de-teste.mjs`). Ela faz DUAS coisas e
+// A marca é `estado.testador === true`, posta só pela ferramenta de admin (`admin/personagem-de-teste.mjs`). Ela faz TRÊS coisas (a 3., abaixo) e
 // nenhuma outra:
 //   1. a MORTE não acontece: o dano chega normalmente (o número aparece, a vida cai), mas a vida para no piso `VIDA_MINIMA` em vez de
 //      zerar. O piso é 1, e não 0, porque o jogo inteiro lê "vida <= 0" como morto (a sessão manda o `death`, a caçada offline para, os
@@ -11,6 +11,10 @@
 // Onde a morte é barrada: no dano (`hunt/combate.mjs` → o golpe corpo a corpo; `poderes.mjs` → `aplicarNoJogador`, por onde passam as
 // magias, as mecânicas e o dano contínuo), no fim de todo tique da caçada (`Cacadas.tique`, que também é o tique da caçada offline e o
 // das threads do tique) e na sessão, antes de conferir a morte (`websocket/sessao.mjs`). Os três chamam `segurarVida`.
+// E o piso (`pisoDaVida`) nos danos em você que tiravam a vida direto: o Traumatismo e o Ritual Proibido (`acoes.mjs`), a morte do alvo
+// vinculado, o Sangue Petrificado (`gemas-a2.mjs`), as ações `dano`/`danoPctVida` dos gatilhos (`mods-poe.mjs`) e a reserva da Dissolução
+// (`condicoes-poe.mjs`) — sem ele, o testador ficava em 0 no meio do tique e o número saía com `fatal`. Fora da marca, nada muda.
+// 3. (fora da regra da morte e do ranking) os drops dele não vão para a vitrine da capa do site (`drops-do-site.mjs`, pelo `estado`).
 //
 // Sem dependências de propósito: é importado do caminho quente do combate.
 

@@ -411,7 +411,7 @@ function sacolaDoChefe(estado, hunt, alvo, quem, atoDoChefe) {
       // O Único do PoE: o servidor inteiro fica sabendo (chat e faixa do alto — `anuncios.mjs`).
       Anuncios.dropRaro({ quem, peca: daPoe, bicho: alvo.name, boss: true, onde: alvo.name });
       // E a capa do site ("Latest drops"), pelo mesmo critério — fogo e esquece: é só o log da capa.
-      DropsDoSite.anotarDropPoe({ quem, onde: alvo.name, bicho: alvo.name, boss: true, peca: daPoe }).catch((e) => console.error('drops-do-site', e.message));
+      DropsDoSite.anotarDropPoe({ quem, onde: alvo.name, bicho: alvo.name, boss: true, peca: daPoe, estado }).catch((e) => console.error('drops-do-site', e.message));
     }
     // As moedas do PoE que o boss solta (`itens-poe/moedas.mjs`, `regras.json → moedas.drop`).
     itens.push(...MoedasPoe.dropDoMonstro('boss', Math.random, quantidade));
@@ -423,7 +423,7 @@ function sacolaDoChefe(estado, hunt, alvo, quem, atoDoChefe) {
     if (exclusivo) {
       itens.push(exclusivo);
       Anuncios.dropRaro({ quem, peca: exclusivo, bicho: alvo.name, boss: true, onde: alvo.name });
-      DropsDoSite.anotarDropPoe({ quem, onde: alvo.name, bicho: alvo.name, boss: true, peca: exclusivo }).catch((e) => console.error('drops-do-site', e.message));
+      DropsDoSite.anotarDropPoe({ quem, onde: alvo.name, bicho: alvo.name, boss: true, peca: exclusivo, estado }).catch((e) => console.error('drops-do-site', e.message));
     }
   }
   return itens;
@@ -666,7 +666,7 @@ function soltarDrops({ estado, hunt, personagem, alvo, drops, eventos, juntos, s
     }
     // O drop raro vai para a capa do site (ver `drops-do-site.mjs`) — fogo e
     // esquece, é só um log, não pode atrasar o golpe que matou o bicho.
-    DropsDoSite.anotarDrop({ quem: dono.nome, onde: nomeDaHunt(hunt.huntId), bicho: alvo.name, id: drop.id, af, raridade: peca.raridade, efeito: peca.efeito, peca }).catch((e) => console.error('drops-do-site', e.message));
+    DropsDoSite.anotarDrop({ quem: dono.nome, onde: nomeDaHunt(hunt.huntId), bicho: alvo.name, id: drop.id, af, raridade: peca.raridade, efeito: peca.efeito, peca, estado: dono.estado }).catch((e) => console.error('drops-do-site', e.message));
     // Épico para cima: o servidor inteiro fica sabendo (ver `anuncios.mjs`).
     Anuncios.dropRaro({ quem: dono.nome, peca, bicho: alvo.name, onde: nomeDaHunt(hunt.huntId) });
   }
@@ -1000,7 +1000,7 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     conta('loot', daPoe.id, 1);
     // O Único do PoE: o servidor inteiro fica sabendo (chat e faixa do alto — `anuncios.mjs`).
     Anuncios.dropRaro({ quem: personagem?.nome ?? null, peca: daPoe, bicho: alvo.name, onde: nomeDaHunt(hunt.huntId) });
-    DropsDoSite.anotarDropPoe({ quem: personagem?.nome ?? null, onde: nomeDaHunt(hunt.huntId), bicho: alvo.name, peca: daPoe }).catch((e) => console.error('drops-do-site', e.message));
+    DropsDoSite.anotarDropPoe({ quem: personagem?.nome ?? null, onde: nomeDaHunt(hunt.huntId), bicho: alvo.name, peca: daPoe, estado }).catch((e) => console.error('drops-do-site', e.message));
   }
   // Os MAPAS (o endgame — `itens-poe/mapas.mjs`, mapas.json → drop): dentro de um mapa, o monstro solta mapas do tier da área ou um acima
   // (o comum, só o da área; o T16, só o T16) e o chefe do mapa garante os dele. Um sorteio por morte, para quem matou: na party, ninguém

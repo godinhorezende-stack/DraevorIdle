@@ -25,6 +25,7 @@ import * as EfeitosDeItem from './itens/efeitos.mjs';
 import { raridadeDaPeca, metaDaPeca, camposDaPeca } from './itens/item.mjs';
 import { RARIDADES_ANUNCIADAS } from './anuncios.mjs';
 import { ligado } from './itens-poe/catalogo.mjs';
+import { ehTestador } from './personagem/testador.mjs';
 
 const GUARDA = 30;
 // Épico para cima, como o anúncio para o servidor inteiro (a mesma lista: os dois nunca divergem).
@@ -131,8 +132,9 @@ async function guardar(tipo, dados) {
  */
 const pecaDoSite = (id, count, peca) => ({ id, count, ...camposDaPeca(peca ?? {}) });
 
-export async function anotarDrop({ quem, onde, bicho, boss = false, id, count = 1, af = null, tier = 0, raridade = null, efeito = null, peca = null }) {
-  if (emTeste() || !valeAnotar(id, af, { raridade })) return;
+// `estado` (opcional): o de quem levou o drop — o PERSONAGEM DE TESTE (`personagem/testador.mjs`) não vai para a vitrine da capa.
+export async function anotarDrop({ quem, onde, bicho, boss = false, id, count = 1, af = null, tier = 0, raridade = null, efeito = null, peca = null, estado = null }) {
+  if (emTeste() || ehTestador(estado) || !valeAnotar(id, af, { raridade })) return;
   const { afixos, ...resto } = fichaDaPeca(id, count, { af, tier, raridade, efeito, ...(peca ? { base: peca.base, ilvl: peca.ilvl } : {}) });
   await guardar('drop', { ...resto, quem, em: Date.now(), onde, boss, bicho, chance: ITEM_CATALOG[id]?.dropChance ?? null, afixos, peca: pecaDoSite(id, count, peca ?? { af, tier, raridade, efeito }) });
 }
@@ -145,8 +147,8 @@ export async function anotarDrop({ quem, onde, bicho, boss = false, id, count = 
  */
 export const valeAnotarPoe = (peca) => peca?.poe?.raridade === 'unico';
 
-export async function anotarDropPoe({ quem, onde, bicho, boss = false, peca }) {
-  if (emTeste() || !valeAnotarPoe(peca)) return;
+export async function anotarDropPoe({ quem, onde, bicho, boss = false, peca, estado = null }) {
+  if (emTeste() || ehTestador(estado) || !valeAnotarPoe(peca)) return;
   const meta = ITEM_CATALOG[peca.id] ?? {};
   const count = peca.count ?? 1;
   await guardar('drop', {
@@ -158,9 +160,9 @@ export async function anotarDropPoe({ quem, onde, bicho, boss = false, peca }) {
 }
 
 /** O que saiu de uma bag aberta (`bag` = o id da bag, `entre` = de quantas opções). */
-export async function anotarBag({ quem, bag, entre, id, count = 1, af = null, tier = 0, raridade = null, efeito = null, peca = null }) {
-  // O que sai de uma bag vai sempre (a lista é "uma peça sorteada por bag").
-  if (emTeste()) return;
+export async function anotarBag({ quem, bag, entre, id, count = 1, af = null, tier = 0, raridade = null, efeito = null, peca = null, estado = null }) {
+  // O que sai de uma bag vai sempre (a lista é "uma peça sorteada por bag") — menos a do personagem de teste.
+  if (emTeste() || ehTestador(estado)) return;
   await guardar('bag', { ...fichaDaPeca(id, count, { af, tier, raridade, efeito }), quem, em: Date.now(), bag, bagNome: ITEM_CATALOG[bag]?.name ?? null, entre, peca: pecaDoSite(id, count, peca ?? { af, tier, raridade, efeito }) });
 }
 
