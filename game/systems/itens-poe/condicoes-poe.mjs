@@ -26,6 +26,7 @@ import { renovarLento } from './gemas-gbd.mjs';
 import { danoDoUrso } from './gemas-e2b.mjs';
 // (lote D1, 27/10: o Carne e Pedra — o dano sofrido nas duas Posturas)
 import { fatorDaAreia, fatorDoSangue } from './gemas-d1.mjs';
+import { fatorDaInsanidade } from './gemas-r3c.mjs';
 // (lote S2B, 27/10: o Passe Enfeitiçado — "Inimigos afetados por feitiços … não podem causar golpes críticos")
 import { semCriticoPeloFeitico } from './suportes-s2b.mjs';
 
@@ -2445,6 +2446,8 @@ export function doBicho(bicho, agora, { contraOutro = false, ficha = null } = {}
   // (lote D1, decisão do dono 27/10 — o PoB, FleshAndStone: DamageTakenWhenHit MORE) o Carne e Pedra na Postura da Areia: você sofre Y% menos Dano dos acertos do inimigo
   // na aura — o valor cheio, sem a queda pela distância; só em você (não no lacaio)
   if (!contraOutro) danoFator *= fatorDaAreia(bicho, agora);
+  // (lote R3C, 27/10 — o PoB, CalcSetup: "Malignant Madness: Deal 10% less Damage") a Insanidade Perversa da Blasfêmia Sobrenatural: em você e nos lacaios
+  danoFator *= fatorDaInsanidade(bicho, agora);
   if (ativo(e.cego, agora)) {
     // (O "Efeito do Cegamento aumentado" de quem cegou: `e.cego.efeito`.)
     precisaoFator *= 1 - (NO_ACERTO.cegar.precisaoMenosPct * (e.cego.efeito ?? 1)) / 100;

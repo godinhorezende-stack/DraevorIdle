@@ -12,6 +12,7 @@
 //               Mina"); até 15 (+ "Pode ter até N Minas Remotas adicionais").
 //   As duas   — a magia em área de um monstro que pega a casa destrói a Armadilha/Mina ("Armadilhas/Minas não podem ser Danificadas" impede).
 import { ligado } from './catalogo.mjs';
+import { minaPertoDeVoce } from './gemas-r3c.mjs';
 
 export const PADRAO = {
   armadilha: { maximo: 15, duracaoMs: 4000, raioDeAtivacao: 1, raioDasProximas: 3 },
@@ -179,7 +180,9 @@ export function minasQueDetonam(hunt, ficha, agora = hunt?.clock ?? 0, { velocid
   const minas = plantadas(hunt, 'mina', agora);
   if (!minas.length) return [];
   const pode = manual || !movendo(hunt, agora) || v(ficha, 'detonar_minas_movendo') > 0;
-  const fora = minas.filter((p) => p.detonaEm == null);
+  // (lote R3C: a Mina Local — "não podem ser Detonadas enquanto dentro de 3 metros de você": a perto de você fica fora da sequência e espera)
+  const pertoDeVoce = (p) => minaPertoDeVoce(p, hunt.pos, hunt.z ?? 0);
+  const fora = minas.filter((p) => p.detonaEm == null && !pertoDeVoce(p));
   if (pode && fora.length && agora >= (hunt.poeDetonarEm ?? -Infinity) + M.recargaMs && (manual || minas.some((p) => inimigoPerto(hunt, p, M.raioDeDetonacao)))) {
     hunt.poeDetonarEm = agora;
     const naSequencia = minas.filter((p) => p.detonaEm != null).length;
@@ -193,7 +196,7 @@ export function minasQueDetonam(hunt, ficha, agora = hunt?.clock ?? 0, { velocid
       p.detonaEm = t;
     });
   }
-  return minas.filter((p) => p.detonaEm != null && p.detonaEm <= agora).sort((a, b) => a.detonaEm - b.detonaEm).map((p) => ({ p, alvo: inimigoPerto(hunt, p, M.raioDeDetonacao) }));
+  return minas.filter((p) => p.detonaEm != null && p.detonaEm <= agora && !pertoDeVoce(p)).sort((a, b) => a.detonaEm - b.detonaEm).map((p) => ({ p, alvo: inimigoPerto(hunt, p, M.raioDeDetonacao) }));
 }
 
 /**
