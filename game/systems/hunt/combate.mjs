@@ -1611,7 +1611,10 @@ export function round(estado, personagem) {
         // o golpe nos alvos a mais não gasta outro; o Impelir vencido não conta)
         // (lote S1, dono 26/10: um Impelir por Clamor — cada Clamor que alcança o golpe o impele e gasta a sua carga)
         const impelem = !segundo && !emboscada && !extraDoImpelido ? GemasGAC.impelemEste(hunt.impelidos, tagsDoBasico, hunt.clock ?? 0) : [];
+        // (revisão F2) o Clamor Corrompedor: o golpe básico Impelido também põe o Sangue Corrompido no inimigo acertado (`Acoes.sangueDoImpelirS2A`, guardado no uso do Clamor)
+        let sangueDoImpelido = null;
         if (impelem.length) {
+          if (itensPoeLigado()) sangueDoImpelido = Acoes.sangueDoImpelirS2A(hunt, impelem.map((im) => im.de).filter(Boolean));
           if (itensPoeLigado() && impelem.some((im) => im.de === 'Infernal_Cry') && tagsDoBasico.includes('corpo')) eventos.push(...Acoes.combustao(estado, hunt, personagem, null, alvo, hunt.clock ?? 0));
           const extras = impelem.reduce((t, im) => t + (Number(im.alvosExtra) || 0), 0);
           if (itensPoeLigado() && extras > 0 && tagsDoBasico.includes('corpo')) alvosDoImpelido = extras;
@@ -1736,6 +1739,9 @@ export function round(estado, personagem) {
         const doAcerto = poe ? ModsPoe.aoAcertar(estado, hunt, alvo, ficha, { dano: golpe + (elemental?.v ?? 0) + dosAtributos.reduce((n, d) => n + d.v, 0), fisico: golpe, fogo: fogoDoGolpe, crit: critico, eventos, personagem, mover: (b) => ModsPoe.empurrar(hunt, b), elementos: ['physical', ...dosAtributos.map((d) => d.tipo), ...(elemental ? [elemental.tipo ?? arma?.element?.type] : [])] }) : null;
         // (lote B2, dono 20/10: o acerto seu — a Febre Corrompedora ligada põe o Sangue Corrompido; o Contágio da Transferência espalha — `Acoes.aoAcertarB2`)
         if (poe) for (const st of Acoes.aoAcertarB2(hunt, alvo, golpe + (elemental?.v ?? 0) + dosAtributos.reduce((n, d) => n + d.v, 0), hunt.clock ?? 0)) eventos.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: st });
+        if (poe && sangueDoImpelido && alvo.hp > 0) Acoes.porSangueDoImpelirS2A(alvo, sangueDoImpelido, hunt.clock ?? 0, eventos);
+        // (revisão F2) o Marcar ao Acertar: o golpe básico (um Ataque) que acertou um Raro ou Único Ativa as Marcas suportadas
+        if (poe) Acoes.acertoRaroNoGolpe(estado, hunt, personagem, alvo, eventos);
         // A carga de Frenesi "ao Acertar um Inimigo Único" (cargas do PoE).
         if (CargasPoe.reageAoAcerto(ficha.cargas) && CargasPoe.aoAcertar(estado, ficha.cargas, alvo, { crit: critico, corpoACorpo: categoriaDaArma(arma) !== 'distancia', atordoou: !!doAcerto?.atordoou }).length) Ficha.invalidar(estado);
         // ("Acertos Corpo a Corpo contam como Mortes com Fúria" — o Rampage.)

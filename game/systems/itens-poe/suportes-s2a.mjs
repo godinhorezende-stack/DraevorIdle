@@ -143,7 +143,7 @@ export const REGRAS_S2A = [
   [new RegExp(`^Usar habilidades vaal reforçadas inflige Tentação Vaal em você, causando ${N} de dano físico por segundo, em vez de aplicar impedimento de ganho de almas$`, 'i'),
     (m) => ({ tentacaoVaalPorS: num(m[1]) })],
   // as Minas da Cadeia Explosiva, de Alto Impacto (e a Local): "Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida" — a gema reserva o custo
-  // base enquanto estiver na barra (como a aura), e cada mina sai sem custo
+  // base por Mina plantada agora (revisão F2, dono 27/10: como o PoB, `activeMineCount`; sem mina plantada, nada), e cada mina sai sem custo
   [/^Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida$/i, () => ({ reservaDoCusto: 1 })],
   // a Mina de Alto Impacto: "Cada Mina … aplicadas 2% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de 100%" (3 casas)
   [new RegExp(`^Cada Mina das Habilidades Suportadas aplicadas ${N}% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de ${N}%$`, 'i'),

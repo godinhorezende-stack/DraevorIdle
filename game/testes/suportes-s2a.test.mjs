@@ -75,9 +75,10 @@ const FEITOS = ['Excommunicate_Support', 'Withering_Touch_Support', 'Hallow_Supp
 test('S2A: os suportes da fila feitos saem de "parcial"; o Decapitar fica só com a renovação (a decisão do dono)', { skip: SEM }, () => {
   const falhas = FEITOS.filter((s) => SP.doSlug(s)?.status !== 'funciona').map((s) => `${s}: ${SP.doSlug(s)?.status} ${(SP.doSlug(s)?.motivos ?? []).join(' | ')}`);
   assert.deepEqual(falhas, [], falhas.join('\n'));
+  // (revisão F2, aval do dono: com o lote D2 o Decapitar renova — fica 'funciona', sem motivos)
   const d = SP.doSlug('Behead_Support');
-  assert.equal(d.status, 'parcial');
-  assert.ok(d.motivos.length === 1 && /renovar a Duração do Modificador/.test(d.motivos[0]), d.motivos.join(' | '));
+  assert.equal(d.status, 'funciona');
+  assert.deepEqual(d.motivos ?? [], [], (d.motivos ?? []).join(' | '));
 });
 
 test('S2A: os números das linhas no nível 20 (com a qualidade 20)', { skip: SEM }, () => {

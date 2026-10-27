@@ -59,10 +59,13 @@ export function fator(ficha, efeitoDaGema, recurso, arquetipo = null, tipos = nu
   return mult / Math.max(0.1, 1 + eficacia / 100);
 }
 
-/** Quanto a reserva `r` (`{ recurso, pct?, fixo?, fator }`) tranca agora — a % sobre a máxima de AGORA (subiu de level, trocou de peça). */
+/**
+ * Quanto a reserva `r` (`{ recurso, pct?, fixo?, fator }`) tranca agora — a % sobre a máxima de AGORA (subiu de level, trocou de peça).
+ * (revisão F2, dono 27/10: a da Mina — `minasDe`, a ação — é a de uma × as Minas dela plantadas agora, como o PoB; `minasAMais`: as que vão sair — o "cabe?")
+ */
 export function valor(estado, r) {
   const maxima = r.recurso === 'vida' ? estado.maxHp ?? 0 : estado.maxMana ?? 0;
-  return Math.ceil((r.pct ? (maxima * r.pct) / 100 : r.fixo ?? 0) * (r.fator ?? 1));
+  return ModsPoe.valorDaReserva(estado?.hunt, r, maxima);
 }
 
 /** As reservas ligadas agora (as auras da caçada): `{ mana, vida }` — nunca mais que a máxima (a vida deixa sempre 1). */
