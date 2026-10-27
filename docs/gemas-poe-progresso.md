@@ -989,6 +989,39 @@ A fila: 41 gemas ativas (lacaios e totens). As regras novas estão em `game/syst
   - testes: os 93 arquivos afetados (os de antes, mais os de clamor, Impelir, únicos, árvore e movimento): 1125 testes, 1087 passam, 36 pulados, 2 falham pela regra nova do dono, sem edição — `ativas-g-revisao.test.mjs:314` (o "outro Clamor troca o Impelir": depois do Intimidador, o Infernal ainda impele, com 5 cargas, e a Combustão sai) e `ativas-g-revisao.test.mjs:326` (o Dano Dobrado do buff do Intimidador: esperava 0 no ataque Impelido pelo Infernal; agora 100, porque o Intimidador também impele esse ataque);
   - placar dos suportes: parcial 69 → 68; implementada e testada 142 → 143.
 
+### E2A — as ativas de lacaio e de totem mais difíceis (26/10, pelo PoB)
+
+- Fila: 20 gemas ativas de lacaio e de totem ainda parciais. Fonte: o PoB (`act_int.lua`, `act_str.lua`, `act_dex.lua`, `Skills/minion.lua`, `Minions.lua`, `Modules/Data.lua`, `CalcPerform.lua`).
+- Arquivos: `game/systems/itens-poe/gemas-e2a.mjs` (novo: as regras de leitura e as contas puras), `lacaios-poe.mjs` (`oQueInvoca`, o passo, a área do golpe, o dano sofrido), `cacadas.mjs` (a Queda do Zumbi, a aura dos Robôs, o agravar, a Pancada, o crítico das magias do espectro, a balista que some), `acoes.mjs` (a invocação: o alcance, a Queda, os dois Robôs, o anel da Balista; a Troca de Corpos com o lacaio), `gemas-poe.mjs` (o status, o arquétipo da Troca de Corpos do Sacrifício, o leitor da troca) e `linhas-das-gemas.mjs` (a linha local "X% mais Dano de Projétil").
+- **Feitas (12 gemas saem de "parcial"):**
+  - as **Oferendas**: a Carnal — o movimento de 29% agora entra no passo do lacaio (a conjuração já valia); a Óssea — o bloqueio de Dano Mágico já valia no lacaio, só o status não o lia;
+  - o **Ceifador da Evisceração**: 40% (q20) de chance de agravar os Sangramentos do alvo no acerto de ataque (`Dot.agravar`);
+  - o **Zumbi da Pancada**: +76% de Área e +76% de Recarga só na Pancada (o golpe em área do zumbi); a coluna sem número do poedb é a mesma linha;
+  - o **Zumbi da Queda**: o zumbi aparece no alvo (sem alvo, no inimigo mais perto a até 7 casas), não pode ser atingido, cai em 1 s, acerta a área uma vez (2,5× o golpe, sempre acerta, com o crítico e o Dano Dobrado de 15% da qualidade) e morre; o máximo é 200; não usa cadáver;
+  - as **Sentinelas Ascendidas** (Absolvição Vaal e Dominação Vaal): 300% mais Dano, 70% menos Dano sofrido; a Dominação Vaal com até 3 (antes valia 1 — o leitor não lia a linha);
+  - os **Robôs Rastejantes**: são dois (o Resfriante e o Eletrizante), não atacam e não sofrem dano; a aura de 3 m de cada um Resfria (10% × 1,19 = 11,9%, pelo caminho do Resfriamento do jogo) ou Eletriza (15% × 1,19 = 17,85%) sem acerto; com eles vivos, você tem 10% mais Dano de Armadilhas e de Minas. Antes era um robô que causava 15% do golpe por segundo;
+  - a **Balista de Cerco de Trarthus**: 8 balistas no nível 20 (4 + o do nível, o PoB; o poedb escreve "Invoca 1") em anel em volta do alvo, que disparam uma vez e somem; o "Alcance do Posicionamento aumentado em 300%" põe o anel no alvo; o "20% mais Dano de Projétil" da qualidade vale no tiro (`mais_dano@projetil`);
+  - a **Troca de Corpos do Sacrifício**: passa a ser de área, como a Troca de Corpos (antes era lacaio e não fazia nada). Ela usa um lacaio danificável no lugar do cadáver: sem alvo, os lacaios vêm primeiro. O lacaio explode com 29% + 5% (q20) da Vida dele, com 300% mais Área só nessa explosão, e morre. A explosão da magia sai nos dois lugares, com o Fogo base + 4% da sua Vida. Os 50% menos Dano de Afecções valem na gema toda.
+- **Feitas em parte (a gema segue parcial por uma linha):**
+  - os **Espectros**: +30% (+20% da qualidade) de Resistências Elementais; o "55% mais Velocidade de Movimento" agora multiplica o passo (o compilador o lia e ninguém o usava — vale também nos 76% da Relíquia Sagrada); a Transitoriedade tem 30 s (× a Duração dos Lacaios), +1180% de Chance de Crítico (no golpe e nas MAGIAS do monstro erguido, que nunca eram críticas — agora rolam o crítico com a base de 5%) e +1 de máximo na qualidade 20 (a linha da qualidade não somava). "Não viajam entre as Áreas": no jogo nenhum lacaio passa de uma caçada a outra. Fica: o teto do movimento (abaixo, decisão);
+  - o **Golpe Sagrado**: 3 Armamentos (antes 1 — o leitor não lia a linha); +2,1 m (+0,5 m na q20) de alcance do golpe do Armamento, em casas (1 + 1, e 30% de chance de mais uma); o Armamento bate em Físico com 50% em Raio (antes, 100% Raio). Erro corrigido: o "Lacaios causam X% menos Dano" do poedb tem o sinal errado do nível 7 em diante. No PoB é −60% no 1 e +168% no 20, e o Armamento causava 1 de dano. Fica: o "Este ataque" da conversão (abaixo, fora).
+- **Decisão do dono (pendente):** o "Velocidade de Movimento dos Lacaios está no Máximo" dos dois Espectros é o `movement_velocity_cap −53` do PoB, e a base dele é 128 (`Misc.lua`). O PoB não usa esse teto na conta. Opções:
+  - (a) teto de +75% no aumento total do passo (128 − 53);
+  - (b) teto de 75% da velocidade (a leitura "75% da base"), que deixaria o espectro mais lento que a base, contra os 55% mais;
+  - (c) sem teto: hoje o espectro tem +55%, abaixo dos 75%, e só passaria com a árvore e as peças.
+- **Ficou de fora (mecânica grande nova):**
+  - o **Golpe Sagrado**: "Este ataque": no jogo as gemas de ataque + lacaio (o Golpe Sagrado, o Golpe Dominador) só invocam, e o seu golpe não existe. A conversão vale no Armamento;
+  - o **Arauto da Pureza**: no PoE é um Arauto (buff com reserva, 12% mais Dano Físico, a Sentinela ao matar e 20% ao acertar Raro/Único); no jogo é um lacaio que invoca no uso. Converter mexe no `arautoExcedente` (lote 80) e na Sentinela Divina (A2);
+  - a **Relíquia Sagrada**: a Nova (ao acertar com ataque, recarga de 0,3 s, dano Físico e a regeneração por 4 s a aliados e lacaios; o "Efeito do Buff" é o da Nova). O raio da Nova não está no PoB, e o dano da magia de lacaio não tem a conta no jogo;
+  - o **Golem Caótico do Turbilhão**: o "efeito de definhamento aumentado" é o da Aura Caótica Potencializada do golem (a aura degenerativa que Definha). O golem do jogo não tem as auras do PoB, nem o Golem Caótico comum;
+  - o **Totem Chamariz**: a provocação pede que o monstro mire o totem (o passo em `hunt/monstros` e o golpe em `hunt/combate`), no motor comum;
+  - as três **Balistas de Artilharia**: as flechas caem em linha (ou em duas, ou uma por alvo), cada uma com dano em área e um acerto por inimigo. O raio do impacto e o espaço entre as flechas não estão no PoB.
+- Teste novo: `game/testes/ativas-e2a.test.mjs` (11 casos, os sorteios travados).
+- Placar das ativas: parcial 41 → 31; implementada e testada 432 → 434; limitação do modelo idle 44 → 52; implementada, sem teste próprio 44 → 44.
+- A tradução não mudou: nenhuma linha nova em `traducao.json`, e a `VERSAO_DA_TRADUCAO` fica em 73.
+- Testes: os 125 arquivos afetados (`ativas-*`, `gemas-*`, `suportes-*`, `itens-poe-gemas*`, `eficacia-ataque-poe`, `gemas-todas-funcionam-poe` e os de lacaio e totem): 1.454 testes, 1.420 passam, 33 pulados e 1 falha. A falha é pela regra do PoE e o teste não foi editado:
+  - `ativas-linhas-lidas-poe.test.mjs:91` espera o "50 % menos Dano de Afecções" da Troca de Corpos do Sacrifício como motivo, porque como lacaio ela não acertava. Agora ela é de área, acerta, e a linha vale nas afecções (motivos `[]`).
+
 
 ## Pendências conhecidas (por ordem de prioridade)
 

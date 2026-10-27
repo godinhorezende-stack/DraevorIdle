@@ -106,6 +106,8 @@ import * as GemasGBD from './itens-poe/gemas-gbd.mjs';
 import * as GemasGAC from './itens-poe/gemas-gac.mjs';
 // (lote E1b, 26/10: as Armadilhas, as Minas e as auras do lote — itens-poe/gemas-e1b.mjs)
 import * as GemasE1b from './itens-poe/gemas-e1b.mjs';
+// (lote E2A, 26/10: a Queda do Zumbi e os dois Robôs Rastejantes na invocação — `gemas-e2a.mjs`)
+import * as GemasE2a from './itens-poe/gemas-e2a.mjs';
 import { JANELA } from '../websocket/quadro.mjs';
 import * as ItensPoeJogo from './itens-poe/jogo.mjs';
 
@@ -3203,19 +3205,24 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
   // (lote G20b) a BALISTA FOCADA: "Totens Balista das Habilidades Suportadas só Atacam quando você disparar um Projétil de Ataque" — só na balista
   const focada = q.tipo === 'totem' && efeito?.balistaFocada > 0 && (efeito?.viraTotem === 2 || (GemasPoe.doSlug(slug)?.gema?.tipos ?? []).includes('TotemsAreBallistae'));
   const fichaDoTotem = q.tipo === 'totem' && estado ? Ficha.combate(estado) : null;
-  const lugar = lugarDoTotem(hunt, fichaDoTotem ? alvo : null, ModsPoe.valor(fichaDoTotem, 'totem_alcance_posicionamento'));
+  // (lote E2A, 26/10) o ANEL da Balista de Cerco de Trarthus: as balistas em volta do local mirado (o alvo — a habilidade mira um lugar: sem alvo, o inimigo vivo mais perto
+  // de você —, que o "Alcance do Posicionamento aumentado em 300%" alcança; longe demais, em volta do lugar que deu) — `GemasE2a.casasDoAnel`
+  const alvoDoAnel = q.anel ? (alvo?.hp > 0 ? alvo : inimigoMaisPerto(hunt, 8)) : null;
+  const lugar = lugarDoTotem(hunt, fichaDoTotem ? alvoDoAnel ?? alvo : null, ModsPoe.valor(fichaDoTotem, 'totem_alcance_posicionamento') + (q.anel?.posicionamentoPct ?? 0));
+  const anel = q.anel ? GemasE2a.casasDoAnel(alvoDoAnel && distanciaChebyshev(lugar, alvoDoAnel) <= 1 ? alvoDoAnel : lugar, hunt.pos, ModsPoe.gradeDoCombate(hunt)?.andavel ?? null, new Set((hunt.monstros ?? []).filter((m) => m.hp > 0).map((m) => `${m.x},${m.y}`))) : null;
   const qDoUso = q;
   for (let i = 0; i < porUso; i++) {
     // (revisão E1a: a invocação MISTA — a Vaal Convocar Esqueletos —, cada lacaio do tipo dele: a força, o jeito de atacar e o nome — `LacaiosPoe.grupoDoUso`)
     const q = LacaiosPoe.grupoDoUso(qDoUso, i);
     const l = {
       uid: `lacaio:${Date.now().toString(36)}${(seqDeLacaio++).toString(36)}`, gema: slug, acao: entry.id, tipo: q.tipo, nome: q.nome, nivel: q.nivel, desde: agora,
-      x: lugar.x, y: lugar.y, dir: hunt.pos.dir ?? 2, look: q.desenho.look, lookItem: q.desenho.lookItem ?? 0, colors: q.desenho.colors,
+      x: anel ? anel[i % anel.length].x : lugar.x, y: anel ? anel[i % anel.length].y : lugar.y, dir: hunt.pos.dir ?? 2, look: q.desenho.look, lookItem: q.desenho.lookItem ?? 0, colors: q.desenho.colors,
       hp: q.vida, maxHp: q.vida, dano: q.dano, elemento: q.elemento ?? 'physical', intervaloMs: q.intervaloMs, ate: q.duracaoMs ? agora + q.duracaoMs : null, duracaoMs: q.duracaoMs ?? null,
       // (a conversão do dano Físico do golpe e o "só causa dano de X" — `LacaiosPoe.oQueInvoca`)
       ...(q.conversao ? { conversao: q.conversao, soDano: q.soDano ?? null } : {}),
       // A IA do familiar (`cacadas`): perto do dono, batendo no alvo; o totem não anda e usa a skill a até `alcanceDeAtaque` casas.
-      perto: 2, alcance: 0, alcanceDeAtaque: q.tipo === 'totem' ? alcanceDoTotem(entry, estado) : Math.max(1, q.estilo?.alcance ?? 1), proximoGolpe: agora + 400, proximoPassoEm: 0,
+      // (lote E2A: + o "+X metros para o alcance do golpe corpo a corpo do lacaio" do Golpe Sagrado — `q.alcanceExtraM`, em casas, a fração sorteada ao invocar)
+      perto: 2, alcance: 0, alcanceDeAtaque: q.tipo === 'totem' ? alcanceDoTotem(entry, estado) : Math.max(1, q.estilo?.alcance ?? 1) + (q.alcanceExtraM > 0 ? casasDoRaio(q.alcanceExtraM) : 0), proximoGolpe: agora + 400, proximoPassoEm: 0,
       // As HABILIDADES próprias (`LacaiosPoe.oQueInvoca`): o jeito de atacar, a velocidade, o crítico, o dano adicionado, o sangramento e o
       // bônus do golem ao dono (enquanto ele vive — `GemasPoe.adds`).
       estilo: q.estilo ?? null, velAtaquePct: q.velAtaquePct ?? 0, critChance: q.critChance ?? 5, ...(q.critChanceBase != null ? { critChanceBase: q.critChanceBase } : {}), critMult: q.critMult ?? 1.5, somado: q.somado ?? [0, 0], sangrar: q.sangrar ?? 0,
@@ -3226,6 +3233,8 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
       ...(q.recargas ? { recargas: q.recargas.map((h) => ({ ...h })) } : {}),
       ...(q.tipo === 'totem' && alvo ? { mira: { x: alvo.x, y: alvo.y } } : {}),
       ...(focada ? { focada: true } : {}),
+      // (lote E2A) a balista do anel dispara uma vez e some (`cacadas`)
+      ...(q.anel?.umaVez ? { umaVez: true } : {}),
       // (lote G20b) o totem ANCESTRAL do Devastador: a distância de ativação em casas (7 m = 3 casas e meia: a metade é a chance de mais uma, sorteada ao
       // pôr — a mesma conversão das áreas)
       ...(q.tipo === 'totem' && (efeito?.ativacaoM ?? q.efeitosDoTotem?.ativacaoM) > 0 ? { ativacao: casasDoRaio(efeito?.ativacaoM ?? q.efeitosDoTotem.ativacaoM) } : {}),
@@ -3236,6 +3245,15 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
       // (lote E1a) o Efeito do Buff do golem (a qualidade), o Ceifador e o "mais Dano por Lacaio Não-Golem próximo" do Golem da Carniça — `GemasE1a`
       ...(q.e1a ?? {}),
     };
+    // (lote E2A, 26/10) o ZUMBI DA QUEDA: aparece no alvo (a magia mira um lugar: sem alvo, o inimigo vivo mais perto de você a até 7 casas; sem nenhum, ao seu
+    // lado), cai em `q.queda.ms` e não pode ser atingido até lá (`cacadas.impactoDaQueda`)
+    if (q.queda) {
+      const onde = alvo?.hp > 0 ? alvo : inimigoMaisPerto(hunt, 7) ?? hunt.pos;
+      Object.assign(l, { x: onde.x, y: onde.y, queda: { em: agora + q.queda.ms, mult: q.queda.mult }, intocavel: true });
+    }
+    // (lote E2A, 26/10) os ROBÔS RASTEJANTES: o Resfriante e o Eletrizante, cada um com a aura dele (sem dano) e o buff da habilidade num só (`GemasE2a.roboDaInvocacao`)
+    const robo = GemasE2a.roboDaInvocacao(q.robos, i);
+    if (robo) Object.assign(l, { elemento: robo.elemento, nome: robo.nome, auraNaoDano: robo.auraNaoDano, afDono: robo.afDono });
     // O ESPECTRO (Erguer Espectro do PoE): ergue o ÚLTIMO CADÁVER da caçada (o tipo do bicho que morreu por último e que tem magias),
     // ou, sem cadáver, um bicho da área. Fica com o desenho e o nome dele e usa as MAGIAS dele (`cacadas.tiqueDosLacaios`).
     if (/spectre/i.test(GemasPoe.doSlug(slug)?.gema?.en ?? '')) {
@@ -3275,10 +3293,15 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
   // (lote E1a) o "menos Vida Máxima" do Ceifador nos outros lacaios já na invocação (o tique segue — `LacaiosPoe.aplicarCeifador`)
   LacaiosPoe.aplicarCeifador(hunt.lacaios);
   // O golem dá bônus ao dono: a ficha muda.
-  if (q.afDono || q.porLacaioFisico) hunt.lacaiosMudaramAFicha = true;
+  // (lote E2A: + os Robôs Rastejantes — o buff de Armadilhas e Minas vai no Resfriante)
+  if (q.afDono || q.porLacaioFisico || q.robos) hunt.lacaiosMudaramAFicha = true;
   return eventos;
 }
 
+/** (lote E2A) O inimigo vivo mais perto de você, no seu andar, a até `casas` (a mira de um lugar sem alvo — a Queda do Zumbi, o anel da Balista de Trarthus), ou null. */
+function inimigoMaisPerto(hunt, casas) {
+  return (hunt.monstros ?? []).filter((m) => m.hp > 0 && !m.dummy && (m.z == null || m.z === (hunt.z ?? 0)) && distanciaChebyshev(hunt.pos, m) <= casas).sort((a, b) => distanciaChebyshev(hunt.pos, a) - distanciaChebyshev(hunt.pos, b))[0] ?? null;
+}
 /**
  * (lote 70 — dono, 17/10: "Alcance do totem em casas") Onde o TOTEM nasce: com "Alcance do Posicionamento de Totens aumentado em X%", na
  * direção do alvo, a até X% da distância até ele (casa a casa, só nas andáveis, nunca na casa do alvo); sem o mod (ou sem alvo), na sua casa.
@@ -5206,12 +5229,14 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const t = b3.troca;
       const ponto = { x: formaNoUso.x, y: formaNoUso.y };
       const alcance = entry.range || ALCANCE_PADRAO;
-      const cad = (hunt.cadaveres ?? []).filter((c) => (c.z == null || c.z === (hunt.z ?? 0)) && distanciaChebyshev(c, ponto) <= GemasB3.TROCA_DE_CORPOS.cadaverPertoCasas && distanciaChebyshev(hunt.pos, c) <= alcance)
+      // (lote E2A, 26/10) a do SACRIFÍCIO: um lacaio danificável no lugar do cadáver — sem alvo, os lacaios primeiro (`GemasE2a.lacaioDoSacrificio`)
+      const lacaioDaTroca = t.lacaio ? GemasE2a.lacaioDoSacrificio(hunt.lacaios, hunt.pos, ponto, alcance) : null;
+      const cad = t.lacaio ? lacaioDaTroca : (hunt.cadaveres ?? []).filter((c) => (c.z == null || c.z === (hunt.z ?? 0)) && distanciaChebyshev(c, ponto) <= GemasB3.TROCA_DE_CORPOS.cadaverPertoCasas && distanciaChebyshev(hunt.pos, c) <= alcance)
         .sort((a, b) => distanciaChebyshev(a, ponto) - distanciaChebyshev(b, ponto))[0] ?? null;
       const grade = gradeDoJogador(hunt);
       const livre = (c) => (!grade?.andavel || grade.andavel.has(`${c.x},${c.y}`)) && !casaOcupada(hunt, c.x, c.y, vivos);
       const aoLado = Areas.quadrado(ponto, 1).filter((c) => (c.x !== ponto.x || c.y !== ponto.y) && livre(c)).sort((a, b) => distanciaChebyshev(a, { x, y }) - distanciaChebyshev(b, { x, y }))[0] ?? null;
-      const destino = cad && (livre(cad) || (cad.x === x && cad.y === y)) ? { x: cad.x, y: cad.y } : cad ? Areas.quadrado(cad, 1).filter(livre).sort((a, b) => distanciaChebyshev(a, cad) - distanciaChebyshev(b, cad))[0] ?? null : aoLado;
+      const destino = cad && (lacaioDaTroca || livre(cad) || (cad.x === x && cad.y === y)) ? { x: cad.x, y: cad.y } : cad ? Areas.quadrado(cad, 1).filter(livre).sort((a, b) => distanciaChebyshev(a, cad) - distanciaChebyshev(b, cad))[0] ?? null : aoLado;
       const r = Math.max(0, casasDoRaio(t.raioM * Math.sqrt(ModsPoe.fatorDaArea(efeitoDaGema?.areaIncPct ?? 0, efeitoDaGema?.areaMaisPct ?? 0))));
       const lugares = [{ x, y }, ...(destino && (destino.x !== x || destino.y !== y) ? [destino] : [])];
       golpesDaSequencia = [];
@@ -5223,7 +5248,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         const k = new Set(cs.map((q) => `${q.x},${q.y}`));
         for (const b of vivos) if (b.hp > 0 && k.has(`${b.x},${b.y}`)) { golpesDaSequencia.push({ bicho: b, pct: 100 }); unicos.add(b); }
       }
-      trocaNoUso = { destino, cad: cad && destino ? cad : null };
+      trocaNoUso = { destino, cad: cad && destino && !lacaioDaTroca ? cad : null, lacaio: lacaioDaTroca && destino ? lacaioDaTroca : null };
       atingidos = [...unicos];
       casas = [...todas.values()];
     }
@@ -7226,6 +7251,12 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       //    só na explosão do cadáver — × √ da Área do uso) e você teleporta para o destino (sem contar como movimento, como o teleporte do A1b)
       if (trocaNoUso?.destino) {
         if (trocaNoUso.cad) eventos.push(...explodirCadaveres(estado, hunt, entry, efeitoDaGema, { pct: b3.troca.cadaverPct, raioExplosaoM: b3.troca.raioM * Math.sqrt(1 + b3.troca.areaCadaverMaisPct / 100) }, [trocaNoUso.cad], ficha, agora));
+        // (lote E2A) a do Sacrifício: o lacaio é destruído numa explosão da % da Vida máxima dele (com os 300% mais Área só nela) e morre
+        if (trocaNoUso.lacaio) {
+          const l = trocaNoUso.lacaio;
+          eventos.push(...explodirCadaveres(estado, hunt, entry, efeitoDaGema, { pct: b3.troca.lacaioPct, raioExplosaoM: b3.troca.raioM * Math.sqrt(1 + b3.troca.areaLacaioMaisPct / 100) }, [{ x: l.x, y: l.y, maxHp: l.maxHp }], ficha, agora));
+          l.hp = 0;
+        }
         teleportarSemMover(hunt, trocaNoUso.destino, eventos);
       }
       if (objetoDoUso || laminasDoUso?.length || novasDosDisparos) {
