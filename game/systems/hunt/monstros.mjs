@@ -18,6 +18,8 @@ import { fatorDoPassoAprisionado } from '../itens-poe/gemas-pr4.mjs';
 import { fatorDeAcao } from '../itens-poe/gemas-gac.mjs';
 // (lote E1b, dono 26/10: o Imobilizado das Armadilhas de Urso não anda)
 import { imobilizado } from '../itens-poe/gemas-e1b.mjs';
+// (lote E2B, 26/10: o passo do debuff da Armadilha de Urso — o −80% que cai até 0)
+import { fatorDoPassoDoUrso } from '../itens-poe/gemas-e2b.mjs';
 
 export const BESTIARY = CATALOGO.bestiary;
 
@@ -344,7 +346,7 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
       m.y = destino.y;
       m.dir = fy < 0 ? 0 : fy > 0 ? 2 : fx > 0 ? 1 : 3;
       m.andouEm = hunt.clock ?? 0;
-      m.moveMs = passoDoBicho(m, fx !== 0 && fy !== 0) * (Charms.paralisado(m, agora) ? Charms.FATOR_DA_PARALISIA : 1) * Estados.fatorDeLentidao(m, agora) * Reforcos.fatorDeDesaceleracao(m, agora) * Estados.fatorDeTolhimento(m, agora) * fatorDoPassoAprisionado(m.poeAprisionado) * fatorDeAcao(m, agora);
+      m.moveMs = passoDoBicho(m, fx !== 0 && fy !== 0) * (Charms.paralisado(m, agora) ? Charms.FATOR_DA_PARALISIA : 1) * Estados.fatorDeLentidao(m, agora) * Reforcos.fatorDeDesaceleracao(m, agora) * Estados.fatorDeTolhimento(m, agora) * fatorDoPassoAprisionado(m.poeAprisionado) * fatorDoPassoDoUrso(m, agora) * fatorDeAcao(m, agora);
       m.proximoPasso = agora + m.moveMs;
       continue;
     }
@@ -378,7 +380,7 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
     // + lento (support Slow): o passo demora mais.
     // + Desacelerado pela maldição do PoE ("Inimigos Amaldiçoados por você são Desacelerados" — `Reforcos.fatorDeDesaceleracao`).
     // (lote C4, dono 21/10: + o Tolhimento do PoE — `Estados.fatorDeTolhimento`, só no passo)
-    m.moveMs = passoDoBicho(m, dx !== 0 && dy !== 0) * (Charms.paralisado(m, agora) ? Charms.FATOR_DA_PARALISIA : 1) * Estados.fatorDeLentidao(m, agora) * Reforcos.fatorDeDesaceleracao(m, agora) * Estados.fatorDeTolhimento(m, agora) * fatorDoPassoAprisionado(m.poeAprisionado) * fatorDeAcao(m, agora);
+    m.moveMs = passoDoBicho(m, dx !== 0 && dy !== 0) * (Charms.paralisado(m, agora) ? Charms.FATOR_DA_PARALISIA : 1) * Estados.fatorDeLentidao(m, agora) * Reforcos.fatorDeDesaceleracao(m, agora) * Estados.fatorDeTolhimento(m, agora) * fatorDoPassoAprisionado(m.poeAprisionado) * fatorDoPassoDoUrso(m, agora) * fatorDeAcao(m, agora);
     m.proximoPasso = agora + m.moveMs;
   }
 }

@@ -67,6 +67,8 @@ import * as GemasE1a from './gemas-e1a.mjs';
 import * as GemasE1b from './gemas-e1b.mjs';
 // (lote E2A, 26/10: as linhas difíceis dos lacaios — gemas-e2a.mjs)
 import * as GemasE2a from './gemas-e2a.mjs';
+// (lote E2B, 26/10: as parciais mais difíceis de Armadilhas, Minas, Auras e Arautos — gemas-e2b.mjs)
+import * as GemasE2b from './gemas-e2b.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
 const ARQ_GEMAS = new URL('../../gamedata/itens-poe/gemas-poe.json', import.meta.url);
@@ -719,7 +721,8 @@ export function linhasLocaisNoNivel(slug, nivel = 1, qualidade = 0) {
   // pela compilada)
   const daQ = new Set(q > 0 ? linhasDaQualidade(g, q / 20) : []);
   const nao = (h.linhas?.naoImplementadas ?? []).filter((l) => !ehColunaMalRotulada(slug, l));
-  const uso = ehUso(h);
+  // (lote E2B, 26/10: + o Castigo e o Castigo Vaal — o uso é o ataque; o "Não pode ser Evadido" da Vaal vale nele)
+  const uso = ehUso(h) || GemasE2b.ehCastigo(slug);
   const doNivel = uso ? atributosDasLinhas(nao.filter((l) => !daQ.has(l))) : { af: {}, feitas: [] };
   const daQualidade = uso ? atributosDasLinhas(nao.filter((l) => daQ.has(l))) : { af: {}, feitas: [] };
   const af = { ...doNivel.af };
@@ -1201,7 +1204,8 @@ export function daGemaGBD(slug, nivel = 1, qualidade = 0) {
     const q = linhasDaQualidadeDe(slug, qualidade);
     const x = {
       guarda: GemasGBD.guardaDasLinhas(slug, linhas), chamado: GemasGBD.chamadoDasLinhas(slug, linhas), artica: GemasGBD.articaDasLinhas(slug, linhas),
-      articaVaal: GemasGBD.articaVaalDasLinhas(slug, linhas), fogoJusto: GemasGBD.fogoJustoDasLinhas(slug, linhas, q), ktash: GemasGBD.ktashDasLinhas(slug, linhas),
+      // (lote E2B, 26/10: + o Fogo Justo base — o mesmo mecanismo, pela Vida e o Escudo de Energia — `GemasE2b.fogoJustoBaseDasLinhas`)
+      articaVaal: GemasGBD.articaVaalDasLinhas(slug, linhas), fogoJusto: GemasGBD.fogoJustoDasLinhas(slug, linhas, q) ?? GemasE2b.fogoJustoBaseDasLinhas(slug, linhas, q), ktash: GemasGBD.ktashDasLinhas(slug, linhas),
       recargaParada: linhas.some((l) => GemasGBD.LINHA_RECARGA_PARADA.test(l)),
     };
     for (const k of Object.keys(x)) if (x[k] == null || x[k] === false) delete x[k];
@@ -1309,7 +1313,7 @@ export const c1DaGema = (slug, nivel = 1, qualidade = 0) => comCache(C1, `c1|${s
     raioContraAfeccaoPct: slug === 'Elemental_Hit' ? GemasC1.raioContraAfeccaoDasLinhas(linhas) : 0, anzol: GemasC1.anzolDasLinhas(slug, linhas, daQ),
     frenesi: GemasC1.frenesiDasLinhas(slug, linhas), golpesPorAlvo: slug === 'Swordstorm' ? GemasC1.golpesPorAlvoDasLinhas(linhas) : 1, onda: GemasC1.ondaDasLinhas(slug, linhas),
     ondaCentralMaisPct: GemasC1.ondaCentralDasLinhas(slug, linhas, daQ), escudosDeLuz: GemasC1.escudosDeLuzDasLinhas(slug, linhas),
-    raioDoCastigo: GemasC1.raioDoCastigoDasLinhas(slug, linhas, daQ), maos: GemasC1.maosDasLinhas(slug, linhas),
+    raioDoCastigo: GemasC1.raioDoCastigoDasLinhas(slug, linhas, daQ) ?? GemasE2b.castigoDasLinhas(slug, linhas, qualidade), maos: GemasC1.maosDasLinhas(slug, linhas),
   };
 });
 /*
@@ -1571,6 +1575,22 @@ const ehColunaMalRotulada = (slug, l) => !!COLUNAS_MAL_ROTULADAS[slug]?.test(l);
 export const dotEhMagico = (slug) => textosDaGema(slug, 1).linhas.some((l) => /Modificadores de Dano Mágico aplicam-se ao Dano Degenerativo/i.test(l));
 /** (17/10, lote G18b) As linhas da QUALIDADE da gema na fração (0 a 20): para quem lê as linhas sozinho (o Vínculo, a maldição). */
 export const linhasDaQualidadeDe = (slug, qualidade = 0) => (qualidade > 0 ? linhasDaQualidade(POR_SLUG.get(slug), qualidade / 20) : []);
+// ---- (lote E2B, 26/10) os leitores no nível das linhas do lote (gemas-e2b.mjs), com cache ----
+const E2B = new Map();
+/** As explosões menores das Armadilhas Explosivas (GemasE2b.explosoesDasLinhas), ou null. */
+export const explosoesDaGema = (slug, nivel = 1, qualidade = 0) => comCache(E2B, `exp|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasE2b.explosoesDasLinhas(slug, textosDaGema(slug, nivel).linhas, qualidade));
+/** A Armadilha Sísmica (GemasE2b.sismicaDasLinhas), ou null. */
+export const sismicaDaGema = (slug, nivel = 1, qualidade = 0) => comCache(E2B, `sis|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasE2b.sismicaDasLinhas(slug, textosDaGema(slug, nivel).linhas, qualidade));
+/** A Regeneração da Armadilha Sifão de Gelo (GemasE2b.sifaoDasLinhas), ou null. */
+export const sifaoDaGema = (slug, nivel = 1) => comCache(E2B, `sif|${slug}@${nivel | 0}`, () => GemasE2b.sifaoDasLinhas(slug, textosDaGema(slug, nivel).linhas));
+/** O debuff da Armadilha de Urso (GemasE2b.ursoDasLinhas), ou null. */
+export const ursoDaGema = (slug, nivel = 1) => comCache(E2B, `urso|${slug}@${nivel | 0}`, () => GemasE2b.ursoDasLinhas(slug, textosDaGema(slug, nivel).linhas));
+/** O Solo Eletrizado da Relampejante Vaal (GemasE2b.soloEletrizadoDasLinhas), ou null. */
+export const soloEletrizadoDaGema = (slug, nivel = 1, qualidade = 0) => comCache(E2B, `solo|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasE2b.soloEletrizadoDasLinhas(slug, textosDaGema(slug, nivel).linhas, qualidade));
+
+/** A Velocidade de Detonação aumentada da qualidade da gema Detonar Minas (GemasE2b.velocidadeDeDetonacaoDasLinhas), em %. */
+export const detonacaoDaGemaDetonar = (qualidade = 0) => comCache(E2B, `det|${qualidade | 0}`, () => GemasE2b.velocidadeDeDetonacaoDasLinhas(linhasDaQualidadeDe('Detonate_Mines', qualidade)));
+
 // ---- (lote E1b, 26/10) os leitores no nível das linhas do lote (gemas-e1b.mjs), com cache ----
 const E1B = new Map();
 /** (dono, 26/10) As notas das escolhas do dono (o relatório as mostra; a gema não fica parcial por elas). */
@@ -1788,7 +1808,7 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
  * os dois não se separarem — `h`: a gema compilada com `slug`, `arquetipo` e `nivel`; `q`: a qualidade.
  */
 function ehLinhaFeita(h, l, q) {
-  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasPR3.ehLinhaPR3(h.slug, l) && !GemasPR4.ehLinhaPR4(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l) && !GemasB3.ehLinhaB3(h.slug, l) && !GemasC4.ehLinhaC4(h.slug, l) && !GemasC3.ehLinhaC3(h.slug, l) && !GemasB4.ehLinhaB4(h.slug, l) && !GemasGAC.ehLinhaGAC(h.slug, l, h.arquetipo) && !GemasGBD.ehLinhaGBD(h.slug, l) && !GemasE1a.ehLinhaE1a(h.slug, l, h.arquetipo) && !GemasE1b.ehLinhaE1b(h.slug, l) && !GemasE2a.ehLinhaE2a(h.slug, l, h.arquetipo));
+  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasPR3.ehLinhaPR3(h.slug, l) && !GemasPR4.ehLinhaPR4(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l) && !GemasB3.ehLinhaB3(h.slug, l) && !GemasC4.ehLinhaC4(h.slug, l) && !GemasC3.ehLinhaC3(h.slug, l) && !GemasB4.ehLinhaB4(h.slug, l) && !GemasGAC.ehLinhaGAC(h.slug, l, h.arquetipo) && !GemasGBD.ehLinhaGBD(h.slug, l) && !GemasE1a.ehLinhaE1a(h.slug, l, h.arquetipo) && !GemasE1b.ehLinhaE1b(h.slug, l) && !GemasE2a.ehLinhaE2a(h.slug, l, h.arquetipo) && !GemasE2b.ehLinhaE2b(h.slug, l));
 }
 function avaliarNoJogo(h, formato) {
   const st = h.stats;
@@ -1872,7 +1892,7 @@ function avaliarNoJogo(h, formato) {
     // (lote A1: a gema de movimento sem dano — o Avanço, o Passo Rápido, a Emboscada — tem o efeito dela: o deslocamento)
     // (lote B1, dono 20/10: + a gema de cadáver sem dano mágico — o Detonar Mortos da Limpeza: o efeito é a explosão, `cadaverDaGema`)
     // (lote PR3, dono 21/10: + o Pacto de Beidat — o uso é o buff que fortalece as próximas magias, `GemasPR3.pactoNoUso`; lote B3: + a Troca de Corpos — o Fogo base + a Vida, `GemasB3.temDanoProprio`; lote C4: + o Definhar, `GemasC4.EFEITO_SEM_DANO`)
-    if (!Object.keys(st.dano ?? {}).length && !h.ataque && !st.dot?.length && !DESLOCAMENTO[h.slug] && !cadaverDaGema(h.slug, h.nivel) && !GemasPR3.ehPactoDeBeidat(h.slug) && !GemasB3.temDanoProprio(h.slug) && h.slug !== 'Bodyswap_of_Sacrifice' && !GemasC4.EFEITO_SEM_DANO.has(h.slug) && !GemasGBD.EFEITO_SEM_DANO.has(h.slug)) motivos.push('sem dano direto: nenhum efeito no combate');
+    if (!Object.keys(st.dano ?? {}).length && !h.ataque && !st.dot?.length && !DESLOCAMENTO[h.slug] && !cadaverDaGema(h.slug, h.nivel) && !GemasPR3.ehPactoDeBeidat(h.slug) && !GemasB3.temDanoProprio(h.slug) && h.slug !== 'Bodyswap_of_Sacrifice' && !GemasC4.EFEITO_SEM_DANO.has(h.slug) && !GemasGBD.EFEITO_SEM_DANO.has(h.slug) && !GemasE2b.EFEITO_SEM_DANO_E2B.has(h.slug)) motivos.push('sem dano direto: nenhum efeito no combate');
   }
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)
@@ -2156,7 +2176,7 @@ function addsDaCanalizacao(hunt) {
 export function adds(estado) {
   const hunt = estado?.hunt;
   const daCanalizacao = addsDaCanalizacao(hunt);
-  if (!hunt?.buffs && !hunt?.lacaios?.length && !hunt?.partilha?.naSala?.length && !hunt?.a2) return daCanalizacao;
+  if (!hunt?.buffs && !hunt?.lacaios?.length && !hunt?.partilha?.naSala?.length && !hunt?.a2 && !hunt?.poeSifaoE2b) return daCanalizacao;
   const agora = hunt.clock ?? 0;
   const total = {};
   // (× o "Efeito de Auras / dos Buffs dos Clamores / dos Arautos aumentado" dos únicos: `efeito_buff_gema:<arquétipo>` nas peças vestidas — e o
@@ -2236,6 +2256,8 @@ export function adds(estado) {
   for (const [k, v] of Object.entries(doA2)) total[k] = (total[k] ?? 0) + v;
   // (lote A4, dono 19/10) o da canalização de agora (`addsDaCanalizacao`)
   for (const [k, v] of Object.entries(daCanalizacao ?? {})) total[k] = (total[k] ?? 0) + v;
+  // (lote E2B, 26/10) a Regeneração da Armadilha Sifão de Gelo com inimigos afetados (`GemasE2b.addsDoSifao` — `Acoes.tiqueDoSifaoE2b` a põe)
+  for (const [k, v] of Object.entries(GemasE2b.addsDoSifao(hunt) ?? {})) total[k] = (total[k] ?? 0) + v;
   // (dono, 26/10: o dano físico adicionado do Golem da Carniça vai aos lacaios NÃO-golem — o PoB, `MinionModifier` —, não a você: `GemasE1a.danoDoGolemDaCarnica`,
   // no golpe de cada lacaio)
   for (const l of vivos) {
