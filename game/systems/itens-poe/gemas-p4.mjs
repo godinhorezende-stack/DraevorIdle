@@ -127,6 +127,18 @@ export function alternarPraga(p, agora, { recargaMs = 500, porSegundoPct = 12 } 
   return { modo: 'incubando' };
 }
 
+// ---------------------------------------------------------------- o Devastador
+
+/**
+ * (dono 27/10) O DEVASTADOR: "Estar próximo do totem te concede aumento da área de efeito para habilidades corpo a corpo" — o valor (o PoB:
+ * ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills) não está no PoB, no poedb salvo nem nas páginas do Scrapling: 15% é o número escolhido pelo dono
+ * (sem fonte; dono 27/10). "Perto" é o raio do buff dos totens ancestrais que o jogo já usa: a distância de ativação do totem (`l.ativacao` — a do Devastador, 7 m do
+ * PoB), a mesma do "X% mais Dano Corpo a Corpo enquanto o Totem estiver Ativo" do Chefe Guerreiro (`GemasPoe.adds`); não soma entre totens (o maior).
+ */
+export const DEVASTADOR = Object.freeze({ slug: 'Earthbreaker_Support', areaCorpoIncPct: 15, fonte: 'sem fonte; dono 27/10' });
+/** O buff do totem do Devastador em você, perto dele (`l.buffAtivo`): a Área de Efeito aumentada das Habilidades Corpo a Corpo. */
+export const buffDoDevastador = (pct = DEVASTADOR.areaCorpoIncPct) => (pct > 0 ? { 'area_inc@corpo': pct } : null);
+
 // ---------------------------------------------------------------- os Duplos do Golpe Duplo Vaal
 
 export const DUPLOS = Object.freeze({ slug: 'Vaal_Double_Strike', porUso: 2, maximo: 8, duracaoMs: 6000, nome: 'Duplo' });

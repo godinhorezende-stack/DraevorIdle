@@ -167,7 +167,13 @@ function usar({ e, b }, slug) {
   const provocou = (e.hunt.monstros ?? []).some((m) => !!m.estados?.provocado);
   const cegou = (e.hunt.monstros ?? []).some((m) => (m.estados?.cego?.ate ?? 0) > 0);
   const converteu = (e.hunt.lacaios ?? []).some((l) => l.tipo === 'convertido');
-  return { ok: true, dano, debuff, provocou, cegou, converteu, buff: !!e.hunt.buffs?.[G.doSlug(slug).acao] || !!e.hunt.vinculos?.length, deslocou, febre: (b.dots ?? []).some((d) => d.chave === 'Corrupting_Fever' && d.falta > 0) };
+  // (aval do dono 27/10, lote P4: o INFESTADOR é conferido pelo efeito — o uso põe o Incubando em `hunt.praga`; com o Valor, o tique da Praga causa dano no alvo)
+  let praga = false;
+  if (slug === 'Plague_Bearer' && e.hunt.praga?.modo === 'incubando') {
+    e.hunt.praga.valor = Infinity;
+    for (let i = 0; i < 3 && !praga; i++) { e.hunt.clock += 250; praga = Acoes.tiqueDaPraga(e, e.hunt, 250, e.hunt.clock).some((x) => x.t === 'dmg' && x.uid === b.uid && x.foe && x.v > 0); }
+  }
+  return { ok: true, dano, debuff, provocou, cegou, converteu, praga, buff: !!e.hunt.buffs?.[G.doSlug(slug).acao] || !!e.hunt.vinculos?.length, deslocou, febre: (b.dots ?? []).some((d) => d.chave === 'Corrupting_Fever' && d.falta > 0) };
 }
 
 // (aval do dono 27/10, R3) as gemas que não causam dano no PoE (base_deal_no_damage): o critério próprio de cada uma
@@ -195,8 +201,8 @@ test('G16: toda gema ativa "funciona" faz no jogo o que o status promete (o dano
       // (lote A1b, com o aval do dono: a Emboscada colada no alvo não se move e não causa dano — o efeito dela é o buff, `hunt.emboscada`)
       // (lote B2, com o aval do dono: a Febre Corrompedora — o Sangue Corrompido no alvo, pelo acerto da outra gema)
       // (lote C4, com o aval do dono 21/10: a magia sem acerto é conferida pelo debuff — `GemasPoe.magiaSemAcerto`)
-      if (SEM_DANO_NO_POE[slug] ? SEM_DANO_NO_POE[slug](u) : slug === 'Corrupting_Fever' ? u.febre : buff ? u.buff : G.magiaSemAcerto(slug, 20) ? u.debuff : u.dano > 0 || (r.arquetipo === 'movimento' && semDano && u.deslocou) || (slug === 'Ambush' && !!m.e.hunt.emboscada)) { feito = armas[0]; break; }
-      erros.push(`${armas[0]}: saiu sem ${SEM_DANO_NO_POE[slug] ? 'o efeito' : buff ? 'buff' : 'dano'}`);
+      if (SEM_DANO_NO_POE[slug] ? SEM_DANO_NO_POE[slug](u) : slug === 'Plague_Bearer' ? u.praga : slug === 'Corrupting_Fever' ? u.febre : buff ? u.buff : G.magiaSemAcerto(slug, 20) ? u.debuff : u.dano > 0 || (r.arquetipo === 'movimento' && semDano && u.deslocou) || (slug === 'Ambush' && !!m.e.hunt.emboscada)) { feito = armas[0]; break; }
+      erros.push(`${armas[0]}: saiu sem ${SEM_DANO_NO_POE[slug] || slug === 'Plague_Bearer' ? 'o efeito' : buff ? 'buff' : 'dano'}`);
     }
     if (!feito) falhas.push(`${slug} (${r.arquetipo}) — ${erros.slice(0, 3).join(' · ')}`);
   }

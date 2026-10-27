@@ -1417,6 +1417,22 @@ Testes que mudam pela regra nova (não mexi; esperam o aval do dono):
 - zerar-arvore-lote51:90: a alma do Estilhaçado logo depois do uso cai dentro do impedimento e não entra (esperado 109800 → 110000).
 - gemas-todas-funcionam-poe (G16): o Infestador virou 'funciona', mas o uso dele não causa dano na hora. O dano vem do Valor acumulado pelos Venenos, no tique. A montagem do G16 não roda o tique.
 
+### P4, segunda parte (resposta do dono, 27/10)
+
+- **Avais de teste** (comentário "aval do dono 27/10" em cada um):
+  - vinculos-poe:95: o Intuitivo fica 'funciona'.
+  - suportes-d2:78: a Tentação Vaal fica 'funciona', sem motivos.
+  - ativas-c4:95-96: o Golpe Duplo Vaal fica sem o motivo D4.4. O teste confere que os Duplos existem (`GemasP4.DUPLOS`: 2 por uso, máximo 8, e a linha do movimento com leitor). Ele não lê mais `MOTIVOS_C4`.
+  - arvore-principal-poe:131: o Infestador fica 'funciona'. Nas linhas 162 e 166, o sorteio fica travado em 0,1 para o bicho a 2 casas entrar no raio de 1,4 casa.
+  - zerar-arvore-lote51:90: 110000.
+  - G16: o Infestador é conferido pelo efeito. O uso põe o Incubando em `hunt.praga`, e o tique da Praga com Valor causa dano no alvo.
+- **Devastador** (sai de parcial): 15% de Área de Efeito aumentada nas suas Habilidades Corpo a Corpo enquanto você está perto do totem. O número é do dono, **sem fonte; dono 27/10** (`GemasP4.DEVASTADOR`). "Perto" é o raio do buff dos ancestrais que o jogo já usa: a distância de ativação do totem (`l.ativacao`). No Devastador ela é de 7 m (o PoB, `ancestor_totem_parent_activiation_range`): 3 casas, ou 4 com 50% de chance. É o mesmo caminho do "mais Dano Corpo a Corpo enquanto o Totem estiver Ativo" do Chefe Guerreiro (8 m): `l.buffAtivo = { 'area_inc@corpo': 15 }`, somado em `GemasPoe.adds`. Dois totens não somam: vale o maior. O motivo saiu. O teste está em gemas-p4.test.mjs (10 testes): perto dá +15 nas Corpo a Corpo e nada na magia, longe não dá nada, e dois totens não somam.
+- **Ficam falhando** (nenhum aval cobre; não mexi):
+  - zerar-arvore-lote51:94 (a linha 93 de antes, logo depois da 90): `antes - 200` depois do morto não Congelado. Com o impedimento, o `antes` é 110000 e o valor fica 110000; o teste espera 109800. É a mesma causa da linha 90.
+  - totens-suportes-poe:164 (G20b): exige que o Devastador tenha o motivo "Área de Efeito aumentada para Habilidades Corpo a Corpo". O motivo saiu por ordem do dono.
+- Placar (relatório regerado): ativas 562 · testada 460 · sem teste 43 · limitação 58 · não se aplica 1; suportes 262 · testada 212 · sem teste 49 · **parcial 0** · não se aplica 1.
+- Testes: gemas-p4 10/10. Dos 6 do aval: vinculos-poe 10/10, suportes-d2 12/12, ativas-c4 15/15, arvore-principal-poe 7/7, gemas-todas-funcionam-poe 4/4 e zerar-arvore-lote51 6/7 (a linha 94). Totens: especificos 7/7, uso 13/13 e suportes 5/6 (a linha 164). Bateria (ativas-*, gemas-*, suportes-*, itens-poe-gemas*, eficacia-ataque-poe; 58 arquivos): 867 testes, 834 passam, 33 pulados (regra do Draevor clássico), nenhum falha.
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.

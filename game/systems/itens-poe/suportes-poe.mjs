@@ -18,7 +18,7 @@ import { PROPRIAS_R3B, completarEfeito as completarEfeitoR3B } from './gemas-r3b
 // (lote R3C, 27/10: as Bênçãos, a Mina Local, a Blasfêmia Sobrenatural, a Constrição Pérfida, as Instabilidades Cinéticas e o Vínculo Frígido — `gemas-r3c.mjs`)
 import { PROPRIAS_R3C, ajustarEfeitoR3c } from './gemas-r3c.mjs';
 import { PROPRIAS_R3D } from './gemas-r3d.mjs';
-import { PROPRIAS_P4 } from './gemas-p4.mjs';
+import { PROPRIAS_P4, DEVASTADOR } from './gemas-p4.mjs';
 
 const ARQ_SUPORTES = new URL('../../gamedata/itens-poe/suportes-poe.json', import.meta.url);
 const ARQ_IDS = new URL('../../gamedata/itens-poe/suportes-poe-ids.json', import.meta.url);
@@ -916,7 +916,8 @@ export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
   }
   // (18/10, lote G20b) o DEVASTADOR: "um totem ancestral que usa a habilidade por você ENQUANTO VOCÊ ESTIVER PERTO dele" (a descrição; sem linha) — a
   // distância de ativação é a do PoB, `ancestor_totem_parent_activiation_range` 70 = 7 m (other.lua:1499)
-  if (slug === 'Earthbreaker_Support' && efeito.viraTotem) efeito.ativacaoM = 7;
+  // (dono 27/10, lote P4) + a Área de Efeito aumentada nas suas Habilidades Corpo a Corpo perto do totem: 15% (sem fonte; dono 27/10 — `GemasP4.DEVASTADOR`)
+  if (slug === 'Earthbreaker_Support' && efeito.viraTotem) Object.assign(efeito, { ativacaoM: 7, devastadorAreaCorpoPct: DEVASTADOR.areaCorpoIncPct });
   // (lote R3C) o sinal do "Efeito das Auras" da Bênção do Guardião pelo nível
   ajustarEfeitoR3c(slug, nivel, efeito);
   return { efeito, naoFeitas };
@@ -971,7 +972,7 @@ const DESCRICAO_NAO_FEITA = {
   // não tem o Impedimento de Ganho de Almas (as almas das Vaal são a recarga), então não há o que a Tentação substitua nem ganho de almas para bloquear enquanto ela dura
   // (lote P4, decisão do dono 27/10: o Impedimento de Ganho de Almas existe para todas as Vaal — `GemasP4.impedirAlmas`; a Tentação o troca pelo dano: sai daqui)
   // (lote P4: o Devastador fica — o valor da Área perto do totem não está no PoB, no poedb salvo nem nas páginas do Scrapling)
-  Earthbreaker_Support: ['não simulado: perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)'],
+  // (dono 27/10: 15%, sem fonte — `GemasP4.DEVASTADOR`; o buff vale no raio de ativação do totem, como o dos ancestrais: sai daqui)
 };
 
 function idsDosSuportes(slugs) {

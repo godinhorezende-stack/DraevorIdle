@@ -15,8 +15,7 @@
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 211,
-   "parcial": 1,
+   "implementada e testada": 212,
    "implementada, sem teste próprio": 49,
    "não se aplica": 1
   },
@@ -42,7 +41,7 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 1,
+   "linhasDistintas": 0,
    "emDuasOuMais": 0
   },
   "imagens": {
@@ -7580,10 +7579,8 @@
   {
    "slug": "Earthbreaker_Support",
    "nome": "Devastador",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9623,13 +9620,6 @@
    "icone": true
   }
  ],
- "linhasFaltando": [
-  {
-   "linha": "perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)",
-   "gemas": [
-    "Earthbreaker_Support"
-   ]
-  }
- ],
+ "linhasFaltando": [],
  "iconesRepetidos": []
 }

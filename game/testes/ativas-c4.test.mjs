@@ -14,6 +14,7 @@ const Acoes = await import('../systems/acoes.mjs');
 const GS = await import('../systems/skills/gemas.mjs');
 const G = await import('../systems/itens-poe/gemas-poe.mjs');
 const C4 = await import('../systems/itens-poe/gemas-c4.mjs');
+const P4 = await import('../systems/itens-poe/gemas-p4.mjs');
 const Dot = await import('../systems/combate/dot.mjs');
 const AfeccoesPoe = await import('../systems/itens-poe/afeccoes.mjs');
 const ModsPoe = await import('../systems/itens-poe/condicoes-poe.mjs');
@@ -91,9 +92,10 @@ test('C4: as gemas do lote saem de parcial (as linhas do PoE têm leitor); a Pra
     const r = G.REGISTRO.get(s);
     assert.deepEqual([s, r.statusNoJogo, r.motivosNoJogo], [s, 'funciona', []]);
   }
-  // (D4.4: o clone não anda no jogo — limitação do idle, não um efeito não simulado)
-  assert.deepEqual(G.REGISTRO.get('Vaal_Double_Strike').motivosNoJogo, [C4.MOTIVOS_C4.Vaal_Double_Strike[0]]);
-  assert.match(C4.MOTIVOS_C4.Vaal_Double_Strike[0], /^limitação do idle: /);
+  // (aval do dono 27/10, lote P4: os Duplos do Golpe Duplo Vaal existem — andam com o "Clones possuem X% de aumento da Velocidade de Movimento"; o motivo D4.4 saiu)
+  assert.deepEqual(G.REGISTRO.get('Vaal_Double_Strike').motivosNoJogo, []);
+  assert.deepEqual([P4.DUPLOS.slug, P4.DUPLOS.porUso, P4.DUPLOS.maximo], ['Vaal_Double_Strike', 2, 8]);
+  assert.ok(P4.duplosDasLinhas(G.textosDaGema('Vaal_Double_Strike', 20).linhas).movimentoPct > 0, 'a linha do movimento dos Duplos tem leitor');
 });
 
 test('C4: os números das linhas no nível 20 e na qualidade 20 (os do PoB)', { skip: SEM }, () => {

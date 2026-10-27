@@ -75,9 +75,9 @@ const danoEm = (eventos, b) => eventos.filter((x) => x.t === 'dmg' && x.uid === 
 test('D2: o Decapitar, a Transfusão e as Minas da Cadeia Explosiva e de Alto Impacto saem de "parcial"; a Tentação Vaal fica só pelo impedimento de ganho de almas', { skip: SEM }, () => {
   for (const s of ['Behead_Support', 'Transfusion_Support', 'Blastchain_Mine_Support', 'High-Impact_Mine_Support']) assert.equal(SP.doSlug(s).status, 'funciona', `${s}: ${SP.doSlug(s).motivos.join(' | ')}`);
   const t = SP.doSlug('Vaal_Temptation_Support');
-  assert.equal(t.status, 'parcial');
-  assert.equal(t.motivos.length, 1);
-  assert.match(t.motivos[0], /impedimento de ganho de almas/i);
+  // (aval do dono 27/10, lote P4: o Impedimento de Ganho de Almas existe e a Tentação Vaal o troca pelo dano — funciona, sem motivos)
+  assert.equal(t.status, 'funciona');
+  assert.deepEqual(t.motivos, []);
   // (a Mina Local: a linha da reserva também sai — o resto dela segue)
   assert.ok(!SP.doSlug('Locus_Mine_Support').motivos.some((m) => /Reserva Base/.test(m)));
 });

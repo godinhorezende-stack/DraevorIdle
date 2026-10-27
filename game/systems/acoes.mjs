@@ -3632,6 +3632,8 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
       ...(q.tipo === 'totem' && (efeito?.ativacaoM ?? q.efeitosDoTotem?.ativacaoM) > 0 ? { ativacao: casasDoRaio(efeito?.ativacaoM ?? q.efeitosDoTotem.ativacaoM) } : {}),
       // (lote G20c) os efeitos próprios do totem (`LacaiosPoe.efeitosDoTotem`): o buff do ancestral Ativo, a aura do Rejuvenescedor, o Devorador
       ...(q.efeitosDoTotem?.buffAtivo ? { buffAtivo: q.efeitosDoTotem.buffAtivo } : {}),
+      // (dono 27/10, lote P4) o totem do DEVASTADOR: a Área de Efeito aumentada nas suas Habilidades Corpo a Corpo com você perto dele (`l.ativacao`) — `GemasP4.DEVASTADOR`
+      ...(q.tipo === 'totem' && efeito?.devastadorAreaCorpoPct > 0 ? { buffAtivo: { ...(q.efeitosDoTotem?.buffAtivo ?? {}), ...GemasP4.buffDoDevastador(efeito.devastadorAreaCorpoPct) } } : {}),
       ...(q.efeitosDoTotem?.auraDoTotem ? { auraDoTotem: { af: q.efeitosDoTotem.auraDoTotem.af, raio: casasDoRaio(q.efeitosDoTotem.auraDoTotem.raioM), absorvePct: q.efeitosDoTotem.auraDoTotem.absorvePct } } : {}),
       ...(q.efeitosDoTotem?.devorador ? { devorador: q.efeitosDoTotem.devorador } : {}),
       // (lote E1a) o Efeito do Buff do golem (a qualidade), o Ceifador e o "mais Dano por Lacaio Não-Golem próximo" do Golem da Carniça — `GemasE1a`

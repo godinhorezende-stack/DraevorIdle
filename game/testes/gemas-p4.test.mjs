@@ -1,7 +1,8 @@
 // (lote P4, rodada 4 das gemas — dono 27/10: "quero resolver") As parciais e as limitações do idle que sobraram: o Impedimento de Ganho de Almas de todas as Vaal (a
 // decisão do dono) e a Tentação Vaal que o troca; o Vínculo Intuitivo (os acertos do aliado vinculado ativam as suas magias ligadas, com o "menos Dano" e a recarga de
 // 0,5 s); as Maquinações (o "por fundamental" do poedb pt é "per Keystone" — por keystone alocada); o Infestador (o raio do PoB e a troca à mão); e os Duplos do Golpe
-// Duplo Vaal (andam até o inimigo e usam o golpe com a sua força). O Devastador segue parcial: o valor da Área perto do totem não está em fonte nenhuma em disco.
+// Duplo Vaal (andam até o inimigo e usam o golpe com a sua força). O Devastador: 15% de Área de Efeito aumentada nas Habilidades Corpo a Corpo perto do totem (sem
+// fonte; o número do dono 27/10), no raio de ativação do totem.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
@@ -74,12 +75,42 @@ function usar(e, alvo, { slot = 0, passo = 60_000, v = 0.5, manual = true } = {}
 
 // ---------------------------------------------------------------- o status
 
-test('P4: o Vínculo Intuitivo, o Infestador, o Golpe Duplo Vaal, a Tentação Vaal e as Maquinações saem de parcial/limitação; o Devastador segue parcial (sem o número)', { skip: SEM }, async () => {
+test('P4: o Vínculo Intuitivo, o Infestador, o Golpe Duplo Vaal, a Tentação Vaal, as Maquinações e o Devastador saem de parcial/limitação', { skip: SEM }, async () => {
   await montar([['Fireball']]);
   for (const s of ['Intuitive_Link', 'Plague_Bearer', 'Vaal_Double_Strike']) assert.deepEqual([s, G.doSlug(s).statusNoJogo, G.doSlug(s).motivosNoJogo], [s, 'funciona', []]);
-  for (const s of ['Vaal_Temptation_Support', 'Machinations_Support']) assert.deepEqual([s, SP.doSlug(s).status, SP.doSlug(s).motivos], [s, 'funciona', []]);
-  assert.equal(SP.doSlug('Earthbreaker_Support').status, 'parcial');
-  assert.match(SP.doSlug('Earthbreaker_Support').motivos[0], /ancestor_totem_grants_owner_area_of_effect/);
+  for (const s of ['Vaal_Temptation_Support', 'Machinations_Support', 'Earthbreaker_Support']) assert.deepEqual([s, SP.doSlug(s).status, SP.doSlug(s).motivos], [s, 'funciona', []]);
+});
+
+// ---------------------------------------------------------------- o Devastador
+
+test('P4: o Devastador — perto do totem (o raio de ativação, 7 m), 15% de Área de Efeito aumentada nas suas Habilidades Corpo a Corpo (sem fonte; dono 27/10); longe, nada', { skip: SEM }, async () => {
+  assert.deepEqual([P4.DEVASTADOR.areaCorpoIncPct, P4.DEVASTADOR.fonte], [15, 'sem fonte; dono 27/10']);
+  const ModsPoe = await import('../systems/itens-poe/condicoes-poe.mjs');
+  const { e, b } = await montar([['Ground_Slam', 'Earthbreaker_Support']], { arma: 'Two_Hand_Maces/Driftwood_Maul', vocacao: 'knight', classe: 'Marauder' });
+  const ef = GS.efeitoNaSkill(e, G.doSlug('Ground_Slam').acao);
+  assert.deepEqual([ef.viraTotem, ef.ativacaoM, ef.devastadorAreaCorpoPct], [1, 7, 15]);
+  const areaCorpo = () => { Ficha.invalidar(e); return ModsPoe.somaPorTags(Ficha.combate(e), ['corpo', 'area']).area_inc ?? 0; };
+  const areaMagia = () => ModsPoe.somaPorTags(Ficha.combate(e), ['magia', 'area']).area_inc ?? 0;
+  const sem = areaCorpo();
+  const semMagia = areaMagia();
+  const u = usar(e, b, { v: 0.9 });
+  assert.ok(u.r.ok, u.r.erro);
+  const l = (e.hunt.lacaios ?? []).find((x) => x.tipo === 'totem' && x.hp > 0);
+  assert.ok(l, 'o totem ancestral');
+  assert.equal(l.ativacao, 3, '7 m = 3 casas e meia: com o sorteio 0,9, 3');
+  assert.deepEqual(l.buffAtivo, { 'area_inc@corpo': 15 });
+  // (perto: a até 3 casas do totem)
+  Object.assign(e.hunt.pos, { x: l.x + 3, y: l.y });
+  assert.equal(areaCorpo(), sem + 15, 'perto: +15% nas Corpo a Corpo');
+  assert.equal(areaMagia(), semMagia, 'a magia não ganha');
+  assert.equal(G.adds(e)['area_inc@corpo'], 15);
+  // (longe: a 4 casas)
+  Object.assign(e.hunt.pos, { x: l.x + 4, y: l.y });
+  assert.equal(areaCorpo(), sem, 'longe do totem, nada');
+  // (dois totens não somam: o maior)
+  e.hunt.lacaios.push({ ...l, uid: `${l.uid}b` });
+  Object.assign(e.hunt.pos, { x: l.x, y: l.y });
+  assert.equal(areaCorpo(), sem + 15, 'não soma entre totens');
 });
 
 // ---------------------------------------------------------------- o Impedimento de Ganho de Almas

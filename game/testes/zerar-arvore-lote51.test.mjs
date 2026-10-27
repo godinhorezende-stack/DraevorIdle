@@ -87,7 +87,8 @@ test('o CALAFRIO DA CORRUPÇÃO: o inimigo Estilhaçado (morto Congelado) anda U
   const antes = h.cooldowns[id].ate;
   const congelado = { uid: 'x', hp: 0, estados: { congelado: { ate: h.clock + 5000 } } };
   ModsPoe.evento(e, h, 'matar', Ficha.combate(e), { alvo: congelado, rng: () => 0 });
-  assert.equal(h.cooldowns[id].ate, antes - 200);
+  // (aval do dono 27/10, lote P4: dentro do Impedimento de Ganho de Almas da Vaal usada, a alma do Estilhaçado não entra)
+  assert.equal(h.cooldowns[id].ate, 110000);
   // (o morto que não estava Congelado não é estilhaço)
   ModsPoe.evento(e, h, 'matar', Ficha.combate(e), { alvo: { uid: 'y', hp: 0, estados: {} }, rng: () => 0 });
   assert.equal(h.cooldowns[id].ate, antes - 200);

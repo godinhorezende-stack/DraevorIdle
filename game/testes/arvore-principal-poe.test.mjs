@@ -128,7 +128,8 @@ test('o COVEIRO: Profanar cria 5 cadáveres dos monstros da área e Desenterrar 
 const await_combate = await import('../systems/hunt/combate.mjs');
 
 test('o INFESTADOR: na barra, Incuba (40% do dano esperado de cada Veneno, 20% menos Veneno fora do máximo); no máximo (× "Valor Máximo aumentado") com inimigo perto, Infesta (12% do Valor por segundo como Caos a até 2 casas) até acabar', { skip: SEM }, () => {
-  assert.equal(G.doSlug('Plague_Bearer').statusNoJogo, 'parcial');
+  // (aval do dono 27/10, lote P4: o Infestador funciona — o raio do PoB e a troca à mão)
+  assert.equal(G.doSlug('Plague_Bearer').statusNoJogo, 'funciona');
   assert.equal(G.maxDaPraga(1), 4000);
   assert.equal(G.maxDaPraga(20), 1_000_000);
   const e = personagem({ gemas: ['Plague_Bearer'], af: { praga_max: 20 } });
@@ -159,11 +160,13 @@ test('o INFESTADOR: na barra, Incuba (40% do dano esperado de cada Veneno, 20% m
   Object.assign(b, { x: h.pos.x + 2 });
   const longe = h.monstros.find((m) => m !== b);
   Object.assign(longe, { x: h.pos.x + 3, y: h.pos.y, z: h.z, hp: 1e9, maxHp: 1e9 });
-  Acoes.tiqueDaPraga(e, h, 250, t0 + 500);
+  // (aval do dono 27/10, lote P4: o raio do PoB é de 1,4 casa — a fração é a chance de mais uma; o sorteio travado põe o bicho a 2 casas dentro)
+  const sorteio = (f) => { const o = Math.random; Math.random = () => 0.1; try { return f(); } finally { Math.random = o; } };
+  sorteio(() => Acoes.tiqueDaPraga(e, h, 250, t0 + 500));
   assert.equal(h.praga.modo, 'infestando');
   assert.equal(h.praga.inicio, 1_200_000);
   const f = ficha(e);
-  const eventos = Acoes.tiqueDaPraga(e, h, 250, t0 + 750);
+  const eventos = sorteio(() => Acoes.tiqueDaPraga(e, h, 250, t0 + 750));
   const porTique = (1_200_000 * 0.12) / 4;
   assert.equal(1e9 - b.hp, Math.round(resistido(h, b, 'chaos', porTique, f)), 'Caos pela resistência, sem os seus modificadores');
   assert.equal(longe.hp, 1e9, 'a 3 casas, não');

@@ -25,9 +25,8 @@ Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 211 |
+| implementada e testada | 212 |
 | implementada, sem teste próprio | 49 |
-| parcial | 1 |
 | não se aplica | 1 |
 
 ### Variantes
@@ -38,7 +37,7 @@ Só os ataques:
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 1 linhas distintas (0 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 0 linhas distintas (0 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
 - Testes que citam a gema: 511/562 ativas, 213/262 suportes.
@@ -48,7 +47,7 @@ Só os ataques:
 
 | Gemas | Linha |
 |---|---|
-| 1 | perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB) |
+
 
 ## Gemas de habilidade pendentes
 
@@ -171,8 +170,7 @@ Só os ataques:
 
 ## Gemas de suporte pendentes
 
-- **Earthbreaker_Support** (Devastador) — parcial
-  - não simulado: perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)
+
 
 ## Não se aplicam ao jogo
 
