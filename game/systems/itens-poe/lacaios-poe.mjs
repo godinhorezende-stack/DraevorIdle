@@ -180,7 +180,7 @@ const singular = (t) => String(t).trim().split(/\s+/).map((p) => (/ões$|ãos$/i
 
 /**
  * O que a gema invoca no `nivel`: `{ tipo: 'lacaio'|'totem', nome, maximo, porUso, duracaoMs, nivel, vida, dano: {min,max}, intervaloMs, desenho }`.
- * `efeito` (o dos suportes ligados): `lacaioVidaPct`, `lacaioDanoPct`, `totensExtras`, `duracaoPct`.
+ * `efeito` (o dos suportes ligados): `lacaioVidaPct`, `lacaioDanoPct` (o aumentado, soma), `lacaioMaisDanoPct` (o mais/menos, multiplica), `totensExtras`, `duracaoPct`.
  */
 /**
  * (18/10, lote G20a) O multiplicador de VIDA do tipo de totem no PoB (`totemLifeMult[skillTotemId]` — Misc.lua:214; o id em act_str/act_dex.lua): ×1,2
@@ -360,7 +360,7 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   // (lote 43, P040: + do escudo da Égide Necromântica — o "Dano Mágico aumentado" no lacaio que conjura, o dano do elemento dele)
   const conjura = /mag[oa]|mage|espectro|spectre/i.test(`${nome} ${t.nome}`);
   const doEscudo = (conjura ? m0('minion_dano_magico') : 0) + m0(`minion_dano_${elemento ?? 'physical'}`);
-  const golpe = f.dano * (1 + maisDano / 100) * (1 + ((efeito?.lacaioDanoPct ?? 0) + m0('minion_dmg') + porTipo('lacaio_dano') + doEscudo + incV) / 100) * Math.max(0, 1 + porTipo('lacaio_mais_dano') / 100) * extra;
+  const golpe = f.dano * (1 + maisDano / 100) * (1 + ((efeito?.lacaioDanoPct ?? 0) + m0('minion_dmg') + porTipo('lacaio_dano') + doEscudo + incV) / 100) * Math.max(0, 1 + porTipo('lacaio_mais_dano') / 100) * Math.max(0, 1 + (efeito?.lacaioMaisDanoPct ?? 0) / 100) * extra;
   // O dano SOMADO aos lacaios das peças ("Lacaios causam X a Y de Dano de Fogo adicional"): no golpe deles, como o dano adicionado da gema.
   for (const el of ['physical', 'fire', 'ice', 'energy', 'chaos']) somado = [somado[0] + m0(`minion_added_${el}_min`), somado[1] + m0(`minion_added_${el}_max`)];
   // (+ o do TIPO: "Golens têm X a Y de Dano Físico de Ataques Adicional".)

@@ -130,7 +130,7 @@ const maisDe = (texto, v) => ({ [chaveDoMais(texto)]: v, ...(/Dano Mágico|de da
 /** O "mais Dano <tipo> degenerativo" → a chave do degenerativo daquele tipo (`acoes` — as afecções de dano e o degenerativo da gema). */
 const MAIS_DOT_DO_TIPO = { caos: 'maisDotCaosPct', 'físico': 'maisDotFisicoPct', gelo: 'maisDotGeloPct', fogo: 'maisDotFogoPct', raio: 'maisDotRaioPct' };
 /** Os "mais/menos" em % que MULTIPLICAM (duas linhas do mesmo suporte na mesma chave: ×, não +). */
-const MAIS_MULTIPLICA = new Set(['maisDanoPct', 'maisDanoAcertoPct', 'maisDanoMagicoPct', 'maisAfeccaoPct', 'maisIncendioPct', 'maisSangramentoPct', 'maisVenenoPct', 'maisDotPct', ...Object.values(MAIS_DOT_DO_TIPO)]);
+const MAIS_MULTIPLICA = new Set(['maisDanoPct', 'maisDanoAcertoPct', 'maisDanoMagicoPct', 'maisAfeccaoPct', 'maisIncendioPct', 'maisSangramentoPct', 'maisVenenoPct', 'maisDotPct', 'lacaioMaisDanoPct', ...Object.values(MAIS_DOT_DO_TIPO)]);
 // (lote A3, dono 19/10) as chaves que são uma flag ou um teto (o poedb repete a linha com "\n" no meio — o Localizar, a Nova de Flechas): a maior
 // das linhas, não a soma
 const O_MAIOR = new Set(['intensidadeMax', 'intensidadeMenosProjetil', 'doPontoDoAlvo', 'emCirculo', 'soArco', 'origensLaterais', 'projeteisMinimo', 'voltaAtravessa', 'retornar']);
@@ -299,7 +299,8 @@ const REGRAS = [
   [/aplicam suas Maldições como Auras/i, () => ({ maldicaoEmAura: 1 })],
   [new RegExp(`^${N}% menos Efeito de Maldições Suportadas`, 'i'), (m) => ({ efeitoMaldicaoPct: -num(m[1]) })],
   // LACAIOS e TOTENS (`itens-poe/lacaios-poe.mjs`): dano e vida dos lacaios, totens a mais.
-  [new RegExp(`Lacaios? (?:d[ae]s? Habilidades Suportadas )?causam? ${N}% (mais|menos) Dano`, 'i'), (m) => ({ lacaioDanoPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  // (27/10) o "mais/menos Dano" dos lacaios MULTIPLICA (PoB sup_int.lua, `minion_damage_+%_final`), à parte do "Dano aumentado" que soma
+  [new RegExp(`Lacaios? (?:d[ae]s? Habilidades Suportadas )?causam? ${N}% (mais|menos) Dano`, 'i'), (m) => ({ lacaioMaisDanoPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
   [new RegExp(`Lacaios? (?:d[ae]s? Habilidades Suportadas )?(?:causam? )?Dano aumentado em ${N}%`, 'i'), (m) => ({ lacaioDanoPct: num(m[1]) })],
   [new RegExp(`Lacaios? (?:d[ae]s? Habilidades Suportadas )?têm ${N}% (mais|menos) Vida`, 'i'), (m) => ({ lacaioVidaPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
   [new RegExp(`Lacaios? (?:d[ae]s? Habilidades Suportadas )?têm Vida Máxima aumentada em ${N}%`, 'i'), (m) => ({ lacaioVidaPct: num(m[1]) })],
