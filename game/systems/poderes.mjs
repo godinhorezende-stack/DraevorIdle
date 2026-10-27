@@ -208,7 +208,8 @@ export function aplicarNoJogador({ estado, hunt, bicho, dano, elemento, eventos,
   if (dano <= 0) return 0;
   estado.hp = Math.max(0, estado.hp - dano);
   eventos.push({ t: 'fx', id: EFEITO_DO_SANGUE, uid: 'player', x: base.x, y: base.y });
-  eventos.push({ t: 'dmg', ...base, v: dano, color: COR_DO_ELEMENTO[elemento] ?? '#ff0000' });
+  // (o tipo e a marca do golpe que zerou a vida: a caixa da morte diz quem matou, com o quê e quanto — `Morte.golpeQueMatou`)
+  eventos.push({ t: 'dmg', ...base, v: dano, color: COR_DO_ELEMENTO[elemento] ?? '#ff0000', ...(elemento ? { elemento } : {}), ...(estado.hp <= 0 ? { fatal: true } : {}) });
   // Parry e Numb (charms defensivos).
   Charms.depoisDeApanhar(estado, hunt, bicho, dano, eventos);
   return dano;

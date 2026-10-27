@@ -2329,10 +2329,13 @@ export class Sessao {
     let morte = null;
     if (ausencia.morreu) {
       morte = this.morrerNaHunt();
+      // O golpe que matou na caçada offline (`Cacadas.simularAusencia` → `golpeFatal`): fica no relatório gravado, com a conta da morte.
+      if (ausencia.golpeFatal) Object.assign(morte, { golpe: ausencia.golpeFatal, golpeTexto: Morte.textoDoGolpe(ausencia.golpeFatal) });
       andamento.motivo =
         `Você morreu caçando enquanto estava fora e perdeu ${morte.lost.toLocaleString('pt-BR')} de experiência` +
         `${morte.goldLost ? ` e ${morte.goldLost.toLocaleString('pt-BR')} de ouro` : ''}` +
-        `${morte.levelPerdido ? ` (caiu ${morte.levelPerdido} level)` : ''}.`;
+        `${morte.levelPerdido ? ` (caiu ${morte.levelPerdido} level)` : ''}.` +
+        `${morte.golpeTexto ? ` ${morte.golpeTexto}.` : ''}`;
     }
     this.estado.relatorioDaAusencia = { report: andamento, morte, em: Date.now() };
     return { andamento, morte, novo: true };
@@ -2871,7 +2874,18 @@ export class Sessao {
         if (!this.semAba && this.estado.hp > 0) this.entrarAutomaticoNoPortal();
         // A caixa "Você morreu" do client (`mostrarMorte`), no formato do `death` original.
         // Cair no duelo não é morte: é derrota, sem perder nada (ver `Arena.caiu`).
-        if (this.estado.hp <= 0 && !Arena.caiu(this)) this.enviar({ t: 'death', ...this.morrerNaHunt() });
+        if (this.estado.hp <= 0 && !Arena.caiu(this)) {
+          /*
+           * ---- O golpe que matou aparece (report do dono, 27/10) ----
+           * Os eventos deste tique iam no quadro DEPOIS da morte — já na cidade, sem a caçada, por baixo da caixa: o número do golpe
+           * que matou nunca era visto. Agora vai primeiro o ÚLTIMO quadro da caçada, com os eventos (o número sobe em cima do
+           * personagem, na cena dele); depois o `death`, com o golpe (quem, qual, quanto e o tipo — `Morte.golpeQueMatou`); e a cidade.
+           */
+          this.mandarEstado(false, eventos);
+          const golpe = Morte.golpeQueMatou(eventos, this.personagem.nome);
+          this.enviar({ t: 'death', ...this.morrerNaHunt(), ...(golpe ? { golpe, golpeTexto: Morte.textoDoGolpe(golpe) } : {}) });
+          return this.mandarEstado(false);
+        }
         if (!this.estado.hunt) return this.mandarEstado(false, eventos);
         this.mandarEstado(false, eventos);
       } catch (e) {

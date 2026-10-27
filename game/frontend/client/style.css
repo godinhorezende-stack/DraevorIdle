@@ -10835,6 +10835,8 @@ input, textarea {
   font-size: 30px; letter-spacing: .12em; text-transform: uppercase;
   color: #e0564c; text-shadow: 0 0 18px #7a2c2699;
 }
+/* O golpe que matou: quem, com o quê e quanto. */
+.morte-golpe { margin: -4px 0 0; font-size: 13px; color: #f0c9a0; letter-spacing: .02em; }
 
 /* As perdas em coluna: o número grande, o rótulo miúdo embaixo. */
 .morte-perdas { display: flex; justify-content: center; gap: 26px; margin: 2px 0 4px; }

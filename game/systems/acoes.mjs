@@ -383,7 +383,7 @@ function danoDoTraumatismo(estado, hunt, personagem, valor, eventos) {
   else dano = Defesa.absorver(estado, ficha, dano, eventos, base);
   if (!(dano > 0)) return 0;
   estado.hp = Math.max(0, (estado.hp ?? 0) - dano);
-  eventos.push({ t: 'dmg', ...base, v: dano, color: COR_DO_ELEMENTO.physical ?? '#ff0000' });
+  eventos.push({ t: 'dmg', ...base, v: dano, color: COR_DO_ELEMENTO.physical ?? '#ff0000', elemento: 'physical', ...(estado.hp <= 0 ? { fatal: true } : {}) });
   return dano;
 }
 
@@ -809,7 +809,7 @@ function ritualEmVoce(estado, hunt, personagem, slug, nivel, eventos) {
   dano = Defesa.absorverComOCaos(estado, ficha, dano, dano, eventos, base);
   if (!(dano > 0)) return 0;
   estado.hp = Math.max(0, (estado.hp ?? 0) - dano);
-  eventos.push({ t: 'dmg', ...base, v: dano, color: COR_DO_ELEMENTO.chaos ?? '#b44dff' });
+  eventos.push({ t: 'dmg', ...base, v: dano, color: COR_DO_ELEMENTO.chaos ?? '#b44dff', elemento: 'chaos', ...(estado.hp <= 0 ? { fatal: true } : {}) });
   return dano;
 }
 /**
