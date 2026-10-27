@@ -2,39 +2,38 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 391,
+   "implementada e testada": 445,
    "implementada, sem teste próprio": 44,
-   "parcial": 114,
-   "limitação do modelo idle": 12,
+   "parcial": 20,
+   "limitação do modelo idle": 52,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 167,
+   "implementada e testada": 176,
    "implementada, sem teste próprio": 18,
-   "parcial": 18,
-   "limitação do modelo idle": 7
+   "parcial": 6,
+   "limitação do modelo idle": 10
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 102,
-   "parcial": 109,
+   "implementada e testada": 175,
+   "parcial": 36,
    "implementada, sem teste próprio": 51
   },
   "variantes": {
    "vaal": {
     "total": 52,
-    "implementada e testada": 33,
-    "parcial": 12,
-    "implementada, sem teste próprio": 6,
-    "limitação do modelo idle": 1
+    "implementada e testada": 41,
+    "limitação do modelo idle": 5,
+    "implementada, sem teste próprio": 6
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 134,
+    "implementada e testada": 153,
     "implementada, sem teste próprio": 24,
-    "parcial": 44,
-    "limitação do modelo idle": 7
+    "parcial": 6,
+    "limitação do modelo idle": 26
    }
   },
   "compatibilidade": {
@@ -45,8 +44,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 380,
-   "emDuasOuMais": 53
+   "linhasDistintas": 132,
+   "emDuasOuMais": 13
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -60,8 +59,8 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 440,
-   "suportesCitados": 119,
+   "ativasCitadas": 504,
+   "suportesCitados": 186,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
@@ -178,9 +177,7 @@
    "arquetipo": "lacaio",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: +2.1 metros para o alcance do golpe corpo a corpo do lacaio",
-    "efeito não simulado: Este ataque e lacaios convertem 50 % do dano físico em dano elétrico",
-    "efeito não simulado: +0.5 metros para o alcance do golpe corpo a corpo do lacaio"
+    "efeito não simulado: Este ataque e lacaios convertem 50 % do dano físico em dano elétrico"
    ],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
@@ -286,12 +283,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 20 % menos Dano em Área",
-    "efeito não simulado: Raio acerta 1 alvo dentro de 5 metros",
-    "efeito não simulado: 0 % menos Dano em Área"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -368,13 +361,8 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Não pode ser Evadido",
-    "efeito não simulado: Raio acerta 30 alvos dentro de 10 metros",
-    "efeito não simulado: Aura faz com que Castigo ataque +1 alvos com relâmpagos",
-    "efeito não simulado: +10 % mais Dano em Área"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -453,10 +441,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "totem",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Velocidade de Projéteis aumentada em 40 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -468,10 +454,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "totem",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 128 % mais Velocidade de Projétil"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -548,12 +532,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: Estandarte concede Precisão aumentada em 8 % a Você e Aliados",
-    "efeito não simulado: Estandarte concede 4 % mais Dano Físico com Habilidades Corpo a Corpo a Você e Aliados"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -908,12 +888,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Sentinelas Ascendidos causam 300 % mais Dano",
-    "efeito não simulado: Sentinelas Ascendidos sofrem 70 % menos Dano",
-    "efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -992,10 +968,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Estandarte concede -12 de Dano sofrido de cada Tipo de Dano dos Acertos Suprimidos a Você e Aliados"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1037,12 +1011,10 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "arauto",
-   "estado": "parcial",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
-   "outros": [
-    "a queima do excesso de dano é a mesma em todos os vizinhos do morto (as condições de cada alvo não entram)"
-   ],
+   "outros": [],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -1057,8 +1029,7 @@
     "efeito não simulado: Convoca um Sentinela da Pureza quando você Matar um Inimigo",
     "efeito não simulado: 20 % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único",
     "efeito não simulado: Buff concede 12 % mais Dano Físico",
-    "efeito não simulado: Lacaios causam 95 % de Dano Físico",
-    "efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %"
+    "efeito não simulado: Lacaios causam 95 % de Dano Físico"
    ],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
@@ -1177,10 +1148,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "clamor",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Ataques Impelidos ativam as Magias Suportadas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1205,10 +1174,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Estandarte faz com que você e Aliados Recuperem 34 de Vida ao Bloquear"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1301,10 +1268,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "clamor",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Buff tem 100 % mais Efeito em seus Lacaios"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1316,11 +1281,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Efeito das Auras aumentado em 76 %",
-    "efeito não simulado: Resistência à Fogo de Inimigos Próximos é Ignorada por Acertos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1371,10 +1333,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Velocidade de Movimento dos Lacaios aumentada em 40 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -1388,10 +1348,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Velocidade de Movimento dos Lacaios aumentada em 40 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -1522,11 +1480,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 25 % de chance de invocar uma Sentinela da Dominação normal ao atingir um monstro raro ou único",
-    "efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -1540,10 +1495,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 25 % de chance de invocar uma Sentinela da Dominação normal ao atingir um monstro raro ou único"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -1609,10 +1562,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Receba 15 % do Dano Físico como Dano de Gelo Extra"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1624,10 +1575,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Receba 20 % do Dano Físico como Dano de Gelo Extra"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1756,12 +1705,8 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Sentinelas Ascendidos causam 300 % mais Dano",
-    "efeito não simulado: Sentinelas Ascendidos sofrem 70 % menos Dano",
-    "efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -1879,10 +1824,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Efeito do Buff aumentado em 20 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -1896,10 +1839,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -1928,10 +1869,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Efeito do Buff aumentado em 20 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -1945,10 +1884,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -1962,11 +1899,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Lacaios têm 50 % menos Vida Máxima",
-    "efeito não simulado: Efeito do Buff aumentado em 20 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -2162,12 +2096,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Raio Base da explosão menor igual a 3 metros",
-    "efeito não simulado: Causa 7 explosões menores Explosões menores têm entre 1 % de redução e 30 % de aumento do raio base, aleatoriamente",
-    "efeito não simulado: Causa +2 explosões menores"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2179,12 +2109,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Raio Base da explosão menor igual a 3 metros",
-    "efeito não simulado: Causa 7 explosões menores Explosões menores têm entre 1 % de redução e 30 % de aumento do raio base, aleatoriamente",
-    "efeito não simulado: Causa +2 explosões menores"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2196,10 +2122,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 30 % menos Velocidade de Arremesso de Armadilhas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2489,10 +2413,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: +2 ao Máximo de Armas Animadas"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -2506,10 +2428,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: +1 ao Máximo de Armas Animadas"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -2523,11 +2443,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Lâminas Persistêntes Animadas se tornam Arcos",
-    "efeito não simulado: +2 ao Máximo de Armas Animadas"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -2541,12 +2458,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Trava o inimigo no lugar",
-    "efeito não simulado: Inimigos recebem 25 % de aumento de Dano dos Acertos de Minas ou Armadilhas",
-    "efeito não simulado: Inimigos possuem 80 % menos Velocidade de Movimento no início do Debuff"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2558,11 +2471,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Trava o inimigo no lugar",
-    "efeito não simulado: Empala Inimigos ao Acertar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2652,11 +2562,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "totem",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente)",
-    "efeito não simulado: Velocidade de Projéteis aumentada em 40 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2668,11 +2575,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "totem",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente)",
-    "efeito não simulado: Velocidade de Projéteis aumentada em 40 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2697,11 +2601,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Anima até 10 Armas",
-    "efeito não simulado: +2 ao Máximo de Armas Animadas"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -2987,9 +2888,7 @@
    "arquetipo": "armadilha",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Gira 1 vez",
-    "efeito não simulado: Sangramentos inflingidos por esta Habilidade causam Dano 50 % mais rápido",
-    "efeito não simulado: Sangramentos inflingidos por esta Habilidade causam Dano 10 % mais rápido"
+    "efeito não simulado: Gira 1 vez"
    ],
    "idle": [],
    "outros": [],
@@ -3054,10 +2953,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 286 a 429 de Dano de Fogo adicionado contra Inimigos Queimando"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3069,11 +2966,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 50 % de Chance de uma Armadilha ser Ativada uma vez adicional",
-    "efeito não simulado: 881 a 1316 de Dano de Fogo adicionado contra Inimigos Queimando"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3254,10 +3148,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Converte 100 % do Dano Físico para um Elemento aleatório"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3321,13 +3213,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "totem",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Alcance do Posicionamento de Totens aumentado em 300 %",
-    "efeito não simulado: Invoca 1 Totens de Balista em círculo que usam esta habilidade",
-    "efeito não simulado: Após atacar, os totens desaparecem",
-    "efeito não simulado: 20 % mais Dano de Projétil"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3355,11 +3242,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Lança até 1 armadilhas a mais ao usar duas armas",
-    "efeito não simulado: 25 % menos velocidade de lançar armadilhas com arma de duas mãos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "linhasNaoSeAplicam": [
@@ -3683,8 +3567,10 @@
    "ausentes": [],
    "idle": [],
    "outros": [
-    "a Virulência fica no máximo (40 + a qualidade + a \"Virulência Máxima\") enquanto o Arauto está ligado e você Envenenou com ele há até 4 s, como o PoB: o ganho por Veneno e a perda com o tempo do PoE não são simulados",
     "o Rastejador ataca como um lacaio de perto do jogo (o Morteiro e o Espinho da Cauda do PoE não são simulados)"
+   ],
+   "notas": [
+    "a Virulência fica no máximo (40 + a qualidade + a \"Virulência Máxima\") enquanto o Arauto está ligado e você Envenenou com ele há até 4 s, como o PoB mostra (dono, 26/10)"
    ],
    "icone": true,
    "iconeHabilidade": true
@@ -3827,11 +3713,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Você e aliados próximos têm +15 % de chance de Evadirem Acertos de Ataques",
-    "efeito não simulado: Dano Mágico Suprimido causado em você é Azarado"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3856,11 +3739,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Efeito das Auras aumentado em 76 %",
-    "efeito não simulado: Resistência à Gelo de Inimigos Próximos é Ignorada por Acertos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4166,10 +4046,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Tem 4 chamas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4181,11 +4059,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Tem 5 chamas",
-    "efeito não simulado: Possui 1 Chamas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4197,11 +4072,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Raio Base terciário igual a 0.6 metros",
-    "efeito não simulado: 15 % de Chance de uma Armadilha ser Ativada uma vez adicional"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4213,10 +4085,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 15 % de Chance de uma Armadilha ser Ativada uma vez adicional"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4293,12 +4163,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Libera ondas a cada 0.9 segundos",
-    "efeito não simulado: Libera 5 onda",
-    "efeito não simulado: Libera +1 onda"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4310,11 +4176,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Libera 3 onda",
-    "efeito não simulado: Libera +1 onda"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4551,10 +4414,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Efeito do Buff aumentado em 20 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -4568,10 +4429,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -4827,10 +4686,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: +1 ao Máximo de Zumbis Evocados"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -4844,12 +4701,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Ataque de Impacto dos Zumbis Erguidos tem Efeito em Área aumentado em 76 %",
-    "efeito não simulado: Golpe de Impacto de Zumbis Evocados tem a Velocidade de Recarga aumentada em %",
-    "efeito não simulado: +1 ao Máximo de Zumbis Evocados"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -4863,12 +4716,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: +200 ao número máximo de Zumbis",
-    "efeito não simulado: Não requer um cadáver",
-    "efeito não simulado: Lacaios têm 15 % de chance de causar Dano Dobrado"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -4934,10 +4783,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "mina",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Cada mina aplica Dano aumentado em +1 % aos Inimigos próximos máximo de 150 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5174,6 +5021,8 @@
    "arquetipo": "lacaio",
    "estado": "parcial",
    "ausentes": [
+    "efeito não simulado: A Habilidade Explosiva da Relíquia Sagrada concede 154.6 de Vida regenerada por segundo aos Aliados",
+    "efeito não simulado: A Habilidade Explosiva da Relíquia Sagrada concede 985 de Vida regenerada por segundo aos Lacaios",
     "efeito não simulado: Efeito do Buff aumentado em 40 %"
    ],
    "idle": [
@@ -5189,10 +5038,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 20 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -5206,10 +5053,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 30 % de chance de convocar um Lacaio extra"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -5250,18 +5095,10 @@
    "nome": "Troca de Corpos do Sacrifício",
    "variante": "alternativa",
    "ataque": false,
-   "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Esta Magia causa 210 a 315 , mais 4 % da sua Vida Máxima, como Dano de Fogo base",
-    "efeito não simulado: Explosões causam Dano de Fogo base igual a 29 % da Vida máxima do Lacaio",
-    "efeito não simulado: 300 % mais Área de Efeito se Consumindo um Lacaio",
-    "efeito não simulado: Explosões causam Dano de Fogo base igual a 5 % da Vida máxima do Lacaio",
-    "efeito não simulado: 50 % menos Dano de Afecções"
-   ],
-   "idle": [
-    "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
-   ],
+   "arquetipo": "area",
+   "estado": "implementada e testada",
+   "ausentes": [],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -5324,15 +5161,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Aplica feixes aos 10 Inimigos próximos",
-    "efeito não simulado: Concede 324.4 de Regeneração de Vida por segundo caso um Inimigo esteja afetado",
-    "efeito não simulado: Concede 17.2 de Regeneração de Mana por segundo se qualquer Inimigo está afetado",
-    "efeito não simulado: Concede 32.4 de Regeneração de Vida por segundo para cada Inimigo afetado",
-    "efeito não simulado: Concede 1.7 de Regeneração de Mana por segundo para cada Inimigo afetado",
-    "efeito não simulado: Aplica feixes aos +4 Inimigos próximos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5344,10 +5174,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Aplica feixes aos 18 Inimigos próximos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5359,10 +5187,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: +1 ao Máximo de Esqueletos Convocados"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -5376,10 +5202,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: +1 ao Máximo de Esqueletos Convocados"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -5393,10 +5217,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: +1 ao Máximo de Esqueletos Convocados"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -5410,10 +5232,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Suas Habilidades e de seus aliados próximos não Custam Mana"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5438,11 +5258,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: +7 ao Máximo de Esqueletos Convocados",
-    "efeito não simulado: +1 ao Máximo de Esqueletos Convocados"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -5521,12 +5338,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 1 segundos adicionais de Duração Base por Cadáver extra consumido",
-    "efeito não simulado: Concede aos Lacaios +34 % de Chance de Bloquear Dano Mágico",
-    "efeito não simulado: Efeito da Oferenda aumentado em 10 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -5631,13 +5444,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 1 segundos adicionais de Duração Base por Cadáver extra consumido",
-    "efeito não simulado: Aumenta a Velocidade de Conjuração dos Lacaios em 30 %",
-    "efeito não simulado: Aumenta a Velocidade de Movimento dos Lacaios em 29 %",
-    "efeito não simulado: Efeito da Oferenda aumentado em 10 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -5748,10 +5556,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "mina",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Efeito das Auras aumentado em 20 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5828,10 +5634,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 15 % de Chance de uma Armadilha ser Ativada uma vez adicional"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5843,11 +5647,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Projéteis Ricocheteiam ao colidirem com o terreno",
-    "efeito não simulado: 15 % de Chance de uma Armadilha ser Ativada uma vez adicional"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5924,11 +5725,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 1 segundos adicionais de Duração Base por Cadáver extra consumido",
-    "efeito não simulado: Efeito da Oferenda aumentado em 10 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -6046,12 +5844,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Projéteis deixam Solo Eletrizado",
-    "efeito não simulado: Solo Eletrizado causa 15 % de Dano sofrido aumentado",
-    "efeito não simulado: Solo Eletrizado causa 5 % de Dano sofrido aumentado"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6245,10 +6039,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "arauto",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Tempestades Acertam Inimigos com Frequência aumentada em 20 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6273,14 +6065,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: Causa 70 % do seu Escudo de Energia Máximo como Dano Base de Fogo por segundo",
-    "efeito não simulado: Você Queima por 90 % de sua Vida máxima por segundo como Dano de Fogo",
-    "efeito não simulado: Você Queima por 70 % do seu Escudo de Energia máximo por segundo como Dano de Fogo",
-    "efeito não simulado: Concede 39 % mais Dano Mágico"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6305,14 +6091,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Velocidade de Movimento dos Lacaios aumentada em 76 %",
-    "efeito não simulado: Lacaios tem Efeito Resfriante aumentado em 19 %",
-    "efeito não simulado: Lacaios têm Efeito Eletrizante aumentado em 19 %",
-    "efeito não simulado: Robôs Rastejantes concedem 10 % mais Dano de Armadilhas e Minas",
-    "efeito não simulado: Velocidade de Movimento dos Lacaios aumentada em 40 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -6469,10 +6249,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Você e Aliados próximos ganham 30 % de Velocidade de Recarga de Escudo de Energia aumentada"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6562,10 +6340,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "a imunidade a afecções ainda não existe no jogo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6603,10 +6379,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: A Recarga do seu Escudo de Energia e dos seus aliados próximos não é impedida por Dano"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6618,11 +6392,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Efeito das Auras aumentado em 76 %",
-    "efeito não simulado: Resistência à Raio de Inimigos Próximos é Ignorada por Acertos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6647,10 +6418,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Você e Aliados não-Lacaios Próximos têm 10 % de chance de criarem Solo Sagrado ao Acertar um Inimigo Raro ou Único, durando 8 segundos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6779,11 +6548,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "ricochete",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Sacrifica 12 % da Vida do Esqueleto para causar a mesma quantidade de Dano de Caos",
-    "efeito não simulado: Sacrifica +2 % da Vida do Esqueleto para causar a mesma quantidade de Dano de Caos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7146,10 +6912,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 15 % de Chance de uma Armadilha ser Ativada uma vez adicional"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7213,10 +6977,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "mina",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Aura de Exposição ao Fogo aplica -15 % à resistência a dano de fogo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7228,10 +6990,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "mina",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Aura de Exposição ao Fogo aplica -25 % à resistência a dano de fogo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7245,9 +7005,7 @@
    "arquetipo": "lacaio",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Lacaios possuem +30 % de todas Resistências Elementais",
-    "efeito não simulado: Velocidade de Movimento dos Lacaios está no Máximo",
-    "efeito não simulado: Lacaios possuem +20 % de todas Resistências Elementais"
+    "efeito não simulado: Velocidade de Movimento dos Lacaios está no Máximo"
    ],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
@@ -7264,10 +7022,7 @@
    "arquetipo": "lacaio",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Espectros têm Duração Base de 30 segundos Espectros não viajam entre as Áreas",
-    "efeito não simulado: Lacaios possuem +30 % de todas Resistências Elementais",
-    "efeito não simulado: Velocidade de Movimento dos Lacaios está no Máximo",
-    "efeito não simulado: Lacaios têm Chance de Acerto Crítico aumentada em 1180 %"
+    "efeito não simulado: Velocidade de Movimento dos Lacaios está no Máximo"
    ],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
@@ -7386,11 +7141,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Ceifador faz com que seus Lacaios Não-Ceifadores causem 29 % menos Dano",
-    "efeito não simulado: Ceifador faz com que seus Lacaios Não-Ceifadores tenham 29 % menos Vida Máxima"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -7404,12 +7156,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Ceifadores fazem com que seus Lacaios não-Ceifadores tenham 29 % menos Dano",
-    "efeito não simulado: Ceifadores fazem com que seus Lacaios não-Ceifadores tenham 29 % menos Vida Máxima",
-    "efeito não simulado: Velocidade de Movimento dos Lacaios aumentada em 40 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -7423,12 +7171,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Ceifador faz com que seus Lacaios Não-Ceifadores causem 29 % menos Dano",
-    "efeito não simulado: Ceifador faz com que seus Lacaios Não-Ceifadores tenham 29 % menos Vida Máxima",
-    "efeito não simulado: Lacaios têm 40 % de chance de agravar sangramento em alvos atingidos com ataques"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -7572,11 +7316,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Golens causam 5 % mais Dano por Lacaio Não-Golem próximo deles, até 50 %",
-    "efeito não simulado: Efeito do Buff aumentado em 20 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -7590,10 +7331,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -7607,11 +7346,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Golens causam 5 % mais Dano por Lacaio Não-Golem próximo deles, até 50 %",
-    "efeito não simulado: Lacaios Regeneram 3 % de Vida por segundo"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -7625,10 +7361,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Efeito do Buff aumentado em 20 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -7642,10 +7376,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -7676,10 +7408,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Efeito do Buff aumentado em 20 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -7693,10 +7423,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %"
-   ],
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
    ],
@@ -7762,12 +7490,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "mina",
-   "estado": "parcial",
-   "ausentes": [
-    "sem dano direto: nenhum efeito no combate",
-    "efeito não simulado: Primeira Mina é Detonada Instantaneamente Minas recebem 10 % mais Velocidade de Detonação para cada Mina anteior na Sequência de Detonação",
-    "efeito não simulado: Minas tem Velocidade de Detonação aumentada em 20 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7875,12 +7599,8 @@
   {
    "slug": "Hallow_Support",
    "nome": "Santificação (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Intensidade de Chama Santificada infligida por habilidades reforçadas aumentada em 36%",
-    "não simulado: Habilidades reforçadas infligem Chama Santificada ao atingir corpo a corpo",
-    "não simulado: Intensidade de Chama Santificada infligida por habilidades reforçadas aumentada em 10%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -7895,10 +7615,8 @@
   {
    "slug": "Ancestral_Call_Support",
    "nome": "Chamado Ancestral",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Alvos Extras das Habilidades Suportadas podem ser encontrados 15% mais distânte"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -7960,22 +7678,16 @@
   {
    "slug": "Lifetap_Support",
    "nome": "Fonte de Vida",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Ganha Fonte de Vida após Gastar um total de 273 de Vida no Custo Direto e Efeitos das Habilidades Suportadas",
-    "não simulado: Fonte de Vida dura 4 segundos",
-    "não simulado: Fonte de Vida dura +2 segundos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Maim_Support",
    "nome": "Mutilação",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm Efeito da Mutilação aumentado em 20%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8046,31 +7758,24 @@
   {
    "slug": "Endurance_Charge_on_Melee_Stun_Support",
    "nome": "Carga de Tolerância ao Atordoar Corpo a Corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: 4% mais Dano por Carga de Tolerância",
-    "não simulado: Receba uma Carga de Tolerância quando você Atordoar um Inimigo com um Acerto Corpo a Corpo com Habilidades Suportadas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Iron_Grip_Support",
    "nome": "Empunhadura de Ferro",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Bônus de Dano da Força é aplicado ao Dano de Ataque dos Projéteis assim como às Habilidades Suportadas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Iron_Will_Support",
    "nome": "Vontade de Ferro",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Bônus de dano da Força também é aplicado à todo Dano Mágico para Magias Suportadas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8095,7 +7800,7 @@
    "nome": "Onda de Choque",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Habilidades Suportadas Ativam Onda de Choque no Acerto Corpo a Corpo"
+    "não simulado: a onda usa o físico médio da arma × o \"Dano de Ataque: X% de base\" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma)"
    ],
    "outros": [],
    "icone": true
@@ -8119,23 +7824,16 @@
   {
    "slug": "Blessed_Call_Support",
    "nome": "Chamado Abençoado (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Clamores reforçados criam um chão consagrado com duração de 6 segundos",
-    "não simulado: Clamores reforçados têm -40% de área de efeito",
-    "não simulado: Clamores reforçados têm a velocidade de recarga reduzida em 20%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Bloodthirst_Support",
    "nome": "Sede de Sangue",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Ataques Suportados causam Dano Físico com Armas Adicional igual a 2% da Vida Máxima enquanto em Vida Baixa",
-    "não simulado: Ataques Suportados causam Dano Físico com Armas Adicional igual a\\n2% da Vida Máxima enquanto em Vida Baixa"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8150,25 +7848,16 @@
   {
    "slug": "Controlled_Blaze_Support",
    "nome": "Incêndio Controlado",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Cada Habilidade Suportada causa 14% mais Dano com Incêndio por cada Incêndio infligido com ela Recentemente, máximo de 364%",
-    "não simulado: Cada Habilidade Suportada causa 3% menos Dano por cada Incêndio infligido com ela Recentemente, máximo de 78%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Corrupting_Cry_Support",
    "nome": "Clamor Corrompedor",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Sangue Corrompido infligido por Clamores Suportados causam 691.8 de Dano Físico base por segundo",
-    "não simulado: Clamores Suportados infligem 1 Debuffs de Sangue Corrompido no primeiro inimigo Acertado por cada Ataque que Impelirem",
-    "não simulado: Sangue Corrompido infligido por Clamores Suportados tem uma Duração Base de 2 segundos",
-    "não simulado: Clamores Suportados infligem 4 Debuffs de Sangue Corrompido",
-    "não simulado: Clamores Suportados infligem 1 Debuffs de Sangue Corrompido no primeiro\\ninimigo Acertado por cada Ataque que Impelirem"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8188,10 +7877,8 @@
   {
    "slug": "Excommunicate_Support",
    "nome": "Excomungar (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades reforçadas excomungam os inimigos ao atingir corpo a corpo por 3 segundos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8245,13 +7932,8 @@
   {
    "slug": "Inspiration_Support",
    "nome": "Inspiração",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Ganha uma Carga de Inspiração ao Gastar Mana em Custos Diretos ou Efeitos das Habilidades Suportadas",
-    "não simulado: Habilidades Suportadas tem Chance de Golpe Crítico aumentada em 8% por Carga de Inspiração",
-    "não simulado: Perca todas as Cargas de Inspiração após Gastar um total de 800 de Mana em Custos Diretos e Efeitos das Habilidades Suportadas",
-    "não simulado: Ganha uma Carga de Inspiração ao Gastar Mana em\\nCustos Diretos ou Efeitos das Habilidades Suportadas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8300,7 +7982,6 @@
    "nome": "Decapitar",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Golpes Finais das Habilidades de Golpe Suportadas com Armas Corpo a Corpo contra Monstros Raros concedem um de seus Modificadores por 20 segundos",
     "não simulado: 20% de chance de renovar a Duração do Modificador recebido em até 5 segundos quando você Acertar um Inimigo Raro ou Único com Habilidades Suportadas"
    ],
    "outros": [],
@@ -8370,33 +8051,24 @@
   {
    "slug": "Overexertion_Support",
    "nome": "Esforço Excessivo",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Ataques Suportados causam 10% mais Dano por cada Clamor que os Impelir"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Trauma_Support",
    "nome": "Traumatismo",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 10 a 17 de Dano de Ataque Físico Adicional por Traumatismo",
-    "não simulado: Habilidades Suportadas têm Duração do Atordoamento aumentada em 5% por Traumatismo",
-    "não simulado: Ganha 1 Traumatismo na primeira vez que um Ataque Suportado Acertar um Inimigo Sofre 146 de Dano Físico por Traumatismo quando você ganhar Traumatismo das Habilidades Suportadas Traumatismos duram 6.9 segundos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Annihilation_Support",
    "nome": "Aniquilação (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Golpes fatais com habilidades reforçadas fazem com que os inimigos tenham 35% de chance de explodir e causarem um décimo da própria vida máxima como dano de um elemento aleatório",
-    "não simulado: Golpes fatais com habilidades reforçadas fazem com que os inimigos tenham +5% de chance de explodir e causarem um décimo da própria vida máxima como dano de um elemento aleatório"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8411,20 +8083,16 @@
   {
    "slug": "Awakened_Ancestral_Call_Support",
    "nome": "Suporte Desperto: Chamado Ancestral",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Alvos Extras das Habilidades Suportadas podem ser encontrados 15% mais distânte"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Awakened_Brutality_Support",
    "nome": "Suporte Desperto: Brutalidade",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 10% de chance de Esmagar Inimigos por 4 segundos ao Acertar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8471,10 +8139,8 @@
   {
    "slug": "Awakened_Melee_Physical_Damage_Support",
    "nome": "Suporte Desperto: Dano Físico Corpo a Corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 10% de chance de Intimidar Inimigos por 4 segundos ao Acertar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8497,12 +8163,8 @@
   {
    "slug": "Bloodsoaked_Banner_Support",
    "nome": "Estandarte Ensanguentado (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Estandartes reforçados infligem Sangue Corrompido a cada segundo aos inimigos dentro de sua área",
-    "não simulado: Sangue Corrompido infligido por estandartes reforçados causam 26.7 de dano físico base por segundo por bravura consumida",
-    "não simulado: Sangue Corrompido infligido por estandartes reforçados tem uma duração base de 8 segundos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8550,10 +8212,8 @@
   {
    "slug": "Greater_Ancestral_Call_Support",
    "nome": "Convocação Ancestral Maior (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Alvos Extras das Habilidades Suportadas podem ser encontrados 40% mais distânte"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8568,10 +8228,8 @@
   {
    "slug": "Overheat_Support",
    "nome": "Superaquecimento (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades reforçadas consomem toda a Fortificação ao usar, causando +8% de dano com afecções por 3 de Fortificação consumida"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8710,11 +8368,8 @@
   {
    "slug": "Blind_Support",
    "nome": "Cegar",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 10% de chance de Cegar inimigos ao acertar",
-    "não simulado: Habilidades Suportadas têm 38% da duração da Cegueira aumentada"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8758,22 +8413,16 @@
   {
    "slug": "Manaforged_Arrows_Support",
    "nome": "Flecha Forjada com Mana",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas causam 1% mais Dano com Acertos e Afecções por cada 1 de Custo de Mana",
-    "não simulado: Habilidades Suportadas Ativam uma vez que o Custo de Mana total em outros Ataques de Arco excederem 300% do seu Custo de Mana",
-    "não simulado: Habilidades Suportadas Ativam uma vez que o Custo de Mana total em outros Ataques\\nde Arco excederem 300% do seu Custo de Mana"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Multiple_Traps_Support",
    "nome": "Múltiplas Armadilhas",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm Efeito em Área da Ativação de Armadilhas aumentado em 20%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8804,12 +8453,8 @@
   {
    "slug": "Close_Combat_Support",
    "nome": "Combate Próximo",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas concedem Ímpeto de Combate ao Acertar Ímpeto de Combate dura 2 segundos ou até que você utilize uma Habilidade de Deslocamento",
-    "não simulado: Adrenalina de Combate concede 20% mais Velocidade de Ataque às Habilidades de Deslocamento não Suportadas por Combate Próximo",
-    "não simulado: Habilidades Suportadas concedem Ímpeto de Combate ao Acertar\\nÍmpeto de Combate dura 2 segundos ou até que você utilize uma Habilidade de Deslocamento"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8936,10 +8581,8 @@
   {
    "slug": "Ice_Bite_Support",
    "nome": "Mordida Congelante",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 69% de chance de ganhar uma Carga de Frenesi ao Matar um Inimigo Congelado"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8962,11 +8605,8 @@
   {
    "slug": "Second_Wind_Support",
    "nome": "Segunda Ventania",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm Velocidade de Recuperação da Recarga reduzida em 5%",
-    "não simulado: Habilidades Não-Instantâneas Suportadas têm +1 Usos de Tempo do Recarga"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9035,10 +8675,8 @@
   {
    "slug": "Cluster_Traps_Support",
    "nome": "Grupo de Armadilhas",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm Efeito em Área da Ativação de Armadilhas aumentado em 20%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9061,12 +8699,8 @@
   {
    "slug": "Mark_On_Hit_Support",
    "nome": "Marcar ao Acertar",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Efeito das Marcas de Habilidades Suportadas reduzido em 21%",
-    "não simulado: Ativa a Habilidade Suportada quando você Acertar um Inimigo Raro ou Único com um Ataque",
-    "não simulado: Efeito das Marcas de Habilidades Suportadas aumentado em 5%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9081,12 +8715,8 @@
   {
    "slug": "Rupture_Support",
    "nome": "Rompimento",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Golpes Críticos com Habilidades Suportadas que infligirem Sangramento também infligem Rompimento",
-    "não simulado: Alvos sofrem 29% mais Dano do Sangramento por Rompimento das Habilidades Suportadas neles",
-    "não simulado: Sangramento expira 25% mais rápido por Rompimento das Habilidades Suportadas nos alvos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9101,12 +8731,8 @@
   {
    "slug": "Withering_Touch_Support",
    "nome": "Suporte Toque Definhador",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas possuem 25% de chance de causar Definhado ao Acertar",
-    "não simulado: Definhado dura 2 segundos",
-    "não simulado: Habilidades Suportadas recebem 29% de Dano Físico como Dano de Caos Extra"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9129,10 +8755,8 @@
   {
    "slug": "Awakened_Cast_On_Critical_Strike_Support",
    "nome": "Suporte Desperto: Conjurar no Acerto Crítico",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Magias Suportadas têm Recuperação da Recarga aumentada em 52%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9221,12 +8845,8 @@
   {
    "slug": "Companionship_Support",
    "nome": "Companheirismo (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Lacaios de habilidades reforçadas sofrem 15% do dano de ataque da própria vida antes de você, se eles forem seus únicos lacaios",
-    "não simulado: Lacaios de habilidades reforçadas sofrem -28% de dano, se eles forem seus únicos lacaios",
-    "não simulado: Lacaios de habilidades reforçadas sofrem 15% do dano de ataque da própria vida\\nantes de você, se eles forem seus únicos lacaios"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9241,10 +8861,8 @@
   {
    "slug": "Greater_Chain_Support",
    "nome": "Propagação Maior (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades reforçadas se propagam 50% mais vezes"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9259,20 +8877,16 @@
   {
    "slug": "Invention_Support",
    "nome": "Invenção (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm Duração da Armadilha aumentada em 20% Habilidades reforçadas têm a duração de mina aumentada em 20%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Lethal_Dose_Support",
    "nome": "Dose Letal (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Envenenar inimigos não envenenados com habilidades reforçadas inflige 2 envenenamentos adicionais"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9298,13 +8912,8 @@
   {
    "slug": "Unholy_Trinity_Support",
    "nome": "Tríade Profana (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Ataques com habilidades reforçadas, cujo maior tipo de dano é caos, elétrico ou físico, fazem você ganhar 25 de Ressonância Profana dos outros tipos por segundo durante 2 segundos Perde 5 de Ressonância Profana por segundo para cada tipo que não ganhar",
-    "não simulado: Habilidades reforçadas têm 90% de chance de ignorar a resistência a dano de caos e elétrico do inimigo, se cada Ressonância Profana for de, no mínimo, 25",
-    "não simulado: Habilidades reforçadas têm 90% de chance de ignorar a redução de dano físico do inimigo, se cada Ressonância Profana for de, no mínimo, 25",
-    "não simulado: Ataques com habilidades reforçadas, cujo maior tipo de dano é caos, elétrico ou físico, fazem você ganhar 25 de Ressonância Profana dos outros tipos por segundo durante 2 segundos\\nPerde 5 de Ressonância Profana por segundo para cada tipo que não ganhar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9321,23 +8930,16 @@
   {
    "slug": "Arcane_Surge_Support",
    "nome": "Fúria Arcana",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Ganha Fúria Arcana após Gastar um total de 400 de Mana em Custos Diretos e Efeitos de uma Habilidade Suportada",
-    "não simulado: Fúria Arcana concede Velocidade de Conjuração aumentada em 30% Fúria Arcana concede Regeneração de Mana aumentada em 30%",
-    "não simulado: Fúria Arcana dura 4 segundos",
-    "não simulado: Fúria Arcana concede Velocidade de Conjuração aumentada em 30%\\nFúria Arcana concede Regeneração de Mana aumentada em 30%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Elemental_Proliferation_Support",
    "nome": "Proliferação Elemental",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Afecções Elementais infligidas por Habilidades Suportadas se espalham para outros inimigos dentro de 1.5 metros"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9352,14 +8954,8 @@
   {
    "slug": "Prismatic_Burst_Support",
    "nome": "Explosão Prismática",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas Ativam Explosão Prismática ao Acertar",
-    "não simulado: Causa 1224 a 1836 de Dano de Gelo",
-    "não simulado: Causa 153 a 2907 de Dano de Raio",
-    "não simulado: Causa 1224 a 1836 de Dano de Fogo",
-    "não simulado: 0.9 metros de raio"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9374,10 +8970,8 @@
   {
    "slug": "Spell_Cascade_Support",
    "nome": "Cascata Mágica",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades de Efeito em Área Suportadas também afetam áreas na frente e atrás da área alvo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9418,10 +9012,8 @@
   {
    "slug": "Devour_Support",
    "nome": "Devorar",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Golpes Abatedores com Habilidades Suportadas Consomem cadáveres para Recuperar 366 de Vida e 40 de Mana"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9496,12 +9088,8 @@
   {
    "slug": "Exemplar_Support",
    "nome": "Exemplar (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Lacaios de habilidades reforçadas têm a chance de causar golpe crítico aumentada em 40% toda vez que você causar um golpe crítico recentemente com um ataque, até 200%",
-    "não simulado: Lacaios de habilidades reforçadas têm +20% de multiplicador de golpe crítico toda vez que você causar um golpe crítico recentemente com um ataque, até +100%",
-    "não simulado: Lacaios de Habilidades Suportadas têm Chance de Golpe Crítico aumentada em 20%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9516,11 +9104,8 @@
   {
    "slug": "Fresh_Meat_Support",
    "nome": "Carne Fresca",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Lacaios criados por Habilidades Suportadas ganham Fúria Desperta e Adrenalina por 10% de sua Duração, máximo de 10 segundos Fúria Desperta concede +3.9% de Chance de Golpe Crítico Fúria Desperta concede +69% de Multiplicador de Golpe Crítico",
-    "não simulado: Lacaios de Habilidades Suportadas têm Chance de Golpe Crítico aumentada em 20%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9538,6 +9123,7 @@
    "estado": "parcial",
    "ausentes": [
     "não simulado: Habilidades reforçadas ativam Fluxo Cinético no golpe fatal",
+    "não simulado: 150% de Poder Arcano",
     "não simulado: Máximo de 20 anomalias",
     "não simulado: Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética"
    ],
@@ -9555,6 +9141,7 @@
     "não simulado: Invoca 1 Lacaios Relâmpagos Vivos",
     "não simulado: Lacaios Relâmpagos Vivos atacam 3 vezes antes de desaparecerem",
     "não simulado: Esta habilidade é ativada quando uma habilidade de reforço causa dano elétrico com o acerto",
+    "não simulado: Habilidades dos Lacaios Ricocheteiam +3 Vezes",
     "não simulado: Ativa Invocar Relâmpago Vivo quando uma habilidade\\nde reforço causa dano elétrico com o acerto",
     "não simulado: Lacaios Relâmpagos Vivos atacam +2 vezes antes de desaparecerem"
    ],
@@ -9572,13 +9159,8 @@
   {
    "slug": "Minion_Speed_Support",
    "nome": "Velocidade do Lacaio",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 34% de Velocidade de Ataque de Lacaios aumentada",
-    "não simulado: Habilidades Suportadas têm 34% de Velocidade de Conjuração de Lacaios aumentada",
-    "não simulado: Habilidades Suportadas têm 44% de Velocidade de Movimento de Lacaios aumentada",
-    "não simulado: Habilidades Suportadas têm 10% de Velocidade de Movimento de Lacaios aumentada"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9601,11 +9183,8 @@
   {
    "slug": "Power_Charge_On_Critical_Support",
    "nome": "Carga de Poder no Crítico",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 54% de chance de ganhar uma Carga de Poder com Golpes Críticos",
-    "não simulado: Habilidades Suportadas têm 10% de chance de ganhar uma Carga de Poder com Golpes Críticos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9614,6 +9193,7 @@
    "nome": "Predador",
    "estado": "parcial",
    "ausentes": [
+    "não simulado: Lacaios de Habilidades Suportadas causam 24% mais Dano com Acertos e Afecções às suas Presas",
     "não simulado: Lacaios de Habilidades Suportadas sempre focam em Presas se possível"
    ],
    "outros": [],
@@ -9624,6 +9204,7 @@
    "nome": "Espíritos Sagrados",
    "estado": "parcial",
    "ausentes": [
+    "não simulado: Habilidades Suportadas causam 51% menos Dano quando usadas por Espíritos Sagrados",
     "não simulado: Habilidades Suportadas Ativarão Convocar Espíritos Sagrados ao Acertar",
     "não simulado: Habilidades Suportadas só podem ser usadas com Varinhas",
     "não simulado: Convoca 2 Espíritos Sagrados Máximo de 2 Espíritos Sagrados",
@@ -9638,13 +9219,8 @@
   {
    "slug": "Trinity_Support",
    "nome": "Suporte Trindade",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe 25 de Ressonância de outros Elementos por 2 segundos Perde 5 de Ressonância por segundo para cada Elemento que não estiver ganhando",
-    "não simulado: Habilidades Suportadas causam 3% mais Dano Elemental por cada 5 da sua menor Ressonância",
-    "não simulado: Habilidades Suportadas penetram 16% da Resistência Elemental enquanto cada Ressonância estiver em ao menos 25",
-    "não simulado: Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe 25 de Ressonância de outros Elementos por 2 segundos\\nPerde 5 de Ressonância por segundo para cada Elemento que não estiver ganhando"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9659,11 +9235,8 @@
   {
    "slug": "Archmage_Support",
    "nome": "Arquimago",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas ganham Dano de Raio Adicional igual a 14% da Mana Máxima não Reservada",
-    "não simulado: Habilidades reforçadas ganham custo de mana base equivalente a 5% do mana máximo não reservado"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9696,13 +9269,8 @@
   {
    "slug": "Elemental_Army_Support",
    "nome": "Resistências Elementais de Lacaios e Totens",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Lacaios de Habilidades Suportadas têm +29% de todas as Resistências Elementais",
-    "não simulado: Lacaios de Habilidades Suportadas têm 2% ao máximo de todas as Resistências Elementais",
-    "não simulado: Lacaios de Habilidades Suportadas infligem Exposição no Acerto, aplicando -10% à Resistência Elemental que combine com o maior tipo de Dano sofrido pelo Inimigo",
-    "não simulado: Lacaios de Habilidades Suportadas têm +2% ao máximo de todas as Resistências Elementais"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9725,13 +9293,8 @@
   {
    "slug": "Feeding_Frenzy_Support",
    "nome": "Frenesi Faminto",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Duração Base do Frenesi Faminto é de 5.9 segundos",
-    "não simulado: Lacaios de Habilidades Suportadas tem 44% de chance de conceder Frenesi Faminto à você no Acerto",
-    "não simulado: Lacaios de Habilidades Suportadas são Agressivos",
-    "não simulado: Habilidades Suportadas têm 10% de Velocidade de Movimento de Lacaios aumentada"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9757,25 +9320,16 @@
   {
    "slug": "Impending_Doom_Support",
    "nome": "Destruição Iminente",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Ativa Explosão Destruidora quando um Feitiço de Habilidades Maldição Suportadas terminar",
-    "não simulado: Causa 1654 a 2481 de Dano de Caos",
-    "não simulado: Ativa Esta Habilidade quando um Feitiço de Habilidades Suportadas terminar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Innervate_Support",
    "nome": "Inervação",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Ganha Invervação ao Matar um Inimigo Eletrizado com Habilidades Suportadas",
-    "não simulado: Invervação concede 8 a 145 de Dano de Raio",
-    "não simulado: Estímulo dura 8 segundos",
-    "não simulado: Inervação dura 2 segundos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9808,11 +9362,7 @@
    "nome": "Escudo de Carne",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Lacaios de Habilidades Suportadas tem 20% de chance de Provocar ao Acertar",
-    "não simulado: Habilidades Suportadas têm 29% de Velocidade de Movimento de Lacaios aumentada",
-    "não simulado: Lacaios de Habilidades Suportadas sofrem 24% menos Dano",
-    "não simulado: Lacaios de Habilidades Suportadas são Defensivos",
-    "não simulado: Lacaios de Habilidades Suportadas sofrem 5% menos Dano"
+    "não simulado: Lacaios de Habilidades Suportadas são Defensivos"
    ],
    "outros": [],
    "icone": true
@@ -9828,21 +9378,16 @@
   {
    "slug": "Sacrifice_Support",
    "nome": "Sacrificar",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Magias Suportadas Sacrificam 20% da sua Vida atual quando Conjuradas para ganhar Dano de Caos adicional igual a 54% da Vida Sacrificada"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Swiftbrand_Support",
    "nome": "Runa Repentina",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 44% mais frequência de Ativação",
-    "não simulado: Habilidades Suportadas têm 5% mais frequência de Ativação"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9873,10 +9418,8 @@
   {
    "slug": "Decay_Support",
    "nome": "Decadência",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas infligem Podridão ao Acertar, causando 1230 de Dano de Caos por segundo durante 8 segundos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9897,33 +9440,24 @@
   {
    "slug": "Hex_Bloom_Support",
    "nome": "Propagar Feitiço",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm alcance de Transferência de Feitiços aumentado em 28%",
-    "não simulado: Feitiços de Habilidades Suportadas se Transferem para todos os Inimigos dentro de 3 metros quando o Inimigo Enfeitiçado morrer",
-    "não simulado: Habilidades Suportadas têm alcance de Transferência de Feitiços aumentado em 4%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Hextouch_Support",
    "nome": "Toque Maldito",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas aplicam Maldições Suportadas em Acertos",
-    "não simulado: Você não pode Conjurar Magias Maldição Suportadas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Ignite_Proliferation_Support",
    "nome": "Proliferação de Incêndio",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Incêndios causados por Habilidades Suportadas se espalham para outros Inimigos dentro de 2 metros"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9946,10 +9480,8 @@
   {
    "slug": "Minefield_Support",
    "nome": "Campo Minado",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas podem ter até 3 Minas Remotas adicionais plantadas de uma vez"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10004,20 +9536,16 @@
   {
    "slug": "Awakened_Cast_While_Channelling_Support",
    "nome": "Suporte Desperto: Conjurar ao Canalizar",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Ignora Atordoamentos enquanto Usando Habilidades Suportadas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Awakened_Controlled_Destruction_Support",
    "nome": "Suporte Desperto: Destruição Controlada",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 10% de chance de Enervar Inimigos por 4 segundos ao Acertar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10040,12 +9568,8 @@
   {
    "slug": "Awakened_Hextouch_Support",
    "nome": "Suporte Desperto: Toque Maldito",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas aplicam Maldições Suportadas em Acertos",
-    "não simulado: Você não pode Conjurar Magias Maldição Suportadas",
-    "não simulado: Feitiços aplicados por habilidades de maldição reforçadas têm 34% de chance de afetar inimigos imunes a feitiços"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10076,11 +9600,8 @@
   {
    "slug": "Awakened_Spell_Cascade_Support",
    "nome": "Suporte Desperto: Cascata Mágica",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades de Efeito em Área Suportadas também afetam áreas na frente, atrás, e dos lados da área alvo",
-    "não simulado: Habilidades de Efeito em Área Suportadas também afetam áreas na frente, atrás,\\ne dos lados da área alvo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10111,11 +9632,8 @@
   {
    "slug": "Congregation_Support",
    "nome": "Congregação (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: +38% para o número máximo de lacaios de habilidades reforçadas",
-    "não simulado: Habilidades Suportadas têm 10% de Velocidade de Movimento de Lacaios aumentada"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10155,23 +9673,16 @@
   {
    "slug": "Frostmage_Support",
    "nome": "Mago do Gelo (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades reforçadas ganham dano de frio adicionado equivalente a 26% do mana máximo reservado",
-    "não simulado: Habilidades reforçadas ganham custo de mana base equivalente a 5% do mana máximo reservado"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Gluttony_Support",
    "nome": "Gula (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Ganha 1 de Gula ao conjurar magias reforçadas",
-    "não simulado: Ao atingir 10 de Gula, perde toda a Gula e ganha Regurgitação por 4 segundos",
-    "não simulado: Enquanto você tiver Regurgitação, as magias reforçadas disparam projéteis em círculo Enquanto você tiver Regurgitação, as magias reforçadas disparam 7 projéteis adicionais"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10180,7 +9691,6 @@
    "nome": "Devorar Maior (Reforço)",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Golpes Abatedores com Habilidades Suportadas Consomem cadáveres para Recuperar 484 de Vida e 48 de Mana",
     "não simulado: Consumir um cadáver com habilidades reforçadas tem 4% de chance de conceder uma alma por poder",
     "não simulado: Consumir um cadáver com habilidades reforçadas tem +1% de chance de conceder uma alma por poder"
    ],
@@ -10193,6 +9703,7 @@
    "estado": "parcial",
    "ausentes": [
     "não simulado: Habilidades reforçadas ativam Fluxo Cinético ao causar golpe crítico",
+    "não simulado: 150% de Poder Arcano",
     "não simulado: Máximo de 20 anomalias",
     "não simulado: Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética"
    ],
@@ -10202,11 +9713,8 @@
   {
    "slug": "Greater_Spell_Cascade_Support",
    "nome": "Sequência Mágica Maior (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades de Efeito em Área Suportadas também afetam áreas na frente, atrás, e dos lados da área alvo",
-    "não simulado: Habilidades de Efeito em Área Suportadas também afetam áreas na frente, atrás,\\ne dos lados da área alvo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10229,12 +9737,8 @@
   {
    "slug": "Hexpass_Support",
    "nome": "Passe Enfeitiçado (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Feitiços aplicados por habilidades de maldição reforçadas afetam inimigos imunes a feitiços",
-    "não simulado: Efeito em Área de Habilidades Maldição Suportadas reduzido em 20%",
-    "não simulado: Inimigos afetados por feitiços de habilidades de maldição reforçadas não podem causar golpes críticos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10276,43 +9780,32 @@
   {
    "slug": "Communion_Support",
    "nome": "Comunhão (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Magias reforçadas causam de 20 a 30 de dano físico adicionado para cada lacaio permanente"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Overloaded_Intensity_Support",
    "nome": "Intensidade Sobrecarregada (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Ganha uma instância de Intensidade Sobrecarregada por 10 segundos após perder 6 de Intensidade com habilidades reforçadas",
-    "não simulado: Habilidades reforçadas têm +1.4% de chance de causar golpe crítico por Intensidade Sobrecarregada",
-    "não simulado: Habilidades reforçadas têm +50% de multiplicador de golpe crítico por Intensidade Sobrecarregada",
-    "não simulado: Ganha uma instância de Intensidade Sobrecarregada por 10 segundos após\\nperder 6 de Intensidade com habilidades reforçadas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Scornful_Herald_Support",
    "nome": "Arauto Desdenhoso (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades de arauto reforçadas não têm efeito bônus"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Vaal_Sacrifice_Support",
    "nome": "Sacrifício Vaal (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades reforçadas sacrificam tudo, menos 1, da sua vida e escudo de energia ao usar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10335,121 +9828,11 @@
  ],
  "linhasFaltando": [
   {
-   "linha": "Lacaios têm Recuperação da Recarga aumentada em # %",
-   "gemas": [
-    "Absolution",
-    "Dominating_Blow",
-    "Herald_of_Purity",
-    "Summon_Carrion_Golem_of_Hordes",
-    "Summon_Chaos_Golem_of_Hordes",
-    "Summon_Flame_Golem_of_Hordes",
-    "Summon_Holy_Relic_of_Conviction",
-    "Summon_Ice_Golem_of_Hordes",
-    "Summon_Lightning_Golem_of_Hordes",
-    "Summon_Stone_Golem_of_Hordes",
-    "Vaal_Absolution",
-    "Vaal_Domination"
-   ]
-  },
-  {
-   "linha": "Efeito do Buff aumentado em # %",
-   "gemas": [
-    "Summon_Carrion_Golem",
-    "Summon_Chaos_Golem",
-    "Summon_Flame_Golem",
-    "Summon_Holy_Relic",
-    "Summon_Ice_Golem",
-    "Summon_Lightning_Golem",
-    "Summon_Stone_Golem",
-    "Summon_Stone_Golem_of_Safeguarding"
-   ]
-  },
-  {
-   "linha": "# % de Chance de uma Armadilha ser Ativada uma vez adicional",
-   "gemas": [
-    "Fire_Trap_of_Blasting",
-    "Ice_Trap",
-    "Ice_Trap_of_Hollowness",
-    "Lightning_Spire_Trap_of_Zapping",
-    "Lightning_Trap",
-    "Lightning_Trap_of_Sparking"
-   ]
-  },
-  {
-   "linha": "+# ao Máximo de Armas Animadas",
-   "gemas": [
-    "Animate_Weapon",
-    "Animate_Weapon_of_Ranged_Arms",
-    "Animate_Weapon_of_Self_Reflection",
-    "Vaal_Animate_Weapon"
-   ]
-  },
-  {
-   "linha": "+# ao Máximo de Esqueletos Convocados",
-   "gemas": [
-    "Summon_Skeletons",
-    "Summon_Skeletons_of_Archers",
-    "Summon_Skeletons_of_Mages",
-    "Vaal_Summon_Skeletons"
-   ]
-  },
-  {
-   "linha": "Efeito das Auras aumentado em # %",
-   "gemas": [
-    "Icicle_Mine_of_Sabotage",
-    "Vaal_Impurity_of_Fire",
-    "Vaal_Impurity_of_Ice",
-    "Vaal_Impurity_of_Lightning"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% de Velocidade de Movimento de Lacaios aumentada",
-   "gemas": [
-    "Congregation_Support",
-    "Feeding_Frenzy_Support",
-    "Meat_Shield_Support",
-    "Minion_Speed_Support"
-   ]
-  },
-  {
-   "linha": "Velocidade de Movimento dos Lacaios aumentada em # %",
-   "gemas": [
-    "Animate_Guardian",
-    "Animate_Guardian_of_Smiting",
-    "Summon_Reaper_of_Revenants",
-    "Summon_Skitterbots"
-   ]
-  },
-  {
-   "linha": "# segundos adicionais de Duração Base por Cadáver extra consumido",
-   "gemas": [
-    "Bone_Offering",
-    "Flesh_Offering",
-    "Spirit_Offering"
-   ]
-  },
-  {
-   "linha": "Alvos Extras das Habilidades Suportadas podem ser encontrados #% mais distânte",
-   "gemas": [
-    "Ancestral_Call_Support",
-    "Awakened_Ancestral_Call_Support",
-    "Greater_Ancestral_Call_Support"
-   ]
-  },
-  {
    "linha": "as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:##; no jogo ainda são projéteis no alvo)",
    "gemas": [
     "Artillery_Ballista",
     "Artillery_Ballista_of_Cross_Strafe",
     "Artillery_Ballista_of_Focus_Fire"
-   ]
-  },
-  {
-   "linha": "Efeito da Oferenda aumentado em # %",
-   "gemas": [
-    "Bone_Offering",
-    "Flesh_Offering",
-    "Spirit_Offering"
    ]
   },
   {
@@ -10477,30 +9860,6 @@
    ]
   },
   {
-   "linha": "nenhum efeito do buff tem equivalente no jogo",
-   "gemas": [
-    "Flesh_and_Stone",
-    "Righteous_Fire",
-    "War_Banner"
-   ]
-  },
-  {
-   "linha": "sem dano direto: nenhum efeito no combate",
-   "gemas": [
-    "Conversion_Trap",
-    "Detonate_Mines",
-    "Smoke_Mine"
-   ]
-  },
-  {
-   "linha": "Velocidade de Projéteis aumentada em # %",
-   "gemas": [
-    "Holy_Flame_Totem",
-    "Shrapnel_Ballista",
-    "Shrapnel_Ballista_of_Steel"
-   ]
-  },
-  {
    "linha": "# % de chance de Convocar um Sentinela da Absolvição ao Acertar um Inimigo Raro ou Único",
    "gemas": [
     "Absolution",
@@ -10508,17 +9867,10 @@
    ]
   },
   {
-   "linha": "# % de chance de invocar uma Sentinela da Dominação normal ao atingir um monstro raro ou único",
+   "linha": "#% de Poder Arcano",
    "gemas": [
-    "Dominating_Blow",
-    "Dominating_Blow_of_Inspiring"
-   ]
-  },
-  {
-   "linha": "# a # de Dano de Fogo adicionado contra Inimigos Queimando",
-   "gemas": [
-    "Fire_Trap",
-    "Fire_Trap_of_Blasting"
+    "Greater_Kinetic_Instability_Support",
+    "Kinetic_Instability_Support"
    ]
   },
   {
@@ -10529,73 +9881,10 @@
    ]
   },
   {
-   "linha": "+# ao Máximo de Zumbis Evocados",
+   "linha": "a onda usa o físico médio da arma × o \"Dano de Ataque: X% de base\" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma)",
    "gemas": [
-    "Raise_Zombie",
-    "Raise_Zombie_of_Slamming"
-   ]
-  },
-  {
-   "linha": "Aplica feixes aos # Inimigos próximos",
-   "gemas": [
-    "Siphoning_Trap",
-    "Siphoning_Trap_of_Pain"
-   ]
-  },
-  {
-   "linha": "as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente)",
-   "gemas": [
-    "Shrapnel_Ballista",
-    "Shrapnel_Ballista_of_Steel"
-   ]
-  },
-  {
-   "linha": "Aura de Exposição ao Fogo aplica # % à resistência a dano de fogo",
-   "gemas": [
-    "Pyroclast_Mine",
-    "Pyroclast_Mine_of_Sabotage"
-   ]
-  },
-  {
-   "linha": "Causa # a # de Dano de Caos",
-   "gemas": [
-    "Hextoad_Support",
-    "Impending_Doom_Support"
-   ]
-  },
-  {
-   "linha": "Causa # a # de Dano de Raio",
-   "gemas": [
-    "Foulgrasp_Support",
-    "Prismatic_Burst_Support"
-   ]
-  },
-  {
-   "linha": "Causa # explosões menores Explosões menores têm entre # % de redução e # % de aumento do raio base, aleatoriamente",
-   "gemas": [
-    "Explosive_Trap",
-    "Explosive_Trap_of_Shrapnel"
-   ]
-  },
-  {
-   "linha": "Causa +# explosões menores",
-   "gemas": [
-    "Explosive_Trap",
-    "Explosive_Trap_of_Shrapnel"
-   ]
-  },
-  {
-   "linha": "Ceifador faz com que seus Lacaios Não-Ceifadores causem # % menos Dano",
-   "gemas": [
-    "Summon_Reaper",
-    "Summon_Reaper_of_Eviscerating"
-   ]
-  },
-  {
-   "linha": "Ceifador faz com que seus Lacaios Não-Ceifadores tenham # % menos Vida Máxima",
-   "gemas": [
-    "Summon_Reaper",
-    "Summon_Reaper_of_Eviscerating"
+    "Shockwave_Support",
+    "Void_Shockwave_Support"
    ]
   },
   {
@@ -10606,80 +9895,10 @@
    ]
   },
   {
-   "linha": "Golens causam # % mais Dano por Lacaio Não-Golem próximo deles, até # %",
-   "gemas": [
-    "Summon_Carrion_Golem",
-    "Summon_Carrion_Golem_of_Scavenging"
-   ]
-  },
-  {
-   "linha": "Golpes Abatedores com Habilidades Suportadas Consomem cadáveres para Recuperar # de Vida e # de Mana",
-   "gemas": [
-    "Devour_Support",
-    "Greater_Devour_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades de Efeito em Área Suportadas também afetam áreas na frente, atrás, e dos lados da área alvo",
-   "gemas": [
-    "Awakened_Spell_Cascade_Support",
-    "Greater_Spell_Cascade_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades de Efeito em Área Suportadas também afetam áreas na frente, atrás,\\ne dos lados da área alvo",
-   "gemas": [
-    "Awakened_Spell_Cascade_Support",
-    "Greater_Spell_Cascade_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas aplicam Maldições Suportadas em Acertos",
-   "gemas": [
-    "Awakened_Hextouch_Support",
-    "Hextouch_Support"
-   ]
-  },
-  {
    "linha": "Habilidades suportadas criam Solo Maldito com uma Duração base de # segundos Feitiços de Habilidades Suportadas não tem Duração Inimigos em Solo Maldito das Habilidades Suportadas são Amaldiçoados com tal Feitiço Limite de # área de Solo Maldito",
    "gemas": [
     "Cursed_Ground_Support",
     "Hextoad_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm Efeito em Área da Ativação de Armadilhas aumentado em #%",
-   "gemas": [
-    "Cluster_Traps_Support",
-    "Multiple_Traps_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios de Habilidades Suportadas têm Chance de Golpe Crítico aumentada em #%",
-   "gemas": [
-    "Exemplar_Support",
-    "Fresh_Meat_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios possuem +# % de todas Resistências Elementais",
-   "gemas": [
-    "Raise_Spectre",
-    "Raise_Spectre_of_Transience"
-   ]
-  },
-  {
-   "linha": "Libera # onda",
-   "gemas": [
-    "Seismic_Trap",
-    "Seismic_Trap_of_Swells"
-   ]
-  },
-  {
-   "linha": "Libera +# onda",
-   "gemas": [
-    "Seismic_Trap",
-    "Seismic_Trap_of_Swells"
    ]
   },
   {
@@ -10690,45 +9909,10 @@
    ]
   },
   {
-   "linha": "Raio Base da explosão menor igual a # metros",
+   "linha": "sem dano direto: nenhum efeito no combate",
    "gemas": [
-    "Explosive_Trap",
-    "Explosive_Trap_of_Shrapnel"
-   ]
-  },
-  {
-   "linha": "Receba # % do Dano Físico como Dano de Gelo Extra",
-   "gemas": [
-    "Ice_Crash",
-    "Ice_Crash_of_Cadence"
-   ]
-  },
-  {
-   "linha": "Sentinelas Ascendidos causam # % mais Dano",
-   "gemas": [
-    "Vaal_Absolution",
-    "Vaal_Domination"
-   ]
-  },
-  {
-   "linha": "Sentinelas Ascendidos sofrem # % menos Dano",
-   "gemas": [
-    "Vaal_Absolution",
-    "Vaal_Domination"
-   ]
-  },
-  {
-   "linha": "Tem # chamas",
-   "gemas": [
-    "Flamethrower_Trap",
-    "Flamethrower_Trap_of_Stability"
-   ]
-  },
-  {
-   "linha": "Trava o inimigo no lugar",
-   "gemas": [
-    "Bear_Trap",
-    "Bear_Trap_of_Skewers"
+    "Conversion_Trap",
+    "Smoke_Mine"
    ]
   },
   {
@@ -10739,70 +9923,9 @@
    ]
   },
   {
-   "linha": "Você não pode Conjurar Magias Maldição Suportadas",
-   "gemas": [
-    "Awakened_Hextouch_Support",
-    "Hextouch_Support"
-   ]
-  },
-  {
-   "linha": "# % de chance de convocar um Lacaio extra",
-   "gemas": [
-    "Summon_Raging_Spirit"
-   ]
-  },
-  {
    "linha": "# % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único",
    "gemas": [
     "Herald_of_Purity"
-   ]
-  },
-  {
-   "linha": "# % mais Área de Efeito se Consumindo um Lacaio",
-   "gemas": [
-    "Bodyswap_of_Sacrifice"
-   ]
-  },
-  {
-   "linha": "# % mais Dano de Projétil",
-   "gemas": [
-    "Siege_Ballista_of_Trarthus"
-   ]
-  },
-  {
-   "linha": "# % mais Velocidade de Projétil",
-   "gemas": [
-    "Holy_Flame_Totem_of_Ire"
-   ]
-  },
-  {
-   "linha": "# % menos Dano de Afecções",
-   "gemas": [
-    "Bodyswap_of_Sacrifice"
-   ]
-  },
-  {
-   "linha": "# % menos Dano em Área",
-   "gemas": [
-    "Smite"
-   ]
-  },
-  {
-   "linha": "# % menos Velocidade de Arremesso de Armadilhas",
-   "gemas": [
-    "Explosive_Trap_of_Magnitude"
-   ]
-  },
-  {
-   "linha": "# % menos velocidade de lançar armadilhas com arma de duas mãos",
-   "gemas": [
-    "Spectral_Helix_of_Trarthus"
-   ]
-  },
-  {
-   "linha": "# metros de raio",
-   "gemas": [
-    "Prismatic_Burst_Support"
    ]
   },
   {
@@ -10818,45 +9941,15 @@
    ]
   },
   {
-   "linha": "#% mais Dano por Carga de Tolerância",
-   "gemas": [
-    "Endurance_Charge_on_Melee_Stun_Support"
-   ]
-  },
-  {
-   "linha": "+# % mais Dano em Área",
-   "gemas": [
-    "Vaal_Smite"
-   ]
-  },
-  {
    "linha": "+# ao número máximo de Guerreiros Ilusórios",
    "gemas": [
     "Generals_Cry"
    ]
   },
   {
-   "linha": "+# ao número máximo de Zumbis",
-   "gemas": [
-    "Raise_Zombie_of_Falling"
-   ]
-  },
-  {
-   "linha": "+# metros para o alcance do golpe corpo a corpo do lacaio",
-   "gemas": [
-    "Holy_Strike"
-   ]
-  },
-  {
    "linha": "+# vez",
    "gemas": [
     "Blade_Trap"
-   ]
-  },
-  {
-   "linha": "+#% para o número máximo de lacaios de habilidades reforçadas",
-   "gemas": [
-    "Congregation_Support"
    ]
   },
   {
@@ -10872,81 +9965,15 @@
    ]
   },
   {
-   "linha": "a imunidade a afecções ainda não existe no jogo",
+   "linha": "A Habilidade Explosiva da Relíquia Sagrada concede # de Vida regenerada por segundo aos Aliados",
    "gemas": [
-    "Purity_of_Elements"
+    "Summon_Holy_Relic"
    ]
   },
   {
-   "linha": "a onda usa o físico médio da arma × o \"Dano de Ataque: X% de base\" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma)",
+   "linha": "A Habilidade Explosiva da Relíquia Sagrada concede # de Vida regenerada por segundo aos Lacaios",
    "gemas": [
-    "Void_Shockwave_Support"
-   ]
-  },
-  {
-   "linha": "A Recarga do seu Escudo de Energia e dos seus aliados próximos não é impedida por Dano",
-   "gemas": [
-    "Vaal_Discipline"
-   ]
-  },
-  {
-   "linha": "Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe # de Ressonância de outros Elementos por # segundos Perde # de Ressonância por segundo para cada Elemento que não estiver ganhando",
-   "gemas": [
-    "Trinity_Support"
-   ]
-  },
-  {
-   "linha": "Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe # de Ressonância de outros Elementos por # segundos\\nPerde # de Ressonância por segundo para cada Elemento que não estiver ganhando",
-   "gemas": [
-    "Trinity_Support"
-   ]
-  },
-  {
-   "linha": "Adrenalina de Combate concede #% mais Velocidade de Ataque às Habilidades de Deslocamento não Suportadas por Combate Próximo",
-   "gemas": [
-    "Close_Combat_Support"
-   ]
-  },
-  {
-   "linha": "Afecções Elementais infligidas por Habilidades Suportadas se espalham para outros inimigos dentro de # metros",
-   "gemas": [
-    "Elemental_Proliferation_Support"
-   ]
-  },
-  {
-   "linha": "Alcance do Posicionamento de Totens aumentado em # %",
-   "gemas": [
-    "Siege_Ballista_of_Trarthus"
-   ]
-  },
-  {
-   "linha": "Alvos sofrem #% mais Dano do Sangramento por Rompimento das Habilidades Suportadas neles",
-   "gemas": [
-    "Rupture_Support"
-   ]
-  },
-  {
-   "linha": "Anima até # Armas",
-   "gemas": [
-    "Vaal_Animate_Weapon"
-   ]
-  },
-  {
-   "linha": "Ao atingir # de Gula, perde toda a Gula e ganha Regurgitação por # segundos",
-   "gemas": [
-    "Gluttony_Support"
-   ]
-  },
-  {
-   "linha": "Aplica feixes aos +# Inimigos próximos",
-   "gemas": [
-    "Siphoning_Trap"
-   ]
-  },
-  {
-   "linha": "Após atacar, os totens desaparecem",
-   "gemas": [
-    "Siege_Ballista_of_Trarthus"
+    "Summon_Holy_Relic"
    ]
   },
   {
@@ -10968,75 +9995,15 @@
    ]
   },
   {
-   "linha": "Ataque de Impacto dos Zumbis Erguidos tem Efeito em Área aumentado em # %",
-   "gemas": [
-    "Raise_Zombie_of_Slamming"
-   ]
-  },
-  {
-   "linha": "Ataques com habilidades reforçadas, cujo maior tipo de dano é caos, elétrico ou físico, fazem você ganhar # de Ressonância Profana dos outros tipos por segundo durante # segundos Perde # de Ressonância Profana por segundo para cada tipo que não ganhar",
-   "gemas": [
-    "Unholy_Trinity_Support"
-   ]
-  },
-  {
-   "linha": "Ataques com habilidades reforçadas, cujo maior tipo de dano é caos, elétrico ou físico, fazem você ganhar # de Ressonância Profana dos outros tipos por segundo durante # segundos\\nPerde # de Ressonância Profana por segundo para cada tipo que não ganhar",
-   "gemas": [
-    "Unholy_Trinity_Support"
-   ]
-  },
-  {
-   "linha": "Ataques Impelidos ativam as Magias Suportadas",
-   "gemas": [
-    "Battlemages_Cry"
-   ]
-  },
-  {
    "linha": "Ataques reforçados ativam Rajada de Vento ao atingir, limitado a uma vez a cada # metros percorridos",
    "gemas": [
     "Windburst_Support"
    ]
   },
   {
-   "linha": "Ataques Suportados causam #% mais Dano por cada Clamor que os Impelir",
-   "gemas": [
-    "Overexertion_Support"
-   ]
-  },
-  {
-   "linha": "Ataques Suportados causam Dano Físico com Armas Adicional igual a #% da Vida Máxima enquanto em Vida Baixa",
-   "gemas": [
-    "Bloodthirst_Support"
-   ]
-  },
-  {
-   "linha": "Ataques Suportados causam Dano Físico com Armas Adicional igual a\\n#% da Vida Máxima enquanto em Vida Baixa",
-   "gemas": [
-    "Bloodthirst_Support"
-   ]
-  },
-  {
-   "linha": "Ativa a Habilidade Suportada quando você Acertar um Inimigo Raro ou Único com um Ataque",
-   "gemas": [
-    "Mark_On_Hit_Support"
-   ]
-  },
-  {
-   "linha": "Ativa Esta Habilidade quando um Feitiço de Habilidades Suportadas terminar",
-   "gemas": [
-    "Impending_Doom_Support"
-   ]
-  },
-  {
    "linha": "Ativa esta magia reforçada quando sua salvaguarda quebra",
    "gemas": [
     "Cast_on_Ward_Break_Support"
-   ]
-  },
-  {
-   "linha": "Ativa Explosão Destruidora quando um Feitiço de Habilidades Maldição Suportadas terminar",
-   "gemas": [
-    "Impending_Doom_Support"
    ]
   },
   {
@@ -11052,39 +10019,9 @@
    ]
   },
   {
-   "linha": "Aumenta a Velocidade de Conjuração dos Lacaios em # %",
-   "gemas": [
-    "Flesh_Offering"
-   ]
-  },
-  {
-   "linha": "Aumenta a Velocidade de Movimento dos Lacaios em # %",
-   "gemas": [
-    "Flesh_Offering"
-   ]
-  },
-  {
-   "linha": "Aura faz com que Castigo ataque +# alvos com relâmpagos",
-   "gemas": [
-    "Vaal_Smite"
-   ]
-  },
-  {
    "linha": "Auras das Habilidades Suportadas têm uma duração base de # segundos",
    "gemas": [
     "Divine_Blessing_Support"
-   ]
-  },
-  {
-   "linha": "Bônus de Dano da Força é aplicado ao Dano de Ataque dos Projéteis assim como às Habilidades Suportadas",
-   "gemas": [
-    "Iron_Grip_Support"
-   ]
-  },
-  {
-   "linha": "Bônus de dano da Força também é aplicado à todo Dano Mágico para Magias Suportadas",
-   "gemas": [
-    "Iron_Will_Support"
    ]
   },
   {
@@ -11094,51 +10031,21 @@
    ]
   },
   {
-   "linha": "Buff tem # % mais Efeito em seus Lacaios",
-   "gemas": [
-    "Rallying_Cry"
-   ]
-  },
-  {
-   "linha": "Cada Habilidade Suportada causa #% mais Dano com Incêndio por cada Incêndio infligido com ela Recentemente, máximo de #%",
-   "gemas": [
-    "Controlled_Blaze_Support"
-   ]
-  },
-  {
-   "linha": "Cada Habilidade Suportada causa #% menos Dano por cada Incêndio infligido com ela Recentemente, máximo de #%",
-   "gemas": [
-    "Controlled_Blaze_Support"
-   ]
-  },
-  {
-   "linha": "Cada mina aplica Dano aumentado em +# % aos Inimigos próximos máximo de # %",
-   "gemas": [
-    "Stormblast_Mine"
-   ]
-  },
-  {
    "linha": "Cada Mina das Habilidades Suportadas aplicadas #% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de #%",
    "gemas": [
     "High-Impact_Mine_Support"
    ]
   },
   {
-   "linha": "Causa # % do seu Escudo de Energia Máximo como Dano Base de Fogo por segundo",
+   "linha": "Causa # a # de Dano de Caos",
    "gemas": [
-    "Righteous_Fire"
+    "Hextoad_Support"
    ]
   },
   {
-   "linha": "Causa # a # de Dano de Fogo",
+   "linha": "Causa # a # de Dano de Raio",
    "gemas": [
-    "Prismatic_Burst_Support"
-   ]
-  },
-  {
-   "linha": "Causa # a # de Dano de Gelo",
-   "gemas": [
-    "Prismatic_Burst_Support"
+    "Foulgrasp_Support"
    ]
   },
   {
@@ -11148,99 +10055,15 @@
    ]
   },
   {
-   "linha": "Ceifadores fazem com que seus Lacaios não-Ceifadores tenham # % menos Dano",
-   "gemas": [
-    "Summon_Reaper_of_Revenants"
-   ]
-  },
-  {
-   "linha": "Ceifadores fazem com que seus Lacaios não-Ceifadores tenham # % menos Vida Máxima",
-   "gemas": [
-    "Summon_Reaper_of_Revenants"
-   ]
-  },
-  {
    "linha": "Chão amaldiçoado de habilidades reforçadas ativam Sapo Explosivo a cada # segundo",
    "gemas": [
     "Hextoad_Support"
    ]
   },
   {
-   "linha": "Clamores reforçados criam um chão consagrado com duração de # segundos",
-   "gemas": [
-    "Blessed_Call_Support"
-   ]
-  },
-  {
-   "linha": "Clamores reforçados têm #% de área de efeito",
-   "gemas": [
-    "Blessed_Call_Support"
-   ]
-  },
-  {
-   "linha": "Clamores reforçados têm a velocidade de recarga reduzida em #%",
-   "gemas": [
-    "Blessed_Call_Support"
-   ]
-  },
-  {
-   "linha": "Clamores Suportados infligem # Debuffs de Sangue Corrompido",
-   "gemas": [
-    "Corrupting_Cry_Support"
-   ]
-  },
-  {
-   "linha": "Clamores Suportados infligem # Debuffs de Sangue Corrompido no primeiro inimigo Acertado por cada Ataque que Impelirem",
-   "gemas": [
-    "Corrupting_Cry_Support"
-   ]
-  },
-  {
-   "linha": "Clamores Suportados infligem # Debuffs de Sangue Corrompido no primeiro\\ninimigo Acertado por cada Ataque que Impelirem",
-   "gemas": [
-    "Corrupting_Cry_Support"
-   ]
-  },
-  {
    "linha": "Cobre Inimigos em Cinzas ao Acertar",
    "gemas": [
     "Pyre_Support"
-   ]
-  },
-  {
-   "linha": "Concede # % mais Dano Mágico",
-   "gemas": [
-    "Righteous_Fire"
-   ]
-  },
-  {
-   "linha": "Concede # de Regeneração de Mana por segundo para cada Inimigo afetado",
-   "gemas": [
-    "Siphoning_Trap"
-   ]
-  },
-  {
-   "linha": "Concede # de Regeneração de Mana por segundo se qualquer Inimigo está afetado",
-   "gemas": [
-    "Siphoning_Trap"
-   ]
-  },
-  {
-   "linha": "Concede # de Regeneração de Vida por segundo caso um Inimigo esteja afetado",
-   "gemas": [
-    "Siphoning_Trap"
-   ]
-  },
-  {
-   "linha": "Concede # de Regeneração de Vida por segundo para cada Inimigo afetado",
-   "gemas": [
-    "Siphoning_Trap"
-   ]
-  },
-  {
-   "linha": "Concede aos Lacaios +# % de Chance de Bloquear Dano Mágico",
-   "gemas": [
-    "Bone_Offering"
    ]
   },
   {
@@ -11259,12 +10082,6 @@
    "linha": "Conta o Poder total de Inimigos e Cadáveres no Alcance",
    "gemas": [
     "Generals_Cry"
-   ]
-  },
-  {
-   "linha": "Converte # % do Dano Físico para um Elemento aleatório",
-   "gemas": [
-    "Reave_of_Refraction"
    ]
   },
   {
@@ -11334,18 +10151,6 @@
    ]
   },
   {
-   "linha": "Dano Mágico Suprimido causado em você é Azarado",
-   "gemas": [
-    "Vaal_Grace"
-   ]
-  },
-  {
-   "linha": "Definhado dura # segundos",
-   "gemas": [
-    "Withering_Touch_Support"
-   ]
-  },
-  {
    "linha": "Detonação da Mina é Instantânea",
    "gemas": [
     "Smoke_Mine"
@@ -11364,33 +10169,9 @@
    ]
   },
   {
-   "linha": "Duração Base do Frenesi Faminto é de # segundos",
+   "linha": "Efeito do Buff aumentado em # %",
    "gemas": [
-    "Feeding_Frenzy_Support"
-   ]
-  },
-  {
-   "linha": "Efeito das Marcas de Habilidades Suportadas aumentado em #%",
-   "gemas": [
-    "Mark_On_Hit_Support"
-   ]
-  },
-  {
-   "linha": "Efeito das Marcas de Habilidades Suportadas reduzido em #%",
-   "gemas": [
-    "Mark_On_Hit_Support"
-   ]
-  },
-  {
-   "linha": "Efeito em Área de Habilidades Maldição Suportadas reduzido em #%",
-   "gemas": [
-    "Hexpass_Support"
-   ]
-  },
-  {
-   "linha": "Empala Inimigos ao Acertar",
-   "gemas": [
-    "Bear_Trap_of_Skewers"
+    "Summon_Holy_Relic"
    ]
   },
   {
@@ -11403,24 +10184,6 @@
    "linha": "Enquanto na Postura de Sangue, Aura faz com que os Inimigos sofram até # % mais Dano Físico dos Acertos",
    "gemas": [
     "Flesh_and_Stone"
-   ]
-  },
-  {
-   "linha": "Enquanto você tiver Regurgitação, as magias reforçadas disparam projéteis em círculo Enquanto você tiver Regurgitação, as magias reforçadas disparam # projéteis adicionais",
-   "gemas": [
-    "Gluttony_Support"
-   ]
-  },
-  {
-   "linha": "Envenenar inimigos não envenenados com habilidades reforçadas inflige # envenenamentos adicionais",
-   "gemas": [
-    "Lethal_Dose_Support"
-   ]
-  },
-  {
-   "linha": "Espectros têm Duração Base de # segundos Espectros não viajam entre as Áreas",
-   "gemas": [
-    "Raise_Spectre_of_Transience"
    ]
   },
   {
@@ -11454,165 +10217,15 @@
    ]
   },
   {
-   "linha": "Esta Magia causa # a # , mais # % da sua Vida Máxima, como Dano de Fogo base",
-   "gemas": [
-    "Bodyswap_of_Sacrifice"
-   ]
-  },
-  {
-   "linha": "Estandarte concede # % mais Dano Físico com Habilidades Corpo a Corpo a Você e Aliados",
-   "gemas": [
-    "War_Banner"
-   ]
-  },
-  {
-   "linha": "Estandarte concede # de Dano sofrido de cada Tipo de Dano dos Acertos Suprimidos a Você e Aliados",
-   "gemas": [
-    "Defiance_Banner"
-   ]
-  },
-  {
-   "linha": "Estandarte concede Precisão aumentada em # % a Você e Aliados",
-   "gemas": [
-    "War_Banner"
-   ]
-  },
-  {
-   "linha": "Estandarte faz com que você e Aliados Recuperem # de Vida ao Bloquear",
-   "gemas": [
-    "Dread_Banner"
-   ]
-  },
-  {
-   "linha": "Estandartes reforçados infligem Sangue Corrompido a cada segundo aos inimigos dentro de sua área",
-   "gemas": [
-    "Bloodsoaked_Banner_Support"
-   ]
-  },
-  {
    "linha": "Este ataque e lacaios convertem # % do dano físico em dano elétrico",
    "gemas": [
     "Holy_Strike"
    ]
   },
   {
-   "linha": "Estímulo dura # segundos",
-   "gemas": [
-    "Innervate_Support"
-   ]
-  },
-  {
-   "linha": "Explosões causam Dano de Fogo base igual a # % da Vida máxima do Lacaio",
-   "gemas": [
-    "Bodyswap_of_Sacrifice"
-   ]
-  },
-  {
-   "linha": "Feitiços aplicados por habilidades de maldição reforçadas afetam inimigos imunes a feitiços",
-   "gemas": [
-    "Hexpass_Support"
-   ]
-  },
-  {
-   "linha": "Feitiços aplicados por habilidades de maldição reforçadas têm #% de chance de afetar inimigos imunes a feitiços",
-   "gemas": [
-    "Awakened_Hextouch_Support"
-   ]
-  },
-  {
-   "linha": "Feitiços de Habilidades Suportadas se Transferem para todos os Inimigos dentro de # metros quando o Inimigo Enfeitiçado morrer",
-   "gemas": [
-    "Hex_Bloom_Support"
-   ]
-  },
-  {
    "linha": "Flechas caem em duas linhas perpendiculares",
    "gemas": [
     "Artillery_Ballista_of_Cross_Strafe"
-   ]
-  },
-  {
-   "linha": "Fonte de Vida dura # segundos",
-   "gemas": [
-    "Lifetap_Support"
-   ]
-  },
-  {
-   "linha": "Fonte de Vida dura +# segundos",
-   "gemas": [
-    "Lifetap_Support"
-   ]
-  },
-  {
-   "linha": "Fúria Arcana concede Velocidade de Conjuração aumentada em #% Fúria Arcana concede Regeneração de Mana aumentada em #%",
-   "gemas": [
-    "Arcane_Surge_Support"
-   ]
-  },
-  {
-   "linha": "Fúria Arcana concede Velocidade de Conjuração aumentada em #%\\nFúria Arcana concede Regeneração de Mana aumentada em #%",
-   "gemas": [
-    "Arcane_Surge_Support"
-   ]
-  },
-  {
-   "linha": "Fúria Arcana dura # segundos",
-   "gemas": [
-    "Arcane_Surge_Support"
-   ]
-  },
-  {
-   "linha": "Ganha # de Gula ao conjurar magias reforçadas",
-   "gemas": [
-    "Gluttony_Support"
-   ]
-  },
-  {
-   "linha": "Ganha # Traumatismo na primeira vez que um Ataque Suportado Acertar um Inimigo Sofre # de Dano Físico por Traumatismo quando você ganhar Traumatismo das Habilidades Suportadas Traumatismos duram # segundos",
-   "gemas": [
-    "Trauma_Support"
-   ]
-  },
-  {
-   "linha": "Ganha Fonte de Vida após Gastar um total de # de Vida no Custo Direto e Efeitos das Habilidades Suportadas",
-   "gemas": [
-    "Lifetap_Support"
-   ]
-  },
-  {
-   "linha": "Ganha Fúria Arcana após Gastar um total de # de Mana em Custos Diretos e Efeitos de uma Habilidade Suportada",
-   "gemas": [
-    "Arcane_Surge_Support"
-   ]
-  },
-  {
-   "linha": "Ganha Invervação ao Matar um Inimigo Eletrizado com Habilidades Suportadas",
-   "gemas": [
-    "Innervate_Support"
-   ]
-  },
-  {
-   "linha": "Ganha uma Carga de Inspiração ao Gastar Mana em Custos Diretos ou Efeitos das Habilidades Suportadas",
-   "gemas": [
-    "Inspiration_Support"
-   ]
-  },
-  {
-   "linha": "Ganha uma Carga de Inspiração ao Gastar Mana em\\nCustos Diretos ou Efeitos das Habilidades Suportadas",
-   "gemas": [
-    "Inspiration_Support"
-   ]
-  },
-  {
-   "linha": "Ganha uma instância de Intensidade Sobrecarregada por # segundos após perder # de Intensidade com habilidades reforçadas",
-   "gemas": [
-    "Overloaded_Intensity_Support"
-   ]
-  },
-  {
-   "linha": "Ganha uma instância de Intensidade Sobrecarregada por # segundos após\\nperder # de Intensidade com habilidades reforçadas",
-   "gemas": [
-    "Overloaded_Intensity_Support"
    ]
   },
   {
@@ -11640,57 +10253,15 @@
    ]
   },
   {
-   "linha": "Golpe de Impacto de Zumbis Evocados tem a Velocidade de Recarga aumentada em %",
-   "gemas": [
-    "Raise_Zombie_of_Slamming"
-   ]
-  },
-  {
-   "linha": "Golpes Críticos com Habilidades Suportadas que infligirem Sangramento também infligem Rompimento",
-   "gemas": [
-    "Rupture_Support"
-   ]
-  },
-  {
-   "linha": "Golpes fatais com habilidades reforçadas fazem com que os inimigos tenham #% de chance de explodir e causarem um décimo da própria vida máxima como dano de um elemento aleatório",
-   "gemas": [
-    "Annihilation_Support"
-   ]
-  },
-  {
-   "linha": "Golpes fatais com habilidades reforçadas fazem com que os inimigos tenham +#% de chance de explodir e causarem um décimo da própria vida máxima como dano de um elemento aleatório",
-   "gemas": [
-    "Annihilation_Support"
-   ]
-  },
-  {
-   "linha": "Golpes Finais das Habilidades de Golpe Suportadas com Armas Corpo a Corpo contra Monstros Raros concedem um de seus Modificadores por # segundos",
-   "gemas": [
-    "Behead_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades de arauto reforçadas não têm efeito bônus",
-   "gemas": [
-    "Scornful_Herald_Support"
-   ]
-  },
-  {
    "linha": "Habilidades de Aura Suportadas não tem Reserva",
    "gemas": [
     "Guardians_Blessing_Support"
    ]
   },
   {
-   "linha": "Habilidades de Efeito em Área Suportadas também afetam áreas na frente e atrás da área alvo",
+   "linha": "Habilidades dos Lacaios Ricocheteiam +# Vezes",
    "gemas": [
-    "Spell_Cascade_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Não-Instantâneas Suportadas têm +# Usos de Tempo do Recarga",
-   "gemas": [
-    "Second_Wind_Support"
+    "Living_Lightning_Support"
    ]
   },
   {
@@ -11718,45 +10289,9 @@
    ]
   },
   {
-   "linha": "Habilidades reforçadas consomem toda a Fortificação ao usar, causando +#% de dano com afecções por # de Fortificação consumida",
-   "gemas": [
-    "Overheat_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades reforçadas excomungam os inimigos ao atingir corpo a corpo por # segundos",
-   "gemas": [
-    "Excommunicate_Support"
-   ]
-  },
-  {
    "linha": "Habilidades reforçadas ganham #% do dano físico como dano de caos adicional por fundamental",
    "gemas": [
     "Machinations_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades reforçadas ganham custo de mana base equivalente a #% do mana máximo não reservado",
-   "gemas": [
-    "Archmage_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades reforçadas ganham custo de mana base equivalente a #% do mana máximo reservado",
-   "gemas": [
-    "Frostmage_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades reforçadas ganham dano de frio adicionado equivalente a #% do mana máximo reservado",
-   "gemas": [
-    "Frostmage_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades reforçadas infligem Chama Santificada ao atingir corpo a corpo",
-   "gemas": [
-    "Hallow_Support"
    ]
   },
   {
@@ -11766,45 +10301,9 @@
    ]
   },
   {
-   "linha": "Habilidades reforçadas sacrificam tudo, menos #, da sua vida e escudo de energia ao usar",
-   "gemas": [
-    "Vaal_Sacrifice_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades reforçadas se propagam #% mais vezes",
-   "gemas": [
-    "Greater_Chain_Support"
-   ]
-  },
-  {
    "linha": "Habilidades reforçadas têm #% de chance de ativar Chamado da Fogueira ao atingir inimigos incendiados corpo a corpo",
    "gemas": [
     "Pyre_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades reforçadas têm #% de chance de ignorar a redução de dano físico do inimigo, se cada Ressonância Profana for de, no mínimo, #",
-   "gemas": [
-    "Unholy_Trinity_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades reforçadas têm #% de chance de ignorar a resistência a dano de caos e elétrico do inimigo, se cada Ressonância Profana for de, no mínimo, #",
-   "gemas": [
-    "Unholy_Trinity_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades reforçadas têm +#% de chance de causar golpe crítico por Intensidade Sobrecarregada",
-   "gemas": [
-    "Overloaded_Intensity_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades reforçadas têm +#% de multiplicador de golpe crítico por Intensidade Sobrecarregada",
-   "gemas": [
-    "Overloaded_Intensity_Support"
    ]
   },
   {
@@ -11820,30 +10319,6 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas Ativam Explosão Prismática ao Acertar",
-   "gemas": [
-    "Prismatic_Burst_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas Ativam Onda de Choque no Acerto Corpo a Corpo",
-   "gemas": [
-    "Shockwave_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas Ativam uma vez que o Custo de Mana total em outros Ataques de Arco excederem #% do seu Custo de Mana",
-   "gemas": [
-    "Manaforged_Arrows_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas Ativam uma vez que o Custo de Mana total em outros Ataques\\nde Arco excederem #% do seu Custo de Mana",
-   "gemas": [
-    "Manaforged_Arrows_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas Ativarão Convocar Espíritos Sagrados ao Acertar",
    "gemas": [
     "Sacred_Wisps_Support"
@@ -11856,15 +10331,9 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas causam #% mais Dano com Acertos e Afecções por cada # de Custo de Mana",
+   "linha": "Habilidades Suportadas causam #% menos Dano quando usadas por Espíritos Sagrados",
    "gemas": [
-    "Manaforged_Arrows_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas causam #% mais Dano Elemental por cada # da sua menor Ressonância",
-   "gemas": [
-    "Trinity_Support"
+    "Sacred_Wisps_Support"
    ]
   },
   {
@@ -11874,33 +10343,9 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas concedem Ímpeto de Combate ao Acertar Ímpeto de Combate dura # segundos ou até que você utilize uma Habilidade de Deslocamento",
-   "gemas": [
-    "Close_Combat_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas concedem Ímpeto de Combate ao Acertar\\nÍmpeto de Combate dura # segundos ou até que você utilize uma Habilidade de Deslocamento",
-   "gemas": [
-    "Close_Combat_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas Custam +# de Mana",
    "gemas": [
     "Divine_Blessing_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas ganham Dano de Raio Adicional igual a #% da Mana Máxima não Reservada",
-   "gemas": [
-    "Archmage_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas infligem Podridão ao Acertar, causando # de Dano de Caos por segundo durante # segundos",
-   "gemas": [
-    "Decay_Support"
    ]
   },
   {
@@ -11916,111 +10361,9 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas penetram #% da Resistência Elemental enquanto cada Ressonância estiver em ao menos #",
-   "gemas": [
-    "Trinity_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas podem ter até # Minas Remotas adicionais plantadas de uma vez",
-   "gemas": [
-    "Minefield_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas possuem #% de chance de causar Definhado ao Acertar",
-   "gemas": [
-    "Withering_Touch_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas recebem #% de Dano Físico como Dano de Caos Extra",
-   "gemas": [
-    "Withering_Touch_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas só podem ser usadas com Varinhas",
    "gemas": [
     "Sacred_Wisps_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm # a # de Dano de Ataque Físico Adicional por Traumatismo",
-   "gemas": [
-    "Trauma_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% da duração da Cegueira aumentada",
-   "gemas": [
-    "Blind_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% de chance de Cegar inimigos ao acertar",
-   "gemas": [
-    "Blind_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% de chance de Enervar Inimigos por # segundos ao Acertar",
-   "gemas": [
-    "Awakened_Controlled_Destruction_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% de chance de Esmagar Inimigos por # segundos ao Acertar",
-   "gemas": [
-    "Awakened_Brutality_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% de chance de ganhar uma Carga de Frenesi ao Matar um Inimigo Congelado",
-   "gemas": [
-    "Ice_Bite_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% de chance de ganhar uma Carga de Poder com Golpes Críticos",
-   "gemas": [
-    "Power_Charge_On_Critical_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% de chance de Intimidar Inimigos por # segundos ao Acertar",
-   "gemas": [
-    "Awakened_Melee_Physical_Damage_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% de Velocidade de Ataque de Lacaios aumentada",
-   "gemas": [
-    "Minion_Speed_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% de Velocidade de Conjuração de Lacaios aumentada",
-   "gemas": [
-    "Minion_Speed_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% mais frequência de Ativação",
-   "gemas": [
-    "Swiftbrand_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm alcance de Transferência de Feitiços aumentado em #%",
-   "gemas": [
-    "Hex_Bloom_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas tem Chance de Golpe Crítico aumentada em #% por Carga de Inspiração",
-   "gemas": [
-    "Inspiration_Support"
    ]
   },
   {
@@ -12030,51 +10373,9 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas têm Duração da Armadilha aumentada em #% Habilidades reforçadas têm a duração de mina aumentada em #%",
-   "gemas": [
-    "Invention_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm Duração do Atordoamento aumentada em #% por Traumatismo",
-   "gemas": [
-    "Trauma_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm Efeito da Mutilação aumentado em #%",
-   "gemas": [
-    "Maim_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas têm Efeito das Auras reduzido em #%",
    "gemas": [
     "Guardians_Blessing_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm Velocidade de Recuperação da Recarga reduzida em #%",
-   "gemas": [
-    "Second_Wind_Support"
-   ]
-  },
-  {
-   "linha": "Ignora Atordoamentos enquanto Usando Habilidades Suportadas",
-   "gemas": [
-    "Awakened_Cast_While_Channelling_Support"
-   ]
-  },
-  {
-   "linha": "Incêndios causados por Habilidades Suportadas se espalham para outros Inimigos dentro de # metros",
-   "gemas": [
-    "Ignite_Proliferation_Support"
-   ]
-  },
-  {
-   "linha": "Inervação dura # segundos",
-   "gemas": [
-    "Innervate_Support"
    ]
   },
   {
@@ -12084,39 +10385,9 @@
    ]
   },
   {
-   "linha": "Inimigos afetados por feitiços de habilidades de maldição reforçadas não podem causar golpes críticos",
-   "gemas": [
-    "Hexpass_Support"
-   ]
-  },
-  {
-   "linha": "Inimigos possuem # % menos Velocidade de Movimento no início do Debuff",
-   "gemas": [
-    "Bear_Trap"
-   ]
-  },
-  {
-   "linha": "Inimigos recebem # % de aumento de Dano dos Acertos de Minas ou Armadilhas",
-   "gemas": [
-    "Bear_Trap"
-   ]
-  },
-  {
    "linha": "Inimigos sofrem de Insanidade Perversa se estiverem sob a influência de auras de habilidades reforçadas por mais de # segundos",
    "gemas": [
     "Eldritch_Blasphemy_Support"
-   ]
-  },
-  {
-   "linha": "Intensidade de Chama Santificada infligida por habilidades reforçadas aumentada em #%",
-   "gemas": [
-    "Hallow_Support"
-   ]
-  },
-  {
-   "linha": "Invervação concede # a # de Dano de Raio",
-   "gemas": [
-    "Innervate_Support"
    ]
   },
   {
@@ -12132,12 +10403,6 @@
    ]
   },
   {
-   "linha": "Invoca # Totens de Balista em círculo que usam esta habilidade",
-   "gemas": [
-    "Siege_Ballista_of_Trarthus"
-   ]
-  },
-  {
    "linha": "Lacaios causam # % de Dano Físico",
    "gemas": [
     "Herald_of_Purity"
@@ -12147,12 +10412,6 @@
    "linha": "Lacaios convertem #% do Dano Físico para Dano de Raio",
    "gemas": [
     "Living_Lightning_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios criados por Habilidades Suportadas ganham Fúria Desperta e Adrenalina por #% de sua Duração, máximo de # segundos Fúria Desperta concede +#% de Chance de Golpe Crítico Fúria Desperta concede +#% de Multiplicador de Golpe Crítico",
-   "gemas": [
-    "Fresh_Meat_Support"
    ]
   },
   {
@@ -12168,51 +10427,15 @@
    ]
   },
   {
-   "linha": "Lacaios de habilidades reforçadas sofrem #% de dano, se eles forem seus únicos lacaios",
-   "gemas": [
-    "Companionship_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios de habilidades reforçadas sofrem #% do dano de ataque da própria vida antes de você, se eles forem seus únicos lacaios",
-   "gemas": [
-    "Companionship_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios de habilidades reforçadas sofrem #% do dano de ataque da própria vida\\nantes de você, se eles forem seus únicos lacaios",
-   "gemas": [
-    "Companionship_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios de habilidades reforçadas têm +#% de multiplicador de golpe crítico toda vez que você causar um golpe crítico recentemente com um ataque, até +#%",
-   "gemas": [
-    "Exemplar_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios de habilidades reforçadas têm a chance de causar golpe crítico aumentada em #% toda vez que você causar um golpe crítico recentemente com um ataque, até #%",
-   "gemas": [
-    "Exemplar_Support"
-   ]
-  },
-  {
    "linha": "Lacaios de Habilidades Suportadas causam # de Dano de Fogo por segundo aos Inimigos próximos a eles",
    "gemas": [
     "Infernal_Legion_Support"
    ]
   },
   {
-   "linha": "Lacaios de Habilidades Suportadas infligem Exposição no Acerto, aplicando #% à Resistência Elemental que combine com o maior tipo de Dano sofrido pelo Inimigo",
+   "linha": "Lacaios de Habilidades Suportadas causam #% mais Dano com Acertos e Afecções às suas Presas",
    "gemas": [
-    "Elemental_Army_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios de Habilidades Suportadas são Agressivos",
-   "gemas": [
-    "Feeding_Frenzy_Support"
+    "Predator_Support"
    ]
   },
   {
@@ -12234,48 +10457,6 @@
    ]
   },
   {
-   "linha": "Lacaios de Habilidades Suportadas sofrem #% menos Dano",
-   "gemas": [
-    "Meat_Shield_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios de Habilidades Suportadas têm #% ao máximo de todas as Resistências Elementais",
-   "gemas": [
-    "Elemental_Army_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios de Habilidades Suportadas tem #% de chance de conceder Frenesi Faminto à você no Acerto",
-   "gemas": [
-    "Feeding_Frenzy_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios de Habilidades Suportadas tem #% de chance de Provocar ao Acertar",
-   "gemas": [
-    "Meat_Shield_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios de Habilidades Suportadas têm +#% ao máximo de todas as Resistências Elementais",
-   "gemas": [
-    "Elemental_Army_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios de Habilidades Suportadas têm +#% de todas as Resistências Elementais",
-   "gemas": [
-    "Elemental_Army_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios Regeneram # % de Vida por segundo",
-   "gemas": [
-    "Summon_Carrion_Golem_of_Scavenging"
-   ]
-  },
-  {
    "linha": "Lacaios Relâmpagos Vivos atacam # vezes antes de desaparecerem",
    "gemas": [
     "Living_Lightning_Support"
@@ -12288,33 +10469,9 @@
    ]
   },
   {
-   "linha": "Lacaios têm # % de chance de agravar sangramento em alvos atingidos com ataques",
-   "gemas": [
-    "Summon_Reaper_of_Eviscerating"
-   ]
-  },
-  {
-   "linha": "Lacaios têm # % de chance de causar Dano Dobrado",
-   "gemas": [
-    "Raise_Zombie_of_Falling"
-   ]
-  },
-  {
-   "linha": "Lacaios têm # % menos Vida Máxima",
-   "gemas": [
-    "Summon_Stone_Golem_of_Safeguarding"
-   ]
-  },
-  {
    "linha": "Lacaios têm #% de chance de cobrir os inimigos de gelo ao atingir",
    "gemas": [
     "Hiveborn_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios têm Chance de Acerto Crítico aumentada em # %",
-   "gemas": [
-    "Raise_Spectre_of_Transience"
    ]
   },
   {
@@ -12324,57 +10481,15 @@
    ]
   },
   {
-   "linha": "Lacaios têm Efeito Eletrizante aumentado em # %",
+   "linha": "Lacaios têm Recuperação da Recarga aumentada em # %",
    "gemas": [
-    "Summon_Skitterbots"
-   ]
-  },
-  {
-   "linha": "Lacaios tem Efeito Resfriante aumentado em # %",
-   "gemas": [
-    "Summon_Skitterbots"
-   ]
-  },
-  {
-   "linha": "Lâminas Persistêntes Animadas se tornam Arcos",
-   "gemas": [
-    "Animate_Weapon_of_Ranged_Arms"
-   ]
-  },
-  {
-   "linha": "Lança até # armadilhas a mais ao usar duas armas",
-   "gemas": [
-    "Spectral_Helix_of_Trarthus"
-   ]
-  },
-  {
-   "linha": "Libera ondas a cada # segundos",
-   "gemas": [
-    "Seismic_Trap"
-   ]
-  },
-  {
-   "linha": "Magias reforçadas causam de # a # de dano físico adicionado para cada lacaio permanente",
-   "gemas": [
-    "Communion_Support"
+    "Absolution"
    ]
   },
   {
    "linha": "Magias Suportadas causam # % menos Dano",
    "gemas": [
     "Intuitive_Link"
-   ]
-  },
-  {
-   "linha": "Magias Suportadas Sacrificam #% da sua Vida atual quando Conjuradas para ganhar Dano de Caos adicional igual a #% da Vida Sacrificada",
-   "gemas": [
-    "Sacrifice_Support"
-   ]
-  },
-  {
-   "linha": "Magias Suportadas têm Recuperação da Recarga aumentada em #%",
-   "gemas": [
-    "Awakened_Cast_On_Critical_Strike_Support"
    ]
   },
   {
@@ -12414,12 +10529,6 @@
    ]
   },
   {
-   "linha": "Minas tem Velocidade de Detonação aumentada em # %",
-   "gemas": [
-    "Detonate_Mines"
-   ]
-  },
-  {
    "linha": "Minas usando Habilidades Suportadas sempre focam na sua localização",
    "gemas": [
     "Locus_Mine_Support"
@@ -12432,15 +10541,9 @@
    ]
   },
   {
-   "linha": "Não pode ser Evadido",
+   "linha": "nenhum efeito do buff tem equivalente no jogo",
    "gemas": [
-    "Vaal_Smite"
-   ]
-  },
-  {
-   "linha": "Não requer um cadáver",
-   "gemas": [
-    "Raise_Zombie_of_Falling"
+    "Flesh_and_Stone"
    ]
   },
   {
@@ -12456,45 +10559,15 @@
    ]
   },
   {
-   "linha": "Perca todas as Cargas de Inspiração após Gastar um total de # de Mana em Custos Diretos e Efeitos das Habilidades Suportadas",
-   "gemas": [
-    "Inspiration_Support"
-   ]
-  },
-  {
    "linha": "perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)",
    "gemas": [
     "Earthbreaker_Support"
    ]
   },
   {
-   "linha": "Possui # Chamas",
-   "gemas": [
-    "Flamethrower_Trap_of_Stability"
-   ]
-  },
-  {
-   "linha": "Primeira Mina é Detonada Instantaneamente Minas recebem # % mais Velocidade de Detonação para cada Mina anteior na Sequência de Detonação",
-   "gemas": [
-    "Detonate_Mines"
-   ]
-  },
-  {
-   "linha": "Projéteis deixam Solo Eletrizado",
-   "gemas": [
-    "Vaal_Lightning_Trap"
-   ]
-  },
-  {
    "linha": "Projéteis Perfuram todos Alvos",
    "gemas": [
     "Windburst_Support"
-   ]
-  },
-  {
-   "linha": "Projéteis Ricocheteiam ao colidirem com o terreno",
-   "gemas": [
-    "Lightning_Trap_of_Sparking"
    ]
   },
   {
@@ -12510,129 +10583,15 @@
    ]
   },
   {
-   "linha": "Raio acerta # alvo dentro de # metros",
-   "gemas": [
-    "Smite"
-   ]
-  },
-  {
-   "linha": "Raio acerta # alvos dentro de # metros",
-   "gemas": [
-    "Vaal_Smite"
-   ]
-  },
-  {
-   "linha": "Raio Base terciário igual a # metros",
-   "gemas": [
-    "Ice_Trap"
-   ]
-  },
-  {
-   "linha": "Receba uma Carga de Tolerância quando você Atordoar um Inimigo com um Acerto Corpo a Corpo com Habilidades Suportadas",
-   "gemas": [
-    "Endurance_Charge_on_Melee_Stun_Support"
-   ]
-  },
-  {
-   "linha": "Resistência à Fogo de Inimigos Próximos é Ignorada por Acertos",
-   "gemas": [
-    "Vaal_Impurity_of_Fire"
-   ]
-  },
-  {
-   "linha": "Resistência à Gelo de Inimigos Próximos é Ignorada por Acertos",
-   "gemas": [
-    "Vaal_Impurity_of_Ice"
-   ]
-  },
-  {
-   "linha": "Resistência à Raio de Inimigos Próximos é Ignorada por Acertos",
-   "gemas": [
-    "Vaal_Impurity_of_Lightning"
-   ]
-  },
-  {
-   "linha": "Robôs Rastejantes concedem # % mais Dano de Armadilhas e Minas",
-   "gemas": [
-    "Summon_Skitterbots"
-   ]
-  },
-  {
-   "linha": "Sacrifica # % da Vida do Esqueleto para causar a mesma quantidade de Dano de Caos",
-   "gemas": [
-    "Dark_Bargain"
-   ]
-  },
-  {
-   "linha": "Sacrifica +# % da Vida do Esqueleto para causar a mesma quantidade de Dano de Caos",
-   "gemas": [
-    "Dark_Bargain"
-   ]
-  },
-  {
-   "linha": "Sangramento expira #% mais rápido por Rompimento das Habilidades Suportadas nos alvos",
-   "gemas": [
-    "Rupture_Support"
-   ]
-  },
-  {
-   "linha": "Sangramentos inflingidos por esta Habilidade causam Dano # % mais rápido",
-   "gemas": [
-    "Blade_Trap_of_Laceration"
-   ]
-  },
-  {
-   "linha": "Sangue Corrompido infligido por Clamores Suportados causam # de Dano Físico base por segundo",
-   "gemas": [
-    "Corrupting_Cry_Support"
-   ]
-  },
-  {
-   "linha": "Sangue Corrompido infligido por Clamores Suportados tem uma Duração Base de # segundos",
-   "gemas": [
-    "Corrupting_Cry_Support"
-   ]
-  },
-  {
-   "linha": "Sangue Corrompido infligido por estandartes reforçados causam # de dano físico base por segundo por bravura consumida",
-   "gemas": [
-    "Bloodsoaked_Banner_Support"
-   ]
-  },
-  {
-   "linha": "Sangue Corrompido infligido por estandartes reforçados tem uma duração base de # segundos",
-   "gemas": [
-    "Bloodsoaked_Banner_Support"
-   ]
-  },
-  {
-   "linha": "Solo Eletrizado causa # % de Dano sofrido aumentado",
-   "gemas": [
-    "Vaal_Lightning_Trap"
-   ]
-  },
-  {
    "linha": "Somente uma Mina deste tipo pode ser Detonada em cada Sequência de Detonação",
    "gemas": [
     "Smoke_Mine"
    ]
   },
   {
-   "linha": "Suas Habilidades e de seus aliados próximos não Custam Mana",
-   "gemas": [
-    "Vaal_Clarity"
-   ]
-  },
-  {
    "linha": "Suas Habilidades Não-Bênção que Reservam Mana são Desabilitadas enquanto você tiver uma Aura da Habilidade Suportada em você",
    "gemas": [
     "Eternal_Blessing_Support"
-   ]
-  },
-  {
-   "linha": "Tempestades Acertam Inimigos com Frequência aumentada em # %",
-   "gemas": [
-    "Herald_of_Thunder"
    ]
   },
   {
@@ -12675,36 +10634,6 @@
    "linha": "Velocidade de rotação aumentada em # % se em Empunhadura Dupla",
    "gemas": [
     "Blade_Trap"
-   ]
-  },
-  {
-   "linha": "Você e Aliados não-Lacaios Próximos têm # % de chance de criarem Solo Sagrado ao Acertar um Inimigo Raro ou Único, durando # segundos",
-   "gemas": [
-    "Zealotry"
-   ]
-  },
-  {
-   "linha": "Você e Aliados próximos ganham # % de Velocidade de Recarga de Escudo de Energia aumentada",
-   "gemas": [
-    "Discipline"
-   ]
-  },
-  {
-   "linha": "Você e aliados próximos têm +# % de chance de Evadirem Acertos de Ataques",
-   "gemas": [
-    "Vaal_Grace"
-   ]
-  },
-  {
-   "linha": "Você Queima por # % de sua Vida máxima por segundo como Dano de Fogo",
-   "gemas": [
-    "Righteous_Fire"
-   ]
-  },
-  {
-   "linha": "Você Queima por # % do seu Escudo de Energia máximo por segundo como Dano de Fogo",
-   "gemas": [
-    "Righteous_Fire"
    ]
   }
  ],

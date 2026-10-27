@@ -22,6 +22,10 @@ import { raioQueCresce } from './gemas-b1.mjs';
 // (lotes G-A e G-C, dono 25/10: a Precisão a menos do Enfraquecer, o Impelir restrito)
 import * as GemasGAC from './gemas-gac.mjs';
 import { renovarLento } from './gemas-gbd.mjs';
+// (lote E2B, 26/10: o dano sofrido do debuff da Armadilha de Urso nos acertos de Armadilha e Mina)
+import { danoDoUrso } from './gemas-e2b.mjs';
+// (lote S2B, 27/10: o Passe Enfeitiçado — "Inimigos afetados por feitiços … não podem causar golpes críticos")
+import { semCriticoPeloFeitico } from './suportes-s2b.mjs';
 
 /** "Recentemente" no PoE: nos últimos 4 segundos. */
 export const RECENTE_MS = 4000;
@@ -1229,6 +1233,10 @@ export const BUFFS = {
   crueldade: { nome: 'Crueldade', af: { dano_dot_mais: 40 } },
   // (o suporte Momentum: "Rapidez concede Velocidade de Movimento aumentada em 15% por Momentum perdido" — o valor é o do momento em que veio)
   rapidez: { nome: 'Rapidez', af: (estado) => ({ move_speed: estado?.hunt?.rapidez?.movimentoPct ?? 0 }) },
+  // (lote S2A, 27/10) a Fonte de Vida do suporte (o PoB: Lifetap → FlaskLifeRecovery INC 20) e o Ímpeto de Combate do Combate Próximo (o efeito — o "mais" da
+  // Velocidade de Ataque das Habilidades de Deslocamento não suportadas — é do uso: `suportes-s2a.fatorDoImpeto`)
+  fonteDeVida: { nome: 'Fonte de Vida', af: { frasco_vida_rec: 20 } },
+  impetoDeCombate: { nome: 'Ímpeto de Combate', af: {} },
 };
 /** (14/10) Os 13 altares do sorteio do PoE ("Ganha um buff de altar aleatório" — a lista do Gritos dos Dessecados no poedb). */
 export const ALTARES_DO_SORTEIO = Object.freeze(['altarAceleracao', 'altarBrutal', 'altarCongelanteMaior', 'altarDiamante', 'altarEcoante', 'altarSombrio', 'altarImpenetravel', 'altarMassivo', 'altarReabastecimento', 'altarResistencia', 'altarCarregado', 'altarEletrizanteMaior', 'altarEsqueleticoMaior']);
@@ -1681,7 +1689,11 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
     const daEmboscada = !naoImpelivel && !t.has('totem') && !!estado?.hunt?.emboscada?.golpe && (estado.hunt.emboscada.ate ?? 0) > agora;
     if (daEmboscada) { t.add('impelido'); t.add('impelidoEmboscada'); }
     // (lote G-A, D2: o Impelir do Sísmico só vale nas Pancadas, o do Ancestral só nos Golpes — `GemasGAC.impeleEste`)
-    else if (!naoImpelivel && !semNoDeslocamento && !t.has('totem') && (estado?.hunt?.impelidos?.n ?? 0) > 0 && (estado.hunt.impelidos.ate ?? Infinity) > agora && GemasGAC.impeleEste(estado.hunt.impelidos, [...t])) { t.add('impelido'); t.add('impelidoClamor'); if (estado.hunt.impelidos.de) t.add(`impelidoClamor_${estado.hunt.impelidos.de}`); }
+    // (lote S1, dono 26/10: um Impelir por Clamor — todos os que alcançam este ataque, `GemasGAC.impelemEste`)
+    else if (!naoImpelivel && !semNoDeslocamento && !t.has('totem') && estado?.hunt?.impelidos) {
+      const impelem = GemasGAC.impelemEste(estado.hunt.impelidos, [...t], agora);
+      if (impelem.length) { t.add('impelido'); t.add('impelidoClamor'); for (const x of impelem) if (x.de) t.add(`impelidoClamor_${x.de}`); }
+    }
     // (revisão G, 26/10: `impelidoClamor_<slug>` — DE QUAL Clamor é o Impelir; os bônus do buff de cada Clamor só valem no ataque Impelido por ele — `GemasPoe.adds`)
     if (estado?.hunt?.poeTerceiroGolpe) t.add('terceiroGolpe');
     if (ficha.mao === 'secundaria' || ficha.mao === 'ambas') t.add('maoSecundaria');
@@ -1738,13 +1750,15 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   // (+ lote G17: o "não pode" — o Foco Elemental e a Sede de Sangue, nas linhas dos suportes)
   // (lote A5, dono 20/10: + o máximo da Eletrização, o −X% de Fogo dos Incendiados, o "Eletriza ao resfriar / Resfria ao eletrizar" do Coursing Current e o Resfriamento Ósseo —
   // as linhas da gema e dos suportes que as afecções do golpe leem)
-  const temAfeccao = Object.keys(s).some((k) => /^(chance_|dot_|dano_dot_|ailment_|poison_|bleed_|ignite_|duracao_|efeito_|envenena|pode:|nao_pode:|congelamento_como|eletrizacao_como|resfriamento_como|eletrizacao_maximo|res_menos_|eletriza_ao_|resfria_ao_|resfriado_fragil_gelo)/.test(k));
+  const temAfeccao = Object.keys(s).some((k) => /^(chance_|dot_|dano_dot_|ailment_|poison_|bleed_|ignite_|duracao_|efeito_|envenena|pode:|nao_pode:|congelamento_como|eletrizacao_como|resfriamento_como|eletrizacao_maximo|res_menos_|eletriza_ao_|resfria_ao_|resfriado_fragil_gelo|sangramento_mais_rapido)/.test(k));
   // Os sorteios do golpe: "Dano Dobrado"/"Triplicado" e "ignorar a Redução de Dano Físico" (a chance sem condição + a do golpe).
   const chance = (k) => (Number(ficha.afPoe[k]) || 0) + (s[k] ?? 0);
   const triplo = chance('chance_dano_triplo') > 0 && rng() * 100 < chance('chance_dano_triplo');
   const dobro = !triplo && chance('chance_dano_dobrado') > 0 && rng() * 100 < chance('chance_dano_dobrado');
   const ignora = chance('ignora_reducao_fisica') > 0 && rng() * 100 < chance('ignora_reducao_fisica');
   const invertida = chance('chance_res_invertida') > 0 && rng() * 100 < chance('chance_res_invertida');
+  // (lote S2B: a Tríade Profana — "X% de chance de ignorar a resistência a dano de caos e elétrico do inimigo", sorteado por acerto)
+  const ignoraCaosRaio = chance('s2b_ignora_res_caos_raio') > 0 && rng() * 100 < chance('s2b_ignora_res_caos_raio');
   const f = { ...ficha };
   f.tagsDoGolpe = [...t];
   // (lote A5b, dono 20/10: a PRECISÃO deste golpe — o "+X de Precisão" e o "X% de Precisão aumentada" com as tags dele: a gema e os suportes (a Precisão
@@ -1777,6 +1791,7 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   if (Object.keys(maisDoElemento).length) f.maisDoElemento = maisDoElemento;
   if (ignora) f.ignoraReducaoFisica = true;
   if (invertida) f.resInvertida = true;
+  if (ignoraCaosRaio) f.ignoraResDe = ['chaos', 'energy'];
   // O "aumentado" de UM elemento com condição ("Dano de Gelo aumentado com Habilidades de Ataque"), a penetração de um elemento, o dano
   // somado com condição ("contra Inimigos Resfriados") e o roubo com condição ("contra Inimigos Eletrizados").
   const doElemento = { physical: (s.phys_dmg ?? 0), fire: s.fire_dmg ?? 0, ice: s.ice_dmg ?? 0, energy: s.energy_dmg ?? 0, chaos: s.chaos_dmg ?? 0 };
@@ -3041,6 +3056,8 @@ export function criticoDoBicho(base, bicho, ficha, agora, rng = Math.random) {
   // (ciclo 7) "Inimigos Marcados não podem causar Golpes Críticos"; (lote D) "Acertos contra você Não podem ser Golpes Críticos se você foi
   // Atordoado Recentemente" (`sem_critico_recebido@atordoadoRecente`).
   if (regraDaMarca(bicho, agora, 'semCritico') > 0 || Number(ficha?.afPoe?.sem_critico_recebido) > 0) return { critico: false, fator: 1 };
+  // (lote S2B: o Passe Enfeitiçado — o Feitiço seu suportado no monstro)
+  if (semCriticoPeloFeitico(bicho, agora)) return { critico: false, fator: 1 };
   // ("Inimigos Próximos não podem causar Acertos Críticos": a aura põe `semCritico` nos de perto — `mods-poe.aurasProximas`.)
   if (ativo(bicho?.estados?.semCritico, agora)) return { critico: false, fator: 1 };
   // (lote 50, a Defesa Imprudente: "Acertos tem Chance de Acerto Crítico aumentada em X% contra você" — `crit_recebido_inc`)
@@ -3274,6 +3291,10 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   // (lote E) "Cada Mina aplica Dano sofrido aumentado em X% aos Inimigos próximos a ela, até Y%" (`mods-poe.aoAcertar` acumula no alvo da
   // Mina) e "Inimigos que você Provocar recebem Dano aumentado em X%".
   if (ativo(e.minaFragil, agora)) f *= 1 + (e.minaFragil.pct ?? 0) / 100;
+  // (lote E2B, 26/10 — o PoB, BearTrap: TrapMineDamageTaken) "Inimigos recebem 25% de aumento de Dano dos Acertos de Minas ou Armadilhas" — o debuff de Urso, só no acerto
+  // de Armadilha ou Mina (as tags do golpe)
+  const doUrso = danoDoUrso(alvo, agora);
+  if (doUrso > 0 && (ficha?.tagsDoGolpe ?? []).some((t) => t === 'armadilha' || t === 'mina')) f *= 1 + doUrso / 100;
   // (12/10) "Inimigos sofrem Dano aumentado em X% para cada uma de suas Runas Vinculadas a eles" (`runas-vinculadas.marcarNosInimigos`).
   if (alvo.runasVinculadas > 0) f *= 1 + (alvo.runasVinculadas * (Number(ficha?.afPoe?.dano_por_runa_vinculada) || 0)) / 100;
   // ("Cada Totem aplica Dano aumentado em X% sofrido pelos Inimigos próximos a ele" — `mods-poe.aurasProximas`.)

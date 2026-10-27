@@ -60,7 +60,9 @@ export function basicosDoNivel(gema, nivel) {
 // (lote B3, dono 21/10) A célula de VÁRIOS números ("2, 1.6") numa coluna cujo cabeçalho tem UM número ("Raio do Estouro é de 1.2 metros"): o poedb põe
 // junto o número de outro stat (o modo de descrição da área do PoB…), e o primeiro não é o do texto. O certo é o da POSIÇÃO em que a célula do nível 1 tem o
 // número do cabeçalho (o cabeçalho é o texto do nível 1). Fora: as gemas da outra sessão (as Armadilhas Explosivas, os totens), que seguem como antes.
-const COLUNA_COMO_ANTES = /^Explosive_Trap|^Siege_Ballista/;
+// (lote E2B, 26/10: as Armadilhas Explosivas saíram daqui — a célula do nível é a da posição, como nas outras: o raio da explosão 1,8 m e o da menor 1,3 m no
+// nível 20, o PoB)
+const COLUNA_COMO_ANTES = /^Siege_Ballista/;
 function celulaDoTexto(gema, i, cab, valor) {
   if (COLUNA_COMO_ANTES.test(gema.slug ?? '') || cab.includes("#")) return valor;
   const nums = cab.match(NUM) ?? [];

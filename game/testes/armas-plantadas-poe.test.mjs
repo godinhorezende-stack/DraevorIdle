@@ -249,7 +249,8 @@ test('"Minas Desaceleram Inimigos próximos delas por 2 segundos quando são Pla
   alocar(e, /^minas_desaceleram_s$/);
   const b = bichoEm(e, 1, 0);
   const ev = usar(e, 0, b);
-  assert.ok((b.estados?.lento?.ate ?? 0) > e.hunt.clock, 'desacelerado');
+  // (com o aval do dono, 26/10 — lote E1b: "Minas Desaceleram…" é o Tolhimento do PoE, `Estados.tolher`, não a lentidão)
+  assert.ok((b.estados?.tolhido?.ate ?? 0) > e.hunt.clock, 'tolhido');
   // (a Mina usada pela barra, com o alvo perto e você parado, detona na hora — e marca o "Detonou uma Mina Recentemente")
   assert.ok(danoEm(ev, b) > 0, 'detonou');
   assert.equal(e.hunt.poeRecente?.detonouMina, e.hunt.clock);
