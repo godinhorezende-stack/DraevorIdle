@@ -239,3 +239,57 @@ test('R3 #16: o monstro provocado (o Chamariz) lança as magias de dano no totem
   assert.equal(e.hp, hp0, 'nada em você');
   assert.ok(totem.hp < 1e6, `o totem levou a magia (${totem.hp})`);
 });
+
+// ---------------------------------------------------------------- achado 4 (aval do dono 27/10): uma recarga por habilidade concedida
+
+test('R3 #4: o Cristal em Queda e a Rajada de Vento têm a recarga/distância POR habilidade suportada (a de outra não trava esta)', { skip: SEM }, async () => {
+  const m = await montar('Two_Hand_Maces/Driftwood_Maul', [['Ground_Slam', 'Crystalfall_Support']]);
+  Object.assign(m.ms[1], { x: m.e.hunt.pos.x + 2, y: m.e.hunt.pos.y, hp: 1e12, maxHp: 1e12, estados: {}, dots: [] });
+  const id = G.doSlug('Ground_Slam').acao;
+  // o formato antigo (um só para a caçada) é descartado
+  m.e.hunt.poeR3A = { cristal: [m.e.hunt.clock + 1000, m.e.hunt.clock + 2000, m.e.hunt.clock + 3000] };
+  const r1 = usar(m.e, 0, m.b, 0.1);
+  assert.ok(daFonte(r1.ev, 'cristal-em-queda').length >= 1, 'o formato antigo não trava');
+  assert.equal(m.e.hunt.poeR3A.cristal[id].length, 1);
+  // outra habilidade com os 3 usos gastos não trava esta
+  m.e.hunt.poeR3A.cristal['poe-gema:Outra'] = [m.e.hunt.clock + 1000, m.e.hunt.clock + 2000, m.e.hunt.clock + 3000];
+  m.e.hunt.cooldowns = {};
+  const r2 = usar(m.e, 0, m.b, 0.1);
+  assert.ok(daFonte(r2.ev, 'cristal-em-queda').length >= 1, 'a recarga da outra não vale nesta');
+  assert.equal(m.e.hunt.poeR3A.cristal[id].length, 2);
+  // a Rajada: a distância de cada habilidade anda junto com você, separada
+  const st = { vento: { a: { x: 0, y: 0, z: 0, andadoM: 0 }, b: { x: 0, y: 0, z: 0, andadoM: 0 } } };
+  const h = { pos: { x: 0, y: 5 }, z: 0, poeR3A: st };
+  for (const v of Object.values(st.vento)) R3A.andar(v, h.pos);
+  assert.ok(st.vento.a.andadoM >= 10 && st.vento.b.andadoM >= 10);
+});
+
+// ---------------------------------------------------------------- achado 19 (pedido do dono 27/10): as afecções do convertido continuam
+
+test('R3 #19: os DoTs do monstro convertido continuam correndo no aliado (o dano sai do aliado) e seguem quando ele volta', { skip: SEM }, async () => {
+  const Dot = await import('../systems/combate/dot.mjs');
+  const Estados = await import('../systems/skills/estados.mjs');
+  const { e, ms } = await montar('Wands/Driftwood_Wand', [['Conversion_Trap']]);
+  const h = e.hunt;
+  const [b] = ms;
+  Object.assign(b, { x: h.pos.x + 2, y: h.pos.y, raridade: 'normal', hp: 100_000, maxHp: 100_000, resist: {}, dots: [] });
+  assert.ok(Dot.aplicar(b, { tipo: 'queimadura', total: 4000, duracaoMs: 4000, origem: { fonte: 'poe' } }, h.clock), 'a queimadura posta');
+  const falta0 = b.dots[0].falta;
+  Plantadas.plantar(h, Ficha.combate(e), { tipo: 'armadilha', acao: G.doSlug('Conversion_Trap').acao, slot: 0, x: b.x, y: b.y, duracaoMs: 4000, agora: h.clock });
+  travado(0.5, () => Acoes.tiqueDasPlantadas(e, h, P, [], h.clock, { soPlantadas: true }));
+  const l = h.lacaios.find((x) => x.convertido?.monstro === b);
+  assert.ok(l, 'virou aliado');
+  const vida0 = l.hp;
+  h.clock += 2000;
+  const ev = [];
+  Estados.tique(h, ev, h.clock);
+  assert.ok(l.hp < vida0, `a queimadura feriu o aliado (${vida0} → ${l.hp})`);
+  assert.ok((b.dots?.[0]?.falta ?? 0) < falta0, 'o tempo da queimadura correu');
+  assert.ok(ev.some((x) => x.dot === 'queimadura' && x.uid === l.uid), 'o evento é no aliado');
+  // no fim da conversão, volta com a vida do aliado e o resto da queimadura (não a cheia)
+  const resto = b.dots?.[0]?.falta ?? 0;
+  travado(0.5, () => Cacadas.tiqueDosLacaios(e, h, P, grade(h), l.ate + 1));
+  assert.ok(h.monstros.includes(b));
+  assert.equal(b.hp, l.hp);
+  assert.ok(!b.dots?.length || b.dots[0].falta <= resto, 'segue com o que faltava');
+});

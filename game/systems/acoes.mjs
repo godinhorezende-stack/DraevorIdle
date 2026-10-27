@@ -9908,6 +9908,15 @@ function areaDoAtivadoR3A(estado, hunt, personagem, entry, c, r, { tags, fonte, 
   return acertados;
 }
 /**
+ * (correções R3, achado 4) O estado POR HABILIDADE suportada de uma habilidade concedida (`st[campo]`: `{ [id da ação]: … }` — a recarga do Cristal, da Fenda e da Pira, a
+ * distância da Rajada). O formato antigo (um só para a caçada inteira: lista, número ou objeto de posição) é descartado.
+ */
+function porHabilidadeR3A(st, campo) {
+  const x = st[campo];
+  if (!x || typeof x !== 'object' || Array.isArray(x) || 'andadoM' in x) st[campo] = {};
+  return st[campo];
+}
+/**
  * (lote R3A) O CRISTAL EM QUEDA (o suporte: "Habilidades reforçadas ativam Cristal em Queda ao atingir"): a recarga com os usos ("Recarga: 1.00 seg (3 Times)" — recuperados
  * um de cada vez), o cristal cai no acertado — o raio dele ("O raio Base é de 2.3 metros" × √ da Área) —, o ataque ativado com o "Dano de Ataque" dele e a qualidade dele
  * ("Dano Corpo a Corpo aumentado").
@@ -9915,9 +9924,11 @@ function areaDoAtivadoR3A(estado, hunt, personagem, entry, c, r, { tags, fonte, 
 function cristalEmQuedaR3A(estado, hunt, personagem, entry, ef, alvo, agora) {
   const eventos = [];
   const st = GemasR3A.estado(hunt);
-  const l = GemasR3A.usarRecarga(st.cristal, agora, ef.cristalRecargaMs ?? 1000, ef.cristalUsos ?? 1);
+  // (correções R3, achado 4 — o PoE: cada habilidade concedida tem a recarga dela) os usos são por habilidade suportada (`st.cristal[id]`)
+  const porHab = porHabilidadeR3A(st, 'cristal');
+  const l = GemasR3A.usarRecarga(porHab[entry.id], agora, ef.cristalRecargaMs ?? 1000, ef.cristalUsos ?? 1);
   if (!l || !alvo) return eventos;
-  st.cristal = l;
+  porHab[entry.id] = l;
   const tags = tagsDoAtivadoR3A(entry, ['ataque', 'area', 'corpo', 'pancada', 'fisico']);
   const efetivo = efeitoNoAtivadoR3A(estado, entry.id, tags) ?? {};
   const r = raioDoAtivadoR3A(estado, entry, ef.cristalRaioM ?? 2.3, tags, { efetivo });
@@ -9933,8 +9944,9 @@ function cristalEmQuedaR3A(estado, hunt, personagem, entry, ef, alvo, agora) {
 function fendasR3A(estado, hunt, personagem, entry, ef, impacto, agora) {
   const eventos = [];
   const st = GemasR3A.estado(hunt);
-  if (!impacto || !hunt?.pos || agora < (st.fendaAte ?? -Infinity)) return eventos;
-  st.fendaAte = agora + (ef.fendaRecargaMs ?? 500);
+  const fendaAte = porHabilidadeR3A(st, 'fendaAte');
+  if (!impacto || !hunt?.pos || agora < (fendaAte[entry.id] ?? -Infinity)) return eventos;
+  fendaAte[entry.id] = agora + (ef.fendaRecargaMs ?? 500);
   const tags = tagsDoAtivadoR3A(entry, ['ataque', 'area', 'corpo', 'pancada', 'fogo']);
   const ativado = { danoPct: ef.fendaDanoPct ?? 100, eficaciaPct: ef.fendaEficaciaPct, conversao: ef.fendaConvFogoPct ? { fire: ef.fendaConvFogoPct } : null };
   const efetivo = efeitoNoAtivadoR3A(estado, entry.id, tags) ?? {};
@@ -9960,8 +9972,9 @@ function fendasR3A(estado, hunt, personagem, entry, ef, impacto, agora) {
 function chamadoDaFogueiraR3A(estado, hunt, personagem, entry, ef, alvo, agora, rng = Math.random) {
   const eventos = [];
   const st = GemasR3A.estado(hunt);
-  if (!alvo || agora < (st.piraAte ?? -Infinity) || !(rng() * 100 < (ef.piraChancePct ?? 50))) return eventos;
-  st.piraAte = agora + (ef.piraRecargaMs ?? 1000);
+  const piraAte = porHabilidadeR3A(st, 'piraAte');
+  if (!alvo || agora < (piraAte[entry.id] ?? -Infinity) || !(rng() * 100 < (ef.piraChancePct ?? 50))) return eventos;
+  piraAte[entry.id] = agora + (ef.piraRecargaMs ?? 1000);
   const tags = tagsDoAtivadoR3A(entry, ['ataque', 'area', 'corpo', 'fogo']);
   const ativado = { danoPct: ef.piraDanoPct ?? 100, eficaciaPct: ef.piraEficaciaPct, conversao: ef.piraConvFogoPct ? { fire: ef.piraConvFogoPct } : null };
   const efetivo = efeitoNoAtivadoR3A(estado, entry.id, tags) ?? {};
@@ -9989,8 +10002,9 @@ function chamadoDaFogueiraR3A(estado, hunt, personagem, entry, ef, alvo, agora, 
  */
 function rajadaDeVentoR3A(estado, hunt, personagem, entry, ef, agora) {
   const st = GemasR3A.estado(hunt);
-  if (!hunt?.pos || !GemasR3A.ventoPode(st.vento, ef.ventoMetros ?? 10)) return;
-  st.vento = { x: hunt.pos.x, y: hunt.pos.y, z: hunt.z ?? 0, andadoM: 0 };
+  const ventos = porHabilidadeR3A(st, 'vento');
+  if (!hunt?.pos || !GemasR3A.ventoPode(ventos[entry.id], ef.ventoMetros ?? 10)) return;
+  ventos[entry.id] = { x: hunt.pos.x, y: hunt.pos.y, z: hunt.z ?? 0, andadoM: 0 };
   const durMs = Math.max(100, Math.round((ef.ventoMs ?? 4000) * fatorDeDuracao(estado, entry, ef)));
   const lista = st.rajadas ?? [];
   for (let i = 0; i < Math.max(1, ef.ventoProjeteis ?? 3); i++) {
@@ -10004,7 +10018,7 @@ function rajadaDeVentoR3A(estado, hunt, personagem, entry, ef, agora) {
 function tiqueR3A(estado, hunt, personagem, eventos, agora) {
   const st = hunt?.poeR3A;
   if (!st) return;
-  if (st.vento && hunt.pos) GemasR3A.andar(st.vento, { x: hunt.pos.x, y: hunt.pos.y, z: hunt.z ?? 0 });
+  if (st.vento && hunt.pos) for (const v of Object.values(porHabilidadeR3A(st, 'vento'))) GemasR3A.andar(v, { x: hunt.pos.x, y: hunt.pos.y, z: hunt.z ?? 0 });
   if (!st.rajadas?.length) { delete st.rajadas; return; }
   const andavel = ModsPoe.gradeDoCombate(hunt)?.andavel ?? null;
   const ficam = [];

@@ -486,8 +486,10 @@ test('A4: as Excepcionais do Vazio — a Onda de Choque no acerto corpo a corpo 
   const ev = [];
   t.e.hunt.clock += 1000;
   sorte(0.999, () => Acoes.tiqueDasPlantadas(t.e, t.e.hunt, PERSONAGEM, ev));
-  assert.ok(ev.some((x) => x.t === 'dmg' && x.fonte === 'tormenta-do-vazio'), 'explodiu no inimigo dentro dela');
-  assert.equal(t.e.hunt.poeTormentas, undefined);
+  // (aval do dono 27/10: a tormenta explode quando VOCÊ entra; com só o inimigo dentro, ela fica e o cega)
+  assert.ok(!ev.some((x) => x.t === 'dmg' && x.fonte === 'tormenta-do-vazio'), 'o inimigo dentro não a explode');
+  assert.equal(t.e.hunt.poeTormentas?.length, 1, 'a tormenta continua');
+  assert.ok(t.bs[0].estados?.cego?.ate > t.e.hunt.clock, 'o inimigo dentro fica Cego');
 });
 
 test('A4: a Maré Invernal — cada Ativação da Marca soma 1 estágio ao debuff no inimigo (20% mais por estágio, até 20), pela duração de 2 s do debuff', { skip: SEM }, async () => {

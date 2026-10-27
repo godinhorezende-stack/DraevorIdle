@@ -1368,7 +1368,7 @@ Corrigidos:
 - **20 (baixa) — a Mina de Fumaça com a Mina Local.** A "uma por Sequência" é a mais velha que pode detonar.
 - **21 (baixa) — o Espinho da Cauda.** Ele é um ataque (`porVelocidade`): 1,3 s ÷ a Velocidade de Ataque do lacaio, não a Recuperação de Recarga (o PoB, HeraldOfAgonyMinionTailSpike).
 
-Não corrigidos (para o dono):
+Não corrigidos nesta etapa (feitos depois, com a resposta do dono — abaixo):
 
 - **4 (baixa) — uma recarga por habilidade.** Precisa trocar o formato de `hunt.poeR3A` (`cristal`, `fendaAte`, `piraAte`, `vento` → um por habilidade). Os testes suportes-r3a:175-176, 186, 200 e 206-209 leem esses campos e quebrariam, e eu não mexo em teste sem aval.
 - **19 (baixa) — as afecções do convertido.** No PoE elas continuam correndo no aliado. Fazer isso pede rodar os DoTs do monstro dentro do aliado (o dano nele) ou descontar o tempo na volta. Não é simples, então fica para uma decisão.
@@ -1381,6 +1381,19 @@ Testes que as correções quebram (esperam o aval do dono; não mexi):
 Suíte (ativas-*, gemas-*, suportes-*, totens-*, itens-poe-gemas*, combo-poe, eficacia-ataque-poe, repeticoes-estagios-a4, correcoes-r3 e os afetados: plantadas, clamores, lacaios, poderes, grupo): 1010 testes, 962 passam, 43 pulados, 5 falham. As 5 falhas são as 3 que já esperavam o dono e as 2 acima.
 
 Placar (relatório regerado, sem mudança): ativas — implementada e testada 456, parcial 1, não se aplica 1; suportes — implementada e testada 209, parcial 3, não se aplica 1.
+
+### Correções da revisão (R3) — a resposta do dono (27/10)
+
+- **Avais de teste aplicados** (comentário "aval do dono 27/10"):
+  - suportes-r3a:122-124 — a Torre Óssea fica 'funciona', sem motivos;
+  - suportes-r3a:165 e repeticoes-estagios-a4:489-490 — com só o inimigo dentro, a tormenta não explode: fica e o cega;
+  - gemas-r3b:317 — 1170;
+  - gemas-r3c:169 — o lugar mirado.
+- **Achado 4 — uma recarga por habilidade concedida.** O estado agora é por id da ação suportada: `poeR3A.cristal[id]` (os usos), `fendaAte[id]`, `piraAte[id]` e `vento[id]` (a distância de cada Rajada anda junto com você). O formato antigo, um só para a caçada inteira, é descartado (`porHabilidadeR3A`). Com aval, ajustei suportes-r3a:175-176, 186, 200 e 206-209 ao formato novo. Na 206, o `st` virou uma vista com getters, e por isso as linhas seguintes do teste ficaram como estavam.
+- **Achado 19 — as afecções do convertido continuam.** Escolhi rodar os DoTs no tique: `Estados.tique` → `dotsDosConvertidos`. O monstro guardado no aliado recebe a vida e a casa do aliado, `Dot.tique` corre o pulso na mesma conta de sempre (resistência, Sangramento em movimento, dano sofrido aumentado), e a vida volta ao aliado. Os eventos saem no aliado. Se morrer assim, ele some e o spawn volta à fila. Na volta, segue com o resto da afecção. Preferi isso a "descontar o tempo na volta" porque é o que o PoE faz (o dano cai no aliado enquanto ele luta), reusa a conta inteira do `Dot.tique` sem duplicar regra, e o aliado pode morrer da afecção.
+- Testes novos em correcoes-r3.test.mjs: #4 (o formato antigo não trava; a recarga de outra habilidade não trava esta; as Rajadas andam separadas) e #19 (a queimadura fere o aliado, o tempo corre, o evento é no aliado, a volta segue com o resto). São 12 testes no arquivo.
+- Bateria (a de antes + estados, afeccoes-acerto-poe, itens-poe-afeccoes e passivas-poe-afeccoes-nos-monstros): 1055 testes, 1012 passam, 43 pulados, nenhum falha.
+- Placar (relatório regerado, sem mudança): ativas — implementada e testada 456, parcial 1, não se aplica 1; suportes — implementada e testada 209, parcial 3, não se aplica 1.
 
 ## Pendências conhecidas (por ordem de prioridade)
 

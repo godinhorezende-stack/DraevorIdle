@@ -166,7 +166,8 @@ test('R3C: a Mina Local — as Minas caem em você, em arco à frente, e não de
   assert.equal(e1.minaEmVoceR3c, 1);
   assert.equal(e1.minaEmArcoR3c, 1);
   assert.equal(e1.minaSemDetonarPertoM, 3);
-  assert.deepEqual(R3C.lugarDaMina(e1, { x: 9, y: 9 }, { x: 1, y: 2 }), { x: 1, y: 2 });
+  // (aval do dono 27/10: a Mina cai no lugar mirado; o "foca na sua localização" é a mira da habilidade dela)
+  assert.deepEqual(R3C.lugarDaMina(e1, { x: 9, y: 9 }, { x: 1, y: 2 }), { x: 9, y: 9 });
   assert.deepEqual(R3C.casasDoArco({ x: 0, y: 0 }, 0, 3), [{ x: 0, y: 0 }, { x: 0, y: -1 }, { x: 1, y: -1 }]);
   // 3 m = 1,5 casa: 1 casa e 50% de chance de 2
   assert.equal(travado(0.4, () => R3C.raioSemDetonar(e1)), 2);

@@ -119,9 +119,9 @@ test('R3A: as linhas das habilidades concedidas são delas (não da suportada) e
   const wb = ef('Windburst_Support', 1, 0);
   assert.deepEqual([wb.vento, wb.ventoMetros, wb.ventoDanoPct, wb.ventoVelM, wb.ventoPerfura, wb.ventoMs, wb.ventoProjeteis, wb.ventoAreaMaisPct, wb.ventoRaioM], [1, 10, 118, 4, 1, 4000, 3, 40, 1.5]);
   for (const s of ['Shockwave_Support', 'Void_Shockwave_Support', 'Voidstorm_Support', 'Crystalfall_Support', 'Fissure_Support', 'Pyre_Support', 'Windburst_Support']) assert.equal(SP.doSlug(s).status, 'funciona', `${s}: ${SP.doSlug(s).motivos.join(' | ')}`);
-  assert.equal(SP.doSlug('Bonespire_Support').status, 'parcial');
-  assert.deepEqual(SP.doSlug('Bonespire_Support').motivos.length, 1);
-  assert.match(SP.doSlug('Bonespire_Support').motivos[0], /caminho dos monstros/);
+  // (aval do dono 27/10: as torres viraram obstáculo no passo dos monstros — a Torre Óssea fica 'funciona', sem motivos)
+  assert.equal(SP.doSlug('Bonespire_Support').status, 'funciona');
+  assert.deepEqual(SP.doSlug('Bonespire_Support').motivos, []);
 });
 
 // ---------------------------------------------------------------- o ataque ativado
@@ -162,7 +162,9 @@ test('R3A: a Onda de Choque sai pelo ataque ativado (crítico da arma) e a Torme
   t.e.hunt.clock += 1000;
   const ev2 = [];
   travado(0.999, () => Acoes.tiqueDasPlantadas(t.e, t.e.hunt, PERSONAGEM, ev2));
-  assert.ok(daFonte(ev2, 'tormenta-do-vazio').length, 'explodiu');
+  // (aval do dono 27/10: a tormenta explode quando VOCÊ entra; com só o inimigo dentro, ela não explode — só o cega)
+  assert.equal(daFonte(ev2, 'tormenta-do-vazio').length, 0, 'o inimigo dentro não a explode');
+  assert.equal(t.e.hunt.poeTormentas?.length, 1, 'a tormenta continua');
   assert.ok(t.bs[0].estados.cego?.ate > t.e.hunt.clock, 'Cego dentro da tormenta');
 });
 
@@ -172,8 +174,9 @@ test('R3A: o Cristal em Queda — cai no acertado ao atingir, com 3 usos na reca
   const m = await montar('Two_Hand_Maces/Driftwood_Maul', 'Ground_Slam', { suportes: ['Crystalfall_Support'], onde: [[1, 0], [2, 0]] });
   const ev = usar(m, 0.1);
   assert.ok(daFonte(ev, 'cristal-em-queda').length >= 1, 'o cristal acertou');
-  assert.equal(m.e.hunt.poeR3A.cristal.length, 1, 'gastou 1 dos 3 usos');
-  m.e.hunt.poeR3A.cristal = [m.e.hunt.clock + 1000, m.e.hunt.clock + 2000, m.e.hunt.clock + 3000];
+  // (aval do dono 27/10: os usos são por habilidade suportada — `poeR3A.cristal[id]`)
+  const idCr = G.doSlug('Ground_Slam').acao;
+  assert.equal(m.e.hunt.poeR3A.cristal[idCr].length, 1, 'gastou 1 dos 3 usos'); m.e.hunt.poeR3A.cristal[idCr] = [m.e.hunt.clock + 1000, m.e.hunt.clock + 2000, m.e.hunt.clock + 3000];
   m.e.hunt.cooldowns = {};
   const ev2 = usar(m, 0.1);
   assert.equal(daFonte(ev2, 'cristal-em-queda').length, 0, 'sem uso, sem cristal');
@@ -183,7 +186,7 @@ test('R3A: a Fenda — as fendas saem do impacto da pancada (60% do Físico em F
   const m = await montar('Two_Hand_Maces/Driftwood_Maul', 'Ground_Slam', { suportes: ['Fissure_Support'], onde: [[1, 0], [3, 0]] });
   const ev = usar(m, 0.1);
   assert.ok(daFonte(ev, 'fenda').length >= 1, 'a fenda acertou');
-  assert.equal(m.e.hunt.poeR3A.fendaAte, m.e.hunt.clock + 500);
+  assert.equal(m.e.hunt.poeR3A.fendaAte[G.doSlug('Ground_Slam').acao], m.e.hunt.clock + 500); // (aval do dono 27/10: a recarga por habilidade suportada)
 });
 
 test('R3A: a Pira — o corpo a corpo que acerta um Incendiado ativa o Chamado da Fogueira (50%): os pilares de Fogo cobrem em Cinzas', { skip: SEM }, async () => {
@@ -197,16 +200,16 @@ test('R3A: a Pira — o corpo a corpo que acerta um Incendiado ativa o Chamado d
   const ev = usar(m, 0.1);
   assert.ok(daFonte(ev, 'chamado-da-fogueira').length >= 1, 'o pilar acertou');
   assert.ok(b.estados.cinzas?.ate > t, 'Coberto de Cinzas');
-  assert.equal(m.e.hunt.poeR3A.piraAte, m.e.hunt.clock + 1000);
+  assert.equal(m.e.hunt.poeR3A.piraAte[G.doSlug('Heavy_Strike').acao], m.e.hunt.clock + 1000); // (aval do dono 27/10: a recarga por habilidade suportada)
 });
 
 test('R3A: a Rajada de Vento — 3 projéteis que andam, perfuram e explodem no fim; depois, só com 10 m percorridos', { skip: SEM }, async () => {
   const m = await montar('Bows/Crude_Bow', 'Rain_of_Arrows', { suportes: ['Windburst_Support'], onde: [[3, 0]] });
   usar(m, 0.3);
-  const st = m.e.hunt.poeR3A;
+  const idV = G.doSlug('Rain_of_Arrows').acao; const st = { get rajadas() { return m.e.hunt.poeR3A.rajadas; }, get vento() { return m.e.hunt.poeR3A.vento[idV]; } };
   assert.equal(st.rajadas?.length, 3, 'os 3 projéteis');
   assert.equal(st.vento.andadoM, 0);
-  // parado, o próximo acerto não solta outra
+  // parado, o próximo acerto não solta outra (aval do dono 27/10: a distância da Rajada é por habilidade suportada — `poeR3A.vento[id]`)
   m.e.hunt.cooldowns = {};
   usar(m, 0.3);
   assert.equal(st.rajadas.length, 3);

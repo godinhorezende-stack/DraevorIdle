@@ -281,5 +281,24 @@ export function tique(hunt, eventos, agora) {
   }
   // Os pulsos de dano ao longo do tempo (queimadura, veneno, sangramento...).
   total += Dot.tique(hunt, eventos, agora);
+  // (correções R3, achado 19 — o PoE: as afecções continuam no monstro convertido pela Armadilha Conversora) os DoTs do monstro guardado no aliado (`l.convertido.monstro`)
+  // correm no mesmo tique e na mesma conta (`Dot.tique`), com a vida e a casa do aliado; o dano sai do aliado (morto, ele some e o spawn volta — `cacadas`)
+  dotsDosConvertidos(hunt, eventos, agora);
   return total;
+}
+
+/** (correções R3, achado 19) Os DoTs dos monstros convertidos (aliados da Armadilha Conversora) no tique: a vida e a casa do aliado vão ao monstro, o pulso corre, a vida volta. */
+function dotsDosConvertidos(hunt, eventos, agora) {
+  const conv = (hunt?.lacaios ?? []).filter((l) => l?.convertido?.monstro?.dots?.length && l.hp > 0);
+  if (!conv.length) return;
+  const porUid = new Map();
+  for (const l of conv) {
+    const m = l.convertido.monstro;
+    Object.assign(m, { hp: l.hp, x: l.x, y: l.y, z: l.z ?? m.z });
+    porUid.set(m.uid, l);
+  }
+  const ev = [];
+  Dot.tique({ ...hunt, monstros: conv.map((l) => l.convertido.monstro) }, ev, agora);
+  for (const l of conv) l.hp = Math.max(0, l.convertido.monstro.hp);
+  for (const x of ev) { const l = porUid.get(x.uid); eventos.push(l ? { ...x, uid: l.uid, x: l.x, y: l.y, foe: false, lacaio: true } : x); }
 }

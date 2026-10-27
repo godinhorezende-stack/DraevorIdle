@@ -314,7 +314,8 @@ test('R3B: o Relâmpago Vivo — o acerto com Raio o invoca (5 usos de 0,2 s), 1
   const ll = (e.hunt.lacaios ?? []).filter((l) => l.r3bRelampago && l.hp > 0);
   assert.equal(ll.length, 1);
   const l = ll[0];
-  assert.deepEqual([l.nome, l.conversao.energy, l.intocavel, l.r3bAtaques, l.r3bRicochetes, l.intervaloMs, l.critChance, l.nivel], ['Relâmpago Vivo', 100, true, 5, 3, 250, 13, 70]);
+  // (aval do dono 27/10: o intervalo é o attackTime do PoB, 1,17 s — os 250 ms são a recarga do golpe, o piso)
+  assert.deepEqual([l.nome, l.conversao.energy, l.intocavel, l.r3bAtaques, l.r3bRicochetes, l.intervaloMs, l.critChance, l.nivel], ['Relâmpago Vivo', 100, true, 5, 3, 1170, 13, 70]);
   // a recarga com 5 usos (0,2 s cada um): 5 saem na hora, o 6º espera a recarga
   const s = {};
   assert.deepEqual(Array.from({ length: 6 }, () => R3B.gastarUso(s, 'r', 200, 5, 1000)), [true, true, true, true, true, false]);
