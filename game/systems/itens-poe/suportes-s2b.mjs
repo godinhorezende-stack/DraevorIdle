@@ -193,17 +193,82 @@ export function doLacaio(efeito) {
   if (efeito.lacaioMenosDanoRecebidoPct) o.menosDanoRecebidoPct = efeito.lacaioMenosDanoRecebidoPct;
   if (efeito.lacaioMaisPertoDeVocePct) o.maisPertoDeVocePct = efeito.lacaioMaisPertoDeVocePct;
   if (efeito.frenesiFamintoPct) o.frenesiFaminto = { pct: efeito.frenesiFamintoPct, ms: efeito.frenesiFamintoMs ?? 4000 };
+  // (lote D3, dono 27/10) o Escudo de Carne ("são Defensivos"), o Predador (o foco e o "mais Dano … às suas Presas") e a Legião Infernal (a queima e o dano no lacaio)
+  if (efeito.lacaioDefensivo > 0) o.defensivo = true;
+  if (efeito.lacaioPredador > 0 || efeito.lacaioMaisPresaPct) o.predador = { maisPct: num(efeito.lacaioMaisPresaPct), foca: efeito.lacaioPredador > 0, ms: num(efeito.presaMs) || PRESA.ms, recargaMs: num(efeito.presaRecargaMs) || PRESA.recargaMs };
+  if (efeito.legiaoDps > 0 || efeito.legiaoDegenPct > 0) o.legiao = { dps: num(efeito.legiaoDps), raioM: LEGIAO.raioBaseM + num(efeito.legiaoRaioM), degenPct: num(efeito.legiaoDegenPct) };
   return Object.keys(o).length ? o : null;
 }
 /**
  * A CARNE FRESCA: "Lacaios criados por Habilidades Suportadas ganham Fúria Desperta e Adrenalina por 10% de sua Duração, máximo de 10 segundos" — o lacaio com duração; o
- * permanente (sem duração) não ganha (decisão pendente do dono). Grava `l.s2bCarneFrescaAte` (o relógio da caçada).
+ * permanente (sem duração) não ganha: 10% de nenhuma duração = 0 s (decisão do dono 27/10, lote D3). Grava `l.s2bCarneFrescaAte` (o relógio da caçada).
+ * (lote D3, dono 27/10) + a LEGIÃO INFERNAL: o raio da queima em casas (2 m + o "metros ao Raio" ÷ 2; a fração é a chance de 1 casa a mais — sorteada ao nascer, como a
+ * área do jogo) em `l.s2bLegiaoRaio`.
  */
-export function aoInvocar(l, agora) {
+export function aoInvocar(l, agora, rng = Math.random) {
+  const g = l?.poe?.s2b?.legiao;
+  if (g?.dps > 0) {
+    const casas = g.raioM / 2;
+    l.s2bLegiaoRaio = Math.trunc(casas) + (rng() < casas % 1 ? 1 : 0);
+  }
   const c = l?.poe?.s2b?.carneFresca;
   if (!c || !(l.duracaoMs > 0)) return;
   l.s2bCarneFrescaAte = agora + Math.min(c.maxMs, (l.duracaoMs * c.pct) / 100);
 }
+/** A LEGIÃO INFERNAL (o PoB: `SupportInfernalLegion` — o `InfernalLegion` do lacaio é uma área de Fogo degenerativa; "40% de sua Vida Máxima como Dano de Fogo por segundo"
+ * no próprio lacaio — `FireDegen` pela Vida, que a resistência a Fogo dele reduz). O raio de base é 2 m (1 casa, a decisão do dono). */
+export const LEGIAO = Object.freeze({ raioBaseM: 2 });
+/**
+ * A queima da Legião Infernal neste tique (`ms`): `{ porInimigo, raio, noLacaio }` — o dano de Fogo por inimigo a até `raio` casas do lacaio (o dano por segundo × o
+ * "aumentado" e o "mais" do dano do lacaio — `poe.fatorDoDano` — × o multiplicador degenerativo dele), antes da resistência do inimigo; e o dano no lacaio, já com a
+ * resistência a Fogo dele (`resFogo`, no teto). Ou null.
+ */
+export function queimaDaLegiao(l, ms, resFogo = 0) {
+  const g = l?.poe?.s2b?.legiao;
+  if (!g || !(l.hp > 0)) return null;
+  const s = ms / 1000;
+  const porInimigo = g.dps > 0 ? g.dps * Math.max(0, num(l.poe.fatorDoDano) || 1) * Math.max(0, 1 + num(l.poe.dotMulti) / 100) * s : 0;
+  const noLacaio = g.degenPct > 0 ? ((num(l.maxHp) * g.degenPct) / 100) * s * Math.max(0, 1 - Math.min(100, num(resFogo)) / 100) : 0;
+  return { porInimigo, raio: l.s2bLegiaoRaio ?? Math.max(1, Math.round(g.raioM / 2)), noLacaio };
+}
+
+// ---------------------------------------------------------------- a PRESA do Predador (lote D3, decisão do dono 27/10)
+
+/** A "Sinalizar Presa" do Predador (o PoB, `SignalPrey`): recarga 0,8 s, instantânea; a Presa dura 8 s; uma Presa por vez. */
+export const PRESA = Object.freeze({ recargaMs: 800, ms: 8000 });
+const raroOuUnico = (b) => /raro|unico/.test(String(b?.raridade ?? b?.raridadePoe ?? '')) || !!b?.boss || !!b?.chefe;
+/**
+ * A Presa é marcada SOZINHA a cada 0,8 s (a recarga dela) enquanto um lacaio seu tem o Predador: no Raro ou Único vivo mais perto de você; sem nenhum, no seu alvo atual
+ * (`alvoAtual`); sem alvo, nada. Grava `hunt.poeS2B.presa = { uid, ate }` (a nova tira a velha). Devolve a Presa (o monstro) ou null.
+ */
+export function tiqueDaPresa(hunt, lacaios, alvoAtual = null, agora = hunt?.clock ?? 0) {
+  const pred = (lacaios ?? []).map((l) => (l?.hp > 0 ? l.poe?.s2b?.predador : null)).find(Boolean);
+  if (!hunt || !pred) return null;
+  const s = est(hunt);
+  if ((s.presaProxima ?? -Infinity) > agora) return presaDe(hunt, agora);
+  const pos = hunt.pos ?? { x: 0, y: 0 };
+  const z = hunt.z ?? 0;
+  let melhor = null;
+  let menor = Infinity;
+  for (const b of hunt.monstros ?? []) {
+    if (!(b?.hp > 0) || b.dummy || (b.z ?? z) !== z || !raroOuUnico(b)) continue;
+    const d = Math.max(Math.abs(b.x - pos.x), Math.abs(b.y - pos.y));
+    if (d < menor) { menor = d; melhor = b; }
+  }
+  const presa = melhor ?? (alvoAtual?.hp > 0 && !alvoAtual.dummy ? alvoAtual : null);
+  if (!presa) return null;
+  s.presaProxima = agora + pred.recargaMs;
+  s.presa = { uid: presa.uid, ate: agora + pred.ms };
+  return presa;
+}
+/** A Presa viva agora (o monstro), ou null. */
+export function presaDe(hunt, agora = hunt?.clock ?? 0) {
+  const p = hunt?.poeS2B?.presa;
+  if (!p || !(p.ate > agora)) return null;
+  return (hunt.monstros ?? []).find((b) => b.uid === p.uid && b.hp > 0) ?? null;
+}
+/** O monstro é a Presa agora? */
+export const ehPresa = (hunt, b, agora = hunt?.clock ?? 0) => !!b && hunt?.poeS2B?.presa?.uid === b.uid && hunt.poeS2B.presa.ate > agora;
 /** A Adrenalina do lacaio (a Carne Fresca) agora? */
 export const adrenalinaDoLacaio = (l, agora) => (l?.s2bCarneFrescaAte ?? 0) > agora;
 /** A ADRENALINA do PoE (o lembrete: 100% de Dano aumentado, 25% de Velocidade de Ataque, Conjuração e Movimento, 10% de Redução de Dano Físico adicional). */
@@ -232,6 +297,8 @@ export function noGolpeDoLacaio(hunt, l, alvo, agora = hunt?.clock ?? 0) {
   if (adrenalinaDoLacaio(l, agora)) fator *= (1 + (inc + ADRENALINA.danoIncPct) / 100) / Math.max(0.01, 1 + inc / 100);
   if (l?.tipo !== 'totem' && frenesiFamintoAtivo(hunt, agora)) fator *= 1 + FRENESI_FAMINTO.maisDanoPct / 100;
   if (s?.maisPertoDeVocePct && alvo && hunt?.pos && Math.max(Math.abs(alvo.x - hunt.pos.x), Math.abs(alvo.y - hunt.pos.y)) <= CASAS_PERTO_DE_VOCE) fator *= 1 + s.maisPertoDeVocePct / 100;
+  // (lote D3, dono 27/10) o Predador: "X% mais Dano com Acertos e Afecções às suas Presas" — só contra a Presa
+  if (s?.predador?.maisPct && ehPresa(hunt, alvo, agora)) fator *= 1 + s.predador.maisPct / 100;
   let critInc = 0;
   let critMult = 0;
   let critBase = 0;
@@ -297,6 +364,8 @@ export function regrasDoFeitico(ef) {
   if (ef.amaldicoadoSemCritico > 0) o.semCritico = true;
   if (ef.feiticoTransfereM > 0) o.transfereCasas = (ef.feiticoTransfereM * (1 + num(ef.feiticoTransfereIncPct) / 100)) / 2;
   if (ef.doomBlast > 0) o.doom = true;
+  // (lote D3, dono 27/10) o Solo Maldito / o Sapo Enfeitiçado: o Feitiço não pega no acerto — só no solo (`criarSoloMaldito`)
+  if (ef.soloMalditoMs > 0) o.soloMaldito = true;
   return Object.keys(o).length ? o : null;
 }
 /** O monstro tem um Feitiço seu com "não podem causar golpes críticos" ativo? */
@@ -335,11 +404,11 @@ export function antesDeApagar(hunt, bicho, id, m, agora) {
   if (!hunt || !m?.s2b?.doom || m.doomFeito || !(m.ate <= agora) || !(bicho?.hp > 0)) return;
   m.doomFeito = true;
   const s = est(hunt);
-  s.doomPendentes = [...(s.doomPendentes ?? []), { id, uid: bicho.uid, x: bicho.x, y: bicho.y, z: bicho.z ?? 0, ate: m.ate }].slice(-30);
+  s.doomPendentes = [...(s.doomPendentes ?? []), { id, uid: bicho.uid, x: bicho.x, y: bicho.y, z: bicho.z ?? hunt.z ?? 0, ate: m.ate }].slice(-30);
 }
 /**
  * Os Feitiços seus com `doom` que TERMINARAM (a duração acabou) desde a última volta — `[{ bicho, id }]` (`bicho`: o monstro vivo, ou o lugar dele): cada um sai uma vez só
- * (`doomFeito`). O monstro morto não conta (o PoE: "quando o Feitiço terminar" — a morte e o Feitiço trocado pelo limite ficam para o dono decidir).
+ * (`doomFeito`). O monstro morto entra pelos pendentes (`feiticosNaMorte` — decisão do dono 27/10); o Feitiço trocado pelo limite não sai.
  */
 export function feiticosQueTerminaram(hunt, agora = hunt?.clock ?? 0) {
   const saida = [];
@@ -349,11 +418,53 @@ export function feiticosQueTerminaram(hunt, agora = hunt?.clock ?? 0) {
   }
   const s = hunt?.poeS2B;
   if (s?.doomPendentes?.length) {
-    for (const p of s.doomPendentes) saida.push({ bicho: (hunt.monstros ?? []).find((b) => b.uid === p.uid && b.hp > 0) ?? { uid: p.uid, x: p.x, y: p.y, z: p.z }, id: p.id });
+    // (lote D3: o do morto vale no tique da morte — um segundo depois, a sala já mudou)
+    for (const p of s.doomPendentes.filter((x) => !x.morto || agora - x.ate <= 1000)) saida.push({ bicho: (hunt.monstros ?? []).find((b) => b.uid === p.uid && b.hp > 0) ?? { uid: p.uid, x: p.x, y: p.y, z: p.z }, id: p.id });
     s.doomPendentes = [];
   }
   return saida;
 }
+/**
+ * (lote D3, decisão do dono 27/10) A DESTRUIÇÃO IMINENTE também quando o amaldiçoado MORRE com o Feitiço nele (ativo): fica pendente para o tique, no lugar dele, uma vez
+ * só. O Feitiço que outro tira pelo limite de maldições NÃO a ativa (o `Reforcos.marcar` apaga sem passar por aqui). Devolve quantos ficaram pendentes.
+ */
+export function feiticosNaMorte(hunt, morto, agora = hunt?.clock ?? 0) {
+  if (!hunt || !morto?.maldicoes) return 0;
+  let n = 0;
+  for (const [id, m] of Object.entries(morto.maldicoes)) {
+    if (!m?.s2b?.doom || m.doomFeito || m.marca || !(m.ate > agora)) continue;
+    m.doomFeito = true;
+    const s = est(hunt);
+    s.doomPendentes = [...(s.doomPendentes ?? []), { id, uid: morto.uid, x: morto.x, y: morto.y, z: morto.z ?? hunt.z ?? 0, ate: agora, morto: true }].slice(-30);
+    n++;
+  }
+  return n;
+}
+
+// ---------------------------------------------------------------- o SOLO MALDITO (e o do Sapo Enfeitiçado) — lote D3, decisão do dono 27/10
+
+/**
+ * "Habilidades suportadas criam Solo Maldito com uma Duração base de 34 segundos; Feitiços de Habilidades Suportadas não tem Duração; Inimigos em Solo Maldito … são
+ * Amaldiçoados com tal Feitiço; Limite de 1 área de Solo Maldito" (o PoB: `base_hex_zone_skill_duration_ms`). Ao ligar o buff do Feitiço, o solo nasce no `centro` (o
+ * alvo atual; sem alvo, o inimigo mais perto) com o raio da maldição (`casas`; a fração é a chance de 1 casa a mais, sorteada ao nascer); o novo tira o velho (o `n`).
+ * `efeitos`: os do buff do Feitiço (`efeitosPoe`, com as regras). `sapoMs`: o Sapo Enfeitiçado (o primeiro Sapo Explosivo sai um intervalo depois). Devolve o solo.
+ */
+export function criarSoloMaldito(hunt, { id, centro, casas = 0, ms, efeitos, fator = 1, lancado, sapoMs = 0 }, agora = hunt?.clock ?? 0, rng = Math.random) {
+  if (!hunt || !centro || !(ms > 0)) return null;
+  const s = est(hunt);
+  s.soloN = num(s.soloN) + 1;
+  const c = Math.max(0, num(casas));
+  const raio = Math.trunc(c) + (rng() < c % 1 ? 1 : 0);
+  s.solo = { id, n: s.soloN, x: centro.x, y: centro.y, z: centro.z ?? hunt.z ?? 0, raio, ate: agora + ms, efeitos: efeitos ?? [], fator, lancado: lancado ?? agora, ...(sapoMs > 0 ? { sapoMs, sapoEm: agora + sapoMs } : {}) };
+  return s.solo;
+}
+/** O Solo Maldito ativo agora, ou null. */
+export const soloAgora = (hunt, agora = hunt?.clock ?? 0) => (hunt?.poeS2B?.solo?.ate > agora ? hunt.poeS2B.solo : null);
+/** O monstro está dentro do solo? (o mesmo andar, a até o raio em casas — Chebyshev) */
+export const noSolo = (solo, b) => !!solo && !!b && (b.z ?? solo.z) === solo.z && Math.max(Math.abs(b.x - solo.x), Math.abs(b.y - solo.y)) <= solo.raio;
+/** A duração do Feitiço posto pelo solo ("não tem Duração"): sem fim — só sai quando o inimigo sai do solo ou o solo acaba. */
+export const SEM_DURACAO_MS = 1e12;
+
 /** O uso da recarga com usos ("Recarga: 0.15 seg (3 Times)"): os usos guardados recarregam um a um. `chave` no estado. Devolve se pode (e gasta um). */
 export function gastarUso(hunt, chave, recargaMs, usos = 1, agora = hunt?.clock ?? 0) {
   const s = est(hunt);

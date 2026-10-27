@@ -172,6 +172,18 @@ const REGRAS = [
   [new RegExp(`^Duração Base do Frenesi Faminto é de ${N} segundos$`, 'i'), (m) => ({ frenesiFamintoMs: Math.round(num(m[1]) * 1000) })],
   [new RegExp(`^Lacaios de Habilidades Suportadas tem ${N}% de chance de conceder Frenesi Faminto à você no Acerto$`, 'i'), (m) => ({ frenesiFamintoPct: num(m[1]) })],
   [/^Lacaios de Habilidades Suportadas são Agressivos$/i, () => ({ lacaioAgressivo: 1 })],
+  // ---- (lote D3, decisões do dono 27/10) ----
+  // - o Escudo de Carne: "Lacaios … são Defensivos" — só atacam inimigos a até 3 casas de VOCÊ (a regra de "Próximos" — `cacadas.alvoDoFamiliar`);
+  // - o Predador: a Presa ("Sinalizar Presa", sozinha a cada 0,8 s no Raro/Único mais perto — `SuportesS2B.tiqueDaPresa`), o foco nela e o "mais Dano … às suas Presas";
+  // - a Legião Infernal: a queima em volta do lacaio (o dano por segundo, 2 m + o "metros ao Raio") e o dano no próprio lacaio (40% da Vida máxima por segundo, o PoB);
+  // - o Solo Maldito e o Sapo Enfeitiçado: o solo nasce no alvo ao ligar o Feitiço (`SuportesS2B.criarSoloMaldito`, `Acoes.tiqueDosFeiticosS2B`);
+  [/^Lacaios de Habilidades Suportadas são Defensivos$/i, () => ({ lacaioDefensivo: 1 })],
+  [new RegExp(`^Lacaios de Habilidades Suportadas causam ${N}% mais Dano com Acertos e Afecções às suas Presas$`, 'i'), (m) => ({ lacaioMaisPresaPct: num(m[1]) })],
+  [/^Lacaios de Habilidades Suportadas sempre focam em Presas se possível$/i, () => ({ lacaioPredador: 1 })],
+  [new RegExp(`^Lacaios de Habilidades Suportadas sofrem ${N}% de sua Vida Máxima como Dano de Fogo por segundo$`, 'i'), (m) => ({ legiaoDegenPct: num(m[1]) })],
+  [new RegExp(`^Lacaios de Habilidades Suportadas causam ${N} de Dano de Fogo por segundo aos Inimigos próximos a eles$`, 'i'), (m) => ({ legiaoDps: num(m[1]) })],
+  [new RegExp(`^Lacaios das Habilidades Suportadas têm \\+?${N} metros ao Raio de seu Efeito Incendiário$`, 'i'), (m) => ({ legiaoRaioM: num(m[1]) })],
+  [new RegExp(`^Habilidades suportadas criam Solo Maldito com uma Duração base de ${N} segundos${ESP}Feitiços de Habilidades Suportadas não tem Duração${ESP}Inimigos em Solo Maldito das Habilidades Suportadas são Amaldiçoados com tal Feitiço${ESP}Limite de 1 área de Solo Maldito$`, 'i'), (m) => ({ soloMalditoMs: Math.round(num(m[1]) * 1000) })],
   // - a FÚRIA ARCANA do suporte: a mana gasta no custo da habilidade (`Acoes`, o pagamento), o que o buff dá (o MAIOR com o da Fúria Arcana comum — o PoB) e o "35% mais Dano
   //   Mágico enquanto você possuir Fúria Arcana" (só com ela — antes, sempre);
   [new RegExp(`^Ganha Fúria Arcana após Gastar um total de ${N} de Mana em Custos Diretos e Efeitos de uma Habilidade Suportada$`, 'i'), (m) => ({ furiaArcanaLimiar: num(m[1]) })],
@@ -813,6 +825,23 @@ const PROPRIAS_A2 = {
     [new RegExp(`^Área de Efeito aumentada em ${N}%$`, 'i'), (m, e) => { e.doomAreaIncPct = (e.doomAreaIncPct ?? 0) + num(m[1]); }],
     [/^Tempo de Conjuração:/i, () => {}],
   ],
+  // (lote D3, dono 27/10) o PREDADOR: a "Sinalizar Presa" dele (o PoB, `SignalPrey`: recarga 0,8 s, instantânea, a Presa dura 8 s) — sozinha (`SuportesS2B.tiqueDaPresa`);
+  // o SAPO ENFEITIÇADO: o Sapo Explosivo que o Solo Maldito ativa (o PoB, `TriggeredSupportHextoad`: o Caos da magia, 2,3 m, 5% de crítico, a eficácia, o Definhando de
+  // 2 s no acerto) — `Acoes.tiqueDosFeiticosS2B`. As linhas eram lidas como da suportada (nenhuma tinha efeito nela).
+  Predator_Support: [
+    [new RegExp(`^Duração base é de ${N} segundos?$`, 'i'), (m, e) => { e.presaMs = Math.round(num(m[1]) * 1000); }],
+    [new RegExp(`^Recarga: ${N} seg`, 'i'), (m, e) => { e.presaRecargaMs = Math.round(num(m[1]) * 1000); }],
+    [/^Tempo de Conjuração:/i, () => {}],
+  ],
+  Hextoad_Support: [
+    [new RegExp(`^Chão amaldiçoado de habilidades reforçadas ativam Sapo Explosivo a cada ${N} segundos?$`, 'i'), (m, e) => { e.sapoIntervaloMs = Math.round(num(m[1]) * 1000); }],
+    [new RegExp(`^Causa ${N} a ${N} de Dano de Caos$`, 'i'), (m, e) => { e.sapoMin = num(m[1]); e.sapoMax = num(m[2]); }],
+    [new RegExp(`^O raio Base é de ${N} metros?$`, 'i'), (m, e) => { e.sapoRaioM = num(m[1]); }],
+    [new RegExp(`^Inflige Definhando por ${N} segundos? ao Acertar$`, 'i'), (m, e) => { e.sapoDefinharMs = Math.round(num(m[1]) * 1000); }],
+    [new RegExp(`^Chance de Crítico: ${N}%$`, 'i'), (m, e) => { e.sapoCrit = num(m[1]); }],
+    [new RegExp(`^Eficácia do Dano Adicionado: ${N}%$`, 'i'), (m, e) => { e.sapoEficacia = num(m[1]) / 100; }],
+    [/^Tempo de Conjuração:/i, () => {}],
+  ],
   Divine_Sentinel_Support: [
     [new RegExp(`^Lacaios de habilidades reforçadas têm a área de efeito aumentada em ${N}%$`, 'i'), (m, e) => { e.areaLacaioPct = (e.areaLacaioPct ?? 0) + num(m[1]); }],
     [/^Sentinelas invocadas de habilidades reforçadas têm uma aura templária$/i, (m, e) => { e.auraTemplaria = 1; }],
@@ -823,7 +852,8 @@ const PROPRIAS_A2 = {
  * Presas" do Predador (a Presa); o "Poder Arcano" do Fluxo Cinético das Instabilidades Cinéticas (a habilidade ativada); o "Ricocheteiam" dos Relâmpagos Vivos (os
  * lacaios do suporte); o "menos Dano quando usadas por Espíritos Sagrados" (só no uso dos Espíritos — antes, a suportada saía sempre com 51% menos).
  */
-const NAO_FEITAS_S2B = [/às suas Presas$/i];
+// (lote D3, dono 27/10: a Presa existe — o "mais Dano … às suas Presas" do Predador saiu daqui, `SuportesS2B.noGolpeDoLacaio`)
+const NAO_FEITAS_S2B = [];
 const NAO_FEITAS_S2B_DO = {
   Kinetic_Instability_Support: [/de Poder Arcano$/i], Greater_Kinetic_Instability_Support: [/de Poder Arcano$/i],
   Living_Lightning_Support: [/^Habilidades dos Lacaios Ricocheteiam/i], Sacred_Wisps_Support: [/menos Dano quando usadas por Espíritos Sagrados$/i],

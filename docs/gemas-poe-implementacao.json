@@ -17,8 +17,8 @@
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 179,
-   "parcial": 32,
+   "implementada e testada": 184,
+   "parcial": 27,
    "implementada, sem teste próprio": 51
   },
   "variantes": {
@@ -44,8 +44,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 115,
-   "emDuasOuMais": 11
+   "linhasDistintas": 105,
+   "emDuasOuMais": 10
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -60,7 +60,7 @@
   },
   "testes": {
    "ativasCitadas": 505,
-   "suportesCitados": 189,
+   "suportesCitados": 192,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
@@ -9013,12 +9013,8 @@
   {
    "slug": "Infernal_Legion_Support",
    "nome": "Legião Infernal",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Lacaios de Habilidades Suportadas sofrem 40% de sua Vida Máxima como Dano de Fogo por segundo",
-    "não simulado: Lacaios de Habilidades Suportadas causam 2468.6 de Dano de Fogo por segundo aos Inimigos próximos a eles",
-    "não simulado: Lacaios das Habilidades Suportadas têm 0.5 metros ao Raio de seu Efeito Incendiário"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9168,11 +9164,8 @@
   {
    "slug": "Predator_Support",
    "nome": "Predador",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Lacaios de Habilidades Suportadas causam 24% mais Dano com Acertos e Afecções às suas Presas",
-    "não simulado: Lacaios de Habilidades Suportadas sempre focam em Presas se possível"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9236,10 +9229,8 @@
   {
    "slug": "Cursed_Ground_Support",
    "nome": "Solo Maldito",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades suportadas criam Solo Maldito com uma Duração base de 34 segundos Feitiços de Habilidades Suportadas não tem Duração Inimigos em Solo Maldito das Habilidades Suportadas são Amaldiçoados com tal Feitiço Limite de 1 área de Solo Maldito"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9334,10 +9325,8 @@
   {
    "slug": "Meat_Shield_Support",
    "nome": "Escudo de Carne",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Lacaios de Habilidades Suportadas são Defensivos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9719,13 +9708,8 @@
   {
    "slug": "Hextoad_Support",
    "nome": "Sapo Enfeitiçado (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades suportadas criam Solo Maldito com uma Duração base de 14 segundos Feitiços de Habilidades Suportadas não tem Duração Inimigos em Solo Maldito das Habilidades Suportadas são Amaldiçoados com tal Feitiço Limite de 1 área de Solo Maldito",
-    "não simulado: Chão amaldiçoado de habilidades reforçadas ativam Sapo Explosivo a cada 0.8 segundo",
-    "não simulado: Causa 2504 a 3757 de Dano de Caos",
-    "não simulado: Inflige Definhando por 2 segundos ao Acertar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9861,13 +9845,6 @@
    ]
   },
   {
-   "linha": "Habilidades suportadas criam Solo Maldito com uma Duração base de # segundos Feitiços de Habilidades Suportadas não tem Duração Inimigos em Solo Maldito das Habilidades Suportadas são Amaldiçoados com tal Feitiço Limite de # área de Solo Maldito",
-   "gemas": [
-    "Cursed_Ground_Support",
-    "Hextoad_Support"
-   ]
-  },
-  {
    "linha": "Máximo de # anomalias",
    "gemas": [
     "Greater_Kinetic_Instability_Support",
@@ -9972,12 +9949,6 @@
    ]
   },
   {
-   "linha": "Causa # a # de Dano de Caos",
-   "gemas": [
-    "Hextoad_Support"
-   ]
-  },
-  {
    "linha": "Causa # a # de Dano de Raio",
    "gemas": [
     "Foulgrasp_Support"
@@ -9987,12 +9958,6 @@
    "linha": "Causa Dano de Fogo base igual a #% da Vida Máxima dos Totens",
    "gemas": [
     "Flamewood_Support"
-   ]
-  },
-  {
-   "linha": "Chão amaldiçoado de habilidades reforçadas ativam Sapo Explosivo a cada # segundo",
-   "gemas": [
-    "Hextoad_Support"
    ]
   },
   {
@@ -10278,12 +10243,6 @@
    ]
   },
   {
-   "linha": "Inflige Definhando por # segundos ao Acertar",
-   "gemas": [
-    "Hextoad_Support"
-   ]
-  },
-  {
    "linha": "Inimigos sofrem de Insanidade Perversa se estiverem sob a influência de auras de habilidades reforçadas por mais de # segundos",
    "gemas": [
     "Eldritch_Blasphemy_Support"
@@ -10317,42 +10276,6 @@
    "linha": "Lacaios das Habilidades Suportadas sofrem #% de sua Vida e Escudo de Energia Máximos total como Dano Físico por segundo enquanto você tiver uma Aura de uma Habilidade Suportada em você",
    "gemas": [
     "Guardians_Blessing_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios das Habilidades Suportadas têm # metros ao Raio de seu Efeito Incendiário",
-   "gemas": [
-    "Infernal_Legion_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios de Habilidades Suportadas causam # de Dano de Fogo por segundo aos Inimigos próximos a eles",
-   "gemas": [
-    "Infernal_Legion_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios de Habilidades Suportadas causam #% mais Dano com Acertos e Afecções às suas Presas",
-   "gemas": [
-    "Predator_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios de Habilidades Suportadas são Defensivos",
-   "gemas": [
-    "Meat_Shield_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios de Habilidades Suportadas sempre focam em Presas se possível",
-   "gemas": [
-    "Predator_Support"
-   ]
-  },
-  {
-   "linha": "Lacaios de Habilidades Suportadas sofrem #% de sua Vida Máxima como Dano de Fogo por segundo",
-   "gemas": [
-    "Infernal_Legion_Support"
    ]
   },
   {

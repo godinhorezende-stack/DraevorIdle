@@ -2330,8 +2330,12 @@ function esquecerAlvo(f, alvo, agora) {
 
 export function alvoDoFamiliar(hunt, f, agora) {
   if (hunt.lurando) return null;
-  const raio = f.perto + folgaDe(f);
+  // (lote D3, dono 27/10) o Escudo de Carne — "Lacaios … são Defensivos": só atacam inimigos a até 3 casas de VOCÊ (a regra de "Próximos")
+  const s2b = f?.poe?.s2b;
+  const raio = s2b?.defensivo ? Math.min(f.perto + folgaDe(f), SuportesS2B.CASAS_PERTO_DE_VOCE) : f.perto + folgaDe(f);
   const ok = (m) => m && m.hp > 0 && distancia(m, hunt.pos) <= raio && !((f.esquecidos?.[m.uid] ?? 0) > agora);
+  // (lote D3, dono 27/10) o Predador — "sempre focam em Presas se possível"
+  if (s2b?.predador?.foca) { const presa = SuportesS2B.presaDe(hunt, hunt.clock ?? 0); if (ok(presa)) return presa; }
   const doDono = alvoAtual(hunt);
   if (ok(doDono)) return doDono;
   let melhor = null;
@@ -2828,6 +2832,8 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
   hunt.agoraDosLacaios = agora;
   // (lote E1a) o "menos Vida Máxima" do Ceifador vivo nos outros lacaios (e a vida de volta quando ele some — `LacaiosPoe.aplicarCeifador`)
   LacaiosPoe.aplicarCeifador(hunt.lacaios);
+  // (lote D3, dono 27/10) a PRESA do Predador: marcada sozinha a cada 0,8 s (o Raro/Único mais perto de você; sem nenhum, o seu alvo atual)
+  if (itensPoeLigado() && !Protecao.imune(hunt)) SuportesS2B.tiqueDaPresa(hunt, hunt.lacaios, alvoAtual(hunt), relogio);
   for (const l of hunt.lacaios) {
     const aliado = l.mercenario ? aliadoDoMercenario : aliadoBase;
     if (l.hp <= 0 || (l.ate && agora >= l.ate)) {
@@ -2861,6 +2867,22 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     if (l.poe?.degenPct) l.hp -= (l.maxHp * l.poe.degenPct) / 100 / 4;
     // (14/10) o Sentinela do Resplendor queima os inimigos a até 2 casas (20% da vida dele por segundo, como Fogo — `Acoes.queimaDoSentinela`)
     if (l.sentinela && !Protecao.imune(hunt)) Acoes.queimaDoSentinela(hunt, l, ficha, 250, eventos);
+    // (lote D3, dono 27/10) a LEGIÃO INFERNAL: a queima de Fogo em volta do lacaio (1 casa + a fração do "+0,5 m", `SuportesS2B.aoInvocar`) e os 40% da Vida máxima dele por
+    // segundo como Fogo nele (a resistência a Fogo dele reduz — o PoB)
+    if (l.poe?.s2b?.legiao) {
+      const q = SuportesS2B.queimaDaLegiao(l, 250, Math.min(LacaiosPoe.tetoDaResDoLacaio(l, 'fire'), resDoLacaio(l, 'fire', aliado)));
+      if (q?.noLacaio > 0) l.hp -= q.noLacaio;
+      if (q?.porInimigo > 0 && !Protecao.imune(hunt)) {
+        for (const b of hunt.monstros) {
+          if (!(b.hp > 0) || b.dummy || (b.z ?? hunt.z ?? 0) !== (l.z ?? hunt.z ?? 0) || distancia(b, l) > q.raio) continue;
+          const v = Math.round(resistido(hunt, b, 'fire', q.porInimigo, ficha));
+          if (!(v > 0)) continue;
+          b.hp -= v;
+          QuemFeriu.carimbar(b, QuemFeriu.LACAIO);
+          eventos.push({ t: 'dmg', uid: b.uid, x: b.x, y: b.y, v, foe: true, lacaio: true, alvo: b.name, color: Acoes.COR_DO_ELEMENTO.fire ?? '#ff9900' });
+        }
+      }
+    }
     // (14/10: os Robôs Ativadores não tomam dano — `intocavel`)
     for (const b of l.intocavel ? [] : hunt.monstros) {
       if (b.hp <= 0 || b.dummy || distancia(b, l) > 1 || Math.random() > 0.125) continue;
