@@ -1318,6 +1318,9 @@ export function adds(estado, total = null) {
     const efeito = elusivoAgora ?? 1 + ((Number(total?.[`efeito_buff:${nome}`]) || 0) + (Number(estado?.hunt?.poeEfeitoDeBuff?.[nome]) || 0) + (b.altar ? Number(total?.efeito_altar) || 0 : 0)) / 100;
     for (const [k, v] of Object.entries(typeof b.af === 'function' ? b.af(estado) : b.af)) saida[k] = (saida[k] ?? 0) + v * (k.startsWith('periodico:') ? 1 : efeito);
   }
+  // (R3, o Devorar Maior) as almas do Comedor de Almas em você: +5% de Velocidade de Ataque e de Conjuração por alma
+  const almasEu = almasDoJogador(estado?.hunt, agoraT);
+  if (almasEu > 0) for (const k of ['atk_speed', 'cast_speed']) saida[k] = (saida[k] ?? 0) + almasEu * DEVORADOR_DE_ALMAS.porAlmaPct;
   // (lote G) Sobre o Solo Sagrado: 6% da Vida por segundo (× "Efeito de Solos Sagrados Criados por você aumentado"), "Seu chão consagrado
   // concede precisão aumentada em X%" e "faz com que a Regeneração de Vida também Recupere Escudo de Energia".
   if (noSoloSagrado(estado?.hunt)) {
@@ -2551,6 +2554,24 @@ export function almaParaOsLacaios(lacaios, morto, agora) {
   }
   return n;
 }
+/**
+ * (R3, dono 27/10: o DEVORAR MAIOR "como o PoB") As almas do COMEDOR DE ALMAS em VOCÊ (`hunt.poeAlmas = { n, em, vistas }`): o mesmo Devorador de Almas dos lacaios
+ * (`DEVORADOR_DE_ALMAS`: +5% de Velocidade de Ataque e de Conjuração por alma, até 45; sem alma nova Recentemente, perde 1 a cada 0,5 s — `almasDecaidas`). O Poder do morto
+ * pela raridade (o PoE: Normal 1, Mágico 2, Raro 10, Único 20) — a chance do Devorar Maior é "por poder".
+ */
+export const PODER_DO_MORTO = Object.freeze({ normal: 1, comum: 1, magico: 2, raro: 10, elite: 10, unico: 20, boss: 20 });
+export const poderDoMorto = (m) => (m?.boss ? PODER_DO_MORTO.unico : PODER_DO_MORTO[m?.raridade ?? m?.raridadePoe] ?? 1);
+export function almasDoJogador(hunt, agora = hunt?.clock ?? 0) {
+  return hunt?.poeAlmas?.n > 0 ? almasDecaidas({ almas: hunt.poeAlmas }, agora) : 0;
+}
+/** Ganha uma alma (até o máximo); a ficha é refeita. Devolve as almas agora. */
+export function almaDoJogador(hunt, agora = hunt?.clock ?? 0) {
+  if (!hunt) return 0;
+  const n = Math.min(DEVORADOR_DE_ALMAS.maximo, almasDoJogador(hunt, agora) + 1);
+  hunt.poeAlmas = { n, em: agora, vistas: n };
+  hunt.poeFichaMudou = true;
+  return n;
+}
 export function tiqueDaDissolucao(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
   const r = hunt?.dissolucao;
   if (!r || !(r.reservado > 0)) return;
@@ -2573,6 +2594,12 @@ export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   // (lote 51: + os bônus temporários — `poeTemporarios`, o modificador do Raro do Aprendizado Inspirado; lote 52: + a imunidade a Maldições
   // da Desgraça das Bruxas)
   if (Object.values(hunt.poeBuffs ?? {}).some(venceu) || venceu(hunt.oferendaEmVoce?.ate) || Object.values(hunt.poeTemporarios ?? {}).some((x) => venceu(x?.ate)) || venceu(hunt.imunidadesPoe?.maldicao)) hunt.poeFichaMudou = true;
+  // (R3: as almas do Comedor de Almas em você caíram — a velocidade sai da ficha; sem nenhuma, o registro sai)
+  if (hunt.poeAlmas) {
+    const n = almasDoJogador(hunt, agora);
+    if (n !== hunt.poeAlmas.vistas) { hunt.poeAlmas.vistas = n; hunt.poeFichaMudou = true; }
+    if (!n) delete hunt.poeAlmas;
+  }
   tiqueDaFuria(hunt, agora);
   tiqueDasCargasFanaticas(hunt, ficha, agora);
   tiqueDaDissolucao(estado, hunt, ficha, agora);

@@ -246,6 +246,10 @@ const REGRAS = [
   //   "Consumiu um cadáver Recentemente" (a qualidade: "Dano aumentado em X% se você tiver Consumido um cadáver Recentemente" — antes, sempre);
   [new RegExp(`^Golpes Abatedores com Habilidades Suportadas Consomem cadáveres para Recuperar ${N} de Vida e ${N} de Mana$`, 'i'), (m) => ({ devorarVida: num(m[1]), devorarMana: num(m[2]) })],
   [new RegExp(`causam Dano aumentado em ${N}% se você tiver Consumido um cadáver Recentemente$`, 'i'), (m) => ({ ['af:dmg_inc@consumiuCadaverRecente']: num(m[1]) })],
+  // - (R3, dono 27/10: "como o PoB") o Devorar Maior: "Consumir um cadáver com habilidades reforçadas tem X% de chance de conceder uma alma por poder" — cada cadáver
+  //   consumido pelo Devorar sorteia X% × o Poder do morto (Normal 1, Mágico 2, Raro 10, Único 20) de ganhar uma alma do Comedor de Almas (`Acoes.abatesDoSuporteS1`,
+  //   `CondicoesPoe.almaDoJogador`); a qualidade ("+X%") soma
+  [new RegExp(`^Consumir um cadáver com habilidades reforçadas tem \\+?${N}% de chance de conceder uma alma por poder$`, 'i'), (m) => ({ almaPorPoderPct: num(m[1]) })],
   // - o Esforço Excessivo (dono, 26/10: "como no PoE"): "X% mais Dano por cada Clamor que os Impelir" — × os Clamores que impelem o ataque (um Impelir por Clamor —
   //   `GemasGAC.impelemEste`, `Acoes.comOsAlvosDaGema`);
   [new RegExp(`^Ataques Suportados causam ${N}% mais Dano por cada Clamor que os Impelir$`, 'i'), (m) => ({ impelidoPorClamorMaisPct: num(m[1]) })],
@@ -928,7 +932,15 @@ export const algumDe = (s) => (s.tags.includes('Ricochete') && !s.tags.includes(
 // ---------------------------------------------------------------- status, ids, registro
 
 const MOMENTUM_CANALIZANDO = /Ganhe \S+ de Momentum a cada \S+ segundos enquanto Canalizando uma Habilidade suportada/gi;
+/**
+ * (R3, dono 27/10 — aval do dono 27/10) O suporte que NÃO SE APLICA ao jogo, com a nota do porquê (como as gemas — `GemasPoe.NAO_SE_APLICA`): fica sem efeito e o relatório o
+ * mostra como "não se aplica" (`tools/relatorio-gemas-poe.mjs`, `naoSeAplica`).
+ */
+export const NAO_SE_APLICA = {
+  Cast_on_Ward_Break_Support: 'não se aplica: o jogo não tem Salvaguarda (Ward), então a salvaguarda nunca quebra e a magia nunca seria ativada (aval do dono 27/10)',
+};
 function avaliar(s) {
+  if (NAO_SE_APLICA[s.slug]) return { status: 'nao', motivos: [NAO_SE_APLICA[s.slug]], naoSeAplica: NAO_SE_APLICA[s.slug] };
   // Pelo que o suporte É (as tags) e pelo gatilho dos mods — a descrição fala do que ele NÃO suporta ("não pode suportar totens").
   // (O Momentum cita a canalização só como OUTRO jeito de ganhar Momentum — "a cada N segundos enquanto Canalizando" —, que o jogo não tem;
   // o ganho a cada uso, sim: essa frase não trava o suporte.)
@@ -952,7 +964,7 @@ const DESCRICAO_NAO_FEITA = {
   // (lote R3A, 27/10) a explosão das torres, a onda e a tempestade são o ATAQUE ATIVADO completo (`Acoes.acertoDoArauto` com `ativado` — a arma com os locais, o crítico
   // dela, o adicionado × a eficácia, a Área); a Cegueira dentro da Tormenta é feita. Fica: as torres não bloqueiam o caminho dos monstros (o jogo não tem obstáculo
   // temporário no caminho dos bichos — a exceção do idle pede o aval do dono)
-  Bonespire_Support: ['não simulado: as torres de osso não bloqueiam o caminho dos monstros (o caminho dos bichos não tem obstáculo temporário)'],
+  // (R3, dono 27/10: as torres viram obstáculo no passo dos monstros enquanto duram — `hunt/monstros.moverMonstros`; a Torre Óssea sai de parcial)
   // (lote D2, dono 27/10) a Tentação Vaal: o dano de 1300/s em você é feito (`SuportesS2A.tentacaoVaalNoUso`); o "em vez de aplicar impedimento de ganho de almas" fica — o jogo
   // não tem o Impedimento de Ganho de Almas (as almas das Vaal são a recarga), então não há o que a Tentação substitua nem ganho de almas para bloquear enquanto ela dura
   Vaal_Temptation_Support: ['não simulado: o impedimento de ganho de almas que a Tentação substitui (o jogo não tem o Impedimento de Ganho de Almas: as almas das gemas Vaal são a recarga)'],
@@ -989,9 +1001,9 @@ export function iniciar({ registrarSuporte } = {}) {
   const ids = idsDosSuportes(SUPORTES.map((s) => s.slug));
   const porStatus = {};
   for (const s of SUPORTES) {
-    const { status, motivos } = avaliar(s);
+    const { status, motivos, naoSeAplica } = avaliar(s);
     const itemId = ids[s.slug];
-    REGISTRO.set(s.slug, { itemId, status, motivos, suporte: s });
+    REGISTRO.set(s.slug, { itemId, status, motivos, suporte: s, ...(naoSeAplica ? { naoSeAplica } : {}) });
     porStatus[status] = (porStatus[status] ?? 0) + 1;
     registrarSuporte?.({
       itemId, suporte: s, requer: requerDe(s), algum: algumDe(s), exclui: EXCLUI[s.slug] ?? [], levelMinimo: s.nivelReq ?? 1,

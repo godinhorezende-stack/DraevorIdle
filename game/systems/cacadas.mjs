@@ -1919,7 +1919,24 @@ export function tique(estado, personagem, agora = Date.now()) {
           hunt.perseguicao = alvo && d > querDistancia ? { uid: alvo.uid, desde: hunt.clock ?? 0 } : null;
         }
         const cansou = hunt.percurso && hunt.perseguicao && (hunt.clock ?? 0) - hunt.perseguicao.desde > PERSEGUICAO_MAXIMA_MS;
-        if (alvo && d > querDistancia && cansou) {
+        /*
+         * (R3, dono 27/10) A TORMENTA DO VAZIO explode quando VOCÊ entra nela: com uma tormenta carregada (estágio cheio, inimigo dentro) a até 5 casas e nada mais urgente
+         * (sem lurar, com metade da Vida ou mais, e já na distância do alvo — sem o kite pedindo recuo — ou sem alvo), ele anda até ela. Comprometido com uma, segue até
+         * entrar (no máximo 3 s), mesmo que a distância do alvo mude no caminho; a explosão é no tique das plantadas (`Acoes.tiqueDasTormentas`).
+         */
+        const rumoTormenta = itensPoeLigado() ? Acoes.tormentaParaEntrar(estado, hunt) : null;
+        const chaveTormenta = rumoTormenta ? `${rumoTormenta.x},${rumoTormenta.y},${rumoTormenta.desde}` : null;
+        const comprometido = !!chaveTormenta && hunt.poeRumoTormenta?.chave === chaveTormenta && (hunt.clock ?? 0) - hunt.poeRumoTormenta.desde <= 3000;
+        const semUrgencia = !hunt.lurando && (estado.hp ?? 0) >= (estado.maxHp ?? 0) * 0.5 && (comprometido || (!(hunt.poeRumoTormenta?.chave === chaveTormenta) && (!alvo || (d <= querDistancia && !(hunt.distancia > 0 && d < querDistancia)))));
+        let passoDaTormenta = null;
+        if (rumoTormenta && semUrgencia) {
+          const casasDeBicho = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
+          passoDaTormenta = proximoPassoAte(grade, hunt.pos, rumoTormenta, (c) => casasDeBicho.has(`${c.x},${c.y}`), casasDeBicho);
+          if (passoDaTormenta && !comprometido) hunt.poeRumoTormenta = { chave: chaveTormenta, desde: hunt.clock ?? 0 };
+        } else if (!rumoTormenta) delete hunt.poeRumoTormenta;
+        if (passoDaTormenta) {
+          destino = passoDaTormenta;
+        } else if (alvo && d > querDistancia && cansou) {
           alvo.semCaminhoAte = (hunt.clock ?? 0) + 10_000;
           hunt.alvoTravado = null;
           if (hunt.alvo === hunt.alvoDaLimpeza) hunt.alvo = null;

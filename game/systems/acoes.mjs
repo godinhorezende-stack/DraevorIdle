@@ -1902,6 +1902,9 @@ export function abatesDoSuporteS1(estado, hunt, personagem, ef, atingidos, event
       ModsPoe.marcar(hunt, 'consumiuCadaver', agora);
       ((hunt.poeUsosRecentes ??= {}).cadaver ??= []).push(agora);
       Ficha.curar(estado, Math.round(ef.devorarVida ?? 0), Math.round(ef.devorarMana ?? 0), eventos, personagem?.nome, hunt?.pos ?? { x: 0, y: 0 });
+      // (R3, dono 27/10: o Devorar Maior "como o PoB") consumir o cadáver tem X% × o Poder do morto (Normal 1, Mágico 2, Raro 10, Único 20) de dar uma alma do
+      // Comedor de Almas em você (+5% de Velocidade de Ataque e de Conjuração por alma, até 45 — `ModsPoe.almaDoJogador`)
+      if (ef.almaPorPoderPct > 0 && rng() * 100 < ef.almaPorPoderPct * ModsPoe.poderDoMorto(b)) { ModsPoe.almaDoJogador(hunt, agora); Ficha.invalidar(estado); }
     }
   }
   return mortos.length;
@@ -9775,7 +9778,25 @@ function porTormentaDoVazio(hunt, entry, ef, c, agora) {
   hunt.poeTormentas = lista.slice(-Math.max(1, ef.tormentasMax ?? 3));
 }
 /**
- * (lote A4, dono 19/10) A tempestade no tempo: "ganham um estágio por 0.2 segundos, até 10"; "Ao entrar na tormenta, ela explode" — o inimigo no raio dela
+ * (R3, dono 27/10) A tormenta CARREGADA (no estágio máximo, no seu andar, com algum inimigo vivo dentro do raio dela) mais perto de você, a até `ate` casas — o idle anda até
+ * ela quando não há nada mais urgente (`cacadas`, a Caça Automática), para entrar e explodi-la. null sem nenhuma.
+ */
+export function tormentaParaEntrar(estado, hunt, ate = 5, agora = hunt?.clock ?? 0) {
+  if (!itensPoeLigado() || !hunt?.pos || !hunt.poeTormentas?.length) return null;
+  let melhor = null;
+  for (const t of hunt.poeTormentas) {
+    if (t.ate <= agora || (t.z ?? 0) !== (hunt.z ?? 0)) continue;
+    if (Math.floor(Math.max(0, agora - t.desde) / Math.max(1, t.estagioMs)) < t.estagiosMax) continue;
+    const d = distanciaChebyshev(hunt.pos, t);
+    if (d > ate || (melhor && d >= melhor.d)) continue;
+    const r = t.raioDoEstagio?.r ?? 1;
+    if (!(hunt.monstros ?? []).some((m) => m.hp > 0 && !m.dummy && (m.z ?? hunt.z ?? 0) === (t.z ?? 0) && distanciaChebyshev(m, t) <= r)) continue;
+    melhor = { t, d };
+  }
+  return melhor?.t ?? null;
+}
+/**
+ * (lote A4, dono 19/10) A tempestade no tempo: "ganham um estágio por 0.2 segundos, até 10"; "Ao entrar na tormenta, ela explode" — (R3, dono 27/10: quando VOCÊ entra) o raio dela
  * ("+15% de área de efeito por estágio": o raio × √, em casas — o sorteio da fração uma vez por estágio) a explode, com "+40% de dano com ataques e
  * afecções por estágio", em todos os do raio. As vencidas somem.
  */
@@ -9796,7 +9817,10 @@ function tiqueDasTormentas(estado, hunt, personagem, eventos, agora) {
       if ((m.estados?.cego?.ate ?? 0) > agora) m.estados.cego.ate = Math.max(m.estados.cego.ate, ate);
       else ModsPoe.porNoAlvo(m, 'cego', ate, agora);
     }
-    if (!dentro.length) { ficam.push(t); continue; }
+    // (R3, dono 27/10 — revoga a decisão de 19/10) a tormenta explode quando VOCÊ entra no raio dela (no mesmo andar), e não quando um inimigo entra; a explosão acerta os
+    // inimigos dentro dela (sem nenhum, ela explode à toa — como no PoE)
+    const voceDentro = !!hunt.pos && (hunt.z ?? 0) === (t.z ?? 0) && distanciaChebyshev(hunt.pos, t) <= r;
+    if (!voceDentro) { ficam.push(t); continue; }
     eventos.push({ t: 'explosao', id: EFEITO_DA_EXPLOSAO, x: t.x, y: t.y, lado: 2 * r + 1 });
     for (const m of dentro) {
       // (lote R3A: o ataque ativado completo; a qualidade da tormenta soma ao "aumentado", o "+40% por estágio" é o "mais" dela)

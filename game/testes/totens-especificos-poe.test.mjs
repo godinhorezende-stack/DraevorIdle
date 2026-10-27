@@ -142,7 +142,8 @@ test('G20c: a Balista de Cerco q20 — +5% de Velocidade de Ataque por Totem má
 
 test('G20c: o status — o Chefe Guerreiro, o Protetor, o Chefe Vaal, os Rejuvenescedores, o Devorador e a Balista de Cerco "funciona"; o Chamariz segue com a provocação', { skip: SEM }, () => {
   for (const s of ['Ancestral_Warchief', 'Ancestral_Protector', 'Vaal_Ancestral_Warchief', 'Rejuvenation_Totem', 'Vaal_Rejuvenation_Totem', 'Devouring_Totem', 'Siege_Ballista']) assert.equal(G.doSlug(s).statusNoJogo, 'funciona', `${s}: ${G.doSlug(s).motivosNoJogo.join(' | ')}`);
-  assert.ok(G.doSlug('Decoy_Totem').motivosNoJogo.some((m) => /provoca/.test(m)));
+  // (aval do dono 27/10, R3: a provocação do Chamariz é feita — lote R3D)
+  assert.ok(!G.doSlug('Decoy_Totem').motivosNoJogo.some((m) => /provoca/.test(m)));
   assert.ok(!G.doSlug('Decoy_Totem').motivosNoJogo.some((m) => /não podem Evadir/.test(m)));
 });
 

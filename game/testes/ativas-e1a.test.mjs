@@ -48,13 +48,16 @@ test('E1a — status: as 30 gemas sem "efeito não simulado"; as que dependem de
   // as que ficam (o dono decide ou é mecânica nova): a linha delas segue, e só ela
   // (as decisões do dono, 26/10: o Golpe Dominador, a Oferenda Espiritual e a Balista Estilhaçante fecharam)
   for (const s of ['Dominating_Blow', 'Dominating_Blow_of_Inspiring', 'Spirit_Offering', 'Shrapnel_Ballista', 'Shrapnel_Ballista_of_Steel']) assert.deepEqual(naoSimuladas(s), [], s);
-  assert.ok(naoSimuladas('Summon_Holy_Relic').some((m) => /Efeito do Buff/.test(m)), 'a Relíquia Sagrada: o Efeito do Buff é o da Nova, que não existe');
-  // (dono, 26/10) as linhas da Nova da Relíquia Sagrada não eram feitas: voltam aos motivos
-  assert.equal(naoSimuladas('Summon_Holy_Relic').filter((m) => /Habilidade Explosiva da Relíquia Sagrada/.test(m)).length, 2);
+  // (aval do dono 27/10, R3: a Nova da Relíquia Sagrada existe — lote R3B; o Efeito do Buff vale só com a Nova — as linhas dela saem dos motivos)
+  assert.ok(!naoSimuladas('Summon_Holy_Relic').some((m) => /Efeito do Buff/.test(m)), 'a Relíquia Sagrada: o Efeito do Buff é o da Nova, feita');
+  // (dono, 26/10) as linhas da Nova da Relíquia Sagrada não eram feitas: voltavam aos motivos — (aval do dono 27/10, R3: feitas)
+  assert.equal(naoSimuladas('Summon_Holy_Relic').filter((m) => /Habilidade Explosiva da Relíquia Sagrada/.test(m)).length, 0);
   assert.ok(!naoSimuladas('Bone_Offering').some((m) => /Cadáver extra/.test(m)) && !naoSimuladas('Flesh_Offering').some((m) => /Cadáver extra/.test(m)), 'a Óssea e a Carnal também');
-  assert.ok(naoSimuladas('Summon_Chaos_Golem_of_the_Maelstr%C3%B6m').some((m) => /definhamento/.test(m)));
+  // (aval do dono 27/10, R3: as auras do Golem Caótico — o definhamento — são feitas, com 2 casas)
+  assert.ok(!naoSimuladas('Summon_Chaos_Golem_of_the_Maelstr%C3%B6m').some((m) => /definhamento/.test(m)));
   // a Absolvição é de área (não convoca as Sentinelas no jogo): a Recuperação da Recarga dos Lacaios dela não sai
-  assert.ok(G.statusNoJogo().Absolution.motivos.some((m) => /Recuperação da Recarga/.test(m)));
+  // (aval do dono 27/10, R3: a Absolvição convoca as Sentinelas no jogo — lote R3B —: a Recuperação da Recarga dos Lacaios dela sai dos motivos)
+  assert.ok(!G.statusNoJogo().Absolution.motivos.some((m) => /Recuperação da Recarga/.test(m)));
   assert.equal(GemasE1a.ehLinhaE1a('Absolution', 'Lacaios têm Recuperação da Recarga aumentada em 40 %', 'area'), false);
 });
 

@@ -26,9 +26,10 @@ Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 207 |
+| implementada e testada | 209 |
 | implementada, sem teste próprio | 49 |
-| parcial | 6 |
+| parcial | 3 |
+| não se aplica | 1 |
 
 ### Variantes
 
@@ -38,20 +39,16 @@ Só os ataques:
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 9 linhas distintas (0 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 5 linhas distintas (0 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 510/562 ativas, 210/262 suportes.
+- Testes que citam a gema: 510/562 ativas, 212/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
 
 | Gemas | Linha |
 |---|---|
-| 1 | as torres de osso não bloqueiam o caminho dos monstros (o caminho dos bichos não tem obstáculo temporário) |
-| 1 | Ativa esta magia reforçada quando sua salvaguarda quebra |
-| 1 | Consumir um cadáver com habilidades reforçadas tem #% de chance de conceder uma alma por poder |
-| 1 | Consumir um cadáver com habilidades reforçadas tem +#% de chance de conceder uma alma por poder |
 | 1 | Habilidades reforçadas ganham #% do dano físico como dano de caos adicional por fundamental |
 | 1 | Habilidades reforçadas têm o custo aumentado em #% por fundamental |
 | 1 | Magias Suportadas causam # % menos Dano |
@@ -186,15 +183,8 @@ Só os ataques:
 
 ## Gemas de suporte pendentes
 
-- **Bonespire_Support** (Torre Óssea (Reforço)) — parcial
-  - não simulado: as torres de osso não bloqueiam o caminho dos monstros (o caminho dos bichos não tem obstáculo temporário)
-- **Cast_on_Ward_Break_Support** (Conjurar ao Perder Salvaguarda (Reforço)) — parcial
-  - não simulado: Ativa esta magia reforçada quando sua salvaguarda quebra
 - **Earthbreaker_Support** (Devastador) — parcial
   - não simulado: perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)
-- **Greater_Devour_Support** (Devorar Maior (Reforço)) — parcial
-  - não simulado: Consumir um cadáver com habilidades reforçadas tem 4% de chance de conceder uma alma por poder
-  - não simulado: Consumir um cadáver com habilidades reforçadas tem +1% de chance de conceder uma alma por poder
 - **Machinations_Support** (Maquinações (Reforço)) — parcial
   - não simulado: Habilidades reforçadas ganham 8% do dano físico como dano de caos adicional por fundamental
   - não simulado: Habilidades reforçadas têm o custo aumentado em 10% por fundamental
@@ -204,6 +194,8 @@ Só os ataques:
 ## Não se aplicam ao jogo
 
 - **Portal** (Portal) — não se aplica (não se aplica: a caçada já tem a saída para a cidade, e os 6 portais do mapa são gastos pela morte (mapa-aberto.mjs) — o portal do PoE não tem o que fazer no jogo)
+- **Cast_on_Ward_Break_Support** (Conjurar ao Perder Salvaguarda (Reforço)) — não se aplica (não se aplica: o jogo não tem Salvaguarda (Ward), então a salvaguarda nunca quebra e a magia nunca seria ativada (aval do dono 27/10))
+  - não se aplica: o jogo não tem Salvaguarda (Ward), então a salvaguarda nunca quebra e a magia nunca seria ativada (aval do dono 27/10)
 
 ## Linhas que não se aplicam ao jogo
 

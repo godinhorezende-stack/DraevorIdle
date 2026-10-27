@@ -1311,6 +1311,37 @@ Revisão dos suportes dos lotes S2A e D2 (27/10), modo PoE (`ITENS_POE=1`). Ante
 - Testes: os 73 arquivos afetados — 914 testes, 876 passam, 33 pulados, 5 falham pelas regras novas (os testes esperavam as linhas ainda parciais; não editados): `ativas-d1.test.mjs:72`, `ativas-e1a.test.mjs:55`, `totens-especificos-poe.test.mjs:145`, `totens-uso-poe.test.mjs:174` e `gemas-todas-funcionam-poe.test.mjs:194` (o G16 exige dano de toda gema `funciona`: o Chamariz, a Mina de Fumaça e a Armadilha Conversora não causam dano — o efeito é a provocação, o teleporte e a conversão).
 - Placar (o relatório regerado): ativas parcial 15 → 7, limitação do idle 54 → 55 (o Golem do Turbilhão), implementada e testada 448 → 455; suportes parcial 27 → 26, implementada e testada 186 → 187.
 
+## R3 — decisões do dono (27/10)
+
+Decisões aplicadas (teste próprio: `game/testes/gemas-r3-decisoes.test.mjs`):
+
+1. **Conjurar ao Perder Salvaguarda (Cast_on_Ward_Break_Support): não se aplica.** O jogo não tem Salvaguarda (Ward), então a magia nunca seria ativada. Os suportes passaram a ter o mesmo mecanismo das gemas (`SuportesPoe.NAO_SE_APLICA`, nota "aval do dono 27/10"): fica sem efeito e o relatório mostra "não se aplica".
+2. **Devorar Maior (Greater_Devour_Support): como o PoB.** Cada cadáver consumido pelo Devorar da suportada tem X% × o Poder do morto de dar uma alma do Comedor de Almas a você. X é a coluna da gema: 2/3/4% por nível, com +1% na qualidade 20. O Poder vem da raridade: Normal 1, Mágico 2, Raro 10, Único 20 (`CondicoesPoe.poderDoMorto`). As almas usam as regras do Devorador de Almas dos lacaios (`DEVORADOR_DE_ALMAS`): +5% de Velocidade de Ataque e de Conjuração por alma, até 45; sem alma nova Recentemente, perde 1 a cada 0,5 s (`hunt.poeAlmas`, `almaDoJogador`, a soma em `adds`). Quando as almas caem, a ficha é refeita no tique.
+3. **Torre Óssea (Bonespire_Support): as torres viram obstáculo** no passo dos monstros enquanto duram, no andar delas (`hunt/monstros.torresNoCaminho`). A BFS da perseguição não passa por elas, e nenhum passo cai nelas: nem o normal, nem o da fuga, nem o do provocado pelo Chamariz. O monstro que já está numa casa de torre sai normalmente, porque a casa dele fica sem distância e qualquer vizinha com caminho serve. A Torre Óssea sai de parcial.
+4. **Tormenta do Vazio (Voidstorm_Support): explode quando VOCÊ entra no raio dela**, e não quando um inimigo entra. Isso revoga a decisão de 19/10. Ela continua sem nascer a menos de 3 m de você, ganha os estágios (até 10 em 2 s; +40% de dano e +15% de área por estágio) e Cega os inimigos que estão dentro. A explosão acerta os inimigos no raio. No idle (`cacadas`, Caça Automática), o personagem anda até a tormenta quando ela está carregada (estágio cheio, algum inimigo dentro), a até 5 casas, e não há nada mais urgente. "Nada mais urgente" quer dizer: sem lurar, com metade da Vida ou mais, e já na distância do alvo sem o kite pedindo recuo (ou sem alvo). Depois de escolher uma tormenta, ele segue até entrar, por no máximo 3 s, mesmo que a distância do alvo mude no caminho (`Acoes.tormentaParaEntrar`, `hunt.poeRumoTormenta`). Fora disso, a explosão acontece quando ele passa por ela no caminho normal.
+
+Escolhas sem fonte confirmadas pelo dono:
+
+- Fenda: 1 s = 3 casas.
+- Pira: até 2 casas.
+- Rajada de Vento: a primeira na hora, depois a cada 10 m.
+- Nova da Relíquia: 3 m.
+- Cadáver = 1 de Poder.
+- Presença dos Espíritos: 2 casas.
+- Guerreiros: todos no uso.
+- Chamariz: renovado a cada tique; os chefes únicos ficam no comportamento próprio.
+- Artilharia: 1 casa, espaçadas de 1.
+- Auras do Golem Caótico: 2 casas.
+- Relíquia: só com a Nova.
+- Bênção do Guardião: de −30% a +27%.
+- Os acertos dos ajudantes contam como seus.
+
+Testes ajustados com o aval do dono (o comportamento novo das rodadas R3A–R3D e desta): ativas-e1a:51, 53, 55 e 57; ativas-e2a:47; ativas-d1:72; suportes-s1:68; totens-especificos-poe:145; totens-uso-poe:174; gemas-sem-efeito-a2 (o Arauto da Pureza é Arauto de buff; a Sentinela vem no acerto no Raro); passivas-ramificadoras-pedras-lote80:207-208 (a Pureza conta pelo buff); gemas-todas-funcionam-poe G16 (critério próprio para o Chamariz, a Mina de Fumaça e a Armadilha Conversora, que não causam dano no PoE).
+
+Testes que as decisões 3 e 4 quebram (fora dos avais; esperam o dono): suportes-r3a:122-124 (a Torre Óssea ainda "parcial" com o motivo do caminho dos monstros); suportes-r3a:165 e repeticoes-estagios-a4:489 (a tormenta explodindo com o inimigo dentro dela, a decisão revogada).
+
+Placar (relatório regerado): suportes parcial 6 → 3, não se aplica 0 → 1, implementada e testada 207 → 209; ativas sem mudança (implementada e testada 456, parcial 1, não se aplica 1).
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.

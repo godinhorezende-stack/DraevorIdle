@@ -65,7 +65,8 @@ test('S1: os suportes da fila feitos saem de "parcial" — nenhuma linha não fe
   const falhas = FEITOS.filter((s) => SP.doSlug(s)?.status !== 'funciona').map((s) => `${s}: ${SP.doSlug(s)?.status} ${(SP.doSlug(s)?.motivos ?? []).join(' | ')}`);
   assert.deepEqual(falhas, [], falhas.join('\n'));
   // (a Onda de Choque: a linha do gatilho é feita; fica a mesma nota do acerto sem golpe da Excepcional)
-  assert.equal(SP.doSlug('Shockwave_Support').status, 'parcial');
+  // (aval do dono 27/10, R3: a onda é o ataque ativado completo — lote R3A —: a Onda de Choque sai de parcial)
+  assert.equal(SP.doSlug('Shockwave_Support').status, 'funciona');
   assert.ok(SP.doSlug('Shockwave_Support').motivos.every((m) => /acerto sem golpe/.test(m)), SP.doSlug('Shockwave_Support').motivos.join(' | '));
 });
 

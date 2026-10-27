@@ -21,6 +21,7 @@ const Afixos = await import('../systems/afixos.mjs');
 const Registro = await import('../systems/combate/registro.mjs');
 const Areas = await import('../engine/areas.mjs');
 const Runas = await import('../systems/itens-poe/runas-vinculadas.mjs');
+const GemasR3D = await import('../systems/itens-poe/gemas-r3d.mjs');
 
 /** As armas tentadas (a primeira que a gema aceita): a varinha, o arco, a espada com escudo, a maça de duas mãos, a adaga, o cajado. */
 const ARMAS = [['Wands/Driftwood_Wand'], ['Bows/Crude_Bow'], ['One_Hand_Swords/Rusted_Sword', 'Shields/Splintered_Tower_Shield'], ['Two_Hand_Maces/Driftwood_Maul'], ['Daggers/Sai'], ['Staves/Gnarled_Branch']];
@@ -159,9 +160,18 @@ function usar({ e, b }, slug) {
   // o Definhamento ou o Tolhimento)
   // (o relógio já andou os tiques acima: vale o debuff que o uso pôs, mesmo que já tenha acabado)
   const debuff = (b.dots ?? []).length > 0 || ['definhado', 'tolhido'].some((k) => !!b.estados?.[k]);
-  return { ok: true, dano, debuff, buff: !!e.hunt.buffs?.[G.doSlug(slug).acao] || !!e.hunt.vinculos?.length, deslocou, febre: (b.dots ?? []).some((d) => d.chave === 'Corrupting_Fever' && d.falta > 0) };
+  // (aval do dono 27/10, R3: as gemas que NÃO causam dano no PoE — base_deal_no_damage — são conferidas pelo efeito delas: o Totem Chamariz provoca os monstros em volta (o
+  // pulso que a caçada roda a cada tique — `GemasR3D.provocarEmVolta`); a Mina de Fumaça teleporta você ou Cega quem está na nuvem; a Armadilha Conversora converte)
+  for (const l of (e.hunt.lacaios ?? []).filter((x) => x.provocaR3D && x.hp > 0)) GemasR3D.provocarEmVolta(e.hunt.monstros, l, e.hunt.z, e.hunt.clock);
+  GemasR3D.cegarNasNuvens(e.hunt, e.hunt.clock);
+  const provocou = (e.hunt.monstros ?? []).some((m) => !!m.estados?.provocado);
+  const cegou = (e.hunt.monstros ?? []).some((m) => (m.estados?.cego?.ate ?? 0) > 0);
+  const converteu = (e.hunt.lacaios ?? []).some((l) => l.tipo === 'convertido');
+  return { ok: true, dano, debuff, provocou, cegou, converteu, buff: !!e.hunt.buffs?.[G.doSlug(slug).acao] || !!e.hunt.vinculos?.length, deslocou, febre: (b.dots ?? []).some((d) => d.chave === 'Corrupting_Fever' && d.falta > 0) };
 }
 
+// (aval do dono 27/10, R3) as gemas que não causam dano no PoE (base_deal_no_damage): o critério próprio de cada uma
+const SEM_DANO_NO_POE = { Decoy_Totem: (u) => u.provocou, Smoke_Mine: (u) => u.deslocou || u.cegou, Conversion_Trap: (u) => u.converteu };
 test('G16: toda gema ativa "funciona" faz no jogo o que o status promete (o dano, ou o buff ligado)', { skip: SEM, timeout: 600_000 }, async () => {
   J = await import('../systems/itens-poe/jogo.mjs');
   ({ gerarPeca } = await import('../systems/itens-poe/gerar.mjs'));
@@ -185,8 +195,8 @@ test('G16: toda gema ativa "funciona" faz no jogo o que o status promete (o dano
       // (lote A1b, com o aval do dono: a Emboscada colada no alvo não se move e não causa dano — o efeito dela é o buff, `hunt.emboscada`)
       // (lote B2, com o aval do dono: a Febre Corrompedora — o Sangue Corrompido no alvo, pelo acerto da outra gema)
       // (lote C4, com o aval do dono 21/10: a magia sem acerto é conferida pelo debuff — `GemasPoe.magiaSemAcerto`)
-      if (slug === 'Corrupting_Fever' ? u.febre : buff ? u.buff : G.magiaSemAcerto(slug, 20) ? u.debuff : u.dano > 0 || (r.arquetipo === 'movimento' && semDano && u.deslocou) || (slug === 'Ambush' && !!m.e.hunt.emboscada)) { feito = armas[0]; break; }
-      erros.push(`${armas[0]}: saiu sem ${buff ? 'buff' : 'dano'}`);
+      if (SEM_DANO_NO_POE[slug] ? SEM_DANO_NO_POE[slug](u) : slug === 'Corrupting_Fever' ? u.febre : buff ? u.buff : G.magiaSemAcerto(slug, 20) ? u.debuff : u.dano > 0 || (r.arquetipo === 'movimento' && semDano && u.deslocou) || (slug === 'Ambush' && !!m.e.hunt.emboscada)) { feito = armas[0]; break; }
+      erros.push(`${armas[0]}: saiu sem ${SEM_DANO_NO_POE[slug] ? 'o efeito' : buff ? 'buff' : 'dano'}`);
     }
     if (!feito) falhas.push(`${slug} (${r.arquetipo}) — ${erros.slice(0, 3).join(' · ')}`);
   }

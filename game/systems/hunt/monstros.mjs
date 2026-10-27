@@ -257,6 +257,12 @@ export function passoDoBicho(m, diagonal = false) {
  * A caçada passa aqui a grade DOS BICHOS (sem as casas seguras): a BFS não passa por elas e nenhum passo cai nelas. Com o jogador numa
  * delas (`semPerseguir`), ninguém o persegue: a IA larga a perseguição em vez de ficar rondando a borda à espera dele.
  */
+/** (R3, dono 27/10) As casas das torres de osso vivas no andar de agora (`Set` de "x,y"), ou null sem nenhuma. */
+export function torresNoCaminho(hunt, agora) {
+  const relogio = hunt?.clock ?? agora;
+  const vivas = (hunt?.a2?.torres ?? []).filter((t) => t.ate > relogio && (t.z ?? 0) === (hunt.z ?? 0));
+  return vivas.length ? new Set(vivas.map((t) => `${t.x},${t.y}`)) : null;
+}
 export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percepcao = ALCANCE_DE_PERCEPCAO } = {}) {
   if (semPerseguir) {
     for (const m of hunt.monstros) m.perseguindo = false;
@@ -271,7 +277,12 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
   // neste tique — bem mais barato do que um BFS por bicho.
   // Dois mapas de distância (só reto e com diagonal), reaproveitados por todo
   // bicho perseguindo neste tique — bem mais barato do que um BFS por bicho.
-  const reto = perseguindo ? bfsDistancias(grade, hunt.pos, ALCANCE_DE_PERSEGUICAO + 6, null, VIZINHANCA_4) : null;
+  /*
+   * (R3, dono 27/10) As TORRES DE OSSO da Torre Óssea (`hunt.a2.torres`, enquanto duram, no andar de agora) são OBSTÁCULO no passo dos monstros: a BFS não passa por elas e
+   * nenhum passo cai nelas. Quem já está numa casa de torre sai normalmente (a casa dele fica sem distância e qualquer vizinha com caminho vale) — ninguém fica preso.
+   */
+  const torres = torresNoCaminho(hunt, agora);
+  const reto = perseguindo ? bfsDistancias(grade, hunt.pos, ALCANCE_DE_PERSEGUICAO + 6, null, VIZINHANCA_4, torres) : null;
   let comDiagonal = null;
   /*
    * ---- Quem está em cada casa, sem varrer todo mundo ----
@@ -300,6 +311,7 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
   const livre = (m, viz) => {
     if (viz.x === hunt.pos.x && viz.y === hunt.pos.y) return false; // não pisa no jogador
     if (aliados.has(`${viz.x},${viz.y}`)) return false;
+    if (torres?.has(`${viz.x},${viz.y}`)) return false;
     const outro = ocupada.get(`${viz.x},${viz.y}`);
     return !outro || outro === m;
   };
@@ -334,7 +346,7 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
       let melhor = d;
       for (const [dx, dy] of VIZINHANCA_8) {
         const v = { x: m.x + dx, y: m.y + dy };
-        if (perto.em(v.x, v.y) == null || (v.x === hunt.pos.x && v.y === hunt.pos.y) || aliadosDaFuga.has(`${v.x},${v.y}`) || (ocupada ? (ocupada.get(`${v.x},${v.y}`) ?? m) !== m : hunt.monstros.some((o) => o !== m && o.hp > 0 && o.x === v.x && o.y === v.y))) continue;
+        if (perto.em(v.x, v.y) == null || (v.x === hunt.pos.x && v.y === hunt.pos.y) || aliadosDaFuga.has(`${v.x},${v.y}`) || torres?.has(`${v.x},${v.y}`) || (ocupada ? (ocupada.get(`${v.x},${v.y}`) ?? m) !== m : hunt.monstros.some((o) => o !== m && o.hp > 0 && o.x === v.x && o.y === v.y))) continue;
         const dv = distancia(hunt.pos, v);
         if (dv > melhor) { melhor = dv; destino = v; }
       }
@@ -359,7 +371,7 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
       if (!pronto(m) || !Estados.podeAgir(m, agora) || imobilizado(m, agora)) continue;
       const perto = bfsDistancias(grade, m, 1);
       aliadosDaFuga ??= aliadosPorCasa(hunt);
-      const vizinhas = VIZINHANCA_8.map(([dx, dy]) => ({ x: m.x + dx, y: m.y + dy })).filter((v) => perto.em(v.x, v.y) != null && !(v.x === hunt.pos.x && v.y === hunt.pos.y) && !aliadosDaFuga.has(`${v.x},${v.y}`) && !(hunt.lacaios ?? []).some((l) => l.hp > 0 && l.x === v.x && l.y === v.y) && (ocupada ? (ocupada.get(`${v.x},${v.y}`) ?? m) === m : !hunt.monstros.some((o) => o !== m && o.hp > 0 && o.x === v.x && o.y === v.y)));
+      const vizinhas = VIZINHANCA_8.map(([dx, dy]) => ({ x: m.x + dx, y: m.y + dy })).filter((v) => perto.em(v.x, v.y) != null && !(v.x === hunt.pos.x && v.y === hunt.pos.y) && !aliadosDaFuga.has(`${v.x},${v.y}`) && !torres?.has(`${v.x},${v.y}`) && !(hunt.lacaios ?? []).some((l) => l.hp > 0 && l.x === v.x && l.y === v.y) && (ocupada ? (ocupada.get(`${v.x},${v.y}`) ?? m) === m : !hunt.monstros.some((o) => o !== m && o.hp > 0 && o.x === v.x && o.y === v.y)));
       const destino = GemasR3D.passoAteAIsca(m, isca, vizinhas);
       if (!destino) continue;
       ocupada?.delete(`${m.x},${m.y}`);
@@ -386,7 +398,7 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
     if (!Estados.podeAgir(m, agora) || imobilizado(m, agora)) continue;
     let destino = melhorPasso(m, reto, VIZINHANCA_4);
     if (!destino) {
-      comDiagonal ??= bfsDistancias(grade, hunt.pos, ALCANCE_DE_PERSEGUICAO + 4);
+      comDiagonal ??= bfsDistancias(grade, hunt.pos, ALCANCE_DE_PERSEGUICAO + 4, null, VIZINHANCA_8, torres);
       destino = melhorPasso(m, comDiagonal, VIZINHANCA_8);
     }
     if (!destino) continue;

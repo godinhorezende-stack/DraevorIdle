@@ -171,7 +171,8 @@ test('G20a: o totem SEM golpe (o Chamariz, o Devorador, os Rejuvenescedores, o V
   const chamariz = G.doSlug('Decoy_Totem').motivosNoJogo;
   // (lote G20c, com o aval do dono: o "não podem Evadir" e a regeneração do Rejuvenescedor foram feitos — `totens-especificos-poe.test.mjs`; a
   // provocação do Chamariz segue não feita)
-  assert.ok(chamariz.some((m) => /o totem provoca os monstros em volta/.test(m)), chamariz.join(' | '));
+  // (aval do dono 27/10, R3: a provocação do Chamariz é feita — lote R3D)
+  assert.ok(!chamariz.some((m) => /o totem provoca os monstros em volta/.test(m)), chamariz.join(' | '));
   assert.ok(!chamariz.some((m) => /Totem dura|Vida do Totem|mais Vida de Totens|Invoca um Totem/.test(m)), 'as linhas do totem são feitas');
   assert.ok(!G.doSlug('Rejuvenation_Totem').motivosNoJogo.some((m) => /Vida Regenerada/.test(m)), 'a aura do Rejuvenescedor: feita no G20c');
   assert.ok(!G.doSlug('Searing_Bond').motivosNoJogo.some((m) => /Dano de Fogo Base por segundo/.test(m)), 'o feixe do Vínculo: feito no G20d (com o aval do dono)');

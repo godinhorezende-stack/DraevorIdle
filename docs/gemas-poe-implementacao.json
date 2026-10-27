@@ -16,9 +16,10 @@
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 207,
-   "parcial": 6,
-   "implementada, sem teste próprio": 49
+   "implementada e testada": 209,
+   "parcial": 3,
+   "implementada, sem teste próprio": 49,
+   "não se aplica": 1
   },
   "variantes": {
    "vaal": {
@@ -42,7 +43,7 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 9,
+   "linhasDistintas": 5,
    "emDuasOuMais": 0
   },
   "imagens": {
@@ -58,7 +59,7 @@
   },
   "testes": {
    "ativasCitadas": 510,
-   "suportesCitados": 210,
+   "suportesCitados": 212,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
@@ -8094,10 +8095,8 @@
   {
    "slug": "Bonespire_Support",
    "nome": "Torre Óssea (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: as torres de osso não bloqueiam o caminho dos monstros (o caminho dos bichos não tem obstáculo temporário)"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8722,12 +8721,13 @@
   {
    "slug": "Cast_on_Ward_Break_Support",
    "nome": "Conjurar ao Perder Salvaguarda (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Ativa esta magia reforçada quando sua salvaguarda quebra"
+   "estado": "não se aplica",
+   "ausentes": [],
+   "outros": [
+    "não se aplica: o jogo não tem Salvaguarda (Ward), então a salvaguarda nunca quebra e a magia nunca seria ativada (aval do dono 27/10)"
    ],
-   "outros": [],
-   "icone": true
+   "icone": true,
+   "nota": "não se aplica: o jogo não tem Salvaguarda (Ward), então a salvaguarda nunca quebra e a magia nunca seria ativada (aval do dono 27/10)"
   },
   {
    "slug": "Companionship_Support",
@@ -9519,11 +9519,8 @@
   {
    "slug": "Greater_Devour_Support",
    "nome": "Devorar Maior (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Consumir um cadáver com habilidades reforçadas tem 4% de chance de conceder uma alma por poder",
-    "não simulado: Consumir um cadáver com habilidades reforçadas tem +1% de chance de conceder uma alma por poder"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9641,30 +9638,6 @@
   }
  ],
  "linhasFaltando": [
-  {
-   "linha": "as torres de osso não bloqueiam o caminho dos monstros (o caminho dos bichos não tem obstáculo temporário)",
-   "gemas": [
-    "Bonespire_Support"
-   ]
-  },
-  {
-   "linha": "Ativa esta magia reforçada quando sua salvaguarda quebra",
-   "gemas": [
-    "Cast_on_Ward_Break_Support"
-   ]
-  },
-  {
-   "linha": "Consumir um cadáver com habilidades reforçadas tem #% de chance de conceder uma alma por poder",
-   "gemas": [
-    "Greater_Devour_Support"
-   ]
-  },
-  {
-   "linha": "Consumir um cadáver com habilidades reforçadas tem +#% de chance de conceder uma alma por poder",
-   "gemas": [
-    "Greater_Devour_Support"
-   ]
-  },
   {
    "linha": "Habilidades reforçadas ganham #% do dano físico como dano de caos adicional por fundamental",
    "gemas": [

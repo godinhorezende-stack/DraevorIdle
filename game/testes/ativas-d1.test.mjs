@@ -69,7 +69,8 @@ test('D1: as gemas do lote ficam completas; os Espectros só com a limitação d
   for (const s of ['Raise_Spectre', 'Raise_Spectre_of_Transience']) assert.ok(!G.doSlug(s).motivosNoJogo.some((m) => /no Máximo/.test(m)), `${s}: ${G.doSlug(s).motivosNoJogo.join(' | ')}`);
   const fumaca = G.doSlug('Smoke_Mine').motivosNoJogo;
   assert.ok(!fumaca.some((m) => /Re-armadas/.test(m)), fumaca.join(' | '));
-  assert.ok(fumaca.some((m) => /Detonação da Mina é Instantânea/.test(m)), 'o resto da gema segue parcial');
+  // (aval do dono 27/10, R3: a Mina de Fumaça ficou completa no lote R3D — a Detonação Instantânea é feita)
+  assert.ok(!fumaca.some((m) => /Detonação da Mina é Instantânea/.test(m)), 'a gema completa');
   assert.match(G.linhasQueNaoSeAplicam(['Minas não podem ser Re-armadas'])[0], /^não se aplica: .*Re-armar/);
 });
 
