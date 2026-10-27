@@ -43,6 +43,7 @@ import * as GemasGBD from './itens-poe/gemas-gbd.mjs';
 import * as Protecao from './protecao.mjs';
 import * as Plantadas from './itens-poe/armas-plantadas.mjs';
 import * as Vinculos from './itens-poe/vinculos.mjs';
+import * as Testador from './personagem/testador.mjs';
 
 const ler = (arquivo) => JSON.parse(readFileSync(new URL(`../gamedata/${arquivo}`, import.meta.url), 'utf8'));
 const PODERES = { ...ler('monstro-poderes.json').monstros, ...ler('boss-poderes.json').bosses };
@@ -206,7 +207,8 @@ export function aplicarNoJogador({ estado, hunt, bicho, dano, elemento, eventos,
   // As cargas do PoE: a magia do bicho também conta como "acertado" (recentemente, e a chance de Tolerância).
   if (ficha?.cargas) CargasPoe.aoSerAcertado(estado, ficha.cargas);
   if (dano <= 0) return 0;
-  estado.hp = Math.max(0, estado.hp - dano);
+  // (o personagem de teste não morre: a vida para no piso dele — `personagem/testador.mjs`)
+  estado.hp = Math.max(Testador.pisoDaVida(estado), estado.hp - dano);
   eventos.push({ t: 'fx', id: EFEITO_DO_SANGUE, uid: 'player', x: base.x, y: base.y });
   // (o tipo e a marca do golpe que zerou a vida: a caixa da morte diz quem matou, com o quê e quanto — `Morte.golpeQueMatou`)
   eventos.push({ t: 'dmg', ...base, v: dano, color: COR_DO_ELEMENTO[elemento] ?? '#ff0000', ...(elemento ? { elemento } : {}), ...(estado.hp <= 0 ? { fatal: true } : {}) });

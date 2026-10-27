@@ -27,14 +27,16 @@ const consulta = banco.prepare(
          (estado::jsonb #>> '{level}')::int AS level,
          (estado::jsonb #>> '{xp}')::numeric AS xp,
          estado::jsonb ->> 'outfit' AS outfit,
-         estado::jsonb #>> '{hunt,huntId}' AS hunt
+         estado::jsonb #>> '{hunt,huntId}' AS hunt,
+         estado::jsonb ->> 'testador' AS testador
        FROM personagens WHERE caca_offline_ate > ? AND ${sqlDoPoe('postgres')}
        ORDER BY caca_offline_ate DESC LIMIT ${TETO_DA_LISTA}`
     : `SELECT nome, vocacao, classe, caca_offline_ate AS ate,
          json_extract(estado, '$.level') AS level,
          json_extract(estado, '$.xp') AS xp,
          json_extract(estado, '$.outfit') AS outfit,
-         json_extract(estado, '$.hunt.huntId') AS hunt
+         json_extract(estado, '$.hunt.huntId') AS hunt,
+         json_extract(estado, '$.testador') AS testador
        FROM personagens WHERE caca_offline_ate > ? AND ${sqlDoPoe('sqlite')}
        ORDER BY caca_offline_ate DESC LIMIT ${TETO_DA_LISTA}`,
 );
@@ -54,7 +56,7 @@ export async function atualizar(agora = Date.now()) {
       } catch {
         outfit = null;
       }
-      return { nome: r.nome, vocacao: r.vocacao, classe: r.classe ?? null, level: Number(r.level) || 1, xp: Number(r.xp) || 0, outfit, huntId: r.hunt ?? null, ate: Number(r.ate) };
+      return { nome: r.nome, vocacao: r.vocacao, classe: r.classe ?? null, level: Number(r.level) || 1, xp: Number(r.xp) || 0, outfit, huntId: r.hunt ?? null, ate: Number(r.ate), ...(r.testador === true || r.testador === 1 || r.testador === 'true' ? { testador: true } : {}) };
     });
   } catch (e) {
     console.error('ausentes ->', e.message);

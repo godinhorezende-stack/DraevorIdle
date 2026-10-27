@@ -44,6 +44,8 @@ import * as FrascosPoe from './itens-poe/frascos.mjs';
 import { armaDoPersonagem, alcanceDaArma, categoriaDaArma, armorDoPersonagem, definirLevel, ATAQUE_MS } from './hunt/combate.mjs';
 import { distancia } from './hunt/caminho.mjs';
 import { sqlDoPoe } from './personagem/legado.mjs';
+// O personagem de teste (`estado.testador`) fica fora do pódio e da lista de vencedores (dono, 27/10).
+import { ehTestador, sqlSemTestador } from './personagem/testador.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import * as CondicoesPoe from './itens-poe/condicoes-poe.mjs';
 import { GRUPO_DO_POE } from './acoes.mjs';
@@ -106,19 +108,19 @@ const Q = {
   daSemana: banco.prepare(
     pg
       ? `SELECT nome, (estado::jsonb #>> '{arena,pontos}')::numeric AS pontos FROM personagens
-         WHERE (estado::jsonb #>> '{arena,semana}')::bigint = ? AND (estado::jsonb #>> '{arena,pontos}')::numeric > 0 AND ${sqlDoPoe('postgres')}
+         WHERE (estado::jsonb #>> '{arena,semana}')::bigint = ? AND (estado::jsonb #>> '{arena,pontos}')::numeric > 0 AND ${sqlDoPoe('postgres')} AND ${sqlSemTestador('postgres')}
          ORDER BY pontos DESC LIMIT 3`
       : `SELECT nome, json_extract(estado, '$.arena.pontos') AS pontos FROM personagens
-         WHERE json_extract(estado, '$.arena.semana') = ? AND json_extract(estado, '$.arena.pontos') > 0 AND ${sqlDoPoe('sqlite')}
+         WHERE json_extract(estado, '$.arena.semana') = ? AND json_extract(estado, '$.arena.pontos') > 0 AND ${sqlDoPoe('sqlite')} AND ${sqlSemTestador('sqlite')}
          ORDER BY pontos DESC LIMIT 3`,
   ),
   vencedores: banco.prepare(
     pg
       ? `SELECT nome, estado FROM personagens
-         WHERE coalesce((estado::jsonb #>> '{arena,vitorias}')::numeric, 0) > 0 AND ${sqlDoPoe('postgres')}
+         WHERE coalesce((estado::jsonb #>> '{arena,vitorias}')::numeric, 0) > 0 AND ${sqlDoPoe('postgres')} AND ${sqlSemTestador('postgres')}
          ORDER BY (estado::jsonb #>> '{arena,vitorias}')::numeric DESC LIMIT 10`
       : `SELECT nome, estado FROM personagens
-         WHERE coalesce(json_extract(estado, '$.arena.vitorias'), 0) > 0 AND ${sqlDoPoe('sqlite')}
+         WHERE coalesce(json_extract(estado, '$.arena.vitorias'), 0) > 0 AND ${sqlDoPoe('sqlite')} AND ${sqlSemTestador('sqlite')}
          ORDER BY json_extract(estado, '$.arena.vitorias') DESC LIMIT 10`,
   ),
   personagem: banco.prepare('SELECT nome, estado FROM personagens WHERE nome = ?'),
@@ -179,7 +181,8 @@ async function fecharSemanaPassada(agora = Date.now()) {
   const porNome = new Map((await Q.daSemana.all(anterior)).map((r) => [r.nome, r.pontos]));
   for (const s of vivas.values()) {
     const a = s.estado?.arena;
-    if (a?.semana === anterior && a.pontos > 0) porNome.set(nomeDe(s), a.pontos);
+    if (ehTestador(s.estado)) porNome.delete(nomeDe(s));
+    else if (a?.semana === anterior && a.pontos > 0) porNome.set(nomeDe(s), a.pontos);
   }
   const top = [...porNome.entries()].sort((x, y) => y[1] - x[1]).slice(0, REGRAS.lugaresPremiados);
   for (const [i, [nome, pontos]] of top.entries()) await Q.porNoPodio.run(semana, i + 1, nome, pontos);
@@ -333,7 +336,10 @@ export async function vista(s, aviso = null, agora = Date.now()) {
 
 async function vencedores() {
   const porNome = new Map((await Q.vencedores.all()).map((r) => [r.nome, JSON.parse(r.estado)]));
-  for (const s of vivas.values()) if (s.estado?.arena?.vitorias > 0) porNome.set(nomeDe(s), s.estado);
+  for (const s of vivas.values()) {
+    if (ehTestador(s.estado)) porNome.delete(nomeDe(s));
+    else if (s.estado?.arena?.vitorias > 0) porNome.set(nomeDe(s), s.estado);
+  }
   return [...porNome.entries()]
     .map(([nome, e]) => ({ nome, level: e.arenaGuardado?.level ?? e.level, vitorias: e.arena.vitorias, derrotas: e.arena.derrotas ?? 0, patente: patente(e.arena.pontos ?? 0, e.arena.pontosTotais ?? 0), outfit: roupa(e) }))
     .sort((x, y) => y.vitorias - x.vitorias || x.derrotas - y.derrotas || x.nome.localeCompare(y.nome))

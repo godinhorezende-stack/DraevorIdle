@@ -33,6 +33,8 @@ import * as Ausentes from './ausentes.mjs';
 import * as ItensDoJogo from './itens/item.mjs';
 import * as EfeitosDeItem from './itens/efeitos.mjs';
 import { sqlDoPoe } from './personagem/legado.mjs';
+// O personagem de teste (`estado.testador`) fica fora do ranking da capa, da exp do dia e da hora e dos totais (dono, 27/10).
+import { ehTestador, sqlSemTestador } from './personagem/testador.mjs';
 import { ligado } from './itens-poe/catalogo.mjs';
 import * as Passivas from './passivas/arvore.mjs';
 import * as FrascosPoe from './itens-poe/frascos.mjs';
@@ -117,7 +119,7 @@ const consultaDoDia = banco.prepare(
          (estado::jsonb #>> '{level}')::int - (estado::jsonb #>> '{expDoDia,level}')::int AS levels,
          estado::jsonb ->> 'outfit' AS outfit
     FROM personagens
-   WHERE (estado::jsonb #>> '{expDoDia,dia}')::bigint = ? AND ${sqlDoPoe(banco.dialeto)}
+   WHERE (estado::jsonb #>> '{expDoDia,dia}')::bigint = ? AND ${sqlDoPoe(banco.dialeto)} AND ${sqlSemTestador(banco.dialeto)}
    ORDER BY ganho DESC
    LIMIT 50`
     : `SELECT nome, vocacao, classe,
@@ -126,7 +128,7 @@ const consultaDoDia = banco.prepare(
          json_extract(estado, '$.level') - json_extract(estado, '$.expDoDia.level') AS levels,
          json_extract(estado, '$.outfit') AS outfit
     FROM personagens
-   WHERE json_extract(estado, '$.expDoDia.dia') = ? AND ${sqlDoPoe(banco.dialeto)}
+   WHERE json_extract(estado, '$.expDoDia.dia') = ? AND ${sqlDoPoe(banco.dialeto)} AND ${sqlSemTestador(banco.dialeto)}
    ORDER BY ganho DESC
    LIMIT 50`,
 );
@@ -141,6 +143,10 @@ async function expHoje(agora) {
   for (const s of online()) {
     const e = s.estado;
     marcarDia(e, agora);
+    if (ehTestador(e)) {
+      porNome.delete(s.personagem.nome);
+      continue;
+    }
     const ganho = (e.xp ?? 0) - e.expDoDia.xp;
     const nome = s.personagem.nome;
     if (ganho > 0) porNome.set(nome, comClasse({ name: nome, vocation: e.vocation, level: e.level, value: ganho, levels: (e.level ?? 1) - e.expDoDia.level, online: true, outfit: roupa(e.outfit), guilda: guildaDe(nome) }, e));
@@ -152,6 +158,7 @@ async function expHoje(agora) {
 function expHora(agora) {
   const lista = [];
   for (const s of online()) {
+    if (ehTestador(s.estado)) continue;
     const nome = s.personagem.nome;
     const hist = (amostras.get(nome) ?? []).filter(([t]) => t >= agora - HORA_MS);
     if (!hist.length) continue;
@@ -160,6 +167,7 @@ function expHora(agora) {
   }
   // Quem caça de aba fechada, pela exp que o banco tem dele agora (ver `amostrar`).
   for (const a of Ausentes.agora(agora)) {
+    if (a.testador) continue;
     const hist = (amostras.get(a.nome) ?? []).filter(([t]) => t >= agora - HORA_MS);
     if (!hist.length) continue;
     const ganho = a.xp - hist[0][1];
@@ -172,8 +180,8 @@ function expHora(agora) {
 
 const totais = banco.prepare(
   banco.dialeto === 'postgres'
-    ? `SELECT count(*)::int AS n, max(coalesce((estado::jsonb #>> '{level}')::int, 1)) AS maior FROM personagens WHERE ${sqlDoPoe(banco.dialeto)}`
-    : `SELECT count(*) AS n, max(coalesce(json_extract(estado, '$.level'), 1)) AS maior FROM personagens WHERE ${sqlDoPoe(banco.dialeto)}`,
+    ? `SELECT count(*)::int AS n, max(coalesce((estado::jsonb #>> '{level}')::int, 1)) AS maior FROM personagens WHERE ${sqlDoPoe(banco.dialeto)} AND ${sqlSemTestador(banco.dialeto)}`
+    : `SELECT count(*) AS n, max(coalesce(json_extract(estado, '$.level'), 1)) AS maior FROM personagens WHERE ${sqlDoPoe(banco.dialeto)} AND ${sqlSemTestador(banco.dialeto)}`,
 );
 const guardados = new Map(); // categoria -> {ate, corpo}
 
@@ -182,7 +190,7 @@ export async function status(categoria = 'level', agora = Date.now()) {
   const g = guardados.get(categoria);
   if (g && g.ate > agora) return g.corpo;
   const t = await totais.get();
-  const vivosNoTopo = Math.max(0, ...online().map((s) => s.estado.level ?? 1));
+  const vivosNoTopo = Math.max(0, ...online().filter((s) => !ehTestador(s.estado)).map((s) => s.estado.level ?? 1));
   // Online = conectados + quem está caçando de aba fechada (ver `ausentes.mjs`).
   // Só o número: as chaves do `/api/status` são as do original (site.test.mjs);
   // quem é quem aparece na página /online, com o selo "caçando offline".
