@@ -8,7 +8,7 @@
 // parte pura em `mapas-grupos.mjs`. Cada cartão tem a caixa do LOOP (quantos usar: todos, ou um número); "Iniciar loop" manda os grupos
 // marcados e o servidor abre um depois do outro a cada mapa concluído (a fila mora no personagem — `systems/itens-poe/mapas-loop.mjs`).
 import { iconeDeBotao } from './world-arte.mjs';
-import { agruparMapas, abasDosMapas, abaValida, gruposDaAba, rotuloDoGrupo, resumoDaSelecao } from './mapas-grupos.mjs';
+import { agruparMapas, abasDosMapas, abaValida, gruposDaAba, rotuloDoGrupo, resumoDaSelecao, ondeDoGrupo } from './mapas-grupos.mjs';
 
 const el = (tag, classe, ...filhos) => {
   const n = document.createElement(tag);
@@ -157,7 +157,7 @@ export function desenharDispositivo(body, { mapas, faixaDaCampanha = null, h }) 
     topo.classList.add('vazio');
     topo.append(el('div', 'mp-info',
       el('span', 'mp-rotulo', 'Nenhum mapa aberto'),
-      el('p', 'mp-nota', `Abra um mapa da mochila ou da bolsa: ele vira uma instância só sua (e da party que seguir você), com ${mapas.portais} portais. Cada morte gasta um; limpar 100% (o chefe junto) conclui o mapa. Offline, a caçada segue até limpar.`)));
+      el('p', 'mp-nota', `Abra um mapa da mochila, da bolsa ou do depósito: ele vira uma instância só sua (e da party que seguir você), com ${mapas.portais} portais. Cada morte gasta um; limpar 100% (o chefe junto) conclui o mapa. Offline, a caçada segue até limpar.`)));
   }
   corpo.append(topo);
 
@@ -211,6 +211,9 @@ export function desenharDispositivo(body, { mapas, faixaDaCampanha = null, h }) 
       cab.append(el('span', `mp-loop-fim${fim.concluiu ? ' ok' : ''}`, el('span', null, fim.motivo), quando, fora));
     }
     lista.append(cab);
+    // (dono, 27/10) O Baú da Conta é de todos os personagens da conta: os mapas de lá não abrem daqui — a linha diz o que fazer.
+    const daConta = Number(mapas.noBauDaConta) || 0;
+    if (daConta > 0) lista.append(el('p', 'mp-nota mp-bau-conta', `${daConta === 1 ? '1 mapa' : `${daConta} mapas`} no Baú da Conta: mova para o seu depósito para usar.`));
     if (!mapas.mapas.length) {
       lista.append(el('p', 'mp-nota', 'Nenhum mapa com você. Eles caem dentro dos mapas (do tier da área ou um acima; o chefe garante um) e do chefe do Ato 10.'));
       return;
@@ -244,7 +247,7 @@ export function desenharDispositivo(body, { mapas, faixaDaCampanha = null, h }) 
     const ic = h.itemCanvas(m.id, 40);
     h.tipFor(ic, m.id, null, null, m.peca);
     fig.append(ic, el('span', 'mp-tier', g.raridade === 'unico' ? 'Ú' : `T${g.tier}`));
-    const onde = g.naBolsa === g.qtd ? ' · na bolsa' : g.naBolsa ? ` · ${g.naBolsa} na bolsa` : '';
+    const onde = ondeDoGrupo(g);
     const cab = el('header', null, fig, el('div', 'mp-info',
       el('h5', `mp-nome r-${g.raridade}`, m.nome),
       el('span', 'mp-linha', `${RARIDADE[g.raridade] ?? g.raridade} · área nível ${g.nivel}${onde}`)));

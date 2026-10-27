@@ -1,11 +1,13 @@
-// O DISPOSITIVO DE MAPAS (o endgame do PoE, dono 10/10 — só no jogo oficial): abre a peça de mapa da mochila (ou da bolsa) numa instância
-// só sua, depois de vencer o chefe do Ato 10. Fica na aba Mapas da tela Campanha e nas Docas de Oriath (a cidade do Ato 10).
+// O DISPOSITIVO DE MAPAS (o endgame do PoE, dono 10/10 — só no jogo oficial): abre a peça de mapa da mochila, da bolsa ou do depósito do
+// personagem (dono 27/10: as caixas numeradas e as Chegadas; o Baú da Conta não — `MapasLoop.fontesDeMapas`) numa instância só sua,
+// depois de vencer o chefe do Ato 10. Fica na aba Mapas da tela Campanha e nas Docas de Oriath (a cidade do Ato 10).
 //
 // Abrir é TUDO OU NADA, no servidor e numa chamada só (síncrona — nenhum outro comando do personagem entra no meio):
 //   1. o dispositivo está liberado (o chefe do `dispositivo.atoQueLibera` vencido, em qualquer dificuldade) e não há outro mapa aberto;
 //   2. a peça é um mapa, está onde a tela disse e é A MESMA que a tela mostrou (`assinatura`: id, base, raridade e mods);
 //   3. a instância nasce (`Cacadas.entrar` com o mapa) — falhou, nada muda e a peça fica onde estava;
-//   4. só então a peça sai da mochila (consumida) e o mapa fica aberto (`estado.mapas.aberto`, com os 6 portais).
+//   4. só então a peça sai de onde estava (consumida; a caixa do depósito acerta a contagem "N/100") e o mapa fica aberto
+//      (`estado.mapas.aberto`, com os 6 portais).
 // Com um mapa aberto não se abre outro (não há consumo em dobro nem dois mapas ao mesmo tempo); volta-se a ele (`voltar`) ou desiste-se
 // dele (`abandonar` — a peça já foi gasta, como no PoE).
 import { ligado } from './itens-poe/catalogo.mjs';
@@ -15,6 +17,7 @@ import * as MapaAberto from './itens-poe/mapa-aberto.mjs';
 import * as MapasLoop from './itens-poe/mapas-loop.mjs';
 import * as Campanha from './campanha.mjs';
 import * as Cacadas from './cacadas.mjs';
+import * as Deposito from './deposito.mjs';
 
 const CFG = () => Mapas.DADOS.dispositivo ?? {};
 /** O ato cujo chefe libera o dispositivo (mapas.json → dispositivo.atoQueLibera; 10). */
@@ -32,7 +35,17 @@ export function motivoFechado(estado) {
   return `O Dispositivo de Mapas abre depois de vencer ${chefe} (Ato ${atoQueLibera()}).`;
 }
 
-const ONDES = ['inventory', 'pouch'];
+/** As fontes de mapas (`MapasLoop.fontesDeMapas`), com o depósito acertado antes (`Deposito.garantir`: a marca das Chegadas e o Baú da Conta fora). */
+function fontes(estado) {
+  if (Array.isArray(estado?.deposito)) Deposito.garantir(estado);
+  return MapasLoop.fontesDeMapas(estado);
+}
+
+/** Quantos mapas há no Baú da Conta (a tela avisa que de lá não abre: mova para o seu depósito). */
+export function mapasNoBauDaConta(estado) {
+  return (estado?.bauDaConta?.itens ?? []).reduce((n, p) => n + (Mapas.ehMapa(p) ? p.count ?? 1 : 0), 0);
+}
+
 /**
  * A ASSINATURA de uma peça de mapa (o que a tela manda de volta para provar que é a mesma peça): o id, a base, a raridade, a qualidade e os
  * textos dos mods. Duas peças iguais em tudo dão a mesma — e aí tanto faz qual sai.
@@ -46,19 +59,23 @@ export function assinatura(peca) {
 }
 
 /**
- * Os mapas que `estado` carrega (mochila e bolsa), para a tela: `[{ onde, indice, assinatura, chave, id, tier, nivel, raridade, nome, peca }]`
- * (`chave`: a dos iguais — a tela junta num cartão "×N" e o loop usa — `MapasLoop.chaveDoMapa`).
+ * Os mapas que `estado` tem (mochila, bolsa e depósito), para a tela: `[{ onde, origem, caixa, indice, assinatura, chave, id, tier, nivel,
+ * raridade, nome, peca }]` (`chave`: a dos iguais — a tela junta num cartão "×N" e o loop usa — `MapasLoop.chaveDoMapa`; `origem`:
+ * 'mochila' | 'bolsa' | 'deposito'; `caixa`: o nome da caixa do depósito). Do tier maior para o menor; no mesmo tier, na ordem em que o
+ * Dispositivo usa (a mochila, a bolsa, o depósito) — o primeiro de cada grupo é o que o "Abrir mapa" abre.
  */
 export function mapasCarregados(estado) {
   const saida = [];
-  for (const onde of ONDES) {
-    (estado?.[onde] ?? []).forEach((peca, indice) => {
+  fontes(estado).forEach(({ onde, origem, lista, caixa }, ordem) => {
+    lista.forEach((peca, indice) => {
       if (!Mapas.ehMapa(peca)) return;
       const tier = Mapas.tierDaPeca(peca);
-      saida.push({ onde, indice, assinatura: assinatura(peca), chave: MapasLoop.chaveDoMapa(peca), id: peca.id, tier, nivel: Mapas.nivelDoTier(tier), raridade: peca.poe.raridade ?? 'normal', nome: peca.poe.nome ?? `Mapa (Nível ${tier})`, peca });
+      saida.push({ onde, origem, ...(caixa ? { caixa: caixa.nome ?? null } : {}), indice, ordem, assinatura: assinatura(peca), chave: MapasLoop.chaveDoMapa(peca), id: peca.id, tier, nivel: Mapas.nivelDoTier(tier), raridade: peca.poe.raridade ?? 'normal', nome: peca.poe.nome ?? `Mapa (Nível ${tier})`, peca });
     });
-  }
-  return saida.sort((a, b) => b.tier - a.tier || a.onde.localeCompare(b.onde) || a.indice - b.indice);
+  });
+  saida.sort((a, b) => b.tier - a.tier || a.ordem - b.ordem || a.indice - b.indice);
+  for (const m of saida) delete m.ordem;
+  return saida;
 }
 
 /**
@@ -70,8 +87,10 @@ export function abrir(estado, { onde = 'inventory', indice, assinatura: aDaTela,
   if (fechado) return { ok: false, erro: fechado };
   const st = MapaAberto.doPersonagem(estado);
   if (st.aberto) return { ok: false, erro: 'Você já tem um mapa aberto: volte a ele ou abandone-o antes de abrir outro.' };
-  if (!ONDES.includes(onde)) return { ok: false, erro: 'Esse mapa não está com você.' };
-  const lista = estado[onde] ?? [];
+  // O `onde` só vale se for uma fonte que EXISTE (a mochila, a bolsa, uma caixa do depósito do personagem): nunca uma caixa inventada.
+  const fonte = typeof onde === 'string' ? fontes(estado).find((f) => f.onde === onde) : null;
+  if (!fonte) return { ok: false, erro: 'Esse mapa não está com você.' };
+  const { lista, caixa } = fonte;
   const i = Number(indice);
   const peca = Number.isInteger(i) && i >= 0 ? lista[i] : null;
   if (!Mapas.ehMapa(peca)) return { ok: false, erro: 'Isso não é um mapa.' };
@@ -80,14 +99,19 @@ export function abrir(estado, { onde = 'inventory', indice, assinatura: aDaTela,
   const huntId = MapasAreas.huntIdDoTier(tier);
   if (!huntId || !Mapas.nivelDoTier(tier)) return { ok: false, erro: `O Mapa (Nível ${tier}) não existe no jogo.` };
   antes?.();
-  // O registro primeiro (a caçada precisa do id), desfeito se a instância não nascer: a peça só sai depois.
-  const aberto = MapaAberto.abrir(estado, peca);
+  // O registro primeiro (a caçada precisa do id), desfeito se a instância não nascer: a peça só sai depois. (Um mapa empilhado — não
+  // deveria haver: a peça do PoE não empilha — gasta UM: o aberto leva uma cópia de uma e a pilha fica com o resto.)
+  const pilha = Number(peca.count) > 1;
+  const aberto = MapaAberto.abrir(estado, pilha ? { ...peca, count: 1 } : peca);
   const r = Cacadas.entrar(estado, { huntId, mode, strategy, mapa: aberto });
   if (!r.ok) {
     st.aberto = null;
     return r;
   }
-  lista.splice(i, 1);
+  if (pilha) peca.count -= 1;
+  else lista.splice(i, 1);
+  // A caixa do depósito: a contagem "N/100" (`tipos`) acompanha a lista, como no `take` do depósito.
+  if (caixa) caixa.tipos = caixa.itens.length;
   return { ok: true, mapa: MapaAberto.abertoParaTela(estado) };
 }
 
@@ -211,6 +235,8 @@ export function paraTela(estado) {
     portais: MapaAberto.portaisPorMapa(),
     aberto: MapaAberto.abertoParaTela(estado),
     mapas: mapasCarregados(estado),
+    // Os do Baú da Conta não abrem (é compartilhado entre os personagens): a tela só diz quantos há lá.
+    noBauDaConta: mapasNoBauDaConta(estado),
     loop: MapasLoop.paraTela(estado),
     estatisticas: { concluidos: st.concluidos, falhos: st.falhos, mortes: st.mortes, maiorTier: st.maiorTier, porTier: st.porTier, ultimo: st.ultimo },
     tiers: Mapas.TIERS,

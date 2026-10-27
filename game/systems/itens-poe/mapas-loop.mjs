@@ -13,13 +13,12 @@
 //   estado.mapas.loopFim = null | { motivo, feitos, concluiu, em }  // por que o último loop parou (a tela mostra)
 //
 // Os GRUPOS são as peças iguais (`chaveDoMapa`: a mesma base/tier, raridade, qualidade, afixos, o único e o estado de corrompido): o loop
-// guarda a chave, não a posição — a peça é procurada de novo na mochila e na bolsa a cada mapa, então a que foi vendida, trocada ou mudou
-// de lugar sai da fila sem quebrar nada. Quem ABRE é o Dispositivo (`mapas-dispositivo.mjs → seguirLoop`), pelo MESMO caminho do botão
+// guarda a chave, não a posição — a peça é procurada de novo na mochila, na bolsa e no depósito a cada mapa, então a que foi vendida,
+// trocada ou mudou de lugar sai da fila sem quebrar nada. Quem ABRE é o Dispositivo (`mapas-dispositivo.mjs → seguirLoop`), pelo MESMO caminho do botão
 // "Abrir mapa"; aqui só a fila (sem caçada, sem sessão).
 import { createHash } from 'node:crypto';
 import * as Mapas from './mapas.mjs';
 
-const ONDES = ['inventory', 'pouch'];
 const RARIDADES = ['normal', 'magico', 'raro', 'unico'];
 
 /**
@@ -38,11 +37,35 @@ export function chaveDoMapa(peca) {
   return `${Mapas.tierDaPeca(peca) ?? 0}:${createHash('sha256').update(texto).digest('base64url').slice(0, 32)}`;
 }
 
-/** As peças do grupo que `estado` carrega agora (mochila primeiro, depois a bolsa): `[{ onde, indice, peca }]`. */
+/**
+ * (dono, 27/10: "é possível utilizar mapas do baú também? hoje só o que está no inventário") ONDE o Dispositivo procura mapas, na ordem em
+ * que usa: a mochila, a bolsa e o DEPÓSITO do personagem — as caixas numeradas (da menor para a maior) e por último as Chegadas. Como no
+ * PoE, o Dispositivo pega do baú direto, sem passar pela mochila. O BAÚ DA CONTA fica de fora: é o mesmo para todos os personagens da conta
+ * (dois personagens abrindo a mesma peça ao mesmo tempo) — nem está em `estado.deposito` (`Deposito.garantir` o tira; ele mora em
+ * `estado.bauDaConta`), e a caixa marcada `compartilhada` é recusada aqui de novo.
+ *
+ * `[{ onde, origem, lista, caixa }]` — `onde`: o que a tela manda de volta ('inventory', 'pouch', 'depot:<índice da caixa>' ou 'chegadas');
+ * `origem`: 'mochila' | 'bolsa' | 'deposito'; `lista`: o array de onde a peça sai; `caixa`: a caixa do depósito (ou null). Só o que EXISTE no
+ * estado vira fonte: um `onde` inventado (uma caixa que não há, a da conta) não acha nada.
+ */
+export function fontesDeMapas(estado) {
+  const fontes = [
+    { onde: 'inventory', origem: 'mochila', lista: estado?.inventory ?? [], caixa: null },
+    { onde: 'pouch', origem: 'bolsa', lista: estado?.pouch ?? [], caixa: null },
+  ];
+  const caixas = (Array.isArray(estado?.deposito) ? estado.deposito : []).filter((c) => c && !c.compartilhada && Number.isInteger(c.indice) && Array.isArray(c.itens));
+  const numeradas = caixas.filter((c) => !c.chegadas).sort((a, b) => a.indice - b.indice);
+  for (const c of numeradas) fontes.push({ onde: `depot:${c.indice}`, origem: 'deposito', lista: c.itens, caixa: c });
+  const chegadas = caixas.find((c) => c.chegadas);
+  if (chegadas) fontes.push({ onde: 'chegadas', origem: 'deposito', lista: chegadas.itens, caixa: chegadas });
+  return fontes;
+}
+
+/** As peças do grupo que `estado` tem agora (a mochila primeiro, depois a bolsa, depois o depósito — `fontesDeMapas`): `[{ onde, indice, peca }]`. */
 export function pecasDoGrupo(estado, chave) {
   const saida = [];
-  for (const onde of ONDES) {
-    (estado?.[onde] ?? []).forEach((peca, indice) => {
+  for (const { onde, lista } of fontesDeMapas(estado)) {
+    lista.forEach((peca, indice) => {
       if (Mapas.ehMapa(peca) && chaveDoMapa(peca) === chave) saida.push({ onde, indice, peca });
     });
   }
