@@ -18,6 +18,7 @@ import { PROPRIAS_R3B, completarEfeito as completarEfeitoR3B } from './gemas-r3b
 // (lote R3C, 27/10: as Bênçãos, a Mina Local, a Blasfêmia Sobrenatural, a Constrição Pérfida, as Instabilidades Cinéticas e o Vínculo Frígido — `gemas-r3c.mjs`)
 import { PROPRIAS_R3C, ajustarEfeitoR3c } from './gemas-r3c.mjs';
 import { PROPRIAS_R3D } from './gemas-r3d.mjs';
+import { PROPRIAS_P4 } from './gemas-p4.mjs';
 
 const ARQ_SUPORTES = new URL('../../gamedata/itens-poe/suportes-poe.json', import.meta.url);
 const ARQ_IDS = new URL('../../gamedata/itens-poe/suportes-poe-ids.json', import.meta.url);
@@ -882,7 +883,8 @@ export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
   // (lote R3A: + as habilidades concedidas pelo Cristal em Queda, pela Fenda, pela Pira e pela Rajada de Vento — `PROPRIAS_R3A`)
   // (lote R3C: + as linhas próprias dos suportes do lote — `gemas-r3c.PROPRIAS_R3C`)
   // (lote R3D, 27/10: + as do Chuva Ardente — a Vingança Flamejante do totem, `GemasR3D.PROPRIAS_R3D`)
-  const proprias = PROPRIAS_A2[slug] ?? PROPRIAS_R3A[slug] ?? PROPRIAS_R3B[slug] ?? PROPRIAS_R3C[slug] ?? PROPRIAS_R3D[slug];
+  // (lote P4, 27/10: + as das Maquinações — o "por fundamental" é por keystone alocada, `GemasP4.PROPRIAS_P4`)
+  const proprias = PROPRIAS_A2[slug] ?? PROPRIAS_R3A[slug] ?? PROPRIAS_R3B[slug] ?? PROPRIAS_R3C[slug] ?? PROPRIAS_R3D[slug] ?? PROPRIAS_P4[slug];
   for (const linha of [...t.props, ...t.mods, ...t.qualidade]) {
     if (proprias) {
       const p = proprias.find(([re]) => re.test(linha));
@@ -967,7 +969,8 @@ const DESCRICAO_NAO_FEITA = {
   // (R3, dono 27/10: as torres viram obstáculo no passo dos monstros enquanto duram — `hunt/monstros.moverMonstros`; a Torre Óssea sai de parcial)
   // (lote D2, dono 27/10) a Tentação Vaal: o dano de 1300/s em você é feito (`SuportesS2A.tentacaoVaalNoUso`); o "em vez de aplicar impedimento de ganho de almas" fica — o jogo
   // não tem o Impedimento de Ganho de Almas (as almas das Vaal são a recarga), então não há o que a Tentação substitua nem ganho de almas para bloquear enquanto ela dura
-  Vaal_Temptation_Support: ['não simulado: o impedimento de ganho de almas que a Tentação substitui (o jogo não tem o Impedimento de Ganho de Almas: as almas das gemas Vaal são a recarga)'],
+  // (lote P4, decisão do dono 27/10: o Impedimento de Ganho de Almas existe para todas as Vaal — `GemasP4.impedirAlmas`; a Tentação o troca pelo dano: sai daqui)
+  // (lote P4: o Devastador fica — o valor da Área perto do totem não está no PoB, no poedb salvo nem nas páginas do Scrapling)
   Earthbreaker_Support: ['não simulado: perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)'],
 };
 

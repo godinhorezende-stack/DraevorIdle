@@ -46,6 +46,8 @@ export function daGema(linhas = []) {
     else if (/Efeitos do Dreno de Vida aplicam Recuperação ao Alvo Vinculado ao invés/i.test(l)) ef.drenoNoAlvo = true;
     else if ((m = /^Buff concede \+(\d+(?:[.,]\d+)?) ?% ao Máximo total de Recuperação de Vida por segundo do Dreno/i.exec(l))) ef.tetoDoDreno = num(m[1]);
     else if (/^Vínculos se quebram se o alvo deixar o alcance/i.test(l)) { /* a regra geral (`tique`) */ }
+    // (lote P4) o Vínculo Intuitivo: o "menos Dano" das magias que os acertos do alvo ativam (`Acoes.intuitivoNoTique`); não é efeito no alvo
+    else if ((m = /^Magias Suportadas causam (\d+(?:[.,]\d+)?) ?% menos Dano$/i.exec(l))) ef.intuitivoMenosPct = num(m[1]);
     else naoFeitas.push(l);
   }
   return { duracaoMs: duracaoMs + extraMs, efeitos: ef, naoFeitas };

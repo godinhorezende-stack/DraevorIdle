@@ -583,6 +583,11 @@ const magiaDoArcanista = (def) => def?.tipo === 'ativa' && !ehArcanista(def) && 
 // 'magoDeBatalha'); as mesmas regras do Arcanista (ativáveis, sem Armadilha, Mina, Totem, as que reservam e as Vaal) e sem as de Canalização
 const ehMagoDeBatalha = (def) => def?.tipo === 'ativa' && def.poe?.slug === 'Battlemages_Cry';
 const magiaDoMagoDeBatalha = (def) => magiaDoArcanista(def) && !def.tags.includes('poe:Canalização');
+// (lote P4, 27/10) o VÍNCULO INTUITIVO (o PoB, act_dex.lua SupportIntuitiveLink): as magias ligadas a ele que podem ser ativadas — sem reserva, Armadilha, Mina, Totem, as
+// Vaal, as de Canalização e as de Ativação embutida — saem quando o aliado vinculado acerta um inimigo (`Acoes.intuitivoNoTique`, 'intuitivo'); recarga 0,5 s
+const ehIntuitivo = (def) => def?.tipo === 'ativa' && def.poe?.slug === 'Intuitive_Link';
+const magiaDoIntuitivo = (def) => magiaDoArcanista(def) && !ehIntuitivo(def) && !def.tags.includes('poe:Canalização');
+export const RECARGA_DO_INTUITIVO_MS = 500;
 const ehRuinaDef = (def) => def?.tipo === 'ativa' && /^Bane(_of_Condemnation)?$/.test(def.poe?.slug ?? '');
 // (lote S1, 26/10) o Toque Maldito (Hextouch): o suporte no grupo faz as maldições que ele suporta saírem nos acertos das outras ativas do grupo
 const ehToqueMaldito = (def) => def?.tipo === 'support' && /^Hextouch_Support$/.test(def.poe?.slug ?? '');
@@ -754,6 +759,10 @@ export function gruposComGatilho(estado) {
       const doMago = mago ? noGrupo.filter((y) => magiaDoMagoDeBatalha(y.def)).map((y) => y.def.acao) : [];
       if (doMago.length) saida.push({ chave: `${slot}:${mago.i}`, nome: mago.def.nome, nivel: mago.g.nivel + bonus, gatilho: { quando: 'magoDeBatalha' }, ataques: [], magias: doMago, magoDeBatalha: mago.def.acao });
       if (doArcanista.length) saida.push({ chave: `${slot}:${arc.i}`, nome: arc.def.nome, nivel: arc.g.nivel + bonus, gatilho: { quando: 'arcanista' }, ataques: [], magias: doArcanista, arcanista: arc.def.acao });
+      // (lote P4) o Vínculo Intuitivo: as magias do grupo saem nos acertos do aliado vinculado
+      const intu = noGrupo.find((y) => ehIntuitivo(y.def));
+      const doIntuitivo = intu ? noGrupo.filter((y) => magiaDoIntuitivo(y.def)).map((y) => y.def.acao) : [];
+      if (doIntuitivo.length) saida.push({ chave: `${slot}:${intu.i}`, nome: intu.def.nome, nivel: intu.g.nivel + bonus, gatilho: { quando: 'intuitivo', recargaMs: RECARGA_DO_INTUITIVO_MS }, ataques: [], magias: doIntuitivo, intuitivo: intu.def.acao });
       // (revisão G — D13) a Ruína: as maldições Feitiço ligadas só saem por ela (`Acoes.maldicoesDaRuina`); o `quando` 'ruina' não é evento de nenhum despachante
       const ruina = noGrupo.find((y) => ehRuinaDef(y.def));
       const daRuina = ruina && !noGrupo.some((y) => ehBlasfemia(y.def)) ? noGrupo.filter((y) => maldicaoDaRuina(y.def, y.g.nivel + bonus + extrasDaGemaPoe(estado, peca, y.def, y.i).nivel)).map((y) => y.def.acao) : [];

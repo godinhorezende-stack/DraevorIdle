@@ -115,6 +115,7 @@ import * as GemasD1 from './itens-poe/gemas-d1.mjs';
 // (lote R3C, 27/10: as Bênçãos, a Mina Local, a Insanidade Perversa, a Constrição Pérfida, o Fluxo Cinético e o Vínculo Frígido)
 import * as GemasR3c from './itens-poe/gemas-r3c.mjs';
 import * as GemasR3D from './itens-poe/gemas-r3d.mjs';
+import * as GemasP4 from './itens-poe/gemas-p4.mjs';
 // (lote S2A, 27/10: os suportes com mecânica nova — o acerto, o uso pago, o abate, o Ímpeto de Combate)
 import * as SuportesS2A from './itens-poe/suportes-s2a-jogo.mjs';
 // (lote S2B, 27/10: os suportes da segunda metade das parciais)
@@ -2192,6 +2193,8 @@ ModsPoe.definirAoEstilhacar((estado, hunt, ficha, rng, ctx = {}) => {
   const chance = ModsPoe.valor(ficha, 'alma_vaal_ao_estilhacar');
   if (!(chance > 0) || !(rng() * 100 < chance)) return;
   const agora = hunt.clock ?? 0;
+  // (lote P4) no Impedimento de Ganho de Almas, a alma não entra
+  if (GemasP4.almasImpedidas(hunt, agora)) return;
   for (const a of estado.actions ?? []) {
     const entry = a?.id ? POR_ID.get(a.id) : null;
     const cd = entry?.poeGema && hunt.cooldowns?.[a.id];
@@ -2231,7 +2234,9 @@ export function tiqueDaPraga(estado, hunt, ms = 250, agora = hunt?.clock ?? 0) {
   const p = (hunt.praga ??= { modo: 'incubando', valor: 0, recargaAte: 0 });
   p.max = GemasPoe.maxDaPraga(gema.nivel) * Math.max(0, 1 + ModsPoe.valor(ficha, 'praga_max') / 100);
   p.valor = Math.min(p.valor, p.max);
-  const perto = (hunt.monstros ?? []).filter((m) => m.hp > 0 && !m.dummy && (m.z ?? hunt.z ?? 0) === (hunt.z ?? 0) && Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) <= GemasPoe.PRAGA.raio);
+  // (lote P4, 27/10: o raio do PoB — radius 25 + o "+X metros de raio" do nível, × √ da Área, ÷ 2 em casas; a fração, a chance de uma casa a mais — `raioDaPragaP4`)
+  const raioDaPraga = raioDaPragaP4(estado, gema.nivel);
+  const perto = (hunt.monstros ?? []).filter((m) => m.hp > 0 && !m.dummy && (m.z ?? hunt.z ?? 0) === (hunt.z ?? 0) && Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) <= raioDaPraga);
   if (p.modo === 'incubando') {
     if (p.valor > 0 && p.valor >= p.max && perto.length && agora >= (p.recargaAte ?? 0)) {
       Object.assign(p, { modo: 'infestando', inicio: p.valor, recargaAte: agora + GemasPoe.PRAGA.recargaMs, porSegundoPct: GemasPoe.PRAGA.porSegundoPct + (gema.qualidade ?? 0) * GemasPoe.PRAGA.qualidadePorPonto });
@@ -4629,6 +4634,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // A habilidade que um ÚNICO ativa ("Ativa X quando…"): só sai pelo evento, como no PoE.
   if (!gatilho && entry.poeGema && Gemas.skillsAtivas(estado).get(entry.id)?.ativadaPorItem) return { ok: false, erro: 'Ativada pelo item.', motivo: 'ATIVADA_POR_GATILHO' };
   // (14/10) O Infestador alterna sozinho, ligado na barra (`tiqueDaPraga`).
+  // (lote P4, 27/10: como o PoE — o uso À MÃO alterna entre Incubando e Infestando, na recarga de 0,5 s — `alternarPragaP4`)
+  if (entry.poeGema?.arquetipo === 'praga' && manual && !gatilho) return alternarPragaP4(estado, hunt, entry);
   if (entry.poeGema?.arquetipo === 'praga') return { ok: false, erro: 'O Infestador alterna sozinho entre Incubando e Infestando.', motivo: 'SOZINHA' };
 
   const agora = hunt.clock ?? 0;
@@ -4712,6 +4719,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (lote R3B, 27/10) o Golpe Sagrado: "Este ataque e lacaios convertem 50% do dano físico em dano elétrico" — a conversão do Físico do ataque (a do Armamento: `lacaios-poe`)
   const convR3B = itensPoeLigado() && entry.poeGema && !entry.poeGema.buff ? GemasR3B.conversaoDoAtaque(entry.poeGema.slug, GemasPoe.textosDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1).linhas) : null;
   if (convR3B?.energy > 0 && efeitoDaGema) efeitoDaGema = { ...efeitoDaGema, 'af:conv_hab_physical_energy': (efeitoDaGema['af:conv_hab_physical_energy'] ?? 0) + convR3B.energy };
+  // (lote P4, 27/10) as MAQUINAÇÕES: o "por fundamental" é por keystone alocada na árvore (o PoB: Multiplier:AllocatedKeystone) — o Físico como Caos adicional e o Custo
+  // aumentado (`GemasP4.comAsFundamentais`)
+  if (itensPoeLigado() && efeitoDaGema && (efeitoDaGema.p4CaosPorFundamentalPct > 0 || efeitoDaGema.p4CustoPorFundamentalPct > 0)) efeitoDaGema = GemasP4.comAsFundamentais(efeitoDaGema, keystonesAlocadasP4(estado));
   // (lote B3, dono 21/10) o que o lote B3 muda no uso (`GemasPoe.b3DaGema`, `itens-poe/gemas-b3.mjs`): a Conflagração, a Cremação da Exumação e a do Vulcão, a Troca de
   // Corpos, a Chuva de Lâminas de Trarthus
   const b3 = itensPoeLigado() && entry.poeGema && !entry.poeGema.buff ? GemasPoe.b3DaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
@@ -5019,7 +5029,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (revisão E1b: + o "não custa Mana" sem tag — a Clareza Vaal, `sem_custo_mana`: o custo ZERO antes de qualquer aumentado, mais ou custo fixo, como o
   // "ManaCost MORE −100, unscalable" do PoB, act_int.lua:2739-2741)
   // (lote D2: + a Mina que reserva o custo — `reservaDaMina` — sai sem custo; + o "Custo de Vida aumentado" da Transfusão, no "aumentado" do custo que sai da Vida)
-  const custoVidaInc = efeitoDaGema?.custoEmVida ? Number(efeitoDaGema.custoVidaIncPct) || 0 : 0;
+  // (lote P4: + o Custo aumentado das Maquinações por keystone — `custoIncPct`, no mesmo "aumentado")
+  const custoVidaInc = (efeitoDaGema?.custoEmVida ? Number(efeitoDaGema.custoVidaIncPct) || 0 : 0) + (Number(efeitoDaGema?.custoIncPct) || 0);
   const custoDeMana = entry.kind === 'item' || gatilho?.semCusto || reserva || reservaDaMina || Vinculos.ehVinculo(entry) || (doCustoPorTag.sem_custo_mana ?? 0) + ModsPoe.valor(fichaDoCusto, 'sem_custo_mana') > 0 ? 0 : Math.max(0, Math.round((custoDaSkill(entry, efeitoDaGema, estado) * (1 + (fichaDoCusto.custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100) * Math.max(0, 1 + (ModsPoe.valor(fichaDoCusto, 'custo_mana_inc') + (doCustoPorTag.custo_mana_inc ?? 0) + custoVidaInc) / 100) * Math.max(0, 1 + ((doCustoPorTag.custo_mana_mais ?? 0) + ModsPoe.valor(fichaDoCusto, 'custo_mana_mais')) / 100) * (gatilho?.custoMult ?? 1)) / Math.max(0.1, 1 + (ModsPoe.valor(fichaDoCusto, 'eficiencia_custo_mana') + (doCustoPorTag.eficiencia_custo_mana ?? 0)) / 100) / Math.max(0.1, 1 + eficaciaDaMina / 100) + ModsPoe.valor(fichaDoCusto, 'custo_mana_fixo') + (doCustoPorTag.custo_mana_fixo ?? 0)));
   // Life Cost (support): o custo sai da VIDA, e não da mana (sem deixar o personagem a menos de 1).
   // Magia Sanguínea (keystone do PoE): as habilidades custam Vida em vez de Mana.
@@ -6109,9 +6120,12 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   if (vidaGastaNoUso > 0) vidaGastaB2(hunt, vidaGastaNoUso, agora);
   //  - (lote S2A, 27/10) o uso pago por você: o adicionado e o atordoamento por Traumatismo do suporte, as Cargas de Inspiração e a Fonte de Vida (`doUsoS2A`)
   // (lote D2, dono 27/10) a Tentação Vaal: o seu uso da Vaal suportada põe em você o degenerativo dela pelo Impedimento de Ganho de Almas da gema
-  if (itensPoeLigado() && efeitoDaGema?.tentacaoVaalPorS > 0 && entry.poeGema && !doTotem && !plantada) {
-    SuportesS2A.tentacaoVaalNoUso(hunt, efeitoDaGema, { vaal: tagsPoeDaSkill(entry).includes('vaal'), impedimentoMs: SuportesS2A.impedimentoDasProps(GemasPoe.textosDaGema(entry.poeGema.slug, efeitoDaGema.nivel ?? 1).props), agora });
+  // (lote P4: pelo tempo do impedimento que ela troca — × a Duração, se a gema tem a linha, `msDoImpedimentoP4`; o golpe do Duplo não é uso seu)
+  if (itensPoeLigado() && efeitoDaGema?.tentacaoVaalPorS > 0 && entry.poeGema && !doTotem && !plantada && !gatilho?.p4Duplo) {
+    SuportesS2A.tentacaoVaalNoUso(hunt, efeitoDaGema, { vaal: tagsPoeDaSkill(entry).includes('vaal'), impedimentoMs: msDoImpedimentoP4(estado, entry, efeitoDaGema), agora });
   }
+  // (lote P4) o Golpe Duplo Vaal: cada golpe do SEU uso convoca um Duplo (`convocarDuplosP4`)
+  if (itensPoeLigado() && entry.poeGema?.slug === GemasP4.DUPLOS.slug && !gatilho && !plantada && !doTotem) eventos.push(...convocarDuplosP4(estado, hunt, entry, efeitoDaGema));
   if (itensPoeLigado() && efeitoDaGema && !doTotem && !plantada) efeitoDaGema = SuportesS2A.doUsoS2A(estado, hunt, efeitoDaGema, { vida: vidaGastaNoUso, mana: manaGastaS2A, fatorDur: fatorDeDuracao(estado, entry, efeitoDaGema), traumas: efeitoDaGema.traumaFisicoMin > 0 || efeitoDaGema.traumaAtordoamentoPct > 0 ? GemasC2.traumasAgora(hunt, agora) : 0, custoDeMana, agora });
   //  - o Descarrego detonou as lâminas do Vórtice
   if (vorticeDoDescarrego) { vorticeDoDescarrego.laminas = []; vorticeDoDescarrego.ate = Math.min(vorticeDoDescarrego.ate, agora); }
@@ -8006,6 +8020,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   const vaalDeGraca = !plantada && recarga > 0 && entry.poeGema && tagsPoeDaSkill(entry).includes('vaal') && Math.random() * 100 < ModsPoe.valor(fichaDaRecarga, 'vaal_almas_de_volta_chance');
   // (lote A1b, dono 19/10: D-a: a recarga pulada com a carga não recomeça)
   if (!plantada && !vaalDeGraca && !continuaCanal && !pulaARecarga) cds[action.id] = { ate: inicio + recarga, total: recarga };
+  // (lote P4, decisão do dono 27/10) o IMPEDIMENTO DE GANHO DE ALMAS: o seu uso de uma Vaal (não o ativado — o Duplo, a plantada) para a recarga de toda Vaal da barra pelo
+  // "Impedimento de Ganho de Almas" da gema (× a Duração, se a gema tem a linha); com a Tentação Vaal, o dano dela vem em vez dele (`impedimentoP4`)
+  if (itensPoeLigado() && entry.poeGema && !gatilho && !plantada && !doTotem && tagsPoeDaSkill(entry).includes('vaal') && !(efeitoDaGema?.tentacaoVaalPorS > 0)) impedimentoP4(estado, hunt, entry, efeitoDaGema, inicio);
   // (14/10, o Coveiro) Profanar e Desenterrar criam os cadáveres deles no alvo (`criarCadaveres`).
   if (entry.poeGema && GemasPoe.cadaveresDaGema(entry.poeGema.slug, 1)) criarCadaveres(estado, hunt, entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, alvo ?? hunt.pos, Math.random, { qualidade: efeitoDaGema?.qualidade ?? 0 });
   // (lote B1, dono 20/10) a Descarga remove as cargas que contou no começo (as removíveis) depois do golpe, salvo a chance da qualidade; as que o golpe deu ficam
@@ -8320,6 +8337,8 @@ export function tiqueDosVinculos(estado, hunt, personagem, eventos = [], agora =
   const { morreu } = Vinculos.tique(estado, hunt, ficha.afPoe, agora);
   // (lote R3C, 27/10) o Vínculo Frígido: o Gelo e o Resfriamento no feixe (`frigidoNosVinculosR3c`)
   frigidoNosVinculosR3c(estado, hunt, eventos, agora);
+  // (lote P4, 27/10) o Vínculo Intuitivo: o acerto do aliado vinculado ativa as suas magias ligadas (`intuitivoNoTique`)
+  intuitivoNoTique(estado, hunt, personagem, eventos);
   if (morreu && (estado.hp ?? 0) > 0) {
     estado.hp = Testador.pisoDaVida(estado); // (o personagem de teste fica no piso; o comum zera, como antes)
     eventos.push({ t: 'say', uid: 'player', quem: personagem?.nome, text: 'O alvo vinculado morreu.', x: hunt.pos?.x, y: hunt.pos?.y, color: '#ff5b4f' });
@@ -8335,6 +8354,116 @@ export function tiqueDosVinculos(estado, hunt, personagem, eventos = [], agora =
     }
   }
   return eventos;
+}
+
+/**
+ * (lote P4, 27/10) o VÍNCULO INTUITIVO (o PoB, SupportIntuitiveLink — "trigger_on_trigger_link_target_hit"): para cada Vínculo Intuitivo seu, o aliado vinculado (um
+ * jogador da party na sala) que ACERTOU um inimigo desde a última olhada (o `poeRecente.acertou` dele) ativa as magias ligadas ao Vínculo (`ativarGatilhos` 'intuitivo'),
+ * no inimigo vivo mais perto dele, com o "X% menos Dano" do nível (o efeito do Vínculo, `intuitivoMenosPct`) e a recarga do gatilho (0,5 s). O último acerto visto fica no
+ * alvo do Vínculo (`a.p4AcertoVisto` — some com o Vínculo).
+ */
+function intuitivoNoTique(estado, hunt, personagem, eventos = []) {
+  for (const lk of hunt?.vinculos ?? []) {
+    if (lk.slug !== GemasP4.INTUITIVO.slug || !(lk.ate > (hunt.clock ?? 0))) continue;
+    for (const a of lk.alvos ?? []) {
+      if (a.tipo !== 'jogador') continue;
+      const quem = Vinculos.resolver(hunt, a);
+      const d = GemasP4.acertoDoVinculado(a.p4AcertoVisto, quem?.hunt?.poeRecente?.acertou);
+      a.p4AcertoVisto = d.visto;
+      if (!d.dispara || !quem?.hunt?.pos) continue;
+      const p = quem.hunt.pos;
+      const z = quem.hunt.z ?? 0;
+      const alvo = (hunt.monstros ?? []).filter((m) => m.hp > 0 && !m.dummy && (m.z ?? z) === z).sort((x, y) => distanciaChebyshev(p, x) - distanciaChebyshev(p, y))[0] ?? null;
+      if (!alvo) continue;
+      const menos = Number(lk.efeitos?.intuitivoMenosPct) || 0;
+      ativarGatilhos(estado, hunt, personagem, 'intuitivo', { alvo, vinculo: lk.acao, maisAcertoPct: -menos, maisAfeccaoPct: -menos }, eventos);
+    }
+  }
+  return eventos;
+}
+
+/** (lote P4) As keystones ALOCADAS na árvore (os nós Keystone — as das peças não contam; o PoB: Multiplier:AllocatedKeystone). */
+const keystonesAlocadasP4 = (estado) => (efeitosDaArvore(estado)?.keystones ?? []).filter((k) => k.no != null).length;
+/** (lote P4) Os ms do Impedimento de Ganho de Almas do uso da Vaal `entry`: o da gema no nível × a Duração da Habilidade, se a gema tem a linha (`GemasP4.msDoImpedimento`). */
+function msDoImpedimentoP4(estado, entry, ef) {
+  const t = GemasPoe.textosDaGema(entry.poeGema.slug, ef?.nivel ?? 1);
+  return GemasP4.msDoImpedimento(SuportesS2A.impedimentoDasProps(t.props), t.linhas, fatorDeDuracao(estado, entry, ef));
+}
+/**
+ * (lote P4, decisão do dono 27/10) O IMPEDIMENTO DE GANHO DE ALMAS do uso da Vaal `entry` (a partir de `inicio`): a recarga de toda habilidade Vaal da barra que ainda
+ * carrega — a recém-usada também — fica parada pelo impedimento (`GemasP4.impedirAlmas`). Devolve os ms acrescentados.
+ */
+function impedimentoP4(estado, hunt, entry, ef, inicio) {
+  const ms = msDoImpedimentoP4(estado, entry, ef);
+  if (!(ms > 0)) return 0;
+  GemasP4.limparImpedimento(hunt, inicio);
+  const vaal = (estado.actions ?? []).filter((a) => a?.id && POR_ID.get(a.id)?.poeGema && tagsPoeDaSkill(POR_ID.get(a.id)).includes('vaal')).map((a) => a.id);
+  return GemasP4.impedirAlmas(hunt, hunt.cooldowns, [...new Set([entry.id, ...vaal])], inicio, ms);
+}
+
+/** (lote P4) O raio do Infestador em casas: o do PoB (2,5 m + o "+X metros de raio" do nível — `GemasP4.raioDoInfestadorM`) × √ da Área, ÷ 2; a fração, a chance. */
+function raioDaPragaP4(estado, nivel, rng = Math.random) {
+  const entry = POR_ID.get(ACAO_DA_PRAGA);
+  const bonus = Number(GemasPoe.compilada('Plague_Bearer', nivel ?? 1)?.stats?.raioBonus) || 0;
+  return raioDoAtivadoR3A(estado, entry, GemasP4.raioDoInfestadorM(bonus), entry ? tagsPoeDaSkill(entry) : ['magia', 'area', 'caos'], {}, rng);
+}
+/** (lote P4) A troca À MÃO do Infestador (`GemasP4.alternarPraga`): Incubando com Valor → Infestando; Infestando → Incubando. */
+function alternarPragaP4(estado, hunt, entry) {
+  const agora = hunt.clock ?? 0;
+  const gema = Gemas.skillsAtivas(estado).get(entry.id);
+  if (!gema) return { ok: false, erro: 'Ponha o Infestador ligado na barra.', motivo: 'SEM_PRAGA' };
+  // (o primeiro uso: ganha o Incubando — o PoE: "Gain an Incubating buff")
+  if (!hunt.praga) {
+    tiqueDaPraga(estado, hunt, 0, agora);
+    if (!hunt.praga) return { ok: false, erro: 'Ponha o Infestador ligado na barra.', motivo: 'SEM_PRAGA' };
+    hunt.poeFichaMudou = true;
+    return { ok: true, eventos: [{ t: 'fx', id: 3, uid: 'player', x: hunt.pos.x, y: hunt.pos.y, sk: entry.id }], praga: 'incubando' };
+  }
+  const p = hunt.praga;
+  const r = GemasP4.alternarPraga(p, agora, { recargaMs: GemasPoe.PRAGA.recargaMs, porSegundoPct: GemasPoe.PRAGA.porSegundoPct + (gema.qualidade ?? 0) * GemasPoe.PRAGA.qualidadePorPonto });
+  if (!r.modo) return { ok: false, erro: r.motivo === 'SEM_VALOR' ? 'Sem Valor da Praga para Infestar.' : 'Ainda recarregando.', motivo: r.motivo };
+  hunt.poeFichaMudou = true;
+  return { ok: true, eventos: r.modo === 'infestando' ? [{ t: 'fx', id: 17, x: hunt.pos.x, y: hunt.pos.y }] : [{ t: 'fx', id: 3, uid: 'player', x: hunt.pos.x, y: hunt.pos.y, sk: entry.id }], praga: r.modo };
+}
+
+/**
+ * (lote P4) Os DUPLOS do Golpe Duplo Vaal: o SEU uso convoca um Duplo por golpe (2) nas casas livres ao seu lado, pela "Duração base" × a Duração da Habilidade, no
+ * máximo do nível (8 — o mais velho sai). O Duplo é um lacaio intocável com o seu desenho que anda com o "Clones possuem X% de aumento da Velocidade de Movimento" e usa
+ * o golpe (`golpeDoDuploP4`, do tique dos lacaios). Devolve os eventos.
+ */
+function convocarDuplosP4(estado, hunt, entry, ef) {
+  if (!hunt?.pos || !ef) return [];
+  const d = GemasP4.duplosDasLinhas(GemasPoe.textosDaGema(entry.poeGema.slug, ef.nivel ?? 1).linhas);
+  const agora = hunt.ultimoTique ?? Date.now();
+  const dur = Math.max(1, Math.round(d.duracaoMs * fatorDeDuracao(estado, entry, ef)));
+  hunt.lacaios ??= [];
+  GemasP4.abrirEspacoDosDuplos(hunt.lacaios, entry.id, d.maximo, GemasP4.DUPLOS.porUso, agora);
+  const af = Ficha.combate(estado).afPoe ?? {};
+  const casas = GemasR3B.casasEmVolta(hunt.pos, 1, ModsPoe.gradeDoCombate(hunt)?.andavel ?? null, ocupadasR3B(hunt));
+  const o = estado.outfit ?? {};
+  const eventos = [];
+  for (let i = 0; i < GemasP4.DUPLOS.porUso; i++) {
+    const c = casas.shift() ?? hunt.pos;
+    const l = lacaioDoGuardian(estado, hunt, agora, af, GemasP4.DUPLOS.nome, 'physical', {
+      p4Duplo: entry.id, intocavel: true, desde: agora, ate: agora + dur, duracaoMs: dur, x: c.x, y: c.y, proximoGolpe: agora, poe: { movimentoPct: d.movimentoPct },
+      ...(o.type ? { look: o.type, lookItem: 0, colors: { head: o.head ?? 0, body: o.body ?? 0, legs: o.legs ?? 0, feet: o.feet ?? 0 } } : {}),
+    });
+    hunt.lacaios.push(l);
+    eventos.push({ t: 'fx', id: 11, uid: l.uid, x: l.x, y: l.y, sk: entry.id });
+  }
+  return eventos;
+}
+/**
+ * (lote P4) O golpe do DUPLO `l` no `alvo` colado: o Golpe Duplo Vaal com a SUA força, do lugar dele (sem custo, sem recarga, sem ser uso de Vaal — `p4Duplo`).
+ * `{ eventos, intervaloMs }` — o intervalo é o seu tempo de ataque com a gema.
+ */
+export function golpeDoDuploP4(estado, hunt, personagem, l, alvo) {
+  const entry = POR_ID.get(l?.p4Duplo);
+  const ef = entry && Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id) : null;
+  if (!ef || !alvo || (estado.hp ?? 0) <= 0 || Protecao.imune(hunt)) return { eventos: [], intervaloMs: 250 };
+  const r = doLugarR3B(hunt, l, entry.id, () => dispararSemMarcar(estado, hunt, personagem, null, alvo, { gatilho: gatilhoR3B(entry.id, { p4Duplo: true }) }));
+  const uso = Number(temposDaGemaPoe(estado, entry, ef).uso) || 1000;
+  return { eventos: r?.ok ? [{ t: 'gatilho', quem: personagem?.nome, suporte: GemasP4.DUPLOS.nome, skill: entry.name }, ...(r.eventos ?? [])] : [], intervaloMs: Math.max(250, Math.round(uso)) };
 }
 
 /**
@@ -9189,7 +9318,7 @@ export function acertoRaroNoGolpe(estado, hunt, personagem, alvo, eventos = []) 
   if (!itensPoeLigado() || !alvo || !GemasC1.raroOuUnico(alvo)) return 0;
   return ativarGatilhos(estado, hunt, personagem, 'acertoRaro', { alvo }, eventos);
 }
-export function ativarGatilhos(estado, hunt, personagem, evento, { acao = null, alvo = null, vezes = 1, maisAcertoPct = 0, maisAfeccaoPct = 0, runa = null, areaMaisPct = 0, vinculadoUid = null, contraVinculadoPct = 0, soChave = null } = {}, eventos = []) {
+export function ativarGatilhos(estado, hunt, personagem, evento, { acao = null, alvo = null, vezes = 1, maisAcertoPct = 0, maisAfeccaoPct = 0, runa = null, areaMaisPct = 0, vinculadoUid = null, contraVinculadoPct = 0, soChave = null, vinculo = null } = {}, eventos = []) {
   const cds = (hunt.cooldowns ??= {});
   const agora = hunt.clock ?? 0;
   let n = 0;
@@ -9203,6 +9332,8 @@ export function ativarGatilhos(estado, hunt, personagem, evento, { acao = null, 
     // com ele LIGADO: a reserva dele.)
     if (acao && !g.feiticeiro && !g.automacao && !g.ataques.includes(acao)) continue;
     if (g.arcanista && g.arcanista !== runa) continue;
+    // (lote P4) o Vínculo Intuitivo: só o grupo do Vínculo que viu o acerto do aliado
+    if (g.intuitivo && g.intuitivo !== vinculo) continue;
     if (g.feiticeiro && !(hunt.buffs?.[g.feiticeiro]?.ate > agora)) continue;
     // (lote A2) a Automação: só com ela ligada (o buff dela)
     if (g.automacao && !(hunt.buffs?.[g.automacao]?.ate > agora)) continue;
@@ -9216,7 +9347,7 @@ export function ativarGatilhos(estado, hunt, personagem, evento, { acao = null, 
       // (as magias do Feiticeiro não custam: o custo delas virou a reserva dele)
       const robos = comRobos(estado);
       // (lote A2: a Automação — o "Multiplicador de Custo: 150%" da gema, no custo da suportada)
-      const disparo = () => dispararSemMarcar(estado, hunt, personagem, null, alvoDaMagia, { gatilho: { acao: { id: magia, enabled: true, minMana: 0, minTargets: 1, conditions: [] }, ...(g.feiticeiro ? { semCusto: true } : {}), ...(g.automacao ? { custoMult: AUTOMACAO.custoMult } : {}), ...(g.atirar || g.arcanista || g.magoDeBatalha ? { maisAcertoPct, maisAfeccaoPct } : {}), ...(g.arcanista && areaMaisPct ? { areaMaisPct } : {}), ...(g.arcanista && vinculadoUid != null && contraVinculadoPct ? { vinculadoUid, contraVinculadoPct } : {}) } });
+      const disparo = () => dispararSemMarcar(estado, hunt, personagem, null, alvoDaMagia, { gatilho: { acao: { id: magia, enabled: true, minMana: 0, minTargets: 1, conditions: [] }, ...(g.feiticeiro ? { semCusto: true } : {}), ...(g.automacao ? { custoMult: AUTOMACAO.custoMult } : {}), ...(g.atirar || g.arcanista || g.magoDeBatalha || g.intuitivo ? { maisAcertoPct, maisAfeccaoPct } : {}), ...(g.arcanista && areaMaisPct ? { areaMaisPct } : {}), ...(g.arcanista && vinculadoUid != null && contraVinculadoPct ? { vinculadoUid, contraVinculadoPct } : {}) } });
       const r = robos ? doLugarDoRobo(hunt, 0, disparo) : disparo();
       if (!r.ok) continue;
       saiu = true;

@@ -2,31 +2,30 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 456,
-   "implementada, sem teste próprio": 44,
-   "limitação do modelo idle": 60,
-   "parcial": 1,
+   "implementada e testada": 460,
+   "implementada, sem teste próprio": 43,
+   "limitação do modelo idle": 58,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 181,
+   "implementada e testada": 182,
    "implementada, sem teste próprio": 18,
-   "limitação do modelo idle": 11
+   "limitação do modelo idle": 10
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 209,
-   "parcial": 3,
+   "implementada e testada": 211,
+   "parcial": 1,
    "implementada, sem teste próprio": 49,
    "não se aplica": 1
   },
   "variantes": {
    "vaal": {
     "total": 52,
-    "implementada e testada": 41,
-    "limitação do modelo idle": 5,
-    "implementada, sem teste próprio": 6
+    "implementada e testada": 43,
+    "limitação do modelo idle": 4,
+    "implementada, sem teste próprio": 5
    },
    "alternativas": {
     "total": 209,
@@ -43,7 +42,7 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 5,
+   "linhasDistintas": 1,
    "emDuasOuMais": 0
   },
   "imagens": {
@@ -58,8 +57,8 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 510,
-   "suportesCitados": 212,
+   "ativasCitadas": 511,
+   "suportesCitados": 213,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
@@ -2328,11 +2327,9 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "limitação do modelo idle",
+   "estado": "implementada e testada",
    "ausentes": [],
-   "idle": [
-    "limitação do idle: os clones do Golpe Duplo Vaal não andam no jogo — o \"Clones possuem X% de aumento da Velocidade de Movimento\" não tem onde valer (D4.4)"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -3642,11 +3639,9 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "praga",
-   "estado": "limitação do modelo idle",
+   "estado": "implementada e testada",
    "ausentes": [],
-   "idle": [
-    "sai sozinha, na barra: Incuba e, no Valor Máximo da Praga com um inimigo a até 2 casas, Infesta até o Valor acabar; o raio da Infestação é de 2 casas (o PoE não publica o raio base)"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -4333,14 +4328,10 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "vinculo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Magias Suportadas causam 44 % menos Dano"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
-   "outros": [
-    "os acertos do alvo vinculado ainda não ativam as suas magias suportadas"
-   ],
+   "outros": [],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -5774,7 +5765,7 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "ricochete",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -8167,10 +8158,8 @@
   {
    "slug": "Vaal_Temptation_Support",
    "nome": "Tentação Vaal (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: o impedimento de ganho de almas que a Tentação substitui (o jogo não tem o Impedimento de Ganho de Almas: as almas das gemas Vaal são a recarga)"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8780,11 +8769,8 @@
   {
    "slug": "Machinations_Support",
    "nome": "Maquinações (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades reforçadas ganham 8% do dano físico como dano de caos adicional por fundamental",
-    "não simulado: Habilidades reforçadas têm o custo aumentado em 10% por fundamental"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9638,30 +9624,6 @@
   }
  ],
  "linhasFaltando": [
-  {
-   "linha": "Habilidades reforçadas ganham #% do dano físico como dano de caos adicional por fundamental",
-   "gemas": [
-    "Machinations_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades reforçadas têm o custo aumentado em #% por fundamental",
-   "gemas": [
-    "Machinations_Support"
-   ]
-  },
-  {
-   "linha": "Magias Suportadas causam # % menos Dano",
-   "gemas": [
-    "Intuitive_Link"
-   ]
-  },
-  {
-   "linha": "o impedimento de ganho de almas que a Tentação substitui (o jogo não tem o Impedimento de Ganho de Almas: as almas das gemas Vaal são a recarga)",
-   "gemas": [
-    "Vaal_Temptation_Support"
-   ]
-  },
   {
    "linha": "perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)",
    "gemas": [

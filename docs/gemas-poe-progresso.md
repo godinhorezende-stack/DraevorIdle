@@ -1395,6 +1395,28 @@ Placar (relatório regerado, sem mudança): ativas — implementada e testada 45
 - Bateria (a de antes + estados, afeccoes-acerto-poe, itens-poe-afeccoes e passivas-poe-afeccoes-nos-monstros): 1055 testes, 1012 passam, 43 pulados, nenhum falha.
 - Placar (relatório regerado, sem mudança): ativas — implementada e testada 456, parcial 1, não se aplica 1; suportes — implementada e testada 209, parcial 3, não se aplica 1.
 
+## P4 — rodada 4 (27/10: "quero resolver")
+
+As 4 parciais e as 2 limitações do idle que não são de lacaio. Módulo novo `game/systems/itens-poe/gemas-p4.mjs` (dados e contas puras). Teste novo `game/testes/gemas-p4.test.mjs` (9 testes, os sorteios travados).
+
+- **Impedimento de Ganho de Almas** (decisão do dono: criar o do PoE para todas as Vaal). No jogo, as almas são a recarga. Então, depois do SEU uso de uma Vaal, a recarga de toda Vaal da barra que ainda carrega fica parada pelo "Impedimento de Ganho de Almas: N Seg" da gema usada. A recém-usada começa a carregar só no fim do impedimento. As 27 gemas com "Modificadores à Duração … também se aplicam à Anulação" usam N × a Duração da Habilidade. Impedimentos sobrepostos não somam: vale até o fim do mais longo. Durante o impedimento, a alma "por Inimigo Estilhaçado" não entra. O estado é um instante só (`hunt.poeAlmasImpedidasAte`).
+- **Tentação Vaal** (sai de parcial): com ela, o uso não impede. Ela dá o dano de 1300/s pelo tempo do impedimento que troca (× a Duração, quando a gema tem a linha).
+- **Vínculo Intuitivo** (o PoB, `SupportIntuitiveLink`): as magias ligadas a ele (ativáveis, sem reserva, sem Armadilha, Mina, Totem, Vaal, Canalização e Ativação embutida) só saem por ele. Quando a aliada vinculada (party, na sala) acerta um inimigo, elas saem de você, no inimigo vivo mais perto dela. Saem com o "X% menos Dano" do nível (44 no nível 1, 38 no 20) e a recarga de 0,5 s. Sem party, não há alvo.
+- **Maquinações**: o "fundamental" do poedb pt é "Keystone". A fonte é a página em inglês do poedb (https://poedb.tw/us/Machinations_Support, uma página baixada pelo Scrapling): "per Keystone". A conta é por keystone ALOCADA na árvore (o PoB: `Multiplier:AllocatedKeystone`; as keystones das peças não contam). Cada uma dá X% do Físico como Caos adicional (6 a 8) e +10% de Custo aumentado.
+- **Infestador** (sai da limitação): o raio é o do PoB, radius 25 (2,5 m), + o "+0,3 metros de raio" do nível 20, × √ da Área ÷ 2. Isso dá 1,4 casa: 1 casa, ou 2 com 40% de chance. O uso à mão alterna entre Incubando e Infestando (recarga de 0,5 s; o primeiro uso dá o Incubando). Ligado na barra, ele segue alternando sozinho como antes.
+- **Duplos do Golpe Duplo Vaal** (sai da limitação). A conferência achou que os clones NÃO existiam no jogo, não só que "não andavam". Agora cada golpe do seu uso convoca um Duplo (2 por uso), por 6 s × a Duração, no máximo 8 (o mais velho sai). O Duplo é um lacaio intocável com o seu visual. Ele anda até o inimigo com o "+57% de Velocidade de Movimento" (a chance do passo a mais) e, colado, usa o Golpe Duplo Vaal com a sua força, do lugar dele e no seu tempo de ataque. Esse golpe não custa, não tem recarga e não conta como uso de Vaal.
+- **Devastador** (segue parcial): o valor de `ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills` não está no PoB (só o statMap, `other.lua:1489`), no poedb salvo, nas páginas do Scrapling (pt) nem no Drive. Não inventei o número.
+
+Placar: antes, ativas 562 · testada 456 · sem teste 44 · limitação 60 · parcial 1 · não se aplica 1, e suportes 262 · testada 209 · sem teste 49 · parcial 3 · não se aplica 1. Depois, ativas · testada 460 · sem teste 43 · limitação 58 · parcial 0 · não se aplica 1, e suportes · testada 211 · sem teste 49 · parcial 1 (Devastador) · não se aplica 1.
+
+Testes que mudam pela regra nova (não mexi; esperam o aval do dono):
+- vinculos-poe:95: Intuitivo 'parcial' → 'funciona'.
+- suportes-d2:78: Tentação Vaal 'parcial' → 'funciona'.
+- ativas-c4:95-96: o motivo D4.4 do Golpe Duplo Vaal saiu (os Duplos existem).
+- arvore-principal-poe:131: Infestador 'parcial' → 'funciona'. Nas linhas 162 e 166, o bicho a 2 casas agora só entra na chance de 40% (2,8 m ÷ 2 = 1,4 casa). Sem o sorteio travado, essas duas linhas ficam ao acaso.
+- zerar-arvore-lote51:90: a alma do Estilhaçado logo depois do uso cai dentro do impedimento e não entra (esperado 109800 → 110000).
+- gemas-todas-funcionam-poe (G16): o Infestador virou 'funciona', mas o uso dele não causa dano na hora. O dano vem do Valor acumulado pelos Venenos, no tique. A montagem do G16 não roda o tique.
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.

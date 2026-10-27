@@ -1836,7 +1836,9 @@ function avaliarNoJogo(h, formato) {
   const daQualidade = new Set(linhasDaQualidadeDe(h.slug, q).map(norm));
   if (SEM_NO_JOGO[h.arquetipo]) return { status: 'nao', motivos: [SEM_NO_JOGO[h.arquetipo]] };
   // (14/10) O Infestador sai sozinho (o jogo usa as habilidades sozinho); o Feiticeiro liga reservando e ativa as magias ligadas.
-  if (h.arquetipo === 'praga') return { status: 'parcial', motivos: ['sai sozinha, na barra: Incuba e, no Valor Máximo da Praga com um inimigo a até 2 casas, Infesta até o Valor acabar; o raio da Infestação é de 2 casas (o PoE não publica o raio base)'] };
+  // (lote P4, 27/10) como o PoE: à mão, alterna entre Incubando e Infestando; o raio é o do PoB (radius 25 + o do nível, × √ da Área — `GemasP4.raioDoInfestadorM`);
+  // ligada na barra, segue alternando sozinha (o automático do jogo)
+  if (h.arquetipo === 'praga') return { status: 'funciona', motivos: [] };
   if (h.arquetipo === 'feiticeiro') return { status: 'funciona', motivos: [] };
   // (lote 74 — dono, 17/10: "Implementar a gema") a Convocar Runas: traz as suas Runas, Ativa as vinculadas pagando 20% do custo de cada uma e dá o
   // Alcance de Vínculo da gema até se vincularem de novo (`acoes.convocarRunas`).
@@ -1867,7 +1869,7 @@ function avaliarNoJogo(h, formato) {
   if (h.arquetipo === 'vinculo') {
     const d = Vinculos.daGema([...textosDaGema(h.slug, 1).linhas, ...linhasDaQualidadeDe(h.slug, q)]);
     for (const l of d.naoFeitas) motivos.push(`efeito não simulado: ${l}`);
-    if ((h.tags ?? []).includes('Ativação')) motivos.push('os acertos do alvo vinculado ainda não ativam as suas magias suportadas');
+    // (lote P4, 27/10) o Vínculo Intuitivo: os acertos do alvo vinculado ativam as magias ligadas a ele (`Gemas.gruposComGatilho` 'intuitivo', `Acoes.intuitivoNoTique`)
     return { status: motivos.length ? 'parcial' : 'funciona', motivos };
   }
   if (BUFF.has(h.arquetipo)) {

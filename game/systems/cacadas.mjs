@@ -3124,6 +3124,19 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     // (lote 87, dono 19/10: B2) o lacaio ATORDOADO, CONGELADO ou na trava do bloqueio não anda nem ataca (`LacaiosPoe.lacaioPreso`, o relógio da
     // caçada); o totem fica fora (o ramo de cima)
     if (itensPoeLigado() && LacaiosPoe.lacaioPreso(l, relogio)) continue;
+    // (lote P4, 27/10) os DUPLOS do Golpe Duplo Vaal: andam até o inimigo (o passo do lacaio, com o "aumento da Velocidade de Movimento" deles) e, colados, usam o golpe com
+    // a sua força, do lugar deles, no tempo do seu ataque (`Acoes.golpeDoDuploP4`)
+    if (l.p4Duplo) {
+      const alvo = Protecao.imune(hunt) ? null : alvoDoFamiliar(hunt, l, agora);
+      if (!alvo) { andarFamiliar(hunt, grade, l, agora); continue; }
+      if (distancia(l, alvo) > 1) { passoDoFamiliar(hunt, grade, l, agora, alvo, { pararEm: (d) => d <= 1, longe: 4 }); continue; }
+      if (!R.jaPode(agora, l.proximoGolpe)) continue;
+      const g = Acoes.golpeDoDuploP4(estado, hunt, personagem, l, alvo);
+      l.proximoGolpe = agora + g.intervaloMs;
+      l.dir = alvo.y < l.y ? 0 : alvo.y > l.y ? 2 : alvo.x > l.x ? 1 : 3;
+      eventos.push(...g.eventos);
+      continue;
+    }
     // (lote 44, P066) os Robôs Ativadores "seguem você e correm até os inimigos" (o PoE): até o alvo do familiar, na folga do combate — as suas
     // Magias Ativadas saem do lugar deles (`Acoes.doLugarDoRobo`).
     if (l.robo && !Protecao.imune(hunt)) {
