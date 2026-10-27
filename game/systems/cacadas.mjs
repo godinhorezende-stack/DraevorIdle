@@ -2895,7 +2895,9 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       if (q?.porInimigo > 0 && !Protecao.imune(hunt)) {
         for (const b of hunt.monstros) {
           if (!(b.hp > 0) || b.dummy || (b.z ?? hunt.z ?? 0) !== (l.z ?? hunt.z ?? 0) || distancia(b, l) > q.raio) continue;
-          const v = Math.round(resistido(hunt, b, 'fire', q.porInimigo, ficha));
+          // (correções F3: é dano contínuo do lacaio — sem a sua ficha: a sua penetração e os seus "mais" não valem nele, e penetração só vale em acerto; o que o
+          // bicho sofre a mais pelos estados dele, como o dano contínuo — `fatorRecebidoNoDot`)
+          const v = Math.round(resistido(hunt, b, 'fire', q.porInimigo * ModsPoe.fatorRecebidoNoDot(b, 'fire', hunt.clock ?? 0), null));
           if (!(v > 0)) continue;
           b.hp -= v;
           QuemFeriu.carimbar(b, QuemFeriu.LACAIO);
@@ -3113,7 +3115,7 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       // O CRÍTICO do lacaio (a gema: "sempre crítico", "+X% de multiplicador"; a Oferenda de Espírito; ciclo 7: os da árvore).
       // (lote 86: + o crítico do escudo da Égide "se (não) Bloqueou Recentemente" — pelo relógio da caçada)
       // (lote S2B: + o Exemplar, a Fúria Desperta e o "mais" da Adrenalina, do Frenesi Faminto e do Escudo de Carne — `SuportesS2B.noGolpeDoLacaio`)
-      const doLote = SuportesS2B.noGolpeDoLacaio(hunt, l, b, relogio);
+      const doLote = SuportesS2B.noGolpeDoLacaio(hunt, l, b, relogio, { incExtra: aliado?.danoIncPct ?? 0 });
       const critico0 = SuportesS2B.comCriticoDoLote(l, LacaiosPoe.criticoDoLacaio(l, oferenda, hunt.clock ?? agora), doLote);
       // (o Vínculo Destrutivo no lacaio: "+X% de Multiplicador" e a chance de crítico igual à sua)
       const critico = vinculo ? { chance: vinculo.critPct > 0 ? vinculo.critPct : critico0.chance, mult: critico0.mult + vinculo.critMult / 100 } : critico0;
@@ -3276,7 +3278,8 @@ function magiasDoEspectro(hunt, l, agora, ficha, estado = null, oferenda = null)
     // (ciclo 7: "Lacaios têm Recuperação da Recarga aumentada" encurta o intervalo das magias do espectro)
     l.proximoPoder[i] = agora + LacaiosPoe.recargaDoLacaio(l, a.intervalo);
     if (Math.random() * 100 >= (a.chance ?? 100)) return;
-    const alvo = vivos.filter((m) => Poderes.alcanca(a, l, m)).sort((x, y) => distancia(l, x) - distancia(l, y))[0];
+    // (correções F3: o Escudo de Carne e o Predador também na escolha do alvo da magia — `SuportesS2B.alvoDoLacaio`)
+    const alvo = SuportesS2B.alvoDoLacaio(hunt, l, vivos.filter((m) => Poderes.alcanca(a, l, m)).sort((x, y) => distancia(l, x) - distancia(l, y)), hunt.clock ?? agora);
     if (!alvo) return;
     const tipo = ELEMENTO_DO_MONSTRO[a.elemento] === undefined ? a.elemento : ELEMENTO_DO_MONSTRO[a.elemento];
     if (!tipo) return;
@@ -3293,7 +3296,9 @@ function magiasDoEspectro(hunt, l, agora, ficha, estado = null, oferenda = null)
       // (revisão F1: + a Oferenda Espiritual e o crítico dos suportes S2B — `comCriticoDoLote` —, como no golpe corpo a corpo)
       const critico = SuportesS2B.comCriticoDoLote(l, LacaiosPoe.criticoDoLacaio(l, oferenda, hunt.clock ?? agora), SuportesS2B.noGolpeDoLacaio(hunt, l, m, hunt.clock ?? agora));
       const crit = Math.random() * 100 < critico.chance;
-      const bruto = ((Math.min(a.min, a.max) + Math.random() * Math.abs(a.max - a.min)) * l.espectro.fator * pct * LacaiosPoe.fatorDoCeifador(l, hunt.lacaios) * (crit ? critico.mult : 1)) / 100;
+      // (correções F3: + o "mais" do lote — a Presa do Predador, o Escudo de Carne perto de você, a Adrenalina, o Frenesi Faminto —, como no golpe)
+      const doLote = SuportesS2B.noGolpeDoLacaio(hunt, l, m, hunt.clock ?? agora);
+      const bruto = ((Math.min(a.min, a.max) + Math.random() * Math.abs(a.max - a.min)) * l.espectro.fator * pct * LacaiosPoe.fatorDoCeifador(l, hunt.lacaios) * (crit ? critico.mult : 1) * doLote.fator) / 100;
       const d = Math.max(1, Math.round(resistido(hunt, m, tipo, bruto, ficha)));
       m.hp -= d;
       QuemFeriu.carimbar(m, QuemFeriu.LACAIO); // (o espectro)
@@ -3339,8 +3344,9 @@ function habilidadesComRecarga(estado, hunt, l, agora, ficha, oferenda = null) {
     while (h.carga < (h.usos ?? 1) && h.prontoEm != null && agora >= h.prontoEm) { h.carga++; h.prontoEm = h.carga < (h.usos ?? 1) ? h.prontoEm + LacaiosPoe.recargaDoLacaio(l, h.recargaMs) : null; }
     if (h.carga <= 0) continue;
     const perto = vivos.filter((m) => distancia(l, m) <= (h.alcance ?? 5)).sort((a, b) => distancia(l, a) - distancia(l, b));
-    if (!perto.length) continue;
-    const alvo = perto[0];
+    // (correções F3: o Escudo de Carne e o Predador também aqui — `SuportesS2B.alvoDoLacaio`; a Ira, sem alvo, sai com qualquer inimigo ao alcance)
+    const alvo = h.tipo === 'aura' ? perto[0] : SuportesS2B.alvoDoLacaio(hunt, l, perto, relogio);
+    if (!alvo) continue;
     h.carga--;
     if (h.prontoEm == null) h.prontoEm = agora + LacaiosPoe.recargaDoLacaio(l, h.recargaMs);
     const critico = LacaiosPoe.criticoDoLacaio(l, oferenda, relogio);
@@ -3358,7 +3364,7 @@ function habilidadesComRecarga(estado, hunt, l, agora, ficha, oferenda = null) {
     if (h.tipo === 'magia') {
       const chance = (h.crit ?? 5) * (1 + (l.poe?.critInc ?? 0) / 100);
       const crit = Math.random() * 100 < chance;
-      const bruto = (h.dano[0] + Math.random() * Math.max(0, h.dano[1] - h.dano[0])) * (l.poe?.fatorDoDano ?? 1) * (crit ? critico.mult : 1) * LacaiosPoe.fatorDoCeifador(l, hunt.lacaios);
+      const bruto = (h.dano[0] + Math.random() * Math.max(0, h.dano[1] - h.dano[0])) * (l.poe?.fatorDoDano ?? 1) * (crit ? critico.mult : 1) * LacaiosPoe.fatorDoCeifador(l, hunt.lacaios) * SuportesS2B.noGolpeDoLacaio(hunt, l, alvo, relogio).fator;
       const d = Math.max(1, Math.round(resistido(hunt, alvo, h.elemento ?? 'energy', bruto, ficha)));
       alvo.hp -= d;
       QuemFeriu.carimbar(alvo, QuemFeriu.LACAIO);
@@ -3370,12 +3376,13 @@ function habilidadesComRecarga(estado, hunt, l, agora, ficha, oferenda = null) {
     const tipo = l.elemento ?? 'physical';
     const crit = Math.random() * 100 < critico.chance;
     const doGolpe = LacaiosPoe.golpeDoLacaio(l, alvo, ficha, tipo, agora, Math.random, hunt.lacaios, relogio);
-    const bruto = (l.dano.min + Math.random() * Math.max(0, l.dano.max - l.dano.min)) * (h.mult ?? 1) * (crit ? critico.mult : 1) * doGolpe.fator;
+    const bruto0 = (l.dano.min + Math.random() * Math.max(0, l.dano.max - l.dano.min)) * (h.mult ?? 1) * (crit ? critico.mult : 1) * doGolpe.fator;
     const raio = LacaiosPoe.raioDaAreaDoLacaio(l);
     eventos.push({ t: 'explosao', id: 1, x: alvo.x, y: alvo.y, lado: 1 + 2 * raio });
     for (const m of vivos) {
       if (m.hp <= 0 || distancia(m, alvo) > raio) continue;
-      const d = Math.max(1, Math.round(resistido(hunt, m, tipo, bruto, doGolpe.ficha)));
+      // (correções F3: + o "mais" do lote em cada atingido — a Presa, o perto de você —, como no golpe)
+      const d = Math.max(1, Math.round(resistido(hunt, m, tipo, bruto0 * SuportesS2B.noGolpeDoLacaio(hunt, l, m, relogio).fator, doGolpe.ficha)));
       m.hp -= d;
       QuemFeriu.carimbar(m, QuemFeriu.LACAIO);
       eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: d, foe: true, lacaio: true, alvo: m.name, habilidade: h.id, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });

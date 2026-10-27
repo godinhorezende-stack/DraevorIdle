@@ -227,7 +227,7 @@ export function queimaDaLegiao(l, ms, resFogo = 0) {
   const g = l?.poe?.s2b?.legiao;
   if (!g || !(l.hp > 0)) return null;
   const s = ms / 1000;
-  const porInimigo = g.dps > 0 ? g.dps * Math.max(0, num(l.poe.fatorDoDano) || 1) * Math.max(0, 1 + num(l.poe.dotMulti) / 100) * s : 0;
+  const porInimigo = g.dps > 0 ? g.dps * Math.max(0, num(l.poe.fatorDoFogo ?? l.poe.fatorDoDano) || 1) * Math.max(0, 1 + num(l.poe.dotMulti) / 100) * s : 0;
   const noLacaio = g.degenPct > 0 ? ((num(l.maxHp) * g.degenPct) / 100) * s * Math.max(0, 1 - Math.min(100, num(resFogo)) / 100) : 0;
   return { porInimigo, raio: l.s2bLegiaoRaio ?? Math.max(1, Math.round(g.raioM / 2)), noLacaio };
 }
@@ -290,9 +290,11 @@ export const CASAS_PERTO_DE_VOCE = 3;
  * lacaio — `poe.danoIncPct`), o Frenesi Faminto (10% mais), o Escudo de Carne ("30% mais Dano com Acertos e Afecções aos Inimigos Próximos a você"), o Exemplar (o crítico
  * por crítico de ataque seu recente, com os tetos) e a Fúria Desperta (o crítico e o multiplicador de base).
  */
-export function noGolpeDoLacaio(hunt, l, alvo, agora = hunt?.clock ?? 0) {
+export function noGolpeDoLacaio(hunt, l, alvo, agora = hunt?.clock ?? 0, { incExtra = 0 } = {}) {
   const s = l?.poe?.s2b;
-  const inc = num(l?.poe?.danoIncPct);
+  // (correções F3: `incExtra` — o aumentado que já entrou por fora, o das suas auras de aliado: os aumentados SOMAM numa conta só, então a Adrenalina normaliza sobre
+  // a base com ele; antes, cada um sobre a mesma base, e o produto dava 1,5 × 2 = 3 em vez de 1 + 0,5 + 1 = 2,5)
+  const inc = num(l?.poe?.danoIncPct) + num(incExtra);
   let fator = 1;
   if (adrenalinaDoLacaio(l, agora)) fator *= (1 + (inc + ADRENALINA.danoIncPct) / 100) / Math.max(0.01, 1 + inc / 100);
   if (l?.tipo !== 'totem' && frenesiFamintoAtivo(hunt, agora)) fator *= 1 + FRENESI_FAMINTO.maisDanoPct / 100;
@@ -309,6 +311,17 @@ export function noGolpeDoLacaio(hunt, l, alvo, agora = hunt?.clock ?? 0) {
   }
   if (s?.carneFresca && adrenalinaDoLacaio(l, agora)) { critBase += s.carneFresca.crit; critMult += s.carneFresca.mult; }
   return { fator, critInc, critBase, critMult };
+}
+/**
+ * (correções F3) O ALVO de quem o lacaio escolhe sozinho (as magias do espectro, as habilidades com recarga): dos `candidatos` (em ordem de preferência), o Escudo de Carne
+ * ("Defensivos") deixa só os a até 3 casas de VOCÊ e o Predador ("sempre focam em Presas se possível") pega a Presa se ela está entre eles — como `alvoDoFamiliar`. Ou null.
+ */
+export function alvoDoLacaio(hunt, l, candidatos, agora = hunt?.clock ?? 0) {
+  const s = l?.poe?.s2b;
+  let c = candidatos ?? [];
+  if (s?.defensivo && hunt?.pos) c = c.filter((b) => Math.max(Math.abs(b.x - hunt.pos.x), Math.abs(b.y - hunt.pos.y)) <= CASAS_PERTO_DE_VOCE);
+  if (s?.predador?.foca) { const presa = presaDe(hunt, agora); if (presa && c.includes(presa)) return presa; }
+  return c[0] ?? null;
 }
 /** O crítico do lacaio com os do lote (`c`: o de `LacaiosPoe.criticoDoLacaio`; `x`: o de `noGolpeDoLacaio`). */
 export function comCriticoDoLote(l, c, x) {
@@ -363,9 +376,12 @@ export function regrasDoFeitico(ef) {
   if (ef.feiticoAfetaAProvaPct > 0) o.afetaAProvaPct = ef.feiticoAfetaAProvaPct;
   if (ef.amaldicoadoSemCritico > 0) o.semCritico = true;
   if (ef.feiticoTransfereM > 0) o.transfereCasas = (ef.feiticoTransfereM * (1 + num(ef.feiticoTransfereIncPct) / 100)) / 2;
-  if (ef.doomBlast > 0) o.doom = true;
+  // (correções F3) a Destruição Iminente e o Solo Maldito não suportam a maldição aplicada como AURA (a Blasfêmia) — o PoB: SupportImpendingDoom e SupportCursedGround,
+  // `excludeSkillTypes` Aura ("Cannot support curse skills which are … applied as an aura", "Supports non-aura hex curse skills")
+  const emAura = num(ef.maldicaoEmAura) > 0;
+  if (ef.doomBlast > 0 && !emAura) o.doom = true;
   // (lote D3, dono 27/10) o Solo Maldito / o Sapo Enfeitiçado: o Feitiço não pega no acerto — só no solo (`criarSoloMaldito`)
-  if (ef.soloMalditoMs > 0) o.soloMaldito = true;
+  if (ef.soloMalditoMs > 0 && !emAura) o.soloMaldito = true;
   return Object.keys(o).length ? o : null;
 }
 /** O monstro tem um Feitiço seu com "não podem causar golpes críticos" ativo? */
@@ -401,7 +417,7 @@ export function transferirFeiticos(hunt, morto, agora = hunt?.clock ?? 0, rng = 
  * o tique (`hunt.poeS2B.doomPendentes`), uma vez só.
  */
 export function antesDeApagar(hunt, bicho, id, m, agora) {
-  if (!hunt || !m?.s2b?.doom || m.doomFeito || !(m.ate <= agora) || !(bicho?.hp > 0)) return;
+  if (!hunt || !m?.s2b?.doom || m.aura || m.doomFeito || !(m.ate <= agora) || !(bicho?.hp > 0)) return;
   m.doomFeito = true;
   const s = est(hunt);
   s.doomPendentes = [...(s.doomPendentes ?? []), { id, uid: bicho.uid, x: bicho.x, y: bicho.y, z: bicho.z ?? hunt.z ?? 0, ate: m.ate }].slice(-30);
@@ -414,7 +430,7 @@ export function feiticosQueTerminaram(hunt, agora = hunt?.clock ?? 0) {
   const saida = [];
   for (const b of hunt?.monstros ?? []) {
     if (!(b?.hp > 0) || b.dummy || !b.maldicoes) continue;
-    for (const [id, m] of Object.entries(b.maldicoes)) if (m?.s2b?.doom && !m.doomFeito && m.ate <= agora) { m.doomFeito = true; saida.push({ bicho: b, id }); }
+    for (const [id, m] of Object.entries(b.maldicoes)) if (m?.s2b?.doom && !m.aura && !m.doomFeito && m.ate <= agora) { m.doomFeito = true; saida.push({ bicho: b, id }); }
   }
   const s = hunt?.poeS2B;
   if (s?.doomPendentes?.length) {
@@ -432,7 +448,7 @@ export function feiticosNaMorte(hunt, morto, agora = hunt?.clock ?? 0) {
   if (!hunt || !morto?.maldicoes) return 0;
   let n = 0;
   for (const [id, m] of Object.entries(morto.maldicoes)) {
-    if (!m?.s2b?.doom || m.doomFeito || m.marca || !(m.ate > agora)) continue;
+    if (!m?.s2b?.doom || m.doomFeito || m.marca || m.aura || !(m.ate > agora)) continue;
     m.doomFeito = true;
     const s = est(hunt);
     s.doomPendentes = [...(s.doomPendentes ?? []), { id, uid: morto.uid, x: morto.x, y: morto.y, z: morto.z ?? hunt.z ?? 0, ate: agora, morto: true }].slice(-30);

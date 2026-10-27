@@ -17,9 +17,9 @@
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 184,
+   "implementada e testada": 186,
    "parcial": 27,
-   "implementada, sem teste próprio": 51
+   "implementada, sem teste próprio": 49
   },
   "variantes": {
    "vaal": {
@@ -60,7 +60,7 @@
   },
   "testes": {
    "ativasCitadas": 505,
-   "suportesCitados": 192,
+   "suportesCitados": 194,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
@@ -7736,7 +7736,7 @@
   {
    "slug": "Elemental_Damage_with_Attacks_Support",
    "nome": "Dano Elemental com Ataques",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -7974,7 +7974,7 @@
   {
    "slug": "Brutality_Support",
    "nome": "Brutalidade",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true

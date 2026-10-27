@@ -125,12 +125,17 @@ function morrerOsMortos(estado, personagem, eventos, lista) {
     }
     // (revisão das gemas PR4: as flechas da Flecha Explosiva e a Concha esgotada explodem na morte — os restos ficam na sala para o tique)
     if (m.poeFusiveis || m.poeConchas) Acoes.guardarRestosPR4(hunt, m);
-    // (lote S2B, 27/10) o Propagar Feitiço: os Feitiços suportados do morto passam aos vivos a até o raio (`SuportesS2B.transferirFeiticos`)
-    if (m.maldicoes) for (const b of SuportesS2B.transferirFeiticos(hunt, m, hunt.clock ?? 0)) eventos.push({ t: 'estado', uid: b.uid, x: b.x, y: b.y, estado: 'amaldicoado' });
-    // (lote D3, dono 27/10) a Destruição Iminente também na MORTE do amaldiçoado com o Feitiço nele (a Explosão Destruidora no lugar dele, no tique)
-    if (m.maldicoes) SuportesS2B.feiticosNaMorte(hunt, m, hunt.clock ?? 0);
+    feiticosDoMorto(hunt, m, eventos);
     matarMonstro(estado, hunt, personagem, m, eventos);
   }
+}
+/** Os Feitiços do morto (antes do `matarMonstro`, que o tira da sala): o Propagar Feitiço e a Destruição Iminente. (correções F3: também no golpe básico.) */
+function feiticosDoMorto(hunt, m, eventos) {
+  if (!m?.maldicoes) return;
+  // (lote S2B, 27/10) o Propagar Feitiço: os Feitiços suportados do morto passam aos vivos a até o raio (`SuportesS2B.transferirFeiticos`)
+  for (const b of SuportesS2B.transferirFeiticos(hunt, m, hunt.clock ?? 0)) eventos.push({ t: 'estado', uid: b.uid, x: b.x, y: b.y, estado: 'amaldicoado' });
+  // (lote D3, dono 27/10) a Destruição Iminente também na MORTE do amaldiçoado com o Feitiço nele (a Explosão Destruidora no lugar dele, no tique)
+  SuportesS2B.feiticosNaMorte(hunt, m, hunt.clock ?? 0);
 }
 
 /** Soma real do `armor` de cada peça vestida (ver `item-catalog.json` — o `defense` do escudo é outra conta, ainda não ligada). */
@@ -1799,7 +1804,8 @@ export function round(estado, personagem) {
       alvo.hp = alvo.maxHp; // o boneco não morre
       Treino.treinar(estado, 'shielding'); // no pátio o escudo sobe junto (a faixa do HUD)
     }
-    else if (alvo.hp <= 0) matarMonstro(estado, hunt, personagem, alvo, eventos);
+    // (correções F3: o morto pelo golpe básico também passa os Feitiços — o Propagar Feitiço e a Destruição Iminente — antes de sair da sala)
+    else if (alvo.hp <= 0) { feiticosDoMorto(hunt, alvo, eventos); matarMonstro(estado, hunt, personagem, alvo, eventos); }
     // Quem caiu com o dano extra da árvore (Chuva de flechas, Flecha que atravessa).
     processarMortes(estado, personagem, eventos);
   }

@@ -1107,13 +1107,14 @@ const tagsDoArauto = (entry, extra = []) => [...new Set([...tagsPoeDaSkill(entry
  * Um ACERTO do Arauto `id` no bicho `m`: `bruto` (o dano no nível, antes dos aumentos) do `elemento`. `semEletrizar`: a tempestade "Não Pode
  * aplicar Eletrizar". Devolve o dano dado.
  */
-export function acertoDoArauto(estado, hunt, id, m, bruto, elemento, { tags = null, eventos = [], rng = Math.random, semEletrizar = false, fonte = null, personagem = null, critBase = 0, afeccoesExtra = null, ataque = false, adicionado = null, adicionadoMagia = null, conversaoFisico = null, soElemento = null, maisPct = 0 } = {}) {
+export function acertoDoArauto(estado, hunt, id, m, bruto, elemento, { tags = null, eventos = [], rng = Math.random, semEletrizar = false, fonte = null, personagem = null, critBase = 0, afeccoesExtra = null, ataque = false, adicionado = null, adicionadoMagia = null, conversaoFisico = null, soElemento = null, maisPct = 0, efetivo = null } = {}) {
   const entry = POR_ID.get(id);
   if (!entry || !m || !(m.hp > 0) || m.dummy || !(bruto > 0)) return 0;
   const agora = hunt.clock ?? 0;
   const fichaBase = Ficha.combate(estado);
   const t = tags ?? tagsDoArauto(entry);
-  const ef = Gemas.efeitoNaSkill(estado, id);
+  // (correções F3: `efetivo` — o efeito dos suportes já recalculado para outra habilidade, a magia ativada da Explosão Prismática e da Destruição Iminente)
+  const ef = efetivo ?? Gemas.efeitoNaSkill(estado, id);
   const f = ModsPoe.fichaDoGolpe(fichaBase, t, { alvo: m, estado });
   // (lote A5b, dono 20/10) o acerto de ATAQUE que sai por aqui (a Onda de Choque e a Tormenta das Excepcionais do Vazio, a explosão da Torre Óssea) rola o
   // acerto como as gemas de ataque: a precisão do uso (as linhas da gema e dos suportes, a tag `habilidade`) contra a evasão do alvo. Errou: o evento do erro
@@ -1183,22 +1184,44 @@ export function acertoDoArauto(estado, hunt, id, m, bruto, elemento, { tags = nu
   }
   return dano;
 }
+const TAG_POE_DA_MAGIA = { magia: 'Magia', area: 'Área', fogo: 'Fogo', gelo: 'Gelo', raio: 'Raio', caos: 'Caos', fisico: 'Físico', elemental: 'Elemental' };
+/**
+ * (correções F3) O efeito dos suportes da habilidade `id` numa MAGIA que ela ativa (as `tags` da magia): só os suportes que a suportariam — a regra das tags do suporte
+ * (`requer`/`algum`/`exclui`: o que exige Ataque não suporta a magia), já que a magia concedida não está na lista do PoE — e as linhas deles pelas tags da magia. Sem o
+ * nível e a qualidade da gema que ativou (a magia tem os dela). O PoB: a magia ativada por suporte leva os suportes do grupo que a suportam.
+ */
+export function efeitoNaMagiaAtivada(estado, id, tags) {
+  const ativas = Gemas.skillsAtivas(estado);
+  const a = ativas.get(id);
+  if (!a) return null;
+  const tagsPoe = [...new Set((tags ?? []).map((t) => TAG_POE_DA_MAGIA[t]).filter(Boolean).map((t) => `poe:${t}`))];
+  const semLista = (s) => { const { indicePoe, ...resto } = s ?? {}; return resto; };
+  const supports = (a.supports ?? []).filter((sp) => Gemas.compativel(semLista(sp.def?.suporte), tagsPoe));
+  const def = { ...a.def, tags: tagsPoe, progressao: null, fatorDeDano: 1 };
+  return Gemas.efeitoNaSkill(estado, id, new Map([[id, { ...a, def, supports }]]));
+}
 /**
  * (lote S2B, 27/10) Uma MAGIA ATIVADA por suporte com o dano dela (a Explosão Prismática, a Explosão Destruidora): o acerto de magia (`acertoDoArauto` com as tags da
  * magia — os modificadores de dano mágico valem —, o dano adicionado às magias × a eficácia dela, o crítico de base dela e os suportes da habilidade que a ativou) em
  * todos os vivos a até o raio do `centro` (os metros ÷ 2, × √ da Área: a sua, a dos suportes da habilidade e a da própria magia; a fração, a chance de uma casa a mais).
  */
 function magiaAtivadaS2B(estado, hunt, personagem, id, centro, { min, max, elemento, raioM, areaIncPct = 0, critBase = 0, eficacia = 1, maisPct = 0, tags, fonte, cor, aoAcertar = null }, eventos, rng = Math.random) {
-  const ef = Gemas.efeitoNaSkill(estado, id);
+  // (correções F3) os suportes da habilidade que a ativou valem na magia só se a suportariam (pelas tags dela, a regra das tags do suporte) e pelas linhas que
+  // valem numa magia: o "mais Dano Elemental com Ataques" e o Multigolpe (que só suportam ataques) saem; a Brutalidade suporta e a deixa sem dano elemental
+  const ef = efeitoNaMagiaAtivada(estado, id, tags);
   const fichaBase = Ficha.combate(estado);
   const porTag = ModsPoe.somaPorTags(fichaBase, tags);
-  const base = Math.max(1, Math.round(raioM / 2));
-  const raio = base + ModsPoe.casasPelaArea(base, ModsPoe.fatorDaArea(ModsPoe.valor(fichaBase, 'area_inc') + (porTag.area_inc ?? 0) + (ef?.areaIncPct ?? 0) + areaIncPct, ModsPoe.valor(fichaBase, 'area_mais') + (porTag.area_mais ?? 0), ef?.areaMaisPct ?? 0), rng);
+  // (correções F3) o raio em casas: os metros ÷ 2 × √ da Área, e a fração é a chance de uma casa a mais (antes o arredondamento dos metros jogava o "+X metros" fora)
+  const fator = ModsPoe.fatorDaArea(ModsPoe.valor(fichaBase, 'area_inc') + (porTag.area_inc ?? 0) + (ef?.areaIncPct ?? 0) + areaIncPct, ModsPoe.valor(fichaBase, 'area_mais') + (porTag.area_mais ?? 0), ef?.areaMaisPct ?? 0);
+  const casas = (Math.max(0, raioM) / 2) * Math.sqrt(Math.max(0, fator));
+  const raio = Math.max(1, Math.floor(casas) + (rng() < casas % 1 ? 1 : 0));
   eventos.push({ t: 'explosao', uid: centro.uid, x: centro.x, y: centro.y, raio, fonte, color: cor });
+  // (a magia sem dano: a Brutalidade — "não causam Dano Elemental" — na Prismática; a explosão sai, sem dano)
+  if ((ef?.semDanoElemental && ['fire', 'ice', 'energy'].includes(elemento)) || (ef?.semDanoCaos && elemento === 'chaos')) return 0;
   let total = 0;
   for (const m of [...(hunt.monstros ?? [])]) {
     if (!(m.hp > 0) || m.dummy || (m.z ?? hunt.z ?? 0) !== (centro.z ?? hunt.z ?? 0) || Math.max(Math.abs(m.x - centro.x), Math.abs(m.y - centro.y)) > raio) continue;
-    const d = acertoDoArauto(estado, hunt, id, m, min + rng() * Math.max(0, max - min), elemento, { tags, eventos, rng, fonte, personagem, critBase, adicionadoMagia: eficacia, soElemento: elemento, maisPct }) ?? 0;
+    const d = acertoDoArauto(estado, hunt, id, m, min + rng() * Math.max(0, max - min), elemento, { tags, eventos, rng, fonte, personagem, critBase, adicionadoMagia: eficacia, soElemento: elemento, maisPct, efetivo: ef ?? {} }) ?? 0;
     total += d;
     // (lote D3: o que a magia faz em quem acerta — o Definhando do Sapo Explosivo)
     if (d > 0) aoAcertar?.(m);
@@ -4983,7 +5006,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // a Tríade Profana (as Ressonâncias agora), a Gula (a Regurgitação: em círculo, com os projéteis a mais) e a Intensidade Sobrecarregada (o crítico por instância); o seu uso
   // (o totem, a armadilha, a mina e o ativado por gatilho não contam). O que muda depois que o uso sai (a Gula, a Intensidade perdida) é do `aposPagar`, abaixo
   const s2bDoUso = itensPoeLigado() && entry.poeGema && efeitoDaGema && !doTotem && !plantada && !tipoPlantado && !gatilho
-    ? { magia: !entry.poeGema.ataque && tagsPoeDaSkill(entry).includes('magia'), projetil: tagsPoeDaSkill(entry).includes('projetil'), furiaArcana: ModsPoe.buffAtivo(estado, 'furiaArcana'),
+    ? { magia: !entry.poeGema.ataque && tagsPoeDaSkill(entry).includes('magia'), projetil: tagsPoeDaSkill(entry).includes('projetil'), furiaArcana: ModsPoe.buffAtivo(estado, 'furiaArcana', Ficha.combate(estado).afPoe),
       perdaDeIntensidade: efeitoDaGema.intensidadeMax > 0 ? Math.max(0, (hunt.poeIntensidade?.[entry.id]?.n ?? 0) - intensidade) : 0 }
     : null;
   if (s2bDoUso) efeitoDaGema = SuportesS2B.doUso(hunt, entry.id, efeitoDaGema, s2bDoUso, hunt.clock ?? 0);
@@ -5992,7 +6015,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     if (doPoe) Ficha.invalidar(estado);
     // (lote D3, dono 27/10) o SOLO MALDITO e o SAPO ENFEITIÇADO: ligar o Feitiço cria o solo no alvo atual (sem alvo, no inimigo mais perto), com o raio da maldição, por
     // 34 s (14 s no Sapo) × a Duração; o Feitiço só pega no solo (`tiqueDosFeiticosS2B`)
-    if (itensPoeLigado() && efeitoDaGema?.soloMalditoMs > 0 && entry.poeGema?.arquetipo === 'maldicao' && hunt.buffs?.[entry.id]?.efeitosPoe) criarSoloMalditoD3(estado, hunt, entry, efeitoDaGema, alvo, agora);
+    if (itensPoeLigado() && efeitoDaGema?.soloMalditoMs > 0 && !(efeitoDaGema?.maldicaoEmAura > 0) && entry.poeGema?.arquetipo === 'maldicao' && hunt.buffs?.[entry.id]?.efeitosPoe) criarSoloMalditoD3(estado, hunt, entry, efeitoDaGema, alvo, agora);
     // (lote S2A, 27/10) o Estandarte Ensanguentado plantado: o Sangue Corrompido de cada segundo na área dele, com o Físico base × o Valor consumido (`SuportesS2A.tiqueS2A`)
     if (itensPoeLigado() && plantado && efeitoDaGema?.sangueEstandarte > 0 && hunt.buffs?.[entry.id]?.estandarte) hunt.buffs[entry.id].estandarte.sangue = { ...sangueDoSuporteS2A(estado, entry, efeitoDaGema, (efeitoDaGema.sangueEstandartePorValor ?? 0) * (plantado.valor ?? 0), efeitoDaGema.sangueEstandarteMs ?? 8000), proximo: agora };
     // (lote A1b, dono 19/10: D-e) a Corrida de Fase guarda o buff secundário — o próximo uso de qualquer habilidade sua o troca (`trocarCorridaDeFase`)
@@ -6412,7 +6435,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const segundaForma = itensPoeLigado() && entry.poeGema && !casas ? GemasPoe.segundaFormaDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
     // (lote G-C, D11) a Detonação: "Dano de Caos com Acertos é Resistido pela Resistência mais baixa" (a da Contradição: a maior) — no acerto (`resistenciaEfetivaDe`)
     const fichaDaRes = detonacaoDoUso?.resistencia ? { ...ficha, caosResistidoPela: detonacaoDoUso.resistencia } : ficha;
+    // (correções F3) as chances "por acerto" do uso (a Tríade Profana, o ignorar a Redução Física): o 2º alvo em diante sorteia de novo — `ModsPoe.resortearPorAcerto`
+    let acertosDoUso = 0;
     const acertar = (bicho, pct0 = 100, fonte = null, golpe = null) => {
+      if (acertosDoUso++ > 0 && ficha.chancesPorAcerto) ModsPoe.resortearPorAcerto(ficha, [fichaDaRes]);
       // (revisão do C1) o raio do Castigo do Julgamento Divino não é golpe corpo a corpo (a parte "Area Hit" do PoB: melee = false): sem o Golpe Impiedoso e sem a
       // Proximidade do Impacto, que são do corpo a corpo; o "aumentado"/"mais" corpo a corpo da ficha sai pelo `fatorDoRaioSemCorpo`
       const naoCorpo = fonte === 'raio';
