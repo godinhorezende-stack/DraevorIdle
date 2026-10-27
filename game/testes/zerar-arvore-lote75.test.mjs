@@ -60,7 +60,7 @@ test('a linha: "+5 de Virulência Máxima"', { skip: SEM }, () => {
   assert.deepEqual(efeitos('+5 de Virulência Máxima'), { virulencia_max: 5 });
 });
 
-test('a GEMA: Arauto (não lacaio); o buff com a chance de Envenenar e o mais do Veneno (não "mais Dano" em tudo); parcial com o motivo da Virulência', { skip: SEM }, () => {
+test('a GEMA: Arauto (não lacaio); o buff com a chance de Envenenar e o mais do Veneno (não "mais Dano" em tudo); funciona (o Rastejador do PoB)', { skip: SEM }, () => {
   const g = G.doSlug(Virulencia.SLUG);
   assert.equal(g.arquetipo, 'arauto');
   const entry = Acoes.POR_ID_PUBLICO(Virulencia.ID);
@@ -70,11 +70,12 @@ test('a GEMA: Arauto (não lacaio); o buff com a chance de Envenenar e o mais do
   assert.deepEqual(b.af, { chance_poison: 20, veneno_mais_final: 10 });
   assert.deepEqual(b.efeitos, []);
   assert.equal(b.dur, 60000);
-  assert.equal(g.statusNoJogo, 'parcial');
-  // (com o aval do dono, 26/10 — lote E1b: a Virulência no máximo, como o PoB, é NOTA — `notas` no registro —; só o Rastejador fica de motivo)
+  // (aval do dono 27/10 — lote R3D: o Rastejador ganhou o Morteiro e o Espinho da Cauda do PoB, e a gema sai de parcial)
+  assert.equal(g.statusNoJogo, 'funciona');
+  // (com o aval do dono, 26/10 — lote E1b: a Virulência no máximo, como o PoB, é NOTA — `notas` no registro —)
   assert.ok(g.notas.some((m) => /Virulência fica no máximo/.test(m)));
   assert.ok(!g.motivosNoJogo.some((m) => /Virulência/.test(m)));
-  assert.ok(g.motivosNoJogo.some((m) => /Rastejador/.test(m)));
+  assert.ok(!g.motivosNoJogo.some((m) => /Rastejador/.test(m)));
   assert.ok(!g.motivosNoJogo.some((m) => /efeito não simulado/.test(m) && /Virulência|Rastejador/.test(m)));
 });
 
