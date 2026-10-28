@@ -284,14 +284,18 @@ export function gastarUso(hunt, chave, recargaMs, usos = 1, agora = hunt?.clock 
 /**
  * Cria a anomalia no lugar `c` (a habilidade `acao`, o raio em casas já sorteado, a duração em ms): o teto (`teto`, 20) tira a mais velha. Devolve a anomalia.
  */
-export function criarAnomalia(hunt, { acao, c, z, raio, ms, teto = 20, maior = false }, agora = hunt?.clock ?? 0) {
+export function criarAnomalia(hunt, { acao, c, z, raio, ms, teto = 20, maior = false, grupo = null }, agora = hunt?.clock ?? 0) {
   if (!hunt || !c || !(ms > 0)) return null;
   const s = est(hunt);
   s.n = (s.n ?? 0) + 1;
-  const a = { id: s.n, acao, x: c.x, y: c.y, z: z ?? hunt.z ?? 0, raio: Math.max(0, raio | 0), ate: agora + ms, ...(maior ? { maior: true } : {}) };
+  const a = { id: s.n, acao, x: c.x, y: c.y, z: z ?? hunt.z ?? 0, raio: Math.max(0, raio | 0), ate: agora + ms, ...(maior ? { maior: true } : {}), ...(grupo ? { grupo } : {}) };
   const lista = (s.anomalias ?? []).filter((x) => x.ate > agora);
   lista.push(a);
-  while (lista.length > Math.max(1, teto)) lista.shift();
+  // (achado C3 da rodada 4) o teto é de cada habilidade (o PoE: kinetic_instability_maximum_number_of_instability_orbs_allowed de cada uma): as da Chuva Cinética
+  // (`grupo` 'chuva', até 30) e as do Fluxo Cinético (sem grupo, até 20) não se cortam — a mais velha que sai é a do mesmo grupo
+  const doGrupo = (x) => (x.grupo ?? null) === (grupo ?? null);
+  let n = lista.filter(doGrupo).length;
+  for (let i = 0; i < lista.length && n > Math.max(1, teto); ) if (doGrupo(lista[i])) { lista.splice(i, 1); n--; } else i++;
   s.anomalias = lista;
   return a;
 }

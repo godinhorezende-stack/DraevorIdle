@@ -46,16 +46,25 @@ export function msDoImpedimento(baseMs, linhas = [], fatorDur = 1) {
 export const almasImpedidas = (hunt, agora = hunt?.clock ?? 0) => (hunt?.poeAlmasImpedidasAte ?? -Infinity) > agora;
 /**
  * Põe o impedimento de `ms` a partir de `inicio`: a recarga de cada habilidade Vaal que ainda carrega (`cds[id]` de `vaalIds` — a recém-usada também) anda para frente
- * pelo pedaço do impedimento que ainda não estava coberto (o novo fim menos o fim do anterior, se este ainda valia). Guarda um número só (`hunt.poeAlmasImpedidasAte`):
+ * pelo pedaço do impedimento que ainda não estava coberto (o novo fim menos o fim do anterior, se este ainda valia); a recém-usada (`usadaId`) anda até o fim do
+ * impedimento que vale (o novo ou o de antes). Guarda um número só (`hunt.poeAlmasImpedidasAte`):
  * o fim do impedimento — o estado novo é um instante, sem lista. Devolve os ms acrescentados.
  */
-export function impedirAlmas(hunt, cds, vaalIds, inicio, ms) {
+export function impedirAlmas(hunt, cds, vaalIds, inicio, ms, usadaId = null) {
   if (!hunt || !(ms > 0)) return 0;
   const fim = inicio + ms;
   const antes = hunt.poeAlmasImpedidasAte ?? -Infinity;
   const extra = Math.max(0, fim - Math.max(inicio, antes));
   if (fim > antes) hunt.poeAlmasImpedidasAte = fim;
-  if (extra > 0) for (const id of vaalIds ?? []) { const cd = cds?.[id]; if (cd && cd.ate > inicio) cd.ate += extra; }
+  // (achado C3 da rodada 4) a RECÉM-USADA (`usadaId`) começou a carregar em `inicio`: ela só carrega no fim do impedimento que vale — o novo ou o de antes, o que
+  // acabar depois —, então anda (esse fim − `inicio`), e não só o pedaço novo (quem já carregava já foi parado pelo impedimento de antes).
+  const fimQueVale = Math.max(fim, antes);
+  for (const id of vaalIds ?? []) {
+    const cd = cds?.[id];
+    if (!cd || !(cd.ate > inicio)) continue;
+    if (usadaId != null && id === usadaId) cd.ate += fimQueVale - inicio;
+    else if (extra > 0) cd.ate += extra;
+  }
   return extra;
 }
 /** O impedimento acabou: a chave sai (a caçada não guarda instantes vencidos). */

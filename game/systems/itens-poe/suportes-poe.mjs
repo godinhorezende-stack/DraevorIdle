@@ -122,8 +122,9 @@ export function textosDoNivel(s, nivel = 1, qualidade = 0) {
   const q = Math.max(0, Math.min(20, qualidade || 0)) / 20;
   // (lote T3, 27/10: a RESERVA pela coluna "Mana" da tabela do nível, quando ela existe — a Blasfêmia Desperta: a faixa da propriedade, "(34—32)%", é a dos níveis 1 a 5
   // ("Nível: (1—5)"), e a interpolação de 20 passos dava 32% no nível 20; a tabela do poedb diz 28%)
+  // (achado C3 da rodada 4: + o "Multiplicador de Custo & Reserva" — a mesma coluna "Mana"; a Transfusão no 20: 320% da tabela, não os 430% da faixa estendida)
   const manaDaTabela = /%$/.test(String(linha[s.colunas.indexOf('Mana')] ?? '')) ? String(linha[s.colunas.indexOf('Mana')]) : null;
-  const prop = (p) => (manaDaTabela && /^(?:Sobreposição de )?Reserva: /.test(p) ? p.replace(/\([\d.]+\s*—\s*[\d.]+\)%|[\d.]+%/, manaDaTabela) : interpolar(p, (n - 1) / passos));
+  const prop = (p) => (manaDaTabela && /^(?:(?:Sobreposição de )?Reserva|Multiplicador de Custo & Reserva): /.test(p) ? p.replace(/\([\d.]+\s*—\s*[\d.]+\)%|[\d.]+%/, manaDaTabela) : interpolar(p, (n - 1) / passos));
   return { mods: out, qualidade: (s.qualidade ?? []).map((t) => interpolar(t, q)), props: s.props.map(prop) };
 }
 
