@@ -8,8 +8,7 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 554 |
-| limitação do modelo idle | 5 |
+| implementada e testada | 559 |
 | parcial | 2 |
 | não se aplica | 1 |
 
@@ -29,8 +28,8 @@ Só os ataques:
 
 ### Variantes
 
-- Vaal (52): implementada e testada 51 · limitação do modelo idle 1
-- Alternativas (209): implementada e testada 207 · limitação do modelo idle 2
+- Vaal (52): implementada e testada 52
+- Alternativas (209): implementada e testada 209
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
@@ -50,20 +49,10 @@ Só os ataques:
 
 ## Gemas de habilidade pendentes
 
-- **Animate_Guardian** (Animar Guardião) — limitação do modelo idle
-  - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Animate_Guardian_of_Smiting** (Guardião Animado do Castigo) — limitação do modelo idle
-  - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Animate_Weapon** (Animar Arma) — limitação do modelo idle
-  - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Animate_Weapon_of_Ranged_Arms** (Animar Arma dos Braços Distantes) — limitação do modelo idle
-  - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Pact_of_Lycia** (Pacto de Lycia) — parcial
   - efeito não simulado: o Pacto (o PoB: o uso não causa dano — fortalece as próximas 3 magias de canalização com 40% mais dano e, enquanto você canaliza uma delas, o Flagelo Celestial cai a cada 0,3 s, até 10; e a Aflição, sem dado no PoB nem no poedb) — no jogo ele é uma canalização com o dano do Flagelo (decisão do dono)
 - **Rain_of_Arrows_of_Artillery** (Chuva de Flechas da Arilharia) — parcial
   - efeito não simulado: as flechas em sequência numa linha de você até o alvo, cada uma com a área de 1 m (o comprimento da linha e o espaçamento das flechas não estão no PoB nem no poedb — decisão do dono)
-- **Vaal_Animate_Weapon** (Animar Arma Vaal) — limitação do modelo idle
-  - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 
 ## Gemas de suporte pendentes
 

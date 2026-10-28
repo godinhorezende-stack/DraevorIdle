@@ -49,27 +49,35 @@ test('T1 (correção): Legião Congelada do Agrupamento — o Arrastão Congelan
   // (o poedb: "100%, 100%, 100%, 184.9%" — a última parte é a do Arrastão; o PoB, FrozenSweepAltX nível 20: baseMultiplier 1,849, attackSpeedMultiplier −30, radius 25)
   assert.equal(nums(celula(S, 20, /^Base Damage$/)).at(-1), 184.9);
   const st = st20(S);
-  assert.deepEqual([st.efetividade, st.conversao, st.velAtaqueBase, st.raio], [1.849, [{ para: 'gelo', pct: 100 }], 70, 2.5]);
+  // (aval do dono 28/10: a versão das Estátuas do lote T3 — o uso gasta todos os usos prontos, uma Estátua por uso, e cada uma usa o Arrastão uma vez; os 70% da
+  // velocidade são do ataque da Estátua, `velArrastao`, não do seu uso)
+  assert.deepEqual([st.efetividade, st.conversao, st.velArrastao, st.raio], [1.849, [{ para: 'gelo', pct: 100 }], 70, 2.5]);
   assert.deepEqual([G.temposNoNivel(S, 20).recargaMs, G.temposNoNivel(S, 20).cargas], [300, 5], doPoedb(S).props.join(' | '));
   // (a Legião comum: o Arrastão dela, 332,9%)
   assert.ok(perto(st20('Frozen_Legion').efetividade, 3.329, 1e-6));
-  const golpe = async (slug) => {
+  const estatuas = async (slug, casas = []) => {
     const m = await montar(MACA, [[slug]]);
+    const viz = por(m, casas);
     const u = usar(m, 0.5);
-    return { g: u.golpes[0], uso: m.e.hunt.cooldowns['grupo:poe'].total, m };
+    const uso = m.e.hunt.cooldowns['grupo:poe'].total;
+    m.e.hunt.clock += 100;
+    const ev = sorte(0.5, () => Acoes.tiqueDasPlantadas(m.e, m.e.hunt, PERSONAGEM, []));
+    return { u, ev, uso, m, viz, golpes: ev.filter((x) => x.t === 'dmg' && x.uid === m.b.uid && x.foe) };
   };
-  const r = await golpe(S);
-  const b = await golpe('Frozen_Legion');
-  assert.deepEqual(Object.keys(r.g.detalhe.porElemento), ['ice'], 'o Físico da arma vira Gelo');
-  assert.ok(perto(r.g.danoAntesDaResistencia / b.g.danoAntesDaResistencia, 1.849 / 3.329, 0.05), `${r.g.danoAntesDaResistencia} / ${b.g.danoAntesDaResistencia}`);
-  // (o tempo do ataque: o da arma ÷ 0,7)
+  const r = await estatuas(S);
+  const b = await estatuas('Frozen_Legion');
+  assert.equal(danoEm(r.u.eventos, r.m.b), 0, 'o uso só invoca as Estátuas');
+  assert.deepEqual([r.golpes.length, b.golpes.length], [5, 6], 'uma Estátua por uso pronto (5 e 6), um Arrastão cada');
+  assert.ok(perto(r.golpes[0].v / b.golpes[0].v, 1.849 / 3.329, 0.05), `${r.golpes[0].v} / ${b.golpes[0].v}`);
+  // (todo o golpe é Gelo: 75% de resistência a Gelo tira 75%)
+  const gelo = await (async () => { const m = await montar(MACA, [[S]]); m.b.resist = { ice: 75 }; usar(m, 0.5); m.e.hunt.clock += 100; return sorte(0.5, () => Acoes.tiqueDasPlantadas(m.e, m.e.hunt, PERSONAGEM, [])).filter((x) => x.t === 'dmg' && x.uid === m.b.uid && x.foe)[0].v; })();
+  assert.ok(Math.abs(gelo - r.golpes[0].v * 0.25) <= 1, `${gelo} contra ${r.golpes[0].v}`);
+  // (o seu uso: o tempo do ataque da arma — os 70% não entram nele)
   const arma = Ficha.combate(r.m.e).intervaloDoGolpeMs;
-  assert.ok(perto(r.uso, arma / 0.7, 0.02), `${r.uso} contra ${arma / 0.7}`);
+  assert.ok(perto(r.uso, arma, 0.02), `${r.uso} contra ${arma}`);
   // (a área de 2,5 m: o vizinho a 1 casa do alvo também leva)
-  const m = await montar(MACA, [[S]]);
-  const [viz] = por(m, [[1, 1]]);
-  usar(m, 0.5);
-  assert.ok(ferido(viz), 'o Arrastão acerta em área');
+  const v = await estatuas(S, [[1, 1]]);
+  assert.ok(ferido(v.viz[0]), 'o Arrastão acerta em área');
 });
 
 test('T1: Flecha Ardente Vaal — 560% (PoB), Fogo, perfura 3, explode no impacto (1,6 m), 50% de Incendiar, não pode ser Evadida', { skip: SEM }, async () => {

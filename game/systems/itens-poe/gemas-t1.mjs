@@ -30,7 +30,11 @@ export function efetividadeDoArrastao(celula) {
 export function corrigirCompilada(slug, h, celulaDoDano) {
   if (!h || !LEGIAO.test(String(slug ?? ''))) return h;
   const ef = efetividadeDoArrastao(celulaDoDano);
-  const st = { ...h.stats, conversao: [{ para: 'gelo', pct: ARRASTAO.conversaoGeloPct }], velAtaqueBase: ARRASTAO.velAtaqueBase, raio: ARRASTAO.raioM, raioFinal: ARRASTAO.raioM, ...(ef ? { efetividade: ef } : {}) };
+  // (C1, dono 28/10) os 70% da velocidade são do ATAQUE da Estátua (`velArrastao`), não do SEU uso (o PoB: FrozenSweep attackSpeedMultiplier −30 é da Estátua).
+  // O CONFLITO T1 × T3: o T1 punha `velAtaqueBase: 70` na gema, e o seu uso virava o ataque da arma ÷ 0,7 (a Clava de Madeira: 769 → 1099 ms), mais longo que a
+  // recarga de 0,8 s — o uso seguinte das Estátuas (lote T3) ficava "Ainda recarregando" pelo relógio do grupo. (No PoB o seu uso é uma magia de 0,7 s — castTime
+  // 0.7 —; o jogo segue com o tempo do ataque da arma, como antes do T1.)
+  const st = { ...h.stats, conversao: [{ para: 'gelo', pct: ARRASTAO.conversaoGeloPct }], velArrastao: ARRASTAO.velAtaqueBase, raio: ARRASTAO.raioM, raioFinal: ARRASTAO.raioM, ...(ef ? { efetividade: ef } : {}) };
   return { ...h, stats: st };
 }
 

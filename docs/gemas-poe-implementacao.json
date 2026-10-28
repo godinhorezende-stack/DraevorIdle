@@ -2,8 +2,7 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 554,
-   "limitação do modelo idle": 5,
+   "implementada e testada": 559,
    "parcial": 2,
    "não se aplica": 1
   },
@@ -20,13 +19,11 @@
   "variantes": {
    "vaal": {
     "total": 52,
-    "implementada e testada": 51,
-    "limitação do modelo idle": 1
+    "implementada e testada": 52
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 207,
-    "limitação do modelo idle": 2
+    "implementada e testada": 209
    }
   },
   "compatibilidade": {
@@ -1299,11 +1296,9 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "limitação do modelo idle",
+   "estado": "implementada e testada",
    "ausentes": [],
-   "idle": [
-    "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -1314,11 +1309,9 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "limitação do modelo idle",
+   "estado": "implementada e testada",
    "ausentes": [],
-   "idle": [
-    "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -2359,11 +2352,9 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "limitação do modelo idle",
+   "estado": "implementada e testada",
    "ausentes": [],
-   "idle": [
-    "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -2387,11 +2378,9 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "limitação do modelo idle",
+   "estado": "implementada e testada",
    "ausentes": [],
-   "idle": [
-    "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -2545,11 +2534,9 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "lacaio",
-   "estado": "limitação do modelo idle",
+   "estado": "implementada e testada",
    "ausentes": [],
-   "idle": [
-    "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true

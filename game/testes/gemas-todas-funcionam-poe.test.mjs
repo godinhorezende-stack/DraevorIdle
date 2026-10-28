@@ -22,6 +22,9 @@ const Registro = await import('../systems/combate/registro.mjs');
 const Areas = await import('../engine/areas.mjs');
 const Runas = await import('../systems/itens-poe/runas-vinculadas.mjs');
 const GemasR3D = await import('../systems/itens-poe/gemas-r3d.mjs');
+// (aval do dono 28/10: as gemas de LACAIO conferidas pelo dano do lacaio no tique dos lacaios — o lote L)
+const Terreno = await import('../systems/hunt/terreno.mjs');
+const LacaiosPoe = await import('../systems/itens-poe/lacaios-poe.mjs');
 
 /** As armas tentadas (a primeira que a gema aceita): a varinha, o arco, a espada com escudo, a maça de duas mãos, a adaga, o cajado. */
 const ARMAS = [['Wands/Driftwood_Wand'], ['Bows/Crude_Bow'], ['One_Hand_Swords/Rusted_Sword', 'Shields/Splintered_Tower_Shield'], ['Two_Hand_Maces/Driftwood_Maul'], ['Daggers/Sai'], ['Staves/Gnarled_Branch']];
@@ -87,6 +90,12 @@ function montar(slug, [arma, escudo], suportes = []) {
   e.hunt.cadaveres = [{ key: 'x', nome: 'Morto', look: 1, x: b.x, y: b.y, maxHp: 10000 }];
   const retaliacao = G.gatilhoDeRetaliacao(slug);
   if (retaliacao) e.hunt.retaliacao = { [retaliacao]: { ate: Infinity, usados: [] } };
+  // (aval do dono 28/10: as Oferendas, a Convocação e a Relíquia — que não ataca no PoE: a nova sai pelos acertos dos lacaios — agem pelos SEUS lacaios — a montagem
+  // põe um Zumbi seu ao lado; o dano conferido é o dos lacaios, no tique deles)
+  if (/_Offering$|^Convocation$|^Summon_Holy_Relic/.test(slug)) {
+    const q = LacaiosPoe.oQueInvoca('Raise_Zombie', 20, { nivel: 20, qualidade: 0 }, {});
+    (e.hunt.lacaios ??= []).push({ ...q, recargas: (q.recargas ?? []).map((x) => ({ ...x })), uid: 'zumbi', gema: 'Raise_Zombie', tipo: 'lacaio', x: b.x, y: b.y + 1, hp: q.vida, maxHp: q.vida, proximoGolpe: 0, alcanceDeAtaque: 1, perto: 6, acertos: 0 });
+  }
   if (G.doSlug(slug).arquetipo === 'vinculo') (e.hunt.lacaios ??= []).push({ uid: 'aliado', nome: 'Aliado', mercenario: true, hp: 1000, maxHp: 1000, x: e.hunt.pos.x - 1, y: e.hunt.pos.y });
   // (merge com o lote 74, com o aval do dono: a Convocar Runas ativa as SUAS Runas vinculadas — uma Marca da Tempestade encaixada e a Runa dela
   // vinculada no alvo; o dano é o da Runa ativada)
@@ -154,6 +163,20 @@ function usar({ e, b }, slug) {
       if (e.hunt.roubos.some((r) => r.recurso === 'vida' && r.restante > 0)) efeitoDoTotem = true;
     }
   }
+  // (aval do dono 28/10: a gema de LACAIO — o lote L, as habilidades do lacaio pelo PoB —: o dano é o dos lacaios no tique deles, uns segundos depois do uso)
+  if (G.doSlug(slug).arquetipo === 'lacaio' && e.hunt.lacaios?.length) {
+    const grade = Cacadas.andarDaGrade(Cacadas.gradeDaHunt(Terreno.huntOuMapaCustom(e.hunt.huntId)), e.hunt.z);
+    // (o relógio dos lacaios é o da parede — `agora` —, como no tique da caçada)
+    const parede = Date.now();
+    // (o Ceifador da Evisceração não ataca sozinho: o Ultimate sai no SEGUNDO uso da gema, com ele em campo)
+    if (slug === 'Summon_Reaper_of_Eviscerating') {
+      e.hunt.clock = Math.max(e.hunt.clock, e.hunt.cooldowns?.[Acoes.GRUPO_DO_POE]?.ate ?? e.hunt.clock, e.hunt.cooldowns?.[G.doSlug(slug).acao]?.ate ?? e.hunt.clock);
+      const r3 = Acoes.disparar(e, e.hunt, PERSONAGEM, 0, b, { manual: true });
+      if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM); }
+      if (!r3.ok) return { ok: false, erro: `o Ultimate: ${r3.motivo ?? r3.erro}` };
+    }
+    for (let i = 1; i <= 16; i++) { e.hunt.clock += 250; ev.push(...Cacadas.tiqueDosLacaios(e, e.hunt, PERSONAGEM, grade, parede + 250 * i)); }
+  }
   const dano = ev.filter((x) => x.t === 'dmg' && x.uid === b.uid && x.foe).reduce((t, x) => t + (x.v ?? 0), 0) + (b.dots?.length ? 1 : 0) + (efeitoDoTotem ? 1 : 0);
   const deslocou = e.hunt.pos.x !== de.x || e.hunt.pos.y !== de.y || (e.hunt.teleportes ?? 0) > de.teleportes;
   // (lote C4, com o aval do dono 21/10: a MAGIA SEM ACERTO — a Praga, o Definhar, o Contágio… — não fere no uso; o efeito dela é o DEBUFF no alvo: o degenerativo,
@@ -173,11 +196,13 @@ function usar({ e, b }, slug) {
     e.hunt.praga.valor = Infinity;
     for (let i = 0; i < 3 && !praga; i++) { e.hunt.clock += 250; praga = Acoes.tiqueDaPraga(e, e.hunt, 250, e.hunt.clock).some((x) => x.t === 'dmg' && x.uid === b.uid && x.foe && x.v > 0); }
   }
-  return { ok: true, dano, debuff, provocou, cegou, converteu, praga, buff: !!e.hunt.buffs?.[G.doSlug(slug).acao] || !!e.hunt.vinculos?.length, deslocou, febre: (b.dots ?? []).some((d) => d.chave === 'Corrupting_Fever' && d.falta > 0) };
+  // (aval do dono 28/10: os Robôs Rastejantes não causam dano no PoE — as auras Eletrizam e Resfriam quem está nelas)
+  const afligiu = ['chocado', 'resfriado', 'congelado'].some((k) => !!b.estados?.[k]);
+  return { ok: true, dano, debuff, afligiu, provocou, cegou, converteu, praga, buff: !!e.hunt.buffs?.[G.doSlug(slug).acao] || !!e.hunt.vinculos?.length, deslocou, febre: (b.dots ?? []).some((d) => d.chave === 'Corrupting_Fever' && d.falta > 0) };
 }
 
 // (aval do dono 27/10, R3) as gemas que não causam dano no PoE (base_deal_no_damage): o critério próprio de cada uma
-const SEM_DANO_NO_POE = { Decoy_Totem: (u) => u.provocou, Smoke_Mine: (u) => u.deslocou || u.cegou, Conversion_Trap: (u) => u.converteu };
+const SEM_DANO_NO_POE = { Decoy_Totem: (u) => u.provocou, Smoke_Mine: (u) => u.deslocou || u.cegou, Conversion_Trap: (u) => u.converteu, Summon_Skitterbots: (u) => u.afligiu };
 test('G16: toda gema ativa "funciona" faz no jogo o que o status promete (o dano, ou o buff ligado)', { skip: SEM, timeout: 600_000 }, async () => {
   J = await import('../systems/itens-poe/jogo.mjs');
   ({ gerarPeca } = await import('../systems/itens-poe/gerar.mjs'));

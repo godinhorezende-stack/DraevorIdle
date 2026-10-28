@@ -145,6 +145,11 @@ export function resMenosDasMaldicoes(bicho, tipo, agora, fator = 1) {
  * 2,4 m, é onde caem). Em metros, ou null fora da Torre Elétrica.
  */
 export const impactoDaTorreM = (slug) => (/^Lightning_Spire_Trap/.test(String(slug ?? '')) ? 1 : null);
+/**
+ * (C1, dono 28/10 — o PoB, LightningSpireTrap preDamageFunc) os PULSOS da Torre Elétrica: ⌊Duração × Frequência⌋ (`pulses = floor(duration * wavePulseRate)`, a duração com
+ * os modificadores de Duração e a frequência com os de Velocidade de Arremesso), o primeiro um intervalo depois da ativação — a duração efetiva é pulsos × intervalo.
+ */
+export const pulsosDaTorre = (duracaoMs, intervaloMs) => (duracaoMs > 0 && intervaloMs > 0 ? Math.floor(duracaoMs / intervaloMs + 1e-9) : 0);
 
 // ---------------------------------------------------------------- os objetos do uso
 

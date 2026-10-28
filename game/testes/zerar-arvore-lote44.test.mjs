@@ -96,7 +96,8 @@ test('os LACAIOS DAS GEMAS pelo PoB: o Zumbi (3,75 de vida × os 38% mais da gem
   assert.equal(LacaiosPoe.oQueInvoca('Summon_Skitterbots', 20, null, {}).intocavel, true);
   // o Espírito Furioso: o tempo do PoB (0,57 s) já é o rápido — sem o "rápido" do jeito por cima
   const esp = LacaiosPoe.oQueInvoca('Summon_Raging_Spirit', 20, null, {});
-  assert.equal(esp.intervaloMs, 570);
+  // (aval do dono 28/10: o lote L — o Espírito Furioso tem o "40% mais Velocidade de Ataque" dos mods dele no PoB: 570 ÷ 1,4 = 407)
+  assert.equal(esp.intervaloMs, Math.round(570 / 1.4));
   assert.equal(esp.estilo.rapido, undefined);
   // o Espectro (o monstro erguido) não tem tipo no PoB
   const espectro = LacaiosPoe.oQueInvoca('Raise_Spectre', 20, null, {});

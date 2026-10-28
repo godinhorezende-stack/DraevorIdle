@@ -191,20 +191,22 @@ test('B2 — no tique, o lacaio atordoado não anda nem ataca; sem o atordoament
 });
 
 test('B1 — o golpe principal que ERRA não conta acerto nem solta o golpe em área do Zumbi', { skip: SEM }, () => {
-  const cada = invocar('Raise_Zombie').estilo.area.cada;
-  // a 4ª pancada é a da área; um vizinho do bicho a leva
-  const comVizinho = (opcoes) => {
-    const r = tiqueDoZumbi({ ...opcoes, extra: { acertos: cada - 1 } });
-    return r;
-  };
-  const errou = comVizinho({ random: 0.99, evasaoPct: 100_000 });
+  // (aval do dono 28/10: o lote L — o golpe em área do Zumbi é a Pancada do PoB, com recarga de 6 s, no lugar do "a cada N acertos": o golpe principal que erra
+  // não conta acerto nem fere; a Pancada que erra gasta o uso e não fere)
+  const q = invocar('Raise_Zombie');
+  const emRecarga = () => q.recargas.map((x) => ({ ...x, ...(x.id === 'ZombieSlam' ? { carga: 0, prontoEm: Infinity } : {}) }));
+  const errou = tiqueDoZumbi({ random: 0.99, evasaoPct: 100_000, extra: { recargas: emRecarga() } });
   assert.ok(errou.ev.some((x) => x.t === 'block' && x.errou && x.lacaio), 'errou');
-  assert.equal(errou.l.acertos, cada - 1, 'não contou o acerto');
-  assert.ok(!errou.ev.some((x) => x.t === 'explosao'), 'nem soltou a área');
-  const acertou = comVizinho({ random: 0.99 });
+  assert.equal(errou.l.acertos ?? 0, 0, 'não contou o acerto');
+  assert.equal(errou.b.hp, 1e9, 'nem feriu');
+  const acertou = tiqueDoZumbi({ random: 0.99, extra: { recargas: emRecarga() } });
   assert.ok(acertou.b.hp < 1e9);
-  assert.equal(acertou.l.acertos, cada, 'acertou: contou');
-  assert.ok(acertou.ev.some((x) => x.t === 'explosao'), 'e soltou a área');
+  assert.equal(acertou.l.acertos, 1, 'acertou: contou');
+  assert.ok(!acertou.ev.some((x) => x.habilidade === 'ZombieSlam'), 'a Pancada em recarga não sai');
+  // a Pancada pronta que erra: gasta o uso, não fere
+  const pancada = tiqueDoZumbi({ random: 0.99, evasaoPct: 100_000, extra: { recargas: q.recargas.map((x) => ({ ...x })) } });
+  assert.equal(pancada.l.recargas.find((h) => h.id === 'ZombieSlam').carga, 0, 'usou a Pancada');
+  assert.equal(pancada.b.hp, 1e9, 'errou: não feriu');
 });
 
 test('B2 — a lentidão da MAGIA do Elite no lacaio vale no tique seguinte (o relógio do tique, não o da caçada)', { skip: SEM }, () => {

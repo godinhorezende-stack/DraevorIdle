@@ -80,6 +80,11 @@ export const GEMAS = [
   [/^(?:Blink|Mirror)_Arrow/, { principal: ['BlinkMirrorArrowMelee'], arma: 'sua' }],
   [/^Holy_Strike$/, { principal: ['HolyStrikeMinionAttack'], arma: 'sua' }],
   [/^Animate_Weapon_of_Self_Reflection$/, { principal: ['Melee'], arma: 'sua' }],
+  // (lote C1, dono 28/10: o item animado é uma BASE Normal do nível da gema — `LacaiosAnimados`: a Arma Animada com o dano e o tempo da base de arma; o Guardião
+  // desarmado com as defesas da Armadura de Corpo base; o do Castigo usa o Castigo do PoB)
+  [/^(?:Vaal_)?Animate_Weapon/, { principal: ['Melee'], arma: 'base' }],
+  [/^Animate_Guardian_of_Smiting$/, { principal: ['AnimateGuardianSmite'], armadura: 'base' }],
+  [/^Animate_Guardian$/, { principal: ['Melee'], armadura: 'base' }],
   [/^Summon_Skitterbots$/, { semAtaque: true }],
 ];
 /** As gemas que não invocam (dão bônus aos lacaios em campo, ou os chamam): não têm golpe de lacaio a seguir. */
@@ -234,7 +239,7 @@ export function estiloDaPrincipal(hab, pobId) {
   // (o lacaio sem golpe — o Ceifador da Evisceração: o jeito do corpo a corpo, só para andar perto)
   if (!hab.principal.length) return { alcance: 1, impacto: 10, elemento: 'physical', pob: true };
   const p = hab.principal[0];
-  const arco = /bow/i.test(DADOS.lacaios[pobId]?.arma ?? '') || p.id === 'BlinkMirrorArrowMelee';
+  const arco = /bow/i.test(DADOS.lacaios[pobId]?.arma ?? '') || p.id === 'BlinkMirrorArrowMelee' || !!p.arco;
   const alcance = Math.max(...hab.principal.map((h) => h.alcance ?? 1));
   return {
     alcance, impacto: IMPACTO[p.elemento] ?? 10, elemento: p.elemento,
@@ -420,8 +425,14 @@ export function usar(l, h, alvo0, c) {
  * A força do ESPECTRO pelo PoB: o monstro erguido (`poe` do bestiário — o nível, o dano e o tempo de ataque dele; `vida` — a vida + o escudo) leva os MULTIPLICADORES
  * dele (a vida e o dano ÷ as tabelas de monstro do nível dele — `monsterLifeTable`, `monsterDamageTable`) para as tabelas de ALIADO do nível do Espectro
  * (`monsterAllyLifeTable`, `monsterAllyDamageTable` — como o PoB monta o Espectro); o tempo de ataque é o dele. As MAGIAS do monstro sobem do nível dele para o do
- * Espectro pela tabela de dano de monstro (o dano da magia de monstro cresce com o nível como ela). `{ vida, golpe, tempoMs, fatorDasMagias }`, ou null.
+ * Espectro pela EFICÁCIA do PoB (lote C1, dono 28/10 — no lugar da tabela de dano de monstro): a magia de monstro tem o dano base × a eficácia do nível (statInterpolation
+ * 3: (3,885209 + 0,360246 × (N − 1)) × (1 + o incremental)^(N − 1)), e o Espectro a usa no nível dele — o fator é a eficácia no nível do Espectro ÷ a no nível do monstro.
+ * O incremental de cada magia de monstro está no `Skills/spectre.lua` do PoB, que a cópia salva não tem: vale o 0,04 (`INCREMENTAL_DAS_MAGIAS_DO_ESPECTRO` — o das
+ * magias de monstro do PoB fica entre 0,035 e 0,058, a maioria perto de 0,04). `{ vida, golpe, tempoMs, fatorDasMagias }`, ou null.
  */
+export const INCREMENTAL_DAS_MAGIAS_DO_ESPECTRO = 0.04;
+/** O fator das magias do monstro erguido (nível `nMon`) no Espectro de nível `nivel`: a eficácia do PoB num ÷ no outro. */
+export const fatorDasMagiasDoEspectro = (nMon, nivel, inc = INCREMENTAL_DAS_MAGIAS_DO_ESPECTRO) => eficacia(nivel, 1, inc) / eficacia(nMon, 1, inc);
 export function espectroPeloPob(poe, vida, nivel) {
   const nMon = Math.round(Number(poe?.nivel) || 0);
   if (!(nMon >= 1) || !(Number(poe?.dano) > 0)) return null;
@@ -433,7 +444,7 @@ export function espectroPeloPob(poe, vida, nivel) {
     vida: k(FORCA.tabelas.vida, nivel) * multVida,
     golpe: k(FORCA.tabelas.dano, nivel) * multDano,
     tempoMs: Math.round((Number(poe.tempoAtaque) || 1) * 1000),
-    fatorDasMagias: k(T.danoMonstro, nivel) / k(T.danoMonstro, nMon),
+    fatorDasMagias: fatorDasMagiasDoEspectro(nMon, Math.max(1, Math.round(Number(nivel) || 1))),
   };
 }
 

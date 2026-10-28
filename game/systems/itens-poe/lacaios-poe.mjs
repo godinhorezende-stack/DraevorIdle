@@ -28,6 +28,8 @@ import * as GemasR3D from './gemas-r3d.mjs';
 import * as SuportesS2B from './suportes-s2b.mjs';
 // (rodada 4, lote L: o motor das habilidades dos lacaios pelo PoB — o principal, as recargas, o início e a Vida Baixa de cada lacaio)
 import * as LacaiosHabilidades from './lacaios-habilidades.mjs';
+// (lote C1, 28/10) a Arma Animada e o Guardião: o item animado é uma base Normal do nível da gema
+import * as LacaiosAnimados from './lacaios-animados.mjs';
 export { aplicarCeifador, fatorDoCeifador, fatorPorNaoGolemPerto, danoDoGolemDaCarnica, desviarParaOGolemDePedra } from './gemas-e1a.mjs';
 import { readFileSync } from 'node:fs';
 
@@ -398,9 +400,17 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
   const f0 = forcaDoNivel(n);
   // (rodada 4, lote L) as HABILIDADES do lacaio pelo PoB (`LacaiosHabilidades.doLacaio`): o tempo do golpe é o da habilidade principal (a magia: o `castTime` dela;
   // o ataque: o `attackTime` do lacaio com o "mais" de velocidade dele — o Espírito Furioso, +40%); a Pancada do Zumbi da Pancada leva a área e a recarga da gema
-  const hab = !totem && !doSuporte && pob ? LacaiosHabilidades.doLacaio(slug, pob.id, n, { ZombieSlam: { areaPct: e2a.impactoAreaPct ?? 0, recargaPct: e2a.impactoRecargaPct ?? 0 } }) : null;
-  const f = pob ? { vida: pob.vida, dano: pob.dano ?? f0.dano, tempo: hab?.principal.length ? hab.principal[0].tempoMs / 1000 : pob.tempo ?? f0.tempo } : f0;
-  const spread = pob?.spread ?? 0.2;
+  let hab = !totem && !doSuporte && pob ? LacaiosHabilidades.doLacaio(slug, pob.id, n, { ZombieSlam: { areaPct: e2a.impactoAreaPct ?? 0, recargaPct: e2a.impactoRecargaPct ?? 0 } }) : null;
+  // (lote C1, dono 28/10) o ITEM ANIMADO (`LacaiosAnimados.animadoDaGema`): a Arma Animada bate com o dano Físico e o tempo da base de arma (a dos Braços Distantes, de
+  // longe com o arco); o Guardião bate desarmado (2 a 6, 1 s — o PoB) e tem as defesas da Armadura de Corpo base (abaixo, em `poe`)
+  const animado = !totem && !doSuporte && pob ? LacaiosAnimados.animadoDaGema(slug, t.linhas, n) : null;
+  if (hab && animado?.arma) {
+    const a = animado.arma;
+    hab = { ...hab, principal: hab.principal.map((h) => ({ ...h, tempoMs: a.intervaloMs, ...(a.distancia ? { corpo: false, projetil: true, arco: true, alcance: LacaiosHabilidades.ALCANCE_DE_LONGE } : {}) })) };
+  }
+  const danoAnimado = animado?.arma ? (animado.arma.min + animado.arma.max) / 2 : animado?.armadura ? (LacaiosAnimados.GUARDIAO_DESARMADO.min + LacaiosAnimados.GUARDIAO_DESARMADO.max) / 2 : null;
+  const f = pob ? { vida: pob.vida, dano: danoAnimado ?? pob.dano ?? f0.dano, tempo: hab?.principal.length ? hab.principal[0].tempoMs / 1000 : pob.tempo ?? f0.tempo } : f0;
+  const spread = animado?.arma ? (animado.arma.max - animado.arma.min) / (animado.arma.max + animado.arma.min) : animado?.armadura ? (LacaiosAnimados.GUARDIAO_DESARMADO.max - LacaiosAnimados.GUARDIAO_DESARMADO.min) / (LacaiosAnimados.GUARDIAO_DESARMADO.max + LacaiosAnimados.GUARDIAO_DESARMADO.min) : pob?.spread ?? 0.2;
   // (+ a "Vida máxima dos Lacaios aumentada" / "Vida do Totem aumentada" e o "Lacaios causam Dano aumentado" das peças do PoE.)
   // (+ os do TIPO de lacaio: "Golens possuem X% menos Vida", "Espíritos Furiosos Convocados causam Dano aumentado", "Zumbis têm X% da Vida
   // máxima aumentada", "Zumbis causam X% mais Dano Físico", "+N de Vida máxima" dos Zumbis…)
@@ -527,7 +537,8 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
       // (lote 43, P040: as defesas do escudo da Égide Necromântica — a armadura, a evasão, o escudo de energia fixo, a supressão de magia)
       // (lote 44: + a armadura, a evasão e o escudo de energia de base do lacaio no PoB)
       // (lote 49: + "Golens têm +X de Armadura" — `lacaio_armadura:<tipo>`)
-      armadura: mn('minion_armadura') + (pob?.armadura ?? 0) + porTipo('lacaio_armadura'), evasao: mn('minion_evasao') + (pob?.evasao ?? 0), esFixo: mn('minion_es') + (pob?.es ?? 0), supressao: mn('minion_supressao'),
+      // (lote C1: + as defesas da Armadura de Corpo base do Guardião Animado — `LacaiosAnimados.armaduraBase`)
+      armadura: mn('minion_armadura') + (pob?.armadura ?? 0) + porTipo('lacaio_armadura') + (animado?.armadura?.armadura ?? 0), evasao: mn('minion_evasao') + (pob?.evasao ?? 0) + (animado?.armadura?.evasao ?? 0), esFixo: mn('minion_es') + (pob?.es ?? 0) + (animado?.armadura?.es ?? 0), supressao: mn('minion_supressao'),
       // (lote 50, o Poder Primordial: "Dano dos Golens aumentado em X% se convocados nos últimos N segundos" — `golpeDoLacaio`, por `l.desde`)
       danoRecentePct: porTipo('lacaio_dano_recente'), danoRecenteMs: porTipo('lacaio_dano_recente_s') * 1000,
       // (lote 51) "Lacaios Convocados são Agressivos" — a busca de alvo mais longe (`cacadas.CASAS_DO_AGRESSIVO`)
@@ -581,6 +592,8 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
     ...(hab ? { habPob: { principal: hab.principal, ...(hab.fixa ? { fixa: true } : {}), ...(hab.semGolpe ? { semGolpe: true } : {}), ...(hab.arma ? { arma: hab.arma } : {}) } } : {}),
     // (rodada 4, lote L) a vida de base (antes dos modificadores): o Espectro pelo PoB troca a base e mantém os modificadores (`acoes.invocarLacaios`)
     ...(!totem ? { vidaBase: f.vida } : {}),
+    // (lote C1) o item animado (a base de arma ou a Armadura de Corpo base) — o balão e os testes o leem
+    ...(animado ? { itemAnimado: animado.arma ? { tipo: 'arma', ...animado.arma } : { tipo: 'armadura', ...animado.armadura } } : {}),
   };
   // (rodada 4, lote L) + as habilidades com recarga do motor (a Pancada do Zumbi, as do Golem Flamejante, do Glacial e do Pétreo, as das Sentinelas e do Juiz…), o
   // Meteoro do início e as da Vida Baixa, depois das que outro lote já faz (`HABILIDADES_COM_RECARGA`, `GemasR3D.recargasDoLacaio`)

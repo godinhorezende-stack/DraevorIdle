@@ -3664,6 +3664,8 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
       ...(q.recargas ? { recargas: q.recargas.map((h) => ({ ...h })) } : {}),
       // (rodada 4, lote L) as habilidades do PoB do lacaio (o principal — `cacadas`; `LacaiosHabilidades`)
       ...(q.habPob ? { habPob: q.habPob } : {}),
+      // (lote C1) o item animado da Arma Animada e do Guardião (a base Normal — `LacaiosAnimados`)
+      ...(q.itemAnimado ? { itemAnimado: q.itemAnimado } : {}),
       ...(q.tipo === 'totem' && alvo ? { mira: { x: alvo.x, y: alvo.y } } : {}),
       ...(focada ? { focada: true } : {}),
       // (lote E2A) a balista do anel dispara uma vez e some (`cacadas`)
@@ -9108,7 +9110,13 @@ export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora 
     if (torre) {
       const ef = Gemas.efeitoNaSkill(estado, p.acao);
       const vel = torre.velocidadeDeArremesso ? 1 + (ef?.velArremessoArmadilhaPct ?? 0) / 100 : 1;
-      (hunt.poeTorres ??= []).push({ id: `torre-${p.id}`, slot: p.slot, acao: p.acao, x: p.x, y: p.y, z: p.z, ate: agora + torre.duracaoMs, proxima: agora, intervaloMs: Math.max(50, Math.round(torre.intervaloMs / Math.max(0.1, vel))), areas: torre.areas });
+      // (C1, dono 28/10 — o PoB) a TORRE ELÉTRICA (todas): ⌊Duração × Frequência⌋ pulsos, o primeiro um intervalo depois da ativação (`GemasT3.pulsosDaTorre`; a duração
+      // com os modificadores de Duração). Antes golpeava na ativação e seguia até o fim da duração (3,5 s ÷ 0,36 s: 10 golpes, contra os 9 do PoB). A Lança-Chamas segue.
+      const intervaloT = Math.max(50, Math.round(torre.intervaloMs / Math.max(0.1, vel)));
+      const pulsosT = chamas ? 0 : GemasT3.pulsosDaTorre(Math.round(torre.duracaoMs * fatorDeDuracao(estado, POR_ID.get(p.acao), ef)), intervaloT);
+      const novaTorre = (id) => (chamas ? { id, slot: p.slot, acao: p.acao, x: p.x, y: p.y, z: p.z, ate: agora + torre.duracaoMs, proxima: agora, intervaloMs: intervaloT, areas: torre.areas }
+        : { id, slot: p.slot, acao: p.acao, x: p.x, y: p.y, z: p.z, ate: agora + intervaloT * pulsosT, proxima: agora + intervaloT, intervaloMs: intervaloT, areas: torre.areas });
+      if (chamas || pulsosT > 0) (hunt.poeTorres ??= []).push(novaTorre(`torre-${p.id}`));
       tiqueDasTorres(estado, hunt, personagem, eventos, agora);
       // (revisão E1b: a Armadilha foi ativada — o evento e as Armadilhas Carregadas, uma vez; os pulsos seguem como 'torre', sem o evento a cada 0,1 s)
       ativouArmadilha(p, alvo);
@@ -9116,7 +9124,7 @@ export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora 
       // ativada de novo ergue outra Espiral no mesmo lugar
       const slugT = String(p.acao).replace(GemasPoe.PREFIXO, '');
       if (GemasE1b.ativaDeNovo(ModsPoe.valor(ficha, 'armadilha_ativa_de_novo'), GemasPoe.chanceDeAtivarDeNovoDaGema(slugT, ef?.nivel ?? 1, ef?.qualidade ?? 0))) {
-        hunt.poeTorres.push({ id: `torre-${p.id}-2`, slot: p.slot, acao: p.acao, x: p.x, y: p.y, z: p.z, ate: agora + torre.duracaoMs, proxima: agora, intervaloMs: Math.max(50, Math.round(torre.intervaloMs / Math.max(0.1, vel))), areas: torre.areas });
+        if (chamas || pulsosT > 0) (hunt.poeTorres ??= []).push(novaTorre(`torre-${p.id}-2`));
         tiqueDasTorres(estado, hunt, personagem, eventos, agora);
         // (a ativação adicional também é uma ativação — o evento dela, como no disparo comum; as cargas, só na primeira)
         ativouArmadilha(p, alvo, { cargas: false });
