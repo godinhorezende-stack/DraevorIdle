@@ -1567,6 +1567,61 @@ As 58 gemas de lacaio estavam em "limitação do modelo idle" pelo motivo "o lac
   - lacaios-pob:177 — o Espectro: esperado `fatorDasMagias` = danoMonstro[40] ÷ danoMonstro[10] = 7,25 → agora a eficácia, 8,16 ((3,885209 + 0,360246 × 39) × 1,04^39 ÷ ((3,885209 + 0,360246 × 9) × 1,04^9)).
   - lacaios-pob:299 — esperava `invocar('Animate_Weapon').habPob` indefinido → agora `{ principal: [Melee], arma: 'base' }`.
 
+## C2 — rodada 4: as regras do PoE e a Artilharia (28/10: "quero resolver")
+
+As seis decisões do dono, como o PoE 1 e o PoB. O código novo fica em `systems/itens-poe/gemas-r4c2.mjs`; o teste novo é `testes/gemas-c2.test.mjs` (10 testes).
+
+1. **O "mais" e o "aumentado" de um tipo valem só na parte daquele tipo** (o PoB: FireDamage/ColdDamage/… MORE e INC). Antes valiam no golpe inteiro, e só quando a ativa tinha a tag. A pendência 9 sai.
+   - O "X% mais/menos Dano de Fogo/Gelo/Raio/Caos/Físico/Elemental" vira `maisDoTipoPct:<tipo>`. Vale no multiplicador da parte, pelo caminho dela: o Físico ganho como Fogo leva o "mais Físico" e o "mais Fogo". Vale no acerto, nas afecções que saem dele e no degenerativo daquele tipo. São a Combustão, o Foco Elemental (e o Desperto), o Dano Elemental com Ataques (só em ataques), o Mutilar, a Brutalidade, a Manipulação do Vazio e o Resfriamento Ósseo.
+   - O "mais" com flag de acerto vira `maisDoTipoAcertoPct:<tipo>@<tags>`: o Dano Físico Corpo a Corpo (`@corpo`) e o "Físico de Ataque de Projétil" dos Projéteis Viciosos (`@projetil+ataque`). Vale só no acerto da parte Física; a afecção sai sem ele, como no PoB (as afecções não têm as flags Melee e Projectile).
+   - Os dois "mais" multiplicam entre os suportes (`Gemas.efeitoNaSkill`).
+   - O "aumentado" de um tipo vai ao aumentado dele: o Elemental nos três elementos (`af:fire_dmg`, `af:ice_dmg`, `af:energy_dmg`); o "Físico Corpo a Corpo aumentado" em `af:phys_dmg@corpo`; o "Inimigos Mutilados sofrem X% de Dano Físico aumentado" em `af:phys_dmg@alvoMutilado`.
+   - Fica igual: a Sede de Sangue (o "mais Físico Corpo a Corpo contra Sangrando" segue no golpe inteiro, `maisAcertoContraSangrandoPct`).
+2. **O Pacto de Lycia** (o PoB, other.lua PactOfLycia + TriggeredHeavensScourge). Antes era uma canalização com o dano do Flagelo.
+   - O uso não causa dano. Ele fortalece as próximas 3 magias de canalização que você conjura (o totem, a armadilha, a mina e o gatilho não contam; um uso novo recomeça a conta).
+   - A magia que começa um canalizar fortalecida gasta uma e leva 40% mais Dano pelo canalizar inteiro, no acerto e nas afecções. O canalizar que continua não gasta outra.
+   - O Flagelo Celestial cai a cada 0,3 s enquanto aquele canalizar segue. Ao parar, os que faltam caem a cada 0,05 s, 10 no total. Cada um cai num inimigo a até 7 m de você, na área de 1,2 m (+ 0,1 m por qualidade) × √ da Área, com o dano de Raio da gema (130 a 2467 no 20) e 7,5% de crítico.
+   - A Aflição do Pacto não tem dado no PoB nem no poedb: fica sem efeito.
+   - O Pacto de Ghorr foi conferido e **não mudou**. No PoB: o uso não causa dano; fortalece as próximas 3 magias de dano degenerativo (40% mais Dano Degenerativo); e o bônus Fome de Ghorr, por 6 s, ativa o Destruir Carne a cada 2 s (+150% de frequência por estágio do "Rito de Sangue"). O Destruir Carne é a nova de 3 projéteis que atravessam; cada um põe um degenerativo Físico de 0,4 s, até 3 acúmulos, com +25% de dano degenerativo sofrido por acúmulo. No jogo o uso põe o degenerativo de 1521,1/s por 4 s no alvo. O PoB não diz como o estágio do Rito de Sangue cresce. Fica para o dono.
+3. **O Aço Estraçalhador** (a parte "Cone AoE" do PoB, 2,8 m). Cada projétil que acerta despedaça num cone de 2,8 m × √ da Área à frente do acertado, na direção do tiro. Quem está no cone leva o acerto dele. Um cone por projétil: vários cones, vários acertos. O acertado não leva o do próprio cone (o projétil já o acertou — o mesmo do cone do Tiro Gélido).
+   **O Tiro Cinético da Fragmentação** ("projectiles_can_shotgun"): os projéteis que não acham outro inimigo vão no alvo. Contra um alvo sozinho, os 3 acertam.
+4. **As Bombas Congelantes** (as três): o cristal fica no alvo e explode depois da duração da habilidade × a Duração. São 2 s na comum e na da Aproximação, e 1,5 s na da Instabilidade (o `base_skill_effect_duration` de cada uma no PoB). O dano, a Exposição e a Regeneração reduzida vêm na explosão. Na armadilha e na mina segue na hora.
+5. **A Chuva de Flechas da Artilharia**: as 22 flechas (+ os projéteis a mais) caem em sequência numa linha, da casa à sua frente até o alvo, distribuídas igualmente (a flecha k na casa ⌊k × L ÷ n⌋). Cada uma acerta a casa dela, na área de 1 m × √ da Área (em casas, a fração como chance, por flecha). Quem está em mais de uma leva mais de um acerto. Com o alvo a 4 casas: 6, 5, 6 e 5 flechas. O motivo saiu.
+6. **A área numa conta só**: o raio em metros × √(1 + Área) ÷ 2, com a fração como chance. O sorteio do raio da gema fica guardado com ele (`<chave>~u`), e a Área estica pelos metros com o mesmo sorteio (`casasAMaisDaArea` → `GemasR4C2.raioComAArea`). Antes, o raio em casas era sorteado e as casas a mais pela Área eram sorteadas de novo (`casasPelaArea`). Vale na forma do uso e no golpe do mercenário.
+
+Testes que mudam pelas regras novas (não mexi; esperam o aval do dono):
+- Regra 1, as chaves novas no lugar das antigas:
+  - afeccoes-acerto-poe:74 — os Projéteis Viciosos: `maisDanoAcertoPct` 49 → undefined. Agora é `maisDoTipoAcertoPct:physical@projetil+ataque` = 49.
+  - suportes-afeccoes-poe-lote76:47 — o Dano Físico Corpo a Corpo: `maisDanoAcertoPct` 49 → undefined. Agora é `maisDoTipoAcertoPct:physical@corpo` = 49. O Sangramento e o Veneno (49 e 49) não mudam.
+  - suportes-a5:494 — a Manipulação do Vazio: `maisDanoPct > 0` → false. Agora é `maisDoTipoPct:chaos` = 34.
+  - correcoes-r3:99 — o Golpe Pesado com o Dano Físico Corpo a Corpo: `fatorDeDano > 1` → 1. O "mais" entra agora no multiplicador da parte Física. No golpe, o Físico sai × 1,49 (gemas-c2). A Rajada de Vento continua sem ele, pela condição `@corpo`.
+- Regra 2, o Pacto de Lycia:
+  - gemas-t2:120 — status `parcial` → `funciona`.
+  - gemas-todas-funcionam-poe:210 (G16) — o Pacto de Lycia entra na lista: "saiu sem dano". O uso dele não fere mais, como o de Beidat. Para o teste geral ver o efeito, ele precisaria de uma magia de canalização depois, como a Bola de Fogo do Beidat em `DANO_POR_OUTRA` (por exemplo `Pact_of_Lycia: 'Incinerate'`). As outras 48 gemas da lista já falhavam antes deste lote (os lacaios do lote L).
+- Regra 3, o cone do Aço Estraçalhador:
+  - gemas-t2-ataques:168 — 3 atingidos → 4. Com o sorteio 0,3, o cone tem 2,8 m ÷ 2 = 1,4 casa, ou seja 1 + (0,3 < 0,4) = 2 casas. Ele pega o vizinho atrás do alvo.
+- Regra 4, a Bomba Congelante explode depois da duração:
+  - ativas-b1:133 — `regenMenosDebuff` no uso: 75 → undefined. Vem na explosão, 2 s depois (gemas-c2 confere o 75 ali).
+  - ativas-b1:158 — o dano da Aproximação no uso: 0. Na explosão é 3× o balão (gemas-c2 confere).
+  - suportes-a5:375 — a Exposição no uso: 15 → undefined. Vem na explosão.
+  - gemas-t2-magias:33 e :43 — a da Instabilidade no uso: 0 de dano. A explosão sai 1,5 s depois.
+  - gemas-t2-magias:90 — a razão Meteoros ÷ Bomba da Instabilidade: o divisor é 0 no uso.
+- Regra 5, a Artilharia:
+  - gemas-t3-ativas:29 — status `parcial` → `funciona`.
+- Regra 6, a área numa conta só:
+  - gemas-t3-suportes:299 — a Nova de Gelo com a Área Desperta (+64%) e o sorteio 0,05: 3 casas → 2. A conta: 3 m ÷ 2 × √1,64 = 1,92, ou seja 1 + (0,05 < 0,92) = 2. Antes eram 2 + 1.
+  - gemas-t2-suportes:290 — o Eco Mágico Maior com o sorteio 0,1: 2 repetições a 3 casas → 0. A conta: 1,6 × √1,24 = 1,78 → 2 casas, e 1,6 × √1,48 = 1,95 → 2 casas. Antes eram 2 + 1.
+  - zerar-arvore-lote36:138 — a Nova de 2,8 m com +100% e o sorteio 0,5: [0, 0, 0] → [1, 0, 0]. A conta: 1,4 × √2 = 1,98, ou seja 1 + (0,5 < 0,98) = 2 casas. Antes eram 1 + 0. Nas linhas seguintes do mesmo teste, com o sorteio 0,05: [1, 1, 0] → [1, 0, 0] (1,98 → 2, não 3). O Efeito Concentrado (1,4 × √0,7 = 1,17 → 2 com 0,05): [0] → [1].
+  - zerar-arvore-lote36:152 — a Repetição Final, sem a linha: [0, 0] → [1, 0]. É o mesmo 1,98 → 2.
+  - passivas-poe-suportes-sem-regra:481 — a Repetição Final. A procura acha a borda a 3 casas: 1,98 → 2 com 0,5. Com a linha (1,4 × √(2 + X%) = 2,17 com 40%), a última repetição também fica em 2 casas e não alcança a 3.
+- Já falhavam antes deste lote (conferido com os arquivos do branch, sem as mudanças): ativas-e1a:210, ativas-e2a:42/229/243, gemas-r3b:73, gemas-t1-ativas:63, gemas-t3-ativas:62 (a Legião), gemas-todas-funcionam-poe:210 (48 gemas, os lacaios), itens-poe-gemas:34/337, lacaios-precisao-lote87:194, passivas-poe-maldicoes-dreno:123/214 (os dois do T3), revisao-e1s1:139 e zerar-arvore-lote44:99.
+
+Placar (relatório regerado):
+- antes: ativas 562 · testada 554 · limitação 5 · parcial 2 (o Pacto de Lycia e a Artilharia) · não se aplica 1. Ataques: 209 testados e 1 parcial. Suportes: 262 · testada 261 · não se aplica 1.
+- depois: ativas 562 · testada 556 · limitação 5 · parcial 0 · não se aplica 1. Ataques: 210 testados. Suportes sem mudança.
+
+Bateria: 152 arquivos (ativas-*, gemas-*, suportes-*, itens-poe-gemas*, lacaios-*, totens-*, passivas-poe-*, zerar-arvore-*, revisao-*, sequencia-*, eficacia-ataque-poe, combo-poe e os afetados: afeccoes-*, correcoes-*, deslocamento-*, mercenario*, canalizacao*). Deram 1611 testes: 1545 passam, 33 pulados, 33 falham. São 18 pelas regras novas, listados acima, e 15 que já falhavam antes deste lote. O gemas-c2 passa os 10.
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.
@@ -1577,7 +1632,7 @@ As 58 gemas de lacaio estavam em "limitação do modelo idle" pelo motivo "o lac
 6. **Os outros suportes:** 157 parciais e 31 sem efeito; gatilhos que faltam (Conjurar ao Morrer, ao ser Atordoado, enquanto Canaliza), os suportes que viram totem (G20b; a velocidade de posicionamento e a vida do totem feitas no G20a), auras (efeito), maldições (efeito em área, duração).
 7. **A interface:** o balão da gema mostra as linhas da qualidade que não valem; marcar cada linha (feita / não feita) e o motivo, nos encaixes e na barra.
 8. ~~Testes parametrizados~~ feito no G16 (uso real e dano/buff de toda ativa `funciona`; efeito lido de todo suporte `funciona`). Falta: medir o efeito de CADA suporte num uso (com e sem), não só que o código o lê.
-9. **O "Dano de Fogo/Gelo/Raio aumentado" dos suportes** vale para todo o dano da habilidade que tem a tag (`valeParaOTipo` → `danoPct`): numa habilidade de dano misto, o PoE só aumenta a parte daquele elemento. Trocar por `af:fire_dmg`… (a ficha do golpe aplica por elemento).
+9. ~~O "Dano de Fogo/Gelo/Raio aumentado" dos suportes vale para todo o dano da habilidade que tem a tag~~ — feito no C2 da rodada 4 (28/10): o "mais" e o "aumentado" de um tipo valem só na parte daquele tipo (`gemas-r4c2.mjs`).
 10. **Acertos secundários de ataque de itens** (A5b, revisão): a Rajada Vulcânica e outros acertos de ataque que vêm de itens não rolam a precisão.
 
 ## Próximo passo exato

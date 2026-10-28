@@ -22,6 +22,7 @@ import { PROPRIAS_R3D } from './gemas-r3d.mjs';
 import { PROPRIAS_P4, DEVASTADOR } from './gemas-p4.mjs';
 // (lote T2, rodada 4 — 27/10: as linhas com condição que as regras gerais davam sem ela)
 import { REGRAS_T2 } from './gemas-t2.mjs';
+import { REGRAS_C2R4 } from './gemas-r4c2.mjs';
 
 const ARQ_SUPORTES = new URL('../../gamedata/itens-poe/suportes-poe.json', import.meta.url);
 const ARQ_IDS = new URL('../../gamedata/itens-poe/suportes-poe-ids.json', import.meta.url);
@@ -178,6 +179,8 @@ const REGRAS = [
   ...REGRAS_T2,
   // ---- (lote T3, 27/10: as correções que os testes do lote acharam — `suportes-t3.mjs`: o adicionado da Imolação só contra o alvo Queimando) ----
   ...REGRAS_T3,
+  // ---- (lote C2 da rodada 4, 28/10: o "mais" e o "aumentado" de um tipo só na parte daquele tipo do golpe — `gemas-r4c2.REGRAS_C2R4`) ----
+  ...REGRAS_C2R4,
   // ---- (lote S2B, 27/10: a segunda metade das parciais — `suportes-s2b.mjs`; antes das gerais, que pegavam o começo de algumas e davam o "mais" sem a condição) ----
   // - os LACAIOS: a Velocidade do Lacaio (ataque e conjuração — `LacaiosPoe.oQueInvoca`), o crítico da qualidade do Exemplar e da Carne Fresca, o Exemplar ("toda vez que
   //   você causar um golpe crítico recentemente com um ataque, até X"), a Carne Fresca (a Fúria Desperta e a Adrenalina), o Exército Elemental (as resistências, o máximo,

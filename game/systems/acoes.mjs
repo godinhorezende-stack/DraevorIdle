@@ -120,6 +120,7 @@ import * as GemasR3D from './itens-poe/gemas-r3d.mjs';
 import * as GemasP4 from './itens-poe/gemas-p4.mjs';
 // (lote T2, rodada 4 — 27/10: as correções das gemas que estavam sem teste próprio)
 import * as GemasT2 from './itens-poe/gemas-t2.mjs';
+import * as GemasR4C2 from './itens-poe/gemas-r4c2.mjs';
 // (lote S2A, 27/10: os suportes com mecânica nova — o acerto, o uso pago, o abate, o Ímpeto de Combate)
 import * as SuportesS2A from './itens-poe/suportes-s2a-jogo.mjs';
 import * as SuportesT3 from './itens-poe/suportes-t3.mjs';
@@ -819,8 +820,18 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   // (lote A5c, dono 20/10: "regra do PoE") a parte que passou por mais de um tipo (o Físico convertido em Gelo, o Fogo ganho como Caos…) soma o "aumentado" de
   // todos eles, uma vez cada, e os "mais" dos tipos do caminho que não são o final (`ModsPoe.maisDaOrigem` — o do final entra no acerto); a faixa rola com o
   // fator médio das origens dela (`ModsPoe.fatorPelasOrigens`). A penetração, a resistência e as afecções seguem o tipo final.
-  const multDosTipos = (tipos, final) => (mult + ((tipos.reduce((t, x) => t + doElementoDe(x), 0) - doElemento) / 100) * sintonia) * ModsPoe.maisDaOrigem(ficha, hunt, entry.id, tipos, final);
+  // (lote C2 da rodada 4, 28/10 — dono: "como o PoB") + o "X% mais Dano de <tipo>" dos SUPORTES (`maisDoTipoPct:<tipo>`): só na parte que passou por aquele tipo, uma vez
+  // por tipo do caminho (o "Elemental" uma vez, se algum for elemental) — no acerto e nas afecções que saem dele (`GemasR4C2.maisDosSuportesNosTipos`)
+  const multDosTipos = (tipos, final) => (mult + ((tipos.reduce((t, x) => t + doElementoDe(x), 0) - doElemento) / 100) * sintonia) * ModsPoe.maisDaOrigem(ficha, hunt, entry.id, tipos, final) * GemasR4C2.maisDosSuportesNosTipos(efeitoDaGema, tipos.length ? tipos : [final]);
   if (partes) for (const p of partes) p.mult = ModsPoe.fatorPelasOrigens(origens[p.elemento], p.elemento, (tipos) => multDosTipos(tipos.length ? tipos : [p.elemento], p.elemento));
+  // (lote C2 da rodada 4) o fator dos "mais" de um tipo dos suportes em cada parte, à parte (o balão — `danoMostrado` — multiplica o `mult` do golpe por ele)
+  if (partes) for (const p of partes) p.maisDoTipo = ModsPoe.fatorPelasOrigens(origens[p.elemento], p.elemento, (tipos) => GemasR4C2.maisDosSuportesNosTipos(efeitoDaGema, tipos.length ? tipos : [p.elemento]));
+  // (lote C2 da rodada 4) e o "mais" de um tipo SÓ DO ACERTO (o Dano Físico Corpo a Corpo, os Projéteis Viciosos — `maisDoTipoAcertoPct`): no multiplicador da parte (o acerto)
+  // e guardado nela (`maisAcerto`) para a afecção sair sem ele (`acertar`, `partesDaAfeccao`)
+  if (partes) for (const p of partes) {
+    const ma = ModsPoe.fatorPelasOrigens(origens[p.elemento], p.elemento, (tipos) => GemasR4C2.maisDosSuportesNoAcerto(efeitoDaGema, tipos.length ? tipos : [p.elemento], tagsDoGolpe));
+    if (ma !== 1) { p.mult *= ma; p.maisAcerto = ma; p.maisDoTipo = (p.maisDoTipo ?? 1) * ma; }
+  }
   // (13/10, a Sobrecarga Elemental: "Habilidades que causaram um Golpe Crítico nos últimos 8 segundos causam 40% mais Dano Elemental" — a parte
   // de Fogo, Gelo e Raio desta habilidade, se ela critou há pouco; + 14/10, o "X% mais Dano Elemental" do Liberto: `ModsPoe.fatorDoDanoElemental`.)
   // (lote A5c: o "mais Dano Elemental" agora vai em `multDosTipos` — uma vez, pelo caminho da parte)
@@ -829,7 +840,7 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   // "X% mais Dano por cada tipo de Afecção Elemental no Inimigo" (Acerto Elemental do Espectro).
   const porAfeccao = daGemaPoe ? GemasPoe.extrasDoAtaque(daGemaPoe.slug, nivelPoe, efeitoDaGema?.qualidade ?? 0).porAfeccao : 0;
   // (lote 31, P043: o multiplicador da parte Física e a eficácia do dano adicionado — o Físico adicional por Empalamento, alvo a alvo)
-  const multFisico = (mult + ((doElementoDe('physical') - doElemento) / 100) * sintonia) * ModsPoe.fatorDoDanoElemental(ficha, hunt, entry.id, 'physical');
+  const multFisico = (mult + ((doElementoDe('physical') - doElemento) / 100) * sintonia) * ModsPoe.fatorDoDanoElemental(ficha, hunt, entry.id, 'physical') * GemasR4C2.maisDosSuportesNosTipos(efeitoDaGema, ['physical']) * GemasR4C2.maisDosSuportesNoAcerto(efeitoDaGema, ['physical'], tagsDoGolpe);
   return { min, max, daPericia, mult, sobrecarga, fatorDaGema, ficha, partes, porAfeccao, ehMagia, sintonia, multFisico, eficacia, soAcertoDaFicha, multDosTipos };
 }
 
@@ -2073,9 +2084,10 @@ export function alvosDoGolpeDoMercenario(estado, l, alvo, vivos, rng = Math.rand
   if (entry.forma) {
     const noAlvo = entry.miraNoChao || entry.alvoNoCentro;
     // (17/10, lote G2: a forma no raio do PoE da gema — `formaNoRaioDoPoe`)
-    const forma = formaNoRaioDoPoe(entry, efeito, rng).forma;
+    const comForma = formaNoRaioDoPoe(entry, efeito, rng);
+    const forma = comForma.forma;
     const raio = Areas.raioDaForma(forma);
-    const n = ModsPoe.casasPelaArea(raio, ModsPoe.fatorDaArea(efeito.areaIncPct ?? 0, efeito.areaMaisPct ?? 0), rng);
+    const n = casasAMaisDaArea(comForma, raio, ModsPoe.fatorDaArea(efeito.areaIncPct ?? 0, efeito.areaMaisPct ?? 0), rng);
     const casas = Areas.daForma(n ? Areas.escalarForma(forma, raio + n) : forma, noAlvo ? alvo : origem, !noAlvo && direcional(entry) ? ordemDosLados(origem, alvo)[0] : null);
     const golpes = Areas.dentro(casas, vivos).filter((b) => b !== alvo).map((b) => ({ bicho: b, pct: 100, tipo: 'area' }));
     return { golpes, eventos: entry.efeito ? [{ t: 'area', id: entry.efeito, x: origem.x, y: origem.y, casas: Areas.paraTela(casas, origem) }] : [], emitidos: [], explosoes: [] };
@@ -2359,7 +2371,8 @@ export function danoMostrado(estado, entry, efeitoDaGema = Gemas.ehSkillDeGema(e
   // (18/10, lote G18b: + o "X% mais Dano de <tipo>" — a Ira: "mais Dano Mágico de Raio" — pela fração de cada parte do golpe; no acerto ele entra
   // por `fatorRecebidoPeloBicho`, e o balão o deixava de fora)
   const md = c.ficha?.maisDoElemento;
-  const doTipo = md && c.partes ? c.partes.reduce((t, p) => t + p.frac * Math.max(0, 1 + (md[p.elemento] ?? 0) / 100), 0) || 1 : 1;
+  // (lote C2 da rodada 4: + o "mais" de um tipo dos suportes em cada parte — `p.maisDoTipo`)
+  const doTipo = c.partes && (md || c.partes.some((p) => (p.maisDoTipo ?? 1) !== 1)) ? c.partes.reduce((t, p) => t + p.frac * Math.max(0, 1 + (md?.[p.elemento] ?? 0) / 100) * (p.maisDoTipo ?? 1), 0) || 1 : 1;
   const f = c.mult * c.fatorDaGema * c.sobrecarga * doTipo;
   return { min: Math.round((c.min + c.daPericia) * f), max: Math.round((c.max + c.daPericia) * f) };
 }
@@ -3371,7 +3384,8 @@ export function virarParaOAlvo(hunt, para) {
 function totalDoDegenerativo(p, durMs, { efeitoDaGema, ficha, fatorDaGema, soAcertoDaFicha = 1, dotMagico = false }) {
   const a = ficha.afeccoes ?? AfeccoesPoe.daSoma(ficha.afPoe ?? {});
   const MULTI = { fire: a.multiplicadorFogo, ice: a.multiplicadorGelo, energy: a.multiplicadorRaio, chaos: a.multiplicadorCaos, physical: a.multiplicadorFisico };
-  const maisDoDot = Math.max(0, 1 + (efeitoDaGema?.maisDotPct ?? 0) / 100) * Math.max(0, 1 + (efeitoDaGema?.[MAIS_DOT_DO_ELEMENTO[p.elemento]] ?? 0) / 100);
+  // (lote C2 da rodada 4: + o "X% mais Dano de <tipo>" dos suportes — FireDamage MORE… sem flag vale no degenerativo daquele tipo, como no PoB)
+  const maisDoDot = Math.max(0, 1 + (efeitoDaGema?.maisDotPct ?? 0) / 100) * Math.max(0, 1 + (efeitoDaGema?.[MAIS_DOT_DO_ELEMENTO[p.elemento]] ?? 0) / 100) * GemasR4C2.maisDosSuportesNosTipos(efeitoDaGema, [p.elemento]);
   const voltaMagico = dotMagico ? Math.max(0, 1 + (efeitoDaGema?.maisDanoMagicoPct ?? 0) / 100) * (soAcertoDaFicha ?? 1) : 1;
   return p.dps * (durMs / 1000) * (fatorDaGema / Math.max(1e-9, (1 + (efeitoDaGema?.maisDanoAcertoPct ?? 0) / 100) * (soAcertoDaFicha ?? 1))) * voltaMagico * maisDoDot * (1 + ((a.multiplicador ?? 0) + (MULTI[p.elemento] ?? 0)) / 100) * (1 + ((a.danoAumentado ?? 0) + (ficha.danoDoElemento?.[p.elemento] ?? 0) + (a.danoDegenDoElemento?.[p.elemento] ?? 0)) / 100) * Math.max(0, 1 + (a.dotMais ?? 0) / 100);
 }
@@ -3830,15 +3844,33 @@ export function formaNoRaioDoPoe(entry, efeito, rng = Math.random, { hunt = null
   // (`hunt`: o sorteio da fração fica guardado até um uso SAIR — `consumirRaioDoPoe` — para a área que não pegou ninguém não sortear de novo no
   // tique seguinte: sem isto, a fração virava "a casa a mais" na prática, de tanto tentar)
   const chave = `${entry.poeGema.slug}@${raioM}`;
+  // (lote C2 da rodada 4, 28/10 — dono: "uma conta só") o SORTEIO `u` fica guardado com o raio (`<chave>~u`): a Área de Efeito do uso estica o raio pelos metros com o
+  // mesmo sorteio (`casasAMaisDaArea` → `GemasR4C2.raioComAArea`: raio em metros × √(1 + Área) ÷ 2, a fração como chance), em vez de sortear as casas a mais de novo
   let r = hunt?.poeRaioPendente?.[chave];
+  let u = hunt?.poeRaioPendente?.[`${chave}~u`];
   if (r == null) {
-    r = Math.max(0, Math.trunc(casas) + (rng() < casas % 1 ? 1 : 0));
-    if (hunt) (hunt.poeRaioPendente ??= {})[chave] = r;
+    u = rng();
+    r = GemasR4C2.raioComAArea(casas, u);
+    if (hunt) Object.assign((hunt.poeRaioPendente ??= {}), { [chave]: r, [`${chave}~u`]: u });
+  } else if (u == null) {
+    // (o raio guardado sem o sorteio — fixado de fora: o sorteio coerente com ele)
+    u = GemasR4C2.sorteioDoRaio(casas, r, rng);
+    if (hunt) hunt.poeRaioPendente[`${chave}~u`] = u;
   }
   // (`minimo`: a ARMADILHA — no PoE o inimigo que a ativa está sempre na explosão, porque o raio de ativação é menor que o dela; aqui a
   // ativação é a 1 casa, `Plantadas.PADRAO.armadilha.raioDeAtivacao`, e a explosão pega ao menos essa casa)
   r = Math.max(r, minimo);
-  return r === Areas.raioDaForma(entry.forma) ? entry : { ...entry, forma: Areas.escalarForma(entry.forma, r) };
+  const forma = r === Areas.raioDaForma(entry.forma) ? entry.forma : Areas.escalarForma(entry.forma, r);
+  return { ...entry, forma, raioPoe: { casas, u, minimo, forma } };
+}
+/**
+ * (lote C2 da rodada 4, 28/10) As casas A MAIS do raio `raio` da forma do uso pela Área de Efeito `fator`: na forma do raio do PoE (`formaNoRaioDoPoe` — `entry.raioPoe`),
+ * numa conta só com o raio da gema (os metros × √fator ÷ 2, o mesmo sorteio — `GemasR4C2.raioComAArea`); nas outras, `ModsPoe.casasPelaArea`.
+ */
+function casasAMaisDaArea(entry, raio, fator, rng = Math.random) {
+  const p = entry?.raioPoe;
+  if (!p || p.forma !== entry.forma) return ModsPoe.casasPelaArea(raio, fator, rng);
+  return GemasR4C2.raioComAArea(p.casas, p.u, fator, p.minimo) - raio;
 }
 /*
  * ---- (lote A1, dono 19/10) O DESLOCAMENTO das gemas de movimento do PoE ----
@@ -5227,7 +5259,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // dano é o das rajadas no tique, D-B3.4)
   const vulcaoDoUso = b3?.vulcao && !plantada ? b3.vulcao : null;
   const trarthusDoUso = b3?.trarthus && !gatilho && !plantada && !doTotem ? b3.trarthus : null;
-  const semGolpeDireto = (!!doCadaver && (!doCadaver.comDano || doCadaver.modo === 'geiser')) || !!orbeDoUso || !!runasDoUso || !!b2?.febre || !!usoDoPacto || !!vulcaoDoUso || !!trarthusDoUso || esqueletosDoUso.length > 0;
+  // (lote C2 da rodada 4, dono 28/10: + o Pacto de Lycia — o uso não causa dano: fortalece as próximas magias de canalização, `GemasR4C2.LYCIA`)
+  const usoDoLycia = itensPoeLigado() && entry.poeGema && !doTotem && !plantada && GemasR4C2.ehPactoDeLycia(entry.poeGema.slug);
+  const semGolpeDireto = (!!doCadaver && (!doCadaver.comDano || doCadaver.modo === 'geiser')) || !!orbeDoUso || !!runasDoUso || !!b2?.febre || !!usoDoPacto || !!usoDoLycia || !!vulcaoDoUso || !!trarthusDoUso || esqueletosDoUso.length > 0;
   // (revisão do B3, 21/10) a Chuva de Lâminas de Trarthus por gatilho, totem, armadilha ou mina NÃO SAI — o PoB (act_dex.lua, BladefallOfTrarthus): "This skill
   // cannot be triggered or used by Totems, Traps, or Mines" (os `skillTypes` sem Triggerable/Totemable/Trappable/Mineable). Antes, virava um golpe direto comum.
   // A rajada dela (`rajadaDaTrarthus` → `golpeDoObjeto`, o `plantada` 'objeto' seu — que também chega com o `gatilho` das plantadas) segue saindo.
@@ -5304,6 +5338,15 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     if (pactoAgora.projeteis > 0) efeitoDaGema = { ...efeitoDaGema, alvosExtras: (efeitoDaGema.alvosExtras ?? 0) + pactoAgora.projeteis, emCirculo: true, doPontoDoAlvo: false };
     if (pactoAgora.feixes > 0 && efeitoDaGema.cadeiaPoe) efeitoDaGema = { ...efeitoDaGema, cadeiaPoe: { ...efeitoDaGema.cadeiaPoe, saltos: (efeitoDaGema.cadeiaPoe.saltos ?? 0) + pactoAgora.feixes } };
   }
+  /*
+   * (lote C2 da rodada 4, dono 28/10 — o PoB, other.lua PactOfLycia) o PACTO DE LYCIA fortalece esta magia? A sua magia de CANALIZAÇÃO (conjurada por você: o totem, a
+   * armadilha, a mina e o gatilho não contam) que COMEÇA um canalizar com o Pacto pendente (`hunt.poeLycia`) gasta uma das 3 e fica fortalecida pelo canalizar inteiro (o
+   * canalizar que continua leva a do começo — `hunt.canalizacao.lycia`): 40% mais Dano (Damage MORE — no acerto e nas afecções que saem dele).
+   */
+  const tagsDoLycia = itensPoeLigado() && entry.poeGema ? tagsPoeDaSkill(entry) : [];
+  const lyciaAgora = itensPoeLigado() && entry.poeGema && efeitoDaGema && !gatilho && !doTotem && !plantada && !tipoPlantado && GemasR4C2.fortalecePeloLycia(entry.poeGema.slug, tagsDoLycia)
+    ? (continuaCanal ? hunt.canalizacao?.lycia ?? null : hunt.poeLycia?.restantes > 0 ? { acao: hunt.poeLycia.acao, maisPct: hunt.poeLycia.maisPct, novo: true } : null) : null;
+  if (lyciaAgora?.maisPct) efeitoDaGema = { ...efeitoDaGema, fatorDeDano: (efeitoDaGema.fatorDeDano ?? 1) * (1 + lyciaAgora.maisPct / 100) };
   // (lote S2B, 27/10) o que os suportes do lote dão a ESTE uso (`SuportesS2B.doUso`): a Fúria Arcana ("35% mais Dano Mágico enquanto você possuir Fúria Arcana"), a Trindade e
   // a Tríade Profana (as Ressonâncias agora), a Gula (a Regurgitação: em círculo, com os projéteis a mais) e a Intensidade Sobrecarregada (o crítico por instância); o seu uso
   // (o totem, a armadilha, a mina e o ativado por gatilho não contam). O que muda depois que o uso sai (a Gula, a Intensidade perdida) é do `aposPagar`, abaixo
@@ -5523,7 +5566,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const mais = [efeitoDaGema?.areaMaisPct ?? 0, intensidade > 0 ? -intensidade * (efeitoDaGema.intensidadeMenosAreaPct ?? 0) : 0, semCanalizar?.est.areaMaisPorEstagioPct ? semCanalizar.est.areaMaisPorEstagioPct * semCanalizar.estagio : 0];
       const legado = Math.round(efeitoDaGema?.areaExtra ?? 0);
       areaNoUso = (incExtra = 0) => {
-        const n = ModsPoe.casasPelaArea(raio, ModsPoe.fatorDaArea(inc + incExtra, ...mais));
+        const n = casasAMaisDaArea(entry, raio, ModsPoe.fatorDaArea(inc + incExtra, ...mais));
         const cs = n ? Areas.daForma(anguloIncPct ? Areas.abrirForma(Areas.escalarForma(formaSemAngulo, raio + n), 1 + anguloIncPct / 100) : Areas.escalarForma(entry.forma, raio + n), formaNoUso, formaNoUso.dir) : base;
         return legado ? Areas.mudar(cs, legado) : cs;
       };
@@ -5731,6 +5774,18 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
             cs.forEach(naCasa);
             for (const b of quem(cs)) { golpesDaSequencia.push({ bicho: b, pct: 100 }); unicos.add(b); }
           }
+        }
+      } else if (seq.forma === 'linhaDeFlechas') {
+        // (lote C2 da rodada 4, dono 28/10) a CHUVA DE FLECHAS DA ARTILHARIA: as 22 flechas (+ os projéteis a mais) caem em sequência numa linha da casa à SUA FRENTE até o
+        // alvo (o local mirado), distribuídas igualmente (`GemasR4C2.casasDasFlechas`); cada flecha acerta a casa dela na área de 1 m × √ da Área (em casas, a fração como
+        // chance, sorteada por flecha); quem está em mais de uma leva mais de um acerto
+        const rumo = alvo && (alvo.x !== x || alvo.y !== y) ? alvo : formaNoUso.x !== x || formaNoUso.y !== y ? formaNoUso : { x: x + ux, y: y + uy };
+        const linha = Areas.reta({ x, y }, rumo, Math.max(1, distanciaChebyshev({ x, y }, rumo)));
+        const n = Math.max(1, Math.round(efeitoDaGema?.projeteisBase ?? seq.flechas) + Math.max(0, Math.round(efeitoDaGema?.alvosExtras ?? 0)));
+        for (const c of GemasR4C2.casasDasFlechas(linha, n)) {
+          const cs = Areas.quadrado(c, emCasas(seq.raioM));
+          cs.forEach(naCasa);
+          for (const b of quem(cs)) { golpesDaSequencia.push({ bicho: b, pct: 100 }); unicos.add(b); }
         }
       } else if (seq.forma === 'chuvaRetangular') {
         // (lote B3, dono 21/10) a CHUVA CINÉTICA DO IMPACTO: o retângulo à sua frente, na direção do alvo — 9 m de comprimento a partir da casa ao seu lado e 4,5 m de
@@ -6177,6 +6232,16 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // tique) e o que deixa um objeto que não acerta na hora (a Invocar Tormenta Vaal) não recebem o Pacto — o dano deles sai depois, de outro caminho (`plantada`)
     hunt.poePacto.restantes -= 1;
     if (!(hunt.poePacto.restantes > 0)) delete hunt.poePacto;
+  }
+  // (lote C2 da rodada 4, dono 28/10) o PACTO DE LYCIA: o uso dele fortalece as próximas 3 magias de canalização (um uso novo recomeça a conta, como o de Beidat); a magia
+  // que começa um canalizar fortalecida gasta uma e põe o Flagelo Celestial no tempo (`porFlageloDoLycia`)
+  if (usoDoLycia) {
+    hunt.poeLycia = { acao: entry.id, restantes: GemasR4C2.LYCIA.magias, maisPct: GemasR4C2.LYCIA.maisPct, nivel: efeitoDaGema?.nivel ?? 1, qualidade: efeitoDaGema?.qualidade ?? 0 };
+    if (entry.efeito) eventos.push({ t: 'fx', id: entry.efeito, uid: 'player', x: hunt.pos.x, y: hunt.pos.y });
+  } else if (lyciaAgora?.novo && hunt.poeLycia) {
+    porFlageloDoLycia(estado, hunt, entry, hunt.poeLycia, inicio);
+    hunt.poeLycia.restantes -= 1;
+    if (!(hunt.poeLycia.restantes > 0)) delete hunt.poeLycia;
   }
   // (lote A1b, dono 19/10) o uso SAIU (pagou):
   //  - D-a: a carga que pula a recarga é gasta agora (o golpe já sai sem ela — no PoE ela é gasta no uso);
@@ -6831,8 +6896,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         const r1 = rolarParte(p);
         const r2 = azarado || sempre || soNaoCritico ? rolarParte(p) : r1;
         const dano = sempre ? (azarado ? r1 : Math.max(r1, r2)) : azarado ? Math.min(r1, r2) : r1;
-        if (!sempre && !soNaoCritico) return { elemento: p.elemento, dano };
-        return { elemento: p.elemento, dano, naoCritico: sempre ? dano : azarado ? r1 : Math.max(r1, r2) };
+        // (lote C2 da rodada 4: + o "mais" de um tipo só do acerto da parte — `maisAcerto`, que a afecção tira)
+        const ma = p.maisAcerto && p.maisAcerto !== 1 ? { maisAcerto: p.maisAcerto } : {};
+        if (!sempre && !soNaoCritico) return { elemento: p.elemento, dano, ...ma };
+        return { elemento: p.elemento, dano, naoCritico: sempre ? dano : azarado ? r1 : Math.max(r1, r2), ...ma };
       }) : null;
       // (lote 31, P043 — o Mestre do Metal: o Físico adicional pelos Empalamentos DESTE alvo entra na parte Física do golpe: a eficácia do dano
       // adicionado, o "aumentado" do Físico e os "mais" do golpe; o crítico e a defesa do alvo vêm depois, com o resto)
@@ -7223,7 +7290,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
           sangramento: m('maisSangramentoPct') * m('maisDotFisicoPct'),
           veneno: m('maisVenenoPct') * m('maisDotCaosPct'),
         };
-        const partesDaAfeccao = pedacos ?? [{ elemento: tipo, dano: bruto }];
+        // (lote C2 da rodada 4) a afecção sai sem o "mais" de um tipo só do acerto (`maisAcerto` da parte — o Dano Físico Corpo a Corpo, os Projéteis Viciosos)
+        const partesDaAfeccao = pedacos ? pedacos.map((p) => (p.maisAcerto > 0 && p.maisAcerto !== 1 ? { ...p, dano: p.dano / p.maisAcerto } : p)) : [{ elemento: tipo, dano: bruto }];
         // (PoE, a Força Concussiva: "Incêndios de Acertos Corpo a Corpo Atordoantes causam X% mais Dano" — o acerto corpo a corpo que atordoou: pelo
         // suporte, pelo Golpe Impiedoso ou pelo atordoamento do PoE)
         const atordoouAgora = postosDaGema.includes('atordoado') || !!doAcerto?.atordoou || !!doSuporte?.atordoou;
@@ -7314,6 +7382,11 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const raioM = GemasPoe.areaNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0).raioM ?? GemasPR1.CONE_GALVANICO.raioPadraoM;
       return Areas.escalarForma(GemasA4.CONE_DO_TIRO_GELIDO.forma, Math.max(1, casasDoRaio(raioM * Math.sqrt(ModsPoe.fatorDaArea(efeitoDaGema?.areaIncPct ?? 0, efeitoDaGema?.areaMaisPct ?? 0)))));
     })() : null;
+    // (lote C2 da rodada 4, dono 28/10) o CONE do Aço Estraçalhador (o PoB: a parte "Cone AoE", radius 28): 2,8 m × √ da Área, em casas (a fração como chance, sorteada uma
+    // vez no uso), à frente de cada inimigo que um projétil acerta (`GemasR4C2.ACO_ESTRACALHADOR`)
+    const coneDoAco = itensPoeLigado() && entry.poeGema && GemasR4C2.temConeDoAco(entry.poeGema.slug) && !casas
+      ? Areas.escalarForma(GemasA4.CONE_DO_TIRO_GELIDO.forma, Math.max(1, casasDoRaio((GemasPoe.areaNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0).raioM ?? GemasR4C2.ACO_ESTRACALHADOR.raioM) * Math.sqrt(ModsPoe.fatorDaArea(efeitoDaGema?.areaIncPct ?? 0, efeitoDaGema?.areaMaisPct ?? 0)))))
+      : null;
     // (lote A3c, dono 19/10: "Fazer como o PoE") a ÁREA NO IMPACTO do projétil da gema com raio-base no PoB — `areaNoImpactoDoUso`, sorteada uma
     // vez no uso. (revisão do A3c: também no Totem de Magia e na Balista — no PoE o projétil lançado pelo totem explode igual)
     const areaNoImpacto = !casas ? areaNoImpactoDoUso(entry, efeitoDaGema, intensidade) : null;
@@ -7484,6 +7557,16 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         const impactos = [...(!casas && !projeteisAleatorios() && !soNaVolta() ? atingidos : []), ...golpes.filter((g) => FONTES_DE_PROJETIL.has(g.tipo)).map((g) => g.bicho)].filter(acertouNoPasse);
         for (const b of impactos) {
           const cs = Areas.daForma(coneDoSurto, { x: b.x, y: b.y }, ordemDosLados({ x, y }, b)[0]);
+          for (const m of Areas.dentro(cs, vivos)) if (m !== b && m.hp > 0) acertar(m, 100, 'cone');
+          if (entry.efeito) eventos.push({ t: 'area', id: entry.efeito, x: b.x, y: b.y, casas: Areas.paraTela(cs, b) });
+        }
+      }
+      // (lote C2 da rodada 4, dono 28/10) o cone do Aço Estraçalhador: cada projétil que acerta despedaça à frente do acertado, na direção do tiro; quem está no cone leva o
+      // acerto dele (um cone por projétil — vários cones, vários acertos); o acertado não leva o do próprio cone (o projétil já o acertou)
+      if (coneDoAco) {
+        const impactos = [...(!casas && !projeteisAleatorios() && !soNaVolta() ? atingidos : []), ...golpes.filter((g) => FONTES_DE_PROJETIL.has(g.tipo)).map((g) => g.bicho)].filter(acertouNoPasse);
+        for (const b of impactos) {
+          const cs = Areas.daForma(coneDoAco, { x: b.x, y: b.y }, ordemDosLados({ x, y }, b)[0]);
           for (const m of Areas.dentro(cs, vivos)) if (m !== b && m.hp > 0) acertar(m, 100, 'cone');
           if (entry.efeito) eventos.push({ t: 'area', id: entry.efeito, x: b.x, y: b.y, casas: Areas.paraTela(cs, b) });
         }
@@ -8208,11 +8291,12 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // ("se você usou uma Habilidade de Fogo Recentemente"; "por cada Magia Não Instantânea que você tenha Conjurado Recentemente".)
     if (tagsPoe.includes('fogo')) ModsPoe.marcar(hunt, 'usouFogo');
     // (14/10, a Infusão Espiritual: "enquanto canaliza uma magia" — `ModsPoe.tiqueDaInfusao`)
-    if (tagsPoe.includes('canalizar') && tagsPoe.includes('magia')) ModsPoe.marcar(hunt, 'canalizouMagia');
+    if (tagsPoe.includes('canalizar') && tagsPoe.includes('magia') && !usoDoLycia) ModsPoe.marcar(hunt, 'canalizouMagia');
     // (lote 42, P074) a CANALIZAÇÃO CONTÍNUA: a mesma habilidade de Canalização usada de novo em seguida continua o canalizar (até o fim deste
     // uso); outra habilidade interrompe (`ModsPoe.canalizandoAgora`). A folga de um tique entre um uso e o outro.
     const canal = hunt.canalizacao;
-    if (tagsPoe.includes('canalizar')) {
+    // (lote C2 da rodada 4: o Pacto de Lycia não é uma canalização — o poedb lhe dá a tag do Flagelo Celestial)
+    if (tagsPoe.includes('canalizar') && !usoDoLycia) {
       // (revisão do A4: o uso depois da liberação começa um canalizar novo)
       const continua = canal && canal.acao === entry.id && !canal.liberou && inicio <= canal.ate + 250;
       // (lote A1b, dono 19/10: + a liberação da miragem — o próximo uso começa um canalizar novo)
@@ -8222,7 +8306,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         // (lote A4, dono 19/10: o nível da gema e o estágio do tempo — o que a canalização dá a você: `GemasPoe.adds`, o "menos Velocidade de Movimento por Estágio")
         nivel: efeitoDaGema?.nivel ?? 1, ...(estagioDoUso?.est.modo === 'tempo' ? { estagioDaFicha: estagioDoUso.estagio } : {}),
         // (lote S1: o Conjurar ao Canalizar Desperto — "Ignora Atordoamentos enquanto Usando Habilidades Suportadas", lido em `Controle.tentar`)
-        ...(efeitoDaGema?.ignoraAtordoamento ? { ignoraAtordoamento: true } : {}) };
+        ...(efeitoDaGema?.ignoraAtordoamento ? { ignoraAtordoamento: true } : {}),
+        // (lote C2 da rodada 4) o Pacto de Lycia que fortalece este canalizar (o do começo segue nos usos que continuam)
+        ...(lyciaAgora ? { lycia: { acao: lyciaAgora.acao, maisPct: lyciaAgora.maisPct } } : {}) };
       // (lote A4, dono 19/10: o que a canalização dá a você mudou — a ficha é refeita)
       if (!continua || (canal?.estagioDaFicha ?? null) !== (hunt.canalizacao.estagioDaFicha ?? null)) Ficha.invalidar(estado);
       // (lote A1b, dono 19/10) a miragem dura o mesmo que o canalizar (o fim deste uso, com as repetições)
@@ -10994,6 +11080,37 @@ function criarObjetoT3(estado, hunt, entry, ef, obj, { base, x, y, alvo, mira, f
     porObjeto(hunt, { ...base, tipo: 'tempestadeT3', mov: 'parado', x: c.x, y: c.y, efeito: 'pulso', raio: casasDe(obj.raioM), raioM: obj.raioM, fatorA, fd, estagios: 0, intervaloMs: GemasT3.TEMPESTADE.estagioMs, proxima: agora, ate: agora + Math.round(GemasT3.TEMPESTADE.duracaoMs * fd), max: GemasT3.TEMPESTADE.limite }, agora);
   }
 }
+/**
+ * (lote C2 da rodada 4, dono 28/10 — o PoB, other.lua TriggeredHeavensScourge) O FLAGELO CELESTIAL do Pacto de Lycia no canalizar fortalecido que começou agora (`canal`, `desde`):
+ * o objeto em você que solta um raio a cada 0,3 s enquanto aquele canalizar segue e, parado, os que faltam a cada 0,05 s — 10 no total (`pulsarFlageloDoLycia`). O raio é o
+ * do Pacto (o dano da gema — o do Flagelo —, no nível e na qualidade dele, com os suportes ligados a ele), na área de 1,2 m (+ 0,1 m por qualidade) × √ da Área.
+ */
+function porFlageloDoLycia(estado, hunt, entry, pacto, agora) {
+  if (!POR_ID.get(pacto?.acao) || !hunt?.pos) return;
+  const ef = Gemas.efeitoNaSkill(estado, pacto.acao);
+  const fatorA = ModsPoe.fatorDaArea(ef?.areaIncPct ?? 0, ef?.areaMaisPct ?? 0);
+  porObjeto(hunt, {
+    acao: pacto.acao, slug: GemasR4C2.LYCIA.slug, el: 'energy', dono: 'voce', tipo: 'flageloLycia', mov: 'parado', x: hunt.pos.x, y: hunt.pos.y, efeito: 'pulso',
+    canal: entry.id, canalDesde: agora, feitos: 0, raioM: GemasR4C2.raioDoFlageloM(ef?.qualidade ?? pacto.qualidade ?? 0) * Math.sqrt(fatorA), alcance: Math.max(1, Math.round(GemasR4C2.LYCIA.alcanceM / 2)),
+    intervaloMs: GemasR4C2.LYCIA.intervaloMs, proxima: agora + GemasR4C2.LYCIA.intervaloMs, ate: agora + 120_000, max: GemasR4C2.LYCIA.magias,
+  }, agora);
+}
+/** (lote C2 da rodada 4) O raio do Flagelo Celestial agora (`porFlageloDoLycia`): num inimigo sorteado a até 7 m de você, a área dele. */
+function pulsarFlageloDoLycia(estado, hunt, personagem, o, t, eventos) {
+  const c = hunt.canalizacao;
+  const canalizando = !!c && c.acao === o.canal && c.desde === o.canalDesde && t <= (c.ate ?? -Infinity) + 250;
+  const passo = GemasR4C2.passoDoFlagelo(o, canalizando);
+  o.intervaloMs = passo.intervaloMs;
+  if (!passo.cai) { o.ate = Math.min(o.ate, t); return; }
+  o.feitos = (o.feitos ?? 0) + 1;
+  if (passo.acabou) o.ate = Math.min(o.ate, t);
+  const perto = hunt.pos ? vivosNoAndar(hunt, o.z).filter((m) => distanciaChebyshev(m, hunt.pos) <= o.alcance) : [];
+  if (!perto.length) return;
+  const alvo = perto[Math.min(perto.length - 1, Math.floor(Math.random() * perto.length))];
+  const raio = Math.max(0, casasDoRaio(o.raioM));
+  eventos.push({ t: 'explosao', id: EFEITO_DA_EXPLOSAO, x: alvo.x, y: alvo.y, lado: 2 * raio + 1 });
+  golpeDoObjeto(estado, hunt, personagem, { ...o, x: alvo.x, y: alvo.y, raio }, alvo, {}, eventos);
+}
 /** (lote T3) O PULSO dos objetos do lote T3 (`pulsarObjeto`). */
 function pulsarObjetoT3(estado, hunt, personagem, o, t, eventos) {
   const dentroDe = (c, r) => vivosNoAndar(hunt, o.z).filter((m) => distanciaChebyshev(m, c) <= r);
@@ -11136,6 +11253,8 @@ function tormentasCaem(hunt, acao, dono, t, exceto = null) {
   for (const x of hunt.poeObjetos ?? []) if (x !== exceto && x.tipo === 'tormenta' && x.acao === acao && x.dono === dono && x.ate > t && x.proxima > t) x.proxima = t;
 }
 function pulsarObjeto(estado, hunt, personagem, o, t, eventos) {
+  // (lote C2 da rodada 4, dono 28/10) o Flagelo Celestial do Pacto de Lycia (`pulsarFlageloDoLycia`)
+  if (o.tipo === 'flageloLycia') { pulsarFlageloDoLycia(estado, hunt, personagem, o, t, eventos); return; }
   // (lote C3, dono 25/10) os objetos do lote C3 — as tempestades, o abalo, os martelos, o orbe (`pulsarObjetoC3`)
   if (GemasC3.TIPOS.has(o.tipo)) { pulsarObjetoC3(estado, hunt, personagem, o, t, eventos); return; }
   // (lote T3, 27/10) os objetos do lote T3 — as Estátuas, os orbes do Confinamento, a Tempestade Relampejante e as explosões da Rajada (`pulsarObjetoT3`)

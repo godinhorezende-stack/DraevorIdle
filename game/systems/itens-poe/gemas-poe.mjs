@@ -79,6 +79,7 @@ import * as GemasT1 from './gemas-t1.mjs';
 // (lote T2, rodada 4 — 27/10: as correções pelo PoB das gemas que estavam sem teste próprio)
 import * as GemasT2 from './gemas-t2.mjs';
 import * as GemasT3 from './gemas-t3.mjs';
+import * as GemasR4C2 from './gemas-r4c2.mjs';
 // (rodada 4, lote L: o motor das habilidades dos lacaios pelo PoB — a gema que segue o PoB perde o motivo "o lacaio ataca do jeito do tipo dele")
 import * as LacaiosHabilidades from './lacaios-habilidades.mjs';
 
@@ -635,6 +636,8 @@ export function alvosNoNivel(slug, nivel = 1, qualidade = 0) {
   // (lote T2, 27/10) os ricochetes da QUALIDADE que estão só no PoB (o Golpe Relampejante do Arco: qualityStats "number_of_chains" 0,1 por ponto — +2 com 20)
   const t2 = GemasT2.CORRECAO_DO_POB_T2[slug];
   if (t2?.saltosPorQualidade && q > 0) a.saltos += Math.floor(q * t2.saltosPorQualidade + 1e-9);
+  // (lote C2 da rodada 4, dono 28/10) o Tiro Cinético da Fragmentação: "projectiles_can_shotgun" — os projéteis que não acham outro inimigo vão no alvo (`Secundarios`)
+  if (GemasR4C2.projeteisNoMesmoAlvo(slug)) a.extrasNoAlvo = true;
   ALVOS.set(k, a);
   return a;
 }
@@ -1074,6 +1077,8 @@ export function sequenciaDaGema(slug, nivel = 1, qualidade = 0) {
   // `chuvaRetangular` — `GemasB3.sequenciaDasLinhas`)
   // (lote T2, 27/10: + a Chuva Cinética — o mesmo retângulo da do Impacto, pelas linhas do PoB — `GemasT2.chuvaDasLinhas`)
   if (slug === GemasT2.CHUVA_CINETICA) return GemasT2.chuvaDasLinhas(slug, textosDaGema(slug, nivel).linhas);
+  // (lote C2 da rodada 4, dono 28/10: + a Chuva de Flechas da Artilharia — as 22 flechas na linha da casa à sua frente até o alvo, `GemasR4C2.sequenciaDaArtilharia`)
+  if (slug === GemasR4C2.ARTILHARIA.slug) return GemasR4C2.sequenciaDaArtilharia(slug);
   if (/^(Glacial_Cascade|Divine_Retribution$|Kinetic_Rain_of_Impact$)/.test(slug)) return GemasB3.sequenciaDasLinhas(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), { raioDoEstouroM: slug === 'Divine_Retribution' ? ultimoDaColuna(slug, nivel, /^Raio do Estouro/i) : null });
   if (!/^Sunder/.test(slug)) {
     const a4 = /^(Bladefall|Ice_Crash|Earthshatter)/.test(slug) ? GemasA4.sequenciaDasLinhas(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade)) : null;
@@ -1131,7 +1136,7 @@ export const snipeDaGema = (slug, nivel = 1) => comCache(A4, `sni|${slug}@${nive
 const A3B = new Map();
 /** O objeto que o uso da gema deixa (`GemasA3b.objetoDaGema`): a bola, o tornado, a espiral, o olho, o marcador, o chão, as lâminas, a captura. */
 // (lote B1, dono 20/10 — D-B1.10: + o marcador da Invocar Tormenta, `GemasB1.tormentaDasLinhas`; lote B2: + a Explosão Voltáxica e a Tormenta Flamejante Vaal)
-export const objetoDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A3B, `obj|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA3b.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasB1.tormentaDasLinhas(slug, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasPR1.objetoDasLinhas(slug, textosDaGema(slug, nivel).linhas) ?? GemasB2.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasB3.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasC3.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasB4.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}, nivel) ?? objetoT3(slug, nivel, qualidade));
+export const objetoDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A3B, `obj|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA3b.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasB1.tormentaDasLinhas(slug, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasPR1.objetoDasLinhas(slug, textosDaGema(slug, nivel).linhas) ?? GemasB2.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasB3.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasC3.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasB4.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}, nivel) ?? objetoT3(slug, nivel, qualidade) ?? GemasR4C2.bombaDaGema(slug, compilada(slug, nivel, qualidade)?.stats ?? {}, areaNoNivel(slug, nivel, qualidade).raioM));
 /** (D2) O que a gema faz com os seus Disparos Congelantes (a Nova Glacial dos Disparos, o Vórtice da Projeção). */
 /**
  * (lote T3, 27/10) O objeto das gemas do lote T3 (`GemasT3.objetoDaGemaT3`): as Estátuas da Legião Congelada, os orbes do Confinamento, a tempestade da Tempestade
