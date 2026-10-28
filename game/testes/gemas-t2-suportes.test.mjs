@@ -280,16 +280,17 @@ test('T2 Greater_Spell_Echo: no 3, Repete 2 vezes, 62% mais Velocidade de Conjur
 });
 
 test('T2 Greater_Spell_Echo: a Área cresce a cada repetição (k × 24%) — o primeiro uso sem o aumento (antes, +37% fixo em todo o uso)', { skip: SEM }, async () => {
-  // a Nova (3,2 m = 1,6 casa): com o sorteio 0,1 a fração sai — 2 casas no uso; a Área da repetição estica a forma (`casasPelaArea`: 2 × (√1,24 − 1) = 0,23 casa na 1ª,
-  // 2 × (√1,48 − 1) = 0,43 na 2ª — a fração como chance, que o 0,1 dá): 3 casas nas duas repetições. O inimigo a 3 casas de você leva as 2 repetições e não o uso
+  // (aval do dono 28/10: a área numa conta só — a Nova, 3,2 m ÷ 2 = 1,6 casa; o uso 1,6, a 1ª repetição 1,6 × √1,24 = 1,78, a 2ª 1,6 × √1,48 = 1,95; a fração como
+  // chance pelo mesmo sorteio: com 0,7, o uso fica em 1 casa (0,7 ≥ 0,6); as repetições seguem o sorteio coerente com esse raio (`GemasR4C2.sorteioDoRaio`:
+  // 0,6 + 0,7 × 0,4 = 0,88) — a 1ª fica em 1 casa (0,78 < 0,88) e a 2ª vai a 2 (0,95 > 0,88). O inimigo a 2 casas leva só a 2ª repetição)
   const { e, b, resto } = await montar(['Ice_Nova', 'Greater_Spell_Echo_Support'], { arma: 'Wands/Driftwood_Wand', nivelDe: { Greater_Spell_Echo_Support: 3 } });
   const longe = resto[0];
-  Object.assign(longe, { x: e.hunt.pos.x - 3, y: e.hunt.pos.y, estados: {}, dots: [] });
-  const { ev } = usar(e, 0, b, 0.1);
+  Object.assign(longe, { x: e.hunt.pos.x - 2, y: e.hunt.pos.y, estados: {}, dots: [] });
+  const { ev } = usar(e, 0, b, 0.7);
   assert.equal(golpesEm(ev, b).length, 3);
-  assert.equal(golpesEm(ev, longe).length, 2, 'as 2 repetições');
-  // sem o suporte, o mesmo sorteio: a 3 casas, nada
+  assert.equal(golpesEm(ev, longe).length, 1, 'a 2ª repetição');
+  // sem o suporte, o mesmo sorteio: a 2 casas, nada
   const { e: e2, b: b2, resto: r2 } = await montar(['Ice_Nova'], { arma: 'Wands/Driftwood_Wand' });
-  Object.assign(r2[0], { x: e2.hunt.pos.x - 3, y: e2.hunt.pos.y, estados: {}, dots: [] });
-  assert.equal(golpesEm(usar(e2, 0, b2, 0.1).ev, r2[0]).length, 0);
+  Object.assign(r2[0], { x: e2.hunt.pos.x - 2, y: e2.hunt.pos.y, estados: {}, dots: [] });
+  assert.equal(golpesEm(usar(e2, 0, b2, 0.7).ev, r2[0]).length, 0);
 });

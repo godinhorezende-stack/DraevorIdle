@@ -88,9 +88,11 @@ test('L — status: as 53 gemas que seguem o PoB ficam sem o motivo do lacaio (f
     assert.deepEqual(st[s].motivos, [], s);
     assert.equal(st[s].status, 'funciona', s);
   }
+  // (aval do dono 28/10: o Animar pela base do nível — o item animado é uma base Normal até o nível que a gema anima; as 5 seguem o PoB e funcionam, sem o motivo)
   for (const s of ['Animate_Weapon', 'Vaal_Animate_Weapon', 'Animate_Weapon_of_Ranged_Arms', 'Animate_Guardian', 'Animate_Guardian_of_Smiting']) {
-    assert.equal(H.segueOPob(s), false, s);
-    assert.ok(st[s].motivos.some((m) => /^o lacaio ataca do jeito do tipo dele/.test(m)), s);
+    assert.equal(H.segueOPob(s), true, s);
+    assert.deepEqual(st[s].motivos, [], s);
+    assert.equal(st[s].status, 'funciona', s);
   }
 });
 
@@ -174,7 +176,10 @@ test('L — o ESPECTRO pelo PoB: o monstro erguido leva os multiplicadores dele 
   assert.ok(perto(r.vida, A.vida[39] * 3));
   assert.ok(perto(r.golpe, A.dano[39] * 2));
   assert.equal(r.tempoMs, 1500);
-  assert.ok(perto(r.fatorDasMagias, T.danoMonstro[39] / T.danoMonstro[9]));
+  // (aval do dono 28/10: as magias do Espectro pela EFICÁCIA do PoB — statInterpolation 3, incremental 0,04 —, não pela tabela de dano de monstro:
+  // ((3,885209 + 0,360246 × 39) × 1,04^39) ÷ ((3,885209 + 0,360246 × 9) × 1,04^9) ≈ 8,16)
+  const efic = (n) => (3.885209 + 0.360246 * (n - 1)) * 1.04 ** (n - 1);
+  assert.ok(perto(r.fatorDasMagias, efic(40) / efic(10)), String(r.fatorDasMagias));
   assert.equal(H.espectroPeloPob(null, 100, 40), null);
   // na invocação: o Espectro ergue o cadáver de um monstro do PoE e fica com a força dele pelo PoB
   const c = cacadaComGema('Raise_Spectre');
@@ -296,7 +301,9 @@ test('L — os que usam a SUA arma: o clone das Flechas (175% do arco), o Armame
 });
 
 test('L — as gemas que não seguem o motor ficam como estavam: o totem não tem habilidades do PoB; o Animar Arma segue o jeito do tipo', { skip: SEM }, () => {
-  assert.equal(invocar('Animate_Weapon').habPob, undefined);
+  // (aval do dono 28/10: o Animar Arma pela base do nível — o golpe padrão com a arma animada, `{ principal: [Melee], arma: 'base' }`)
+  const animada = invocar('Animate_Weapon').habPob;
+  assert.deepEqual([animada?.arma, animada?.principal?.map((h) => h.id)], ['base', ['Melee']]);
   assert.equal(invocar('Shrapnel_Ballista')?.habPob, undefined);
   assert.equal(H.doLacaio('Raise_Zombie_of_Falling', 'RaisedZombie', 20), null, 'a Queda é do lote E2A');
   assert.equal(H.doLacaio('Summon_Holy_Relic', 'HolyLivingRelic', 20), null, 'a Relíquia é do lote R3B');

@@ -35,7 +35,9 @@ const BUFF = new Set(['aura', 'arauto', 'clamor', 'maldicao', 'guarda', 'vinculo
 // a montagem usa a Febre e logo depois a Bola de Fogo, e confere o Sangue Corrompido no alvo — `febre`, abaixo)
 // (lote PR3, com o aval do dono 21/10: o Pacto de Beidat não causa dano no PoE — base_deal_no_spell_damage —; o uso fortalece as próximas magias: a montagem usa o
 // Pacto e logo depois a Bola de Fogo, como a Febre)
-const DANO_POR_OUTRA = { Vaal_Venom_Gyre: 'Whirling_Blades', Corrupting_Fever: 'Fireball', Pact_of_Beidat: 'Fireball' };
+// (aval do dono 28/10: o Pacto de Lycia como no PoB — o uso não fere; fortalece as próximas magias de CANALIZAÇÃO e o Flagelo Celestial cai enquanto você canaliza:
+// a montagem usa o Pacto e logo depois a Incinerar, uma magia canalizada; o dano conferido é o da magia fortalecida)
+const DANO_POR_OUTRA = { Vaal_Venom_Gyre: 'Whirling_Blades', Corrupting_Fever: 'Fireball', Pact_of_Beidat: 'Fireball', Pact_of_Lycia: 'Incinerate' };
 // (lote B2, com o aval do dono 20/10: a Explosão de Lâminas do Descarrego detona as lâminas do SEU Vórtice de Lâminas — sem lâmina não sai: a montagem usa o Vórtice
 // ANTES, encaixado junto e no slot 2; o dano conferido é o do Descarrego)
 // (aval do dono 27/10: a Detonar Minas detona as SUAS Minas — a montagem planta uma Mina da Tormenta Explosiva antes, ANDANDO, para que ela espere a detonação

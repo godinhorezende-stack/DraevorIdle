@@ -24,8 +24,13 @@ export const usaBase = (slug) => ehArmaAnimada(slug) || ehGuardiao(slug);
 export const GUARDIAO_DESARMADO = Object.freeze({ min: 2, max: 6, tempoS: 1 });
 
 /** O nível máximo do item que a gema anima ("Pode usar Itens que exigem até o Nível N"), ou null. */
+// (rodada 4, correções finais — achado C: a linha da Vaal vem embaralhada do poedb: "até o Nível 40 … Exigência de Nível entre 100 e 1". No PoB (VaalAnimateWeapon,
+// act_dex.lua) o animate_item_maximum_level_requirement é 9 no nível 1, 44 no 10 e 100 no 20, igual ao da comum; o 40 é o vaal_animate_weapon_minimum_level_requirement.
+// Com a faixa "entre A e B" na linha, o limite é o maior dos dois.)
 export function limiteDeNivel(linhas) {
   for (const l of linhas ?? []) {
+    const faixa = /Exigência de Nível entre (\d+) e (\d+)/i.exec(String(l));
+    if (faixa) return Math.max(Number(faixa[1]), Number(faixa[2]));
     const m = /Pode usar Itens que exigem até o Nível (\d+)/i.exec(String(l));
     if (m) return Number(m[1]);
   }

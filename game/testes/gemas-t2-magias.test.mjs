@@ -2,7 +2,7 @@
 // com outra magia do mesmo personagem, a resistência do alvo zerada), a área e cada linha feita, com o número do nível 20 conferido com o poedb ou o PoB.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { SEM, G, Ficha, montar, usar, danoEm, perto } from './gemas-t2-apoio.mjs';
+import { SEM, G, Ficha, Acoes, travado, montar, usar, danoEm, perto } from './gemas-t2-apoio.mjs';
 
 const { resistenciaDe } = await import('../systems/hunt/resistencia.mjs');
 const Afeccoes = await import('../systems/itens-poe/afeccoes.mjs');
@@ -12,12 +12,20 @@ function semResistencia(e, b) {
   b.resist = {};
   for (const el of ['fire', 'ice', 'energy', 'chaos']) b.resist[el] = -resistenciaDe(e.hunt, b, el);
 }
+// (aval do dono 28/10: as Bombas Congelantes explodem 1,5 s (a Instabilidade) depois do uso — o dano e o Congelamento conferidos na EXPLOSÃO,
+// rodando o tempo até ela: os objetos da caçada a cada 100 ms, com o mesmo sorteio)
+function ateAExplosao(e, v = 0.5, ms = 1600) {
+  const ev = [];
+  travado(v, () => { for (let t = 0; t < ms; t += 100) { e.hunt.clock += 100; Acoes.tiqueDosObjetos(e, e.hunt, { nome: 'T' }, ev, e.hunt.clock); } });
+  return ev;
+}
 async function golpeDe(slug, { vida = 1e12, v = 0.5 } = {}) {
   const { e, b, resto } = await montar([slug], { arma: 'Wands/Driftwood_Wand' });
   Object.assign(b, { hp: vida, maxHp: vida });
   semResistencia(e, b);
   const { r, ev } = usar(e, 0, b, v);
   assert.ok(r.ok, JSON.stringify(r));
+  if (slug.startsWith('Frost_Bomb')) ev.push(...ateAExplosao(e, v)); // (aval do dono 28/10)
   return { e, b, resto, ev, dano: danoEm(ev, b) };
 }
 const media = ([a, z]) => (a + z) / 2;
@@ -40,12 +48,14 @@ test('T2 Frost_Bomb_of_Instability: a explosão pega quem está no raio (2,4 m =
   Object.assign(resto[0], { x: b.x, y: b.y + 1, estados: {}, dots: [] });
   Object.assign(resto[1], { x: b.x + 3, y: b.y, estados: {}, dots: [] });
   const { ev } = usar(e, 0, b, 0.5);
+  ev.push(...ateAExplosao(e, 0.5)); // (aval do dono 28/10: na explosão)
   assert.ok(danoEm(ev, b) > 0 && danoEm(ev, resto[0]) > 0, 'o alvo e o vizinho');
   assert.equal(danoEm(ev, resto[1]), 0, 'a 3 casas, fora');
   assert.equal(b.estados.congelado, undefined, '0,5 ≥ 25%');
   const { e: e2, b: b2 } = await montar(['Frost_Bomb_of_Instability'], { arma: 'Wands/Driftwood_Wand' });
   Object.assign(b2, { hp: 20_000, maxHp: 20_000 });
   usar(e2, 0, b2, 0.2);
+  ateAExplosao(e2, 0.2); // (aval do dono 28/10: na explosão)
   assert.ok(b2.estados.congelado?.ate > e2.hunt.clock, JSON.stringify(b2.estados));
 });
 

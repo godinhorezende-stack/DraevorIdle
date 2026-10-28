@@ -337,7 +337,11 @@ test('A4 E2 (D6): o Devastar — cada uso que acerta ganha 1 estágio (50% mais 
   const usos = seguidos(m, 9, 0.999);
   const st = m.e.hunt.poeEstagios[m.e.actions[0].id];
   assert.equal(st.n, 8, 'o máximo do PoB');
-  assert.ok(tamanho(usos[8]) > tamanho(usos[0]), `a área cresce: ${usos.map(tamanho)}`);
+  // (aval do dono 28/10: a área numa conta só — o Devastar, 1,6 m ÷ 2 = 0,8 casa; no 8º estágio, 0,8 × √5 = 1,79: com o sorteio 0,999 a fração não sai e fica 1 casa,
+  // a varredura mínima, como no 1º estágio (0,8 × √1,5 = 0,98 → o mínimo 1); com o sorteio 0,5 (< 0,79), 2 casas)
+  assert.equal(tamanho(usos[8]), tamanho(usos[0]), `com 0,999, a mesma área: ${usos.map(tamanho)}`);
+  const meio = usar(m, 0.5);
+  assert.ok(tamanho(meio) > tamanho(usos[0]), `a área cresce: ${tamanho(usos[0])} → ${tamanho(meio)}`);
   m.e.hunt.clock += 2500;
   const depois = usar(m, 0.999);
   assert.equal(tamanho(depois), tamanho(usos[0]), 'depois de 2 s sem acertar, recomeça');
@@ -419,7 +423,9 @@ test('A4 C: o Ciclone — "Área de Efeito aumentada em 15% por cada 0.1 metro d
   const area = async (metros) => {
     const m = await montar('Two_Hand_Swords/Corroded_Blade', 'Cyclone', { onde: [[1, 0]] });
     if (metros) { m.e.equipment.ring = { id: 0, count: 1, af: [], poe: { af: { alcance_corpo_m: metros } } }; Ficha.invalidar(m.e); }
-    return usar(m, 0.999).ev.find((x) => x.t === 'area').casas.length;
+    // (aval do dono 28/10: a área numa conta só — 1,6 m ÷ 2 = 0,8 casa; +2 m de alcance, +300%: 0,8 × √4 = 1,6. Com o sorteio 0,999 as duas ficam na varredura
+    // mínima de 1 casa; com 0,5, 1 casa sem (0,5 < 0,8) e 2 com (0,5 < 0,6))
+    return usar(m, 0.5).ev.find((x) => x.t === 'area').casas.length;
   };
   // (o raio do Ciclone, 1,6 m, fica na varredura de 1 casa; +2 m de alcance = +300% de área: o dobro do raio)
   const sem = await area(0);

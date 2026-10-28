@@ -1354,7 +1354,9 @@ function anomaliasDoFluxoR3c(estado, hunt, entry, ef, { mortos = [], critico = n
   const porTag = ModsPoe.somaPorTags(ficha, ['ataque', 'area']);
   const fator = ModsPoe.fatorDaArea(ModsPoe.valor(ficha, 'area_inc') + (porTag.area_inc ?? 0) + (ef?.areaIncPct ?? 0), ModsPoe.valor(ficha, 'area_mais') + (porTag.area_mais ?? 0), ef?.areaMaisPct ?? 0);
   const ms = Math.round((ef.fluxoDuracaoMs ?? 6000) * fatorDeDuracao(estado, entry, ef));
-  const criar = (c, maior) => GemasR3c.criarAnomalia(hunt, { acao: entry.id, c, z: c.z ?? hunt.z ?? 0, raio: GemasR3c.casasDe(ef.fluxoRaioM ?? 1.2, fator), ms, teto: ef.fluxoTeto ?? 20, maior }, agora);
+  // (rodada 4, correções finais — achado C: o teto é de CADA habilidade ligada ao Fluxo — o grupo é a habilidade suportada; antes duas habilidades com o Fluxo
+  // dividiam os mesmos 20)
+  const criar = (c, maior) => GemasR3c.criarAnomalia(hunt, { acao: entry.id, c, z: c.z ?? hunt.z ?? 0, raio: GemasR3c.casasDe(ef.fluxoRaioM ?? 1.2, fator), ms, teto: ef.fluxoTeto ?? 20, maior, grupo: `fluxo:${entry.id}` }, agora);
   if (ef.fluxoAoMatar) for (const b of mortos) criar(b, false);
   if (ef.fluxoAoCritico && critico && GemasR3c.gastarUso(hunt, `fluxo:${entry.id}`, ef.fluxoRecargaMs ?? 150, ef.fluxoUsos ?? 1, agora)) criar(critico, true);
 }
@@ -4545,7 +4547,8 @@ export function temposDaGemaPoe(estado, entry, efeitoDaGema = Gemas.efeitoNaSkil
   const ficha = comAsLinhasDaGema(estado, fichaDoPersonagem, entry, efeitoDaGema);
   const t = GemasPoe.temposNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0);
   const suportes = 1 + (efeitoDaGema?.castTimePct ?? 0) / 100;
-  const ataque = !!entry.poeGema.ataque;
+  // (rodada 4, correções finais) o uso que é MAGIA numa gema de golpe de ataque (a Legião Congelada — `usoComoMagia`): o tempo do uso é o da conjuração
+  const ataque = !!entry.poeGema.ataque && !t.usoComoMagia;
   // PoE: a velocidade de conjuração / a recuperação de recarga "com Habilidades de Fogo", "de Movimento", "do Totem"… (pelas tags da gema).
   const porTag = ModsPoe.somaPorTags(ficha, tagsPoeDaSkill(entry));
   // (18/10, lote G20a) a "Velocidade de Posicionamento do Totem aumentada" das peças e da árvore (`cast_speed_tag@totem`) é a de COLOCAR o totem (o
@@ -5380,7 +5383,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (lote PR4, dono 25/10) o que este uso deixa grudado ou ligado (`pr4DoUso` → `aposOPasseDoPR4`): as flechas da Flecha Explosiva e da Eletrocussão, as cordas da
   // Flecha Aprisionadora, a Concha Somática, a energia do Golpe Estático e os Relâmpagos Concentrados — só o SEU uso (a exceção 3); e a concha que a explodida passa
   const pr4DoUso = itensPoeLigado() && entry.poeGema && efeitoDaGema && !doTotem && !tipoPlantado && (!plantada || plantada.pr4?.tipo === 'passaConcha') ? usoDoPR4(estado, entry, efeitoDaGema, !!plantada) : null;
-  const objetoDaGemaNoUso = itensPoeLigado() && entry.poeGema && !entry.poeGema.lacaio && !tipoPlantado && (!plantada || plantada.tipo === 'totem') ? GemasPoe.objetoDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
+  // (rodada 4, correções finais — achado C: a Bomba Congelante é Trappable/Mineable no PoB e o cristal também espera a duração quando a armadilha ou a mina dispara —
+  // o cristal no alvo da plantada, como no seu uso)
+  const bombaPlantada = !!plantada && (plantada.tipo === 'armadilha' || plantada.tipo === 'mina') && !!entry.poeGema && GemasR4C2.ehBombaCongelante(entry.poeGema.slug);
+  const objetoDaGemaNoUso = itensPoeLigado() && entry.poeGema && !entry.poeGema.lacaio && (!tipoPlantado || bombaPlantada) && (!plantada || plantada.tipo === 'totem' || bombaPlantada) ? GemasPoe.objetoDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
   // (lote B1, dono 20/10 — D-B1.10) a Invocar Tormenta: na chance da qualidade, o raio cai NA HORA (o uso acerta como sempre, sem o marcador); os outros marcadores
   // dela caem junto (`tormentasCaem`)
   const tormentaNaHora = objetoDaGemaNoUso?.tipo === 'tormenta' && Math.random() * 100 < (objetoDaGemaNoUso.naHoraPct ?? 0);
@@ -8640,11 +8646,25 @@ function alternarPragaP4(estado, hunt, entry) {
   if (!gema) return { ok: false, erro: 'Ponha o Infestador ligado na barra.', motivo: 'SEM_PRAGA' };
   // (achado C3 da rodada 4) cada uso à mão é pago, como no PoE ("Custo: 13 Mana" no 20): o custo da gema × o Custo dos suportes, o "custo de mana aumentado" e a
   // eficiência da ficha (o caminho curto — a troca não passa pelo uso inteiro de `dispararSemMarcar`)
+  // (rodada 4, correções finais — achado C) pela REGRA DO CUSTO do uso (`fatorDoCustoDeMana`: o "não custa Mana" — a Clareza Vaal —, o aumentado e o "mais" por tag, a
+  // eficiência; + o custo fixo) e pelo RECURSO do uso: a Magia Sanguínea, o keystone e o custo em Vida pagam com a Vida; o "custam Escudo de Energia", com o Escudo
   const ficha = Ficha.combate(estado);
   const ef = Gemas.efeitoNaSkill(estado, entry.id);
-  const custo = Math.max(0, Math.round((custoDaSkill(entry, ef, estado) * (1 + (ficha.custoDeMana ?? 0)) * (1 + (ef?.custoPct ?? 0) / 100) * Math.max(0, 1 + ModsPoe.valor(ficha, 'custo_mana_inc') / 100)) / Math.max(0.1, 1 + ModsPoe.valor(ficha, 'eficiencia_custo_mana') / 100)));
-  if (custo > 0 && (estado.mana ?? 0) < custo) return { ok: false, erro: 'Sem mana.', motivo: 'MANA' };
-  const pagar = () => { if (custo > 0) estado.mana = Math.max(0, (estado.mana ?? 0) - custo); };
+  const porTag = ModsPoe.somaPorTags(ficha, tagsPoeDaSkill(entry));
+  const fator = fatorDoCustoDeMana(estado, entry, ef);
+  const custo = fator > 0 ? Math.max(0, Math.round(custoDaSkill(entry, ef, estado) * fator + ModsPoe.valor(ficha, 'custo_mana_fixo') + (porTag.custo_mana_fixo ?? 0))) : 0;
+  const recurso = GemasPoe.recursoDoCusto(entry.poeGema.slug, ef?.nivel ?? 1);
+  const comVida = custo > 0 && (!!ef?.custoEmVida || recurso === 'vida' || temHabilidade(estado, 'magiaSanguinea') || ModsPoe.valor(ficha, 'keystone_magia_sanguinea') > 0);
+  const comEscudo = custo > 0 && !comVida && (ModsPoe.valor(ficha, 'custo_em_es') > 0 || recurso === 'es');
+  if (comVida && (estado.hp ?? 0) <= custo) return { ok: false, erro: 'Sem vida para pagar.', motivo: 'VIDA' };
+  if (comEscudo && (estado.es ?? 0) < custo) return { ok: false, erro: 'Sem escudo de energia para pagar.', motivo: 'ESCUDO' };
+  if (custo > 0 && !comVida && !comEscudo && (estado.mana ?? 0) < custo) return { ok: false, erro: 'Sem mana.', motivo: 'MANA' };
+  const pagar = () => {
+    if (!(custo > 0)) return;
+    if (comVida) { estado.hp = Math.max(1, (estado.hp ?? 0) - custo); ModsPoe.marcar(hunt, 'gastouVida'); }
+    else if (comEscudo) estado.es = Math.max(0, (estado.es ?? 0) - custo);
+    else estado.mana = Math.max(0, (estado.mana ?? 0) - custo);
+  };
   // (o primeiro uso: ganha o Incubando — o PoE: "Gain an Incubating buff")
   if (!hunt.praga) {
     tiqueDaPraga(estado, hunt, 0, agora);
@@ -11092,7 +11112,13 @@ function criarObjetoT3(estado, hunt, entry, ef, obj, { base, x, y, alvo, mira, f
     const ativos = ((hunt.cargasPoe ?? {})[entry.id] ?? []).filter((v) => v > agora).length;
     const n = doTotem ? 1 : GemasT3.usosNoUso(slug, (t.cargas ?? 1) - ativos);
     const c = mira ?? alvo ?? formaNoUso ?? { x, y };
-    for (let i = 0; i < n; i++) porObjeto(hunt, { ...base, tipo: 'estatuas', mov: 'parado', x: c.x, y: c.y, efeito: 'pulso', raio: casasDe(obj.raioM), intervaloMs: 1, proxima: agora, ate: agora + 1, max: 12 }, agora);
+    // (rodada 4, correções finais — achado C) cada Estátua acerta depois do tempo de UM Arrastão Congelante: o seu ataque com a arma (a sua Velocidade de Ataque e a dos
+    // suportes) ÷ os 70% do Arrastão (o PoB: FrozenSweep attackSpeedMultiplier −30) — `GemasT1.atrasoDoArrastaoMs`
+    const ficha = Ficha.combate(estado);
+    const global = ficha.velocidadeDeAtaque ?? 0;
+    const intervaloDaArma = ((ficha.intervaloDoGolpeMs ?? 2000) * Math.max(0.1, 1 + global / 100)) / Math.max(0.1, 1 + (global + (ef?.velAtaquePct ?? 0)) / 100);
+    const atraso = GemasT1.atrasoDoArrastaoMs(intervaloDaArma, GemasPoe.temposNoNivel(slug, ef?.nivel ?? 1, ef?.qualidade ?? 0).velArrastao);
+    for (let i = 0; i < n; i++) porObjeto(hunt, { ...base, tipo: 'estatuas', mov: 'parado', x: c.x, y: c.y, efeito: 'pulso', raio: casasDe(obj.raioM), intervaloMs: atraso, proxima: agora + atraso, ate: agora + atraso, max: 12 }, agora);
   } else if (obj.tipo === 'orbeConfinado') {
     const atraso = Math.max(1, Math.round(obj.atrasoMs * fd));
     for (const c of cadaveres ?? []) porObjeto(hunt, { ...base, tipo: 'orbeConfinado', mov: 'parado', x: c.x, y: c.y, efeito: 'pulso', raio: casasDe(obj.raioM), intervaloMs: atraso, proxima: agora + atraso, ate: agora + atraso, max: 60 }, agora);
@@ -11104,7 +11130,7 @@ function criarObjetoT3(estado, hunt, entry, ef, obj, { base, x, y, alvo, mira, f
 /**
  * (lote C2 da rodada 4, dono 28/10 — o PoB, other.lua TriggeredHeavensScourge) O FLAGELO CELESTIAL do Pacto de Lycia no canalizar fortalecido que começou agora (`canal`, `desde`):
  * o objeto em você que solta um raio a cada 0,3 s enquanto aquele canalizar segue e, parado, os que faltam a cada 0,05 s — 10 no total (`pulsarFlageloDoLycia`). O raio é o
- * do Pacto (o dano da gema — o do Flagelo —, no nível e na qualidade dele, com os suportes ligados a ele), na área de 1,2 m (+ 0,1 m por qualidade) × √ da Área.
+ * do Pacto (o dano da gema — o do Flagelo —, no nível e na qualidade dele, com os suportes ligados a ele), na área de 1,2 m (+ 0,01 m por qualidade) × √ da Área.
  */
 function porFlageloDoLycia(estado, hunt, entry, pacto, agora) {
   if (!POR_ID.get(pacto?.acao) || !hunt?.pos) return;
@@ -11123,10 +11149,12 @@ function pulsarFlageloDoLycia(estado, hunt, personagem, o, t, eventos) {
   const passo = GemasR4C2.passoDoFlagelo(o, canalizando);
   o.intervaloMs = passo.intervaloMs;
   if (!passo.cai) { o.ate = Math.min(o.ate, t); return; }
+  // (rodada 4, correções finais — achado C) só conta o raio que CAI num inimigo: sem inimigo a até 7 m, canalizando, o raio não sai e não gasta um dos 10; parado (o
+  // desenrolo), sem inimigo perto, o Flagelo acaba — os que faltavam não caem em lugar nenhum
+  const perto = hunt.pos ? vivosNoAndar(hunt, o.z).filter((m) => distanciaChebyshev(m, hunt.pos) <= o.alcance) : [];
+  if (!perto.length) { if (!canalizando) o.ate = Math.min(o.ate, t); return; }
   o.feitos = (o.feitos ?? 0) + 1;
   if (passo.acabou) o.ate = Math.min(o.ate, t);
-  const perto = hunt.pos ? vivosNoAndar(hunt, o.z).filter((m) => distanciaChebyshev(m, hunt.pos) <= o.alcance) : [];
-  if (!perto.length) return;
   const alvo = perto[Math.min(perto.length - 1, Math.floor(Math.random() * perto.length))];
   const raio = Math.max(0, casasDoRaio(o.raioM));
   eventos.push({ t: 'explosao', id: EFEITO_DA_EXPLOSAO, x: alvo.x, y: alvo.y, lado: 2 * raio + 1 });

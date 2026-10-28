@@ -296,7 +296,8 @@ test('T3: a Área de Efeito Aumentada Desperta — +64% de Área e 24% mais Dano
     return danoEm(u.eventos, longe) > 0;
   };
   assert.equal(await alcance([]), false, 'sem: 2 casas');
-  assert.equal(await alcance(['Awakened_Increased_Area_of_Effect_Support']), true, 'com: 3 casas');
+  // (aval do dono 28/10: a área numa conta só — 3 m × √1,64 ÷ 2 = 1,92 casa: 1 + a fração 0,92 como chance, que o sorteio 0,05 pega = 2 casas; a 3 casas, fora)
+  assert.equal(await alcance(['Awakened_Increased_Area_of_Effect_Support']), false, 'com: 2 casas');
 });
 
 // ---------------------------------------------------------------- Libertar Desperto e Desencadeamento Maior

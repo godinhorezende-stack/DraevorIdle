@@ -1622,6 +1622,37 @@ Placar (relatório regerado):
 
 Bateria: 152 arquivos (ativas-*, gemas-*, suportes-*, itens-poe-gemas*, lacaios-*, totens-*, passivas-poe-*, zerar-arvore-*, revisao-*, sequencia-*, eficacia-ataque-poe, combo-poe e os afetados: afeccoes-*, correcoes-*, deslocamento-*, mercenario*, canalizacao*). Deram 1611 testes: 1545 passam, 33 pulados, 33 falham. São 18 pelas regras novas, listados acima, e 15 que já falhavam antes deste lote. O gemas-c2 passa os 10.
 
+## R4 final — rodada 4, etapa final: os avais de 28/10 e os achados das conferências C1–C3
+
+**Avais do dono (28/10)** — 25 testes ajustados ao comportamento novo, cada um com o comentário "aval do dono 28/10":
+- o "mais Dano de elemento" só na parte do elemento: afeccoes-acerto-poe (Projéteis Viciosos, `maisDoTipoAcertoPct:physical@projetil+ataque` 49), suportes-afeccoes-poe-lote76 (`maisDoTipoAcertoPct:physical@corpo` 49), suportes-a5 (Manipulação do Vazio, `maisDoTipoPct:chaos` 34), correcoes-r3 #2 (o Físico do golpe × 1,49 por `GemasR4C2.maisDosSuportesNoAcerto`, e não o `fatorDeDano`);
+- as Bombas Congelantes na explosão (rodando o tempo até ela): ativas-b1 (os dois), suportes-a5, gemas-t2-magias (as três da Instabilidade/Meteoros);
+- a área numa conta só: gemas-t3-suportes (2 casas), gemas-t2-suportes (o Eco Maior com o sorteio 0,7 e o inimigo a 2 casas: só a 2ª repetição — o sorteio coerente 0,6 + 0,7 × 0,4 = 0,88), zerar-arvore-lote36 (as duas; os sorteios escolhidos para mostrar a fração: 1,98 → 0,99 dá 1 casa, 0,5 dá 2; a Repetição Final com 0,1: 2,17 → 3), passivas-poe-suportes-sem-regra (o sorteio na metade da fração da última repetição), repeticoes-estagios-a4 (o Devastar e o Ciclone: com 0,999 ficam na varredura mínima; com 0,5, 1,79 → 2 e 1,6 → 2);
+- gemas-t2 (o Pacto de Lycia 'funciona', o uso não fere), gemas-t3-ativas:29 (a Artilharia 'funciona'), gemas-t2-ataques (o cone pega 4), G16 (o Lycia conferido pela Incinerar fortalecida, `DANO_POR_OUTRA`), gemas-t3-ativas Torre (3 pulsos, o primeiro 1 s depois), lacaios-pob (as 5 de Animar seguem o PoB; o Espectro pela eficácia, ≈ 8,16; o Animar Arma `{ principal: [Melee], arma: 'base' }`).
+
+**Achados corrigidos** (teste novo: `testes/correcoes-r4-final.test.mjs`, 11 testes):
+- a Animar Arma Vaal: o limite pela faixa "entre A e B" da linha (o maior) — 9 / 44 / 100, como o PoB (`lacaios-animados.limiteDeNivel`);
+- a Legião Congelada: o seu uso é MAGIA (castTime 0,7 pela conjuração — `usoComoMagia`, `Acoes.temposDaGemaPoe`); cada Estátua acerta depois de um Arrastão: o ataque da arma ÷ 0,7 (`GemasT1.atrasoDoArrastaoMs`; a Clava de Madeira: 769 → 1099 ms);
+- a troca à mão do Infestador pelo `fatorDoCustoDeMana` + o custo fixo, e pelo recurso (Vida com a Magia Sanguínea / o keystone / o custo em Vida; Escudo com o "custam Escudo de Energia");
+- o raio do Flagelo Celestial: +0,01 m por qualidade (1,4 m no q20);
+- o Flagelo só gasta o raio que cai num inimigo; parado e sem inimigo perto, acaba;
+- o Pacto de Ghorr: PARCIAL com o motivo (`GemasT2.MOTIVOS_T2`) — falta fonte para o Destruir Carne (a área do degenerativo do projétil, o estágio do Rito de Sangue), e trocar o uso quebraria gemas-t1-ativas:364 sem aval;
+- a Bomba Congelante por armadilha ou mina também espera a explosão (o cristal no alvo da plantada);
+- o teto das anomalias do Fluxo Cinético é de cada habilidade (`grupo: fluxo:<id>`);
+- o impedimento: a Vaal que saiu pela carga que pula a recarga anda só o pedaço novo (`GemasP4.impedirAlmas`);
+- testes de comportamento: o "mais" local multiplicando (entre suportes e com o da gema), a Tentação Vaal com o canalizar que continua, a Artilharia com o sorteio 0,1, o cone do Aço da Munição.
+- sem mudança, com o motivo: a Menos Duração com qualidade (−49 −10 = −59): a linha da qualidade tem o mesmo texto (o mesmo stat) da do nível — no PoE o stat do nível e o da qualidade somam dentro da gema, um "menos" só.
+
+**Quebram pela regra nova, sem aval (não editados):**
+- gemas-t3-ativas:37 (a Legião): `andar(e, 1, 100)` espera 6 golpes; o Arrastão agora acerta 1099 ms depois → 0.
+- gemas-t1-ativas:47 (a Legião do Agrupamento): os golpes 100 ms depois do uso [5, 6] → [0, 0] (o mesmo atraso); e a linha 77 espera o uso = o ataque da arma (769 ms) → 700 ms (a magia do PoB).
+- lacaios-animados-c1:76: `limiteDeNivel` da Vaal 20 = 40 → 100, e a base ≤ 40 → a do 100.
+
+**Decisões do dono (sem fonte):** a regra de escolha da base animada (o requisito mais alto, depois o DPS); o Pacto de Ghorr (o Destruir Carne); o "Inimigos Mutilados sofrem X% de Dano Físico aumentado" como debuff de toda fonte (hoje só a habilidade suportada) e o "Físico Corpo a Corpo aumentado" que pela tag pode chegar ao Sangramento.
+
+Placar: ativas 562 · testada 560 · parcial 1 (o Pacto de Ghorr) · não se aplica 1. Ataques 210 testados. Suportes 262 · 261 testados · 1 não se aplica.
+Bateria: 153 arquivos, 1648 testes — 1612 passam, 33 pulados, 3 falham (os três acima).
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.

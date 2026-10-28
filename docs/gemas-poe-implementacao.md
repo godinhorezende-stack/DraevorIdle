@@ -8,7 +8,8 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 561 |
+| implementada e testada | 560 |
+| parcial | 1 |
 | não se aplica | 1 |
 
 Só os ataques:
@@ -46,7 +47,8 @@ Só os ataques:
 
 ## Gemas de habilidade pendentes
 
-
+- **Pact_of_Ghorr** (Pacto de Ghorr) — parcial
+  - o Pacto (o PoB: o uso não causa dano; fortalece as próximas 3 magias degenerativas com 40% mais Dano Degenerativo; a Fome de Ghorr ativa o Destruir Carne a cada 2 s por 6 s) — no jogo o uso só põe o degenerativo no alvo; a área do Destruir Carne e o estágio do Rito de Sangue sem fonte: decisão do dono
 
 ## Gemas de suporte pendentes
 

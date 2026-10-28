@@ -134,23 +134,27 @@ test('a FORMA estica até o raio novo e segue a mesma (o losango da Nova segue l
 // forma de 1 casa, ou de 2 com 40% de chance (`Acoes.formaNoRaioDoPoe`) — no lugar das 5 casas da magia-molde. A conta da área é a mesma.
 test('P002 — a Nova de Gelo (1,4 casa no PoE) com +100% de área: o raio × √2 (a fração é a chance de uma casa a mais)', { skip: SEM }, () => {
   const cena = (sorte) => usar(nova({ af: { area_inc: 100 }, longe: [2, 3, 4] }), sorte);
-  // sorte 0,5: a forma de 1 casa; 1 × (√2 − 1) = 0,41 de casa a mais — o sorteio 0,5 não a pega
-  assert.deepEqual(cena(0.5), [0, 0, 0], 'o raio 1');
-  // sorte 0,41: a forma de 1 casa (0,41 ≥ 0,4) e a fração 0,414 pega a casa 2
-  assert.deepEqual(cena(0.41), [1, 0, 0], 'a fração de 1 × (√2 − 1) alcança a 2');
-  // sorte 0,05: a forma de 2 casas (os 40%) e 2 × (√2 − 1) = 0,83 → a 3
-  assert.deepEqual(cena(0.05), [1, 1, 0], 'a forma de 2 + 0,83 → a 3; a 4, não');
-  assert.deepEqual(usar(nova({ longe: [2, 3] }), 0.05), [1, 0], 'sem a área: o raio 2');
-  // o Efeito Concentrado (30% menos): 2 × (√0,7 − 1) = −0,33 → o raio 1 (no sorteio 0,05)
-  assert.deepEqual(usar(nova({ suportes: ['Concentrated_Effect_Support'], longe: [2] }), 0.05), [0]);
+  // (aval do dono 28/10: a área numa conta só — 2,8 m × √(1 + Área) ÷ 2, a fração como chance pelo mesmo sorteio)
+  // +100%: 1,4 × √2 = 1,98 casa — 1 casa e a fração 0,98 como chance da 2
+  assert.deepEqual(cena(0.99), [0, 0, 0], 'o sorteio 0,99 ≥ 0,98: o raio 1');
+  assert.deepEqual(cena(0.5), [1, 0, 0], 'o sorteio 0,5 < 0,98: o raio 2');
+  assert.deepEqual(cena(0.05), [1, 0, 0], 'a 3, nunca (1,98 < 2)');
+  // sem a área: 1,4 casa — a 2 com 40%
+  assert.deepEqual(usar(nova({ longe: [2, 3] }), 0.5), [0, 0], 'sem a área, 0,5 ≥ 0,4: o raio 1');
+  assert.deepEqual(usar(nova({ longe: [2, 3] }), 0.3), [1, 0], 'sem a área, 0,3 < 0,4: o raio 2');
+  // o Efeito Concentrado (30% menos): 1,4 × √0,7 = 1,17 — a 2 com 17%
+  assert.deepEqual(usar(nova({ suportes: ['Concentrated_Effect_Support'], longe: [2] }), 0.3), [0]);
+  assert.deepEqual(usar(nova({ suportes: ['Concentrated_Effect_Support'], longe: [2] }), 0.1), [1]);
 });
 
 test('P002 — a REPETIÇÃO FINAL soma o X no aumentado da última repetição (o Eco de Magia)', { skip: SEM }, () => {
   // +100% e a Repetição Final de 40% (sorte 0,5, a forma de 1 casa): 1 × (√2 − 1) = 0,41 nas outras (não pega a 2), 1 × (√2,4 − 1) = 0,55 na
   // última (pega)
-  const cena = (af) => usar(nova({ suportes: ['Spell_Echo_Support'], af, longe: [2, 3] }), 0.5);
-  assert.deepEqual(cena({ area_inc: 100 }), [0, 0], 'sem a linha: o raio 1');
-  assert.deepEqual(cena({ area_inc: 100, repeticao_final_area: 40 }), [1, 0], 'a última repetição alcança a 2');
+  // (aval do dono 28/10: a área numa conta só, o sorteio 0,1 — as repetições com +100%: 1,4 × √2 = 1,98 → 2 casas; a última com +140%: 1,4 × √2,4 = 2,17 →
+  // 2 e a fração 0,17 como chance da 3, que o 0,1 pega)
+  const cena = (af) => usar(nova({ suportes: ['Spell_Echo_Support'], af, longe: [2, 3] }), 0.1);
+  assert.deepEqual(cena({ area_inc: 100 }), [1, 0], 'sem a linha: o raio 2');
+  assert.deepEqual(cena({ area_inc: 100, repeticao_final_area: 40 }), [1, 1], 'a última repetição alcança a 3');
 });
 
 test('P002 — as RUNAS, o CONVOCAR O AÇO e o golpe em área dos LACAIOS pela mesma conta', { skip: SEM }, () => {

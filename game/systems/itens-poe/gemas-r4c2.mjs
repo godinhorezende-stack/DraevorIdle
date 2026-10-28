@@ -89,7 +89,9 @@ export function maisDosSuportesNosTipos(efeito, tipos = []) {
 
 // ---------------------------------------------------------------- 2. o Pacto de Lycia
 
-export const LYCIA = Object.freeze({ slug: 'Pact_of_Lycia', magias: 3, maisPct: 40, raios: 10, intervaloMs: 300, desenroloMs: 50, alcanceM: 7, raioM: 1.2, raioPorQualidadeM: 0.1 });
+// (rodada 4, correções finais — achado C: o qualityStats do PoB, active_skill_base_area_of_effect_radius 0.1 por ponto, é em DÉCIMOS de metro — +0,01 m por ponto, 1,4 m
+// no q20; a Bola de Fogo confirma a escala: 0.15 no PoB, "(0—0,3) metros" no poedb)
+export const LYCIA = Object.freeze({ slug: 'Pact_of_Lycia', magias: 3, maisPct: 40, raios: 10, intervaloMs: 300, desenroloMs: 50, alcanceM: 7, raioM: 1.2, raioPorQualidadeM: 0.01 });
 export const ehPactoDeLycia = (slug) => slug === LYCIA.slug;
 /** A magia fortalecida pelo Pacto de Lycia: uma magia de canalização sua (não o próprio Pacto). */
 export const fortalecePeloLycia = (slug, tags = []) => !ehPactoDeLycia(slug) && tags.includes('magia') && tags.includes('canalizar');

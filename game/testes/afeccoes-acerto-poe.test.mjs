@@ -71,7 +71,8 @@ test('G17: o efeito dos suportes pelo que cada "mais" atinge (o PoB)', { skip: S
   assert.deepEqual(efeito('Deadly_Ailments_Support', TAGS('Ataque', 'Magia')), { custoPct: 40, maisAfeccaoPct: 44, maisDanoAcertoPct: -80 });
   // (um ataque de arco sem a tag Físico: o "Dano Físico de Ataque de Projétil" vale — o físico vem da arma)
   const vic = efeito('Vicious_Projectiles_Support', TAGS('Ataque', 'Projétil', 'Arco'));
-  assert.deepEqual([vic.maisDanoAcertoPct, vic.maisDotCaosPct, vic.maisDotFisicoPct, vic.maisDanoPct], [49, 49, 49, undefined]);
+  // (aval do dono 28/10: o "mais Dano Físico" de projétil de ataque só na parte física do acerto — `maisDoTipoAcertoPct:physical@projetil+ataque`)
+  assert.deepEqual([vic['maisDoTipoAcertoPct:physical@projetil+ataque'], vic.maisDotCaosPct, vic.maisDotFisicoPct, vic.maisDanoPct], [49, 49, 49, undefined]);
   const multi = efeito('Multistrike_Support', TAGS('Ataque', 'Corpo a Corpo'));
   assert.deepEqual([multi.maisDanoAcertoPct, multi['repeticaoMaisPct:1'], multi['repeticaoMaisPct:2'], multi.maisDanoPct], [-20, 22, 44, undefined]);
   const sangra = efeito('Chance_to_Bleed_Support', TAGS('Ataque'));

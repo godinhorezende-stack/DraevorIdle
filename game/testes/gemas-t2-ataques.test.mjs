@@ -164,8 +164,9 @@ test('T2 Shattering_Steel: 265% de dano, 85% de velocidade, 3 projéteis e 40% d
   [[0, 1], [1, 0], [0, -1]].forEach(([dx, dy], i) => Object.assign(resto[i], { x: b.x + dx, y: b.y + dy, estados: {}, dots: [] }));
   const { ev } = usar(e, 0, b, 0.3);
   // os 3 projéteis: o alvo e os 2 mais perto (um por inimigo)
+  // (aval do dono 28/10: + o cone de 2,8 m à frente de cada acertado — pega os 4)
   const atingidos = [b, ...resto.slice(0, 3)].filter((m) => danoEm(ev, m) > 0);
-  assert.equal(atingidos.length, 3);
+  assert.equal(atingidos.length, 4);
   assert.ok(perto(danoEm(ev, b), 2650, 0.02), String(danoEm(ev, b)));
   // o sorteio 0,3 (< 40%) Empala o alvo — guarda 10% do Físico do golpe (2650), por 8 s e 5 acertos; o 0,5, não
   assert.deepEqual(b.estados.empalado, [{ valor: 265, acertos: 5, ate: e.hunt.clock + 8000 }]);

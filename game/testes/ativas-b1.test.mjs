@@ -125,11 +125,20 @@ test('B1: o Condutor Elétrico dos Céus acerta até 15 (+4 da qualidade 20) —
 
 // ---------------------------------------------------------------- as Bombas Congelantes
 
+// (aval do dono 28/10: a Bomba Congelante explode depois da duração da gema × a Duração — o debuff, a Exposição e o dano conferidos na EXPLOSÃO,
+// rodando o tempo até ela: os objetos da caçada a cada 100 ms)
+function ateAExplosao(e, ms = 2100) {
+  const ev = [];
+  for (let t = 0; t < ms; t += 100) { e.hunt.clock += 100; Acoes.tiqueDosObjetos(e, e.hunt, PERSONAGEM, ev, e.hunt.clock); }
+  return ev;
+}
+
 test('B1: a Bomba Congelante — a Regeneração de Vida −75% no debuff, junto da Exposição (5 s)', { skip: SEM }, async () => {
   assert.equal(G.regenMenosDaGema('Frost_Bomb', 20), 75);
   const { e, b } = await montar('Frost_Bomb');
   const r = usar(e, b);
   assert.ok(r.ok, r.erro);
+  ateAExplosao(e); // (aval do dono 28/10: o debuff vem na explosão, 2 s depois)
   assert.equal(b.estados.regenMenosDebuff?.pct, 75);
   assert.equal(b.estados.regenMenosDebuff.ate, b.estados.exposicao.ice);
   // a regeneração do monstro (10% da vida por segundo): 100 → 25
@@ -154,6 +163,7 @@ test('B1 (D-B1.3): a Bomba Congelante da Aproximação — 10% mais nos acertos 
   const mostrado = Acoes.danoMostrado(e, entry);
   const vida = b.hp;
   assert.ok(usar(e, b).ok);
+  ateAExplosao(e); // (aval do dono 28/10: o dano vem na explosão, 2 s depois)
   const dano = vida - b.hp;
   assert.ok(dano >= mostrado.min * 3 * 0.99 && dano <= mostrado.max * 3 * 1.01, `${dano} em ${mostrado.min * 3}–${mostrado.max * 3}`);
 });

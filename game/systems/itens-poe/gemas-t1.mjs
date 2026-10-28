@@ -18,7 +18,9 @@
 
 /** As gemas da Legião Congelada (a base e a do Agrupamento): o Arrastão Congelante das Estátuas. */
 const LEGIAO = /^Frozen_Legion(?:_of_Rallying)?$/;
-export const ARRASTAO = Object.freeze({ conversaoGeloPct: 100, velAtaqueBase: 70, raioM: 2.5 });
+export const ARRASTAO = Object.freeze({ conversaoGeloPct: 100, velAtaqueBase: 70, raioM: 2.5, castTimeS: 0.7 });
+/** O tempo de UM Arrastão Congelante da Estátua (ms): o intervalo do seu ataque com a arma (`intervaloMs`, já com a sua Velocidade de Ataque) ÷ os 70% dele. */
+export const atrasoDoArrastaoMs = (intervaloMs, velPct = ARRASTAO.velAtaqueBase) => Math.max(1, Math.round((Number(intervaloMs) || 0) / ((Number(velPct) || 100) / 100)));
 /** O dano-base do Arrastão na célula "Base Damage" do poedb (a última parte, em fração); null se não houver. */
 export function efetividadeDoArrastao(celula) {
   const partes = String(celula ?? '').split(',').map((t) => parseFloat(t)).filter((v) => Number.isFinite(v));
@@ -34,7 +36,10 @@ export function corrigirCompilada(slug, h, celulaDoDano) {
   // O CONFLITO T1 × T3: o T1 punha `velAtaqueBase: 70` na gema, e o seu uso virava o ataque da arma ÷ 0,7 (a Clava de Madeira: 769 → 1099 ms), mais longo que a
   // recarga de 0,8 s — o uso seguinte das Estátuas (lote T3) ficava "Ainda recarregando" pelo relógio do grupo. (No PoB o seu uso é uma magia de 0,7 s — castTime
   // 0.7 —; o jogo segue com o tempo do ataque da arma, como antes do T1.)
-  const st = { ...h.stats, conversao: [{ para: 'gelo', pct: ARRASTAO.conversaoGeloPct }], velArrastao: ARRASTAO.velAtaqueBase, raio: ARRASTAO.raioM, raioFinal: ARRASTAO.raioM, ...(ef ? { efetividade: ef } : {}) };
+  // (rodada 4, correções finais — achado C) o SEU uso é a MAGIA do PoB: castTime 0,7 pela Velocidade de Conjuração (`usoComoMagia` — `Acoes.temposDaGemaPoe`); o golpe
+  // segue o ataque da arma (as Estátuas). Os 70% são do Arrastão de cada Estátua: ela acerta depois do tempo de UM ataque dela — o da arma, com a sua Velocidade de
+  // Ataque, ÷ 0,7 (`Acoes.criarObjetoT3`, `GemasT1.atrasoDoArrastaoMs`).
+  const st = { ...h.stats, conversao: [{ para: 'gelo', pct: ARRASTAO.conversaoGeloPct }], velArrastao: ARRASTAO.velAtaqueBase, raio: ARRASTAO.raioM, raioFinal: ARRASTAO.raioM, tempoUso: ARRASTAO.castTimeS, usoComoMagia: true, ...(ef ? { efetividade: ef } : {}) };
   return { ...h, stats: st };
 }
 

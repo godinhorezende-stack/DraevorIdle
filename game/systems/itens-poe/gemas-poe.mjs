@@ -398,7 +398,9 @@ export function temposNoNivel(slug, nivel = 1, qualidade = 0) {
   // (18/10, lote G20a: + a "Velocidade de Posicionamento de Totem aumentada" da gema — os ancestrais —, no tempo de COLOCAR o totem)
   // (lote A1: + a recuperação condicional do Passo Rápido — `Acoes.temposDaGemaPoe` a aplica no uso, pela presença)
   return { conjuracaoMs: Math.round((st.tempoUso ?? 0) * 1000), recargaMs: st.recarga ? Math.round(st.recarga * 1000) : 0, cargas: st.cargas ?? 1, velAtaqueBase: st.velAtaqueBase ?? 100, velClamor: st.velClamor ?? 0, tempoExtraMs: Math.round((st.tempoAtaqueExtra ?? 0) * 1000), velPosicionamentoPct: st.velPosicionamento ?? 0,
-    ...(st.velRecargaSemInimigos ? { recargaSemInimigosPct: st.velRecargaSemInimigos } : {}), ...(st.recuperacaoComUnico ? { recargaComUnicoPct: st.recuperacaoComUnico } : {}) };
+    ...(st.velRecargaSemInimigos ? { recargaSemInimigosPct: st.velRecargaSemInimigos } : {}), ...(st.recuperacaoComUnico ? { recargaComUnicoPct: st.recuperacaoComUnico } : {}),
+    // (rodada 4, correções finais) o uso que é MAGIA numa gema cujo golpe é de ataque (a Legião Congelada: o PoB — SkillType.Spell, castTime 0,7 — e as Estátuas atacam)
+    ...(st.usoComoMagia ? { usoComoMagia: true } : {}), ...(st.velArrastao ? { velArrastao: st.velArrastao } : {}) };
 }
 
 /**

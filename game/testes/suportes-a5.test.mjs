@@ -372,6 +372,8 @@ test('A5: a Bomba Congelante no jogo — o alvo fica com −15% de Gelo por 5 s 
   const r = travado(0.5, () => Acoes.disparar(e, e.hunt, PERSONAGEM, 0, b, { manual: true }));
   if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; travado(0.5, () => Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM)); }
   assert.ok(r.ok, r.erro);
+  // (aval do dono 28/10: a Bomba explode depois da duração, 2 s — a Exposição conferida na EXPLOSÃO, rodando o tempo até ela)
+  for (let t = 0; t < 2100; t += 100) { e.hunt.clock += 100; Acoes.tiqueDosObjetos(e, e.hunt, PERSONAGEM, [], e.hunt.clock); }
   assert.equal(b.estados.exposicaoPct?.ice, 15);
   assert.ok(b.estados.exposicao.ice > e.hunt.clock);
 });
@@ -491,7 +493,8 @@ test('A5 (revisão): o Empalamento refletido também quando o Golpe de Misericó
 test('A5 (revisão): a Manipulação do Vazio tira só a parte elemental; os bônus condicionais do Dreno', { skip: SEM }, async () => {
   const ef = (slug, nivel, ativa, q = 0) => SP.efeitoNoNivel(slug, nivel, q, ativa).efeito;
   const v = ef('Void_Manipulation_Support', 20, ATIVA('Magia', 'Raio', 'Caos'));
-  assert.deepEqual([v.semDanoElemental, v.maisDanoPct > 0], [1, true]);
+  // (aval do dono 28/10: o "mais Dano de Caos" só na parte do Caos — `maisDoTipoPct:chaos`)
+  assert.deepEqual([v.semDanoElemental, v['maisDoTipoPct:chaos']], [1, 34]);
   const { e } = await montar(['Fireball', 'Void_Manipulation_Support']);
   const bola = Acoes.POR_ID_PUBLICO(G.doSlug('Fireball').acao);
   assert.deepEqual(Acoes.danoMostrado(e, bola, efeito(e, 'Fireball')), { min: 0, max: 0 }, 'a Bola de Fogo, só Fogo, não fere');

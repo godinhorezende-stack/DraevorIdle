@@ -116,12 +116,13 @@ test('T2 Conductivity: "Acertos contra Inimigos Amaldiçoados têm +25% de chanc
 // ---------------------------------------------------------------- Pacto de Lycia (a decisão do dono)
 
 test('T2 Pact_of_Lycia: o teste achou que o jogo faz uma canalização com o dano do Flagelo Celestial (130 a 2467 de Raio no 20) — no PoE é um Pacto; fica PARCIAL até a decisão do dono', { skip: SEM }, async () => {
+  // (aval do dono 28/10: o Pacto de Lycia como no PoB — o uso não fere e fortalece as 3 magias de canalização seguintes; fica 'funciona', sem motivos)
   const r = G.REGISTRO.get('Pact_of_Lycia');
-  assert.equal(r.statusNoJogo, 'parcial');
-  assert.ok(r.motivosNoJogo.some((m) => /o Pacto \(o PoB: o uso não causa dano/.test(m)), r.motivosNoJogo.join(' | '));
+  assert.equal(r.statusNoJogo, 'funciona');
+  assert.deepEqual(r.motivosNoJogo, []);
   // o que o jogo faz hoje (os números do PoB do Flagelo Celestial e do Pacto): 130–2467 de Raio, recarga 4 s, conjuração 0,8 s, 33 de Mana
   const c = G.compilada('Pact_of_Lycia', 20);
   assert.deepEqual([c.stats.dano.raio, c.stats.recarga, c.stats.tempoUso, c.stats.custo], [[130, 2467], 4, 0.8, 33]);
   const { e, b } = await montar(['Pact_of_Lycia'], { arma: 'Wands/Driftwood_Wand' });
-  assert.ok(danoEm(usar(e, 0, b).ev, b) > 0);
+  assert.equal(danoEm(usar(e, 0, b).ev, b), 0, 'o uso do Pacto não fere (aval do dono 28/10)');
 });

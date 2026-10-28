@@ -62,7 +62,10 @@ export function impedirAlmas(hunt, cds, vaalIds, inicio, ms, usadaId = null) {
   for (const id of vaalIds ?? []) {
     const cd = cds?.[id];
     if (!cd || !(cd.ate > inicio)) continue;
-    if (usadaId != null && id === usadaId) cd.ate += fimQueVale - inicio;
+    // (rodada 4, correções finais — achado C) só a recarga que ESTE uso criou (começa em `inicio`: ate − total); a Vaal que saiu pela carga que pula a recarga
+    // (`pulaARecarga`) segue a recarga de antes, já parada pelo impedimento anterior — anda só o pedaço novo, como as outras
+    const criadaAgora = Number.isFinite(cd.total) && Math.abs(cd.ate - cd.total - inicio) < 1;
+    if (usadaId != null && id === usadaId && criadaAgora) cd.ate += fimQueVale - inicio;
     else if (extra > 0) cd.ate += extra;
   }
   return extra;

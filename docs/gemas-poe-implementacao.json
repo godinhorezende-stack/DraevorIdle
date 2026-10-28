@@ -2,8 +2,9 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 561,
-   "não se aplica": 1
+   "implementada e testada": 560,
+   "não se aplica": 1,
+   "parcial": 1
   },
   "ataques": {
    "total": 210,
@@ -7360,10 +7361,12 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "implementada e testada",
+   "estado": "parcial",
    "ausentes": [],
    "idle": [],
-   "outros": [],
+   "outros": [
+    "o Pacto (o PoB: o uso não causa dano; fortalece as próximas 3 magias degenerativas com 40% mais Dano Degenerativo; a Fome de Ghorr ativa o Destruir Carne a cada 2 s por 6 s) — no jogo o uso só põe o degenerativo no alvo; a área do Destruir Carne e o estágio do Rito de Sangue sem fonte: decisão do dono"
+   ],
    "icone": true,
    "iconeHabilidade": true
   },

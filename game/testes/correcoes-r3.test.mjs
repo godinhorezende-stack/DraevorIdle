@@ -17,6 +17,7 @@ const G = await import('../systems/itens-poe/gemas-poe.mjs');
 const SP = await import('../systems/itens-poe/suportes-poe.mjs');
 const R3A = await import('../systems/itens-poe/gemas-r3a.mjs');
 const R3C = await import('../systems/itens-poe/gemas-r3c.mjs');
+const R4C2 = await import('../systems/itens-poe/gemas-r4c2.mjs');
 const ModsPoe = await import('../systems/itens-poe/mods-poe.mjs');
 const Plantadas = await import('../systems/itens-poe/armas-plantadas.mjs');
 const Poderes = await import('../systems/poderes.mjs');
@@ -96,13 +97,18 @@ test('R3 #2: a Rajada de Vento não leva o suporte corpo a corpo do Golpe Pesado
   const { e } = await montar('Two_Hand_Maces/Driftwood_Maul', [['Heavy_Strike', 'Windburst_Support', 'Melee_Physical_Damage_Support']]);
   const id = G.doSlug('Heavy_Strike').acao;
   const naSuportada = GS.efeitoNaSkill(e, id);
-  assert.ok((naSuportada?.fatorDeDano ?? 1) > 1, `o suporte corpo a corpo vale no Golpe Pesado: ${naSuportada?.fatorDeDano}`);
+  // (aval do dono 28/10: o "mais Dano Físico Corpo a Corpo" vale só no Físico do golpe — × 1,49 pela parte física do acerto, `maisDoTipoAcertoPct`,
+  // e não mais no `fatorDeDano` do golpe inteiro)
+  const fis = (ef, tags) => R4C2.maisDosSuportesNoAcerto(ef, ['physical'], tags);
+  const CORPO = ['ataque', 'area', 'corpo', 'pancada', 'fisico', 'habilidade'];
+  assert.ok(Math.abs(fis(naSuportada, CORPO) - 1.49) < 1e-9, `o suporte corpo a corpo vale no Golpe Pesado: ${fis(naSuportada, CORPO)}`);
+  assert.equal(naSuportada?.fatorDeDano ?? 1, 1, 'não no golpe inteiro');
   const naRajada = Acoes.efeitoNoAtivadoR3A(e, id, ['ataque', 'projetil', 'area', 'fisico', 'habilidade']);
   assert.ok(naRajada, 'o efeito existe');
-  assert.equal(naRajada.fatorDeDano ?? 1, 1, 'o "mais Dano Físico Corpo a Corpo" não suporta a Rajada (Ataque, Projétil, Área)');
+  assert.equal(fis(naRajada, ['ataque', 'projetil', 'area', 'fisico', 'habilidade']), 1, 'o "mais Dano Físico Corpo a Corpo" não suporta a Rajada (Ataque, Projétil, Área)');
   // num ataque concedido corpo a corpo (o Cristal em Queda), o mesmo suporte vale
-  const noCristal = Acoes.efeitoNoAtivadoR3A(e, id, ['ataque', 'area', 'corpo', 'pancada', 'fisico', 'habilidade']);
-  assert.ok((noCristal?.fatorDeDano ?? 1) > 1, `no Cristal (corpo a corpo) vale: ${noCristal?.fatorDeDano}`);
+  const noCristal = Acoes.efeitoNoAtivadoR3A(e, id, CORPO);
+  assert.ok(Math.abs(fis(noCristal, CORPO) - 1.49) < 1e-9, `no Cristal (corpo a corpo) vale: ${fis(noCristal, CORPO)}`);
 });
 
 // ---------------------------------------------------------------- achado 3 (média): a Pira pede o incendiado de antes do acerto

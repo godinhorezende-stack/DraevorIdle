@@ -25,9 +25,10 @@ const ARCO = { arma: 'Bows/Crude_Bow', vocacao: 'paladin' };
 test('T3: as 13 ativas da fila estão "funciona", sem motivos; a Chuva de Flechas da Artilharia fica "parcial" pela linha de flechas (decisão do dono)', { skip: SEM }, async () => {
   await montar([['Fireball']]);
   for (const s of FILA) assert.deepEqual([s, G.doSlug(s).statusNoJogo, G.doSlug(s).motivosNoJogo], [s, 'funciona', []]);
+  // (aval do dono 28/10: a Chuva de Flechas da Artilharia faz a linha de flechas — fica 'funciona', sem motivos)
   const a = G.doSlug('Rain_of_Arrows_of_Artillery');
-  assert.equal(a.statusNoJogo, 'parcial');
-  assert.deepEqual(a.motivosNoJogo, [`efeito não simulado: ${T3.MOTIVOS_T3.Rain_of_Arrows_of_Artillery[0]}`]);
+  assert.equal(a.statusNoJogo, 'funciona');
+  assert.deepEqual(a.motivosNoJogo, []);
   assert.equal(numeros(celula('Rain_of_Arrows_of_Artillery', /Flechas/))[0], 22);
   assert.equal(G.compilada('Rain_of_Arrows_of_Artillery', 20).stats.efetividade, numeros(celula('Rain_of_Arrows_of_Artillery', /Base Damage/))[0] / 100);
 });
@@ -405,10 +406,15 @@ test('T3: a Armadilha de Torre Elétrica da Sobrecarga — 484 a 1453 de Raio, c
   const um = await montar([['Lightning_Spire_Trap_of_Overloading']]);
   const u = usar(um.e, um.b);
   assert.ok(u.r.ok);
+  // (aval do dono 28/10: pela conta do PoB, ⌊3,5 ÷ 1⌋ = 3 pulsos, o primeiro 1 s depois da ativação — na ativação, nada)
   const ev = [...u.eventos, ...andar(um.e, 1, 100)];
+  assert.equal(golpesEm(ev, um.b).length, 0, 'na ativação, nenhum pulso');
+  ev.push(...andar(um.e, 11, 100));
   const g = golpesEm(ev, um.b);
-  assert.equal(g.length, 8);
+  assert.equal(g.length, 8, 'o primeiro pulso, 1 s depois: as 8 áreas');
   assert.ok(g.every((x) => x.crit), 'crítico 100%');
+  ev.push(...andar(um.e, 50, 100));
+  assert.equal(golpesEm(ev, um.b).length, 3 * 8, '3 pulsos de 8 áreas');
   // (dois inimigos a 2 casas um do outro: cada área cai em um e acerta só ele — a área de impacto, 1 m = 0 ou 1 casa — e não os dois; o sorteio alterna os alvos)
   const dois = await montar([['Lightning_Spire_Trap_of_Overloading']]);
   const outro = dois.resto[0];
