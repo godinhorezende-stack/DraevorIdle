@@ -21,6 +21,7 @@ import * as SocketsPoe from '../itens-poe/sockets.mjs';
 import * as CompatSuportes from '../itens-poe/compat-suportes.mjs';
 import * as ModsPoe from '../itens-poe/condicoes-poe.mjs';
 import { pilhaMaxima } from '../itens/pilha.mjs';
+import { MAIS_LOCAL_QUE_MULTIPLICA } from '../itens-poe/suportes-t3.mjs';
 
 const ler = (f) => JSON.parse(readFileSync(new URL(`../../gamedata/gemas/${f}.json`, import.meta.url), 'utf8'));
 export const CONFIG = ler('config');
@@ -884,6 +885,9 @@ export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
       else if (k === 'lacaioMaisDanoPct') e.lacaioMaisDanoPct = ((1 + (e.lacaioMaisDanoPct ?? 0) / 100) * Math.max(0, 1 + valor / 100) - 1) * 100;
       // (lote T1, rodada 4) o "X% mais/menos Duração" dos suportes também multiplica entre eles (`Acoes.fatorDeDuracao`)
       else if (k === 'duracaoMaisPct') e.duracaoMaisPct = ((1 + (e.duracaoMaisPct ?? 0) / 100) * Math.max(0, 1 + valor / 100) - 1) * 100;
+      // (achado C3 da rodada 4) os "mais/menos" LOCAIS dos suportes (`af:` — o "menos Duração das Afecções Danificadoras" do Sofrimento Veloz, o "menos Chance de
+      // Crítico" do Destruição Controlada) também multiplicam entre os suportes
+      else if (MAIS_LOCAL_QUE_MULTIPLICA.test(k)) e[k] = ((1 + (e[k] ?? 0) / 100) * Math.max(0, 1 + valor / 100) - 1) * 100;
       else e[k] = (e[k] ?? 0) + valor;
     }
     e.supports.push(sp.def.nome);

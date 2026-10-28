@@ -519,7 +519,8 @@ export function comAsLinhasDaGema(estado, ficha, entry, efeito = undefined) {
   const doSuporte = Object.entries(e ?? {}).filter(([k, v]) => k.startsWith('af:') && typeof v === 'number' && v);
   if (doSuporte.length) {
     af = { ...daGema };
-    for (const [k, v] of doSuporte) af[k.slice(3)] = (af[k.slice(3)] ?? 0) + v;
+    // (achado C3 da rodada 4) o "mais/menos" local do suporte multiplica o da gema (o PoE: cada more/less é um fator), não soma
+    for (const [k, v] of doSuporte) af[k.slice(3)] = SuportesT3.MAIS_LOCAL_QUE_MULTIPLICA.test(k) && af[k.slice(3)] ? ((1 + af[k.slice(3)] / 100) * Math.max(0, 1 + v / 100) - 1) * 100 : (af[k.slice(3)] ?? 0) + v;
   }
   // (lote A3, dono 19/10 — D1: "o dano com Arcos por habilidade, só o aumentada") "Aumentos e Reduções à Velocidade de Projéteis também se aplicam ao
   // Dano com Arcos" (`dmg_inc%stat:projectile_speed@arco` na soma): a da ficha já vale pela escala; a do USO — a da gema e a dos suportes — entra aqui,
@@ -1352,11 +1353,13 @@ function anomaliasDoFluxoR3c(estado, hunt, entry, ef, { mortos = [], critico = n
  */
 function explodirAnomaliaR3c(estado, hunt, personagem, a, eventos, rng = Math.random) {
   const entry = POR_ID.get(a.acao);
-  const ef = entry ? Gemas.efeitoNaSkill(estado, a.acao) : null;
   // (lote T2, 27/10: + a Anomalia Cinética da Chuva Cinética — `a.chuvaT2`, o "Dano de Ataque" e o Poder Arcano dela)
   const t2 = a.chuvaT2 ?? null;
+  // (achado C3 da rodada 4) a explosão da Anomalia Cinética NÃO é projétil (o PoB: KineticRainKineticInstability — baseFlags attack, area, duration): sem a tag, o
+  // "Dano de Projétil" da ficha e o "menos Dano de Projétil" dos suportes (os Projéteis Múltiplos) não valem nela — o efeito dos suportes sai pelas tags sem Projétil
+  const ef = entry ? (t2 ? efeitoSemProjetilT2(estado, a.acao) : Gemas.efeitoNaSkill(estado, a.acao)) : null;
   if (!entry || !ef || !(t2 || ef.fluxoAoMatar || ef.fluxoAoCritico)) return 0;
-  const tags = [...new Set([...tagsPoeDaSkill(entry), 'ataque', 'area'])];
+  const tags = [...new Set([...tagsPoeDaSkill(entry).filter((t) => !t2 || t !== 'projetil'), 'ataque', 'area'])];
   eventos.push({ t: 'explosao', id: EFEITO_DA_EXPLOSAO, x: a.x, y: a.y, lado: 2 * Math.max(0, a.raio) + 1, fonte: 'fluxo-cinetico' });
   // (correções R3, achado 11 — o PoB: TriggeredSupportKineticInstability é um ataque de varinha) o ATAQUE ATIVADO completo do R3A (`ativado`): a arma × o "Dano de Ataque",
   // o adicionado × a eficácia, as conversões e o CRÍTICO DA VARINHA (a chance da ficha do golpe com os aumentos — antes só o "+X%" fixo das tags, quase nunca crítico)
@@ -1364,9 +1367,15 @@ function explodirAnomaliaR3c(estado, hunt, personagem, a, eventos, rng = Math.ra
   let total = 0;
   for (const m of [...(hunt.monstros ?? [])]) {
     if (!(m.hp > 0) || m.dummy || (m.z ?? hunt.z ?? 0) !== (a.z ?? hunt.z ?? 0) || distanciaChebyshev(m, a) > a.raio) continue;
-    total += acertoDoArauto(estado, hunt, a.acao, m, 1, 'physical', { tags, eventos, rng, fonte: t2 ? 'anomalia-cinetica' : 'fluxo-cinetico', personagem, ataque: true, ativado, poderArcano: t2 ? t2.arcanoPct : ef.fluxoArcanoPct ?? 0 }) ?? 0;
+    total += acertoDoArauto(estado, hunt, a.acao, m, 1, 'physical', { tags, eventos, rng, fonte: t2 ? 'anomalia-cinetica' : 'fluxo-cinetico', personagem, ataque: true, ativado, poderArcano: t2 ? t2.arcanoPct : ef.fluxoArcanoPct ?? 0, ...(t2 ? { efetivo: ef } : {}) }) ?? 0;
   }
   return total;
+}
+/** (achado C3 da rodada 4) O efeito dos suportes da habilidade `id` com as tags dela SEM Projétil (a explosão da Anomalia Cinética da Chuva Cinética). */
+function efeitoSemProjetilT2(estado, id) {
+  const a = Gemas.skillsAtivas(estado).get(id);
+  if (!a?.def?.tags?.includes('poe:Projétil')) return Gemas.efeitoNaSkill(estado, id);
+  return Gemas.efeitoNaSkill(estado, id, new Map([[id, { ...a, def: { ...a.def, tags: a.def.tags.filter((t) => t !== 'poe:Projétil') } }]]));
 }
 /**
  * (lote T2, 27/10) A ANOMALIA CINÉTICA da Chuva Cinética no lugar `c` da queda de um projétil (o PoB: KineticRainKineticInstability — 6 s × a Duração, o raio 1,2 m × √ da
@@ -1376,7 +1385,7 @@ function anomaliaDaChuvaT2(estado, hunt, entry, ef, d, c, agora) {
   const ficha = Ficha.combate(estado);
   const porTag = ModsPoe.somaPorTags(ficha, ['ataque', 'area']);
   const fator = ModsPoe.fatorDaArea(ModsPoe.valor(ficha, 'area_inc') + (porTag.area_inc ?? 0) + (ef?.areaIncPct ?? 0), ModsPoe.valor(ficha, 'area_mais') + (porTag.area_mais ?? 0), ef?.areaMaisPct ?? 0);
-  const a = GemasR3c.criarAnomalia(hunt, { acao: entry.id, c: { x: c.x, y: c.y }, z: c.z ?? hunt.z ?? 0, raio: GemasR3c.casasDe(d.raioM, fator), ms: Math.round(d.duracaoMs * fatorDeDuracao(estado, entry, ef)), teto: d.teto }, agora);
+  const a = GemasR3c.criarAnomalia(hunt, { acao: entry.id, c: { x: c.x, y: c.y }, z: c.z ?? hunt.z ?? 0, raio: GemasR3c.casasDe(d.raioM, fator), ms: Math.round(d.duracaoMs * fatorDeDuracao(estado, entry, ef)), teto: d.teto, grupo: 'chuva' }, agora);
   if (a) a.chuvaT2 = { danoPct: d.danoPct, arcanoPct: d.arcanoPct };
   return a;
 }
@@ -3599,7 +3608,8 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
   const agora = hunt.ultimoTique ?? Date.now();
   const eventos = [];
   hunt.lacaios ??= [];
-  // A OFERENDA: o bônus em todos os lacaios em campo, pela duração dela.
+  // A OFERENDA: o bônus em todos os lacaios em campo, pela duração dela. (achado C3 da rodada 4: os Duplos do Golpe Duplo Vaal — `p4Duplo` — são cópias suas, não
+  // lacaios: a Oferenda e a Convocação não os pegam, nem contam como "lacaio em campo")
   if (q.tipo === 'oferenda') {
     // (dono, 26/10 — as Oferendas do PoE: "Consome um cadáver… e os outros cadáveres próximos, com a duração aumentada por cadáver consumido") consome os
     // cadáveres a até 4 casas (`GemasE1a.cadaveresDaOferenda`); a duração é a base + N s por cadáver extra. Sem cadáver, não sai (`dispararSemMarcar` recusa antes).
@@ -3609,7 +3619,7 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
     hunt.cadaveres = (hunt.cadaveres ?? []).filter((c) => !usados.has(c));
     for (const c of cadaveres) eventos.push({ t: 'fx', id: 13, x: c.x, y: c.y, sk: entry.id });
     const duracaoMs = GemasE1a.duracaoDaOferenda(q, cadaveres.length);
-    for (const l of hunt.lacaios) if (l.hp > 0 && l.tipo === 'lacaio') { l.oferenda = { ...q.bonus, ate: agora + duracaoMs }; eventos.push({ t: 'fx', id: 13, uid: l.uid, x: l.x, y: l.y, sk: entry.id }); }
+    for (const l of hunt.lacaios) if (l.hp > 0 && l.tipo === 'lacaio' && !l.p4Duplo) { l.oferenda = { ...q.bonus, ate: agora + duracaoMs }; eventos.push({ t: 'fx', id: 13, uid: l.uid, x: l.x, y: l.y, sk: entry.id }); }
     // (PoE, o Necromante: "Suas Habilidades de Oferenda também afetam você" — `condicoes-poe.adds`, com o "redução do Efeito em você".)
     if (estado && ModsPoe.valor(Ficha.combate(estado), 'oferenda_em_voce') > 0) { hunt.oferendaEmVoce = { ...q.bonus, ate: (hunt.clock ?? agora) + duracaoMs }; Ficha.invalidar(estado); }
     // (lote R3B, 27/10) o Nascido da Colmeia: a Oferenda suportada que saiu ativa a invocação (`colmeiaNaOferendaR3B`)
@@ -3618,7 +3628,7 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
   }
   // A CONVOCAÇÃO: todos os lacaios para perto do dono (na casa dele: o próximo passo os espalha) e a cura.
   if (q.tipo === 'convocacao') {
-    for (const l of hunt.lacaios) if (l.hp > 0 && l.tipo === 'lacaio') {
+    for (const l of hunt.lacaios) if (l.hp > 0 && l.tipo === 'lacaio' && !l.p4Duplo) {
       l.x = hunt.pos.x;
       l.y = hunt.pos.y;
       l.hp = Math.min(l.maxHp, l.hp + l.maxHp * (q.curaPct / 100) * 4);
@@ -5979,7 +5989,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const ultimate = itensPoeLigado() && LacaiosHabilidades.temUltimate(entry.poeGema.slug) && desta.length > 0;
     if (q && q.maximo && desta.length >= q.maximo && !venceLogo && !ultimate) return { ok: false, erro: `Já estão todos em campo (${desta.length}/${q.maximo}).`, motivo: 'LACAIOS_COMPLETOS' };
     // A Oferenda e a Convocação agem nos lacaios que estão em campo: sem nenhum, não saem.
-    if (q && (q.tipo === 'oferenda' || q.tipo === 'convocacao') && !(hunt.lacaios ?? []).some((l) => l.hp > 0 && l.tipo === 'lacaio')) return { ok: false, erro: 'Nenhum lacaio em campo.', motivo: 'SEM_LACAIOS' };
+    if (q && (q.tipo === 'oferenda' || q.tipo === 'convocacao') && !(hunt.lacaios ?? []).some((l) => l.hp > 0 && l.tipo === 'lacaio' && !l.p4Duplo)) return { ok: false, erro: 'Nenhum lacaio em campo.', motivo: 'SEM_LACAIOS' };
     // (dono, 26/10) a Oferenda consome cadáveres: sem nenhum a até 4 casas, não sai
     if (q?.tipo === 'oferenda' && !GemasE1a.cadaveresDaOferenda(hunt).length) return { ok: false, erro: 'Nenhum cadáver perto.', motivo: 'SEM_CADAVER' };
   }
@@ -6196,8 +6206,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   if (vidaGastaNoUso > 0) vidaGastaB2(hunt, vidaGastaNoUso, agora);
   //  - (lote S2A, 27/10) o uso pago por você: o adicionado e o atordoamento por Traumatismo do suporte, as Cargas de Inspiração e a Fonte de Vida (`doUsoS2A`)
   // (lote D2, dono 27/10) a Tentação Vaal: o seu uso da Vaal suportada põe em você o degenerativo dela pelo Impedimento de Ganho de Almas da gema
-  // (lote P4: pelo tempo do impedimento que ela troca — × a Duração, se a gema tem a linha, `msDoImpedimentoP4`; o golpe do Duplo não é uso seu)
-  if (itensPoeLigado() && efeitoDaGema?.tentacaoVaalPorS > 0 && entry.poeGema && !doTotem && !plantada && !gatilho?.p4Duplo) {
+  // (lote P4: pelo tempo do impedimento que ela troca — × a Duração, se a gema tem a linha, `msDoImpedimentoP4`; o golpe do Duplo não é uso seu; como o
+  // impedimento, uma vez só no uso — o estágio seguinte da canalização não renova, achado C3 da rodada 4)
+  if (itensPoeLigado() && efeitoDaGema?.tentacaoVaalPorS > 0 && entry.poeGema && !doTotem && !plantada && !gatilho?.p4Duplo && !continuaCanal) {
     SuportesS2A.tentacaoVaalNoUso(hunt, efeitoDaGema, { vaal: tagsPoeDaSkill(entry).includes('vaal'), impedimentoMs: msDoImpedimentoP4(estado, entry, efeitoDaGema), agora });
   }
   // (lote P4) o Golpe Duplo Vaal: cada golpe do SEU uso convoca um Duplo (`convocarDuplosP4`)
@@ -8144,8 +8155,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (lote A1b, dono 19/10: D-a: a recarga pulada com a carga não recomeça)
   if (!plantada && !vaalDeGraca && !continuaCanal && !pulaARecarga) cds[action.id] = { ate: inicio + recarga, total: recarga };
   // (lote P4, decisão do dono 27/10) o IMPEDIMENTO DE GANHO DE ALMAS: o seu uso de uma Vaal (não o ativado — o Duplo, a plantada) para a recarga de toda Vaal da barra pelo
-  // "Impedimento de Ganho de Almas" da gema (× a Duração, se a gema tem a linha); com a Tentação Vaal, o dano dela vem em vez dele (`impedimentoP4`)
-  if (itensPoeLigado() && entry.poeGema && !gatilho && !plantada && !doTotem && tagsPoeDaSkill(entry).includes('vaal') && !(efeitoDaGema?.tentacaoVaalPorS > 0)) impedimentoP4(estado, hunt, entry, efeitoDaGema, inicio);
+  // "Impedimento de Ganho de Almas" da gema (× a Duração, se a gema tem a linha); com a Tentação Vaal, o dano dela vem em vez dele (`impedimentoP4`). Uma vez só, no
+  // uso: os estágios seguintes de uma Vaal canalizada (`continuaCanal`) não o renovam (achado C3 da rodada 4)
+  if (itensPoeLigado() && entry.poeGema && !gatilho && !plantada && !doTotem && !continuaCanal && tagsPoeDaSkill(entry).includes('vaal') && !(efeitoDaGema?.tentacaoVaalPorS > 0)) impedimentoP4(estado, hunt, entry, efeitoDaGema, inicio);
   // (14/10, o Coveiro) Profanar e Desenterrar criam os cadáveres deles no alvo (`criarCadaveres`).
   if (entry.poeGema && GemasPoe.cadaveresDaGema(entry.poeGema.slug, 1)) criarCadaveres(estado, hunt, entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, alvo ?? hunt.pos, Math.random, { qualidade: efeitoDaGema?.qualidade ?? 0 });
   // (lote B1, dono 20/10) a Descarga remove as cargas que contou no começo (as removíveis) depois do golpe, salvo a chance da qualidade; as que o golpe deu ficam
@@ -8524,7 +8536,7 @@ function impedimentoP4(estado, hunt, entry, ef, inicio) {
   if (!(ms > 0)) return 0;
   GemasP4.limparImpedimento(hunt, inicio);
   const vaal = (estado.actions ?? []).filter((a) => a?.id && POR_ID.get(a.id)?.poeGema && tagsPoeDaSkill(POR_ID.get(a.id)).includes('vaal')).map((a) => a.id);
-  return GemasP4.impedirAlmas(hunt, hunt.cooldowns, [...new Set([entry.id, ...vaal])], inicio, ms);
+  return GemasP4.impedirAlmas(hunt, hunt.cooldowns, [...new Set([entry.id, ...vaal])], inicio, ms, entry.id);
 }
 
 /** (lote P4) O raio do Infestador em casas: o do PoB (2,5 m + o "+X metros de raio" do nível — `GemasP4.raioDoInfestadorM`) × √ da Área, ÷ 2; a fração, a chance. */
@@ -8538,16 +8550,25 @@ function alternarPragaP4(estado, hunt, entry) {
   const agora = hunt.clock ?? 0;
   const gema = Gemas.skillsAtivas(estado).get(entry.id);
   if (!gema) return { ok: false, erro: 'Ponha o Infestador ligado na barra.', motivo: 'SEM_PRAGA' };
+  // (achado C3 da rodada 4) cada uso à mão é pago, como no PoE ("Custo: 13 Mana" no 20): o custo da gema × o Custo dos suportes, o "custo de mana aumentado" e a
+  // eficiência da ficha (o caminho curto — a troca não passa pelo uso inteiro de `dispararSemMarcar`)
+  const ficha = Ficha.combate(estado);
+  const ef = Gemas.efeitoNaSkill(estado, entry.id);
+  const custo = Math.max(0, Math.round((custoDaSkill(entry, ef, estado) * (1 + (ficha.custoDeMana ?? 0)) * (1 + (ef?.custoPct ?? 0) / 100) * Math.max(0, 1 + ModsPoe.valor(ficha, 'custo_mana_inc') / 100)) / Math.max(0.1, 1 + ModsPoe.valor(ficha, 'eficiencia_custo_mana') / 100)));
+  if (custo > 0 && (estado.mana ?? 0) < custo) return { ok: false, erro: 'Sem mana.', motivo: 'MANA' };
+  const pagar = () => { if (custo > 0) estado.mana = Math.max(0, (estado.mana ?? 0) - custo); };
   // (o primeiro uso: ganha o Incubando — o PoE: "Gain an Incubating buff")
   if (!hunt.praga) {
     tiqueDaPraga(estado, hunt, 0, agora);
     if (!hunt.praga) return { ok: false, erro: 'Ponha o Infestador ligado na barra.', motivo: 'SEM_PRAGA' };
+    pagar();
     hunt.poeFichaMudou = true;
     return { ok: true, eventos: [{ t: 'fx', id: 3, uid: 'player', x: hunt.pos.x, y: hunt.pos.y, sk: entry.id }], praga: 'incubando' };
   }
   const p = hunt.praga;
   const r = GemasP4.alternarPraga(p, agora, { recargaMs: GemasPoe.PRAGA.recargaMs, porSegundoPct: GemasPoe.PRAGA.porSegundoPct + (gema.qualidade ?? 0) * GemasPoe.PRAGA.qualidadePorPonto });
   if (!r.modo) return { ok: false, erro: r.motivo === 'SEM_VALOR' ? 'Sem Valor da Praga para Infestar.' : 'Ainda recarregando.', motivo: r.motivo };
+  pagar();
   hunt.poeFichaMudou = true;
   return { ok: true, eventos: r.modo === 'infestando' ? [{ t: 'fx', id: 17, x: hunt.pos.x, y: hunt.pos.y }] : [{ t: 'fx', id: 3, uid: 'player', x: hunt.pos.x, y: hunt.pos.y, sk: entry.id }], praga: r.modo };
 }

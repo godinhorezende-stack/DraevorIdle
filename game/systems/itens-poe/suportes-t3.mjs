@@ -27,9 +27,13 @@ const temTag = (ativa, t) => !!ativa?.tags?.includes(`poe:${t}`);
 function tagsDoNivel(t) {
   if (/Físicas/i.test(t)) return ['Físico'];
   if (/Elementais/i.test(t)) return ['Fogo', 'Gelo', 'Raio'];
-  for (const [re, tag] of [[/de Fogo/i, 'Fogo'], [/de Gelo/i, 'Gelo'], [/de Raio/i, 'Raio'], [/de Caos/i, 'Caos'], [/Aura/i, 'Aura'], [/Golpes/i, 'Golpe'], [/Maldição/i, 'Maldição'], [/Lacaios?/i, 'Lacaio']]) if (re.test(t)) return [tag];
+  for (const [re, tag] of [[/de Fogo/i, 'Fogo'], [/de Gelo/i, 'Gelo'], [/de Raio/i, 'Raio'], [/de Caos/i, 'Caos'], [/Aura/i, 'Aura'], [/Maldição/i, 'Maldição'], [/Lacaios?/i, 'Lacaio']]) if (re.test(t)) return [tag];
+  // (achado C3 da rodada 4) o "de Golpes" do Dano Propagado Desperto: nas gemas do PoE a tag é "Golpear" (46 gemas — o Golpe Duplo, o Golpe Pesado…)
+  if (/Golpes/i.test(t)) return ['Golpe', 'Golpear'];
   return null;
 }
+/** (achado C3 da rodada 4) Os "mais/menos" LOCAIS dos suportes (`af:` no efeito) que MULTIPLICAM — entre suportes e com o da gema —, como cada more/less do PoE. */
+export const MAIS_LOCAL_QUE_MULTIPLICA = /^af:(?:crit_mais_pct|duracao_afeccoes_dano_mais)(?:@\w+)?$/;
 const TAG_DO_CRITICO = { ataques: 'ataque', 'mágico': 'magia', magico: 'magia' };
 export const REGRAS_T3 = [
   [new RegExp(`^\\+?${N} (?:ao|do) N[iíï]vel (?:de|das) Gemas de (?:Habilidade )?(\\S+)? ?(?:de )?(?:Habilidades? )?(\\S+)? ?Suportadas`, 'i'), (m, t, a) => {
