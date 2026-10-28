@@ -171,7 +171,11 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
     porLento(e, agora + ms, pct, agora);
   };
   if (sorte(v('chance_mutilar'))) {
-    e.mutilado = { ate: agora + NO_ACERTO.mutilar.duracaoMs };
+    // (rodada 4, etapa final — o dono, 28/10) a Mutilação da habilidade com o "Inimigos Mutilados … sofrem X% de Dano Físico aumentado" (o Suporte de Mutilação) leva o
+    // debuff do dano físico sofrido (`fisicoSofridoPct` — `fatorRecebidoPeloBicho`, toda fonte); o maior vale enquanto a Mutilação de antes dura
+    const sofridoAntes = (e.mutilado?.ate ?? 0) > agora ? Number(e.mutilado.fisicoSofridoPct) || 0 : 0;
+    const sofrido = Math.max(sofridoAntes, v('mutilados_fisico_sofrido'));
+    e.mutilado = { ate: agora + NO_ACERTO.mutilar.duracaoMs, ...(sofrido > 0 ? { fisicoSofridoPct: sofrido } : {}) };
     // (lote B1, dono 20/10: × o "X% de aumento do Efeito de Mutilação" — a Chuva de Flechas Vaal, 150%: 30% × 2,5 = 75%)
     lentidao(NO_ACERTO.mutilar.lentidaoPct * Math.max(0, 1 + v('efeito_mutilacao') / 100), NO_ACERTO.mutilar.duracaoMs);
     ev('mutilado');
@@ -754,7 +758,7 @@ const definhadosNoAlvo = (alvo, agora) => (ativo(alvo?.estados?.definhado, agora
 const ESTADOS_NO_ALVO = {
   // (revisão G, 26/10: a lentidão de cada estado pelo `porLento` — vale a mais forte enquanto dura, sem uma fonte apagar, encurtar ou herdar o `pct` da outra; `agora`, o
   // relógio de quem põe)
-  cego: (e, ate) => (e.cego = { ate }), mutilado: (e, ate, agora) => { e.mutilado = { ate }; porLento(e, ate, 30, agora); },
+  cego: (e, ate) => (e.cego = { ate }), mutilado: (e, ate, agora) => { const pct = (e.mutilado?.ate ?? 0) > agora ? e.mutilado.fisicoSofridoPct : 0; e.mutilado = { ate: pct ? Math.max(ate, e.mutilado.ate) : ate, ...(pct ? { fisicoSofridoPct: pct } : {}) }; porLento(e, ate, 30, agora); },
   intimidado: (e, ate) => (e.intimidado = { ate }), debilitado: (e, ate, agora) => { e.debilitado = { ate }; porLento(e, ate, 20, agora); },
   cinzas: (e, ate, agora) => { e.cinzas = { ate }; porLento(e, ate, 20, agora); }, causticado: (e, ate) => (e.causticado = { ate, pct: 10 }),
   fragilizado: (e, ate) => (e.fragilizado = { ate, pct: 6 }), exaurido: (e, ate) => (e.exaurido = { ate, pct: 10 }), lento: (e, ate, agora) => porLento(e, ate, 30, agora),

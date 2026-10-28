@@ -3351,6 +3351,8 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   const maisDoTipo = ficha?.maisDoElemento?.[tipo] ?? (Number(ficha?.afPoe?.[MAIS_DANO_DO_TIPO[tipo]]) || 0);
   if (maisDoTipo) f *= Math.max(0, 1 + maisDoTipo / 100);
   if (tipo === 'fire' && ativo(e.cinzas, agora)) f *= 1.2;
+  // (rodada 4, etapa final — o dono, 28/10) o Mutilado pelo Suporte de Mutilação: "sofrem X% de Dano Físico aumentado" — toda fonte, o acerto e o degenerativo
+  if (tipo === 'physical' && ativo(e.mutilado, agora) && e.mutilado.fisicoSofridoPct > 0) f *= 1 + e.mutilado.fisicoSofridoPct / 100;
   // (lote 71: + "Inimigos Provocados por seus Clamores são Intimidados" e "Inimigos Amaldiçoados por você são Enervados")
   const intimidado = ativo(e.intimidado, agora) || (Number(ficha?.afPoe?.provocados_clamor_intimidados) > 0 && provocadoPeloClamor(alvo, agora));
   if (intimidado && (ficha?.tagsDoGolpe ?? []).includes('ataque')) f *= 1.1;

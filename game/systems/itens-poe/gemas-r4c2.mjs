@@ -51,7 +51,10 @@ export const REGRAS_C2R4 = [
   [new RegExp(`^Habilidades Suportadas causam ${N}% de Dano Elemental aumentado$`, 'i'), (m) => aumentadoElemental(num(m[1]))],
   [new RegExp(`^Dano Elemental aumentado em ${N}% com Habilidades de Ataque$`, 'i'), (m, t, a) => (temTag(a, 'Ataque') ? aumentadoElemental(num(m[1])) : {})],
   [new RegExp(`^Habilidades Suportadas causam ${N}% de Dano Físico Corpo a Corpo aumentado$`, 'i'), (m) => ({ 'af:phys_dmg@corpo': num(m[1]) })],
-  [new RegExp(`^Inimigos Mutilados por Habilidades Suportadas sofrem ${N}% de Dano Físico aumentado$`, 'i'), (m) => ({ 'af:phys_dmg@alvoMutilado': num(m[1]) })],
+  // (rodada 4, etapa final — o dono, 28/10: "como o PoE") o "Inimigos Mutilados por Habilidades Suportadas sofrem X% de Dano Físico aumentado" é um DEBUFF no inimigo:
+  // a Mutilação posta pela habilidade suportada leva o "dano físico sofrido aumentado" (`mutilados_fisico_sofrido` — `ModsPoe.aoAcertar` o põe em `estados.mutilado`),
+  // que vale para toda fonte — você, os lacaios, a party, o acerto e o degenerativo (`CondicoesPoe.fatorRecebidoPeloBicho`)
+  [new RegExp(`^Inimigos Mutilados por Habilidades Suportadas sofrem ${N}% de Dano Físico aumentado$`, 'i'), (m) => ({ 'af:mutilados_fisico_sofrido': num(m[1]) })],
 ];
 // (as chaves `maisDoTipoPct:<tipo>` e `maisDoTipoAcertoPct:<tipo>@<tags>` multiplicam entre os suportes — `Gemas.efeitoNaSkill`)
 /**

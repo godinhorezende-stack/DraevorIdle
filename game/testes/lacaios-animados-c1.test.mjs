@@ -49,7 +49,7 @@ test('C1 — status: as 5 gemas de Animar seguem o PoB (o item animado é uma ba
   assert.equal(A.usaBase('Animate_Weapon_of_Self_Reflection'), false);
 });
 
-test('C1 — a ARMA ANIMADA: a base Normal de arma corpo a corpo de requisito mais alto até o nível da gema (a de maior DPS entre elas); o golpe é o dano Físico e o tempo dela', { skip: SEM }, () => {
+test('C1 — a ARMA ANIMADA: a base Normal de arma corpo a corpo de maior DPS Físico de base até o nível da gema; o golpe é o dano Físico e o tempo dela', { skip: SEM }, () => {
   // o limite: "Pode usar Itens que exigem até o Nível N" (o PoB: animate_item_maximum_level_requirement)
   const linhas = G.textosDaGema('Animate_Weapon', 20).linhas;
   assert.equal(A.limiteDeNivel(linhas), 100);
@@ -59,12 +59,12 @@ test('C1 — a ARMA ANIMADA: a base Normal de arma corpo a corpo de requisito ma
   const arma = q.itemAnimado;
   assert.equal(arma.tipo, 'arma');
   assert.ok(A.CLASSES_CORPO.includes(arma.classe), arma.classe);
-  // a conta da escolha, na mão: o requisito mais alto ≤ 100 entre as corpo a corpo, e o maior DPS Físico de base entre elas
+  // (decisão do dono 28/10) a conta da escolha: o maior DPS Físico de base entre TODAS as corpo a corpo com requisito ≤ 100 (sem preferir o requisito mais alto)
   const corpo = bases(A.CLASSES_CORPO).filter((b) => b.atributos?.dano_fisico?.max > 0 && b.atributos?.ataques_por_segundo > 0 && b.requisitos.nivel <= 100);
-  const topo = Math.max(...corpo.map((b) => b.requisitos.nivel));
-  const melhorDps = Math.max(...corpo.filter((b) => b.requisitos.nivel === topo).map((b) => media(b.atributos.dano_fisico) * b.atributos.ataques_por_segundo));
-  assert.equal(arma.nivel, topo);
+  const dps = (b) => media(b.atributos.dano_fisico) * b.atributos.ataques_por_segundo;
+  const melhorDps = Math.max(...corpo.map(dps));
   assert.ok(perto(media(arma) * arma.aps, melhorDps), `${arma.nome}: ${media(arma) * arma.aps} contra ${melhorDps}`);
+  assert.ok(corpo.every((b) => dps(b) <= melhorDps * (1 + 1e-9)), 'nenhuma base que cabe tem DPS maior');
   // o golpe: a faixa da base × o "aumentado/mais" do lacaio (o fator da invocação); o tempo: 1 ÷ os ataques por segundo dela
   const f = q.poe.fatorDoDano;
   const golpe = media(arma) * f;
@@ -76,10 +76,11 @@ test('C1 — a ARMA ANIMADA: a base Normal de arma corpo a corpo de requisito ma
   // a gema de nível 1: a base até o limite dela
   const q1 = invocar('Animate_Weapon', 1);
   assert.ok(q1.itemAnimado.nivel <= limite1, `${q1.itemAnimado.nome} ${q1.itemAnimado.nivel} ≤ ${limite1}`);
-  // a Vaal: "Pode usar Itens que exigem até o Nível 40" — a base até o 40
+  // (aval do dono 28/10) a Vaal: o limite do PoB (animate_item_maximum_level_requirement) — 100 no nível 20, como a comum; o 40 da linha é o requisito mínimo da Vaal
   const vaal = invocar('Vaal_Animate_Weapon');
-  assert.equal(A.limiteDeNivel(G.textosDaGema('Vaal_Animate_Weapon', 20).linhas), 40);
-  assert.ok(vaal.itemAnimado.nivel <= 40 && A.CLASSES_CORPO.includes(vaal.itemAnimado.classe), JSON.stringify(vaal.itemAnimado));
+  assert.equal(A.limiteDeNivel(G.textosDaGema('Vaal_Animate_Weapon', 20).linhas), 100);
+  assert.ok(vaal.itemAnimado.nivel <= 100 && A.CLASSES_CORPO.includes(vaal.itemAnimado.classe), JSON.stringify(vaal.itemAnimado));
+  assert.deepEqual([vaal.itemAnimado.id, vaal.itemAnimado.nivel], [arma.id, arma.nivel], 'a mesma base da comum no 20');
 });
 
 test('C1 — a ARMA ANIMADA DOS BRAÇOS DISTANTES: a base é um arco; o lacaio ataca de longe (5 casas) com a flecha', { skip: SEM }, () => {

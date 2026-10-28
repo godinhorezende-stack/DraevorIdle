@@ -1648,10 +1648,19 @@ Bateria: 152 arquivos (ativas-*, gemas-*, suportes-*, itens-poe-gemas*, lacaios-
 - gemas-t1-ativas:47 (a Legião do Agrupamento): os golpes 100 ms depois do uso [5, 6] → [0, 0] (o mesmo atraso); e a linha 77 espera o uso = o ataque da arma (769 ms) → 700 ms (a magia do PoB).
 - lacaios-animados-c1:76: `limiteDeNivel` da Vaal 20 = 40 → 100, e a base ≤ 40 → a do 100.
 
-**Decisões do dono (sem fonte):** a regra de escolha da base animada (o requisito mais alto, depois o DPS); o Pacto de Ghorr (o Destruir Carne); o "Inimigos Mutilados sofrem X% de Dano Físico aumentado" como debuff de toda fonte (hoje só a habilidade suportada) e o "Físico Corpo a Corpo aumentado" que pela tag pode chegar ao Sangramento.
+**Decisões do dono (sem fonte):** (resolvidas na parte 2: a base animada, o Ghorr exceto a Fome, a Mutilação) o "Físico Corpo a Corpo aumentado" que pela tag pode chegar ao Sangramento.
 
 Placar: ativas 562 · testada 560 · parcial 1 (o Pacto de Ghorr) · não se aplica 1. Ataques 210 testados. Suportes 262 · 261 testados · 1 não se aplica.
 Bateria: 153 arquivos, 1648 testes — 1612 passam, 33 pulados, 3 falham (os três acima).
+
+### R4 final, parte 2 — a resposta do dono (28/10)
+
+- **Avais:** gemas-t3-ativas:37 (a Legião: o golpe depois do Arrastão, 769 ÷ 0,7 = 1099 ms; os usos conferidos logo depois do uso; o segundo uso numa montagem nova, no instante em que 1 uso voltou), gemas-t1-ativas:47 e :77 (o Arrastão andado; o uso = 700 ms ÷ a conjuração), lacaios-animados-c1:76 (a Vaal 20 até 100, a mesma base da comum) e gemas-t1-ativas:364 (o Ghorr: o uso não fere, `hunt.poeGhorr`).
+- **Pacto de Ghorr como o PoB:** o uso não fere; fortalece as próximas 3 magias com dano degenerativo próprio (não de afecção) com 40% mais Dano Degenerativo (`maisDotPct`, `GemasT2.GHORR`; o canalizar que continua leva a do começo). O Dreno de Essência: 10 370,6 → 14 518,8 (× 1,4). As páginas: `Pact_of_Ghorr` já estava em disco (saida/html, com a aba do Destruir Carne); baixada com o Scrapling só https://poedb.tw/pt/Fleshrend. Mesmo com as duas, faltam números para a **Fome de Ghorr** (o Destruir Carne a cada 2 s, 150% mais rápido por estágio): o raio da área em volta do projétil, o alcance do voo e como o estágio do Rito de Sangue cresce — a gema segue **parcial** com esse motivo só.
+- **Arma Animada:** a base de maior DPS Físico de base entre todas as que cabem no limite (o Guardião segue com o requisito mais alto e a maior defesa).
+- **Suporte de Mutilação:** "Inimigos Mutilados … sofrem X% de Dano Físico aumentado" virou debuff no inimigo (`af:mutilados_fisico_sofrido` → `estados.mutilado.fisicoSofridoPct`, lido em `fatorRecebidoPeloBicho` — toda fonte, acerto e degenerativo).
+- Placar: ativas 562 · testada 560 · parcial 1 (o Ghorr, a Fome) · não se aplica 1; ataques 210; suportes 262 · 261 · 1. Bateria: 153 arquivos, 1649 testes — 1615 passam, 33 pulados, 1 falha (abaixo).
+- **Quebra sem aval (não editado):** gemas-c2:49 espera `mutilar['af:phys_dmg@alvoMutilado'] = 10`; agora a chave é `af:mutilados_fisico_sofrido` (o debuff) e a antiga sai → undefined.
 
 ## Pendências conhecidas (por ordem de prioridade)
 

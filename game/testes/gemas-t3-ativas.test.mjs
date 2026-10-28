@@ -52,22 +52,33 @@ test('T3: a Legião Congelada — 6 usos de 0,8 s; o uso gasta todos os prontos,
   const u = usar(e, b);
   assert.ok(u.r.ok, u.r.erro);
   assert.equal(danoEm(u.eventos, b), 0, 'o uso só invoca as Estátuas');
-  const ev = andar(e, 1, 100);
-  const g6 = golpesEm(ev, b);
-  assert.equal(g6.length, 6, '6 Estátuas, um Arrastão cada');
+  // (aval do dono 28/10: a Legião como no PoB — o seu uso é a magia de 0,7 s; cada Estátua acerta depois de UM Arrastão Congelante: o ataque da arma ÷ os 70% dele
+  // (a Clava de Madeira: 769 ms ÷ 0,7 = 1099 ms) — o tempo até o golpe é andado; 100 ms antes, nada)
+  // (os usos conferidos logo depois do uso: o Arrastão vem depois dos 0,8 s da recarga)
   assert.equal(e.hunt.cargasPoe[acao].length, 6, 'os 6 usos gastos');
   assert.ok((e.hunt.cooldowns[acao]?.ate ?? 0) > e.hunt.clock, 'sem uso pronto');
+  const atraso = Math.round(Ficha.combate(e).intervaloDoGolpeMs / 0.7);
+  const arrastao = (m) => andar(m, Math.ceil(atraso / 100) + 1, 100);
+  assert.equal(golpesEm(andar(e, Math.floor(atraso / 100) - 1, 100), b).length, 0, 'antes do Arrastão, nada');
+  const ev = andar(e, 3, 100);
+  const g6 = golpesEm(ev, b);
+  assert.equal(g6.length, 6, '6 Estátuas, um Arrastão cada');
   // (0,8 s depois: 1 uso de volta — 1 Estátua)
-  e.hunt.clock = e.hunt.cooldowns[acao].ate;
-  const u2 = usar(e, b, { passo: 0 });
+  // (aval do dono 28/10: o Arrastão vem depois da recarga de 0,8 s — o segundo uso numa montagem nova, no instante em que 1 uso voltou)
+  const m2 = await montar([['Frozen_Legion']], opts);
+  assert.ok(usar(m2.e, m2.b).r.ok);
+  m2.e.hunt.clock = m2.e.hunt.cooldowns[acao].ate;
+  const antes2 = (m2.e.hunt.poeObjetos ?? []).filter((o) => o.tipo === 'estatuas').length;
+  const u2 = usar(m2.e, m2.b, { passo: 0 });
   assert.ok(u2.r.ok, u2.r.erro);
-  assert.equal(golpesEm(andar(e, 1, 100), b).length, 1, 'um uso, uma Estátua');
+  assert.equal((m2.e.hunt.poeObjetos ?? []).filter((o) => o.tipo === 'estatuas').length - antes2, 1, 'um uso, uma Estátua');
+  assert.equal(golpesEm(arrastao(m2.e), m2.b).length, 6 + 1, 'as 6 do primeiro uso e a do segundo');
   // (o Gelo: 75% de resistência a Gelo tira 75% de cada golpe; a de Fogo não muda nada)
   const comRes = async (resist) => {
     const m = await montar([['Frozen_Legion']], opts);
     m.b.resist = resist;
     assert.ok(usar(m.e, m.b).r.ok);
-    return golpesEm(andar(m.e, 1, 100), m.b)[0].v;
+    return golpesEm(arrastao(m.e), m.b)[0].v;
   };
   const cru = await comRes({});
   assert.ok(Math.abs((await comRes({ ice: 75 })) - cru * 0.25) <= 1, 'todo o golpe é Gelo');

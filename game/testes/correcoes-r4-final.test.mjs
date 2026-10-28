@@ -5,14 +5,16 @@
 //     com a arma ÷ os 70% dele;
 //   - a troca à mão do Infestador pela regra do custo (`fatorDoCustoDeMana`) e pelo recurso (a Magia Sanguínea paga com a Vida; o "não custa Mana" zera);
 //   - o raio do Flagelo Celestial com a qualidade em décimos de metro (+0,01 m por ponto);
-//   - o Pacto de Ghorr parcial, com o motivo (o PoB faz mais do que o jogo; falta fonte para o Destruir Carne);
+//   - o Pacto de Ghorr como o PoB (o uso não fere; fortalece 3 magias degenerativas com 40% mais) — a Fome de Ghorr segue parcial (sem fonte);
+//   - o Suporte de Mutilação: o "dano físico sofrido aumentado" é um debuff no inimigo, de toda fonte;
+//   - a Arma Animada: a base de maior DPS Físico entre todas as que cabem no limite;
 //   - a Bomba Congelante plantada por armadilha também espera a explosão;
 //   - o Flagelo do Lycia só gasta o raio que cai num inimigo;
 //   - o "mais" local multiplicando entre suportes e com o da gema; a Tentação Vaal com o canalizar que continua;
 //   - o impedimento na Vaal que saiu pela carga que pula a recarga; a Chuva de Flechas da Artilharia com outro sorteio; o cone do Aço Estraçalhador da Munição.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { SEM, G, GS, Acoes, Ficha, montar, usar, danoEm, golpesEm, perto, travado } from './gemas-t2-apoio.mjs';
+import { SEM, G, GS, SP, Acoes, Ficha, montar, usar, danoEm, golpesEm, perto, travado } from './gemas-t2-apoio.mjs';
 
 const A = await import('../systems/itens-poe/lacaios-animados.mjs');
 const C2 = await import('../systems/itens-poe/gemas-r4c2.mjs');
@@ -128,10 +130,56 @@ test('R4 final: o Flagelo Celestial — o raio com a qualidade em décimos de me
 
 // ---------------------------------------------------------------- o Pacto de Ghorr
 
-test('R4 final: o Pacto de Ghorr fica parcial com o motivo (o PoB: o uso não fere, fortalece 3 magias degenerativas, a Fome de Ghorr) — decisão do dono', { skip: SEM }, () => {
+test('R4 final: o Pacto de Ghorr como o PoB — o uso não fere; as próximas 3 magias degenerativas com 40% mais Dano Degenerativo (a Fome de Ghorr segue parcial: sem fonte)', { skip: SEM }, async () => {
   const r = G.REGISTRO.get('Pact_of_Ghorr');
   assert.equal(r.statusNoJogo, 'parcial');
-  assert.ok(r.motivosNoJogo.some((m) => /o Pacto \(o PoB: o uso não causa dano; fortalece as próximas 3 magias degenerativas/.test(m) && /decisão do dono/.test(m)), r.motivosNoJogo.join(' | '));
+  assert.ok(r.motivosNoJogo.length === 1 && /a Fome de Ghorr .* não é simulada: o raio da área, o alcance do projétil e o crescimento do estágio .* decisão do dono/.test(r.motivosNoJogo[0]), r.motivosNoJogo.join(' | '));
+  // (o degenerativo do Dreno de Essência — a magia com dano degenerativo próprio — sem e com o Pacto; a Bola de Fogo, sem degenerativo, não gasta)
+  const dreno = async (pacto) => {
+    const { e, b } = await montar(['Pact_of_Ghorr'], { arma: VARINHA, soltas: ['Essence_Drain', 'Fireball'] });
+    if (pacto) {
+      const u = usar(e, 0, b);
+      assert.ok(u.r.ok, JSON.stringify(u.r));
+      assert.equal(danoEm(u.ev, b), 0, 'o uso não fere');
+      assert.equal((b.dots ?? []).length, 0, 'nem põe degenerativo');
+      assert.deepEqual([e.hunt.poeGhorr?.restantes, e.hunt.poeGhorr?.maisPct], [3, 40]);
+      e.hunt.clock += 5000;
+    }
+    assert.ok(usar(e, 2, b).r.ok);
+    if (pacto) assert.equal(e.hunt.poeGhorr.restantes, 3, 'a Bola de Fogo não é degenerativa: não gasta');
+    e.hunt.clock += 5000;
+    b.dots = [];
+    assert.ok(usar(e, 1, b).r.ok);
+    return { falta: b.dots.find((d) => d.tipo === 'degenCaos')?.falta ?? 0, restantes: e.hunt.poeGhorr?.restantes };
+  };
+  const sem = await dreno(false);
+  const com = await dreno(true);
+  assert.ok(sem.falta > 0);
+  assert.ok(perto(com.falta / sem.falta, 1.4, 1e-6), `${com.falta} / ${sem.falta}`);
+  assert.equal(com.restantes, 2, 'a magia degenerativa gastou uma');
+});
+
+test('R4 final: o Suporte de Mutilação — "Inimigos Mutilados sofrem 10% de Dano Físico aumentado" é um debuff no inimigo: vale para toda fonte (outra habilidade, o degenerativo)', { skip: SEM }, async () => {
+  const CP = await import('../systems/itens-poe/condicoes-poe.mjs');
+  const ef = SP.efeitoNoNivel('Maim_Support', 20, 0, { tags: ['poe:Ataque'] }).efeito;
+  assert.deepEqual([ef['af:mutilados_fisico_sofrido'], ef['af:phys_dmg@alvoMutilado']], [10, undefined]);
+  const alvo = { estados: { mutilado: { ate: 1e12, fisicoSofridoPct: 10 } } };
+  assert.ok(perto(CP.fatorRecebidoPeloBicho(alvo, 'physical', {}, 0), 1.1, 1e-9));
+  assert.equal(CP.fatorRecebidoPeloBicho(alvo, 'fire', {}, 0), 1, 'só o Físico');
+  assert.ok(perto(CP.fatorRecebidoNoDot(alvo, 'physical', 0), 1.1, 1e-9), 'o degenerativo físico (o Sangramento) também');
+  // no jogo: o Golpe Pesado com a Mutilação (sorteio 0: mutila) deixa o debuff no alvo
+  const { e, b } = await montar(['Heavy_Strike', 'Maim_Support'], { arma: 'Two_Hand_Maces/Driftwood_Maul' });
+  assert.ok(usar(e, 0, b, 0).r.ok);
+  assert.equal(b.estados.mutilado?.fisicoSofridoPct, 10);
+  // outra fonte (o Golpe Pesado sem o suporte, outro personagem) no alvo mutilado: × 1,1 no Físico
+  const golpe = async (mutilado) => {
+    const m = await montar(['Heavy_Strike'], { arma: 'Two_Hand_Maces/Driftwood_Maul' });
+    if (mutilado) m.b.estados.mutilado = { ate: m.e.hunt.clock + 60_000, fisicoSofridoPct: 10 };
+    return danoEm(usar(m.e, 0, m.b, 0.5).ev, m.b);
+  };
+  const cru = await golpe(false);
+  assert.ok(cru > 0);
+  assert.ok(perto((await golpe(true)) / cru, 1.1, 0.01));
 });
 
 // ---------------------------------------------------------------- a Bomba Congelante plantada

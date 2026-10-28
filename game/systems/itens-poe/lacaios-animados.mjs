@@ -2,7 +2,7 @@
 // Animado (Animar Guardião, o do Castigo). No PoE o lacaio é um ITEM animado — a arma no chão, a armadura —, e o idle não tem o item no chão: a decisão do dono é que o
 // item animado seja uma BASE NORMAL do nível que a gema anima ("Pode usar Itens que exigem até o Nível N" — o PoB: animate_item_maximum_level_requirement):
 //   - a ARMA: uma base de arma do tipo da gema — corpo a corpo (Animar Arma, a Vaal) ou à distância (a dos Braços Distantes: os arcos) —, com o requisito de nível até
-//     o da gema; a de requisito mais alto, e entre elas a de maior DPS Físico de base. O lacaio bate com o dano Físico e o tempo de ataque dela (o PoB: a Arma Animada
+//     o da gema; a de maior DPS Físico de base entre todas as que cabem (decisão do dono 28/10 — antes, a de requisito mais alto). O lacaio bate com o dano Físico e o tempo de ataque dela (o PoB: a Arma Animada
 //     tem `damage = 0` e `monster_gets_item_stats` — o golpe é o da arma);
 //   - o GUARDIÃO: uma Armadura de Corpo base com o requisito até o da gema (a de requisito mais alto; entre elas, a de mais defesa — armadura + evasão + escudo). O
 //     lacaio tem a armadura, a evasão e o escudo de energia dela (a média da faixa da base) somados às dele no PoB (armour 0,5 × a tabela) e bate desarmado: os 2 a 6
@@ -44,12 +44,15 @@ function bases(classes) {
   if (!cat) return [];
   return classes.flatMap((c) => (cat.classes?.[c]?.bases ?? []).map((b) => ({ b, classe: c }))).filter(({ b }) => Number.isFinite(nivelDe(b)));
 }
-/** A melhor base até o `limite`: o requisito mais alto, e entre elas a de maior `valor`. */
-function melhor(lista, limite, valor) {
+/**
+ * A melhor base até o `limite`: com `porRequisito`, o requisito mais alto e, entre elas, a de maior `valor` (o Guardião); sem ele, a de maior `valor` entre TODAS as que
+ * cabem no limite (a Arma Animada — decisão do dono 28/10: o maior DPS Físico de base, sem preferir o requisito mais alto). Empate: o requisito mais alto, depois o id.
+ */
+function melhor(lista, limite, valor, { porRequisito = true } = {}) {
   const ok = lista.filter(({ b }) => nivelDe(b) <= limite);
   if (!ok.length) return null;
   const topo = Math.max(...ok.map(({ b }) => nivelDe(b)));
-  return ok.filter(({ b }) => nivelDe(b) === topo).sort((x, y) => valor(y.b) - valor(x.b) || String(x.b.id).localeCompare(String(y.b.id)))[0];
+  return ok.filter(({ b }) => !porRequisito || nivelDe(b) === topo).sort((x, y) => valor(y.b) - valor(x.b) || nivelDe(y.b) - nivelDe(x.b) || String(x.b.id).localeCompare(String(y.b.id)))[0];
 }
 /**
  * A ARMA animada: `{ id, nome, classe, nivel, min, max, aps, intervaloMs, distancia }` — a base Normal de arma do tipo da gema com o requisito até `limite`. Null sem
@@ -57,7 +60,7 @@ function melhor(lista, limite, valor) {
  */
 export function armaBase(limite, { distancia = false } = {}) {
   const lista = bases(distancia ? CLASSES_DISTANCIA : CLASSES_CORPO).filter(({ b }) => b.atributos?.dano_fisico?.max > 0 && b.atributos?.ataques_por_segundo > 0);
-  const x = melhor(lista, limite, (b) => media(b.atributos.dano_fisico) * b.atributos.ataques_por_segundo);
+  const x = melhor(lista, limite, (b) => media(b.atributos.dano_fisico) * b.atributos.ataques_por_segundo, { porRequisito: false });
   if (!x) return null;
   const a = x.b.atributos;
   return { id: x.b.id, nome: x.b.nome, classe: x.classe, nivel: nivelDe(x.b), min: a.dano_fisico.min, max: a.dano_fisico.max, aps: a.ataques_por_segundo, intervaloMs: Math.round(1000 / a.ataques_por_segundo), distancia };

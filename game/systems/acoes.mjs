@@ -5274,7 +5274,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   const trarthusDoUso = b3?.trarthus && !gatilho && !plantada && !doTotem ? b3.trarthus : null;
   // (lote C2 da rodada 4, dono 28/10: + o Pacto de Lycia — o uso não causa dano: fortalece as próximas magias de canalização, `GemasR4C2.LYCIA`)
   const usoDoLycia = itensPoeLigado() && entry.poeGema && !doTotem && !plantada && GemasR4C2.ehPactoDeLycia(entry.poeGema.slug);
-  const semGolpeDireto = (!!doCadaver && (!doCadaver.comDano || doCadaver.modo === 'geiser')) || !!orbeDoUso || !!runasDoUso || !!b2?.febre || !!usoDoPacto || !!usoDoLycia || !!vulcaoDoUso || !!trarthusDoUso || esqueletosDoUso.length > 0;
+  // (rodada 4, etapa final — o dono, 28/10: o Pacto de Ghorr como o PoB — o uso não fere: fortalece as próximas magias degenerativas, `GemasT2.GHORR`)
+  const usoDoGhorr = itensPoeLigado() && entry.poeGema && !doTotem && !plantada && GemasT2.ehPactoDeGhorr(entry.poeGema.slug);
+  const semGolpeDireto = (!!doCadaver && (!doCadaver.comDano || doCadaver.modo === 'geiser')) || !!orbeDoUso || !!runasDoUso || !!b2?.febre || !!usoDoPacto || !!usoDoLycia || !!usoDoGhorr || !!vulcaoDoUso || !!trarthusDoUso || esqueletosDoUso.length > 0;
   // (revisão do B3, 21/10) a Chuva de Lâminas de Trarthus por gatilho, totem, armadilha ou mina NÃO SAI — o PoB (act_dex.lua, BladefallOfTrarthus): "This skill
   // cannot be triggered or used by Totems, Traps, or Mines" (os `skillTypes` sem Triggerable/Totemable/Trappable/Mineable). Antes, virava um golpe direto comum.
   // A rajada dela (`rajadaDaTrarthus` → `golpeDoObjeto`, o `plantada` 'objeto' seu — que também chega com o `gatilho` das plantadas) segue saindo.
@@ -5360,6 +5362,13 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   const lyciaAgora = itensPoeLigado() && entry.poeGema && efeitoDaGema && !gatilho && !doTotem && !plantada && !tipoPlantado && GemasR4C2.fortalecePeloLycia(entry.poeGema.slug, tagsDoLycia)
     ? (continuaCanal ? hunt.canalizacao?.lycia ?? null : hunt.poeLycia?.restantes > 0 ? { acao: hunt.poeLycia.acao, maisPct: hunt.poeLycia.maisPct, novo: true } : null) : null;
   if (lyciaAgora?.maisPct) efeitoDaGema = { ...efeitoDaGema, fatorDeDano: (efeitoDaGema.fatorDeDano ?? 1) * (1 + lyciaAgora.maisPct / 100) };
+  // (rodada 4, etapa final — o PoB, other.lua PactOfGhorr) o PACTO DE GHORR fortalece esta magia? A sua magia com dano degenerativo próprio (conjurada por você: o totem,
+  // a armadilha, a mina e o gatilho não contam) com o Pacto pendente (`hunt.poeGhorr`) gasta uma das 3: 40% mais Dano Degenerativo (Damage MORE com ModFlag.Dot —
+  // `maisDotPct`, que vale no degenerativo da gema e nas afecções dela); o canalizar que continua leva a do começo (`hunt.canalizacao.ghorr`)
+  const ghorrAgora = itensPoeLigado() && entry.poeGema && efeitoDaGema && !gatilho && !doTotem && !plantada && !tipoPlantado && !usoDoGhorr
+    && GemasT2.fortalecePeloGhorr(entry.poeGema.slug, tagsDoLycia, (GemasPoe.compilada(entry.poeGema.slug, efeitoDaGema.nivel ?? 1, efeitoDaGema.qualidade ?? 0)?.stats?.dot ?? []).length > 0)
+    ? (continuaCanal ? hunt.canalizacao?.ghorr ?? null : hunt.poeGhorr?.restantes > 0 ? { acao: hunt.poeGhorr.acao, maisPct: hunt.poeGhorr.maisPct, novo: true } : null) : null;
+  if (ghorrAgora?.maisPct) efeitoDaGema = { ...efeitoDaGema, maisDotPct: ((1 + (efeitoDaGema.maisDotPct ?? 0) / 100) * (1 + ghorrAgora.maisPct / 100) - 1) * 100 };
   // (lote S2B, 27/10) o que os suportes do lote dão a ESTE uso (`SuportesS2B.doUso`): a Fúria Arcana ("35% mais Dano Mágico enquanto você possuir Fúria Arcana"), a Trindade e
   // a Tríade Profana (as Ressonâncias agora), a Gula (a Regurgitação: em círculo, com os projéteis a mais) e a Intensidade Sobrecarregada (o crítico por instância); o seu uso
   // (o totem, a armadilha, a mina e o ativado por gatilho não contam). O que muda depois que o uso sai (a Gula, a Intensidade perdida) é do `aposPagar`, abaixo
@@ -6258,6 +6267,14 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     porFlageloDoLycia(estado, hunt, entry, hunt.poeLycia, inicio);
     hunt.poeLycia.restantes -= 1;
     if (!(hunt.poeLycia.restantes > 0)) delete hunt.poeLycia;
+  }
+  // (rodada 4, etapa final) o PACTO DE GHORR: o uso fortalece as próximas 3 magias degenerativas (um uso novo recomeça a conta); a fortalecida gasta uma
+  if (usoDoGhorr) {
+    hunt.poeGhorr = { acao: entry.id, restantes: GemasT2.GHORR.magias, maisPct: GemasT2.GHORR.maisDotPct };
+    if (entry.efeito) eventos.push({ t: 'fx', id: entry.efeito, uid: 'player', x: hunt.pos.x, y: hunt.pos.y });
+  } else if (ghorrAgora?.novo && hunt.poeGhorr) {
+    hunt.poeGhorr.restantes -= 1;
+    if (!(hunt.poeGhorr.restantes > 0)) delete hunt.poeGhorr;
   }
   // (lote A1b, dono 19/10) o uso SAIU (pagou):
   //  - D-a: a carga que pula a recarga é gasta agora (o golpe já sai sem ela — no PoE ela é gasta no uso);
@@ -8326,7 +8343,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         // (lote S1: o Conjurar ao Canalizar Desperto — "Ignora Atordoamentos enquanto Usando Habilidades Suportadas", lido em `Controle.tentar`)
         ...(efeitoDaGema?.ignoraAtordoamento ? { ignoraAtordoamento: true } : {}),
         // (lote C2 da rodada 4) o Pacto de Lycia que fortalece este canalizar (o do começo segue nos usos que continuam)
-        ...(lyciaAgora ? { lycia: { acao: lyciaAgora.acao, maisPct: lyciaAgora.maisPct } } : {}) };
+        ...(lyciaAgora ? { lycia: { acao: lyciaAgora.acao, maisPct: lyciaAgora.maisPct } } : {}),
+        // (rodada 4, etapa final) e o Pacto de Ghorr
+        ...(ghorrAgora ? { ghorr: { acao: ghorrAgora.acao, maisPct: ghorrAgora.maisPct } } : {}) };
       // (lote A4, dono 19/10: o que a canalização dá a você mudou — a ficha é refeita)
       if (!continua || (canal?.estagioDaFicha ?? null) !== (hunt.canalizacao.estagioDaFicha ?? null)) Ficha.invalidar(estado);
       // (lote A1b, dono 19/10) a miragem dura o mesmo que o canalizar (o fim deste uso, com as repetições)

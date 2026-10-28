@@ -48,7 +48,7 @@ Só os ataques:
 ## Gemas de habilidade pendentes
 
 - **Pact_of_Ghorr** (Pacto de Ghorr) — parcial
-  - o Pacto (o PoB: o uso não causa dano; fortalece as próximas 3 magias degenerativas com 40% mais Dano Degenerativo; a Fome de Ghorr ativa o Destruir Carne a cada 2 s por 6 s) — no jogo o uso só põe o degenerativo no alvo; a área do Destruir Carne e o estágio do Rito de Sangue sem fonte: decisão do dono
+  - a Fome de Ghorr (o PoB: ativa o Destruir Carne a cada 2 s por 6 s, 150% mais rápido por estágio do Rito de Sangue — 3 projéteis que põem um degenerativo Físico de 0,4 s na área em volta) não é simulada: o raio da área, o alcance do projétil e o crescimento do estágio não estão no PoB nem no poedb — decisão do dono
 
 ## Gemas de suporte pendentes
 

@@ -75,14 +75,19 @@ export const ehLinhaT2 = (slug, l) => slug === CHUVA_CINETICA && (LINHA_COMPRIME
  */
 // (lote C2 da rodada 4, dono 28/10: o Pacto como no PoB — `gemas-r4c2.LYCIA`, `acoes`: o uso fortalece as 3 magias de canalização e o Flagelo cai enquanto você canaliza;
 // a gema sai de parcial)
-// (rodada 4, correções finais — achado C, médio: o Pacto de Ghorr passava como "funciona" sem fazer o que o PoB faz. No PoB (other.lua PactOfGhorr +
-// TriggeredBloodrend) o uso não fere (base_deal_no_spell_damage), fortalece as próximas 3 magias de dano degenerativo (40% mais Dano Degenerativo —
-// pact_skill_grant_damage_over_time_+%_final_to_spells) e dá a Fome de Ghorr por 6 s, que ativa o Destruir Carne a cada 2 s (+150% de frequência por estágio do Rito de
-// Sangue): 3 projéteis em círculo que atravessam e põem, na área em volta de cada um, um degenerativo Físico de 0,4 s, até 3 acúmulos, com +25% de dano degenerativo
-// sofrido por acúmulo. O jogo põe o degenerativo da coluna do poedb (1521,1/s no 20) por 4 s no alvo. Falta fonte para o resto — a área do degenerativo do projétil
-// e como o estágio do Rito de Sangue cresce não estão no PoB salvo —, e trocar o uso quebra o teste do T1 (gemas-t1-ativas:364) sem aval: fica PARCIAL até o dono.)
+// (rodada 4, etapa final — o dono, 28/10: "faça como o PoB") o PACTO DE GHORR (o PoB, other.lua PactOfGhorr + TriggeredBloodrend; o poedb salvo, Pact_of_Ghorr e Fleshrend):
+//   - o uso não fere (base_deal_no_spell_damage) — antes o jogo punha o degenerativo da coluna (1521,1/s no 20) no alvo;
+//   - fortalece as próximas 3 magias de dano degenerativo que não sejam de afecção (skill_empowers_next_x_spells_cast 3): "+40% de dano degenerativo" — o PoB,
+//     pact_skill_grant_damage_over_time_+%_final_to_spells: Damage MORE com ModFlag.Dot (`maisDotPct` no uso fortalecido);
+//   - a Fome de Ghorr (6 s × a Duração) ativa o Destruir Carne a cada 2 s, 150% mais rápido por estágio do Rito de Sangue: 3 projéteis em círculo (8 m/s, atravessam)
+//     que põem, na área em volta de cada um, um degenerativo Físico de 0,4 s (até 3 acúmulos, +25% de dano degenerativo sofrido por acúmulo). Isso NÃO é simulado:
+//     nem o PoB nem o poedb (as duas páginas) trazem o raio da área do projétil, o alcance do voo, nem como o estágio do Rito de Sangue cresce — fica parcial.
+export const GHORR = Object.freeze({ slug: 'Pact_of_Ghorr', magias: 3, maisDotPct: 40, fomeMs: 6000, destruirCarneMs: 2000, porEstagioPct: 150 });
+export const ehPactoDeGhorr = (slug) => slug === GHORR.slug;
+/** A magia fortalecida pelo Pacto de Ghorr: uma magia sua com dano degenerativo próprio (`temDot` — o degenerativo da gema, não o de afecção), não o próprio Pacto. */
+export const fortalecePeloGhorr = (slug, tags = [], temDot = false) => !ehPactoDeGhorr(slug) && tags.includes('magia') && !!temDot;
 export const MOTIVOS_T2 = {
-  Pact_of_Ghorr: ['o Pacto (o PoB: o uso não causa dano; fortalece as próximas 3 magias degenerativas com 40% mais Dano Degenerativo; a Fome de Ghorr ativa o Destruir Carne a cada 2 s por 6 s) — no jogo o uso só põe o degenerativo no alvo; a área do Destruir Carne e o estágio do Rito de Sangue sem fonte: decisão do dono'],
+  Pact_of_Ghorr: ['a Fome de Ghorr (o PoB: ativa o Destruir Carne a cada 2 s por 6 s, 150% mais rápido por estágio do Rito de Sangue — 3 projéteis que põem um degenerativo Físico de 0,4 s na área em volta) não é simulada: o raio da área, o alcance do projétil e o crescimento do estágio não estão no PoB nem no poedb — decisão do dono'],
 };
 
 // ---------------------------------------------------------------- o Golpe Relampejante do Arco

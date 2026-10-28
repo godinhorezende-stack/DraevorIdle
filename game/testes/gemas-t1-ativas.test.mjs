@@ -60,8 +60,10 @@ test('T1 (correção): Legião Congelada do Agrupamento — o Arrastão Congelan
     const viz = por(m, casas);
     const u = usar(m, 0.5);
     const uso = m.e.hunt.cooldowns['grupo:poe'].total;
-    m.e.hunt.clock += 100;
-    const ev = sorte(0.5, () => Acoes.tiqueDasPlantadas(m.e, m.e.hunt, PERSONAGEM, []));
+    // (aval do dono 28/10: cada Estátua acerta depois de UM Arrastão — o ataque da arma ÷ os 70% dele, como no PoB; o tempo até o golpe é andado)
+    const ev = [];
+    const atraso = Math.round(Ficha.combate(m.e).intervaloDoGolpeMs / 0.7);
+    for (let t = 0; t <= atraso; t += 100) { m.e.hunt.clock += 100; ev.push(...sorte(0.5, () => Acoes.tiqueDasPlantadas(m.e, m.e.hunt, PERSONAGEM, []))); }
     return { u, ev, uso, m, viz, golpes: ev.filter((x) => x.t === 'dmg' && x.uid === m.b.uid && x.foe) };
   };
   const r = await estatuas(S);
@@ -70,11 +72,11 @@ test('T1 (correção): Legião Congelada do Agrupamento — o Arrastão Congelan
   assert.deepEqual([r.golpes.length, b.golpes.length], [5, 6], 'uma Estátua por uso pronto (5 e 6), um Arrastão cada');
   assert.ok(perto(r.golpes[0].v / b.golpes[0].v, 1.849 / 3.329, 0.05), `${r.golpes[0].v} / ${b.golpes[0].v}`);
   // (todo o golpe é Gelo: 75% de resistência a Gelo tira 75%)
-  const gelo = await (async () => { const m = await montar(MACA, [[S]]); m.b.resist = { ice: 75 }; usar(m, 0.5); m.e.hunt.clock += 100; return sorte(0.5, () => Acoes.tiqueDasPlantadas(m.e, m.e.hunt, PERSONAGEM, [])).filter((x) => x.t === 'dmg' && x.uid === m.b.uid && x.foe)[0].v; })();
+  const gelo = await (async () => { const m = await montar(MACA, [[S]]); m.b.resist = { ice: 75 }; usar(m, 0.5); m.e.hunt.clock += Math.round(Ficha.combate(m.e).intervaloDoGolpeMs / 0.7); return sorte(0.5, () => Acoes.tiqueDasPlantadas(m.e, m.e.hunt, PERSONAGEM, [])).filter((x) => x.t === 'dmg' && x.uid === m.b.uid && x.foe)[0].v; })();
   assert.ok(Math.abs(gelo - r.golpes[0].v * 0.25) <= 1, `${gelo} contra ${r.golpes[0].v}`);
-  // (o seu uso: o tempo do ataque da arma — os 70% não entram nele)
-  const arma = Ficha.combate(r.m.e).intervaloDoGolpeMs;
-  assert.ok(perto(r.uso, arma, 0.02), `${r.uso} contra ${arma}`);
+  // (aval do dono 28/10: o seu uso é a MAGIA do PoB — castTime 0,7 pela Velocidade de Conjuração —, não o ataque da arma; os 70% não entram nele)
+  const conj = 700 / (1 + (Ficha.combate(r.m.e).castSpeed ?? 0) / 100);
+  assert.ok(perto(r.uso, conj, 0.02), `${r.uso} contra ${conj}`);
   // (a área de 2,5 m: o vizinho a 1 casa do alvo também leva)
   const v = await estatuas(S, [[1, 1]]);
   assert.ok(ferido(v.viz[0]), 'o Arrastão acerta em área');
@@ -361,20 +363,20 @@ test('T1: Explosão Flamejante da Contração — 171 a 256, 600% mais Mágico e
   assert.ok(casasPorUso.length === est.max);
 });
 
-test('T1: Pacto de Ghorr — 1521,1 de Físico por segundo (poedb, nível 20) no alvo, por 4 s; recarga de 4 s', { skip: SEM }, async () => {
+test('T1: Pacto de Ghorr — 1521,1 de Físico por segundo (poedb, nível 20) na linha; o uso não fere e fortalece as próximas 3 magias degenerativas; recarga de 4 s', { skip: SEM }, async () => {
   const S = 'Pact_of_Ghorr';
   assert.deepEqual([G.textosDaGema(S, 20).linhas, G.temposNoNivel(S, 20).recargaMs], [['Causa 1521.1 de Dano Físico Base por segundo'], 4000]);
+  // (aval do dono 28/10: o Pacto de Ghorr como o PoB — o uso não fere (base_deal_no_spell_damage); o 1521,1/s é o do Destruir Carne da Fome de Ghorr; o uso fortalece
+  // as próximas 3 magias de dano degenerativo com 40% mais Dano Degenerativo — `hunt.poeGhorr`; a magia fortalecida: correcoes-r4-final)
   const m = await montar(VARINHA, [[S]]);
-  usar(m, 0.5);
-  const dot = m.b.dots.find((d) => d.tipo === 'degenFisico');
-  assert.ok(dot, JSON.stringify(m.b.dots));
-  const f = Ficha.combate(m.e);
-  const porSegundo = (dot.porPulso * 1000) / (dot.proximo - dot.desde);
-  assert.ok(porSegundo >= 1521.1 * 0.999, `${porSegundo}`);
-  assert.equal(dot.ate - dot.desde, 4000);
-  assert.ok(perto(dot.falta, porSegundo * 4, 0.01));
-  assert.ok(f);
+  const vida = m.b.hp;
+  const u = usar(m, 0.5);
+  assert.equal(danoEm(u.eventos ?? [], m.b), 0, 'o uso não fere');
+  assert.equal(m.b.hp, vida);
+  assert.equal(m.b.dots.find((d) => d.tipo === 'degenFisico'), undefined, 'sem degenerativo no alvo');
+  assert.deepEqual([m.e.hunt.poeGhorr?.restantes, m.e.hunt.poeGhorr?.maisPct], [3, 40]);
   m.e.hunt.clock += 1000;
   const r = Acoes.disparar(m.e, m.e.hunt, PERSONAGEM, 0, m.b, { manual: true });
   assert.equal(r.ok, false, 'a recarga de 4 s');
 });
+
