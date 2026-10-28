@@ -73,9 +73,9 @@ export const ehLinhaT2 = (slug, l) => slug === CHUVA_CINETICA && (LINHA_COMPRIME
  * Flagelo Celestial cai a cada 0,3 s (até 10 por canalização; ao parar, os restantes a cada 0,05 s), 1,2 m de raio, 7,5% de crítico, eficácia 230%; e o uso impõe uma
  * AFLIÇÃO — o PoB e o poedb salvo não trazem o que ela faz. A gema fica PARCIAL até a decisão do dono (o status deixava passar por não ter linhas).
  */
-export const MOTIVOS_T2 = {
-  Pact_of_Lycia: ['efeito não simulado: o Pacto (o PoB: o uso não causa dano — fortalece as próximas 3 magias de canalização com 40% mais dano e, enquanto você canaliza uma delas, o Flagelo Celestial cai a cada 0,3 s, até 10; e a Aflição, sem dado no PoB nem no poedb) — no jogo ele é uma canalização com o dano do Flagelo (decisão do dono)'],
-};
+// (lote C2 da rodada 4, dono 28/10: o Pacto como no PoB — `gemas-r4c2.LYCIA`, `acoes`: o uso fortalece as 3 magias de canalização e o Flagelo cai enquanto você canaliza;
+// a gema sai de parcial)
+export const MOTIVOS_T2 = {};
 
 // ---------------------------------------------------------------- o Golpe Relampejante do Arco
 

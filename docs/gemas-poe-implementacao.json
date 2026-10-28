@@ -2,15 +2,13 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 554,
+   "implementada e testada": 556,
    "limitação do modelo idle": 5,
-   "parcial": 2,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 209,
-   "parcial": 1
+   "implementada e testada": 210
   },
   "suportes": {
    "total": 262,
@@ -37,7 +35,7 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 2,
+   "linhasDistintas": 0,
    "emDuasOuMais": 0
   },
   "imagens": {
@@ -3031,10 +3029,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "chuva",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: as flechas em sequência numa linha de você até o alvo, cada uma com a área de 1 m (o comprimento da linha e o espaçamento das flechas não estão no PoB nem no poedb — decisão do dono)"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7403,10 +7399,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: o Pacto (o PoB: o uso não causa dano — fortalece as próximas 3 magias de canalização com 40% mais dano e, enquanto você canaliza uma delas, o Flagelo Celestial cai a cada 0,3 s, até 10; e a Aflição, sem dado no PoB nem no poedb) — no jogo ele é uma canalização com o dano do Flagelo (decisão do dono)"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -9514,19 +9508,6 @@
    "icone": true
   }
  ],
- "linhasFaltando": [
-  {
-   "linha": "as flechas em sequência numa linha de você até o alvo, cada uma com a área de # m (o comprimento da linha e o espaçamento das flechas não estão no PoB nem no poedb — decisão do dono)",
-   "gemas": [
-    "Rain_of_Arrows_of_Artillery"
-   ]
-  },
-  {
-   "linha": "o Pacto (o PoB: o uso não causa dano — fortalece as próximas # magias de canalização com #% mais dano e, enquanto você canaliza uma delas, o Flagelo Celestial cai a cada # s, até #; e a Aflição, sem dado no PoB nem no poedb) — no jogo ele é uma canalização com o dano do Flagelo (decisão do dono)",
-   "gemas": [
-    "Pact_of_Lycia"
-   ]
-  }
- ],
+ "linhasFaltando": [],
  "iconesRepetidos": []
 }

@@ -168,9 +168,9 @@ export function objetoDaGemaT3(slug, linhas = [], daQualidade = [], stats = {}) 
  * sequência, começando na sua frente e seguindo em linha na direção do alvo; cada flecha causa dano numa área em volta dela" (o PoB: radius 10 — 1 m — e as 22 flechas;
  * nem o PoB nem o poedb dão o comprimento da linha nem o espaçamento). No jogo ela segue como as outras Chuvas: a área de 2,4 m no alvo, um acerto em cada inimigo.
  */
-export const MOTIVOS_T3 = Object.freeze({
-  Rain_of_Arrows_of_Artillery: ['as flechas em sequência numa linha de você até o alvo, cada uma com a área de 1 m (o comprimento da linha e o espaçamento das flechas não estão no PoB nem no poedb — decisão do dono)'],
-});
+// (lote C2 da rodada 4, dono 28/10: a linha da Artilharia decidida — da casa à sua frente até o alvo, as 22 flechas distribuídas igualmente, cada uma com 1 m —
+// `gemas-r4c2.sequenciaDaArtilharia`, a forma `linhaDeFlechas` em `acoes`; a gema sai de parcial)
+export const MOTIVOS_T3 = Object.freeze({});
 
 /** As linhas que o lote faz (saem de "efeito não simulado"). */
 export function ehLinhaT3(slug, l) {

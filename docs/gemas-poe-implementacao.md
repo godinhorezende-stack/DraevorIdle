@@ -8,17 +8,15 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 554 |
+| implementada e testada | 556 |
 | limitação do modelo idle | 5 |
-| parcial | 2 |
 | não se aplica | 1 |
 
 Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 209 |
-| parcial | 1 |
+| implementada e testada | 210 |
 
 ### Gemas de suporte (262)
 
@@ -35,7 +33,7 @@ Só os ataques:
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 2 linhas distintas (0 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 0 linhas distintas (0 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
 - Testes que citam a gema: 562/562 ativas, 262/262 suportes.
@@ -45,8 +43,7 @@ Só os ataques:
 
 | Gemas | Linha |
 |---|---|
-| 1 | as flechas em sequência numa linha de você até o alvo, cada uma com a área de # m (o comprimento da linha e o espaçamento das flechas não estão no PoB nem no poedb — decisão do dono) |
-| 1 | o Pacto (o PoB: o uso não causa dano — fortalece as próximas # magias de canalização com #% mais dano e, enquanto você canaliza uma delas, o Flagelo Celestial cai a cada # s, até #; e a Aflição, sem dado no PoB nem no poedb) — no jogo ele é uma canalização com o dano do Flagelo (decisão do dono) |
+
 
 ## Gemas de habilidade pendentes
 
@@ -58,10 +55,6 @@ Só os ataques:
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Animate_Weapon_of_Ranged_Arms** (Animar Arma dos Braços Distantes) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Pact_of_Lycia** (Pacto de Lycia) — parcial
-  - efeito não simulado: o Pacto (o PoB: o uso não causa dano — fortalece as próximas 3 magias de canalização com 40% mais dano e, enquanto você canaliza uma delas, o Flagelo Celestial cai a cada 0,3 s, até 10; e a Aflição, sem dado no PoB nem no poedb) — no jogo ele é uma canalização com o dano do Flagelo (decisão do dono)
-- **Rain_of_Arrows_of_Artillery** (Chuva de Flechas da Arilharia) — parcial
-  - efeito não simulado: as flechas em sequência numa linha de você até o alvo, cada uma com a área de 1 m (o comprimento da linha e o espaçamento das flechas não estão no PoB nem no poedb — decisão do dono)
 - **Vaal_Animate_Weapon** (Animar Arma Vaal) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 
