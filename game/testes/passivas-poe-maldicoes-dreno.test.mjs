@@ -20,6 +20,8 @@ const ModsPoe = await import('../systems/itens-poe/mods-poe.mjs');
 const Acoes = await import('../systems/acoes.mjs');
 const Reforcos = await import('../systems/skills/reforcos.mjs');
 const GemasPoe = await import('../systems/itens-poe/gemas-poe.mjs');
+// (aval do dono 28/10: a Inflamabilidade pela RESISTÊNCIA a menos — lote T3, `GemasT3.resMenosDasMaldicoes`)
+const GemasT3 = await import('../systems/itens-poe/gemas-t3.mjs');
 const Gemas = await import('../systems/skills/gemas.mjs');
 const Fr = await import('../systems/itens-poe/frascos.mjs');
 const { moverMonstros } = await import('../systems/hunt/monstros.mjs');
@@ -120,9 +122,10 @@ test('"Suas Maldições têm Efeito aumentado em X% se Y% da Duração da Maldi�
   const m = b.maldicoes[id];
   const base = m.efeitos[0].pct;
   assert.ok(base > 0 && m.dur > 0);
-  assert.ok(Math.abs(Reforcos.vulnerabilidade(b, 'fire', m.dur * apos - 1) - (1 + base / 100)) < 1e-9, 'antes: o efeito normal');
-  assert.ok(Math.abs(Reforcos.vulnerabilidade(b, 'fire', m.dur * apos + 1) - (1 + (base * (1 + ef.valor / 100)) / 100)) < 1e-9, 'depois: +X% de efeito');
-  assert.equal(Reforcos.vulnerabilidade(b, 'fire', m.dur + 1), 1, 'vencida, acabou');
+  // (aval do dono 28/10: o lote T3 — a Inflamabilidade tira RESISTÊNCIA a Fogo, `GemasT3.resMenosDasMaldicoes`, no lugar do "sofre X% mais dano")
+  assert.ok(Math.abs(GemasT3.resMenosDasMaldicoes(b, 'fire', m.dur * apos - 1) - base) < 1e-9, 'antes: o efeito normal');
+  assert.ok(Math.abs(GemasT3.resMenosDasMaldicoes(b, 'fire', m.dur * apos + 1) - base * (1 + ef.valor / 100)) < 1e-9, 'depois: +X% de efeito');
+  assert.equal(GemasT3.resMenosDasMaldicoes(b, 'fire', m.dur + 1), 0, 'vencida, acabou');
 });
 
 test('"Inimigos Amaldiçoados por você são Desacelerados" (a maestria real): o monstro amaldiçoado anda mais devagar na razão exata (moverMonstros)', { skip: SEM }, () => {
@@ -211,7 +214,8 @@ test('Mestre dos Feitiços: os Feitiços têm duração INFINITA no monstro e 20
   const h = { clock: 0, buffs: {} };
   const id = ligar(e, h, 'Flammability', 0);
   Reforcos.marcar(h, b, 0);
-  assert.ok(Reforcos.vulnerabilidade(b, 'fire', 3_600_000) > 1, 'uma hora depois, ainda amaldiçoado');
+  // (aval do dono 28/10: o lote T3 — a resistência a menos da Inflamabilidade, `GemasT3.resMenosDasMaldicoes`)
+  assert.ok(GemasT3.resMenosDasMaldicoes(b, 'fire', 3_600_000) > 0, 'uma hora depois, ainda amaldiçoado');
   assert.ok(b.maldicoes[id]);
   // "+N ao Nível de todas as Gemas de Habilidade Maldição": o nível que a gema ganha pela árvore
   const g = novo();

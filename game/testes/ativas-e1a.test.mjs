@@ -207,18 +207,27 @@ function tiqueDoZumbi(extra = {}) {
 }
 
 test('E1a — a Recuperação da Recarga do lacaio solta o golpe em área (a habilidade com recarga) (1 + X%) vezes mais; sem ela, a cada N acertos, como antes', { skip: SEM }, () => {
-  const cada = LacaiosPoe.oQueInvoca('Raise_Zombie', 10, null, {}).estilo.area.cada;
-  // sem recarga: o 1º acerto não solta a área
-  const sem = tiqueDoZumbi();
-  assert.equal(sem.l.acertos, 1);
-  assert.ok(!sem.ev.some((x) => x.t === 'explosao'));
-  // com 100%: cada acerto carrega 2 — com a carga a N − 2, o acerto completa o N e solta
-  const com = tiqueDoZumbi({ cargaDaArea: cada - 2, poe: { recargaPct: 100 } });
-  assert.ok(com.ev.some((x) => x.t === 'explosao'), 'soltou a área');
-  assert.equal(com.l.cargaDaArea, 0);
-  // e o ritmo: com 100%, a área sai a cada N/2 acertos
-  const meio = tiqueDoZumbi({ cargaDaArea: 0, poe: { recargaPct: 100 } });
-  assert.equal(meio.l.cargaDaArea, 2);
+  // (aval do dono 28/10: o lote L — o golpe em área do Zumbi é a Pancada do PoB, com a recarga de 6 s; a Recuperação da Recarga do lacaio a encurta ÷ (1 + X%), no
+  // lugar do "a cada N acertos")
+  const q = LacaiosPoe.oQueInvoca('Raise_Zombie', 10, null, {});
+  const copia = () => q.recargas.map((x) => ({ ...x }));
+  const pancada = (l) => l.recargas.find((h) => h.id === 'ZombieSlam');
+  assert.equal(pancada(q).recargaMs, 6000);
+  const medir = (extra) => {
+    const t0 = Date.now();
+    const r = tiqueDoZumbi({ recargas: copia(), ...extra });
+    return { ...r, t0, t1: Date.now() };
+  };
+  // sem recarga: a Pancada pronta sai no 1º tique e volta em 6 s
+  const sem = medir({});
+  assert.equal(pancada(sem.l).carga, 0, 'usou a Pancada');
+  assert.ok(sem.ev.some((x) => x.habilidade === 'ZombieSlam'), 'a Pancada saiu');
+  assert.ok(pancada(sem.l).prontoEm - 6000 >= sem.t0 && pancada(sem.l).prontoEm - 6000 <= sem.t1);
+  // com 100%: volta em 3 s — sai (1 + 100%) vezes mais
+  const com = medir({ poe: { recargaPct: 100 } });
+  assert.equal(pancada(com.l).carga, 0);
+  assert.ok(pancada(com.l).prontoEm - 3000 >= com.t0 && pancada(com.l).prontoEm - 3000 <= com.t1);
+  assert.equal(LacaiosPoe.recargaDoLacaio(com.l, 6000), 3000);
 });
 
 // ---- as decisões do dono (26/10) ----

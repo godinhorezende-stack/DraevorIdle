@@ -136,7 +136,8 @@ test('revisão E1a (3) — dono 27/10: os golens de Relâmpago e da Carniça tê
   assert.deepEqual([rel.recargas[1].ataque, rel.recargas[1].magia], [[Math.round(0.2 * efIra), Math.round(1.8 * efIra)], [Math.round(0.12 * efIra), Math.round(1.08 * efIra)]]);
   assert.deepEqual(invocar('Summon_Carrion_Golem').recargas.map((h) => [h.id, h.recargaMs, h.mult]), [['BoneGolemCascade', 6000, 0.65], ['BoneGolemLeapSlam', 4000, 2.25]]);
   assert.equal(invocar('Summon_Carrion_Golem_of_Hordes').recargas.length, 2, 'as variantes também');
-  assert.equal(invocar('Summon_Flame_Golem').recargas, undefined, 'só os dois');
+  // (aval do dono 28/10: o lote L — o Golem Flamejante tem as dele do motor do PoB, `tipo: 'pob'`; as do E1a seguem só nos dois)
+  assert.deepEqual((invocar('Summon_Flame_Golem').recargas ?? []).filter((h) => h.tipo !== 'pob'), [], 'só os dois');
 });
 
 test('revisão E1a (3) — no tique: o Orbe acerta e recarrega em 8 s ÷ (1 + a recuperação); a Cascata e o Salto ferem a área; a Ira dá Raio a você e aos lacaios no raio', { skip: SEM }, () => {

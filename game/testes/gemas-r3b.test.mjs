@@ -70,7 +70,8 @@ const lacaiosDe = (e, slug) => (e.hunt.lacaios ?? []).filter((l) => l.gema === s
 test('R3B: o status — as ativas só com a limitação dos lacaios (o Clamor do General sem nada); os suportes sem linha de fora; os números do PoB', { skip: SEM }, () => {
   const st = G.statusNoJogo();
   for (const s of ['Absolution', 'Absolution_of_Inspiring', 'Herald_of_Purity', 'Summon_Holy_Relic', 'Holy_Strike']) {
-    assert.ok(st[s].motivos.length === 1 && /^o lacaio ataca do jeito do tipo dele/.test(st[s].motivos[0]), `${s}: ${st[s].motivos.join(' | ')}`);
+    // (aval do dono 28/10: o lote L tira a limitação do lacaio — as habilidades dele pelo PoB —: sem motivo)
+    assert.ok(st[s].motivos.length === 0, `${s}: ${st[s].motivos.join(' | ')}`);
   }
   assert.equal(st.Generals_Cry.status, 'funciona', st.Generals_Cry.motivos.join(' | '));
   assert.equal(G.doSlug('Herald_of_Purity').arquetipo, 'arauto');

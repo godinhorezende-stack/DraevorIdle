@@ -78,17 +78,20 @@ test('G11: a Armadilha de Torre Elétrica — ativada, golpeia 3 áreas a cada 0
   for (const m of resto) Object.assign(m, { x: e.hunt.pos.x + 60, y: e.hunt.pos.y + 60 });
   Object.assign(b, { x: e.hunt.pos.x + 4, y: e.hunt.pos.y, hp: 1e12, maxHp: 1e12 });
   Plantadas.plantar(e.hunt, Ficha.combate(e), { tipo: 'armadilha', acao: e.actions[0].id, slot: 0, x: e.hunt.pos.x + 3, y: e.hunt.pos.y, duracaoMs: 4000, agora: e.hunt.clock });
-  // o inimigo a 1 casa ativa: a torre nasce e golpeia na hora (3 áreas no mesmo inimigo — o único perto)
+  // (aval do dono 28/10 — o PoB, LightningSpireTrap: ⌊Duração × Frequência⌋ pulsos, o primeiro um intervalo depois da ativação: ⌊3,5 ÷ 0,36⌋ = 9 pulsos, o último aos
+  // 3,24 s)
+  // o inimigo a 1 casa ativa: a torre nasce e ainda não golpeia
   const ev0 = Acoes.tiqueDasPlantadas(e, e.hunt, PERSONAGEM, []);
   const golpes = (ev) => ev.filter((x) => x.t === 'dmg' && x.uid === b.uid && x.foe).length;
-  assert.equal(golpes(ev0), 3, 'o primeiro golpe: 3 áreas');
+  assert.equal(golpes(ev0), 0, 'na ativação, nenhum golpe');
   assert.equal(e.hunt.poeTorres?.length, 1);
-  // 1 s depois: 1000 / 360 → mais 2 golpes de 3 áreas (o de 360 e o de 720)
+  assert.equal(e.hunt.poeTorres[0].ate - e.hunt.clock, 9 * 360, '9 pulsos');
+  // 1 s depois: os golpes de 360 e de 720 ms, 3 áreas cada (no mesmo inimigo — o único perto)
   e.hunt.clock += 1000;
   assert.equal(golpes(Acoes.tiqueDasPlantadas(e, e.hunt, PERSONAGEM, [])), 6);
-  // passada a duração (3,5 s), acabou
+  // até o fim: os outros 7 pulsos (1080 … 3240 ms), e acabou
   e.hunt.clock += 5000;
-  Acoes.tiqueDasPlantadas(e, e.hunt, PERSONAGEM, []);
+  assert.equal(golpes(Acoes.tiqueDasPlantadas(e, e.hunt, PERSONAGEM, [])), 21);
   assert.equal(e.hunt.poeTorres, undefined);
   assert.ok(!G.doSlug('Lightning_Spire_Trap').motivosNoJogo.some((m) => /repetições|Ataca a cada|Golpeia/.test(m)), G.doSlug('Lightning_Spire_Trap').motivosNoJogo.join(' | '));
 });

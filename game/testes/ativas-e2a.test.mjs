@@ -39,7 +39,8 @@ const FEITAS = ['Bone_Offering', 'Flesh_Offering', 'Summon_Reaper_of_Evisceratin
 test('E2A — status: as 8 gemas sem "efeito não simulado"; as que seguem ficam só com a linha delas', { skip: SEM }, () => {
   for (const s of FEITAS) {
     assert.deepEqual(naoSimuladas(s), [], s);
-    assert.equal(G.statusNoJogo()[s].motivos.length, 1, s);
+    // (aval do dono 28/10: o lote L tira a limitação do lacaio — as habilidades dele pelo PoB —: nenhum motivo)
+    assert.equal(G.statusNoJogo()[s].motivos.length, 0, s);
   }
   // o teto do movimento do Espectro (movement_velocity_cap): feito no D1 (decisão do dono) — aval do dono (revisão F1): sem motivo
   for (const s of ['Raise_Spectre', 'Raise_Spectre_of_Transience']) assert.deepEqual(naoSimuladas(s), [], s);
@@ -225,9 +226,11 @@ test('E2A — o Ceifador da Evisceração: 40% (q20) de chance de agravar os San
   assert.equal(invocar('Summon_Reaper_of_Eviscerating', 0).poe.agravarPct, undefined);
   const sangra = (c) => Dot.aplicar(c.alvo, { tipo: 'sangramento', total: 1000, origem: { fonte: 'suporte' } }, c.h.clock);
   // dentro dos 40% (0,3): agrava; fora (0,5): não
-  const dentro = tiqueDe('Summon_Reaper_of_Eviscerating', { random: 0.3, antes: (c) => sangra(c) });
+  // (aval do dono 28/10: o lote L — o Ceifador da Evisceração não ataca sozinho, só solta o Ultimate no uso da gema: o pedido do Ultimate no alvo)
+  const pedir = (c, l) => { sangra(c); l.ultimatePedido = { uid: c.alvo.uid }; };
+  const dentro = tiqueDe('Summon_Reaper_of_Eviscerating', { random: 0.3, antes: pedir });
   assert.ok(dentro.c.alvo.dots.some((d) => d.tipo === 'sangramento' && d.agravado), JSON.stringify(dentro.c.alvo.dots));
-  const fora = tiqueDe('Summon_Reaper_of_Eviscerating', { random: 0.5, antes: (c) => sangra(c) });
+  const fora = tiqueDe('Summon_Reaper_of_Eviscerating', { random: 0.5, antes: pedir });
   assert.ok(!fora.c.alvo.dots.some((d) => d.tipo === 'sangramento' && d.agravado));
 });
 
@@ -238,9 +241,11 @@ test('E2A — o Zumbi da Pancada: +76% de Área e de Recarga só na Pancada (o g
   assert.equal(LacaiosPoe.raioDaAreaDoLacaio({ poe: q.poe }, () => 0.2), 2);
   assert.equal(LacaiosPoe.raioDaAreaDoLacaio({ poe: q.poe }, () => 0.5), 1);
   assert.equal(LacaiosPoe.raioDaAreaDoLacaio({ poe: {} }, () => 0.2), 1);
-  // a recarga: cada acerto carrega 1,76 da Pancada
-  const { l } = tiqueDe('Raise_Zombie_of_Slamming', { random: 0.99, antes: (c, z) => { z.cargaDaArea = 0; } });
-  assert.ok(Math.abs(l.cargaDaArea - 1.76) < 1e-9, String(l.cargaDaArea));
+  // (aval do dono 28/10: o lote L — a Pancada é a habilidade com recarga do PoB: a recarga de 6 s ÷ 1,76 e +76% de área só nela; o golpe padrão sem área)
+  const pancada = q.recargas.find((h) => h.id === 'ZombieSlam');
+  assert.deepEqual([pancada.recargaMs, pancada.areaExtraPct], [Math.round(6000 / 1.76), 76]);
+  assert.equal(invocar('Raise_Zombie').recargas.find((h) => h.id === 'ZombieSlam').recargaMs, 6000, 'o Zumbi comum: 6 s');
+  assert.equal(q.estilo.area, undefined, 'o golpe padrão não tem área');
 });
 
 test('E2A — a Balista de Cerco de Trarthus: 8 balistas (no 20) em anel em volta do alvo, que disparam uma vez e somem; 20% mais Dano de Projétil (q20)', { skip: SEM }, () => {
