@@ -5,7 +5,7 @@
 //     com a arma ÷ os 70% dele;
 //   - a troca à mão do Infestador pela regra do custo (`fatorDoCustoDeMana`) e pelo recurso (a Magia Sanguínea paga com a Vida; o "não custa Mana" zera);
 //   - o raio do Flagelo Celestial com a qualidade em décimos de metro (+0,01 m por ponto);
-//   - o Pacto de Ghorr como o PoB (o uso não fere; fortalece 3 magias degenerativas com 40% mais) — a Fome de Ghorr segue parcial (sem fonte);
+//   - o Pacto de Ghorr como o PoB (o uso não fere; fortalece 3 magias degenerativas com 40% mais) e a Fome de Ghorr com as escolhas do dono (sem fonte);
 //   - o Suporte de Mutilação: o "dano físico sofrido aumentado" é um debuff no inimigo, de toda fonte;
 //   - a Arma Animada: a base de maior DPS Físico entre todas as que cabem no limite;
 //   - a Bomba Congelante plantada por armadilha também espera a explosão;
@@ -130,10 +130,7 @@ test('R4 final: o Flagelo Celestial — o raio com a qualidade em décimos de me
 
 // ---------------------------------------------------------------- o Pacto de Ghorr
 
-test('R4 final: o Pacto de Ghorr como o PoB — o uso não fere; as próximas 3 magias degenerativas com 40% mais Dano Degenerativo (a Fome de Ghorr segue parcial: sem fonte)', { skip: SEM }, async () => {
-  const r = G.REGISTRO.get('Pact_of_Ghorr');
-  assert.equal(r.statusNoJogo, 'parcial');
-  assert.ok(r.motivosNoJogo.length === 1 && /a Fome de Ghorr .* não é simulada: o raio da área, o alcance do projétil e o crescimento do estágio .* decisão do dono/.test(r.motivosNoJogo[0]), r.motivosNoJogo.join(' | '));
+test('R4 final: o Pacto de Ghorr como o PoB — o uso não fere; as próximas 3 magias degenerativas com 40% mais Dano Degenerativo', { skip: SEM }, async () => {
   // (o degenerativo do Dreno de Essência — a magia com dano degenerativo próprio — sem e com o Pacto; a Bola de Fogo, sem degenerativo, não gasta)
   const dreno = async (pacto) => {
     const { e, b } = await montar(['Pact_of_Ghorr'], { arma: VARINHA, soltas: ['Essence_Drain', 'Fireball'] });
@@ -157,6 +154,49 @@ test('R4 final: o Pacto de Ghorr como o PoB — o uso não fere; as próximas 3 
   assert.ok(sem.falta > 0);
   assert.ok(perto(com.falta / sem.falta, 1.4, 1e-6), `${com.falta} / ${sem.falta}`);
   assert.equal(com.restantes, 2, 'a magia degenerativa gastou uma');
+});
+
+test('R4 final: a Fome de Ghorr (sem fonte; escolhas do dono) — o Destruir Carne a cada 2 s, 150% mais rápido por estágio; 3 projéteis de 3,2 m, área de 1 casa; acúmulos de +25% de degenerativo sofrido', { skip: SEM }, async () => {
+  const T2 = await import('../systems/itens-poe/gemas-t2.mjs');
+  const CP = await import('../systems/itens-poe/condicoes-poe.mjs');
+  assert.deepEqual(G.REGISTRO.get('Pact_of_Ghorr').motivosNoJogo, []);
+  assert.equal(G.REGISTRO.get('Pact_of_Ghorr').statusNoJogo, 'funciona');
+  // (as contas: 2 s ÷ (1 + 1,5 × estágios), até 3; o alcance 8 m/s × 0,4 s = 3,2 m = 1,6 casa, a fração 0,6 como chance)
+  assert.deepEqual([0, 1, 2, 3, 4].map((n) => T2.intervaloDaFomeMs(n)), [2000, 800, 500, 364, 364]);
+  assert.deepEqual([T2.alcanceDoDestruirCarne(0.5), T2.alcanceDoDestruirCarne(0.7)], [2, 1]);
+  // (os acúmulos: até 3, o mais velho sai; +25% de degenerativo sofrido cada, de toda fonte)
+  const m = { estados: {} };
+  for (let i = 0; i < 4; i++) T2.acumularCarne(m, 400, i * 10);
+  assert.equal(m.estados.carneDestruida.length, 3);
+  assert.ok(perto(T2.fatorDaCarne(m, 50), 1.75, 1e-9));
+  assert.ok(perto(CP.fatorRecebidoNoDot(m, 'fire', 50), 1.75, 1e-9), 'o degenerativo de qualquer elemento');
+  assert.equal(CP.fatorRecebidoNoDot(m, 'fire', 1000), 1, 'depois dos 0,4 s, nada');
+  // no jogo: o uso põe a Fome (6 s); 2 s depois, o Destruir Carne no alvo colado (1 casa): o degenerativo Físico de 0,4 s com o dano do poedb (1521,1/s no 20)
+  const { e, b, resto } = await montar(['Pact_of_Ghorr'], { arma: VARINHA, soltas: ['Essence_Drain'] });
+  posicionar(e, resto, resto.map((_, i) => [40 + i, 40]));
+  assert.ok(usar(e, 0, b).r.ok);
+  const fome = (e.hunt.poeObjetos ?? []).find((o) => o.tipo === 'fomeGhorr');
+  assert.ok(fome, 'a Fome de Ghorr');
+  assert.deepEqual([fome.ate - fome.desde, fome.proxima - fome.desde, fome.estagios], [6000, 2000, 0], '6 s; o primeiro 2 s depois do uso');
+  andar(e, fome.proxima - e.hunt.clock - 100, 50);
+  assert.equal((b.estados.carneDestruida ?? []).length, 0, 'antes dos 2 s, nada');
+  andar(e, 150, 50);
+  const pilha = (b.estados.carneDestruida ?? []).filter((x) => x.ate > e.hunt.clock);
+  assert.ok(pilha.length >= 1 && pilha.length <= 3, JSON.stringify(b.estados.carneDestruida));
+  const dot = (b.dots ?? []).find((d) => /^destruirCarne:/.test(d.chave ?? ''));
+  assert.ok(dot && dot.tipo === 'degenFisico', JSON.stringify(b.dots));
+  assert.ok(dot.falta / 0.4 >= 1521.1 * 0.999, `o dano por segundo do poedb (1521,1 no 20): ${dot.falta / 0.4}`);
+  assert.equal(dot.ate - dot.desde, 400, '0,4 s');
+  // (a magia degenerativa usada durante a Fome: +1 estágio — o próximo Destruir Carne em 0,8 s)
+  e.hunt.clock += 100;
+  assert.ok(usar(e, 1, b).r.ok);
+  assert.deepEqual([fome.estagios, fome.intervaloMs], [1, 800]);
+  // (fora do alcance — a 4 casas de você, longe do caminho de 2 casas + 1 —, nada)
+  const { e: e2, b: b2, resto: r2 } = await montar(['Pact_of_Ghorr'], { arma: VARINHA });
+  posicionar(e2, [b2, ...r2], [[4, 0], ...r2.map((_, i) => [40 + i, 40])]);
+  assert.ok(usar(e2, 0, b2).r.ok);
+  andar(e2, 3000, 50, 0.1);
+  assert.equal((b2.estados.carneDestruida ?? []).length, 0, 'a 4 casas, fora');
 });
 
 test('R4 final: o Suporte de Mutilação — "Inimigos Mutilados sofrem 10% de Dano Físico aumentado" é um debuff no inimigo: vale para toda fonte (outra habilidade, o degenerativo)', { skip: SEM }, async () => {

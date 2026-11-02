@@ -79,16 +79,41 @@ export const ehLinhaT2 = (slug, l) => slug === CHUVA_CINETICA && (LINHA_COMPRIME
 //   - o uso não fere (base_deal_no_spell_damage) — antes o jogo punha o degenerativo da coluna (1521,1/s no 20) no alvo;
 //   - fortalece as próximas 3 magias de dano degenerativo que não sejam de afecção (skill_empowers_next_x_spells_cast 3): "+40% de dano degenerativo" — o PoB,
 //     pact_skill_grant_damage_over_time_+%_final_to_spells: Damage MORE com ModFlag.Dot (`maisDotPct` no uso fortalecido);
-//   - a Fome de Ghorr (6 s × a Duração) ativa o Destruir Carne a cada 2 s, 150% mais rápido por estágio do Rito de Sangue: 3 projéteis em círculo (8 m/s, atravessam)
-//     que põem, na área em volta de cada um, um degenerativo Físico de 0,4 s (até 3 acúmulos, +25% de dano degenerativo sofrido por acúmulo). Isso NÃO é simulado:
-//     nem o PoB nem o poedb (as duas páginas) trazem o raio da área do projétil, o alcance do voo, nem como o estágio do Rito de Sangue cresce — fica parcial.
-export const GHORR = Object.freeze({ slug: 'Pact_of_Ghorr', magias: 3, maisDotPct: 40, fomeMs: 6000, destruirCarneMs: 2000, porEstagioPct: 150 });
+//   - a FOME DE GHORR: 6 s × a Duração; ativa o DESTRUIR CARNE a cada 2 s, 150% mais rápido por estágio do Rito de Sangue: 3 projéteis em círculo (8 m/s, atravessam)
+//     que põem, na área em volta de cada um, um degenerativo Físico de 0,4 s × a Duração (o dano da coluna do poedb — 1521,1/s no 20 —, com os Modificadores de Dano
+//     Mágico), até 3 acúmulos, cada um com +25% de dano degenerativo sofrido (de toda fonte) pelo mesmo tempo.
+//     SEM FONTE — escolhas do dono (02/11): o alcance pela duração, 8 m/s × 0,4 s = 3,2 m (1,6 casa — a fração como chance); a área de 1 casa em volta do caminho do
+//     projétil; +1 estágio do Rito de Sangue por magia degenerativa sua usada durante a Fome, até 3; cada acerto de projétil dá um acúmulo.
+export const GHORR = Object.freeze({
+  slug: 'Pact_of_Ghorr', magias: 3, maisDotPct: 40, fomeMs: 6000, destruirCarneMs: 2000, porEstagioPct: 150, estagiosMax: 3,
+  projeteis: 3, alcanceM: 8 * 0.4, areaCasas: 1, degenMs: 400, acumulosMax: 3, sofridoPorAcumuloPct: 25,
+});
 export const ehPactoDeGhorr = (slug) => slug === GHORR.slug;
 /** A magia fortalecida pelo Pacto de Ghorr: uma magia sua com dano degenerativo próprio (`temDot` — o degenerativo da gema, não o de afecção), não o próprio Pacto. */
 export const fortalecePeloGhorr = (slug, tags = [], temDot = false) => !ehPactoDeGhorr(slug) && tags.includes('magia') && !!temDot;
-export const MOTIVOS_T2 = {
-  Pact_of_Ghorr: ['a Fome de Ghorr (o PoB: ativa o Destruir Carne a cada 2 s por 6 s, 150% mais rápido por estágio do Rito de Sangue — 3 projéteis que põem um degenerativo Físico de 0,4 s na área em volta) não é simulada: o raio da área, o alcance do projétil e o crescimento do estágio não estão no PoB nem no poedb — decisão do dono'],
-};
+/** O intervalo do Destruir Carne (ms) com `estagios` do Rito de Sangue: 2 s ÷ (1 + 150% × estágios). */
+export const intervaloDaFomeMs = (estagios = 0) => Math.max(1, Math.round(GHORR.destruirCarneMs / (1 + (GHORR.porEstagioPct / 100) * Math.min(GHORR.estagiosMax, Math.max(0, estagios | 0)))));
+/** O alcance do projétil em casas (3,2 m ÷ 2 = 1,6): a parte inteira e a fração como chance pelo sorteio `u`. */
+export const alcanceDoDestruirCarne = (u) => { const c = GHORR.alcanceM / 2; const t = Math.trunc(c + 1e-9); return t + (u < c - t - 1e-9 ? 1 : 0); };
+/**
+ * Um acúmulo do Destruir Carne no monstro `m` (`estados.carneDestruida`, até 3 — o mais velho sai): devolve o índice do acúmulo (0 a 2), a chave do degenerativo dele.
+ */
+export function acumularCarne(m, ms, agora) {
+  const e = (m.estados ??= {});
+  let pilha = (e.carneDestruida ?? []).filter((x) => x.ate > agora);
+  let k;
+  if (pilha.length >= GHORR.acumulosMax) {
+    const velho = pilha.reduce((a, b) => (b.ate < a.ate ? b : a));
+    k = velho.k;
+    pilha = pilha.filter((x) => x !== velho);
+  } else k = [0, 1, 2].find((i) => !pilha.some((x) => x.k === i));
+  pilha.push({ k, ate: agora + ms });
+  e.carneDestruida = pilha;
+  return k;
+}
+/** O "+25% de dano degenerativo sofrido" por acúmulo do Destruir Carne vivo no monstro (toda fonte): o fator. */
+export const fatorDaCarne = (m, agora) => 1 + (GHORR.sofridoPorAcumuloPct / 100) * Math.min(GHORR.acumulosMax, (m?.estados?.carneDestruida ?? []).filter((x) => x.ate > agora).length);
+export const MOTIVOS_T2 = {};
 
 // ---------------------------------------------------------------- o Golpe Relampejante do Arco
 

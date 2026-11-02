@@ -3442,7 +3442,9 @@ export function fatorRecebidoNoDot(alvo, tipo, agora, sofrido = null) {
   const e = alvo.estados ?? {};
   const pilha = (e.chocadosPilha ?? []).filter((x) => x.ate > agora);
   const eletrizacao = pilha.length ? 1 + pilha.reduce((t, x) => t + (x.pct ?? 0), 0) / 100 : ativo(e.chocado, agora) ? 1 + (e.chocado.pct ?? 0) / 100 : 1;
-  return fatorRecebidoPeloBicho(alvo, tipo, sofrido ? { afPoe: sofrido, tagsDoGolpe: FICHA_DO_DOT.tagsDoGolpe, dot: true } : FICHA_DO_DOT, agora) * eletrizacao;
+  // (rodada 4, etapa final — o Destruir Carne do Pacto de Ghorr: "Dano degenerativo sofrido aumentado em 25%" por acúmulo, até 3 — toda fonte)
+  const carne = 1 + 0.25 * Math.min(3, (e.carneDestruida ?? []).filter((x) => x.ate > agora).length);
+  return fatorRecebidoPeloBicho(alvo, tipo, sofrido ? { afPoe: sofrido, tagsDoGolpe: FICHA_DO_DOT.tagsDoGolpe, dot: true } : FICHA_DO_DOT, agora) * eletrizacao * carne;
 }
 /** As chaves com escala do ALVO (`resfriamentoNoAlvo:N`, `eletrizacaoNoAlvo:N`), guardadas por soma (`afPoe`). */
 const ESCALAS_DO_ALVO = /^(resfriamentoNoAlvo|eletrizacaoNoAlvo)(:|$)/;

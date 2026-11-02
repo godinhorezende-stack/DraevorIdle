@@ -5365,8 +5365,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (rodada 4, etapa final — o PoB, other.lua PactOfGhorr) o PACTO DE GHORR fortalece esta magia? A sua magia com dano degenerativo próprio (conjurada por você: o totem,
   // a armadilha, a mina e o gatilho não contam) com o Pacto pendente (`hunt.poeGhorr`) gasta uma das 3: 40% mais Dano Degenerativo (Damage MORE com ModFlag.Dot —
   // `maisDotPct`, que vale no degenerativo da gema e nas afecções dela); o canalizar que continua leva a do começo (`hunt.canalizacao.ghorr`)
-  const ghorrAgora = itensPoeLigado() && entry.poeGema && efeitoDaGema && !gatilho && !doTotem && !plantada && !tipoPlantado && !usoDoGhorr
-    && GemasT2.fortalecePeloGhorr(entry.poeGema.slug, tagsDoLycia, (GemasPoe.compilada(entry.poeGema.slug, efeitoDaGema.nivel ?? 1, efeitoDaGema.qualidade ?? 0)?.stats?.dot ?? []).length > 0)
+  // (+ a Fome de Ghorr: a magia degenerativa sua usada durante ela dá +1 estágio do Rito de Sangue — `magiaDegenSua`, no uso que sai)
+  const magiaDegenSua = itensPoeLigado() && !!entry.poeGema && !!efeitoDaGema && !gatilho && !doTotem && !plantada && !tipoPlantado && !usoDoGhorr
+    && GemasT2.fortalecePeloGhorr(entry.poeGema.slug, tagsDoLycia, (GemasPoe.compilada(entry.poeGema.slug, efeitoDaGema.nivel ?? 1, efeitoDaGema.qualidade ?? 0)?.stats?.dot ?? []).length > 0);
+  const ghorrAgora = magiaDegenSua
     ? (continuaCanal ? hunt.canalizacao?.ghorr ?? null : hunt.poeGhorr?.restantes > 0 ? { acao: hunt.poeGhorr.acao, maisPct: hunt.poeGhorr.maisPct, novo: true } : null) : null;
   if (ghorrAgora?.maisPct) efeitoDaGema = { ...efeitoDaGema, maisDotPct: ((1 + (efeitoDaGema.maisDotPct ?? 0) / 100) * (1 + ghorrAgora.maisPct / 100) - 1) * 100 };
   // (lote S2B, 27/10) o que os suportes do lote dão a ESTE uso (`SuportesS2B.doUso`): a Fúria Arcana ("35% mais Dano Mágico enquanto você possuir Fúria Arcana"), a Trindade e
@@ -6272,9 +6274,21 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   if (usoDoGhorr) {
     hunt.poeGhorr = { acao: entry.id, restantes: GemasT2.GHORR.magias, maisPct: GemasT2.GHORR.maisDotPct };
     if (entry.efeito) eventos.push({ t: 'fx', id: entry.efeito, uid: 'player', x: hunt.pos.x, y: hunt.pos.y });
+    // a FOME DE GHORR (6 s × a Duração): o Destruir Carne a cada 2 s, mais rápido por estágio do Rito de Sangue (`pulsarFomeDeGhorr`); um uso novo recomeça
+    const g = GemasT2.GHORR;
+    porObjeto(hunt, { acao: entry.id, slug: g.slug, el: 'physical', dono: 'voce', tipo: 'fomeGhorr', mov: 'parado', x: hunt.pos.x, y: hunt.pos.y, efeito: 'pulso', estagios: 0,
+      intervaloMs: GemasT2.intervaloDaFomeMs(0), proxima: inicio + GemasT2.intervaloDaFomeMs(0), ate: inicio + Math.max(1, Math.round(g.fomeMs * fatorDeDuracao(estado, entry, efeitoDaGema))), max: 1 }, inicio);
   } else if (ghorrAgora?.novo && hunt.poeGhorr) {
     hunt.poeGhorr.restantes -= 1;
     if (!(hunt.poeGhorr.restantes > 0)) delete hunt.poeGhorr;
+  }
+  // (sem fonte; o dono, 02/11) +1 estágio do Rito de Sangue por magia degenerativa sua usada durante a Fome de Ghorr, até 3 (o canalizar que continua não conta)
+  if (magiaDegenSua && !continuaCanal) {
+    for (const o of hunt.poeObjetos ?? []) {
+      if (o.tipo !== 'fomeGhorr' || !(o.ate > inicio)) continue;
+      o.estagios = Math.min(GemasT2.GHORR.estagiosMax, (o.estagios ?? 0) + 1);
+      o.intervaloMs = GemasT2.intervaloDaFomeMs(o.estagios);
+    }
   }
   // (lote A1b, dono 19/10) o uso SAIU (pagou):
   //  - D-a: a carga que pula a recarga é gasta agora (o golpe já sai sem ela — no PoE ela é gasta no uso);
@@ -11179,6 +11193,40 @@ function pulsarFlageloDoLycia(estado, hunt, personagem, o, t, eventos) {
   eventos.push({ t: 'explosao', id: EFEITO_DA_EXPLOSAO, x: alvo.x, y: alvo.y, lado: 2 * raio + 1 });
   golpeDoObjeto(estado, hunt, personagem, { ...o, x: alvo.x, y: alvo.y, raio }, alvo, {}, eventos);
 }
+/**
+ * (rodada 4, etapa final — o PoB, other.lua TriggeredBloodrend; o poedb, Fleshrend) O DESTRUIR CARNE da Fome de Ghorr: 3 projéteis em círculo a partir de você (o giro
+ * sorteado), cada um pelo alcance (3,2 m = 1,6 casa, a fração como chance — sem fonte, o dono), atravessando; quem está a 1 casa do caminho de um projétil (sem fonte, o
+ * dono) leva um acúmulo — o degenerativo Físico de 0,4 s × a Duração com o dano da coluna do poedb (pela conta do degenerativo, com os Modificadores de Dano Mágico) e o
+ * "+25% de dano degenerativo sofrido" (`GemasT2.acumularCarne`, até 3). O próximo, pelo estágio do Rito de Sangue de agora.
+ */
+function pulsarFomeDeGhorr(estado, hunt, personagem, o, t, eventos) {
+  const entry = POR_ID.get(o.acao);
+  o.intervaloMs = GemasT2.intervaloDaFomeMs(o.estagios ?? 0);
+  if (!entry?.poeGema || !hunt.pos) return;
+  const g = GemasT2.GHORR;
+  const ef = Gemas.efeitoNaSkill(estado, o.acao);
+  const dg = GemasPoe.degenerativoNoNivel(entry.poeGema.slug, ef?.nivel ?? 1, ef?.qualidade ?? 0);
+  const p = (dg?.partes ?? []).find((x) => x.elemento === 'physical') ?? dg?.partes?.[0];
+  if (!p) return;
+  const ms = Math.max(1, Math.round(g.degenMs * fatorDeDuracao(estado, entry, ef)));
+  const fatorDaGema = (1 + (ef?.danoPct ?? 0) / 100) * (ef?.fatorDeDano ?? 1) * (1 + (ef?.maisDanoAcertoPct ?? 0) / 100);
+  const total = totalDoDegenerativo({ ...p, elemento: 'physical' }, ms, { efeitoDaGema: ef, ficha: Ficha.combate(estado), fatorDaGema, dotMagico: true });
+  const r = GemasT2.alcanceDoDestruirCarne(Math.random());
+  const a0 = Math.random() * 2 * Math.PI;
+  const vivos = vivosNoAndar(hunt, o.z);
+  for (let k = 0; k < g.projeteis; k++) {
+    const ang = a0 + (2 * Math.PI * k) / g.projeteis;
+    const caminho = Array.from({ length: r }, (_, i) => ({ x: hunt.pos.x + Math.round((i + 1) * Math.cos(ang)), y: hunt.pos.y + Math.round((i + 1) * Math.sin(ang)) }));
+    const fim = caminho.at(-1) ?? hunt.pos;
+    if (entry.projetil) eventos.push({ t: 'shot', id: entry.projetil, x: hunt.pos.x, y: hunt.pos.y, tx: fim.x, ty: fim.y });
+    for (const m of vivos) {
+      if (!caminho.some((c) => distanciaChebyshev(m, c) <= g.areaCasas)) continue;
+      const i = GemasT2.acumularCarne(m, ms, t);
+      const posto = total > 0 ? Dot.aplicar(m, { tipo: 'degenFisico', total, duracaoMs: ms, chave: `destruirCarne:${i}`, origem: { fonte: 'gema', habilidade: entry.id } }, t) : null;
+      if (posto) eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: posto });
+    }
+  }
+}
 /** (lote T3) O PULSO dos objetos do lote T3 (`pulsarObjeto`). */
 function pulsarObjetoT3(estado, hunt, personagem, o, t, eventos) {
   const dentroDe = (c, r) => vivosNoAndar(hunt, o.z).filter((m) => distanciaChebyshev(m, c) <= r);
@@ -11323,6 +11371,8 @@ function tormentasCaem(hunt, acao, dono, t, exceto = null) {
 function pulsarObjeto(estado, hunt, personagem, o, t, eventos) {
   // (lote C2 da rodada 4, dono 28/10) o Flagelo Celestial do Pacto de Lycia (`pulsarFlageloDoLycia`)
   if (o.tipo === 'flageloLycia') { pulsarFlageloDoLycia(estado, hunt, personagem, o, t, eventos); return; }
+  // (rodada 4, etapa final) a Fome de Ghorr: o Destruir Carne (`pulsarFomeDeGhorr`)
+  if (o.tipo === 'fomeGhorr') { pulsarFomeDeGhorr(estado, hunt, personagem, o, t, eventos); return; }
   // (lote C3, dono 25/10) os objetos do lote C3 — as tempestades, o abalo, os martelos, o orbe (`pulsarObjetoC3`)
   if (GemasC3.TIPOS.has(o.tipo)) { pulsarObjetoC3(estado, hunt, personagem, o, t, eventos); return; }
   // (lote T3, 27/10) os objetos do lote T3 — as Estátuas, os orbes do Confinamento, a Tempestade Relampejante e as explosões da Rajada (`pulsarObjetoT3`)

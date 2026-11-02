@@ -1662,6 +1662,14 @@ Bateria: 153 arquivos, 1648 testes — 1612 passam, 33 pulados, 3 falham (os tr�
 - Placar: ativas 562 · testada 560 · parcial 1 (o Ghorr, a Fome) · não se aplica 1; ataques 210; suportes 262 · 261 · 1. Bateria: 153 arquivos, 1649 testes — 1615 passam, 33 pulados, 1 falha (abaixo).
 - **Quebra sem aval (não editado):** gemas-c2:49 espera `mutilar['af:phys_dmg@alvoMutilado'] = 10`; agora a chave é `af:mutilados_fisico_sofrido` (o debuff) e a antiga sai → undefined.
 
+### R4 final, parte 3 — a Fome de Ghorr e o aval do gemas-c2 (02/11)
+
+- **Aval do dono:** gemas-c2:49 confere `af:mutilados_fisico_sofrido` = 10 (o debuff da Mutilação).
+- **A Fome de Ghorr** (`GemasT2.GHORR`, `Acoes.pulsarFomeDeGhorr`): o uso do Pacto põe a Fome por 6 s × a Duração; o Destruir Carne a cada 2 s ÷ (1 + 150% × estágios) — 2000, 800, 500, 364 ms; 3 projéteis em círculo (o giro sorteado) a partir de você; quem está a 1 casa do caminho leva um acúmulo: o degenerativo Físico de 0,4 s × a Duração com o dano da coluna do poedb (Fleshrend: 59,9 a 9854,7/s; 1521,1 no 20 do Pacto), pela conta do degenerativo com os Modificadores de Dano Mágico; até 3 acúmulos (o mais velho sai), cada um com +25% de dano degenerativo sofrido de toda fonte (`fatorRecebidoNoDot`) pelo mesmo tempo.
+  - **sem fonte; dono** (02/11): o alcance pela duração, 8 m/s × 0,4 s = 3,2 m = 1,6 casa (a fração como chance); a área de 1 casa em volta do caminho do projétil; +1 estágio do Rito de Sangue por magia degenerativa sua usada durante a Fome, até 3; cada acerto de projétil dá um acúmulo.
+- O Pacto de Ghorr sai do `MOTIVOS_T2`: 'funciona'.
+- Placar: ativas 562 · testada 561 · parcial 0 · não se aplica 1; ataques 210; suportes 262 · 261 · 1. Bateria: 153 arquivos, 1650 testes — 1617 passam, 33 pulados, 0 falhas.
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.

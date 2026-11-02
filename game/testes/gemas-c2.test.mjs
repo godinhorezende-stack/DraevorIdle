@@ -46,7 +46,8 @@ test('C2 (1): as regras — o "mais Dano de <tipo>" vira `maisDoTipoPct:<tipo>` 
   assert.equal(ef('Melee_Physical_Damage_Support', 20, 0, 'Ataque', 'Corpo a Corpo')['maisDoTipoAcertoPct:physical@corpo'], 49);
   assert.equal(ef('Vicious_Projectiles_Support', 20, 0, 'Ataque', 'Projétil')['maisDoTipoAcertoPct:physical@projetil+ataque'], 49);
   const mutilar = ef('Maim_Support', 20, 20, 'Ataque');
-  assert.deepEqual([mutilar['maisDoTipoPct:physical'] > 0, mutilar['af:phys_dmg@alvoMutilado'], mutilar.danoPct, mutilar.maisDanoPct], [true, 10, undefined, undefined]);
+  // (aval do dono: o "Inimigos Mutilados sofrem X% de Dano Físico aumentado" é o debuff no inimigo — `af:mutilados_fisico_sofrido`, de toda fonte)
+  assert.deepEqual([mutilar['maisDoTipoPct:physical'] > 0, mutilar['af:mutilados_fisico_sofrido'], mutilar.danoPct, mutilar.maisDanoPct], [true, 10, undefined, undefined]);
   assert.ok(ef('Void_Manipulation_Support', 20, 0, 'Magia', 'Caos')['maisDoTipoPct:chaos'] > 0);
   // (a conta: um tipo do caminho uma vez; o Elemental uma vez; o do acerto só com as tags)
   const e = { 'maisDoTipoPct:fire': 20, 'maisDoTipoPct:elemental': 10, 'maisDoTipoPct:physical': 50, 'maisDoTipoAcertoPct:physical@corpo': 30 };

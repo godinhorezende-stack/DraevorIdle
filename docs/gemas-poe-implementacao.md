@@ -8,8 +8,7 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 560 |
-| parcial | 1 |
+| implementada e testada | 561 |
 | não se aplica | 1 |
 
 Só os ataques:
@@ -47,8 +46,7 @@ Só os ataques:
 
 ## Gemas de habilidade pendentes
 
-- **Pact_of_Ghorr** (Pacto de Ghorr) — parcial
-  - a Fome de Ghorr (o PoB: ativa o Destruir Carne a cada 2 s por 6 s, 150% mais rápido por estágio do Rito de Sangue — 3 projéteis que põem um degenerativo Físico de 0,4 s na área em volta) não é simulada: o raio da área, o alcance do projétil e o crescimento do estágio não estão no PoB nem no poedb — decisão do dono
+
 
 ## Gemas de suporte pendentes
 
