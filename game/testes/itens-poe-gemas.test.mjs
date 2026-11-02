@@ -31,7 +31,8 @@ test('as 562 gemas viram magias do jogo com o molde do Draevor, item com ícone,
   assert.deepEqual([e.element, e.kind, !!e.projetil], ['fire', 'spell', true]);
   assert.equal(ITEM_CATALOG[bola.itemId].poeGema.icone, 'icones/Fireball.png');
   assert.equal(G.doSlug('Arc').molde, 'spell-forked-thorns', 'Arco = a corrente');
-  assert.equal(G.doSlug('Raise_Zombie').statusNoJogo, 'parcial', 'o lacaio invoca (as habilidades próprias dele ainda não)');
+  // (aval do dono 28/10: o lote L — o zumbi usa as habilidades dele do PoB)
+  assert.equal(G.doSlug('Raise_Zombie').statusNoJogo, 'funciona', 'o lacaio invoca e usa as habilidades dele do PoB');
   const st = [...G.REGISTRO.values()].reduce((o, r) => ((o[r.statusNoJogo] = (o[r.statusNoJogo] ?? 0) + 1), o), {});
   // (lote B1, dono 20/10 — aval: sem o piso de parciais, que cai a cada lote que zera gemas)
   assert.ok(st.funciona > 30 && st.nao < 40, JSON.stringify(st));
@@ -208,7 +209,8 @@ async function comGemas(slugs, { crit = 0 } = {}) {
 test('os 262 suportes do PoE viram gemas de suporte, com o status no jogo e a compatibilidade da lista do PoE', { skip: SEM_SUPORTES }, () => {
   assert.equal(SP.REGISTRO.size, 262);
   const st = [...SP.REGISTRO.values()].reduce((o, r) => ((o[r.status] = (o[r.status] ?? 0) + 1), o), {});
-  assert.ok(st.funciona > 40 && st.parcial > 100, JSON.stringify(st));
+  // (aval do dono, 26/10 — lote S1: sem o piso de "mais de 100 suportes parciais" — os lotes tiram suportes de parcial; as outras conferências seguem)
+  assert.ok(st.funciona > 40, JSON.stringify(st));
   assert.equal(SP.doSlug('Cast_On_Critical_Strike_Support').status, 'funciona');
   assert.equal(SP.doSlug('Minion_Damage_Support')?.status, 'funciona', 'o suporte de dano de lacaio vale nos lacaios');
   // (17/10, lote G3 — o dono: "Inverter para funciona") o Suporte de Armadilha transforma a habilidade em Armadilha (`armas-plantadas.mjs`)
@@ -333,9 +335,11 @@ test('lacaios e totens do PoE: o que a gema invoca no nível dela, eles batem e 
 test('as habilidades próprias dos lacaios: de longe/de perto, área, crítico da gema, oferenda, e os golens dando bônus ao dono', { skip: SEM_SUPORTES }, async () => {
   const L = await import('../systems/itens-poe/lacaios-poe.mjs');
   assert.equal(L.oQueInvoca('Summon_Skeletons_of_Mages', 10).estilo.alcance, 5, 'mago ataca de longe');
-  assert.equal(L.oQueInvoca('Raise_Zombie', 10).estilo.area.cada, 4, 'a pancada do zumbi a cada 4');
+  // (aval do dono 28/10: o lote L — a pancada do zumbi é a habilidade com recarga do PoB, 6 s, no lugar do "a cada 4 acertos")
+  assert.equal(L.oQueInvoca('Raise_Zombie', 10).recargas.find((h) => h.id === 'ZombieSlam').recargaMs, 6000, 'a pancada do zumbi a cada 6 s');
   assert.equal(L.oQueInvoca('Summon_Raging_Spirit_of_Enormity', 10).critChance, 100, '"Acertos dos Lacaios são sempre Golpes Críticos"');
-  assert.deepEqual(L.oQueInvoca('Summon_Flame_Golem', 10).afDono, { dmg_vs_monsters: 24 }, '"Golens aumentam 24% de Dano"');
+  // (aval do dono, 26/10 — lote E1a: "Golens concedem 20% mais área de efeito" do Golem Flamejante é a Área AUMENTADA do PoB, fire_golem_grants_area_of_effect_+%)
+  assert.deepEqual(L.oQueInvoca('Summon_Flame_Golem', 10).afDono, { dmg_vs_monsters: 24, area_inc: 20 }, '"Golens aumentam 24% de Dano"');
   const of = L.oQueInvoca('Flesh_Offering', 10);
   assert.equal(of.tipo, 'oferenda');
   assert.ok(of.bonus.velAtaquePct > 0);

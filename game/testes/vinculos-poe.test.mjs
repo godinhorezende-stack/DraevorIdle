@@ -92,7 +92,8 @@ function alocar(e, re) {
 test('as 6 GEMAS de Vínculo existem: Flamejante, Protetor, D\'Alma, Destrutivo e Vampírico funcionam; o Intuitivo é parcial (as magias ativadas pelos acertos do alvo)', { skip: SEM }, async () => {
   await bruxaCom();
   for (const s of ['Flame_Link', 'Protective_Link', 'Soul_Link', 'Destructive_Link', 'Vampiric_Link']) assert.equal(G.doSlug(s).statusNoJogo, 'funciona', s);
-  assert.equal(G.doSlug('Intuitive_Link').statusNoJogo, 'parcial');
+  // (aval do dono 27/10, lote P4: o Vínculo Intuitivo funciona — os acertos do aliado vinculado ativam as magias ligadas)
+  assert.equal(G.doSlug('Intuitive_Link').statusNoJogo, 'funciona');
   assert.equal(G.doSlug('Flame_Link').arquetipo, 'vinculo');
 });
 

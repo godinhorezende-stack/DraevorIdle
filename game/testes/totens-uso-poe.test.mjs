@@ -171,7 +171,8 @@ test('G20a: o totem SEM golpe (o Chamariz, o Devorador, os Rejuvenescedores, o V
   const chamariz = G.doSlug('Decoy_Totem').motivosNoJogo;
   // (lote G20c, com o aval do dono: o "não podem Evadir" e a regeneração do Rejuvenescedor foram feitos — `totens-especificos-poe.test.mjs`; a
   // provocação do Chamariz segue não feita)
-  assert.ok(chamariz.some((m) => /o totem provoca os monstros em volta/.test(m)), chamariz.join(' | '));
+  // (aval do dono 27/10, R3: a provocação do Chamariz é feita — lote R3D)
+  assert.ok(!chamariz.some((m) => /o totem provoca os monstros em volta/.test(m)), chamariz.join(' | '));
   assert.ok(!chamariz.some((m) => /Totem dura|Vida do Totem|mais Vida de Totens|Invoca um Totem/.test(m)), 'as linhas do totem são feitas');
   assert.ok(!G.doSlug('Rejuvenation_Totem').motivosNoJogo.some((m) => /Vida Regenerada/.test(m)), 'a aura do Rejuvenescedor: feita no G20c');
   assert.ok(!G.doSlug('Searing_Bond').motivosNoJogo.some((m) => /Dano de Fogo Base por segundo/.test(m)), 'o feixe do Vínculo: feito no G20d (com o aval do dono)');
@@ -182,7 +183,8 @@ test('G20a: o status honesto — o Sísmico "funciona"; o que o totem não faz v
   // (lote G20c, com o aval do dono: o buff do Chefe Guerreiro Ativo foi feito — `totens-especificos-poe.test.mjs`)
   const chefe = G.doSlug('Ancestral_Warchief').motivosNoJogo;
   assert.ok(!chefe.some((m) => /o totem fica parado|Velocidade de Posicionamento|enquanto o Totem estiver Ativo/.test(m)), chefe.join(' | '));
-  assert.ok(G.doSlug('Holy_Flame_Totem_of_Ire').motivosNoJogo.includes('efeito não simulado: 128 % mais Velocidade de Projétil'));
+  // (aval do dono, 26/10 — lote E1a: o "128% mais Velocidade de Projétil" vale no tiro do totem, que sai pelo seu uso; a linha não está mais nos motivos)
+  assert.ok(!G.doSlug('Holy_Flame_Totem_of_Ire').motivosNoJogo.includes('efeito não simulado: 128 % mais Velocidade de Projétil'));
   // (a chave do compilador sem leitor: o alcance corpo a corpo da gema não ia a lugar nenhum — a Lâmina Gélida também)
   // (lote A5, com o aval do dono: o alcance das Lâminas Gélidas agora é feito — `Acoes.alcanceCorpoDoUso` —, e a linha sai dos motivos)
   assert.ok(!G.doSlug('Frost_Blades').motivosNoJogo.includes('efeito não simulado: +2.1 metros ao Alcance de Golpes Corpo a Corpo'), G.doSlug('Frost_Blades').motivosNoJogo.join(' | '));

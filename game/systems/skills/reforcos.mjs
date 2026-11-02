@@ -17,6 +17,8 @@ import { fatorDosLentosPorFonte } from '../itens-poe/gemas-b2.mjs';
 // (lotes G-A e G-C, dono 25/10: os efeitos das maldições do lote no amaldiçoado — a Corrente Temporal, a Punição, as Marcas)
 import * as GemasGAC from '../itens-poe/gemas-gac.mjs';
 import { VIDA_BAIXA } from '../itens-poe/condicoes-poe.mjs';
+// (lote S2B, 27/10: a Destruição Iminente — o Feitiço que venceu antes do tique)
+import { antesDeApagar, SEM_DURACAO_MS } from '../itens-poe/suportes-s2b.mjs';
 
 const DADOS = JSON.parse(readFileSync(new URL('../../gamedata/gemas/reforcos.json', import.meta.url), 'utf8'));
 
@@ -118,7 +120,7 @@ export function amaldicoar(bicho, id, efeitosPoe, { agora = Date.now(), dur = 60
   if (!bicho || bicho.hp <= 0 || bicho.dummy) return false;
   const efeitos = [];
   for (const e of efeitosPoe ?? []) {
-    if (e.efeito === 'marcaVulneravel') efeitos.push({ tipo: 'vulneravel', pct: e.pct, tipos: e.tipos });
+    if (e.efeito === 'marcaVulneravel') efeitos.push({ tipo: 'vulneravel', pct: e.pct, tipos: e.tipos, ...(e.res ? { res: true } : {}) });
     if (e.efeito === 'marcaEnfraquece') efeitos.push({ tipo: 'enfraquecido', pct: e.pct, ...(e.pctRaro != null ? { pctRaro: e.pctRaro } : {}) });
   }
   if (!efeitos.length) return false;
@@ -189,7 +191,11 @@ export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
  * (lote G-C, D13) O `marcar` com uma lista própria de maldições (`[{ id, def, fator, lancado, emAura }]`, a forma de `ativos`) — a Ruína aplica as maldições LIGADAS a
  * ela, que não precisam estar ligadas como buff (`acoes.ruinaNoAcerto`).
  */
-export function marcarCom(hunt, bicho, lista, agora = hunt?.clock ?? Date.now()) {
+/*
+ * (lote D3, dono 27/10) `opcoes.solo`: o Feitiço posto pelo SOLO MALDITO (`acoes.tiqueDosFeiticosS2B`) — sem duração (`SEM_DURACAO_MS`), sem a área (o solo é a área), com
+ * o número do solo (`solo`) para sair quando o inimigo sai dele. Sem ela, o Feitiço com o Solo Maldito (`regras.s2b.soloMaldito`) não pega no acerto.
+ */
+export function marcarCom(hunt, bicho, lista, agora = hunt?.clock ?? Date.now(), opcoes = {}) {
   const tinha = amaldicoado(bicho, agora);
   let amaldicoou = false;
   let naoAura = false;
@@ -199,7 +205,7 @@ export function marcarCom(hunt, bicho, lista, agora = hunt?.clock ?? Date.now())
       const efeitos = [];
       let dur = 0;
       for (const e of def.efeitos ?? []) {
-        if (e.efeito === 'marcaVulneravel') efeitos.push({ tipo: 'vulneravel', pct: e.pct * fator, tipos: e.tipos });
+        if (e.efeito === 'marcaVulneravel') efeitos.push({ tipo: 'vulneravel', pct: e.pct * fator, tipos: e.tipos, ...(e.res ? { res: true } : {}) });
         if (e.efeito === 'marcaEnfraquece') efeitos.push({ tipo: 'enfraquecido', pct: e.pct * fator, ...(e.pctRaro != null ? { pctRaro: e.pctRaro * fator } : {}) });
         // (lotes G-A e G-C) os do lote: `gac:<tipo>` (`GemasGAC.efeitoNoBicho`)
         const gac = GemasGAC.efeitoNoBicho(e, fator);
@@ -210,12 +216,15 @@ export function marcarCom(hunt, bicho, lista, agora = hunt?.clock ?? Date.now())
       const contra = (def.efeitos ?? []).find((e) => e.efeito === 'maldicaoContra');
       if (!efeitos.length && !contra && !(def.efeitos ?? []).some((e) => e.efeito === 'maldicaoRegras')) continue;
       const regras = (def.efeitos ?? []).find((e) => e.efeito === 'maldicaoRegras') ?? {};
+      if (regras.s2b?.soloMaldito && !opcoes.solo) continue;
       const amaldicoarCom = (bicho) => {
         // À PROVA DE MALDIÇÕES (o "Infeitiçável" do PoE): o Feitiço não pega — a Marca, sim; e o "Seus Feitiços podem afetar Inimigos a Prova
         // de Maldições" (a Ocultista) passa.
-        if (bicho.aProvaDeMaldicoes && regras.feitico && !regras.afetaAProva) return false;
+        // (lote S2B: + o Toque Maldito Desperto — "34% de chance de afetar inimigos imunes a feitiços")
+        if (bicho.aProvaDeMaldicoes && regras.feitico && !regras.afetaAProva && !(regras.s2b?.afetaAProvaPct > 0 && Math.random() * 100 < regras.s2b.afetaAProvaPct)) return false;
         const maldicoes = (bicho.maldicoes ??= {});
-        for (const [k, m] of Object.entries(maldicoes)) if (!(m?.ate > agora)) delete maldicoes[k];
+        // (lote S2B: o Feitiço da Destruição Iminente que venceu fica pendente para a Explosão Destruidora — `SuportesS2B.antesDeApagar`)
+        for (const [k, m] of Object.entries(maldicoes)) if (!(m?.ate > agora)) { antesDeApagar(hunt, bicho, k, m, agora); delete maldicoes[k]; }
         // já amaldiçoado por ESTA: a maldição corre a duração dela (não renova a cada acerto — o "expirou X%" e a duração valem)
         if (maldicoes[id]) return false;
         // o LIMITE: a nova tira a lançada há mais tempo DO MESMO GRUPO (as Marcas têm o limite delas, à parte) — se ela mesma foi lançada
@@ -231,11 +240,14 @@ export function marcarCom(hunt, bicho, lista, agora = hunt?.clock ?? Date.now())
         }
         if (!cabe) return false;
         dur ||= 6000;
+        if (opcoes.solo) dur = SEM_DURACAO_MS;
         // (lote 52: `aura` — a posta pela aura, a Blasfêmia; a Desgraça das Bruxas só conta o Feitiço não-aura)
         maldicoes[id] = { ate: agora + dur, desde: agora, lancada: lancado, dur, efeitos, ...(marca ? { marca: true } : {}), ...(emAura ? { aura: true } : {}), ...(regras.expirou?.length ? { expirou: regras.expirou } : {}), ...(regras.desacelera ? { desacelera: regras.desacelera } : {}), ...(regras.lentoApos ? { lentoApos: regras.lentoApos } : {}), ...(regras.danoApos ? { danoApos: regras.danoApos } : {}),
           ...(regras.regenMenos ? { regenMenos: regras.regenMenos } : {}), ...(regras.semRecargaEs ? { semRecargaEs: true } : {}), ...(regras.destruir ? { destruir: true } : {}),
           // (ciclo 7) as regras da árvore no Inimigo Marcado (`acoes.efeitosDaMaldicao` → `daMarca`)
           ...(regras.daMarca ? { daMarca: regras.daMarca } : {}),
+          // (lote S2B) as regras dos suportes do lote no Feitiço: "não podem causar golpes críticos", a transferência na morte, a Explosão Destruidora
+          ...(regras.s2b ? { s2b: regras.s2b } : {}), ...(opcoes.solo ? { solo: opcoes.solo } : {}),
           ...(contra ? { contra: { golpe: contra.golpe ?? {}, morte: contra.morte ?? {}, atordoar: contra.atordoar ?? {}, fator } } : {}) };
         // "100% de chance de Refletir Feitiços": o Feitiço posto nele volta para VOCÊ (os mesmos efeitos, pela duração dele — `afDaMaldicaoNoJogador`).
         if (regras.feitico && bicho.refleteFeiticos > 0 && Math.random() * 100 < bicho.refleteFeiticos) {
@@ -249,7 +261,7 @@ export function marcarCom(hunt, bicho, lista, agora = hunt?.clock ?? Date.now())
       // pega também nos vizinhos a até o raio (`acoes.efeitosDaMaldicao` → `regras.raioCasas`: os metros da gema ÷ 2 × √ da "Área de Efeito
       // aumentada" — a geral, a das Maldições e a da Blasfêmia —; a fração, a chance de uma casa a mais), esteja o atingido amaldiçoado, à prova
       // ou no limite ou não; na aura, o atingido só se estiver no raio em volta de você. A Marca é de um alvo só.
-      const casas = !regras.marca ? Number(regras.raioCasas) || 0 : 0;
+      const casas = !regras.marca && !opcoes.solo ? Number(regras.raioCasas) || 0 : 0;
       const centro = casas > 0 ? (emAura && hunt?.pos ? { x: hunt.pos.x, y: hunt.pos.y, z: hunt.z ?? 0 } : { x: bicho.x, y: bicho.y, z: bicho.z ?? hunt?.z ?? 0 }) : null;
       const raio = centro ? Math.trunc(casas) + (Math.random() < casas % 1 ? 1 : 0) : 0;
       const noRaio = (m) => (m.z ?? hunt?.z ?? 0) === centro.z && Math.max(Math.abs(m.x - centro.x), Math.abs(m.y - centro.y)) <= raio;
@@ -298,7 +310,8 @@ export function vulnerabilidade(bicho, tipo, agora) {
   let f = m && m.ate > agora && m.tipos.includes(tipo) ? 1 + m.pct / 100 : 1;
   // (lote 57: + o Solo Profano — "maldições têm efeito aumentado em 10% sobre eles")
   const profano = noSoloProfano(bicho, agora) ? 1 + SOLO_PROFANO.efeitoMaldicaoPct / 100 : 1;
-  for (const c of maldicoesAtivas(bicho, agora)) for (const e of c.efeitos) if (e.tipo === 'vulneravel' && e.tipos.includes(tipo)) f *= 1 + (e.pct * fatorDoExpirou(c, agora) * profano) / 100;
+  // (lote T3, 27/10: a resistência reduzida da maldição — `res` — não é dano sofrido: sai na resistência do bicho, `Resistencia.resistenciaDe`)
+  for (const c of maldicoesAtivas(bicho, agora)) for (const e of c.efeitos) if (e.tipo === 'vulneravel' && !e.res && e.tipos.includes(tipo)) f *= 1 + (e.pct * fatorDoExpirou(c, agora) * profano) / 100;
   // (lote G-C) a Punição: "Inimigos Amaldiçoados sofrem Dano aumentado em X% enquanto em Vida Baixa" (todo tipo)
   return f * GemasGAC.fatorDaVidaBaixa(bicho, agora, VIDA_BAIXA);
 }
@@ -368,7 +381,8 @@ export function descrever(id, efeitoDaGema = null) {
   const def = REFORCOS[id];
   if (!def) return null;
   const fator = fatorDaGema(efeitoDaGema);
-  const duracaoMs = Math.round(def.dur * (1 + (efeitoDaGema?.duracaoPct ?? 0) / 100));
+  // (lote T3: × o "mais/menos Duração" dos suportes — `duracaoMaisPct`)
+  const duracaoMs = Math.round(def.dur * (1 + (efeitoDaGema?.duracaoPct ?? 0) / 100) * Math.max(0, 1 + (Number(efeitoDaGema?.duracaoMaisPct) || 0) / 100));
   const linhas = [];
   if (def.tipo === 'shield') linhas.push('O dano que você sofre sai da sua mana antes de sair da vida');
   if (def.mult) linhas.push(`+${num((velocidadeEscalada(def.mult, fator) - 1) * 100)}% de velocidade de movimento`);

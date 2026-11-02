@@ -153,7 +153,7 @@ export function ehLinhaC4(slug, l) {
   if (slug === 'Wither' && [LINHA_DEFINHADO, LINHA_TOLHE, LINHA_CAOS_SOFRIDO].some((re) => re.test(t))) return true;
   if (slug === 'Pestilent_Strike' && (LINHA_DURACAO_DO_VENENO.test(t) || LINHA_SECUNDARIO.test(t))) return true;
   if (LINHA_UM_VENENO.test(t) || LINHA_NAO_ENVENENA_ENVENENADO.test(t)) return true;
-  // (D4.4) a do clone vai como limitação do idle (`MOTIVOS_C4`)
+  // (D4.4 → lote P4: a do clone tem leitor — os Duplos andam com ela, `GemasP4.duplosDasLinhas`)
   if (slug === 'Vaal_Double_Strike' && LINHA_CLONES.test(t)) return true;
   return false;
 }
@@ -164,6 +164,6 @@ export const EFEITO_SEM_DANO = Object.freeze(new Set(['Wither']));
  * O que a mecânica do lote ainda não faz, ou o que é limitação do idle — sem linha (o status não a vê). Uma gema sem nada aqui segue o PoE pelas linhas.
  */
 export const MOTIVOS_C4 = Object.freeze({
-  // (D4.4) o "limitação do idle:" é lido pelo relatório (`tools/relatorio-gemas-poe.mjs` — LIMITACAO_IDLE)
-  Vaal_Double_Strike: ['limitação do idle: os clones do Golpe Duplo Vaal não andam no jogo — o "Clones possuem X% de aumento da Velocidade de Movimento" não tem onde valer (D4.4)'],
+  // (lote P4, 27/10: os Duplos do Golpe Duplo Vaal existem — andam até o inimigo com o "Clones possuem X% de aumento da Velocidade de Movimento" e usam o golpe com a
+  // sua força, `GemasP4.DUPLOS`, `Acoes.convocarDuplosP4`; o motivo D4.4 saiu)
 });

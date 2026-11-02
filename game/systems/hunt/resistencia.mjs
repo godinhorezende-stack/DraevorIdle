@@ -19,6 +19,10 @@ import * as AtributosDoMob from '../mobs/atributos.mjs';
 import * as ModsPoe from '../itens-poe/condicoes-poe.mjs';
 // (lote G-A, dono 25/10 — D4: a Redução de Dano Físico a menos da Marca do Caçador)
 import { reducaoFisicaMenos, resistenciaDoCaos } from '../itens-poe/gemas-gac.mjs';
+// (lote E1b, 26/10: a resistência ignorada pelos acertos no raio das Impurezas Vaal)
+import { resIgnoradaNoAlvo } from '../itens-poe/gemas-e1b.mjs';
+// (lote T3, 27/10: a resistência que as maldições tiram — "Inimigos Amaldiçoados possuem −X% de Resistências")
+import { resMenosDasMaldicoes } from '../itens-poe/gemas-t3.mjs';
 
 /** A resistência (em %) do bicho ao `tipo`, com o teto do boss e o piso da fraqueza (antes do teto de resistência e da penetração). */
 export function resistenciaDe(hunt, alvo, tipo) {
@@ -42,7 +46,9 @@ export function resistenciaDe(hunt, alvo, tipo) {
   const daEspecie = zerada ? 0 : igual != null ? igual : (BESTIARY[alvo?.key]?.elements?.[tipo] ?? 0) + (alvo?.resist?.[tipo] ?? 0);
   // (+ o Esmagado do PoE: −15 na redução física; + lote F: "Inimigos Próximos possuem −X% de Resistência a <tipo>" — a aura da árvore.)
   const esmagado = (tipo === 'physical' ? ModsPoe.esmagado(alvo, agora) : 0) + ModsPoe.resMenosDaAura(alvo, agora, tipo);
-  const r = daEspecie + daAura + BuffsDeMob.resistencia(alvo, agora, tipo) - vulneravel - causticado - esmagado + ModsPoe.equilibrio(alvo, agora, tipo);
+  // (lote T3, 27/10: − a das maldições — a Fraqueza Elemental, a Inflamabilidade, o Desespero…, com o "efeito aumentado" delas e o do Solo Profano)
+  const daMaldicao = resMenosDasMaldicoes(alvo, tipo, agora, ModsPoe.noSoloProfano(alvo, agora) ? 1 + ModsPoe.SOLO_PROFANO.efeitoMaldicaoPct / 100 : 1);
+  const r = daEspecie + daAura + BuffsDeMob.resistencia(alvo, agora, tipo) - vulneravel - causticado - esmagado - daMaldicao + ModsPoe.equilibrio(alvo, agora, tipo);
   const comBoss = hunt?.isBoss ? Math.min(R.RESISTENCIA_MAXIMA_DE_BOSS, r) : r;
   // A fraqueza só vai até o piso (`fraquezaMaxima`); o teto de cima fica para `resistenciaEfetivaDe`.
   return Math.max(-Limites.LIMITES.resistenciaDoMob.fraquezaMaxima, comBoss);
@@ -72,6 +78,11 @@ export function resistenciaEfetivaDe(hunt, alvo, tipo, ficha = null) {
   if (ficha?.resInvertida && elemental && !sempreInvertida) res = -res;
   // (lote G-C, D11) a Detonação de Feitiços: o Caos do acerto resistido pela menor resistência do alvo entre Fogo, Gelo, Raio e Caos (a da Contradição: a maior)
   if (tipo === 'chaos' && ficha?.caosResistidoPela) res = resistenciaDoCaos(ficha.caosResistidoPela, (t) => resistenciaDe(hunt, alvo, t));
+  // (lote E1b, 26/10) as Impurezas Vaal: "Resistência a <El> de Inimigos Próximos é Ignorada por Acertos" — o acerto (com a ficha de quem acerta; o dano degenerativo
+  // vem sem ela) no bicho a até o raio da aura ignora a resistência POSITIVA (a negativa fica, como no "Golpes Críticos ignoram as Resistências" do jogo)
+  if (ficha && res > 0 && resIgnoradaNoAlvo(hunt, alvo, tipo)) res = 0;
+  // (lote S2B, 27/10) a Tríade Profana: o acerto que sorteou "ignorar a resistência a dano de caos e elétrico" (`ficha.ignoraResDe` — `ModsPoe.fichaDoGolpe`): a positiva vai a 0
+  if (res > 0 && ficha?.ignoraResDe?.includes(tipo)) res = 0;
   return Limites.resistenciaEfetiva(Limites.resistenciaDoMob(res), pen);
 }
 

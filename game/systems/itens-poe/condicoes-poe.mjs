@@ -22,6 +22,13 @@ import { raioQueCresce } from './gemas-b1.mjs';
 // (lotes G-A e G-C, dono 25/10: a Precisão a menos do Enfraquecer, o Impelir restrito)
 import * as GemasGAC from './gemas-gac.mjs';
 import { renovarLento } from './gemas-gbd.mjs';
+// (lote E2B, 26/10: o dano sofrido do debuff da Armadilha de Urso nos acertos de Armadilha e Mina)
+import { danoDoUrso } from './gemas-e2b.mjs';
+// (lote D1, 27/10: o Carne e Pedra — o dano sofrido nas duas Posturas)
+import { fatorDaAreia, fatorDoSangue } from './gemas-d1.mjs';
+import { fatorDaInsanidade } from './gemas-r3c.mjs';
+// (lote S2B, 27/10: o Passe Enfeitiçado — "Inimigos afetados por feitiços … não podem causar golpes críticos")
+import { semCriticoPeloFeitico } from './suportes-s2b.mjs';
 import * as Testador from '../personagem/testador.mjs';
 
 /** "Recentemente" no PoE: nos últimos 4 segundos. */
@@ -143,7 +150,8 @@ export const efeitoDaAreaFria = (h, b, agora = h?.clock ?? 0) => Math.max(0, ...
  * ele guarda em `postura` — ligar começa na de Sangue; usar de novo alterna, `GemasC3.trocarPostura`. Antes, o buff ligado era sempre a de Areia, e os bônus de Sangue
  * nunca valiam.) Sem o buff, a de Sangue (o lembrete: "Você está automaticamente em Postura de Sangue").
  */
-const buffDaPostura = (h, agora) => Object.entries(h?.buffs ?? {}).find(([id, b]) => b && b.ate > agora && /Blood_and_Sand/.test(id))?.[1] ?? null;
+// (lote D1, 27/10: + o Carne e Pedra — a outra gema de Postura do PoE; as duas ficam na mesma Postura, `acoes.trocarPosturaNoUso`)
+const buffDaPostura = (h, agora) => Object.entries(h?.buffs ?? {}).find(([id, b]) => b && b.ate > agora && /Blood_and_Sand|Flesh_and_Stone/.test(id))?.[1] ?? null;
 export const posturaDe = (h, agora = h?.clock ?? 0) => (buffDaPostura(h, agora)?.postura === 'areia' ? 'areia' : 'sangue');
 /**
  * (lote C3, dono 25/10) Você está numa Tempestade de Lâminas SANGRENTA sua (`hunt.poeObjetos` — `GemasC3`, a Tempestade de Lâminas): "12% mais Velocidade de Ataque
@@ -1230,6 +1238,10 @@ export const BUFFS = {
   crueldade: { nome: 'Crueldade', af: { dano_dot_mais: 40 } },
   // (o suporte Momentum: "Rapidez concede Velocidade de Movimento aumentada em 15% por Momentum perdido" — o valor é o do momento em que veio)
   rapidez: { nome: 'Rapidez', af: (estado) => ({ move_speed: estado?.hunt?.rapidez?.movimentoPct ?? 0 }) },
+  // (lote S2A, 27/10) a Fonte de Vida do suporte (o PoB: Lifetap → FlaskLifeRecovery INC 20) e o Ímpeto de Combate do Combate Próximo (o efeito — o "mais" da
+  // Velocidade de Ataque das Habilidades de Deslocamento não suportadas — é do uso: `suportes-s2a.fatorDoImpeto`)
+  fonteDeVida: { nome: 'Fonte de Vida', af: { frasco_vida_rec: 20 } },
+  impetoDeCombate: { nome: 'Ímpeto de Combate', af: {} },
 };
 /** (14/10) Os 13 altares do sorteio do PoE ("Ganha um buff de altar aleatório" — a lista do Gritos dos Dessecados no poedb). */
 export const ALTARES_DO_SORTEIO = Object.freeze(['altarAceleracao', 'altarBrutal', 'altarCongelanteMaior', 'altarDiamante', 'altarEcoante', 'altarSombrio', 'altarImpenetravel', 'altarMassivo', 'altarReabastecimento', 'altarResistencia', 'altarCarregado', 'altarEletrizanteMaior', 'altarEsqueleticoMaior']);
@@ -1307,6 +1319,9 @@ export function adds(estado, total = null) {
     const efeito = elusivoAgora ?? 1 + ((Number(total?.[`efeito_buff:${nome}`]) || 0) + (Number(estado?.hunt?.poeEfeitoDeBuff?.[nome]) || 0) + (b.altar ? Number(total?.efeito_altar) || 0 : 0)) / 100;
     for (const [k, v] of Object.entries(typeof b.af === 'function' ? b.af(estado) : b.af)) saida[k] = (saida[k] ?? 0) + v * (k.startsWith('periodico:') ? 1 : efeito);
   }
+  // (R3, o Devorar Maior) as almas do Comedor de Almas em você: +5% de Velocidade de Ataque e de Conjuração por alma
+  const almasEu = almasDoJogador(estado?.hunt, agoraT);
+  if (almasEu > 0) for (const k of ['atk_speed', 'cast_speed']) saida[k] = (saida[k] ?? 0) + almasEu * DEVORADOR_DE_ALMAS.porAlmaPct;
   // (lote G) Sobre o Solo Sagrado: 6% da Vida por segundo (× "Efeito de Solos Sagrados Criados por você aumentado"), "Seu chão consagrado
   // concede precisão aumentada em X%" e "faz com que a Regeneração de Vida também Recupere Escudo de Energia".
   if (noSoloSagrado(estado?.hunt)) {
@@ -1682,7 +1697,11 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
     const daEmboscada = !naoImpelivel && !t.has('totem') && !!estado?.hunt?.emboscada?.golpe && (estado.hunt.emboscada.ate ?? 0) > agora;
     if (daEmboscada) { t.add('impelido'); t.add('impelidoEmboscada'); }
     // (lote G-A, D2: o Impelir do Sísmico só vale nas Pancadas, o do Ancestral só nos Golpes — `GemasGAC.impeleEste`)
-    else if (!naoImpelivel && !semNoDeslocamento && !t.has('totem') && (estado?.hunt?.impelidos?.n ?? 0) > 0 && (estado.hunt.impelidos.ate ?? Infinity) > agora && GemasGAC.impeleEste(estado.hunt.impelidos, [...t])) { t.add('impelido'); t.add('impelidoClamor'); if (estado.hunt.impelidos.de) t.add(`impelidoClamor_${estado.hunt.impelidos.de}`); }
+    // (lote S1, dono 26/10: um Impelir por Clamor — todos os que alcançam este ataque, `GemasGAC.impelemEste`)
+    else if (!naoImpelivel && !semNoDeslocamento && !t.has('totem') && estado?.hunt?.impelidos) {
+      const impelem = GemasGAC.impelemEste(estado.hunt.impelidos, [...t], agora);
+      if (impelem.length) { t.add('impelido'); t.add('impelidoClamor'); for (const x of impelem) if (x.de) t.add(`impelidoClamor_${x.de}`); }
+    }
     // (revisão G, 26/10: `impelidoClamor_<slug>` — DE QUAL Clamor é o Impelir; os bônus do buff de cada Clamor só valem no ataque Impelido por ele — `GemasPoe.adds`)
     if (estado?.hunt?.poeTerceiroGolpe) t.add('terceiroGolpe');
     if (ficha.mao === 'secundaria' || ficha.mao === 'ambas') t.add('maoSecundaria');
@@ -1739,13 +1758,17 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   // (+ lote G17: o "não pode" — o Foco Elemental e a Sede de Sangue, nas linhas dos suportes)
   // (lote A5, dono 20/10: + o máximo da Eletrização, o −X% de Fogo dos Incendiados, o "Eletriza ao resfriar / Resfria ao eletrizar" do Coursing Current e o Resfriamento Ósseo —
   // as linhas da gema e dos suportes que as afecções do golpe leem)
-  const temAfeccao = Object.keys(s).some((k) => /^(chance_|dot_|dano_dot_|ailment_|poison_|bleed_|ignite_|duracao_|efeito_|envenena|pode:|nao_pode:|congelamento_como|eletrizacao_como|resfriamento_como|eletrizacao_maximo|res_menos_|eletriza_ao_|resfria_ao_|resfriado_fragil_gelo)/.test(k));
+  const temAfeccao = Object.keys(s).some((k) => /^(chance_|dot_|dano_dot_|ailment_|poison_|bleed_|ignite_|duracao_|efeito_|envenena|pode:|nao_pode:|congelamento_como|eletrizacao_como|resfriamento_como|eletrizacao_maximo|res_menos_|eletriza_ao_|resfria_ao_|resfriado_fragil_gelo|sangramento_mais_rapido)/.test(k));
   // Os sorteios do golpe: "Dano Dobrado"/"Triplicado" e "ignorar a Redução de Dano Físico" (a chance sem condição + a do golpe).
   const chance = (k) => (Number(ficha.afPoe[k]) || 0) + (s[k] ?? 0);
   const triplo = chance('chance_dano_triplo') > 0 && rng() * 100 < chance('chance_dano_triplo');
-  const dobro = !triplo && chance('chance_dano_dobrado') > 0 && rng() * 100 < chance('chance_dano_dobrado');
+  // (lote D2, dono 27/10: + a chance das Minas de Alto Impacto perto do alvo — `minaDobro`, o golpe com alvo)
+  const doAltoImpacto = alvo && ativo(alvo.estados?.minaDobro, agora) ? alvo.estados.minaDobro.pct ?? 0 : 0;
+  const dobro = !triplo && chance('chance_dano_dobrado') + doAltoImpacto > 0 && rng() * 100 < chance('chance_dano_dobrado') + doAltoImpacto;
   const ignora = chance('ignora_reducao_fisica') > 0 && rng() * 100 < chance('ignora_reducao_fisica');
   const invertida = chance('chance_res_invertida') > 0 && rng() * 100 < chance('chance_res_invertida');
+  // (lote S2B: a Tríade Profana — "X% de chance de ignorar a resistência a dano de caos e elétrico do inimigo", sorteado por acerto)
+  const ignoraCaosRaio = chance('s2b_ignora_res_caos_raio') > 0 && rng() * 100 < chance('s2b_ignora_res_caos_raio');
   const f = { ...ficha };
   f.tagsDoGolpe = [...t];
   // (lote A5b, dono 20/10: a PRECISÃO deste golpe — o "+X de Precisão" e o "X% de Precisão aumentada" com as tags dele: a gema e os suportes (a Precisão
@@ -1778,6 +1801,10 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   if (Object.keys(maisDoElemento).length) f.maisDoElemento = maisDoElemento;
   if (ignora) f.ignoraReducaoFisica = true;
   if (invertida) f.resInvertida = true;
+  if (ignoraCaosRaio) f.ignoraResDe = ['chaos', 'energy'];
+  // (correções F3) as chances "por acerto" (a Tríade Profana; o "ignorar a Redução de Dano Físico"): o sorteio daqui vale no primeiro alvo do uso; cada outro alvo
+  // sorteia de novo (`resortearPorAcerto`) — antes, todos os alvos do mesmo uso dividiam o mesmo sorteio
+  if (chance('s2b_ignora_res_caos_raio') > 0 || chance('ignora_reducao_fisica') > 0) f.chancesPorAcerto = { caosRaio: chance('s2b_ignora_res_caos_raio'), fisico: chance('ignora_reducao_fisica') };
   // O "aumentado" de UM elemento com condição ("Dano de Gelo aumentado com Habilidades de Ataque"), a penetração de um elemento, o dano
   // somado com condição ("contra Inimigos Resfriados") e o roubo com condição ("contra Inimigos Eletrizados").
   const doElemento = { physical: (s.phys_dmg ?? 0), fire: s.fire_dmg ?? 0, ice: s.ice_dmg ?? 0, energy: s.energy_dmg ?? 0, chaos: s.chaos_dmg ?? 0 };
@@ -1830,7 +1857,8 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
     f.critChance = Math.min(teto, Math.max(0, (ficha.critPontos + baseDoGolpe) * (1 + ((ficha.critInc ?? 0) + critInc) / 100) * (ficha.critMais ?? 1)));
     // (a chance refeita volta a ser Sortuda só se a da ficha era — `critSortudo`; senão o sorteio do golpe rola duas vezes)
     if (ficha.critSortudo) f.critChance = Math.min(teto, 1 - (1 - Math.min(1, f.critChance)) ** 2);
-    if (ficha.critMagiaPoe) f.critMagiaPoe = { ...ficha.critMagiaPoe, aumentada: ficha.critMagiaPoe.aumentada + critInc };
+    // (lote T3, 27/10: + a base do golpe na das magias do PoE — o "+X% de Chance de Crítico" dos suportes, `crit_base_golpe`, soma à base da gema antes dos aumentos)
+    if (ficha.critMagiaPoe) f.critMagiaPoe = { ...ficha.critMagiaPoe, aumentada: ficha.critMagiaPoe.aumentada + critInc, fixa: (ficha.critMagiaPoe.fixa ?? 0) + baseDoGolpe };
     if (ficha.critChanceMagia != null) f.critChanceMagia = Math.min(teto, Math.max(0, (ficha.critPontos + baseDoGolpe) * (1 + ((ficha.critInc ?? 0) + (ficha.critIncMagia ?? 0) + critInc) / 100) * (ficha.critMais ?? 1)));
   }
   if (s.crit_chance) f.critChance = Math.min(ficha.critTeto ?? 1, (f.critChance ?? 0) + s.crit_chance / 100);
@@ -1839,6 +1867,8 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
     const m = Math.max(0, 1 + s.crit_mais_pct / 100);
     f.critChance = Math.min(ficha.critTeto ?? 1, (f.critChance ?? 0) * m);
     if (f.critChanceMagia != null) f.critChanceMagia = Math.min(ficha.critTeto ?? 1, f.critChanceMagia * m);
+    // (lote T3, 27/10: e na das magias do PoE — a conta da gema refaz a chance pelo `critMagiaPoe`; antes o "mais" deste golpe se perdia nela)
+    if (f.critMagiaPoe) f.critMagiaPoe = { ...f.critMagiaPoe, mais: (f.critMagiaPoe.mais ?? 1) * m };
   }
   // (O multiplicador FIXO — "Seu Multiplicador de Acerto Crítico é N%" — e o "Golpes Críticos não causam Dano extra" não somam o do golpe.)
   const multFixo = Number(ficha.afPoe?.crit_multi_fixo) > 0 || Number(ficha.afPoe?.critico_sem_dano_extra) > 0;
@@ -2281,6 +2311,16 @@ export function sorteado(chance, sortudo, azarado, rng = Math.random, tres = fal
  * Quanto do recurso (`vida`/`mana`) está RESERVADO agora: as auras ligadas da caçada (`hunt.buffs[].reserva`, a mesma conta de
  * `itens-poe/reserva.valor`) e, na vida, a "Reserva X% da Vida" das peças (`reserva_vida_pct` — `total`: a soma; sem ela, a ficha da caçada).
  */
+/**
+ * (revisão F2, dono 27/10 — como o PoB, CalcPerform.lua `activeMineCount`) Quantas Minas da gema `acao` arremessadas com a reserva do custo (a Cadeia Explosiva, o
+ * Alto Impacto: `p.reserva`) estão plantadas agora — a reserva dela é o custo base de UMA × esse número; sem mina plantada, nada reservado.
+ */
+export const minasDaReserva = (h, acao, agora = h?.clock ?? 0) => (h?.plantadas ?? []).filter((p) => p.tipo === 'mina' && p.reserva && p.acao === acao && p.ate > agora).length;
+/** (revisão F2) Quanto a reserva `r` de um buff tranca: a % da máxima ou o fixo, × o fator, arredondado para cima; a da Mina, × as plantadas dela (`minasDaReserva`). */
+export function valorDaReserva(h, r, maxima, agora = h?.clock ?? 0) {
+  const uma = Math.ceil((r.pct ? (maxima * r.pct) / 100 : r.fixo ?? 0) * (r.fator ?? 1));
+  return r.minasDe ? uma * (minasDaReserva(h, r.minasDe, agora) + (Number(r.minasAMais) || 0)) : uma;
+}
 export function reservadoAgora(estado, recurso, total = null) {
   const h = estado?.hunt;
   const agora = h?.clock ?? 0;
@@ -2288,7 +2328,7 @@ export function reservadoAgora(estado, recurso, total = null) {
   let n = 0;
   for (const b of Object.values(h?.buffs ?? {})) {
     if (!b?.reserva || !(b.ate > agora) || (b.reserva.recurso === 'vida') !== (recurso === 'vida')) continue;
-    n += Math.ceil((b.reserva.pct ? (maxima * b.reserva.pct) / 100 : b.reserva.fixo ?? 0) * (b.reserva.fator ?? 1));
+    n += valorDaReserva(h, b.reserva, maxima, agora);
   }
   const pct = recurso === 'vida' ? Number((total ?? fichaDa(h)?.afPoe)?.reserva_vida_pct) || 0 : 0;
   if (pct > 0) n += Math.ceil((maxima * pct) / 100);
@@ -2308,6 +2348,21 @@ export const ativo = (s, agora) => !!s && s.ate > agora;
 export const fatorDeDanoDobrado = (ficha, rng = Math.random) => (ligado() && rng() * 100 < valor(ficha, 'chance_dano_dobrado') ? 2 : 1);
 
 /** O golpe ignora a redução de dano Físico do alvo? (a chance do "Acertos … ignoram a Redução de Dano Físico"). */
+/**
+ * (correções F3) Sorteia de novo, na `ficha` do uso (e nas `outras` fichas dele já copiadas), as chances "por acerto" de `fichaDoGolpe` (`chancesPorAcerto`): a Tríade Profana
+ * ("X% de chance de ignorar a resistência a dano de caos e elétrico") e o "ignorar a Redução de Dano Físico". Para o 2º alvo em diante do mesmo uso.
+ */
+export function resortearPorAcerto(ficha, outras = [], rng = Math.random) {
+  const c = ficha?.chancesPorAcerto;
+  if (!c) return;
+  const caosRaio = c.caosRaio > 0 && rng() * 100 < c.caosRaio ? ['chaos', 'energy'] : undefined;
+  const fisico = c.fisico > 0 && rng() * 100 < c.fisico ? true : undefined;
+  for (const f of new Set([ficha, ...outras])) {
+    if (!f) continue;
+    if (c.caosRaio > 0) f.ignoraResDe = caosRaio;
+    if (c.fisico > 0) f.ignoraReducaoFisica = fisico;
+  }
+}
 export const ignoraReducaoFisica = (ficha, rng = Math.random) => ligado() && rng() * 100 < valor(ficha, 'ignora_reducao_fisica');
 
 /**
@@ -2395,6 +2450,11 @@ export function doBicho(bicho, agora, { contraOutro = false, ficha = null } = {}
   // (lote F) "Inimigos Próximos Resfriados causam Dano reduzido em X% com Acertos" (de quem leva o golpe — `ficha`).
   if (ativo(e.lento, agora) && ficha) danoFator *= Math.max(0, 1 - (Number(ficha.afPoe?.resfriados_dano_red) || 0) / 100);
   if (contraOutro && ativo(e.provocado, agora)) danoFator *= 1 - NO_ACERTO.provocar.danoMenosPct / 100;
+  // (lote D1, decisão do dono 27/10 — o PoB, FleshAndStone: DamageTakenWhenHit MORE) o Carne e Pedra na Postura da Areia: você sofre Y% menos Dano dos acertos do inimigo
+  // na aura — o valor cheio, sem a queda pela distância; só em você (não no lacaio)
+  if (!contraOutro) danoFator *= fatorDaAreia(bicho, agora);
+  // (lote R3C, 27/10 — o PoB, CalcSetup: "Malignant Madness: Deal 10% less Damage") a Insanidade Perversa da Blasfêmia Sobrenatural: em você e nos lacaios
+  danoFator *= fatorDaInsanidade(bicho, agora);
   if (ativo(e.cego, agora)) {
     // (O "Efeito do Cegamento aumentado" de quem cegou: `e.cego.efeito`.)
     precisaoFator *= 1 - (NO_ACERTO.cegar.precisaoMenosPct * (e.cego.efeito ?? 1)) / 100;
@@ -2469,9 +2529,22 @@ function usosDaFicha(ficha) {
  */
 export const DEVORADOR_DE_ALMAS = Object.freeze({ porAlmaPct: 5, maximo: 45, raioCasas: 3, perdaMs: 500 });
 export function almasDoLacaio(l, agora) {
-  if (!((l?.buffs?.devoradorDeAlmas ?? 0) > agora) || !l.almas) return 0;
+  // (lote D2, dono 27/10: as almas da Transfusão — `almas.livre` — valem mesmo sem o buff do Devorador)
+  // (revisão F2: `livre` é QUANTAS são da Transfusão — sem o buff, só elas valem; as do Devorador acabam com ele)
+  if (!l?.almas) return 0;
+  if ((l.buffs?.devoradorDeAlmas ?? 0) > agora) return almasDecaidas(l, agora);
+  return almasLivresDoLacaio(l, agora);
+}
+const almasDecaidas = (l, agora) => {
   const parado = agora - (l.almas.em ?? agora) - RECENTE_MS;
   return Math.max(0, l.almas.n - (parado > 0 ? Math.floor(parado / DEVORADOR_DE_ALMAS.perdaMs) : 0));
+};
+/** (revisão F2) As almas da Transfusão do lacaio agora (`almas.livre`: quantas; `true` — o formato antigo — todas), já com a perda. */
+export function almasLivresDoLacaio(l, agora) {
+  const livre = l?.almas?.livre;
+  if (!livre) return 0;
+  const total = almasDecaidas(l, agora);
+  return livre === true ? total : Math.min(total, Number(livre) || 0);
 }
 /** Um inimigo morreu (`morto`, por quem for): cada lacaio com o Devorador de Almas a até 3 casas consome a alma. Devolve quantos consumiram. */
 export function almaParaOsLacaios(lacaios, morto, agora) {
@@ -2479,9 +2552,28 @@ export function almaParaOsLacaios(lacaios, morto, agora) {
   let n = 0;
   for (const l of lacaios ?? []) {
     if (!(l?.hp > 0) || !((l.buffs?.devoradorDeAlmas ?? 0) > agora) || Math.max(Math.abs(l.x - morto.x), Math.abs(l.y - morto.y)) > DEVORADOR_DE_ALMAS.raioCasas) continue;
-    l.almas = { n: Math.min(DEVORADOR_DE_ALMAS.maximo, almasDoLacaio(l, agora) + 1), em: agora };
+    const livres = almasLivresDoLacaio(l, agora);
+    l.almas = { n: Math.min(DEVORADOR_DE_ALMAS.maximo, almasDoLacaio(l, agora) + 1), em: agora, ...(livres > 0 ? { livre: livres } : {}) };
     n++;
   }
+  return n;
+}
+/**
+ * (R3, dono 27/10: o DEVORAR MAIOR "como o PoB") As almas do COMEDOR DE ALMAS em VOCÊ (`hunt.poeAlmas = { n, em, vistas }`): o mesmo Devorador de Almas dos lacaios
+ * (`DEVORADOR_DE_ALMAS`: +5% de Velocidade de Ataque e de Conjuração por alma, até 45; sem alma nova Recentemente, perde 1 a cada 0,5 s — `almasDecaidas`). O Poder do morto
+ * pela raridade (o PoE: Normal 1, Mágico 2, Raro 10, Único 20) — a chance do Devorar Maior é "por poder".
+ */
+export const PODER_DO_MORTO = Object.freeze({ normal: 1, comum: 1, magico: 2, raro: 10, elite: 10, unico: 20, boss: 20 });
+export const poderDoMorto = (m) => (m?.boss ? PODER_DO_MORTO.unico : PODER_DO_MORTO[m?.raridade ?? m?.raridadePoe] ?? 1);
+export function almasDoJogador(hunt, agora = hunt?.clock ?? 0) {
+  return hunt?.poeAlmas?.n > 0 ? almasDecaidas({ almas: hunt.poeAlmas }, agora) : 0;
+}
+/** Ganha uma alma (até o máximo); a ficha é refeita. Devolve as almas agora. */
+export function almaDoJogador(hunt, agora = hunt?.clock ?? 0) {
+  if (!hunt) return 0;
+  const n = Math.min(DEVORADOR_DE_ALMAS.maximo, almasDoJogador(hunt, agora) + 1);
+  hunt.poeAlmas = { n, em: agora, vistas: n };
+  hunt.poeFichaMudou = true;
   return n;
 }
 export function tiqueDaDissolucao(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
@@ -2506,6 +2598,12 @@ export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   // (lote 51: + os bônus temporários — `poeTemporarios`, o modificador do Raro do Aprendizado Inspirado; lote 52: + a imunidade a Maldições
   // da Desgraça das Bruxas)
   if (Object.values(hunt.poeBuffs ?? {}).some(venceu) || venceu(hunt.oferendaEmVoce?.ate) || Object.values(hunt.poeTemporarios ?? {}).some((x) => venceu(x?.ate)) || venceu(hunt.imunidadesPoe?.maldicao)) hunt.poeFichaMudou = true;
+  // (R3: as almas do Comedor de Almas em você caíram — a velocidade sai da ficha; sem nenhuma, o registro sai)
+  if (hunt.poeAlmas) {
+    const n = almasDoJogador(hunt, agora);
+    if (n !== hunt.poeAlmas.vistas) { hunt.poeAlmas.vistas = n; hunt.poeFichaMudou = true; }
+    if (!n) delete hunt.poeAlmas;
+  }
   tiqueDaFuria(hunt, agora);
   tiqueDasCargasFanaticas(hunt, ficha, agora);
   tiqueDaDissolucao(estado, hunt, ficha, agora);
@@ -3042,6 +3140,8 @@ export function criticoDoBicho(base, bicho, ficha, agora, rng = Math.random) {
   // (ciclo 7) "Inimigos Marcados não podem causar Golpes Críticos"; (lote D) "Acertos contra você Não podem ser Golpes Críticos se você foi
   // Atordoado Recentemente" (`sem_critico_recebido@atordoadoRecente`).
   if (regraDaMarca(bicho, agora, 'semCritico') > 0 || Number(ficha?.afPoe?.sem_critico_recebido) > 0) return { critico: false, fator: 1 };
+  // (lote S2B: o Passe Enfeitiçado — o Feitiço seu suportado no monstro)
+  if (semCriticoPeloFeitico(bicho, agora)) return { critico: false, fator: 1 };
   // ("Inimigos Próximos não podem causar Acertos Críticos": a aura põe `semCritico` nos de perto — `mods-poe.aurasProximas`.)
   if (ativo(bicho?.estados?.semCritico, agora)) return { critico: false, fator: 1 };
   // (lote 50, a Defesa Imprudente: "Acertos tem Chance de Acerto Crítico aumentada em X% contra você" — `crit_recebido_inc`)
@@ -3251,6 +3351,8 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   const maisDoTipo = ficha?.maisDoElemento?.[tipo] ?? (Number(ficha?.afPoe?.[MAIS_DANO_DO_TIPO[tipo]]) || 0);
   if (maisDoTipo) f *= Math.max(0, 1 + maisDoTipo / 100);
   if (tipo === 'fire' && ativo(e.cinzas, agora)) f *= 1.2;
+  // (rodada 4, etapa final — o dono, 28/10) o Mutilado pelo Suporte de Mutilação: "sofrem X% de Dano Físico aumentado" — toda fonte, o acerto e o degenerativo
+  if (tipo === 'physical' && ativo(e.mutilado, agora) && e.mutilado.fisicoSofridoPct > 0) f *= 1 + e.mutilado.fisicoSofridoPct / 100;
   // (lote 71: + "Inimigos Provocados por seus Clamores são Intimidados" e "Inimigos Amaldiçoados por você são Enervados")
   const intimidado = ativo(e.intimidado, agora) || (Number(ficha?.afPoe?.provocados_clamor_intimidados) > 0 && provocadoPeloClamor(alvo, agora));
   if (intimidado && (ficha?.tagsDoGolpe ?? []).includes('ataque')) f *= 1.1;
@@ -3259,7 +3361,10 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   if (inervado && (ficha?.tagsDoGolpe ?? []).includes('magia')) f *= 1.1;
   // (lote 72) o Esconjuro: 10% de dano sofrido aumentado (`esconjurado`)
   if (esconjurado(alvo, ficha?.afPoe, agora)) f *= 1 + ESCONJURO.pct / 100;
-  if (tipo === 'chaos' && ativo(e.definhado, agora)) f *= 1 + 0.06 * Math.max(0, 1 + (Number(ficha?.afPoe?.efeito_definhamento) || 0) / 100) * Math.min(15, e.definhado.n ?? 1);
+  // (lote R3D, 27/10: + o "efeito de definhamento aumentado" dos lacaios — o Definhamento da Aura Caótica Potencializada do Golem do Turbilhão, `efeitoExtraPct`; o maior vale)
+  if (tipo === 'chaos' && ativo(e.definhado, agora)) f *= 1 + 0.06 * Math.max(0, 1 + Math.max(Number(ficha?.afPoe?.efeito_definhamento) || 0, Number(e.definhado.efeitoExtraPct) || 0) / 100) * Math.min(15, e.definhado.n ?? 1);
+  // (lote R3D, 27/10) a Aura Caótica Potencializada: os inimigos nela sofrem X% mais Dano de Caos (chaos_damage_taken_+%, o PoB)
+  if (tipo === 'chaos' && ativo(e.caosSofridoR3D, agora)) f *= 1 + (e.caosSofridoR3D.pct ?? 0) / 100;
   // (lote C4, dono 21/10) o Tolhido pela Praga Vaal: "Inimigos Desacelerados sofrem Dano de Caos aumentado em 30%" (também no pulso do dano contínuo — `fatorRecebidoNoDot`)
   if (tipo === 'chaos' && ativo(e.tolhidoCaos, agora)) f *= 1 + (e.tolhidoCaos.pct ?? 0) / 100;
   // Coberto de Gelo (PoE): +20% de dano de Gelo recebido.
@@ -3275,6 +3380,14 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   // (lote E) "Cada Mina aplica Dano sofrido aumentado em X% aos Inimigos próximos a ela, até Y%" (`mods-poe.aoAcertar` acumula no alvo da
   // Mina) e "Inimigos que você Provocar recebem Dano aumentado em X%".
   if (ativo(e.minaFragil, agora)) f *= 1 + (e.minaFragil.pct ?? 0) / 100;
+  // (lote E2B, 26/10 — o PoB, BearTrap: TrapMineDamageTaken) "Inimigos recebem 25% de aumento de Dano dos Acertos de Minas ou Armadilhas" — o debuff de Urso, só no acerto
+  // de Armadilha ou Mina (as tags do golpe)
+  const doUrso = danoDoUrso(alvo, agora);
+  if (doUrso > 0 && (ficha?.tagsDoGolpe ?? []).some((t) => t === 'armadilha' || t === 'mina')) f *= 1 + doUrso / 100;
+  // (lote D1, decisão do dono 27/10 — o PoB, FleshAndStone: PhysicalDamageTaken MORE, ModFlag.Hit) o Carne e Pedra na Postura de Sangue: o inimigo na aura sofre X% mais
+  // Dano Físico dos Acertos — o valor cheio, sem a queda pela distância
+  // (revisão F1: só no ACERTO — o pulso do dano contínuo, `fatorRecebidoNoDot`, vem com a ficha `dot`)
+  if (tipo === 'physical' && !ficha?.dot) f *= fatorDoSangue(alvo, agora);
   // (12/10) "Inimigos sofrem Dano aumentado em X% para cada uma de suas Runas Vinculadas a eles" (`runas-vinculadas.marcarNosInimigos`).
   if (alvo.runasVinculadas > 0) f *= 1 + (alvo.runasVinculadas * (Number(ficha?.afPoe?.dano_por_runa_vinculada) || 0)) / 100;
   // ("Cada Totem aplica Dano aumentado em X% sofrido pelos Inimigos próximos a ele" — `mods-poe.aurasProximas`.)
@@ -3310,7 +3423,7 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
  * "increased Damage taken" do Shock). Fica de fora o que é do atacante (a ficha do golpe: o "mais" do tipo, os "contra Inimigos X"), o que é só de Acerto, de Ataque
  * (o Intimidado) ou de Magia (o Inervado). A Exposição já está na resistência (`hunt/resistencia`), que o pulso usa.
  */
-const FICHA_DO_DOT = Object.freeze({ afPoe: Object.freeze({}), tagsDoGolpe: Object.freeze([]) });
+const FICHA_DO_DOT = Object.freeze({ afPoe: Object.freeze({}), tagsDoGolpe: Object.freeze([]), dot: true });
 /*
  * (revisão do C4, 21/10 — o PoB: o Definhado é `6 × (1 + WitherEffect)` no `enemyDB ChaosDamageTaken`, CalcPerform.lua; os "Inimigos … sofrem Dano aumentado" são
  * `EnemyModifier DamageTaken`, ModParser.lua — sem flag de Acerto: valem no dano contínuo, CalcOffence.lua) as chaves do ATACANTE que são dano SOFRIDO pelo inimigo (não
@@ -3329,7 +3442,9 @@ export function fatorRecebidoNoDot(alvo, tipo, agora, sofrido = null) {
   const e = alvo.estados ?? {};
   const pilha = (e.chocadosPilha ?? []).filter((x) => x.ate > agora);
   const eletrizacao = pilha.length ? 1 + pilha.reduce((t, x) => t + (x.pct ?? 0), 0) / 100 : ativo(e.chocado, agora) ? 1 + (e.chocado.pct ?? 0) / 100 : 1;
-  return fatorRecebidoPeloBicho(alvo, tipo, sofrido ? { afPoe: sofrido, tagsDoGolpe: FICHA_DO_DOT.tagsDoGolpe } : FICHA_DO_DOT, agora) * eletrizacao;
+  // (rodada 4, etapa final — o Destruir Carne do Pacto de Ghorr: "Dano degenerativo sofrido aumentado em 25%" por acúmulo, até 3 — toda fonte)
+  const carne = 1 + 0.25 * Math.min(3, (e.carneDestruida ?? []).filter((x) => x.ate > agora).length);
+  return fatorRecebidoPeloBicho(alvo, tipo, sofrido ? { afPoe: sofrido, tagsDoGolpe: FICHA_DO_DOT.tagsDoGolpe, dot: true } : FICHA_DO_DOT, agora) * eletrizacao * carne;
 }
 /** As chaves com escala do ALVO (`resfriamentoNoAlvo:N`, `eletrizacaoNoAlvo:N`), guardadas por soma (`afPoe`). */
 const ESCALAS_DO_ALVO = /^(resfriamentoNoAlvo|eletrizacaoNoAlvo)(:|$)/;

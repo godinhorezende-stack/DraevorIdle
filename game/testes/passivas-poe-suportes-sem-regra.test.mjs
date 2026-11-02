@@ -277,6 +277,8 @@ test('NECROMANTE: "Suas Habilidades de Oferenda também afetam você", com "X% d
   // Na caçada: a Oferenda usada (com um lacaio em campo) passa a valer em você.
   const o = cacada({ classe: 'Witch', base: 'Wands/Driftwood_Wand', gema: 'Flesh_Offering', af: { oferenda_em_voce: 1, oferenda_efeito_reduzido: reduzido } });
   o.h.lacaios = [{ uid: 'l1', tipo: 'lacaio', hp: 100, maxHp: 100, x: o.h.pos.x, y: o.h.pos.y + 1 }];
+  // (aval do dono, 26/10 — lote E1a: as Oferendas do PoE consomem cadáveres a até 4 casas; sem cadáver, não saem — um cadáver perto)
+  o.h.cadaveres = [{ x: o.h.pos.x + 1, y: o.h.pos.y + 1, z: o.h.z ?? 0, key: 'x' }];
   usar(o, 0);
   assert.ok(o.h.oferendaEmVoce?.ate > o.h.clock && o.h.oferendaEmVoce.velAtaquePct > 0, 'a Oferenda vale em você');
 });
@@ -461,12 +463,17 @@ test('FÚRIA TRIBAL: "Habilidades de Golpe Corpo a Corpo causam Dano Propagado a
 
 test('REPETIÇÃO FINAL: "Repetição Final das Magias têm Efeito em Área aumentado em X%" — a última repetição pega a área maior', { skip: SEM }, () => {
   const { valor } = com(/^repeticao_final_area$/);
+  // (aval do dono 28/10: a área numa conta só — a Nova do nível 10, 2,8 m ÷ 2 = 1,4 casa; com +100%, 1,4 × √2 = 1,98 nas repetições (2 casas com qualquer sorteio
+  // abaixo de 0,98) e 1,4 × √(2 + X%) na última, a fração como chance pelo mesmo sorteio: o sorteio na metade da fração da última leva só ela à casa seguinte)
+  const fracao = (1.4 * Math.sqrt(2 + valor / 100)) % 1;
+  assert.ok(1.4 * Math.sqrt(2 + valor / 100) >= 2, `X = ${valor}`);
+  const u = fracao / 2;
   const longe = (af) => {
     const o = cacada({ classe: 'Witch', base: 'Wands/Driftwood_Wand', gema: 'Ice_Nova', suportes: ['Spell_Echo_Support'], monstros: 2, af });
     const fora = o.h.monstros[1];
     // o segundo monstro um pouco além da área da Nova de Gelo
     let d = 2;
-    for (; d < 12; d++) { Object.assign(fora, { x: o.h.pos.x + d, y: o.h.pos.y }); const a = fora.hp; comSorte(0.5, () => usar(o, 5000)); if (fora.hp === a) break; fora.hp = a; }
+    for (; d < 12; d++) { Object.assign(fora, { x: o.h.pos.x + d, y: o.h.pos.y }); const a = fora.hp; comSorte(u, () => usar(o, 5000)); if (fora.hp === a) break; fora.hp = a; }
     return { d, o, fora };
   };
   // (17/10, lote G2 — o dono: "Aplicar raio do PoE": a Nova tem o raio do PoE, 1,4 casa — no sorteio 0,5, 1 casa; +100% de área nas duas
@@ -475,6 +482,6 @@ test('REPETIÇÃO FINAL: "Repetição Final das Magias têm Efeito em Área aume
   const com_ = cacada({ classe: 'Witch', base: 'Wands/Driftwood_Wand', gema: 'Ice_Nova', suportes: ['Spell_Echo_Support'], monstros: 2, af: { area_inc: 100, repeticao_final_area: valor } });
   Object.assign(com_.h.monstros[1], { x: com_.h.pos.x + sem.d, y: com_.h.pos.y });
   const antes = com_.h.monstros[1].hp;
-  comSorte(0.5, () => usar(com_, 0));
+  comSorte(u, () => usar(com_, 0));
   assert.ok(com_.h.monstros[1].hp < antes, `o monstro a ${sem.d} casas (fora da área) é atingido na Repetição Final`);
 });

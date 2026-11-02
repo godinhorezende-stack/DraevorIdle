@@ -10,6 +10,8 @@ import * as Plantadas from './armas-plantadas.mjs';
 // (lotes G-A e G-C, dono 25/10: as Marcas no acerto — as Cargas, as Cargas de Frasco — e a Punição em quem acerta você)
 import * as GemasGAC from './gemas-gac.mjs';
 import { porLento } from './gemas-gbd.mjs';
+// (lote S2B, 27/10: o Exemplar conta os seus críticos de ataque)
+import { notarCriticoDeAtaque } from './suportes-s2b.mjs';
 import * as Testador from '../personagem/testador.mjs';
 export * from './condicoes-poe.mjs';
 
@@ -73,6 +75,8 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
     marcarCriticoDaHabilidade(hunt, habilidade, agora);
     // (Os frascos com "chance de ganhar uma Carga de Frasco ao causar um Golpe Crítico" — `frascos.tique`.)
     if (hunt) hunt.poeCriticosParaFrascos = (hunt.poeCriticosParaFrascos ?? 0) + 1;
+    // (lote S2B: o Exemplar — "toda vez que você causar um golpe crítico recentemente com um ataque": os seus críticos de ATAQUE dos últimos 4 s)
+    if (tags.has('ataque')) notarCriticoDeAtaque(hunt, agora);
   }
   const e = (alvo.estados ??= {});
   // (13/10, o Mestre do Metal: "Você e Aliados próximos causam de 6 a 12 de Dano Físico adicional para cada Empalar no Inimigo" — lote 31,
@@ -167,7 +171,11 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
     porLento(e, agora + ms, pct, agora);
   };
   if (sorte(v('chance_mutilar'))) {
-    e.mutilado = { ate: agora + NO_ACERTO.mutilar.duracaoMs };
+    // (rodada 4, etapa final — o dono, 28/10) a Mutilação da habilidade com o "Inimigos Mutilados … sofrem X% de Dano Físico aumentado" (o Suporte de Mutilação) leva o
+    // debuff do dano físico sofrido (`fisicoSofridoPct` — `fatorRecebidoPeloBicho`, toda fonte); o maior vale enquanto a Mutilação de antes dura
+    const sofridoAntes = (e.mutilado?.ate ?? 0) > agora ? Number(e.mutilado.fisicoSofridoPct) || 0 : 0;
+    const sofrido = Math.max(sofridoAntes, v('mutilados_fisico_sofrido'));
+    e.mutilado = { ate: agora + NO_ACERTO.mutilar.duracaoMs, ...(sofrido > 0 ? { fisicoSofridoPct: sofrido } : {}) };
     // (lote B1, dono 20/10: × o "X% de aumento do Efeito de Mutilação" — a Chuva de Flechas Vaal, 150%: 30% × 2,5 = 75%)
     lentidao(NO_ACERTO.mutilar.lentidaoPct * Math.max(0, 1 + v('efeito_mutilacao') / 100), NO_ACERTO.mutilar.duracaoMs);
     ev('mutilado');
@@ -554,11 +562,12 @@ export function aoSerAtordoado(estado, hunt, bicho, ficha, { dano = 0, duracaoMs
  * (ciclo 7, lote F) O PODER do Clamor (PoE: cada inimigo perto vale 1, Mágico 2, Raro 10, Único 20): os de até 6 casas, com o "mínimo de N de
  * Poder", o "Poder total contado aumentado" e o "poder infinito" (conta como 1000).
  */
-export function poderDoClamor(hunt, ficha) {
+// (correções R3, achado 7: `extra` — o Poder a mais contado junto com o dos inimigos, os cadáveres do Clamor do General: entra antes do "aumentado" e do mínimo)
+export function poderDoClamor(hunt, ficha, extra = 0) {
   const v = (k) => valor(ficha, k);
   if (v('clamor_poder_infinito') > 0) return 1000;
   const p = hunt?.pos;
-  let poder = 0;
+  let poder = Math.max(0, Number(extra) || 0);
   for (const m of hunt?.monstros ?? []) {
     if (!p || !(m.hp > 0) || m.dummy || Math.max(Math.abs(m.x - p.x), Math.abs(m.y - p.y)) > 6) continue;
     poder += m.boss || m.raridade === 'unico' || m.raridade === 'boss' ? 20 : m.raridade === 'raro' ? 10 : m.raridade === 'magico' ? 2 : 1;
@@ -749,7 +758,7 @@ const definhadosNoAlvo = (alvo, agora) => (ativo(alvo?.estados?.definhado, agora
 const ESTADOS_NO_ALVO = {
   // (revisão G, 26/10: a lentidão de cada estado pelo `porLento` — vale a mais forte enquanto dura, sem uma fonte apagar, encurtar ou herdar o `pct` da outra; `agora`, o
   // relógio de quem põe)
-  cego: (e, ate) => (e.cego = { ate }), mutilado: (e, ate, agora) => { e.mutilado = { ate }; porLento(e, ate, 30, agora); },
+  cego: (e, ate) => (e.cego = { ate }), mutilado: (e, ate, agora) => { const pct = (e.mutilado?.ate ?? 0) > agora ? e.mutilado.fisicoSofridoPct : 0; e.mutilado = { ate: pct ? Math.max(ate, e.mutilado.ate) : ate, ...(pct ? { fisicoSofridoPct: pct } : {}) }; porLento(e, ate, 30, agora); },
   intimidado: (e, ate) => (e.intimidado = { ate }), debilitado: (e, ate, agora) => { e.debilitado = { ate }; porLento(e, ate, 20, agora); },
   cinzas: (e, ate, agora) => { e.cinzas = { ate }; porLento(e, ate, 20, agora); }, causticado: (e, ate) => (e.causticado = { ate, pct: 10 }),
   fragilizado: (e, ate) => (e.fragilizado = { ate, pct: 6 }), exaurido: (e, ate) => (e.exaurido = { ate, pct: 10 }), lento: (e, ate, agora) => porLento(e, ate, 30, agora),

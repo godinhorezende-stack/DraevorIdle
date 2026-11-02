@@ -204,7 +204,8 @@ test('o MENSAGEIRO desabilita também o Orgulho e os Estandartes (a tag Aura) e 
   e.hunt.buffs = { 'poe-gema:Herald_of_Ash': { ate: 1e12, desde: 0, tipo: 'poe-arauto', afPoe: {} } };
   assert.equal(Acoes.arautoExcedente(e.hunt, 'poe-gema:Herald_of_Purity', ficha(e)), true);
   e.hunt.buffs = {};
-  e.hunt.lacaios = [{ acao: 'poe-gema:Herald_of_Purity', hp: 100, desde: 5 }];
+  // (aval do dono 27/10, R3: a Pureza é Arauto de buff — lote R3B —, conta pelo buff ligado, não pela Sentinela em campo)
+  e.hunt.buffs = { 'poe-gema:Herald_of_Purity': { ate: 1e12, desde: 5, tipo: 'poe-arauto', afPoe: {} }, 'poe-gema:Herald_of_Ash': { ate: 1e12, desde: 10, tipo: 'poe-arauto', afPoe: {} } };
   assert.equal(Acoes.arautoExcedente(e.hunt, 'poe-gema:Herald_of_Ash', ficha(e)), true);
   assert.equal(Acoes.arautoExcedente(e.hunt, 'poe-gema:Herald_of_Purity', ficha(e)), false, 'religar a própria Pureza');
 });

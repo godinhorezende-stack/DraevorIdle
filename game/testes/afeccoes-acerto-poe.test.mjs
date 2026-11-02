@@ -71,7 +71,8 @@ test('G17: o efeito dos suportes pelo que cada "mais" atinge (o PoB)', { skip: S
   assert.deepEqual(efeito('Deadly_Ailments_Support', TAGS('Ataque', 'Magia')), { custoPct: 40, maisAfeccaoPct: 44, maisDanoAcertoPct: -80 });
   // (um ataque de arco sem a tag Físico: o "Dano Físico de Ataque de Projétil" vale — o físico vem da arma)
   const vic = efeito('Vicious_Projectiles_Support', TAGS('Ataque', 'Projétil', 'Arco'));
-  assert.deepEqual([vic.maisDanoAcertoPct, vic.maisDotCaosPct, vic.maisDotFisicoPct, vic.maisDanoPct], [49, 49, 49, undefined]);
+  // (aval do dono 28/10: o "mais Dano Físico" de projétil de ataque só na parte física do acerto — `maisDoTipoAcertoPct:physical@projetil+ataque`)
+  assert.deepEqual([vic['maisDoTipoAcertoPct:physical@projetil+ataque'], vic.maisDotCaosPct, vic.maisDotFisicoPct, vic.maisDanoPct], [49, 49, 49, undefined]);
   const multi = efeito('Multistrike_Support', TAGS('Ataque', 'Corpo a Corpo'));
   assert.deepEqual([multi.maisDanoAcertoPct, multi['repeticaoMaisPct:1'], multi['repeticaoMaisPct:2'], multi.maisDanoPct], [-20, 22, 44, undefined]);
   const sangra = efeito('Chance_to_Bleed_Support', TAGS('Ataque'));
@@ -83,8 +84,11 @@ test('G17: o efeito dos suportes pelo que cada "mais" atinge (o PoB)', { skip: S
   assert.deepEqual([vol.maisMaxAtaquePct, vol.maisMinAtaquePct, vol.maisDanoPct], [58, -69, undefined]);
   assert.equal(efeito('Behead_Support', TAGS('Ataque', 'Corpo a Corpo'))['af:mais_dano@alvoVidaBaixa'], 49);
   assert.equal(efeito('Controlled_Destruction_Support', TAGS('Magia')).maisDanoAcertoPct, 39);
-  // (o "por cada …" sem regra própria não vira um "mais" fixo: o Sobre-esforço fica parcial, com a linha do Clamor não feita)
-  assert.ok(SP.efeitoNoNivel('Overexertion_Support', 20, 0, TAGS('Ataque')).naoFeitas.some((l) => /por cada Clamor/.test(l)));
+  // (o "por cada …" não vira um "mais" fixo. Aval do dono, 26/10 — lote S1: o Esforço Excessivo como no PoE — um ataque pode ser Impelido por vários Clamores ao mesmo
+  // tempo; a linha "10% mais Dano por cada Clamor que os Impelir" é feita, × os Clamores que impelem o ataque — `impelidoPorClamorMaisPct`, não um "mais" fixo)
+  const sobre = SP.efeitoNoNivel('Overexertion_Support', 20, 0, TAGS('Ataque'));
+  assert.ok(!sobre.naoFeitas.some((l) => /por cada Clamor/.test(l)));
+  assert.deepEqual([sobre.efeito.impelidoPorClamorMaisPct, sobre.efeito['af:mais_dano@impelido']], [10, 14]);
 });
 
 test('G17: as Afecções Mortais — o acerto da Bola de Fogo cai 80%, o Incêndio dela sobe 44%', { skip: SEM }, async () => {

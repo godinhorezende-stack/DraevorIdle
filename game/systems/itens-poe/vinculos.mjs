@@ -46,6 +46,8 @@ export function daGema(linhas = []) {
     else if (/Efeitos do Dreno de Vida aplicam Recuperação ao Alvo Vinculado ao invés/i.test(l)) ef.drenoNoAlvo = true;
     else if ((m = /^Buff concede \+(\d+(?:[.,]\d+)?) ?% ao Máximo total de Recuperação de Vida por segundo do Dreno/i.exec(l))) ef.tetoDoDreno = num(m[1]);
     else if (/^Vínculos se quebram se o alvo deixar o alcance/i.test(l)) { /* a regra geral (`tique`) */ }
+    // (lote P4) o Vínculo Intuitivo: o "menos Dano" das magias que os acertos do alvo ativam (`Acoes.intuitivoNoTique`); não é efeito no alvo
+    else if ((m = /^Magias Suportadas causam (\d+(?:[.,]\d+)?) ?% menos Dano$/i.exec(l))) ef.intuitivoMenosPct = num(m[1]);
     else naoFeitas.push(l);
   }
   return { duracaoMs: duracaoMs + extraMs, efeitos: ef, naoFeitas };
@@ -95,6 +97,8 @@ export function candidatos(estado, hunt, af) {
   // (14/10: o mercenário do Luminary é um aliado — os Vínculos o pegam sem o nó dos lacaios)
   for (const l of hunt.lacaios ?? []) {
     if (!(v(af, 'vinculo_em_lacaios') > 0) && !l.mercenario) continue;
+    // (achado C3 da rodada 4) "Lacaios DANIFICÁVEIS": o lacaio que não toma dano (`intocavel` — os Duplos do Golpe Duplo Vaal, os Robôs, as Aranhas…) não é alvo
+    if (l.intocavel) continue;
     const a = { tipo: 'lacaio', uid: l.uid, ...(l.mercenario ? { mercenario: true } : {}) };
     if (l.hp > 0 && !ja.has(chave(a)) && perto({ x: l.x, y: l.y })) lista.push(a);
   }

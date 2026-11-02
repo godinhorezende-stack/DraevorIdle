@@ -74,6 +74,8 @@ const REGRAS = [
   [new RegExp(`^Velocidade de Ataque aumentada em ${N} ?% caso tenha mudado de Postura Recentemente$`, 'i'), (m) => ({ 'atk_speed@mudouPosturaRecente': num(m[1]) })],
   [new RegExp(`^${N} ?% mais Velocidade de Ataque enquanto estiver em uma Tempestade de Lâminas Sangrentas$`, 'i'), (m) => ({ 'atk_speed_mais@emTempestadeSangrenta': num(m[1]) })],
   [new RegExp(`^${N} ?% mais Dano com a Arma Principal$`), (m) => ({ 'mais_dano@maoPrincipal': num(m[1]) })],
+  // (lote E2A, 26/10: a qualidade da Balista de Cerco de Trarthus — active_skill_projectile_damage_+%_final, só no acerto/afecção do projétil)
+  [new RegExp(`^${N} ?% mais Dano de Projétil$`), (m) => ({ 'mais_dano@projetil': num(m[1]) })],
   // As frases de gema que as peças escrevem de outro jeito: a duração da habilidade, a velocidade de conjuração (a da gema soma como a "com
   // Habilidades de X" — `cast_speed_tag`), o efeito do Empalamento.
   [new RegExp(`^Duração do Efeito de Habilidades? aumentada em ${N} ?%$`), (m) => ({ duracao_habilidades: num(m[1]) })],
@@ -142,8 +144,26 @@ const REGRAS = [
   }],
   // (lote C1, dono 20/10) a Cegueira das Lâminas Velozes Vaal: "100% de chance de Cegar inimigos ao acertá-los" (o PoB: global_chance_to_blind_on_hit_%) e "Efeito da
   // Cegueira aumentado em 68%" (blind_effect_+%) — a Cegueira do PoE no acerto (`ModsPoe.aoAcertar`: `chance_cegar`, `efeito_cegueira`)
-  [new RegExp(`^${N} ?% de chance de Cegar inimigos ao acertá-los$`, 'i'), (m) => ({ chance_cegar: num(m[1]) })],
+  // (lote S1, 26/10: + a frase do Cegar — "têm 10% de chance de Cegar inimigos ao acertar" — e a duração dele: "38% da duração da Cegueira aumentada", o
+  // blind_duration_+% do PoE — `ModsPoe.aoAcertar`, `duracao_cegueira`)
+  [new RegExp(`^${N} ?% de chance de Cegar inimigos ao acert(?:á-los|ar)$`, 'i'), (m) => ({ chance_cegar: num(m[1]) })],
   [new RegExp(`^Efeito da Cegueira aumentado em ${N} ?%$`, 'i'), (m) => ({ efeito_cegueira: num(m[1]) })],
+  [new RegExp(`^${N} ?% da duração da Cegueira aumentada$`, 'i'), (m) => ({ duracao_cegueira: num(m[1]) })],
+  // ---- (lote S1, 26/10: os suportes com 1 ou 2 linhas faltando) ----
+  // - a qualidade da Mutilação ("Efeito da Mutilação aumentado em 20%" — maim_effect_+%, como o "de aumento do Efeito de Mutilação" acima);
+  [new RegExp(`^Efeito da Mutilação aumentado em ${N} ?%$`, 'i'), (m) => ({ efeito_mutilacao: num(m[1]) })],
+  // - o Esmagar da Brutalidade Desperta, o Intimidar do Dano Físico Corpo a Corpo Desperto e o "Enervar" (o Unnerve do PoE — o `inervado`: 10% mais dano
+  //   de Magias sofrido) da Destruição Controlada Desperta, "por 4 segundos ao Acertar" (`ModsPoe.aoAcertar`: a chance e a duração; a do Esmagar é sempre 4 s);
+  [new RegExp(`^${N} ?% de chance de Esmagar Inimigos por 4 segundos ao Acertar$`, 'i'), (m) => ({ chance_esmagar: num(m[1]) })],
+  [new RegExp(`^${N} ?% de chance de (Intimidar|Enervar|Inervar) Inimigos por ${N} segundos ao Acertar$`, 'i'), (m) => (m[2].toLowerCase() === 'intimidar' ? { chance_intimidar: num(m[1]), intimidar_s: num(m[3]) } : { chance_inervar: num(m[1]), inervar_s: num(m[3]) })],
+  // - o "X% mais Dano por Carga" sem o "com Ataques" (a Carga de Tolerância no Atordoamento Corpo a Corpo, a Carga de Poder no Crítico — o PoB: Damage MORE
+  //   × o Multiplicador da carga);
+  [new RegExp(`^${N} ?% mais Dano por Carga de (Frenesi|Poder|Tolerância)$`), (m) => ({ [`mais_dano%carga:${CARGA[m[2]]}`]: num(m[1]) })],
+  // (lote E1b, 26/10) a Armadilha de Urso dos Espetos: "Empala Inimigos ao Acertar" (o PoB: impale_on_hit_%_chance 100 — o Empalamento do jogo no acerto)
+  [/^Empala Inimigos ao Acertar$/i, () => ({ chance_empalar: 100 })],
+  // (lote E2B, 26/10) a Armadilha de Lâminas da Laceração: "Sangramentos inflingidos por esta Habilidade causam Dano X% mais rápido" (o PoB: faster_bleed_% — o
+  // "mais rápido" do Sangramento do uso, `afeccoes.daSoma`)
+  [new RegExp(`^Sangramentos inflingidos por esta Habilidade causam Dano ${N} ?% mais rápido$`, 'i'), (m) => ({ sangramento_mais_rapido: num(m[1]) })],
 ];
 
 /**
@@ -157,7 +177,7 @@ const REGRAS = [
  * rola o acerto por alvo com elas — `acoes.dispararSemMarcar`, `acertar`)
  * (lote B1, dono 20/10: + o "mais Velocidade de Conjuração" — `cast_speed_mais`, `acoes.temposDaGemaPoe`; a Mutilação já entrava pelo `chance_…`/`efeito_…`)
  */
-const LIDOS_NO_USO = /^(dmg_inc|crit_chance_inc|crit_chance|crit_dmg|crit_mais_pct|elem_pen|phys_pen|fire_pen|ice_pen|energy_pen|phys_dmg|fire_dmg|ice_dmg|energy_dmg|chaos_dmg|mais_dano|mais_dano_(fisico|fogo|gelo|raio|caos|elemental)|life_leech|mana_leech|poder_arcano|chance_dano_dobrado|chance_dano_triplo|ignora_reducao_fisica|nunca_critico|added_(fire|ice|energy|chaos|physical)_dmg_(min|max)|area_inc|area_mais|atk_speed|atk_speed_mais|cast_speed_tag|furia_por_acerto|life_on_hit|mana_on_hit|velocidade_clamor|enemy_stun_threshold_red|distancia_empurrao|stun_duration|chance_dobrar_atordoamento|culling|(eletrizacao|resfriamento|congelamento)_como_mais|(chance|dot|dano_dot|ailment|poison|bleed|ignite|duracao|efeito)_[a-z_]+|es_leech|es_leech_magia|vida_leech_magia|fortificacao_[a-z_]+|critico_sem_dano_extra|culling_[a-z_]+|imune_reflexo_elemental|empalar_[a-z_]+|alcance_corpo_m|mais_dano_acerto|eletrizacao_maximo|exposicao_chance_(fogo|gelo|raio)|res_menos_fogo_incendiado|accuracy|accuracy_inc|nunca_erra|cast_speed_mais)$/;
+const LIDOS_NO_USO = /^(dmg_inc|crit_chance_inc|crit_chance|crit_dmg|crit_mais_pct|elem_pen|phys_pen|fire_pen|ice_pen|energy_pen|phys_dmg|fire_dmg|ice_dmg|energy_dmg|chaos_dmg|mais_dano|mais_dano_(fisico|fogo|gelo|raio|caos|elemental)|life_leech|mana_leech|poder_arcano|chance_dano_dobrado|chance_dano_triplo|ignora_reducao_fisica|nunca_critico|added_(fire|ice|energy|chaos|physical)_dmg_(min|max)|area_inc|area_mais|atk_speed|atk_speed_mais|cast_speed_tag|furia_por_acerto|life_on_hit|mana_on_hit|velocidade_clamor|enemy_stun_threshold_red|distancia_empurrao|stun_duration|chance_dobrar_atordoamento|culling|(eletrizacao|resfriamento|congelamento)_como_mais|(chance|dot|dano_dot|ailment|poison|bleed|ignite|duracao|efeito)_[a-z_]+|es_leech|es_leech_magia|vida_leech_magia|fortificacao_[a-z_]+|critico_sem_dano_extra|culling_[a-z_]+|imune_reflexo_elemental|empalar_[a-z_]+|alcance_corpo_m|mais_dano_acerto|eletrizacao_maximo|exposicao_chance_(fogo|gelo|raio)|res_menos_fogo_incendiado|accuracy|accuracy_inc|nunca_erra|cast_speed_mais|intimidar_s|inervar_s|phys_as_extra_(fire|ice|energy|chaos)|sangramento_mais_rapido)$/;
 const lidoNoUso = (k) => LIDOS_NO_USO.test(partir(k).stat) && atributoTemEfeito(k);
 
 /** Os atributos de UMA linha (com os números do nível): `{ stat: valor }`, ou null se nenhuma regra tem efeito no uso da gema. */
@@ -262,6 +282,32 @@ const BUFF_PROPRIO = [
     (m) => ({ [`${m[3] === 'Dano' ? 'mais_dano' : 'area_mais'}@corpo+area+postura${m[4]}`]: (m[2] === 'menos' || (m[3] === 'Dano' && m[4] === 'Areia') ? -1 : 1) * num(m[1]) })],
   [new RegExp(`^Estandarte concede \\+${N} ?% de chance de Suprimir o Dano Mágico a Você e Aliados$`, 'i'), (m) => ({ spell_suppression: num(m[1]) })],
   [new RegExp(`^Buff concede ${N} ?% mais Dano (Físico|de Fogo|de Gelo|de Raio|de Caos)$`, 'i'), (m) => ({ [{ Físico: 'mais_dano_fisico', 'de Fogo': 'mais_dano_fogo', 'de Gelo': 'mais_dano_gelo', 'de Raio': 'mais_dano_raio', 'de Caos': 'mais_dano_caos' }[m[2]]]: num(m[1]) })],
+  // ---- (lote E1b, 26/10) as auras e os Estandartes do lote (gemas-e1b.mjs) ----
+  // a Disciplina: "Você e Aliados próximos ganham 30 % de Velocidade de Recarga de Escudo de Energia aumentada" (energy_shield_recharge_rate_+%)
+  [new RegExp(`^Você e Aliados próximos ganham ${N} ?% de Velocidade de Recarga de Escudo de Energia aumentada$`, 'i'), (m) => ({ es_recharge: num(m[1]) })],
+  // a Graça Vaal: "+15 % de chance de Evadirem Acertos de Ataques" (chance_to_evade_attacks_% — soma à chance da Evasão, defesa.esquivou) e "Dano Mágico Suprimido
+  // causado em você é Azarado" (damage_taken_from_suppressed_hits_is_unlucky — poderes: a magia suprimida rola o dano duas vezes e fica o menor)
+  [new RegExp(`^Você e aliados próximos têm \\+${N} ?% de chance de Evadirem Acertos de Ataques$`, 'i'), (m) => ({ chance_evadir: num(m[1]) })],
+  [/^Dano Mágico Suprimido causado em você é Azarado$/i, () => ({ suprimido_azarado: 1 })],
+  // a Clareza Vaal: "Suas Habilidades e de seus aliados próximos não Custam Mana" (no_mana_cost — o custo de Mana × 0)
+  // (revisão E1b: um custo ZERO de verdade — no PoB, ManaCost MORE −100 `unscalable`, act_int.lua:2739-2741: o efeito da aura não o escala e nenhum aumentado,
+  // mais ou custo fixo o desfaz. A flag `sem_custo_mana` — escalada pelo efeito da aura, segue > 0 —; antes, um "aumentado" de −100% que vazava)
+  [/^Suas Habilidades e de seus aliados próximos não Custam Mana$/i, () => ({ sem_custo_mana: 1 })],
+  // a Disciplina Vaal: "A Recarga do seu Escudo de Energia e dos seus aliados próximos não é impedida por Dano" (energy_shield_recharge_not_delayed_by_damage)
+  [/^A Recarga do seu Escudo de Energia e dos seus aliados próximos não é impedida por Dano$/i, () => ({ recarga_es_nunca_interrompida: 1 })],
+  // a Pureza Elementar: "Imunes a todas as Afecções Elementais" (as quatro do jogo)
+  [/^Você e aliados próximos são Imunes a todas as Afecções Elementais$/i, () => ({ imune_incendio: 1, imune_resfriamento: 1, imune_congelamento: 1, imune_eletrizacao: 1 })],
+  // o Fanatismo: "Você e Aliados não-Lacaios Próximos têm 10 % de chance de criarem Solo Sagrado ao Acertar um Inimigo Raro ou Único, durando 8 segundos" (o mesmo
+  // evento do "X% de chance de criar Solo Sagrado ao Acertar um Inimigo Raro ou Único" das peças)
+  [new RegExp(`^Você e Aliados não-Lacaios Próximos têm ${N} ?% de chance de criarem Solo Sagrado ao Acertar um Inimigo Raro ou Único, durando ${N} segundos?$`, 'i'), (m) => ({ [`ev:acertar:soloSagrado:${num(m[2])}@alvoRaro`]: num(m[1]), [`ev:acertar:soloSagrado:${num(m[2])}@alvoUnico`]: num(m[1]) })],
+  // o Estandarte Horrendo: "Estandarte faz com que você e Aliados Recuperem X de Vida ao Bloquear" (recover_X_life_on_block); o Desafiador: "Estandarte concede −X de
+  // Dano sofrido de cada Tipo de Dano dos Acertos Suprimidos a Você e Aliados" (damage_taken_+_from_suppressed_hits — poderes, na magia suprimida)
+  [new RegExp(`^Estandarte faz com que você e Aliados Recuperem ${N} de Vida ao Bloquear$`, 'i'), (m) => ({ 'ev:bloquear:vida': num(m[1]) })],
+  [new RegExp(`^Estandarte concede -${N} de Dano sofrido de cada Tipo de Dano dos Acertos Suprimidos a Você e Aliados$`, 'i'), (m) => ({ suprimido_fixo: -num(m[1]) })],
+  // ---- (lote E2B, 26/10) o Estandarte da Guerra (o PoB, WarBanner): "Precisão aumentada em X%" (Accuracy INC) e "X% mais Dano Físico com Habilidades Corpo a Corpo"
+  // (PhysicalDamage MORE com SkillType.Melee — o "mais" do Físico só nos golpes corpo a corpo), a você e aos aliados na área do Estandarte plantado ----
+  [new RegExp(`^Estandarte concede Precisão aumentada em ${N} ?% a Você e Aliados$`, 'i'), (m) => ({ accuracy_inc: num(m[1]) })],
+  [new RegExp(`^Estandarte concede ${N} ?% mais Dano Físico com Habilidades Corpo a Corpo a Você e Aliados$`, 'i'), (m) => ({ 'mais_dano_fisico@corpo': num(m[1]) })],
 ];
 export function atributosDoBuff(linha) {
   const l = String(linha).trim();

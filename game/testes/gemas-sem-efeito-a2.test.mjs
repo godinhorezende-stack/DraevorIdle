@@ -435,8 +435,14 @@ test('A2: a Sentinela Divina — as auras templárias valem em você no raio da 
   const m = montar(['Herald_of_Purity', 'Divine_Sentinel_Support'], { nivel: 20 });
   m.e.inventory = [];
   assert.ok(usar(m).ok);
-  const s0 = (m.e.hunt.lacaios ?? []).find((l) => /sentinela|sentinel/i.test(l.nome ?? ''));
-  assert.ok(s0, 'a sentinela em campo');
+  // (aval do dono 27/10, R3: o Arauto da Pureza é Arauto de buff — lote R3B —: ligá-lo não convoca; as Sentinelas vêm ao matar e no acerto num Raro ou Único)
+  const sentinela = (l) => /sentinela|sentinel/i.test(l.nome ?? '');
+  assert.ok(m.e.hunt.buffs?.[acao('Herald_of_Purity')]?.tipo === 'poe-arauto', 'o Arauto de buff ligado');
+  assert.ok(!(m.e.hunt.lacaios ?? []).some(sentinela), 'ligar não convoca');
+  const raro = { uid: 'raro', hp: 100, maxHp: 100, x: m.e.hunt.pos.x + 2, y: m.e.hunt.pos.y, raridade: 'raro' };
+  Acoes.aoAcertarR3B(m.e, m.e.hunt, PERSONAGEM, { acertados: [raro] }, () => 0);
+  const s0 = (m.e.hunt.lacaios ?? []).find(sentinela);
+  assert.ok(s0, 'a sentinela em campo (o acerto no Raro)');
   assert.ok(A2.AURAS_TEMPLARIAS.some((a) => a.nome === s0.auraTemplaria?.nome), 'com uma aura templária');
   assert.equal(s0.auraTemplaria.raio, 2);
 });

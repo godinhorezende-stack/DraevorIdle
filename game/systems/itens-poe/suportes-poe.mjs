@@ -11,6 +11,18 @@ import { readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { ligado } from './catalogo.mjs';
 import { comNiveisDoPoedb } from './gemas-niveis.mjs';
 import { atributosDaLinha } from './linhas-das-gemas.mjs';
+import { REGRAS_S2A, ehGatilhoDoMarcar, limiarDaFlechaForjada } from './suportes-s2a.mjs';
+import { REGRAS_T3 } from './suportes-t3.mjs';
+import { PROPRIAS_R3A } from './gemas-r3a.mjs';
+// (lote R3B, 27/10: as linhas próprias do Arqueiro Ilusório, dos Espíritos Sagrados, do Relâmpago Vivo e do Nascido da Colmeia — `gemas-r3b.mjs`)
+import { PROPRIAS_R3B, completarEfeito as completarEfeitoR3B } from './gemas-r3b.mjs';
+// (lote R3C, 27/10: as Bênçãos, a Mina Local, a Blasfêmia Sobrenatural, a Constrição Pérfida, as Instabilidades Cinéticas e o Vínculo Frígido — `gemas-r3c.mjs`)
+import { PROPRIAS_R3C, ajustarEfeitoR3c } from './gemas-r3c.mjs';
+import { PROPRIAS_R3D } from './gemas-r3d.mjs';
+import { PROPRIAS_P4, DEVASTADOR } from './gemas-p4.mjs';
+// (lote T2, rodada 4 — 27/10: as linhas com condição que as regras gerais davam sem ela)
+import { REGRAS_T2 } from './gemas-t2.mjs';
+import { REGRAS_C2R4 } from './gemas-r4c2.mjs';
 
 const ARQ_SUPORTES = new URL('../../gamedata/itens-poe/suportes-poe.json', import.meta.url);
 const ARQ_IDS = new URL('../../gamedata/itens-poe/suportes-poe-ids.json', import.meta.url);
@@ -48,6 +60,16 @@ const substituir = (cab, celula, doNivel1 = null) => {
       usados.add(k);
       return v[k];
     });
+  }
+  // (lote T2, 27/10) Célula com MAIS valores que o texto tem números, e o número do texto está na célula do nível 1 numa posição que não é a do fim (o Propagar Dano
+  // Desperto: "39, 1" para "causam 39% menos Dano Propagado" — o 1 é outro stat; antes saía "1% menos" e a propagação quase não perdia dano): o valor da MESMA posição
+  if (base && base.length === v.length && v.length > doTexto.length && doTexto.length && doTexto.every((t) => base.some((b) => numero(b) === numero(t)))) {
+    const usados = new Set();
+    const k0 = doTexto.map((t) => base.findIndex((b, i) => numero(b) === numero(t) && !usados.has(i) && usados.add(i)));
+    if (k0.some((k, i) => k !== v.length - doTexto.length + i)) {
+      let j = 0;
+      return cab.replace(NUM, (o) => (j < k0.length ? v[k0[j++]] : o));
+    }
   }
   // Célula com mais valores que o cabeçalho tem números ("100, 528" para "sofrer 528 de Dano"): os do FIM são os do texto.
   const vagas = (cab.match(/#/g) ?? cab.match(NUM) ?? []).length;
@@ -98,7 +120,12 @@ export function textosDoNivel(s, nivel = 1, qualidade = 0) {
     else add(m.includes('—') ? interpolar(m, (n - 1) / passos) : m);
   }
   const q = Math.max(0, Math.min(20, qualidade || 0)) / 20;
-  return { mods: out, qualidade: (s.qualidade ?? []).map((t) => interpolar(t, q)), props: s.props.map((p) => interpolar(p, (n - 1) / passos)) };
+  // (lote T3, 27/10: a RESERVA pela coluna "Mana" da tabela do nível, quando ela existe — a Blasfêmia Desperta: a faixa da propriedade, "(34—32)%", é a dos níveis 1 a 5
+  // ("Nível: (1—5)"), e a interpolação de 20 passos dava 32% no nível 20; a tabela do poedb diz 28%)
+  // (achado C3 da rodada 4: + o "Multiplicador de Custo & Reserva" — a mesma coluna "Mana"; a Transfusão no 20: 320% da tabela, não os 430% da faixa estendida)
+  const manaDaTabela = /%$/.test(String(linha[s.colunas.indexOf('Mana')] ?? '')) ? String(linha[s.colunas.indexOf('Mana')]) : null;
+  const prop = (p) => (manaDaTabela && /^(?:(?:Sobreposição de )?Reserva|Multiplicador de Custo & Reserva): /.test(p) ? p.replace(/\([\d.]+\s*—\s*[\d.]+\)%|[\d.]+%/, manaDaTabela) : interpolar(p, (n - 1) / passos));
+  return { mods: out, qualidade: (s.qualidade ?? []).map((t) => interpolar(t, q)), props: s.props.map(prop) };
 }
 
 // ---------------------------------------------------------------- as linhas → os efeitos do motor
@@ -142,7 +169,192 @@ const tempoDaVelocidade = (pct) => (1 / (1 + pct / 100) - 1) * 100;
  * conta como feita. Linha sem regra nenhuma vai para `naoFeitas`.
  */
 const ELEMENTO_DO_TEXTO = { fogo: 'fire', gelo: 'ice', raio: 'energy', 'físico': 'physical', fisico: 'physical', caos: 'chaos' };
+const CARGA_DO_TEXTO = { frenesi: 'frenesi', poder: 'poder', 'tolerância': 'tolerancia' };
+/** (lote S1) O dano ADICIONADO local do uso (`af:`), aos ataques e às magias, com a escala ("× a Vida máxima", "× as Cargas de Frenesi"…). */
+const adicionadoDe = (el, escala, min, max = min) => Object.fromEntries(['added', 'spell_added'].flatMap((p) => [[`af:${p}_${el}_dmg_min%${escala}`, min], [`af:${p}_${el}_dmg_max%${escala}`, max]]));
+const ESP = '(?:\\\\n|\\s)+';
 const REGRAS = [
+  // ---- (lote S2A, 27/10: os suportes com mecânica nova — `suportes-s2a.mjs`; antes de todas, que pegavam o começo de algumas) ----
+  ...REGRAS_S2A,
+  // ---- (lote T2, 27/10: o Dano com Vida Cheia, a qualidade do Dreno de Mana e a área por repetição do Eco Mágico Maior — `gemas-t2.REGRAS_T2`) ----
+  ...REGRAS_T2,
+  // ---- (lote T3, 27/10: as correções que os testes do lote acharam — `suportes-t3.mjs`: o adicionado da Imolação só contra o alvo Queimando) ----
+  ...REGRAS_T3,
+  // ---- (lote C2 da rodada 4, 28/10: o "mais" e o "aumentado" de um tipo só na parte daquele tipo do golpe — `gemas-r4c2.REGRAS_C2R4`) ----
+  ...REGRAS_C2R4,
+  // ---- (lote S2B, 27/10: a segunda metade das parciais — `suportes-s2b.mjs`; antes das gerais, que pegavam o começo de algumas e davam o "mais" sem a condição) ----
+  // - os LACAIOS: a Velocidade do Lacaio (ataque e conjuração — `LacaiosPoe.oQueInvoca`), o crítico da qualidade do Exemplar e da Carne Fresca, o Exemplar ("toda vez que
+  //   você causar um golpe crítico recentemente com um ataque, até X"), a Carne Fresca (a Fúria Desperta e a Adrenalina), o Exército Elemental (as resistências, o máximo,
+  //   o "mais Dano Elemental" só nas partes elementais e a Exposição), o Escudo de Carne (a Provocação, o "menos Dano" recebido — o nível e a qualidade somam no MESMO
+  //   "mais" do PoB, `support_minion_defensive_stance_minion_damage_taken_+%_final` — e o "mais Dano" contra os inimigos perto de você) e o Frenesi Faminto;
+  [new RegExp(`têm ${N}% de Velocidade de Ataque de Lacaios aumentada$`, 'i'), (m) => ({ lacaioVelAtaquePct: num(m[1]) })],
+  [new RegExp(`têm ${N}% de Velocidade de Conjuração de Lacaios aumentada$`, 'i'), (m) => ({ lacaioVelConjPct: num(m[1]) })],
+  [new RegExp(`^Lacaios de Habilidades Suportadas têm Chance de Golpe Crítico aumentada em ${N}%$`, 'i'), (m) => ({ lacaioCritIncPct: num(m[1]) })],
+  [new RegExp(`^Lacaios de habilidades reforçadas têm a chance de causar golpe crítico aumentada em ${N}% toda vez que você causar um golpe crítico recentemente com um ataque, até ${N}%$`, 'i'), (m) => ({ exemplarCritIncPor: num(m[1]), exemplarCritIncMax: num(m[2]) })],
+  [new RegExp(`^Lacaios de habilidades reforçadas têm \\+${N}% de multiplicador de golpe crítico toda vez que você causar um golpe crítico recentemente com um ataque, até \\+${N}%$`, 'i'), (m) => ({ exemplarMultPor: num(m[1]), exemplarMultMax: num(m[2]) })],
+  [new RegExp(`^Lacaios criados por Habilidades Suportadas ganham Fúria Desperta e Adrenalina por ${N}% de sua Duração, máximo de ${N} segundos${ESP}Fúria Desperta concede \\+${N}% de Chance de Golpe Crítico${ESP}Fúria Desperta concede \\+${N}% de Multiplicador de Golpe Crítico$`, 'i'),
+    (m) => ({ carneFrescaPct: num(m[1]), carneFrescaMaxMs: Math.round(num(m[2]) * 1000), furiaDespertaCrit: num(m[3]), furiaDespertaMult: num(m[4]) })],
+  [new RegExp(`^Lacaios de Habilidades Suportadas têm \\+${N}% de todas as Resistências Elementais$`, 'i'), (m) => ({ lacaioResPct: num(m[1]) })],
+  [new RegExp(`^Lacaios de Habilidades Suportadas têm \\+?${N}% ao máximo de todas as Resistências Elementais$`, 'i'), (m) => ({ lacaioResMaxPct: num(m[1]) })],
+  [new RegExp(`^Lacaios de Habilidades Suportadas infligem Exposição no Acerto, aplicando -${N}% à Resistência Elemental que combine com o maior tipo de Dano sofrido pelo Inimigo$`, 'i'), (m) => ({ lacaioExposicaoPct: num(m[1]) })],
+  [new RegExp(`^Lacaios de Habilidades Suportadas causam ${N}% mais Dano Elemental$`, 'i'), (m) => ({ lacaioMaisElementalPct: num(m[1]) })],
+  [new RegExp(`^Lacaios de Habilidades Suportadas tem ${N}% de chance de Provocar ao Acertar$`, 'i'), (m) => ({ lacaioProvocarPct: num(m[1]) })],
+  [new RegExp(`^Lacaios de Habilidades Suportadas sofrem ${N}% (menos|mais) Dano$`, 'i'), (m) => ({ lacaioMenosDanoRecebidoPct: (m[2].toLowerCase() === 'menos' ? 1 : -1) * num(m[1]) })],
+  [new RegExp(`^Lacaios das Habilidades Suportadas causam ${N}% mais Dano com Acertos e Afecções aos Inimigos Próximos a você$`, 'i'), (m) => ({ lacaioMaisPertoDeVocePct: num(m[1]) })],
+  [new RegExp(`^Duração Base do Frenesi Faminto é de ${N} segundos$`, 'i'), (m) => ({ frenesiFamintoMs: Math.round(num(m[1]) * 1000) })],
+  [new RegExp(`^Lacaios de Habilidades Suportadas tem ${N}% de chance de conceder Frenesi Faminto à você no Acerto$`, 'i'), (m) => ({ frenesiFamintoPct: num(m[1]) })],
+  [/^Lacaios de Habilidades Suportadas são Agressivos$/i, () => ({ lacaioAgressivo: 1 })],
+  // ---- (lote D3, decisões do dono 27/10) ----
+  // - o Escudo de Carne: "Lacaios … são Defensivos" — só atacam inimigos a até 3 casas de VOCÊ (a regra de "Próximos" — `cacadas.alvoDoFamiliar`);
+  // - o Predador: a Presa ("Sinalizar Presa", sozinha a cada 0,8 s no Raro/Único mais perto — `SuportesS2B.tiqueDaPresa`), o foco nela e o "mais Dano … às suas Presas";
+  // - a Legião Infernal: a queima em volta do lacaio (o dano por segundo, 2 m + o "metros ao Raio") e o dano no próprio lacaio (40% da Vida máxima por segundo, o PoB);
+  // - o Solo Maldito e o Sapo Enfeitiçado: o solo nasce no alvo ao ligar o Feitiço (`SuportesS2B.criarSoloMaldito`, `Acoes.tiqueDosFeiticosS2B`);
+  [/^Lacaios de Habilidades Suportadas são Defensivos$/i, () => ({ lacaioDefensivo: 1 })],
+  [new RegExp(`^Lacaios de Habilidades Suportadas causam ${N}% mais Dano com Acertos e Afecções às suas Presas$`, 'i'), (m) => ({ lacaioMaisPresaPct: num(m[1]) })],
+  [/^Lacaios de Habilidades Suportadas sempre focam em Presas se possível$/i, () => ({ lacaioPredador: 1 })],
+  [new RegExp(`^Lacaios de Habilidades Suportadas sofrem ${N}% de sua Vida Máxima como Dano de Fogo por segundo$`, 'i'), (m) => ({ legiaoDegenPct: num(m[1]) })],
+  [new RegExp(`^Lacaios de Habilidades Suportadas causam ${N} de Dano de Fogo por segundo aos Inimigos próximos a eles$`, 'i'), (m) => ({ legiaoDps: num(m[1]) })],
+  [new RegExp(`^Lacaios das Habilidades Suportadas têm \\+?${N} metros ao Raio de seu Efeito Incendiário$`, 'i'), (m) => ({ legiaoRaioM: num(m[1]) })],
+  [new RegExp(`^Habilidades suportadas criam Solo Maldito com uma Duração base de ${N} segundos${ESP}Feitiços de Habilidades Suportadas não tem Duração${ESP}Inimigos em Solo Maldito das Habilidades Suportadas são Amaldiçoados com tal Feitiço${ESP}Limite de 1 área de Solo Maldito$`, 'i'), (m) => ({ soloMalditoMs: Math.round(num(m[1]) * 1000) })],
+  // - a FÚRIA ARCANA do suporte: a mana gasta no custo da habilidade (`Acoes`, o pagamento), o que o buff dá (o MAIOR com o da Fúria Arcana comum — o PoB) e o "35% mais Dano
+  //   Mágico enquanto você possuir Fúria Arcana" (só com ela — antes, sempre);
+  [new RegExp(`^Ganha Fúria Arcana após Gastar um total de ${N} de Mana em Custos Diretos e Efeitos de uma Habilidade Suportada$`, 'i'), (m) => ({ furiaArcanaLimiar: num(m[1]) })],
+  [new RegExp(`^Fúria Arcana concede Velocidade de Conjuração aumentada em ${N}%${ESP}Fúria Arcana concede Regeneração de Mana aumentada em ${N}%$`, 'i'), (m, t) => (/\\n/.test(t) ? {} : { furiaArcanaCastPct: num(m[1]), furiaArcanaRegenPct: num(m[2]) })],
+  [new RegExp(`^Fúria Arcana dura ${N} segundos$`, 'i'), (m) => ({ furiaArcanaMs: Math.round(num(m[1]) * 1000) })],
+  [new RegExp(`^Habilidades Suportadas causam ${N}% mais Dano Mágico enquanto você possuir Fúria Arcana$`, 'i'), (m) => ({ furiaArcanaMaisMagicoPct: num(m[1]) })],
+  // - a INERVAÇÃO: ao matar um Eletrizado com a suportada, o dano de Raio adicionado (aos ataques e às magias) pela duração (8 s + a da qualidade — o PoB soma as duas);
+  [/^Ganha Invervação ao Matar um Inimigo Eletrizado com Habilidades Suportadas$/i, () => ({ inervacao: 1 })],
+  [new RegExp(`^Invervação concede ${N} a ${N} de Dano de Raio$`, 'i'), (m) => ({ inervacaoMin: num(m[1]), inervacaoMax: num(m[2]) })],
+  [new RegExp(`^(?:Estímulo|Inervação) dura ${N} segundos$`, 'i'), (m) => ({ inervacaoMs: Math.round(num(m[1]) * 1000) })],
+  // - a TRINDADE e a TRÍADE PROFANA: as Ressonâncias (`SuportesS2B.noAcerto`, `doUso`); o "+7% de dano por 10 da menor" agora escala (antes, 7% mais fixo);
+  [new RegExp(`^Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe ${N} de Ressonância de outros Elementos por ${N} segundos${ESP}Perde ${N} de Ressonância por segundo para cada Elemento que não estiver ganhando$`, 'i'), (m, t) => (/\\n/.test(t) ? {} : { trindade: 1 })],
+  [new RegExp(`^Habilidades Suportadas causam ${N}% mais Dano Elemental por cada 5 da sua menor Ressonância$`, 'i'), (m) => ({ trindadeMaisPor5: num(m[1]) })],
+  [new RegExp(`^Habilidades Suportadas penetram ${N}% da Resistência Elemental enquanto cada Ressonância estiver em ao menos 25$`, 'i'), (m) => ({ trindadePen: num(m[1]) })],
+  [new RegExp(`^Ataques com habilidades reforçadas, cujo maior tipo de dano é caos, elétrico ou físico, fazem você ganhar ${N} de Ressonância Profana dos outros tipos por segundo durante ${N} segundos${ESP}Perde ${N} de Ressonância Profana por segundo para cada tipo que não ganhar$`, 'i'), (m, t) => (/\\n/.test(t) ? {} : { profana: 1 })],
+  [new RegExp(`^Habilidades reforçadas causam \\+${N}% de dano por 10 da menor Ressonância Profana$`, 'i'), (m) => ({ profanaMaisPor10: num(m[1]) })],
+  [new RegExp(`^Habilidades reforçadas têm ${N}% de chance de ignorar a resistência a dano de caos e elétrico do inimigo, se cada Ressonância Profana for de, no mínimo, 25$`, 'i'), (m) => ({ profanaIgnoraResPct: num(m[1]) })],
+  [new RegExp(`^Habilidades reforçadas têm ${N}% de chance de ignorar a redução de dano físico do inimigo, se cada Ressonância Profana for de, no mínimo, 25$`, 'i'), (m) => ({ profanaIgnoraFisicoPct: num(m[1]) })],
+  // - a GULA: 1 de Gula por magia conjurada; em 10, a Regurgitação (4 s): os projéteis em círculo e os 7 a mais (`SuportesS2B.doUso`);
+  [new RegExp(`^Ganha ${N} de Gula ao conjurar magias reforçadas$`, 'i'), (m) => ({ gulaPorUso: num(m[1]) })],
+  [new RegExp(`^Ao atingir ${N} de Gula, perde toda a Gula e ganha Regurgitação por ${N} segundos$`, 'i'), (m) => ({ gulaLimite: num(m[1]), regurgitaMs: Math.round(num(m[2]) * 1000) })],
+  [new RegExp(`^Enquanto você tiver Regurgitação, as magias reforçadas disparam projéteis em círculo${ESP}Enquanto você tiver Regurgitação, as magias reforçadas disparam ${N} projéteis adicionais$`, 'i'), (m, t) => (/\\n/.test(t) ? {} : { regurgitaProjeteis: num(m[1]) })],
+  // - a INTENSIDADE SOBRECARREGADA: uma instância (10 s) a cada 6 de Intensidade perdida, e o crítico por instância (`SuportesS2B.doUso`);
+  [new RegExp(`^Ganha uma instância de Intensidade Sobrecarregada por ${N} segundos após${ESP}perder ${N} de Intensidade com habilidades reforçadas$`, 'i'), (m, t) => (/\\n/.test(t) ? {} : { sobrecargaMs: Math.round(num(m[1]) * 1000), sobrecargaPerda: num(m[2]) })],
+  [new RegExp(`^Habilidades reforçadas têm \\+${N}% de chance de causar golpe crítico por Intensidade Sobrecarregada$`, 'i'), (m) => ({ sobrecargaCritPor: num(m[1]) })],
+  [new RegExp(`^Habilidades reforçadas têm \\+${N}% de multiplicador de golpe crítico por Intensidade Sobrecarregada$`, 'i'), (m) => ({ sobrecargaMultPor: num(m[1]) })],
+  // - os FEITIÇOS: o Passe Enfeitiçado e o Toque Maldito Desperto (os inimigos "Anti-Maldições"), "não podem causar golpes críticos", a área reduzida do Passe e o Propagar
+  //   Feitiço (a transferência na morte, o alcance aumentado — `SuportesS2B.regrasDoFeitico`);
+  [/^Feitiços aplicados por habilidades de maldição reforçadas afetam inimigos imunes a feitiços$/i, () => ({ feiticoAfetaAProva: 1 })],
+  [new RegExp(`^Feitiços aplicados por habilidades de maldição reforçadas têm ${N}% de chance de afetar inimigos imunes a feitiços$`, 'i'), (m) => ({ feiticoAfetaAProvaPct: num(m[1]) })],
+  [/^Inimigos afetados por feitiços de habilidades de maldição reforçadas não podem causar golpes críticos$/i, () => ({ amaldicoadoSemCritico: 1 })],
+  [new RegExp(`^Efeito em Área de Habilidades Maldição Suportadas reduzido em ${N}%$`, 'i'), (m) => ({ areaMaldicaoPct: -num(m[1]) })],
+  [new RegExp(`têm alcance de Transferência de Feitiços aumentado em ${N}%$`, 'i'), (m) => ({ feiticoTransfereIncPct: num(m[1]) })],
+  [new RegExp(`^Feitiços de Habilidades Suportadas se Transferem para todos os Inimigos dentro de ${N} metros quando o Inimigo Enfeitiçado morrer$`, 'i'), (m) => ({ feiticoTransfereM: num(m[1]) })],
+  // ---- (lote S1, 26/10: os suportes com 1 ou 2 linhas faltando — antes das regras gerais, que pegavam o começo de algumas) ----
+  // - o "X% mais Dano por Carga" (a Carga de Poder no Crítico — o PoB: support_power_charge_on_crit_damage_+%_final_per_power_charge, Damage MORE × as Cargas de
+  //   Poder) e o "Dano aumentado em X% por Carga" (a qualidade da Mordida Congelante): × as cargas de agora (`af:` com a escala da carga — antes, um "mais" fixo);
+  [new RegExp(`causam ${N}% mais Dano por Carga de (Frenesi|Poder|Tolerância)$`, 'i'), (m) => ({ [`af:mais_dano%carga:${CARGA_DO_TEXTO[m[2].toLowerCase()]}`]: num(m[1]) })],
+  [new RegExp(`causam Dano aumentado em ${N}% por Carga de (Frenesi|Poder|Tolerância)$`, 'i'), (m) => ({ [`af:dmg_inc%carga:${CARGA_DO_TEXTO[m[2].toLowerCase()]}`]: num(m[1]) })],
+  // - a Mordida Congelante: "X a Y de Dano de Gelo adicional por Carga de Frenesi" — o adicionado aos ataques e às magias × as cargas (× a eficácia, no `contaDoDano`;
+  //   antes somava fixo ao adicionado da linha de cima);
+  [new RegExp(`têm ${N} a ${N} de Dano de (\\S+) adicional por Carga de (Frenesi|Poder|Tolerância)$`, 'i'), (m) => adicionadoDe(ELEMENTO_DO_TEXTO[m[3].toLowerCase()] ?? 'physical', `carga:${CARGA_DO_TEXTO[m[4].toLowerCase()]}`, num(m[1]), num(m[2]))],
+  // - as CARGAS do uso suportado (`Acoes`, no acerto e no abate do uso; o do totem não dá carga a você): a de Poder no Golpe Crítico (o nível e a qualidade somam —
+  //   add_power_charge_on_critical_strike_%), a de Tolerância ao Atordoar com um Acerto Corpo a Corpo e a de Frenesi ao Matar um Inimigo Congelado;
+  [new RegExp(`têm ${N}% de chance de ganhar uma Carga de Poder com Golpes Críticos$`, 'i'), (m) => ({ cargaPoderNoCriticoPct: num(m[1]) })],
+  [/^Receba uma Carga de Tolerância quando você Atordoar um Inimigo com um Acerto Corpo a Corpo com Habilidades Suportadas$/i, () => ({ cargaToleranciaAoAtordoarPct: 100 })],
+  [new RegExp(`têm ${N}% de chance de ganhar uma Carga de Frenesi ao Matar um Inimigo Congelado$`, 'i'), (m) => ({ cargaFrenesiAoMatarCongeladoPct: num(m[1]) })],
+  // - a Sede de Sangue (Bloodthirst): "Dano Físico com Armas Adicional igual a X% da Vida Máxima enquanto em Vida Baixa" — o Físico adicionado ao ataque, mínimo e máximo
+  //   iguais, × a Vida máxima de agora, só em Vida Baixa (a cópia com o "\n" literal não soma) — e a qualidade "Dano aumentado em X% quando em Vida Baixa" (antes, sempre);
+  [new RegExp(`^Ataques Suportados causam Dano Físico com Armas Adicional igual a ${N}% da Vida Máxima enquanto em Vida Baixa$`, 'i'), (m, t, a) => (temTag(a, 'Ataque') ? adicionadoDe('physical', 'vidaMax:1@vidaBaixa', num(m[1]) / 100) : null)],
+  [/^Ataques Suportados causam Dano Físico com Armas Adicional igual a\\n/i, () => ({})],
+  [new RegExp(`causam Dano aumentado em ${N}% quando em Vida Baixa$`, 'i'), (m) => ({ ['af:dmg_inc@vidaBaixa']: num(m[1]) })],
+  // - o Devorar: o golpe fatal do uso consome o cadáver do morto e recupera X de Vida e Y de Mana (o PoB: LifeOnKill/ManaOnKill — `Acoes`, por morto seu) e marca o
+  //   "Consumiu um cadáver Recentemente" (a qualidade: "Dano aumentado em X% se você tiver Consumido um cadáver Recentemente" — antes, sempre);
+  [new RegExp(`^Golpes Abatedores com Habilidades Suportadas Consomem cadáveres para Recuperar ${N} de Vida e ${N} de Mana$`, 'i'), (m) => ({ devorarVida: num(m[1]), devorarMana: num(m[2]) })],
+  [new RegExp(`causam Dano aumentado em ${N}% se você tiver Consumido um cadáver Recentemente$`, 'i'), (m) => ({ ['af:dmg_inc@consumiuCadaverRecente']: num(m[1]) })],
+  // - (R3, dono 27/10: "como o PoB") o Devorar Maior: "Consumir um cadáver com habilidades reforçadas tem X% de chance de conceder uma alma por poder" — cada cadáver
+  //   consumido pelo Devorar sorteia X% × o Poder do morto (Normal 1, Mágico 2, Raro 10, Único 20) de ganhar uma alma do Comedor de Almas (`Acoes.abatesDoSuporteS1`,
+  //   `CondicoesPoe.almaDoJogador`); a qualidade ("+X%") soma
+  [new RegExp(`^Consumir um cadáver com habilidades reforçadas tem \\+?${N}% de chance de conceder uma alma por poder$`, 'i'), (m) => ({ almaPorPoderPct: num(m[1]) })],
+  // - o Esforço Excessivo (dono, 26/10: "como no PoE"): "X% mais Dano por cada Clamor que os Impelir" — × os Clamores que impelem o ataque (um Impelir por Clamor —
+  //   `GemasGAC.impelemEste`, `Acoes.comOsAlvosDaGema`);
+  [new RegExp(`^Ataques Suportados causam ${N}% mais Dano por cada Clamor que os Impelir$`, 'i'), (m) => ({ impelidoPorClamorMaisPct: num(m[1]) })],
+  // - a Empunhadura de Ferro e a Vontade de Ferro: o Bônus de Dano da Força (o "Dano Físico Corpo a Corpo aumentado" a cada 5 de Força) também no Dano de Ataque dos
+  //   Projéteis / em todo o Dano Mágico do uso suportado (`Acoes.contaDoDano`);
+  [/^Bônus de Dano da Força é aplicado ao Dano de Ataque dos Projéteis assim como às Habilidades Suportadas$/i, () => ({ forcaEmProjeteis: 1 })],
+  [/^Bônus de dano da Força também é aplicado à todo Dano Mágico para Magias Suportadas$/i, () => ({ forcaEmMagias: 1 })],
+  // - o Arquimago e o Mago do Gelo (o PoB: LightningMin/Max BASE pelo PercentStat ManaUnreserved; ColdMin/Max BASE pelo ManaReserved): o dano adicionado igual a X% da
+  //   Mana máxima não reservada / reservada, de agora (× a eficácia do dano adicionado, como todo adicionado), e o custo de Mana BASE a mais igual a 5% dela
+  //   (manaweave_cost_equals_%_unreserved_mana — ManaCostBase BASE: antes dos multiplicadores do custo — `Acoes.custoDaSkill`);
+  [new RegExp(`ganham Dano de (Raio|Gelo|Fogo) Adicional igual a ${N}% da Mana Máxima não Reservada$`, 'i'), (m) => adicionadoDe(ELEMENTO_DO_TEXTO[m[1].toLowerCase()], 'manaNaoReservada:1', num(m[2]) / 100)],
+  [new RegExp(`ganham dano de frio adicionado equivalente a ${N}% do mana máximo reservado$`, 'i'), (m) => adicionadoDe('ice', 'manaReservada:1', num(m[1]) / 100)],
+  [new RegExp(`ganham custo de mana base equivalente a ${N}% do mana máximo (não reservado|reservado)$`, 'i'), (m) => ({ [m[2].toLowerCase() === 'reservado' ? 'custoBaseManaReservadaPct' : 'custoBaseManaNaoReservadaPct']: num(m[1]) })],
+  // - o Sacrificar: a magia suportada, ao ser conjurada, tira X% da sua Vida atual e ganha Dano de Caos adicional igual a Y% da Vida sacrificada (o PoB:
+  //   support_sacrifice_* — ChaosMin/Max BASE: × a eficácia do dano adicionado); o Sacrifício Vaal: tudo, menos 1, da Vida e todo o Escudo de Energia ao usar (`Acoes`);
+  [new RegExp(`^Magias Suportadas Sacrificam ${N}% da sua Vida atual quando Conjuradas para ganhar Dano de Caos adicional igual a ${N}% da Vida Sacrificada$`, 'i'), (m, t, a) => (temTag(a, 'Magia') ? { sacrificioVidaPct: num(m[1]), sacrificioCaosPct: num(m[2]) } : null)],
+  [/^Habilidades reforçadas sacrificam tudo, menos 1, da sua vida e escudo de energia ao usar$/i, () => ({ sacrificaTudoMenosUm: 1 })],
+  // - a Segunda Ventania: a recuperação da recarga "reduzida" (o "aumentada" da qualidade soma com ela antes de virar tempo — `recuperacaoRecargaPct`, no fim de
+  //   `efeitoNoNivel`) e "+1 Usos de Tempo de Recarga" só na habilidade não instantânea (`Acoes.temposDaGemaPoe`);
+  [new RegExp(`Velocidade de Recuperação da Recarga (aumentada|reduzida) em ${N}%`, 'i'), (m) => ({ recuperacaoRecargaPct: (m[1].toLowerCase() === 'reduzida' ? -1 : 1) * num(m[2]) })],
+  [new RegExp(`^Habilidades Não-Instantâneas Suportadas têm \\+${N} Usos de Tempo do Recarga$`, 'i'), (m) => ({ usosExtraNaoInstantanea: Math.floor(num(m[1])) })],
+  // - o Conjurar no Acerto Crítico Desperto: "Magias Suportadas têm Recuperação da Recarga aumentada em X%" — a recarga do gatilho (a das magias ativadas) ÷ (1 + X%)
+  //   (`gatilhoDe`);
+  [/^Magias Suportadas têm Recuperação da Recarga aumentada em/i, () => ({})],
+  // - a Runa Repentina (o PoB: support_rapid_activation_brand_activation_rate_+%_final — o nível e a qualidade somam no MESMO "mais") e as durações dela (−65% MAIS na
+  //   vinculada e na desvinculada — as duas são a Duração da Runa, `Acoes.fatorDeDuracao`; antes as duas somavam −130% no "aumentado");
+  [new RegExp(`têm ${N}% mais frequência de Ativação$`, 'i'), (m) => ({ freqAtivacaoMaisPct: num(m[1]) })],
+  [new RegExp(`têm ${N}% (mais|menos) Duração Vinculada$`, 'i'), (m) => ({ duracaoMaisPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  [new RegExp(`têm ${N}% (mais|menos) Duração Desvinculada$`, 'i'), () => ({})],
+  // - a Propagação Maior: "se propagam X% mais vezes" — o total de Ricochetes do uso × (1 + X%), para baixo (o ChainCountMax MORE do PoE — `Acoes.comOsAlvosDaGema`);
+  [new RegExp(`se propagam ${N}% mais vezes$`, 'i'), (m) => ({ encadearMaisPct: num(m[1]) })],
+  // - a Proliferação Elemental e a de Incêndio: as afecções que o acerto do uso PÔS se espalham aos inimigos a até N metros do atingido (1 casa = 2 m, no mínimo 1),
+  //   iguais (o mesmo Incêndio, Congelamento, Eletrização e Resfriamento — `Acoes.aposAfeccoesS1`);
+  [new RegExp(`^Afecções Elementais infligidas por Habilidades Suportadas se espalham para outros inimigos dentro de ${N} metros$`, 'i'), (m) => ({ proliferarElementalM: num(m[1]) })],
+  [new RegExp(`^Incêndios causados por Habilidades Suportadas se espalham para outros Inimigos dentro de ${N} metros$`, 'i'), (m) => ({ proliferarIncendioM: num(m[1]) })],
+  // - a Dose Letal: envenenar um inimigo que não estava envenenado inflige N Venenos a mais (cópias do Veneno do acerto — `Acoes.aposAfeccoesS1`);
+  [new RegExp(`^Envenenar inimigos não envenenados com habilidades reforçadas inflige ${N} envenenamentos adicionais$`, 'i'), (m) => ({ venenosExtrasNoNaoEnvenenado: Math.floor(num(m[1])) })],
+  // - a Aniquilação: o golpe fatal do uso faz o morto explodir com X% de chance (o nível e a qualidade somam), "um décimo da própria vida máxima como dano de um elemento
+  //   aleatório" (Fogo, Gelo ou Raio — `ModsPoe.explodirMorto`, `Acoes.abatesDoSuporteS1`);
+  [new RegExp(`fazem com que os inimigos tenham \\+?${N}% de chance de explodir e causarem um décimo da própria vida máxima como dano de um elemento aleatório$`, 'i'), (m) => ({ explodirAoMatarPct: num(m[1]) })],
+  // - o Conjurar ao Canalizar Desperto: "Ignora Atordoamentos enquanto Usando Habilidades Suportadas" — enquanto canaliza a habilidade suportada, o atordoamento dos
+  //   monstros não pega (`Controle.tentar`, pelo `hunt.canalizacao`);
+  [/^Ignora Atordoamentos enquanto Usando Habilidades Suportadas$/i, () => ({ ignoraAtordoamento: 1 })],
+  // - a Congregação (lacaios): "+X% para o número máximo de lacaios" (o % do máximo, como o `max_lacaio_pct` das peças) e a "Velocidade de Movimento de Lacaios
+  //   aumentada" da qualidade (`LacaiosPoe.oQueInvoca`);
+  [new RegExp(`^\\+${N}% para o número máximo de lacaios de habilidades reforçadas$`, 'i'), (m) => ({ maxLacaioPct: num(m[1]) })],
+  [new RegExp(`têm ${N}% de Velocidade de Movimento de Lacaios aumentada$`, 'i'), (m) => ({ lacaioMovPct: num(m[1]) })],
+  // - a Comunhão: "Magias reforçadas causam de X a Y de dano físico adicionado para cada lacaio permanente" — × os seus lacaios vivos sem duração, no uso (× a eficácia
+  //   do dano adicionado, como o dos suportes — `Acoes.sacrificioDoUsoS1`);
+  [new RegExp(`^Magias reforçadas causam de ${N} a ${N} de dano físico adicionado para cada lacaio permanente$`, 'i'), (m, t, a) => (temTag(a, 'Magia') ? { comunhaoMin: num(m[1]), comunhaoMax: num(m[2]) } : null)],
+  // - a Cascata Mágica (e a Desperta e a Maior): "também afetam áreas na frente e atrás da área alvo" (1) / "na frente, atrás, e dos lados" (2) — as cópias da área do uso
+  //   ao lado dela, na linha de você até o centro (e na perpendicular), encostadas; quem está em mais de uma leva mais de um acerto (`Acoes`, como a Fissura do Serpenteado;
+  //   a cópia da linha com o "\n" literal não soma);
+  [/^Habilidades de Efeito em Área Suportadas também afetam áreas na frente, atrás, e dos lados da área alvo$/i, () => ({ cascataMagica: 2 })],
+  [/^Habilidades de Efeito em Área Suportadas também afetam áreas na frente e atrás da área alvo$/i, () => ({ cascataMagica: 1 })],
+  [/^Habilidades de Efeito em Área Suportadas também afetam áreas na frente, atrás,\\n/i, () => ({})],
+  // - o Incêndio Controlado: por cada Incêndio que a habilidade infligiu Recentemente (4 s — `hunt.poeIncendiosS1`), "X% mais Dano com Incêndio" (até o máximo) e "Y% menos
+  //   Dano" (até o máximo), no uso (`Acoes.doUsoS1`);
+  [new RegExp(`^Cada Habilidade Suportada causa ${N}% mais Dano com Incêndio por cada Incêndio infligido com ela Recentemente, máximo de ${N}%$`, 'i'), (m) => ({ blazeIncendioPorPct: num(m[1]), blazeIncendioMax: num(m[2]) })],
+  [new RegExp(`^Cada Habilidade Suportada causa ${N}% menos Dano por cada Incêndio infligido com ela Recentemente, máximo de ${N}%$`, 'i'), (m) => ({ blazeMenosPorPct: num(m[1]), blazeMenosMax: num(m[2]) })],
+  // - o Superaquecimento: o uso consome toda a Fortificação e as afecções dele causam "+X% de dano" (o "mais") por cada 3 de Fortificação consumida (`Acoes.doUsoS1`);
+  [new RegExp(`^Habilidades reforçadas consomem toda a Fortificação ao usar, causando \\+${N}% de dano com afecções por ${N} de Fortificação consumida$`, 'i'), (m) => ({ superaquecerPct: num(m[1]), superaquecerPor: num(m[2]) })],
+  // - a Decadência: "infligem Podridão ao Acertar, causando X de Dano de Caos por segundo durante N segundos" — o degenerativo de Caos no acertado, uma Podridão por
+  //   inimigo (a mais forte vale; reaplicar renova), pela conta do degenerativo do uso (os "mais" e os multiplicadores de dano degenerativo — `Acoes`);
+  [new RegExp(`infligem Podridão ao Acertar, causando ${N} de Dano de Caos por segundo durante ${N} segundos$`, 'i'), (m) => ({ podridaoPorS: num(m[1]), podridaoMs: Math.round(num(m[2]) * 1000) })],
+  // - o Campo Minado: "podem ter até N Minas Remotas adicionais plantadas de uma vez" (o limite das Minas do uso — `Acoes.plantarArmas`) e a qualidade da Invenção: a
+  //   "Duração da Armadilha / de mina aumentada em X%" (soma com a das peças — `Acoes.plantarArmas`);
+  [new RegExp(`podem ter até ${N} Minas Remotas adicionais plantadas de uma vez$`, 'i'), (m) => ({ maxMinasExtra: num(m[1]) })],
+  [new RegExp(`têm Duração da Armadilha aumentada em ${N}% Habilidades reforçadas têm a duração de mina aumentada em ${N}%$`, 'i'), (m) => ({ plantaDuracaoIncPct: num(m[1]) })],
+  // - o Arauto Desdenhoso: "Habilidades de arauto reforçadas não têm efeito bônus" — o buff do Arauto suportado não dá os atributos dele (o dano adicionado…); o resto do
+  //   Arauto (a explosão, os acertos dele, com o crítico do suporte) segue (`Acoes`, o buff ligado);
+  [/^Habilidades de arauto reforçadas não têm efeito bônus$/i, () => ({ arautoSemBuff: 1 })],
+  // - o Toque Maldito: as maldições do grupo saem nos acertos das outras ativas dele e não se conjuram à mão (`Gemas.gruposComGatilho` — `toqueMaldito` —,
+  //   `Acoes.maldicoesDoToqueS1`); o "menos efeito" e a duração das maldições suportadas seguem as regras de sempre;
+  [/^Habilidades Suportadas aplicam Maldições Suportadas em Acertos$/i, () => ({ toqueMaldito: 1 })],
+  [/^Você não pode Conjurar Magias Maldição Suportadas$/i, () => ({})],
+  // - o Chamado Ancestral (e o Desperto e o Maior): "Alvos Extras das Habilidades Suportadas podem ser encontrados X% mais distante" — o raio em que o Golpe procura
+  //   os alvos extras (`Acoes`, o golpe corpo a corpo da gema);
+  [new RegExp(`^Alvos Extras das Habilidades Suportadas podem ser encontrados ${N}% mais dist`, 'i'), (m) => ({ alcanceAlvosExtrasPct: num(m[1]) })],
   // (lote A2, dono 19/10) os suportes "sem efeito" do PoE: a Raridade de Itens do abate (`combate.raridadeDoDrop`), a chance de os monstros FUGIREM
   // (2 s — `Acoes.fugir`), o Pacifismo (o ataque não mata — `Acoes.acertoDosSuportesA2`) e a Redução de Chance de Bloqueio (os pontos a menos, o
   // "reduzido" da qualidade e o Subjugado — `AtributosDoMob.bloqueou`, `subjugar`)
@@ -499,7 +711,9 @@ const REGRAS = [
   // Afecções ao acertar.
   [new RegExp(`têm ${N}% de chance de Congelar`, 'i'), (m) => ({ congelarChance: num(m[1]) })],
   // Duração, recarga, drenagem.
-  [new RegExp(`têm ${N}% (mais|menos) Duração`, 'i'), (m) => ({ duracaoPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  // (lote T1, rodada 4: o "X% mais/menos Duração" é MAIS — multiplica o aumentado, como no PoE: a Mais Duração é support_more_duration_skill_effect_duration_+%_final;
+  // antes somava no aumentado, `duracaoPct` — `Acoes.fatorDeDuracao` e os outros que leem a duração multiplicam o `duracaoMaisPct`)
+  [new RegExp(`têm ${N}% (mais|menos) Duração`, 'i'), (m) => ({ duracaoMaisPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
   [new RegExp(`Duração (?:de Habilidade )?aumentada em ${N}%`, 'i'), (m) => ({ duracaoPct: num(m[1]) })],
   [new RegExp(`Velocidade de Recarga aumentada em ${N}%`, 'i'), (m) => ({ recargaPct: tempoDaVelocidade(num(m[1])) })],
   [new RegExp(`${N}% do Dano .*Drenado como Vida`, 'i'), (m) => ({ leechVidaPct: num(m[1]) })],
@@ -507,8 +721,11 @@ const REGRAS = [
   // Nível das gemas suportadas (Fortalecer...).
   // (lote A5, dono 20/10: + "1 do Nível das Gemas de Habilidade de Caos Suportadas" — o Manipulação do Vazio Desperto: "do Nível", e só nas de Caos)
   [new RegExp(`^\\+?${N} (?:ao|do) N[iíï]vel (?:de|das) Gemas de (?:Habilidade )?(\\S+)? ?(?:de )?(?:Habilidades? )?(\\S+)? ?Suportadas`, 'i'), (m, t, a) => {
-    const so = /Físicas/i.test(t) ? 'Físico' : /de Fogo/i.test(t) ? 'Fogo' : /de Caos/i.test(t) ? 'Caos' : /Aura/i.test(t) ? 'Aura' : /Golpes/i.test(t) ? 'Golpe' : null;
-    return !so || temTag(a, so) ? { nivelExtra: Math.floor(num(m[1])) } : null;
+    // (lote T2, 27/10: + as de Raio, de Gelo, de Maldição, de Lacaios e as Elementais — antes o "+1 ao Nível" delas valia em QUALQUER gema suportada: o Dano Adicional
+    // de Raio Desperto subia a Cutilada; e o Golpe do PoE é a tag "Golpear")
+    const so = /Físicas/i.test(t) ? ['Físico'] : /de Fogo/i.test(t) ? ['Fogo'] : /de Caos/i.test(t) ? ['Caos'] : /de Raio/i.test(t) ? ['Raio'] : /de Gelo/i.test(t) ? ['Gelo'] : /Elementais/i.test(t) ? ['Fogo', 'Gelo', 'Raio']
+      : /Maldição/i.test(t) ? ['Maldição'] : /Lacaios/i.test(t) ? ['Lacaio'] : /Aura/i.test(t) ? ['Aura'] : /Golpes/i.test(t) ? ['Golpe', 'Golpear'] : null;
+    return !so || so.some((x) => temTag(a, x)) ? { nivelExtra: Math.floor(num(m[1])) } : null;
   }],
   // Repetições (Eco de Magia, Golpe Múltiplo): a skill sai de novo na hora.
   [new RegExp(`Repetem ${N} vez(?:es)? adiciona`, 'i'), (m) => ({ repeticoes: num(m[1]) })],
@@ -527,7 +744,9 @@ const REGRAS = [
 function gatilhoDe(s, textos) {
   const tudo = [...textos.mods, ...textos.props].join(' | ');
   const recarga = textos.props.map((p) => p.match(/^Recarga: (-?\d+(?:\.\d+)?) seg/)).find(Boolean);
-  const recargaMs = recarga ? Math.round(parseFloat(recarga[1]) * 1000) : 250;
+  // (lote S1: o Conjurar no Acerto Crítico Desperto — "Magias Suportadas têm Recuperação da Recarga aumentada em X%": a recarga das magias ativadas ÷ (1 + X%))
+  const recuperacao = Number(/Magias Suportadas têm Recuperação da Recarga aumentada em (\d+(?:\.\d+)?)%/i.exec(tudo)?.[1]) || 0;
+  const recargaMs = recarga ? Math.round((parseFloat(recarga[1]) * 1000) / (1 + recuperacao / 100)) : 250;
   if (/Ativarão uma Magia Suportada ao causar um Crítico/i.test(tudo)) return { quando: 'critico', recargaMs };
   if (/Ativarão uma Magia Suportada ao Matar/i.test(tudo)) return { quando: 'abate', recargaMs };
   const dano = tudo.match(/Ativa Magias Suportadas quando você sofrer (\d+(?:\.\d+)?) de Dano total/i);
@@ -539,6 +758,11 @@ function gatilhoDe(s, textos) {
   const atordoado = tudo.match(/(\d+(?:\.\d+)?)% de chance de Ativar Magias Suportadas quando você for Atordoado/i);
   if (atordoado) return { quando: 'atordoado', recargaMs, chance: parseFloat(atordoado[1]) };
   if (/chance de Ativar Magias de Não-Lacaios Suportadas ao Morrer/i.test(tudo)) return { quando: 'morte', recargaMs };
+  // (lote S2A, 27/10) o Marcar ao Acertar: a Marca suportada sai quando você Acerta um Inimigo Raro ou Único com um Ataque (a recarga do suporte, 4 s)
+  if (ehGatilhoDoMarcar(tudo)) return { quando: 'acertoRaro', recargaMs };
+  // (lote S2A) a Flecha Forjada com Mana: os Ataques de Arco suportados saem quando a Mana gasta em OUTROS Ataques de Arco passa de X% do custo deles (a recarga, 0,5 s)
+  const limiarPct = limiarDaFlechaForjada(tudo);
+  if (limiarPct != null) return { quando: 'manaForjada', recargaMs, limiarPct };
   return null;
 }
 
@@ -604,10 +828,77 @@ const PROPRIAS_A2 = {
     [new RegExp(`^Dano em Área aumentado em ${N}%$`, 'i'), (m, e) => { e.tormentaIncPct = (e.tormentaIncPct ?? 0) + num(m[1]); }],
     [/^Tempo de Uso:|^Eficácia do Dano Adicionado:/i, () => {}],
   ],
+  // (lote S1, 26/10) a ONDA DE CHOQUE (o suporte comum): a mesma onda da Excepcional (`Acoes.ondaDoVazio`), com os números dela — a recarga com os usos ("Recarga: 1.00
+  // seg (4 Times)"), a "Velocidade de Recarga aumentada" (só a da onda), o "Dano de Ataque: X% de base", o raio e o "Dano Corpo a Corpo aumentado" da qualidade dela;
+  // sem repetições
+  Shockwave_Support: [
+    [/^Habilidades Suportadas Ativam Onda de Choque no Acerto Corpo a Corpo$/i, (m, e) => { e.ondaDoVazio = 1; }],
+    [new RegExp(`^Recarga: ${N} seg(?:\\s*\\((\\d+) Times\\))?`, 'i'), (m, e) => { e.ondaRecargaMs = Math.round(num(m[1]) * 1000); if (m[2]) e.ondaUsos = Number(m[2]); }],
+    [new RegExp(`^Velocidade de Recarga aumentada em ${N}%$`, 'i'), (m, e) => { e.ondaRecargaIncPct = (e.ondaRecargaIncPct ?? 0) + num(m[1]); }],
+    [new RegExp(`^O raio Base é de ${N} metros?$`, 'i'), (m, e) => { e.ondaRaioM = num(m[1]); }],
+    [new RegExp(`^Dano de Ataque: ${N}% de base$`, 'i'), (m, e) => { e.ondaDanoPct = num(m[1]); }],
+    [new RegExp(`^Dano Corpo a Corpo aumentado em ${N}%$`, 'i'), (m, e) => { e.ondaIncPct = (e.ondaIncPct ?? 0) + num(m[1]); }],
+    [/^Tempo de Uso:|^Eficácia do Dano Adicionado:/i, () => {}],
+  ],
+  // (lote S2B, 27/10) a EXPLOSÃO PRISMÁTICA e a DESTRUIÇÃO IMINENTE: a magia que o suporte ativa tem os números dela (o dano, o raio — o PoB: 13 e 20 unidades de base,
+  // 1,3 m e 2 m; a Prismática + "0.9 metros de raio" —, a recarga, o crítico, a eficácia e a qualidade — "Dano Elemental aumentado" / "Área de Efeito aumentada" são da
+  // magia ativada no PoB, `PrismaticBurst`/`DoomBlast`.qualityStats), que as regras gerais davam à suportada (o "100% menos Dano de cada Tipo não escolhido" zerava o
+  // dano da suportada). `Acoes.prismaNoAcerto`, `Acoes.tiqueDosFeiticosS2B`.
+  Prismatic_Burst_Support: [
+    [/^Habilidades Suportadas Ativam Explosão Prismática ao Acertar$/i, (m, e) => { e.prisma = 1; }],
+    [new RegExp(`^Causa ${N} a ${N} de Dano de (Gelo|Raio|Fogo)$`, 'i'), (m, e) => { const el = ELEMENTO_DO_TEXTO[m[3].toLowerCase()]; e[`prismaMin_${el}`] = num(m[1]); e[`prismaMax_${el}`] = num(m[2]); }],
+    [new RegExp(`^\\+?${N} metros de raio$`, 'i'), (m, e) => { e.prismaRaioM = 1.3 + num(m[1]); }],
+    [/^Causa 100% menos Dano de cada Tipo de Dano não escolhido$/i, () => {}],
+    [new RegExp(`^Velocidade de Recarga aumentada em ${N}%$`, 'i'), (m, e) => { e.prismaRecargaIncPct = (e.prismaRecargaIncPct ?? 0) + num(m[1]); }],
+    [new RegExp(`^Recarga: ${N} seg`, 'i'), (m, e) => { e.prismaRecargaMs = Math.round(num(m[1]) * 1000); }],
+    [new RegExp(`^Chance de Crítico: ${N}%$`, 'i'), (m, e) => { e.prismaCrit = num(m[1]); }],
+    [new RegExp(`^Eficácia do Dano Adicionado: ${N}%$`, 'i'), (m, e) => { e.prismaEficacia = num(m[1]) / 100; }],
+    [new RegExp(`^Dano Elemental aumentado em ${N}%$`, 'i'), (m, e) => { e.prismaIncPct = (e.prismaIncPct ?? 0) + num(m[1]); }],
+    [/^Tempo de Conjuração:/i, () => {}],
+  ],
+  Impending_Doom_Support: [
+    [/^Ativa Explosão Destruidora quando um Feitiço de Habilidades Maldição Suportadas terminar$/i, (m, e) => { e.doomBlast = 1; e.doomRaioM = 2; }],
+    [/^Ativa Esta Habilidade quando um Feitiço de Habilidades Suportadas terminar$/i, () => {}],
+    [new RegExp(`^Causa ${N} a ${N} de Dano de Caos$`, 'i'), (m, e) => { e.doomMin = num(m[1]); e.doomMax = num(m[2]); }],
+    [new RegExp(`^Recarga: ${N} seg(?:\\s*\\((\\d+) Times\\))?`, 'i'), (m, e) => { e.doomRecargaMs = Math.round(num(m[1]) * 1000); e.doomUsos = m[2] ? Number(m[2]) : 1; }],
+    [new RegExp(`^Chance de Crítico: ${N}%$`, 'i'), (m, e) => { e.doomCrit = num(m[1]); }],
+    [new RegExp(`^Eficácia do Dano Adicionado: ${N}%$`, 'i'), (m, e) => { e.doomEficacia = num(m[1]) / 100; }],
+    [new RegExp(`^Área de Efeito aumentada em ${N}%$`, 'i'), (m, e) => { e.doomAreaIncPct = (e.doomAreaIncPct ?? 0) + num(m[1]); }],
+    [/^Tempo de Conjuração:/i, () => {}],
+  ],
+  // (lote D3, dono 27/10) o PREDADOR: a "Sinalizar Presa" dele (o PoB, `SignalPrey`: recarga 0,8 s, instantânea, a Presa dura 8 s) — sozinha (`SuportesS2B.tiqueDaPresa`);
+  // o SAPO ENFEITIÇADO: o Sapo Explosivo que o Solo Maldito ativa (o PoB, `TriggeredSupportHextoad`: o Caos da magia, 2,3 m, 5% de crítico, a eficácia, o Definhando de
+  // 2 s no acerto) — `Acoes.tiqueDosFeiticosS2B`. As linhas eram lidas como da suportada (nenhuma tinha efeito nela).
+  Predator_Support: [
+    [new RegExp(`^Duração base é de ${N} segundos?$`, 'i'), (m, e) => { e.presaMs = Math.round(num(m[1]) * 1000); }],
+    [new RegExp(`^Recarga: ${N} seg`, 'i'), (m, e) => { e.presaRecargaMs = Math.round(num(m[1]) * 1000); }],
+    [/^Tempo de Conjuração:/i, () => {}],
+  ],
+  Hextoad_Support: [
+    [new RegExp(`^Chão amaldiçoado de habilidades reforçadas ativam Sapo Explosivo a cada ${N} segundos?$`, 'i'), (m, e) => { e.sapoIntervaloMs = Math.round(num(m[1]) * 1000); }],
+    [new RegExp(`^Causa ${N} a ${N} de Dano de Caos$`, 'i'), (m, e) => { e.sapoMin = num(m[1]); e.sapoMax = num(m[2]); }],
+    [new RegExp(`^O raio Base é de ${N} metros?$`, 'i'), (m, e) => { e.sapoRaioM = num(m[1]); }],
+    [new RegExp(`^Inflige Definhando por ${N} segundos? ao Acertar$`, 'i'), (m, e) => { e.sapoDefinharMs = Math.round(num(m[1]) * 1000); }],
+    [new RegExp(`^Chance de Crítico: ${N}%$`, 'i'), (m, e) => { e.sapoCrit = num(m[1]); }],
+    [new RegExp(`^Eficácia do Dano Adicionado: ${N}%$`, 'i'), (m, e) => { e.sapoEficacia = num(m[1]) / 100; }],
+    [/^Tempo de Conjuração:/i, () => {}],
+  ],
   Divine_Sentinel_Support: [
     [new RegExp(`^Lacaios de habilidades reforçadas têm a área de efeito aumentada em ${N}%$`, 'i'), (m, e) => { e.areaLacaioPct = (e.areaLacaioPct ?? 0) + num(m[1]); }],
     [/^Sentinelas invocadas de habilidades reforçadas têm uma aura templária$/i, (m, e) => { e.auraTemplaria = 1; }],
   ],
+};
+/**
+ * (lote S2B, 27/10) As linhas que as regras gerais leriam como da SUPORTADA e são de quem o jogo ainda não tem (ficam não feitas, sem efeito): o "mais Dano … às suas
+ * Presas" do Predador (a Presa); o "Poder Arcano" do Fluxo Cinético das Instabilidades Cinéticas (a habilidade ativada); o "Ricocheteiam" dos Relâmpagos Vivos (os
+ * lacaios do suporte); o "menos Dano quando usadas por Espíritos Sagrados" (só no uso dos Espíritos — antes, a suportada saía sempre com 51% menos).
+ */
+// (lote D3, dono 27/10: a Presa existe — o "mais Dano … às suas Presas" do Predador saiu daqui, `SuportesS2B.noGolpeDoLacaio`)
+const NAO_FEITAS_S2B = [];
+const NAO_FEITAS_S2B_DO = {
+  Kinetic_Instability_Support: [/de Poder Arcano$/i], Greater_Kinetic_Instability_Support: [/de Poder Arcano$/i],
+  // (lote R3B, 27/10: o "Ricocheteiam +3" dos Relâmpagos Vivos e o "menos Dano quando usadas por Espíritos Sagrados" saíram daqui — os lacaios e os Espíritos existem,
+  // `PROPRIAS_R3B`)
 };
 /** O efeito do suporte no nível, para esta ativa: `{ efeito, naoFeitas }`. */
 export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
@@ -618,12 +909,19 @@ export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
   const naoFeitas = [];
   // (lote A2) as linhas próprias da Torre Óssea e da Sentinela Divina (`PROPRIAS_A2`): a habilidade concedida pela Torre Óssea — Tomar a Carne — tem
   // os números dela (a duração, os raios, as torres), que as regras gerais leriam como do Clamor suportado
-  const proprias = PROPRIAS_A2[slug];
+  // (lote R3B: + as do Arqueiro Ilusório, dos Espíritos Sagrados, do Relâmpago Vivo e do Nascido da Colmeia — `PROPRIAS_R3B`; o 3º argumento diz se a linha é da qualidade)
+  // (lote R3A: + as habilidades concedidas pelo Cristal em Queda, pela Fenda, pela Pira e pela Rajada de Vento — `PROPRIAS_R3A`)
+  // (lote R3C: + as linhas próprias dos suportes do lote — `gemas-r3c.PROPRIAS_R3C`)
+  // (lote R3D, 27/10: + as do Chuva Ardente — a Vingança Flamejante do totem, `GemasR3D.PROPRIAS_R3D`)
+  // (lote P4, 27/10: + as das Maquinações — o "por fundamental" é por keystone alocada, `GemasP4.PROPRIAS_P4`)
+  const proprias = PROPRIAS_A2[slug] ?? PROPRIAS_R3A[slug] ?? PROPRIAS_R3B[slug] ?? PROPRIAS_R3C[slug] ?? PROPRIAS_R3D[slug] ?? PROPRIAS_P4[slug];
   for (const linha of [...t.props, ...t.mods, ...t.qualidade]) {
     if (proprias) {
       const p = proprias.find(([re]) => re.test(linha));
-      if (p) { p[1](linha.match(p[0]), efeito); continue; }
+      if (p) { p[1](linha.match(p[0]), efeito, t.qualidade.includes(linha)); continue; }
     }
+    // (lote S2B) as linhas que as regras gerais leriam sem a condição e que o jogo ainda não faz (o "mais Dano … às suas Presas" do Predador: a Presa não existe)
+    if (NAO_FEITAS_S2B.some((re) => re.test(linha)) || NAO_FEITAS_S2B_DO[slug]?.some((re) => re.test(linha))) { naoFeitas.push(linha); continue; }
     const regra = REGRAS.find(([re]) => re.test(linha));
     if (!regra) {
       // (17/10, lote G3) sem regra própria: a linha como modificador LOCAL do uso suportado ("Habilidades Suportadas têm 30% de chance de Mutilar
@@ -639,9 +937,19 @@ export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
   }
   // (lote 44, P064) o nível do Suporte: Convocar Fantasma — o Poder Fantasmal de cada Fantasma é o desse nível (a tabela do PoB)
   if (efeito.fantasmaAoMatarPct > 0 || efeito.fantasmaRaroPct > 0) efeito.fantasmaNivel = nivel;
+  // (lote R3B) o nível dos lacaios do Relâmpago Vivo e do Nascido da Colmeia e os totais com a qualidade (`GemasR3B.completarEfeito`)
+  if (PROPRIAS_R3B[slug]) completarEfeitoR3B(slug, efeito, nivel, Number(linhaDoNivel(s, nivel)[s.colunas.indexOf('RequerNível')]) || s.nivelReq || 1);
+  // (lote S1) a recuperação da recarga "aumentada/reduzida" das linhas soma ANTES de virar o % do tempo (a Segunda Ventania: −X% do nível e +Y% da qualidade)
+  if (efeito.recuperacaoRecargaPct != null) {
+    if (efeito.recuperacaoRecargaPct) efeito.recargaPct = (efeito.recargaPct ?? 0) + tempoDaVelocidade(efeito.recuperacaoRecargaPct);
+    delete efeito.recuperacaoRecargaPct;
+  }
   // (18/10, lote G20b) o DEVASTADOR: "um totem ancestral que usa a habilidade por você ENQUANTO VOCÊ ESTIVER PERTO dele" (a descrição; sem linha) — a
   // distância de ativação é a do PoB, `ancestor_totem_parent_activiation_range` 70 = 7 m (other.lua:1499)
-  if (slug === 'Earthbreaker_Support' && efeito.viraTotem) efeito.ativacaoM = 7;
+  // (dono 27/10, lote P4) + a Área de Efeito aumentada nas suas Habilidades Corpo a Corpo perto do totem: 15% (sem fonte; dono 27/10 — `GemasP4.DEVASTADOR`)
+  if (slug === 'Earthbreaker_Support' && efeito.viraTotem) Object.assign(efeito, { ativacaoM: 7, devastadorAreaCorpoPct: DEVASTADOR.areaCorpoIncPct });
+  // (lote R3C) o sinal do "Efeito das Auras" da Bênção do Guardião pelo nível
+  ajustarEfeitoR3c(slug, nivel, efeito);
   return { efeito, naoFeitas };
 }
 
@@ -657,7 +965,15 @@ export const algumDe = (s) => (s.tags.includes('Ricochete') && !s.tags.includes(
 // ---------------------------------------------------------------- status, ids, registro
 
 const MOMENTUM_CANALIZANDO = /Ganhe \S+ de Momentum a cada \S+ segundos enquanto Canalizando uma Habilidade suportada/gi;
+/**
+ * (R3, dono 27/10 — aval do dono 27/10) O suporte que NÃO SE APLICA ao jogo, com a nota do porquê (como as gemas — `GemasPoe.NAO_SE_APLICA`): fica sem efeito e o relatório o
+ * mostra como "não se aplica" (`tools/relatorio-gemas-poe.mjs`, `naoSeAplica`).
+ */
+export const NAO_SE_APLICA = {
+  Cast_on_Ward_Break_Support: 'não se aplica: o jogo não tem Salvaguarda (Ward), então a salvaguarda nunca quebra e a magia nunca seria ativada (aval do dono 27/10)',
+};
 function avaliar(s) {
+  if (NAO_SE_APLICA[s.slug]) return { status: 'nao', motivos: [NAO_SE_APLICA[s.slug]], naoSeAplica: NAO_SE_APLICA[s.slug] };
   // Pelo que o suporte É (as tags) e pelo gatilho dos mods — a descrição fala do que ele NÃO suporta ("não pode suportar totens").
   // (O Momentum cita a canalização só como OUTRO jeito de ganhar Momentum — "a cada N segundos enquanto Canalizando" —, que o jogo não tem;
   // o ganho a cada uso, sim: essa frase não trava o suporte.)
@@ -678,11 +994,15 @@ function avaliar(s) {
 const DESCRICAO_NAO_FEITA = {
   // (lote A2) a Torre Óssea: a explosão é o físico MÉDIO da sua arma × o "Dano de Ataque: X% de base" da Tomar a Carne, pelo acerto das habilidades sem
   // golpe — os modificadores do golpe da arma (o crítico dela, os locais) não entram
-  Bonespire_Support: ['não simulado: a explosão das torres usa o físico médio da arma × 250–271% pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); as torres não bloqueiam o caminho dos monstros'],
-  // (lote A4, dono 19/10) as Excepcionais do Vazio: o acerto da onda e da tempestade é o das habilidades sem golpe (como a Torre Óssea)
-  Void_Shockwave_Support: ['não simulado: a onda usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma)'],
-  Voidstorm_Support: ['não simulado: a explosão da tempestade usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); a Cegueira dentro dela (a descrição) não é aplicada'],
-  Earthbreaker_Support: ['não simulado: perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)'],
+  // (lote R3A, 27/10) a explosão das torres, a onda e a tempestade são o ATAQUE ATIVADO completo (`Acoes.acertoDoArauto` com `ativado` — a arma com os locais, o crítico
+  // dela, o adicionado × a eficácia, a Área); a Cegueira dentro da Tormenta é feita. Fica: as torres não bloqueiam o caminho dos monstros (o jogo não tem obstáculo
+  // temporário no caminho dos bichos — a exceção do idle pede o aval do dono)
+  // (R3, dono 27/10: as torres viram obstáculo no passo dos monstros enquanto duram — `hunt/monstros.moverMonstros`; a Torre Óssea sai de parcial)
+  // (lote D2, dono 27/10) a Tentação Vaal: o dano de 1300/s em você é feito (`SuportesS2A.tentacaoVaalNoUso`); o "em vez de aplicar impedimento de ganho de almas" fica — o jogo
+  // não tem o Impedimento de Ganho de Almas (as almas das Vaal são a recarga), então não há o que a Tentação substitua nem ganho de almas para bloquear enquanto ela dura
+  // (lote P4, decisão do dono 27/10: o Impedimento de Ganho de Almas existe para todas as Vaal — `GemasP4.impedirAlmas`; a Tentação o troca pelo dano: sai daqui)
+  // (lote P4: o Devastador fica — o valor da Área perto do totem não está no PoB, no poedb salvo nem nas páginas do Scrapling)
+  // (dono 27/10: 15%, sem fonte — `GemasP4.DEVASTADOR`; o buff vale no raio de ativação do totem, como o dos ancestrais: sai daqui)
 };
 
 function idsDosSuportes(slugs) {
@@ -715,9 +1035,9 @@ export function iniciar({ registrarSuporte } = {}) {
   const ids = idsDosSuportes(SUPORTES.map((s) => s.slug));
   const porStatus = {};
   for (const s of SUPORTES) {
-    const { status, motivos } = avaliar(s);
+    const { status, motivos, naoSeAplica } = avaliar(s);
     const itemId = ids[s.slug];
-    REGISTRO.set(s.slug, { itemId, status, motivos, suporte: s });
+    REGISTRO.set(s.slug, { itemId, status, motivos, suporte: s, ...(naoSeAplica ? { naoSeAplica } : {}) });
     porStatus[status] = (porStatus[status] ?? 0) + 1;
     registrarSuporte?.({
       itemId, suporte: s, requer: requerDe(s), algum: algumDe(s), exclui: EXCLUI[s.slug] ?? [], levelMinimo: s.nivelReq ?? 1,

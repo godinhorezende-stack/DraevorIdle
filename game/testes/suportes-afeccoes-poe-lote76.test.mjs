@@ -44,7 +44,8 @@ test('a LEITURA dos suportes: o "mais" e o "aumentado" de UMA afecção, a chanc
   // o "menos Dano com Acertos" das Afecções Mortais vale só no acerto (`maisDanoAcertoPct`): as afecções não perdem os 80%
   assert.deepEqual([ef('Deadly_Ailments_Support').maisAfeccaoPct, ef('Deadly_Ailments_Support').maisDanoAcertoPct, ef('Deadly_Ailments_Support').maisDanoPct ?? 0], [44, -80, 0]);
   const mpd = S.efeitoNoNivel('Melee_Physical_Damage_Support', 20, 0, { tags: ['poe:Ataque', 'poe:Corpo a Corpo'] }).efeito;
-  assert.deepEqual([mpd.maisSangramentoPct, mpd.maisVenenoPct, mpd.maisDanoAcertoPct, mpd.maisDanoPct ?? 0], [49, 49, 49, 0], 'o "Físico Corpo a Corpo": só no acerto; o Sangramento/Veneno pela linha deles');
+  // (aval do dono 28/10: o "mais Dano Físico Corpo a Corpo" só na parte física do acerto — `maisDoTipoAcertoPct:physical@corpo`)
+  assert.deepEqual([mpd.maisSangramentoPct, mpd.maisVenenoPct, mpd['maisDoTipoAcertoPct:physical@corpo'], mpd.maisDanoPct ?? 0], [49, 49, 49, 0],'o "Físico Corpo a Corpo": só no acerto; o Sangramento/Veneno pela linha deles');
   assert.equal(ef('Lethal_Dose_Support', 15).maisVenenoPct, -2, 'a Dose Letal: menos só no Veneno');
   assert.equal(ef('Unbound_Ailments_Support', 20, 20)['af:ailment_duration'], 64);
   assert.equal(ef('Combustion_Support')['af:chance_ignite'], 25);

@@ -1071,6 +1071,8 @@ export function blocoDaGemaDaSkill(entry) {
   if (e.leechVidaPct || e.leechManaPct) partes.push('leech');
   if (e.custoEmVida) partes.push('custo em vida');
   if (e.duracaoPct) partes.push(`+${Math.round(e.duracaoPct)}% duração`);
+  // (achado C3 da rodada 4) o "mais/menos Duração" dos suportes (a Mais Duração, a Menos Duração, o Sofrimento Veloz) vai a `duracaoMaisPct`
+  if (e.duracaoMaisPct) partes.push(`${Math.round(Math.abs(e.duracaoMaisPct))}% ${e.duracaoMaisPct > 0 ? 'mais' : 'menos'} duração`);
   if (partes.length) bloco.append(el('div', 'tip-gema-efeito', partes.join(' · ')));
   bloco.append(el('div', 'tip-gema-tags', g.supports?.length ? `Suportes ligados: ${g.supports.map((s) => `${s.nomePt ?? s.nome} ${s.nivel}`).join(', ')}` : 'Sem suporte ligado'));
   if (g.castTime) bloco.append(el('div', null, `Conjuração: ${(g.castTime / 1000).toLocaleString('pt-BR')} s`));
@@ -2611,7 +2613,7 @@ const ETIQUETA_DO_EFEITO = [
   ['alvosExtras', 'PROJÉTIL'], ['perfurar', 'PROJÉTIL'], ['bifurcar', 'PROJÉTIL'], ['encadear', 'PROJÉTIL'], ['retornar', 'PROJÉTIL'],
   ['areaExtra', 'ÁREA'], ['explosaoPct', 'EXPLOSÃO'], ['segundaExplosaoPct', 'EXPLOSÃO'],
   ['critChance', 'CRÍTICO'], ['critDano', 'CRÍTICO'], ['castTimePct', 'CONJURAÇÃO'], ['custoPct', 'CUSTO'], ['custoEmVida', 'CUSTO'],
-  ['recargaPct', 'RECARGA'], ['curaPct', 'CURA'], ['duracaoPct', 'DURAÇÃO'], ['leechVidaPct', 'ROUBO'], ['leechManaPct', 'ROUBO'],
+  ['recargaPct', 'RECARGA'], ['curaPct', 'CURA'], ['duracaoPct', 'DURAÇÃO'], ['duracaoMaisPct', 'DURAÇÃO'], ['leechVidaPct', 'ROUBO'], ['leechManaPct', 'ROUBO'],
   ['igniteChance', 'QUEIMADURA'], ['venenoChance', 'VENENO'], ['sangramentoChance', 'SANGRAMENTO'], ['congelarChance', 'CONTROLE'], ['lentidaoPct', 'CONTROLE'], ['atordoarChance', 'CONTROLE'],
 ];
 
