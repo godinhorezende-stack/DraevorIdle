@@ -79,6 +79,7 @@ import { distancia } from './caminho.mjs';
 import { tirarMonstro, salaDe } from './sala.mjs';
 import { alvoAtual } from './alvo.mjs';
 import * as Defesa from '../personagem/defesa.mjs';
+import * as Salvaguarda from '../personagem/salvaguarda.mjs';
 import * as Anuncios from '../anuncios.mjs';
 import * as Tags from '../skills/tags.mjs';
 import * as GemasDeSkill from '../skills/gemas.mjs';
@@ -1258,11 +1259,16 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   if (final > 0) ModsPoe.antesDeSerAcertado(estado, hunt, ficha);
   // "Conjurar ao Receber Dano" (suporte de gatilho do PoE): o dano recebido (antes do Escudo de Energia, como no PoE) soma no limiar.
   if (final > 0) Acoes.aoReceberDano(estado, hunt, personagem, final, eventos);
+  // (02/11, dono: a SALVAGUARDA como o PoE) o acerto sai primeiro da Salvaguarda — antes da Égide, do Escudo Gélido, da Guarda, do Vínculo e do Escudo de Energia —;
+  // na quebra, o Conjurar ao Perder Salvaguarda e o evento `salvaguardaQuebra` (`personagem/salvaguarda.mjs`). As partes de cada tipo (a Égide, o Físico que ignora o
+  // Escudo, o Caos que o atravessa) seguem na proporção do que sobrou dela.
+  if (final > 0) final = Salvaguarda.absorver(estado, hunt, ficha, final, eventos, { uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: bicho.name, golpe: 'corpo a corpo' }, personagem);
+  const fatorDaSalvaguarda = danoDoAcerto > 0 ? final / danoDoAcerto : 1;
   // (14/10, as Égides — a Primitiva do Elementalist e as dos únicos: a parte de cada tipo do acerto sai da Égide dele antes do Escudo e da
   // Vida — `ModsPoe.absorverNaEgide`)
   if (final > 0 && hunt.egides) {
-    const porTipo = { physical: fisicoProtegido * fatorFinal };
-    for (const [el, v] of Object.entries(partes)) porTipo[el] = (porTipo[el] ?? 0) + v * fatorFinal;
+    const porTipo = { physical: fisicoProtegido * fatorFinal * fatorDaSalvaguarda };
+    for (const [el, v] of Object.entries(partes)) porTipo[el] = (porTipo[el] ?? 0) + v * fatorFinal * fatorDaSalvaguarda;
     const tomou = Math.min(final, Math.round(ModsPoe.absorverNaEgide(hunt, porTipo, hunt.clock ?? 0)));
     if (tomou > 0) { final -= tomou; eventos.push({ t: 'dmg', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, v: tomou, foe: false, de: bicho.name, golpe: 'corpo a corpo', color: '#c8a2ff' }); }
   }
@@ -1296,7 +1302,7 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // "X% do Dano … recebido como Dano de Caos" — também atravessa o Escudo: `ModsPoe.caosNasPartes`)
   const caosFisico = Math.min(fisicoProtegido, brutoFisico * ModsPoe.parteCaosRecebida(ficha, 'physical'));
   // (revisão PR2, dono 21/10: o Escudo Gélido e o Vínculo também levam a parte deles do Físico que ignora o Escudo — a mesma proporção do Caos)
-  const depoisDosDesvios = depoisDaEgide > 0 ? final / depoisDaEgide : 0;
+  const depoisDosDesvios = depoisDaEgide > 0 ? (final / depoisDaEgide) * fatorDaSalvaguarda : 0;
   const fisicoDireto = ModsPoe.valor(ficha, 'fisico_ignora_escudo') > 0 ? Math.min(final, Math.round((fisicoProtegido - caosFisico) * fatorFinal * depoisDosDesvios)) : 0;
   if (fisicoDireto > 0) Defesa.reiniciarEspera(estado, ficha);
   // (dono, 20/10 — o lote PR2: "o Caos dos monstros atravessa o Escudo de Energia, como no PoE") a parte de Caos do golpe — a do monstro (`danoExtra`, o

@@ -42,8 +42,9 @@ const relogio = (hunt) => hunt?.clock ?? 0;
 const temEscudo = (hunt) => Object.values(hunt?.buffs ?? {}).some((b) => b.tipo === 'shield' && b.ate > relogio(hunt));
 
 /** Um dano de mecânica no jogador (o valor antes da proteção). */
-function ferirJogador(estado, hunt, personagem, m, valor, elemento, eventos, golpe) {
-  return Poderes.danoDeElementoNoJogador(estado, hunt, personagem, m, valor, elemento, eventos, golpe, Ficha.combate(estado), temEscudo(hunt));
+// (02/11: `opcoes.acerto` — o dano que é acerto passa pela Salvaguarda, `Poderes.danoDeElementoNoJogador`)
+function ferirJogador(estado, hunt, personagem, m, valor, elemento, eventos, golpe, opcoes = {}) {
+  return Poderes.danoDeElementoNoJogador(estado, hunt, personagem, m, valor, elemento, eventos, golpe, Ficha.combate(estado), temEscudo(hunt), opcoes);
 }
 
 /** As casas livres em volta de (x, y), andáveis e sem bicho vivo (nunca numa Safe Zone — `protecao.mjs`). */
@@ -109,7 +110,7 @@ export function aoMorrer(estado, hunt, personagem, m, eventos) {
       const raio = mec.raio ?? 1;
       eventos.push({ t: 'area', id: 6, x: m.x, y: m.y, casas: Areas.paraTela(Areas.quadrado(m, raio), m) });
       if (distancia(hunt.pos, m) <= raio) {
-        ferirJogador(estado, hunt, personagem, m, (m.maxHp * (mec.danoPctDaVida ?? 5)) / 100, mec.elemento ?? 'fire', eventos, 'Explosão');
+        ferirJogador(estado, hunt, personagem, m, (m.maxHp * (mec.danoPctDaVida ?? 5)) / 100, mec.elemento ?? 'fire', eventos, 'Explosão', { acerto: true });
       }
     } else if (mec.efeito === 'gerar') gerar(hunt, m, mec, eventos);
     else if (mec.efeito === 'solo') criarSolo(hunt, m, mec, agora, eventos);

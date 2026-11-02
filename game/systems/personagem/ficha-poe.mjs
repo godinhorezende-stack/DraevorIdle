@@ -13,6 +13,7 @@ import * as Especializacoes from './especializacoes.mjs';
 import * as Passivas from '../passivas/arvore.mjs';
 import * as ClassesPoe from '../itens-poe/classes.mjs';
 import { esperaDaRecarga, recargaPorSegundo } from './defesa.mjs';
+import * as Salvaguarda from './salvaguarda.mjs';
 import { nomeDaHunt } from '../hunt/terreno.mjs';
 import * as CargasPoe from '../itens-poe/cargas.mjs';
 import { MANA_REGEN_BASE_POE, LEECH_POE, tetoDoRouboPct, APS_DESARMADO_POE } from '../ficha.mjs';
@@ -248,6 +249,8 @@ export function montar(estado, ficha, extras = {}) {
     { id: 'defesa', titulo: 'Defesa', linhas: [
       linha('Armadura', num(ficha.armor), { fontes: daOrigem('armour'), dica: `reduz ${pct(reducaoDaArmadura(ficha.armor ?? 0, 100) * 100, 0)} de um golpe físico de 100` }),
       linha('Evasão', num(ficha.evasion), { fontes: daOrigem('evasion'), dica: chances.esquiva != null ? `${pct(chances.esquiva * 100, 0)} de chance de evitar o ataque de um monstro do seu nível` : null }),
+      // (02/11) a SALVAGUARDA (Ward — `personagem/salvaguarda.mjs`): absorve os acertos antes de tudo e volta inteira depois da espera
+      ...(ficha.salvaguarda > 0 ? [linha('Salvaguarda', num(ficha.salvaguarda), { dica: `absorve o dano dos acertos antes do Escudo de Energia e da Vida; volta inteira ${num(Salvaguarda.espera(ficha) / 1000, 2)} s depois do primeiro dano` })] : []),
       linha('Chance de bloquear ataques', pct((ficha.blockChance ?? 0) * 100, 1)),
       linha('Chance de bloquear magias', pct((ficha.bloqueioDeMagia ?? 0) * 100, 1)),
       linha('Chance de suprimir dano de magia', pct((ficha.supressaoDeMagia ?? 0) * 100, 0), { dica: 'a magia suprimida causa 50% menos dano' }),

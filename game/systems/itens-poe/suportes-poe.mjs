@@ -180,6 +180,10 @@ const REGRAS = [
   ...REGRAS_T2,
   // ---- (lote T3, 27/10: as correções que os testes do lote acharam — `suportes-t3.mjs`: o adicionado da Imolação só contra o alvo Queimando) ----
   ...REGRAS_T3,
+  // (02/11) o Conjurar ao Perder Salvaguarda: o gatilho (`gatilhoDe`, 'salvaguarda') e a recarga "5% mais rápida por 100 Salvaguarda, até 400%" — da recarga do GATILHO
+  // (`Salvaguarda.recargaDoGatilho`, em `Acoes.ativarGatilhos`); antes a regra larga da "velocidade de recarga aumentada" a lia como 5% sempre
+  [/^Ativa esta magia reforçada quando sua salvaguarda quebra$/i, () => ({})],
+  [new RegExp(`^Magias reforçadas têm a velocidade de recarga aumentada em ${N}% por 100 Salvaguarda, até ${N}%$`, 'i'), () => ({})],
   // ---- (lote C2 da rodada 4, 28/10: o "mais" e o "aumentado" de um tipo só na parte daquele tipo do golpe — `gemas-r4c2.REGRAS_C2R4`) ----
   ...REGRAS_C2R4,
   // ---- (lote S2B, 27/10: a segunda metade das parciais — `suportes-s2b.mjs`; antes das gerais, que pegavam o começo de algumas e davam o "mais" sem a condição) ----
@@ -758,6 +762,12 @@ function gatilhoDe(s, textos) {
   const atordoado = tudo.match(/(\d+(?:\.\d+)?)% de chance de Ativar Magias Suportadas quando você for Atordoado/i);
   if (atordoado) return { quando: 'atordoado', recargaMs, chance: parseFloat(atordoado[1]) };
   if (/chance de Ativar Magias de Não-Lacaios Suportadas ao Morrer/i.test(tudo)) return { quando: 'morte', recargaMs };
+  // (02/11, dono: a Salvaguarda como o PoE) o Conjurar ao Perder Salvaguarda: as magias saem quando a Salvaguarda quebra (`personagem/salvaguarda.mjs` → `Acoes`), com a
+  // recarga de 1 s ÷ (1 + 5% por 100 de Salvaguarda máxima, até 400%)
+  if (/Ativa esta magia reforçada quando sua salvaguarda quebra/i.test(tudo)) {
+    const por = /velocidade de recarga aumentada em (\d+(?:\.\d+)?)% por 100 Salvaguarda, até (\d+(?:\.\d+)?)%/i.exec(tudo);
+    return { quando: 'salvaguarda', recargaMs, ...(por ? { porSalvaguardaPct: parseFloat(por[1]), porSalvaguardaMaxPct: parseFloat(por[2]) } : {}) };
+  }
   // (lote S2A, 27/10) o Marcar ao Acertar: a Marca suportada sai quando você Acerta um Inimigo Raro ou Único com um Ataque (a recarga do suporte, 4 s)
   if (ehGatilhoDoMarcar(tudo)) return { quando: 'acertoRaro', recargaMs };
   // (lote S2A) a Flecha Forjada com Mana: os Ataques de Arco suportados saem quando a Mana gasta em OUTROS Ataques de Arco passa de X% do custo deles (a recarga, 0,5 s)
@@ -950,6 +960,9 @@ export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
   if (slug === 'Earthbreaker_Support' && efeito.viraTotem) Object.assign(efeito, { ativacaoM: 7, devastadorAreaCorpoPct: DEVASTADOR.areaCorpoIncPct });
   // (lote R3C) o sinal do "Efeito das Auras" da Bênção do Guardião pelo nível
   ajustarEfeitoR3c(slug, nivel, efeito);
+  // (02/11) o Conjurar ao Perder Salvaguarda: a coluna do poedb ("-30% de dano mágico") traz só o número — 30, 26, …, 2, nada no 13, 2 e 4 no 14 e no 15: a penalidade
+  // diminui até 0 e vira "mais" depois dele (o mesmo passo de 2); no 14 e no 15 o sinal sai positivo
+  if (slug === 'Cast_on_Ward_Break_Support' && nivel >= 14) for (const k of ['maisDanoAcertoPct', 'maisDanoMagicoPct']) if (efeito[k] < 0) efeito[k] = -efeito[k];
   return { efeito, naoFeitas };
 }
 
@@ -969,9 +982,8 @@ const MOMENTUM_CANALIZANDO = /Ganhe \S+ de Momentum a cada \S+ segundos enquanto
  * (R3, dono 27/10 — aval do dono 27/10) O suporte que NÃO SE APLICA ao jogo, com a nota do porquê (como as gemas — `GemasPoe.NAO_SE_APLICA`): fica sem efeito e o relatório o
  * mostra como "não se aplica" (`tools/relatorio-gemas-poe.mjs`, `naoSeAplica`).
  */
-export const NAO_SE_APLICA = {
-  Cast_on_Ward_Break_Support: 'não se aplica: o jogo não tem Salvaguarda (Ward), então a salvaguarda nunca quebra e a magia nunca seria ativada (aval do dono 27/10)',
-};
+// (02/11, dono: "resolva essa que não se aplica" — a Salvaguarda existe como no PoE, `personagem/salvaguarda.mjs`: o Conjurar ao Perder Salvaguarda saiu daqui)
+export const NAO_SE_APLICA = {};
 function avaliar(s) {
   if (NAO_SE_APLICA[s.slug]) return { status: 'nao', motivos: [NAO_SE_APLICA[s.slug]], naoSeAplica: NAO_SE_APLICA[s.slug] };
   // Pelo que o suporte É (as tags) e pelo gatilho dos mods — a descrição fala do que ele NÃO suporta ("não pode suportar totens").

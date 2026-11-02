@@ -2366,7 +2366,11 @@ export function renderHud(character, catalog, party = null, escudoDeMana = false
   // O número INTEIRO no texto (dono, 07/10: "147.00000000000006/246"): a regeneração do PoE soma frações por tique e o servidor guarda o
   // resto (é ele que faz a regeneração fechar a conta); a tela mostra só o inteiro — e nunca 0 com o personagem vivo.
   const inteiro = (v) => { const n = Number(v) || 0; return n > 0 && n < 1 ? 1 : Math.floor(n); };
-  setBar('hp', character.hp, derived.maxHp, esMax > 0 ? `${inteiro(character.hp)}/${inteiro(derived.maxHp)} · ES ${inteiro(esAgora)}/${inteiro(esMax)}` : `${inteiro(character.hp)}/${inteiro(derived.maxHp)}`);
+  // (02/11) a SALVAGUARDA (Ward do PoE — `personagem/salvaguarda.mjs`): um número simples no texto da barra, como o do Escudo — "SG atual/máx" (0 enquanto quebrada,
+  // até voltar inteira)
+  const sgMax = derived.salvaguarda ?? 0;
+  const sg = sgMax > 0 ? ` · SG ${inteiro(Math.max(0, Math.min(sgMax, character.salvaguarda ?? sgMax)))}/${inteiro(sgMax)}` : '';
+  setBar('hp', character.hp, derived.maxHp, `${esMax > 0 ? `${inteiro(character.hp)}/${inteiro(derived.maxHp)} · ES ${inteiro(esAgora)}/${inteiro(esMax)}` : `${inteiro(character.hp)}/${inteiro(derived.maxHp)}`}${sg}`);
   escudoNaBarraDeVida(esAgora, esMax, derived.maxHp > 0 ? character.hp / derived.maxHp : 0);
   setBar('mana', character.mana, derived.maxMana, derived.reservaDeMana > 0 ? `${inteiro(character.mana)}/${inteiro(derived.maxMana)} · ${inteiro(derived.reservaDeMana)} reservada` : `${inteiro(character.mana)}/${inteiro(derived.maxMana)}`);
   // As auras do PoE que reservam: a parte trancada no fim das barras.

@@ -52,6 +52,7 @@ import { waypointMaisPerto, passoNoPercurso } from './hunt/percurso.mjs';
 import { proximoMonstroForaDeAlcance, metaDoLure, atualizarLure } from './hunt/lure.mjs';
 import { aliadosPorCasa } from './hunt/aliados.mjs';
 import * as Defesa from './personagem/defesa.mjs';
+import * as Salvaguarda from './personagem/salvaguarda.mjs';
 import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, ATAQUE_DO_MONSTRO_MS, round, golpesDosMonstros, contextoDoDrop, pagarRecompensaDeAto, nivelDoDropPoe, raridadeDoDrop, naSalaDaPartilha } from './hunt/combate.mjs';
 import { gerarItem, aceitaAtributos } from './itens/gerar.mjs';
 import * as Campanha from './campanha.mjs';
@@ -1722,6 +1723,8 @@ export function regenerar(estado, ms) {
   Reserva.cortarNoLivre(estado);
   // O Energy Shield volta sozinho depois de um tempo sem apanhar (`Defesa.recarregar`).
   Defesa.recarregar(estado, ficha, ms);
+  // (02/11) a Salvaguarda volta inteira no fim da espera (`personagem/salvaguarda.mjs`)
+  Salvaguarda.recarregar(estado, ficha, ms);
 }
 
 const ELEMENTO_DA_COR = Object.fromEntries(Object.entries(Acoes.COR_DO_ELEMENTO).map(([el, cor]) => [cor, el]));

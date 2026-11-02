@@ -99,6 +99,7 @@ import * as Comparar from '../systems/itens/comparar.mjs';
 import * as Atributos from '../systems/personagem/atributos.mjs';
 import * as AtributosDoMob from '../systems/mobs/atributos.mjs';
 import * as Defesa from '../systems/personagem/defesa.mjs';
+import * as Salvaguarda from '../systems/personagem/salvaguarda.mjs';
 import * as Anuncios from '../systems/anuncios.mjs';
 import * as Manutencao from '../systems/modo-de-manutencao.mjs';
 import * as Presentes from '../systems/presentes.mjs';
@@ -325,6 +326,10 @@ export function encherNaCidade(estado) {
   if (estado.maxHp && estado.hp !== estado.maxHp && (estado.hp ?? 0) > 0) estado.hp = estado.maxHp;
   if (estado.maxMana && estado.mana !== estado.maxMana) estado.mana = estado.maxMana;
   estado.es = null; // cheio
+  // (02/11) a Salvaguarda também (`personagem/salvaguarda.atual`: sem espera, cheia)
+  estado.salvaguarda = null;
+  estado.salvaguardaEspera = 0;
+  estado.salvaguardaQuebrada = false;
   FrascosPoe.encherNaCidade(estado);
 }
 
@@ -388,6 +393,8 @@ function characterParaCliente(personagem, estado) {
     },
     // O Energy Shield ATUAL (o máximo é `derived.energyShield`).
     es: Defesa.esAtual(estado, Ficha.combate(estado)),
+    // (02/11) a SALVAGUARDA atual (o máximo é `derived.salvaguarda` — `personagem/salvaguarda.mjs`)
+    salvaguarda: Salvaguarda.atual(estado, Ficha.combate(estado)),
     // A FICHA no estilo do PoE (dono, 07/10): os números, as seções e DE ONDE vem cada um (`personagem/ficha-poe.mjs`). Só com ITENS_POE=1.
     ...(ItensPoeCatalogo.ligado() ? { fichaPoe: FichaPoe.montar(estado, Ficha.combate(estado), {
       // (lote A5d: contra o monstro típico do PoE do nível — a tabela do PoE × o multiplicador padrão, como no combate; o Evasivo por cima)

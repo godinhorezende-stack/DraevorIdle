@@ -20,8 +20,7 @@ Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 261 |
-| não se aplica | 1 |
+| implementada e testada | 262 |
 
 ### Variantes
 
@@ -50,11 +49,6 @@ Só os ataques:
 ## Gemas de suporte pendentes
 
 
-
-## Não se aplicam ao jogo
-
-- **Cast_on_Ward_Break_Support** (Conjurar ao Perder Salvaguarda (Reforço)) — não se aplica (não se aplica: o jogo não tem Salvaguarda (Ward), então a salvaguarda nunca quebra e a magia nunca seria ativada (aval do dono 27/10))
-  - não se aplica: o jogo não tem Salvaguarda (Ward), então a salvaguarda nunca quebra e a magia nunca seria ativada (aval do dono 27/10)
 
 ## Linhas que não se aplicam ao jogo
 

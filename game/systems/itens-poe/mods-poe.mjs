@@ -13,6 +13,7 @@ import { porLento } from './gemas-gbd.mjs';
 // (lote S2B, 27/10: o Exemplar conta os seus críticos de ataque)
 import { notarCriticoDeAtaque } from './suportes-s2b.mjs';
 import * as Testador from '../personagem/testador.mjs';
+import * as Salvaguarda from '../personagem/salvaguarda.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -1100,6 +1101,8 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     // "X% de chance de ganhar uma Carga de Frasco ao causar um Golpe Crítico": a CHANCE de cada frasco do cinto ganhar uma carga.
     case 'frascoChance': { if (sorte(v)) for (const p of estado.frascos ?? []) if (p?.poe) p.poe.cargas = (p.poe.cargas ?? 0) + 1; return; }
     case 'recargaEs': if (sorte(v)) estado.esEspera = 0; return;
+    // (02/11) "X% de chance de Restaurar a Salvaguarda ao Bloquear / ao usar um Frasco": ela volta inteira (`personagem/salvaguarda.restaurar`)
+    case 'salvaguarda': if (sorte(v)) Salvaguarda.restaurar(estado, ficha); return;
     // `removerAfeccao:elementais` ("Remove Afecções Elementais quando você Conjurar uma Magia Maldição"): o Incêndio, a Eletrização, o
     // Resfriamento e o Congelamento em você; sem parâmetro, a afecção mais antiga.
     case 'removerAfeccao': if (sorte(v)) {

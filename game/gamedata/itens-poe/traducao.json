@@ -17948,6 +17948,202 @@
       "_lote12": "13/10 — as correções das notas da árvore (lote 12)"
     },
     {
+      "padrao": "^Proteção aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_pct_local",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)",
+      "_local": "LOCAL na peça (o poedb: local ward +%): × a Salvaguarda da base dela, com a qualidade (itens-poe/jogo.baseDaPeca)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Proteção$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_local",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)",
+      "_local": "LOCAL na peça (o poedb: local ward — Svalinn): soma na Salvaguarda da base dela (itens-poe/jogo.baseDaPeca)"
+    },
+    {
+      "padrao": "^Proteção é Restaurada \\{(\\d+)\\}% mais rápido$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_restauracao_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
+      "padrao": "^Proteção é Restaurada \\{(\\d+)\\}% mais lento$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_restauracao_pct",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano sofrido ignora a Proteção$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_ignorada_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
+      "padrao": "^Ganha Adrenalina por \\{(\\d+)\\} segundos quando a Proteção for Quebrada$",
+      "efeitos": [
+        {
+          "stat": "ev:salvaguardaQuebra:buff:adrenalina",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
+      "padrao": "^Aumentos e Reduções ao Escudo de Energia Máximo se aplicam a Proteção$",
+      "efeitos": [
+        {
+          "stat": "es_inc_na_salvaguarda",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)",
+      "nota": "o poedb: \"energy shield additive modifiers instead apply to ward\" — o Escudo de Energia aumentado vai para a Salvaguarda, e não para o Escudo"
+    },
+    {
+      "padrao": "^Salvaguarda aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
+      "padrao": "^Salvaguarda aumentada em \\{(\\d+)\\}% dos itens de armadura equipados$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)",
+      "nota": "toda Salvaguarda do jogo vem de itens de armadura (as bases Rúnicas e o escudo Svalinn)"
+    },
+    {
+      "padrao": "^Restauração da Salvaguarda \\{(\\d+)\\}% mais rápida$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_restauracao_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
+      "padrao": "^Salvaguarda \\{(\\d+)\\}% menor$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_mais",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} Carga de Tolerância quando a Salvaguarda se Rompe$",
+      "efeitos": [
+        {
+          "stat": "ev:salvaguardaQuebra:carga:tolerancia",
+          "valor": "100"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} Carga de Poder quando a Salvaguarda se Rompe$",
+      "efeitos": [
+        {
+          "stat": "ev:salvaguardaQuebra:carga:poder",
+          "valor": "100"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} Carga de Frenesi quando a Salvaguarda se Rompe$",
+      "efeitos": [
+        {
+          "stat": "ev:salvaguardaQuebra:carga:frenesi",
+          "valor": "100"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Restaurar a Salvaguarda ao Bloquear$",
+      "efeitos": [
+        {
+          "stat": "ev:bloquear:salvaguarda",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance da Salvaguarda ser Restaurada ao usar um Frasco$",
+      "efeitos": [
+        {
+          "stat": "ev:usarFrasco:salvaguarda",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
       "padrao": "^.*Proteção.*$",
       "efeitos": [
         {
@@ -17956,7 +18152,7 @@
         }
       ],
       "estado": "inerte",
-      "nota": "a Proteção (Ward) não existe no jogo",
+      "nota": "esta linha da Proteção (Salvaguarda/Ward) ainda não tem efeito no jogo (a Salvaguarda existe desde 02/11: a base, o aumentado, a restauração e a quebra valem)",
       "_nova": true,
       "_unico": true
     },

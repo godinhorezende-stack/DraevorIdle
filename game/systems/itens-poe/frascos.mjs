@@ -21,6 +21,7 @@ import { camposDaPeca } from '../itens/item.mjs';
 import * as Dot from '../combate/dot.mjs';
 import { vidaSoPeloDreno, marcar, reservadoAgora } from './condicoes-poe.mjs';
 import * as Tinturas from './tinturas.mjs';
+import * as Salvaguarda from '../personagem/salvaguarda.mjs';
 import { quebrarGelo, porLento } from './gemas-gbd.mjs';
 
 // (12/10: + as TINTURAS — `itens-poe/tinturas.mjs`: vão no mesmo cinto, sem cargas; ativam e desativam.)
@@ -47,6 +48,8 @@ const preencher = (modelo, valores) => String(modelo ?? '').replace(/\{(\d+)\}/g
 
 /** As regras das linhas que mexem no FRASCO (e não no personagem). `p` = os parâmetros sendo montados; `v` = o número da linha. */
 const REGRAS_DO_FRASCO = [
+  // (02/11, dono: a Salvaguarda como o PoE) o Frasco de Ferro: "Restaura Proteção ao usar" — a Salvaguarda volta inteira no uso (`usar` → `Salvaguarda.restaurar`)
+  [/^Restaura Proteção ao usar$/, (p) => (p.restauraSalvaguarda = true)],
   [/^Velocidade de Recuperação aumentada em \{\d+\}%$/, (p, v) => (p.velocidadePct += v)],
   [/^Velocidade de Recuperação reduzida em \{\d+\}%$/, (p, v) => (p.velocidadePct -= v)],
   [/^Quantidade Recuperada aumentada em \{\d+\}%$/, (p, v) => (p.quantidadePct += v)],
@@ -152,10 +155,9 @@ export function parametros(peca, afDoPersonagem = null) {
         linhas.push({ texto, estado: vale ? 'efeito' : 'registrado' });
         continue;
       }
-      // "Restaura Proteção ao usar": a Proteção (Ward) não existe no jogo — o balão explica. O resto passa pela tradução (o que ela marca
-      // como inerte, como na peça).
+      // O resto passa pela tradução (o que ela marca como inerte, como na peça). (02/11: o "Restaura Proteção ao usar" tem efeito — a regra acima.)
       const tr = traduzirParte(parte, mod.valores ?? []);
-      linhas.push({ texto, estado: /Restaura Proteção/.test(parte) || tr.estado === 'inerte' ? 'inerte' : 'registrado' });
+      linhas.push({ texto, estado: tr.estado === 'inerte' ? 'inerte' : 'registrado' });
     }
     const minhas = linhas.slice(antes);
     estadosPorMod.push(minhas.every((l) => l.estado === 'efeito') ? 'equivalente' : minhas.some((l) => l.estado === 'efeito') ? 'aproximado' : minhas.every((l) => l.estado === 'inerte') ? 'inerte' : 'registrado');
@@ -185,6 +187,7 @@ export function parametros(peca, afDoPersonagem = null) {
     efeitoPct: p.efeitoPct,
     instantaneoPct: Math.min(100, p.instantaneoPct), instantaneoNaVidaBaixa: p.instantaneoNaVidaBaixa, instantaneoNoFim: p.instantaneoNoFim, naoParaNoCheio: p.naoParaNoCheio,
     naoAcumula: p.naoAcumula, saiNoPvp: p.saiNoPvp, custoDaOutraPct: p.custoDaOutraPct, lacaiosPct: p.lacaiosPct, cargaNoCriticoPct: p.cargaNoCriticoPct, cargasAoSerAcertado: p.cargasAoSerAcertado, aoUsar: p.aoUsar,
+    ...(p.restauraSalvaguarda ? { restauraSalvaguarda: true } : {}),
     af,
     efeitoDaBase: daBase?.texto ?? null,
     linhas,
@@ -289,6 +292,8 @@ export function usar(estado, v, eventos = null, quem = null) {
   // (ciclo 7, lote F) "X% de chance de Frascos usados por você não consumirem Cargas".
   if (!(Math.random() * 100 < (Number(afp.frasco_sem_consumo) || 0))) peca.poe.cargas = cargas - par.cargasPorUso;
   aoUsarOFrasco(estado, par, eventos, quem);
+  // (02/11) "Restaura Proteção ao usar" (o Frasco de Ferro): a Salvaguarda volta inteira
+  if (par.restauraSalvaguarda) Salvaguarda.restaurar(estado);
   // (12/10, a Tintura: "…se você usou um Frasco de Vida Recentemente")
   if (par.tipo === 'vida') marcar(hunt, 'usouFrascoVida', agora);
   if (par.tipo === 'utilidade') {

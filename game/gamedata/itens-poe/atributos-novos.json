@@ -6296,6 +6296,54 @@
       "combate": true,
       "efeito": "o Escudo de Energia das peças de armadura vira Vida (afixos.sincronizarMaximos, ficha.defesasDaFicha) (13/10)"
     },
+    "salvaguarda": {
+      "nome": "Salvaguarda (+N, global)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.defesasDaFicha → ficha.salvaguarda (personagem/salvaguarda.mjs) (02/11)"
+    },
+    "salvaguarda_pct": {
+      "nome": "Salvaguarda aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.defesasDaFicha: × (1 + X%) a Salvaguarda das peças (02/11)"
+    },
+    "salvaguarda_local": {
+      "nome": "Salvaguarda da peça (+N, local)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/jogo.baseDaPeca: soma na Salvaguarda da base da própria peça (Svalinn) (02/11)"
+    },
+    "salvaguarda_pct_local": {
+      "nome": "Salvaguarda da peça aumentada (local)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/jogo.baseDaPeca: × (1 + qualidade + X%) a Salvaguarda da base da própria peça (02/11)"
+    },
+    "salvaguarda_restauracao_pct": {
+      "nome": "Restauração da Salvaguarda mais rápida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "personagem/salvaguarda.espera: divide os 2 s da espera (o PoB: WardRechargeDelay, WardRechargeFaster) (02/11)"
+    },
+    "salvaguarda_ignorada_pct": {
+      "nome": "Dano sofrido que ignora a Salvaguarda",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "personagem/salvaguarda.absorver: essa parte do acerto passa direto (02/11)"
+    },
+    "salvaguarda_mais": {
+      "nome": "Salvaguarda mais/menos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.defesasDaFicha: multiplica a Salvaguarda (02/11)"
+    },
+    "es_inc_na_salvaguarda": {
+      "nome": "O Escudo de Energia aumentado vai para a Salvaguarda",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.defesasDaFicha: o Escudo de Energia aumentado (peças, árvore, Inteligência) sai do Escudo e aumenta a Salvaguarda — o Guardião da Fé (02/11)"
+    },
     "sem_es_da_base": {
       "nome": "Sem Escudo de Energia na base",
       "unidade": "",

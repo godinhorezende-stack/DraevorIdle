@@ -506,6 +506,8 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // As defesas novas: Evasion (esquiva do golpe do bicho) e Energy Shield (barra antes da vida).
     evasion: defesas.evasion,
     energyShield: defesas.energyShield,
+    // (02/11) a SALVAGUARDA máxima (Ward — `personagem/salvaguarda.mjs`): absorve os acertos antes de tudo e volta inteira depois da espera
+    salvaguarda: defesas.salvaguarda,
     // Accuracy: a chance de o golpe da arma/wand acertar o bicho (`Atributos.chanceDeAcerto`).
     // PoE: × (1 + "Precisão Global aumentada") × (1 − "X% menos Precisão").
     // (ciclo 7: + o "X% mais Precisão" sem condição do alvo — "5% mais Precisão por Carga de Frenesi")
@@ -932,7 +934,14 @@ function defesasDaFicha(estado, af, doAtributo, espStat = () => 0) {
   const armour = simples(somaDoCampo('armor'), { fixos: af.armor_flat ?? 0, pct: (af.armour_pct ?? 0) + espStat('armour') }).bruto;
   // (+ a evasão % da DEX e o escudo % da INT — `Atributos.efeitos`; na escala do PoE com o PoE ligado.)
   const evasion = simples(somaDoCampo('evasion'), { fixos: (af.evasion ?? 0) + doAtributo.evasao, pct: (af.evasion_pct ?? 0) + espStat('evasion') + (doAtributo.evasaoPct ?? 0) }).bruto;
-  const energyShield = simples(somaDoCampo('es'), { fixos: af.energy_shield ?? 0, pct: (af.es_pct ?? 0) + (doAtributo.energyShieldPct ?? 0) }).bruto;
+  // (02/11, o Guardião da Fé: "Aumentos e Reduções ao Escudo de Energia Máximo se aplicam a Proteção" — o poedb: "energy shield additive modifiers INSTEAD apply to
+  // ward": o "Escudo de Energia aumentado" (o das peças, da árvore e da Inteligência) sai do Escudo e vai para a Salvaguarda)
+  const esPctGeral = (af.es_pct ?? 0) + (doAtributo.energyShieldPct ?? 0);
+  const esNaSalvaguarda = itensPoeLigado() && Number(af.es_inc_na_salvaguarda) > 0;
+  const energyShield = simples(somaDoCampo('es'), { fixos: af.energy_shield ?? 0, pct: esNaSalvaguarda ? 0 : esPctGeral }).bruto;
+  // (02/11, dono: a SALVAGUARDA como o PoE — `personagem/salvaguarda.mjs`) a das peças vestidas (a base Rúnica com os locais — `base.ward`) + o "+N" global, × (1 + o
+  // "Salvaguarda aumentada" global), × o "mais/menos" ("Salvaguarda X% menor")
+  const salvaguarda = itensPoeLigado() ? Math.round(simples(somaDoCampo('ward'), { fixos: af.salvaguarda ?? 0, pct: (af.salvaguarda_pct ?? 0) + (esNaSalvaguarda ? esPctGeral : 0) }).bruto * Math.max(0, 1 + (Number(af.salvaguarda_mais) || 0) / 100)) : 0;
   // (09/10) O aumento de UMA peça (a árvore do PoE: "Evasão do seu Peitoral aumentada em X%", "Defesas do Escudo equipado aumentadas em
   // X%", "Armadura das Botas e Luvas Equipadas"): vale só para a base daquela peça, somado aos aumentos gerais — como no PoE.
   const daPeca = (campo, chaves, total) => (total > 0 ? Object.entries(chaves).reduce((n, [slot, ks]) => {
@@ -951,7 +960,7 @@ function defesasDaFicha(estado, af, doAtributo, espStat = () => 0) {
   const semEscudo = itensPoeLigado() && Number(af.sem_escudo_energia) > 0;
   // (lote A2, dono 19/10: + o "mais/menos Escudo de Energia Máximo" — a Lâmina de Energia: "Buff concede 50% menos Escudo de Energia Máximo", o PoB
   // `EnergyShield MORE`)
-  return { armour: Math.round((armour + armourDaPeca) * mais('armour_mais')), evasion: Math.round((evasion + evasionDaPeca) * mais('evasion_mais')), energyShield: semEscudo ? 0 : Math.round((energyShield + esDaPeca) * mais('es_mais')) };
+  return { armour: Math.round((armour + armourDaPeca) * mais('armour_mais')), evasion: Math.round((evasion + evasionDaPeca) * mais('evasion_mais')), energyShield: semEscudo ? 0 : Math.round((energyShield + esDaPeca) * mais('es_mais')), salvaguarda: Math.max(0, salvaguarda) };
 }
 
 /** Os totais da vida do personagem (monstros, ouro, mortes, tempo caçando). */

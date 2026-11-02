@@ -1153,8 +1153,23 @@ export function corpoDaGemaPoe(entry) {
   const recarga = t ? t.recarga : tb.recargaMs ?? 0;
   if (!f.suporte) linhaDeTempo('Recarga', recarga ? `${seg(recarga)}${(t?.cargas ?? tb.cargas ?? 1) > 1 ? ` (${t?.cargas ?? tb.cargas} usos)` : ''}` : 'sem recarga (como no PoE)');
   // O suporte de GATILHO: quando as magias ligadas saem sozinhas e a recarga do gatilho.
-  const QUANDO = { critico: 'quando o ataque ligado acerta um crítico', abate: 'quando o ataque corpo a corpo ligado mata', danoRecebido: `a cada ${f.gatilho?.limiar ?? '?'} de dano que você recebe` };
-  if (f.gatilho) linhaDeTempo('Ativa as magias ligadas', `${QUANDO[f.gatilho.quando] ?? f.gatilho.quando} · recarga ${seg(f.gatilho.recargaMs)}`);
+  // (02/11, dono: "atualize o tooltip de todas") todo gatilho dos suportes diz QUANDO sai, em português — antes só o crítico, o abate e o dano recebido; os outros
+  // mostravam a chave crua ('canalizar', 'morte'…). O da Salvaguarda (o Conjurar ao Perder Salvaguarda) com a recarga pela Salvaguarda máxima.
+  const g = f.gatilho ?? {};
+  const pctTxt = (v) => `${Number(v ?? 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
+  const QUANDO = {
+    critico: 'quando o ataque ligado acerta um crítico',
+    abate: 'quando o ataque corpo a corpo ligado mata',
+    danoRecebido: `a cada ${g.limiar ?? '?'} de dano que você recebe`,
+    canalizar: 'a cada intervalo, enquanto você canaliza a habilidade ligada',
+    atordoado: `${pctTxt(g.chance ?? 100)} de chance quando você é atordoado`,
+    morte: 'quando você morre',
+    acertoRaro: 'quando um ataque seu acerta um inimigo Raro ou Único',
+    manaForjada: `quando a mana gasta em outros ataques de arco passa de ${pctTxt(g.limiarPct)} do custo deles`,
+    salvaguarda: `quando a sua Salvaguarda quebra${g.porSalvaguardaPct ? ` (recarga ${pctTxt(g.porSalvaguardaPct)} mais rápida por 100 de Salvaguarda máxima, até ${pctTxt(g.porSalvaguardaMaxPct)})` : ''}`,
+  };
+  const ROTULO_DA_RECARGA = { canalizar: 'intervalo' };
+  if (f.gatilho) linhaDeTempo('Ativa as magias ligadas', `${QUANDO[g.quando] ?? g.quando} · ${ROTULO_DA_RECARGA[g.quando] ?? 'recarga'} ${seg(g.recargaMs ?? 0)}`);
   if (entry.ativadaPor) linhaDeTempo('Ativada por', `${entry.ativadaPor} (não se conjura à mão)`);
   if (tempos.children.length) jogo.append(tempos);
   if (entry.damage) {
