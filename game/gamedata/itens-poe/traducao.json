@@ -6142,14 +6142,14 @@
       "padrao": "^Campo de Visão é baseado no Escudo de Energia em vez de na Vida$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "luz_pelo_escudo",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: o jogo não tem raio de luz nem campo de visão",
+      "estado": "novo",
+      "nota": "o raio da luz encolhe com o Escudo de Energia que falta, e não com a vida (o stat do PoE: light radius scales with energy shield)",
       "_nova": true,
-      "_ciclo7": true
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
     },
     {
       "padrao": "^.*metros ao Alcance de Golpes Corpo a Corpo.*$",
@@ -6382,17 +6382,17 @@
       "_lote39": "16/10 — lote 39 (P060: a aura do arquétipo do mercenário, × o efeito — vale nele e em você; a decisão do dono \"Uma aura por arquétipo\")"
     },
     {
-      "padrao": "^.*[Mm]ercenário.*$",
+      "padrao": "^Aumentos e reduções de campo de visão também se aplicam ao efeito dos seus bônus de habilidade de conexão no seu mercenário$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "luz_no_vinculo_mercenario",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: o jogo não tem raio de luz nem campo de visão (o mercenário do Luminary existe — esta linha depende do Raio de Iluminação)",
+      "estado": "novo",
+      "nota": "o \"aumentado\" do Raio de Iluminação soma no Efeito do Buff dos seus Vínculos no mercenário",
       "_nova": true,
-      "_ciclo7": true
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
     },
     {
       "padrao": "^Habilidades de Retaliação se tornam Utilizáveis.*$|^.*que uma Habilidade de Retaliação diferente se torne Utilizável$|^.*Habilidades de Retaliação utilizadas continuarem Utilizáveis.*$|^Habilidades de Retaliação Nocivas se tornam Utilizáveis.*$",
@@ -8758,17 +8758,98 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^.*Raio de Iluminação.*$",
+      "padrao": "^Aumentos e Reduções ao Raio de Iluminação também são aplicados ao Dano$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "dmg_inc%stat:light_radius",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: no PoE o raio de luz só muda o quanto se enxerga em volta: o jogo mostra a tela inteira",
+      "estado": "novo",
+      "nota": "o PoB: LightRadiusAppliesToDamage — o \"aumentado\" da luz entra no Dano aumentado",
       "_nova": true,
-      "_ciclo7": true
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
+    },
+    {
+      "padrao": "^Aumentos e Reduções ao Raio de Iluminação também são aplicados ao Efeito em Área em \\{(\\d+)\\}% de seu valor$",
+      "efeitos": [
+        {
+          "stat": "area_inc%stat:light_radius",
+          "valor": "pct({1})"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o PoB: LightRadiusAppliesToAreaOfEffect — metade do \"aumentado\" da luz na Área de Efeito",
+      "_nova": true,
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
+    },
+    {
+      "padrao": "^Aumentos e Reduções ao Raio de Iluminação também (?:são aplicados|se aplicam) à Precisão$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc%stat:light_radius",
+          "valor": "1"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o PoB: LightRadiusAppliesToAccuracy — o \"aumentado\" da luz entra na Precisão",
+      "_nova": true,
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
+    },
+    {
+      "padrao": "^Adiciona de \\{(\\d+)\\} a \\{(\\d+)\\} de dano de fogo aos ataques por \\{(\\d+)\\}% de campo de visão aumentada$",
+      "efeitos": [
+        {
+          "stat": "added_fire_dmg_min%stat:light_radius",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_fire_dmg_max%stat:light_radius",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o Eclipse Solaris: o PoB — o Fogo adicionado aos ataques por 1% de Raio de Iluminação acima da base (LightRadiusInc)",
+      "_nova": true,
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
+    },
+    {
+      "padrao": "^Cegueira não afeta seu (?:Campo de Visão|Raio de Iluminação)$",
+      "efeitos": [
+        {
+          "stat": "cegueira_sem_luz",
+          "valor": "1"
+        }
+      ],
+      "estado": "novo",
+      "nota": "a Cegueira em você não encolhe a luz",
+      "_nova": true,
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
+    },
+    {
+      "padrao": "^Raio de Iluminação aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "light_radius",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "_nova": true,
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
+    },
+    {
+      "padrao": "^Raio aumentado em \\{(\\d+)\\}%(?: durante o Efeito)?$",
+      "efeitos": [
+        {
+          "stat": "light_radius",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o \"Raio aumentado durante o Efeito\" do frasco é o Raio de Iluminação (poedb: FlaskLightRadius)",
+      "_nova": true,
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
     },
     {
       "padrao": "^Inimigos esfriados pelos seus ataques sofrem dano de frio aumentado pelo esfriamento$",
@@ -9808,13 +9889,13 @@
       "padrao": "^\\{(\\d+)\\}% de redução do Raio de Iluminação$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "light_radius",
+          "valor": "-{1}"
         }
       ],
+      "estado": "novo",
       "_nova": true,
-      "estado": "inerte",
-      "nota": "no PoE o raio de luz só muda o quanto se enxerga em volta: o jogo mostra a tela inteira"
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% do Dano Físico Convertido em Dano de Fogo$",
@@ -14570,13 +14651,13 @@
       "padrao": "^\\{(\\d+)\\}% de aumento do Raio de Iluminação$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "light_radius",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "no PoE o raio de luz só muda o quanto se enxerga em volta: o jogo mostra a tela inteira",
-      "_nova": true
+      "estado": "novo",
+      "_nova": true,
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
     },
     {
       "padrao": "^Recuperação de Bloqueio aumentada em \\{(\\d+)\\}%$",
@@ -18210,18 +18291,56 @@
       "_unico": true
     },
     {
-      "padrao": "^.*(?:Raio de Iluminação|Campo de Visão|redução do Tamanho|Tamanho do (?:Personagem|Zumbi|Golem)).*$",
+      "padrao": "^Tamanho do Personagem aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "tamanho_personagem",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: efeito só visual (luz, visão, tamanho) — o jogo mostra a tela inteira e o tamanho não muda nada",
+      "estado": "novo",
+      "nota": "no PoE só muda o desenho: o personagem aparece maior na tela",
       "_nova": true,
-      "_unico": true,
-      "_lote49": "16/10 — lote 49 (como na árvore: luz, visão e tamanho não se aplicam ao jogo)"
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
+    },
+    {
+      "padrao": "^Tamanho do Zumbi aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "tamanho_zumbi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "no PoE só muda o desenho: os zumbis aparecem maiores",
+      "_nova": true,
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de redução do Tamanho dos Golens$",
+      "efeitos": [
+        {
+          "stat": "tamanho_golem",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "no PoE só muda o desenho: os golens aparecem menores",
+      "_nova": true,
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Tamanho dos Golens$",
+      "efeitos": [
+        {
+          "stat": "tamanho_golem",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "no PoE só muda o desenho: os golens aparecem maiores",
+      "_nova": true,
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
     },
     {
       "padrao": "^Acertos Corpo a Corpo com Maças, Cetros ou Cajados Fortificam por \\{(\\d+)\\} segundos$",

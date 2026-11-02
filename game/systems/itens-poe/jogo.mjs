@@ -467,7 +467,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // `phys_add_min`/`phys_add_max` —, como no PoE; antes a média em `phys_add`, com o máximo 2×)
 // (74 — 02/11, dono: a SALVAGUARDA (Ward) como o PoE — a das bases Rúnicas na peça (`base.ward`), as linhas da "Proteção" dos únicos e as da Salvaguarda das Joias
 // Atemporais com efeito — `personagem/salvaguarda.mjs`)
-export const VERSAO_DA_TRADUCAO = 74;
+// (75 — 02/11, lote "luz": o RAIO DE ILUMINAÇÃO (`light_radius`, a escuridão em volta na caçada), o que depende da luz (dano, área, precisão, o
+// Eclipse Solaris, a Glória Dourada), o Campo de Visão pelo Escudo, a Cegueira sem luz e o tamanho no desenho — `itens-poe/iluminacao.mjs`)
+export const VERSAO_DA_TRADUCAO = 75;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

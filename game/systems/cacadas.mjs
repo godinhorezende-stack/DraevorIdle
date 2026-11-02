@@ -18,6 +18,8 @@ import * as R from './regras.mjs';
 import { VALOR_DA_MOEDA, pesoDoInventario, removerItem } from './inventario.mjs';
 import * as Acoes from './acoes.mjs';
 import * as Vinculos from './itens-poe/vinculos.mjs';
+import * as Iluminacao from './itens-poe/iluminacao.mjs';
+import { DADOS as MODS_DE_MONSTRO } from './itens-poe/modificadores-monstro.mjs';
 import * as Aliados from './itens-poe/aliados.mjs';
 import * as Combo from './combo.mjs';
 import * as Treino from './treino.mjs';
@@ -3897,6 +3899,9 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
   const hd = huntOuMapaCustom(hunt.huntId);
   const mandarMapa = !hunt.mapaEnviado || forcarMapa;
   if (mandarMapa) hunt.mapaEnviado = true;
+  // (lote "luz") o af do PoE para a luz e os tamanhos no desenho (`itens-poe/iluminacao.mjs`)
+  const afDaLuz = itensPoeLigado() ? Ficha.combate(estado).afPoe ?? {} : null;
+  const tamanho = (x) => (x !== 1 ? { escala: x } : {});
   return {
     mapId: hunt.huntId,
     // A ENTRADA neste mapa (a caçada, a sala da party, a instância): o cliente confirma o carregamento dela (`protecao.mjs`).
@@ -3925,6 +3930,8 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
       ...Raridade.paraCliente(m),
       // Congelado / atordoado / lento / queimando: o cliente mostra um ícone de cada (só quando há).
       ...(m.estados ? ((a) => (a.length ? { estados: a } : {}))(Estados.ativosDe(m, hunt.clock ?? 0)) : {}),
+      // (lote "luz") o "Tamanho do Personagem aumentado" dos modificadores do PoE: o desenho maior
+      ...(afDaLuz ? tamanho(Iluminacao.tamanhoDoMonstro(m, MODS_DE_MONSTRO)) : {}),
     })),
     players: [],
     npcs: [],
@@ -3938,10 +3945,13 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     alvoClicado: hunt.alvo ?? null,
     // O familiar em campo (map.mjs desenha com o nível ao lado do nome).
     // Os lacaios e os totens das gemas do PoE (desenhados como o familiar, com a vida).
-    lacaios: (hunt.lacaios ?? []).map((l) => ({ uid: l.uid, x: l.x, y: l.y, dir: l.dir, look: l.look, lookItem: l.lookItem ?? 0, colors: l.colors ?? null, name: l.nome, nivel: l.nivel, hp: Math.max(0, Math.round(l.hp)), maxHp: l.maxHp, moveMs: l.moveMs ?? R.PASSO_MS })),
+    lacaios: (hunt.lacaios ?? []).map((l) => ({ uid: l.uid, x: l.x, y: l.y, dir: l.dir, look: l.look, lookItem: l.lookItem ?? 0, colors: l.colors ?? null, name: l.nome, nivel: l.nivel, hp: Math.max(0, Math.round(l.hp)), maxHp: l.maxHp, moveMs: l.moveMs ?? R.PASSO_MS, ...(afDaLuz ? tamanho(Iluminacao.tamanhoDoLacaio(afDaLuz, l)) : {}) })),
     // (lote A3b, dono 19/10: D13) os OBJETOS das gemas do PoE no chão ou no tempo (a bola, o tornado, as lâminas, os marcadores, o chão, os capturados em você):
     // sempre presente (lista vazia sem objeto), para o quadro em delta limpar quando somem — `Acoes.objetosParaCliente`, desenhados em `map.mjs`
     poeObjetos: Acoes.objetosParaCliente(hunt),
+    // (lote "luz", dono 02/11: "escuridão em volta") o RAIO DE ILUMINAÇÃO agora (casas) e o tamanho do personagem — a tela escurece fora da luz
+    // (`frontend/client/src/iluminacao.mjs`); sempre presente (null fora do modo PoE), para o quadro em delta limpar
+    luz: afDaLuz ? Iluminacao.paraCliente(estado, afDaLuz, hunt) : null,
     // (revisão do A3b: os dos aliados da sala vêm em `poeObjetosDoGrupo` — `Party.extrasDoRetrato`, `objetosDoPoeDoAliado`)
     summon: hunt.summon
       ? { uid: hunt.summon.uid, x: hunt.summon.x, y: hunt.summon.y, dir: hunt.summon.dir, look: hunt.summon.look, name: hunt.summon.name, nivel: hunt.summon.nivel, moveMs: hunt.summon.moveMs ?? R.PASSO_MS }
