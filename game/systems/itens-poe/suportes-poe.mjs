@@ -20,6 +20,8 @@ import { PROPRIAS_R3B, completarEfeito as completarEfeitoR3B } from './gemas-r3b
 import { PROPRIAS_R3C, ajustarEfeitoR3c } from './gemas-r3c.mjs';
 import { PROPRIAS_R3D } from './gemas-r3d.mjs';
 import { PROPRIAS_P4, DEVASTADOR } from './gemas-p4.mjs';
+// (balão de todas as gemas, 02/11) as propriedades, as linhas internas e as notas curtas do balão
+import { propDoBalao, notaCurta, linhaEscondida, linhaEmPortugues } from './balao-das-gemas.mjs';
 // (lote T2, rodada 4 — 27/10: as linhas com condição que as regras gerais davam sem ela)
 import { REGRAS_T2 } from './gemas-t2.mjs';
 import { REGRAS_C2R4 } from './gemas-r4c2.mjs';
@@ -1073,10 +1075,18 @@ export function fichaNoNivel(slug, nivel = 1, qualidade = 0) {
   const n = Math.max(1, Math.min(nivel | 0 || 1, s.linhas.length || 1));
   const t = textosDoNivel(s, n, qualidade);
   const req = Number(linhaDoNivel(s, n)[s.colunas.indexOf('RequerNível')]) || s.nivelReq || 1;
-  const props = t.props.map((p) => (/^Nível:/.test(p) ? ['Nível', String(n)] : p.includes(': ') ? [p.slice(0, p.indexOf(': ')), p.slice(p.indexOf(': ') + 2).replace(/\((\d+) Times\)/, '($1 usos)')] : [p, '']));
-  const { naoFeitas } = efeitoNoNivel(slug, n, qualidade, { tags: ['Magia', 'Ataque', 'Projétil', 'Área', 'Corpo a Corpo', 'Fogo', 'Gelo', 'Raio', 'Caos', 'Físico'].map((x) => `poe:${x}`) });
+  // (balão de todas as gemas, 02/11: o "(Máx)" no nível máximo, como nas ativas; as propriedades em português — `propDoBalao`; sem as linhas do nível vazias, internas
+  // ou que valem 0 — `linhaEscondida`)
+  // (o máximo por XP: o da propriedade "Nível: (1—20)" — 20, ou 3 nas Excepcionais; a tabela segue até o 40 para os bônus de nível das peças)
+  const faixa = (s.props ?? []).map((p) => /^Nível: \((\d+)\s*—\s*(\d+)\)/.exec(p)).find(Boolean);
+  const max = faixa ? Number(faixa[2]) : nivelMaximoDe(s);
+  const props = t.props.map((p) => (/^Nível:/.test(p) ? ['Nível', `${n}${n >= max ? ' (Máx)' : ''}`] : propDoBalao(p.includes(': ') ? [p.slice(0, p.indexOf(': ')), p.slice(p.indexOf(': ') + 2)] : [p, '']))).filter(Boolean);
+  // (balão de todas as gemas, 02/11: as linhas não feitas com as MESMAS etiquetas da avaliação do status — `avaliar` — para o balão não riscar o que o status
+  // dá por feito)
+  const { naoFeitas } = efeitoNoNivel(slug, n, qualidade, { tags: ['Magia', 'Ataque', 'Projétil', 'Área', 'Corpo a Corpo', 'Fogo', 'Gelo', 'Raio', 'Caos', 'Físico', 'Duração', 'Aura', 'Golpe'].map((x) => `poe:${x}`) });
   return {
-    nome: s.nome, en: s.en, cor: s.cor, tags: s.tags, nivel: n, nivelReq: req, props, desc: s.desc, mods: t.mods, qualidade: Math.max(0, Math.min(20, qualidade || 0)), modsDaQualidade: t.qualidade,
-    status: r.status, motivos: r.motivos, naoFeitas, suporte: true, gatilho: gatilhoDe(s, t),
+    nome: s.nome, en: s.en, cor: s.cor, tags: s.tags, nivel: n, nivelMax: max, nivelReq: req, props, desc: s.desc, mods: t.mods.filter((m) => !linhaEscondida(m)).map(linhaEmPortugues), qualidade: Math.max(0, Math.min(20, qualidade || 0)), modsDaQualidade: t.qualidade,
+    status: r.status, motivos: r.motivos, naoFeitas: naoFeitas.filter((l) => !linhaEscondida(l) || t.qualidade.includes(l)).map(linhaEmPortugues), suporte: true, gatilho: gatilhoDe(s, t),
+    ...(r.naoSeAplica ? { naoSeAplica: notaCurta(r.naoSeAplica) } : {}),
   };
 }

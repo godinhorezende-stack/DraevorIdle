@@ -416,7 +416,9 @@
 :is(.tooltip, .action-resumo) .tip-poe-props .tip-poe-agora b { color: #c9a35a; }
 :is(.tooltip, .action-resumo) .tip-poe-desc { color: #1ba29b; font-style: italic; line-height: 1.35; }
 :is(.tooltip, .action-resumo) .tip-poe-mods div, :is(.tooltip, .action-resumo) .tip-poe-qualidade div { color: #8888ff; line-height: 1.35; }
-:is(.tooltip, .action-resumo) .tip-poe-mods div.fora { color: #66667a; text-decoration: line-through; }
+:is(.tooltip, .action-resumo) :is(.tip-poe-mods, .tip-poe-qualidade) div.fora { color: #66667a; text-decoration: line-through; }
+/* (balão de todas as gemas, 02/11) a linha que não se aplica ao jogo (só muda a trajetória no PoE): em cinza, sem riscar — a nota vai embaixo */
+:is(.tooltip, .action-resumo) :is(.tip-poe-mods, .tip-poe-qualidade) div.nsa { color: #7f7f8f; }
 :is(.tooltip, .action-resumo) .tip-poe-qualidade .tip-poe-rotulo { color: #7f7f7f; }
 :is(.tooltip, .action-resumo) .tip-poe-status.ok { color: #6fcf7a; font-weight: 600; }
 :is(.tooltip, .action-resumo) .tip-poe-status.parcial { color: #e0b84a; font-weight: 600; }
