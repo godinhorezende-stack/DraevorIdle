@@ -82,6 +82,8 @@ import * as GemasT3 from './gemas-t3.mjs';
 import * as GemasR4C2 from './gemas-r4c2.mjs';
 // (rodada 4, lote L: o motor das habilidades dos lacaios pelo PoB — a gema que segue o PoB perde o motivo "o lacaio ataca do jeito do tipo dele")
 import * as LacaiosHabilidades from './lacaios-habilidades.mjs';
+// (balão de todas as gemas, 02/11) as propriedades e as notas curtas do balão
+import { propDoBalao, notaCurta, linhaEmPortugues, linhaEscondida } from './balao-das-gemas.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
 const ARQ_GEMAS = new URL('../../gamedata/itens-poe/gemas-poe.json', import.meta.url);
@@ -1702,8 +1704,39 @@ export function projeteisDaGema(slug, nivel = 1, qualidade = 0) {
   const st = compilada(slug, nivel, qualidade)?.stats ?? {};
   return st.maisProjetilPct || st.quintoMaisPct || st.quintoProjeteis ? { pct: st.maisProjetilPct ?? 0, quintoPct: st.quintoMaisPct ?? 0, quintoProjeteis: st.quintoProjeteis ?? 0 } : null;
 }
-/** O custo de mana da gema no nível. */
-export const custoNoNivel = (slug, nivel) => Math.max(0, Math.round(compilada(slug, nivel)?.stats?.custo ?? 0));
+/**
+ * (balão de todas as gemas, 02/11 — achado) O custo AO LONGO DO TEMPO dos Vínculos ("Custo: 15 Mana por segundo" no poedb): a coluna "Mana" da tabela é a do PoB,
+ * `cost = { ManaPerMinute = 900 }` (act_str.lua, FlameLink), por MINUTO — o jogo cobrava os 900 no uso e 900 a cada segundo. Agora: nada no uso
+ * (`skill_cost_over_time_is_not_removed_with_skill`, só o custo por segundo) e 900 ÷ 60 = 15 por segundo (`custoPorSegundoNoNivel`, `acoes` → `Vinculos.criar`).
+ */
+function custoPorMinuto(slug, nivel) {
+  const g = POR_SLUG.get(slug);
+  if (!g || !COMPILADOR?.propsDoNivel) return false;
+  const n = Math.max(1, Math.min(nivel | 0 || 1, COMPILADOR.nivelMaximo?.(g) ?? 40));
+  return COMPILADOR.propsDoNivel(g, n).some((p) => /^Custo: [\d.]+ Mana por segundo$/i.test(p));
+}
+/**
+ * (balão de todas as gemas, 02/11 — achado) O custo das gemas cuja tabela do poedb veio SEM a coluna "Mana" (o Evocar Zumbi do Impacto, a Mina de Pingentes da
+ * Sabotagem, a Explosão Cinética do Agrupamento: o jogo cobrava 0) — o da propriedade "Custo: (9 — 28) Mana" no nível, que é o do PoB (act_int.lua: Mana 9 → 28,
+ * 3 → 6, 6 → 9) —; e a Mina Piroclástica da Sabotagem, cuja coluna veio com 16 → 24: a do PoB é a da base, 4 → 6.
+ */
+const CUSTO_DA_BASE = { Pyroclast_Mine_of_Sabotage: 'Pyroclast_Mine' };
+function custoDaPropriedade(slug, nivel) {
+  const g = POR_SLUG.get(slug);
+  if (!g || !COMPILADOR?.propsDoNivel) return 0;
+  const n = Math.max(1, Math.min(nivel | 0 || 1, COMPILADOR.nivelMaximo?.(g) ?? 40));
+  const m = (COMPILADOR.propsDoNivel(g, n).find((p) => /^Custo:/.test(p)) ?? '').match(/^Custo: ([\d.]+) (?:Mana|Vida|Escudo de Energia)/);
+  return m ? Number(m[1]) : 0;
+}
+/** O custo de mana da gema no nível (o do USO: 0 na gema de custo por segundo — `custoPorSegundoNoNivel`). */
+export const custoNoNivel = (slug, nivel) => {
+  if (custoPorMinuto(slug, nivel)) return 0;
+  if (CUSTO_DA_BASE[slug]) return custoNoNivel(CUSTO_DA_BASE[slug], nivel);
+  const st = compilada(slug, nivel)?.stats;
+  return Math.max(0, Math.round(st?.custo ?? custoDaPropriedade(slug, nivel)));
+};
+/** (02/11) O custo de mana POR SEGUNDO da gema no nível (os Vínculos: a coluna por minuto ÷ 60, com uma casa — 15; 32,7 no 20); 0 nas outras. */
+export const custoPorSegundoNoNivel = (slug, nivel) => (custoPorMinuto(slug, nivel) ? Math.round(((compilada(slug, nivel)?.stats?.custo ?? 0) / 60) * 10) / 10 : 0);
 /**
  * (lote A2, dono 19/10) O RECURSO do custo da gema no nível ("Custo: 29 Vida" — a Fúria Sangrenta; "Custo: 624 Escudo de Energia" — a Lâmina de
  * Energia; o resto, Mana): `'vida'`, `'es'` ou `'mana'`.
@@ -2128,32 +2161,81 @@ const inteiros = (t) => t.replace(/\d+\.\d+/g, (x) => (parseFloat(x) >= 10 ? Str
  * (nível, custo, conjuração, crítico, eficácia, requisito), a descrição, os modificadores com os números DESTE nível e os da qualidade —
  * e o que vale no jogo (status, motivos, as linhas que o combate ainda não faz).
  */
+// (balão de todas as gemas, 02/11: com cache — a ficha agora passa pela avaliação do status, e o catálogo da barra a pede a cada envio; os dados não mudam
+// depois do `iniciar`)
+const FICHAS = new Map();
 export function fichaNoNivel(slug, nivel = 1, qualidade = 0) {
+  const k = `${slug}@${nivel | 0}@${qualidadeDasContas(qualidade)}`;
+  if (FICHAS.has(k)) return FICHAS.get(k);
+  const f = montarFicha(slug, nivel, qualidade);
+  if (f && INICIADO) {
+    if (FICHAS.size > 5000) FICHAS.clear();
+    FICHAS.set(k, f);
+  }
+  return f;
+}
+function montarFicha(slug, nivel = 1, qualidade = 0) {
   const g = POR_SLUG.get(slug);
   const r = REGISTRO.get(slug);
   const h = compilada(slug, nivel);
   if (!g || !h || !COMPILADOR?.textosDoNivel) return null;
   const n = h.nivel;
   const b = COMPILADOR.basicosDoNivel(g, n);
-  const props = [];
-  for (const p of COMPILADOR.propsDoNivel(g, n)) {
-    if (/^Nível:/.test(p)) props.push(['Nível', `${n}${n >= maximoPorXp(g) ? ' (Máx)' : ''}`]);
-    else if (/^Custo:/.test(p)) props.push(['Custo', `${b.custo ?? 0} Mana`]);
-    else if (/^Eficácia do Dano Adicionado:/.test(p)) props.push(['Eficácia do Dano Adicionado', `${Math.round((b.efetividade ?? 1) * 100)}%`]);
-    else {
-      const i = p.indexOf(': ');
-      // "(3 Times)" do poedb em português (as cargas da recarga).
-      const valor = p.slice(i + 2).replace(/\((\d+) Times\)/, '($1 usos)');
-      props.push(i > 0 ? [p.slice(0, i), valor] : [p, '']);
-    }
-  }
   // (revisão do A5 — D2: o balão mostra a qualidade que vale no uso, acima de 20 com o Aprimorar/Eclipse)
   const q = qualidadeDasContas(qualidade);
+  // (balão de todas as gemas, 02/11) os NÚMEROS QUE O JOGO USA nas propriedades — o custo (`custoNoNivel`, no recurso da gema: Vida, Escudo de Energia ou os
+  // três), a eficácia do dano adicionado (a do PoB, `eficaciaDoAdicionado`), o dano de ataque (`eficaciaNoNivel`, com as correções do PoB), o tempo de
+  // conjuração e a recarga com os usos (`temposNoNivel`, com a qualidade) — e o resto do poedb em português, sem o raio em unidades (`propDoBalao`)
+  const tempos = temposNoNivel(slug, n, q);
+  const seg = (ms) => `${(ms / 1000).toFixed(2)} seg`;
+  const custo = custoNoNivel(slug, n);
+  const RECURSO = { mana: `${custo} Mana`, vida: `${custo} Vida`, es: `${custo} Escudo de Energia`, todos: `${custo} Mana, ${custo} Vida, ${custo} Escudo de Energia` };
+  const props = [];
+  for (const p of COMPILADOR.propsDoNivel(g, n)) {
+    const i = p.indexOf(': ');
+    const [rotulo, valor] = i > 0 ? [p.slice(0, i), p.slice(i + 2)] : [p, ''];
+    if (rotulo === 'Nível') props.push(['Nível', `${n}${n >= maximoPorXp(g) ? ' (Máx)' : ''}`]);
+    // (o custo em % da Mana — a Chuva de Lâminas de Trarthus, o Vínculo de Mana — segue o do poedb; o dos Vínculos, por segundo)
+    else if (rotulo === 'Custo') props.push(['Custo', /%/.test(valor) ? valor : custoPorSegundoNoNivel(slug, n) ? `${custoPorSegundoNoNivel(slug, n)} Mana por segundo` : RECURSO[recursoDoCusto(slug, n)] ?? RECURSO.mana]);
+    else if (rotulo === 'Eficácia do Dano Adicionado') props.push([rotulo, `${Math.round(eficaciaDoAdicionado(slug, n) * 100)}%`]);
+    else if (rotulo === 'Dano de Ataque' && /% de base$/.test(valor)) props.push([rotulo, `${Math.round(eficaciaNoNivel(slug, n) * 100)}% de base`]);
+    else if (rotulo === 'Tempo de Conjuração' && tempos.conjuracaoMs) props.push([rotulo, seg(tempos.conjuracaoMs)]);
+    else if (rotulo === 'Recarga' && tempos.recargaMs) props.push([rotulo, `${seg(tempos.recargaMs)}${tempos.cargas > 1 ? ` (${tempos.cargas} usos)` : ''}`]);
+    else {
+      const prop = propDoBalao([rotulo, valor]);
+      if (prop) props.push(prop);
+    }
+  }
+  // (balão de todas as gemas, 02/11) as linhas NÃO FEITAS pela MESMA regra do status (`avaliarNoJogo`, por arquétipo: o lacaio, o vínculo, o totem sem golpe, a
+  // praga…), neste nível e nesta qualidade — antes o balão usava só a regra das gemas de uso e riscava as linhas dos Vínculos, do Portador da Praga e da
+  // Convocar Runas, que o jogo faz; e as da QUALIDADE nunca eram vistas. `naoFeitas` traz o texto do balão (das linhas do nível e das da qualidade).
+  const hq = compilada(slug, n, q) ?? h;
+  const aval = NAO_SE_APLICA[slug] ? { motivos: [] } : avaliarNoJogo({ ...hq, slug, nivel: n, qualidade: q }, r?.formato ?? null);
+  const norm = (t) => String(t).replace(/(\d)\s*%/g, '$1 %').replace(/\\b/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+  const fora = new Set(aval.motivos.filter((m) => m.startsWith('efeito não simulado: ')).map((m) => norm(m.slice('efeito não simulado: '.length))));
+  // (sem as colunas mal rotuladas — `ehColunaMalRotulada` —, sem as linhas vazias ou que valem 0 neste nível — `linhaEscondida`; e as que vieram em inglês, em
+  // português — `linhaEmPortugues`, só no texto, depois de ver se é feita)
+  const modsBrutos = COMPILADOR.textosDoNivel(g, n).map(inteiros).filter((m) => !ehColunaMalRotulada(slug, m) && !linhaEscondida(m));
+  const qualidadeBruta = (g.qualidade ?? []).map((t) => naFracao(t, q / 20));
+  const vistas = new Set();
+  const ehFora = (texto, partes) => partes.some((x) => fora.has(norm(x)) && vistas.add(norm(x)));
+  const naoFeitas = [
+    ...modsBrutos.filter((m) => ehFora(m, [m])),
+    ...qualidadeBruta.filter((m) => ehFora(m, [m, ...partirQualidade(m).map((x) => x.replace(/^O raio Base é de ([\d.]+) metros?$/i, '+$1 metros de raio'))])),
+  ].map(linhaEmPortugues);
+  const mods = modsBrutos.map(linhaEmPortugues);
+  const modsDaQualidade = qualidadeBruta.map(linhaEmPortugues);
+  // (a linha não feita que não está no texto do balão — a mecânica da descrição: vai como nota)
+  const semLinha = aval.motivos.filter((m) => !m.startsWith('efeito não simulado: ') || !vistas.has(norm(m.slice('efeito não simulado: '.length))));
+  // (as notas: o "não se aplica" da gema, as escolhas do dono e as linhas que não se aplicam — curtas, sem o arquivo nem a data)
+  const naoSeAplicam = mods.filter((m) => ehLinhaQueNaoSeAplica(m));
+  const notas = [...(r?.notas ?? []), ...linhasQueNaoSeAplicam(naoSeAplicam)].map(notaCurta).filter(Boolean);
   return {
     nome: g.nome, en: g.en, cor: g.cor, tags: g.tags ?? [], nivel: n, nivelMax: maximoPorXp(g), nivelReq: b.nivelReq ?? g.nivelReq ?? 1,
-    props, desc: g.desc ?? '', mods: COMPILADOR.textosDoNivel(g, n).map(inteiros), qualidade: q, modsDaQualidade: (g.qualidade ?? []).map((t) => naFracao(t, q / 20)),
-    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeLacaio(l) && !ehLinhaFeita({ ...h, slug, nivel: n }, l, q)),
-    ataque: !!h.ataque, tempos: temposNoNivel(slug, n),
+    props, desc: g.desc ?? '', mods, qualidade: q, modsDaQualidade,
+    status: r?.statusNoJogo ?? 'nao', motivos: r?.statusNoJogo === 'funciona' ? semLinha : r?.motivosNoJogo ?? [], naoFeitas,
+    ...(r?.naoSeAplica ? { naoSeAplica: notaCurta(r.naoSeAplica) } : {}), ...(notas.length ? { notas } : {}), ...(naoSeAplicam.length ? { naoSeAplicam } : {}),
+    ataque: !!h.ataque, tempos,
   };
 }
 

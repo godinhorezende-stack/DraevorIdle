@@ -8586,7 +8586,8 @@ function criarVinculo(estado, hunt, entry, action, efeitoDaGema, agora) {
   const alvos = [cand[0], ...resto.slice(0, Vinculos.quantosVincula(ficha.afPoe) - 1)];
   // (14/10, o Juramento de Fidelidade do Luminary: "Habilidades de conexão têm duração de fixação infinita" — o Vínculo não acaba pelo tempo)
   const duracaoMs = ModsPoe.valor(ficha, 'vinculo_duracao_infinita') > 0 ? DURACAO_INFINITA_MS : Math.round(props.duracaoMs * fatorDeDuracao(estado, entry, efeitoDaGema));
-  const lk = Vinculos.criar(hunt, { acao: entry.id, slug, nome: entry.name, props, alvos, duracaoMs, custoPorSegundo: GemasPoe.custoNoNivel(slug, nivel), agora });
+  // (02/11: o custo por segundo do PoB — a coluna é por MINUTO, `GemasPoe.custoPorSegundoNoNivel`; antes cobrava os 900 do nível 1 a cada segundo)
+  const lk = Vinculos.criar(hunt, { acao: entry.id, slug, nome: entry.name, props, alvos, duracaoMs, custoPorSegundo: GemasPoe.custoPorSegundoNoNivel(slug, nivel), agora });
   fotoDoVinculo(estado, hunt, ficha, lk);
   return alvos.map((a) => { const p = Vinculos.posicao(a, Vinculos.resolver(hunt, a)); return p ? { t: 'fx', id: 13, x: p.x, y: p.y } : null; }).filter(Boolean);
 }
