@@ -200,11 +200,14 @@ function usar({ e, b }, slug) {
   }
   // (aval do dono 28/10: os Robôs Rastejantes não causam dano no PoE — as auras Eletrizam e Resfriam quem está nelas)
   const afligiu = ['chocado', 'resfriado', 'congelado'].some((k) => !!b.estados?.[k]);
-  return { ok: true, dano, debuff, afligiu, provocou, cegou, converteu, praga, buff: !!e.hunt.buffs?.[G.doSlug(slug).acao] || !!e.hunt.vinculos?.length, deslocou, febre: (b.dots ?? []).some((d) => d.chave === 'Corrupting_Fever' && d.falta > 0) };
+  // (aval do dono 02/11: o Portal não causa dano no PoE — é conferido pela viagem: o fim da conjuração marca a saída, `hunt.saidaPeloPortal`)
+  const viajou = !!e.hunt.saidaPeloPortal;
+  return { ok: true, dano, debuff, afligiu, provocou, cegou, converteu, praga, viajou, buff: !!e.hunt.buffs?.[G.doSlug(slug).acao] || !!e.hunt.vinculos?.length, deslocou, febre: (b.dots ?? []).some((d) => d.chave === 'Corrupting_Fever' && d.falta > 0) };
 }
 
 // (aval do dono 27/10, R3) as gemas que não causam dano no PoE (base_deal_no_damage): o critério próprio de cada uma
-const SEM_DANO_NO_POE = { Decoy_Totem: (u) => u.provocou, Smoke_Mine: (u) => u.deslocou || u.cegou, Conversion_Trap: (u) => u.converteu, Summon_Skitterbots: (u) => u.afligiu };
+// (aval do dono 02/11: o Portal, pela viagem — hunt.saidaPeloPortal —, como o Chamariz)
+const SEM_DANO_NO_POE = { Portal: (u) => u.viajou, Decoy_Totem: (u) => u.provocou, Smoke_Mine: (u) => u.deslocou || u.cegou, Conversion_Trap: (u) => u.converteu, Summon_Skitterbots: (u) => u.afligiu };
 test('G16: toda gema ativa "funciona" faz no jogo o que o status promete (o dano, ou o buff ligado)', { skip: SEM, timeout: 600_000 }, async () => {
   J = await import('../systems/itens-poe/jogo.mjs');
   ({ gerarPeca } = await import('../systems/itens-poe/gerar.mjs'));

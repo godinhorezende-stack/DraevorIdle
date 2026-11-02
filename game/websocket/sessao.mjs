@@ -2946,9 +2946,11 @@ export class Sessao {
         }
         // "Seguir" ligado e a fase completa: a próxima fase, no mesmo modo.
         // Só com a aba aberta: o char trazido sem aba (party) é offline, fica em loop.
-        if (!this.semAba && this.estado.hp > 0) this.seguirParaAProximaFase();
+        // (o Portal da gema concluído neste tique vem antes: a fase seguinte ou o portal do boss trocariam a caçada e a saída sumiria com ela)
+        const peloPortalDaGema = !!this.estado.hunt?.saidaPeloPortal;
+        if (!peloPortalDaGema && !this.semAba && this.estado.hp > 0) this.seguirParaAProximaFase();
         // Caça Automática + portal do boss aberto (limpeza confirmada pelo servidor): entra sozinha, uma tentativa só por portal.
-        if (!this.semAba && this.estado.hp > 0) this.entrarAutomaticoNoPortal();
+        if (!peloPortalDaGema && !this.semAba && this.estado.hp > 0) this.entrarAutomaticoNoPortal();
         // O personagem de teste não morre: a vida fica no piso dele (`personagem/testador.mjs`; o tique já segura — isto é o cinto).
         Testador.segurarVida(this.estado);
         // A caixa "Você morreu" do client (`mostrarMorte`), no formato do `death` original.
@@ -3064,8 +3066,9 @@ export class Sessao {
     const h = this.estado?.hunt;
     if (!h?.saidaPeloPortal) return false;
     delete h.saidaPeloPortal;
-    // A caçada guardada ANTES de a sala passar a outro da party (a cópia é a de agora).
-    const r = PortalDaGema.guardar(this.estado, { nome: Cacadas.nomeDaHunt(h.huntId) });
+    // A caçada guardada ANTES de a sala passar a outro da party (a cópia é a de agora). `compartilhada`: há mais alguém da party na sala — a
+    // instância é a da party, e ela fecha quando todos saem (como no PoE, o portal some com ela).
+    const r = PortalDaGema.guardar(this.estado, { nome: Cacadas.nomeDaHunt(h.huntId), compartilhada: Party.outrosNaSala(this).length > 0 });
     if (!r.ok) {
       this.avisoPendente = r.erro;
       return false;
@@ -3088,6 +3091,8 @@ export class Sessao {
     if (junto?.ok) {
       // (a casa do portal, se for no andar da sala; a entrada na sala já fechou o portal)
       Cacadas.posicionarNaVolta(this.estado.hunt, p, { mesmoAndar: true });
+      // (o relatório e as recargas de antes do Portal seguem: a caçada não acabou)
+      PortalDaGema.levarAsessao(this.estado.hunt, p);
       return this.aplicar(junto);
     }
     return this.aplicar(Cacadas.voltarPeloPortalDaGema(this.estado));

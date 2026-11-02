@@ -192,8 +192,16 @@ const custoDoCatalogo = (entry) => Math.round((entry.mana ?? 0) * (Gemas.defDaGe
 // (E a maldição com a Blasfêmia, que vira aura e reserva.)
 const custoDaSkill = (entry, efeitoDaGema, estado = null) => (entry.poeGema
   // (lote R3C: a aura com a Bênção Divina — "Habilidades Suportadas Custam +N de Mana": a reserva vira esse custo base; a Eterna e a do Guardião, sem custo)
-  ? entry.poeGema.buff && (Reserva.daGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) || Reserva.ehMaldicaoEmAura(entry, efeitoDaGema)) ? (GemasR3c.bencaoDaAura(entry.poeGema.arquetipo, entry.poeGema.slug, efeitoDaGema)?.custoMana ?? 0) : GemasPoe.custoNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) + custoBaseDoSuporte(estado, efeitoDaGema)
+  ? entry.poeGema.buff && (Reserva.daGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) || Reserva.ehMaldicaoEmAura(entry, efeitoDaGema)) ? (GemasR3c.bencaoDaAura(entry.poeGema.arquetipo, entry.poeGema.slug, efeitoDaGema)?.custoMana ?? 0) : GemasPoe.custoNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) + custoPctDaManaMaxima(entry, efeitoDaGema, estado) + custoBaseDoSuporte(estado, efeitoDaGema)
   : custoDoCatalogo(entry));
+/**
+ * (achado da revisão de 02/11) O custo em % da Mana máxima ("Custo: 5% Mana" — o Vínculo de Mana; o PoB: `cost = { ManaPercent = 5 }`): o % × a Mana máxima, como
+ * o custo base que os multiplicadores escalam (como o da Trarthus, `custoDaTrarthus` com a Mana máxima). Sem o estado, 0 (antes o jogo cobrava 0 sempre).
+ */
+function custoPctDaManaMaxima(entry, ef, estado) {
+  const pct = estado ? GemasPoe.custoPctDaManaNoNivel(entry.poeGema.slug, ef?.nivel ?? 1) : 0;
+  return pct > 0 ? (pct / 100) * Math.max(0, estado.maxMana ?? 0) : 0;
+}
 /**
  * (lote S1, 26/10) O custo de Mana BASE a mais dos suportes (o Arquimago: "custo de mana base equivalente a 5% do mana máximo não reservado"; o Mago do Gelo: "…do mana
  * máximo reservado" — o PoB: ManaCostBase BASE pelo PercentStat ManaUnreserved/ManaReserved): soma ao custo da gema antes dos multiplicadores. Sem o estado, 0.
@@ -8592,7 +8600,10 @@ function criarVinculo(estado, hunt, entry, action, efeitoDaGema, agora) {
   // (14/10, o Juramento de Fidelidade do Luminary: "Habilidades de conexão têm duração de fixação infinita" — o Vínculo não acaba pelo tempo)
   const duracaoMs = ModsPoe.valor(ficha, 'vinculo_duracao_infinita') > 0 ? DURACAO_INFINITA_MS : Math.round(props.duracaoMs * fatorDeDuracao(estado, entry, efeitoDaGema));
   // (02/11: o custo por segundo do PoB — a coluna é por MINUTO, `GemasPoe.custoPorSegundoNoNivel`; antes cobrava os 900 do nível 1 a cada segundo)
-  const lk = Vinculos.criar(hunt, { acao: entry.id, slug, nome: entry.name, props, alvos, duracaoMs, custoPorSegundo: GemasPoe.custoPorSegundoNoNivel(slug, nivel), agora });
+  // (achado da revisão de 02/11) o custo ao longo do tempo passa pelos multiplicadores do custo — o dos suportes, o de Mana aumentado/reduzido, o "mais/menos" e a
+  // eficiência (como no PoE, e como a Chuva de Lâminas de Trarthus aqui: `fatorDoCustoDeMana`); com uma casa
+  const custoPorSegundo = Math.round(GemasPoe.custoPorSegundoNoNivel(slug, nivel) * fatorDoCustoDeMana(estado, entry, efeitoDaGema) * 10) / 10;
+  const lk = Vinculos.criar(hunt, { acao: entry.id, slug, nome: entry.name, props, alvos, duracaoMs, custoPorSegundo, agora });
   fotoDoVinculo(estado, hunt, ficha, lk);
   return alvos.map((a) => { const p = Vinculos.posicao(a, Vinculos.resolver(hunt, a)); return p ? { t: 'fx', id: 13, x: p.x, y: p.y } : null; }).filter(Boolean);
 }

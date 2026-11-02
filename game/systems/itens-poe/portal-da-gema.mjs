@@ -8,7 +8,9 @@
 //     relógio de quando você saiu, na casa onde o portal abriu (`Cacadas.voltarPeloPortalDaGema`);
 //   - o portal dura até ser usado para voltar ou até você abrir OUTRA caçada (`Cacadas.entrar`/`entrarNaSala` o fecham — `fechar`);
 //   - na party, quem usa vai sozinho (como no PoE: cada um entra no portal) e, na volta, entra na sala da party se ela ainda estiver na mesma
-//     instância (`Party.voltarPeloPortal`); sem ela, volta sozinho à cópia guardada;
+//     instância (`Party.voltarPeloPortal`); se a sala era da party (`compartilhada`) e ninguém ficou nela, a instância fechou e o portal some
+//     com ela (o PoE: a instância é uma só — os monstros que a party matou não voltam vivos); sozinho, volta à cópia guardada;
+//   - o relatório da sessão e as recargas seguem na volta, também no mapa e na sala da party (`levarAsessao`): a caçada não acabou;
 //   - no MAPA do endgame, o Portal NÃO gasta um dos 6 portais do mapa (no PoE o da gema é outro portal): os monstros ficam com o mapa aberto
 //     (`MapaAberto.guardarAoSair`, sem morte) e a volta é a do mapa (`MapaAberto.retomar`), na casa do portal.
 //
@@ -42,7 +44,7 @@ const guardarBicho = (m) => JSON.parse(JSON.stringify(compactarMonstro(m)));
  * Guarda a caçada de agora no portal (antes de ela sumir — a sessão chama ANTES de a sala passar a outro da party). No mapa do endgame, só o
  * lugar: os monstros ficam com o mapa aberto. `{ ok, nome }` ou `{ ok: false, erro }`.
  */
-export function guardar(estado, { nome = null, agora = Date.now() } = {}) {
+export function guardar(estado, { nome = null, agora = Date.now(), compartilhada = false } = {}) {
   const h = estado?.hunt;
   const motivo = motivoParaNaoAbrir(h);
   if (motivo) return { ok: false, erro: motivo };
@@ -51,7 +53,9 @@ export function guardar(estado, { nome = null, agora = Date.now() } = {}) {
   const p = {
     huntId: h.huntId, nome: nome ?? h.huntId, modo: h.modo === 'online' ? 'online' : 'auto', strategy: h.strategy ?? null,
     dificuldade: h.campanha?.dificuldade ?? null, bossDoAto: h.campanha?.bossDoAto ?? null,
-    z: h.z ?? 0, pos: { x: h.pos?.x, y: h.pos?.y }, instanciaId: instancia?.id ?? null, abertoEm: agora,
+    z: h.z ?? 0, pos: { x: h.pos?.x, y: h.pos?.y }, instanciaId: instancia?.id ?? null, abertoEm: agora, compartilhada: !!compartilhada,
+    // (o relatório e as recargas, no relógio da SUA caçada — `levarAsessao` os traz para a caçada da volta, seja ela qual for)
+    sessao: JSON.parse(JSON.stringify({ sessao: h.sessao ?? null, startedAt: h.startedAt ?? null, cooldowns: h.cooldowns ?? null, clock: h.clock ?? 0 })),
   };
   if (h.mapa?.id) {
     // (o mapa: a volta é a do mapa aberto — só o dono dele o tem; o convidado volta pela party)
@@ -94,6 +98,27 @@ export function restaurar(hunt, p) {
   // (o relógio continua de onde parou: os prazos dos monstros guardados são dele — como a volta ao mapa)
   if (Number.isFinite(p.relogio) && p.relogio > (hunt.clock ?? 0)) hunt.clock = p.relogio;
   for (const [k, v] of Object.entries(p.campos ?? {})) hunt[k] = v;
+  return true;
+}
+
+/**
+ * O relatório da sessão e as recargas de antes do Portal na caçada da volta (o mapa, a sala da party — que nascem com sessão nova): a sessão
+ * e o começo dela como estavam; as recargas no relógio da caçada nova (o que faltava, falta). Sem nada guardado, nada muda.
+ */
+export function levarAsessao(hunt, p) {
+  const g = p?.sessao;
+  if (!hunt || !g) return false;
+  if (g.sessao) hunt.sessao = g.sessao;
+  if (g.startedAt) hunt.startedAt = g.startedAt;
+  if (g.cooldowns) {
+    const desloc = (hunt.clock ?? 0) - (Number(g.clock) || 0);
+    const cds = (hunt.cooldowns ??= {});
+    for (const [k, v] of Object.entries(g.cooldowns)) {
+      if (!v || typeof v !== 'object' || !Number.isFinite(v.ate)) continue;
+      const ate = v.ate + desloc;
+      if (ate > (hunt.clock ?? 0)) cds[k] = { ...v, ate };
+    }
+  }
   return true;
 }
 

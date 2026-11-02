@@ -121,6 +121,9 @@ export function textosDoNivel(s, nivel = 1, qualidade = 0) {
     // (lote A2: a faixa "(a—b)" do poedb vai do nível 1 ao 20 — ou ao máximo das Excepcionais, o 3)
     else add(m.includes('—') ? interpolar(m, (n - 1) / passos) : m);
   }
+  // (achado da revisão de 02/11) o Conjurar ao Perder Salvaguarda: no 14 e no 15 a penalidade já passou de 0 e vira "mais" (o efeito — `efeitoNoNivel`); o texto da coluna
+  // do poedb guarda só o número com o sinal de menos — o balão mostra o sinal do efeito, "+2%" e "+4%"
+  if (s.slug === 'Cast_on_Ward_Break_Support' && n >= 14) for (let i = 0; i < out.length; i++) out[i] = out[i].replace(/causam -(\d+(?:[.,]\d+)?)% de dano mágico/, 'causam +$1% de dano mágico');
   const q = Math.max(0, Math.min(20, qualidade || 0)) / 20;
   // (lote T3, 27/10: a RESERVA pela coluna "Mana" da tabela do nível, quando ela existe — a Blasfêmia Desperta: a faixa da propriedade, "(34—32)%", é a dos níveis 1 a 5
   // ("Nível: (1—5)"), e a interpolação de 20 passos dava 32% no nível 20; a tabela do poedb diz 28%)

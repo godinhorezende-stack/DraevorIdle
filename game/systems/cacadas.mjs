@@ -1401,7 +1401,14 @@ export function voltarPeloPortalDaGema(estado) {
     // (sem os monstros guardados — não deveria acontecer —, a instância fica como nasceu, na entrada)
     if (a.cacada) posicionarNaVolta(estado.hunt, p);
     MapaAberto.retomar(estado, estado.hunt);
+    // (o relatório e as recargas de antes do Portal: a caçada do mapa não acabou)
+    PortalDaGema.levarAsessao(estado.hunt, p);
   } else {
+    // (a instância era da party e ninguém dela ficou lá — `Party.voltarPeloPortal` não achou a sala —: como no PoE, ela fechou, e o portal some com ela)
+    if (p.compartilhada) {
+      PortalDaGema.fechar(estado);
+      return { ok: false, erro: 'O portal fechou: a instância da party fechou quando todos saíram dela.' };
+    }
     const doAto = p.bossDoAto != null;
     const r = entrar(estado, { huntId: p.huntId, mode: p.modo, strategy: p.strategy, dificuldade: p.dificuldade, campanha: doAto, viaPortal: doAto, viaPortalDaGema: true });
     if (!r.ok) return r;

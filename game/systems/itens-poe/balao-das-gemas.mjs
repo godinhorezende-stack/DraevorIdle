@@ -35,12 +35,14 @@ export const ehLinhaInterna = (t) => /^[A-Z][A-Za-z]+(?:_[A-Za-z]+)*: -?\d+(?:\.
 /**
  * A NOTA CURTA do balão a partir da nota do registro: sem o "não se aplica:" do começo (o balão já diz "Não se aplica ao jogo"), sem os parênteses de
  * arquivo, lote, aval e data ("(mapa-aberto.mjs)", "(aval do dono 27/10)", "(dono, 26/10)") e só a primeira frase antes do travessão; com a inicial maiúscula e
- * o ponto final.
+ * o ponto final. A nota que antes do travessão só cita a linha leva também a frase seguinte (o porquê).
  */
 export function notaCurta(nota) {
   let t = String(nota ?? '').replace(/^não se aplica:\s*/i, '');
   t = t.replace(/\s*\([^()]*(?:\.mjs|\blote\b|\baval\b|\bdono\b|\d{1,2}\/\d{1,2})[^()]*\)/gi, '');
-  t = t.split(/\s+—\s+/)[0].trim().replace(/[\s.;,:]+$/, '');
+  const partes = t.split(/\s+—\s+/).map((x) => x.trim());
+  // (achado da revisão de 02/11: a primeira frase que é só a linha citada — '"Minas não podem ser Re-armadas" (Mina de Fumaça)' — fica sem o porquê; leva a segunda)
+  t = (/^"[^"]*"(?:\s*\([^()]*\))?$/.test(partes[0]) && partes[1] ? `${partes[0]}: ${partes[1]}` : partes[0]).replace(/[\s.;,:]+$/, '');
   return t ? `${t[0].toUpperCase()}${t.slice(1)}.` : '';
 }
 
@@ -71,3 +73,10 @@ export function linhaEscondida(t) {
   const nums = s.match(/-?\d+(?:[.,]\d+)?/g);
   return !!nums && nums.every((x) => Number(x.replace(',', '.')) === 0);
 }
+
+/**
+ * (achado da revisão de 02/11) As linhas do PoE que o poedb trouxe GRUDADAS numa só, no balão separadas como no PoE (só o texto: a regra do jogo segue lendo a
+ * linha como veio) — as três dos Vínculos ("…por 4 segundos" · "Máximo de 1 Vínculo…" · "Você morre se o alvo Vinculado Morrer") e as duas da Fúria do buff.
+ */
+const COSTURAS = /(?<=por [\d.]+ segundos) (?=Máximo de \d+ Vínculo)|(?<=por alvo) (?=Você morre se o alvo Vinculado)|(?<=ao Máximo de Fúria) (?=Buff impede)/g;
+export const partirLinhaColada = (t) => String(t ?? '').split(COSTURAS);

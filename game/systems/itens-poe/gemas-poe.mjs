@@ -83,7 +83,7 @@ import * as GemasR4C2 from './gemas-r4c2.mjs';
 // (rodada 4, lote L: o motor das habilidades dos lacaios pelo PoB — a gema que segue o PoB perde o motivo "o lacaio ataca do jeito do tipo dele")
 import * as LacaiosHabilidades from './lacaios-habilidades.mjs';
 // (balão de todas as gemas, 02/11) as propriedades e as notas curtas do balão
-import { propDoBalao, notaCurta, linhaEmPortugues, linhaEscondida } from './balao-das-gemas.mjs';
+import { propDoBalao, notaCurta, linhaEmPortugues, linhaEscondida, partirLinhaColada } from './balao-das-gemas.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
 const ARQ_GEMAS = new URL('../../gamedata/itens-poe/gemas-poe.json', import.meta.url);
@@ -1735,6 +1735,17 @@ export const custoNoNivel = (slug, nivel) => {
   const st = compilada(slug, nivel)?.stats;
   return Math.max(0, Math.round(st?.custo ?? custoDaPropriedade(slug, nivel)));
 };
+/**
+ * (achado da revisão de 02/11) O custo em % da MANA MÁXIMA no uso ("Custo: 5% Mana" — o Vínculo de Mana; o PoB: `cost = { ManaPercent = 5 }`, act_int.lua): o %, ou 0.
+ * O custo por segundo em % (a Chuva de Lâminas de Trarthus) é o dela (`GemasB3.custoDaTrarthus`), não este.
+ */
+export function custoPctDaManaNoNivel(slug, nivel = 1) {
+  const g = POR_SLUG.get(slug);
+  if (!g || !COMPILADOR?.propsDoNivel) return 0;
+  const n = Math.max(1, Math.min(nivel | 0 || 1, COMPILADOR.nivelMaximo?.(g) ?? 40));
+  const m = (COMPILADOR.propsDoNivel(g, n).find((p) => /^Custo:/.test(p)) ?? '').match(/^Custo: ([\d.]+)\s*% Mana$/i);
+  return m ? Number(m[1]) : 0;
+}
 /** (02/11) O custo de mana POR SEGUNDO da gema no nível (os Vínculos: a coluna por minuto ÷ 60, com uma casa — 15; 32,7 no 20); 0 nas outras. */
 export const custoPorSegundoNoNivel = (slug, nivel) => (custoPorMinuto(slug, nivel) ? Math.round(((compilada(slug, nivel)?.stats?.custo ?? 0) / 60) * 10) / 10 : 0);
 /**
@@ -2227,13 +2238,18 @@ function montarFicha(slug, nivel = 1, qualidade = 0) {
   const naoFeitas = [
     ...modsBrutos.filter((m) => ehFora(m, [m])),
     ...qualidadeBruta.filter((m) => ehFora(m, [m, ...partirQualidade(m).map((x) => x.replace(/^O raio Base é de ([\d.]+) metros?$/i, '+$1 metros de raio'))])),
-  ].map(linhaEmPortugues);
-  const mods = modsBrutos.map(linhaEmPortugues);
+  ].map(linhaEmPortugues).flatMap(partirLinhaColada);
+  // (as linhas grudadas pelo poedb — os Vínculos — separadas no texto: `partirLinhaColada`)
+  const mods = modsBrutos.map(linhaEmPortugues).flatMap(partirLinhaColada);
   const modsDaQualidade = qualidadeBruta.map(linhaEmPortugues);
   // (a linha não feita que não está no texto do balão — a mecânica da descrição: vai como nota)
   const semLinha = aval.motivos.filter((m) => !m.startsWith('efeito não simulado: ') || !vistas.has(norm(m.slice('efeito não simulado: '.length))));
   // (as notas: o "não se aplica" da gema, as escolhas do dono e as linhas que não se aplicam — curtas, sem o arquivo nem a data)
-  const naoSeAplicam = mods.filter((m) => ehLinhaQueNaoSeAplica(m));
+  // (achado da revisão de 02/11: também as da QUALIDADE — a "Velocidade de Movimento do Orbe" do Morto Volátil —, a linha inteira ou uma das partes dela)
+  const naoSeAplicam = [
+    ...mods.filter((m) => ehLinhaQueNaoSeAplica(m)),
+    ...modsDaQualidade.filter((t, i) => [t, qualidadeBruta[i], ...partirQualidade(qualidadeBruta[i])].some((x) => ehLinhaQueNaoSeAplica(x))),
+  ];
   const notas = [...(r?.notas ?? []), ...linhasQueNaoSeAplicam(naoSeAplicam)].map(notaCurta).filter(Boolean);
   return {
     nome: g.nome, en: g.en, cor: g.cor, tags: g.tags ?? [], nivel: n, nivelMax: maximoPorXp(g), nivelReq: b.nivelReq ?? g.nivelReq ?? 1,

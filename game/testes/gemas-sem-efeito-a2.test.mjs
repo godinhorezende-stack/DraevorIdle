@@ -76,8 +76,9 @@ test('A2: as 10 ativas viram buff com efeito e o Portal não se aplica; os 6 sup
     assert.notEqual(r.statusNoJogo, 'nao', `${s}: ${r.motivosNoJogo.join(' | ')}`);
   }
   const portal = G.doSlug('Portal');
-  assert.equal(portal.statusNoJogo, 'nao');
-  assert.match(portal.naoSeAplica, /^não se aplica/);
+  // (aval do dono 02/11: o Portal funciona como o PoE — à mão, a viagem para a cidade e a volta —, sem naoSeAplica)
+  assert.equal(portal.statusNoJogo, 'funciona');
+  assert.ok(!portal.naoSeAplica, portal.naoSeAplica);
   for (const s of ['Item_Rarity_Support', 'Chance_to_Flee_Support', 'Block_Chance_Reduction_Support', 'Pacifism_Support', 'Bonespire_Support', 'Divine_Sentinel_Support']) assert.notEqual(SP.doSlug(s).status, 'nao', s);
 });
 
