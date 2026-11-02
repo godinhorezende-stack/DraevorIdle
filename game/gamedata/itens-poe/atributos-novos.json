@@ -6338,6 +6338,54 @@
       "combate": true,
       "efeito": "ficha.defesasDaFicha: multiplica a Salvaguarda (02/11)"
     },
+    "salvaguarda_nao_quebra": {
+      "nome": "A Salvaguarda não quebra",
+      "unidade": "",
+      "combate": true,
+      "efeito": "personagem/salvaguarda.absorver: segura cada acerto até o que ela tem e não desce — a Decisão de Olroth, durante o efeito (o PoB: WardNotBreak) (02/11)"
+    },
+    "salvaguarda_chance_nao_romper": {
+      "nome": "Chance de a Salvaguarda não se Romper",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "personagem/salvaguarda.absorver: o acerto que a levaria a 0 não a tira (o PoB: WardAvoidBreakChance) (02/11)"
+    },
+    "peitoral_em_salvaguarda_pct": {
+      "nome": "Armadura e Evasão do peitoral viram Salvaguarda",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.defesasDaFicha: essa parte da Armadura e da Evasão do peitoral vira Salvaguarda da base — a Postura de Ynda (o PoB: BodyArmourArmourEvasionToWardPercent) (02/11)"
+    },
+    "evasao_pela_salvaguarda_pct": {
+      "nome": "Chance de Evadir pela Salvaguarda",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.evasaoDaEsquiva: a chance de evadir usa essa parte da Salvaguarda no lugar da Evasão (o PoB: EvadeChanceBasedOnWard) (02/11)"
+    },
+    "armadura_pela_salvaguarda_pct": {
+      "nome": "Redução física pela Salvaguarda",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.armaduraDaReducao: a redução física dos acertos usa essa parte da Salvaguarda no lugar da Armadura (o PoB: PhysicalReductionBasedOnWard) (02/11)"
+    },
+    "ataque_rompe_salvaguarda": {
+      "nome": "O ataque rompe a Salvaguarda",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.mjs → personagem/salvaguarda.romper: o ataque sem canalização usado com a Salvaguarda Intacta a rompe (a Joia Atemporal) (02/11)"
+    },
+    "frasco_restaura_salvaguarda": {
+      "nome": "O frasco restaura a Salvaguarda",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/frascos.usar: a Salvaguarda volta inteira no uso (o Frasco de Ferro) (02/11)"
+    },
+    "frasco_sai_na_quebra_da_salvaguarda": {
+      "nome": "O efeito do frasco sai na quebra da Salvaguarda",
+      "unidade": "",
+      "combate": true,
+      "efeito": "personagem/salvaguarda.quebrar: o efeito do frasco acaba quando ela quebra (a Preparação de Vorana) (02/11)"
+    },
     "es_inc_na_salvaguarda": {
       "nome": "O Escudo de Energia aumentado vai para a Salvaguarda",
       "unidade": "",

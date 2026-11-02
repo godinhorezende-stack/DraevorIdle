@@ -8350,6 +8350,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const ctxDoUso = { alvo, eventos, personagem, tags: tagsPoe };
     ModsPoe.evento(estado, hunt, 'usarHabilidade', fichaDoUso, ctxDoUso);
     ModsPoe.evento(estado, hunt, tagsPoe.includes('ataque') ? 'usarAtaque' : 'usarMagia', fichaDoUso, ctxDoUso);
+    // (02/11, a Joia Atemporal: "Enquanto você tiver Salvaguarda Intacta, seu próximo Ataque sem canalização usado por você rompe sua Salvaguarda para ganhar Dano de
+    // Gelo Adicional igual a 25% da Salvaguarda") o ataque já saiu com o Gelo (a ficha com a Salvaguarda Intacta); agora ele a rompe
+    if (tagsPoe.includes('ataque') && !tagsPoe.includes('canalizar') && ModsPoe.valor(fichaDoUso, 'ataque_rompe_salvaguarda') > 0) Salvaguarda.romper(estado, hunt, fichaDoUso, personagem, eventos);
     // ("se você usou uma Habilidade de Fogo Recentemente"; "por cada Magia Não Instantânea que você tenha Conjurado Recentemente".)
     if (tagsPoe.includes('fogo')) ModsPoe.marcar(hunt, 'usouFogo');
     // (14/10, a Infusão Espiritual: "enquanto canaliza uma magia" — `ModsPoe.tiqueDaInfusao`)
@@ -12954,6 +12957,11 @@ Salvaguarda.definirAoQuebrar((estado, hunt, personagem, eventos) => {
   if (!itensPoeLigado() || !hunt) return;
   ativarGatilhos(estado, hunt, personagem, 'salvaguarda', {}, eventos);
   ModsPoe.evento(estado, hunt, 'salvaguardaQuebra', Ficha.combate(estado), { eventos, personagem });
+});
+/** (02/11, a Joia Atemporal) A Salvaguarda RESTAURADA depois de descer: o evento `salvaguardaRestaurada` ("Remove uma Afecção Danificadora aleatória"). */
+Salvaguarda.definirAoRestaurar((estado, hunt) => {
+  if (!itensPoeLigado() || !hunt) return;
+  ModsPoe.evento(estado, hunt, 'salvaguardaRestaurada', Ficha.combate(estado), {});
 });
 
 const fracaoDeVida = (e) => (e?.hp ?? 0) / Math.max(1, e?.maxHp ?? 1);

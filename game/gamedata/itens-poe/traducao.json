@@ -18144,6 +18144,221 @@
       "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
     },
     {
+      "padrao": "^Ganha Dano de Caos Adicional igual a \\{(\\d+)\\}% da Proteção$",
+      "efeitos": [
+        {
+          "stat": "added_chaos_dmg_min%pctSalvaguarda:{V1}",
+          "valor": "1"
+        },
+        {
+          "stat": "added_chaos_dmg_max%pctSalvaguarda:{V1}",
+          "valor": "1"
+        },
+        {
+          "stat": "spell_added_chaos_dmg_min%pctSalvaguarda:{V1}",
+          "valor": "1"
+        },
+        {
+          "stat": "spell_added_chaos_dmg_max%pctSalvaguarda:{V1}",
+          "valor": "1"
+        }
+      ],
+      "estado": "novo",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o PoB: ChaosMin/ChaosMax BASE com PercentStat Ward — o Dano de Caos adicionado aos ataques e às magias, N% da Salvaguarda máxima (a segunda passada da ficha)"
+    },
+    {
+      "padrao": "^Proteção não Quebra(?: durante o Efeito)?$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_nao_quebra",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o PoB: WardNotBreak durante o efeito do frasco — a Salvaguarda segura cada acerto até o que ela tem e não desce (frascos.mjs, personagem/salvaguarda.absorver)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Proteção(?: durante o Efeito)?$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_mais",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "a Salvaguarda máxima × (1 − N%) enquanto o frasco dura (o \"durante o Efeito\" do frasco)"
+    },
+    {
+      "padrao": "^Restaura Proteção ao usar$",
+      "efeitos": [
+        {
+          "stat": "frasco_restaura_salvaguarda",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o Frasco de Ferro: a Salvaguarda volta inteira no uso (frascos.mjs)"
+    },
+    {
+      "padrao": "^Efeito é removido quando a Proteção Quebrar$",
+      "efeitos": [
+        {
+          "stat": "frasco_sai_na_quebra_da_salvaguarda",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o efeito do frasco acaba quando a Salvaguarda quebra (frascos.mjs, personagem/salvaguarda.quebrar)"
+    },
+    {
+      "padrao": "^Ganhe Proteção ao invés de \\{(\\d+)\\}% da Armadura e Evasão do Peitoral Equipado$",
+      "efeitos": [
+        {
+          "stat": "peitoral_em_salvaguarda_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o PoB: ConvertBodyArmourArmourEvasionToWard — N% da Armadura e da Evasão do peitoral (a da peça, com os locais) saem delas e viram Salvaguarda da base, que a Salvaguarda aumentada multiplica (ficha.defesasDaFicha)"
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\} de Salvaguarda por \\{(\\d+)\\} de Armadura no Elmo Equipado$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda%armaduraElmo:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o PoB: Ward BASE com PerStat ArmourOnHelmet — a Armadura do elmo vestido (com os locais)"
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\} de Salvaguarda por \\{(\\d+)\\} de Evasão nas Luvas Equipadas$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda%evasaoLuvas:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o PoB: Ward BASE com PerStat EvasionOnGloves — a Evasão das luvas vestidas (com os locais)"
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\} de Salvaguarda por \\{(\\d+)\\} de Escudo de Energia nas Botas Equipadas$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda%esBotas:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o PoB: Ward BASE com PerStat EnergyShieldOnBoots — o Escudo de Energia das botas vestidas (com os locais)"
+    },
+    {
+      "padrao": "^Remove uma Afecção Danificadora aleatória quando a Salvaguarda é Restaurada$",
+      "efeitos": [
+        {
+          "stat": "ev:salvaguardaRestaurada:removerAfeccao:danificadoraAleatoria",
+          "valor": "100"
+        }
+      ],
+      "estado": "novo",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "uma afecção danificadora em você (Incêndio, Sangramento ou Veneno), sorteada, sai quando a Salvaguarda volta depois de descer"
+    },
+    {
+      "padrao": "^Frascos de Ferro ganham \\{(\\d+)\\} cargas? quando sua Salvaguarda se Rompe$",
+      "efeitos": [
+        {
+          "stat": "ev:salvaguardaQuebra:frasco:ferro",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o PoB: IronFlaskChargesGeneratedOnWardBreak — os Frascos de Ferro do cinto ganham as cargas na quebra"
+    },
+    {
+      "padrao": "^A Chance de Evadir Acertos se baseia em \\{(\\d+)\\}% da sua Salvaguarda em vez da sua Evasão$",
+      "efeitos": [
+        {
+          "stat": "evasao_pela_salvaguarda_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o PoB: EvadeChanceBasedOnWard — a chance de evadir usa N% da Salvaguarda máxima no lugar da Evasão (a Evasão segue na ficha para o resto)"
+    },
+    {
+      "padrao": "^A Redução de Dano Físico de Acertos se baseia em \\{(\\d+)\\}% da sua Salvaguarda em vez da sua Armadura$",
+      "efeitos": [
+        {
+          "stat": "armadura_pela_salvaguarda_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o PoB: PhysicalReductionBasedOnWard — a redução física dos acertos usa N% da Salvaguarda máxima no lugar da Armadura (a Armadura segue na ficha para o resto)"
+    },
+    {
+      "padrao": "^A Salvaguarda tem \\{(\\d+)\\}% de chance de não se Romper$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_chance_nao_romper",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o PoB: WardAvoidBreakChance — o acerto que a levaria a 0 é absorvido e ela não desce nesse acerto (personagem/salvaguarda.absorver)"
+    },
+    {
+      "padrao": "^Enquanto você tiver Salvaguarda Intacta, seu próximo Ataque sem canalização usado por você rompe sua Salvaguarda para ganhar Dano de Gelo Adicional igual a \\{(\\d+)\\}% da Salvaguarda$",
+      "efeitos": [
+        {
+          "stat": "added_ice_dmg_min%pctSalvaguarda:{V1}@salvaguardaRompivel+naoCanalizar",
+          "valor": "1"
+        },
+        {
+          "stat": "added_ice_dmg_max%pctSalvaguarda:{V1}@salvaguardaRompivel+naoCanalizar",
+          "valor": "1"
+        },
+        {
+          "stat": "ataque_rompe_salvaguarda@salvaguardaRompivel",
+          "valor": "1"
+        }
+      ],
+      "estado": "novo",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o PoB: ColdMin/ColdMax BASE com PercentStat Ward, só nos ataques sem canalização, com a Salvaguarda Intacta e sem o \"não Quebra\" do frasco — o ataque usado leva o Gelo e rompe a Salvaguarda (acoes.mjs → personagem/salvaguarda.romper)"
+    },
+    {
       "padrao": "^.*Proteção.*$",
       "efeitos": [
         {
@@ -18152,7 +18367,7 @@
         }
       ],
       "estado": "inerte",
-      "nota": "esta linha da Proteção (Salvaguarda/Ward) ainda não tem efeito no jogo (a Salvaguarda existe desde 02/11: a base, o aumentado, a restauração e a quebra valem)",
+      "nota": "esta variação da Proteção (Salvaguarda/Ward) não tem regra no jogo (as linhas da Proteção dos únicos e das Atemporais têm as regras acima)",
       "_nova": true,
       "_unico": true
     },
@@ -27157,7 +27372,7 @@
       "_unico": true
     },
     {
-      "padrao": "^Efeito de Auras Não[ -]Maldiç(?:ões|ão) das suas Habilidades aumentado em \\{(\\d+)\\}%$",
+      "padrao": "^Efeito d(?:e|as) Auras Não[ -]Maldiç(?:ões|ão) das suas [Hh]abilidades aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
           "stat": "efeito_buff_gema:aura",

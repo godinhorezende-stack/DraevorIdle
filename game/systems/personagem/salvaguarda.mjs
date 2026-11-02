@@ -11,6 +11,12 @@
 //   - a RESTAURAÇÃO: o primeiro dano nela começa a espera (o PoB: Data.lua `WardRechargeDelay = 2` s), ÷ (1 + "Restauração da Salvaguarda X% mais rápida" — o
 //     ModParser: "restoration of ward" = `WardRechargeFaster`); no fim, ela volta INTEIRA (`recarregar`, no tique da caçada). O dano no meio da espera não a reinicia.
 //   - o frasco "Restaura Proteção ao usar" (o Frasco de Ferro) e "X% de chance de Restaurar a Salvaguarda ao Bloquear": `restaurar`.
+//   - (02/11, os únicos e as Atemporais — o PoB) "Proteção não Quebra durante o Efeito" (a Decisão de Olroth: `salvaguarda_nao_quebra`, o PoB: `WardNotBreak`): o
+//     acerto é absorvido até a Salvaguarda, mas ela não desce, não quebra e a espera não começa — vira uma redução fixa por acerto (com o "85% menos Proteção
+//     durante o Efeito", a do frasco); "A Salvaguarda tem X% de chance de não se Romper" (`WardAvoidBreakChance`): o acerto que a levaria a 0 é absorvido e ela
+//     não desce nesse acerto (a espera começa); a INTACTA/ROMPIDA (`intacta` — o PoB: `UnbrokenWard`): a condição "enquanto você tiver Salvaguarda Intacta"/"enquanto
+//     sua Salvaguarda estiver Rompida" (`condicoes-poe`); "Efeito é removido quando a Proteção Quebrar" (a Preparação de Vorana: o frasco com `saiNaQuebra`); o
+//     ataque que rompe a Salvaguarda (`romper`, `acoes`); "…quando a Salvaguarda é Restaurada" (o evento `salvaguardaRestaurada`, pelo `aoRestaurar`).
 // Fora do modo PoE nada disto existe (a ficha não tem Salvaguarda).
 import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
 
@@ -53,27 +59,70 @@ export function absorver(estado, hunt, ficha, dano, eventos = null, evento = nul
   const ignora = Math.min(100, Math.max(0, valor(ficha, 'salvaguarda_ignorada_pct')));
   const tira = Math.min(tem, Math.round(dano * (1 - ignora / 100)));
   if (!(tira > 0)) return dano;
-  if (!(estado.salvaguardaEspera > 0)) estado.salvaguardaEspera = espera(ficha);
-  estado.salvaguarda = tem - tira;
   if (eventos && evento) eventos.push({ t: 'dmg', ...evento, v: tira, color: COR, salvaguarda: true });
+  // "Proteção não Quebra durante o Efeito" (o PoB: `WardNotBreak`): ela segura o acerto e não desce
+  if (naoQuebra(ficha)) return dano - tira;
+  if (!(estado.salvaguardaEspera > 0)) estado.salvaguardaEspera = espera(ficha);
+  // "A Salvaguarda tem X% de chance de não se Romper" (o PoB: `WardAvoidBreakChance`): o acerto que a levaria a 0 não a tira
+  if (tem - tira <= 0 && Math.random() * 100 < valor(ficha, 'salvaguarda_chance_nao_romper')) return dano - tira;
+  estado.salvaguarda = tem - tira;
   if (estado.salvaguarda <= 0) quebrar(estado, hunt, personagem, eventos);
   return dano - tira;
+}
+
+/** "Proteção não Quebra durante o Efeito" (a Decisão de Olroth, enquanto o frasco dura). */
+export const naoQuebra = (ficha) => valor(ficha, 'salvaguarda_nao_quebra') > 0;
+
+/**
+ * A Salvaguarda está INTACTA (o PoB: `Condition:UnbrokenWard`)? Com Salvaguarda e sem ter quebrado — a quebra vale até a restauração (a espera correndo).
+ * `temSalvaguarda`: o personagem tem Salvaguarda (o máximo > 0, ou as peças, quem chama sem a ficha).
+ */
+export const intacta = (estado, temSalvaguarda) => !!temSalvaguarda && !(estado?.salvaguardaQuebrada && estado.salvaguardaEspera > 0);
+
+/**
+ * (o ataque da Joia Atemporal: "Enquanto você tiver Salvaguarda Intacta, seu próximo Ataque sem canalização usado por você rompe sua Salvaguarda…") ROMPE a
+ * Salvaguarda agora: ela vai a 0, a espera começa e a quebra sai (o evento, o Conjurar ao Perder Salvaguarda). Devolve true se rompeu.
+ */
+export function romper(estado, hunt, ficha, personagem = null, eventos = null) {
+  if (naoQuebra(ficha) || !(atual(estado, ficha) > 0)) return false;
+  if (!(estado.salvaguardaEspera > 0)) estado.salvaguardaEspera = espera(ficha);
+  quebrar(estado, hunt, personagem, eventos);
+  return true;
 }
 
 /** A Salvaguarda QUEBROU (chegou a 0 por um acerto): marca e chama o que sai na quebra. */
 function quebrar(estado, hunt, personagem, eventos) {
   estado.salvaguarda = 0;
   estado.salvaguardaQuebrada = true;
-  if (hunt) hunt.salvaguardaQuebrouEm = hunt.clock ?? 0;
+  if (hunt) {
+    hunt.salvaguardaQuebrouEm = hunt.clock ?? 0;
+    // a condição Intacta/Rompida mudou: a ficha é refeita no tique (`cacadas`)
+    hunt.poeFichaMudou = true;
+    // "Efeito é removido quando a Proteção Quebrar" (a Preparação de Vorana): o efeito do frasco acaba agora (o tique dos frascos o tira)
+    for (const a of Object.values(hunt.frascosPoe?.ativos ?? {})) if (a?.saiNaQuebra && a.ate > (hunt.clock ?? 0)) a.ate = hunt.clock ?? 0;
+  }
   aoQuebrar?.(estado, hunt, personagem, eventos ?? []);
+}
+
+let aoRestaurar = null;
+/** (acoes.mjs) O que sai quando a Salvaguarda é RESTAURADA depois de ter descido: o evento `salvaguardaRestaurada` ("Remove uma Afecção Danificadora aleatória"). */
+export function definirAoRestaurar(fn) { aoRestaurar = fn; }
+/** Ela estava abaixo do máximo (a espera correndo ou quebrada): a restauração conta como "Restaurada". */
+const desceu = (estado) => estado.salvaguardaEspera > 0 || !!estado.salvaguardaQuebrada;
+function restaurada(estado, estava) {
+  if (!estava) return;
+  if (estado.hunt) estado.hunt.poeFichaMudou = true;
+  aoRestaurar?.(estado, estado.hunt ?? null);
 }
 
 /** A Salvaguarda volta inteira agora (o Frasco de Ferro; "Restaurar a Salvaguarda ao Bloquear"). Sem a ficha (o frasco), ela fica cheia na próxima leitura (`atual`). */
 export function restaurar(estado, ficha = null) {
+  const estava = desceu(estado);
   if (!ficha) {
     estado.salvaguarda = null;
     estado.salvaguardaEspera = 0;
     estado.salvaguardaQuebrada = false;
+    restaurada(estado, estava);
     return true;
   }
   const max = maximo(ficha);
@@ -81,6 +130,7 @@ export function restaurar(estado, ficha = null) {
   estado.salvaguarda = max;
   estado.salvaguardaEspera = 0;
   estado.salvaguardaQuebrada = false;
+  restaurada(estado, estava);
   return true;
 }
 

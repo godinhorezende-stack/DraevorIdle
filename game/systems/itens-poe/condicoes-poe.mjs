@@ -30,6 +30,7 @@ import { fatorDaInsanidade } from './gemas-r3c.mjs';
 // (lote S2B, 27/10: o Passe Enfeitiçado — "Inimigos afetados por feitiços … não podem causar golpes críticos")
 import { semCriticoPeloFeitico } from './suportes-s2b.mjs';
 import * as Testador from '../personagem/testador.mjs';
+import * as Salvaguarda from '../personagem/salvaguarda.mjs';
 
 /** "Recentemente" no PoE: nos últimos 4 segundos. */
 export const RECENTE_MS = 4000;
@@ -366,6 +367,9 @@ export const CONDICOES_DE_ESTADO = new Set([
   // (11/10, os únicos:) nenhum item equipado corrompido / todos corrompidos; um Anel Mágico (em qualquer lado, no esquerdo, no direito); drenando
   // Escudo de Energia / Mana; as garras no desarmado (`garra_desarmado` dá o "com Garra" ao desarmado).
   'semItemCorrompido', 'todosCorrompidos', 'semVidaNosOutros', 'anelMagico', 'anelMagicoEsquerdo', 'anelMagicoDireito', 'drenandoEs', 'drenandoMana',
+  // (02/11, a Salvaguarda — o PoB: `Condition:UnbrokenWard`) "enquanto você tiver Salvaguarda Intacta", "enquanto sua Salvaguarda estiver Rompida" (a negação, como no
+  // PoB: sem Salvaguarda também conta) e a intacta que pode romper (o ataque da Joia Atemporal: sem o "não Quebra" do frasco — `WardNotBreak`)
+  'salvaguardaIntacta', 'salvaguardaRompida', 'salvaguardaRompivel',
 ]);
 /** O raio da PRESENÇA (PoE: a área em volta do personagem que os implícitos eldritch olham), em casas. */
 export const RAIO_DA_PRESENCA = 6;
@@ -471,6 +475,18 @@ export function defesaDaPecaVestida(p) {
   return { armadura: meio('armor', 'armadura'), evasao: meio('evasion', 'evasao'), escudo: meio('es', 'escudo') };
 }
 
+/**
+ * (02/11) O personagem TEM Salvaguarda (sem a ficha — as condições vêm antes dela)? Uma peça vestida com Salvaguarda (`base.ward`: as Rúnicas, Svalinn), o "+N" global
+ * (também o "por N de Armadura no Elmo" das Atemporais) ou o peitoral com Armadura/Evasão e a Postura de Ynda.
+ */
+export function temSalvaguarda(estado, total) {
+  const eq = estado?.equipment ?? {};
+  if (Object.entries(eq).some(([slot, p]) => p && slot !== 'backpack' && Number(p.base?.ward?.[0]) > 0)) return true;
+  for (const k in total ?? {}) if (k.startsWith('salvaguarda') && /^salvaguarda(?:$|[%@])/.test(k) && Number(total[k]) > 0) return true;
+  const d = Number(total?.peitoral_em_salvaguarda_pct) > 0 ? defesaDaPecaVestida(eq.body) : null;
+  return !!d && d.armadura + d.evasao > 0;
+}
+
 export function condicoesDe(estado, total = null, principais = null) {
   const v = new Set();
   v.parametros = { estado, total, principais };
@@ -524,6 +540,14 @@ export function condicoesDe(estado, total = null, principais = null) {
   if ((estado?.maxMana ?? 0) > 0 && (estado.mana ?? 0) <= VIDA_BAIXA * estado.maxMana) v.add('manaBaixa');
   else v.add('naoManaBaixa');
   if (!(estado?.es > 0)) v.add('semEscudo');
+  // (02/11) a Salvaguarda INTACTA ou ROMPIDA (`personagem/salvaguarda.intacta`): com Salvaguarda (as peças vestidas, o "+N" global, o peitoral da Postura de Ynda) e sem
+  // ter quebrado — até a restauração
+  if (ligado()) {
+    if (Salvaguarda.intacta(estado, temSalvaguarda(estado, total))) {
+      v.add('salvaguardaIntacta');
+      if (!(Number(total?.salvaguarda_nao_quebra) > 0)) v.add('salvaguardaRompivel');
+    } else v.add('salvaguardaRompida');
+  }
   if (!(estado?.hunt?.monstros ?? []).some((m) => m.hp > 0 && Object.values(m.maldicoes ?? {}).some((x) => x?.marca && x.ate > (estado.hunt.clock ?? 0)))) v.add('semMarca');
   // (09/10) As peças vestidas: o Peitoral sem modificador de Vida; as quatro armaduras com Evasão / com Armadura na base (`defesasDaPeca`).
   const eq = estado?.equipment ?? {};
@@ -1008,7 +1032,7 @@ export function resolver(estado, total, principais = null) {
 }
 
 /** As escalas que só a ficha sabe (a segunda passada). */
-export const ESCALAS_DA_FICHA = /^(precisao|armadura|evasao|esMax|bloqueio|bloqueioMagico|armaduraEscudo|evasaoEscudo|esEscudo|armEvaEscudo|bloqueioEscudo|resFogo|resGelo|resRaio|resCaos|evasaoPeitoral|esElmo|resFogoExcedente|resGeloExcedente|resRaioExcedente):/;
+export const ESCALAS_DA_FICHA = /^(pctSalvaguarda|precisao|armadura|evasao|esMax|bloqueio|bloqueioMagico|armaduraEscudo|evasaoEscudo|esEscudo|armEvaEscudo|bloqueioEscudo|resFogo|resGelo|resRaio|resCaos|evasaoPeitoral|esElmo|resFogoExcedente|resGeloExcedente|resRaioExcedente):/;
 
 /**
  * O fator de uma ESCALA ("por X"): `nivel`, `atr:dex:10` (a cada 10 de Destreza), `carga:frenesi`, `cargaMax:poder`, `furia`, `furia:5`,
@@ -1113,6 +1137,11 @@ export function fatorDaEscala(estado, total, principais, escala) {
     // com teto.)
     case 'cadaveresPerto': { const r = Number(a) || 4; const p = h?.pos; const n = p ? (h.cadaveres ?? []).filter((c) => Math.max(Math.abs(c.x - p.x), Math.abs(c.y - p.y)) <= r).length : 0; return b ? Math.min(Number(b), n) : n; }
     case 'manaReservada': return cada(reservadoAgora(estado, 'mana', total), a);
+    // (02/11, as Atemporais: "+2 de Salvaguarda por 10 de Armadura no Elmo Equipado", "…de Evasão nas Luvas", "…de Escudo de Energia nas Botas" — o PoB: `PerStat`
+    // ArmourOnHelmet / EvasionOnGloves / EnergyShieldOnBoots, a defesa da peça com os locais dela)
+    case 'armaduraElmo': return cada((defesaDaPecaVestida(estado?.equipment?.head) ?? {}).armadura ?? 0, a);
+    case 'evasaoLuvas': return cada((defesaDaPecaVestida(estado?.equipment?.gloves) ?? {}).evasao ?? 0, a);
+    case 'esBotas': return cada((defesaDaPecaVestida(estado?.equipment?.feet) ?? {}).escudo ?? 0, a);
     // (13/10) "por cada N de Mana Máxima Não Reservada" (o Santuário do Pensamento): a máxima menos a reservada.
     case 'manaNaoReservada': return cada(Math.max(0, (estado?.maxMana ?? 0) - reservadoAgora(estado, 'mana', total)), a);
     default: return 0;
@@ -1148,7 +1177,8 @@ export function escalasDaFicha(estado, total, ficha) {
       // (a resistência EXCEDENTE — acima do máximo: "Armadura é aumentada pela Resistência a Fogo Excedente"; "por X% de resistência a dano de gelo excedente")
       resFogoExcedente: ficha.excedentes?.protection?.fire ?? 0, resGeloExcedente: ficha.excedentes?.protection?.ice ?? 0, resRaioExcedente: ficha.excedentes?.protection?.energy ?? 0,
     }[tipo] ?? 0;
-    const m = Math.floor(Math.max(0, base) / Math.max(1, Number(n) || 1));
+    // (02/11, o Aperto Noturno: "Ganha Dano de Caos Adicional igual a 10% da Proteção" — o PoB: `PercentStat` Ward) `pctSalvaguarda:N`: N% da Salvaguarda máxima
+    const m = tipo === 'pctSalvaguarda' ? Math.floor((Math.max(0, Number(ficha.salvaguarda) || 0) * (Number(n) || 0)) / 100) : Math.floor(Math.max(0, base) / Math.max(1, Number(n) || 1));
     const chave = golpe.length ? `${stat}@${golpe.join('+')}` : stat;
     if (m) saida[chave] = (saida[chave] ?? 0) + comTeto(v, m, teto);
   }
@@ -2183,7 +2213,9 @@ export const EVENTOS = new Set(['incendiarNovo', 'ganharAdrenalina', 'amaldicoar
   // (lote 70) ao Convocar um Totem (`acoes.invocarLacaios`)
   'convocarTotem',
   // (02/11) quando a Salvaguarda se Rompe (`personagem/salvaguarda.absorver` → `acoes.mjs`)
-  'salvaguardaQuebra']);
+  'salvaguardaQuebra',
+  // (02/11, as Atemporais) quando a Salvaguarda é Restaurada (`personagem/salvaguarda.restaurar` → `acoes.mjs`)
+  'salvaguardaRestaurada']);
 export const ACOES = new Set(['transferirMarca', 'frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
   'dano', 'danoPctVida', 'furia', 'frasco', 'recargaEs', 'explodir', 'gatilho', 'espalhar', 'roubarCargas', 'maldicao', 'soloSagrado', 'soloProfano', 'fumaca', 'removerAfeccao', 'perdeVidaPct', 'perdeEsPct', 'perdeManaPct',
   // (11/10, os únicos)
@@ -2280,7 +2312,7 @@ export function dinamicoValido(stat) {
   return DINAMICOS.test(stat) || PARAMETRICOS.some((re) => re.test(stat));
 }
 /** A escala é conhecida? */
-export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|joiasAbissais|joiaUnica|devocao|itemMagico|maldicoesEmVoce|abissalLocal|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|vinhas|desdeUsou|afetadoPorClamor|valor|valorDoEstandarte|forcaDosVentos|stat)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
+export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|joiasAbissais|joiaUnica|devocao|itemMagico|maldicoesEmVoce|abissalLocal|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|vinhas|desdeUsou|afetadoPorClamor|valor|valorDoEstandarte|forcaDosVentos|stat|armaduraElmo|evasaoLuvas|esBotas)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
 
 /** Os números base do PoE dos efeitos de acerto. */
 export const NO_ACERTO = {

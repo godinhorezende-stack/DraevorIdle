@@ -508,6 +508,11 @@ function calcularCombate(estado, extrasDoPoe = null) {
     energyShield: defesas.energyShield,
     // (02/11) a SALVAGUARDA máxima (Ward — `personagem/salvaguarda.mjs`): absorve os acertos antes de tudo e volta inteira depois da espera
     salvaguarda: defesas.salvaguarda,
+    // (02/11, as Atemporais — o PoB: EvadeChanceBasedOnWard / PhysicalReductionBasedOnWard) "A Chance de Evadir Acertos se baseia em 200% da sua Salvaguarda em vez da
+    // sua Evasão", "A Redução de Dano Físico de Acertos se baseia em 200% da sua Salvaguarda em vez da sua Armadura": o que a esquiva e a redução física usam (a Evasão e a
+    // Armadura da ficha seguem para o resto)
+    ...(itensPoeLigado() && Number(af.evasao_pela_salvaguarda_pct) > 0 ? { evasaoDaEsquiva: Math.round((defesas.salvaguarda * Number(af.evasao_pela_salvaguarda_pct)) / 100) } : {}),
+    ...(itensPoeLigado() && Number(af.armadura_pela_salvaguarda_pct) > 0 ? { armaduraDaReducao: Math.round((defesas.salvaguarda * Number(af.armadura_pela_salvaguarda_pct)) / 100) } : {}),
     // Accuracy: a chance de o golpe da arma/wand acertar o bicho (`Atributos.chanceDeAcerto`).
     // PoE: × (1 + "Precisão Global aumentada") × (1 − "X% menos Precisão").
     // (ciclo 7: + o "X% mais Precisão" sem condição do alvo — "5% mais Precisão por Carga de Frenesi")
@@ -926,9 +931,23 @@ function defesasDaFicha(estado, af, doAtributo, espStat = () => 0) {
   // armadura não entra aqui: vira Vida (`Afixos.vidaDasArmaduras`).
   const esEmVida = Afixos.esDasArmadurasEmVida(af);
   const fora = (p, campo) => !p || p === semEscudo0 || (esEmVida && campo === 'es' && Afixos.ehPecaDeArmadura(p));
+  // (02/11, a Postura de Ynda: "Ganhe Proteção ao invés de 50% da Armadura e Evasão do Peitoral Equipado" — o PoB: ConvertBodyArmourArmourEvasionToWard) essa parte
+  // da Armadura e da Evasão do peitoral (a da peça, com os locais) sai delas e vira Salvaguarda da base, que a Salvaguarda aumentada multiplica
+  const corpo = estado.equipment?.body;
+  const paraSalvaguarda = itensPoeLigado() ? Math.min(1, Math.max(0, (Number(af.peitoral_em_salvaguarda_pct) || 0) / 100)) : 0;
+  const faixa = (p, campo) => {
+    if (campo === 'ward' && p === corpo && paraSalvaguarda > 0 && !fora(p, 'armor')) {
+      const [w0, w1] = faixaDoCampo(p, 'ward');
+      const [a0, a1] = faixaDoCampo(p, 'armor');
+      const [e0, e1] = faixaDoCampo(p, 'evasion');
+      return [w0 + (a0 + e0) * paraSalvaguarda, w1 + (a1 + e1) * paraSalvaguarda];
+    }
+    const [a, b] = faixaDoCampo(p, campo);
+    return p === corpo && paraSalvaguarda > 0 && (campo === 'armor' || campo === 'evasion') ? [a * (1 - paraSalvaguarda), b * (1 - paraSalvaguarda)] : [a, b];
+  };
   const somaDoCampo = (campo) => Object.values(estado.equipment ?? {}).reduce((n, p) => {
     if (fora(p, campo)) return n;
-    const [a, b] = faixaDoCampo(p, campo);
+    const [a, b] = faixa(p, campo);
     return n + (a + b) / 2;
   }, 0);
   const armour = simples(somaDoCampo('armor'), { fixos: af.armor_flat ?? 0, pct: (af.armour_pct ?? 0) + espStat('armour') }).bruto;
@@ -948,7 +967,7 @@ function defesasDaFicha(estado, af, doAtributo, espStat = () => 0) {
     const p = estado.equipment?.[slot];
     const pct = ks.reduce((s, k) => s + (Number(af[k]) || 0), 0);
     if (!pct || fora(p, campo)) return n;
-    const [a, b] = faixaDoCampo(p, campo);
+    const [a, b] = faixa(p, campo);
     return n + ((a + b) / 2) * pct / 100;
   }, 0) : 0);
   const armourDaPeca = daPeca('armor', { shield: ['armour_pct_escudo', 'defesas_pct_escudo'], body: ['armour_pct_peitoral'], gloves: ['armour_pct_luvas'], feet: ['armour_pct_botas'] }, armour);

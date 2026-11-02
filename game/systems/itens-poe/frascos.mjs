@@ -50,6 +50,8 @@ const preencher = (modelo, valores) => String(modelo ?? '').replace(/\{(\d+)\}/g
 const REGRAS_DO_FRASCO = [
   // (02/11, dono: a Salvaguarda como o PoE) o Frasco de Ferro: "Restaura Proteção ao usar" — a Salvaguarda volta inteira no uso (`usar` → `Salvaguarda.restaurar`)
   [/^Restaura Proteção ao usar$/, (p) => (p.restauraSalvaguarda = true)],
+  // (02/11, a Preparação de Vorana) "Efeito é removido quando a Proteção Quebrar": o efeito acaba na quebra (`personagem/salvaguarda.quebrar`)
+  [/^Efeito é removido quando a Proteção Quebrar$/, (p) => (p.saiNaQuebra = true)],
   [/^Velocidade de Recuperação aumentada em \{\d+\}%$/, (p, v) => (p.velocidadePct += v)],
   [/^Velocidade de Recuperação reduzida em \{\d+\}%$/, (p, v) => (p.velocidadePct -= v)],
   [/^Quantidade Recuperada aumentada em \{\d+\}%$/, (p, v) => (p.quantidadePct += v)],
@@ -188,6 +190,7 @@ export function parametros(peca, afDoPersonagem = null) {
     instantaneoPct: Math.min(100, p.instantaneoPct), instantaneoNaVidaBaixa: p.instantaneoNaVidaBaixa, instantaneoNoFim: p.instantaneoNoFim, naoParaNoCheio: p.naoParaNoCheio,
     naoAcumula: p.naoAcumula, saiNoPvp: p.saiNoPvp, custoDaOutraPct: p.custoDaOutraPct, lacaiosPct: p.lacaiosPct, cargaNoCriticoPct: p.cargaNoCriticoPct, cargasAoSerAcertado: p.cargasAoSerAcertado, aoUsar: p.aoUsar,
     ...(p.restauraSalvaguarda ? { restauraSalvaguarda: true } : {}),
+    ...(p.saiNaQuebra ? { saiNaQuebra: true } : {}),
     af,
     efeitoDaBase: daBase?.texto ?? null,
     linhas,
@@ -302,7 +305,7 @@ export function usar(estado, v, eventos = null, quem = null) {
     const adjacente = Number(afp.tintura_frasco_adjacente_efeito) || 0;
     const ao = adjacente > 0 && (hunt.poeRecente?.acertou ?? -Infinity) >= agora - 4000 && Tinturas.ativas(st).some(([w]) => Math.abs(Number(w) - v) === 1);
     const af = ao ? parametros(peca, { ...afp, frasco_efeito: (Number(afp.frasco_efeito) || 0) + adjacente }).af : par.af;
-    st.ativos[v] = { ate: agora + par.duracaoMs, af, nome: peca.poe.nome, ...(par.saiNoPvp ? { saiNoPvp: true } : {}) };
+    st.ativos[v] = { ate: agora + par.duracaoMs, af, nome: peca.poe.nome, ...(par.saiNoPvp ? { saiNoPvp: true } : {}), ...(par.saiNaQuebra ? { saiNaQuebra: true } : {}) };
     return true;
   }
   // Vida/Mana: na vida baixa (abaixo de 50%), o "mais Recuperação se usado enquanto em Vida Baixa" (o de mana olha a Mana Baixa).

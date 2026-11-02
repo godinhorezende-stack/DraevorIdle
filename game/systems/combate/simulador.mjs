@@ -96,7 +96,7 @@ export function mitigacao(estado, { dano, tipo = 'physical', levelDoAtacante = e
     danoAposProtecao: F.arredondar(aposProtecao),
     armaduraAbsorvidaMedia: F.arredondar(absorvido),
     danoMedioRecebido: F.arredondar(aposArmadura),
-    chanceDeEsquiva: tipo === 'physical' ? Atributos.chanceDeEsquiva(ficha.evasion ?? 0, levelDoAtacante, itensPoeLigado() ? Mobs.padraoPoe('precisao', levelDoAtacante) : null) : 0,
+    chanceDeEsquiva: tipo === 'physical' ? Atributos.chanceDeEsquiva(ficha.evasaoDaEsquiva ?? ficha.evasion ?? 0, levelDoAtacante, itensPoeLigado() ? Mobs.padraoPoe('precisao', levelDoAtacante) : null) : 0,
     reducaoTotalPct: dano > 0 ? Math.round((1 - aposArmadura / dano) * 1000) / 10 : 0,
   };
 }

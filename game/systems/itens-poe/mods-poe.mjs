@@ -1095,7 +1095,9 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
         if (agora - (intervalos[`frasco:${ev.param}`] ?? -Infinity) < Number(cadaS) * 1000) return;
         intervalos[`frasco:${ev.param}`] = agora;
       }
-      for (const p of estado.frascos ?? []) if (p?.poe && (so !== 'vida' || p.poe.classe === 'Life_Flasks')) p.poe.cargas = (p.poe.cargas ?? 0) + v;
+      // (02/11, a Joia Atemporal: "Frascos de Ferro ganham 2 cargas quando sua Salvaguarda se Rompe" — `frasco:ferro`, só os Frascos de Ferro)
+      const doTipo = (p) => (so === 'vida' ? p.poe.classe === 'Life_Flasks' : so === 'ferro' ? String(p.poe.base ?? '').split('/')[1] === 'Iron_Flask' : true);
+      for (const p of estado.frascos ?? []) if (p?.poe && doTipo(p)) p.poe.cargas = (p.poe.cargas ?? 0) + v;
       return;
     }
     // "X% de chance de ganhar uma Carga de Frasco ao causar um Golpe Crítico": a CHANCE de cada frasco do cinto ganhar uma carga.
@@ -1119,6 +1121,11 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
         for (const t of ['queimadura', 'sangramento', 'veneno', 'venenoPoe']) Dot.removerDoJogador(hunt, t);
       } else if (ev.param === 'lento') {
         if (hunt.controle) delete hunt.controle.lento;
+      } else if (ev.param === 'danificadoraAleatoria') {
+        // (02/11, a Joia Atemporal: "Remove uma Afecção Danificadora aleatória quando a Salvaguarda é Restaurada") UMA das danificadoras em você — o Incêndio, o
+        // Sangramento ou o Veneno —, sorteada
+        const tem = AFECCOES_NO_JOGADOR.filter((a) => ['incendio', 'sangramento', 'veneno'].includes(a.nome) && a.tem(hunt, agora));
+        if (tem.length) tem[Math.floor(rng() * tem.length)].tirar(hunt);
       } else if (ev.param === 'naoElemental' || ev.param === 'aleatoria') {
         // (13/10) UMA afecção aleatória (a de todas as pilhas do tipo, como no PoE): `naoElemental` — o Sangramento ou o Veneno (a Maestria de
         // Frascos); `aleatoria` — qualquer uma, as elementais também: o Incêndio, o Congelamento, o Resfriamento e a Eletrização (a Maestria de

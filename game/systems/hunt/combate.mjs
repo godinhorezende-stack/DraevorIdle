@@ -147,8 +147,10 @@ function feiticosDoMorto(hunt, m, eventos) {
  * + o atributo "Armadura" (`armor_flat`). Antes somava só o catálogo e o
  * atributo aparecia na ficha sem cortar nada (auditoria dos atributos, 29/09).
  */
+// (02/11, a Joia Atemporal: "A Redução de Dano Físico de Acertos se baseia em 200% da sua Salvaguarda em vez da sua Armadura" — `ficha.armaduraDaReducao`)
 export function armorDoPersonagem(estado) {
-  return Ficha.combate(estado).armor ?? 0;
+  const f = Ficha.combate(estado);
+  return f.armaduraDaReducao ?? f.armor ?? 0;
 }
 
 /** O ML de BÔNUS (itens, proficiência, imbuement): +1% de dano/cura por ponto em magia, runa e wand (decisão do dono). */
