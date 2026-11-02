@@ -133,14 +133,14 @@ const SEM_NO_JOGO = { generico: 'a gema não tem comportamento de combate reconh
 // reserva, quando a gema reserva — `reserva.pedida`) — com a mecânica própria de cada uma (`itens-poe/gemas-a2.mjs`). O Emblema do Poder, o Escudo
 // Gélido e a Parede de Força também: o uso põe o objeto no chão e liga o buff enquanto ele dura.
 const DO_LOTE_A2 = ['Blood_Rage', 'Berserk', 'Petrified_Blood', 'Temporal_Rift', 'Automation', 'Energy_Blade', 'Frost_Shield', 'Mana-Infused_Staff', 'Sigil_of_Power', 'Wall_of_Force'];
-const ARQUETIPO_PROPRIO = { Plague_Bearer: 'praga', Spellslinger: 'feiticeiro', Herald_of_Agony: 'arauto', Old_Phase_Run: 'guarda', Withering_Step: 'guarda', ...Object.fromEntries(DO_LOTE_A2.map((s) => [s, 'guarda'])), ...GemasB4.ARQUETIPO_B4, ...GemasGAC.ARQUETIPO_GAC, ...GemasGBD.ARQUETIPO_GBD, ...GemasE2a.ARQUETIPO_E2A, ...GemasR3B.ARQUETIPO_R3B, ...GemasT2.ARQUETIPO_T2 };
+// (o Portal — dono, 02/11: "como o PoE") o PORTAL: o uso leva você para a cidade e a caçada fica guardada para a volta (`itens-poe/portal-da-gema.mjs`)
+const ARQUETIPO_PROPRIO = { Plague_Bearer: 'praga', Spellslinger: 'feiticeiro', Portal: 'portal', Herald_of_Agony: 'arauto', Old_Phase_Run: 'guarda', Withering_Step: 'guarda', ...Object.fromEntries(DO_LOTE_A2.map((s) => [s, 'guarda'])), ...GemasB4.ARQUETIPO_B4, ...GemasGAC.ARQUETIPO_GAC, ...GemasGBD.ARQUETIPO_GBD, ...GemasE2a.ARQUETIPO_E2A, ...GemasR3B.ARQUETIPO_R3B, ...GemasT2.ARQUETIPO_T2 };
 /**
  * (lote A2, dono 19/10: "o Portal passa a não se aplica") A gema que NÃO SE APLICA ao jogo, com a nota do porquê — o relatório a mostra assim
  * (`tools/relatorio-gemas-poe.mjs`). Ela segue sem efeito (a skill avisa — `poeGema.bloqueio`).
+ * (dono, 02/11: "resolva essa que não se aplica" — o Portal saiu daqui: ele abre o portal para a cidade, como no PoE — `ARQUETIPO_PROPRIO`)
  */
-export const NAO_SE_APLICA = {
-  Portal: 'não se aplica: a caçada já tem a saída para a cidade, e os 6 portais do mapa são gastos pela morte (mapa-aberto.mjs) — o portal do PoE não tem o que fazer no jogo',
-};
+export const NAO_SE_APLICA = {};
 /**
  * (lote A2, dono 19/10) As LINHAS das gemas do lote A2 que o jogo faz: `[regex, (m, x) => void]` — `x.af` (os atributos do buff, na ficha enquanto
  * ele está ligado) e `x.a2` (os números da mecânica própria, guardados no buff — `itens-poe/gemas-a2.mjs`). Os números são os do nível (e da
@@ -1893,6 +1893,9 @@ function avaliarNoJogo(h, formato) {
   // ligada na barra, segue alternando sozinha (o automático do jogo)
   if (h.arquetipo === 'praga') return { status: 'funciona', motivos: [] };
   if (h.arquetipo === 'feiticeiro') return { status: 'funciona', motivos: [] };
+  // (o Portal — dono, 02/11) a cidade e a volta ao mesmo lugar da área, com os monstros que ficaram (`itens-poe/portal-da-gema.mjs`); a conjuração e a qualidade (a
+  // Velocidade de Conjuração) pelo uso da gema (`Acoes.usarPortalDaGema`)
+  if (h.arquetipo === 'portal') return { status: 'funciona', motivos: [] };
   // (lote 74 — dono, 17/10: "Implementar a gema") a Convocar Runas: traz as suas Runas, Ativa as vinculadas pagando 20% do custo de cada uma e dá o
   // Alcance de Vínculo da gema até se vincularem de novo (`acoes.convocarRunas`).
   if (h.slug === 'Brand_Recall') return { status: 'funciona', motivos: [] };
@@ -2020,7 +2023,8 @@ function acaoDaGema(g, h, itemId, formato, elemento) {
   else if (h.arquetipo === 'praga') moldeId = 'spell-haste';
   // O lacaio só invoca (o visual é o do estilo da gema): o molde sem alvo. O totem usa o molde da skill que ele vai usar (o projétil, a área).
   // (lote 74: a Convocar Runas também — no PoE ela sai em você, sem alvo nem área: `acoes.convocarRunas`)
-  else if (h.arquetipo === 'lacaio' || convocaRunas) moldeId = 'spell-haste';
+  // (o Portal também: sai em você, sem alvo)
+  else if (h.arquetipo === 'lacaio' || convocaRunas || h.arquetipo === 'portal') moldeId = 'spell-haste';
   else if (h.arquetipo === 'corpo_a_corpo') moldeId = tagsArea ? 'spell-front-sweep' : 'spell-brutal-strike';
   else if (h.arquetipo === 'movimento') moldeId = h.ataque || Object.keys(h.stats.dano ?? {}).length ? 'spell-ethereal-barrage' : 'spell-haste';
   else moldeId = MOLDES[formato]?.[visual] ?? MOLDES.projetil[visual] ?? 'spell-brutal-strike';
@@ -2055,8 +2059,9 @@ function acaoDaGema(g, h, itemId, formato, elemento) {
     kind: 'spell',
     vocations: null,
     // Lacaio e totem são de SUPORTE na barra (invocam; quem bate é o invocado).
-    papeis: buff || ['lacaio', 'totem'].includes(h.arquetipo) || convocaRunas ? ['suporte'] : moldeId === 'spell-haste' ? ['velocidade'] : ['attack'],
-    group: buff || moldeId === 'spell-haste' || ['lacaio', 'totem'].includes(h.arquetipo) ? 'support' : 'attack',
+    // (o Portal: de suporte — não é ataque, nem entra no combo)
+    papeis: buff || ['lacaio', 'totem', 'portal'].includes(h.arquetipo) || convocaRunas ? ['suporte'] : moldeId === 'spell-haste' ? ['velocidade'] : ['attack'],
+    group: buff || moldeId === 'spell-haste' || ['lacaio', 'totem', 'portal'].includes(h.arquetipo) ? 'support' : 'attack',
     // Para os ganchos do combate (dano pelo nível da gema, custo, buff, bloqueio).
     poeGema: { slug: g.slug, arquetipo: h.arquetipo, ataque: !!h.ataque, buff: buff && !vinculo, molde: moldeId, ...(vinculo ? { vinculo: true } : {}), ...(['lacaio', 'totem'].includes(h.arquetipo) ? { lacaio: h.arquetipo } : {}), ...(iconeDaHabilidade(g.slug) ? { iconeHabilidade: iconeDaHabilidade(g.slug) } : {}),
       // (lote A1: a gema que DESLOCA — o "Configurar ação" mostra a opção "direção", e a de fuga a aceita)

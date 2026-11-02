@@ -12,7 +12,7 @@
 //   - "limitação do modelo idle": parcial SÓ por limitações documentadas do idle (o totem parado, o lacaio com a força do PoB, o deslocamento…);
 //   - "sem efeito": status `nao`;  "dados ausentes": a gema não tem linhas/tabela no catálogo;
 //   - (lote A2, dono 19/10: "o estado não se aplica, com nota, como na árvore") "não se aplica": a gema não tem como existir no jogo (`naoSeAplica`
-//     no registro, com a nota do porquê — o Portal: a caçada já tem a saída e os portais do mapa são os da morte).
+//     no registro, com a nota do porquê — o Portal era: dono, 02/11, ele passou a abrir o portal para a cidade, como no PoE — `portal-da-gema.mjs`).
 import { readFileSync, readdirSync, writeFileSync, existsSync, statSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';

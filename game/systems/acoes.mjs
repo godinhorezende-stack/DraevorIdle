@@ -46,6 +46,8 @@ import * as GemasE1a from './itens-poe/gemas-e1a.mjs';
 import * as Virulencia from './itens-poe/virulencia.mjs';
 import * as Poderes from './poderes.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
+// (o Portal da gema — dono, 02/11: "como o PoE")
+import * as PortalDaGema from './itens-poe/portal-da-gema.mjs';
 import * as LinhasDasGemas from './itens-poe/linhas-das-gemas.mjs';
 import { defesaDaPecaVestida } from './itens-poe/condicoes-poe.mjs';
 import * as Reserva from './itens-poe/reserva.mjs';
@@ -4738,6 +4740,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (lote P4, 27/10: como o PoE — o uso À MÃO alterna entre Incubando e Infestando, na recarga de 0,5 s — `alternarPragaP4`)
   if (entry.poeGema?.arquetipo === 'praga' && manual && !gatilho) return alternarPragaP4(estado, hunt, entry);
   if (entry.poeGema?.arquetipo === 'praga') return { ok: false, erro: 'O Infestador alterna sozinho entre Incubando e Infestando.', motivo: 'SOZINHA' };
+  // (o Portal — dono, 02/11: "como o PoE") o uso abre o portal para a cidade: a conjuração da gema e, no fim, a saída (`usarPortalDaGema`)
+  if (entry.poeGema?.arquetipo === 'portal') return usarPortalDaGema(estado, hunt, personagem, slot, entry, { concluir, manual, gatilho, plantada });
 
   const agora = hunt.clock ?? 0;
   const cds = (hunt.cooldowns ??= {});
@@ -8672,6 +8676,31 @@ function raioDaPragaP4(estado, nivel, rng = Math.random) {
   const bonus = Number(GemasPoe.compilada('Plague_Bearer', nivel ?? 1)?.stats?.raioBonus) || 0;
   return raioDoAtivadoR3A(estado, entry, GemasP4.raioDoInfestadorM(bonus), entry ? tagsPoeDaSkill(entry) : ['magia', 'area', 'caos'], {}, rng);
 }
+/**
+ * (o Portal — dono, 02/11: "como o PoE", `itens-poe/portal-da-gema.mjs`) O uso da gema Portal: à mão (a barra automática não leva ninguém para a
+ * cidade sozinha), com a conjuração dela (2,5 s × a Velocidade de Conjuração — a qualidade dá até 60%: `temposDaGemaPoe`); no fim, a saída fica
+ * marcada (`hunt.saidaPeloPortal`) e a sessão faz a viagem (a caçada guardada, a sala que fica com a party — `Sessao.entrarNoPortalDaGema`). Não
+ * custa nada (o PoE: sem custo). A armadilha, a mina, o totem e o gatilho não levam ninguém: o portal é o seu.
+ */
+function usarPortalDaGema(estado, hunt, personagem, slot, entry, { concluir = false, manual = false, gatilho = null, plantada = null } = {}) {
+  if (gatilho || plantada) return { ok: false, erro: 'O Portal só abre pelo seu uso.', motivo: 'PORTAL_A_MAO' };
+  const motivo = PortalDaGema.motivoParaNaoAbrir(hunt);
+  if (motivo) return { ok: false, erro: motivo, motivo: 'PORTAL' };
+  const agora = hunt.clock ?? 0;
+  if (concluir) {
+    hunt.saidaPeloPortal = { em: agora };
+    return { ok: true, eventos: [] };
+  }
+  if (!manual) return { ok: false, erro: 'O Portal se usa à mão (clique ou tecla): ele leva você para a cidade.', motivo: 'PORTAL_A_MAO' };
+  const castMs = Math.max(0, temposDaGemaPoe(estado, entry, Gemas.efeitoNaSkill(estado, entry.id)).conjuracaoMs || 0);
+  if (!(castMs > 0)) {
+    hunt.saidaPeloPortal = { em: agora };
+    return { ok: true, eventos: [] };
+  }
+  hunt.conjurando = { slot, id: entry.id, alvo: null, inicio: agora, fim: agora + castMs, castFim: agora + castMs };
+  return { ok: true, conjurando: true, eventos: [{ t: 'cast', uid: 'player', quem: personagem?.nome, skill: entry.name, ms: castMs, sk: entry.id, x: hunt.pos.x, y: hunt.pos.y }] };
+}
+
 /** (lote P4) A troca À MÃO do Infestador (`GemasP4.alternarPraga`): Incubando com Valor → Infestando; Infestando → Incubando. */
 function alternarPragaP4(estado, hunt, entry) {
   const agora = hunt.clock ?? 0;

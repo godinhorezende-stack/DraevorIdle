@@ -1670,6 +1670,20 @@ Bateria: 153 arquivos, 1648 testes — 1612 passam, 33 pulados, 3 falham (os tr�
 - O Pacto de Ghorr sai do `MOTIVOS_T2`: 'funciona'.
 - Placar: ativas 562 · testada 561 · parcial 0 · não se aplica 1; ataques 210; suportes 262 · 261 · 1. Bateria: 153 arquivos, 1650 testes — 1617 passam, 33 pulados, 0 falhas.
 
+### O Portal (02/11) — "resolva essa que não se aplica"
+
+- **A gema Portal deixa de ser "não se aplica"** (`itens-poe/portal-da-gema.mjs`, arquétipo `portal`): o uso, só à mão (a barra automática não leva ninguém para a cidade), conjura 2,5 s × a Velocidade de Conjuração (a qualidade dá até 60%: 1,56 s na q20) e, no fim, marca a saída (`hunt.saidaPeloPortal`, `Acoes.usarPortalDaGema`). A sessão leva você para a cidade (`Sessao.entrarNoPortalDaGema`, sem o relatório de fim de caçada) e a caçada fica guardada em `estado.portalDaGema` (gravado com o personagem: os monstros vivos compactados, a instância, o relógio, o relatório da sessão, as recargas, o portal do boss do ato).
+- **A volta** (botão "Voltar pelo portal" na cidade → `{t:'voltarPeloPortal'}`, `Cacadas.voltarPeloPortalDaGema`): a mesma área, com os mesmos monstros vivos, a limpeza e o relógio, na casa onde o portal abriu. O portal dura até ser usado ou até outra caçada (`Cacadas.entrar`/`entrarNaSala` o fecham).
+- **Party:** quem usa vai sozinho (quem segue o líder fica; a sala passa ao próximo, que segue puxando); a volta entra na sala da party que ainda está na mesma instância (`Party.voltarPeloPortal`); sem ela, volta sozinho à cópia guardada.
+- **Mapa:** não gasta um dos 6 portais do mapa (a saída sem morte, o loop de mapas espera) e a volta é a do mapa aberto (`MapaAberto.retomar`), na casa do portal; o mapa que acabou fecha o portal.
+- Não abre no duelo da Arena nem na sala de chefe que não é a do ato (os pináculos, os diários). A armadilha, a mina, o totem e o gatilho não levam ninguém.
+- Teste novo: `testes/gema-portal.test.mjs` (6 testes). Placar: ativas 562 · testada 562 · não se aplica 0; suportes 262 · 261 · 1 (Conjurar ao Perder Salvaguarda).
+- Bateria (ativas-*, gemas-*, suportes-*, itens-poe-gemas*, mapas-endgame*, party-*, protecao*, portal-ciclo, boss-do-ato, campanha e os que leem o texto dos arquivos mexidos): 92 arquivos, 1178 testes — 1094 passam, 81 pulados, 3 falhas (abaixo); os 4 `.classico` de mapas/party: 48/48.
+- **Quebras legítimas, sem aval (não editadas):**
+  - `gemas-sem-efeito-a2.test.mjs:79-80` espera o Portal `statusNoJogo === 'nao'` e `naoSeAplica` /^não se aplica/ — agora `'funciona'` e sem `naoSeAplica` (o pedido do dono).
+  - `gemas-todas-funcionam-poe.test.mjs:237` (G16): toda ativa "funciona" precisa causar dano ou ligar buff no uso; o Portal não causa dano no PoE (o efeito é a viagem — `hunt.saidaPeloPortal`). Proposta: um critério próprio em `SEM_DANO_NO_POE` (`Portal: (u) => u.saida`), como o Totem Chamariz e a Mina de Fumaça.
+  - `itens-poe-gemas.test.mjs:38`: `st.funciona > 30 && st.nao < 40` — com o Portal, nenhuma ativa fica "nao" (`{"funciona":562}`), `st.nao` é `undefined` e `undefined < 40` é falso. Proposta: `(st.nao ?? 0) < 40`.
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.

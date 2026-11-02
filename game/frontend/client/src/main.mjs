@@ -2133,6 +2133,7 @@ function applyState(message) {
   confirmarCarregamento();
   atualizarBotaoDeInteragir();
   atualizarBotaoDoPortal();
+  atualizarBotaoDoPortalDaGema();
   // Só na fase (na cidade não): os pontos andam a cada retrato; a geometria é refeita só ao trocar de fase/andar.
   atualizarMinimapa(!!message.hunt);
   /*
@@ -6287,6 +6288,26 @@ function atualizarBotaoDoPortal() {
     document.body.append(botao);
   }
   const texto = `Portal aberto — enfrentar ${portal.nome}`;
+  if (botao.textContent !== texto) botao.textContent = texto;
+  botao.removeAttribute('hidden');
+}
+
+/**
+ * (o Portal da gema — dono, 02/11: "como o PoE") O botão "VOLTAR PELO PORTAL": na cidade, enquanto o servidor manda o portal aberto
+ * (`character.portalDaGema`) — a volta ao mesmo lugar da área, com os monstros que ficaram. O servidor valida tudo.
+ */
+function atualizarBotaoDoPortalDaGema() {
+  const portal = !state.hunt ? state.character?.portalDaGema ?? null : null;
+  let botao = document.getElementById('btn-portal-da-gema');
+  if (!portal) return void botao?.setAttribute('hidden', '');
+  if (!botao) {
+    botao = el('button', 'btn-portal-do-boss');
+    botao.id = 'btn-portal-da-gema';
+    botao.type = 'button';
+    botao.onclick = () => send({ t: 'voltarPeloPortal' });
+    document.body.append(botao);
+  }
+  const texto = `Voltar pelo portal — ${portal.nome}`;
   if (botao.textContent !== texto) botao.textContent = texto;
   botao.removeAttribute('hidden');
 }
