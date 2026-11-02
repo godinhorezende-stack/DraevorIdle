@@ -91,6 +91,8 @@ import * as ItensDoJogo from '../systems/itens/item.mjs';
 import * as Campanha from '../systems/campanha.mjs';
 import * as MapasDispositivo from '../systems/mapas-dispositivo.mjs';
 import * as MapaAberto from '../systems/itens-poe/mapa-aberto.mjs';
+// (o Portal da gema — dono, 02/11: "como o PoE")
+import * as PortalDaGema from '../systems/itens-poe/portal-da-gema.mjs';
 import * as Protecao from '../systems/protecao.mjs';
 import * as Cidades from '../systems/cidades.mjs';
 import * as Comparar from '../systems/itens/comparar.mjs';
@@ -429,6 +431,8 @@ function characterParaCliente(personagem, estado) {
     inventory: estado.inventory ?? [],
     // O cinto de frascos do PoE (só com ITENS_POE=1; null sem o sistema).
     frascosPoe: FrascosPoe.paraCliente(estado),
+    // O portal da gema Portal aberto (o botão "Voltar pelo portal" na cidade — `itens-poe/portal-da-gema.mjs`); null sem portal.
+    portalDaGema: PortalDaGema.paraTela(estado),
     // Estes três são MUTÁVEIS por personagem (ver `estadoInicialPersonagem`) —
     // por isso vêm de `estado`, e não ficam para trás no molde compartilhado.
     // `?? CHARACTER_TEMPLATE.X`: personagens salvos ANTES deste sistema
@@ -959,6 +963,8 @@ export class Sessao {
     // tela no quadro inteiro seguinte, até 1 s depois.
     this.characterSujo = true;
     this.mandarEstado(false, resultado.eventos);
+    // (o Portal da gema sem conjuração: a saída já está marcada)
+    if (this.estado.hunt?.saidaPeloPortal) this.entrarNoPortalDaGema();
   }
 
   /*
@@ -1574,6 +1580,9 @@ export class Sessao {
         return this.entrarNaArena();
       case 'stopHunt':
         return this.voltarParaACidade();
+      // O PORTAL DA GEMA (dono, 02/11): na cidade, a volta pelo portal aberto ao mesmo lugar da área.
+      case 'voltarPeloPortal':
+        return this.voltarPeloPortal();
       // A CIDADE de outro ato (o mapa da campanha — `cidades.mjs`): sai da caçada (se estiver numa) e vai para a cidade do ato pedido, se o
       // ato estiver aberto para ele. Chega no ponto de entrada da cidade.
       case 'irParaCidade': {
@@ -2950,6 +2959,12 @@ export class Sessao {
           return this.mandarEstado(false);
         }
         if (!this.estado.hunt) return this.mandarEstado(false, eventos);
+        // O PORTAL DA GEMA concluiu neste tique: o último quadro da caçada (com o fim da conjuração) e então a cidade.
+        if (this.estado.hunt.saidaPeloPortal) {
+          this.mandarEstado(false, eventos);
+          this.entrarNoPortalDaGema();
+          return;
+        }
         this.mandarEstado(false, eventos);
       } catch (e) {
         console.error('tique hunt', this.estado.hunt?.huntId, '->', e.message);
@@ -3030,6 +3045,45 @@ export class Sessao {
     portal();
     if (report) this.enviar({ t: 'runReport', report });
     return resultado;
+  }
+
+  /*
+   * ---- O PORTAL DA GEMA (dono, 02/11: "como o PoE" — `itens-poe/portal-da-gema.mjs`) ----
+   * O uso da gema Portal terminou (`hunt.saidaPeloPortal`): a caçada fica guardada no portal e você vai para a cidade. Como no PoE, cada um entra
+   * no portal: quem segue o líder NÃO vem junto, e a sala fica com quem está nela (o próximo da party segue puxando — `Party.antesDeSairDaCacada`).
+   * Sem relatório da sessão: a caçada não acabou, ela continua na volta. No mapa do endgame, não gasta portal do mapa (a saída sem morte).
+   */
+  entrarNoPortalDaGema() {
+    const h = this.estado?.hunt;
+    if (!h?.saidaPeloPortal) return false;
+    delete h.saidaPeloPortal;
+    // A caçada guardada ANTES de a sala passar a outro da party (a cópia é a de agora).
+    const r = PortalDaGema.guardar(this.estado, { nome: Cacadas.nomeDaHunt(h.huntId) });
+    if (!r.ok) {
+      this.avisoPendente = r.erro;
+      return false;
+    }
+    const portal = Party.portalDeSaida(this);
+    Party.antesDeSairDaCacada(this);
+    // (não é parar: o loop de mapas espera a volta)
+    this.aplicar(Cacadas.sair(this.estado, { manterLoop: true }));
+    portal();
+    this.avisoPendente = `Você atravessou o Portal para a cidade. Ele fica aberto até você voltar por ele ou abrir outra caçada: "Voltar pelo portal" leva você de volta a ${r.nome}.`;
+    return true;
+  }
+
+  /** `{t:'voltarPeloPortal'}`: a volta pelo portal da gema — a sala da party na mesma instância, se houver; senão, a caçada guardada. */
+  voltarPeloPortal() {
+    const p = PortalDaGema.doPersonagem(this.estado);
+    if (!p) return this.erro('Você não tem um portal aberto.');
+    if (this.estado.hunt) return this.erro('Você já está numa caçada.');
+    const junto = Party.voltarPeloPortal(this, p.instanciaId);
+    if (junto?.ok) {
+      // (a casa do portal, se for no andar da sala; a entrada na sala já fechou o portal)
+      Cacadas.posicionarNaVolta(this.estado.hunt, p, { mesmoAndar: true });
+      return this.aplicar(junto);
+    }
+    return this.aplicar(Cacadas.voltarPeloPortalDaGema(this.estado));
   }
 
   morrerNaHunt({ real = true } = {}) {

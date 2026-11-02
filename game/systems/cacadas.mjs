@@ -94,6 +94,8 @@ import * as ItensPoeJogo from './itens-poe/jogo.mjs';
 import * as Mapas from './itens-poe/mapas.mjs';
 import * as MapasAreas from './itens-poe/mapas-areas.mjs';
 import * as MapaAberto from './itens-poe/mapa-aberto.mjs';
+// (o Portal da gema — dono, 02/11: "como o PoE")
+import * as PortalDaGema from './itens-poe/portal-da-gema.mjs';
 import * as MapasLoop from './itens-poe/mapas-loop.mjs';
 // (o LOOP DE MAPAS: o próximo da fila abre pelo Dispositivo — importação circular, usada só dentro das funções)
 import * as MapasDispositivo from './mapas-dispositivo.mjs';
@@ -686,7 +688,7 @@ export const conteudoDoJogoOficial = ({ hunt = null, boss = null, arenaPvp = fal
  * (`mapa`: o mapa do endgame aberto no Dispositivo — `{ id, peca }` do `estado.mapas.aberto`, passado só pelo `mapas-dispositivo.mjs`: a
  * hunt do mapa não se alcança por `startHunt`.)
  */
-export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: pelaCampanha = false, viaPortal = false, arenaPvp = false, mapa: mapaAberto = null }) {
+export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: pelaCampanha = false, viaPortal = false, arenaPvp = false, mapa: mapaAberto = null, viaPortalDaGema = false }) {
   const boss = CATALOGO.bosses.find((b) => b.id === huntId) ?? null;
   // A campanha (ver `systems/campanha.mjs`): a fase desta hunt, ou o boss de fim de ato.
   const dif = Campanha.DIFICULDADES.includes(dificuldade) ? dificuldade : Campanha.DIFICULDADES[0];
@@ -753,6 +755,8 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
   else if (atoDoBoss != null) estado.atoDaCidade = atoDoBoss;
   // Estava no SEU mapa aberto (e foi para outra caçada, ou voltou ao mesmo): os monstros dele ficam guardados para a volta.
   MapaAberto.guardarAoSair(estado);
+  // (o Portal da gema: outra caçada aberta fecha o portal — a volta por ele, `voltarPeloPortalDaGema`, não)
+  if (!viaPortalDaGema) PortalDaGema.fechar(estado);
 
   // Lure e assistência começam do que o personagem já tinha configurado fora
   // da hunt (`estado.settings`, ver `Cacadas.definirLure`/`definirAssistencia`)
@@ -1053,6 +1057,8 @@ export function entrarNaSala(estado, sala, gente = []) {
     entrada: Protecao.novaEntrada(),
   };
   ligarAoDono(estado.hunt, sala);
+  // (o Portal da gema: entrar na sala de outro — também a volta pelo portal para a sala da party — fecha o portal)
+  PortalDaGema.fechar(estado);
   // Chega por um portal de viagem, na casa livre dele perto do dono (todos da sala veem).
   EventosDeEncontro.empurrar(sala, [portalDeViagem(inicio, { chegada: true, entrada: estado.hunt.entrada })]);
   return { ok: true };
@@ -1371,6 +1377,54 @@ export function sair(estado, { manterLoop = false } = {}) {
   MapaAberto.guardarAoSair(estado, { manterLoop });
   estado.hunt = null;
   return { ok: true };
+}
+
+/*
+ * ---- O PORTAL DA GEMA (dono, 02/11: "como o PoE" — `itens-poe/portal-da-gema.mjs`) ----
+ * A volta pelo portal: a mesma área (`entrar`, com as regras de sempre — a fase liberada, o mapa ainda aberto, o chefe do ato pelo portal dele), e
+ * nela a caçada guardada (as casas, os monstros vivos, a limpeza, o relógio), na casa onde o portal abriu. No mapa do endgame a volta é a do mapa
+ * aberto (`MapaAberto.retomar`) e não gasta portal do mapa. A entrada que falha (a fase fechou) deixa o portal aberto; o mapa que acabou o fecha.
+ */
+export function voltarPeloPortalDaGema(estado) {
+  const p = PortalDaGema.doPersonagem(estado);
+  if (!p) return { ok: false, erro: 'Você não tem um portal aberto.' };
+  if (estado.hunt) return { ok: false, erro: 'Você já está numa caçada.' };
+  if (p.mapaId) {
+    const a = estado.mapas?.aberto;
+    if (!p.doDono || a?.id !== p.mapaId) {
+      PortalDaGema.fechar(estado);
+      return { ok: false, erro: 'O portal fechou: o mapa dele não está mais aberto para você.' };
+    }
+    const r = entrar(estado, { huntId: p.huntId, mode: p.modo, strategy: p.strategy, mapa: a, viaPortalDaGema: true });
+    if (!r.ok) return r;
+    // (sem os monstros guardados — não deveria acontecer —, a instância fica como nasceu, na entrada)
+    if (a.cacada) posicionarNaVolta(estado.hunt, p);
+    MapaAberto.retomar(estado, estado.hunt);
+  } else {
+    const doAto = p.bossDoAto != null;
+    const r = entrar(estado, { huntId: p.huntId, mode: p.modo, strategy: p.strategy, dificuldade: p.dificuldade, campanha: doAto, viaPortal: doAto, viaPortalDaGema: true });
+    if (!r.ok) return r;
+    posicionarNaVolta(estado.hunt, p);
+    PortalDaGema.restaurar(estado.hunt, p);
+  }
+  PortalDaGema.fechar(estado);
+  return { ok: true, notice: `Você voltou pelo portal para ${nomeDaHunt(p.huntId) ?? p.nome}.` };
+}
+
+/**
+ * A casa do portal na volta (`p.z`, `p.pos`): se ela é andável na área (e, com `mesmoAndar`, no andar onde a caçada já está — o convidado da party
+ * não troca de andar), você chega nela; senão, fica na entrada. O laço da Caça Automática recomeça do waypoint mais perto.
+ */
+export function posicionarNaVolta(hunt, p, { mesmoAndar = false } = {}) {
+  if (!hunt || !p?.pos || !Number.isInteger(p.pos.x) || !Number.isInteger(p.pos.y)) return false;
+  const z = p.z ?? 0;
+  if (mesmoAndar && z !== (hunt.z ?? 0)) return false;
+  const grade = gradeDaHunt(huntOuMapaCustom(hunt.huntId));
+  if (!andarDaGrade(grade, z)?.andavel?.has(`${p.pos.x},${p.pos.y}`)) return false;
+  hunt.z = z;
+  chegarNaInstancia(hunt, p.pos, z);
+  if (grade.percurso && !hunt.anfitriao) hunt.percurso = { passo: waypointMaisPerto(grade.percurso, hunt.pos, 0, grade.percurso.length, z) };
+  return true;
 }
 
 /** `send({t:'huntTarget', uid})` — `uid:null` cancela o alvo. */

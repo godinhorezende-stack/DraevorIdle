@@ -2,8 +2,7 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 561,
-   "não se aplica": 1
+   "implementada e testada": 562
   },
   "ataques": {
    "total": 210,
@@ -7319,12 +7318,11 @@
    "nome": "Portal",
    "variante": "normal",
    "ataque": false,
-   "arquetipo": "generico",
-   "estado": "não se aplica",
+   "arquetipo": "portal",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
-   "nota": "não se aplica: a caçada já tem a saída para a cidade, e os 6 portais do mapa são gastos pela morte (mapa-aberto.mjs) — o portal do PoE não tem o que fazer no jogo",
    "icone": true,
    "iconeHabilidade": true
   },
