@@ -33,6 +33,7 @@ import * as Areas from '../engine/areas.mjs';
 import * as Prey from './prey.mjs';
 import * as Charms from './charms.mjs';
 import * as Defesa from './personagem/defesa.mjs';
+import * as Salvaguarda from './personagem/salvaguarda.mjs';
 import * as AtributosDoPersonagem from './personagem/atributos.mjs';
 import * as Reforcos from './skills/reforcos.mjs';
 import * as CargasPoe from './itens-poe/cargas.mjs';
@@ -417,6 +418,9 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // (14/10, as Égides — a Primitiva do Elementalist e as dos únicos: a parte de cada tipo do acerto, na proporção das partes, sai da Égide dele
   // antes do Escudo e da Vida — `ModsPoe.absorverNaEgide`)
   const somaDasPartes = Object.values(partes).reduce((t, v) => t + Math.max(0, v), 0);
+  // (02/11, dono: a SALVAGUARDA como o PoE) a magia do monstro é um acerto: sai primeiro da Salvaguarda, antes da Égide e do resto (`personagem/salvaguarda.mjs`)
+  if (dano > 0) dano = Salvaguarda.absorver(estado, hunt, ficha, dano, eventos, base, personagem);
+  const fatorDaSalvaguarda = danoDoAcerto > 0 ? dano / danoDoAcerto : 1;
   if (dano > 0 && hunt.egides && somaDasPartes > 0) {
     const porTipo = Object.fromEntries(Object.entries(partes).map(([el, v]) => [el, (Math.max(0, v) * dano) / somaDasPartes]));
     const tomou = Math.min(dano, Math.round(ModsPoe.absorverNaEgide(hunt, porTipo, hunt.clock ?? 0)));
@@ -437,7 +441,7 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   dano = Vinculos.desviarParaOEscudo(estado, dano);
   // (revisão PR2, 21/10) só a parte de CAOS da magia atravessa o Escudo de Energia: a de cada tipo (`ModsPoe.caosNasPartes` — o Caos e o recebido como Caos), na
   // proporção do que sobrou do acerto (a Égide não toma Caos; o Escudo Gélido e o Vínculo levam de cada tipo na proporção)
-  const caosDaMagia = somaDasPartes > 0 ? Math.min(dano, Math.round(((danoDoAcerto * ModsPoe.caosNasPartes(ficha, brutas, partes)) / somaDasPartes) * (depoisDaEgide > 0 ? dano / depoisDaEgide : 0))) : 0;
+  const caosDaMagia = somaDasPartes > 0 ? Math.min(dano, Math.round(((danoDoAcerto * fatorDaSalvaguarda * ModsPoe.caosNasPartes(ficha, brutas, partes)) / somaDasPartes) * (depoisDaEgide > 0 ? dano / depoisDaEgide : 0))) : 0;
   dano = aplicarNoJogador({ estado, hunt, bicho, dano, elemento: a.elemento, eventos, base, ficha, temEscudo, suprimiu, caos: caosDaMagia });
   // PoE: o "acertado/dano recentemente", a recuperação do dano sofrido e o congelar quem acerta (a magia não é corpo a corpo: sem Reflexo).
   ModsPoe.aoSerAcertado(estado, hunt, bicho, ficha, { dano: Math.max(0, dano), corpoACorpo: ataqueDoPoe && !!a.corpoACorpo, ataque: projetil || ataqueDoPoe, magia: !projetil && !ataqueDoPoe, tipo: a.elemento, eventos });
@@ -461,10 +465,13 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
  * caminho inteiro: a proteção do elemento, a prey de defesa, a mitigação das
  * gemas e `aplicarNoJogador`. `golpe`: o nome que aparece ("Explosão"...).
  */
-export function danoDeElementoNoJogador(estado, hunt, personagem, bicho, valor, elemento, eventos, golpe, ficha, temEscudo) {
+// (02/11) `acerto`: o dano é um ACERTO (a explosão do monstro ao morrer) — passa antes pela Salvaguarda (`personagem/salvaguarda.mjs`); o dano contínuo (a aura, o solo, o
+// degenerativo) não passa por ela, como no PoE.
+export function danoDeElementoNoJogador(estado, hunt, personagem, bicho, valor, elemento, eventos, golpe, ficha, temEscudo, { acerto = false } = {}) {
   if (!(valor > 0) || estado.hp <= 0 || Protecao.imune(hunt)) return 0;
-  const dano = Math.round(valor * ModsPoe.fatorDaResistenciaRecebida(ficha, elemento) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
   const base = { uid: 'player', quem: personagem?.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: bicho.name, golpe };
+  const doAcerto = Math.round(valor * ModsPoe.fatorDaResistenciaRecebida(ficha, elemento) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
+  const dano = acerto && doAcerto > 0 && !GemasGBD.imortal(hunt, hunt?.clock ?? 0) ? Salvaguarda.absorver(estado, hunt, ficha, doAcerto, eventos, base, personagem) : doAcerto;
   return dano > 0 ? aplicarNoJogador({ estado, hunt, bicho, dano, elemento, eventos, base, ficha, temEscudo }) : 0;
 }
 

@@ -2181,7 +2181,9 @@ export const EVENTOS = new Set(['incendiarNovo', 'ganharAdrenalina', 'amaldicoar
   // `hunt/combate.matarMonstro`, pelo carimbo de `hunt/quem-feriu`.
   'matarLacaio', 'matarTotem', 'inimigoMorrer',
   // (lote 70) ao Convocar um Totem (`acoes.invocarLacaios`)
-  'convocarTotem']);
+  'convocarTotem',
+  // (02/11) quando a Salvaguarda se Rompe (`personagem/salvaguarda.absorver` → `acoes.mjs`)
+  'salvaguardaQuebra']);
 export const ACOES = new Set(['transferirMarca', 'frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
   'dano', 'danoPctVida', 'furia', 'frasco', 'recargaEs', 'explodir', 'gatilho', 'espalhar', 'roubarCargas', 'maldicao', 'soloSagrado', 'soloProfano', 'fumaca', 'removerAfeccao', 'perdeVidaPct', 'perdeEsPct', 'perdeManaPct',
   // (11/10, os únicos)
@@ -2195,7 +2197,9 @@ export const ACOES = new Set(['transferirMarca', 'frascoChance', 'explodirChance
   // (lote 72) `mods-poe.aplicarAcao`: a carga aleatória por Poder do Clamor e o atributo temporário por Poder
   'cargaAleatoriaPorPoder', 'statTempPorPoder',
   // (lote G)
-  'valor', 'mortalha']);
+  'valor', 'mortalha',
+  // (02/11) restaurar a Salvaguarda (`personagem/salvaguarda.restaurar`)
+  'salvaguarda']);
 /** Os prefixos de atributo montados pelo nome (`sempre:<buff>`, `efeito_buff:<buff>`, `concede:<gema>`, `suporte_local:<gema>`). */
 /**
  * Quem sabe se uma gema existe pelo NOME ("Concede a Habilidade X", "Suportadas por X"): as gemas do PoE carregam depois e `skills/gemas.mjs`

@@ -223,6 +223,9 @@ function baseDaPeca(a, af, fq = 1) {
     ...(a.armadura ? { armor: mult([a.armadura, a.armadura]) } : {}),
     ...(a.evasao ? { evasion: mult([a.evasao, a.evasao]) } : {}),
     ...(a.escudo_energia && !(Number(af.sem_es_da_base) > 0) ? { es: mult([a.escudo_energia, a.escudo_energia]) } : {}),
+    // (02/11, dono: a Salvaguarda como o PoE) a SALVAGUARDA da peça (as bases Rúnicas: `protecao`): (a base + o "+N de Proteção" LOCAL — Svalinn) × (1 + a qualidade +
+    // o "Proteção aumentada em X%" LOCAL — os únicos Rúnicos; o poedb: "local ward +%") — a ficha soma (`ficha.defesasDaFicha`, `personagem/salvaguarda.mjs`)
+    ...(Number(a.protecao) || Number(af.salvaguarda_local) ? { ward: ((v) => [v, v])(Math.round(((Number(a.protecao) || 0) + (Number(af.salvaguarda_local) || 0)) * Math.max(0, fq + (Number(af.salvaguarda_pct_local) || 0) / 100))) } : {}),
   };
 }
 
@@ -462,7 +465,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (72 — 20/10, lote A5b: a precisão "+X de Precisão" da arma é local — `accuracy_local`)
 // (73 — 20/10, dono: "Adiciona X a Y de Dano Físico em Ataques" (e as variantes por arma, por atributo, por carga) com +X no mínimo e +Y no máximo —
 // `phys_add_min`/`phys_add_max` —, como no PoE; antes a média em `phys_add`, com o máximo 2×)
-export const VERSAO_DA_TRADUCAO = 73;
+// (74 — 02/11, dono: a SALVAGUARDA (Ward) como o PoE — a das bases Rúnicas na peça (`base.ward`), as linhas da "Proteção" dos únicos e as da Salvaguarda das Joias
+// Atemporais com efeito — `personagem/salvaguarda.mjs`)
+export const VERSAO_DA_TRADUCAO = 74;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
@@ -560,7 +565,8 @@ export function qualidadeDoDrop(peca, rng = Math.random, regras = Catalogo.REGRA
   const p = peca?.poe;
   if (!p || !q?.chance) return peca;
   // (a Tintura não tem qualidade: nada nela escala com a qualidade)
-  const temBase = !!(p.atributos?.dano_fisico || p.atributos?.armadura || p.atributos?.evasao || p.atributos?.escudo_energia) || (FRASCOS.includes(p.classe) && p.classe !== 'Tinctures');
+  // (02/11: + as Rúnicas — a qualidade aumenta a Salvaguarda da base, como no PoE)
+  const temBase = !!(p.atributos?.dano_fisico || p.atributos?.armadura || p.atributos?.evasao || p.atributos?.escudo_energia || p.atributos?.protecao) || (FRASCOS.includes(p.classe) && p.classe !== 'Tinctures');
   if (!temBase || rng() >= q.chance) return peca;
   p.qualidade = 1 + Math.floor(rng() * Math.max(1, q.maximo ?? 20));
   return recalcular(peca, regras);

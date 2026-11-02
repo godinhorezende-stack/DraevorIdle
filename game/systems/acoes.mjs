@@ -33,6 +33,7 @@ import { salaDe, tirarMonstro } from './hunt/sala.mjs';
 import * as Controle from './combate/controle.mjs';
 import * as AtributosDoMob from './mobs/atributos.mjs';
 import * as Defesa from './personagem/defesa.mjs';
+import * as Salvaguarda from './personagem/salvaguarda.mjs';
 import { ACTION_CATALOG, ACTION_CATALOG_ALTO, LEVELS_DAS_CAPTURAS, ITEM_CATALOG, CHARACTER_TEMPLATE, CATALOGO } from './dados.mjs';
 import { removerItem } from './inventario.mjs';
 import * as Treino from './treino.mjs';
@@ -9672,7 +9673,8 @@ export function ativarGatilhos(estado, hunt, personagem, evento, { acao = null, 
       }
     }
     // (o Feiticeiro: 0,6 s ÷ a "Recuperação da Recarga" do nível dele; lote A2: a Automação, a recarga dela — 0,6 s)
-    const recargaMs = g.feiticeiro ? GemasPoe.feiticeiroNoNivel(g.nivel).recargaMs : g.automacao ? GemasPoe.temposNoNivel('Automation', g.nivel).recargaMs || AUTOMACAO.recargaMs : g.gatilho.recargaMs;
+    // (02/11: o Conjurar ao Perder Salvaguarda — "5% de recarga mais rápida por 100 Salvaguarda, até 400%", pela Salvaguarda máxima — `Salvaguarda.recargaDoGatilho`)
+    const recargaMs = g.feiticeiro ? GemasPoe.feiticeiroNoNivel(g.nivel).recargaMs : g.automacao ? GemasPoe.temposNoNivel('Automation', g.nivel).recargaMs || AUTOMACAO.recargaMs : g.gatilho.porSalvaguardaPct ? Salvaguarda.recargaDoGatilho(g.gatilho.recargaMs, Ficha.combate(estado), { porCemPct: g.gatilho.porSalvaguardaPct, maxPct: g.gatilho.porSalvaguardaMaxPct }) : g.gatilho.recargaMs;
     if (saiu && recargaMs) cds[chave] = { ate: agora + recargaMs, total: recargaMs };
   }
   return n;
@@ -12901,6 +12903,17 @@ export function aoReceberDano(estado, hunt, personagem, dano, eventos = []) {
   }
   return n;
 }
+
+/**
+ * (02/11, dono: a Salvaguarda como o PoE) A QUEBRA da Salvaguarda (`personagem/salvaguarda.absorver`, no acerto que a leva a 0): o Conjurar ao Perder Salvaguarda (o
+ * gatilho 'salvaguarda', com a recarga dele) e o evento `salvaguardaQuebra` dos mods ("Ganha 1 Carga de Poder quando a Salvaguarda se Rompe", a Adrenalina da Investida
+ * de Olroth).
+ */
+Salvaguarda.definirAoQuebrar((estado, hunt, personagem, eventos) => {
+  if (!itensPoeLigado() || !hunt) return;
+  ativarGatilhos(estado, hunt, personagem, 'salvaguarda', {}, eventos);
+  ModsPoe.evento(estado, hunt, 'salvaguardaQuebra', Ficha.combate(estado), { eventos, personagem });
+});
 
 const fracaoDeVida = (e) => (e?.hp ?? 0) / Math.max(1, e?.maxHp ?? 1);
 /** Os da caçada em grupo (`hunt.partilha.membros`, vivo) — sozinho, só eu. */
