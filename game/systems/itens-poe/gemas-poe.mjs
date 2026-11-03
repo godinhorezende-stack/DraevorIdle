@@ -662,6 +662,14 @@ export function danoNoNivel(slug, nivel) {
  * Devolve `{ elemento: [min, max] }` (no jogo: physical, fire, ice, energy, chaos).
  */
 const EL_DA_ARENA = { fisico: 'physical', fogo: 'fire', gelo: 'ice', raio: 'energy', caos: 'chaos' };
+// (100% — dados, 03/11) o sorteio do "em Fogo, Gelo ou Raio": um dos três, sem os PROIBIDOS (o Foco de Combate — `itens-poe/prismaticas.mjs`; com os três
+// proibidos, os três)
+const ELEMENTOS_PRISMA = ['fire', 'ice', 'energy'];
+function sortearElemento(proibidos, rng = Math.random) {
+  const livres = ELEMENTOS_PRISMA.filter((el) => !proibidos?.has?.(el));
+  const lista = livres.length ? livres : ELEMENTOS_PRISMA;
+  return lista[Math.min(lista.length - 1, Math.floor(rng() * lista.length))];
+}
 /**
  * (lote A5c, dono 20/10) A CONVERSÃO do Físico do golpe, a mesma nos ataques e nas magias (a ordem do PoE): a da GEMA (`conversoes`; `escolher` dá o elemento
  * do "aleatorio"), depois as das OUTRAS fontes só no que a gema deixou e o "Físico como Extra" sobre o Físico de antes (`outras(fisico, tetoPct)`). Muda `p`
@@ -694,7 +702,9 @@ const podarOrigens = (p, origens) => { if (origens) for (const el of Object.keys
 // (lote C1, dono 20/10: `escolhido` — o elemento do Acerto Elemental já escolhido no uso, para o raio contra a afecção dele; fora dos presentes, o sorteio)
 // (revisão do lote da eficácia, 20/10: `conversoesExtras` — a conversão do Físico dos SUPORTES, `[{ para: 'raio', pct }]`: a da habilidade, com a da gema; as outras
 // fontes ficam com o que sobrou)
-export function partesDoAtaque(slug, nivel, arma = { min: 1, max: 1 }, extras = {}, rng = Math.random, { outras = null, origens = null, escolhido = null, conversoesExtras = [] } = {}) {
+// (100% — dados, 03/11: `proibidos` — os elementos que o Foco de Combate proíbe às Habilidades Prismáticas; e o `escolhido` também vale na conversão "em Fogo, Gelo ou
+// Raio" — o Golpe Selvagem converte no elemento do uso)
+export function partesDoAtaque(slug, nivel, arma = { min: 1, max: 1 }, extras = {}, rng = Math.random, { outras = null, origens = null, escolhido = null, conversoesExtras = [], proibidos = null } = {}) {
   const st = compilada(slug, nivel)?.stats ?? {};
   const ef = st.efetividade ?? 1;
   const p = {};
@@ -704,11 +714,11 @@ export function partesDoAtaque(slug, nivel, arma = { min: 1, max: 1 }, extras = 
   for (const [el, v] of Object.entries(st.adicional ?? {})) somar(EL_DA_ARENA[el] ?? 'physical', v, ef);
   for (const [el, v] of Object.entries(extras)) if (v && (v[0] || v[1])) somar(el, v);
   // (lote E1b, 26/10: + a conversão para um elemento aleatório da Devastação da Refração — GemasE1b.conversaoAleatoriaDasLinhas)
-  converterOFisico(p, origens, [...(st.conversao ?? []), ...conversaoAleatoriaDaGema(slug, nivel), ...conversoesExtras], outras, () => ['fire', 'ice', 'energy'][Math.floor(rng() * 3)]);
+  converterOFisico(p, origens, [...(st.conversao ?? []), ...conversaoAleatoriaDaGema(slug, nivel), ...conversoesExtras], outras, () => (ELEMENTOS_PRISMA.includes(escolhido) ? escolhido : sortearElemento(proibidos, rng)));
   const ex = extrasDoAtaque(slug, nivel);
   if (ex.soElemental) { delete p.physical; delete p.chaos; }
   // "Apenas Causa Dano do Elemento escolhido" (Acerto Elemental): cada uso sorteia fogo, gelo ou raio e só ele fica.
-  if (ex.umElemento) { const els = ['fire', 'ice', 'energy'].filter((el) => p[el]); const fica = els.includes(escolhido) ? escolhido : els[Math.floor(rng() * els.length)]; for (const el of Object.keys(p)) if (el !== fica) delete p[el]; }
+  if (ex.umElemento) { const todos = ['fire', 'ice', 'energy'].filter((el) => p[el]); const livres = todos.filter((el) => !proibidos?.has?.(el)); const els = livres.length ? livres : todos; const fica = els.includes(escolhido) ? escolhido : els[Math.floor(rng() * els.length)]; for (const el of Object.keys(p)) if (el !== fica) delete p[el]; }
   for (const el of Object.keys(p)) if (!(p[el][1] > 0)) delete p[el];
   podarOrigens(p, origens);
   return p;
@@ -732,13 +742,13 @@ export const conversoesDosSuportes = (efeito) => Object.entries(efeito ?? {}).fl
 // (lote B1, dono 20/10: `basePor` — o multiplicador do dano BASE da gema por elemento, `{ energy: 2, … }`: a Descarga, "por Carga removida")
 // (lote B2, dono 20/10: `baseExtra` — o dano BASE a mais do uso, `{ elemento: [min, max] }`, sem a eficácia: o Caos do sacrifício da Barganha de Trarthus — o PoB soma
 // ao ChaosMin/ChaosMax da habilidade)
-export function partesDaMagia(slug, nivel, extras = {}, { rng = Math.random, elementoSorteado = null, outras = null, origens = null, basePor = null, baseExtra = null, conversoesExtras = [] } = {}) {
+export function partesDaMagia(slug, nivel, extras = {}, { rng = Math.random, elementoSorteado = null, outras = null, origens = null, basePor = null, baseExtra = null, conversoesExtras = [], proibidos = null } = {}) {
   const p = {};
   const somar = (k, [a, b], m = 1) => { if (!m) return; const x = p[k] ?? [0, 0]; p[k] = [x[0] + a * m, x[1] + b * m]; somarOrigem(origens, k, [], [a, b], m); };
   for (const [el, v] of Object.entries(compilada(slug, nivel)?.stats?.dano ?? {})) { const k = EL_DA_ARENA[el] ?? 'physical'; somar(k, v, basePor ? Math.max(0, Number(basePor[k]) || 0) : 1); }
   for (const [el, v] of Object.entries(baseExtra ?? {})) if (v && (v[0] > 0 || v[1] > 0)) somar(el, v);
   for (const [el, v] of Object.entries(extras ?? {})) if (v && (v[0] || v[1])) somar(el, v);
-  converterOFisico(p, origens, [...conversaoDaMagia(slug, nivel), ...conversoesExtras], outras, () => (['fire', 'ice', 'energy'].includes(elementoSorteado) ? elementoSorteado : ['fire', 'ice', 'energy'][Math.floor(rng() * 3)]));
+  converterOFisico(p, origens, [...conversaoDaMagia(slug, nivel), ...conversoesExtras], outras, () => (ELEMENTOS_PRISMA.includes(elementoSorteado) ? elementoSorteado : sortearElemento(proibidos, rng)));
   for (const el of Object.keys(p)) if (!(p[el][0] > 0 || p[el][1] > 0)) delete p[el];
   podarOrigens(p, origens);
   return p;

@@ -1,0 +1,1056 @@
+{
+ "_nota": "As TATUAGENS do PoE (tools/importar-tatuagens-poe.mjs, do poedb pt — https://poedb.tw/pt/Tattoo). O que cada uma faz no jogo, onde entra (o `alvo`), o limite de 50 e o drop: systems/passivas/tatuagens.mjs. `itemId`: ESTÁVEL (só cresce, 917.001+).",
+ "fonte": "https://poedb.tw/pt/Tattoo (+ Tattoo_of_the_Ngamahu_Warrior, Journey_Tattoo_of_the_Body, Forbidden_Tattoo_of_the_Witch)",
+ "maximo": 50,
+ "tatuagens": [
+  {
+   "slug": "Tattoo_of_the_Ngamahu_Firewalker",
+   "nome": "Tatuagem do Andarilho Flamejante de Ngamahu",
+   "en": "Tattoo of the Ngamahu Firewalker",
+   "tipo": "comum",
+   "tribo": "Ngamahu",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "str"
+   },
+   "linhas": [
+    "+6% de Resistência a Fogo"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonStrTatttooEquipment.png",
+   "itemId": 917026
+  },
+  {
+   "slug": "Tattoo_of_the_Ngamahu_Shaman",
+   "nome": "Tatuagem do Xamã de Ngamahu",
+   "en": "Tattoo of the Ngamahu Shaman",
+   "tipo": "comum",
+   "tribo": "Ngamahu",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "str"
+   },
+   "linhas": [
+    "Duração do Incêndio em Você aumentada em 10%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonStrTatttooEquipment.png",
+   "itemId": 917027
+  },
+  {
+   "slug": "Tattoo_of_the_Ngamahu_Warrior",
+   "nome": "Tatuagem do Guerreiro de Ngamahu",
+   "en": "Tattoo of the Ngamahu Warrior",
+   "tipo": "comum",
+   "tribo": "Ngamahu",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "str"
+   },
+   "linhas": [
+    "Dano de Fogo aumentado em 5%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonStrTatttooEquipment.png",
+   "itemId": 917029
+  },
+  {
+   "slug": "Tattoo_of_the_Ngamahu_Warmonger",
+   "nome": "Tatuagem do Guerrilheiro de Ngamahu",
+   "en": "Tattoo of the Ngamahu Warmonger",
+   "tipo": "comum",
+   "tribo": "Ngamahu",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "str"
+   },
+   "linhas": [
+    "5% de chance de Incendiar"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonStrTatttooEquipment.png",
+   "itemId": 917028
+  },
+  {
+   "slug": "Tattoo_of_the_Ngamahu_Woodcarver",
+   "nome": "Tatuagem do Talhador de Ngamahu",
+   "en": "Tattoo of the Ngamahu Woodcarver",
+   "tipo": "comum",
+   "tribo": "Ngamahu",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "str"
+   },
+   "linhas": [
+    "Vida do Totem aumentada em 5%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonStrTatttooEquipment.png",
+   "itemId": 917030
+  },
+  {
+   "slug": "Tattoo_of_the_Kitava_Blood_Drinker",
+   "nome": "Tatuagem Hematofágica de Kitava",
+   "en": "Tattoo of the Kitava Blood Drinker",
+   "tipo": "comum",
+   "tribo": "Kitava",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "str"
+   },
+   "linhas": [
+    "0.5% do Dano de Ataques é Drenado como Vida"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonStrTatttooEquipment.png",
+   "itemId": 917021
+  },
+  {
+   "slug": "Tattoo_of_the_Kitava_Rebel",
+   "nome": "Tatuagem do Rebelde de Kitava",
+   "en": "Tattoo of the Kitava Rebel",
+   "tipo": "comum",
+   "tribo": "Kitava",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "str"
+   },
+   "linhas": [
+    "10% de chance de Evitar Sangramento"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonStrTatttooEquipment.png",
+   "itemId": 917023
+  },
+  {
+   "slug": "Tattoo_of_the_Kitava_Warrior",
+   "nome": "Tatuagem do Guerreiro de Kitava",
+   "en": "Tattoo of the Kitava Warrior",
+   "tipo": "comum",
+   "tribo": "Kitava",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "str"
+   },
+   "linhas": [
+    "Dano Físico aumentado em 5%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonStrTatttooEquipment.png",
+   "itemId": 917025
+  },
+  {
+   "slug": "Tattoo_of_the_Kitava_Heart_Eater",
+   "nome": "Tatuagem do Devorador de Corações de Kitava",
+   "en": "Tattoo of the Kitava Heart Eater",
+   "tipo": "comum",
+   "tribo": "Kitava",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "int"
+   },
+   "linhas": [
+    "Golpes Abatedores têm 4% de chance de Consumir cadáveres para recuperar 10% da Vida Máxima"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonIntTatttooEquipment.png",
+   "itemId": 917022
+  },
+  {
+   "slug": "Tattoo_of_the_Kitava_Shaman",
+   "nome": "Tatuagem do Xamã de Kitava",
+   "en": "Tattoo of the Kitava Shaman",
+   "tipo": "comum",
+   "tribo": "Kitava",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "str"
+   },
+   "linhas": [
+    "Ataques têm 5% de chance de causar Sangramento"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonStrTatttooEquipment.png",
+   "itemId": 917024
+  },
+  {
+   "slug": "Tattoo_of_the_Tukohama_Shaman",
+   "nome": "Tatuagem do Xamã de Tukohama",
+   "en": "Tattoo of the Tukohama Shaman",
+   "tipo": "comum",
+   "tribo": "Tukohama",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "str"
+   },
+   "linhas": [
+    "0.3% de Vida Regenerada por segundo"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonStrTatttooEquipment.png",
+   "itemId": 917052
+  },
+  {
+   "slug": "Tattoo_of_the_Tukohama_Warrior",
+   "nome": "Tatuagem do Guerreiro de Tukohama",
+   "en": "Tattoo of the Tukohama Warrior",
+   "tipo": "comum",
+   "tribo": "Tukohama",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "str"
+   },
+   "linhas": [
+    "Acertos Corpo a Corpo que Atordoam têm 5% de chance de Fortificar"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonStrTatttooEquipment.png",
+   "itemId": 917055
+  },
+  {
+   "slug": "Tattoo_of_the_Tukohama_Brawler",
+   "nome": "Tatuagem do Brigão de Tukohama",
+   "en": "Tattoo of the Tukohama Brawler",
+   "tipo": "comum",
+   "tribo": "Tukohama",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "str"
+   },
+   "linhas": [
+    "10% de chance de Empurrar Inimigos ao acertar"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonStrTatttooEquipment.png",
+   "itemId": 917051
+  },
+  {
+   "slug": "Tattoo_of_the_Tukohama_Warmonger",
+   "nome": "Tatuagem do Guerrilheiro de Tukohama",
+   "en": "Tattoo of the Tukohama Warmonger",
+   "tipo": "comum",
+   "tribo": "Tukohama",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "str"
+   },
+   "linhas": [
+    "Dano Corpo a Corpo aumentado em 5%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonStrTatttooEquipment.png",
+   "itemId": 917054
+  },
+  {
+   "slug": "Tattoo_of_the_Tukohama_Warcaller",
+   "nome": "Tatuagem do Combatente de Tukohama",
+   "en": "Tattoo of the Tukohama Warcaller",
+   "tipo": "comum",
+   "tribo": "Tukohama",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "str"
+   },
+   "linhas": [
+    "Velocidade de Recarga do Clamor aumentada em 8%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonStrTatttooEquipment.png",
+   "itemId": 917053
+  },
+  {
+   "slug": "Tattoo_of_the_Rongokurai_Warrior",
+   "nome": "Tatuagem do Guerreiro de Rongokurai",
+   "en": "Tattoo of the Rongokurai Warrior",
+   "tipo": "comum",
+   "tribo": "Rongokurai",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "str"
+   },
+   "linhas": [
+    "Armadura aumentada em 6%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonStrTatttooEquipment.png",
+   "itemId": 917040
+  },
+  {
+   "slug": "Tattoo_of_the_Rongokurai_Brute",
+   "nome": "Tatuagem do Bruto de Rongokurai",
+   "en": "Tattoo of the Rongokurai Brute",
+   "tipo": "comum",
+   "tribo": "Rongokurai",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "str"
+   },
+   "linhas": [
+    "Ponto de Atordoamento aumentado em 10%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonStrTatttooEquipment.png",
+   "itemId": 917036
+  },
+  {
+   "slug": "Tattoo_of_the_Rongokurai_Goliath",
+   "nome": "Tatuagem do Gigante de Rongokurai",
+   "en": "Tattoo of the Rongokurai Goliath",
+   "tipo": "comum",
+   "tribo": "Rongokurai",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "str"
+   },
+   "linhas": [
+    "Duração de Atordoamentos em Inimigos aumentada em 10%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonStrTatttooEquipment.png",
+   "itemId": 917037
+  },
+  {
+   "slug": "Tattoo_of_the_Rongokurai_Turtle",
+   "nome": "Tatuagem da Tartaruga de Rongokurai",
+   "en": "Tattoo of the Rongokurai Turtle",
+   "tipo": "comum",
+   "tribo": "Rongokurai",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "int"
+   },
+   "linhas": [
+    "Dano Extra recebido de Acertos Críticos em Você reduzido em 5%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonIntTatttooEquipment.png",
+   "itemId": 917039
+  },
+  {
+   "slug": "Tattoo_of_the_Rongokurai_Guard",
+   "nome": "Tatuagem do Guarda de Rongokurai",
+   "en": "Tattoo of the Rongokurai Guard",
+   "tipo": "comum",
+   "tribo": "Rongokurai",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "str"
+   },
+   "linhas": [
+    "Habilidades de Guarda têm Duração aumentada em 6%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonStrTatttooEquipment.png",
+   "itemId": 917038
+  },
+  {
+   "slug": "Tattoo_of_the_Tasalio_Bladedancer",
+   "nome": "Tatuagem do Dançarino das Lâminas de Tasalio",
+   "en": "Tattoo of the Tasalio Bladedancer",
+   "tipo": "comum",
+   "tribo": "Tasalio",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "str"
+   },
+   "linhas": [
+    "Ataques têm 5% de chance de Mutilar ao Acertar"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonStrTatttooEquipment.png",
+   "itemId": 917041
+  },
+  {
+   "slug": "Tattoo_of_the_Tasalio_Tideshifter",
+   "nome": "Tatuagem do Capitão das Marés de Tasalio",
+   "en": "Tattoo of the Tasalio Tideshifter",
+   "tipo": "comum",
+   "tribo": "Tasalio",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "dex"
+   },
+   "linhas": [
+    "10% de chance de Evitar ser Atordoado"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonDexTatttooEquipment.png",
+   "itemId": 917044
+  },
+  {
+   "slug": "Tattoo_of_the_Tasalio_Shaman",
+   "nome": "Tatuagem do Xamã de Tasalio",
+   "en": "Tattoo of the Tasalio Shaman",
+   "tipo": "comum",
+   "tribo": "Tasalio",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "int"
+   },
+   "linhas": [
+    "5% de chance de Desacelerar Inimigos ao Acertar com Magias"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonIntTatttooEquipment.png",
+   "itemId": 917043
+  },
+  {
+   "slug": "Tattoo_of_the_Tasalio_Warrior",
+   "nome": "Tatuagem do Guerreiro de Tasalio",
+   "en": "Tattoo of the Tasalio Warrior",
+   "tipo": "comum",
+   "tribo": "Tasalio",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "dex"
+   },
+   "linhas": [
+    "5% de chance de Cegar Inimigos ao Acertar com Ataques"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonDexTatttooEquipment.png",
+   "itemId": 917045
+  },
+  {
+   "slug": "Tattoo_of_the_Tasalio_Scout",
+   "nome": "Tatuagem do Batedor de Tasalio",
+   "en": "Tattoo of the Tasalio Scout",
+   "tipo": "comum",
+   "tribo": "Tasalio",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "dex"
+   },
+   "linhas": [
+    "Efeito das suas Marcas aumentado em 4%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonDexTatttooEquipment.png",
+   "itemId": 917042
+  },
+  {
+   "slug": "Tattoo_of_the_Arohongui_Moonwarden",
+   "nome": "Tatuagem do Guarda Lunar de Aronhongui",
+   "en": "Tattoo of the Arohongui Moonwarden",
+   "tipo": "comum",
+   "tribo": "Arohongui",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "dex"
+   },
+   "linhas": [
+    "+6% de Resistência a Gelo"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonDexTatttooEquipment.png",
+   "itemId": 917011
+  },
+  {
+   "slug": "Tattoo_of_the_Arohongui_Scout",
+   "nome": "Tatuagem do Batedor de Aronhongui",
+   "en": "Tattoo of the Arohongui Scout",
+   "tipo": "comum",
+   "tribo": "Arohongui",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "dex"
+   },
+   "linhas": [
+    "10% de chance de Evitar ser Resfriado",
+    "10% de chance de Evitar ser Congelado"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonDexTatttooEquipment.png",
+   "itemId": 917012
+  },
+  {
+   "slug": "Tattoo_of_the_Arohongui_Warrior",
+   "nome": "Tatuagem do Guerreiro de Aronhongui",
+   "en": "Tattoo of the Arohongui Warrior",
+   "tipo": "comum",
+   "tribo": "Arohongui",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "dex"
+   },
+   "linhas": [
+    "Dano de Gelo aumentado em 5%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonDexTatttooEquipment.png",
+   "itemId": 917015
+  },
+  {
+   "slug": "Tattoo_of_the_Arohongui_Warmonger",
+   "nome": "Tatuagem do Guerrilheiro de Aronhongui",
+   "en": "Tattoo of the Arohongui Warmonger",
+   "tipo": "comum",
+   "tribo": "Arohongui",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "int"
+   },
+   "linhas": [
+    "5% de chance de Congelar"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonIntTatttooEquipment.png",
+   "itemId": 917014
+  },
+  {
+   "slug": "Tattoo_of_the_Arohongui_Shaman",
+   "nome": "Tatuagem do Xamã de Aronhongui",
+   "en": "Tattoo of the Arohongui Shaman",
+   "tipo": "comum",
+   "tribo": "Arohongui",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "int"
+   },
+   "linhas": [
+    "Efeito dos Buffs de Arauto em você aumentado em 5%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonIntTatttooEquipment.png",
+   "itemId": 917013
+  },
+  {
+   "slug": "Tattoo_of_the_Ramako_Scout",
+   "nome": "Tatuagem do Batedor de Ramako",
+   "en": "Tattoo of the Ramako Scout",
+   "tipo": "comum",
+   "tribo": "Ramako",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "dex"
+   },
+   "linhas": [
+    "Evasão aumentada em 6%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonDexTatttooEquipment.png",
+   "itemId": 917033
+  },
+  {
+   "slug": "Tattoo_of_the_Ramako_Archer",
+   "nome": "Tatuagem do Arqueiro de Ramako",
+   "en": "Tattoo of the Ramako Archer",
+   "tipo": "comum",
+   "tribo": "Ramako",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "dex"
+   },
+   "linhas": [
+    "Precisão aumentada em 5%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonDexTatttooEquipment.png",
+   "itemId": 917031
+  },
+  {
+   "slug": "Tattoo_of_the_Ramako_Sniper",
+   "nome": "Tatuagem do Atirador de Ramako",
+   "en": "Tattoo of the Ramako Sniper",
+   "tipo": "comum",
+   "tribo": "Ramako",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "dex"
+   },
+   "linhas": [
+    "Velocidade do Projétil aumentada em 5%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonDexTatttooEquipment.png",
+   "itemId": 917035
+  },
+  {
+   "slug": "Tattoo_of_the_Ramako_Fleetfoot",
+   "nome": "Tatuagem do Soldado de Ramako",
+   "en": "Tattoo of the Ramako Fleetfoot",
+   "tipo": "comum",
+   "tribo": "Ramako",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "dex"
+   },
+   "linhas": [
+    "Velocidade de Movimento aumentada em 2%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonDexTatttooEquipment.png",
+   "itemId": 917032
+  },
+  {
+   "slug": "Tattoo_of_the_Ramako_Shaman",
+   "nome": "Tatuagem do Xamã de Ramako",
+   "en": "Tattoo of the Ramako Shaman",
+   "tipo": "comum",
+   "tribo": "Ramako",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "dex"
+   },
+   "linhas": [
+    "+2% de chance de Suprimir Dano Mágico"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonDexTatttooEquipment.png",
+   "itemId": 917034
+  },
+  {
+   "slug": "Tattoo_of_the_Hinekora_Warrior",
+   "nome": "Tatuagem do Guerreiro de Hinekora",
+   "en": "Tattoo of the Hinekora Warrior",
+   "tipo": "comum",
+   "tribo": "Hinekora",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "int"
+   },
+   "linhas": [
+    "Escudo de Energia máximo aumentado em 3%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonIntTatttooEquipment.png",
+   "itemId": 917020
+  },
+  {
+   "slug": "Tattoo_of_the_Hinekora_Deathwarden",
+   "nome": "Tatuagem do Guarda Mortal de Hinekora",
+   "en": "Tattoo of the Hinekora Deathwarden",
+   "tipo": "comum",
+   "tribo": "Hinekora",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "int"
+   },
+   "linhas": [
+    "Efeitos de Maldições em Você reduzidos em 6%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonIntTatttooEquipment.png",
+   "itemId": 917016
+  },
+  {
+   "slug": "Tattoo_of_the_Hinekora_Shaman",
+   "nome": "Tatuagem do Xamã de Hinekora",
+   "en": "Tattoo of the Hinekora Shaman",
+   "tipo": "comum",
+   "tribo": "Hinekora",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "int"
+   },
+   "linhas": [
+    "Regeneração de Mana aumentada em 8%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonIntTatttooEquipment.png",
+   "itemId": 917017
+  },
+  {
+   "slug": "Tattoo_of_the_Hinekora_Storyteller",
+   "nome": "Tatuagem do Orador de Hinekora",
+   "en": "Tattoo of the Hinekora Storyteller",
+   "tipo": "comum",
+   "tribo": "Hinekora",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "int"
+   },
+   "linhas": [
+    "+3% de Resistência a Caos"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonIntTatttooEquipment.png",
+   "itemId": 917018
+  },
+  {
+   "slug": "Tattoo_of_the_Hinekora_Warmonger",
+   "nome": "Tatuagem do Guerrilheiro de Hinekora",
+   "en": "Tattoo of the Hinekora Warmonger",
+   "tipo": "comum",
+   "tribo": "Hinekora",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "int"
+   },
+   "linhas": [
+    "Vida máxima dos Lacaios aumentada em 5%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonIntTatttooEquipment.png",
+   "itemId": 917019
+  },
+  {
+   "slug": "Tattoo_of_the_Tawhoa_Naturalist",
+   "nome": "Tatuagem do Naturalista de Tawhoa",
+   "en": "Tattoo of the Tawhoa Naturalist",
+   "tipo": "comum",
+   "tribo": "Tawhoa",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "dex"
+   },
+   "linhas": [
+    "Vida Recuperada de Frascos aumentada em 8%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonDexTatttooEquipment.png",
+   "itemId": 917047
+  },
+  {
+   "slug": "Tattoo_of_the_Tawhoa_Scout",
+   "nome": "Tatuagem do Batedor de Tawhoa",
+   "en": "Tattoo of the Tawhoa Scout",
+   "tipo": "comum",
+   "tribo": "Tawhoa",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "dex"
+   },
+   "linhas": [
+    "10% de chance de Evitar ser Envenenado"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonDexTatttooEquipment.png",
+   "itemId": 917048
+  },
+  {
+   "slug": "Tattoo_of_the_Tawhoa_Warrior",
+   "nome": "Tatuagem do Guerreiro de Tawhoa",
+   "en": "Tattoo of the Tawhoa Warrior",
+   "tipo": "comum",
+   "tribo": "Tawhoa",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "int"
+   },
+   "linhas": [
+    "Dano de Caos aumentado em 5%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonIntTatttooEquipment.png",
+   "itemId": 917050
+  },
+  {
+   "slug": "Tattoo_of_the_Tawhoa_Herbalist",
+   "nome": "Tatuagem do Herbalista de Tawhoa",
+   "en": "Tattoo of the Tawhoa Herbalist",
+   "tipo": "comum",
+   "tribo": "Tawhoa",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "dex"
+   },
+   "linhas": [
+    "Duração do efeito do Frasco aumentada em 4%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonDexTatttooEquipment.png",
+   "itemId": 917046
+  },
+  {
+   "slug": "Tattoo_of_the_Tawhoa_Shaman",
+   "nome": "Tatuagem do Xamã de Tawhoa",
+   "en": "Tattoo of the Tawhoa Shaman",
+   "tipo": "comum",
+   "tribo": "Tawhoa",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "int"
+   },
+   "linhas": [
+    "5% de chance de Envenenar ao Acertar"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonIntTatttooEquipment.png",
+   "itemId": 917049
+  },
+  {
+   "slug": "Tattoo_of_the_Valako_Stormrider",
+   "nome": "Tatuagem do Tempestuoso de Valako",
+   "en": "Tattoo of the Valako Stormrider",
+   "tipo": "comum",
+   "tribo": "Valako",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "int"
+   },
+   "linhas": [
+    "+6% de Resistência a Raio"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonIntTatttooEquipment.png",
+   "itemId": 917059
+  },
+  {
+   "slug": "Tattoo_of_the_Valako_Scout",
+   "nome": "Tatuagem do Batedor de Valako",
+   "en": "Tattoo of the Valako Scout",
+   "tipo": "comum",
+   "tribo": "Valako",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "int"
+   },
+   "linhas": [
+    "10% de redução do Efeito da Eletrização em você"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonIntTatttooEquipment.png",
+   "itemId": 917056
+  },
+  {
+   "slug": "Tattoo_of_the_Valako_Warrior",
+   "nome": "Tatuagem do Guerreiro de Valako",
+   "en": "Tattoo of the Valako Warrior",
+   "tipo": "comum",
+   "tribo": "Valako",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "int"
+   },
+   "linhas": [
+    "Dano de Raio aumentado em 5%"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonIntTatttooEquipment.png",
+   "itemId": 917060
+  },
+  {
+   "slug": "Tattoo_of_the_Valako_Shieldbearer",
+   "nome": "Tatuagem do Escudeiro de Valako",
+   "en": "Tattoo of the Valako Shieldbearer",
+   "tipo": "comum",
+   "tribo": "Valako",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "str"
+   },
+   "linhas": [
+    "+1% de Chance de Bloquear o Dano de Ataques"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonStrTatttooEquipment.png",
+   "itemId": 917058
+  },
+  {
+   "slug": "Tattoo_of_the_Valako_Shaman",
+   "nome": "Tatuagem do Xamã de Valako",
+   "en": "Tattoo of the Valako Shaman",
+   "tipo": "comum",
+   "tribo": "Valako",
+   "alvo": {
+    "tipo": "pequena",
+    "atributo": "int"
+   },
+   "linhas": [
+    "5% de chance de Eletrizar"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_CommonIntTatttooEquipment.png",
+   "itemId": 917057
+  },
+  {
+   "slug": "Journey_Tattoo_of_the_Body",
+   "nome": "Tatuagem da Jornada do Corpo",
+   "en": "Journey Tattoo of the Body",
+   "tipo": "jornada",
+   "tribo": null,
+   "alvo": {
+    "tipo": "notavel30",
+    "atributo": "str"
+   },
+   "linhas": [
+    "+25 de Vida máxima por Tatuagem da Jornada do Corpo Alocada"
+   ],
+   "nivelDoDrop": 81,
+   "icone": "Tatuagem_Unique3TatttooEquipment.png",
+   "itemId": 917008
+  },
+  {
+   "slug": "Journey_Tattoo_of_the_Mind",
+   "nome": "Tatuagem da Jornada da Mente",
+   "en": "Journey Tattoo of the Mind",
+   "tipo": "jornada",
+   "tribo": null,
+   "alvo": {
+    "tipo": "notavel30",
+    "atributo": "dex"
+   },
+   "linhas": [
+    "+30 de Mana máxima por Tatuagem da Jornada da Mente Alocada"
+   ],
+   "nivelDoDrop": 81,
+   "icone": "Tatuagem_Unique3TatttooEquipment.png",
+   "itemId": 917009
+  },
+  {
+   "slug": "Journey_Tattoo_of_the_Soul",
+   "nome": "Tatuagem da Jornada da Alma",
+   "en": "Journey Tattoo of the Soul",
+   "tipo": "jornada",
+   "tribo": null,
+   "alvo": {
+    "tipo": "notavel30",
+    "atributo": "int"
+   },
+   "linhas": [
+    "+40 de Escudo de Energia máximo por Tatuagem da Jornada da Alma Alocada"
+   ],
+   "nivelDoDrop": 81,
+   "icone": "Tatuagem_Unique3TatttooEquipment.png",
+   "itemId": 917010
+  },
+  {
+   "slug": "Forbidden_Tattoo_of_the_Ranger",
+   "nome": "Tatuagem Proibida da Patrulheira",
+   "en": "Forbidden Tattoo of the Ranger",
+   "tipo": "proibida",
+   "tribo": null,
+   "alvo": {
+    "tipo": "ascendencia"
+   },
+   "limite": {
+    "n": 1,
+    "grupo": "ascendencia"
+   },
+   "classe": "Ranger",
+   "linhas": [
+    "Concede uma habilidade notável de ascendência aleatória da Caçadora"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_RandomRangerTattoo.png",
+   "itemId": 917003
+  },
+  {
+   "slug": "Forbidden_Tattoo_of_the_Duelist",
+   "nome": "Tatuagem Proibida do Duelista",
+   "en": "Forbidden Tattoo of the Duelist",
+   "tipo": "proibida",
+   "tribo": null,
+   "alvo": {
+    "tipo": "ascendencia"
+   },
+   "limite": {
+    "n": 1,
+    "grupo": "ascendencia"
+   },
+   "classe": "Duelist",
+   "linhas": [
+    "Concede uma habilidade notável de ascendência aleatória do Duelista"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_RandomDuelistTattoo.png",
+   "itemId": 917001
+  },
+  {
+   "slug": "Forbidden_Tattoo_of_the_Marauder",
+   "nome": "Tatuagem Proibida do Espoliador",
+   "en": "Forbidden Tattoo of the Marauder",
+   "tipo": "proibida",
+   "tribo": null,
+   "alvo": {
+    "tipo": "ascendencia"
+   },
+   "limite": {
+    "n": 1,
+    "grupo": "ascendencia"
+   },
+   "classe": "Marauder",
+   "linhas": [
+    "Concede uma habilidade notável de ascendência aleatória do Espoliador"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_RandomMarauderTattoo.png",
+   "itemId": 917002
+  },
+  {
+   "slug": "Forbidden_Tattoo_of_the_Templar",
+   "nome": "Tatuagem Proibida do Templário",
+   "en": "Forbidden Tattoo of the Templar",
+   "tipo": "proibida",
+   "tribo": null,
+   "alvo": {
+    "tipo": "ascendencia"
+   },
+   "limite": {
+    "n": 1,
+    "grupo": "ascendencia"
+   },
+   "classe": "Templar",
+   "linhas": [
+    "Concede uma habilidade notável de ascendência aleatória do Templário"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_RandomTemplarTattoo.png",
+   "itemId": 917006
+  },
+  {
+   "slug": "Forbidden_Tattoo_of_the_Witch",
+   "nome": "Tatuagem Proibida da Bruxa",
+   "en": "Forbidden Tattoo of the Witch",
+   "tipo": "proibida",
+   "tribo": null,
+   "alvo": {
+    "tipo": "ascendencia"
+   },
+   "limite": {
+    "n": 1,
+    "grupo": "ascendencia"
+   },
+   "classe": "Witch",
+   "linhas": [
+    "Concede uma habilidade notável de ascendência aleatória da Bruxa"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_RandomWitchTattoo.png",
+   "itemId": 917007
+  },
+  {
+   "slug": "Forbidden_Tattoo_of_the_Shadow",
+   "nome": "Tatuagem Proibida do Sombra",
+   "en": "Forbidden Tattoo of the Shadow",
+   "tipo": "proibida",
+   "tribo": null,
+   "alvo": {
+    "tipo": "ascendencia"
+   },
+   "limite": {
+    "n": 1,
+    "grupo": "ascendencia"
+   },
+   "classe": "Shadow",
+   "linhas": [
+    "Concede uma habilidade notável de ascendência aleatória do Sombra"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_RandomShadowTattoo.png",
+   "itemId": 917005
+  },
+  {
+   "slug": "Forbidden_Tattoo_of_the_Scion",
+   "nome": "Tatuagem Proibida da Herdeira",
+   "en": "Forbidden Tattoo of the Scion",
+   "tipo": "proibida",
+   "tribo": null,
+   "alvo": {
+    "tipo": "ascendencia"
+   },
+   "limite": {
+    "n": 1,
+    "grupo": "ascendencia"
+   },
+   "classe": "Scion",
+   "linhas": [
+    "Concede uma habilidade notável de ascendência aleatória da Herdeira"
+   ],
+   "nivelDoDrop": 1,
+   "icone": "Tatuagem_RandomScionTattoo.png",
+   "itemId": 917004
+  }
+ ]
+}

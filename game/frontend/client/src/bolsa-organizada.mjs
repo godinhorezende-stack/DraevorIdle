@@ -49,7 +49,7 @@ export function classeDe(entry, meta) {
 export function secaoDe(entry, meta) {
   if (meta?.missao || meta?.type === 'quest items') return 'quest';
   if (meta?.mapa || classeDe(entry, meta) === 'Maps') return 'mapas';
-  if (meta?.moedaPoe || meta?.orbeDeSocket) return 'currency';
+  if (meta?.moedaPoe || meta?.orbeDeSocket || meta?.tatuagemPoe) return 'currency';
   if (meta?.gemaDef || entry?.gema) return 'gemas';
   if (meta?.frasco || FRASCOS.has(classeDe(entry, meta))) return 'frascos';
   if (entry?.poe || meta?.poe || meta?.slot) return 'equipamentos';

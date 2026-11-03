@@ -25,6 +25,8 @@ import * as Combo from './combo.mjs';
 import * as Treino from './treino.mjs';
 import * as Bolsa from './bolsa.mjs';
 import * as Ficha from './ficha.mjs';
+// (100% — dados, 03/11) o Foco de Combate nos Esqueletos Magos (`LacaiosHabilidades.principalDaVez`)
+import * as Prismaticas from './itens-poe/prismaticas.mjs';
 import * as Bau from './bau.mjs';
 import * as Boosts from './boosts.mjs';
 import * as Stamina from './stamina.mjs';
@@ -3304,7 +3306,7 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     if (!R.jaPode(agora, l.proximoGolpe)) continue;
     // (rodada 4, lote L) a habilidade PRINCIPAL do PoB da vez (`LacaiosHabilidades.principalDaVez`: o mago no elemento dele, a Sentinela da Pureza alternando): o tempo,
     // a magia, o elemento, o dano e a área dela
-    const hp = l.habPob && itensPoeLigado() ? LacaiosHabilidades.principalDaVez(l) : null;
+    const hp = l.habPob && itensPoeLigado() ? LacaiosHabilidades.principalDaVez(l, Math.random, Prismaticas.proibidos(ficha)) : null;
     const magiaDaVez = hp ? !!hp.magia : !!est.magia;
     // A velocidade: a do monstro do nível × o jeito (o espírito é rápido) ÷ os bônus (a gema, a Oferenda de Carne, a Agressividade).
     // (lote 32, P028: a Oferenda Carnal — a velocidade de Conjuração no lacaio que conjura)

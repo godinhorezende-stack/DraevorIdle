@@ -8366,6 +8366,84 @@
       "unidade": "",
       "combate": true,
       "efeito": "acoes.tiqueDasPlantadas → combate-100.rearmarMina (100% — combate, 02/11)"
+    },
+    "raio_prisma_nao_escolhe_fire": {
+      "nome": "Joia (raio): o Foco de Combate — o total dos dois atributos alocados no raio para as Habilidades Prismáticas não escolherem Fogo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias → `prisma_nao_escolhe_fire` (100% — dados)"
+    },
+    "raio_prisma_menos_fire_limiar": {
+      "nome": "Joia (raio): o Foco de Combate — o total dos dois atributos alocados no raio para o \"menos Dano de Fogo\" das Habilidades Prismáticas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (100% — dados)"
+    },
+    "raio_prisma_menos_fire": {
+      "nome": "Joia (raio): o Foco de Combate — X% menos Dano de Fogo das Habilidades Prismáticas",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias → `mais_dano_<el>@prismatico` (100% — dados)"
+    },
+    "prisma_nao_escolhe_fire": {
+      "nome": "As Habilidades Prismáticas não podem escolher Fogo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/prismaticas.proibidos → a escolha do elemento (100% — dados)"
+    },
+    "raio_prisma_nao_escolhe_ice": {
+      "nome": "Joia (raio): o Foco de Combate — o total dos dois atributos alocados no raio para as Habilidades Prismáticas não escolherem Gelo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias → `prisma_nao_escolhe_ice` (100% — dados)"
+    },
+    "raio_prisma_menos_ice_limiar": {
+      "nome": "Joia (raio): o Foco de Combate — o total dos dois atributos alocados no raio para o \"menos Dano de Gelo\" das Habilidades Prismáticas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (100% — dados)"
+    },
+    "raio_prisma_menos_ice": {
+      "nome": "Joia (raio): o Foco de Combate — X% menos Dano de Gelo das Habilidades Prismáticas",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias → `mais_dano_<el>@prismatico` (100% — dados)"
+    },
+    "prisma_nao_escolhe_ice": {
+      "nome": "As Habilidades Prismáticas não podem escolher Gelo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/prismaticas.proibidos → a escolha do elemento (100% — dados)"
+    },
+    "raio_prisma_nao_escolhe_energy": {
+      "nome": "Joia (raio): o Foco de Combate — o total dos dois atributos alocados no raio para as Habilidades Prismáticas não escolherem Raio",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias → `prisma_nao_escolhe_energy` (100% — dados)"
+    },
+    "raio_prisma_menos_energy_limiar": {
+      "nome": "Joia (raio): o Foco de Combate — o total dos dois atributos alocados no raio para o \"menos Dano de Raio\" das Habilidades Prismáticas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (100% — dados)"
+    },
+    "raio_prisma_menos_energy": {
+      "nome": "Joia (raio): o Foco de Combate — X% menos Dano de Raio das Habilidades Prismáticas",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias → `mais_dano_<el>@prismatico` (100% — dados)"
+    },
+    "prisma_nao_escolhe_energy": {
+      "nome": "As Habilidades Prismáticas não podem escolher Raio",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/prismaticas.proibidos → a escolha do elemento (100% — dados)"
+    },
+    "raio_efeito_tatuagens": {
+      "nome": "Joia (raio): Efeito das Tatuagens no Raio aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.efeitosNoRaio — os números das Tatuagens dos nós do raio (100% — dados)"
     }
   }
 }

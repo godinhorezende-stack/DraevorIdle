@@ -479,7 +479,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // Congelado e o Re-armar das Minas — `itens-poe/combate-100.mjs`)
 // (79 — 03/11, "100%" lote mundo: os baús do PoE — "abrir Baús próximos", "Seus Clamores abrem Baús" —, o Estandarte ("Bônus do seu estandarte permanecem"),
 // a aura (a área e a duração), o Vínculo e "Punição pode afetar Inimigos Infeitiçáveis" — `itens-poe/baus-poe.mjs`)
-export const VERSAO_DA_TRADUCAO = 79;
+// (80 — 03/11, 100% — dados: as Habilidades Prismáticas — o Foco de Combate na árvore, `itens-poe/prismaticas.mjs` — e as Tatuagens — o Conto do Guerreiro, o
+// Devorador de Corações; `passivas/tatuagens.mjs`)
+export const VERSAO_DA_TRADUCAO = 80;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

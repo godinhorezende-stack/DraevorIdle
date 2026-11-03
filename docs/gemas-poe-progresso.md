@@ -2133,6 +2133,41 @@ As notas "não se aplica ao jogo" do assunto do mundo (os baús, o Estandarte e 
   - O alcance de 2 casas, o mesmo da interação. Alternativa: 1 casa, só adjacente.
   - O loot vai para quem abre. A party não divide o loot do baú (alternativa: o rodízio do loot dos monstros).
 
+## 100% — dados: as Habilidades Prismáticas e as Tatuagens (03/11)
+
+Dono, 03/11: "nada pode ficar como 'não se aplica ao jogo'". Este lote tirou as notas das Habilidades Prismáticas (o Foco de Combate) e das Tatuagens (o Conto do Guerreiro) e fez o efeito de verdade.
+
+- **As gemas prismáticas já estavam na coleção.** O Acerto Elemental, o Acerto Elemental do Espectro, o Golpe Selvagem e o Golpe Selvagem dos Extremos já vinham do importador das gemas (`gemas-poe.json`, `poedb-gemas.json`), com a origem na campanha (`origem-das-gemas.json`). A nota "não estão na coleção" estava velha. Não foi preciso baixar gema nenhuma. O do Espectro não tem a tag Prismático no PoE: ele causa os três elementos.
+- **A escolha do elemento** (`systems/itens-poe/prismaticas.mjs`):
+  - o Acerto Elemental e o Golpe Selvagem (e o dos Extremos) escolhem o elemento no uso, sem repetir o anterior ("Ela evitará escolher o mesmo elemento duas vezes consecutivas"), e o guardam até o uso sair, como o Acerto já fazia;
+  - nenhuma prismática escolhe um elemento que o Foco de Combate proíbe. Isso vale para o Acerto e o Golpe, a conversão "em Fogo, Gelo ou Raio" (`GemasPoe.partesDoAtaque` / `partesDaMagia`, opção `proibidos`; só nas habilidades com a tag `prismatico`), o Tornado da Turbulência Elemental (o elemento do objeto), a Explosão Prismática (os pesos pelos atributos ficam, sem o proibido) e o Esqueleto Mago (`LacaiosHabilidades.principalDaVez`: a magia do elemento proibido não sai, e a escolhida que ficou proibida é refeita).
+- **A forma do Golpe Selvagem pelo elemento** (o PoB, act_dex.lua WildStrike):
+  - Fogo: a explosão em volta do alvo, com o raio de 2,4 m da gema × a Área;
+  - Raio: o raio que ricocheteia, com os "Raios Ricocheteiam N Vezes" como saltos da cadeia;
+  - Gelo: a onda, com os 3 projéteis que perfuram todos.
+  Antes saíam os projéteis, a perfuração e o ricochete juntos, e cada golpe sorteava o próprio elemento.
+- **O Foco de Combate na árvore** (`passivas/arvore.raiosDasJoias`): a soma dos dois atributos das passivas alocadas no raio. Os pares são os do PoB: Fogo usa Inteligência e Destreza (o poedb pt escreve só "Destreza", e a regra aceita); Gelo usa Força e Inteligência; Raio usa Destreza e Força. Com a soma no limiar, ele dá `prisma_nao_escolhe_<el>` e `mais_dano_<el>@prismatico` −50 (a tag nova `prismatico`, de "Prismático" do poedb).
+- **As TATUAGENS** (`systems/passivas/tatuagens.mjs`). Os dados vêm de `gamedata/itens-poe/tatuagens-poe.json` (`tools/importar-tatuagens-poe.mjs`, do poedb pt pelo Scrapling): as 60 tatuagens (50 comuns, 3 da Jornada, 7 Proibidas) e os 11 ícones oficiais. As regras:
+  - é um item empilhável. "Tatuar uma passiva da árvore…" no botão direito abre a árvore. No nó alocado, o quadro "Tatuagem" mostra a que está nele e as da mochila que ele aceita (`{t:'passivas', action:'tatuar', no, id}`);
+  - o nó passa a dar as linhas da tatuagem no lugar das dele. Outra tatuagem no mesmo nó toma o lugar (a de antes se perde). A tatuagem fica no nó mesmo com a passiva tirada;
+  - onde entra: a comum, na pequena que só dá "+10 de <atributo>" do atributo dela; a da Jornada, no notável de "+30 de <atributo>"; a Proibida, num notável da SUA ascendência. A passiva conquistada por uma Atemporal e os nós da Ramificadora não aceitam. O máximo é de 50; as Proibidas são "Limitado a: 1";
+  - a Jornada dá "+25 de Vida máxima por Tatuagem da Jornada do Corpo Alocada": cada uma vale 25 × as do mesmo tipo alocadas (com 2, +100), como o multiplicador do PoB;
+  - a Proibida sorteia, ao ser aplicada, um notável das ascendências da classe dela (fora os que você já tem). O nó dá as linhas dele;
+  - o Conto do Guerreiro ("Efeito das Tatuagens no Raio aumentado em 100%") multiplica os números da tatuagem do nó alocado no raio (`efeitosNoRaio`);
+  - a linha nova "Golpes Abatedores têm 4% de chance de Consumir cadáveres para recuperar 10% da Vida Máxima" (o Devorador de Corações de Kitava) é a ação `consumirCadaverChance` no Golpe de Misericórdia: o morto não deixa cadáver, marca o "Consumiu um cadáver Recentemente" e recupera a Vida. As outras 49 linhas comuns já tinham regra;
+  - a tela da árvore mostra o nome e as linhas da tatuagem no balão do nó, e o "Antes: …";
+  - o balão do item mostra o "Substitui …", as linhas e o "Limitado a".
+- **Escolhas sem fonte** (o dono decide):
+  1. **O drop das tatuagens.** No PoE elas vêm da liga Ancestral (o Julgamento dos Ancestrais e as tribos), que o jogo não tem. A fonte simples (`Tatuagens.DROP`) é esta: todo monstro do PoE tem a chance pela raridade (normal 0,04%, mágico 0,12%, raro 0,6%, único 3%, chefe 15%) × a quantidade de itens. Os pesos são comum 100, Jornada 4, Proibida 2, e a da Jornada só cai na área 81+ (o DropLevel dela). Opções: (a) assim; (b) só nos mapas; (c) só a loja da Zuma; (d) outra taxa.
+  2. **Os três elementos proibidos** (três Focos de Combate, um de cada): o PoE não diz o que acontece. A regra cai e sorteia entre os três. Opções: (a) assim; (b) o golpe não sai.
+  3. **A Proibida** sorteia entre os notáveis das ascendências da classe da tatuagem, fora os que você já tem (inclusive os da sua classe, se for a mesma). As mecânicas que o jogo lê pelo id do notável alocado (`temHabilidade`) não ligam pelo sorteado: valem as linhas dele. Opções: (a) assim; (b) ligar também a mecânica pelo id.
+  4. **As Tatuagens de Lealdade** (Loyalty_Tattoo_of_Kaom e as outras, que concedem a habilidade de um Chefe Guerreiro Espiritual): o poedb as marca "Drop disabled" e elas ficaram fora.
+- Testes novos: `game/testes/prismaticas-poe.test.mjs` (8) e `game/testes/tatuagens-poe.test.mjs` (11). VERSAO_DA_TRADUCAO 75 → 76.
+- **Quebras pela regra nova, sem aval (não editadas):**
+  - salvaguarda-unicos:78 espera `J.VERSAO_DA_TRADUCAO` = 75. Agora é 76 (a tradução mudou neste lote).
+  - zerar-arvore-lote49:85 espera a nota "não se aplica ao jogo" em "Com um total de 40 de Destreza no Raio, Habilidades Prismáticas não podem escolher Fogo". Agora a linha vale (`equivalente`, `raio_prisma_nao_escolhe_fire` 40).
+- **Notas que ficam:** as Flechas de Clones Prismáticos (a Flecha Relâmpago e a do Espelho) têm a tag Prismático, mas o clone não escolhe um elemento no jogo. O Foco de Combate não muda nada nelas.
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.

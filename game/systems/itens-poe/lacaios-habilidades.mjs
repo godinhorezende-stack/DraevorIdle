@@ -24,6 +24,8 @@
 //   - os PROJÉTEIS (1 + "number_of_additional_projectiles"), o alcance (o corpo a corpo: 1 casa; o de longe: as 5 casas do jogo × (1 + o
 //     "spell_maximum_action_distance_+%"), no mínimo 1), as chances (Congelar, Incendiar, Eletrizar, Provocar) e o "não pode ser crítico".
 // O dano sai pelo GOLPE DO LACAIO de sempre (`cacadas.golpeDoLacaioNoBicho`): as auras, o crítico, os suportes do lote S2B, as afecções, o erro do ataque.
+// (100% — dados) o elemento da magia do Esqueleto Mago pelo nome do PoB (o Foco de Combate)
+import { elementoDoNome } from './prismaticas.mjs';
 import { readFileSync } from 'node:fs';
 
 export const DADOS = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/pob-habilidades-lacaios.json', import.meta.url), 'utf8'));
@@ -267,12 +269,19 @@ export function recargasDoMotor(hab) {
 }
 
 /** A habilidade principal da vez (a variante sorteada; `fixa`: a mesma do lacaio inteiro, sorteada no primeiro golpe e guardada em `l.habPobIndice`). */
-export function principalDaVez(l, rng = Math.random) {
+// (100% — dados, 03/11: `proibidos` — os elementos que o Foco de Combate proíbe às Habilidades Prismáticas: o Esqueleto Mago não escolhe a magia daquele elemento;
+// a escolhida que ficou proibida é refeita)
+export function principalDaVez(l, rng = Math.random, proibidos = null) {
   const lista = l?.habPob?.principal;
   if (!lista?.length) return null;
   if (lista.length === 1) return lista[0];
   if (l.habPob.fixa) {
-    if (l.habPobIndice == null || !lista[l.habPobIndice]) l.habPobIndice = Math.floor(rng() * lista.length);
+    const vale = (i) => !!lista[i] && !proibidos?.has?.(elementoDoNome(lista[i].id));
+    if (l.habPobIndice == null || !vale(l.habPobIndice)) {
+      const livres = lista.map((_, i) => i).filter(vale);
+      const de = livres.length ? livres : lista.map((_, i) => i);
+      l.habPobIndice = de[Math.min(de.length - 1, Math.floor(rng() * de.length))];
+    }
     return lista[l.habPobIndice];
   }
   return lista[Math.floor(rng() * lista.length)];

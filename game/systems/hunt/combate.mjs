@@ -50,6 +50,8 @@ import * as Gemas from '../gemas.mjs';
 import * as Charms from '../charms.mjs';
 import * as ItensPoeJogo from '../itens-poe/jogo.mjs';
 import * as MoedasPoe from '../itens-poe/moedas.mjs';
+// (100% — dados, 03/11) as Tatuagens do PoE (a fonte simples, sem a liga Ancestral — `passivas/tatuagens.dropDoMonstro`)
+import * as Tatuagens from '../passivas/tatuagens.mjs';
 import * as Pinaculos from '../itens-poe/pinaculos.mjs';
 import { tipoDoBicho } from './escalonamento.mjs';
 import * as Mapas from '../itens-poe/mapas.mjs';
@@ -1052,7 +1054,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // As MOEDAS do PoE (Transmutação, Caos, Exaltado... — `itens-poe/moedas.mjs`, chances em `regras.json → moedas.drop`).
   // (+ as do chefe do mapa ÚNICO — "Chefe Único derruba N Itens Monetários adicionais": `efeitos.chefe.moedasExtras`.)
   const moedasDoChefe = noMapa && alvo.chefeDoMapa ? MoedasPoe.moedasAvulsas(Number(noMapa.efeitos?.chefe?.moedasExtras) || 0) : [];
-  for (const moeda of [...MoedasPoe.dropDoMonstro(tipoDoBicho(alvo), Math.random, quantidadeDoJogador), ...moedasDoChefe]) {
+  // (100% — dados, 03/11: + as TATUAGENS — a chance pela raridade do bicho, a da Jornada só na área 81+; o filtro e a bolsa como as moedas)
+  for (const moeda of [...MoedasPoe.dropDoMonstro(tipoDoBicho(alvo), Math.random, quantidadeDoJogador), ...moedasDoChefe, ...(BESTIARY[alvo.key]?.poe ? Tatuagens.dropDoMonstro(tipoDoBicho(alvo), nivelDoDropPoe(hunt, alvo), Math.random, quantidadeDoJogador) : [])]) {
     // A moeda marcada em "Não coletar" (a lista) fica no chão.
     if (Bolsa.ignora(estado, moeda.id)) {
       conta('ignorado', moeda.id, moeda.count);
