@@ -7,9 +7,15 @@
 //   - a RARIDADE do baú sai do mesmo sorteio da raridade dos monstros do PoE (`modificadores-monstro.sortearRaridade`: Mágico 10%, Raro 2%);
 //   - o baú é um ENCONTRO da instância (`instancia.encontros`, tipos `bau-poe-normal`/`-magico`/`-raro`/`-grande`): o cliente já desenha os
 //     baús (`encontros-na-tela.mjs`), o clique abre (`sessao.interagirComEncontro`, a até 2 casas), "X% de chance de abrir Baús próximos
-//     quando você Conjurar uma Magia" e "Seus Clamores abrem Baús" também (`acoes.abrirBausAoConjurar`, `abrirNoRaio`). Não segura o CLEAR
-//     (opcional) e não expira; a instância seguinte leva os que ficaram fechados, como no PoE;
+//     quando você Conjurar uma Magia" e "Seus Clamores abrem Baús" também (`acoes.abrirBausAoConjurar`, `abrirNoRaio`). Não é obrigatório e
+//     não expira; o baú que fica fechado quando a instância acaba se perde com ela (a instância seguinte sorteia os dela — 03/11: o comentário
+//     antigo dizia que "a seguinte leva os que ficaram fechados", o que o código nunca fez);
+//   - o lugar dos baús sai da SEMENTE da instância (`instancia.semente`, a dos encontros — `encontros/sorteio.mjs`): recalcular dá o mesmo;
 //   - ABRE AO PASSAR: a cada tique, o baú disponível a até `ALCANCE` casas de você (no seu andar) abre (`abrirAoPassar`);
+//   - (03/11) O IDLE PASSA PELOS BAÚS, como o jogador do PoE que abre os baús no caminho (a sonda: 1/3 dos baús ficava fechado — 36 de 54 em 18
+//     áreas; os de quem ataca de longe, que para no alcance da arma, quase nunca): sem nada à vista, a Caça Automática vai ao baú fechado mais
+//     perto A PÉ quando nenhum monstro da instância está mais perto (`bauMaisPerto`, no `cacadas.tique`), e (nas áreas da campanha) os baús alcançáveis do seu andar
+//     SEGURAM o fim da sala no automático (`seguramOClear`) até abertos — no máximo `SEGURA_O_CLEAR_MS` depois do último monstro;
 //   - o LOOT pela tabela do jogo — a mesma do monstro da raridade do baú (`jogo.dropsDoMonstro`, `moedas.dropDoMonstro`, `jogo.ouroDoMonstro`):
 //     Normal = a do monstro Normal, Mágico = Mágico, Raro = Raro, Grande Baú = Único; no nível da área; × a sua quantidade de itens (Buff Power,
 //     o afixo Loot) e a do mapa; a Raridade de Itens sua + a do mapa + "Baús têm a Raridade de Itens aumentada em X%" (o mapa único).
@@ -17,6 +23,13 @@ import { registrarTipo } from '../encontros/tipos.mjs';
 import * as Encontros from '../encontros/estado.mjs';
 import * as Eventos from '../encontros/eventos.mjs';
 import { casasAlcancaveis, daSala } from '../hunt/instancia.mjs';
+import { bfsDistancias, distancia } from '../hunt/caminho.mjs';
+import { novaSemente, rolar } from '../encontros/sorteio.mjs';
+import { nomeDaHunt } from '../hunt/terreno.mjs';
+import * as Mapas from './mapas.mjs';
+import { REGRAS as REGRAS_POE } from './catalogo.mjs';
+import * as Anuncios from '../anuncios.mjs';
+import * as DropsDoSite from '../drops-do-site.mjs';
 import { andarDaGrade } from '../hunt/andares.mjs';
 import { salaDe } from '../hunt/sala.mjs';
 import * as Protecao from '../protecao.mjs';
@@ -38,6 +51,9 @@ export const ALCANCE = 2;
 /** O raio (casas) em volta do monstro-âncora onde o baú procura casa livre. */
 const RAIO_DA_ANCORA = 3;
 const ID_DO_OURO = 3031;
+/** (03/11) Quanto (ms do relógio da caçada) os baús ainda fechados seguram o CLEAR depois do último monstro (escolha sem fonte: a rede de segurança
+ * contra o baú que o idle não alcança). */
+export const SEGURA_O_CLEAR_MS = 60_000;
 
 export const RARIDADES = ['normal', 'magico', 'raro', 'grande'];
 export const NOMES = { normal: 'Baú', magico: 'Baú Mágico', raro: 'Baú Raro', grande: 'Grande Baú' };
@@ -79,11 +95,40 @@ function casaPerto(grade, alcancaveis, p, ocupadas) {
 }
 
 /**
- * Põe os baús na instância nova (`Cacadas.povoar`): `POR_AREA` sorteados + os Grandes Baús do mapa (`baus.grandes`). `todos`: os monstros
- * que nasceram (`[{ z, m }]`, as âncoras); `nivel`: o nível da área (o loot). Devolve os baús criados.
+ * (03/11) O caminho do loot do MONSTRO (`hunt/combate.mjs`: `fatorDaCacaOnline`, `entregarMoedas`), registrado por `cacadas.mjs` — importar o
+ * combate daqui fecharia um ciclo de módulos (combate → acoes → baus-poe). Sem o registro (um teste que só carrega este módulo): sem bônus e
+ * o ouro inteiro no bolso de quem abriu.
  */
-export function porNaInstancia(instancia, { grade, inicio = null, todos = [], nivel = null, baus = null, rng = Math.random } = {}) {
+let doMonstro = null;
+export function definirLootDoMonstro(f) {
+  doMonstro = f;
+}
+const fatorOnline = (hunt) => doMonstro?.fatorDaCacaOnline?.(hunt) ?? 1;
+function darOuroDoBau(ctx, n) {
+  if (!(n > 0)) return;
+  if (doMonstro?.entregarMoedas) return doMonstro.entregarMoedas(ctx, ID_DO_OURO, n);
+  const valor = n * (VALOR_DA_MOEDA[ID_DO_OURO] ?? 1);
+  ctx.estado.gold = (ctx.estado.gold ?? 0) + valor;
+  if (ctx.estado.hunt?.sessao) ctx.estado.hunt.sessao.gold = (ctx.estado.hunt.sessao.gold ?? 0) + valor;
+  Ficha.totais(ctx.estado).gold += valor;
+  ctx.caiu.push({ id: ID_DO_OURO, count: n });
+  ctx.conta('loot', ID_DO_OURO, n);
+}
+
+/** (03/11) O sorteio pela SEMENTE da instância (o mesmo número para a mesma instância — `encontros/sorteio.rolar`). */
+export const rngDaSemente = (semente, chave = 'baus-poe') => {
+  let i = 0;
+  return () => rolar(semente, `${chave}#${i++}`) / 100;
+};
+
+/**
+ * Põe os baús na instância nova (`Cacadas.povoar`): `POR_AREA` sorteados + os Grandes Baús do mapa (`baus.grandes`). `todos`: os monstros
+ * que nasceram (`[{ z, m }]`, as âncoras); `nivel`: o nível da área (o loot). Devolve os baús criados. (03/11: sem `rng`, sorteia pela
+ * semente da instância — a dos encontros, criada aqui se a área não tem encontros.)
+ */
+export function porNaInstancia(instancia, { grade, inicio = null, todos = [], nivel = null, baus = null, rng = null } = {}) {
   if (!ligado() || !instancia || !grade) return [];
+  if (!rng) rng = rngDaSemente((instancia.semente ??= novaSemente()));
   const alcancaveis = casasAlcancaveis(grade, inicio);
   const ocupadas = new Set(todos.map(({ z, m }) => `${m.x},${m.y},${z ?? grade.z}`));
   if (inicio) ocupadas.add(`${inicio.x},${inicio.y},${inicio.z ?? grade.z}`);
@@ -125,23 +170,44 @@ export function lootDoBau(raridade, { nivel = 1, quantidade = 1, raridadeAumenta
 /** O nível do loot do baú: o da instância (gravado no baú), o do mapa ou o da escala da fase; sem nenhum, o do personagem. */
 const nivelDoBau = (e, hunt, estado) => e.nivel ?? salaDe(hunt)?.mapa?.nivel ?? hunt?.escala?.nivel ?? estado?.level ?? 1;
 
-/** Abre o baú `e` para `estado`: o loot na bolsa dele (o filtro de loot vale), o ouro no bolso, o evento "Loot of a" na tela. */
-export function pagar(estado, hunt, e, rng = Math.random) {
+/**
+ * Abre o baú `e` para `estado`: o loot na bolsa dele (o filtro de loot vale), o ouro no bolso, o evento "Loot of a" na tela. (03/11) O MESMO
+ * caminho do loot do monstro do PoE (`hunt/combate.matarMonstro`): a Caça Online (`fatorDaCacaOnline`), os MAPAS dentro de um mapa
+ * (`Mapas.sortearDrops`, pela tabela do monstro da raridade do baú), o ouro DIVIDIDO na party (`entregarMoedas`) e o anúncio do Único
+ * (`Anuncios.dropRaro`, `DropsDoSite`); a Raridade dos baús do mapa único pelos fatores da instância (`Mapas.fatoresDaInstancia(...).baus`).
+ */
+export function pagar(estado, hunt, e, rng = Math.random, personagem = null) {
   if (!estado || !hunt) return [];
   const mapa = salaDe(hunt)?.mapa ?? null;
   const ficha = Ficha.combate(estado);
-  const quantidade = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * (1 + Math.max(0, Number(mapa?.quantidade) || 0) / 100);
-  const raridadeAumentada = ModsPoe.valor(ficha, 'item_rarity') + (Number(mapa?.raridade) || 0) + (Number(mapa?.efeitos?.instancia?.bausRaridadePct) || 0);
+  const tipo = TIPO_DO_LOOT[e.raridade] ?? 'normal';
+  const quantidade = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * fatorOnline(hunt) * (1 + Math.max(0, Number(mapa?.quantidade) || 0) / 100);
+  const raridadeAumentada = ModsPoe.valor(ficha, 'item_rarity') + (Number(mapa?.raridade) || 0) + (mapa ? Mapas.fatoresDaInstancia(mapa).baus.raridadePct : 0);
   const achado = 1 + (ficha.goldFind ?? 0) / 100;
   const { pecas, moedas, ouro } = lootDoBau(e.raridade, { nivel: nivelDoBau(e, hunt, estado), quantidade, raridadeAumentada, achado, rng });
   const sessao = hunt.sessao;
-  const conta = (grupo, id, n) => { if (sessao?.itens?.[grupo]) sessao.itens[grupo][id] = (sessao.itens[grupo][id] ?? 0) + n; };
+  const conta = (grupo, id, n, ses = sessao) => { if (ses?.itens?.[grupo]) ses.itens[grupo][id] = (ses.itens[grupo][id] ?? 0) + n; };
   const caiu = [];
+  const onde = nomeDaHunt(hunt.huntId);
   for (const peca of pecas) {
     if (Bolsa.ignora(estado, peca.id, peca)) { conta('ignorado', peca.id, 1); continue; }
     if (!Bolsa.porNaBolsa(estado, peca.id, 1, peca)) break;
     caiu.push({ id: peca.id, count: 1 });
     conta('loot', peca.id, 1);
+    // o Único do PoE: o servidor inteiro fica sabendo (como o do monstro)
+    Anuncios.dropRaro({ quem: personagem?.nome ?? estado.nome ?? null, peca, bicho: e.nome, onde });
+    DropsDoSite.anotarDropPoe({ quem: personagem?.nome ?? estado.nome ?? null, onde, bicho: e.nome, peca, estado }).catch((err) => console.error('drops-do-site', err.message));
+  }
+  // os MAPAS (dentro de um mapa): o sorteio do monstro da raridade do baú
+  if (mapa) {
+    for (const { tier } of Mapas.sortearDrops({ tierDaArea: mapa.tier, tipo, bonusDeQuantidade: Number(REGRAS_POE.drop?.bonusDeQuantidade?.[tipo]) || 0, quantidadePct: mapa.quantidade, rng })) {
+      const m = ItensPoeJogo.mapaSorteado(tier, { raridadeAumentada });
+      if (!m) continue;
+      if (Bolsa.ignora(estado, m.id, m)) { conta('ignorado', m.id, 1); continue; }
+      if (!Bolsa.porNaBolsa(estado, m.id, 1, m)) break;
+      caiu.push({ id: m.id, count: 1 });
+      conta('loot', m.id, 1);
+    }
   }
   for (const moeda of moedas) {
     if (Bolsa.ignora(estado, moeda.id)) { conta('ignorado', moeda.id, moeda.count); continue; }
@@ -149,27 +215,60 @@ export function pagar(estado, hunt, e, rng = Math.random) {
     caiu.push(moeda);
     conta('loot', moeda.id, moeda.count);
   }
-  if (ouro > 0) {
-    const valor = ouro * (VALOR_DA_MOEDA[ID_DO_OURO] ?? 1);
-    estado.gold = (estado.gold ?? 0) + valor;
-    if (sessao) sessao.gold = (sessao.gold ?? 0) + valor;
-    Ficha.totais(estado).gold += valor;
-    caiu.push({ id: ID_DO_OURO, count: ouro });
-    conta('loot', ID_DO_OURO, ouro);
-  }
+  // o OURO: no bolso, dividido na party como o do monstro
+  const part = hunt.partilha;
+  const juntos = part?.ativa && part.membros.length > 1 ? part.membros.filter((m) => m.estado === estado || m.estado?.hunt) : null;
+  darOuroDoBau({ estado, juntos, sala: juntos ? salaDe(hunt) : null, caiu, conta }, ouro);
   Eventos.empurrar(hunt, [{ t: 'loot', name: e.nome, items: caiu }]);
   return caiu;
 }
 
+/**
+ * (03/11) O baú do PoE disponível mais perto A PÉ no seu andar (`grade`: a do andar), fora o que se mostrou sem caminho há pouco: `{ e, d }`
+ * (`d`: os passos até ele) ou null.
+ */
+export function bauMaisPerto(hunt, grade) {
+  if (!ligado() || !hunt?.pos || !grade) return null;
+  const inst = daSala(hunt);
+  if (inst?.status !== 'ativa') return null;
+  const z = hunt.z ?? grade.z;
+  const agora = hunt.clock ?? 0;
+  const baus = Object.values(inst.encontros ?? {}).filter((e) => ehBauPoe(e) && e.estado === 'disponivel' && e.x != null && (e.z ?? z) === z && (e.semCaminhoAte ?? 0) <= agora);
+  if (!baus.length) return null;
+  const dist = bfsDistancias(grade, hunt.pos);
+  let melhor = null;
+  for (const e of baus) {
+    const d = distancia(hunt.pos, e) <= ALCANCE ? 0 : dist.em(e.x, e.y);
+    if (d != null && (!melhor || d < melhor.d)) melhor = { e, d };
+  }
+  return melhor;
+}
+
+/**
+ * (03/11) Os baús SEGURAM o CLEAR? Nas áreas da campanha, na Caça Automática (não na manual: lá quem anda é o jogador), vivo, com um baú do PoE
+ * fechado e alcançável no seu andar — até `SEGURA_O_CLEAR_MS` depois de a sala ficar sem monstros (`instancia.bausSeguramDesde`).
+ */
+export function seguramOClear(estado, hunt, grade) {
+  if (!ligado() || !hunt || hunt.modo === 'online' || !(estado?.hp > 0)) return false;
+  // (só nas áreas da campanha: o MAPA do endgame se conclui ao limpar — a regra do dono, o loop de mapas —, e lá o idle só passa pelos baús que
+  // estão mais perto que os monstros)
+  if (salaDe(hunt)?.mapa) return false;
+  const inst = daSala(hunt);
+  if (!inst || !bauMaisPerto(hunt, grade)) return false;
+  const agora = hunt.clock ?? 0;
+  inst.bausSeguramDesde ??= agora;
+  return agora - inst.bausSeguramDesde <= SEGURA_O_CLEAR_MS;
+}
+
 function definicao() {
   return {
-    // O idle não "vai até" o baú (ele abre ao passar — `abrirAoPassar`; a rota passa pelos monstros, e os baús nascem perto deles): 'escolha'
-    // tira o baú da ativação automática do idle (`Encontros.avaliar`) sem pedir decisão nenhuma (o baú é opcional e não expira).
+    // O baú abre ao passar (`abrirAoPassar`; 03/11: o idle anda até ele — `bauMaisPerto` no `cacadas.tique`): 'escolha' tira o baú da ativação
+    // automática à distância (`Encontros.avaliar`) sem pedir decisão nenhuma (o baú é opcional e não expira).
     idle: 'escolha',
     podeAtivar: () => ({ ok: true }),
     aoAtivar(ctx) {
-      const { instancia, encontro: e, hunt, estado, agora } = ctx;
-      if (estado && hunt) pagar(estado, hunt, e);
+      const { instancia, encontro: e, hunt, estado, agora, personagem } = ctx;
+      if (estado && hunt) pagar(estado, hunt, e, Math.random, personagem ?? null);
       Encontros.concluir(instancia, e.id, { agora });
     },
   };

@@ -481,7 +481,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // a aura (a área e a duração), o Vínculo e "Punição pode afetar Inimigos Infeitiçáveis" — `itens-poe/baus-poe.mjs`)
 // (80 — 03/11, 100% — dados: as Habilidades Prismáticas — o Foco de Combate na árvore, `itens-poe/prismaticas.mjs` — e as Tatuagens — o Conto do Guerreiro, o
 // Devorador de Corações; `passivas/tatuagens.mjs`)
-export const VERSAO_DA_TRADUCAO = 80;
+// (83 — 03/11, frente mundo + dados: o Foco de Combate só nos 3 elementos do PoE — Fogo, Gelo e Raio; o curinga {E} também casava "Caos" e gerava
+// `raio_prisma_*_chaos`, não cadastrado)
+export const VERSAO_DA_TRADUCAO = 83;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

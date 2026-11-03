@@ -1477,7 +1477,7 @@ function montar(body) {
     return caixa;
   }
   /*
-   * (100% — dados, 03/11) As TATUAGENS do PoE no nó alocado escolhido: a que está nele e as da mochila que ele aceita ("Substitui uma Habilidade Passiva
+   * (100% — dados, 03/11) As TATUAGENS do PoE no nó alocado escolhido: a que está nele e as da mochila e do baú que ele aceita ("Substitui uma Habilidade Passiva
    * Pequena de Força" — o servidor confere o tipo, o máximo de 50 e o "Limitado a: 1" das Proibidas: `systems/passivas/tatuagens.mjs`). A de antes se perde.
    */
   function quadroDaTatuagem(n) {
@@ -1501,9 +1501,13 @@ function montar(body) {
       const a = meta?.tatuagemPoe?.alvo;
       return !!a && a.tipo === tipo.tipo && (tipo.tipo === 'ascendencia' || a.atributo === tipo.atributo);
     };
-    const mochila = (ctx.state.character?.inventory ?? []).filter((p) => ctx.state.items?.[p?.id]?.tatuagemPoe);
-    const cabem = [...new Map(mochila.filter((p) => aceita(ctx.state.items[p.id])).map((p) => [p.id, p])).values()];
-    caixa.append(el('p', 'pas-dica', cabem.length ? (atual ? 'Trocar pela tatuagem da mochila (a de agora se perde):' : 'Tatuar com uma da mochila:') : 'Nenhuma tatuagem da mochila serve neste nó.'));
+    // (03/11) as da MOCHILA e as do BAÚ (as caixas do depósito do personagem; o baú da conta, compartilhado, fica de fora) — o servidor gasta
+    // das duas (`MoedasPoe.gastar`, em `passivas/tatuagens.tatuar`), como a Forja (`forja-poe.moedasDoPersonagem`)
+    const ehTatuagem = (p) => !!ctx.state.items?.[p?.id]?.tatuagemPoe;
+    const mochila = (ctx.state.character?.inventory ?? []).filter(ehTatuagem);
+    const doBau = (ctx.state.character?.deposito ?? []).filter((c) => c && !c.compartilhada).flatMap((c) => (c.itens ?? []).filter(ehTatuagem));
+    const cabem = [...new Map([...mochila, ...doBau].filter((p) => aceita(ctx.state.items[p.id])).map((p) => [p.id, p])).values()];
+    caixa.append(el('p', 'pas-dica', cabem.length ? (atual ? 'Trocar por uma tatuagem da mochila ou do baú (a de agora se perde):' : 'Tatuar com uma da mochila ou do baú:') : 'Nenhuma tatuagem da mochila nem do baú serve neste nó.'));
     for (const p of cabem) {
       const meta = ctx.state.items[p.id];
       const linha = el('div', 'pas-joia-linha');

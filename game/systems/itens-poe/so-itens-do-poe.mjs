@@ -4,7 +4,7 @@
 // some por causa desta regra.
 //
 // É do PoE: as bases, os frascos e os itens de missão (`itens-poe/jogo.mjs`, ids 7.000.000+), os suportes (914.001+), as moedas (915.001+) e
-// as gemas (916.001+) do PoE, e toda peça gerada pelo sistema do PoE (`peca.poe`). Fora disso só passam o DINHEIRO (gold/platinum/crystal
+// as gemas (916.001+) e as tatuagens (917.001+) do PoE, e toda peça gerada pelo sistema do PoE (`peca.poe`). Fora disso só passam o DINHEIRO (gold/platinum/crystal
 // coin viram ouro no bolso na hora: `Inventario.VALOR_DA_MOEDA`) e a MOCHILA do personagem (o contêiner, não um item de jogo).
 import { ligado } from './catalogo.mjs';
 
@@ -14,6 +14,9 @@ export const FAIXAS_DO_POE = Object.freeze([
   [914_001, 914_999], // suportes
   [915_001, 915_999], // moedas
   [916_001, 916_999], // gemas
+  // (03/11) as TATUAGENS do PoE (`passivas/tatuagens.mjs`, ids estáveis 917.001+ — `tools/importar-tatuagens-poe.mjs`): fora desta lista a
+  // tatuagem caída não podia ser pega (inventario.mjs), era recusada na troca/guilda/mercado.
+  [917_001, 917_999], // tatuagens
 ]);
 
 /** Dinheiro (vira ouro no bolso) e a mochila do personagem: passam sempre. */

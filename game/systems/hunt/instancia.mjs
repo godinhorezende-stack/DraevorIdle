@@ -296,6 +296,8 @@ export function marcarSeLimpou(hunt, agora, quem = {}) {
   // CLEAR = bichos mortos E encontros OBRIGATÓRIOS concluídos. Opcional nunca trava.
   // Um encontro EM ANDAMENTO (ativo) também segura o CLEAR: a instância não some no meio de uma luta de boss.
   if (!bichosLimpos || Encontros.obrigatoriosPendentes(inst) > 0 || Encontros.emAndamento(inst) > 0) return false;
+  // (03/11) quem chama pode segurar o fim da sala (`quem.segura()`: os baús do PoE ainda fechados no caminho do idle — `itens-poe/baus-poe.seguramOClear`)
+  if (quem.segura?.()) return false;
   inst.status = 'limpa';
   inst.limpaEm = Date.now();
   inst.limpaNoRelogio = agora;
@@ -311,7 +313,8 @@ export const horaDaProxima = (hunt, agora) =>
  * A PÉ no andar atual (e que não se mostrou sem caminho há pouco). `null`: não
  * há nenhum alcançável aqui — o laço da rota leva a outro andar.
  */
-export function bichoMaisPerto(hunt, grade) {
+export function bichoMaisPerto(hunt, grade, saida = null) {
+  // (03/11: `saida.d` — os passos até ele, para o idle comparar com o baú do PoE mais perto — `itens-poe/baus-poe.bauMaisPerto`)
   const inst = daSala(hunt);
   const vivos = hunt.monstros.filter((m) => m.hp > 0 && m.instancia === inst?.id && (m.semCaminhoAte ?? 0) <= (hunt.clock ?? 0));
   if (!vivos.length) return null;
@@ -332,6 +335,7 @@ export function bichoMaisPerto(hunt, grade) {
       melhor = m;
     }
   }
+  if (saida) saida.d = d;
   return melhor;
 }
 
