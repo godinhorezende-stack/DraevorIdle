@@ -467,7 +467,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // `phys_add_min`/`phys_add_max` —, como no PoE; antes a média em `phys_add`, com o máximo 2×)
 // (74 — 02/11, dono: a SALVAGUARDA (Ward) como o PoE — a das bases Rúnicas na peça (`base.ward`), as linhas da "Proteção" dos únicos e as da Salvaguarda das Joias
 // Atemporais com efeito — `personagem/salvaguarda.mjs`)
-export const VERSAO_DA_TRADUCAO = 74;
+// (75 — 02/11, lote "projetil" do dono: o voo de verdade dos projéteis — "X% mais/menos Velocidade de Projéteis" (`proj_vel_mais`) e o "Ângulo da Difusão de
+// Projéteis aumentado/reduzido" (`proj_difusao_angulo_inc`) valem; eram "não se aplica ao jogo")
+export const VERSAO_DA_TRADUCAO = 75;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

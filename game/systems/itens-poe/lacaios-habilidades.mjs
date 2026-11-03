@@ -397,10 +397,15 @@ export function usar(l, h, alvo0, c) {
     const o = outrosAtingidos(l, h, alvo, vivos, rng);
     atingidos = [alvo, ...o.projeteis];
   }
-  if (h.projetil || h.magia) for (const m of atingidos) if (!h.area || h.centro !== 'lacaio') eventos.push({ t: 'shot', id: PROJETIL[op.tipo] ?? 12, x: l.x, y: l.y, tx: m.x, ty: m.y });
+  // (lote "projetil", dono 02/11: o projétil da habilidade VOA — `c.depoisDoVoo` (a caçada): o golpe em cada um no tempo do voo do lacaio até ele; a da área em volta
+  // do lacaio não voa)
+  const voa = (h.projetil || h.magia) && !(h.area && h.centro === 'lacaio') && typeof c.depoisDoVoo === 'function';
+  const tiros = new Map();
+  if (h.projetil || h.magia) for (const m of atingidos) if (!h.area || h.centro !== 'lacaio') { const ev = { t: 'shot', id: PROJETIL[op.tipo] ?? 12, x: l.x, y: l.y, tx: m.x, ty: m.y }; tiros.set(m, ev); eventos.push(ev); }
   // (a Investida: até +30% no alcance máximo — pela distância percorrida)
   const maisDaInvestida = h.investidaMaxPct ? 1 + ((h.investidaMaxPct / 100) * Math.min(1, dist(l, alvo) / Math.max(1, h.alcance ?? ALCANCE_DE_LONGE))) : 1;
   for (const m of atingidos) {
+    const golpearEste = () => {
     for (let k = 0; k < (h.hits ?? 1); k++) {
       if (!(m.hp > 0)) break;
       const r = c.golpe(m, 100 * maisDaInvestida, op);
@@ -408,9 +413,12 @@ export function usar(l, h, alvo0, c) {
       // (o Provocar da habilidade — a Pancada do Golem de Pedra: 33%)
       if (h.chances?.provocar > 0 && m.hp > 0 && rng() * 100 < h.chances.provocar) {
         (m.estados ??= {}).provocado = { ate: (c.relogio ?? 0) + 3000, por: l.nome, deLacaio: true };
-        eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'provocado' });
+        (c.eventosDaChegada?.() ?? eventos).push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'provocado' });
       }
     }
+    };
+    if (voa && tiros.has(m)) { const ms = c.depoisDoVoo(m, { magia: !!h.magia }, golpearEste); if (ms > 0) tiros.get(m).ms = ms; }
+    else golpearEste();
   }
   // (o Meteoro: o Fogo no chão — o dano por segundo nos atingidos, pela duração, pela resistência a Fogo deles; × o "aumentado/mais" do lacaio)
   if (h.dotPorSegundo > 0 && c.queimar) for (const m of atingidos) if (m.hp > 0) c.queimar(m, h.dotPorSegundo * (l?.poe?.fatorDoDano ?? 1), h.dotMs);

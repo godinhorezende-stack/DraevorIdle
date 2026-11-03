@@ -6469,17 +6469,56 @@
       "_lote42": "16/10 — lote 42 (dono: \"Fazer todos\" — a canalização contínua, as direções aleatórias, o terreno)"
     },
     {
-      "padrao": "^.*Velocidade de Projéteis$|^Ângulo da Difusão de Projéteis .*$",
+      "padrao": "^\\{(\\d+)\\}% mais Velocidade de Projéteis$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "proj_vel_mais",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: o projétil do jogo vai direto ao alvo: sem velocidade, ângulo, terreno ou volta",
+      "estado": "novo",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_projetil": "02/11 — lote projetil (dono: o voo de verdade dos projéteis — a velocidade, o ângulo, o terreno e a volta valem: hunt/voos.mjs)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Velocidade de Projéteis$",
+      "efeitos": [
+        {
+          "stat": "proj_vel_mais",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "novo",
+      "_nova": true,
+      "_ciclo7": true,
+      "_projetil": "02/11 — lote projetil (dono: o voo de verdade dos projéteis — a velocidade, o ângulo, o terreno e a volta valem: hunt/voos.mjs)"
+    },
+    {
+      "padrao": "^Ângulo da Difusão de Projéteis aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "proj_difusao_angulo_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "_nova": true,
+      "_ciclo7": true,
+      "_projetil": "02/11 — lote projetil (dono: o voo de verdade dos projéteis — a velocidade, o ângulo, o terreno e a volta valem: hunt/voos.mjs)"
+    },
+    {
+      "padrao": "^Ângulo da Difusão de Projéteis reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "proj_difusao_angulo_inc",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "novo",
+      "_nova": true,
+      "_ciclo7": true,
+      "_projetil": "02/11 — lote projetil (dono: o voo de verdade dos projéteis — a velocidade, o ângulo, o terreno e a volta valem: hunt/voos.mjs)"
     },
     {
       "padrao": "^Bônus do seu estandarte permanecem por .* segundos após você sair da área$",

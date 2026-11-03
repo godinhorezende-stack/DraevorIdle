@@ -265,7 +265,19 @@
       "nome": "Velocidade do Projétil aumentada",
       "unidade": "%",
       "combate": true,
-      "efeito": "hunt/combate (evento shot: o projétil voa mais rápido)"
+      "efeito": "o voo de verdade (itens-poe/projeteis-voo, hunt/voos — lote projetil, 02/11): o projétil anda mais rápido e chega antes"
+    },
+    "proj_vel_mais": {
+      "nome": "Mais/menos Velocidade de Projéteis",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o voo de verdade (acoes.velocidadeDoProjetil — o \"mais\" multiplica por cima da \"aumentada\"; negativo = menos) (lote projetil, 02/11)"
+    },
+    "proj_difusao_angulo_inc": {
+      "nome": "Ângulo da Difusão de Projéteis aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "os filhos da difusão saem a ± o ângulo dela (skills/golpes-secundarios com o voo; negativo = reduzido) (lote projetil, 02/11)"
     },
     "crit_dmg_taken_red": {
       "nome": "Dano extra de Críticos recebidos reduzido",

@@ -80,6 +80,8 @@ import * as GemasT1 from './gemas-t1.mjs';
 import * as GemasT2 from './gemas-t2.mjs';
 import * as GemasT3 from './gemas-t3.mjs';
 import * as GemasR4C2 from './gemas-r4c2.mjs';
+// (lote "projetil", dono 02/11) o voo de verdade dos projéteis: a velocidade base, a 2ª forma, a desaceleração, o ziguezague, a espiral e o orbe
+import * as GemasVoo from './projeteis-voo.mjs';
 // (rodada 4, lote L: o motor das habilidades dos lacaios pelo PoB — a gema que segue o PoB perde o motivo "o lacaio ataca do jeito do tipo dele")
 import * as LacaiosHabilidades from './lacaios-habilidades.mjs';
 // (balão de todas as gemas, 02/11) as propriedades e as notas curtas do balão
@@ -487,6 +489,9 @@ const REGRAS_DE_ALVOS = [
   // adicionais ao invés" — e a mudança de direção não se aplica (`LINHAS_QUE_NAO_SE_APLICAM`): a Difusão não vale nesta gema
   [/^Modificadores que fariam com que projéteis se Difundissem fazem com que eles mudem de direção vezes adicionais ao invés$/i, (m, a) => { a.semDifundir = true; }],
   [/^Projéteis se Difundem$/i, (m, a) => { a.bifurcar = Math.max(a.bifurcar, 2); }],
+  // (lote "projetil", dono 02/11 — o voo de verdade) "Dispara Projéteis em um círculo" (as Facas Etéreas do Massacre, a Faísca da Nova): o círculo de você — os projéteis a
+  // 360° ÷ N um do outro a partir do rumo do alvo (`Secundarios.resolver`, `emCirculo`); antes os a mais iam "nos mais perto", o que dava as voltas sem o círculo
+  [/^Dispara Projéteis em um círculo$/i, (m, a) => { a.emCirculo = true; }],
   // (18/10, lote G20a) a Balista de Cerco Fragmentadora: os filhos da difusão difundem de novo e a chance de 1 filho a mais (a da qualidade —
   // act_dex.lua:14056-14061)
   [/^Projéteis podem Difundir (\d+) Vez\w* adicionais$/i, (m, a) => { a.difundirDeNovo = (a.difundirDeNovo ?? 0) + Number(m[1]); }],
@@ -596,17 +601,12 @@ const DESCRICAO_DO_PROJETIL = [
   [/^Ice_Spear_of_Splitting$/, { perfuraNaPrimeiraForma: 99 }],
 ];
 /**
- * (lote A3, dono 19/10 — D1, D6) As linhas de projétil que NÃO SE APLICAM ao jogo (só a trajetória — o projétil do jogo acerta no tique, e o PoB
- * não as usa na conta): saem dos motivos e ficam como nota (`linhasQueNaoSeAplicam`, o relatório as mostra).
+ * (lote A3, dono 19/10 — D1, D6) As linhas que NÃO SE APLICAM ao jogo: saem dos motivos e ficam como nota (`linhasQueNaoSeAplicam`, o relatório as mostra). As de
+ * trajetória do projétil (a 2ª forma, a desaceleração, o ziguezague, a espiral, o orbe) saíram daqui no lote "projetil" (02/11: o voo de verdade).
  */
 const LINHAS_QUE_NAO_SE_APLICAM = [
-  [/^A Segunda forma possui [\d.]+ ?% mais Velocidade de Projétil$/i, 'não se aplica: "A Segunda forma possui X% mais Velocidade de Projétil" (Lança de Gelo) só muda a trajetória da segunda forma — o PoB não a usa na conta, e o projétil do jogo acerta no tique'],
-  [/^Desaceleração do Projétil reduzida em [\d.]+ ?%$/i, 'não se aplica: "Desaceleração do Projétil reduzida" (Arremesso Espectral da Materialização) só muda a trajetória — o PoB não a usa na conta'],
-  [/^Projéteis mudam de direção \d+ vezes$/i, 'não se aplica: "Projéteis mudam de direção N vezes" (Raio Cinético) só muda a trajetória — o projétil não acerta de novo a cada mudança'],
-  // (lote PR1, dono 20/10 — D1 do plano: como a 2ª forma da Lança de Gelo) a Hélice Espectral
-  [/^Gira por [\d.]+ rotações$/i, 'não se aplica: "Gira por N rotações" (Hélice Espectral) só muda a trajetória da espiral — o PoB não a usa na conta, e o projétil do jogo acerta no tique'],
-  // (lote B3, dono 21/10) o Morto Volátil e o do Fervor (a qualidade)
-  [GemasB3.LINHA_VELOCIDADE_DO_ORBE, 'não se aplica: "Velocidade de Movimento do Orbe aumentada em X%" (Morto Volátil) só muda a trajetória do orbe até o inimigo — o PoB não a usa na conta, e o orbe do jogo acerta no uso'],
+  // (lote "projetil", dono 02/11: o voo de verdade — "A Segunda forma possui X% mais Velocidade de Projétil", "Desaceleração do Projétil reduzida", "Projéteis
+  // mudam de direção N vezes", "Gira por N rotações" e "Velocidade de Movimento do Orbe aumentada" valem agora: `GemasVoo.perfilDaGema`, `hunt/voos.mjs`)
   // (lote D1, aval do dono 27/10) a Mina de Fumaça: o jogo não tem Re-armar
   [/^Minas não podem ser Re-armadas$/i, 'não se aplica: "Minas não podem ser Re-armadas" (Mina de Fumaça) — o jogo não tem Re-armar Minas (aval do dono 27/10)'],
 ];
@@ -1137,6 +1137,15 @@ export const snipeDaGema = (slug, nivel = 1) => comCache(A4, `sni|${slug}@${nive
 /*
  * ---- (lote A3b, dono 19/10) o leitor no nível do lote A3b (`itens-poe/gemas-a3b.mjs`: os objetos que ficam no chão ou no tempo) ----
  */
+/*
+ * ---- (lote "projetil", dono 02/11) o VOO da gema (`itens-poe/projeteis-voo.mjs`): a velocidade base (m/s — o poedb, `props`) e o perfil (as linhas) ----
+ */
+const VOO = new Map();
+/** `{ metros, perfil }`: a velocidade base da gema (null sem o número do poedb — `GemasVoo.metrosBase` dá a do ataque ou da magia) e o perfil do voo. */
+export const vooDaGema = (slug, nivel = 1, qualidade = 0) => comCache(VOO, `voo|${slug}@${nivel | 0}@${qualidade | 0}`, () => {
+  const t = textosDaGema(slug, nivel);
+  return { metros: GemasVoo.metrosDasProps(t.props?.length ? t.props : POR_SLUG.get(slug)?.props ?? []) ?? GemasVoo.metrosDasProps(POR_SLUG.get(slug)?.props ?? []), perfil: GemasVoo.perfilDaGema(slug, t.linhas, linhasDaQualidadeDe(slug, qualidade)) };
+});
 const A3B = new Map();
 /** O objeto que o uso da gema deixa (`GemasA3b.objetoDaGema`): a bola, o tornado, a espiral, o olho, o marcador, o chão, as lâminas, a captura. */
 // (lote B1, dono 20/10 — D-B1.10: + o marcador da Invocar Tormenta, `GemasB1.tormentaDasLinhas`; lote B2: + a Explosão Voltáxica e a Tormenta Flamejante Vaal)
@@ -1911,7 +1920,7 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
  * os dois não se separarem — `h`: a gema compilada com `slug`, `arquetipo` e `nivel`; `q`: a qualidade.
  */
 function ehLinhaFeita(h, l, q) {
-  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasPR3.ehLinhaPR3(h.slug, l) && !GemasPR4.ehLinhaPR4(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l) && !GemasB3.ehLinhaB3(h.slug, l) && !GemasC4.ehLinhaC4(h.slug, l) && !GemasC3.ehLinhaC3(h.slug, l) && !GemasB4.ehLinhaB4(h.slug, l) && !GemasGAC.ehLinhaGAC(h.slug, l, h.arquetipo) && !GemasGBD.ehLinhaGBD(h.slug, l) && !GemasE1a.ehLinhaE1a(h.slug, l, h.arquetipo) && !GemasE1b.ehLinhaE1b(h.slug, l) && !GemasE2a.ehLinhaE2a(h.slug, l, h.arquetipo) && !GemasE2b.ehLinhaE2b(h.slug, l) && !GemasD1.ehLinhaD1(h.slug, l) && !GemasR3B.ehLinhaR3B(h.slug, l) && !GemasR3D.ehLinhaR3D(h.slug, l) && !GemasT2.ehLinhaT2(h.slug, l) && !GemasT3.ehLinhaT3(h.slug, l));
+  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasPR3.ehLinhaPR3(h.slug, l) && !GemasPR4.ehLinhaPR4(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l) && !GemasB3.ehLinhaB3(h.slug, l) && !GemasC4.ehLinhaC4(h.slug, l) && !GemasC3.ehLinhaC3(h.slug, l) && !GemasB4.ehLinhaB4(h.slug, l) && !GemasGAC.ehLinhaGAC(h.slug, l, h.arquetipo) && !GemasGBD.ehLinhaGBD(h.slug, l) && !GemasE1a.ehLinhaE1a(h.slug, l, h.arquetipo) && !GemasE1b.ehLinhaE1b(h.slug, l) && !GemasE2a.ehLinhaE2a(h.slug, l, h.arquetipo) && !GemasE2b.ehLinhaE2b(h.slug, l) && !GemasD1.ehLinhaD1(h.slug, l) && !GemasR3B.ehLinhaR3B(h.slug, l) && !GemasR3D.ehLinhaR3D(h.slug, l) && !GemasT2.ehLinhaT2(h.slug, l) && !GemasT3.ehLinhaT3(h.slug, l) && !GemasVoo.ehLinhaDoVoo(h.slug, l));
 }
 function avaliarNoJogo(h, formato) {
   const st = h.stats;

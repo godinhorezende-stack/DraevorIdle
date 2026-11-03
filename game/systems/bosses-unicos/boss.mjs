@@ -228,7 +228,8 @@ function executar(ctx, c) {
   switch (c.tipo) {
     case 'magia': {
       const a = ataqueDe(c);
-      if (Poderes.alcanca(a, bicho, hunt.pos)) Poderes.dispararMagia(ctx, a);
+      // (lote "projetil": a de projétil voa — `Poderes.magiaDoBicho`)
+      if (Poderes.alcanca(a, bicho, hunt.pos)) Poderes.magiaDoBicho(ctx, a);
       break;
     }
     case 'area-telegrafada':

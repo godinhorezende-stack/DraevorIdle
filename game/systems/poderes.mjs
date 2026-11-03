@@ -45,6 +45,10 @@ import * as Protecao from './protecao.mjs';
 import * as Plantadas from './itens-poe/armas-plantadas.mjs';
 import * as Vinculos from './itens-poe/vinculos.mjs';
 import * as Testador from './personagem/testador.mjs';
+// (lote "projetil", dono 02/11) o projétil do monstro VOA (`hunt/voos.mjs`)
+import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
+import * as GemasVoo from './itens-poe/projeteis-voo.mjs';
+import * as Voos from './hunt/voos.mjs';
 
 const ler = (arquivo) => JSON.parse(readFileSync(new URL(`../gamedata/${arquivo}`, import.meta.url), 'utf8'));
 const PODERES = { ...ler('monstro-poderes.json').monstros, ...ler('boss-poderes.json').bosses };
@@ -157,6 +161,52 @@ function casasDa(a, bicho, alvo) {
   return [{ x: alvo.x, y: alvo.y }];
 }
 
+/**
+ * (lote "projetil", dono 02/11) O PROJÉTIL DO MONSTRO VOA: a magia com projétil (`a.tiro`, sem ser feixe) sai do bicho na velocidade do PoE (D1 de `projeteis-voo.mjs`:
+ * o físico — o Ataque de Projétil — a 32.6 m/s; a magia a 10.4 m/s) e anda reta até você (ou o lacaio `l`): sai no CONTATO — na hora, se chega a até meio tique,
+ * senão no tique em que chega. Você que saiu da frente não leva; a de área no alvo ("noAlvo") cai no ponto mirado (ou onde encontrou você) e pega quem está na área
+ * ali. O golpe é o de sempre (`dispararMagia`, `magiaNoLacaio`), com a sua ficha da hora.
+ */
+export const voaDoBicho = (a) => itensPoeLigado() && a?.tiro != null && a.forma !== 'feixe';
+export function voarDoBicho({ estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo }, a, l = null) {
+  const z = bicho.z ?? hunt.z ?? 0;
+  const de = { x: bicho.x, y: bicho.y };
+  const quem = l ?? hunt.pos;
+  const para = { x: quem.x, y: quem.y };
+  const area = a.forma === 'area' && a.noAlvo;
+  const alcance = area ? Math.max(1, distancia(de, para)) : Math.max(1, a.alcance || 7);
+  const clock0 = hunt.clock ?? 0;
+  const v0 = GemasVoo.casasPorSegundo(a.ataque || a.elemento === 'physical' ? GemasVoo.VOO.padraoAtaqueM : GemasVoo.VOO.padraoMagiaM, 1);
+  const naCasa = (c) => (l ? l.hp > 0 && l.x === c.x && l.y === c.y : hunt.pos.x === c.x && hunt.pos.y === c.y && (hunt.z ?? 0) === z);
+  const golpe = (ponto, adiado) => {
+    const sair = (ev) => {
+      const ctx = { estado, hunt, personagem, bicho, eventos: ev, agora: agora + ((hunt.clock ?? 0) - clock0), ficha: adiado ? ModsPoe.fichaDa(hunt) ?? ficha : ficha, temEscudo };
+      if (l) { if (l.hp > 0 && magiaNoLacaio) magiaNoLacaio({ ...ctx, l, a, semTiro: true }); return; }
+      const casas = area ? casasDa(a, bicho, ponto) : [{ x: ponto.x, y: ponto.y }];
+      if (casas.some((c) => c.x === hunt.pos.x && c.y === hunt.pos.y)) dispararMagia(ctx, a, { casas, semTiro: true });
+      else if (casas.length > 1) ev.push({ t: 'area', id: a.efeito ?? EFEITO_PADRAO[a.elemento], x: ponto.x, y: ponto.y, casas: Areas.paraTela(casas, ponto) });
+    };
+    if (!adiado) { sair(eventos); return []; }
+    if (estado.hunt !== hunt || !((estado.hp ?? 0) > 0)) return [];
+    const ev = [];
+    sair(ev);
+    return ev;
+  };
+  const tiro = { t: 'shot', id: a.tiro, x: de.x, y: de.y, tx: para.x, ty: para.y };
+  eventos.push(tiro);
+  const r = Voos.lancar(hunt, {
+    de, para, z, alcance, v0, agora: clock0,
+    colide: (c) => (naCasa(c) ? quem : null),
+    parede: (c) => { const g = ModsPoe.gradeDoCombate(hunt)?.andavel; return !!g && !g.has(`${c.x},${c.y}`); },
+    aoContato: (m, casa, { adiado }) => golpe(casa, adiado),
+    aoFim: (casa, { adiado }) => (area ? golpe(casa, adiado) : []),
+  });
+  if (r.ms > 0) tiro.ms = r.ms;
+  return 0;
+}
+/** (lote "projetil") A magia do bicho em você: a de projétil voa (`voarDoBicho`); as outras, na hora (`dispararMagia`). */
+export const magiaDoBicho = (ctx, a) => (voaDoBicho(a) ? voarDoBicho(ctx, a, null) : dispararMagia(ctx, a));
+
 /** As casas que uma magia de monstro pega saindo de `origem` na direção de `alvo` (o espectro do PoE usa as do monstro erguido). */
 export const casasDaMagia = (a, origem, alvo) => casasDa(a, origem, alvo);
 
@@ -234,7 +284,7 @@ function chanceDeBloquearAtaque(ficha, hunt, bicho) {
   return Math.min(Math.max(teto, ficha.blockChance ?? 0), min + Math.random() * (max - min) + contraAmaldicoado);
 }
 
-export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo }, a, { casas: casasFixas = null } = {}) {
+export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo }, a, { casas: casasFixas = null, semTiro = false } = {}) {
   const alvo = hunt.pos;
   // Esquiva das gemas: a magia inteira não pega (o efeito na tela sai igual).
   // "Chance to Avoid Damage" (add) também evita a magia inteira (a Evasion não: só o golpe corpo a corpo).
@@ -283,7 +333,7 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   }
 
   const efeito = a.efeito ?? EFEITO_PADRAO[a.elemento];
-  if (a.tiro != null) eventos.push({ t: 'shot', id: a.tiro, x: bicho.x, y: bicho.y, tx: alvo.x, ty: alvo.y });
+  if (a.tiro != null && !semTiro) eventos.push({ t: 'shot', id: a.tiro, x: bicho.x, y: bicho.y, tx: alvo.x, ty: alvo.y });
   // A área na tela: um evento só, com as casas que acertam (antes: um `fx` por casa, cortado em 90).
   const casas = casasFixas ?? casasDa(a, bicho, alvo);
   // (PoE, 12/10) A magia em área do bicho destrói as Armadilhas e Minas plantadas que pega ("… não podem ser Danificadas" impede).
@@ -522,8 +572,14 @@ export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, t
     bicho.proximoPoder[i] = agora + a.intervalo / Math.max(0.1, (Number(bicho.velocidadeDeConjuracao) || 1) * eletrizado * recarga);
     if (Math.random() * 100 >= a.chance) return;
     // (lote 41, P019) o lacaio mais perto do bicho que você leva a magia de dano
-    if (noLacaio && noLacaio.hp > 0 && (a.min > 0 || a.max > 0) && alcanca(a, bicho, noLacaio)) return void magiaNoLacaio({ estado, hunt, bicho, l: noLacaio, a, eventos, agora, ficha });
+    if (noLacaio && noLacaio.hp > 0 && (a.min > 0 || a.max > 0) && alcanca(a, bicho, noLacaio)) {
+      // (lote "projetil") o projétil da magia voa até o lacaio
+      if (voaDoBicho(a)) return void voarDoBicho({ estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo }, a, noLacaio);
+      return void magiaNoLacaio({ estado, hunt, bicho, l: noLacaio, a, eventos, agora, ficha });
+    }
     if (isca || !alcanca(a, bicho, alvo)) return;
+    // (lote "projetil") o projétil da magia voa até você: o golpe sai no contato (quem saiu da frente não leva)
+    if (voaDoBicho(a)) return void voarDoBicho({ estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo }, a, null);
     total += dispararMagia({ estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo }, a);
   });
   // As curas do boss (`monster.defenses` do arquivo).

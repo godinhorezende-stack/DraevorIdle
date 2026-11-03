@@ -1202,8 +1202,9 @@ export const BUFFS = {
   // Gritos dos Dessecados — `ALTARES_DO_SORTEIO`; o Ressonante do PoE antigo é o Carregado de hoje) e os Menores dos únicos (o Erro Crasso).
   // "Efeito dos Buffs de Altares em você aumentado" multiplica os números (`efeito_altar` — não o nível das gemas disparadas). As Novas e os
   // Esqueletos dos Maiores: o poedb não publica o dano nem a frequência — as gemas do jogo (Nova Glacial, Nova Elétrica, Convocar Esqueleto)
-  // nível 20, a cada 2 s (4 s os Esqueletos). O Altar de Aceleração: a Velocidade de Projéteis não se aplica (o projétil do jogo vai direto ao alvo).
-  altarAceleracao: { nome: 'Altar de Aceleração', altar: true, af: { action_speed: 50 } },
+  // nível 20, a cada 2 s (4 s os Esqueletos). O Altar de Aceleração (o poedb, Acceleration Shrine: "50% increased Action Speed", "80% increased Projectile Speed"):
+  // (lote "projetil", dono 02/11: a Velocidade de Projéteis vale — o voo de verdade, `hunt/voos.mjs`)
+  altarAceleracao: { nome: 'Altar de Aceleração', altar: true, af: { action_speed: 50, projectile_speed: 80 } },
   altarBrutal: { nome: 'Altar Brutal', altar: true, af: { chance_empurrar: 100, stun_duration: 30, dmg_inc: 50 } },
   altarDiamante: { nome: 'Altar Diamante', altar: true, af: { critico_sempre: 1 } },
   altarEcoante: { nome: 'Altar Ecoante', altar: true, af: { repeticoes_extra: 1 } },

@@ -204,8 +204,9 @@ export const REGRAS = [
   [r(`Ricocheteia \\+${N} Vezes`), (s, m) => (s.ricochetes = num(m[1]))],
   [r(`Acerta até ${N} inimigos adicionais`), (s, m) => (s.alvosAdicionais = num(m[1]))],
   [r(`Projéteis se Partem na direção de ${N} alvos`), (s, m) => (s.alvosAdicionais = num(m[1]))],
-  // (18/10, lote G20a: sem leitor no jogo — `velProjetilMais` e `alcanceExtra` não iam a lugar nenhum e a linha contava como feita; agora fica não feita:
-  // o projétil do jogo acerta no tique, e o alcance corpo a corpo da gema ainda não entra no do golpe)
+  // (18/10, lote G20a: sem leitor no compilador — `velProjetilMais` e `alcanceExtra` não iam a lugar nenhum e a linha contava como feita; o alcance corpo a corpo
+  // da gema ainda não entra no do golpe. A velocidade "mais" da gema é lida em `GemasPoe.alvosNoNivel` — `velMais` — e vale no voo de verdade desde o lote
+  // "projetil", 02/11: `Acoes.velocidadeDoProjetil`, `hunt/voos.mjs`)
   [r(`${N} % mais Velocidade de Projétil`), () => false],
   [r(`^\\+${N} metros ao Alcance de Golpes Corpo a Corpo`), () => false],
   [r(`(?:Cria ${N} fissuras|Golpeia ${N} Áreas|Onda causa Dano em ${N} Áreas|^${N} Rajadas)`), (s, m) => (s.repeticoes = num(m[1] || m[2] || m[3] || m[4]))],
