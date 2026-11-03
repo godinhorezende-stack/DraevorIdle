@@ -8249,10 +8249,10 @@
       "_lote29": "15/10 — os raios das joias únicas (lote 29)"
     },
     {
-      "padrao": "^Com um total de \\{(\\d+)\\} de (?:Inteligência e Destreza|Força e Inteligência|Destreza e Força|Destreza) no Raio, Habilidades Prismáticas não podem escolher {E}$",
+      "padrao": "^Com um total de \\{(\\d+)\\} de (?:Inteligência e Destreza|Força e Inteligência|Destreza e Força|Destreza) no Raio, Habilidades Prismáticas não podem escolher Fogo$",
       "efeitos": [
         {
-          "stat": "raio_prisma_nao_escolhe_{E}",
+          "stat": "raio_prisma_nao_escolhe_fire",
           "valor": "{1}"
         }
       ],
@@ -8261,17 +8261,50 @@
       "_nova": true,
       "_lote29": "15/10 — os raios das joias únicas (lote 29)",
       "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)",
-      "_100dados": "03/11 — 100% (lote dados): as Habilidades Prismáticas e as Tatuagens"
+      "_100dados": "03/11 — 100% (lote dados): as Habilidades Prismáticas e as Tatuagens",
+      "_03-11": "03/11 — o curinga {E} trocado pelos 3 elementos do Foco de Combate (Fogo, Gelo, Raio — os do PoE): com ele, 'Caos' também casava e gerava atributos não cadastrados (raio_prisma_*_chaos)"
     },
     {
-      "padrao": "^Com um total de \\{(\\d+)\\} de (?:Inteligência e Destreza|Força e Inteligência|Destreza e Força|Destreza) no Raio, Habilidades Prismáticas causam \\{(\\d+)\\}% menos Dano de {E}$",
+      "padrao": "^Com um total de \\{(\\d+)\\} de (?:Inteligência e Destreza|Força e Inteligência|Destreza e Força|Destreza) no Raio, Habilidades Prismáticas não podem escolher Gelo$",
       "efeitos": [
         {
-          "stat": "raio_prisma_menos_{E}_limiar",
+          "stat": "raio_prisma_nao_escolhe_ice",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o Foco de Combate: a soma dos dois atributos das passivas alocadas no raio (os pares do PoB — Fogo: Inteligência e Destreza, que o poedb pt escreve só \"Destreza\"; Gelo: Força e Inteligência; Raio: Destreza e Força); com ela, o Acerto Elemental, o Golpe Selvagem (e o dos Extremos), o Tornado da Turbulência Elemental, os Esqueletos Magos e a Explosão Prismática escolhem só entre os outros elementos (`itens-poe/prismaticas.mjs`)",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)",
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)",
+      "_100dados": "03/11 — 100% (lote dados): as Habilidades Prismáticas e as Tatuagens",
+      "_03-11": "03/11 — o curinga {E} trocado pelos 3 elementos do Foco de Combate (Fogo, Gelo, Raio — os do PoE): com ele, 'Caos' também casava e gerava atributos não cadastrados (raio_prisma_*_chaos)"
+    },
+    {
+      "padrao": "^Com um total de \\{(\\d+)\\} de (?:Inteligência e Destreza|Força e Inteligência|Destreza e Força|Destreza) no Raio, Habilidades Prismáticas não podem escolher Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_prisma_nao_escolhe_energy",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o Foco de Combate: a soma dos dois atributos das passivas alocadas no raio (os pares do PoB — Fogo: Inteligência e Destreza, que o poedb pt escreve só \"Destreza\"; Gelo: Força e Inteligência; Raio: Destreza e Força); com ela, o Acerto Elemental, o Golpe Selvagem (e o dos Extremos), o Tornado da Turbulência Elemental, os Esqueletos Magos e a Explosão Prismática escolhem só entre os outros elementos (`itens-poe/prismaticas.mjs`)",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)",
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)",
+      "_100dados": "03/11 — 100% (lote dados): as Habilidades Prismáticas e as Tatuagens",
+      "_03-11": "03/11 — o curinga {E} trocado pelos 3 elementos do Foco de Combate (Fogo, Gelo, Raio — os do PoE): com ele, 'Caos' também casava e gerava atributos não cadastrados (raio_prisma_*_chaos)"
+    },
+    {
+      "padrao": "^Com um total de \\{(\\d+)\\} de (?:Inteligência e Destreza|Força e Inteligência|Destreza e Força|Destreza) no Raio, Habilidades Prismáticas causam \\{(\\d+)\\}% menos Dano de Fogo$",
+      "efeitos": [
+        {
+          "stat": "raio_prisma_menos_fire_limiar",
           "valor": "{1}"
         },
         {
-          "stat": "raio_prisma_menos_{E}",
+          "stat": "raio_prisma_menos_fire",
           "valor": "{2}"
         }
       ],
@@ -8280,7 +8313,48 @@
       "_nova": true,
       "_lote29": "15/10 — os raios das joias únicas (lote 29)",
       "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)",
-      "_100dados": "03/11 — 100% (lote dados): as Habilidades Prismáticas e as Tatuagens"
+      "_100dados": "03/11 — 100% (lote dados): as Habilidades Prismáticas e as Tatuagens",
+      "_03-11": "03/11 — o curinga {E} trocado pelos 3 elementos do Foco de Combate (Fogo, Gelo, Raio — os do PoE): com ele, 'Caos' também casava e gerava atributos não cadastrados (raio_prisma_*_chaos)"
+    },
+    {
+      "padrao": "^Com um total de \\{(\\d+)\\} de (?:Inteligência e Destreza|Força e Inteligência|Destreza e Força|Destreza) no Raio, Habilidades Prismáticas causam \\{(\\d+)\\}% menos Dano de Gelo$",
+      "efeitos": [
+        {
+          "stat": "raio_prisma_menos_ice_limiar",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_prisma_menos_ice",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o Foco de Combate: com a soma dos dois atributos alocados no raio, o \"X% menos Dano\" daquele elemento nos golpes das habilidades prismáticas (a tag Prismático)",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)",
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)",
+      "_100dados": "03/11 — 100% (lote dados): as Habilidades Prismáticas e as Tatuagens",
+      "_03-11": "03/11 — o curinga {E} trocado pelos 3 elementos do Foco de Combate (Fogo, Gelo, Raio — os do PoE): com ele, 'Caos' também casava e gerava atributos não cadastrados (raio_prisma_*_chaos)"
+    },
+    {
+      "padrao": "^Com um total de \\{(\\d+)\\} de (?:Inteligência e Destreza|Força e Inteligência|Destreza e Força|Destreza) no Raio, Habilidades Prismáticas causam \\{(\\d+)\\}% menos Dano de Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_prisma_menos_energy_limiar",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_prisma_menos_energy",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o Foco de Combate: com a soma dos dois atributos alocados no raio, o \"X% menos Dano\" daquele elemento nos golpes das habilidades prismáticas (a tag Prismático)",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)",
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)",
+      "_100dados": "03/11 — 100% (lote dados): as Habilidades Prismáticas e as Tatuagens",
+      "_03-11": "03/11 — o curinga {E} trocado pelos 3 elementos do Foco de Combate (Fogo, Gelo, Raio — os do PoE): com ele, 'Caos' também casava e gerava atributos não cadastrados (raio_prisma_*_chaos)"
     },
     {
       "padrao": "^Efeito das Tatuagens no Raio aumentado em \\{(\\d+)\\}%$",

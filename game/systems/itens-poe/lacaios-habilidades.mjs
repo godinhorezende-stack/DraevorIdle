@@ -25,7 +25,7 @@
 //     "spell_maximum_action_distance_+%"), no mínimo 1), as chances (Congelar, Incendiar, Eletrizar, Provocar) e o "não pode ser crítico".
 // O dano sai pelo GOLPE DO LACAIO de sempre (`cacadas.golpeDoLacaioNoBicho`): as auras, o crítico, os suportes do lote S2B, as afecções, o erro do ataque.
 // (100% — dados) o elemento da magia do Esqueleto Mago pelo nome do PoB (o Foco de Combate)
-import { elementoDoNome } from './prismaticas.mjs';
+import { elementoDoNome, escolherElemento } from './prismaticas.mjs';
 import { readFileSync } from 'node:fs';
 
 export const DADOS = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/pob-habilidades-lacaios.json', import.meta.url), 'utf8'));
@@ -79,6 +79,9 @@ export const GEMAS = [
   [/^Summon_Reaper_of_Eviscerating$/, { principal: [], semGolpe: true, porUso: 'SummonedReaperUltimate' }],
   [/^Summon_Reaper_of_Revenants$/, { principal: ['SummonedReaperMelee'] }],
   [/^Summon_Reaper$/, { principal: ['SummonedReaperMelee'], porUso: 'SummonedReaperUltimate' }],
+  // (03/11) o clone das Flechas dos Clones Prismáticos: "flechas de elementos aleatórios que convertem todo o dano físico para o elemento escolhido" (o poedb) —
+  // `prismatica`: cada flecha sorteia Fogo, Gelo ou Raio (sem os que o Foco de Combate proíbe) e converte 100% do Físico nele (`principalDaVez`)
+  [/^(?:Blink|Mirror)_Arrow_of_Prismatic_Clones$/, { principal: ['BlinkMirrorArrowMelee'], arma: 'sua', prismatica: true }],
   [/^(?:Blink|Mirror)_Arrow/, { principal: ['BlinkMirrorArrowMelee'], arma: 'sua' }],
   [/^Holy_Strike$/, { principal: ['HolyStrikeMinionAttack'], arma: 'sua' }],
   [/^Animate_Weapon_of_Self_Reflection$/, { principal: ['Melee'], arma: 'sua' }],
@@ -230,7 +233,7 @@ export function doLacaio(slug, pobId, n, extra = {}) {
   const inicio = c.inicio ? habilidade(c.inicio, pobId, n) : null;
   const vidaBaixa = (c.vidaBaixa ?? []).map((id) => habilidade(id, pobId, n)).filter(Boolean);
   const porUso = c.porUso ? habilidade(c.porUso, pobId, n) : null;
-  return { principal, ...(c.fixa || doGrupo?.fixa ? { fixa: true } : {}), ...(c.semGolpe ? { semGolpe: true } : {}), recargas, ...(inicio ? { inicio } : {}), ...(vidaBaixa.length ? { vidaBaixa } : {}), ...(porUso ? { porUso } : {}), ...(c.arma ? { arma: c.arma } : {}) };
+  return { principal, ...(c.fixa || doGrupo?.fixa ? { fixa: true } : {}), ...(c.semGolpe ? { semGolpe: true } : {}), recargas, ...(inicio ? { inicio } : {}), ...(vidaBaixa.length ? { vidaBaixa } : {}), ...(porUso ? { porUso } : {}), ...(c.arma ? { arma: c.arma } : {}), ...(c.prismatica ? { prismatica: true } : {}) };
 }
 
 /**
@@ -274,6 +277,13 @@ export function recargasDoMotor(hab) {
 export function principalDaVez(l, rng = Math.random, proibidos = null) {
   const lista = l?.habPob?.principal;
   if (!lista?.length) return null;
+  // (03/11) a PRISMÁTICA (o clone dos Clones Prismáticos): o elemento da flecha, sorteado a cada golpe sem os proibidos, e todo o Físico convertido nele
+  if (l.habPob.prismatica) {
+    const h = lista.length === 1 ? lista[0] : lista[Math.floor(rng() * lista.length)];
+    const el = escolherElemento(null, proibidos ?? new Set(), rng);
+    l.prismaElemento = el;
+    return { ...h, elemento: el, conversao: { [el]: 100 } };
+  }
   if (lista.length === 1) return lista[0];
   if (l.habPob.fixa) {
     const vale = (i) => !!lista[i] && !proibidos?.has?.(elementoDoNome(lista[i].id));

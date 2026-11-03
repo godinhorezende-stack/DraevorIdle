@@ -636,9 +636,9 @@ function escolherDono({ estado, personagem, juntos, id, peca, origem, verificar 
  * Entrega `n` moedas (`id`) de um drop. Moeda do loot cai no bolso (carregado), como o resto do ouro ganho caçando — só vai para o banco
  * quando o jogador deposita de propósito no Banqueiro. (Uma versão anterior mandava direto para `bank`, a partir de uma medição do original
  * que o dono do projeto confirmou estar errada.) Na party: partes iguais; o resto (unidades que não dividem) roda entre os integrantes,
- * evento a evento (`dividirOuro`).
+ * evento a evento (`dividirOuro`). (03/11: exportada — o baú do PoE divide o ouro dele pelo mesmo caminho, `itens-poe/baus-poe.pagar`.)
  */
-function entregarMoedas({ estado, juntos, sala, caiu, conta }, id, n) {
+export function entregarMoedas({ estado, juntos, sala, caiu, conta }, id, n) {
   if (!(n > 0)) return;
   const total = n * VALOR_DA_MOEDA[id];
   caiu.push({ id, count: n });

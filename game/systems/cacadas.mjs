@@ -59,7 +59,7 @@ import * as Defesa from './personagem/defesa.mjs';
 import * as Salvaguarda from './personagem/salvaguarda.mjs';
 import * as Voos from './hunt/voos.mjs';
 import * as GemasVoo from './itens-poe/projeteis-voo.mjs';
-import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, ATAQUE_DO_MONSTRO_MS, round, golpesDosMonstros, contextoDoDrop, pagarRecompensaDeAto, nivelDoDropPoe, raridadeDoDrop, naSalaDaPartilha } from './hunt/combate.mjs';
+import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, ATAQUE_DO_MONSTRO_MS, round, golpesDosMonstros, contextoDoDrop, pagarRecompensaDeAto, nivelDoDropPoe, raridadeDoDrop, naSalaDaPartilha, fatorDaCacaOnline, entregarMoedas } from './hunt/combate.mjs';
 import { gerarItem, aceitaAtributos } from './itens/gerar.mjs';
 import * as Campanha from './campanha.mjs';
 import { bossUnico } from './bosses-unicos/catalogo.mjs';
@@ -126,6 +126,8 @@ export { salaDe, virarDono, mudarDeDono, separar } from './hunt/sala.mjs';
 export { alvoAtual } from './hunt/alvo.mjs';
 export { runParaCliente } from './hunt/percurso.mjs';
 export { armaDoPersonagem, alcanceDaArma, subirDeLevel } from './hunt/combate.mjs';
+// (03/11) o baú do PoE paga pelo caminho do loot do monstro (a Caça Online, o ouro dividido na party — `itens-poe/baus-poe.pagar`)
+BausPoe.definirLootDoMonstro({ fatorDaCacaOnline, entregarMoedas });
 
 /*
  * ---- A caçada no banco ----
@@ -1878,7 +1880,9 @@ function tiqueDaCacada(estado, personagem, agora) {
       }
       soltarChefeDoAto(hunt, agora);
       soltarReserva(estado, hunt);
-      if (Instancia.marcarSeLimpou(hunt, hunt.clock ?? 0, { estado, personagem })) aoLimparAInstancia(estado, hunt, personagem);
+      // (03/11) os baús do PoE fechados e alcançáveis seguram o fim da sala no automático (`BausPoe.seguramOClear`)
+      const segura = itensPoeLigado() ? () => BausPoe.seguramOClear(estado, hunt, andarDaGrade(gradeDaHunt(huntOuMapaCustom(hunt.huntId)), hunt.z)) : null;
+      if (Instancia.marcarSeLimpou(hunt, hunt.clock ?? 0, { estado, personagem, segura })) aoLimparAInstancia(estado, hunt, personagem);
       // Com o portal do boss aberto a instância espera um pouco mais (dá tempo de entrar); passado isso, a nova fecha o portal. Com o
       // chefe do ato saindo do portal (ou vivo), ela espera ele morrer.
       else if (!hunt.mapa && Instancia.horaDaProxima(hunt, hunt.clock ?? 0) && !chefeDoAtoPendente(hunt) && (!hunt.portalDoBoss || (hunt.clock ?? 0) - (hunt.instancia.limpaNoRelogio ?? 0) >= TEMPO_DO_PORTAL_MS)) {
@@ -2023,9 +2027,15 @@ function tiqueDaCacada(estado, personagem, agora) {
          * o bicho da instância mais perto A PÉ neste andar; não havendo nenhum
          * alcançável aqui, segue o laço, que leva aos outros andares.
          */
+        // (03/11) e os BAÚS do PoE no caminho, como o jogador do PoE: o baú fechado mais perto A PÉ vira o rumo quando nenhum monstro da
+        // instância está mais perto (`BausPoe.bauMaisPerto`) — o idle de quem ataca de longe também passa por eles.
+        let rumoDoBau = null;
         if (!hunt.lurando && hunt.alvo == null && Instancia.daSala(hunt)?.status === 'ativa' && !alvoAtual(hunt)) {
-          const resto = Instancia.bichoMaisPerto(hunt, grade);
-          if (resto) {
+          const ateOResto = {};
+          const resto = Instancia.bichoMaisPerto(hunt, grade, ateOResto);
+          const bau = itensPoeLigado() ? BausPoe.bauMaisPerto(hunt, grade) : null;
+          if (bau && (!resto || bau.d <= ateOResto.d)) rumoDoBau = bau.e;
+          else if (resto) {
             hunt.alvo = resto.uid;
             hunt.alvoDaLimpeza = resto.uid;
           }
@@ -2068,6 +2078,17 @@ function tiqueDaCacada(estado, personagem, agora) {
         } else if (!rumoTormenta) delete hunt.poeRumoTormenta;
         if (passoDaTormenta) {
           destino = passoDaTormenta;
+        } else if (rumoDoBau && !alvo) {
+          // (03/11) o BAÚ do PoE: perto (`BausPoe.ALCANCE`), abre já; senão, um passo até ele. Sem caminho (bichos no corredor), fica de fora 10 s.
+          if (distancia(hunt.pos, rumoDoBau) <= BausPoe.ALCANCE) {
+            BausPoe.abrirAoPassar(estado, hunt, personagem);
+            destino = null;
+          } else {
+            const casasDeBicho = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
+            destino = proximoPassoAte(grade, hunt.pos, rumoDoBau, (c) => casasDeBicho.has(`${c.x},${c.y}`), casasDeBicho);
+            if (!destino) rumoDoBau.semCaminhoAte = (hunt.clock ?? 0) + 10_000;
+            else if (hunt.percurso) hunt.percurso.desviou = true;
+          }
         } else if (alvo && d > querDistancia && cansou) {
           alvo.semCaminhoAte = (hunt.clock ?? 0) + 10_000;
           hunt.alvoTravado = null;
