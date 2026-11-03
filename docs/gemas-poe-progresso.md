@@ -2106,6 +2106,33 @@ As linhas do combate que estavam como "não se aplica ao jogo" passam a valer (m
   - o empurrão = 1 casa, só nas habilidades em área convertidas cuja descrição diz que empurram;
   - a fração do alcance só vale quando há metros a mais (a arma sozinha fica como estava).
 
+## 100% — mundo (03/11: "resolva essas que não se aplicam ao jogo, tem que estar tudo 100%")
+
+As notas "não se aplica ao jogo" do assunto do mundo (os baús, o Estandarte e a aura no chão, o Vínculo, a Punição) saíram, e cada linha tem efeito de verdade. A tradução subiu para a versão 76.
+
+- **Os baús do PoE nas caçadas** (`systems/itens-poe/baus-poe.mjs`):
+  - Cada instância de uma área da campanha (`hunt.poeArea`) ou de um mapa (`hunt.poeMapa`) nasce com 3 baús (`POR_AREA`). Cada baú fica numa casa livre, andável, fora de Safe Zone e alcançável, a até 3 casas de um monstro sorteado. A rota do personagem passa pelos monstros, então o idle também passa pelos baús.
+  - A raridade sai do mesmo sorteio dos monstros do PoE: Mágico 10%, Raro 2% (`modificadores-monstro.sortearRaridade`).
+  - Cada baú é um encontro da instância (os tipos `bau-poe-normal`, `-magico`, `-raro` e `-grande`). O cliente desenha o baú na cor da raridade do PoE (`encontros-na-tela.mjs`) e o clique abre (a até 2 casas). O baú é opcional: não segura o CLEAR e não expira.
+  - **Abre ao passar:** a cada tique, de cada um da sala, abre o baú a até 2 casas (`abrirAoPassar`, chamado em `cacadas.tiqueDaCacada`).
+  - **O loot** usa a tabela do monstro da raridade do baú (`jogo.dropsDoMonstro`, `moedas.dropDoMonstro`, `jogo.ouroDoMonstro`): Normal → Normal, Mágico → Mágico, Raro → Raro, Grande Baú → Único. O nível é o da área. A quantidade é a do personagem (Buff Power, o afixo Loot) × a do mapa. A Raridade de Itens soma a do personagem, a do mapa e a "Baús têm a Raridade de Itens aumentada".
+  - **"X% de chance de abrir Baús próximos quando você Conjurar uma Magia"** (a regra geral, que estava inerte) passa a `abrir_bau_ao_conjurar`. **"Seus Clamores abrem Baús"** (o pool Haunted) ganha o atributo novo `clamor_abre_baus`: o Clamor usado abre os baús no raio dele (`acoes`, junto da provocação; `BausPoe.abrirNoRaio`).
+  - **O mapa único:** "Área contém um Grande Baú" (o Pesadelo de Acton) põe o Grande Baú a mais (`instancia.grandesBaus`). "Baús têm a Raridade de Itens aumentada em X%" (as Câmaras de Atziri) entra no loot do baú (`instancia.bausRaridadePct`). Os dois estão em `Mapas.fatoresDaInstancia(...).baus`, no importador (`tools/importar-mapas-unicos.mjs`) e na validação dos mapas, onde aparecem como `funciona`.
+- **O Estandarte e a aura no chão:** o Estandarte já era plantado no chão, com a área do PoB (2,4 m), a duração e o Valor (`ModsPoe.plantarEstandarte`; o raio em `acoes.raioDaAuraDe`). Continua igual. As regras da tradução que ficaram inertes valem agora: "Bônus do seu estandarte permanecem por N segundos" (`estandarte_fica_s`), "Efeito em Área de Habilidades de Aura" (`area_inc@aura`, o raio até onde a aura vale nos aliados da party) e "Habilidades de Aura Não Maldições têm Duração" (`duracao_habilidades@aura`, nas auras Vaal e nos Estandartes). Isso vale também para as variantes com espaço antes do "%", que vêm do poedb.
+- **O Vínculo:** o Vínculo com o aliado da party já existia (`itens-poe/vinculos.mjs`: o jogador da party a até 10 casas; sem party, o lacaio com a linha ou o mercenário). A regra inerte que restava ("…entre os Jogadores Vinculados") vale agora (`velocidade_igual_vinculados`). As outras duas já caíam nas regras de cima.
+- **A Punição:** é a gema Castigo (Punishment, act_str.lua:8753 do PoB), que já estava no jogo (lote G-C). A linha "Punição pode afetar Inimigos Infeitiçáveis" passa a `feitico_afeta_aprova:Punishment`: o Castigo pega também no monstro à Prova de Maldições. A linha de outra maldição não serve para ele.
+- Teste novo: `game/testes/mundo-100.test.mjs` (10 testes).
+- **Quebras pela regra nova, sem aval (os testes não foram editados):**
+  - `encontros.test.mjs:268`: espera `e.hunt.instancia.encontros === undefined` na área sem encontros cadastrados. Agora vêm os 3 baús do PoE (`bau-poe-1..3`).
+  - `mapas-endgame-unicos.test.mjs:130`: espera `['The_Cowards_Trial', 'Vaults_of_Atziri', 'Hall_of_Grandmasters']` como os únicos sem nenhuma linha com efeito. As Câmaras de Atziri saem da lista, porque "Baús têm a Raridade de Itens aumentada" age.
+  - `zerar-arvore-lote69.test.mjs:29`: espera "Punição pode afetar Inimigos Infeitiçáveis" como `inerte` com "não se aplica". Agora é `novo` (`feitico_afeta_aprova:Punishment`).
+- **Sem fonte (as escolhas, com as opções para o dono):** o PoE não publica quantos baús há por área, a raridade deles, o loot exato de cada um nem o alcance do "abrir ao passar". Escolhas feitas:
+  - 3 por instância. Alternativas: 1 a cada N monstros, ou de 2 a 5 sorteados.
+  - A raridade pela tabela dos monstros.
+  - O loot pela tabela do monstro da mesma raridade. Alternativa: um nível acima (o Normal como Mágico).
+  - O alcance de 2 casas, o mesmo da interação. Alternativa: 1 casa, só adjacente.
+  - O loot vai para quem abre. A party não divide o loot do baú (alternativa: o rodízio do loot dos monstros).
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.

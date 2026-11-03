@@ -199,7 +199,8 @@ export const maldicoesNoJogador = (estado) => mapaDaCacada(estado)?.efeitos?.mal
 
 /**
  * O que o mapa muda na composição da área: `fatorDoGrupo` (o Tamanho do Grupo: cada spawn gera × o fator), `chancesDaRaridade` (os fatores
- * das chances de Mágico e Raro do sorteio — "X% mais Monstros Mágicos/Raros") e `chefes` (1, ou 2 com "A área contém dois Chefes Únicos").
+ * das chances de Mágico e Raro do sorteio — "X% mais Monstros Mágicos/Raros"), `chefes` (1, ou 2 com "A área contém dois Chefes Únicos") e
+ * `baus` (os Grandes Baús e a Raridade de Itens dos baús).
  */
 export function fatoresDaInstancia(r) {
   const inst = r?.efeitos?.instancia ?? {};
@@ -207,6 +208,9 @@ export function fatoresDaInstancia(r) {
     fatorDoGrupo: Math.max(0, 1 + (Number(r?.grupo) || 0) / 100),
     chancesDaRaridade: { modificado: Math.max(0, 1 + (Number(inst.magicosPct) || 0) / 100), raro: Math.max(0, 1 + (Number(inst.rarosPct) || 0) / 100) },
     chefes: Math.max(1, Math.round(Number(inst.chefes) || 1)),
+    // (dono, 03/11 — "100%") os BAÚS do mapa único: "Área contém um Grande Baú" (`grandesBaus`) e "Baús têm a Raridade de Itens aumentada em
+    // X%" (`bausRaridadePct`) — `itens-poe/baus-poe.mjs` (o Grande Baú nasce com a instância; a raridade vale no loot do baú)
+    baus: { grandes: Math.max(0, Math.round(Number(inst.grandesBaus) || 0)), raridadePct: Math.max(0, Number(inst.bausRaridadePct) || 0) },
   };
 }
 

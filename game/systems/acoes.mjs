@@ -82,6 +82,7 @@ import { aliadosPorCasa } from './hunt/aliados.mjs';
 import { casaLivrePerto, proximoPassoAte } from './hunt/caminho.mjs';
 import { criarSoloSagrado, porExposicao } from './itens-poe/condicoes-poe.mjs';
 import * as Encontros from './encontros/estado.mjs';
+import * as BausPoe from './itens-poe/baus-poe.mjs';
 import * as GemasA2 from './itens-poe/gemas-a2.mjs';
 import * as GemasA4 from './itens-poe/gemas-a4.mjs';
 import * as GemasA3b from './itens-poe/gemas-a3b.mjs';
@@ -6546,6 +6547,10 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
     if (buff.tipo === 'desafio') Reforcos.provocar(hunt, buff, distanciaChebyshev);
     // (lote 46) o raio do Clamor: o da gema em casas × √ da "Área de Efeito aumentada/mais" (a geral e a dos Clamores — `area_inc@clamor`)
     if (doPoe?.efeitos.some((e) => e.efeito === 'provocar')) Reforcos.provocar(hunt, { efeitos: doPoe.efeitos.map((e) => (e.efeito === 'provocar' ? { ...e, raio: raioDoClamor(estado, entry, e.raio) } : e)), dur: duracaoDoClamor }, distanciaChebyshev);
+    // (dono, 03/11 — "100%") "Seus Clamores abrem Baús": os baús no raio do Clamor (o da gema, × a área — `raioDoClamor`) abrem (`BausPoe.abrirNoRaio`)
+    if (buff.tipo === 'poe-clamor' && itensPoeLigado() && ModsPoe.valor(Ficha.combate(estado), 'clamor_abre_baus') > 0) {
+      BausPoe.abrirNoRaio(estado, hunt, personagem, raioDoClamor(estado, entry, doPoe?.efeitos.find((e) => e.efeito === 'provocar')?.raio ?? 3));
+    }
     // (lote G-A, dono 26/10) o Clamor Sísmico: "Empurra e Interrompe Inimigos em uma pequena Área" — os inimigos a até 1 casa do alvo, empurrados (3 casas com os +200%)
     // e interrompidos (`empurraoDoClamor`)
     if (buff.tipo === 'poe-clamor' && entry.poeGema && itensPoeLigado()) empurraoDoClamor(hunt, entry, efeitoDaGema, alvo, agora, eventos);

@@ -4225,7 +4225,13 @@
       "nome": "Chance de abrir Baús próximos ao Conjurar",
       "unidade": "%",
       "combate": true,
-      "efeito": "a magia usada (`acoes.abrirBausAoConjurar`)"
+      "efeito": "a magia usada (`acoes.abrirBausAoConjurar`) — os baús do PoE nas caçadas (`itens-poe/baus-poe.mjs`, 03/11)"
+    },
+    "clamor_abre_baus": {
+      "nome": "Seus Clamores abrem Baús",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o Clamor usado abre os baús no raio dele (`itens-poe/baus-poe.abrirNoRaio`, 03/11)"
     },
     "estandarte_remove_afeccao_min": {
       "nome": "Plantar o Estandarte remove uma Afecção (Valor mínimo)",

@@ -73,6 +73,7 @@ import './encontros/tipos-de-boss.mjs'; // registra os encontros de boss (boss, 
 import './encontros/tipos-de-bau.mjs'; // registra os baús e o altar
 import './encontros/tipos-de-onda.mjs'; // registra a sobrevivência e a fenda (ondas)
 import './encontros/tipos-de-captura.mjs'; // registra o aprisionado e o invasor
+import * as BausPoe from './itens-poe/baus-poe.mjs'; // registra os baús do PoE (dono, 03/11)
 import * as EventosDeEncontro from './encontros/eventos.mjs';
 import * as CargasPoe from './itens-poe/cargas.mjs';
 import * as ModsPoe from './itens-poe/mods-poe.mjs';
@@ -681,6 +682,8 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = n
     // Os encontros do mapa (se houver): sorteados AGORA, uma vez, com a semente guardada na instância.
     const definicoes = encontrosDaHunt(huntId);
     if (definicoes.length) Encontros.criar(instancia, definicoes);
+    // (dono, 03/11 — "100%") os BAÚS do PoE nas áreas da campanha e nos mapas (`itens-poe/baus-poe.mjs`): perto dos monstros, abrem ao passar.
+    if (itensPoeLigado() && (hunt?.poeArea || hunt?.poeMapa)) BausPoe.porNaInstancia(instancia, { grade, inicio, todos, nivel: mapa?.nivel ?? escala?.nivel ?? null, baus: doMapa?.baus ?? null });
   }
   return { grade, inicio, andarInicial, monstros, outrosAndares, instancia };
 }
@@ -1847,6 +1850,8 @@ function tiqueDaCacada(estado, personagem, agora) {
   // (a Fúria — o Rampage — terminou: os bônus "a cada N Mortes" saem da ficha)
   if (hunt.poeFichaMudou) { delete hunt.poeFichaMudou; Ficha.invalidar(estado); }
   ModsPoe.aurasProximas(estado, hunt, Ficha.combate(estado));
+  // (dono, 03/11) os BAÚS do PoE abrem ao passar (cada um da sala — `itens-poe/baus-poe.mjs`)
+  if (itensPoeLigado()) BausPoe.abrirAoPassar(estado, hunt, personagem);
   // Numa caçada em grupo, só o DONO da sala move os bichos e faz renascer —
   // senão eles andariam uma vez por membro a cada tique.
   const donoDaSala = !hunt.anfitriao;
