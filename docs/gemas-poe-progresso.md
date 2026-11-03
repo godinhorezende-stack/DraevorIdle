@@ -2080,6 +2080,32 @@ projeteis-a3:408 (a Lança de Gelo sem `linhasNaoSeAplicam`), tooltip-gemas-poe:
   - o teste: "Dispara 3 Flechas" 1 !== 3 (3 → 1)
   - a conta: 1× voo a 16.3 casas/s (32.6 m/s): 3 casas, o contato a 2.5 casas = 153 ms
 
+## 100% — combate (02/11: "resolva essas que não se aplicam ao jogo, tem que estar tudo 100%")
+
+As linhas do combate que estavam como "não se aplica ao jogo" passam a valer (módulo novo `game/systems/itens-poe/combate-100.mjs`; tradução 76):
+
+- **Os lacaios sangram.** O golpe do monstro no lacaio põe as afecções de dano dele, como em você: os `efeitos` da espécie e os `debuff` dos modificadores do PoE (a Carta Sangrenta, o Tóxico, o Incendiário…). O pulso usa o motor `combate/dot.mjs` e passa pela resistência do lacaio ao elemento (o Físico passa inteiro). O golem "Imune ao Dano Elemental" não pega as elementais.
+- **O Sangramento em movimento.** No monstro e em você já valia. No lacaio, quem andou no último segundo (`andouEm`, o passo do lacaio) sofre 3× no pulso. "Se Mover enquanto Sangrando não faz com que Lacaios sofram Dano extra" tira o extra (`lacaios_sangrar_andando_sem_extra`). As regras mortas do Agravar saíram; "Acertos de Ataques contra Inimigos Amaldiçoados têm X% de chance de Agravar o Sangramento" vale como `chance_agravar@ataque+alvoAmaldicoado`.
+- **O alcance em décimos de metro.** Com metros a mais das linhas, a fração das casas (os metros ÷ 2) é a chance de uma casa a mais no golpe, como na área (`hunt.poeSorteDoAlcance`, renovada a cada golpe). Sem metros a mais, só a arma, fica como estava. Ganharam regra: "enquanto Portando um Escudo" (`@comEscudo`) e "Habilidades Suportadas têm +X metros". "por Encaixe Branco" já tinha regra, mas a regra larga a escondia.
+- **O empurrão em você.** As habilidades de monstro cuja descrição no poedb diz que empurram (o "Salto Impactante" de Hillock, Oak, Soulmourn, Kaom, Abberath, Cassius, Ondar, Regulus e do Arauto de Kitava) levam você uma casa para longe, se ela é andável e livre. "Não Pode ser Empurrado" impede (`imune_empurrao`). Ser empurrado conta como andar.
+- **A Furtividade e a Retaliação** já valiam (lotes antigos). As regras mortas com "não se aplica" viraram a forma sem condição da Furtividade e a faixa da Retaliação (a média).
+- **O posicionamento: a Força Ocupante (Deadeye).** O Arqueiro Ilusório agora anda com você, grudado, como no PoE. Com a Força Ocupante: "não são grudados em você" (fica onde nasceu), "+2 ao número máximo" (`max_lacaio:arqueiro`, que antes não chegava ao Arqueiro) e "Não pode Convocar… enquanto próximo" (a até 2 casas).
+- **A Vida dos Cadáveres.** A "Vida do Cadáver" da árvore (`cadaver_vida_inc`) soma com a da qualidade do Desenterrar na Vida Máxima do cadáver criado.
+- **O Solo Congelado.** O modificador de monstro "Solo Resfriado ao Morrer" (MonsterModChilledGroundOnDeath) deixa o solo, como o Ardente e o Eletrizado: 6 s, 1,6 m. Ele Resfria você em 10% enquanto você está nele. "Inafetado por Solo Congelado" impede. "Imunidade a Solo Ardente, Solo Eletrizado e Solo Congelado" ganhou regra.
+- **O Re-armar das Minas.** "Minas podem ser Detonadas N vezes adicionais" (`minas_detonacoes_extra`): a Mina detonada volta armada no mesmo lugar, até N vezes. A Mina de Fumaça ("Minas não podem ser Re-armadas") não volta. A linha saiu de `LINHAS_QUE_NAO_SE_APLICAM` e conta como feita no status da gema.
+- Teste novo: `game/testes/combate-100.test.mjs` (11 testes).
+- **Testes que quebram pela regra nova (não editados; esperam o aval do dono):**
+  - `ativas-d1:74`: espera a nota "não se aplica" do "Minas não podem ser Re-armadas". Agora a linha vale e não há nota.
+  - `correcoes-portal-salvaguarda-balao:145`: espera a mesma nota no balão da Mina de Fumaça.
+  - `zerar-arvore-lote69:27-30`: espera "Inafetado por Solo Congelado" como inerte. Agora é `imune_solo_congelado` (novo).
+  - `zerar-arvore-lote35:66`: espera 1 casa com 1,9 m (1,1 m da espada + 0,8). Agora são 0,95 casa: 95% de chance de 2.
+  - `salvaguarda-unicos:78`: espera a tradução 75. Agora é 76.
+- **Sem fonte (as escolhas estão nas notas):**
+  - "próximo" dos Arqueiros Ilusórios = 2 casas;
+  - o Solo Congelado do monstro = 6 s, 1,6 m e 10%, como os outros solos;
+  - o empurrão = 1 casa, só nas habilidades em área convertidas cuja descrição diz que empurram;
+  - a fração do alcance só vale quando há metros a mais (a arma sozinha fica como estava).
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.

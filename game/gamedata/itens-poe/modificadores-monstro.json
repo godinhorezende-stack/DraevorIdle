@@ -6231,15 +6231,25 @@
    "tipo": "mod",
    "familia": "MonsterModGroundEffect",
    "linhas": [
-    "Chilled Ground on Death"
+    "Deixa Solo Congelado ao Morrer"
    ],
    "nivel": 10,
    "pesoMagico": 0,
    "pesoRaro": 2500,
    "stats": {},
-   "estado": "registrado",
-   "valem": 0,
-   "total": 0,
+   "mecanicas": [
+    {
+     "gatilho": "aoMorrer",
+     "efeito": "solo",
+     "solo": "congelado",
+     "duracaoMs": 6000,
+     "raioMetros": 1.6,
+     "resfriamentoPct": 10
+    }
+   ],
+   "estado": "aproximado",
+   "valem": 1,
+   "total": 1,
    "statsPoe": []
   },
   {

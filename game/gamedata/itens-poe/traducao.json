@@ -1324,16 +1324,16 @@
     },
     {
       "padrao": "^Se Mover enquanto Sangrando não faz com que Lacaios sofram Dano extra$",
+      "_nova": true,
+      "_ciclo7": true,
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "lacaios_sangrar_andando_sem_extra",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: os lacaios do jogo não sangram (o golpe do monstro neles não põe afecção)",
-      "_nova": true,
-      "_ciclo7": true
+      "nota": "o Sangramento triplica no alvo em movimento (o lembrete do PoE: \"O Dano é 200% maior enquanto em movimento\"): o golpe do monstro no lacaio põe o Sangramento (e as outras afecções de dano dele), e no lacaio que anda ele dói 3× — esta linha o tira",
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de chance de Agravar o Sangramento em alvos que você Acertar com Ataques$",
@@ -1416,19 +1416,6 @@
         }
       ],
       "nota": "o Sangramento Agravado (e o do monstro que anda) causa o triplo por pulso — \"O Dano é 200% maior enquanto em movimento\" (`combate/dot`)",
-      "_nova": true,
-      "_ciclo7": true
-    },
-    {
-      "padrao": "^Mover enquanto Sangrando faz com que você não sofra Dano extra$|^Se Mover enquanto Sangrando não faz com que Lacaios sofram Dano extra$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: o Sangramento em você (e nos lacaios) não tem o dano extra em movimento: não há o que tirar",
       "_nova": true,
       "_ciclo7": true
     },
@@ -4244,6 +4231,18 @@
       "_lote3": "12/10 — Armadilhas e Minas plantadas"
     },
     {
+      "padrao": "^Minas podem ser Detonadas \\{(\\d+)\\} vezes adicionais$",
+      "efeitos": [
+        {
+          "stat": "minas_detonacoes_extra",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o Re-armar do PoE: a Mina detonada volta armada no mesmo lugar, até N vezes (a da gema com \"Minas não podem ser Re-armadas\" não volta)",
+      "_nova": true,
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
+    },
+    {
       "padrao": "^\\{(\\d+)\\}% de chance de receber uma Carga do Poder quando sua Armadilha for ativada por um Inimigo$",
       "efeitos": [
         {
@@ -6152,30 +6151,42 @@
       "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
     },
     {
-      "padrao": "^.*metros ao Alcance de Golpes Corpo a Corpo.*$",
+      "padrao": "^\\+\\{(\\d+)\\} metros ao Alcance de Golpes Corpo a Corpo enquanto Portando um Escudo$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "alcance_corpo_m@comEscudo",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: o alcance do jogo é em casas (2 m): décimos de metro não mudam casa",
+      "nota": "o alcance em metros (o da arma + os metros; 1 casa = 2 m): a fração das casas é a CHANCE de uma casa a mais no golpe, como na área",
       "_nova": true,
-      "_ciclo7": true
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
+    },
+    {
+      "padrao": "^Habilidades Suportadas têm \\+\\{(\\d+)\\} metros ao Alcance de Golpes Corpo a Corpo$",
+      "_nova": true,
+      "_ciclo7": true,
+      "efeitos": [
+        {
+          "stat": "alcance_corpo_m",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o alcance em metros (o da arma + os metros; 1 casa = 2 m): a fração das casas é a CHANCE de uma casa a mais no golpe, como na área",
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
     },
     {
       "padrao": "^Não Pode ser Empurrado$",
+      "_nova": true,
+      "_ciclo7": true,
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "imune_empurrao",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: os monstros do jogo não empurram você",
-      "_nova": true,
-      "_ciclo7": true
+      "nota": "a habilidade de monstro do PoE que empurra (o Salto Impactante dos chefes) leva você uma casa para longe dele — esta linha impede",
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
     },
     {
       "padrao": "^.*(?:chance de abrir Baús próximos).*$",
@@ -6395,17 +6406,17 @@
       "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
     },
     {
-      "padrao": "^Habilidades de Retaliação se tornam Utilizáveis.*$|^.*que uma Habilidade de Retaliação diferente se torne Utilizável$|^.*Habilidades de Retaliação utilizadas continuarem Utilizáveis.*$|^Habilidades de Retaliação Nocivas se tornam Utilizáveis.*$",
+      "padrao": "^Habilidades de Retaliação se tornam Utilizáveis por um tempo \\(\\{(\\d+)\\} ?— ?\\{(\\d+)\\}\\) ?% maior$",
+      "_nova": true,
+      "_ciclo7": true,
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "retaliacao_janela_inc",
+          "valor": "media({1},{2})"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: as habilidades de Retaliação do jogo são usáveis sempre (não têm a janela do PoE)",
-      "_nova": true,
-      "_ciclo7": true
+      "nota": "a janela da Retaliação do PoE (usável por um tempo depois de bloquear, evadir ou ser acertado — `condicoes-poe.abrirRetaliacao`): a faixa vale a média",
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
     },
     {
       "padrao": "^Alcance do Ricochete aumentado em \\{(\\d+)\\}%$",
@@ -6547,17 +6558,17 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^.*Agrava.*Sangramento.*$|^Sangramentos que você infligir são Agravados$|^Mover enquanto Sangrando faz com que você não sofra Dano extra$|^Seu Sangramento não causa Dano extra enquanto o Inimigo se move$|^Se Mover enquanto Sangrando não faz com que Lacaios sofram Dano extra$",
+      "padrao": "^Acertos de Ataques contra Inimigos Amaldiçoados têm \\{(\\d+)\\} ?% de chance de Agravar o Sangramento$",
+      "_nova": true,
+      "_ciclo7": true,
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "chance_agravar@ataque+alvoAmaldicoado",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: o Sangramento do jogo não tem o dano extra em movimento (que o Agravar dá)",
-      "_nova": true,
-      "_ciclo7": true
+      "nota": "o Sangramento Agravado causa o triplo por pulso, como se o alvo andasse — o Sangramento triplica no alvo em movimento (o lembrete do PoE: \"O Dano é 200% maior enquanto em movimento\") (`combate/dot`)",
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
     },
     {
       "padrao": "^Habilidades de Golpe também miram no local anterior que foram Usadas$",
@@ -6572,17 +6583,29 @@
       "_lote41": "16/10 — lote 41 (dono: \"Fazer todos\" — os limites do motor)"
     },
     {
-      "padrao": "^Arqueiros Ilusórios não são grudados em você$|^Não pode Convocar Arqueiros Ilusórios enquanto próximo dos seus Arqueiros Ilusórios$",
+      "padrao": "^Arqueiros Ilusórios não são grudados em você$",
+      "_nova": true,
+      "_ciclo7": true,
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "arqueiros_nao_grudados",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: é posicionamento do PoE; o jogo não tem isso",
+      "nota": "no PoE o Arqueiro Ilusório anda com você (grudado); com esta linha ele fica onde nasceu",
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
+    },
+    {
+      "padrao": "^Não pode Convocar Arqueiros Ilusórios enquanto próximo dos seus Arqueiros Ilusórios$",
+      "efeitos": [
+        {
+          "stat": "arqueiro_sem_convocar_perto",
+          "valor": "1"
+        }
+      ],
+      "nota": "\"próximo\" = a até 2 casas (4 m), como os outros \"Próximos\" do jogo — o PoE não publica a distância",
       "_nova": true,
-      "_ciclo7": true
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
     },
     {
       "padrao": "^Sua Velocidade de Movimento é igual a maior Velocidade de Movimento entre os Jogadores Vinculados$|^Alvos Vinculados compartilham Cargas de Tolerância, Frenesi e Poder com você$|^Maldições são infligidas em Você ao invés dos alvos Vinculados$",
@@ -7029,17 +7052,18 @@
       "_lote19": "14/10 — a árvore principal (lote 19)"
     },
     {
-      "padrao": "^Furtividade aumentada em .*$",
+      "padrao": "^Furtividade aumentada em \\{(\\d+)\\}%$",
+      "_nova": true,
+      "_ciclo7": true,
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "furtividade",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: o jogo não tem Furtividade (os monstros sempre veem você)",
-      "_nova": true,
-      "_ciclo7": true
+      "estado": "equivalente",
+      "nota": "exceção do dono (16/10: \"Manter e registrar\"): o PoE não publica a fórmula da Furtividade — encolhe o raio em que os monstros notam você (8 casas ÷ (1 + X%)); quem já persegue segue perseguindo",
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
     },
     {
       "padrao": "^Projéteis causam Dano aumentado em \\{(\\d+)\\}% com Acertos e Afecções para cada Inimigo Atravessado$",
@@ -7432,17 +7456,17 @@
       "_lote7": "13/10 — os aliados de verdade (lote 7)"
     },
     {
-      "padrao": "^Cadáveres Criados por você tem Vida Máxima aumentada em .*$",
+      "padrao": "^Cadáveres Criados por você tem Vida Máxima aumentada em \\{(\\d+)\\}%$",
+      "_nova": true,
+      "_ciclo7": true,
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "cadaver_vida_inc",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: os cadáveres do jogo não têm vida",
-      "_nova": true,
-      "_ciclo7": true
+      "nota": "o cadáver criado (o Profanar, o Desenterrar) tem a Vida Máxima do monstro que deu o desenho — o que explode pelo % da vida dele usa esta",
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
     },
     {
       "padrao": "^Vida Máxima torna-se \\{(\\d+)\\}, Imune a Dano de Caos$",
@@ -18648,16 +18672,36 @@
     },
     {
       "padrao": "^Inafetado por Solo Congelado$",
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "imune_solo_congelado",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: nada no jogo cria Solo Congelado (dono, 17/10)",
+      "nota": "o Solo Congelado dos monstros (\"Solo Resfriado ao Morrer\") Resfria quem está nele (10%) — esta linha impede",
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
+    },
+    {
+      "padrao": "^Imunidade a Solo Ardente, Solo Eletrizado e Solo Congelado$",
+      "efeitos": [
+        {
+          "stat": "imune_solo_ardente",
+          "valor": "1"
+        },
+        {
+          "stat": "imune_solo_eletrizado",
+          "valor": "1"
+        },
+        {
+          "stat": "imune_solo_congelado",
+          "valor": "1"
+        }
+      ],
+      "nota": "os três solos dos monstros do PoE (ao morrer): o Ardente queima, o Eletrizado Eletriza, o Congelado Resfria",
       "_nova": true,
-      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
     },
     {
       "padrao": "^Inafetado por Solo Ardente$",

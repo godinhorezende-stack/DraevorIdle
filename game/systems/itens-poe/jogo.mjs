@@ -474,7 +474,10 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // Eclipse Solaris, a Glória Dourada), o Campo de Visão pelo Escudo, a Cegueira sem luz e o tamanho no desenho — `itens-poe/iluminacao.mjs`)
 // (77 — 03/11, lote "projetil" do dono: o voo de verdade dos projéteis — "X% mais/menos Velocidade de Projéteis" (`proj_vel_mais`) e o "Ângulo da Difusão de
 // Projéteis aumentado/reduzido" (`proj_difusao_angulo_inc`) valem; eram "não se aplica ao jogo")
-export const VERSAO_DA_TRADUCAO = 77;
+// (78 — 02/11, 100% — combate: os lacaios sangram (e o "Se Mover enquanto Sangrando não faz com que Lacaios sofram Dano extra"), o Agravar no Amaldiçoado, o
+// alcance em décimos de metro (o Escudo, o Encaixe Branco, o do suporte), "Não Pode ser Empurrado", a Força Ocupante, a Furtividade, a Vida dos Cadáveres, o Solo
+// Congelado e o Re-armar das Minas — `itens-poe/combate-100.mjs`)
+export const VERSAO_DA_TRADUCAO = 78;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

@@ -111,6 +111,8 @@ import { reuniaoNoLacaio } from './itens-poe/gemas-e1b.mjs';
 import * as GemasE2a from './itens-poe/gemas-e2a.mjs';
 import { fatorDoCompanheirismo } from './itens-poe/suportes-s2a.mjs';
 import * as Testador from './personagem/testador.mjs';
+// (100% — combate, 02/11: os lacaios sangram, o Sangramento em movimento no lacaio — `itens-poe/combate-100.mjs`)
+import * as Combate100 from './itens-poe/combate-100.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
 export { nomeDaHunt, huntsJogaveis, gradeDaHunt, aquecerGrades } from './hunt/terreno.mjs';
@@ -2445,6 +2447,8 @@ function passoDoFamiliar(hunt, grade, f, agora, ate, { pararEm, longe = 3 }) {
     f.y = destino.y;
     deu++;
     f.andando = true;
+    // (100% — combate, 02/11) o lacaio que andou está "em movimento" (o Sangramento nele dói 3× — `Combate100.tiqueDoLacaio`)
+    f.andouEm = hunt.clock ?? agora;
     if (pararEm(distancia(f, ate), true)) break;
   }
   if (!deu) {
@@ -3051,6 +3055,12 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     LacaiosPoe.recarregarEscudoDoLacaio(l, 250);
     // ("Espíritos Furiosos Convocados sofrem X% de sua Vida Máxima como Dano de Caos por segundo".)
     if (l.poe?.degenPct) l.hp -= (l.maxHp * l.poe.degenPct) / 100 / 4;
+    // (100% — combate, 02/11) o dano contínuo NO LACAIO (o Sangramento, o Veneno, a Queimadura que o golpe do monstro pôs): o Sangramento 3× com o lacaio em
+    // movimento — "Se Mover enquanto Sangrando não faz com que Lacaios sofram Dano extra" tira —, a resistência dele ao elemento (`Combate100.tiqueDoLacaio`)
+    if (l.dots?.length) {
+      const sd = Combate100.tiqueDoLacaio(l, relogio, { semExtraAndando: ModsPoe.valor(ficha, 'lacaios_sangrar_andando_sem_extra') > 0, res: (el) => Math.min(LacaiosPoe.tetoDaResDoLacaio(l, el), el === 'chaos' ? l.poe?.resCaos ?? 0 : resDoLacaio(l, el, aliado)) });
+      eventos.push(...sd.eventos);
+    }
     // (14/10) o Sentinela do Resplendor queima os inimigos a até 2 casas (20% da vida dele por segundo, como Fogo — `Acoes.queimaDoSentinela`)
     if (l.sentinela && !Protecao.imune(hunt)) Acoes.queimaDoSentinela(hunt, l, ficha, 250, eventos);
     // (lote D3, dono 27/10) a LEGIÃO INFERNAL: a queima de Fogo em volta do lacaio (1 casa + a fração do "+0,5 m", `SuportesS2B.aoInvocar`) e os 40% da Vida máxima dele por
@@ -3127,6 +3137,12 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       const d = Math.max(1, Math.round(sofrido));
       l.hp -= d;
       eventos.push({ t: 'dmg', uid: l.uid, x: l.x, y: l.y, v: d, foe: false, lacaio: true, de: b.name, color: '#ff8a8a', ...(critDoBicho?.critico ? { critico: true } : {}) });
+      // (100% — combate, 02/11) os LACAIOS SANGRAM: o golpe que acertou põe as afecções de dano do monstro (as da espécie e as dos modificadores), como em
+      // você — do golpe antes das defesas do lacaio (`Combate100.afeccoesNoLacaio`)
+      if (itensPoeLigado() && l.hp > 0) {
+        const afs = Combate100.afeccoesDoGolpe(AtributosDoMob.efeitosDoGolpe(b), b.mods?.length ? Raridade.mecanicasDe(b) : []);
+        for (const st of Combate100.afeccoesNoLacaio(l, b, (golpeDoBicho * metade + extras) * fatorDoGolpe * fatorDoCritico, afs, relogio)) eventos.push({ t: 'estado', uid: l.uid, x: l.x, y: l.y, estado: st });
+      }
       // (lote R3D, 27/10) o Chuva Ardente: o totem acertado ativa a Vingança Flamejante no atacante (`Acoes.vingancaFlamejante`)
       if (l.vingancaR3D) eventos.push(...Acoes.vingancaFlamejante(estado, hunt, personagem, l, b, relogio));
       // (lote 43, P040: "Reflete N de Dano Físico a Atacantes Corpo a Corpo" do escudo da Égide Necromântica — no bicho que bateu no lacaio)

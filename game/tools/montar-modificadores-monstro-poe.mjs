@@ -134,6 +134,9 @@ const HABILIDADES = {
   MonsterModBurningGroundOnDeath: { mecanicas: [{ gatilho: 'aoMorrer', efeito: 'solo', solo: 'ardente', duracaoMs: 6000, raioMetros: 1.6, dpsPctDoGolpe: 62.5 }], linhas: ['Deixa Solo Ardente ao Morrer'] },
   MonsterModBurningGroundOnDeathSanctum: { mecanicas: [{ gatilho: 'aoMorrer', efeito: 'solo', solo: 'ardente', duracaoMs: 6000, raioMetros: 1.6, dpsPctDoGolpe: 62.5 }], linhas: ['Deixa Solo Ardente ao Morrer'] },
   MonsterModShockedGroundOnDeath: { mecanicas: [{ gatilho: 'aoMorrer', efeito: 'solo', solo: 'eletrizado', duracaoMs: 6000, raioMetros: 1.6, danoRecebidoPct: 20 }], linhas: ['Deixa Solo Eletrizado ao Morrer'] },
+  // (100% — combate, 02/11) o SOLO CONGELADO ao morrer ("Chilled Ground on Death" — o poedb não traz stats, como o Eletrizado: o mesmo solo dos outros dois, 6 s,
+  // 1,6 m): Resfria quem está nele (o Resfriamento do Solo Congelado do PoE, 10%) — "Inafetado por Solo Congelado" o impede (`combate-100.resfriarPeloSolo`)
+  MonsterModChilledGroundOnDeath: { mecanicas: [{ gatilho: 'aoMorrer', efeito: 'solo', solo: 'congelado', duracaoMs: 6000, raioMetros: 1.6, resfriamentoPct: 10 }], linhas: ['Deixa Solo Congelado ao Morrer'] },
   MonsterModHexingEffigy: { mecanicas: [{ gatilho: 'aoAtacar', efeito: 'maldicao', chance: 100, maldicoes: ['fraquezaElemental', 'vulnerabilidade', 'enfraquecer'], duracaoMs: 6000 }], linhas: ['Amaldiçoa com Fraqueza Elemental, Vulnerabilidade ou Enfraquecer ao Acertar'] },
 };
 

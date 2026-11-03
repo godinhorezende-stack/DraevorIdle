@@ -45,6 +45,7 @@ import * as ModsPoeEfeitos from './itens-poe/mods-poe.mjs';
 import * as Vinculos from './itens-poe/vinculos.mjs';
 import * as Reserva from './itens-poe/reserva.mjs';
 import { classeDe as classePoeDe } from './itens-poe/classes.mjs';
+import { fracaoDoAlcance } from './itens-poe/combate-100.mjs';
 
 /*
  * Os `skill:*` da árvore em perícias de verdade. Melee é uma perícia só
@@ -552,6 +553,9 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // Desarmado: o PoB não traz o alcance do golpe desarmado — só os metros a mais.
     alcanceCorpoM: itensPoeLigado() ? alcanceCorpoEmMetros(pecaDaArma, af) : 0,
     alcanceCorpoExtra: itensPoeLigado() ? Math.floor(alcanceCorpoEmMetros(pecaDaArma, af) / 2) : 0,
+    // (100% — combate, 02/11: "o alcance em décimos de metro") com metros a mais das linhas, a FRAÇÃO das casas (os metros ÷ 2) é a chance de uma casa a
+    // mais no golpe, como na área (`Combate100.casaDaFracao`, pela sorte do golpe); sem metros a mais, o da arma fica como estava
+    alcanceCorpoFracao: itensPoeLigado() ? fracaoDoAlcance(alcanceCorpoEmMetros(pecaDaArma, af), (Number(af?.alcance_corpo_m) || 0) > 0) : 0,
     // O resto dos afixos, para quem usa: velocidade de ataque (%), dano por
     // elemento (%), dano/cura de magia (%), Onslaught (%), exp e loot (%).
     // % de Attack Speed: o add + o que a DEX dá.

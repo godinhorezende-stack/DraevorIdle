@@ -8318,6 +8318,48 @@
       "unidade": "%",
       "combate": true,
       "efeito": "itens-poe/iluminacao.mjs.tamanhoDoLacaio: o desenho dos golens na escala"
+    },
+    "lacaios_sangrar_andando_sem_extra": {
+      "nome": "Se mover enquanto Sangrando não faz os Lacaios sofrerem Dano extra",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cacadas.tiqueDosLacaios → combate-100.tiqueDoLacaio (100% — combate, 02/11)"
+    },
+    "imune_empurrao": {
+      "nome": "Não pode ser Empurrado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "poderes.dispararMagia → combate-100.empurrarJogador (100% — combate, 02/11)"
+    },
+    "arqueiros_nao_grudados": {
+      "nome": "Arqueiros Ilusórios não são grudados em você",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueR3B → combate-100.grudarArqueiros (100% — combate, 02/11)"
+    },
+    "arqueiro_sem_convocar_perto": {
+      "nome": "Não pode Convocar Arqueiros Ilusórios perto dos seus Arqueiros Ilusórios",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.arqueiroIlusorioR3B → combate-100.podeConvocarArqueiro (100% — combate, 02/11)"
+    },
+    "cadaver_vida_inc": {
+      "nome": "Vida Máxima dos Cadáveres criados aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.criarCadaveres (100% — combate, 02/11)"
+    },
+    "imune_solo_congelado": {
+      "nome": "Inafetado por Solo Congelado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mobs/mecanicas (os solos dos monstros) → combate-100.resfriarPeloSolo (100% — combate, 02/11)"
+    },
+    "minas_detonacoes_extra": {
+      "nome": "Minas podem ser Detonadas vezes adicionais (Re-armar)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDasPlantadas → combate-100.rearmarMina (100% — combate, 02/11)"
     }
   }
 }

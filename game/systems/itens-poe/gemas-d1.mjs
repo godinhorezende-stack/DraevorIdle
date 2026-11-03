@@ -15,7 +15,8 @@
 //     são de Postura — "Usar a habilidade novamente alterna entre a Postura de Sangue e a Postura da Areia"); ligar começa na Postura em que você está;
 //   - os ESPECTROS ("Velocidade de Movimento dos Lacaios está no Máximo" — movement_velocity_cap −53 do PoB, a base 128): o teto de +75% no aumento total do passo do
 //     lacaio (128 − 53). Hoje o espectro tem +55% — só a árvore e as peças passam do teto (`GemasE2a`, `lacaios-poe.movimentoDoLacaio`);
-//   - a MINA DE FUMAÇA: "Minas não podem ser Re-armadas" não se aplica (o jogo não tem Re-armar — gemas-poe.mjs, `LINHAS_QUE_NAO_SE_APLICAM`).
+//   - a MINA DE FUMAÇA: "Minas não podem ser Re-armadas" (100% — combate, 02/11: o jogo Re-arma as Minas com "Minas podem ser Detonadas N vezes adicionais"; a
+//     de Fumaça não volta — `combate-100.rearmarMina`).
 
 const norm = (t) => String(t).replace(/(\d)%/g, '$1 %').replace(/\\n/g, ' ').replace(/[ㅤ ]/g, ' ').replace(/\s+/g, ' ').trim();
 const achar = (linhas, re, g = 1) => { for (const l of linhas ?? []) { const m = re.exec(norm(l)); if (m) return Number(m[g]); } return null; };

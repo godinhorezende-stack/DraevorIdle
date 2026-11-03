@@ -50,11 +50,6 @@ Só os ataques:
 
 
 
-## Linhas que não se aplicam ao jogo
-
-- **Smoke_Mine** (Mina de Fumaça) — implementada e testada
-  - não se aplica: "Minas não podem ser Re-armadas" (Mina de Fumaça) — o jogo não tem Re-armar Minas (aval do dono 27/10)
-
 ## Implementadas sem teste próprio
 
 —
