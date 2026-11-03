@@ -9,7 +9,7 @@ import { existsSync } from 'node:fs';
 process.env.ITENS_POE = '1';
 const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
 const SEM = (!existsSync(Catalogo.ARQUIVO) || !Catalogo.ligado()) && 'só no modo PoE, com o catálogo do PoE';
-const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
+const { personagemDeTeste, PERSONAGEM, pousarVoos } = await import('./apoio.mjs');
 const Acoes = await import('../systems/acoes.mjs');
 const GS = await import('../systems/skills/gemas.mjs');
 const G = await import('../systems/itens-poe/gemas-poe.mjs');
@@ -53,10 +53,12 @@ function usar(e, slot, alvo, v = 0.5) {
   if (!r.ok) return { r, ev };
   ev.push(...(r.eventos ?? []));
   if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; ev.push(...(sorte(v, () => Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM)) ?? [])); }
+  ev.push(...pousarVoos(e.hunt, { sorte: v })); // aval do dono 03/11: o voo de verdade — o golpe do projétil cai no tique em que ele chega (`pousarVoos`)
   return { r, ev };
 }
 const totens = (e) => (e.hunt.lacaios ?? []).filter((l) => l.tipo === 'totem' && l.hp > 0);
-const golpe = (e, l, alvo, v = 0.5) => sorte(v, () => Cacadas.golpeDoTotem(e, e.hunt, l, alvo, Ficha.combate(e), PERSONAGEM, e.hunt.clock));
+// aval do dono 03/11: o voo de verdade — o projétil do totem cai no tique em que chega (`pousarVoos`)
+const golpe = (e, l, alvo, v = 0.5) => sorte(v, () => [...Cacadas.golpeDoTotem(e, e.hunt, l, alvo, Ficha.combate(e), PERSONAGEM, e.hunt.clock), ...pousarVoos(e.hunt)]);
 
 test('G20b: a Bola de Fogo com o Totem de Magia — o seu uso COLOCA o totem em 600 ms (sem dano seu); o totem lança com 50% do dano e a cada 1250 ms', { skip: SEM }, async () => {
   const { e, b } = await montar('Wands/Driftwood_Wand', [['Fireball', 'Spell_Totem_Support']]);

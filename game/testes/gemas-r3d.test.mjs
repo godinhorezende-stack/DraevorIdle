@@ -10,7 +10,7 @@ import { existsSync } from 'node:fs';
 process.env.ITENS_POE = '1';
 const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
 const SEM = (!existsSync(Catalogo.ARQUIVO) || !Catalogo.ligado()) && 'só no modo PoE, com o catálogo do PoE';
-const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
+const { personagemDeTeste, PERSONAGEM, pousarVoos } = await import('./apoio.mjs');
 const Acoes = await import('../systems/acoes.mjs');
 const GS = await import('../systems/skills/gemas.mjs');
 const G = await import('../systems/itens-poe/gemas-poe.mjs');
@@ -293,7 +293,7 @@ test('R3D: o Rastejador do Arauto da Agonia — o Morteiro em área e o Espinho 
   const [a, b] = ms;
   Object.assign(a, { x: r.x + 3, y: r.y, hp: 1e9, maxHp: 1e9 });
   Object.assign(b, { x: r.x + 3, y: r.y + 2, hp: 1e9, maxHp: 1e9 });
-  const ev = sorte(0.5, () => Cacadas.tiqueDosLacaios(e, h, PERSONAGEM, grade(h), Date.now()));
+  const ev = sorte(0.5, () => [...Cacadas.tiqueDosLacaios(e, h, PERSONAGEM, grade(h), Date.now()), ...pousarVoos(h)]); // aval do dono 03/11: o voo de verdade — o golpe do projétil cai no tique em que ele chega (`pousarVoos`)
   const doMorteiro = ev.filter((x) => x.habilidade === 'HeraldOfAgonyMinionMortar' && x.t === 'dmg');
   const doEspinho = ev.filter((x) => x.habilidade === 'HeraldOfAgonyMinionTailSpike' && x.t === 'dmg');
   assert.ok(doMorteiro.length >= 2, `o Morteiro: 6 projéteis distribuídos nos dois (${doMorteiro.length})`);

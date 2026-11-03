@@ -71,7 +71,8 @@ test('D1: as gemas do lote ficam completas; os Espectros só com a limitação d
   assert.ok(!fumaca.some((m) => /Re-armadas/.test(m)), fumaca.join(' | '));
   // (aval do dono 27/10, R3: a Mina de Fumaça ficou completa no lote R3D — a Detonação Instantânea é feita)
   assert.ok(!fumaca.some((m) => /Detonação da Mina é Instantânea/.test(m)), 'a gema completa');
-  assert.match(G.linhasQueNaoSeAplicam(['Minas não podem ser Re-armadas'])[0], /^não se aplica: .*Re-armar/);
+  // aval do dono 03/11: 100% — combate, o jogo Re-arma as Minas: a linha vale e não há nota (antes "não se aplica: … Re-armar")
+  assert.deepEqual(G.linhasQueNaoSeAplicam(['Minas não podem ser Re-armadas']), []);
 });
 
 test('D1: a Armadilha de Lâminas — 4 giros (+1 na qualidade 20, + 1 em Empunhadura Dupla), 0,25 s por giro (÷ 1,25 em Empunhadura Dupla); a Laceração, 1 giro', { skip: SEM }, () => {

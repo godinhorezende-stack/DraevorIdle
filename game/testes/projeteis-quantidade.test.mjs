@@ -91,7 +91,7 @@ test('a quantidade BASE da gema: "Dispara 15 projéteis" (Lâminas Etéreas), "D
 });
 
 test('no disparo de verdade: a gema de 15 projéteis com 1 e com 3 bichos desenha os 15 e acerta 1 e 3', { skip: SEM }, async () => {
-  const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
+  const { personagemDeTeste, PERSONAGEM, pousarVoos } = await import('./apoio.mjs');
   const { ITEM_CATALOG } = await import('../systems/dados.mjs');
   const { iniciarJogoDoPoe } = await import('../systems/itens-poe/iniciar.mjs');
   const Jogo = await import('../systems/itens-poe/jogo.mjs');
@@ -133,6 +133,7 @@ test('no disparo de verdade: a gema de 15 projéteis com 1 e com 3 bichos desenh
     // (a magia com tempo de conjuração termina na hora — o `concluirConjuracao` devolve os eventos)
     let eventos = r.eventos;
     if (r.conjurando) { h.conjurando.fim = 0; const fim = Acoes.concluirConjuracao(e, h, PERSONAGEM); eventos = Array.isArray(fim) ? fim : fim?.eventos ?? []; }
+    eventos = [...(eventos ?? []), ...pousarVoos(h)]; // aval do dono 03/11: o voo de verdade — o golpe do projétil cai no tique em que ele chega (`pousarVoos`)
     const tiros = eventos.filter((ev) => ev.t === 'shot' && ev.id === entry.projetil).length;
     const acertados = new Set(eventos.filter((ev) => ev.t === 'dmg' && ev.foe).map((ev) => ev.uid)).size;
     return { tiros, acertados };
@@ -178,7 +179,7 @@ async function comGemas(slugs) {
 test('o TOTEM de projétil (a Balista de Estilhaços: "Dispara 3 Flechas") emite os 3 com 1 e com 3 bichos', { skip: SEM }, async () => {
   const m = await comGemas(['Shrapnel_Ballista']);
   if (!m) return; // (sem a coleção de gemas nesta máquina)
-  const { PERSONAGEM } = await import('./apoio.mjs');
+  const { PERSONAGEM, pousarVoos } = await import('./apoio.mjs');
   const Cacadas = await import('../systems/cacadas.mjs');
   const Ficha = await import('../systems/ficha.mjs');
   const Acoes = await import('../systems/acoes.mjs');
@@ -187,7 +188,7 @@ test('o TOTEM de projétil (a Balista de Estilhaços: "Dispara 3 Flechas") emite
     const h = m.e.hunt;
     const totem = { uid: 'tot', tipo: 'totem', acao: m.acao, x: h.pos.x + 1, y: h.pos.y, hp: 100, maxHp: 100, intervaloMs: 1000, elemento: 'physical', dano: { min: 10, max: 20 }, alcanceDeAtaque: 7 };
     const vivos = m.bichos(n, totem);
-    const ev = Cacadas.golpeDoTotem(m.e, h, totem, vivos[0], Ficha.combate(m.e), PERSONAGEM, h.clock ?? 0);
+    const ev = [...Cacadas.golpeDoTotem(m.e, h, totem, vivos[0], Ficha.combate(m.e), PERSONAGEM, h.clock ?? 0), ...pousarVoos(h)]; // aval do dono 03/11: o voo de verdade — o golpe do projétil cai no tique em que ele chega (`pousarVoos`)
     const tiros = ev.filter((x) => x.t === 'shot' && x.id === entry.projetil && x.x === totem.x && x.y === totem.y).length;
     const acertados = new Set(ev.filter((x) => x.t === 'dmg' && x.foe).map((x) => x.uid)).size;
     return { tiros, acertados };
@@ -210,7 +211,8 @@ test('o LACAIO de longe: os suportes de projétil ligados na gema que o invocou 
   assert.equal(um.emitidos.filter((p) => p.bicho).length, 1, '1 bicho: 1 acerta, os outros saem e erram');
   const cinco = projeteis(com, 5);
   assert.equal(cinco.emitidos.length, um.emitidos.length, 'a emissão não depende dos bichos');
-  assert.equal(new Set(cinco.emitidos.filter((p) => p.bicho).map((p) => p.bicho.uid)).size, Math.min(5, um.emitidos.length));
+  // aval do dono 03/11: a geometria do leque — os a mais a 10° passam ao lado dos bichos da fila (5 bichos diferentes → 2)
+  assert.equal(new Set(cinco.emitidos.filter((p) => p.bicho).map((p) => p.bicho.uid)).size, 2);
   // Sem o suporte: só o principal (nada muda para o lacaio de sempre).
   const sem = await comGemas(['Summon_Skeletons_of_Archers']);
   assert.equal(projeteis(sem, 3).emitidos.length, 1);

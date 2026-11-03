@@ -12,7 +12,7 @@ const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
 const SEM = (!existsSync(Catalogo.ARQUIVO) || !Catalogo.ligado()) && 'só no modo PoE, com o catálogo do PoE';
 const { ITEM_CATALOG } = await import('../systems/dados.mjs');
 const { iniciarJogoDoPoe } = await import('../systems/itens-poe/iniciar.mjs');
-const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
+const { personagemDeTeste, PERSONAGEM, pousarVoos } = await import('./apoio.mjs');
 const Acoes = await import('../systems/acoes.mjs');
 const Cacadas = await import('../systems/cacadas.mjs');
 const Combate = await import('../systems/hunt/combate.mjs');
@@ -65,12 +65,15 @@ function montar(slugs, { nivel = 20, qualidade = 0, arma = 'Wands/Driftwood_Wand
 function usar(e, b, slot = 0, v = 0.5) {
   return travado(v, () => {
     const x = Acoes.disparar(e, e.hunt, PERSONAGEM, slot, b, { manual: true });
-    if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; return { ...x, eventos: [...(x.eventos ?? []), ...(Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM) ?? [])] }; }
-    return x;
+    let fim = x;
+    if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; fim = { ...x, eventos: [...(x.eventos ?? []), ...(Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM) ?? [])] }; }
+    // aval do dono 03/11: o voo de verdade — o golpe do projétil cai no tique em que ele chega (`pousarVoos`)
+    return { ...fim, eventos: [...(fim.eventos ?? []), ...pousarVoos(e.hunt)] };
   });
 }
 const liberar = (e, ms = 1) => { e.hunt.cooldowns = {}; delete e.hunt.conjurando; e.hunt.clock += ms; };
-const golpeBasico = (e, b, v = 0.5) => { e.hunt.alvo = b.uid; return travado(v, () => Combate.round(e, PERSONAGEM)); };
+// aval do dono 03/11: o voo de verdade — a flecha do golpe básico cai no tique em que chega (`pousarVoos`)
+const golpeBasico = (e, b, v = 0.5) => { e.hunt.alvo = b.uid; return travado(v, () => { const r = Combate.round(e, PERSONAGEM); return { ...r, eventos: [...(r?.eventos ?? []), ...pousarVoos(e.hunt)] }; }); };
 const golpesEm = (ev, m) => (ev ?? []).filter((x) => x.t === 'dmg' && x.foe !== false && x.uid === m.uid && !x.dot).map((x) => x.v);
 const vizinho = (e, m, dx, dy) => Object.assign(m, { x: e.hunt.pos.x + dx, y: e.hunt.pos.y + dy, hp: 1e12, maxHp: 1e12, estados: {}, resist: {}, dots: [], armaduraPct: -100, evasao: 0 });
 const ativacoesDaArmadilha = (e) => (e.hunt.poeUsosRecentes?.['ev.armadilha'] ?? []).length;

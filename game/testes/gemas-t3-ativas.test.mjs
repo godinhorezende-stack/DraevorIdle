@@ -12,6 +12,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { SEM, Acoes, GS, G, Ficha, montar, posicionar, usar, andar, golpesEm, danoEm, celula, numeros, perto, travado, doPoedb } from './apoio-t3.mjs';
+import { pousarVoos } from './apoio.mjs';
 
 const Registro = await import('../systems/combate/registro.mjs');
 
@@ -100,7 +101,11 @@ test('T3: as Facas Etéreas do Massacre — 949 a 1423 de Físico e 16 projétei
   posicionar(e, resto.slice(0, casas.length), casas);
   const u = usar(e, b);
   assert.ok(u.r.ok);
-  for (const m of [b, ...resto.slice(0, casas.length)]) assert.ok(danoEm(u.eventos, m) > 0, `o de ${m.x - e.hunt.pos.x},${m.y - e.hunt.pos.y}`);
+  // aval do dono 03/11: o círculo de verdade e o D7b no instante (rodada 2) — os colados levam todos; os de 3 casas só se um projétil chega a eles sem parar
+  // antes: o de (3,0), atrás do alvo, não (o projétil a 0° para no alvo); o a mais que chega a um colado que outro já pegou não acerta e não segue (antes: todos)
+  const longe = (m) => Math.max(Math.abs(m.x - e.hunt.pos.x), Math.abs(m.y - e.hunt.pos.y)) === 3;
+  for (const m of [b, ...resto.slice(0, casas.length)].filter((m) => !longe(m))) assert.ok(danoEm(u.eventos, m) > 0, `o de ${m.x - e.hunt.pos.x},${m.y - e.hunt.pos.y}`);
+  assert.equal(danoEm(u.eventos, resto[casas.findIndex(([x, y]) => x === 3 && y === 0)]), 0, 'o de 3,0: o projétil parou no alvo');
   assert.equal(u.eventos.filter((x) => x.t === 'shot').length, 16, '16 projéteis');
   // (o Físico: a resistência a Fogo não muda o golpe)
   const um = await montar([['Ethereal_Knives_of_the_Massacre']]);
@@ -120,7 +125,11 @@ test('T3: a Faísca da Nova — 111 a 2113 de Raio, 10 projéteis em círculo, 2
   const casas = [[-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [2, 0], [-2, 0], [0, 2], [0, -2]];
   posicionar(e, resto.slice(0, casas.length), casas);
   const u = usar(e, b);
-  for (const m of [b, ...resto.slice(0, casas.length)]) assert.ok(danoEm(u.eventos, m) > 0, `o de ${m.x - e.hunt.pos.x},${m.y - e.hunt.pos.y}`);
+  // aval do dono 03/11: o círculo de verdade e o D7b no instante (rodada 2) — os colados levam todos; os de 2 casas estão atrás dos colados (10 projéteis a 36°):
+  // o projétil para no primeiro, e o a mais que chega a um colado que outro já pegou não acerta e não segue (antes: todos)
+  const colado = (m) => Math.max(Math.abs(m.x - e.hunt.pos.x), Math.abs(m.y - e.hunt.pos.y)) === 1;
+  for (const m of [b, ...resto.slice(0, casas.length)].filter(colado)) assert.ok(danoEm(u.eventos, m) > 0, `o de ${m.x - e.hunt.pos.x},${m.y - e.hunt.pos.y}`);
+  for (const m of resto.slice(0, casas.length).filter((m) => !colado(m))) assert.equal(danoEm(u.eventos, m), 0, `o de ${m.x - e.hunt.pos.x},${m.y - e.hunt.pos.y}: atrás`);
   assert.equal(u.eventos.filter((x) => x.t === 'shot').length, 10);
   const r = await montar([['Spark_of_the_Nova']]);
   r.b.resist = { energy: 75 };
@@ -221,10 +230,15 @@ test('T3: a Mina de Gelo da Ventilação — 591 a 886 de Gelo, 3 projéteis +1 
   const porDetonacao = [];
   for (let k = 0; k < 30 && porDetonacao.length < 4; k++) {
     const ev = andar(e, 1, 50);
+    // aval do dono 03/11: o voo de verdade — os projéteis da detonação caem no tique em que chegam (o relógio volta para a sequência das Minas)
+    const t1 = e.hunt.clock;
+    ev.push(...pousarVoos(e.hunt, { sorte: 0.5 }));
+    e.hunt.clock = t1;
     const golpes = ev.filter((x) => x.t === 'dmg' && x.foe);
     if (golpes.length) porDetonacao.push(new Set(golpes.map((x) => x.uid)).size);
   }
-  assert.deepEqual(porDetonacao, [3, 3, 4, 4], 'cada projétil num inimigo: 3, 3, 4 (2 anteriores), 4');
+  // aval do dono 03/11: a geometria do leque — o 4º projétil, a 20°, não acha outro inimigo ([3, 3, 4, 4] → [3, 3, 3, 3])
+  assert.deepEqual(porDetonacao, [3, 3, 3, 3], 'cada projétil num inimigo: 3, 3, 3 (o 4º passa ao lado), 3');
   assert.equal(b.estados.minaCritico.pct, 40, '10% por Mina perto');
 });
 

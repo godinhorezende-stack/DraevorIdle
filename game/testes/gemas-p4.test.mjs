@@ -10,7 +10,7 @@ import { existsSync } from 'node:fs';
 process.env.ITENS_POE = '1';
 const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
 const SEM = (!existsSync(Catalogo.ARQUIVO) || !Catalogo.ligado()) && 'só no modo PoE, com o catálogo do PoE';
-const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
+const { personagemDeTeste, PERSONAGEM, pousarVoos } = await import('./apoio.mjs');
 const Acoes = await import('../systems/acoes.mjs');
 const GS = await import('../systems/skills/gemas.mjs');
 const G = await import('../systems/itens-poe/gemas-poe.mjs');
@@ -70,6 +70,7 @@ function usar(e, alvo, { slot = 0, passo = 60_000, v = 0.5, manual = true } = {}
   const r = travado(v, () => Acoes.disparar(e, e.hunt, PERSONAGEM, slot, alvo, { manual }));
   const eventos = [...(r.eventos ?? [])];
   if (r.ok && e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; eventos.push(...(travado(v, () => Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM)) ?? [])); }
+  eventos.push(...pousarVoos(e.hunt, { sorte: v })); // aval do dono 03/11: o voo de verdade — o golpe do projétil cai no tique em que ele chega (`pousarVoos`)
   return { r, eventos, inicio };
 }
 
@@ -216,6 +217,10 @@ test('P4: de ponta a ponta — o acerto da aliada vinculada ativa a Bola de Fogo
   const hp0 = b.hp;
   amiga.hunt.poeRecente.acertou = amiga.hunt.clock;
   const ev = travado(0.5, () => tique(ana));
+  // aval do dono 03/11: o voo de verdade — a Bola de Fogo ativada cai no tique em que chega (o relógio volta para a conta da recarga)
+  const t1 = ana.hunt.clock;
+  pousarVoos(ana.hunt, { sorte: 0.5 });
+  ana.hunt.clock = t1;
   const g = ev.filter((x) => x.t === 'gatilho');
   assert.deepEqual(g.map((x) => x.suporte), ['Vínculo Intuitivo'], JSON.stringify(ev.slice(0, 6)));
   assert.ok(b.hp < hp0, 'a Bola de Fogo acertou o inimigo perto da aliada');
@@ -240,6 +245,7 @@ test('P4: o Vínculo Intuitivo — o "38% menos Dano" do nível 20 vale na magia
     delete ana.hunt.cooldowns[`gatilho:${GS.gruposComGatilho(ana).find((x) => x.intuitivo).chave}`];
     const hp = b.hp;
     travado(0.5, () => Acoes.ativarGatilhos(ana, ana.hunt, PERSONAGEM, 'intuitivo', { alvo: b, vinculo: G.doSlug('Intuitive_Link').acao, maisAcertoPct: -menos, maisAfeccaoPct: -menos }, []));
+    pousarVoos(ana.hunt, { sorte: 0.5 }); // aval do dono 03/11: o voo de verdade — a Bola de Fogo ativada cai no tique em que chega
     return hp - b.hp;
   };
   const [lk] = Vinculos.vinculos(ana.hunt);

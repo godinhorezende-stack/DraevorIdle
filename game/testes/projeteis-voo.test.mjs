@@ -299,8 +299,8 @@ test('as linhas de trajetória das gemas valem (saem das "não se aplicam"); a �
     assert.equal(G.ehLinhaQueNaoSeAplica(l), false, l);
     assert.equal(PV.ehLinhaDoVoo(slug, l), true, l);
   }
-  // a Mina de Fumaça segue (é de outro assunto)
-  assert.equal(G.ehLinhaQueNaoSeAplica('Minas não podem ser Re-armadas'), true);
+  // a Mina de Fumaça (de outro assunto) — aval do dono 03/11: 100% — combate, o jogo Re-arma as Minas e a linha vale (antes true)
+  assert.equal(G.ehLinhaQueNaoSeAplica('Minas não podem ser Re-armadas'), false);
   const { traduzirLinha } = await import('../systems/itens-poe/arvore.mjs');
   assert.deepEqual(traduzirLinha('15% mais Velocidade de Projéteis').efeitos, [{ add: 'proj_vel_mais', valor: 15 }]);
   assert.deepEqual(traduzirLinha('15% menos Velocidade de Projéteis').efeitos, [{ add: 'proj_vel_mais', valor: -15 }]);

@@ -113,8 +113,9 @@ test('o balão: a linha da QUALIDADE que não se aplica (o Morto Volátil) vai m
     const p = partesDoBalaoDaGema({ poeFicha: fichaDoItem(slug, 20, 20) });
     const l = p.qualidade.linhas.find((x) => /Velocidade de Movimento do Orbe/.test(x.texto));
     assert.ok(l, `${slug}: a linha da qualidade`);
-    assert.equal(l.naoSeAplica, true, `${slug}: marcada como não se aplica`);
-    assert.ok(p.notas.some((n) => /Orbe/.test(n)), `${slug}: com a nota curta`);
+    // aval do dono 03/11: 100% — projétil, o voo de verdade: a Velocidade de Movimento do Orbe vale (antes marcada "não se aplica", com a nota)
+    assert.ok(!l.naoSeAplica, `${slug}: não vai marcada`);
+    assert.ok(!p.notas.some((n) => /Orbe/.test(n)), `${slug}: sem a nota curta`);
   }
   // o confronto com a regra (`ehLinhaQueNaoSeAplica`) em todas as ativas, nas linhas do nível e nas da qualidade
   const falhas = [];
@@ -142,7 +143,7 @@ test('o balão: o gatilho de todo suporte diz QUANDO em português (nenhuma chav
 
 test('o balão: a nota curta da Mina de Fumaça leva o porquê; os Vínculos com as três linhas separadas', { skip: SEM }, () => {
   const notas = fichaDoItem('Smoke_Mine', 20, 0).notas ?? [];
-  assert.ok(notas.some((n) => /Re-armadas.*o jogo não tem Re-armar Minas/.test(n)), JSON.stringify(notas));
+  assert.ok(!notas.some((n) => /Re-armadas/.test(n)), JSON.stringify(notas)); // aval do dono 03/11: 100% — combate, o jogo Re-arma as Minas (a nota saiu)
   for (const slug of ['Flame_Link', 'Soul_Link', 'Destructive_Link', 'Protective_Link', 'Vampiric_Link'].filter((s) => G.doSlug(s))) {
     const mods = fichaDoItem(slug, 20, 20).mods;
     assert.ok(!mods.some((m) => /segundos Máximo|por alvo Você/.test(m)), `${slug}: nada grudado`);

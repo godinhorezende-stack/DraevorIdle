@@ -12,6 +12,7 @@ import { CHARACTER_TEMPLATE } from '../systems/dados.mjs';
 import * as Campanha from '../systems/campanha.mjs';
 import { ligado as jogoOficial } from '../systems/itens-poe/catalogo.mjs';
 import { iniciarJogoDoPoe } from '../systems/itens-poe/iniciar.mjs';
+import * as Voos from '../systems/hunt/voos.mjs';
 
 /*
  * A HUNT DE TESTE: no jogo oficial (PoE), a área do PoE sobre o MESMO terreno da Troll Cave (o Navio Encalhado: a mesma grade, as
@@ -128,4 +129,27 @@ export function comSkills(e, ids, { nivel = 1, conjuracao = false } = {}) {
   }
   if (k < itens.length) throw new Error(`mais skills (${itens.length}) do que sockets`);
   return e;
+}
+
+/**
+ * (aval do dono 03/11 — o voo de verdade, lote "projetil") O golpe do projétil não cai mais no uso: cai no tique em que o projétil chega (`Voos.tique`). Os testes
+ * de antes esperam o tique de chegada com isto: o relógio da caçada anda de tique em tique (250 ms) até nada mais estar no ar (nem golpe adiado) — no máximo
+ * `tetoMs` — e devolve os eventos que caíram. `sorte` (opcional) fixa o `Math.random` nos tiques, como no uso.
+ */
+export function pousarVoos(hunt, { passoMs = 250, tetoMs = 30_000, sorte = null } = {}) {
+  const eventos = [];
+  if (!hunt) return eventos;
+  const o = Math.random;
+  if (sorte != null) Math.random = typeof sorte === 'function' ? sorte : () => sorte;
+  try {
+    for (let t = 0; t < tetoMs; t += passoMs) {
+      const { voando, adiados } = Voos.contar(hunt);
+      if (!voando && !adiados) break;
+      hunt.clock = (hunt.clock ?? 0) + passoMs;
+      eventos.push(...(Voos.tique(hunt, hunt.clock) ?? []));
+    }
+  } finally {
+    Math.random = o;
+  }
+  return eventos;
 }

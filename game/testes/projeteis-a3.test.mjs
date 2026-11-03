@@ -9,7 +9,7 @@ import { existsSync } from 'node:fs';
 process.env.ITENS_POE = '1';
 const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
 const SEM = (!existsSync(Catalogo.ARQUIVO) || !Catalogo.ligado()) && 'só no modo PoE, com o catálogo do PoE';
-const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
+const { personagemDeTeste, PERSONAGEM, pousarVoos } = await import('./apoio.mjs');
 const Acoes = await import('../systems/acoes.mjs');
 const GS = await import('../systems/skills/gemas.mjs');
 const G = await import('../systems/itens-poe/gemas-poe.mjs');
@@ -64,6 +64,7 @@ function usar(e, alvo, v = 0.5) {
     eventos.push(...(r.eventos ?? []));
     // (a magia com tempo de conjuração: conclui)
     if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; eventos.push(...(Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM) ?? [])); }
+    eventos.push(...pousarVoos(e.hunt)); // aval do dono 03/11: o voo de verdade — o golpe do projétil cai no tique em que ele chega (`pousarVoos`)
   });
   return eventos;
 }
@@ -407,7 +408,7 @@ test('os triviais: a Vaal Faísca em direções aleatórias; o feixe com "+"; a 
 
 test('as linhas que não se aplicam (só a trajetória) saem dos motivos e ficam como nota', { skip: SEM }, () => {
   assert.ok(!G.doSlug('Ice_Spear').motivosNoJogo.some((m) => /Segunda forma possui [\d.]+ ?% mais Velocidade/.test(m)));
-  assert.ok(G.doSlug('Ice_Spear').linhasNaoSeAplicam?.some((n) => /^não se aplica:/.test(n)));
+  assert.ok(!G.doSlug('Ice_Spear').linhasNaoSeAplicam?.some((n) => /^não se aplica:/.test(n))); // aval do dono 03/11: 100% — projétil, a 2ª forma da Lança Gélida voa de verdade (a nota saiu)
   assert.ok(!G.doSlug('Spectral_Throw_of_Materialising').motivosNoJogo.length, G.doSlug('Spectral_Throw_of_Materialising').motivosNoJogo.join(' | '));
   assert.ok(!G.doSlug('Kinetic_Bolt').motivosNoJogo.some((m) => /mudam de direção/.test(m)));
   // (aval do dono, 26/10 — lote E1a: a velocidade de projétil da gema de totem vale no tiro do totem, que sai pelo seu uso desde o G20a; a linha saiu dos motivos)

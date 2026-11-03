@@ -93,8 +93,9 @@ test('as notas do registro vão discretas no balão: a escolha do dono no Arauto
   assert.ok(agonia.notas.some((n) => /^A Virulência fica no máximo .* como o PoB mostra\.$/.test(n)), agonia.notas.join(' | '));
   const lanca = partesDoBalaoDaGema({ poeFicha: fichaDoItem('Ice_Spear', 20, 0) });
   const segunda = lanca.mods.find((l) => /^A Segunda forma possui .* mais Velocidade de Projétil$/.test(l.texto));
-  assert.deepEqual([segunda.fora, segunda.naoSeAplica], [false, true]);
-  assert.ok(lanca.notas.some((n) => /só muda a trajetória da segunda forma\.$/.test(n)), lanca.notas.join(' | '));
+  // aval do dono 03/11: 100% — projétil, o voo de verdade: a 2ª forma da Lança de Gelo vale (antes "não se aplica", com a nota da trajetória)
+  assert.deepEqual([segunda.fora, segunda.naoSeAplica], [false, false]);
+  assert.ok(!lanca.notas.some((n) => /só muda a trajetória da segunda forma\.$/.test(n)), lanca.notas.join(' | '));
 });
 
 test('os números que o jogo usa nas propriedades: o custo, a eficácia do dano adicionado (a do PoB), o dano de ataque, a conjuração e a recarga com os usos', { skip: SEM }, () => {

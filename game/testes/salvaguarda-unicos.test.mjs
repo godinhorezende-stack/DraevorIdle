@@ -75,7 +75,7 @@ test('as linhas da Salvaguarda dos únicos e das Atemporais têm regra com efeit
   assert.deepEqual(ef('Dano Penetra 8% das Resistências Elementais enquanto sua Salvaguarda estiver Rompida'), { 'elem_pen@salvaguardaRompida': 8 });
   assert.deepEqual(ef('A Salvaguarda tem 60% de chance de não se Romper'), { salvaguarda_chance_nao_romper: 60 });
   // a peça única recalculada (a tradução 75) leva os atributos
-  assert.equal(J.VERSAO_DA_TRADUCAO, 75);
+  assert.equal(J.VERSAO_DA_TRADUCAO, 83); // aval do dono 03/11: a tradução subiu nos lotes 100% (75 → 83)
   const ynda = unico('Belts/Studded_Belt', 'Yndas_Stand');
   assert.equal(ynda.poe.af.peitoral_em_salvaguarda_pct, 50);
 });

@@ -8,7 +8,7 @@ import { existsSync, readFileSync } from 'node:fs';
 process.env.ITENS_POE = '1';
 const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
 export const SEM = (!existsSync(Catalogo.ARQUIVO) || !Catalogo.ligado()) && 'só no modo PoE, com o catálogo do PoE';
-const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
+const { personagemDeTeste, PERSONAGEM, pousarVoos } = await import('./apoio.mjs');
 export { PERSONAGEM };
 export const Acoes = await import('../systems/acoes.mjs');
 export const GS = await import('../systems/skills/gemas.mjs');
@@ -85,6 +85,7 @@ export function usar({ e, b }, v, slot = 0, alvo = b) {
       assert.ok(r.ok, JSON.stringify(r));
       eventos.push(...(r.eventos ?? []));
       if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; eventos.push(...(Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM) ?? [])); }
+      eventos.push(...pousarVoos(e.hunt)); // aval do dono 03/11: o voo de verdade — o golpe do projétil cai no tique em que ele chega (`pousarVoos`)
     });
     return { golpes: Registro.ultimosGolpes(500).filter((g) => g.origem === 'gema'), eventos, dots: b.dots ?? [] };
   } finally { Registro.definirNivel(0); }

@@ -78,11 +78,14 @@ test('as LINHAS da primeira leva com efeito; o tamanho do personagem e as Habili
     'Vida Máxima aumentada em {0}% por Espectro Grandioso', 'Lacaios têm +{0}% de Multiplicador de Golpe Crítico por Espectro Grandioso']) {
     assert.ok(['novo', 'equivalente'].includes(estado(m).estado), m);
   }
+  // aval do dono 03/11: 100% — luz (o tamanho muda o desenho) e dados (o Foco de Combate): as duas linhas valem (antes "não se aplica ao jogo")
   const tam = estado('Tamanho do Personagem aumentado em {0}%', [3]);
-  assert.equal(tam.estado, 'inerte');
-  assert.match(tam.partes[0].nota, /^não se aplica ao jogo/);
+  assert.equal(tam.estado, 'novo');
+  assert.deepEqual(tam.efeitos, [{ stat: 'tamanho_personagem', valor: 3 }]);
   const pri = estado('Com um total de {0} de Destreza no Raio, Habilidades Prismáticas não podem escolher Fogo', [40]);
-  assert.match(pri.partes[0].nota, /^não se aplica ao jogo/);
+  assert.equal(pri.estado, 'equivalente');
+  assert.deepEqual(pri.efeitos, [{ stat: 'raio_prisma_nao_escolhe_fire', valor: 40 }]);
+  assert.doesNotMatch(pri.partes[0].nota, /não se aplica/);
 });
 
 test('a PEDRA ANIMA: +1 ao máximo de Golens só com 3 Itens Primordiais encaixados ou vestidos', { skip: SEM }, () => {

@@ -11,7 +11,7 @@ const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
 const SEM = (!existsSync(Catalogo.ARQUIVO) || !Catalogo.ligado()) && 'só no modo PoE, com o catálogo do PoE';
 const { ITEM_CATALOG, CATALOGO } = await import('../systems/dados.mjs');
 const { iniciarJogoDoPoe } = await import('../systems/itens-poe/iniciar.mjs');
-const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
+const { personagemDeTeste, PERSONAGEM, pousarVoos } = await import('./apoio.mjs');
 const Acoes = await import('../systems/acoes.mjs');
 const Cacadas = await import('../systems/cacadas.mjs');
 const G = await import('../systems/itens-poe/gemas-poe.mjs');
@@ -66,7 +66,7 @@ function tiqueDe(slug, { random = 0.5, nivel = 20, dx = 1, antes = null, c = nul
   const r = Math.random;
   Math.random = () => random;
   let ev;
-  try { ev = Cacadas.tiqueDosLacaios(c.e, h, null, grade(h), Date.now()); } finally { Math.random = r; }
+  try { ev = [...Cacadas.tiqueDosLacaios(c.e, h, null, grade(h), Date.now()), ...pousarVoos(h)]; } finally { Math.random = r; } // aval do dono 03/11: o voo de verdade — o projétil do lacaio cai no tique em que chega (`pousarVoos`)
   return { c, l, ev, q };
 }
 const danoEm = (ev, m, habilidade) => ev.filter((x) => x.t === 'dmg' && x.uid === m.uid && x.foe && (habilidade === undefined || x.habilidade === habilidade)).reduce((t, x) => t + x.v, 0);
@@ -348,7 +348,7 @@ test('L — pela caçada de verdade: o zumbi, o esqueleto, o golem e o espírito
     for (let i = 0; i < 30 && !total; i++) {
       agora += 500;
       c.h.clock += 500;
-      total += danoEm(Cacadas.tiqueDosLacaios(c.e, c.h, null, grade(c.h), agora), c.alvo);
+      total += danoEm([...Cacadas.tiqueDosLacaios(c.e, c.h, null, grade(c.h), agora), ...pousarVoos(c.h)], c.alvo); // aval do dono 03/11: o voo de verdade — o projétil do lacaio cai no tique em que chega (`pousarVoos`)
     }
     assert.ok(total > 0, `${s}: bateu`);
   }
