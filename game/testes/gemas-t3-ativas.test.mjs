@@ -101,11 +101,11 @@ test('T3: as Facas Etéreas do Massacre — 949 a 1423 de Físico e 16 projétei
   posicionar(e, resto.slice(0, casas.length), casas);
   const u = usar(e, b);
   assert.ok(u.r.ok);
-  // aval do dono 03/11: o círculo de verdade e o D7b no instante (rodada 2) — os colados levam todos; os de 3 casas só se um projétil chega a eles sem parar
-  // antes: o de (3,0), atrás do alvo, não (o projétil a 0° para no alvo); o a mais que chega a um colado que outro já pegou não acerta e não segue (antes: todos)
-  const longe = (m) => Math.max(Math.abs(m.x - e.hunt.pos.x), Math.abs(m.y - e.hunt.pos.y)) === 3;
-  for (const m of [b, ...resto.slice(0, casas.length)].filter((m) => !longe(m))) assert.ok(danoEm(u.eventos, m) > 0, `o de ${m.x - e.hunt.pos.x},${m.y - e.hunt.pos.y}`);
-  assert.equal(danoEm(u.eventos, resto[casas.findIndex(([x, y]) => x === 3 && y === 0)]), 0, 'o de 3,0: o projétil parou no alvo');
+  // aval do dono 03/11: raio contínuo (revisão) — cada projétil no raio do ângulo exato (16 a 22,5°): os colados levam todos e os de 3 casas também — o raio
+  // passa pelo colado que outro já pegou (D7b: não o acerta) e chega ao de trás —, menos o (3,0), atrás do alvo: o principal, a 0°, para no alvo
+  const atras = resto[casas.findIndex(([x, y]) => x === 3 && y === 0)];
+  for (const m of [b, ...resto.slice(0, casas.length)].filter((m) => m !== atras)) assert.ok(danoEm(u.eventos, m) > 0, `o de ${m.x - e.hunt.pos.x},${m.y - e.hunt.pos.y}`); // aval do dono 03/11: raio contínuo (revisão)
+  assert.equal(danoEm(u.eventos, atras), 0, 'o de 3,0: o projétil parou no alvo'); // aval do dono 03/11: raio contínuo (revisão)
   assert.equal(u.eventos.filter((x) => x.t === 'shot').length, 16, '16 projéteis');
   // (o Físico: a resistência a Fogo não muda o golpe)
   const um = await montar([['Ethereal_Knives_of_the_Massacre']]);
@@ -125,11 +125,12 @@ test('T3: a Faísca da Nova — 111 a 2113 de Raio, 10 projéteis em círculo, 2
   const casas = [[-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [2, 0], [-2, 0], [0, 2], [0, -2]];
   posicionar(e, resto.slice(0, casas.length), casas);
   const u = usar(e, b);
-  // aval do dono 03/11: o círculo de verdade e o D7b no instante (rodada 2) — os colados levam todos; os de 2 casas estão atrás dos colados (10 projéteis a 36°):
-  // o projétil para no primeiro, e o a mais que chega a um colado que outro já pegou não acerta e não segue (antes: todos)
-  const colado = (m) => Math.max(Math.abs(m.x - e.hunt.pos.x), Math.abs(m.y - e.hunt.pos.y)) === 1;
-  for (const m of [b, ...resto.slice(0, casas.length)].filter(colado)) assert.ok(danoEm(u.eventos, m) > 0, `o de ${m.x - e.hunt.pos.x},${m.y - e.hunt.pos.y}`);
-  for (const m of resto.slice(0, casas.length).filter((m) => !colado(m))) assert.equal(danoEm(u.eventos, m), 0, `o de ${m.x - e.hunt.pos.x},${m.y - e.hunt.pos.y}: atrás`);
+  // aval do dono 03/11: raio contínuo (revisão) — 10 projéteis a 36°: antes, os de 2 casas ficavam de fora pela FOLGA entre os raios de 36° (a reta até o fim
+  // arredondado passava ao lado deles), não por bloqueio; no raio contínuo os de 72°, 108°, 180°… passam pelo colado que outro já pegou (D7b: não o acertam) e
+  // chegam ao de 2 casas. Só o (2,0), atrás do alvo, não leva: o principal, a 0°, para no alvo, e nenhum outro raio passa por ele
+  const atras = resto[casas.findIndex(([x, y]) => x === 2 && y === 0)];
+  for (const m of [b, ...resto.slice(0, casas.length)].filter((m) => m !== atras)) assert.ok(danoEm(u.eventos, m) > 0, `o de ${m.x - e.hunt.pos.x},${m.y - e.hunt.pos.y}`); // aval do dono 03/11: raio contínuo (revisão)
+  assert.equal(danoEm(u.eventos, atras), 0, 'o de 2,0: o projétil parou no alvo'); // aval do dono 03/11: raio contínuo (revisão)
   assert.equal(u.eventos.filter((x) => x.t === 'shot').length, 10);
   const r = await montar([['Spark_of_the_Nova']]);
   r.b.resist = { energy: 75 };
@@ -237,8 +238,9 @@ test('T3: a Mina de Gelo da Ventilação — 591 a 886 de Gelo, 3 projéteis +1 
     const golpes = ev.filter((x) => x.t === 'dmg' && x.foe);
     if (golpes.length) porDetonacao.push(new Set(golpes.map((x) => x.uid)).size);
   }
-  // aval do dono 03/11: a geometria do leque — o 4º projétil, a 20°, não acha outro inimigo ([3, 3, 4, 4] → [3, 3, 3, 3])
-  assert.deepEqual(porDetonacao, [3, 3, 3, 3], 'cada projétil num inimigo: 3, 3, 3 (o 4º passa ao lado), 3');
+  // aval do dono 03/11: raio contínuo (revisão) — o leque a 10° no raio do ângulo exato: com 3 projéteis o de +10° pega o (2,0) e o de −10° o (3,0); com 4,
+  // o de +20° pega o (1,1) (antes o fim arredondado a 3 casas fundia o +10° e o +20° na mesma reta e dava [3, 3, 3, 3])
+  assert.deepEqual(porDetonacao, [3, 3, 4, 4], 'cada projétil num inimigo: 3, 3, 4 (2 anteriores), 4'); // aval do dono 03/11: raio contínuo (revisão)
   assert.equal(b.estados.minaCritico.pct, 40, '10% por Mina perto');
 });
 

@@ -49,6 +49,50 @@ export const casasDaReta = Areas.reta;
 /** A área aumentada (`n` > 0) ou concentrada (`n` < 0) — ver `Areas.mudar`. */
 export const mudarArea = Areas.mudar;
 
+/*
+ * (03/11, revisão do leque) O RAIO CONTÍNUO de um projétil: as casas que o segmento de `de` no ângulo EXATO `angulo` atravessa até `alcance` casas (Chebyshev, como o
+ * alcance do voo — `itens-poe/projeteis-voo.mjs`), na ordem, sem `de`. Cada ponto do segmento cai na casa do arredondamento SIMÉTRICO a partir de `de` (a meia casa
+ * vai para fora, dos dois lados — o Math.round puxava o −0,5 para dentro e o +0,5 para fora, e montagens simétricas saíam assimétricas); a casa vale quando o
+ * segmento passa por dentro dela (o canto exato — a diagonal — não pega as vizinhas). Antes o projétil seguia a reta até o FIM arredondado: com alcance curto
+ * dois ângulos do leque (10° e 20°, a 3 casas) davam o mesmo fim e viravam a mesma reta.
+ */
+const EPS = 1e-9;
+/** O arredondamento simétrico (a meia casa sai para longe do zero, dos dois lados). */
+export const arredondarSimetrico = (v) => Math.sign(v) * Math.round(Math.abs(v) + EPS) || 0;
+/** O fim do raio: a casa a `alcance` casas (Chebyshev) de `de`, no ângulo `angulo`. */
+export function fimDoRaio(de, angulo, alcance) {
+  const ux = Math.abs(Math.cos(angulo)) < EPS ? 0 : Math.cos(angulo);
+  const uy = Math.abs(Math.sin(angulo)) < EPS ? 0 : Math.sin(angulo);
+  const L = alcance / Math.max(Math.abs(ux), Math.abs(uy));
+  return { x: de.x + arredondarSimetrico(ux * L), y: de.y + arredondarSimetrico(uy * L) };
+}
+/** As casas do raio contínuo (ver acima). */
+export function casasDoRaio(de, angulo, alcance) {
+  const ux = Math.abs(Math.cos(angulo)) < EPS ? 0 : Math.cos(angulo);
+  const uy = Math.abs(Math.sin(angulo)) < EPS ? 0 : Math.sin(angulo);
+  if (!(alcance > 0)) return [];
+  const L = alcance / Math.max(Math.abs(ux), Math.abs(uy));
+  // os pontos em que o segmento cruza uma borda de casa (a meia casa de cada eixo); os quase iguais (o canto exato) contam como um só
+  const cortes = [0];
+  for (const u of [ux, uy]) if (u) for (let k = 0; (k + 0.5) / Math.abs(u) < L - EPS; k++) cortes.push((k + 0.5) / Math.abs(u));
+  cortes.sort((a, b) => a - b);
+  const ts = cortes.filter((t, i) => !i || t - cortes[i - 1] > EPS);
+  ts.push(L);
+  const casas = [];
+  const vistas = new Set(['0,0']);
+  const em = (t) => {
+    const c = { x: arredondarSimetrico(ux * t), y: arredondarSimetrico(uy * t) };
+    const k = `${c.x},${c.y}`;
+    if (vistas.has(k)) return;
+    vistas.add(k);
+    casas.push({ x: de.x + c.x, y: de.y + c.y });
+  };
+  // (o meio de cada trecho entre dois cortes, e o fim — o ponto exato do alcance)
+  for (let i = 1; i < ts.length; i++) em((ts[i - 1] + ts[i]) / 2);
+  em(L);
+  return casas;
+}
+
 /** Os `n` bichos vivos mais perto de `ponto`, a até `distancia`, fora de `fora`. */
 function maisPerto(vivos, ponto, distancia, n, fora) {
   return vivos
@@ -278,10 +322,22 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
     return Math.floor(salto) + (rng() < salto % 1 ? 1 : 0);
   };
   // (lote A3) o PONTO a `alcance` casas de `de`, no ângulo `a` (os projéteis que erram, a divisão sem alvo, o círculo, as origens laterais)
-  const noAngulo = (de, a, dist = alcance) => ({ x: Math.round(de.x + Math.cos(a) * dist), y: Math.round(de.y + Math.sin(a) * dist) });
+  // (03/11, revisão: o fim do RAIO contínuo — `fimDoRaio`, a `dist` casas em Chebyshev, como o voo —, e o ponto guarda o ângulo exato: quem procura o primeiro do
+  // caminho até ele anda o raio de verdade, `casasDoRaio`, e não a reta até o fim arredondado)
+  const raios = new WeakMap();
+  const noAngulo = (de, a, dist = alcance) => {
+    const fim = fimDoRaio(de, a, dist);
+    raios.set(fim, { x: de.x, y: de.y, a, dist });
+    return fim;
+  };
+  /** As casas do caminho de `de` até `fim`, até `ate` casas: o raio contínuo, quando `fim` veio de `noAngulo` a partir de `de`; senão a reta. */
+  const casasAte = (de, fim, ate) => {
+    const r = raios.get(fim);
+    return r && r.x === de.x && r.y === de.y ? casasDoRaio(de, r.a, Math.min(ate, r.dist)) : casasDaReta(de, fim, ate);
+  };
   const anguloDe = (de, para) => (para.x === de.x && para.y === de.y ? anguloDoRumo : Math.atan2(para.y - de.y, para.x - de.x));
   /** O primeiro bicho vivo na reta de `de` a `fim` (até `alcance` casas), fora de `fora`. */
-  const primeiroNaReta = (de, fim, fora) => casasDaReta(de, fim, alcance).map((c) => porCasa.get(`${c.x},${c.y}`)).find((b) => b && b.hp > 0 && !fora.has(b)) ?? null;
+  const primeiroNaReta = (de, fim, fora) => casasAte(de, fim, alcance).map((c) => porCasa.get(`${c.x},${c.y}`)).find((b) => b && b.hp > 0 && !fora.has(b)) ?? null;
   /**
    * (lote A3, dono 19/10 — D5: "o projétil se divide a partir do alvo atingido em N projéteis para os mais próximos", como no PoE) A DIVISÃO: de
    * `ponto`, `n` projéteis inteiros para os `n` bichos vivos mais perto dele (no alcance da habilidade), fora dos que o projétil já acertou; os que
@@ -533,7 +589,7 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
   /** (lote A3) Onde a reta de `de` a `para` bate no TERRENO (a casa antes da que não se anda), ou null. */
   const terrenoNaReta = (de, para) => {
     if (!andavel) return null;
-    const reta = casasDaReta(de, para, alcance);
+    const reta = casasAte(de, para, alcance);
     const i = reta.findIndex((c) => !andavel.has(`${c.x},${c.y}`));
     return i < 0 ? null : i > 0 ? { x: reta[i - 1].x, y: reta[i - 1].y } : { x: de.x, y: de.y };
   };
@@ -723,7 +779,7 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
       for (let k = 1; k <= extras; k++) {
         const j = Math.min(n, Math.ceil(k / 2));
         const lado = k % 2 ? 1 : -1;
-        const de = { x: Math.round(origem.x + px * j * lado), y: Math.round(origem.y + py * j * lado) };
+        const de = { x: origem.x + arredondarSimetrico(px * j * lado), y: origem.y + arredondarSimetrico(py * j * lado) };
         const fim = noAngulo(de, a0);
         const bicho = primeiroNaReta(de, fim, fora);
         emitidos.push({ de, para: bicho ? { x: bicho.x, y: bicho.y } : fim, bicho, tipo: 'projetil' });

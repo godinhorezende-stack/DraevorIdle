@@ -211,8 +211,9 @@ test('o LACAIO de longe: os suportes de projétil ligados na gema que o invocou 
   assert.equal(um.emitidos.filter((p) => p.bicho).length, 1, '1 bicho: 1 acerta, os outros saem e erram');
   const cinco = projeteis(com, 5);
   assert.equal(cinco.emitidos.length, um.emitidos.length, 'a emissão não depende dos bichos');
-  // aval do dono 03/11: a geometria do leque — os a mais a 10° passam ao lado dos bichos da fila (5 bichos diferentes → 2)
-  assert.equal(new Set(cinco.emitidos.filter((p) => p.bicho).map((p) => p.bicho.uid)).size, 2);
+  // aval do dono 03/11: raio contínuo (revisão) — os a mais a 10° passam ao lado da fila, menos o de −10°, que no raio do ângulo exato atravessa a 3ª casa da
+  // fila (5 bichos diferentes → 3; o fim arredondado dava 2)
+  assert.equal(new Set(cinco.emitidos.filter((p) => p.bicho).map((p) => p.bicho.uid)).size, 3); // aval do dono 03/11: raio contínuo (revisão)
   // Sem o suporte: só o principal (nada muda para o lacaio de sempre).
   const sem = await comGemas(['Summon_Skeletons_of_Archers']);
   assert.equal(projeteis(sem, 3).emitidos.length, 1);
