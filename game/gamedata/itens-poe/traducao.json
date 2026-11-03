@@ -6178,17 +6178,18 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^.*(?:chance de abrir Baús próximos).*$",
+      "padrao": "^\\{(\\d+)\\}% de chance de abrir Baús próximos.*$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "abrir_bau_ao_conjurar",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: as caçadas não têm baús",
+      "estado": "equivalente",
+      "nota": "os baús do PoE nas caçadas (`itens-poe/baus-poe.mjs`): os da sala a até 4 casas abrem na chance (`acoes.abrirBausAoConjurar`)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_mundo100": "03/11 — 100%, lote mundo (os baús, o Estandarte e a aura no chão, o Vínculo, a Punição)"
     },
     {
       "padrao": "^Você pode contratar um mercenário de forma permanente$",
@@ -6482,30 +6483,54 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^Bônus do seu estandarte permanecem por .* segundos após você sair da área$",
+      "padrao": "^Bônus do seu estandarte permanecem por \\{(\\d+)\\} segundos após você sair da área$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "estandarte_fica_s",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: o Estandarte do jogo é uma aura em você (não tem área no chão)",
+      "nota": "o Estandarte plantado no chão (a área do PoB, a duração): fora da área o bônus fica N s (`mods-poe.aurasProximas`)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_mundo100": "03/11 — 100%, lote mundo (os baús, o Estandarte e a aura no chão, o Vínculo, a Punição)"
     },
     {
-      "padrao": "^Habilidades de Aura Não Maldições têm Duração aumentada em .*$|^Efeito em Área de Habilidades de Aura aumentado em .*$",
+      "padrao": "^Habilidades de Aura Não Maldições têm Duração aumentada em \\{(\\d+)\\} ?%$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "duracao_habilidades@aura",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "a duração das auras com duração — as Vaal e os Estandartes (as outras ficam ligadas enquanto reservam)",
+      "_nova": true,
+      "_ciclo7": true,
+      "_mundo100": "03/11 — 100%, lote mundo (os baús, o Estandarte e a aura no chão, o Vínculo, a Punição)"
+    },
+    {
+      "padrao": "^Efeito em Área de Habilidades de Aura aumentado em \\{(\\d+)\\} ?%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@aura",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o raio da aura (o da gema × √ da área — `acoes.raioDaAuraDe`): até onde ela vale nos aliados da party; o do Estandarte é o raio dele no chão",
+      "_nova": true,
+      "_mundo100": "03/11 — 100%, lote mundo (os baús, o Estandarte e a aura no chão, o Vínculo, a Punição)"
+    },
+    {
+      "padrao": "^Seus Clamores abrem Baús$",
+      "efeitos": [
+        {
+          "stat": "clamor_abre_baus",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: a aura do jogo fica ligada enquanto a gema está na barra e vale em você (sem duração nem área)",
+      "nota": "os baús do PoE no raio do Clamor abrem (`itens-poe/baus-poe.abrirNoRaio`)",
       "_nova": true,
-      "_ciclo7": true
+      "_mundo100": "03/11 — 100%, lote mundo (os baús, o Estandarte e a aura no chão, o Vínculo, a Punição)"
     },
     {
       "padrao": "^.*Agrava.*Sangramento.*$|^Sangramentos que você infligir são Agravados$|^Mover enquanto Sangrando faz com que você não sofra Dano extra$|^Seu Sangramento não causa Dano extra enquanto o Inimigo se move$|^Se Mover enquanto Sangrando não faz com que Lacaios sofram Dano extra$",
@@ -6546,17 +6571,17 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^Sua Velocidade de Movimento é igual a maior Velocidade de Movimento entre os Jogadores Vinculados$|^Alvos Vinculados compartilham Cargas de Tolerância, Frenesi e Poder com você$|^Maldições são infligidas em Você ao invés dos alvos Vinculados$",
+      "padrao": "^Sua Velocidade de Movimento é igual a maior Velocidade de Movimento entre os Jogadores Vinculados$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "velocidade_igual_vinculados",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: a habilidade de Vínculo do jogo reforça só você (não liga outros jogadores)",
+      "nota": "o Vínculo liga você ao aliado da party (ou ao seu lacaio) — `itens-poe/vinculos.mjs`",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_mundo100": "03/11 — 100%, lote mundo (os baús, o Estandarte e a aura no chão, o Vínculo, a Punição)"
     },
     {
       "padrao": "^Penalidades de Movimento das Armaduras são Ignoradas$",
@@ -43614,14 +43639,14 @@
       "padrao": "^Punição pode afetar Inimigos Infeitiçáveis$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "feitico_afeta_aprova:Punishment",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: a maldição Punição não existe no PoE 3.29 — não há a gema (dono, 17/10)",
+      "nota": "a Punição do texto é a gema Castigo (Punishment, act_str.lua:8753 do PoB): pega também no monstro à Prova de Maldições",
       "_nova": true,
-      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)",
+      "_mundo100": "03/11 — 100%, lote mundo (os baús, o Estandarte e a aura no chão, o Vínculo, a Punição)"
     },
     {
       "padrao": "^Alcance do Posicionamento de Totens aumentado em \\{(\\d+)\\}%$",

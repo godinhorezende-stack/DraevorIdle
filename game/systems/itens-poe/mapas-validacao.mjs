@@ -59,7 +59,7 @@ export const PALAVRAS = {
   critChance: /Chance de Crítico/, critMultiplicador: /Multiplicador de Crítico/, esPct: /Escudo de Energia/, precisaoPct: /Precisão/,
   'resist.physical': /Dano Físico/, 'resist.chaos': /Caos/, 'resist.fire': /Elemental|Fogo/, 'resist.ice': /Elemental|Gelo/, 'resist.energy': /Elemental|Raio/,
   'danoExtraPct.fire': /Fogo/, 'danoExtraPct.ice': /Gelo/, 'danoExtraPct.energy': /Raio/, experienciaPct: /Experiência/,
-  rarosPct: /Raros/, magicosPct: /Mágicos/, mapasExtras: /Mapas/, moedasExtras: /Monetários/,
+  rarosPct: /Raros/, magicosPct: /Mágicos/, mapasExtras: /Mapas/, moedasExtras: /Monetários/, bausRaridadePct: /Baús têm a Raridade de Itens/,
   quantidade: /Quantidade de Itens/, raridade: /Raridade de Itens/, grupo: /Tamanho do Grupo/,
   recuperacao_inc: /Recuperação/, frasco_cargas_recebidas: /Cargas de Frasco/, cooldown_recovery: /Recarga/, accuracy_less: /Precisão/,
   fire_res_max: /máximos de Resistências/, ice_res_max: /máximos de Resistências/, energy_res_max: /máximos de Resistências/, chaos_res_max: /máximos de Resistências/,
