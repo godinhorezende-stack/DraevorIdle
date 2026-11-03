@@ -169,7 +169,9 @@ function casasDa(a, bicho, alvo) {
  * senão no tique em que chega. Você que saiu da frente não leva; a de área no alvo ("noAlvo") cai no ponto mirado (ou onde encontrou você) e pega quem está na área
  * ali. O golpe é o de sempre (`dispararMagia`, `magiaNoLacaio`), com a sua ficha da hora.
  */
-export const voaDoBicho = (a) => itensPoeLigado() && a?.tiro != null && a.forma !== 'feixe';
+// (03/11: a área em VOLTA do próprio bicho — `forma` 'area' sem `noAlvo`: a nova do Devorador do Medo, do Verme Pálido, do Indesejado, de Urmahlullu — não voa:
+// cai na hora, em volta dele)
+export const voaDoBicho = (a) => itensPoeLigado() && a?.tiro != null && a.forma !== 'feixe' && !(a.forma === 'area' && !a.noAlvo);
 export function voarDoBicho({ estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo }, a, l = null) {
   const z = bicho.z ?? hunt.z ?? 0;
   const de = { x: bicho.x, y: bicho.y };
