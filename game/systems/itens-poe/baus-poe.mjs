@@ -54,6 +54,9 @@ const ID_DO_OURO = 3031;
 /** (03/11) Quanto (ms do relógio da caçada) os baús ainda fechados seguram o CLEAR depois do último monstro (escolha sem fonte: a rede de segurança
  * contra o baú que o idle não alcança). */
 export const SEGURA_O_CLEAR_MS = 60_000;
+/** (03/11) No MAPA do endgame (que conclui ao limpar e não segura o CLEAR): quanto (ms do relógio da caçada) a SAÍDA para a cidade ainda espera,
+ * além da pausa do aviso (`hunt.fimEm`), os baús fechados e alcançáveis do andar (escolha sem fonte: o teto contra o baú que o idle não alcança). */
+export const SEGURA_A_SAIDA_DO_MAPA_MS = 10_000;
 
 export const RARIDADES = ['normal', 'magico', 'raro', 'grande'];
 export const NOMES = { normal: 'Baú', magico: 'Baú Mágico', raro: 'Baú Raro', grande: 'Grande Baú' };
@@ -225,12 +228,13 @@ export function pagar(estado, hunt, e, rng = Math.random, personagem = null) {
 
 /**
  * (03/11) O baú do PoE disponível mais perto A PÉ no seu andar (`grade`: a do andar), fora o que se mostrou sem caminho há pouco: `{ e, d }`
- * (`d`: os passos até ele) ou null.
+ * (`d`: os passos até ele) ou null. (03/11, rodada 2: também na instância já LIMPA — o mapa do endgame conclui ao limpar, e o baú perto do
+ * último monstro se perdia; o idle ainda vai a ele enquanto a saída espera — `seguramASaidaDoMapa`.)
  */
 export function bauMaisPerto(hunt, grade) {
   if (!ligado() || !hunt?.pos || !grade) return null;
   const inst = daSala(hunt);
-  if (inst?.status !== 'ativa') return null;
+  if (inst?.status !== 'ativa' && inst?.status !== 'limpa') return null;
   const z = hunt.z ?? grade.z;
   const agora = hunt.clock ?? 0;
   const baus = Object.values(inst.encontros ?? {}).filter((e) => ehBauPoe(e) && e.estado === 'disponivel' && e.x != null && (e.z ?? z) === z && (e.semCaminhoAte ?? 0) <= agora);
@@ -258,6 +262,19 @@ export function seguramOClear(estado, hunt, grade) {
   const agora = hunt.clock ?? 0;
   inst.bausSeguramDesde ??= agora;
   return agora - inst.bausSeguramDesde <= SEGURA_O_CLEAR_MS;
+}
+
+/**
+ * (03/11, rodada 2) Os baús SEGURAM A SAÍDA do MAPA do endgame? O mapa conclui ao limpar (como sempre — a conclusão, o aviso, o loop); passada a
+ * pausa do aviso (`hunt.fimEm`), a volta para a cidade ainda espera, na Caça Automática e vivo, enquanto houver um baú do PoE fechado e
+ * alcançável no seu andar — no máximo `SEGURA_A_SAIDA_DO_MAPA_MS` depois do fim da pausa. O idle anda até eles nesse meio-tempo (`bauMaisPerto`).
+ */
+export function seguramASaidaDoMapa(estado, hunt, grade) {
+  if (!ligado() || !hunt?.fimEm || hunt.modo === 'online' || !(estado?.hp > 0)) return false;
+  if (!(salaDe(hunt)?.mapa ?? hunt.mapa)) return false;
+  if (daSala(hunt)?.status !== 'limpa') return false;
+  if ((hunt.clock ?? 0) - hunt.fimEm > SEGURA_A_SAIDA_DO_MAPA_MS) return false;
+  return !!bauMaisPerto(hunt, grade);
 }
 
 function definicao() {

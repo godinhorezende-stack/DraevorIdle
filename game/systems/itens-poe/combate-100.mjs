@@ -108,7 +108,21 @@ export const fracaoDoAlcance = (metros, temExtra) => {
   const c = Math.max(0, Number(metros) || 0) / 2;
   return Math.round((c - Math.floor(c)) * 1000) / 1000;
 };
-/** A casa a mais do alcance agora: 1 na chance da fração (`fracaoDoAlcance`), pela sorte do golpe. */
+/**
+ * (DECISÃO DO DONO, 03/11 — o alcance "suave") As casas a mais do alcance corpo a corpo: a ARMA dá as casas dela sozinha (os metros dela ÷ 2, sem a fração — como
+ * o jogo já calculava antes do lote combate); só os metros A MAIS (`metrosExtra`, as linhas) valem meia casa cada: a parte inteira soma e a fração vira a chance de
+ * mais uma (`casaDaFracao`, a sorte renovada a cada golpe). +0,2 m = 10% de +1 casa; +0,9 m = 45%; +2,0 m = +1 casa certa; +2,4 m = +1 casa e 20% de +2. Sem
+ * metros a mais (ou com menos — "reduzido"), os metros juntos ÷ 2, sem chance, como antes. `{ inteiras, fracao }`.
+ */
+export function casasDoAlcance(metrosDaArma, metrosExtra) {
+  const arma = Math.max(0, Number(metrosDaArma) || 0);
+  const extra = Number(metrosExtra) || 0;
+  if (!(extra > 0)) return { inteiras: Math.floor(Math.max(0, arma + extra) / 2 + 1e-9), fracao: 0 };
+  const c = extra / 2;
+  const inteiras = Math.floor(c + 1e-9);
+  return { inteiras: Math.floor(arma / 2 + 1e-9) + inteiras, fracao: Math.max(0, Math.round((c - inteiras) * 1000) / 1000) };
+}
+/** A casa a mais do alcance agora: 1 na chance da fração (`fracaoDoAlcance`, `casasDoAlcance`), pela sorte do golpe. */
 export const casaDaFracao = (hunt, fracao) => (ligado() && fracao > 0 && sorteDoAlcance(hunt) < fracao ? 1 : 0);
 
 // ---------------------------------------------------------------- o empurrão em você

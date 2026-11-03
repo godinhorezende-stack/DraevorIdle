@@ -45,7 +45,7 @@ import * as ModsPoeEfeitos from './itens-poe/mods-poe.mjs';
 import * as Vinculos from './itens-poe/vinculos.mjs';
 import * as Reserva from './itens-poe/reserva.mjs';
 import { classeDe as classePoeDe } from './itens-poe/classes.mjs';
-import { fracaoDoAlcance } from './itens-poe/combate-100.mjs';
+import { casasDoAlcance } from './itens-poe/combate-100.mjs';
 
 /*
  * Os `skill:*` da árvore em perícias de verdade. Melee é uma perícia só
@@ -552,10 +552,11 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // sempre ao alcance (as casas encostam) e cada casa a mais pede 2 m (o vão de uma casa). Antes só os metros a mais contavam, sem a arma.
     // Desarmado: o PoB não traz o alcance do golpe desarmado — só os metros a mais.
     alcanceCorpoM: itensPoeLigado() ? alcanceCorpoEmMetros(pecaDaArma, af) : 0,
-    alcanceCorpoExtra: itensPoeLigado() ? Math.floor(alcanceCorpoEmMetros(pecaDaArma, af) / 2) : 0,
-    // (100% — combate, 02/11: "o alcance em décimos de metro") com metros a mais das linhas, a FRAÇÃO das casas (os metros ÷ 2) é a chance de uma casa a
-    // mais no golpe, como na área (`Combate100.casaDaFracao`, pela sorte do golpe); sem metros a mais, o da arma fica como estava
-    alcanceCorpoFracao: itensPoeLigado() ? fracaoDoAlcance(alcanceCorpoEmMetros(pecaDaArma, af), (Number(af?.alcance_corpo_m) || 0) > 0) : 0,
+    // (DECISÃO DO DONO, 03/11 — o alcance "suave": as casas da ARMA sozinha + as dos metros A MAIS, meia casa por metro — `Combate100.casasDoAlcance`)
+    alcanceCorpoExtra: itensPoeLigado() ? casasDoAlcance(alcanceCorpoEmMetros(pecaDaArma, {}), Number(af?.alcance_corpo_m) || 0).inteiras : 0,
+    // (100% — combate, 02/11: "o alcance em décimos de metro") com metros a mais das linhas, a FRAÇÃO é a chance de uma casa a mais no golpe, como na área
+    // (`Combate100.casaDaFracao`, pela sorte do golpe); sem metros a mais, o da arma fica como estava. (03/11: a fração é só a dos metros A MAIS — `casasDoAlcance`.)
+    alcanceCorpoFracao: itensPoeLigado() ? casasDoAlcance(alcanceCorpoEmMetros(pecaDaArma, {}), Number(af?.alcance_corpo_m) || 0).fracao : 0,
     // O resto dos afixos, para quem usa: velocidade de ataque (%), dano por
     // elemento (%), dano/cura de magia (%), Onslaught (%), exp e loot (%).
     // % de Attack Speed: o add + o que a DEX dá.
