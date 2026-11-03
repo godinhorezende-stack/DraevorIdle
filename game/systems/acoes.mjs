@@ -55,6 +55,7 @@ import * as Reserva from './itens-poe/reserva.mjs';
 import * as Plantadas from './itens-poe/armas-plantadas.mjs';
 import * as Runas from './itens-poe/runas-vinculadas.mjs';
 import * as Vinculos from './itens-poe/vinculos.mjs';
+import * as Iluminacao from './itens-poe/iluminacao.mjs';
 import * as Aco from './itens-poe/convocar-o-aco.mjs';
 import * as Mercenarios from './itens-poe/mercenarios.mjs';
 import * as CargasDoPoe from './itens-poe/cargas.mjs';
@@ -8583,6 +8584,8 @@ function fotoDoVinculo(estado, hunt, ficha, lk) {
     vidaMax: estado.maxHp ?? 0, bloqueioPct: Math.round((ficha.blockChance ?? 0) * 1000) / 10, critPct: Math.round((ficha.critChance ?? 0) * 1000) / 10,
     efeitoPct: v('efeito_buff_gema:vinculo'), porMetadePct: v('vinculo_efeito_por_metade'), mov2: v('vinculos2_move_speed'), defesas4: v('vinculos4_defesas'),
     velocidadeIgual: v('velocidade_igual_vinculados') > 0, maldicoesEmVoce: v('maldicoes_em_voce_vinculo') > 0, feixe: v('feixe_sem_afeccao') > 0,
+    // (lote "luz", a Glória Dourada do Luminary: o "aumentado" do Raio de Iluminação no Efeito dos Vínculos no mercenário — `Iluminacao.luzNoMercenarioPct`)
+    ...(Iluminacao.luzNoMercenarioPct(ficha.afPoe) ? { luzNoMercenarioPct: Iluminacao.luzNoMercenarioPct(ficha.afPoe) } : {}),
     ...(v('vinculo_compartilha_cargas') > 0 && ficha.cargas ? { cargas: CargasDoPoe.adds(estado, ficha.cargas) ?? {} } : {}),
   };
   if (lk.foto.velocidadeIgual) lk.velocidadeDosAlvos = Math.max(0, ...lk.alvos.filter((a) => a.tipo === 'jogador').map((a) => { const quem = Vinculos.resolver(hunt, a); return quem ? Ficha.combate(quem).speed ?? 0 : 0; }));

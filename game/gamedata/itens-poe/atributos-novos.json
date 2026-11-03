@@ -242,7 +242,8 @@
     "light_radius": {
       "nome": "Raio de Iluminação aumentado",
       "unidade": "%",
-      "combate": false
+      "combate": true,
+      "efeito": "itens-poe/iluminacao.mjs: o raio da luz em volta de você na caçada (a escuridão fora dele) e o que depende da luz (dano, área, precisão, o Eclipse Solaris, a Glória Dourada — a escala stat:light_radius)"
     },
     "dot_multi": {
       "nome": "Multiplicador do Dano Degenerativo",
@@ -8269,6 +8270,42 @@
       "unidade": "",
       "combate": true,
       "efeito": "personagem/defesa.absorver: o dano não reinicia a espera da recarga (lote E1b, 26/10)"
+    },
+    "luz_pelo_escudo": {
+      "nome": "Raio de Iluminação pelo Escudo de Energia",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/iluminacao.mjs.fracaoDaLuz: a luz encolhe com o Escudo de Energia que falta, não com a vida"
+    },
+    "cegueira_sem_luz": {
+      "nome": "Cegueira não afeta o Raio de Iluminação",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/iluminacao.mjs.raioDaLuz: a Cegueira em você não encolhe a luz"
+    },
+    "luz_no_vinculo_mercenario": {
+      "nome": "Raio de Iluminação no Efeito dos Vínculos no mercenário",
+      "unidade": "",
+      "combate": true,
+      "efeito": "vinculos.doLacaio: o aumentado da luz soma no Efeito do Buff dos Vínculos no mercenário (a foto do Vínculo)"
+    },
+    "tamanho_personagem": {
+      "nome": "Tamanho do Personagem aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/iluminacao.mjs.tamanhoDoPersonagem: o desenho do personagem na escala (no PoE o tamanho só muda o desenho)"
+    },
+    "tamanho_zumbi": {
+      "nome": "Tamanho dos Zumbis aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/iluminacao.mjs.tamanhoDoLacaio: o desenho dos zumbis na escala"
+    },
+    "tamanho_golem": {
+      "nome": "Tamanho dos Golens aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/iluminacao.mjs.tamanhoDoLacaio: o desenho dos golens na escala"
     }
   }
 }

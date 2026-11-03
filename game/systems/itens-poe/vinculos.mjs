@@ -122,10 +122,10 @@ export function criar(hunt, { acao, slug, nome, props, alvos, duracaoMs, custoPo
  * O fator do Efeito do Buff do Vínculo agora (a foto: o "Efeito do Buff aumentado" de quem vincula) + "Efeito do Buff dos seus Vínculos
  * aumentado em X% para cada 50% de Duração do Vínculo que tenha Expirado".
  */
-export function fatorDoEfeito(lk, agora) {
+export function fatorDoEfeito(lk, agora, extraPct = 0) {
   const f = lk.foto ?? {};
   const fracao = (agora - lk.desde) / Math.max(1, lk.ate - lk.desde);
-  return Math.max(0, 1 + ((f.efeitoPct ?? 0) + (f.porMetadePct ?? 0) * Math.floor(Math.min(1, fracao) * 2)) / 100);
+  return Math.max(0, 1 + ((f.efeitoPct ?? 0) + extraPct + (f.porMetadePct ?? 0) * Math.floor(Math.min(1, fracao) * 2)) / 100);
 }
 
 /** Os atributos que UM Vínculo dá ao alvo JOGADOR agora (a foto de quem vinculou e os efeitos da gema, × o Efeito do Buff). */
@@ -193,7 +193,8 @@ export function doLacaio(hunt, l, agora = hunt?.clock ?? 0) {
     if (!(lk.ate > agora) || !(lk.alvos ?? []).some((a) => a.tipo === 'lacaio' && a.uid === l.uid)) continue;
     const e = lk.efeitos ?? {};
     const f = lk.foto ?? {};
-    const x = fatorDoEfeito(lk, agora);
+    // (lote "luz", a Glória Dourada: no MERCENÁRIO, o "aumentado" do Raio de Iluminação soma no Efeito do Buff — `foto.luzNoMercenarioPct`)
+    const x = fatorDoEfeito(lk, agora, l.mercenario ? f.luzNoMercenarioPct ?? 0 : 0);
     r ??= { fogo: [0, 0], menosDano: 0, escudoPct: 0, critMult: 0, critPct: 0, bloqueioPct: 0, vidaAoBloquear: 0 };
     const daVida = ((f.vidaMax ?? 0) * (e.fogoVidaPct ?? 0)) / 100;
     if (e.fogoMin || e.fogoVidaPct) { r.fogo[0] += ((e.fogoMin ?? 0) + daVida) * x; r.fogo[1] += ((e.fogoMax ?? 0) + daVida) * x; }
