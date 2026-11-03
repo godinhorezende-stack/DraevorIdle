@@ -8459,7 +8459,9 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
         const vezes = objetoDoUso?.tipo === 'tormenta' || objetoDoUso?.tipo === 'escudo' ? 1 + repeticoesDoUso(entry, efeitoDaGema, ficha, { gatilho, plantada }) : 1;
         for (let k = 0; k < vezes; k++) eventos.push(...criarObjetosDoUso(estado, hunt, entry, efeitoDaGema, { obj: objetoDoUso, alvo, mira, x, y, formaNoUso, emitidos: emitidosDoUso, laminas: k ? null : laminasDoUso, novas: k ? null : novasDosDisparos, velDoTiro, conta, doTotem, dono: doTotem ? plantada?.dono ?? null : null, cadaveres: k ? null : cadaveresDoUso, agora }));
       }
-      if (deProjetil && !doTotem && emitidosDoUso.length && hunt.poeObjetos?.length) absorverNosTornados(hunt, emitidosDoUso, danoMedio, agora);
+      // (03/11 — a integração do voo de verdade: o golpe do projétil sai no CONTATO, mas o projétil passou pela casa do Tornado logo que saiu — a fase inicial
+      // conta pelo instante em que ele saiu, `saiDoVoo`, não pelo da chegada: a Faísca que vagueia 1,8 s até o alvo era absorvida no PoE e aqui não)
+      if (deProjetil && !doTotem && emitidosDoUso.length && hunt.poeObjetos?.length) absorverNosTornados(hunt, emitidosDoUso, danoMedio, saiDoVoo);
       // (lote C3, dono 25/10) a VARRIDA SAGRADA: "Convoca Martelos Sagrados em até N inimigos atingidos" — N dos atingidos, sorteados; cada martelo cai neles no raio do
       // martelo (1,2 m × √ da Área), com o "−35%", sem poder ser evadido (`pulsarObjetoC3`, no tique)
       if (c3?.martelos?.alvos > 0 && !plantada && !doTotem && atingidos?.length) {
