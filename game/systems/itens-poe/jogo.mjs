@@ -470,7 +470,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (75 — 02/11: as linhas da Salvaguarda que faltavam — o Caos do Aperto Noturno, a Decisão de Olroth, a Preparação de Vorana, a Postura de Ynda e as das Joias
 // Atemporais: a Intacta/Rompida, o "+N por N de Armadura/Evasão/Escudo da peça", a Evasão e a redução física pela Salvaguarda, a chance de não se Romper, o ataque que
 // rompe, os Frascos de Ferro e a Afecção removida na restauração — `personagem/salvaguarda.mjs`)
-export const VERSAO_DA_TRADUCAO = 75;
+// (76 — 03/11, 100% — dados: as Habilidades Prismáticas — o Foco de Combate na árvore, `itens-poe/prismaticas.mjs` — e as Tatuagens — o Conto do Guerreiro, o
+// Devorador de Corações; `passivas/tatuagens.mjs`)
+export const VERSAO_DA_TRADUCAO = 76;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

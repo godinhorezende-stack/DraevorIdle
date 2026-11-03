@@ -1233,6 +1233,22 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
       }
       return;
     }
+    // (100% — dados, 03/11) `consumirCadaverChance:<hp|mana|es>:<pct>` = a CHANCE (%): "Golpes Abatedores têm 4% de chance de Consumir cadáveres para recuperar 10% da
+    // Vida Máxima" (a Tatuagem do Devorador de Corações de Kitava) — no Golpe de Misericórdia, o cadáver do morto é consumido (ele não deixa cadáver: `poeDevorado`,
+    // como o Devorar — `hunt/combate`), marca o "Consumiu um cadáver Recentemente" e recupera pct% do máximo
+    case 'consumirCadaverChance': {
+      if (!sorte(v)) return;
+      const [rec, pct] = String(ev.param ?? '').split(':');
+      if (alvo) alvo.poeDevorado = true;
+      marcar(hunt, 'consumiuCadaver', agora);
+      ((hunt.poeUsosRecentes ??= {}).cadaver ??= []).push(agora);
+      while (hunt.poeUsosRecentes.cadaver.length > 60) hunt.poeUsosRecentes.cadaver.shift();
+      evento(estado, hunt, 'consumirCadaver', ficha, { agora, eventos });
+      const recurso = rec === 'es' ? 'es' : rec === 'mana' ? 'mana' : 'hp';
+      const max = recurso === 'es' ? esMax : recurso === 'mana' ? estado.maxMana ?? 0 : estado.maxHp ?? 0;
+      curar(recurso, max, (max * (Number(pct) || 0)) / 100);
+      return;
+    }
     // `vidaDaRegen:<por>` = N: recupera N de Vida por cada `<por>` de Vida Regenerada por segundo ("A cada 4 segundos, Recupere 1 de vida por
     // cada 0.1 Vida Recuperada por segundo da Regeneração").
     case 'vidaDaRegen': { const r = ficha?.regenPoe?.vidaPorSegundo ?? 0; const por = Number(ev.param) || 1; if (r > 0) curar('hp', estado.maxHp ?? 0, (r / por) * v); return; }

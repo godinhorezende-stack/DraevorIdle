@@ -93,6 +93,8 @@ import * as GemasPR2 from './itens-poe/gemas-pr2.mjs';
 import * as GemasPR3 from './itens-poe/gemas-pr3.mjs';
 import * as GemasPR4 from './itens-poe/gemas-pr4.mjs';
 import * as GemasC1 from './itens-poe/gemas-c1.mjs';
+// (100% — dados, 03/11) as Habilidades PRISMÁTICAS: o elemento sem os proibidos do Foco de Combate e sem repetir; a forma do Golpe Selvagem pelo elemento
+import * as Prismaticas from './itens-poe/prismaticas.mjs';
 // (lote C2, dono 20/10: os contadores próprios e as cargas consumidas das gemas de corpo a corpo, impacto e canalização)
 import * as GemasC2 from './itens-poe/gemas-c2.mjs';
 // (lote C3, dono 25/10: a postura e os objetos no tempo das gemas de corpo a corpo, impacto e canalização)
@@ -719,7 +721,7 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
       // (lote A5c, dono 20/10: a mesma ordem das magias — a conversão da GEMA primeiro, as das outras fontes só no Físico que sobrou, proporcionais se passarem
       // dele, e o "como Extra" sobre o Físico de antes da conversão, todo o Físico do golpe; antes saíam da arma crua, sem a eficácia, e a gema convertia o resto)
       const outras = (fis, teto) => ModsPoe.extrasDoFisico(fichaBase, fis, Math.random, teto);
-      for (const [el, v] of Object.entries(GemasPoe.partesDoAtaque(daGemaPoe.slug, nivelPoe, { min: armaDoGolpe.min, max: armaDoGolpe.max, elemento: armaDoGolpe.elemento ?? 'physical' }, extras, Math.random, { outras, origens, escolhido: elementoSorteado, conversoesExtras: GemasPoe.conversoesDosSuportes(efeitoDaGema) }))) somar(el, v);
+      for (const [el, v] of Object.entries(GemasPoe.partesDoAtaque(daGemaPoe.slug, nivelPoe, { min: armaDoGolpe.min, max: armaDoGolpe.max, elemento: armaDoGolpe.elemento ?? 'physical' }, extras, Math.random, { outras, origens, escolhido: elementoSorteado, conversoesExtras: GemasPoe.conversoesDosSuportes(efeitoDaGema), proibidos: tagsDoUso.includes('prismatico') ? Prismaticas.proibidos(fichaBase) : null }))) somar(el, v);
     } else {
       // (lote A5c, dono 20/10: "corrigir como o PoE") o adicionado vai JUNTO com o dano da gema para `GemasPoe.partesDaMagia`, que converte o Físico de
       // tudo — a conversão da gema, depois a das outras fontes (`ModsPoe.extrasDoFisico`, só no que a gema deixou) e o Físico como Extra —, como nos ataques
@@ -744,7 +746,7 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
       const doRecurso = baseDoRecursoNoUso(estado, daGemaPoe.slug, nivelPoe, efeitoDaGema, fichaBase);
       if (doRecurso > 0) adicionar('chaos', [doRecurso, doRecurso]);
       // (lote B1: + `basePor` — a Descarga, o dano base de cada elemento × as cargas do tipo dele; o adicionado não multiplica)
-      const daMagia = GemasPoe.partesDaMagia(daGemaPoe.slug, nivelPoe, adicionado, { elementoSorteado, origens, outras: (fis, teto) => ModsPoe.extrasDoFisico(fichaBase, fis, Math.random, teto), basePor: efeitoDaGema?.danoBasePor ?? null, baseExtra: efeitoDaGema?.danoBaseExtra ?? null, conversoesExtras: GemasPoe.conversoesDosSuportes(efeitoDaGema) });
+      const daMagia = GemasPoe.partesDaMagia(daGemaPoe.slug, nivelPoe, adicionado, { elementoSorteado, proibidos: tagsDoUso.includes('prismatico') ? Prismaticas.proibidos(fichaBase) : null, origens, outras: (fis, teto) => ModsPoe.extrasDoFisico(fichaBase, fis, Math.random, teto), basePor: efeitoDaGema?.danoBasePor ?? null, baseExtra: efeitoDaGema?.danoBaseExtra ?? null, conversoesExtras: GemasPoe.conversoesDosSuportes(efeitoDaGema) });
       for (const [el, v] of Object.entries(daMagia)) somar(el, v);
     }
     // PoE (únicos): as conversões entre elementos, os ganhos extras e a máscara de dano ("Não Causa Dano Elemental"…).
@@ -1328,7 +1330,9 @@ export function prismaNoAcerto(estado, hunt, personagem, entry, ef, alvo, rng = 
   const recargaMs = Math.round((ef.prismaRecargaMs ?? 800) / Math.max(0.1, 1 + (ef.prismaRecargaIncPct ?? 0) / 100));
   if (!SuportesS2B.gastarUso(hunt, `prisma:${entry.id}`, recargaMs, 1, hunt.clock ?? 0)) return eventos;
   const at = Ficha.combate(estado).atributos ?? {};
-  const el = SuportesS2B.elementoDoPrisma(at.str, at.dex, at.int, rng);
+  // (100% — dados, 03/11: a Explosão Prismática é prismática — sem os elementos que o Foco de Combate proíbe; os pesos pelos atributos ficam)
+  const proib = Prismaticas.proibidos(Ficha.combate(estado));
+  const el = proib.size ? Prismaticas.elementoPorPesos([['fire', Math.max(0, Number(at.str) || 0)], ['ice', Math.max(0, Number(at.dex) || 0)], ['energy', Math.max(0, Number(at.int) || 0)]], proib, rng) : SuportesS2B.elementoDoPrisma(at.str, at.dex, at.int, rng);
   const faixas = { fire: [ef.prismaMin_fire, ef.prismaMax_fire], ice: [ef.prismaMin_ice, ef.prismaMax_ice], energy: [ef.prismaMin_energy, ef.prismaMax_energy] };
   const [min, max] = (faixas[el] ?? []).map((x) => x ?? 0);
   if (!(max > 0)) return eventos;
@@ -4967,10 +4971,20 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   }
   //  - o Acerto Elemental: o elemento do uso é escolhido agora, sem repetir o anterior (guardado até o uso sair, como o raio sorteado), e o raio fica "80% mais"
   //    contra o alvo com a afecção daquele elemento
+  // (100% — dados, 03/11) + o GOLPE SELVAGEM (e o dos Extremos): "Ela evitará escolher o mesmo elemento duas vezes consecutivas"; e os dois sem os elementos que o
+  // Foco de Combate proíbe ("Habilidades Prismáticas não podem escolher Fogo" — `Prismaticas.proibidos`)
   let elementoDoAcerto = null;
-  if (c1?.raioContraAfeccaoPct && !plantada) {
+  const golpeSelvagem = itensPoeLigado() && entry.poeGema && !plantada && Prismaticas.ehGolpeSelvagem(entry.poeGema.slug);
+  if ((c1?.raioContraAfeccaoPct || golpeSelvagem) && !plantada && hunt) {
     const pend = (hunt.poeElementoPendente ??= {});
-    elementoDoAcerto = pend[entry.id] ??= GemasC1.escolherElemento(hunt.poeElementoAnterior?.[entry.id] ?? null);
+    elementoDoAcerto = pend[entry.id] ??= Prismaticas.escolherElemento(hunt.poeElementoAnterior?.[entry.id] ?? null, Prismaticas.proibidos(Ficha.combate(estado)));
+  }
+  //  - o Golpe Selvagem pelo elemento escolhido (o PoB, act_dex.lua WildStrike): FOGO — a explosão de 2,4 m em volta do alvo; RAIO — o raio que ricocheteia (os
+  //    "Raios Ricocheteiam N Vezes"); GELO — a onda: os projéteis que perfuram todos
+  if (golpeSelvagem && elementoDoAcerto && efeitoDaGema) {
+    const u = Prismaticas.usoDoGolpeSelvagem(entry, efeitoDaGema, elementoDoAcerto, (r) => Areas.circulo({ x: 0, y: 0 }, r).map((c) => [c.x, c.y]));
+    entry = u.entry;
+    efeitoDaGema = u.efeito;
   }
   const raioDaAfeccao = elementoDoAcerto && alvo && GemasC1.temAfeccaoDoElemento(alvo, elementoDoAcerto, agora) ? (GemasPoe.areaNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0).raioM ?? 0) * (c1.raioContraAfeccaoPct / 100) : 0;
   entry = formaNoRaioDoPoe(entry, efeitoDaGema, Math.random, { hunt, minimo: plantada?.tipo === 'armadilha' ? plantada.raioDeAtivacao ?? Plantadas.PADRAO.armadilha.raioDeAtivacao : 0, raioExtraM: (estagioDoUso?.raioExtraM ?? 0) + raioDaFuria + raioDosInimigos + raioDaAfeccao + (b2?.chicote?.raioExtraM ?? 0) + (plantada?.raioExtraM ?? 0) });
@@ -10891,7 +10905,8 @@ function criarObjetosDoUso(estado, hunt, entry, ef, { obj, alvo, mira, x, y, for
   const q = ef?.qualidade ?? 0;
   // (lote A5c, dono 20/10) a conversão "em Fogo, Gelo ou Raio" da gema (o Tornado da Turbulência Elemental — "Cria um Tornado de um elemento aleatório",
   // o PoB): o elemento é sorteado UMA vez por objeto, ao criá-lo, e vale em todos os golpes dele (`golpeDoObjeto` → `contaDoDano`)
-  const sorteado = GemasPoe.conversaoDaMagia(slug, nivel).some((c) => c.para === 'aleatorio') ? ['fire', 'ice', 'energy'][Math.floor(Math.random() * 3)] : null;
+  // (100% — dados: sem os elementos que o Foco de Combate proíbe — `Prismaticas.proibidos`)
+  const sorteado = GemasPoe.conversaoDaMagia(slug, nivel).some((c) => c.para === 'aleatorio') ? Prismaticas.escolherElemento(null, Prismaticas.proibidos(Ficha.combate(estado))) : null;
   const base = { acao: entry.id, slug, el: entry.element ?? null, dono: doTotem ? 'totem' : 'voce', ...(doTotem && dono ? { donoPos: { x: dono.x, y: dono.y } } : {}), ...(sorteado ? { elementoSorteado: sorteado } : {}) };
   const raioEmCasas = (m) => Math.max(0, casasDoRaio(m * Math.sqrt(ModsPoe.fatorDaArea(ef?.areaIncPct ?? 0, ef?.areaMaisPct ?? 0))));
   const rumo = (para) => (para && (para.x !== x || para.y !== y) ? Math.atan2(para.y - y, para.x - x) : RUMO_DA_DIRECAO[hunt.pos?.dir ?? 2] ?? 0);

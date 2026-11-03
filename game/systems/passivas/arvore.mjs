@@ -25,6 +25,8 @@ import * as Keystones from './keystones.mjs';
 import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
 import { classeDe as classeDoPoe } from '../itens-poe/classes.mjs';
 import { definirLeitorDeMaestrias, definirLeitorDeJoias, slugDoNome } from '../itens-poe/condicoes-poe.mjs';
+// (100% — dados, 03/11) as Habilidades Prismáticas (o Foco de Combate no raio — `raiosDasJoias`)
+import * as Prismaticas from '../itens-poe/prismaticas.mjs';
 
 const ler = (arq) => JSON.parse(readFileSync(new URL(`../../gamedata/passivas/${arq}`, import.meta.url), 'utf8'));
 export const CONFIG = ler('config.json');
@@ -251,6 +253,8 @@ export function garantir(estado) {
     const ficam = p.alocados.filter((id) => g.porId.has(id));
     if (ficam.length !== p.alocados.length) p.alocados.splice(0, p.alocados.length, ...ficam);
   }
+  // (100% — dados) as Tatuagens de nós que não existem mais (a árvore mudou) ou que não aceitam mais a tatuagem saem (`passivas/tatuagens.limpar`)
+  if (TATUAGENS && p.tatuagens) TATUAGENS.limpar(estado, p);
   return { passivas: p, migrou, arvoreMudou };
 }
 
@@ -411,7 +415,11 @@ function podeAlocarMaestria(estado, no, opcao, meus) {
 }
 
 /** Os efeitos que um nó dá: o da maestria é o da opção escolhida. */
-const efeitosDoNo = (no, passivas) => (no.tipo === 'mastery' ? no.opcoes?.find((o) => o.id === passivas?.maestrias?.[no.id])?.efeitos ?? [] : no.efeitos ?? []);
+// (100% — dados, 03/11) o nó TATUADO: os efeitos da Tatuagem no lugar dos dele ("Substitui uma Habilidade Passiva …" — `passivas/tatuagens.mjs`, que se
+// registra aqui: `definirTatuagens`)
+let TATUAGENS = null;
+export function definirTatuagens(t) { TATUAGENS = t; }
+const efeitosDoNo = (no, passivas) => (TATUAGENS && passivas?.tatuagens?.[no.id] && TATUAGENS.efeitosDoNo(no, passivas)) || (no.tipo === 'mastery' ? no.opcoes?.find((o) => o.id === passivas?.maestrias?.[no.id])?.efeitos ?? [] : no.efeitos ?? []);
 
 /**
  * Tirar estes nós deixaria algum outro ilhado (sem caminho até o início)?
@@ -817,6 +825,18 @@ function raiosDasJoias(estado, alocados) {
         somar('espectro_devorador_chance', v0(x.af, 'raio_fome_chance'));
         extras.espectro_devorador_s = Math.max(extras.espectro_devorador_s ?? 0, v0(x.af, 'raio_fome_s'));
       }
+      // (100% — dados, 03/11) o FOCO DE COMBATE: "Com um total de 40 de <A> e <B> no Raio, Habilidades Prismáticas não podem escolher <Elemento>" /
+      // "… causam 50% menos Dano de <Elemento>" — a soma dos DOIS atributos das passivas ALOCADAS no raio (os pares do PoB — `Prismaticas.ATRIBUTOS_DO_FOCO`)
+      // → `prisma_nao_escolhe_<el>` (a escolha do elemento — `itens-poe/prismaticas.mjs`) e o "menos" com a tag do golpe prismático
+      for (const [el, [a, b]] of Object.entries(Prismaticas.ATRIBUTOS_DO_FOCO)) {
+        const k = Prismaticas.CHAVES[el];
+        const pedeNao = v0(x.af, k.naoNoRaio);
+        const pedeMenos = v0(x.af, k.menosLimiar);
+        if (!(pedeNao > 0) && !(pedeMenos > 0)) continue;
+        const soma = nos.filter((n) => meus.has(n.id)).reduce((t, n) => t + atributoDoNo(n, estado.passivas, a) + atributoDoNo(n, estado.passivas, b), 0);
+        if (pedeNao > 0 && soma >= pedeNao) extras[k.nao] = 1;
+        if (pedeMenos > 0 && soma >= pedeMenos) somar(`mais_dano_${Prismaticas.PT[el]}@prismatico`, -v0(x.af, k.menos));
+      }
     }
     // (lote 52) o TALENTO PURO: "Enquanto sua Árvore Passiva se conectar com a de outra classe, receba: …" — o bônus de cada classe cujo início a
     // árvore alcança (o da sua classe sempre; o de outra, com uma passiva sua encostada nele). Sem raio: vale de qualquer encaixe.
@@ -826,7 +846,8 @@ function raiosDasJoias(estado, alocados) {
 }
 
 /** Os efeitos de um nó alocado com as joias que o alcançam (`raiosDasJoias().porNo`): a lista nova (sem as joias, a de sempre). */
-function efeitosNoRaio(no, efs, joias) {
+// (100% — dados: `tatuado` — o nó com Tatuagem: o "Efeito das Tatuagens no Raio aumentado em X%" do Conto do Guerreiro)
+function efeitosNoRaio(no, efs, joias, tatuado = false) {
   // (lote 48) o nó CONQUISTADO por uma Atemporal: as linhas da conquista no lugar das dele (ou somadas a elas); "Habilidades Passivas
   // Conquistadas não podem ser modificadas por outras joias" — as outras joias do raio não mexem nele.
   const cq = conquistaDoNo(no, joias);
@@ -848,6 +869,11 @@ function efeitosNoRaio(no, efs, joias) {
     if (no.tipo === 'notable' && vira.length) {
       lista = vira.map(([k, add]) => ({ add, valor: v0(af, k) }));
       continue;
+    }
+    // (100% — dados, 03/11) o Conto do Guerreiro: "Efeito das Tatuagens no Raio aumentado em 100%" — os números da Tatuagem do nó × (1 + X%)
+    if (tatuado && v0(af, 'raio_efeito_tatuagens')) {
+      const f = 1 + v0(af, 'raio_efeito_tatuagens') / 100;
+      lista = lista.map((ef) => comValor(ef, valorDoEf(ef) * f));
     }
     if (no.tipo !== 'notable' && no.tipo !== 'keystone' && v0(af, 'raio_efeito_nao_notaveis')) {
       const f = 1 + v0(af, 'raio_efeito_nao_notaveis') / 100;
@@ -931,7 +957,8 @@ const VAZIO = Object.freeze({ adds: {}, dano: {}, stats: {}, legado: {}, keyston
 export function efeitos(estado) {
   if (!estado) return VAZIO;
   const alocados = estado.passivas?.alocados ?? [];
-  const joias = estado.passivas?.joiasVersao ?? 0;
+  // (100% — dados: + a versão das Tatuagens — tatuar muda os efeitos sem mudar a alocação)
+  const joias = `${estado.passivas?.joiasVersao ?? 0}:${estado.passivas?.tatuagensVersao ?? 0}`;
   const guardado = CACHE.get(estado);
   // Caminho rápido: o mesmo array, do mesmo tamanho e com a mesma ponta (alocar põe no fim; respec muda o tamanho).
   if (guardado && guardado.ref === alocados && guardado.n === alocados.length && guardado.ultimo === alocados[alocados.length - 1] && guardado.primeiro === alocados[0] && guardado.joias === joias) return guardado.valor;
@@ -955,7 +982,7 @@ export function efeitos(estado) {
     if (!no) continue;
     if (no.dominio) r.dominios[no.dominio] = (r.dominios[no.dominio] ?? 0) + 1;
     const doRaio = raios?.porNo.get(id);
-    for (const ef of doRaio ? efeitosNoRaio(no, efeitosDoNo(no, estado.passivas), doRaio) : efeitosDoNo(no, estado.passivas)) {
+    for (const ef of doRaio ? efeitosNoRaio(no, efeitosDoNo(no, estado.passivas), doRaio, !!(TATUAGENS && estado.passivas?.tatuagens?.[no.id])) : efeitosDoNo(no, estado.passivas)) {
       if (ef.tag) {
         r.dano[ef.tag] = (r.dano[ef.tag] ?? 0) + ef.dano;
         fonte(ef.tag, no.nome, ef.dano);
@@ -1023,9 +1050,13 @@ export function vista(estado, emCacada = false) {
     ...(() => { const g = grafoDe(estado); return g.extras.size ? { ramificadoras: { nos: [...g.extras.values()].map(noDaRamificadoraParaCliente), encaixes: Object.fromEntries([...g.porEncaixe.keys()].map((id) => [id, g.porId.get(id)?.conexoes ?? []])) } } : {}; })(),
     // (lote 48) as passivas CONQUISTADAS pelas Atemporais encaixadas (as do raio, alocadas ou não): o balão mostra as linhas da conquista
     ...(passivas.joias && CONQUISTA ? (() => { const c = conquistasParaATela(estado); return Object.keys(c).length ? { conquistas: c } : {}; })() : {}),
+    // (100% — dados) as TATUAGENS: as dos nós (`tatuagens`: o nome, as linhas, o ícone) e os nós alocados que aceitam uma (`tatuaveis`: o tipo)
+    ...(TATUAGENS && ARVORE.id === 'poe' ? TATUAGENS.paraATela(estado) : {}),
   };
 }
 const CONQUISTADORES = { vaal: 'pelos Vaal', karui: 'pelos Karui', maraketh: 'pelos Maraketh', templar: 'pelos Templários', eternal: 'pelo Império Eterno', kalguur: 'pelos Kalguuranos' };
+/** (100% — dados) Os ids dos nós CONQUISTADOS pelas Atemporais encaixadas (a Tatuagem não entra neles — `passivas/tatuagens.mjs`). */
+export const nosConquistados = (estado) => new Set(estado?.passivas?.joias && CONQUISTA ? Object.keys(conquistasParaATela(estado)) : []);
 /** (lote 48) `{ nó: { nome, linhas, estados, substitui, por } }` dos nós no raio das Atemporais encaixadas (a primeira que alcança vale). */
 function conquistasParaATela(estado) {
   const saida = {};

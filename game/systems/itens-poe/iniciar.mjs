@@ -22,6 +22,8 @@ import './atemporais.mjs';
 import './aprendizado-inspirado.mjs';
 // (lote 64) as Ramificadoras: quem monta os nós da joia se registra na árvore (`passivas/arvore.definirRamificadoras`)
 import '../passivas/ramificadoras.mjs';
+// (100% — dados, 03/11) as Tatuagens: o módulo se registra na árvore (`passivas/arvore.definirTatuagens`) e põe os itens no catálogo
+import * as Tatuagens from '../passivas/tatuagens.mjs';
 
 /** Os ganchos do jogo de verdade (a magia de cada gema, a gema ativa, o reforço, o suporte) e o catálogo de itens. */
 async function ganchosDoJogo() {
@@ -73,6 +75,8 @@ async function carregar({ log = () => {}, ...dados }) {
   // As moedas empilháveis do PoE (os itens, a loja da Zuma; o efeito na Forja do PoE — `itens-poe/moedas.mjs`).
   const moedasPoe = MoedasPoe.iniciar();
   if (moedasPoe) log(`moedas do PoE: ${moedasPoe} novas no catálogo (${MoedasPoe.MOEDAS.length} ao todo)`);
+  const tatuagens = Tatuagens.iniciar(catalogoDeItens);
+  if (tatuagens) log(`tatuagens do PoE: ${tatuagens} no catálogo`);
   if (suportesPoe.suportes) log(`suportes do PoE: ${suportesPoe.suportes} (${Object.entries(suportesPoe.porStatus).map(([k, v]) => `${k} ${v}`).join(', ')})`);
   if (campanha.atos.length) log(`campanha do PoE: ${campanha.atos.length} atos, ${campanha.areas} áreas${campanha.problemas.length ? ` — ${campanha.problemas.length} problemas: ${campanha.problemas.slice(0, 3).join(' | ')}` : ''}`);
   return { bases: r.porBase.size, campanha, gemas: gemasPoe.gemas ?? 0, suportes: suportesPoe.suportes ?? 0 };

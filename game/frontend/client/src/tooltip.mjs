@@ -2915,7 +2915,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
       : null;
   const linha = [
     semRaridade ? null : tier.name,
-    meta.moedaPoe ? 'Moedas Empilháveis' : TYPE_NAMES[meta.type] ?? meta.type,
+    meta.moedaPoe || meta.tatuagemPoe ? 'Moedas Empilháveis' : TYPE_NAMES[meta.type] ?? meta.type,
     meta.twoHanded ? 'duas mãos' : null,
     // A Draevor Over não se distingue da Draevor normal por nenhum número: a
     // diferença é o golpe pegar em área. Ver a linha inteira logo abaixo.
@@ -2932,7 +2932,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
    * onde ela pode entrar, então é ela que a linha tem de dizer.
    */
   // Moeda e gema do PoE: o cabeçalho só com o nome (a moeda diz o tipo e a pilha no corpo, logo abaixo; a gema, as tags).
-  if (!meta.moedaPoe && !meta.gemaDef?.poe) identidade.append(el('em', null, essencia ? linhaDaEssencia(peca) : linha));
+  if (!meta.moedaPoe && !meta.tatuagemPoe && !meta.gemaDef?.poe) identidade.append(el('em', null, essencia ? linhaDaEssencia(peca) : linha));
   // O Item Level: o da fase onde a peça caiu (libera os tiers dos adds); peça sem drop, o level do item-base.
   if (!essencia && meta.slot) identidade.append(el('em', 'item-level', `Item Level ${peca?.ilvl ?? meta.minLevel ?? 1}`));
   head.append(identidade, el('div', 'tip-art', null));
@@ -2962,7 +2962,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     return linha;
   };
   // A moeda do PoE, como no PoE: "Moedas Empilháveis" e "Tamanho da Pilha: 1 / 100" (o teto de todo empilhável — `itens/pilha.mjs`).
-  if (meta.moedaPoe) {
+  if (meta.moedaPoe || meta.tatuagemPoe) {
     add(linha, 'moeda-tipo');
     prop('Tamanho da Pilha', `${(peca?.count ?? 1).toLocaleString('pt-BR')} / ${(meta.pilha ?? 100).toLocaleString('pt-BR')}`);
   }
@@ -3019,7 +3019,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
    */
   if (meta.aoVestir) add('Os atributos abaixo valem com a peça VESTIDA', 'plain');
   // As moedas de uso (lapidadora, fundidora, orbes de socket) dizem o que fazem.
-  if (meta.type === 'moeda' && meta.descricao && !meta.moedaPoe) add(meta.descricao, 'plain');
+  if (meta.type === 'moeda' && meta.descricao && !meta.moedaPoe && !meta.tatuagemPoe) add(meta.descricao, 'plain');
   for (const aug of meta.augments ?? []) {
     const linha = add(aug.texto, aug.vale ? 'area' : 'plain');
     if (linha && !aug.vale) {
@@ -3094,6 +3094,13 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   }
   if (stats.children.length) node.append(stats);
   // A moeda do PoE: o que ela faz (no azul dos mods) e como usar (em cinza), cada um no seu bloco, como no PoE.
+  // (100% — dados, 03/11) a Tatuagem do PoE: o "Substitui …", as linhas (no azul dos mods) e como usar
+  if (meta.tatuagemPoe) {
+    node.append(el('div', 'tip-extra tip-moeda-ajuda', meta.tatuagemPoe.substitui));
+    for (const l of meta.tatuagemPoe.linhas ?? []) node.append(el('div', 'tip-extra tip-moeda-efeito', l));
+    if (meta.tatuagemPoe.limite) node.append(el('div', 'tip-extra tip-moeda-ajuda', `Limitado a: ${meta.tatuagemPoe.limite.n} Tatuagem de Ascendência`));
+    node.append(el('div', 'tip-extra tip-moeda-ajuda', 'Clique com o botão direito e escolha uma Habilidade Passiva alocada na árvore. Máximo de 50 Tatuagens.'));
+  }
   if (meta.moedaPoe) {
     if (meta.descricao) node.append(el('div', 'tip-extra tip-moeda-efeito', meta.descricao));
     node.append(el('div', 'tip-extra tip-moeda-ajuda', 'Clique com o botão direito para usá-la na Forja.'));

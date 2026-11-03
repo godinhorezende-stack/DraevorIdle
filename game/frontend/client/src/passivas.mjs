@@ -1113,7 +1113,9 @@ function montar(body) {
     const cab = el('div', 'poe-cab');
     // (lote 48) a passiva CONQUISTADA por uma Joia Atemporal encaixada (`vista.conquistas`): o nome e as linhas da conquista
     const conquista = vista()?.conquistas?.[n.id] ?? null;
-    cab.append(el('span', 'poe-nome', conquista?.substitui && conquista.nome ? conquista.nome : n.nome));
+    // (100% — dados, 03/11) o nó TATUADO (`vista.tatuagens`): o nome da tatuagem (ou do notável que a Proibida sorteou) e as linhas dela no lugar das do nó
+    const tatuagem = vista()?.tatuagens?.[n.id] ?? null;
+    cab.append(el('span', 'poe-nome', tatuagem ? tatuagem.sorteado?.nome ?? tatuagem.nome : conquista?.substitui && conquista.nome ? conquista.nome : n.nome));
     caixa.append(cab);
     const corpo = el('div', 'poe-corpo');
     corpo.append(el('div', 'poe-tipo', n.atributo ? 'Atributo' : (TIPOS[n.tipo] ?? n.tipo)));
@@ -1128,6 +1130,14 @@ function montar(body) {
         if (escolhida && o.id !== escolhida) continue;
         o.textos.forEach((t, i) => stats.append(linhaDaArvore(t, o.estados?.[i], o.notas?.[i])));
       }
+      corpo.append(stats);
+    } else if (tatuagem) {
+      corpo.append(sep());
+      const stats = el('div', 'poe-stats');
+      stats.append(el('div', 'poe-nota-arvore', `Tatuada: ${tatuagem.nome}${tatuagem.sorteado ? ' (notável de ascendência sorteado)' : ''}`));
+      if (tatuagem.sorteado) tatuagem.sorteado.textos.forEach((t, i) => stats.append(linhaDaArvore(t, tatuagem.sorteado.estados?.[i])));
+      else tatuagem.linhas.forEach((t, i) => stats.append(linhaDaArvore(t, tatuagem.estados?.[i])));
+      stats.append(el('div', 'poe-nota-arvore', `Antes: ${(n.textos ?? []).join(' / ') || n.nome}`));
       corpo.append(stats);
     } else if (n.textos?.length || conquista) {
       // Nó da árvore do PoE: os textos como no PoE, cada linha com a marca da tradução; o texto explicativo (nota) em itálico.
@@ -1381,6 +1391,7 @@ function montar(body) {
       }
       info.append(linha);
       if (n.encaixeDeJoia) info.append(quadroDaJoia(n, estado));
+      if (estado === 'alocado' && (v.tatuaveis?.[n.id] || v.tatuagens?.[n.id])) info.append(quadroDaTatuagem(n));
       if (estado === 'alocado' && n.tipo !== 'start') {
         const ficam = ficamSem(n.id);
         const junto = v.alocados.length - 1 - ficam.length;
@@ -1463,6 +1474,48 @@ function montar(body) {
       if (porque) fora.set(porque, (fora.get(porque) ?? 0) + 1);
     }
     for (const [porque, k] of fora) caixa.append(el('p', 'pas-aviso', `${k === 1 ? '1 Joia Ramificadora da mochila não cabe aqui' : `${k} Joias Ramificadoras da mochila não cabem aqui`}: ${porque}`));
+    return caixa;
+  }
+  /*
+   * (100% — dados, 03/11) As TATUAGENS do PoE no nó alocado escolhido: a que está nele e as da mochila que ele aceita ("Substitui uma Habilidade Passiva
+   * Pequena de Força" — o servidor confere o tipo, o máximo de 50 e o "Limitado a: 1" das Proibidas: `systems/passivas/tatuagens.mjs`). A de antes se perde.
+   */
+  function quadroDaTatuagem(n) {
+    const v = vista();
+    const caixa = el('div', 'pas-joia pas-tatuagem');
+    const atual = v?.tatuagens?.[n.id];
+    const tipo = v?.tatuaveis?.[n.id];
+    const total = Object.keys(v?.tatuagens ?? {}).length;
+    caixa.append(el('b', null, atual ? 'Tatuagem no nó' : 'Tatuagem'));
+    if (atual) {
+      const linha = el('div', 'pas-joia-linha');
+      const icone = el('span', 'pas-joia-icone');
+      icone.append(itemCanvas(atual.itemId, 34));
+      tipFor(icone, atual.itemId);
+      linha.append(icone, el('span', 'pas-joia-nome', atual.sorteado ? `${atual.nome} — ${atual.sorteado.nome}` : atual.nome), el('span'));
+      caixa.append(linha);
+    }
+    caixa.append(el('p', 'pas-dica', `${total} de ${v?.maximoDeTatuagens ?? 50} Tatuagens na árvore.`));
+    if (!tipo) return caixa;
+    const aceita = (meta) => {
+      const a = meta?.tatuagemPoe?.alvo;
+      return !!a && a.tipo === tipo.tipo && (tipo.tipo === 'ascendencia' || a.atributo === tipo.atributo);
+    };
+    const mochila = (ctx.state.character?.inventory ?? []).filter((p) => ctx.state.items?.[p?.id]?.tatuagemPoe);
+    const cabem = [...new Map(mochila.filter((p) => aceita(ctx.state.items[p.id])).map((p) => [p.id, p])).values()];
+    caixa.append(el('p', 'pas-dica', cabem.length ? (atual ? 'Trocar pela tatuagem da mochila (a de agora se perde):' : 'Tatuar com uma da mochila:') : 'Nenhuma tatuagem da mochila serve neste nó.'));
+    for (const p of cabem) {
+      const meta = ctx.state.items[p.id];
+      const linha = el('div', 'pas-joia-linha');
+      const icone = el('span', 'pas-joia-icone');
+      icone.append(itemCanvas(p.id, 34));
+      tipFor(icone, p.id, null, null, p);
+      linha.append(icone, el('span', 'pas-joia-nome', `${meta.name} — ${(meta.tatuagemPoe.linhas ?? []).join(' / ')}`));
+      const por = el('button', 'primary', atual ? 'Trocar' : 'Tatuar');
+      por.onclick = () => ctx.send({ t: 'passivas', action: 'tatuar', no: n.id, id: p.id });
+      linha.append(por);
+      caixa.append(linha);
+    }
     return caixa;
   }
   /** (lote 77) "Retirar/Trocar a Joia Ramificadora?" — o que sai, o preço e as joias que voltam; Confirmar manda o pedido guardado. */

@@ -8161,31 +8161,65 @@
       "_lote29": "15/10 — os raios das joias únicas (lote 29)"
     },
     {
-      "padrao": "^Com um total de \\{(\\d+)\\} de .+ no Raio, Habilidades Prismáticas .+$",
+      "padrao": "^Com um total de \\{(\\d+)\\} de (?:Inteligência e Destreza|Força e Inteligência|Destreza e Força|Destreza) no Raio, Habilidades Prismáticas não podem escolher {E}$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "raio_prisma_nao_escolhe_{E}",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: as Habilidades Prismáticas (Golpe Elemental, Golpe Selvagem) não estão na coleção de gemas do jogo",
+      "estado": "equivalente",
+      "nota": "o Foco de Combate: a soma dos dois atributos das passivas alocadas no raio (os pares do PoB — Fogo: Inteligência e Destreza, que o poedb pt escreve só \"Destreza\"; Gelo: Força e Inteligência; Raio: Destreza e Força); com ela, o Acerto Elemental, o Golpe Selvagem (e o dos Extremos), o Tornado da Turbulência Elemental, os Esqueletos Magos e a Explosão Prismática escolhem só entre os outros elementos (`itens-poe/prismaticas.mjs`)",
       "_nova": true,
       "_lote29": "15/10 — os raios das joias únicas (lote 29)",
-      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)",
+      "_100dados": "03/11 — 100% (lote dados): as Habilidades Prismáticas e as Tatuagens"
+    },
+    {
+      "padrao": "^Com um total de \\{(\\d+)\\} de (?:Inteligência e Destreza|Força e Inteligência|Destreza e Força|Destreza) no Raio, Habilidades Prismáticas causam \\{(\\d+)\\}% menos Dano de {E}$",
+      "efeitos": [
+        {
+          "stat": "raio_prisma_menos_{E}_limiar",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_prisma_menos_{E}",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o Foco de Combate: com a soma dos dois atributos alocados no raio, o \"X% menos Dano\" daquele elemento nos golpes das habilidades prismáticas (a tag Prismático)",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)",
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)",
+      "_100dados": "03/11 — 100% (lote dados): as Habilidades Prismáticas e as Tatuagens"
     },
     {
       "padrao": "^Efeito das Tatuagens no Raio aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "raio_efeito_tatuagens",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: o jogo não tem Tatuagens",
+      "estado": "equivalente",
+      "nota": "o Conto do Guerreiro: os números das Tatuagens dos nós alocados no raio (`passivas/tatuagens.mjs`) × (1 + X%)",
       "_nova": true,
-      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)",
+      "_100dados": "03/11 — 100% (lote dados): as Habilidades Prismáticas e as Tatuagens"
+    },
+    {
+      "padrao": "^Golpes Abatedores têm \\{(\\d+)\\}% de chance de Consumir cadáveres para recuperar \\{(\\d+)\\}% da Vida Máxima$",
+      "efeitos": [
+        {
+          "stat": "ev:golpeDeMisericordia:consumirCadaverChance:hp:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a Tatuagem do Devorador de Corações de Kitava: o Golpe de Misericórdia que mata tem a chance de consumir o cadáver do morto (ele não deixa cadáver; marca o \"Consumiu um cadáver Recentemente\") e recuperar X% da Vida máxima",
+      "_nova": true,
+      "_100dados": "03/11 — 100% (lote dados): as Habilidades Prismáticas e as Tatuagens"
     },
     {
       "padrao": "^Joias Não Únicas fazem com que Aumentos e Reduções aos Tipos de Dano em um Grande Raio sejam Transformados para serem aplicados ao Dano de Fogo$",

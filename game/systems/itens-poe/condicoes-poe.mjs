@@ -419,6 +419,9 @@ export const TAGS_DE_GOLPE = new Set([
   // (15/10, lote 31) o abate por um ACERTO (o golpe fatal não foi dano contínuo — `quem-feriu.tagsDoAbate`); o inimigo Provocado pelo seu
   // CLAMOR (`Reforcos.provocar` — `provocadoAte`); o morto na área do seu Estandarte plantado (`pertoDoEstandarte`).
   'acerto', 'alvoProvocadoClamor', 'alvoPertoDoEstandarte',
+  // (100% — dados, 03/11) a habilidade PRISMÁTICA (a tag Prismático do poedb — o RandomElement do PoB): "Habilidades Prismáticas causam 50% menos Dano de Gelo"
+  // (o Foco de Combate — `itens-poe/prismaticas.mjs`)
+  'prismatico',
 ]);
 /**
  * As condições que dependem do ESPAÇO em que a peça está (resolvidas peça a peça em `Afixos.somaDeItens`): o anel (esquerdo/direito) e a
@@ -1570,6 +1573,8 @@ const TAG_DO_POE = {
   // Ativação = Trigger.
   Golpear: 'golpe', Impacto: 'pancada', Nova: 'nova', Canalização: 'canalizar', Feitiço: 'feitico', Vínculo: 'vinculo', Marca: 'marca',
   Runa: 'runa', Ativação: 'ativada', Retaliação: 'retaliacao', Postura: 'postura',
+  // (100% — dados, 03/11) as Habilidades Prismáticas (o Foco de Combate)
+  Prismático: 'prismatico',
 };
 /** As tags de golpe de uma lista de tags do poedb (`['Ataque','Projétil','Arco']` → `['ataque','projetil','arco']`), + `elemental`. */
 export function tagsDoPoe(lista = []) {
@@ -2224,6 +2229,8 @@ export const ACOES = new Set(['transferirMarca', 'frascoChance', 'explodirChance
   'regenPct', 'fortificacao', 'atordoarProximos',
   // (lote E)
   'consumirCadaver', 'vidaDaRegen',
+  // (100% — dados, 03/11) a Tatuagem do Devorador de Corações: a chance de consumir o cadáver do morto (o do Golpe de Misericórdia) — `mods-poe.aplicarAcao`
+  'consumirCadaverChance',
   // (lote F)
   'stat', 'congelarProximos', 'regenDaDefesa', 'vidaChance', 'vidaPorDefinhamento', 'vidaPorVeneno', 'furiaPorPoder',
   // (lote 72) `mods-poe.aplicarAcao`: a carga aleatória por Poder do Clamor e o atributo temporário por Poder
