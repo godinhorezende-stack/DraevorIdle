@@ -110,6 +110,24 @@ export function lancar(hunt, opcoes) {
   return { eventos: [], noAr: true, ms };
 }
 
+/**
+ * (03/11, rodada 2 do voo de verdade) ONDE o voo pararia se todos ficassem onde estão agora (as mesmas opções de `lancar`, sem lançar nada): `{ tipo: 'contato', alvo,
+ * casa }`, `{ tipo: 'parede', casa }` ou `{ tipo: 'fim', casa }`. O uso reserva o bicho do caminho do principal que ainda voa: os projéteis a mais escolhem outro (D7b).
+ */
+export function previsto(opcoes) {
+  const { de, para = null, angulo = null, alcance = 7, v0, perfil = null, colide, parede = null, fator = 1 } = opcoes;
+  const destino = para ?? { x: de.x + Math.cos(angulo ?? 0), y: de.y + Math.sin(angulo ?? 0) };
+  const c = caminho(de, destino, { alcance, perfil, angulo: para ? null : angulo });
+  const v = { de, alcance, v0, perfil, fator, caminho: c, sai: 0, s: 0, t: 0, vistas: new Set(), origem: chave({ x: Math.round(de.x), y: Math.round(de.y) }), colide, parede, ultimaLivre: null };
+  const casaDaOrigem = { x: Math.round(de.x), y: Math.round(de.y) };
+  const naOrigem = colide(casaDaOrigem);
+  if (naOrigem) return { tipo: 'contato', alvo: naOrigem, casa: casaDaOrigem };
+  // (o caminho todo de uma vez: `avancar` sem o teto de casas por tique)
+  let r = null;
+  for (let n = 0; !r && n < 1000; n++) r = avancar(v, Infinity, true);
+  return r;
+}
+
 /** ADIA um golpe para o instante `quando` (o relógio da caçada): `fn()` → eventos. Passado o teto, sai na hora. Devolve se ficou à espera. */
 export function adiar(hunt, quando, fn, agora = hunt?.clock ?? 0) {
   const r = hunt ? doHunt(hunt) : null;

@@ -3385,14 +3385,17 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     // (os saltos dos projéteis a mais — a perfuração, o ricochete, a volta… —: no instante em que o projétil chega neles, pelas casas andadas `g.dist`)
     // (03/11) a velocidade do voo do lacaio e do mercenário: a da gema da vez do mercenário (o poedb) e a Velocidade de Projétil dele; a do lacaio, a base (D1) ×
     // a dos suportes ligados na gema que o invocou (`Acoes.vooDoLacaio`)
-    const vooDoTiro = Acoes.vooDoLacaio(estado, l, { magia: magiaDaVez });
-    const v0DoTiro = vooDoTiro.v0;
+    // (03/11, rodada 2: só no golpe de LONGE — o de perto não voa —, e guardado por lacaio/gema em `Acoes.vooDoLacaio`; e o tempo dos a mais e dos saltos pelo PERFIL e
+    // o fator do caminho da gema, como o principal — `GemasVoo.tempoAte` —, não só a velocidade inicial em linha reta)
+    const vooDoTiro = deLonge && itensPoeLigado() ? Acoes.vooDoLacaio(estado, l, { magia: magiaDaVez }) : null;
+    const alcanceDoTiro = Math.max(1, l.alcanceDeAtaque);
+    const tempoDoTiro = (d) => (vooDoTiro ? GemasVoo.tempoAte(Math.max(0, Number(d) || 0) * vooDoTiro.fator, vooDoTiro.v0, vooDoTiro.perfil, { alcance: alcanceDoTiro, fator: vooDoTiro.fator }) : 0);
     const golpearNoTempo = (g, dDoPrincipal) => {
-      if (!itensPoeLigado() || g.dist == null) return golpear(g.bicho, g.pct);
+      if (!itensPoeLigado() || g.dist == null || !vooDoTiro) return golpear(g.bicho, g.pct);
       const clock = hunt.clock ?? 0;
       const bicho = g.bicho;
       const onde = { x: bicho.x, y: bicho.y };
-      const quando = clock + (1000 * Math.max(0, g.dist - dDoPrincipal)) / v0DoTiro;
+      const quando = clock + Math.max(0, tempoDoTiro(g.dist) - tempoDoTiro(dDoPrincipal));
       if (!Voos.adiar(hunt, quando, () => comEventosDaChegada(() => { if (bicho.hp > 0 && distancia(bicho, onde) <= 1) golpear(bicho, g.pct); }), clock)) golpear(bicho, g.pct);
     };
     const ataqueDoLacaio = (alvo) => {
@@ -3469,7 +3472,7 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     // (03/11: a habilidade principal do PoB SEM projétil — a Absolvição do Juiz, a área no alvo — não voa: cai na hora, como as de recarga)
     if (deLonge && itensPoeLigado() && !(hp && !hp.projetil)) {
       const sairNoContato = (m, adiado) => (adiado ? comEventosDaChegada(() => ataqueDoLacaio(m)) : ataqueDoLacaio(m));
-      const voo = voarDoLacaio(hunt, l, alvo, { magia: magiaDaVez, alcance: Math.max(1, l.alcanceDeAtaque), voo: vooDoTiro }, sairNoContato);
+      const voo = voarDoLacaio(hunt, l, alvo, { magia: magiaDaVez, alcance: alcanceDoTiro, voo: vooDoTiro }, sairNoContato);
       if (tiroNoAlvo && voo.ms > 0) tiroNoAlvo.ms = voo.ms;
     } else ataqueDoLacaio(alvo);
   }
@@ -3517,12 +3520,13 @@ function voarDoLacaio(hunt, l, alvo, { magia = false, alcance = 7, voo = null } 
  * do `alvo`, quando há): na hora, se chega a até meio tique; senão, no tique em que chega — o `alvo` que saiu de lá (mais de 1 casa) não é acertado. `trocar(ev)`
  * põe os eventos do golpe que chega depois (e devolve os de antes). Devolve o tempo do voo (ms; 0 na hora).
  */
-function depoisDoVoo(hunt, de, para, { magia = false, alvo = null } = {}, go, trocar) {
+// (03/11, rodada 2: + `voo` — `{ v0, perfil, fator }` de `Acoes.vooDoLacaio`: a Velocidade de Projétil dos suportes ligados na gema que invocou o lacaio; sem ele, a D1)
+function depoisDoVoo(hunt, de, para, { magia = false, alvo = null, voo = null } = {}, go, trocar) {
   if (!itensPoeLigado()) { go(); return 0; }
-  const v0 = GemasVoo.casasPorSegundo(magia ? GemasVoo.VOO.padraoMagiaM : GemasVoo.VOO.padraoAtaqueM, 1);
+  const v0 = voo?.v0 ?? GemasVoo.casasPorSegundo(magia ? GemasVoo.VOO.padraoMagiaM : GemasVoo.VOO.padraoAtaqueM, 1);
   const d = Math.max(0, Math.hypot(para.x - de.x, para.y - de.y) - (alvo ? 0.5 : 0));
   const clock = hunt.clock ?? 0;
-  const quando = clock + (1000 * d) / v0;
+  const quando = clock + (voo?.perfil ? GemasVoo.tempoAte(d * (voo.fator ?? 1), v0, voo.perfil, { fator: voo.fator ?? 1 }) : (1000 * d) / v0);
   const onde = alvo ? { x: alvo.x, y: alvo.y } : null;
   const ficou = Voos.adiar(hunt, quando, () => {
     if (alvo && (!(alvo.hp > 0) || distancia(alvo, onde) > 1)) return [];
@@ -3699,7 +3703,9 @@ function magiasDoEspectro(hunt, l, agora, ficha, estado = null, oferenda = null)
     }
     };
     if (voa) {
-      const ms = depoisDoVoo(hunt, l, alvo, { magia: !(a.ataque || a.elemento === 'physical'), alvo: casas.length > 1 ? null : alvo }, tudo, trocar);
+      // (03/11, rodada 2: + a Velocidade de Projétil dos suportes do Erguer Espectro — `Acoes.vooDoLacaio`)
+      const magiaDoTiro = !(a.ataque || a.elemento === 'physical');
+      const ms = depoisDoVoo(hunt, l, alvo, { magia: magiaDoTiro, alvo: casas.length > 1 ? null : alvo, voo: estado ? Acoes.vooDoLacaio(estado, l, { magia: magiaDoTiro }) : null }, tudo, trocar);
       if (ms > 0) tiro.ms = ms;
     } else tudo();
   });
@@ -3752,7 +3758,8 @@ function habilidadesComRecarga(estado, hunt, l, agora, ficha, oferenda = null, g
     // (rodada 4, lote L) as habilidades do PoB do motor (`LacaiosHabilidades.usar`): pelo golpe do lacaio
     if (h.tipo === 'pob') {
       eventos.push(...LacaiosHabilidades.usar(l, h, alvo, { hunt, vivos, golpe, partesDoLacaio: (x, t) => SuportesS2B.partesDoLacaio(x, partesDoGolpeDoLacaio(x, t)), relogio, agora,
-        depoisDoVoo: (m, o, go) => depoisDoVoo(hunt, l, m, { ...o, alvo: m }, go, trocarDoGolpe), eventosDaChegada: () => eventos,
+        // (03/11, rodada 2: a Velocidade de Projétil dos suportes da gema que o invocou — `Acoes.vooDoLacaio`, guardado)
+        depoisDoVoo: (m, o, go) => depoisDoVoo(hunt, l, m, { ...o, alvo: m, voo: estado ? Acoes.vooDoLacaio(estado, l, { magia: !!o?.magia }) : null }, go, trocarDoGolpe), eventosDaChegada: () => eventos,
         queimar: (m, porSegundo, ms) => { const posto = Dot.aplicar(m, { tipo: 'queimadura', total: (porSegundo * ms) / 1000, duracaoMs: ms, origem: { fonte: 'lacaio', habilidade: h.id } }, relogio); if (posto) eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: posto }); } }));
       continue;
     }
@@ -3775,7 +3782,7 @@ function habilidadesComRecarga(estado, hunt, l, agora, ficha, oferenda = null, g
       const tiroDoOrbe = { t: 'shot', id: 36, x: l.x, y: l.y, tx: alvo.x, ty: alvo.y };
       eventos.push(tiroDoOrbe);
       // (lote "projetil") o Orbe voa até o alvo: o acerto no contato (`depoisDoVoo`)
-      const ms = depoisDoVoo(hunt, l, alvo, { magia: true, alvo }, () => {
+      const ms = depoisDoVoo(hunt, l, alvo, { magia: true, alvo, voo: estado ? Acoes.vooDoLacaio(estado, l, { magia: true }) : null }, () => {
         const crit = Math.random() * 100 < chance;
         const bruto = (h.dano[0] + Math.random() * Math.max(0, h.dano[1] - h.dano[0])) * (l.poe?.fatorDoDano ?? 1) * (crit ? critico.mult : 1) * LacaiosPoe.fatorDoCeifador(l, hunt.lacaios) * SuportesS2B.noGolpeDoLacaio(hunt, l, alvo, hunt.clock ?? relogio).fator;
         const d = Math.max(1, Math.round(resistido(hunt, alvo, h.elemento ?? 'energy', bruto, ficha)));
