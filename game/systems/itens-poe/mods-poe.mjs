@@ -5,7 +5,7 @@ import * as QuemFeriu from '../hunt/quem-feriu.mjs';
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo, porExposicao } from './condicoes-poe.mjs';
+import { RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, criarSoloCongelado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo, porExposicao } from './condicoes-poe.mjs';
 import * as Plantadas from './armas-plantadas.mjs';
 // (lotes G-A e G-C, dono 25/10: as Marcas no acerto — as Cargas, as Cargas de Frasco — e a Punição em quem acerta você)
 import * as GemasGAC from './gemas-gac.mjs';
@@ -1174,6 +1174,9 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     case 'soloProfano': if (sorte(v)) criarSoloProfano(hunt, Number(ev.param) || SOLO_PROFANO.duracaoS, agora); return;
     // (lote G) `soloSagrado:<segundos>` = a CHANCE de criar Solo Sagrado onde você está; `valor` = ganha N de Valor (com um Estandarte ligado).
     case 'soloSagrado': if (sorte(v)) criarSoloSagrado(hunt, Number(ev.param) || 4, agora); return;
+    // (03/11) `soloCongelado` = a CHANCE de criar o seu Solo Congelado onde está o inimigo do evento (o Congelado da Harpa de Nuro, o acertado da Coroa da
+    // Salmoura) — ou em você, sem alvo (`condicoes-poe.criarSoloCongelado`)
+    case 'soloCongelado': if (sorte(v)) criarSoloCongelado(hunt, ficha, { x: alvo?.x ?? hunt.pos?.x, y: alvo?.y ?? hunt.pos?.y, agora }); return;
     case 'valor': ganharValor(hunt, v, ficha?.afPoe, agora, { semIntervalo: true }); return;
     // (lote H) `mortalha:<máximo>` = ganha N Mortalhas Fantasmas (a keystone Mortalhas Fantasmas — `aoSerAcertado` gasta uma).
     case 'mortalha': hunt.mortalhas = Math.min(Number(ev.param) || 3, (hunt.mortalhas ?? 0) + v); return;

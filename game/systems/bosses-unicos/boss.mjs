@@ -160,6 +160,8 @@ const ataqueDe = (c, extra = {}) => ({
   efeito: c.efeito ?? null, tiro: c.tiro ?? null, golpe: c.nome ?? null,
   // (PoE, dono 27/10) o ATAQUE do PoE (a Evasão e o Bloqueio de Ataque) e a conversão do dano físico — `itens-poe/habilidades.mjs`
   ...(c.ataque ? { ataque: true, ...(c.corpoACorpo ? { corpoACorpo: true } : {}), ...(c.convertePct ? { convertePct: { ...c.convertePct } } : {}) } : {}),
+  // (03/11) o EMPURRÃO (o Salto Impactante — `habilidades.comportamentos`): chega ao `dispararMagia`, que empurra você (`Combate100.empurrarJogador`)
+  ...(c.empurra ? { empurra: true } : {}),
   ...extra,
 });
 

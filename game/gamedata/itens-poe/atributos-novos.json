@@ -8444,6 +8444,18 @@
       "unidade": "%",
       "combate": true,
       "efeito": "passivas/arvore.efeitosNoRaio — os números das Tatuagens dos nós do raio (100% — dados)"
+    },
+    "solo_congelado_efeito": {
+      "nome": "Efeito do Solo Congelado aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.criarSoloCongelado: o Resfriamento do Solo Congelado que você cria (10% × o aumentado — a Harpa de Nuro; 03/11)"
+    },
+    "frasco_solo_congelado": {
+      "nome": "Cria Solo Congelado ao Utilizar (o frasco)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "frascos.aoUsarOFrasco → condicoes-poe.criarSoloCongelado: o Solo Congelado no chão onde você está, ao usar o Frasco de Água-marinha (03/11)"
     }
   }
 }

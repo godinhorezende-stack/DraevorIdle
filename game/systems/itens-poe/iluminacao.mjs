@@ -33,8 +33,12 @@ export const aumentoDaLuz = (af) => Math.max(-LUZ.reducaoMaximaPct, n(af, 'light
 /** A fração do recurso que dá a luz: a vida (ou o Escudo de Energia, com "Campo de Visão é baseado no Escudo de Energia"). 0..1. */
 export function fracaoDaLuz(estado, af) {
   if (n(af, 'luz_pelo_escudo') > 0) {
-    const max = Number(estado?.maxEsPoe) || 0;
-    return max > 0 ? Math.max(0, Math.min(1, (Number(estado?.es) || 0) / max)) : 0;
+    // (03/11) `estado.es === null` é o Escudo CHEIO (`Defesa.esAtual` — a arena zera assim, `arena.nivelarParaODuelo`), não vazio; sem o máximo ainda
+    // (`maxEsPoe` só chega no primeiro tique do PoE — `condicoes-poe`), também cheia: sem o dado, a luz não cai no piso. Com o máximo 0 (sem Escudo
+    // nenhum), o piso, como no PoE
+    if (estado?.es == null || estado?.maxEsPoe == null) return 1;
+    const max = Number(estado.maxEsPoe) || 0;
+    return max > 0 ? Math.max(0, Math.min(1, (Number(estado.es) || 0) / max)) : 0;
   }
   const max = Number(estado?.maxHp) || 0;
   return max > 0 ? Math.max(0, Math.min(1, (Number(estado?.hp) || 0) / max)) : 1;

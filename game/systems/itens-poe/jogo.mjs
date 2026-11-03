@@ -481,7 +481,10 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // a aura (a área e a duração), o Vínculo e "Punição pode afetar Inimigos Infeitiçáveis" — `itens-poe/baus-poe.mjs`)
 // (80 — 03/11, 100% — dados: as Habilidades Prismáticas — o Foco de Combate na árvore, `itens-poe/prismaticas.mjs` — e as Tatuagens — o Conto do Guerreiro, o
 // Devorador de Corações; `passivas/tatuagens.mjs`)
-export const VERSAO_DA_TRADUCAO = 80;
+// (82 — 03/11, combate + luz + árvore: o Solo Congelado que você cria — a Harpa de Nuro, a Coroa da Salmoura, o Frasco de Água-marinha — com o "Efeito do Solo
+// Congelado aumentado" e a Vida Regenerada "sobre Solo Congelado" (`condicoes-poe.criarSoloCongelado`/`noSoloCongelado`); a nota larga dos solos diz quais ainda
+// não existem; o "tamanho do Personagem reduzido" (t minúsculo — o Ninho do Rato) casa)
+export const VERSAO_DA_TRADUCAO = 82;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
