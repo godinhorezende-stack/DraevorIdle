@@ -178,6 +178,25 @@ export function pontoEm(c, s) {
   const u = ps[ps.length - 1];
   return { x: u.x, y: u.y, f: u.f };
 }
+/**
+ * (03/11) As CASAS do caminho de `de` até o alcance (o ziguezague, a espiral — `caminho` com o `perfil`), na ordem, sem a casa de onde sai. `angulo` (radianos): o
+ * rumo EXATO do projétil (o do leque, `Secundarios.resolver`); sem ele, a direção de `de` a `fim` — com alcance curto o fim arredondado juntava ângulos
+ * diferentes do leque (revisão do raio contínuo, 03/11).
+ */
+export function casasDoCaminho(de, fim, { alcance = 7, perfil = null, angulo = null } = {}) {
+  const c = caminho(de, fim, { alcance, perfil, angulo: Number.isFinite(angulo) ? angulo : null });
+  const saida = [];
+  const vistas = new Set([`${Math.round(de.x)},${Math.round(de.y)}`]);
+  for (let s = 0.25; s <= c.comprimento + 1e-9; s += 0.25) {
+    const p = pontoEm(c, s);
+    const casa = { x: Math.round(p.x), y: Math.round(p.y) };
+    const k = `${casa.x},${casa.y}`;
+    if (vistas.has(k)) continue;
+    vistas.add(k);
+    saida.push(casa);
+  }
+  return saida;
+}
 /** Quanto o caminho anda por casa de reta (1 no reto; √2 no ziguezague; a espiral pela onda) — para os saltos que o resolvedor mede em reta. */
 export function fatorDoCaminho(perfil, alcance = 7) {
   if (!(perfil?.zigueZague > 0) && !(perfil?.rotacoes > 0)) return 1;

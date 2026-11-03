@@ -92,6 +92,21 @@ export function casasDoRaio(de, angulo, alcance) {
   em(L);
   return casas;
 }
+/**
+ * (03/11, revisão do raio contínuo) As casas que um projétil EMITIDO (`resolver(...).emitidos`) andou, sem `de`: o raio contínuo do ângulo exato quando ele saiu
+ * num ângulo (`angulo`/`alcanceDoRaio`, o que `noAngulo` guarda) — até o bicho que ele acertou, ou até o fim do alcance —; senão a reta de `de` até `para` (`ate`
+ * casas; sem `ate`, até `para`). É o MESMO caminho do acerto e do terreno (`primeiroNaReta`, `terrenoNaReta`): quem refaz o voo fora do resolvedor (onde a explosão
+ * cinética cai, o Tornado que absorve) usa este, e não a reta até o fim arredondado.
+ */
+export function casasDoEmitido(p, ate = null) {
+  if (Number.isFinite(p.angulo)) {
+    const casas = casasDoRaio(p.de, p.angulo, p.alcanceDoRaio);
+    if (!p.bicho) return casas;
+    const i = casas.findIndex((c) => c.x === p.para.x && c.y === p.para.y);
+    if (i >= 0) return casas.slice(0, i + 1);
+  }
+  return casasDaReta(p.de, p.para, ate ?? Math.max(Math.abs(p.para.x - p.de.x), Math.abs(p.para.y - p.de.y)));
+}
 
 /** Os `n` bichos vivos mais perto de `ponto`, a até `distancia`, fora de `fora`. */
 function maisPerto(vivos, ponto, distancia, n, fora) {
@@ -180,11 +195,12 @@ export function resolver(args) {
     const max = G().limites?.explosoesCineticasPorUso ?? 90;
     // (revisão do PR3, 21/10) onde o voo PARA: o projétil que erra e bate no TERRENO no caminho explode ali ("pequenas explosões em volta do ponto de impacto" —
     // bater no terreno é o impacto), não no fim do alcance; o mesmo critério de `terrenoNaReta`
+    // (03/11, revisão do raio contínuo: o mesmo CAMINHO também — `casasDoEmitido`, o raio do ângulo exato, e não a reta até o fim arredondado)
     const fimDoVoo = (p) => {
       if (!andavel) return p.para;
-      const reta = casasDaReta(p.de ?? origem, p.para, alcance);
-      const i = reta.findIndex((c) => !andavel.has(`${c.x},${c.y}`));
       const de = p.de ?? origem;
+      const reta = casasDoEmitido({ ...p, de }, alcance);
+      const i = reta.findIndex((c) => !andavel.has(`${c.x},${c.y}`));
       return i < 0 ? p.para : i > 0 ? { x: reta[i - 1].x, y: reta[i - 1].y } : { x: de.x, y: de.y };
     };
     for (const p of r.emitidos) {
@@ -332,9 +348,13 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
   };
   /** As casas do caminho de `de` até `fim`, até `ate` casas: o raio contínuo, quando `fim` veio de `noAngulo` a partir de `de`; senão a reta. */
   const casasAte = (de, fim, ate) => {
-    const r = raios.get(fim);
-    return r && r.x === de.x && r.y === de.y ? casasDoRaio(de, r.a, Math.min(ate, r.dist)) : casasDaReta(de, fim, ate);
+    const r = raioDe(de, fim);
+    return r ? casasDoRaio(de, r.a, Math.min(ate, r.dist)) : casasDaReta(de, fim, ate);
   };
+  /** O raio (`{ a, dist }`) de `fim`, quando ele veio de `noAngulo` a partir de `de`; senão null. */
+  const raioDe = (de, fim) => { const q = raios.get(fim); return q && q.x === de.x && q.y === de.y ? q : null; };
+  /** O emitido `e` (que saiu de `de` no rumo de `fim`) guarda o ângulo exato e o alcance do raio, para quem refaz o caminho dele (`casasDoEmitido`). */
+  const comRaio = (e, fim) => { const q = raioDe(e.de, fim); if (q) { e.angulo = q.a; e.alcanceDoRaio = q.dist; } return e; };
   const anguloDe = (de, para) => (para.x === de.x && para.y === de.y ? anguloDoRumo : Math.atan2(para.y - de.y, para.x - de.x));
   /** O primeiro bicho vivo na reta de `de` a `fim` (até `alcance` casas), fora de `fora`. */
   const primeiroNaReta = (de, fim, fora) => casasAte(de, fim, alcance).map((c) => porCasa.get(`${c.x},${c.y}`)).find((b) => b && b.hp > 0 && !fora.has(b)) ?? null;
@@ -352,7 +372,7 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
     const alvos = maisPerto(vivosNoInicio, de, alcance, n, p.acertados);
     for (const b of alvos) voar({ de, ate: p.percorrido ?? p.ate ?? 0, pct, perfurar: p.perfurar, bifurcar: p.bifurcar, deNovo: p.deNovo, encadear: p.encadear, volta: false, dividir: 0, acertados: new Set(p.acertados), perfurados: p.perfurados, ricocheteou: p.ricocheteou, ordem: p.ordem }, b, 'divisao');
     const rumoDaDivisao = anguloDe(origem, de);
-    for (let k = alvos.length; k < n; k++) { const para = noAngulo(de, rumoDaDivisao + (k - (n - 1) / 2) * (Math.PI / 8)); emitidos.push({ de, para, bicho: null, tipo: 'divisao', dist: (p.percorrido ?? p.ate ?? 0) + hyp(de, para) }); }
+    for (let k = alvos.length; k < n; k++) { const para = noAngulo(de, rumoDaDivisao + (k - (n - 1) / 2) * (Math.PI / 8)); emitidos.push(comRaio({ de, para, bicho: null, tipo: 'divisao', dist: (p.percorrido ?? p.ate ?? 0) + hyp(de, para) }, para)); }
   };
   /**
    * (lote PR1, dono 20/10) as ESTILHAS do Arremesso de Escudo Espectral (`efeito.estilhas`: `{ n, pct }`): a cada colisão do escudo com um inimigo, N projéteis
@@ -368,7 +388,7 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
       const fora = new Set([ponto]);
       const bicho = primeiroNaReta(de, fim, fora);
       const para = bicho ? { x: bicho.x, y: bicho.y } : fim;
-      emitidos.push({ de, para, bicho, tipo: 'estilha', dist: ate + hyp(de, para) });
+      emitidos.push(comRaio({ de, para, bicho, tipo: 'estilha', dist: ate + hyp(de, para) }, fim));
       if (bicho && pct > 0) voar({ perfurar: 99, bifurcar: 0, deNovo: 0, encadear: 0, volta: false, dividir: 0, rebatidas: 0, soNaVolta: false, ordem: ordens++, de, ate, pct, acertados: fora }, bicho, 'estilha');
     }
   };
@@ -455,7 +475,7 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
             const fim = noAngulo(atual, a);
             const b = primeiroNaReta(atual, fim, ja);
             const para = b ? { x: b.x, y: b.y } : fim;
-            emitidos.push({ de: { x: atual.x, y: atual.y }, para, bicho: b ?? null, tipo: 'bifurcacao', dist: p.percorrido + hyp(atual, para) });
+            emitidos.push(comRaio({ de: { x: atual.x, y: atual.y }, para, bicho: b ?? null, tipo: 'bifurcacao', dist: p.percorrido + hyp(atual, para) }, fim));
             if (b) { ja.add(b); filho(b); }
           }
         } else for (const b of maisPerto(vivosNoInicio, atual, cfg.distanciaDaBifurcacao ?? 4, filhos, p.acertados)) filho(b);
@@ -628,7 +648,7 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
       const naOrigem = efeito.acertaNaOrigem ? porCasa.get(`${origem.x},${origem.y}`) : null;
       const bicho = (naOrigem?.hp > 0 ? naOrigem : null) ?? primeiroNaReta(origem, fim, new Set());
       const pct = k ? pctDe('danoDosExtrasPct') : 100;
-      emitidos.push({ de: { x: origem.x, y: origem.y }, para: bicho ? { x: bicho.x, y: bicho.y } : fim, bicho, tipo: 'projetil' });
+      emitidos.push(comRaio({ de: { x: origem.x, y: origem.y }, para: bicho ? { x: bicho.x, y: bicho.y } : fim, bicho, tipo: 'projetil' }, fim));
       if (bicho) voar({ ...base(), de: origem, pct }, bicho, 'projetil');
       else naParede(fim, pct);
     }
@@ -650,7 +670,7 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
       const bicho = primeiroNaReta(de, fim, new Set());
       const ate = hyp(origem, de);
       const para = bicho ? { x: bicho.x, y: bicho.y } : fim;
-      emitidos.push({ de, para, bicho, tipo: 'secundario', dist: ate + hyp(de, para) });
+      emitidos.push(comRaio({ de, para, bicho, tipo: 'secundario', dist: ate + hyp(de, para) }, fim));
       if (bicho) voar({ ...base(), de, ate, pct }, bicho, 'secundario');
       else naParede(fim, pct, de, ate);
     }
@@ -681,7 +701,8 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
   const extrasDoLeque = total - 1;
   const primeiroNoCaminho = (de, fim, fora) => {
     if (!casasDoCaminho) return primeiroNaReta(de, fim, fora);
-    return (casasDoCaminho(de, fim) ?? []).map((c) => porCasa.get(`${c.x},${c.y}`)).find((b) => b && b.hp > 0 && !fora.has(b)) ?? null;
+    // (03/11, revisão do raio contínuo: o caminho curvo também sai no ângulo EXATO do projétil — `raioDe` —, não na direção do fim arredondado)
+    return (casasDoCaminho(de, fim, raioDe(de, fim)?.a ?? null) ?? []).map((c) => porCasa.get(`${c.x},${c.y}`)).find((b) => b && b.hp > 0 && !fora.has(b)) ?? null;
   };
   const passoDoLeque = total > 1 ? Math.min(((Number(efeito.lequeGraus) || 10) * Math.PI) / 180, (2 * Math.PI) / total) : 0;
   const anguloNoLeque = (k) => anguloDoRumo + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * passoDoLeque;
@@ -690,7 +711,7 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
       const fim = noAngulo(origem, anguloNoLeque(k));
       const b = primeiroNoCaminho(origem, fim, fora);
       const para = b ? { x: b.x, y: b.y } : fim;
-      emitidos.push({ de: { x: origem.x, y: origem.y }, para, bicho: b ?? null, tipo: 'projetil', dist: hyp(origem, para) });
+      emitidos.push(comRaio({ de: { x: origem.x, y: origem.y }, para, bicho: b ?? null, tipo: 'projetil', dist: hyp(origem, para) }, fim));
       if (b) { fora.add(b); voar({ ...base(), exclusivo: true, de: origem, pct: pctDe('danoDosExtrasPct') }, b, 'projetil'); }
       else naParede(fim, pctDe('danoDosExtrasPct'));
     }
@@ -703,7 +724,7 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
     const fim = noAngulo(de, anguloDe(de, mirado));
     const b = primeiroNoCaminho(de, fim, fora);
     const para = b ? { x: b.x, y: b.y } : fim;
-    emitidos.push({ de: { x: de.x, y: de.y }, para, bicho: b ?? null, tipo: 'projetil', dist: hyp(de, para) });
+    emitidos.push(comRaio({ de: { x: de.x, y: de.y }, para, bicho: b ?? null, tipo: 'projetil', dist: hyp(de, para) }, fim));
     if (b) { if (exclusivo) fora.add(b); voar({ ...base(), ...(exclusivo ? { exclusivo: true } : {}), de, pct }, b, 'projetil'); }
     else naParede(fim, pct, de);
     return b;
@@ -749,7 +770,7 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
         emitidos.push({ de: { x: origem.x, y: origem.y }, para: { x: b.x, y: b.y }, bicho: b, tipo: 'projetil' });
         voar({ ...base(), de: origem, pct: pctExtras }, b, 'projetil');
       }
-      for (let k = com.length; k < n; k++) emitidos.push({ de: { x: origem.x, y: origem.y }, para: noAngulo(origem, anguloDoRumo + (k - (n - 1) / 2) * (Math.PI / 8)), bicho: null, tipo: 'projetil' });
+      for (let k = com.length; k < n; k++) { const fim = noAngulo(origem, anguloDoRumo + (k - (n - 1) / 2) * (Math.PI / 8)); emitidos.push(comRaio({ de: { x: origem.x, y: origem.y }, para: fim, bicho: null, tipo: 'projetil' }, fim)); }
     }
     /*
      * (lote A3, dono 19/10 — D7) a GEOMETRIA da emissão:
@@ -765,7 +786,7 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
       for (let k = 1; k <= extras; k++) {
         const fim = noAngulo(centro, a0 + (2 * Math.PI * k) / total);
         const bicho = primeiroNaReta(centro, fim, fora);
-        emitidos.push({ de: centro, para: bicho ? { x: bicho.x, y: bicho.y } : fim, bicho, tipo: 'projetil' });
+        emitidos.push(comRaio({ de: centro, para: bicho ? { x: bicho.x, y: bicho.y } : fim, bicho, tipo: 'projetil' }, fim));
         if (bicho) { fora.add(bicho); voar({ ...base(), ...(voo ? { exclusivo: true } : {}), de: centro, pct: pctExtras }, bicho, 'projetil'); }
         else naParede(fim, pctExtras, centro);
       }
@@ -782,7 +803,7 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
         const de = { x: origem.x + arredondarSimetrico(px * j * lado), y: origem.y + arredondarSimetrico(py * j * lado) };
         const fim = noAngulo(de, a0);
         const bicho = primeiroNaReta(de, fim, fora);
-        emitidos.push({ de, para: bicho ? { x: bicho.x, y: bicho.y } : fim, bicho, tipo: 'projetil' });
+        emitidos.push(comRaio({ de, para: bicho ? { x: bicho.x, y: bicho.y } : fim, bicho, tipo: 'projetil' }, fim));
         if (bicho) { fora.add(bicho); voar({ ...base(), ...(voo ? { exclusivo: true } : {}), de, pct: pctExtras }, bicho, 'projetil'); }
         else naParede(fim, pctExtras, de);
       }
@@ -831,7 +852,7 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
           if ((efeito.sequencia || efeito.extrasNoAlvo) && (!anc || anc.hp > 0)) tiroMirado(origem, ponto, new Set(), pctExtras, false);
           else {
             const fim = noAngulo(origem, anguloNoLeque(k));
-            emitidos.push({ de: { x: origem.x, y: origem.y }, para: fim, bicho: null, tipo: 'projetil', dist: hyp(origem, fim) });
+            emitidos.push(comRaio({ de: { x: origem.x, y: origem.y }, para: fim, bicho: null, tipo: 'projetil', dist: hyp(origem, fim) }, fim));
             naParede(fim, pctExtras);
           }
         }
@@ -880,7 +901,7 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
   if (deProjetil && voo && !alvo && rumo) {
     for (const b of atingidos) impacto(b, 100, origem, 'direto', true);
     const fim = noAngulo(origem, anguloDoRumo);
-    emitidos.push({ de: { x: origem.x, y: origem.y }, para: fim, bicho: null, tipo: 'direto', dist: hyp(origem, fim) });
+    emitidos.push(comRaio({ de: { x: origem.x, y: origem.y }, para: fim, bicho: null, tipo: 'direto', dist: hyp(origem, fim) }, fim));
     naParede(fim, 100);
     if (parte === 'principal') return r;
     extrasDoUso(null, new Set(atingidos));

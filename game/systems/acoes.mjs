@@ -3478,20 +3478,10 @@ function vooDoLacaioSemGuardar(estado, l, { magia = false } = {}) {
 /**
  * (03/11) As CASAS do caminho do projétil do uso de `de` até o alcance na direção de `fim` (o ziguezague do Raio Cinético, a espiral da Hélice — `GemasVoo.caminho`
  * com o perfil da gema): os projéteis a mais andam o mesmo caminho do principal (D3/D4 de `projeteis-voo.mjs`), cada um no ângulo dele. Sem a casa de onde sai.
+ * (03/11, revisão do raio contínuo: `angulo` — o rumo EXATO do projétil, que o resolvedor passa; sem ele, a direção de `de` a `fim`)
  */
-function casasDoCaminhoDoVoo(de, fim, voo) {
-  const c = GemasVoo.caminho(de, fim, { alcance: voo.alcance, perfil: voo.perfil });
-  const saida = [];
-  const vistas = new Set([`${Math.round(de.x)},${Math.round(de.y)}`]);
-  for (let s = 0.25; s <= c.comprimento + 1e-9; s += 0.25) {
-    const p = GemasVoo.pontoEm(c, s);
-    const casa = { x: Math.round(p.x), y: Math.round(p.y) };
-    const k = `${casa.x},${casa.y}`;
-    if (vistas.has(k)) continue;
-    vistas.add(k);
-    saida.push(casa);
-  }
-  return saida;
+function casasDoCaminhoDoVoo(de, fim, voo, angulo = null) {
+  return GemasVoo.casasDoCaminho(de, fim, { alcance: voo.alcance, perfil: voo.perfil, angulo });
 }
 
 /** (lote "projetil") A gema cujos projéteis NÃO saem de quem usa ("ProjectilesNotFromUser" do PoE — o Golpe Vulcânico, as Lâminas Gélidas…): sem o leque. */
@@ -7858,7 +7848,7 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
         // (03/11, rodada 2: + as repetições do uso — `repetindoOUso` —, e no passe dos a mais o bicho reservado para o principal — `reservadosDoPasse`)
         parte: soExtras ? 'extras' : soOPrincipal && (!segundo || repetindoOUso) ? 'principal' : null,
         reservados: soExtras ? reservadosDoPasse : null,
-        casasDoCaminho: vooBase?.perfil && (vooBase.perfil.zigueZague > 0 || vooBase.perfil.rotacoes > 0) ? (de, fim) => casasDoCaminhoDoVoo(de, fim, vooBase) : null,
+        casasDoCaminho: vooBase?.perfil && (vooBase.perfil.zigueZague > 0 || vooBase.perfil.rotacoes > 0) ? (de, fim, angulo) => casasDoCaminhoDoVoo(de, fim, vooBase, angulo) : null,
       });
       // (lote A3b, dono 19/10) os projéteis que saíram do uso (o primeiro passe): o marcador do Disparo Congelante, a captura da Espiral Venenosa, a
       // Lâmina Persistente das Facas Etéreas (D8: 1 a cada N facas, onde a faca parou), o Tornado que os absorve (D7)
@@ -11782,7 +11772,7 @@ export function tiqueDoC3(estado, hunt, personagem, eventos = [], agora = hunt?.
 }
 
 /**
- * (D7) O TORNADO na fase inicial absorve os SEUS projéteis cuja reta passa pela casa dele (até 20 por tornado): guarda 10% do dano médio do acerto de
+ * (D7) O TORNADO na fase inicial absorve os SEUS projéteis cujo caminho passa pela casa dele (até 20 por tornado): guarda 10% do dano médio do acerto de
  * cada um (antes da resistência), que a perseguição soma a cada golpe dela (`pulsarObjeto`).
  */
 function absorverNosTornados(hunt, emitidos, danoMedio, agora) {
@@ -11790,7 +11780,8 @@ function absorverNosTornados(hunt, emitidos, danoMedio, agora) {
     if (o.tipo !== 'tornado' || !o.absorve || o.dono !== 'voce' || o.fase !== 1 || !(agora < (o.depois?.em ?? -Infinity)) || (o.z ?? 0) !== (hunt.z ?? 0)) continue;
     for (const p of emitidos) {
       if (o.absorve.n >= o.absorve.max) break;
-      const reta = [p.de, ...Areas.reta(p.de, p.para, distanciaChebyshev(p.de, p.para))];
+      // (03/11, revisão do raio contínuo: o caminho do projétil é o do acerto — o raio do ângulo exato, `Secundarios.casasDoEmitido` —, não a reta até o fim arredondado)
+      const reta = [p.de, ...Secundarios.casasDoEmitido(p)];
       if (!reta.some((c) => c.x === o.x && c.y === o.y)) continue;
       o.absorve.n++;
       o.absorve.guardado += (Math.max(0, danoMedio) * o.absorve.pct) / 100;
