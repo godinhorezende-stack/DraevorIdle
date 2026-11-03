@@ -3330,10 +3330,12 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     // O golpe do lacaio em UM bicho, com `pct`% (o principal 100%; os projéteis a mais e os saltos, o % deles) — `golpeDoLacaioNoBicho`.
     // (rodada 4, lote L: a mesma função solta as habilidades do PoB — `LacaiosHabilidades`)
     let errouOPrincipal = false;
+    // (03/11) o bicho do golpe principal: o do CONTATO do projétil (o voo de verdade — quem entrou na frente leva no lugar do alvo), não o alvo mirado
+    let principalDoGolpe = alvo;
     const doPob = hp ? LacaiosHabilidades.opcoesDoGolpe(l, hp, partes) : null;
     const golpear = (b, pct, extra = null) => {
       const r = golpeDoLacaioNoBicho(ctxDoGolpe, b, pct, { partes, tipo, magia: !!est.magia, impacto: est.impacto, ...(doPob ?? {}), ...(extra ?? {}) });
-      if (r?.errou && b === alvo && pct === 100) errouOPrincipal = true;
+      if (r?.errou && b === principalDoGolpe && pct === 100) errouOPrincipal = true;
       return r?.errou ? undefined : r?.bruto;
     };
     // (revisão F1: o alcance a mais do golpe CORPO A CORPO — o Golpe Sagrado — não faz do lacaio um de longe)
@@ -3360,7 +3362,10 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       return saida;
     };
     // (os saltos dos projéteis a mais — a perfuração, o ricochete, a volta… —: no instante em que o projétil chega neles, pelas casas andadas `g.dist`)
-    const v0DoTiro = GemasVoo.casasPorSegundo(magiaDaVez ? GemasVoo.VOO.padraoMagiaM : GemasVoo.VOO.padraoAtaqueM, 1);
+    // (03/11) a velocidade do voo do lacaio e do mercenário: a da gema da vez do mercenário (o poedb) e a Velocidade de Projétil dele; a do lacaio, a base (D1) ×
+    // a dos suportes ligados na gema que o invocou (`Acoes.vooDoLacaio`)
+    const vooDoTiro = Acoes.vooDoLacaio(estado, l, { magia: magiaDaVez });
+    const v0DoTiro = vooDoTiro.v0;
     const golpearNoTempo = (g, dDoPrincipal) => {
       if (!itensPoeLigado() || g.dist == null) return golpear(g.bicho, g.pct);
       const clock = hunt.clock ?? 0;
@@ -3370,6 +3375,7 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       if (!Voos.adiar(hunt, quando, () => comEventosDaChegada(() => { if (bicho.hp > 0 && distancia(bicho, onde) <= 1) golpear(bicho, g.pct); }), clock)) golpear(bicho, g.pct);
     };
     const ataqueDoLacaio = (alvo) => {
+    principalDoGolpe = alvo;
     const dDoPrincipal = Math.hypot(alvo.x - origemDoTiro.x, alvo.y - origemDoTiro.y);
     // (o bruto do golpe principal: o golpe em área a cada N acertos sai dele)
     const bruto = golpear(alvo, 100) ?? 0;
@@ -3439,9 +3445,10 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       }
     }
     };
-    if (deLonge && itensPoeLigado()) {
+    // (03/11: a habilidade principal do PoB SEM projétil — a Absolvição do Juiz, a área no alvo — não voa: cai na hora, como as de recarga)
+    if (deLonge && itensPoeLigado() && !(hp && !hp.projetil)) {
       const sairNoContato = (m, adiado) => (adiado ? comEventosDaChegada(() => ataqueDoLacaio(m)) : ataqueDoLacaio(m));
-      const voo = voarDoLacaio(hunt, l, alvo, { magia: magiaDaVez, alcance: Math.max(1, l.alcanceDeAtaque) }, sairNoContato);
+      const voo = voarDoLacaio(hunt, l, alvo, { magia: magiaDaVez, alcance: Math.max(1, l.alcanceDeAtaque), voo: vooDoTiro }, sairNoContato);
       if (tiroNoAlvo && voo.ms > 0) tiroNoAlvo.ms = voo.ms;
     } else ataqueDoLacaio(alvo);
   }
@@ -3469,11 +3476,12 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
  * tem a Velocidade de Projétil das suas peças), reto, no primeiro bicho que encontra; `sair(bicho, adiado)` é o golpe no contato (`adiado`: num tique depois — o
  * chamador põe os eventos de lá). O que se perde não acerta. Devolve `{ ms }` (o tempo do voo até o alvo, para a tela).
  */
-function voarDoLacaio(hunt, l, alvo, { magia = false, alcance = 7 } = {}, sair) {
+// (03/11: + `voo` — `{ v0, perfil, fator }` de `Acoes.vooDoLacaio`: a velocidade da gema da vez do mercenário e a Velocidade de Projétil; sem ele, a base D1)
+function voarDoLacaio(hunt, l, alvo, { magia = false, alcance = 7, voo = null } = {}, sair) {
   const z = l.z ?? hunt.z ?? 0;
   let contato = null;
   const r = Voos.lancar(hunt, {
-    de: { x: l.x, y: l.y }, para: { x: alvo.x, y: alvo.y }, z, alcance, v0: GemasVoo.casasPorSegundo(magia ? GemasVoo.VOO.padraoMagiaM : GemasVoo.VOO.padraoAtaqueM, 1), agora: hunt.clock ?? 0,
+    de: { x: l.x, y: l.y }, para: { x: alvo.x, y: alvo.y }, z, alcance, v0: voo?.v0 ?? GemasVoo.casasPorSegundo(magia ? GemasVoo.VOO.padraoMagiaM : GemasVoo.VOO.padraoAtaqueM, 1), perfil: voo?.perfil ?? null, fator: voo?.fator ?? 1, agora: hunt.clock ?? 0,
     colide: (c) => hunt.monstros.find((m) => m.hp > 0 && !m.dummy && m.x === c.x && m.y === c.y && (m.z ?? hunt.z ?? 0) === z) ?? null,
     parede: (c) => { const g = ModsPoe.gradeDoCombate(hunt)?.andavel; return !!g && !g.has(`${c.x},${c.y}`); },
     aoContato: (m, casa, { adiado }) => { if (!adiado) { contato = m; return []; } return sair(m, true) ?? []; },

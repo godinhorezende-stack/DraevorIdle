@@ -154,7 +154,7 @@ export function resolver(args) {
   return r;
 }
 
-function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alcance, area = false, rumo = null, rng = Math.random, andavel = null, areaNoImpacto = null, cinetica = null, divisaoNoAlvo = null, voo = false }) {
+function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alcance, area = false, rumo = null, rng = Math.random, andavel = null, areaNoImpacto = null, cinetica = null, divisaoNoAlvo = null, voo = false, parte = null, casasDoCaminho = null }) {
   const golpes = [];
   const explosoes = [];
   const emitidos = [];
@@ -612,6 +612,50 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
     for (let k = com.length + 1; k <= extras; k++) tiro(pontoDoProjetil(k), null, k);
     return r;
   }
+  /*
+   * (03/11 — a revisão do voo de verdade: cada projétil é INDEPENDENTE, como no PoE) o LEQUE dos projéteis a mais (`leque`, D7b de `itens-poe/projeteis-voo.mjs`):
+   * cada um no ângulo dele a partir do rumo do principal, no primeiro do caminho que nenhum outro do uso acertou (`fora`); sem ninguém, erra (e pode bater no
+   * terreno). O caminho de cada um é o da gema (`casasDoCaminho`: o ziguezague do Raio Cinético, a espiral da Hélice — o mesmo do principal); sem ele, a reta.
+   * `parte` (o voo de verdade, `Acoes.disparar`): 'extras' — só os projéteis a mais (o leque, que sai no uso e cai no tempo de cada um); 'principal' — só o
+   * principal e o que vem dele (o golpe do contato). Sem `parte`, todos (como antes).
+   */
+  const extrasDoLeque = total - 1;
+  const lequeDoVoo = deProjetil && voo && extrasDoLeque > 0 && lequeIndependente({ efeito, tags, area, voo });
+  const primeiroNoCaminho = (de, fim, fora) => {
+    if (!casasDoCaminho) return primeiroNaReta(de, fim, fora);
+    return (casasDoCaminho(de, fim) ?? []).map((c) => porCasa.get(`${c.x},${c.y}`)).find((b) => b && b.hp > 0 && !fora.has(b)) ?? null;
+  };
+  const leque = (fora) => {
+    const passoDoLeque = total > 1 ? Math.min(((Number(efeito.lequeGraus) || 10) * Math.PI) / 180, (2 * Math.PI) / total) : 0;
+    for (let k = 1; k <= extrasDoLeque; k++) {
+      const a = anguloDoRumo + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * passoDoLeque;
+      const fim = noAngulo(origem, a);
+      const b = primeiroNoCaminho(origem, fim, fora);
+      const para = b ? { x: b.x, y: b.y } : fim;
+      emitidos.push({ de: { x: origem.x, y: origem.y }, para, bicho: b ?? null, tipo: 'projetil', dist: hyp(origem, para) });
+      if (b) { fora.add(b); voar({ ...base(), de: origem, pct: pctDe('danoDosExtrasPct') }, b, 'projetil'); }
+      else naParede(fim, pctDe('danoDosExtrasPct'));
+    }
+  };
+  // (03/11) só os projéteis a mais do leque: o alvo (se o principal vai nele) e os já acertados ficam de fora
+  if (parte === 'extras') {
+    if (lequeDoVoo) leque(new Set([alvo, ...atingidos].filter(Boolean)));
+    return r;
+  }
+  /*
+   * (03/11) o PRINCIPAL QUE SE PERDEU (o voo de verdade: o fim do alcance, a parede, o alvo que saiu da reta): ele sai no rumo do tiro e erra (pode bater no terreno)
+   * — e os projéteis a mais seguem por conta própria, como no PoE: cada um no ângulo do leque dele, acertando o primeiro do caminho (antes saíam todos e erravam).
+   */
+  if (deProjetil && voo && !alvo && rumo) {
+    for (const b of atingidos) impacto(b, 100, origem, 'direto', true);
+    const fim = noAngulo(origem, anguloDoRumo);
+    emitidos.push({ de: { x: origem.x, y: origem.y }, para: fim, bicho: null, tipo: 'direto', dist: hyp(origem, fim) });
+    naParede(fim, 100);
+    if (parte === 'principal') return r;
+    if (lequeDoVoo) leque(new Set(atingidos));
+    else for (let k = 1; k < total; k++) { emitir(null, 'projetil', k); naParede(pontoDoProjetil(k), pctDe('danoDosExtrasPct')); }
+    return r;
+  }
   if (!(t.has('projectile') && alvo)) {
     // Sem projétil (alvo único, cadeia da magia, corpo a corpo com Impact): cada golpe principal é um impacto.
     for (const b of atingidos) impacto(b, 100, origem, 'direto', true);
@@ -718,17 +762,9 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
     // (lote "projetil", dono 02/11 — o voo de verdade: o LEQUE) cada projétil a mais no ângulo dele — `efeito.lequeGraus` entre os vizinhos (D7b de
     // `itens-poe/projeteis-voo.mjs`: 10°, sem passar da volta inteira), alternando os lados a partir do rumo do principal —, no primeiro do caminho que nenhum outro do
     // uso acertou; sem ninguém, erra (e pode bater no terreno)
+    // (03/11: o laço em `leque`, acima; com `parte` 'principal', os a mais já saíram no uso — `Acoes.disparar`)
     if (voo && !todosNoAlvo && !efeito.direcoesAleatorias && !efeito.extrasNoAlvo && !efeito.sequencia) {
-      const passoDoLeque = total > 1 ? Math.min(((Number(efeito.lequeGraus) || 10) * Math.PI) / 180, (2 * Math.PI) / total) : 0;
-      for (let k = 1; k <= extras; k++) {
-        const a = anguloDoRumo + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * passoDoLeque;
-        const fim = noAngulo(origem, a);
-        const b = primeiroNaReta(origem, fim, fora);
-        const para = b ? { x: b.x, y: b.y } : fim;
-        emitidos.push({ de: { x: origem.x, y: origem.y }, para, bicho: b ?? null, tipo: 'projetil', dist: hyp(origem, para) });
-        if (b) { fora.add(b); voar({ ...base(), de: origem, pct: pctDe('danoDosExtrasPct') }, b, 'projetil'); }
-        else naParede(fim, pctDe('danoDosExtrasPct'));
-      }
+      if (parte !== 'principal') leque(fora);
       return r;
     }
     const comBicho = todosNoAlvo ? [] : efeito.direcoesAleatorias ? sorteados() : maisPerto(vivosNoInicio, origem, alcance, extras, fora);
@@ -746,6 +782,18 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
     }
   }
   return r;
+}
+
+/**
+ * (03/11) Os projéteis a mais deste uso saem em LEQUE pelo voo de verdade — cada um independente (o seu tempo, o seu caminho): a geometria comum (sem as direções
+ * aleatórias, o Tiro Tornado, o círculo, as origens laterais da Saraivada, o Aço Perfurador, a sequência e o "nos inimigos diferentes, senão no alvo"). Com ela,
+ * `Acoes.disparar` solta os a mais no uso (`parte: 'extras'`) e o principal no contato dele (`parte: 'principal'`).
+ */
+export function lequeIndependente({ efeito, tags, area = false, voo = false }) {
+  const t = new Set(tags ?? []);
+  if (!voo || !efeito || !t.has('projectile') || area) return false;
+  const total = Math.max(1, Math.round(Number(efeito.projeteisBase) || 1)) + Math.max(0, Math.round(Number(efeito.alvosExtras) || 0));
+  return total > 1 && !efeito.direcoesAleatorias && !efeito.angulos?.length && !efeito.tornado && !efeito.emCirculo && !(efeito.origensLaterais > 0) && !efeito.lanca && !efeito.sequencia && !efeito.extrasNoAlvo;
 }
 
 /** (lote "projetil") A `dist` (as casas andadas desde quem lançou) nos emitidos que saíram sem ela — os que partem de quem lança ou do centro do círculo. */

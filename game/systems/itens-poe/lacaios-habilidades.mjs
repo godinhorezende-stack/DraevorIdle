@@ -408,7 +408,8 @@ export function usar(l, h, alvo0, c) {
   }
   // (lote "projetil", dono 02/11: o projétil da habilidade VOA — `c.depoisDoVoo` (a caçada): o golpe em cada um no tempo do voo do lacaio até ele; a da área em volta
   // do lacaio não voa)
-  const voa = (h.projetil || h.magia) && !(h.area && h.centro === 'lacaio') && typeof c.depoisDoVoo === 'function';
+  // (03/11: só o PROJÉTIL voa — a magia sem projétil, a área no alvo (a Absolvição Fortalecida do Juiz, o cone do Elemental de Fogo, a Absolvição Vaal), cai na hora)
+  const voa = !!h.projetil && !(h.area && h.centro === 'lacaio') && typeof c.depoisDoVoo === 'function';
   const tiros = new Map();
   if (h.projetil || h.magia) for (const m of atingidos) if (!h.area || h.centro !== 'lacaio') { const ev = { t: 'shot', id: PROJETIL[op.tipo] ?? 12, x: l.x, y: l.y, tx: m.x, ty: m.y }; tiros.set(m, ev); eventos.push(ev); }
   // (a Investida: até +30% no alcance máximo — pela distância percorrida)
