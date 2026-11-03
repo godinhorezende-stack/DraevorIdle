@@ -7024,6 +7024,34 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
     // Críticos exceto na Repetição final"; sem repetição, o lançamento é o final)
     let naRepeticaoFinal = true;
     let fatorDoAtaque = 100; // 100% no ataque normal; o do 2º golpe do ataque duplo vem de `combate/limites.json`
+    /*
+     * (03/11, rodada 3 do voo de verdade) o 2º golpe do ATAQUE DUPLO fica fora do roubo de vida/mana e das habilidades da árvore (contam só do primeiro — o
+     * comentário do ataque, abaixo): `semContarNoRoubo` — no contato e no passe dos a mais feito no uso. E o golpe que cai DEPOIS (`Voos.adiar` no passe) com o
+     * estado do passe que o soltou (`noEstadoDoPasse`): o fator do 2º golpe, a repetição da vez (o "mais Dano" dela, o crítico da final, o Dano Dobrado do Eco
+     * Desperto), o Selo — não o do passe que estiver de pé quando ele chega
+     */
+    let noSegundoAtaque = false;
+    const semContarNoRoubo = (fn) => {
+      const antes = { total, danoCritico, danoFisico, totalSemDreno, totalSemDrenoEs, danos: danos.slice(), vida: rouboDosAlvos.vida, mana: rouboDosAlvos.mana };
+      try { return fn(); } finally {
+        total = antes.total;
+        danoCritico = antes.danoCritico;
+        danoFisico = antes.danoFisico;
+        totalSemDreno = antes.totalSemDreno;
+        totalSemDrenoEs = antes.totalSemDrenoEs;
+        danos.length = 0;
+        danos.push(...antes.danos);
+        rouboDosAlvos.vida = antes.vida;
+        rouboDosAlvos.mana = antes.mana;
+      }
+    };
+    const estadoDoPasse = () => ({ fatorDoAtaque, dobroNaFinal, repeticaoAtual, naRepeticaoFinal, reocorrendo, noSegundoAtaque });
+    const porNoPasse = (p) => { ({ fatorDoAtaque, dobroNaFinal, repeticaoAtual, naRepeticaoFinal, reocorrendo, noSegundoAtaque } = p); };
+    const noEstadoDoPasse = (p, fn) => {
+      const antes = estadoDoPasse();
+      porNoPasse(p);
+      try { return p.noSegundoAtaque && !antes.noSegundoAtaque ? semContarNoRoubo(fn) : fn(); } finally { porNoPasse(antes); }
+    };
     let danoVezesMaldicoes = 0;
     // (lote T1, rodada 4) o Arco Elétrico Vaal liga o buff (4 s × a Duração): com ele, o dano dos Arcos Elétricos é Sortudo — o deste uso também (`GemasT1`)
     if (itensPoeLigado() && entry.poeGema?.slug === GemasT1.ARCO_VAAL && !doTotem) GemasT1.ligarArcoSortudo(hunt, agora + Math.round((GemasPoe.compilada(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0)?.stats?.duracao ?? 4) * 1000 * fatorDeDuracao(estado, entry, efeitoDaGema)));
@@ -7849,6 +7877,7 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
       // concha, as flechas que grudam, os cones) sai quando o último chega
       const quandoDosAdiados = [];
       const acertadosDepois = new Set(atingidos.filter(acertouNoPasse));
+      const doPasse = estadoDoPasse();
       // (03/11, rodada 2) no passe dos a mais: o primeiro acerto `exclusivo` (D7b) num bicho que outro projétil do uso já pegou não acontece — nem o resto daquele projétil
       // (`projDoUso`: os saltos, os filhos, as explosões dele); confere no instante do acerto
       const tomados = soExtras ? tomadosNoPasse : null;
@@ -7877,7 +7906,8 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
           if (Voos.adiar(hunt, quando, () => comoNoUso(() => {
             if (!(bicho.hp > 0) || distanciaChebyshev(bicho, onde) > 1) return;
             if (!caiNoInstante(s)) return;
-            acertar(bicho, s.pct, s.tipo, s);
+            // (03/11, rodada 3: no estado do passe que o soltou — `noEstadoDoPasse`)
+            noEstadoDoPasse(doPasse, () => acertar(bicho, s.pct, s.tipo, s));
             if (acertouNoPasse(bicho)) acertadosDepois.add(bicho);
           }), hunt.clock ?? 0)) {
             if (tiroDoSalto) eventos.push({ t: 'shot', id: entry.projetil, x: s.de.x, y: s.de.y, tx: onde.x, ty: onde.y, ...(velDoTiro !== 1 ? { vel: velDoTiro } : {}), ms });
@@ -7936,7 +7966,7 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
       }
       };
       if (!quandoDosAdiados.length) aposOsImpactos(acertouNoPasse);
-      else if (!Voos.adiar(hunt, Math.max(...quandoDosAdiados), () => comoNoUso(() => aposOsImpactos((b) => acertadosDepois.has(b))), hunt.clock ?? 0)) aposOsImpactos((b) => acertadosDepois.has(b));
+      else if (!Voos.adiar(hunt, Math.max(...quandoDosAdiados), () => comoNoUso(() => noEstadoDoPasse(doPasse, () => aposOsImpactos((b) => acertadosDepois.has(b)))), hunt.clock ?? 0)) aposOsImpactos((b) => acertadosDepois.has(b));
       // (lote PR1) o cone da Galvânica: cada um no cone leva o acerto dele (o alvo também — a flecha e o cone são acertos à parte, como as duas partes do PoB)
       if (coneGalvanico && !soExtras) {
         const cs = Areas.daForma(coneGalvanico, { x, y }, ordemDosLados({ x, y }, alvo)[0]);
@@ -8279,6 +8309,26 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
       }
       // (lote A3b: D2: a nova dos Disparos repete dos mesmos pontos — a primeira pode estar vazia)
       if (novasDosDisparos) atingidos = daPrimeiraNova.filter((b) => b.hp > 0);
+      // (03/11, rodada 3) com os a mais da repetição já no ar (saíram no uso — `dobrosDasRepeticoes`), a repetição sai INTEIRA também sem ninguém vivo (o principal
+      // matou o alvo, ou se perdeu): cada repetição é outro uso no PoE, que sai de todo jeito; o principal dela vai no rumo do tiro e erra (`principalDaRepeticaoSemAlvo`)
+      const principalDaRepeticaoSemAlvo = !!dobrosDasRepeticoes && !atingidos.some((b) => b.hp > 0) && !novasDosDisparos?.casas.length;
+      if (principalDaRepeticaoSemAlvo) {
+        naRepeticaoFinal = r === repeticoes - 1;
+        repeticaoAtual = r + 1;
+        dobroNaFinal = dobrosDasRepeticoes[r] ?? false;
+        const alvo0 = alvo;
+        const atingidos0 = atingidos;
+        const rumo0 = rumoDoVoo;
+        const errou0 = vooErrou;
+        alvo = null;
+        atingidos = [];
+        rumoDoVoo = rumoDoVoo ?? miraDoUso;
+        // (o tiro do principal da repetição é outro projétil: vai para a tela também quando o do uso se perdeu — esse já saiu)
+        vooErrou = false;
+        repetindoOUso = true;
+        try { atacar(true); } finally { repetindoOUso = false; alvo = alvo0; atingidos = atingidos0; rumoDoVoo = rumo0; vooErrou = errou0; }
+        continue;
+      }
       if (!atingidos.some((b) => b.hp > 0) && !novasDosDisparos?.casas.length) break;
       naRepeticaoFinal = r === repeticoes - 1;
       repeticaoAtual = r + 1;
@@ -8322,21 +8372,14 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
     // (revisão B4: "ganha Intensidade quando você Conjurá-la" — a ativada por gatilho, a armadilha e a mina — `plantada` também tem o `gatilho` — não ganham; o
     // Community Wiki: "cannot gain a stack of Intensity when this spell is repeated, triggered, or cast by a totem"; usa os acúmulos que já existem)
     if (efeitoDaGema?.intensidadeMax > 0 && !gatilho) ganharIntensidade(hunt, entry.id, efeitoDaGema, ModsPoe.valor(ficha, 'intensidade_max_extra'), hunt.clock ?? 0, ficha.afPoe);
-    const totalDoPrimeiro = total;
-    const criticoDoPrimeiro = danoCritico;
-    const fisicoDoPrimeiro = danoFisico;
-    const danosDoPrimeiro = danos.slice();
     // (03/11, rodada 2: com os a mais já no ar, o sorteio do ataque duplo é o do uso — `ataqueDuploDoUso` —, e o 2º golpe leva só o principal)
+    // (03/11, rodada 3: o roubo e a árvore só do primeiro pelo `semContarNoRoubo` — o mesmo do passe dos a mais; `noSegundoAtaque` vai com o que cai depois)
     if (ataqueDuploDoUso ?? Math.random() < (ficha.ataqueDuplo ?? 0)) {
       fatorDoAtaque = Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct;
       repetindoOUso = ataqueDuploDoUso != null;
-      try { atacar(true); } finally { repetindoOUso = false; }
+      noSegundoAtaque = true;
+      try { semContarNoRoubo(() => atacar(true)); } finally { repetindoOUso = false; noSegundoAtaque = false; }
       fatorDoAtaque = 100;
-      total = totalDoPrimeiro;
-      danoCritico = criticoDoPrimeiro;
-      danoFisico = fisicoDoPrimeiro;
-      danos.length = 0;
-      danos.push(...danosDoPrimeiro);
     }
     // Cataclismo, Arco voltaico, Inverno sem fim, Raiz venenosa (ver `Arvore.depoisDaMagia`).
     if (entry.kind === 'spell') total += Arvore.depoisDaMagia(estado, hunt, entry.element, danos, eventos, cor);
@@ -8631,7 +8674,9 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
         if (ataqueDuploDoUso) {
           fatorDoAtaque = Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct;
           tomadosNoPasse = new Set();
-          atacar(true);
+          // (03/11, rodada 3: o 2º golpe fora do roubo de vida/mana e da árvore, como no contato — os a mais dele que acertam neste tique não somam no `total`)
+          noSegundoAtaque = true;
+          try { semContarNoRoubo(() => atacar(true)); } finally { noSegundoAtaque = false; }
           fatorDoAtaque = 100;
         }
       } finally {
