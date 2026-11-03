@@ -85,14 +85,16 @@ test('a Salvaguarda da base Rúnica na peça (`base.ward`), × a qualidade; os l
   assert.equal(unico('Gloves/Runic_Gages', 'Nightgrip').poe.af.salvaguarda_ignorada_pct, 75);
 });
 
-test('as linhas da Salvaguarda das Joias Atemporais (a Tragédia Heroica) têm efeito; as que faltam seguem registradas', { skip: SEM }, () => {
+test('as linhas da Salvaguarda das Joias Atemporais (a Tragédia Heroica) têm efeito', { skip: SEM }, () => {
   const ef = (l) => traduzirLinha(l).efeitos.map((x) => [x.add ?? x.stat, x.valor]);
   assert.deepEqual(ef('Salvaguarda aumentada em 2%'), [['salvaguarda_pct', 2]]);
   assert.deepEqual(ef('Restauração da Salvaguarda 15% mais rápida'), [['salvaguarda_restauracao_pct', 15]]);
   assert.deepEqual(ef('Salvaguarda 40% menor'), [['salvaguarda_mais', -40]]);
   assert.deepEqual(ef('Ganha 1 Carga de Poder quando a Salvaguarda se Rompe'), [['ev:salvaguardaQuebra:carga:poder', 100]]);
   assert.deepEqual(ef('10% de chance de Restaurar a Salvaguarda ao Bloquear'), [['ev:bloquear:salvaguarda', 10]]);
-  assert.equal(traduzirLinha('A Salvaguarda tem 60% de chance de não se Romper').estado, 'registrado');
+  // aval do dono 03/11: a chance de não se Romper passou a valer (o PoB: WardAvoidBreakChance)
+  assert.equal(traduzirLinha('A Salvaguarda tem 60% de chance de não se Romper').estado, 'equivalente');
+  assert.deepEqual(ef('A Salvaguarda tem 60% de chance de não se Romper'), [['salvaguarda_chance_nao_romper', 60]]);
 });
 
 test('a ficha soma a Salvaguarda das peças vestidas, × o aumentado global; o Guardião da Fé leva o Escudo aumentado para a Salvaguarda', { skip: SEM }, () => {
