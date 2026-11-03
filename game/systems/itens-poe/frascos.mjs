@@ -19,7 +19,7 @@ import { ITEM_CATALOG } from '../dados.mjs';
 import { darPeca, cabeNaMochila, erroDeEspaco } from '../inventario.mjs';
 import { camposDaPeca } from '../itens/item.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { vidaSoPeloDreno, marcar, reservadoAgora } from './condicoes-poe.mjs';
+import { vidaSoPeloDreno, marcar, reservadoAgora, criarSoloCongelado } from './condicoes-poe.mjs';
 import * as Tinturas from './tinturas.mjs';
 import * as Salvaguarda from '../personagem/salvaguarda.mjs';
 import { quebrarGelo, porLento } from './gemas-gbd.mjs';
@@ -294,7 +294,7 @@ export function usar(estado, v, eventos = null, quem = null) {
   if (st.ativos[v]?.ate > agora && !(peca.poe?.classe === 'Life_Flasks' && Number(afp.frasco_vida_sem_fila) > 0)) return false;
   // (ciclo 7, lote F) "X% de chance de Frascos usados por você não consumirem Cargas".
   if (!(Math.random() * 100 < (Number(afp.frasco_sem_consumo) || 0))) peca.poe.cargas = cargas - par.cargasPorUso;
-  aoUsarOFrasco(estado, par, eventos, quem);
+  aoUsarOFrasco(estado, par, eventos, quem, afp);
   // (02/11) "Restaura Proteção ao usar" (o Frasco de Ferro): a Salvaguarda volta inteira
   if (par.restauraSalvaguarda) Salvaguarda.restaurar(estado);
   // (12/10, a Tintura: "…se você usou um Frasco de Vida Recentemente")
@@ -341,7 +341,8 @@ function alternarTintura(estado, v, peca, afp) {
 /** O que o frasco faz AO SER USADO (PoE): tirar Maldições/Incêndios, as imunidades "se usado enquanto…", desacelerar/provocar em volta e os solos. */
 const RAIO_DO_FRASCO = 3;
 const SOLO_MS = 5000;
-function aoUsarOFrasco(estado, par, eventos, quem) {
+// (03/11: + `afp` — os atributos do personagem: o "Efeito do Solo Congelado aumentado" no solo do frasco)
+function aoUsarOFrasco(estado, par, eventos, quem, afp = {}) {
   const hunt = estado.hunt;
   const u = par.aoUsar ?? {};
   const agora = hunt.clock ?? 0;
@@ -367,12 +368,14 @@ function aoUsarOFrasco(estado, par, eventos, quem) {
     const e = (m.estados ??= {});
     const lento = (pct, ms) => { porLento(e, agora + ms, pct, agora); ev(m, 'lento'); };
     if (u.desacelerarPct) lento(u.desacelerarPct, par.ms || 4000);
-    // Solo Congelado: resfria quem está em cima (10% de lentidão, o Resfriamento base do PoE).
-    if (u.solo === 'congelado') lento(10, SOLO_MS);
     if (u.provocar) { e.provocado = { ate: agora + 3000 }; ev(m, 'provocado'); }
     // Nuvem de Fumaça: Cega quem está em volta.
     if (u.fumaca) { e.cego = { ate: agora + 4000 }; ev(m, 'cego'); }
   }
+  // (03/11) Solo Congelado: o SOLO de verdade no chão onde você está (antes: só 10% de lentidão nos monstros perto, na hora do uso) — uma das suas áreas frias
+  // (`condicoes-poe.criarSoloCongelado`): Resfria os monstros que estão nele ou entram (10% × "Efeito do Solo Congelado aumentado"); conta para o "sobre Solo
+  // Congelado". O raio e a duração de antes (o PoE não publica os do frasco): as 3 casas em volta e os 5 s
+  if (u.solo === 'congelado' && hunt.pos) criarSoloCongelado(hunt, { afPoe: afp }, { x: hunt.pos.x, y: hunt.pos.y, raioM: RAIO_DO_FRASCO * 2, segundos: SOLO_MS / 1000, agora });
   // Solo Sagrado: regenera 6% da vida por segundo enquanto o personagem está nele.
   if (u.solo === 'sagrado') (hunt.frascosPoe.extras ??= []).push({ ate: agora + SOLO_MS, af: { life_regen_max_pct: 6 }, nome: 'Solo Sagrado' });
 }

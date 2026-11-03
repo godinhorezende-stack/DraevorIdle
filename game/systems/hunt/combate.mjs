@@ -1574,6 +1574,15 @@ export function elementalDosAtributos(estado, hunt, alvo, ficha, fisico, rolagem
 }
 
 export function round(estado, personagem) {
+  const r = golpeDoRound(estado, personagem);
+  // (100% — combate, 02/11; 03/11: só DEPOIS do golpe inteiro — o principal, os alvos do Impelido, as flechas a mais e o ataque duplo usam a mesma sorte;
+  // antes ela mudava logo no `bateu` e os alvos extras do mesmo golpe viam outra casa a mais) o golpe saiu: a sorte da casa a mais do alcance do próximo é
+  // outra (`Combate100.renovarSorteDoAlcance`)
+  if (r.bateu && itensPoeLigado()) Combate100.renovarSorteDoAlcance(estado.hunt);
+  return r;
+}
+
+function golpeDoRound(estado, personagem) {
   const hunt = estado.hunt;
   // (lote "projetil": `let` — o golpe do projétil que chega depois sai com os eventos da chegada)
   let eventos = [];
@@ -1598,8 +1607,6 @@ export function round(estado, personagem) {
   const semDanoProprio = itensPoeLigado() && ModsPoe.valor(Ficha.combate(estado), 'sem_dano_proprio') > 0;
   if (!hunt.lurando && alvo && !semMunicao && !semDanoProprio && distancia(hunt.pos, alvo) <= alcanceDaArma(arma, estado)) {
     bateu = true;
-    // (100% — combate, 02/11) o golpe saiu: a sorte da casa a mais do alcance do próximo é outra (`Combate100.renovarSorteDoAlcance`)
-    if (itensPoeLigado()) Combate100.renovarSorteDoAlcance(hunt);
     // (o golpe básico é um ataque: "se tiver Atacado no segundo anterior" — as Cargas Fanáticas, `condicoes-poe.tiqueDasCargasFanaticas`)
     if (itensPoeLigado()) ModsPoe.marcar(hunt, 'usou:ataque');
     // O golpe básico também vira o personagem para o alvo.

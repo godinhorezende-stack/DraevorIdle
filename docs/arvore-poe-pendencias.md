@@ -1,13 +1,13 @@
 # Árvore de passivas do PoE — o que falta e o que é parcial
 
-Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-11-02, a partir de `game/gamedata/itens-poe/arvore-poe.json` — o mesmo estado que o balão da árvore mostra em cada linha. Remontar a árvore (`node tools/montar-arvore-poe.mjs`, depois de mexer numa regra de `traducao.json`) atualiza o balão e este relatório juntos.
+Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-11-03, a partir de `game/gamedata/itens-poe/arvore-poe.json` — o mesmo estado que o balão da árvore mostra em cada linha. Remontar a árvore (`node tools/montar-arvore-poe.mjs`, depois de mexer numa regra de `traducao.json`) atualiza o balão e este relatório juntos.
 
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **6022** — equivalente 1379, novo 4641, aproximado (parcial) 2.
+- ✓ Com efeito: **6036** — equivalente 1379, novo 4655, aproximado (parcial) 2.
 - ✗ Sem efeito: **0** — na árvore principal 0, nas ascendências 0; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 0; **0 estão nos blocos que o dono mandou implementar (12/10)**.
-- – Não se aplica ao jogo: 14. Lembretes do PoE (entre parênteses, sem marca): 765.
+- – Não se aplica ao jogo: 0. Lembretes do PoE (entre parênteses, sem marca): 765.
 
 ## Implementado a pedido do dono (12/10)
 
@@ -71,11 +71,11 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-11-02, a partir de `gam
 - **Joias que caem**: Carmesim, Viridiana e Cobalto (Normal, Mágica, Rara e Única), a Prismática (só Única) e os 4 Olhos Abissais (nos encaixes da árvore e nos Encaixes Abissais das peças).
 - **Mods das joias Carmesim/Viridiana/Cobalto/Prismática** (prefixos e sufixos, pelo peso de sorteio): 100% com efeito.
 - **Mods das joias Abissais** (prefixos e sufixos, pelo peso de sorteio): 100% com efeito.
-- **Linhas sorteadas** (o pool de cada única no poedb — `linhas-sorteadas.json`): Personalidade Dividida 9/9 com efeito · O Equilíbrio do Terror 18/18 com efeito · Olho do Vigia 79/87 com efeito (8 não se aplicam: as Fendas e os Grilhões Temporais não existem no jogo; os solos (ardente, sagrado, fúngico…) não existem no jogo) · Visão Sublime 17/17 com efeito · Limitado pelo Destino 54/54 com efeito · Fé Militante 16/16 com efeito · Megalomaníaco 287/287 com efeito.
+- **Linhas sorteadas** (o pool de cada única no poedb — `linhas-sorteadas.json`): Personalidade Dividida 9/9 com efeito · O Equilíbrio do Terror 18/18 com efeito · Olho do Vigia 79/87 com efeito (8 não se aplicam: as Fendas e os Grilhões Temporais não existem no jogo; estes solos ainda não têm efeito no jogo: o Solo Fúngico, o Cáustico, o Profanado (o de dano de Caos em você), o Piche, as "Áreas Resfriadas" do Algor Mortis, o Solo Ardente e o Eletrizado criados por você (os dos monstros existem — "Inafetado por Solo Ardente/Eletrizado" vale), as imunidades "enquanto afetado por Pureza" e as linhas do Solo Sagrado/Profano sem regra própria (o raio, o bloqueio, o Fanatismo, o do frasco). O Solo Sagrado e o Profano que você cria, o Solo Congelado (o dos monstros e o seu) e as imunidades aos solos têm regra própria e valem) · Visão Sublime 17/17 com efeito · Limitado pelo Destino 54/54 com efeito · Fé Militante 16/16 com efeito · Megalomaníaco 287/287 com efeito.
 
 | Únicas | Linhas | ✓ Com efeito | – Lembrete / não se aplica | ✗ Sem efeito |
 |---|---:|---:|---:|---:|
-| Carmesim, Viridiana, Cobalto e Prismática (94) | 238 | 199 | 39 | 0 |
+| Carmesim, Viridiana, Cobalto e Prismática (94) | 238 | 206 | 32 | 0 |
 | Abissais (os 4 Olhos) (4) | 11 | 9 | 2 | 0 |
 | Atemporais (6) | 19 | 8 | 11 | 0 |
 | Ramificadoras (12) | 24 | 18 | 6 | 0 |
@@ -88,7 +88,7 @@ A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento 
 |---|---:|---:|---:|---:|
 | Encantamentos (as pequenas) | 56 | 56 | 0 | 0 |
 | "Também concedem" (as pequenas) | 154 | 154 | 0 | 0 |
-| Notáveis | 676 | 673 | 3 | 0 |
+| Notáveis | 676 | 676 | 0 | 0 |
 
 ### O que ainda não funciona nas joias únicas, pelo lote previsto
 

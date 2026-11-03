@@ -18628,7 +18628,7 @@
       "_unico": true
     },
     {
-      "padrao": "^Tamanho do Personagem aumentado em \\{(\\d+)\\}%$",
+      "padrao": "^[Tt]amanho do Personagem aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
           "stat": "tamanho_personagem",
@@ -18638,7 +18638,8 @@
       "estado": "novo",
       "nota": "no PoE só muda o desenho: o personagem aparece maior na tela",
       "_nova": true,
-      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)",
+      "_03_11": "03/11 — o \"t\" minúsculo do poedb (o Ninho do Rato: \"tamanho do Personagem reduzido em 10%\" — a versão reduzida desta regra) também casa"
     },
     {
       "padrao": "^Tamanho do Zumbi aumentado em \\{(\\d+)\\}%$",
@@ -18785,6 +18786,84 @@
       "_lote70": "17/10 — lote 70 (as Ramificadoras: os notáveis — os solos dos monstros e os totens)"
     },
     {
+      "padrao": "^\\{(\\d+)\\}% de chance de criar Solo Congelado ao Congelar um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:congelar:soloCongelado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o seu Solo Congelado (6 s, 1 casa) onde está o inimigo Congelado: Resfria os monstros nele (10%)",
+      "_nova": true,
+      "_03_11": "03/11 — combate, luz e árvore: o Solo Congelado que você cria e o \"sobre Solo Congelado\""
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de criar Solo Resfriado ao Acertar com um Ataque$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:soloCongelado@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o Solo Resfriado é o Solo Congelado do PoE (Chilled Ground): o seu (6 s, 1 casa) onde está o inimigo acertado; Resfria os monstros nele (10%)",
+      "_nova": true,
+      "_03_11": "03/11 — combate, luz e árvore: o Solo Congelado que você cria e o \"sobre Solo Congelado\""
+    },
+    {
+      "padrao": "^Efeito do Solo Congelado aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "solo_congelado_efeito",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o Resfriamento do Solo Congelado que você cria (10% × o aumentado)",
+      "_nova": true,
+      "_03_11": "03/11 — combate, luz e árvore: o Solo Congelado que você cria e o \"sobre Solo Congelado\""
+    },
+    {
+      "padrao": "^\\{(\\d+(?:\\.\\d+)?)\\}% de Vida Regenerada por segundo sobre Solo Congelado$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct@soloCongelado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "com você sobre qualquer Solo Congelado (o dos monstros ou o seu)",
+      "_nova": true,
+      "_03_11": "03/11 — combate, luz e árvore: o Solo Congelado que você cria e o \"sobre Solo Congelado\""
+    },
+    {
+      "padrao": "^Cria Solo Congelado ao Utilizar$",
+      "efeitos": [
+        {
+          "stat": "frasco_solo_congelado",
+          "valor": "1"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o Frasco de Água-marinha: o Solo Congelado no chão onde você está (3 casas, 5 s) ao usar — quem lê é o frasco (`frascos.aoUsarOFrasco`)",
+      "_nova": true,
+      "_03_11": "03/11 — combate, luz e árvore: o Solo Congelado que você cria e o \"sobre Solo Congelado\""
+    },
+    {
+      "padrao": "^(?:Deixa )?Solo (?:Ardente|Eletrizado|Congelado|Resfriado) ao Morrer$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "modificador de MONSTRO: o solo que ele deixa ao morrer vale no monstro (`mobs/mecanicas` — o Ardente queima, o Eletrizado Eletriza, o Congelado Resfria quem está nele)",
+      "_nova": true,
+      "_03_11": "03/11 — os solos dos monstros existem (lote 70 e 100% combate): a linha do modificador não cai mais na nota larga dos solos"
+    },
+    {
       "padrao": "^(?!Você tem Solo Sagrado ao seu redor enquanto parado|\\{\\d+\\}% de chance de criar Solo Profano no Golpe Crítico|Efeitos do Solo Profano criados por você Perduram).*(?:Solo (?:Ardente|Eletrizado|Congelado|Profano|Profanado|Fúngico|Cáustico|Sagrado|Resfriado)|Áreas Resfriadas|Piche).*$",
       "efeitos": [
         {
@@ -18793,9 +18872,10 @@
         }
       ],
       "estado": "inerte",
-      "nota": "os solos (ardente, sagrado, fúngico…) não existem no jogo",
+      "nota": "estes solos ainda não têm efeito no jogo: o Solo Fúngico, o Cáustico, o Profanado (o de dano de Caos em você), o Piche, as \"Áreas Resfriadas\" do Algor Mortis, o Solo Ardente e o Eletrizado criados por você (os dos monstros existem — \"Inafetado por Solo Ardente/Eletrizado\" vale), as imunidades \"enquanto afetado por Pureza\" e as linhas do Solo Sagrado/Profano sem regra própria (o raio, o bloqueio, o Fanatismo, o do frasco). O Solo Sagrado e o Profano que você cria, o Solo Congelado (o dos monstros e o seu) e as imunidades aos solos têm regra própria e valem",
       "_nova": true,
-      "_unico": true
+      "_unico": true,
+      "_03_11": "03/11 — a nota dizia que nenhum solo existe no jogo: agora diz quais ainda não existem"
     },
     {
       "padrao": "^Efeitos do Dreno de Vida não são removidos quando a Vida Não Reservada estiver Cheia$",

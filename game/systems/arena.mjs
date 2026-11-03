@@ -48,6 +48,7 @@ import { sqlDoPoe } from './personagem/legado.mjs';
 import { ehTestador, sqlSemTestador } from './personagem/testador.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import * as CondicoesPoe from './itens-poe/condicoes-poe.mjs';
+import * as Combate100 from './itens-poe/combate-100.mjs';
 import { GRUPO_DO_POE } from './acoes.mjs';
 
 const ARENAS = JSON.parse(readFileSync(new URL('../gamedata/arenas.json', import.meta.url), 'utf8')).arenas;
@@ -623,10 +624,15 @@ export function antesDoTique(s, agora = Date.now()) {
   // PoE: mais de um golpe no tique, se cabem (`R.ACOES_POR_TIQUE`, como a caçada) — cada um no instante lógico dele; para se ele caiu.
   for (let k = 0; k < (poe ? R.ACOES_POR_TIQUE : 1); k++) {
     if (!(poe ? R.liberou(agora, h.proximoGolpePvp) : R.jaPode(agora, h.proximoGolpePvp))) return;
+    // (03/11) o golpe seguinte do mesmo tique, com a sorte do alcance já renovada (abaixo): a casa a mais dele pode não sair — confere de novo
+    if (k > 0 && distancia(h.pos, oh.pos) > alcanceDaArma(arma, s.estado)) return;
     const intervalo = poe ? Math.max(R.INTERVALO_MINIMO_DA_ACAO_MS, Ficha.combate(s.estado).intervaloDoGolpeMs) : ATAQUE_MS;
     h.proximoGolpePvp = (poe ? R.instanteLogico(agora, anterior, [h.proximoGolpePvp, k === 0 ? esperaOutra : null]) : agora) + intervalo;
     if (poe) (h.cooldowns ??= {})[GRUPO_DO_POE] = { ate: h.proximoGolpePvp - paraParede, total: intervalo, basico: true, adversario: true };
     golpeNoAdversario(s, outro, arma, id);
+    // (03/11) o golpe no adversário saiu: a sorte da casa a mais do alcance do próximo é outra, como o golpe básico da caçada (`hunt/combate.round`) — antes, no
+    // duelo, ela nunca mudava (a fração dos metros dava sempre a casa a mais, ou nunca)
+    if (poe) Combate100.renovarSorteDoAlcance(h);
     if (!duelos.has(id) || (outro.estado?.hp ?? 0) <= 0 || (s.estado.hp ?? 0) <= 0) return;
   }
 }

@@ -105,15 +105,39 @@ export const AREAS_FRIAS = Object.freeze({
 // (lote B1, dono 20/10 — D-B1.6/D-B1.7: + `cresce` — o chão dos Estalos Gélidos, `{ deM, ateM, fator, sorte }`: o raio vai de `deM` a `ateM` pela duração,
 // `atualizarAreasFrias`; + `aoMorrer` — `{ tipo, chance }`, a carga quando um inimigo morre nela, `cargasAoMorrerNaAreaFria`; + `porSegundo` — o tipo da carga a
 // cada segundo com um inimigo nela, `cargasPorSegundoDasAreasFrias`)
-export function criarAreaFria(h, { x, y, raioM, segundos, agora = h?.clock ?? 0, efeitoPct = null, obj = null, fragilGelo = false, cresce = null, aoMorrer = null, porSegundo = null }) {
+// (03/11: + `soloCongelado` — a área é o SOLO CONGELADO que você cria (`criarSoloCongelado`): conta para o "sobre Solo Congelado" — `noSoloCongelado`)
+export function criarAreaFria(h, { x, y, raioM, segundos, agora = h?.clock ?? 0, efeitoPct = null, obj = null, fragilGelo = false, cresce = null, aoMorrer = null, porSegundo = null, soloCongelado = false }) {
   if (!h || !(segundos > 0) || !Number.isFinite(x) || !Number.isFinite(y)) return;
   // (revisão do B1: a do Frenesi por segundo que acaba agora fica até pagar o último — `cargasPorSegundoDasAreasFrias`)
   const lista = (h.areasFrias ??= []).filter((a) => a.ate > agora || (a.porSegundo && a.proximaCarga <= a.ate));
   const durMs = Math.round(segundos * 1000);
   const doCrescer = cresce ? { ...cresce, inicio: agora, durMs } : null;
-  lista.push({ x, y, raio: doCrescer ? raioQueCresce(doCrescer, agora) : Math.max(0, Math.round((Number(raioM) || 0) / 2)), ate: agora + durMs, ...(efeitoPct > 0 ? { efeitoPct } : {}), ...(obj ? { obj } : {}), ...(fragilGelo ? { fragilGelo: true } : {}),
+  lista.push({ x, y, raio: doCrescer ? raioQueCresce(doCrescer, agora) : Math.max(0, Math.round((Number(raioM) || 0) / 2)), ate: agora + durMs, ...(efeitoPct > 0 ? { efeitoPct } : {}), ...(obj ? { obj } : {}), ...(fragilGelo ? { fragilGelo: true } : {}), ...(soloCongelado ? { soloCongelado: true } : {}),
     ...(doCrescer ? { cresce: doCrescer } : {}), ...(aoMorrer ? { aoMorrer } : {}), ...(porSegundo ? { porSegundo, proximaCarga: agora + 1000 } : {}) });
   h.areasFrias = lista.slice(-AREAS_FRIAS.maximo);
+}
+/**
+ * (03/11 — o SOLO CONGELADO que VOCÊ cria, como o PoE: "15% de chance de criar Solo Congelado ao Congelar um Inimigo" (a Harpa de Nuro), "15% de chance de criar
+ * Solo Resfriado ao Acertar com um Ataque" (a Coroa da Salmoura — o Solo Resfriado é o mesmo Chilled Ground) e o Frasco de Água-marinha ("Cria Solo Congelado ao
+ * Utilizar" — `frascos.aoUsarOFrasco`). É uma das suas ÁREAS FRIAS (`criarAreaFria`): os MONSTROS nela ficam Resfriados (`cacadas.resfriarNasAreasFrias`) — o seu
+ * solo não resfria você, como no PoE. O Resfriamento: os 10% do Solo Congelado do PoE × "Efeito do Solo Congelado aumentado em X%" (`solo_congelado_efeito`, a
+ * Harpa de Nuro). O raio e a duração (o PoE não publica os do solo criado pelo item): os do solo do monstro ("Solo Resfriado ao Morrer", 1,6 m → 1 casa, 6 s).
+ */
+export const SOLO_CONGELADO_SEU = Object.freeze({ efeitoPct: 10, raioM: 2, segundos: 6 });
+export function criarSoloCongelado(h, ficha, { x = h?.pos?.x, y = h?.pos?.y, raioM = SOLO_CONGELADO_SEU.raioM, segundos = SOLO_CONGELADO_SEU.segundos, agora = h?.clock ?? 0 } = {}) {
+  const efeitoPct = Math.round(SOLO_CONGELADO_SEU.efeitoPct * Math.max(0, 1 + valor(ficha, 'solo_congelado_efeito') / 100) * 100) / 100;
+  criarAreaFria(h, { x, y, raioM, segundos, agora, efeitoPct, soloCongelado: true });
+}
+/**
+ * (03/11) Você está SOBRE SOLO CONGELADO agora ("X% de Vida Regenerada por segundo sobre Solo Congelado" — o Passo Natal)? Qualquer um: o do monstro ("Solo Resfriado
+ * ao Morrer" — `mobs/mecanicas`, no seu andar) ou o que você criou (`criarSoloCongelado`). Estar sobre ele não depende de ser afetado ("Inafetado por Solo Congelado"
+ * só tira o Resfriamento).
+ */
+export function noSoloCongelado(h, agora = h?.clock ?? 0) {
+  const p = h?.pos;
+  if (!p) return false;
+  const dentro = (s) => s.ate > agora && Math.max(Math.abs(s.x - p.x), Math.abs(s.y - p.y)) <= s.raio;
+  return (h.solosDosMonstros ?? []).some((s) => s.tipo === 'congelado' && (s.z ?? h.z ?? 0) === (h.z ?? 0) && dentro(s)) || (h.areasFrias ?? []).some((a) => a.soloCongelado && dentro(a));
 }
 /** (lote B1, D-B1.7) O raio das áreas frias que crescem, no instante `agora` (o tique — `cacadas.resfriarNasAreasFrias`). */
 export function atualizarAreasFrias(h, agora = h?.clock ?? 0) {
@@ -303,7 +327,7 @@ const A_DISTANCIA = new Set(['Bows', 'Wands']);
 export const CONDICOES_DE_ESTADO = new Set([
   ...new Set(Object.values(COND_DA_CLASSE)), 'umaMao', 'duasMaos', 'armaCorpo', 'comEscudo', 'duasArmas',
   'matouRecente', 'naoMatouRecente', 'criticoRecente', 'naoCriticoRecente', 'acertadoRecente', 'semDanoRecente', 'movendo', 'vidaBaixa',
-  'lacaioMorreuRecente', 'usouLacaioRecente', 'elusivo', 'soloSagrado', 'vidaCheia', 'furiaCheia', 'drenoRemovidoCheio',
+  'lacaioMorreuRecente', 'usouLacaioRecente', 'elusivo', 'soloSagrado', 'soloCongelado', 'vidaCheia', 'furiaCheia', 'drenoRemovidoCheio',
   // (07/10, os únicos:) mana, escudo, afecções em você, frasco, roubo, parado, mão secundária, e os "recentemente" dos acontecimentos.
   'manaBaixa', 'naoManaBaixa', 'escudoCheio', 'semEscudo', 'ardendo', 'naoArdendo', 'congeladoProprio', 'eletrizadoProprio', 'resfriadoProprio',
   'sangrandoProprio', 'envenenadoProprio', 'amaldicoadoProprio', 'semAfeccaoElemental', 'duranteFrasco', 'semFrasco', 'drenando', 'drenandoVida', 'parado',
@@ -631,6 +655,8 @@ export function condicoesDe(estado, total = null, principais = null) {
     // (lote G) Elusivo (o buff — antes a condição nunca valia), o Solo Sagrado, a Postura e o Estandarte.
     if (buffAtivo(estado, 'elusivo', total)) v.add('elusivo');
     if (noSoloSagrado(h, agora)) v.add('soloSagrado');
+    // (03/11) sobre Solo Congelado (o do monstro ou o seu — `noSoloCongelado`)
+    if (noSoloCongelado(h, agora)) v.add('soloCongelado');
     v.add(posturaDe(h, agora) === 'areia' ? 'posturaAreia' : 'posturaSangue');
     if (emTempestadeSangrenta(h, agora)) v.add('emTempestadeSangrenta');
     if (estandarteAtivo(h, agora)) v.add('estandarteAtivo');
@@ -2223,7 +2249,7 @@ export const EVENTOS = new Set(['incendiarNovo', 'ganharAdrenalina', 'amaldicoar
   // (02/11, as Atemporais) quando a Salvaguarda é Restaurada (`personagem/salvaguarda.restaurar` → `acoes.mjs`)
   'salvaguardaRestaurada']);
 export const ACOES = new Set(['transferirMarca', 'frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
-  'dano', 'danoPctVida', 'furia', 'frasco', 'recargaEs', 'explodir', 'gatilho', 'espalhar', 'roubarCargas', 'maldicao', 'soloSagrado', 'soloProfano', 'fumaca', 'removerAfeccao', 'perdeVidaPct', 'perdeEsPct', 'perdeManaPct',
+  'dano', 'danoPctVida', 'furia', 'frasco', 'recargaEs', 'explodir', 'gatilho', 'espalhar', 'roubarCargas', 'maldicao', 'soloSagrado', 'soloProfano', 'soloCongelado', 'fumaca', 'removerAfeccao', 'perdeVidaPct', 'perdeEsPct', 'perdeManaPct',
   // (11/10, os únicos)
   'perdeVida', 'esDaArmadura', 'vidaParaEs', 'degenEmVoce', 'statTemp', 'statTempPorMana', 'furiaPorMana', 'transferirMaldicoes', 'degenNoAlvo', 'danoPorMana', 'empurrarProximos',
   // (ciclo 7, lote D) `mods-poe.aplicarAcao`

@@ -154,8 +154,9 @@ export function validarAjuste(aj) {
   return erros.length ? { ok: false, erros } : { ok: true, ajuste: saida };
 }
 
-/** Os campos de ATAQUE do PoE no golpe (`poderes.dispararMagia`): a tag Attack, a Melee e a conversão do dano físico. */
-const deAtaque = (c) => (c.ataque ? { ataque: true, ...(c.corpoACorpo ? { corpoACorpo: true } : {}), ...(c.convertePct ? { convertePct: { ...c.convertePct } } : {}) } : {});
+/** Os campos de ATAQUE do PoE no golpe (`poderes.dispararMagia`): a tag Attack, a Melee, a conversão do dano físico e o empurrão. */
+// (03/11) + o `empurra` (o Salto Impactante): antes ele ficava no `converter` e não chegava ao golpe — o `dispararMagia` nunca empurrava
+const deAtaque = (c) => (c.ataque ? { ataque: true, ...(c.corpoACorpo ? { corpoACorpo: true } : {}), ...(c.convertePct ? { convertePct: { ...c.convertePct } } : {}), ...(c.empurra ? { empurra: true } : {}) } : {});
 
 /** Os COMPORTAMENTOS de boss único (chefe de ato): `invocavel` = as chaves de bestiário que a invocação usa. `ajuste`: o da aba Mobs (ataques e efeitos). */
 export function comportamentos(monstro, invocavel = [], ajuste = null) {
