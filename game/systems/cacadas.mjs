@@ -3591,13 +3591,11 @@ export function golpeDoLacaioNoBicho(c, b, pct, g) {
     // (revisão E1b: o adicionado da Reunião é dano BASE do ataque do lacaio — o PoB, CalcPerform.lua:2363-2378 —: passa pelo aumentado/mais da invocação
     // (`fatorDoDano`), pelo do golpe (`doGolpe.fator`: o dobrado, o "menos" do Ceifador, o "mais" do Golem da Carniça…) e pelas suas auras (`doAliado`))
     // (revisão E1a — dono, 27/10) a Ira do Golem de Relâmpago: o Dano de Raio adicionado ao golpe do lacaio no raio (o do ataque ou o da magia), escalado como a Reunião
-    // (03/11, rodada 2) o LACAIO PRISMÁTICO (o clone dos Clones Prismáticos, os Esqueletos Magos — `Prismaticas.ehLacaioPrismatico`): o "Habilidades Prismáticas causam
-    // X% menos Dano de <Elemento>" do Foco de Combate vale em todo o dano daquele elemento do golpe (`fe`)
-    const doPrisma = itensPoeLigado() && Prismaticas.ehLacaioPrismatico(l) ? Prismaticas.menosNoLacaioPrismatico(ficha) : null;
-    const fe = (el) => doPrisma?.[el] ?? 1;
+    // (03/11, dono) o "Habilidades Prismáticas causam X% menos Dano de <Elemento>" do Foco de Combate NÃO vale no golpe do lacaio prismático (o clone dos
+    // Clones Prismáticos, os Esqueletos Magos): como no PoB, os modificadores do jogador não passam para o dano do lacaio — só o "não podem escolher" vale nele
     const ira = itensPoeLigado() ? iraNoLacaio(hunt, l, magia, hunt.clock ?? agora) : null;
-    const daIra = ira ? resistido(hunt, b, 'energy', ((ira[0] + Math.random() * Math.max(0, ira[1] - ira[0])) * (l.poe?.fatorDoDano ?? 1) * (crit ? critico.mult : 1) * doGolpe.fator * doAliado * pct * fe('energy')) / 100, doGolpe.ficha) : 0;
-    const daReuniao = magia ? 0 : reuniaoNoLacaio(hunt, l, hunt.clock ?? agora).reduce((n, x) => n + resistido(hunt, b, x.el, ((x.min + Math.random() * Math.max(0, x.max - x.min)) * (l.poe?.fatorDoDano ?? 1) * (crit ? critico.mult : 1) * doGolpe.fator * doAliado * pct * fe(x.el)) / 100, doGolpe.ficha), 0);
+    const daIra = ira ? resistido(hunt, b, 'energy', ((ira[0] + Math.random() * Math.max(0, ira[1] - ira[0])) * (l.poe?.fatorDoDano ?? 1) * (crit ? critico.mult : 1) * doGolpe.fator * doAliado * pct) / 100, doGolpe.ficha) : 0;
+    const daReuniao = magia ? 0 : reuniaoNoLacaio(hunt, l, hunt.clock ?? agora).reduce((n, x) => n + resistido(hunt, b, x.el, ((x.min + Math.random() * Math.max(0, x.max - x.min)) * (l.poe?.fatorDoDano ?? 1) * (crit ? critico.mult : 1) * doGolpe.fator * doAliado * pct) / 100, doGolpe.ficha), 0);
     // (14/10, a Chama Santificada: o ATAQUE do lacaio — um aliado, até o seu — leva X% do Físico como Fogo extra e tira as Chamas; as Chamas
     // contam no relógio da caçada, como as afecções do bicho)
     const chamaPct = !magia && itensPoeLigado() ? ModsPoe.consumirChamas(estado, b, `lacaio:${ModsPoe.idDaChama(hunt)}`, hunt.clock ?? 0) : 0;
@@ -3607,7 +3605,7 @@ export function golpeDoLacaioNoBicho(c, b, pct, g) {
     // (correção do lote 86: + o "aumentado"/"mais" do lacaio — `fatorDoDano`, o que a invocação pôs no `dano` — e o das suas auras, `doAliado`,
     // como o `bruto`; e todo o Fogo do golpe — o do Vínculo, o da Chama Santificada — pela ficha do golpe: a penetração de Fogo "se Bloqueou")
     const fogoDoBloqueio = doGolpe.fogoExtra > 0 ? (doGolpe.fogoExtra * (l.poe?.fatorDoDano ?? 1) * (crit ? critico.mult : 1) * doGolpe.fator * doAliado * pct) / 100 : 0;
-    const dano = Math.max(1, Math.round(partes.reduce((n, x) => n + resistido(hunt, b, x.tipo, bruto * x.f * fe(x.tipo), doGolpe.ficha), 0) + (doGolpe.caosExtra ? resistido(hunt, b, 'chaos', bruto * doGolpe.caosExtra, ficha) : 0) + (fogoDoVinculo > 0 ? resistido(hunt, b, 'fire', fogoDoVinculo * fe('fire'), doGolpe.ficha) : 0) + (fisicoDaChama > 0 ? resistido(hunt, b, 'fire', (fisicoDaChama * chamaPct * fe('fire')) / 100, doGolpe.ficha) : 0) + (fogoDoBloqueio > 0 ? resistido(hunt, b, 'fire', fogoDoBloqueio * fe('fire'), doGolpe.ficha) : 0) + daReuniao + daIra));
+    const dano = Math.max(1, Math.round(partes.reduce((n, x) => n + resistido(hunt, b, x.tipo, bruto * x.f, doGolpe.ficha), 0) + (doGolpe.caosExtra ? resistido(hunt, b, 'chaos', bruto * doGolpe.caosExtra, ficha) : 0) + (fogoDoVinculo > 0 ? resistido(hunt, b, 'fire', fogoDoVinculo, doGolpe.ficha) : 0) + (fisicoDaChama > 0 ? resistido(hunt, b, 'fire', (fisicoDaChama * chamaPct) / 100, doGolpe.ficha) : 0) + (fogoDoBloqueio > 0 ? resistido(hunt, b, 'fire', fogoDoBloqueio, doGolpe.ficha) : 0) + daReuniao + daIra));
     b.hp -= dano;
     QuemFeriu.carimbar(b, QuemFeriu.LACAIO); // (lote 31, S001: o golpe do lacaio)
     // ("Acertos de Lacaios só podem Matar Inimigos Incendiados")

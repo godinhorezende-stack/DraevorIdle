@@ -197,11 +197,9 @@ test('PRISMÁTICOS: o clone dos Clones Prismáticos e os Esqueletos Magos são l
   for (const slug of ['Summon_Skeletons', 'Blink_Arrow', 'Mirror_Arrow', 'Raise_Zombie']) assert.ok(!Prismaticas.ehLacaioPrismatico({ gema: slug, habPob: LacaiosPoe.oQueInvoca(slug, 20, { nivel: 20, qualidade: 0 }, {})?.habPob }), slug);
 });
 
-test('PRISMÁTICOS: "Habilidades Prismáticas causam 50% menos Dano de Fogo" vale no golpe do clone prismático e do Esqueleto Mago (só no Fogo; o lacaio comum não)', { skip: SEM }, () => {
-  const linha = [{ stat: 'mais_dano_fogo', tags: ['prismatico'], valor: -50 }, { stat: 'mais_dano_gelo', tags: ['prismatico', 'comArco'], valor: -50 }];
-  assert.deepEqual(Prismaticas.menosNoLacaioPrismatico({ porTag: linha }), { fire: 0.5, ice: 1, energy: 1 }, 'só a linha com a tag prismática pura');
-  // (o que a árvore põe na ficha — `mais_dano_fogo@prismatico` — vira esta linha da `porTag`)
-  assert.deepEqual(Prismaticas.menosNoLacaioPrismatico({ porTag: ModsPoe.porTag(personagemDeMapa(), { 'mais_dano_fogo@prismatico': -50 }) }), { fire: 0.5, ice: 1, energy: 1 });
+// decisão do dono 03/11: como no PoB, o "menos" do Foco de Combate fica só no jogador (os modificadores dele não passam para o dano do lacaio)
+test('PRISMÁTICOS: "Habilidades Prismáticas causam 50% menos Dano de Fogo" NÃO vale no golpe do clone prismático nem do Esqueleto Mago (o PoB)', { skip: SEM }, () => {
+  const linha = [{ stat: 'mais_dano_fogo', tags: ['prismatico'], valor: -50 }];
   // o golpe de verdade (`golpeDoLacaioNoBicho`): o mesmo lacaio com e sem a linha, o bicho sem resistência
   const e = personagemDeMapa();
   const fichaDoDono = Ficha.combate(e);
@@ -215,11 +213,7 @@ test('PRISMÁTICOS: "Habilidades Prismáticas causam 50% menos Dano de Fogo" val
   const lacaio = (extra) => ({ uid: 'l1', x: 2, y: 2, hp: 100, maxHp: 100, dano: { min: 1000, max: 1000 }, somado: [0, 0], critChance: 0, critMult: 1.5, ...extra });
   for (const l of [lacaio({ gema: 'Mirror_Arrow_of_Prismatic_Clones', habPob: { principal: [{ id: 'BlinkMirrorArrowMelee' }], prismatica: true } }), lacaio({ gema: 'Summon_Skeletons_of_Mages' })]) {
     const sem = golpe(l, 'fire', []);
-    const com = golpe(l, 'fire', linha);
     assert.ok(sem > 0);
-    assert.ok(Math.abs(com - sem * 0.5) <= 1, `${l.gema}: Fogo ${sem} → ${com} (50% menos)`);
-    assert.equal(golpe(l, 'energy', linha), golpe(l, 'energy', []), `${l.gema}: o Raio não muda`);
+    assert.equal(golpe(l, 'fire', linha), sem, `${l.gema}: o Fogo não muda`);
   }
-  const comum = lacaio({ gema: 'Summon_Skeletons' });
-  assert.equal(golpe(comum, 'fire', linha), golpe(comum, 'fire', []), 'o lacaio que não é prismático não sofre o "menos"');
 });

@@ -33,19 +33,6 @@ export const ehPrismatica = (slug) => GEMAS_PRISMATICAS.includes(String(slug ?? 
  * duas gemas têm `SkillType.RandomElement` nos `minionSkillTypes` (act_dex.lua BlinkArrowAltY/MirrorArrowAltY, act_int.lua SummonSkeletonsAltY).
  */
 export const ehLacaioPrismatico = (l) => !!l?.habPob?.prismatica || ehPrismatica(String(l?.gema ?? '').replace(/^poe-gema:/, ''));
-/**
- * (03/11, rodada 2) O "Habilidades Prismáticas causam X% menos Dano de <Elemento>" (o Foco de Combate — `mais_dano_<el>@prismatico`, na `porTag` da
- * ficha) no golpe do LACAIO prismático: `{ fire, ice, energy }`, o fator de cada elemento (1 = nada; nunca abaixo de 0).
- */
-export function menosNoLacaioPrismatico(ficha) {
-  const f = { fire: 1, ice: 1, energy: 1 };
-  for (const x of ficha?.porTag ?? []) {
-    if (!x?.tags?.length || !x.tags.every((t) => t === 'prismatico')) continue;
-    const el = ELEMENTOS.find((e) => x.stat === `mais_dano_${PT[e]}`);
-    if (el) f[el] *= Math.max(0, 1 + (Number(x.valor) || 0) / 100);
-  }
-  return f;
-}
 /** O Golpe Selvagem (e o dos Extremos). */
 export const ehGolpeSelvagem = (slug) => /^Wild_Strike(?:_of_Extremes)?$/.test(String(slug ?? ''));
 
