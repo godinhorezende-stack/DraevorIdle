@@ -35,6 +35,8 @@ import * as Controle from '../combate/controle.mjs';
 import * as NoJogador from '../itens-poe/monstros-no-jogador.mjs';
 import * as Vinculos from '../itens-poe/vinculos.mjs';
 import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
+// (100% — combate, 02/11: o Solo Congelado dos monstros — `itens-poe/combate-100.mjs`)
+import * as Combate100 from '../itens-poe/combate-100.mjs';
 
 // A geometria das áreas é a compartilhada (`engine/areas.mjs`): a distância em casas e o quadrado do raio.
 const distancia = Areas.distancia;
@@ -134,7 +136,7 @@ export function aoMorrer(estado, hunt, personagem, m, eventos) {
 function criarSolo(hunt, m, mec, agora, eventos) {
   const raio = Math.max(1, Math.round((mec.raioMetros ?? 1.6) / 2));
   const golpe = (Poderes.golpeMaximoDoBicho(m) ?? 0) * (m.forca ?? 1);
-  (hunt.solosDosMonstros ??= []).push({ tipo: mec.solo, x: m.x, y: m.y, z: hunt.z ?? 0, raio, ate: agora + (mec.duracaoMs ?? 6000), proximo: agora, ...(mec.solo === 'ardente' ? { dps: (golpe * (mec.dpsPctDoGolpe ?? 62.5)) / 100 } : {}), ...(mec.solo === 'eletrizado' ? { pct: mec.danoRecebidoPct ?? 20 } : {}), de: m });
+  (hunt.solosDosMonstros ??= []).push({ tipo: mec.solo, x: m.x, y: m.y, z: hunt.z ?? 0, raio, ate: agora + (mec.duracaoMs ?? 6000), proximo: agora, ...(mec.solo === 'ardente' ? { dps: (golpe * (mec.dpsPctDoGolpe ?? 62.5)) / 100 } : {}), ...(mec.solo === 'eletrizado' ? { pct: mec.danoRecebidoPct ?? 20 } : {}), ...(mec.solo === 'congelado' ? { pct: mec.resfriamentoPct ?? 10 } : {}), de: m });
   eventos.push({ t: 'area', id: 6, x: m.x, y: m.y, casas: Areas.paraTela(Areas.quadrado(m, raio), m) });
 }
 /** (lote 70) Os solos dos monstros a cada tique: o que vale em você agora (e os que acabaram saem). */
@@ -145,6 +147,8 @@ function tiqueDosSolos(estado, hunt, personagem, eventos, agora, ficha) {
     if (s.z !== (hunt.z ?? 0) || !hunt.pos || distancia(hunt.pos, s) > s.raio || estado.hp <= 0) continue;
     if (Number(ficha?.afPoe?.[`imune_solo_${s.tipo}`]) > 0) continue;
     if (s.tipo === 'eletrizado') NoJogador.eletrizarPeloSolo(hunt, ficha, s.pct, agora);
+    // (100% — combate, 02/11) o SOLO CONGELADO ("Solo Resfriado ao Morrer"): Resfria você enquanto está nele (`Combate100.resfriarPeloSolo`)
+    else if (s.tipo === 'congelado') Combate100.resfriarPeloSolo(hunt, ficha, agora, { pct: s.pct ?? Combate100.SOLO_CONGELADO.pct });
     else if (s.tipo === 'ardente' && s.dps > 0 && agora >= s.proximo) {
       s.proximo = agora + 1000;
       ferirJogador(estado, hunt, personagem, s.de, s.dps, 'fire', eventos, 'Solo Ardente');

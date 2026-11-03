@@ -61,7 +61,10 @@ export function converter(h, fator = 1, { fatorDoPoedb = null } = {}) {
   const intervaloMs = Math.max(4000, Math.round((h.recarga ?? (h.tempo ?? 1.5) * 3) * 1000));
   const emArea = tags.includes('area') || IMPACTO.test(nome);
   // (PoE, dono 27/10) o ataque em área é um ATAQUE (a Evasão e o Bloqueio de Ataque valem — `poderes.dispararMagia`); com a tag Melee, corpo a corpo.
-  const doAtaque = { ataque: true, ...(tags.includes('melee') ? { corpoACorpo: true } : {}), ...(texto?.convertePct ? { convertePct: { ...texto.convertePct } } : {}) };
+  // (100% — combate, 02/11) a habilidade que EMPURRA (a descrição do poedb: "empurrando inimigos com sua arma ao cair" — o Salto Impactante dos chefes): o acerto em
+  // você leva você uma casa para longe (`Combate100.empurrarJogador`; "Não Pode ser Empurrado" impede)
+  const empurra = /empurr/i.test(String(h.descricao ?? '')) ? { empurra: true } : {};
+  const doAtaque = { ataque: true, ...(tags.includes('melee') ? { corpoACorpo: true } : {}), ...(texto?.convertePct ? { convertePct: { ...texto.convertePct } } : {}), ...empurra };
   if (!magia && emArea) return { tipo: 'area', nome: h.nome ?? h.interno, elemento, min, max, raio: /flood|upheaval|quake|nova/i.test(nome) ? 3 : 2, avisoMs: 1200, intervaloMs, ...doAtaque };
   if (!magia && !emArea) return null; // ataque de alvo único: o corpo a corpo já representa
   return { tipo: 'magia', nome: h.nome ?? h.interno, elemento, min, max, forma: FEIXE.test(nome) ? 'feixe' : emArea ? 'area' : 'alvo', raio: emArea ? 2 : 0, intervaloMs };

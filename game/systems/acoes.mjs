@@ -139,6 +139,8 @@ import * as GemasT1 from './itens-poe/gemas-t1.mjs';
 import { JANELA } from '../websocket/quadro.mjs';
 import * as ItensPoeJogo from './itens-poe/jogo.mjs';
 import * as Testador from './personagem/testador.mjs';
+// (100% — combate, 02/11: o alcance em décimos de metro, o Arqueiro Ilusório grudado, o Re-armar das Minas — `itens-poe/combate-100.mjs`)
+import * as Combate100 from './itens-poe/combate-100.mjs';
 
 // A BARRA DO PoE (dono, 07/10: "frascos 1 a 5 e mais 8 que podem ser ataques, auras, suporte e etc"): com o PoE ligado a barra tem
 // 8 slots de HABILIDADE numa fileira só (qualquer gema cabe em qualquer um — não há mais os ofícios vida/mana/velocidade/suporte/ataque
@@ -559,7 +561,9 @@ export function alcanceCorpoDoUso(estado, entry, efeito = undefined) {
   const base = Ficha.combate(estado);
   const f = comAsLinhasDaGema(estado, base, entry, efeito);
   const metrosExtra = ModsPoe.valor(f, 'alcance_corpo_m') + (f !== base && f?.porTag ? ModsPoe.somaPorTags(f, tagsPoeDaSkill(entry)).alcance_corpo_m ?? 0 : 0);
-  const casas = itensPoeLigado() ? Math.floor(Ficha.alcanceCorpoEmMetros(estado.equipment?.weapon ?? null, { alcance_corpo_m: metrosExtra }) / 2) : base.alcanceCorpoExtra ?? 0;
+  // (100% — combate, 02/11: com metros a mais, + a casa na chance da fração — `Combate100.casaDaFracao`, a sorte do golpe)
+  const metros = itensPoeLigado() ? Ficha.alcanceCorpoEmMetros(estado.equipment?.weapon ?? null, { alcance_corpo_m: metrosExtra }) : 0;
+  const casas = itensPoeLigado() ? Math.floor(metros / 2) + Combate100.casaDaFracao(estado.hunt, Combate100.fracaoDoAlcance(metros, metrosExtra > 0)) : base.alcanceCorpoExtra ?? 0;
   return { metrosExtra, casas };
 }
 
@@ -2360,7 +2364,8 @@ export function criarCadaveres(estado, hunt, slug, nivelDaGema = 1, onde = hunt?
     const y = onde.y + (i ? Math.floor(rng() * 3) - 1 : 0);
     // (17/10, lote G12: + a Vida Máxima — a do monstro da área que deu o desenho; o Arqueiro de Ossos, a média dos monstros da área)
     const vidaDaArea = daArea.length ? daArea.reduce((t, m) => t + (m.maxHp ?? 0), 0) / daArea.length : 0;
-    const vidaInc = qualidade > 0 ? GemasPoe.vidaDoCadaverDaGema(slug, qualidade) : 0;
+    // (100% — combate, 02/11: + "Cadáveres Criados por você tem Vida Máxima aumentada em X%" — a árvore, `cadaver_vida_inc`; soma com o da qualidade da gema)
+    const vidaInc = (qualidade > 0 ? GemasPoe.vidaDoCadaverDaGema(slug, qualidade) : 0) + ModsPoe.valor(Ficha.combate(estado), 'cadaver_vida_inc');
     lista.push({ key: base?.key ?? 'skeleton', nome: base?.name ?? 'Arqueiro de Ossos', look: desenho.look, lookItem: desenho.lookItem ?? 0, colors: desenho.colors ?? null, x, y, nivel, maxHp: Math.round((base?.maxHp ?? vidaDaArea) * (1 + vidaInc / 100)), criadoPor: slug, criadoEm: hunt.clock ?? 0 });
   }
   const dela = lista.filter((c) => c.criadoPor === slug);
@@ -5537,6 +5542,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // Decapitar —, pela ficha do uso: `alcanceCorpoDoUso`)
       const alcanceDoGolpe = (entry.range || 1) + (corpoDaGemaNoAlvo ? (entry.poeGema ? alcanceCorpoDoUso(estado, entry, efeitoDaGema).casas : Ficha.combate(estado).alcanceCorpoExtra ?? 0) : 0);
       if (distanciaChebyshev(hunt.pos, alvo) > alcanceDoGolpe) return { ok: false, erro: 'Alvo fora de alcance.', motivo: 'FORA_DE_ALCANCE' };
+      // (100% — combate, 02/11) o golpe corpo a corpo saiu: a sorte da casa a mais do alcance do próximo é outra
+      if (corpoDaGemaNoAlvo) Combate100.renovarSorteDoAlcance(hunt);
       atingidos = [alvo];
       // (lote S1, 26/10) os ALVOS EXTRAS do Golpe corpo a corpo da gema ("focam em N Inimigos próximos adicionais" — o Chamado Ancestral, o Impelido pelo Clamor
       // Ancestral, a maestria dos Golpes): os N vivos mais perto do alvo a até o alcance do golpe a partir de você ("Os alvos extras precisam estar em uma distância
@@ -9303,6 +9310,9 @@ export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora 
   for (const { p, alvo } of [...Plantadas.armadilhasQueAtivam(hunt, ficha, agora), ...Plantadas.minasQueDetonam(hunt, ficha, agora, doDetonar)]) {
     if ((estado.hp ?? 0) <= 0) break;
     Plantadas.tirar(hunt, p);
+    // (100% — combate, 02/11) o RE-ARMAR: "Minas podem ser Detonadas N vezes adicionais" — a Mina detonada volta armada no mesmo lugar (até N vezes); a da gema com
+    // "Minas não podem ser Re-armadas" (a Mina de Fumaça) não volta (`Combate100.rearmarMina`)
+    if (p.tipo === 'mina') Combate100.rearmarMina(hunt, p, ficha, { agora, naoRearma: (GemasPoe.textosDaGema(String(p.acao ?? '').replace(GemasPoe.PREFIXO, ''), Gemas.efeitoNaSkill(estado, p.acao)?.nivel ?? 1)?.linhas ?? []).some(Combate100.ehLinhaCombate100) });
     // (lote R3D, 27/10) a Armadilha Conversora: o inimigo que a ativou vira seu aliado (`conversoraNaAtivacao`); a Mina de Fumaça: o teleporte, as nuvens e o buff (`fumacaNaDetonacao`)
     const slugR3D = String(p.acao ?? '').replace(GemasPoe.PREFIXO, '');
     if (p.tipo === 'armadilha' && GemasR3D.ehConversora(slugR3D)) { conversoraNaAtivacao(estado, hunt, p, alvo, eventos); ativouArmadilha(p, alvo); continue; }
@@ -13285,10 +13295,13 @@ export function colmeiaNaOferendaR3B(estado, hunt, entry, ef, rng = Math.random)
 }
 
 /** O ARQUEIRO ILUSÓRIO: o acerto com flecha da suportada o convoca (no seu lugar, 4 s), se não houver o máximo dele; ele usa a habilidade sozinho (`tiqueR3B`). */
-function arqueiroIlusorioR3B(hunt, entry, ef, agora, eventos) {
+// (100% — combate, 02/11: + "+N ao número máximo de Arqueiros Ilusórios Convocados" e o "Não pode Convocar … enquanto próximo dos seus Arqueiros Ilusórios" da Força
+// Ocupante — `Combate100.maximoDeArqueiros`, `podeConvocarArqueiro`)
+function arqueiroIlusorioR3B(hunt, entry, ef, agora, eventos, ficha = null) {
   const s = estadoR3B(hunt);
   s.espelhos = (s.espelhos ?? []).filter((m) => m.ate > agora);
-  if (s.espelhos.length >= Math.max(1, ef.arqueiroMax ?? 1)) return;
+  if (s.espelhos.length >= Combate100.maximoDeArqueiros(ef.arqueiroMax ?? 1, ficha)) return;
+  if (!Combate100.podeConvocarArqueiro(s.espelhos, hunt.pos, ficha)) return;
   s.espelhos.push({ acao: entry.id, x: hunt.pos.x, y: hunt.pos.y, z: hunt.z ?? 0, ate: agora + Math.max(1, ef.arqueiroMs ?? 4000), proximoEm: agora });
   eventos.push({ t: 'fx', id: 11, x: hunt.pos.x, y: hunt.pos.y, sk: entry.id });
 }
@@ -13363,7 +13376,7 @@ export function usoR3B(estado, hunt, personagem, entry, efeitoDaGema, { acertado
   if (entry.poeGema.slug === GemasR3B.GOLPE_SAGRADO && acertados.length) eventos.push(...invocarLacaios(hunt, entry, efeitoDaGema, acertados[0], estado));
   if (efeitoDaGema?.relampagoVivo && acertados.length && causouRaioR3B(partes, entry)) eventos.push(...relampagoVivoR3B(estado, hunt, entry, efeitoDaGema, agora));
   if (gatilho) return eventos;
-  if (efeitoDaGema?.arqueiroIlusorio && acertados.length && ehFlechaR3B(estado, entry)) arqueiroIlusorioR3B(hunt, entry, efeitoDaGema, agora, eventos);
+  if (efeitoDaGema?.arqueiroIlusorio && acertados.length && ehFlechaR3B(estado, entry)) arqueiroIlusorioR3B(hunt, entry, efeitoDaGema, agora, eventos, Ficha.combate(estado));
   if (efeitoDaGema?.espiritosSagrados) eventos.push(...espiritosSagradosR3B(estado, hunt, personagem, entry, efeitoDaGema, alvo, acertados, agora, rng));
   return eventos;
 }
@@ -13430,6 +13443,8 @@ export function tiqueR3B(estado, hunt, personagem, agora = hunt?.clock ?? 0) {
   if (!s.espelhos?.length) return eventos;
   const z = hunt.z ?? 0;
   s.espelhos = s.espelhos.filter((m) => m.ate > agora && (m.z ?? 0) === z);
+  // (100% — combate, 02/11) o Arqueiro Ilusório anda com você (o PoE: grudado em você) — menos com "Arqueiros Ilusórios não são grudados em você" (`Combate100.grudarArqueiros`)
+  Combate100.grudarArqueiros(s.espelhos, hunt.pos, Ficha.combate(estado));
   for (const m of s.espelhos) {
     if (agora < (m.proximoEm ?? 0)) continue;
     const entry = POR_ID.get(m.acao);

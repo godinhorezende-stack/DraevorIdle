@@ -45,6 +45,8 @@ import * as Protecao from './protecao.mjs';
 import * as Plantadas from './itens-poe/armas-plantadas.mjs';
 import * as Vinculos from './itens-poe/vinculos.mjs';
 import * as Testador from './personagem/testador.mjs';
+// (100% — combate, 02/11: o empurrão dos monstros em você — `itens-poe/combate-100.mjs`)
+import * as Combate100 from './itens-poe/combate-100.mjs';
 
 const ler = (arquivo) => JSON.parse(readFileSync(new URL(`../gamedata/${arquivo}`, import.meta.url), 'utf8'));
 const PODERES = { ...ler('monstro-poderes.json').monstros, ...ler('boss-poderes.json').bosses };
@@ -455,6 +457,9 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // (revisão G: todo acerto com dano conta — o de antes das absorções; o que o Chamado Imortal impediu, não)
   if (danoDoAcerto > 0 && GemasGBD.contarAcertoNoGelo(hunt, agora)) GemasGBD.quebrarGelo(hunt, agora);
   if (aoAcertarJogador && bruto > 0) aoAcertarJogador(estado, hunt, personagem, bicho, { dano: danoDoAcerto, bruto: Object.values(brutas).reduce((t, x) => t + x, 0), partes, brutas, critico: critDoMob.critico, ataque: projetilDeAtaque || ataqueDoPoe, eventos });
+  // (100% — combate, 02/11) a habilidade do monstro que EMPURRA (`a.empurra` — o Salto Impactante): o acerto leva você uma casa para longe dele; "Não Pode ser
+  // Empurrado" impede (`Combate100.empurrarJogador`)
+  if (a.empurra && bruto > 0 && estado.hp > 0 && Combate100.empurrarJogador(hunt, bicho, ficha, hunt.clock ?? agora)) eventos.push({ t: 'estado', uid: 'player', quem: personagem?.nome, x: hunt.pos.x, y: hunt.pos.y, estado: 'empurrado', de: bicho.name });
   if (dano <= 0) return 0;
   if (a.elemento === 'lifedrain') bicho.hp = Math.min(bicho.maxHp, bicho.hp + dano);
   return dano;

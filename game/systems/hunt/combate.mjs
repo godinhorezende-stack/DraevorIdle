@@ -88,6 +88,7 @@ import * as FrascosPoe from '../itens-poe/frascos.mjs';
 import * as Protecao from '../protecao.mjs';
 import * as GemasR3D from '../itens-poe/gemas-r3d.mjs';
 import * as Testador from '../personagem/testador.mjs';
+import * as Combate100 from '../itens-poe/combate-100.mjs';
 
 /** Depois de qualquer dano de ação (magia/runa) — mata e dá loot de quem chegou a 0. */
 export function processarMortes(estado, personagem, eventos) {
@@ -182,7 +183,10 @@ export function categoriaDaArma(arma) {
 
 export function alcanceDaArma(arma, estado = null) {
   // + o "alcance" da proficiência (arco, besta, wand), com a arma na mão. PoE: "+N metros ao Alcance de Golpes Corpo a Corpo" (1 casa = 2 m).
-  return categoriaDaArma(arma) === 'melee' ? 1 + (estado ? Ficha.combate(estado).alcanceCorpoExtra ?? 0 : 0) : (arma?.range ?? 3);
+  // (100% — combate, 02/11: + a casa a mais na chance da fração dos metros — `Combate100.casaDaFracao`, a sorte do golpe)
+  if (categoriaDaArma(arma) !== 'melee') return arma?.range ?? 3;
+  const f = estado ? Ficha.combate(estado) : null;
+  return 1 + (f?.alcanceCorpoExtra ?? 0) + (f?.alcanceCorpoFracao > 0 ? Combate100.casaDaFracao(estado.hunt, f.alcanceCorpoFracao) : 0);
 }
 
 /*
@@ -1587,6 +1591,8 @@ export function round(estado, personagem) {
   const semDanoProprio = itensPoeLigado() && ModsPoe.valor(Ficha.combate(estado), 'sem_dano_proprio') > 0;
   if (!hunt.lurando && alvo && !semMunicao && !semDanoProprio && distancia(hunt.pos, alvo) <= alcanceDaArma(arma, estado)) {
     bateu = true;
+    // (100% — combate, 02/11) o golpe saiu: a sorte da casa a mais do alcance do próximo é outra (`Combate100.renovarSorteDoAlcance`)
+    if (itensPoeLigado()) Combate100.renovarSorteDoAlcance(hunt);
     // (o golpe básico é um ataque: "se tiver Atacado no segundo anterior" — as Cargas Fanáticas, `condicoes-poe.tiqueDasCargasFanaticas`)
     if (itensPoeLigado()) ModsPoe.marcar(hunt, 'usou:ataque');
     // O golpe básico também vira o personagem para o alvo.

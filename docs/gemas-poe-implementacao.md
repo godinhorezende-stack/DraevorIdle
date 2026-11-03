@@ -54,8 +54,6 @@ Só os ataques:
 
 - **Spectral_Throw_of_Materialising** (Arremesso Espectral da Materialização) — implementada e testada
   - não se aplica: "Desaceleração do Projétil reduzida" (Arremesso Espectral da Materialização) só muda a trajetória — o PoB não a usa na conta
-- **Smoke_Mine** (Mina de Fumaça) — implementada e testada
-  - não se aplica: "Minas não podem ser Re-armadas" (Mina de Fumaça) — o jogo não tem Re-armar Minas (aval do dono 27/10)
 - **Spectral_Helix** (Hélice Espectral) — implementada e testada
   - não se aplica: "Gira por N rotações" (Hélice Espectral) só muda a trajetória da espiral — o PoB não a usa na conta, e o projétil do jogo acerta no tique
 - **Spectral_Helix_of_Trarthus** (Hélice Espectral de Trarthus) — implementada e testada
