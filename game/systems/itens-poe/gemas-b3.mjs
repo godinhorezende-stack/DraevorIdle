@@ -247,11 +247,11 @@ export const intervaloDaTrarthus = (t, manaMax) => t.intervaloMs / (1 + (t.porMa
 /** A mana que a Chuva de Trarthus gasta em `dtMs` (5% da máxima por segundo, × o multiplicador de custo do uso). */
 export const custoDaTrarthus = (t, manaMax, dtMs, fatorDeCusto = 1) => ((t.custoPctPorS / 100) * Math.max(0, manaMax ?? 0) * Math.max(0, dtMs)) / 1000 * Math.max(0, fatorDeCusto);
 
-// ---------------------------------------------------------------- as linhas que não se aplicam
+// ---------------------------------------------------------------- a velocidade do orbe
 
 /**
- * "Velocidade de Movimento do Orbe aumentada em X%" (a qualidade do Morto Volátil — volatile_dead_core_movement_speed_+%): só a trajetória do orbe até o inimigo; o
- * PoB não a usa na conta, e o orbe do jogo acerta no uso (como as linhas de trajetória do lote A3 — `LINHAS_QUE_NAO_SE_APLICAM`).
+ * "Velocidade de Movimento do Orbe aumentada em X%" (a qualidade do Morto Volátil — volatile_dead_core_movement_speed_+%): o orbe anda do cadáver até o inimigo e a área
+ * cai na chegada (lote "projetil", dono 02/11 — `GemasVoo.perfilDaGema` lê a linha, `Acoes` faz o caminho: era "não se aplica" desde o lote B3).
  */
 export const LINHA_VELOCIDADE_DO_ORBE = /^Velocidade de Movimento do Orbe aumentada em [\d.]+ ?%$/i;
 
