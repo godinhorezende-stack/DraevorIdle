@@ -589,7 +589,8 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
     // O desenho pelo nome do lacaio e o da gema ("Golem" + "Convocar Golem de Chamas").
     desenho: desenhoDe(`${nome} ${t.nome}`, elemento, totem),
     // (rodada 4, lote L) as habilidades do PoB do lacaio (`LacaiosHabilidades`): o principal (lido no tique — `cacadas`), a arma (a SUA — `acoes.invocarLacaios`)
-    ...(hab ? { habPob: { principal: hab.principal, ...(hab.fixa ? { fixa: true } : {}), ...(hab.semGolpe ? { semGolpe: true } : {}), ...(hab.arma ? { arma: hab.arma } : {}) } } : {}),
+    // (03/11, rodada 2: + a `prismatica` — o clone dos Clones Prismáticos; sem ela, o clone invocado de verdade nunca sorteava o elemento)
+    ...(hab ? { habPob: { principal: hab.principal, ...(hab.fixa ? { fixa: true } : {}), ...(hab.semGolpe ? { semGolpe: true } : {}), ...(hab.arma ? { arma: hab.arma } : {}), ...(hab.prismatica ? { prismatica: true } : {}) } } : {}),
     // (rodada 4, lote L) a vida de base (antes dos modificadores): o Espectro pelo PoB troca a base e mantém os modificadores (`acoes.invocarLacaios`)
     ...(!totem ? { vidaBase: f.vida } : {}),
     // (lote C1) o item animado (a base de arma ou a Armadura de Corpo base) — o balão e os testes o leem

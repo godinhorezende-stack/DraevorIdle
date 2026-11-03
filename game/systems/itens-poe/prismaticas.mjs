@@ -28,6 +28,24 @@ export const ATRIBUTOS_DO_FOCO = Object.freeze({ fire: ['int', 'dex'], ice: ['st
 /** As gemas PRISMÁTICAS do jogo (a tag "Prismático" do poedb; a do PoB é `RandomElement`). */
 export const GEMAS_PRISMATICAS = Object.freeze(['Elemental_Hit', 'Wild_Strike', 'Wild_Strike_of_Extremes', 'Tornado_of_Elemental_Turbulence', 'Summon_Skeletons_of_Mages', 'Blink_Arrow_of_Prismatic_Clones', 'Mirror_Arrow_of_Prismatic_Clones']);
 export const ehPrismatica = (slug) => GEMAS_PRISMATICAS.includes(String(slug ?? ''));
+/**
+ * (03/11, rodada 2) O LACAIO PRISMÁTICO: o clone das Flechas/do Piscar dos Clones Prismáticos (`habPob.prismatica`) e os Esqueletos Magos — no PoB, as
+ * duas gemas têm `SkillType.RandomElement` nos `minionSkillTypes` (act_dex.lua BlinkArrowAltY/MirrorArrowAltY, act_int.lua SummonSkeletonsAltY).
+ */
+export const ehLacaioPrismatico = (l) => !!l?.habPob?.prismatica || ehPrismatica(String(l?.gema ?? '').replace(/^poe-gema:/, ''));
+/**
+ * (03/11, rodada 2) O "Habilidades Prismáticas causam X% menos Dano de <Elemento>" (o Foco de Combate — `mais_dano_<el>@prismatico`, na `porTag` da
+ * ficha) no golpe do LACAIO prismático: `{ fire, ice, energy }`, o fator de cada elemento (1 = nada; nunca abaixo de 0).
+ */
+export function menosNoLacaioPrismatico(ficha) {
+  const f = { fire: 1, ice: 1, energy: 1 };
+  for (const x of ficha?.porTag ?? []) {
+    if (!x?.tags?.length || !x.tags.every((t) => t === 'prismatico')) continue;
+    const el = ELEMENTOS.find((e) => x.stat === `mais_dano_${PT[e]}`);
+    if (el) f[el] *= Math.max(0, 1 + (Number(x.valor) || 0) / 100);
+  }
+  return f;
+}
 /** O Golpe Selvagem (e o dos Extremos). */
 export const ehGolpeSelvagem = (slug) => /^Wild_Strike(?:_of_Extremes)?$/.test(String(slug ?? ''));
 

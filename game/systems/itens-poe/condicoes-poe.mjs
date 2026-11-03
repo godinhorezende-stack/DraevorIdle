@@ -92,6 +92,9 @@ export const noSoloProfano = (m, agora) => (m?.estados?.soloProfano?.ate ?? 0) >
 export const AREAS_FRIAS = Object.freeze({
   efeitoPct: 10,
   maximo: 12,
+  // (03/11, rodada 2) o teto dos SEUS Solos Congelados (`criarSoloCongelado`), à parte: a enxurrada deles (a Coroa da Salmoura, 15% por acerto) não expulsa as áreas das
+  // gemas (escolha sem fonte: o mesmo número das gemas)
+  maximoDeSolos: 12,
   porGema: Object.freeze({
     Frostblink: { raioM: 2 }, Creeping_Frost: { raioM: 2, noAlvo: true }, Cold_Snap: { raioM: 3 }, Vaal_Cold_Snap: { raioM: 3.6 }, Vortex: { raioM: 2.3 },
     Frost_Blades_of_Katabasis: { raioM: 2, noAlvo: true },
@@ -112,9 +115,21 @@ export function criarAreaFria(h, { x, y, raioM, segundos, agora = h?.clock ?? 0,
   const lista = (h.areasFrias ??= []).filter((a) => a.ate > agora || (a.porSegundo && a.proximaCarga <= a.ate));
   const durMs = Math.round(segundos * 1000);
   const doCrescer = cresce ? { ...cresce, inicio: agora, durMs } : null;
-  lista.push({ x, y, raio: doCrescer ? raioQueCresce(doCrescer, agora) : Math.max(0, Math.round((Number(raioM) || 0) / 2)), ate: agora + durMs, ...(efeitoPct > 0 ? { efeitoPct } : {}), ...(obj ? { obj } : {}), ...(fragilGelo ? { fragilGelo: true } : {}), ...(soloCongelado ? { soloCongelado: true } : {}),
-    ...(doCrescer ? { cresce: doCrescer } : {}), ...(aoMorrer ? { aoMorrer } : {}), ...(porSegundo ? { porSegundo, proximaCarga: agora + 1000 } : {}) });
-  h.areasFrias = lista.slice(-AREAS_FRIAS.maximo);
+  const raio = doCrescer ? raioQueCresce(doCrescer, agora) : Math.max(0, Math.round((Number(raioM) || 0) / 2));
+  // (03/11, rodada 2) o SEU Solo Congelado na casa de um que ainda está lá RENOVA esse (a duração, e o maior raio e Resfriamento) em vez de somar outro por cima
+  const mesmo = soloCongelado ? lista.find((a) => a.soloCongelado && a.ate > agora && a.x === x && a.y === y) : null;
+  if (mesmo) {
+    mesmo.ate = Math.max(mesmo.ate, agora + durMs);
+    mesmo.raio = Math.max(mesmo.raio, raio);
+    if (efeitoPct > 0) mesmo.efeitoPct = Math.max(mesmo.efeitoPct ?? 0, efeitoPct);
+  } else {
+    lista.push({ x, y, raio, ate: agora + durMs, ...(efeitoPct > 0 ? { efeitoPct } : {}), ...(obj ? { obj } : {}), ...(fragilGelo ? { fragilGelo: true } : {}), ...(soloCongelado ? { soloCongelado: true } : {}),
+      ...(doCrescer ? { cresce: doCrescer } : {}), ...(aoMorrer ? { aoMorrer } : {}), ...(porSegundo ? { porSegundo, proximaCarga: agora + 1000 } : {}) });
+  }
+  // (03/11, rodada 2: os tetos à parte — as áreas das gemas, `maximo`, e os seus Solos Congelados, `maximoDeSolos`: um não expulsa o outro; a ordem fica)
+  const dasGemas = new Set(lista.filter((a) => !a.soloCongelado).slice(-AREAS_FRIAS.maximo));
+  const solos = new Set(lista.filter((a) => a.soloCongelado).slice(-AREAS_FRIAS.maximoDeSolos));
+  h.areasFrias = lista.filter((a) => dasGemas.has(a) || solos.has(a));
 }
 /**
  * (03/11 — o SOLO CONGELADO que VOCÊ cria, como o PoE: "15% de chance de criar Solo Congelado ao Congelar um Inimigo" (a Harpa de Nuro), "15% de chance de criar

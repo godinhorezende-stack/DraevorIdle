@@ -569,8 +569,9 @@ export function alcanceCorpoDoUso(estado, entry, efeito = undefined) {
   const f = comAsLinhasDaGema(estado, base, entry, efeito);
   const metrosExtra = ModsPoe.valor(f, 'alcance_corpo_m') + (f !== base && f?.porTag ? ModsPoe.somaPorTags(f, tagsPoeDaSkill(entry)).alcance_corpo_m ?? 0 : 0);
   // (100% — combate, 02/11: com metros a mais, + a casa na chance da fração — `Combate100.casaDaFracao`, a sorte do golpe)
-  const metros = itensPoeLigado() ? Ficha.alcanceCorpoEmMetros(estado.equipment?.weapon ?? null, { alcance_corpo_m: metrosExtra }) : 0;
-  const casas = itensPoeLigado() ? Math.floor(metros / 2) + Combate100.casaDaFracao(estado.hunt, Combate100.fracaoDoAlcance(metros, metrosExtra > 0)) : base.alcanceCorpoExtra ?? 0;
+  // (DECISÃO DO DONO, 03/11 — o alcance "suave": as casas da arma sozinha + meia casa por metro A MAIS, a fração só desses metros — `Combate100.casasDoAlcance`)
+  const doAlcance = itensPoeLigado() ? Combate100.casasDoAlcance(Ficha.alcanceCorpoEmMetros(estado.equipment?.weapon ?? null, {}), metrosExtra) : null;
+  const casas = doAlcance ? doAlcance.inteiras + Combate100.casaDaFracao(estado.hunt, doAlcance.fracao) : base.alcanceCorpoExtra ?? 0;
   return { metrosExtra, casas };
 }
 
