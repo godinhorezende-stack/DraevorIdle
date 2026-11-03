@@ -3430,7 +3430,30 @@ export function vooDaGemaNoUso(estado, entry, efeito, mod = 1) {
  *   - o LACAIO: a base D1 (o PoE não publica a do golpe do lacaio: o ataque 32.6 m/s, a magia 10.4) × a Velocidade de Projétil dos suportes ligados na gema que o
  *     invocou (o "aumentada" e o "mais" deles — como os outros suportes de projétil valem no lacaio, `projeteisDoLacaio`); as suas peças e a sua árvore não (são suas).
  */
-export function vooDoLacaio(estado, l, { magia = false } = {}) {
+// (03/11, rodada 2 — o desempenho: era chamado em todo golpe de todo lacaio, 0,34 ms cada) o voo GUARDADO por lacaio/gema: a chave é a gema que invocou o lacaio (ou a
+// gema da vez do mercenário, com a versão dele — `merc.v`, como `efeitosDoMercenario`) e a ficha do dono — trocar as gemas ou as peças refaz a ficha (`Ficha.invalidar`)
+const VOO_DO_LACAIO_GUARDADO = new WeakMap();
+export function vooDoLacaio(estado, l, opcoes = {}) {
+  const ficha = Ficha.fichaGuardada(estado);
+  if (!ficha || !l || !itensPoeLigado()) return vooDoLacaioSemGuardar(estado, l, opcoes);
+  const h = l.mercenario ? l.habilidades?.[l.habilidade ?? 0] : null;
+  const chave = l.mercenario
+    ? `m:${l.mercId}:${h?.acao ?? ''}:${h?.gema ?? ''}:${opcoes.magia ? 1 : 0}:${Mercenarios.contratado(estado, l.mercId)?.v ?? 0}`
+    : `l:${l.acao ?? ''}:${opcoes.magia ? 1 : 0}`;
+  let porChave = VOO_DO_LACAIO_GUARDADO.get(ficha);
+  if (!porChave) VOO_DO_LACAIO_GUARDADO.set(ficha, (porChave = new Map()));
+  const guardado = porChave.get(chave);
+  if (guardado) return guardado;
+  const v = Object.freeze(vooDoLacaioSemGuardar(estado, l, opcoes));
+  porChave.set(chave, v);
+  return v;
+}
+/** (03/11, rodada 2) Quantos voos de lacaio estão guardados na ficha de agora do dono (o golpe de perto não calcula o voo — o teste do desempenho). */
+export function voosDoLacaioGuardados(estado) {
+  const f = Ficha.fichaGuardada(estado);
+  return f ? VOO_DO_LACAIO_GUARDADO.get(f)?.size ?? 0 : 0;
+}
+function vooDoLacaioSemGuardar(estado, l, { magia = false } = {}) {
   const base = { v0: GemasVoo.casasPorSegundo(magia ? GemasVoo.VOO.padraoMagiaM : GemasVoo.VOO.padraoAtaqueM, 1), perfil: null, fator: 1 };
   if (!itensPoeLigado() || !l) return base;
   if (l.mercenario) {
@@ -6742,6 +6765,23 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
     // uso); o golpe do contato do principal leva só ele e o que vem dele (`soOPrincipal`: o primeiro passe do golpe — as repetições disparam todos de novo)
     let parteDoPasse = null;
     let soOPrincipal = false;
+    /*
+     * (03/11, rodada 2 do voo de verdade) cada inimigo leva no máximo o que o PoE daria: o primeiro acerto de cada projétil a mais é "no primeiro do caminho que nenhum
+     * outro do uso acertou" (D7b) também com os projéteis independentes — o bicho do caminho do principal que ainda voa fica RESERVADO para ele (`reservadosDoPasse`,
+     * pela previsão do voo — `Voos.previsto`), e o conflito que sobra (alguém andou) se resolve no INSTANTE do acerto (`tomadosDoUso`: quem um projétil do uso já
+     * pegou; o principal passa por ele, o a mais que chega depois nele não acerta — nem o que viria dele)
+     * (+ a separação nas repetições do uso: os a mais de cada repetição saem no uso, `dobrosDasRepeticoes`/`ataqueDuploDoUso` guardam o sorteio delas)
+     */
+    const extrasIndependentes = !!vooPrincipal && Secundarios.extrasIndependentes({ efeito: efeitoDaGema, tags: Tags.tagsDaAcao(entry), voo: !Voos.geometriaAntiga() });
+    const tomadosDoUso = extrasIndependentes ? new Set() : null;
+    let tomadosNoPasse = null;
+    let reservadosDoPasse = null;
+    let reservadoDoVoo = null;
+    let alvoMiradoDoUso = null;
+    let miraDoUso = null;
+    let dobrosDasRepeticoes = null;
+    let ataqueDuploDoUso = null;
+    let repetindoOUso = false;
     const huntDoUso = hunt;
     const posDoTotemNoUso = doTotem && plantada ? { x: plantada.x, y: plantada.y } : null;
     // o golpe que chega depois: no instante e com os eventos da chegada (e, no do totem, na casa dele — como `usarComoTotem`)
@@ -6769,14 +6809,21 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
       const z = hunt.z ?? 0;
       const mira = { x: alvo.x, y: alvo.y };
       const alvoDoUso = alvo;
+      alvoMiradoDoUso = alvo;
+      miraDoUso = mira;
       const soNoLocal = !!efeitoDaGema?.tornado || Voos.geometriaAntiga();
       let contatoAgora = null;
-      const voo = Voos.lancar(hunt, {
+      const opcoesDoVoo = {
         de: deOndeVoa, para: mira, z, alcance: vooBase.alcance, v0: vooBase.v0, perfil: vooBase.perfil, fator: vooBase.fator, agora: saiDoVoo,
         // (o Tiro Tornado "viaja até o local mirado": só o alvo, ou o lugar dele)
-        colide: (c) => (soNoLocal ? ((alvoDoUso.hp > 0 && alvoDoUso.x === c.x && alvoDoUso.y === c.y) || (c.x === mira.x && c.y === mira.y) ? alvoDoUso : null) : hunt.monstros.find((m) => m.hp > 0 && m.x === c.x && m.y === c.y && (m.z ?? hunt.z ?? 0) === z) ?? null),
+        // (03/11, rodada 2: o principal passa por quem um projétil a mais do uso já acertou — `tomadosDoUso`, D7b)
+        colide: (c) => (soNoLocal ? ((alvoDoUso.hp > 0 && alvoDoUso.x === c.x && alvoDoUso.y === c.y) || (c.x === mira.x && c.y === mira.y) ? alvoDoUso : null) : hunt.monstros.find((m) => m.hp > 0 && m.x === c.x && m.y === c.y && (m.z ?? hunt.z ?? 0) === z && !tomadosDoUso?.has(m)) ?? null),
         parede: (c) => { const g = ModsPoe.gradeDoCombate(hunt)?.andavel; return !!g && !g.has(`${c.x},${c.y}`); },
+      };
+      const voo = Voos.lancar(hunt, {
+        ...opcoesDoVoo,
         aoContato: (m, casa, { adiado }) => {
+          tomadosDoUso?.add(m);
           if (!adiado) { contatoAgora = m; return []; }
           return comoNoUso(() => {
             alvo = m;
@@ -6794,6 +6841,8 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
       vooNoAr = voo.noAr;
       if (contatoAgora && contatoAgora !== alvo) { alvo = contatoAgora; atingidos = [contatoAgora]; }
       if (vooErrou) rumoDoVoo = mira;
+      // (03/11, rodada 2) o bicho que o principal ainda no ar vai pegar, com todos onde estão agora: reservado para ele (os a mais escolhem outro)
+      if (extrasIndependentes) reservadoDoVoo = vooErrou ? null : contatoAgora ?? (vooNoAr ? (() => { const p = Voos.previsto(opcoesDoVoo); return p?.tipo === 'contato' ? p.alvo : null; })() : null);
     } else if (tiroNoAlvo && vooBase) tiroNoAlvo.ms = Math.round(chegadaDoVoo(Math.hypot(alvo.x - x, alvo.y - y)) - saiDoVoo);
     const cor = COR_DO_ELEMENTO[entry.element] ?? COR_DO_ELEMENTO.physical;
     // A área vai para a tela num evento SÓ, com as MESMAS casas que causam dano (o cliente
@@ -7777,7 +7826,9 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
         voo: !!vooBase && !naoDoUsuario && !Voos.geometriaAntiga(),
         rumo: rumoDoVoo,
         // (03/11) os a mais no uso, o principal no contato (`parteDoPasse`, `soOPrincipal`); o caminho da gema nos a mais (o ziguezague, a espiral)
-        parte: soExtras ? 'extras' : soOPrincipal && !segundo ? 'principal' : null,
+        // (03/11, rodada 2: + as repetições do uso — `repetindoOUso` —, e no passe dos a mais o bicho reservado para o principal — `reservadosDoPasse`)
+        parte: soExtras ? 'extras' : soOPrincipal && (!segundo || repetindoOUso) ? 'principal' : null,
+        reservados: soExtras ? reservadosDoPasse : null,
         casasDoCaminho: vooBase?.perfil && (vooBase.perfil.zigueZague > 0 || vooBase.perfil.rotacoes > 0) ? (de, fim) => casasDoCaminhoDoVoo(de, fim, vooBase) : null,
       });
       // (lote A3b, dono 19/10) os projéteis que saíram do uso (o primeiro passe): o marcador do Disparo Congelante, a captura da Espiral Venenosa, a
@@ -7798,6 +7849,19 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
       // concha, as flechas que grudam, os cones) sai quando o último chega
       const quandoDosAdiados = [];
       const acertadosDepois = new Set(atingidos.filter(acertouNoPasse));
+      // (03/11, rodada 2) no passe dos a mais: o primeiro acerto `exclusivo` (D7b) num bicho que outro projétil do uso já pegou não acontece — nem o resto daquele projétil
+      // (`projDoUso`: os saltos, os filhos, as explosões dele); confere no instante do acerto
+      const tomados = soExtras ? tomadosNoPasse : null;
+      const projeteisQueNaoAcertaram = tomados ? new Set() : null;
+      const caiNoInstante = (s) => {
+        if (!tomados) return true;
+        if (s.projDoUso != null && projeteisQueNaoAcertaram.has(s.projDoUso)) return false;
+        if (s.exclusivo && s.tipo === 'projetil') {
+          if (tomados.has(s.bicho)) { if (s.projDoUso != null) projeteisQueNaoAcertaram.add(s.projDoUso); return false; }
+          tomados.add(s.bicho);
+        }
+        return true;
+      };
       for (const s of golpes) {
         if (s.bicho.hp <= 0) continue;
         // (o 1º voo de cada projétil já foi desenhado na emissão; aqui, os saltos: perfuração, bifurcação, encadeamento, retorno)
@@ -7812,6 +7876,7 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
           const ms = Math.max(0, Math.round(quando - (hunt.clock ?? 0)));
           if (Voos.adiar(hunt, quando, () => comoNoUso(() => {
             if (!(bicho.hp > 0) || distanciaChebyshev(bicho, onde) > 1) return;
+            if (!caiNoInstante(s)) return;
             acertar(bicho, s.pct, s.tipo, s);
             if (acertouNoPasse(bicho)) acertadosDepois.add(bicho);
           }), hunt.clock ?? 0)) {
@@ -7820,6 +7885,7 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
             continue;
           }
         }
+        if (!caiNoInstante(s)) continue;
         if (tiroDoSalto) eventos.push({ t: 'shot', id: entry.projetil, x: s.de.x, y: s.de.y, tx: s.bicho.x, ty: s.bicho.y, ...(velDoTiro !== 1 ? { vel: velDoTiro } : {}) });
         acertar(s.bicho, s.pct, s.tipo, s);
         if (acertouNoPasse(s.bicho)) acertadosDepois.add(s.bicho);
@@ -8216,7 +8282,8 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
       if (!atingidos.some((b) => b.hp > 0) && !novasDosDisparos?.casas.length) break;
       naRepeticaoFinal = r === repeticoes - 1;
       repeticaoAtual = r + 1;
-      dobroNaFinal = naRepeticaoFinal && (efeitoDaGema?.repeticaoFinalDobroPct ?? 0) > 0 && !ficha.danoDobradoNoGolpe && Math.random() * 100 < efeitoDaGema.repeticaoFinalDobroPct;
+      // (03/11, rodada 2: com os a mais da repetição já no ar — saíram no uso —, o sorteio do Eco Desperto é o de lá: `dobrosDasRepeticoes`)
+      dobroNaFinal = dobrosDasRepeticoes?.[r] ?? (naRepeticaoFinal && (efeitoDaGema?.repeticaoFinalDobroPct ?? 0) > 0 && !ficha.danoDobradoNoGolpe && Math.random() * 100 < efeitoDaGema.repeticaoFinalDobroPct);
       // (PoE: "Repetição Final das Magias têm Efeito em Área aumentado em X%" — lote 36, P002: o X soma no "aumentado" da área da última
       // repetição, e o raio da forma cresce × √ como o resto da área.)
       const areaFinal = naRepeticaoFinal && areaNoUso && ehMagiaDaConta ? ModsPoe.valor(ficha, 'repeticao_final_area') : 0;
@@ -8226,7 +8293,9 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
       const areaRepT2 = areaNoUso ? GemasT2.areaDaRepeticao(efeitoDaGema, repeticaoAtual) : 0;
       if (areaFinal > 0 || semMaximizado > 0 || areaRepT2 > 0) atingidos = Areas.dentro(areaNoUso(areaFinal - semMaximizado + areaRepT2), vivos.filter((b) => b.hp > 0));
       escalaDoUso = escalaDaPrimeira;
-      atacar(true);
+      // (03/11, rodada 2: a repetição do projétil que voa leva só o principal — os a mais dela saíram no uso, no tempo deles)
+      repetindoOUso = true;
+      try { atacar(true); } finally { repetindoOUso = false; }
       escalaDoUso = 100;
       // (lote C2: cada repetição é um ataque — o pulso, os martelos, o ramo)
       extrasDoC2();
@@ -8257,9 +8326,11 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
     const criticoDoPrimeiro = danoCritico;
     const fisicoDoPrimeiro = danoFisico;
     const danosDoPrimeiro = danos.slice();
-    if (Math.random() < (ficha.ataqueDuplo ?? 0)) {
+    // (03/11, rodada 2: com os a mais já no ar, o sorteio do ataque duplo é o do uso — `ataqueDuploDoUso` —, e o 2º golpe leva só o principal)
+    if (ataqueDuploDoUso ?? Math.random() < (ficha.ataqueDuplo ?? 0)) {
       fatorDoAtaque = Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct;
-      atacar(true);
+      repetindoOUso = ataqueDuploDoUso != null;
+      try { atacar(true); } finally { repetindoOUso = false; }
       fatorDoAtaque = 100;
       total = totalDoPrimeiro;
       danoCritico = criticoDoPrimeiro;
@@ -8525,16 +8596,53 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
      * tela, no uso) e cada um cai no tempo do caminho dele (`Voos.adiar` no passe, pelas casas andadas) — o bicho perto no leque leva antes do alvo longe; o principal
      * que se perde não leva os outros junto. O golpe do contato do principal fica só com ele (`soOPrincipal`).
      */
-    if (vooPrincipal && Secundarios.lequeIndependente({ efeito: efeitoDaGema, tags: Tags.tagsDaAcao(entry), voo: !Voos.geometriaAntiga() })) {
+    // (03/11, rodada 2: em TODA geometria de projéteis a mais — `Secundarios.extrasIndependentes` —, com o bicho do caminho do principal reservado para ele, e nas
+    // REPETIÇÕES do uso — Eco de Magia, Altar Ecoante, o ataque duplo —: os a mais de cada uma saem também aqui; o principal delas, no contato)
+    if (extrasIndependentes) {
       soOPrincipal = true;
       const alvo0 = alvo;
       const atingidos0 = atingidos;
       const rumo0 = rumoDoVoo;
-      // (o rumo é o do tiro; o alvo do principal — o que ele já encontrou, ou o mirado, se ainda voa — fica fora dos a mais; o que se perdeu, não)
-      if (vooErrou) { alvo = null; rumoDoVoo = { x: alvo0.x, y: alvo0.y }; }
+      // (o alvo mirado é a âncora da geometria — o leque, as origens laterais, o rodízio do Aço Perfurador —, mas não fica fora dos a mais: fica o do caminho do
+      // principal; o principal que se perdeu não reserva ninguém)
+      alvo = alvoMiradoDoUso?.hp > 0 ? alvoMiradoDoUso : null;
+      rumoDoVoo = { x: miraDoUso.x, y: miraDoUso.y };
       atingidos = [];
+      reservadosDoPasse = reservadoDoVoo ? [reservadoDoVoo] : [];
       parteDoPasse = 'extras';
-      try { atacar(false); } finally { parteDoPasse = null; alvo = alvo0; atingidos = atingidos0; rumoDoVoo = rumo0 ?? rumoDoVoo; }
+      try {
+        tomadosNoPasse = tomadosDoUso;
+        atacar(false);
+        // as repetições: cada uma é outro uso no PoE (os a mais dela podem pegar quem os do primeiro pegaram)
+        if (repeticoes > 0) {
+          dobrosDasRepeticoes = [];
+          for (let rr = 0; rr < repeticoes; rr++) {
+            naRepeticaoFinal = rr === repeticoes - 1;
+            repeticaoAtual = rr + 1;
+            dobroNaFinal = dobrosDasRepeticoes[rr] = naRepeticaoFinal && (efeitoDaGema?.repeticaoFinalDobroPct ?? 0) > 0 && !ficha.danoDobradoNoGolpe && Math.random() * 100 < efeitoDaGema.repeticaoFinalDobroPct;
+            tomadosNoPasse = new Set();
+            atacar(true);
+          }
+          repeticaoAtual = 0;
+          dobroNaFinal = false;
+          naRepeticaoFinal = false;
+        }
+        ataqueDuploDoUso = Math.random() < (ficha.ataqueDuplo ?? 0);
+        if (ataqueDuploDoUso) {
+          fatorDoAtaque = Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct;
+          tomadosNoPasse = new Set();
+          atacar(true);
+          fatorDoAtaque = 100;
+        }
+      } finally {
+        parteDoPasse = null;
+        tomadosNoPasse = null;
+        reservadosDoPasse = null;
+        alvo = alvo0;
+        atingidos = atingidos0;
+        rumoDoVoo = rumo0 ?? rumoDoVoo;
+        naRepeticaoFinal = repeticoes === 0;
+      }
     }
     if (!vooNoAr) {
       if (vooErrou) {
