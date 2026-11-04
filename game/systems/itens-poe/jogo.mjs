@@ -63,7 +63,8 @@ const REG = { porBase: new Map(), porId: new Map(), naoEquipaveis: [], mapas: ne
  * As classes de frasco que entram no jogo (o cinto de frascos — `itens-poe/frascos.mjs`). (12/10: + as Tinturas, POR ÚLTIMO — os ids das
  * bases delas vêm depois dos frascos, sem mudar nenhum id que já existia; `itens-poe/tinturas.mjs`.)
  */
-export const FRASCOS = ['Life_Flasks', 'Mana_Flasks', 'Utility_Flasks', 'Tinctures'];
+// (04/11: + os Frascos Híbridos, DEPOIS das Tinturas — os ids das bases deles vêm por último, sem mudar nenhum id que já existia.)
+export const FRASCOS = ['Life_Flasks', 'Mana_Flasks', 'Utility_Flasks', 'Tinctures', 'Hybrid_Flasks'];
 /**
  * (15/10, lote 27) As JOIAS dos encaixes da árvore de passivas (dono, 14/10: "Criar os encaixes de joia" — `passivas/joias.mjs`), com o id
  * FIXO de cada base (7.800.000 + n, fora da sequência das bases: nenhum id que já existia muda). As Ramificadoras (os encaixes das Joias

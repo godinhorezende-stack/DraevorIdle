@@ -640,7 +640,8 @@ export function condicoesDe(estado, total = null, principais = null) {
     if (!v.has('ardendo') && !v.has('congeladoProprio') && !v.has('eletrizadoProprio') && !v.has('resfriadoProprio')) v.add('semAfeccaoElemental');
     const frascos = Object.values(h.frascosPoe?.ativos ?? {}).some((a) => a.ate > agora);
     v.add(frascos ? 'duranteFrasco' : 'semFrasco');
-    if (Object.values(h.frascosPoe?.ativos ?? {}).some((a) => a.ate > agora && a.recurso === 'mana')) v.add('duranteFrascoMana');
+    // (o Frasco Híbrido ativo — `a.mana` — vale como de Mana e, pelo `recurso`, como de Vida)
+    if (Object.values(h.frascosPoe?.ativos ?? {}).some((a) => a.ate > agora && (a.recurso === 'mana' || a.mana))) v.add('duranteFrascoMana');
     if (Object.values(h.frascosPoe?.ativos ?? {}).some((a) => a.ate > agora && a.recurso === 'vida')) v.add('duranteFrascoVida');
     if (Object.values(h.frascosPoe?.tinturas ?? {}).some((t) => t?.ativa)) v.add('tinturaAtiva');
     if ((h.roubos ?? []).some((x) => x.restante > 0)) v.add('drenando');

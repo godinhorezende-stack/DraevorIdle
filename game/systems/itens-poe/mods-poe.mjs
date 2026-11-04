@@ -842,9 +842,10 @@ export function eventosDoFrasco(estado, classe, ficha, ctx = {}) {
   const hunt = estado?.hunt;
   if (!hunt) return;
   evento(estado, hunt, 'usarFrasco', ficha, ctx);
-  if (classe === 'Mana_Flasks') evento(estado, hunt, 'usarFrascoMana', ficha, ctx);
+  // (04/11: o Frasco Híbrido conta como de Mana e de Vida — os dois eventos)
+  if (classe === 'Mana_Flasks' || classe === 'Hybrid_Flasks') evento(estado, hunt, 'usarFrascoMana', ficha, ctx);
   // (13/10) o de Vida ("Remove uma Afecção não Elemental aleatória quando você usar um Frasco de Vida" — a Maestria de Frascos)
-  if (classe === 'Life_Flasks') evento(estado, hunt, 'usarFrascoVida', ficha, ctx);
+  if (classe === 'Life_Flasks' || classe === 'Hybrid_Flasks') evento(estado, hunt, 'usarFrascoVida', ficha, ctx);
 }
 
 /** Os GATILHOS das peças ("Ativa uma Magia Encaixada quando você Atacar com esta Arma"): quem registra é `acoes.mjs` (o disparo das gemas). */
@@ -1096,7 +1097,8 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
         intervalos[`frasco:${ev.param}`] = agora;
       }
       // (02/11, a Joia Atemporal: "Frascos de Ferro ganham 2 cargas quando sua Salvaguarda se Rompe" — `frasco:ferro`, só os Frascos de Ferro)
-      const doTipo = (p) => (so === 'vida' ? p.poe.classe === 'Life_Flasks' : so === 'ferro' ? String(p.poe.base ?? '').split('/')[1] === 'Iron_Flask' : true);
+      // (o Frasco Híbrido conta como de Vida)
+      const doTipo = (p) => (so === 'vida' ? p.poe.classe === 'Life_Flasks' || p.poe.classe === 'Hybrid_Flasks' : so === 'ferro' ? String(p.poe.base ?? '').split('/')[1] === 'Iron_Flask' : true);
       for (const p of estado.frascos ?? []) if (p?.poe && doTipo(p)) p.poe.cargas = (p.poe.cargas ?? 0) + v;
       return;
     }
