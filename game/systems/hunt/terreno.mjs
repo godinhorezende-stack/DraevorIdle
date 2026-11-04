@@ -273,6 +273,21 @@ export function spawnsDaHunt(huntId) {
   return spawns;
 }
 
+/**
+ * (04/11) Os spawns da hunt SEM deixar o mapa inteiro na memória: o tile a tile (`stacks`/`blocked`) de cada mapa é o que pesa — os ~180 MB
+ * de heap que a campanha do PoE deixava na thread da caçada offline só para saber os bichos nativos de cada mapa. O mesmo resultado de
+ * `spawnsDaHunt`; o mapa que já estava carregado continua carregado, e o que não estava é lido de novo (igual) quando alguém usar.
+ */
+export function spawnsDaHuntSemGuardar(huntId) {
+  const id = mapaDe(huntId);
+  if (mapasReaisCacheados.has(id)) return spawnsDaHunt(huntId);
+  try {
+    return spawnsDaHunt(huntId);
+  } finally {
+    mapasReaisCacheados.delete(id);
+  }
+}
+
 /** Os encontros que o arquivo do mapa define (ver `encontros/modelo.mjs`); lista vazia = nenhum. */
 export function encontrosDaHunt(huntId) {
   // O arquivo próprio da fase (`gamedata/encontros/`), ou o bloco do mapa (formato antigo).

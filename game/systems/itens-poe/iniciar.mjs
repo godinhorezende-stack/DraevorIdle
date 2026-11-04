@@ -47,23 +47,24 @@ let iniciando = null;
  * Carrega o jogo do PoE neste processo/thread (uma vez: chamar de novo devolve a mesma promessa). No modo clássico
  * (`DRAEVOR_CLASSICO=1`) não faz nada e devolve null. Os ganchos (`catalogoDeItens`, `registrar*`) vêm do jogo se não forem passados.
  * `log`: as linhas do resumo (o servidor imprime).
+ * `mapasSobDemanda`: os mapas das hunts só quando alguém usar (a thread da caçada offline — ver `CampanhaPoe.iniciar`); o jogo é o mesmo.
  */
 export function iniciarJogoDoPoe(opcoes = {}) {
   if (!ligado()) return Promise.resolve(null);
   return (iniciando ??= carregar(opcoes));
 }
 
-async function carregar({ log = () => {}, ...dados }) {
+async function carregar({ log = () => {}, mapasSobDemanda = false, ...dados }) {
   const { catalogoDeItens, registrarGema, registrarReforco, registrarSuporte } = { ...(await ganchosDoJogo()), ...dados };
   const r = ItensPoeJogo.iniciar(catalogoDeItens);
   if (r.porBase.size) log(`itens do PoE: ${r.porBase.size} bases no catálogo (ids ${ItensPoeJogo.PRIMEIRO_ID}+); sem slot: ${r.naoEquipaveis.join(', ')}`);
   const pinaculos = Pinaculos.iniciar();
   if (pinaculos.length) log(`chefes pináculo do PoE: ${pinaculos.length} no painel de Bosses (${pinaculos.join(', ')})`);
   // A campanha do PoE no lugar da do Draevor (os 10 atos, as áreas sobre os mapas do Draevor, os chefes de ato).
-  const campanha = CampanhaPoe.iniciar();
+  const campanha = CampanhaPoe.iniciar({ mapasSobDemanda });
   // As áreas dos MAPAS do endgame (T1–T16): o terreno, os monstros e o chefe de cada tier no nível do mapa (depois da campanha: usa os
   // monstros dela).
-  const mapas = MapasAreas.iniciar();
+  const mapas = MapasAreas.iniciar({ mapasSobDemanda });
   if (mapas.tiers || mapas.problemas.length) log(`mapas do endgame: ${mapas.tiers} tiers${mapas.problemas.length ? ` — ${mapas.problemas.length} problemas: ${mapas.problemas.slice(0, 3).join(' | ')}` : ''}`);
   // Os modificadores de monstro do PoE (Mágico 1, Raro 2 a 4) e os ocultos de cada raridade.
   const modsDeMonstro = ModificadoresMonstroPoe.iniciar();

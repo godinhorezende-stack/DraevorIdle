@@ -17,7 +17,7 @@ import * as Habilidades from './habilidades.mjs';
 import { CATALOGO, ITEM_CATALOG } from '../dados.mjs';
 import * as DropsPorMonstro from './drops-por-monstro.mjs';
 import { BESTIARY } from '../hunt/monstros.mjs';
-import { acharHunt, apelidarMapa, definirTransformadorDeSpawns, spawnsDaHunt } from '../hunt/terreno.mjs';
+import { acharHunt, apelidarMapa, definirTransformadorDeSpawns, spawnsDaHunt, spawnsDaHuntSemGuardar } from '../hunt/terreno.mjs';
 import * as BossesUnicos from '../bosses-unicos/catalogo.mjs';
 import * as Campanha from '../campanha.mjs';
 import { lerExecutaveis } from '../atos-carregar.mjs';
@@ -60,7 +60,7 @@ export const idDoChefe = (ato) => `poe-chefe-ato-${ato}`;
 const idDoAto = (ato) => `poe-ato-${ato}`;
 
 /** As criaturas nativas de um mapa do Draevor (as chaves dos spawns da hunt base). */
-const nativosDoMapa = (mapa) => [...new Set((spawnsDaHunt(mapa) ?? []).flatMap((s) => (s.criaturas ?? []).map((c) => c.key)))];
+const nativosDoMapa = (mapa, lerSpawns = spawnsDaHunt) => [...new Set((lerSpawns(mapa) ?? []).flatMap((s) => (s.criaturas ?? []).map((c) => c.key)))];
 
 /** As ligações de uma área sem passar por cidade (a cidade liga os dois lados). */
 function vizinhos(id, ato) {
@@ -227,7 +227,12 @@ export function definirDesenho(slugDoMonstro, chave) {
   return r;
 }
 /** Monta a campanha do PoE (uma vez). Sem o sistema ligado, nada. Devolve `{ areas, atos, problemas }`. */
-export function iniciar() {
+/**
+ * `mapasSobDemanda` (a thread da caçada offline — `simulacao-offline-worker.mjs`): os bichos nativos de cada mapa sem deixar os mapas na memória
+ * (`terreno.spawnsDaHuntSemGuardar`); a thread lê só o mapa da caçada que simula, quando simula. O servidor carrega todos de qualquer jeito
+ * (`aquecerGrades`), então lá eles ficam.
+ */
+export function iniciar({ mapasSobDemanda = false } = {}) {
   if (!ligado()) return { areas: 0, atos: [], problemas: [] };
   if (INICIADO) return INICIADO;
   // 1. as hunts virtuais das áreas, com o apelido do mapa
@@ -241,7 +246,7 @@ export function iniciar() {
     areas++;
   }
   // 2. os monstros e a troca dos bichos dos spawns
-  const { porArea } = Monstros.iniciar(nativosDoMapa);
+  const { porArea } = Monstros.iniciar((mapa) => nativosDoMapa(mapa, mapasSobDemanda ? spawnsDaHuntSemGuardar : spawnsDaHunt));
   PORAREA = porArea;
   // As criaturas da hunt da área (o que a lista de hunts e a janela da hunt mostram) são os monstros do PoE da área, não os do mapa do Draevor.
   for (const [id, chaves] of porArea) {
