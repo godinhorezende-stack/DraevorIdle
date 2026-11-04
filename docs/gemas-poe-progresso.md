@@ -1670,6 +1670,504 @@ Bateria: 153 arquivos, 1648 testes — 1612 passam, 33 pulados, 3 falham (os tr�
 - O Pacto de Ghorr sai do `MOTIVOS_T2`: 'funciona'.
 - Placar: ativas 562 · testada 561 · parcial 0 · não se aplica 1; ataques 210; suportes 262 · 261 · 1. Bateria: 153 arquivos, 1650 testes — 1617 passam, 33 pulados, 0 falhas.
 
+### O Portal (02/11) — "resolva essa que não se aplica"
+
+- **A gema Portal deixa de ser "não se aplica"** (`itens-poe/portal-da-gema.mjs`, arquétipo `portal`): o uso, só à mão (a barra automática não leva ninguém para a cidade), conjura 2,5 s × a Velocidade de Conjuração (a qualidade dá até 60%: 1,56 s na q20) e, no fim, marca a saída (`hunt.saidaPeloPortal`, `Acoes.usarPortalDaGema`). A sessão leva você para a cidade (`Sessao.entrarNoPortalDaGema`, sem o relatório de fim de caçada) e a caçada fica guardada em `estado.portalDaGema` (gravado com o personagem: os monstros vivos compactados, a instância, o relógio, o relatório da sessão, as recargas, o portal do boss do ato).
+- **A volta** (botão "Voltar pelo portal" na cidade → `{t:'voltarPeloPortal'}`, `Cacadas.voltarPeloPortalDaGema`): a mesma área, com os mesmos monstros vivos, a limpeza e o relógio, na casa onde o portal abriu. O portal dura até ser usado ou até outra caçada (`Cacadas.entrar`/`entrarNaSala` o fecham).
+- **Party:** quem usa vai sozinho (quem segue o líder fica; a sala passa ao próximo, que segue puxando); a volta entra na sala da party que ainda está na mesma instância (`Party.voltarPeloPortal`); sem ela, volta sozinho à cópia guardada.
+- **Mapa:** não gasta um dos 6 portais do mapa (a saída sem morte, o loop de mapas espera) e a volta é a do mapa aberto (`MapaAberto.retomar`), na casa do portal; o mapa que acabou fecha o portal.
+- Não abre no duelo da Arena nem na sala de chefe que não é a do ato (os pináculos, os diários). A armadilha, a mina, o totem e o gatilho não levam ninguém.
+- Teste novo: `testes/gema-portal.test.mjs` (6 testes). Placar: ativas 562 · testada 562 · não se aplica 0; suportes 262 · 261 · 1 (Conjurar ao Perder Salvaguarda).
+- Bateria (ativas-*, gemas-*, suportes-*, itens-poe-gemas*, mapas-endgame*, party-*, protecao*, portal-ciclo, boss-do-ato, campanha e os que leem o texto dos arquivos mexidos): 92 arquivos, 1178 testes — 1094 passam, 81 pulados, 3 falhas (abaixo); os 4 `.classico` de mapas/party: 48/48.
+- **Quebras legítimas, sem aval (não editadas):**
+  - `gemas-sem-efeito-a2.test.mjs:79-80` espera o Portal `statusNoJogo === 'nao'` e `naoSeAplica` /^não se aplica/ — agora `'funciona'` e sem `naoSeAplica` (o pedido do dono).
+  - `gemas-todas-funcionam-poe.test.mjs:237` (G16): toda ativa "funciona" precisa causar dano ou ligar buff no uso; o Portal não causa dano no PoE (o efeito é a viagem — `hunt.saidaPeloPortal`). Proposta: um critério próprio em `SEM_DANO_NO_POE` (`Portal: (u) => u.saida`), como o Totem Chamariz e a Mina de Fumaça.
+  - `itens-poe-gemas.test.mjs:38`: `st.funciona > 30 && st.nao < 40` — com o Portal, nenhuma ativa fica "nao" (`{"funciona":562}`), `st.nao` é `undefined` e `undefined < 40` é falso. Proposta: `(st.nao ?? 0) < 40`.
+
+### A Salvaguarda (Ward) e o Conjurar ao Perder Salvaguarda (02/11)
+
+Pedido do dono: "resolva essa que não se aplica e atualize o tooltip de todas". A Salvaguarda passa a existir como no PoE (`systems/personagem/salvaguarda.mjs`), e o Conjurar ao Perder Salvaguarda sai do "não se aplica".
+
+- **De onde vem:** a base Rúnica (o `protecao` do catálogo) vira `base.ward` na peça: (a base + o "+N de Proteção" LOCAL, como em Svalinn) × (1 + a qualidade + o "Proteção aumentada em X%" LOCAL, como nos únicos Rúnicos; o poedb marca "local ward +%"). A ficha soma as peças vestidas, + o "+N" global, × (1 + "Salvaguarda aumentada", que vem das Joias Atemporais), × "Salvaguarda X% menor" (`ficha.salvaguarda`). O Guardião da Fé ("Aumentos e Reduções ao Escudo de Energia Máximo se aplicam a Proteção"; no poedb, *instead apply to ward*): o Escudo de Energia aumentado deixa o Escudo e passa a aumentar a Salvaguarda. As Rúnicas também caem com qualidade.
+- **No acerto:** o acerto em você sai primeiro dela, antes da Égide, do Escudo Gélido, da Guarda, do Vínculo e do Escudo de Energia. Vale no golpe corpo a corpo (`hunt/combate.contraAtaque`), na magia do monstro (`poderes.dispararMagia`) e na explosão ao morrer (`danoDeElementoNoJogador` com `acerto`). O dano contínuo não passa por ela: o degenerativo, as auras e os solos. "75% do Dano sofrido ignora a Proteção" (o Aperto Noturno) deixa essa parte passar direto. A parte de cada tipo que vem depois (a Égide, o Físico que ignora o Escudo, o Caos que atravessa) segue na proporção do que sobrou.
+- **A quebra:** o acerto que a leva a 0 dispara o gatilho `salvaguarda` (`Acoes.ativarGatilhos`) e o evento `salvaguardaQuebra` (Cargas e Adrenalina "quando a Salvaguarda se Rompe").
+- **A restauração:** o primeiro dano nela começa a espera de 2 s. É o PoB (`Data.lua`, `WardRechargeDelay = 2`), ÷ (1 + "Proteção é Restaurada X% mais rápido/lento", "Restauração da Salvaguarda X% mais rápida"; no ModParser, `WardRechargeFaster`). Quando a espera acaba, ela volta inteira. O dano no meio da espera não a reinicia. O Frasco de Ferro ("Restaura Proteção ao usar") e "X% de chance de Restaurar a Salvaguarda ao Bloquear / ao usar um Frasco" a enchem na hora (ação `salvaguarda`).
+- **Na tela:** a barra de vida do HUD mostra "SG atual/máx", ao lado do "ES"; a ficha do PoE ganha a linha "Salvaguarda" em Defesa. Na cidade ela fica cheia.
+- **O Conjurar ao Perder Salvaguarda:** gatilho `{ quando: 'salvaguarda', recargaMs: 1000, porSalvaguardaPct: 5, porSalvaguardaMaxPct: 400 }`. A recarga do gatilho fica ÷ (1 + 5% por 100 de Salvaguarda MÁXIMA, até 400%): com 650, 769 ms. Antes, a regra larga da "velocidade de recarga aumentada" lia esses 5% como recarga sempre. O "menos Dano Mágico" do nível sai da coluna do poedb: −30, −26, …, −2, 0 no nível 13, e +2 e +4 nos níveis 14 e 15 (o poedb perde o sinal; a série continua no mesmo passo de 2). A tradução nova é a VERSAO_DA_TRADUCAO 74.
+- **O tooltip de todos os gatilhos** (`tooltip.mjs`, "Ativa as magias ligadas"): antes só o crítico, o abate e o dano recebido tinham texto. Os outros mostravam a chave crua ('canalizar', 'morte', 'atordoado', 'acertoRaro', 'manaForjada'). Agora todos estão em português, e o da Salvaguarda diz a recarga pela Salvaguarda. No canalizar, a linha diz "intervalo".
+- **Ainda sem efeito** (feitas depois, em "As linhas da Salvaguarda que ficaram sem efeito", abaixo) (a nota da linha diz isso): "Ganha Dano de Caos Adicional igual a 10% da Proteção" (o Aperto Noturno), as linhas do Frasco de Olroth e da Preparação de Vorana ("não Quebra durante o Efeito", "85% menos", "removido quando Quebrar"), a Postura de Ynda (a Armadura e a Evasão do Peitoral viram Salvaguarda) e, nas Atemporais, "enquanto Salvaguarda Intacta/Rompida", "+N por N de Armadura/Evasão/Escudo da peça", "Chance de Evadir / Redução Física baseada na Salvaguarda", "60% de chance de não se Romper", o ataque que rompe a Salvaguarda, "Frascos de Ferro ganham cargas" e "Remove uma Afecção ao Restaurar".
+- Teste novo: `game/testes/salvaguarda-poe.test.mjs` (8 testes).
+- Bateria: 122 arquivos (ativas-*, gemas-*, suportes-*, itens-poe*, defesa, caos-atravessa-escudo, monstros-no-jogador, frascos, únicos, gatilhos, tooltips, a nova) = 1345 testes, 1294 passam, 49 pulados, 2 falham: o gemas-r3-decisoes (abaixo) e o ativas-b1:168, que é intermitente (o dano sorteado da Bomba Congelante passa da faixa de vez em quando; 1 falha em 4 rodadas do arquivo sozinho, sem tocar na Salvaguarda). Mais 98 arquivos (passivas-poe-*, zerar-arvore-*, lacaios-*, revisao-*, correcoes-*, afeccoes-*, mecânicas, cargas, morte…) = 790 testes, 728 passam, 62 pulados, 0 falham. E 11 .classico ligados à defesa e ao dano: 115 testes, 113 passam, 2 pulados.
+- Placar: ativas 562 · testada 561 · não se aplica 1 (o Portal). Suportes 262 · testada 262 · nenhum "não se aplica".
+- **Quebra pela regra nova, sem aval (não editado):** gemas-r3-decisoes:57, :59 e :61 esperam o Conjurar ao Perder Salvaguarda como `nao` e com a nota do "não se aplica". Agora o status é `funciona`, e `naoSeAplica` e `NAO_SE_APLICA.Cast_on_Ward_Break_Support` ficam `undefined`.
+
+## Balão de todas as gemas (02/11: "atualize o tooltip de todas")
+
+- **A parte pura do balão** (`frontend/client/src/balao-da-gema.mjs`, `partesDoBalaoDaGema` / `textoDoBalaoDaGema`): o `corpoDaGemaPoe` (`tooltip.mjs`) desenha só o que ela devolve — o MESMO balão no inventário e nos encaixes (a ficha pela rota `/api/jogo/poe/gema`), na barra e na "Configurar ação" (o `poeFicha` do catálogo).
+- **Sem marcas velhas:** a gema que funciona não leva mais "✓ Funciona no jogo" (como no PoE); a que não se aplica leva "Não se aplica ao jogo" e a nota curta (`notaCurta`: sem o arquivo, o lote, o aval e a data); a parcial e a sem efeito seguem com o aviso de antes (nenhuma hoje).
+- **Linhas não feitas pela mesma regra do status:** a ficha passa pela `avaliarNoJogo` no nível e na qualidade dela (o lacaio, o vínculo, o totem sem golpe, a praga) — antes só a regra das gemas de uso: os 6 Vínculos, o Portador da Praga e a Convocar Runas riscavam linhas que o jogo faz. As linhas da QUALIDADE também saem riscadas quando não valem (a pendência 7). Nos suportes, as mesmas etiquetas da avaliação (+ Duração, Aura, Golpe).
+- **As notas do registro, discretas:** a escolha do dono (o Arauto Agonizante) e as linhas que não se aplicam (a 2ª forma da Lança de Gelo, em cinza e sem riscar).
+- **Os números que o jogo usa nas propriedades:** o custo (`custoNoNivel`, no recurso: Vida, Escudo de Energia ou os três), a Eficácia do Dano Adicionado do PoB (`eficaciaDoAdicionado` — a Bola de Fogo 300% → 480%, antes "100%"), o Dano de Ataque (`eficaciaNoNivel`), o tempo de conjuração e a recarga com os usos (`temposNoNivel` com a qualidade). Em português: "Almas por Uso", "Pode Armazenar N Usos", "metros por segundo", "(N usos)"; fora o raio em unidades do poedb ("AoE Radius: 9", "Raio: 60" — o raio do jogo é o das linhas), o stat interno ("CooldownTime"), a coluna mal rotulada, a linha sem número e a que vale 0 no nível; as 2 linhas em inglês dos dados (o "[DNT]" da Parede de Gelo da Invasão, a da Marca do Assassino) em português, só no texto. Suportes: o "(Máx)" no nível máximo por XP.
+- **Achado — o custo dos Vínculos (PoE, sem perguntar):** a coluna "Mana" é a do PoB `ManaPerMinute` (act_str.lua: 900 no nível 1); o jogo cobrava 900 no uso e 900 a cada segundo. Agora 0 no uso e 15/s (32,7 no 20) — `custoPorSegundoNoNivel`, `acoes` → `Vinculos.criar`.
+- **Achado — o custo das transfiguradas sem a coluna "Mana":** o Evocar Zumbi do Impacto (9 → 28), a Mina de Pingentes da Sabotagem (3 → 6) e a Explosão Cinética do Agrupamento (6 → 9) cobravam 0; a Mina Piroclástica da Sabotagem cobrava 16 → 24 (a coluna errada; o PoB: 4 → 6, o da base).
+- Com cache (`fichaNoNivel`), porque agora passa pela avaliação. Sem tradução nova no `traducao.json` (a ficha da gema não fica guardada na peça): a VERSAO_DA_TRADUCAO não muda.
+- Teste novo: `testes/tooltip-gemas-poe.test.mjs` (o `tooltip-gemas.test.mjs` já existia — o do balão antigo do Draevor, não mexido): todas as 824 gemas em 4 níveis × 2 qualidades.
+- Placar sem mudança: ativas 562 · testada 561 · não se aplica 1; suportes 262 · 261 · 1.
+
+## Correções das 3 revisões do Portal, da Salvaguarda e do balão (02/11)
+
+- **Os avais do dono (02/11), nos 4 testes:** gemas-sem-efeito-a2:79-80 (o Portal `funciona`, sem `naoSeAplica`), gemas-r3-decisoes:57-61 (o Conjurar ao Perder Salvaguarda `funciona`), itens-poe-gemas:38 (`(st.nao ?? 0) < 40`) e o G16 do gemas-todas-funcionam-poe (o Portal conferido pela viagem, `hunt.saidaPeloPortal`, como o Chamariz).
+- **Ficam como estão (decisões confirmadas):** a Salvaguarda absorve antes de tudo, com 2 s como o PoB; o Portal só à mão, sem duelo nem pináculos, sem armadilha, mina ou totem, e sem levar os buffs; o balão sem o "✓ Funciona", sem os raios em unidades do poedb, e com o custo dos Vínculos pela coluna por minuto.
+- **A Salvaguarda:** o Frasco de Ferro dizia "Restaura Proteção (ainda sem efeito no Draevor)" (regras.json) e agora diz "Restaura a Salvaguarda (Proteção) ao usar". No Conjurar ao Perder Salvaguarda, os níveis 14 e 15 mostravam "−2%" e "−4%" de dano mágico, mas o efeito é +2 e +4; o texto agora segue o sinal do efeito (`textosDoNivel`).
+- **O balão:** as linhas da QUALIDADE que não se aplicam (a "Velocidade de Movimento do Orbe" do Morto Volátil e do Fervor) agora saem marcadas e com a nota, como as do nível. A nota curta da Mina de Fumaça ganhou o porquê ("…: o jogo não tem Re-armar Minas"); a regra: quando a 1ª frase só cita a linha, a 2ª vem junto. As três linhas dos Vínculos, que o poedb grudou, saem separadas (e as duas da Fúria do buff); é só no texto (`partirLinhaColada`). Os gatilhos em português já estavam no balão novo (conferido: os 11 suportes de gatilho).
+- **O custo (PoB):** o Vínculo de Mana cobrava 0, embora o balão dissesse "5% Mana". Agora cobra 5% da Mana máxima no uso (`cost = { ManaPercent = 5 }`, act_int.lua; `custoPctDaManaNoNivel`), como custo base que os multiplicadores escalam. O custo por segundo dos Vínculos agora passa pelos multiplicadores do custo (o dos suportes, o de Mana aumentado/reduzido, o "mais/menos" e a eficiência: `fatorDoCustoDeMana`, o mesmo da Chuva de Lâminas de Trarthus). O Fortalecer no Vínculo Flamejante 1 passa de 15/s para 19,5/s.
+- **O Portal:** no tique da sessão, a saída pelo Portal agora vem antes da fase seguinte e do portal do boss; antes, a caçada trocava e a saída sumia. Na party, se a sala era da party (`compartilhada`) e todos saíram, a instância fechou: o portal some com ela, como no PoE, e os mortos não voltam vivos. O relatório da sessão e as recargas (no relógio da caçada da volta) seguem na volta pelo mapa e pela sala da party (`levarAsessao`).
+- **Sem fazer (não é simples ou não tem fonte):** as linhas de Salvaguarda dos únicos e das Atemporais que seguem sem efeito (a lista acima, no item da Salvaguarda — feitas na seção seguinte); o custo base do Arquimago no custo por segundo dos Vínculos (sem fonte do PoB local de que ele vale no custo ao longo do tempo; o CalcOffence.lua não está em referencias-poe/pob).
+- Teste novo: `testes/correcoes-portal-salvaguarda-balao.test.mjs` (11 testes).
+- Placar: sem mudança no relatório (ativas 562 · testada 562; suportes 262 · 262).
+
+## As linhas da Salvaguarda que ficaram sem efeito (02/11)
+
+Pedido do dono: o jogo "100%", nenhuma linha sem efeito. As linhas da Salvaguarda (no poedb pt, "Proteção") que o item acima deixou sem efeito agora valem, pela fonte do PoB (`referencias-poe/pob/Modules/ModParser.lua`). A VERSAO_DA_TRADUCAO passa a 75. A nota larga da "Proteção" (`^.*Proteção.*$`) não diz mais "ainda não tem efeito": agora só pega os nomes de itens (Proteção Karui…).
+
+- **O Aperto Noturno** ("Ganha Dano de Caos Adicional igual a 10% da Proteção"; no PoB, `ChaosMin/ChaosMax` com `PercentStat Ward`): 10% da Salvaguarda máxima entra como Dano de Caos adicionado aos ataques e às magias. A conta é na segunda passada da ficha (a escala nova `pctSalvaguarda:N` em `escalasDaFicha`).
+- **A Decisão de Olroth** (o frasco): "Proteção não Quebra durante o Efeito" (`salvaguarda_nao_quebra`; no PoB, `WardNotBreak`). Durante o efeito, a Salvaguarda segura cada acerto até o valor dela e não desce, não quebra e não começa a espera; funciona como uma redução fixa por acerto e conta como Intacta. "85% menos Proteção durante o Efeito" multiplica o máximo por 0,15 enquanto o frasco dura.
+- **A Preparação de Vorana**: "Efeito é removido quando a Proteção Quebrar". Na quebra, o efeito do frasco acaba (`saiNaQuebra` no frasco ativo; `Salvaguarda.quebrar`).
+- **A Postura de Ynda** ("Ganhe Proteção ao invés de 50% da Armadura e Evasão do Peitoral Equipado"; no PoB, `ConvertBodyArmourArmourEvasionToWard`): 50% da Armadura e da Evasão do peitoral (os valores da peça, com os locais) saem delas e viram Salvaguarda da base. A "Salvaguarda aumentada" multiplica essa parte (`ficha.defesasDaFicha`).
+- **As Joias Atemporais:**
+  - "enquanto você tiver Salvaguarda Intacta" e "enquanto sua Salvaguarda estiver Rompida" usam as condições novas `salvaguardaIntacta` e `salvaguardaRompida` (no PoB, `UnbrokenWard` e a negação dele). Intacta: o personagem tem Salvaguarda e ela não quebrou, ou já foi restaurada. Rompida é o contrário: sem Salvaguarda também conta, como no PoB. Na quebra e na restauração, a ficha é refeita no tique (`hunt.poeFichaMudou`). Também vale para "Efeito das Auras Não-Maldição das suas habilidades aumentado" (a regra das auras agora aceita "habilidades" com minúscula).
+  - "+2 de Salvaguarda por 10 de Armadura no Elmo", "+4 por 10 de Evasão nas Luvas" e "+8 por 10 de Escudo de Energia nas Botas" (no PoB, `PerStat`): contam a defesa da própria peça. São as escalas novas `armaduraElmo`, `evasaoLuvas` e `esBotas`, na primeira passada.
+  - "A Chance de Evadir Acertos se baseia em 200% da sua Salvaguarda" e "A Redução de Dano Físico… em 200% da sua Salvaguarda" (no PoB, `EvadeChanceBasedOnWard` e `PhysicalReductionBasedOnWard`) criam `ficha.evasaoDaEsquiva` e `ficha.armaduraDaReducao`. A esquiva, o golpe físico (corpo a corpo e magia) e os simuladores usam esses valores. A Evasão e a Armadura da ficha seguem para o resto (os "por N de Evasão"). A Postura Inabalável segue sem evadir.
+  - "A Salvaguarda tem 60% de chance de não se Romper" (no PoB, `WardAvoidBreakChance`): no acerto que a levaria a 0, se a sorte sair, ela absorve o acerto e não desce. A espera começa.
+  - "…seu próximo Ataque sem canalização usado por você rompe sua Salvaguarda para ganhar Dano de Gelo Adicional igual a 25% da Salvaguarda" (no PoB, `ColdMin/ColdMax` com `UnbrokenWard` e sem `WardNotBreak`): com ela Intacta e sem o "não Quebra" do frasco (a condição `salvaguardaRompivel`), os ataques sem canalização ganham o Gelo. O ataque usado rompe a Salvaguarda depois do golpe (`acoes`, junto do evento `usarAtaque` → `Salvaguarda.romper`).
+  - "Frascos de Ferro ganham 2 cargas quando sua Salvaguarda se Rompe" (no PoB, `IronFlaskChargesGeneratedOnWardBreak`): a ação `frasco:ferro` dá as cargas só aos Frascos de Ferro do cinto.
+  - "Remove uma Afecção Danificadora aleatória quando a Salvaguarda é Restaurada": o evento novo `salvaguardaRestaurada` dispara quando ela volta depois de descer (a espera, o frasco, o bloqueio). A ação `removerAfeccao:danificadoraAleatoria` sorteia uma entre o Incêndio, o Sangramento e o Veneno.
+- **"Restaura Proteção ao usar"** (o Frasco de Ferro, que já tinha efeito no frasco) e as linhas dos frascos ganharam regra também na tradução geral. Antes, a nota larga as marcava como sem efeito.
+- **Sem fonte exata (a escolha está na nota da regra):** o PoB local não traz o CalcDefence.lua. O "não se Romper", então, segue o mesmo modelo do "não Quebra": o acerto é absorvido e ela não desce.
+- Teste novo: `game/testes/salvaguarda-unicos.test.mjs` (11 testes).
+- **Quebra pela regra nova, sem aval (não editado):** salvaguarda-poe:93 espera `traduzirLinha('A Salvaguarda tem 60% de chance de não se Romper').estado` = `registrado`. Agora é `equivalente` (`salvaguarda_chance_nao_romper` 60).
+
+## 100% — luz (02/11: "resolva essas que não se aplicam ao jogo, tem que estar tudo 100%"; decisão do dono: "escuridão em volta")
+
+O RAIO DE ILUMINAÇÃO do PoE passa a existir (`systems/itens-poe/iluminacao.mjs`, `frontend/client/src/iluminacao.mjs`, teste `testes/iluminacao-poe.test.mjs`):
+
+- **O stat** `light_radius` (combate) — a soma dos "X% de aumento/redução do Raio de Iluminação" das peças (únicos, implícitos de elmo corrompido/Scourge, anéis sintetizados, sementes de joia, o sufixo híbrido "Precisão Global / Raio de Iluminação"), da árvore (Luz da Divindade, as 6 maestrias de Escudo de Energia, os 5 nós do Luminary) e do frasco ("Raio aumentado em 25% durante o Efeito", o Destilado da Adivinhação). O PoB: `LightRadius` INC; o piso do PoE −90%.
+- **A tela da caçada:** fora do raio a tela escurece (gradiente radial em volta do personagem, véu de 72% — escuro suave, não preto) e os monstros fora da luz saem apagados (até 45% de opacidade). Raio = 6 casas × (1 + aumentado) × (50% + 50% × a fração da vida) × (50% com Cegueira em você), entre 1,5 e 14 casas; vai no retrato (`snapshotDaHunt.luz`) e anda suave na tela. Fora do modo PoE e na cidade, nada muda.
+- **O que depende da luz** (o PoB `LightRadiusAppliesTo*`, pela escala `stat:light_radius`): o Dano e metade na Área (a Coroa de Phrecia), a Precisão, o Fogo do Eclipse Solaris ("2 a 5 por 1% de Raio aumentado"), a Glória Dourada do Luminary (o aumentado da luz soma no Efeito dos seus Vínculos no mercenário — `vinculos.doLacaio`, a foto do Vínculo); o "Campo de Visão é baseado no Escudo de Energia" (a luz encolhe com o Escudo que falta) e "Cegueira não afeta seu Campo de Visão / Raio de Iluminação" (o Amuleto da Retaliação, a Segunda Visão das Atemporais).
+- **O tamanho:** "Tamanho do Personagem aumentado" (o Pelego de Gruthkul, os Imperadores, o nó pequeno), "Tamanho do Zumbi", "Tamanho dos Golens" e o "base actor scale" dos modificadores de monstro (Enorme, Destruidor, Quebra-ossos, União das Almas) mudam a escala do desenho (pelos pés).
+- Tradução v75 (`VERSAO_DA_TRADUCAO`); a árvore com os 13 nós da luz remontados (só eles — o resto do `arvore-poe.json` ficou como estava). Árvore: "não se aplica" 33 → 14 (os que sobram são de outros assuntos: projéteis, cadáveres, posicionamento).
+- **Decisões sem fonte** (o PoE não publica, o PoB não calcula): a base de 6 casas, o piso de 50% da luz com a vida no fim e os 50% a menos com Cegueira. Opções para o dono: manter; base 5/7 casas; piso 25%/75%; Cegueira 25%/75%.
+- Testes que mudam por regra legítima (sem editar, esperando o aval): `testes/itens-poe-mods.test.mjs:101-102` (a luz era "inerte" com a nota "tela inteira" → agora "novo", `light_radius`) e `testes/zerar-arvore-lote49.test.mjs:82-83` (o Tamanho do Personagem era "inerte"/"não se aplica" → agora "novo", `tamanho_personagem`).
+
+## 100% — projetil (02–03/11: o voo de verdade dos projéteis — "resolva essas que não se aplicam ao jogo")
+
+O projétil do jogo acertava no tique em que saía ("o projétil do jogo vai direto ao alvo: sem velocidade, ângulo, terreno ou volta"). Agora **todo projétil VIAJA** —
+o seu, o do totem, o das Armadilhas/Minas, o dos lacaios (o ataque de longe, as habilidades do PoB, o Espectro, os golens), o do mercenário, o golpe básico de
+arco/varinha e o dos monstros:
+
+- **As contas** (`game/systems/itens-poe/projeteis-voo.mjs`, puro): a velocidade base da gema é a do poedb ("Projectile Speed: X metres per Second" — a coleção do
+  jogo já trazia em `props`: a Bola de Fogo 10.4 m/s, as flechas 32.6, a Faísca 4.2, o Disparo Congelante 3.75, a Bola Relampejante 4 = o `projectileSpeed 40` do
+  PoB); × o ProjectileSpeedMod do uso (`Acoes.velocidadeDoProjetil`: a "aumentada" da ficha, da gema e dos suportes × o "mais"; + o novo `proj_vel_mais` da ficha);
+  1 casa = 2 m; o caminho em casas de verdade (a diagonal √2), o alcance segue 7 casas. O perfil pelas linhas: a 2ª forma da Lança de Gelo (300% mais a partir de 2
+  casas), a desaceleração do Arremesso Espectral (e a "reduzida em 30%" da Materialização), o ziguezague do Raio Cinético, a espiral da Hélice Espectral e a
+  velocidade do orbe do Morto Volátil. `GemasPoe.vooDaGema(slug, nível, qualidade)` dá `{ metros, perfil }`.
+- **Os projéteis no ar** (`game/systems/hunt/voos.mjs`): cada um anda o trecho dele por tique (no máximo 64 casas), casa a casa: o TERRENO o para (a última casa
+  livre; o principal que se perde passa pelo passe "sem alvo" do resolvedor — as regras do terreno: ricochete e divisão na parede), o primeiro bicho da casa é o
+  CONTATO (quem entrou na frente leva; quem saiu do caminho não), passado o alcance ele se perde. O que nasce dentro de alguém (a Runa do vinculado, a Armadilha com
+  o bicho em cima) o acerta primeiro. Tetos: 300 no ar e 600 golpes adiados por caçada (passou, cai na hora — o voo de antes). Fora do estado salvo (um `WeakMap`
+  pela caçada); a troca de instância e de andar esquecem o que estava no ar. O tique da caçada anda os voos antes das mortes (`cacadas.tique` → `Voos.tique`).
+- **O seu uso** (`Acoes.dispararSemMarcar`): o golpe inteiro do uso (o acerto, os suportes, as repetições, o roubo, os gatilhos de acerto) sai NO CONTATO
+  (`golpeDoUso` / `comoNoUso`: o instante e os eventos da chegada; o do totem na casa dele). Os saltos que o resolvedor mede (perfuração, ricochete, difusão,
+  divisão, rebatida, a volta até o ponto de virada) caem no instante em que o projétil chega neles (`Voos.adiar`, pelas casas andadas `dist` de cada golpe —
+  `skills/golpes-secundarios.mjs`); o que vem depois dos impactos (a concha, as flechas que grudam, os cones) sai quando o último chega. O tiro na tela leva `ms`
+  (o tempo de verdade); os eventos da chegada levam `voou` e a marca da habilidade (`sk`). Sem principal (as direções aleatórias, as espirais e os fragmentos dos
+  objetos, o círculo, os "ProjectilesNotFromUser" — o Golpe Vulcânico, as Lâminas Gélidas, o Golpe Relampejante… —, cujo golpe direto é o corpo a corpo), o uso
+  sai na hora e cada projétil chega no tempo dele. O orbe do Morto Volátil anda do cadáver até o inimigo e a área cai na chegada.
+- **O leque e a difusão** (`Secundarios.resolver` com `voo`): os projéteis a mais saem a 10° um do outro, alternando os lados do rumo do principal, e acertam o
+  primeiro do caminho que nenhum outro do uso acertou (antes: "nos mais perto de você", em qualquer direção); os filhos da difusão saem a ±30° da reta (o "Ângulo
+  da Difusão de Projéteis aumentado/reduzido em 50%" da árvore — `proj_difusao_angulo_inc` — muda os 30°). "Dispara Projéteis em um círculo" (as Facas do
+  Massacre, a Faísca da Nova) virou o círculo de verdade (`emCirculo`).
+- **Os outros**: o golpe básico de longe (`hunt/combate.mjs`, a 32.6 m/s × a Velocidade de Projétil); os lacaios (`cacadas.voarDoLacaio`: o ataque de longe com
+  passos; os saltos dele e os do mercenário no tempo das casas; as habilidades — o Orbe, o Morteiro, o Espinho, as do PoB, as magias do Espectro —
+  `depoisDoVoo`, no tempo do voo até o alvo, que não é acertado se saiu de lá); os monstros (`Poderes.voarDoBicho`: a magia com projétil voa até você ou o lacaio;
+  você que sai do caminho não leva; a de área no alvo cai no ponto mirado).
+- **A tradução e a árvore**: a regra inerte `^.*Velocidade de Projéteis$|^Ângulo da Difusão de Projéteis .*$` virou 4 regras com efeito (`proj_vel_mais` ±,
+  `proj_difusao_angulo_inc` ±; VERSAO_DA_TRADUCAO 75); a árvore (`arvore-poe.json`): o Ângulo Bifurcado (2 nós) e as opções "15% mais/menos Velocidade de
+  Projéteis" das 3 Maestrias de Projéteis com efeito, sem a nota. O Altar de Aceleração ganhou os "80% increased Projectile Speed" do poedb. As 5 linhas de
+  trajetória das gemas saíram de `LINHAS_QUE_NAO_SE_APLICAM` (`GemasVoo.ehLinhaDoVoo` as conta como feitas).
+- **O cliente** (`frontend/client/src/efeitos-visuais.mjs`): o tiro dura o `ms` do servidor; o impacto do golpe que voou (`voou`) não espera o voo de novo.
+- **Para conferir** (só no ambiente, nunca no jogo): `VOO_INSTANTANEO=1` (o caminho todo na hora, pelo mesmo caminho do golpe que chega depois), com
+  `VOO_GEOMETRIA_ANTIGA=1` (sem o leque, a difusão em ângulo e o que entra na frente) e `VOO_REGISTRO=1` (escreve cada voo e cada golpe adiado).
+
+**As escolhas sem fonte (para o aval):** D1 os 69 projéteis sem número no poedb (baixados de novo em 03/11: só a Tempestade de Raios, 3, e o Pacto de Ghorr, 8, têm)
+voam a 32.6 m/s no ataque e 10.4 m/s na magia — e o golpe básico de longe, os lacaios e os monstros pelo mesmo critério (o físico do monstro = ataque); D2 o
+Arremesso Espectral para no fim do alcance (a velocidade cai pela raiz até 20%) e volta acelerando; D3 o ziguezague a 45°, sem se afastar mais de meia casa da
+reta; D4 a espiral da Hélice: meia casa de cada lado; D5 o orbe do Morto Volátil a 10.4 m/s; D6 o golpe cai no tique mais perto (até 125 ms depois do instante,
+no mesmo tique); D7 a difusão a ±30°; D7b o leque de 10°; D8 o uso resolve no contato do principal (os saltos no tempo deles; o que vem depois dos impactos no
+último); D9 as habilidades dos lacaios no tempo do voo, sem passos; D10 o que está no ar não vai para o banco (reiniciar perde no máximo um voo); D11 o principal
+que se perde passa pelas regras do terreno; D12 a magia do monstro só acerta o alvo dela (você ou o lacaio).
+
+**Teste novo:** `game/testes/projeteis-voo.test.mjs` (16 testes: as velocidades e o perfil do poedb/PoB, o tempo pelo caminho, os voos no ar — na hora / no tique,
+o terreno, o teto —, a Bola de Fogo a 3 casas (577 ms na tela, o acerto no tique de 500), a colada na hora, o primeiro do caminho, quem sai da frente, a parede, a
+Velocidade de Projétil, a perfuração e a volta, o leque, a difusão em ângulo, a magia do monstro que você esquiva andando, as linhas/árvore/tradução/altar e o
+"mais" da ficha).
+
+**Bateria** (todos os 515 arquivos não clássicos, ITENS_POE=1): antes 4634 testes / 4 falhas (as de sempre: gemas-r3-decisoes:56, gemas-sem-efeito-a2:72,
+gemas-todas-funcionam-poe:208 o Portal, itens-poe-gemas:26); agora 102 falhas no jogo de verdade = os 4 de sempre + 4 das linhas que agora valem + 10 da
+geometria nova + 81 do tempo do voo + 2 intermitentes + 1 do próprio teste novo (o fator do ziguezague, corrigido depois — o arquivo passa inteiro). No modo
+instantâneo, 27 (os 4 de sempre + 8 do teste novo, que é do modo de verdade + a intermitente da Bomba Congelante + as 4 das linhas + as 10 da geometria); no
+instantâneo com a geometria antiga, nos arquivos dessas falhas, só as de sempre e as das linhas. Intermitentes vistas (passam sozinhas): amigos:56,
+party-ver-aliados:62, ativas-b1:154 (o sorteio da Bomba Congelante — já anotada como intermitente). Os 122 .classico (sem ITENS_POE): 1373 testes, 0 falhas.
+
+**Quebra pela regra nova, sem aval (não editados):**
+
+*As linhas que agora valem* (esperavam o "não se aplica"): ativas-b3:86 (o Morto Volátil sem a nota do orbe), ativas-pr1:76 (a Hélice sem a nota das rotações),
+projeteis-a3:408 (a Lança de Gelo sem `linhasNaoSeAplicam`), tooltip-gemas-poe:90 (a 2ª forma da Lança não vai mais como nota no balão).
+
+*A geometria nova — o leque de 10°, a difusão a ±30°, o círculo de verdade* (falham também no instantâneo; passam com a geometria antiga):
+- gemas-t1-suportes:156 — o Suporte Desperto de Difundir: 7 acertos → 5 (os filhos a ±30° do (3,0) pegam o (5,±1); os netos a ±30° deles não chegam a todos da fila).
+- gemas-t2-ataques:159 — o Aço Estraçalhador: 4 atingidos → 2 (os 2 a mais a ±10° passam ao lado dos vizinhos do alvo).
+- gemas-t2-suportes:95 — os Projéteis Múltiplos: 3 → 2; :129 — o Desperto Maior: 6 → 5 (o leque de 10° não chega a todos em volta do alvo).
+- gemas-t3-ativas:92 — as Facas do Massacre: o de (3,0) atrás do alvo não leva (o projétil a 0° para no alvo); :113 — a Faísca da Nova: o de (2,0), idem; :208 —
+  a Mina de Gelo da Ventilação: [3,3,4,4] → [3,3,3,3] (o 4º projétil a 20° não acha outro inimigo).
+- projeteis-quantidade:199 — o Arqueiro Esqueleto com Projéteis Múltiplos Maior: 5 bichos diferentes → 2.
+- zerar-arvore-lote39:78 — a Flecha Dividida do mercenário: 7 inimigos diferentes → 5.
+- ativas-pr1:193 — a Flecha Galvânica: o do lado leva 2 → 1 (a flecha a mais a 10° não vai nele).
+
+*O tempo do voo* (passam no instantâneo: o golpe é o mesmo, só cai depois — cada um com a conta do registro `VOO_REGISTRO=1`):
+
+- `testes/area-no-impacto-a3c.test.mjs:201:1` — a Bola de Fogo no jogo: o vizinho do alvo leva o mesmo dano do alvo (um acerto, a fonte "impacto"); o alvo, um
+  - o teste: Expected values to be strictly equal: 0 !== 1 (1 → 0)
+  - a conta: 1× voo a 5.2 casas/s (10.4 m/s): 2 casas, o contato a 1.5 casas = 288 ms
+- `testes/area-no-impacto-a3c.test.mjs:218:1` — a área cresce com a Área de Efeito do uso (× √): com o Suporte de Área de Efeito Aumentada (+49%) a Bola de Fo
+  - o teste: o sorteio 0,05 cai na fração: 2 casas 0 !== 1 (1 → 0)
+  - a conta: 1× voo a 5.2 casas/s (10.4 m/s): 2 casas, o contato a 1.5 casas = 288 ms
+- `testes/area-no-impacto-a3c.test.mjs:252:1` — o TOTEM (Totem de Magia): a Bola de Fogo lançada por ele explode igual — o vizinho do alvo leva o acerto da ár
+  - o teste: Expected values to be strictly equal: 0 !== 1 (1 → 0)
+  - a conta: 1× voo a 5.2 casas/s (10.4 m/s): 2 casas, o contato a 1.5 casas = 288 ms
+- `testes/ativas-b4.test.mjs:217:1` — B4 no jogo: o Orbe Trovejante das Borrascas — não golpeia sozinho; o seu uso de Raio perto dele o faz golpear,
+  - o teste: a Faísca (Raio) perto do orbe 13 !== 12 (12 → 13)
+  - a conta: 1× voo a 2.1 casas/s (4.2 m/s): 1 casas, o contato a 0.5 casas = 238 ms
+- `testes/ativas-b4.test.mjs:412:1` — B4 no jogo: a Parede Flamejante — queima quem está nela e põe o debuff secundário; até 3 paredes (sai a mais v
+  - o teste: undefined > undefined (true → false)
+  - a conta: 2× voo a 5.2 casas/s (10.4 m/s): 3 casas, o contato a 2.5 casas = 481 ms
+- `testes/ativas-b4pr4c3-revisao.test.mjs:205:1` — revisão PR4 (12): as flechas da Flecha Explosiva não passam do máximo antes do tique
+  - o teste: Cannot read properties of undefined (reading 'Teste Automatizado')
+  - a conta: 1× voo a 16.3 casas/s (32.6 m/s): 3 casas, o contato a 2.5 casas = 153 ms
+- `testes/ativas-b4pr4c3-revisao.test.mjs:214:1` — revisão PR4 (10): a Flecha Explosiva explode quando o bicho morre (e sai da sala antes do tique)
+  - o teste: Cannot read properties of undefined (reading 'Teste Automatizado')
+  - a conta: 1× voo a 16.3 casas/s (32.6 m/s): 3 casas, o contato a 2.5 casas = 153 ms
+- `testes/ativas-b4pr4c3-revisao.test.mjs:229:1` — revisão PR4 (10, 14): a Concha esgotada no golpe que mata explode; a esgotada à espera do tique não é sobrescr
+  - o teste: Cannot read properties of undefined (reading 'Teste Automatizado')
+  - a conta: 1× voo a 16.3 casas/s (32.6 m/s): 3 casas, o contato a 2.5 casas = 153 ms
+- `testes/ativas-b4pr4c3-revisao.test.mjs:250:1` — revisão PR4 (13): na troca de andar, as flechas grudadas e os golpes da Eletrocussão somem — não caem todos na
+  - o teste: Cannot read properties of undefined (reading 'Teste Automatizado')
+  - a conta: 1× voo a 16.3 casas/s (32.6 m/s): 3 casas, o contato a 2.5 casas = 153 ms
+- `testes/ativas-linhas-lidas-poe.test.mjs:141:1` — G18a: o Golpe Vulcânico — o golpe direto a 100%, os projéteis secundários a 40%; o quinto ataque do Zênite: 5
+  - o teste: o quinto uso dispara mais: 2 → 2 (true → false)
+  - a conta: saltos adiados: 137 ms ×14, 184 ms, 194 ms ×3
+- `testes/ativas-linhas-lidas-poe.test.mjs:203:1` — G18a: o Chicote da Naja — 8% mais por Ricochete restante: o primeiro acerto 1,40× o golpe-base, o primeiro ric
+  - o teste: os acertos: 251 (true → false)
+  - a conta: saltos adiados: 375 ms, 625 ms, 875 ms, 1125 ms, 1375 ms ×2
+- `testes/ativas-linhas-lidas-poe.test.mjs:251:1` — G18a (revisão): o Golpe Vulcânico solta as 4 bolas ALÉM do golpe direto (o direto não ocupa um dos projéteis)
+  - o teste: os golpes: 2 2 !== 5 (5 → 2)
+  - a conta: saltos adiados: 137 ms ×2, 194 ms ×2
+- `testes/ativas-pr1.test.mjs:145:1` — PR1 no jogo: o Arremesso de Escudo Espectral — as 3 estilhas da colisão no alvo acertam o de trás com 50% cada
+  - o teste: razão 0 (true → false)
+  - a conta: saltos adiados: 368 ms ×4
+- `testes/ativas-pr1.test.mjs:159:1` — PR1: o de Trarthus — o escudo para no alvo; as rajadas de 6, a primeira aos 0,6 s e cada intervalo ÷ 1,4, até
+  - o teste: razão 0 (true → false)
+  - a conta: saltos adiados: 184 ms ×7
+- `testes/ativas-pr3.test.mjs:165:1` — PR3 no jogo: a Explosão Cinética — o alvo leva o projétil e as 5 explosões (−40% cada); o vizinho só as explos
+  - o teste: Expected values to be strictly equal: 0 !== 6 (6 → 0)
+  - a conta: 1× voo a 16.3 casas/s (32.6 m/s): 3 casas, o contato a 2.5 casas = 153 ms
+- `testes/ativas-pr3.test.mjs:179:1` — PR3 no jogo: a Lança Gélida — o acerto a 2 casas ou mais é da 2ª forma (+600% de Chance e +49% de Multiplicado
+  - o teste: The expression evaluated to a falsy value: assert.ok(d1 > 0 && d3 > 0) (true → false)
+  - a conta: 1× voo a 5 casas/s (10 m/s): 3 casas, o contato a 2.5 casas = 500 ms
+- `testes/ativas-pr3.test.mjs:195:1` — PR3 no jogo: o Tiro Tornado — o secundário acerta quem está além do alvo; o do caminho leva o tiro que atraves
+  - o teste: Expected values to be strictly equal: 0 !== 1 (1 → 0)
+  - a conta: 1× voo a 10.87 casas/s (21.74 m/s): 3 casas, o contato a 2.5 casas = 230 ms
+- `testes/ativas-pr3.test.mjs:228:1` — PR3 no jogo: o Pacto de Beidat — o uso fortalece as próximas 6 magias; a de projétil ganha 35% mais dano e 6 p
+  - o teste: razão NaN (true → false)
+  - a conta: 1× voo a 5.2 casas/s (10.4 m/s): 2 casas, o contato a 1.5 casas = 288 ms
+- `testes/ativas-pr4.test.mjs:182:1` — PR4 no jogo: a Flecha Explosiva gruda no alvo, explode a 1 s da primeira (no tique) na área dela, e as flechas
+  - o teste: a flecha grudou
+  - a conta: 1× voo a 16.3 casas/s (32.6 m/s): 3 casas, o contato a 2.5 casas = 153 ms
+- `testes/ativas-pr4.test.mjs:206:1` — PR4 no jogo: a Flecha Explosiva explode já no máximo de flechas e na morte do bicho
+  - o teste: Cannot read properties of undefined (reading 'Teste Automatizado')
+  - a conta: 1× voo a 16.3 casas/s (32.6 m/s): 3 casas, o contato a 2.5 casas = 153 ms
+- `testes/ativas-pr4.test.mjs:223:1` — PR4 no jogo: a Eletrocussão gruda no alvo e o acerta mais 4 vezes, uma a cada 0,5 s; até 10 flechas por inimig
+  - o teste: Cannot read properties of undefined (reading 'length')
+  - a conta: 1× voo a 16.3 casas/s (32.6 m/s): 3 casas, o contato a 2.5 casas = 153 ms
+- `testes/ativas-pr4.test.mjs:285:1` — PR4 no jogo: a Concha Somática — no primeiro acertado, 6214; os acertos dela não a gastam; esgotada, explode,
+  - o teste: a concha no alvo
+  - a conta: 1× voo a 16.3 casas/s (32.6 m/s): 3 casas, o contato a 2.5 casas = 153 ms
+- `testes/ativas-pr4.test.mjs:315:1` — PR4 no jogo: a Concha absorve o acerto de outra gema sua antes da Vida
+  - o teste: The expression evaluated to a falsy value: assert.ok(b.poeConchas[QUEM].hp < 1e15) (true → false)
+  - a conta: 1× voo a 16.3 casas/s (32.6 m/s): 3 casas, o contato a 2.5 casas = 153 ms
+- `testes/ativas-pr4.test.mjs:324:1` — PR4 no jogo: a Flecha Aprisionadora — as cordas no alvo (40% cada, até 3), +20% de dano de projétil de ataque
+  - o teste: Cannot read properties of undefined (reading 'cordas')
+  - a conta: 1× voo a 16.3 casas/s (32.6 m/s): 3 casas, o contato a 2.5 casas = 153 ms
+- `testes/ativas-pr4.test.mjs:374:1` — PR4 no jogo (dono, 25/10): a flecha da Flecha Explosiva causa dano ao acertar (a parte "Arrow" do PoB), além d
+  - o teste: Expected values to be strictly equal: 0 !== 1 (1 → 0)
+  - a conta: 1× voo a 16.3 casas/s (32.6 m/s): 3 casas, o contato a 2.5 casas = 153 ms
+- `testes/gemas-c2.test.mjs:127:1` — C2 (3): o Aço Estraçalhador — cada projétil que acerta despedaça num cone à frente do acertado (2,8 m); quem e
+  - o teste: o projétil e o cone 0 !== 2 (2 → 0)
+  - a conta: saltos adiados: 184 ms ×2
+- `testes/gemas-p4.test.mjs:204:1` — P4: de ponta a ponta — o acerto da aliada vinculada ativa a Bola de Fogo ligada ao Vínculo Intuitivo, no inimi
+  - o teste: a Bola de Fogo acertou o inimigo perto da aliada (true → false)
+  - a conta: 1× voo a 5.2 casas/s (10.4 m/s): 2 casas, o contato a 1.5 casas = 288 ms
+- `testes/gemas-p4.test.mjs:233:1` — P4: o Vínculo Intuitivo — o "38% menos Dano" do nível 20 vale na magia ativada (a mesma Bola de Fogo, com e se
+  - o teste: The expression evaluated to a falsy value: assert.ok(cheio > 0) (true → false)
+  - a conta: 2× voo a 5.2 casas/s (10.4 m/s): 2 casas, o contato a 1.5 casas = 288 ms
+- `testes/gemas-r3d.test.mjs:286:1` — R3D: o Rastejador do Arauto da Agonia — o Morteiro em área e o Espinho da Cauda em inimigos diferentes
+  - o teste: o Morteiro: 6 projéteis distribuídos nos dois (0) (true → false)
+  - a conta: saltos adiados: 153 ms, 184 ms ×3, 191 ms, 221 ms ×3
+- `testes/gemas-sem-efeito-a2.test.mjs:316:1` — A2: a Parede de Força — entre você e o alvo; o projétil que a cruza ganha +1 ricochete com −20% de dano, até 1
+  - o teste: com a parede, o ricochete acerta o segundo (true → false)
+  - a conta: 2× voo a 5.2 casas/s (10.4 m/s): 3 casas, o contato a 2.5 casas = 481 ms
+- `testes/gemas-t1-ativas.test.mjs:228:1` — T1: Faísca da Imprevisibilidade — 104 a 1983 de Raio (poedb), 7 projéteis (+2 na qualidade 20)
+  - o teste: Expected values to be strictly equal: 1 !== 7 (7 → 1)
+  - a conta: 1× voo a 2.1 casas/s (4.2 m/s): 1 casas, o contato a 0.5 casas = 238 ms
+- `testes/gemas-t1-ativas.test.mjs:244:1` — T1: Salva Ardente — 270 a 405 de Fogo (poedb), 7 projéteis e a área de 1,6 m no impacto (PoB)
+  - o teste: o colado ao alvo leva a área (0,3 < 0,8: raio de 1 casa) (true → false)
+  - a conta: saltos adiados: 192 ms, 272 ms ×3
+- `testes/gemas-t1-ativas.test.mjs:85:1` — T1: Flecha Ardente Vaal — 560% (PoB), Fogo, perfura 3, explode no impacto (1,6 m), 50% de Incendiar, não pode
+  - o teste: Expected values to be strictly deep-equal: + actual - expected [ true, - true, - true, - true, false, + false, + false, + false ]
+  - a conta: saltos adiados: 184 ms, 245 ms, 307 ms ×2
+- `testes/gemas-t1-suportes.test.mjs:137:1` — T1: Difundir — o projétil se Difunde em 2 no alvo (os outros levam), 9% menos Dano de Projétil (poedb)
+  - o teste: Expected values to be strictly equal: 0 !== 2 (2 → 0)
+  - a conta: 2× voo a 16.3 casas/s (32.6 m/s): 3 casas, o contato a 2.5 casas = 153 ms
+- `testes/gemas-t1-suportes.test.mjs:187:1` — T1: Suporte Desperto: Nova de Flechas — +5 projéteis em círculo a partir do ponto do alvo, 11% menos Dano de P
+  - o teste: Cannot read properties of undefined (reading 'danoAntesDaResistencia')
+  - a conta: 1× voo a 16.3 casas/s (32.6 m/s): 3 casas, o contato a 2.5 casas = 153 ms
+- `testes/gemas-t2-ataques.test.mjs:144:1` — T2 Lightning_Strike_of_Arcing: 10% mais Dano por ricochete da gema (70% no 20) no golpe; o projétil que ricoch
+  - o teste: 0 / 6411 (true → false)
+  - a conta: saltos adiados: 302 ms, 479 ms, 655 ms ×2
+- `testes/gemas-t2-ataques.test.mjs:235:1` — T2 Kinetic_Bolt_of_Fragmentation: 95% de dano, 115% de velocidade, 2 projéteis adicionais (3 alvos) — "mudam d
+  - o teste: Expected values to be strictly equal: 1 !== 3 (3 → 1)
+  - a conta: saltos adiados: 154 ms ×3
+- `testes/gemas-t2-ataques.test.mjs:43:1` — T2 Vaal_Caustic_Arrow: 400% de dano, 60% Físico → Caos, 4622,5 de Caos por segundo por 6 s, perfura todos e nã
+  - o teste: não pode ser Evadido (true → false)
+  - a conta: 1× voo a 3.5 casas/s (7 m/s): 1 casas, o contato a 0.5 casas = 143 ms
+- `testes/gemas-t2-ataques.test.mjs:63:1` — T2 Vaal_Caustic_Arrow: o golpe é 400% do dano da arma no 20 (o PoB e a propriedade do poedb) — antes saía com
+  - o teste: 0 / 905 (true → false)
+  - a conta: 1× voo a 3.5 casas/s (7 m/s): 1 casas, o contato a 0.5 casas = 143 ms
+- `testes/gemas-t2-suportes.test.mjs:108:1` — T2 Greater_Volley: +4 projéteis, de até 4 pontos de cada lado, 21% menos Dano de Projétil no 20 (poedb); custo
+  - o teste: Expected values to be strictly equal: 3 !== 5 (5 → 3)
+  - a conta: saltos adiados: 184 ms ×3
+- `testes/gemas-t2-suportes.test.mjs:142:1` — T2 Awakened_Chain: no 5, Ricocheteia +3 vezes e 6% menos Dano com Acertos (poedb: 10% no 1); a qualidade, alca
+  - o teste: o alvo + 3 ricochetes + actual - expected [ 1, + 1 - 4 ]
+  - a conta: saltos adiados: 148 ms, 235 ms, 322 ms ×2
+- `testes/gemas-t2-suportes.test.mjs:206:1` — T2 Lightning_Penetration: Penetra 34% de Resistência a Raio no 20 (poedb) — com 50% de resistência, o Raio pas
+  - o teste: 0 / 0 (true → false)
+  - a conta: 2× voo a 2.1 casas/s (4.2 m/s): 1 casas, o contato a 0.5 casas = 238 ms
+- `testes/gemas-t2.test.mjs:75:1` — T2 Conductivity: o alvo amaldiçoado tem −36% de Resistência a Raio por 11,8 s (o poedb) — o golpe de raio fere
+  - o teste: The expression evaluated to a falsy value: assert.ok(sem > 0) (true → false)
+  - a conta: 1× voo a 2.1 casas/s (4.2 m/s): 1 casas, o contato a 0.5 casas = 238 ms
+- `testes/gemas-t2.test.mjs:98:1` — T2 Conductivity: "Acertos contra Inimigos Amaldiçoados têm +25% de chance de Eletrizar" — o sorteio abaixo de
+  - o teste: amaldiçoado (o sorteio 0,9 não eletriza)
+  - a conta: 2× voo a 2.1 casas/s (4.2 m/s): 1 casas, o contato a 0.5 casas = 238 ms
+- `testes/gemas-t3-suportes.test.mjs:78:1` — T3: o Conjurar ao Matar Corpo a Corpo — o golpe corpo a corpo que mata Ativa a Bola de Fogo ligada, com 39% ma
+  - o teste: ativada 0 ≈ à mão 2354 × 1,39 (true → false)
+  - a conta: 1× voo a 5.2 casas/s (10.4 m/s): 2 casas, o contato a 1.5 casas = 288 ms
+- `testes/lacaios-pob.test.mjs:144:1` — L — os ESQUELETOS: o guerreiro de perto; o arqueiro de longe (o ataque do arco do PoB); o mago com a magia de
+  - o teste: [] (true → false)
+  - a conta: 1× voo a 5.2 casas/s (10.4 m/s): 3 casas, o contato a 2.5 casas = 481 ms
+- `testes/lacaios-pob.test.mjs:243:1` — L — as SENTINELAS e o JUIZ: a da Pureza alterna o golpe e o golpe em área e usa a Pancada da Cruzada; a do Dom
+  - o teste: [] (true → false)
+  - a conta: 1× voo a 5.2 casas/s (10.4 m/s): 2 casas, o contato a 1.5 casas = 288 ms
+- `testes/lacaios-pob.test.mjs:338:1` — L — pela caçada de verdade: o zumbi, o esqueleto, o golem e o espírito invocados pelo uso da gema batem no alv
+  - o teste: Summon_Skeletons_of_Mages: bateu (true → false)
+  - a conta: 30× voo a 5.2 casas/s (10.4 m/s): 2 casas, o contato a 1.5 casas = 288 ms
+- `testes/objetos-no-chao-a3b.test.mjs:168:1` — A3b D7: o Tornado absorve os SEUS projéteis que passam pela casa dele na fase inicial (até 20) e soma 10% do d
+  - o teste: até 20 0 !== 20 (20 → 0)
+  - a conta: 25× voo a 2.1 casas/s (4.2 m/s): 3 casas, o contato a 2.5 casas = 1190 ms
+- `testes/objetos-no-chao-a3b.test.mjs:194:1` — A3b D10: a Faísca Vaal solta 100 projéteis em 3 s (+ os "+N projéteis"), em direções aleatórias; o uso não ace
+  - o teste: Expected values to be strictly equal: 0 !== 102 (102 → 0)
+  - a conta: saltos adiados: 476 ms ×204
+- `testes/objetos-no-chao-a3b.test.mjs:210:1` — A3b D10: a Bola de Fogo Vaal (32 em 2 s, −720°), o Rasgalma da Espiral (5 em 0,8 s, 300°) e o Arremesso Espect
+  - o teste: as duas voltas passam pelo alvo (true → false)
+  - a conta: saltos adiados: 577 ms ×4
+- `testes/objetos-no-chao-a3b.test.mjs:235:1` — A3b D11: o Olho Invernal não causa dano; solta 1 fragmento a cada 0,1 s no voo e a espiral do fim (8 / 16 / 12
+  - o teste: os fragmentos acertam (true → false)
+  - a conta: saltos adiados: 943 ms ×4
+- `testes/objetos-no-chao-a3b.test.mjs:266:1` — A3b D1/D2: o Disparo Congelante acerta na hora e deixa um marcador no fim do voo (2 s ÷ o mod); a Nova Glacial
+  - o teste: o acerto na hora (true → false)
+  - a conta: 1× voo a 1.88 casas/s (3.76 m/s): 2 casas, o contato a 1.5 casas = 798 ms
+- `testes/objetos-no-chao-a3b.test.mjs:288:1` — A3b D2: o Vórtice da Projeção explode de até 5 Disparos e os destrói, com 50% mais área e 50% mais dano; deixa
+  - o teste: Cannot read properties of undefined (reading 'x')
+  - a conta: 1× voo a 1.88 casas/s (3.76 m/s): 2 casas, o contato a 1.5 casas = 798 ms
+- `testes/objetos-no-chao-a3b.test.mjs:326:1` — A3b D5/D6: a Geada Rastejante deixa o chão onde o projétil parou e PERSEGUE (1 casa a cada 0,5 s até o vivo ma
+  - o teste: Cannot read properties of undefined (reading 'mov')
+  - a conta: 1× voo a 4.22 casas/s (8.44 m/s): 2 casas, o contato a 1.5 casas = 355 ms
+- `testes/objetos-no-chao-a3b.test.mjs:368:1` — A3b D8: as Facas Etéreas das Lâminas Persistentes deixam 1 a cada N facas, onde a faca parou; o teto de 40
+  - o teste: uma por faca: 0 (true → false)
+  - a conta: 1× voo a 5.2 casas/s (10.4 m/s): 2 casas, o contato a 1.5 casas = 288 ms
+- `testes/objetos-no-chao-a3b.test.mjs:381:1` — A3b D9: a Espiral Venenosa captura cada projétil que voltou (até 30 + 0,5 por qualidade, 12 s); as Lâminas Gir
+  - o teste: um por projétil do uso 0 !== 1 (1 → 0)
+  - a conta: 1× voo a 5 casas/s (10 m/s): 2 casas, o contato a 1.5 casas = 300 ms
+- `testes/objetos-no-chao-a3b.test.mjs:452:1` — A3b D13: o retrato da caçada leva os objetos (o tipo, a casa, o raio, o que falta), os capturados juntos em vo
+  - o teste: The expression evaluated to a falsy value: assert.ok(capt && capt.n >= 1 && capt.x === m.e.hunt.pos.x && capt.segue === 'player', JSON.stringify(capt))
+  - a conta: 1× voo a 5 casas/s (10 m/s): 2 casas, o contato a 1.5 casas = 300 ms
+- `testes/objetos-no-chao-a3b.test.mjs:594:1` — revisão A3b: os chãos da mesma gema não somam no mesmo bicho — só o mais forte queima (a Geada, o Vórtice)
+  - o teste: Cannot read properties of undefined (reading 'partes')
+  - a conta: 1× voo a 4.22 casas/s (8.44 m/s): 2 casas, o contato a 1.5 casas = 355 ms
+- `testes/projeteis-a3.test.mjs:143:1` — D2 no jogo: o Pulso Congelante causa ~50% menos a 3 casas que a 0 (a razão 3 casas ÷ colado = 0,5 ÷ 0,833)
+  - o teste: 0.000 (true → false)
+  - a conta: 1× voo a 5.2 casas/s (10.4 m/s): 3 casas, o contato a 2.5 casas = 481 ms
+- `testes/projeteis-a3.test.mjs:163:1` — F3: "Projéteis que Atravessaram causam X% mais Dano" — no jogo, o 2º da reta (que o projétil atravessou para c
+  - o teste: com ÷ sem a qualidade: NaN (true → false)
+  - a conta: 2× voo a 1.88 casas/s (3.76 m/s): 1 casas, o contato a 0.5 casas = 266 ms
+- `testes/projeteis-a3.test.mjs:180:1` — D3: o Arremesso Espectral atravessa todos e RETORNA (a volta atravessa); a Materialização só acerta na volta;
+  - o teste: Expected values to be strictly deep-equal: + actual - expected [ 'direto', - 'retorno' ]
+  - a conta: saltos adiados: 210 ms, 1336 ms, 1482 ms ×2
+- `testes/projeteis-a3.test.mjs:254:1` — revisão: a Saraivada de Projéteis — num alvo único, os 4 acertos da sequência; os simultâneos vão em leque nos
+  - o teste: Expected values to be strictly equal: 0 !== 4 (4 → 0)
+  - a conta: 1× voo a 16.3 casas/s (32.6 m/s): 3 casas, o contato a 2.5 casas = 153 ms
+- `testes/projeteis-a3.test.mjs:265:1` — revisão: a Fuzilaria Cinética num alvo único — os extras vão no alvo, cada um maior que o anterior (+16% por p
+  - o teste: Expected values to be strictly equal: 0 !== 3 (3 → 0)
+  - a conta: 1× voo a 10 casas/s (20 m/s): 3 casas, o contato a 2.5 casas = 250 ms
+- `testes/projeteis-a3.test.mjs:283:1` — F7 no jogo: o Localizar no Pulso Congelante — 5 + 3 projéteis sem Intensidade; com 3 de Intensidade, 5 (um a m
+  - o teste: Expected values to be strictly equal: 1 !== 8 (8 → 1)
+  - a conta: 1× voo a 5.2 casas/s (10.4 m/s): 2 casas, o contato a 1.5 casas = 288 ms
+- `testes/projeteis-a3.test.mjs:315:1` — D5 no jogo: o Aço Violento e a Flecha Dividida da Divisão — os projéteis a mais viram alvos da divisão; "não p
+  - o teste: os dois perto do alvo levam a divisão (true → false)
+  - a conta: saltos adiados: 209 ms ×3
+- `testes/projeteis-a3.test.mjs:82:1` — erro 2: o Pulso Congelante dispara 5 projéteis no nível 20 (o PoB) e a linha da rampa não conta como o "25% de
+  - o teste: os 5 saem — 1 no alvo e 4 que erram 1 !== 5 (5 → 1)
+  - a conta: 1× voo a 5.2 casas/s (10.4 m/s): 2 casas, o contato a 1.5 casas = 288 ms
+- `testes/projeteis-a3.test.mjs:93:1` — erro 3 (D9): o Ponto Cego é a flag do Queima-Roupa (af:queima_roupa), não 30% mais a qualquer distância
+  - o teste: colado ÷ 7 casas: NaN (esperado 1.616) (true → false)
+  - a conta: 2× voo a 16.3 casas/s (32.6 m/s): 7 casas, o contato a 6.5 casas = 399 ms
+- `testes/projeteis-por-projetil-poe.test.mjs:106:1` — "… para cada vez que Ricochetearam" e a Presa Sombria ("Projéteis que Ricochetearam ganham 20% de Dano Não-Caó
+  - o teste: 7589,0,0 (true → false)
+  - a conta: saltos adiados: 307 ms, 491 ms ×2
+- `testes/projeteis-por-projetil-poe.test.mjs:120:1` — o TIRO LONGO nas habilidades: "Dano aumentado em até 60% com Acertos" — a 6 casas, todo; colado, nada (e no go
+  - o teste: longe: com o aumento (true → false)
+  - a conta: 2× voo a 16.3 casas/s (32.6 m/s): 6 casas, o contato a 5.5 casas = 337 ms
+- `testes/projeteis-por-projetil-poe.test.mjs:93:1` — "Dano aumentado em 20% … para cada Inimigo Atravessado": o 2º bicho da fila leva +20% (somado aos aumentos), o
+  - o teste: 7589,0,0 (true → false)
+  - a conta: saltos adiados: 184 ms ×2, 245 ms ×4
+- `testes/projeteis-quantidade.test.mjs:178:1` — o TOTEM de projétil (a Balista de Estilhaços: "Dispara 3 Flechas") emite os 3 com 1 e com 3 bichos
+  - o teste: 3 bichos: os 3 saem, 3 acertam + actual - expected { + acertados: 2, - acertados: 3, tiros: 3 }
+  - a conta: saltos adiados: 184 ms ×2
+- `testes/projeteis-quantidade.test.mjs:93:1` — no disparo de verdade: a gema de 15 projéteis com 1 e com 3 bichos desenha os 15 e acerta 1 e 3
+  - o teste: 3 bichos: os 15 saem, 3 acertam + actual - expected { + acertados: 1, - acertados: 3, tiros: 15 }
+  - a conta: saltos adiados: 385 ms, 577 ms ×2
+- `testes/repeticoes-estagios-a4.test.mjs:295:1` — A4 E1 (D10): o Atirar — sem suportada, a flecha própria no 6º estágio (108% mais por estágio); com o Tiro Géli
+  - o teste: a flecha própria no 6º: 0,0,0,0,0,0 (true → false)
+  - a conta: 1× voo a 16.3 casas/s (32.6 m/s): 3 casas, o contato a 2.5 casas = 153 ms
+- `testes/repeticoes-estagios-a4.test.mjs:561:1` — A4 (revisão): o Tiro Gélido da Penetração — dois cones perpendiculares ao alvo (o de trás não leva)
+  - o teste: os dois lados: 1,0,0,0 (true → false)
+  - a conta: saltos adiados: 184 ms ×2
+- `testes/revisao-e1s1.test.mjs:363:1` — revisão S1 (15): o golpe básico à distância gasta UM Impelir por ataque, não um por flecha a mais
+  - o teste: o alvo (true → false)
+  - a conta: 1× voo a 16.3 casas/s (32.6 m/s): 3 casas, o contato a 2.5 casas = 153 ms; 2× voo a 16.3 casas/s (32.6 m/s): 3.16 casas, o contato a 2.66 casas = 163 ms
+- `testes/suportes-afeccoes-poe-lote76.test.mjs:169:1` — de ponta a ponta: as Afecções Mortais — o acerto × 0,2 e o Incêndio × 1,44 (o "menos com Acertos" não corta a
+  - o teste: {"acerto":0,"incendio":0} (true → false)
+  - a conta: 2× voo a 5.2 casas/s (10.4 m/s): 2 casas, o contato a 1.5 casas = 288 ms
+- `testes/suportes-afeccoes-poe-lote76.test.mjs:177:1` — de ponta a ponta: o Dano Incendiário — o Incêndio × 1,34; o acerto não muda
+  - o teste: 0 / 0 (true → false)
+  - a conta: 2× voo a 5.2 casas/s (10.4 m/s): 2 casas, o contato a 1.5 casas = 288 ms
+- `testes/suportes-afeccoes-poe-lote76.test.mjs:88:1` — de ponta a ponta: a gema ligada ao Chance de Envenenar põe o Veneno do PoE (não o dano contínuo antigo)
+  - o teste: o Veneno do PoE: (true → false)
+  - a conta: 1× voo a 5.2 casas/s (10.4 m/s): 2 casas, o contato a 1.5 casas = 288 ms
+- `testes/totens-suportes-poe.test.mjs:61:1` — G20b: a Bola de Fogo com o Totem de Magia — o seu uso COLOCA o totem em 600 ms (sem dano seu); o totem lança c
+  - o teste: undefined / undefined (true → false)
+  - a conta: 2× voo a 5.2 casas/s (10.4 m/s): 2 casas, o contato a 1.5 casas = 288 ms
+- `testes/totens-uso-poe.test.mjs:104:1` — G20a: a Balista do Aço no uso novo — o ataque do totem gasta 1 dos SEUS fragmentos; sem fragmento, só 1 flecha
+  - o teste: "Dispara 3 Flechas" 1 !== 3 (3 → 1)
+  - a conta: 1× voo a 16.3 casas/s (32.6 m/s): 3 casas, o contato a 2.5 casas = 153 ms
+
+## 100% — combate (02/11: "resolva essas que não se aplicam ao jogo, tem que estar tudo 100%")
+
+As linhas do combate que estavam como "não se aplica ao jogo" passam a valer (módulo novo `game/systems/itens-poe/combate-100.mjs`; tradução 76):
+
+- **Os lacaios sangram.** O golpe do monstro no lacaio põe as afecções de dano dele, como em você: os `efeitos` da espécie e os `debuff` dos modificadores do PoE (a Carta Sangrenta, o Tóxico, o Incendiário…). O pulso usa o motor `combate/dot.mjs` e passa pela resistência do lacaio ao elemento (o Físico passa inteiro). O golem "Imune ao Dano Elemental" não pega as elementais.
+- **O Sangramento em movimento.** No monstro e em você já valia. No lacaio, quem andou no último segundo (`andouEm`, o passo do lacaio) sofre 3× no pulso. "Se Mover enquanto Sangrando não faz com que Lacaios sofram Dano extra" tira o extra (`lacaios_sangrar_andando_sem_extra`). As regras mortas do Agravar saíram; "Acertos de Ataques contra Inimigos Amaldiçoados têm X% de chance de Agravar o Sangramento" vale como `chance_agravar@ataque+alvoAmaldicoado`.
+- **O alcance em décimos de metro.** Com metros a mais das linhas, a fração das casas (os metros ÷ 2) é a chance de uma casa a mais no golpe, como na área (`hunt.poeSorteDoAlcance`, renovada a cada golpe). Sem metros a mais, só a arma, fica como estava. Ganharam regra: "enquanto Portando um Escudo" (`@comEscudo`) e "Habilidades Suportadas têm +X metros". "por Encaixe Branco" já tinha regra, mas a regra larga a escondia.
+- **O empurrão em você.** As habilidades de monstro cuja descrição no poedb diz que empurram (o "Salto Impactante" de Hillock, Oak, Soulmourn, Kaom, Abberath, Cassius, Ondar, Regulus e do Arauto de Kitava) levam você uma casa para longe, se ela é andável e livre. "Não Pode ser Empurrado" impede (`imune_empurrao`). Ser empurrado conta como andar.
+- **A Furtividade e a Retaliação** já valiam (lotes antigos). As regras mortas com "não se aplica" viraram a forma sem condição da Furtividade e a faixa da Retaliação (a média).
+- **O posicionamento: a Força Ocupante (Deadeye).** O Arqueiro Ilusório agora anda com você, grudado, como no PoE. Com a Força Ocupante: "não são grudados em você" (fica onde nasceu), "+2 ao número máximo" (`max_lacaio:arqueiro`, que antes não chegava ao Arqueiro) e "Não pode Convocar… enquanto próximo" (a até 2 casas).
+- **A Vida dos Cadáveres.** A "Vida do Cadáver" da árvore (`cadaver_vida_inc`) soma com a da qualidade do Desenterrar na Vida Máxima do cadáver criado.
+- **O Solo Congelado.** O modificador de monstro "Solo Resfriado ao Morrer" (MonsterModChilledGroundOnDeath) deixa o solo, como o Ardente e o Eletrizado: 6 s, 1,6 m. Ele Resfria você em 10% enquanto você está nele. "Inafetado por Solo Congelado" impede. "Imunidade a Solo Ardente, Solo Eletrizado e Solo Congelado" ganhou regra.
+- **O Re-armar das Minas.** "Minas podem ser Detonadas N vezes adicionais" (`minas_detonacoes_extra`): a Mina detonada volta armada no mesmo lugar, até N vezes. A Mina de Fumaça ("Minas não podem ser Re-armadas") não volta. A linha saiu de `LINHAS_QUE_NAO_SE_APLICAM` e conta como feita no status da gema.
+- Teste novo: `game/testes/combate-100.test.mjs` (11 testes).
+- **Testes que quebram pela regra nova (não editados; esperam o aval do dono):**
+  - `ativas-d1:74`: espera a nota "não se aplica" do "Minas não podem ser Re-armadas". Agora a linha vale e não há nota.
+  - `correcoes-portal-salvaguarda-balao:145`: espera a mesma nota no balão da Mina de Fumaça.
+  - `zerar-arvore-lote69:27-30`: espera "Inafetado por Solo Congelado" como inerte. Agora é `imune_solo_congelado` (novo).
+  - `zerar-arvore-lote35:66`: espera 1 casa com 1,9 m (1,1 m da espada + 0,8). Agora são 0,95 casa: 95% de chance de 2.
+  - `salvaguarda-unicos:78`: espera a tradução 75. Agora é 76.
+- **Sem fonte (as escolhas estão nas notas):**
+  - "próximo" dos Arqueiros Ilusórios = 2 casas;
+  - o Solo Congelado do monstro = 6 s, 1,6 m e 10%, como os outros solos;
+  - o empurrão = 1 casa, só nas habilidades em área convertidas cuja descrição diz que empurram;
+  - a fração do alcance só vale quando há metros a mais (a arma sozinha fica como estava).
+
+## 100% — mundo (03/11: "resolva essas que não se aplicam ao jogo, tem que estar tudo 100%")
+
+As notas "não se aplica ao jogo" do assunto do mundo (os baús, o Estandarte e a aura no chão, o Vínculo, a Punição) saíram, e cada linha tem efeito de verdade. A tradução subiu para a versão 76.
+
+- **Os baús do PoE nas caçadas** (`systems/itens-poe/baus-poe.mjs`):
+  - Cada instância de uma área da campanha (`hunt.poeArea`) ou de um mapa (`hunt.poeMapa`) nasce com 3 baús (`POR_AREA`). Cada baú fica numa casa livre, andável, fora de Safe Zone e alcançável, a até 3 casas de um monstro sorteado. A rota do personagem passa pelos monstros, então o idle também passa pelos baús.
+  - A raridade sai do mesmo sorteio dos monstros do PoE: Mágico 10%, Raro 2% (`modificadores-monstro.sortearRaridade`).
+  - Cada baú é um encontro da instância (os tipos `bau-poe-normal`, `-magico`, `-raro` e `-grande`). O cliente desenha o baú na cor da raridade do PoE (`encontros-na-tela.mjs`) e o clique abre (a até 2 casas). O baú é opcional: não segura o CLEAR e não expira.
+  - **Abre ao passar:** a cada tique, de cada um da sala, abre o baú a até 2 casas (`abrirAoPassar`, chamado em `cacadas.tiqueDaCacada`).
+  - **O loot** usa a tabela do monstro da raridade do baú (`jogo.dropsDoMonstro`, `moedas.dropDoMonstro`, `jogo.ouroDoMonstro`): Normal → Normal, Mágico → Mágico, Raro → Raro, Grande Baú → Único. O nível é o da área. A quantidade é a do personagem (Buff Power, o afixo Loot) × a do mapa. A Raridade de Itens soma a do personagem, a do mapa e a "Baús têm a Raridade de Itens aumentada".
+  - **"X% de chance de abrir Baús próximos quando você Conjurar uma Magia"** (a regra geral, que estava inerte) passa a `abrir_bau_ao_conjurar`. **"Seus Clamores abrem Baús"** (o pool Haunted) ganha o atributo novo `clamor_abre_baus`: o Clamor usado abre os baús no raio dele (`acoes`, junto da provocação; `BausPoe.abrirNoRaio`).
+  - **O mapa único:** "Área contém um Grande Baú" (o Pesadelo de Acton) põe o Grande Baú a mais (`instancia.grandesBaus`). "Baús têm a Raridade de Itens aumentada em X%" (as Câmaras de Atziri) entra no loot do baú (`instancia.bausRaridadePct`). Os dois estão em `Mapas.fatoresDaInstancia(...).baus`, no importador (`tools/importar-mapas-unicos.mjs`) e na validação dos mapas, onde aparecem como `funciona`.
+- **O Estandarte e a aura no chão:** o Estandarte já era plantado no chão, com a área do PoB (2,4 m), a duração e o Valor (`ModsPoe.plantarEstandarte`; o raio em `acoes.raioDaAuraDe`). Continua igual. As regras da tradução que ficaram inertes valem agora: "Bônus do seu estandarte permanecem por N segundos" (`estandarte_fica_s`), "Efeito em Área de Habilidades de Aura" (`area_inc@aura`, o raio até onde a aura vale nos aliados da party) e "Habilidades de Aura Não Maldições têm Duração" (`duracao_habilidades@aura`, nas auras Vaal e nos Estandartes). Isso vale também para as variantes com espaço antes do "%", que vêm do poedb.
+- **O Vínculo:** o Vínculo com o aliado da party já existia (`itens-poe/vinculos.mjs`: o jogador da party a até 10 casas; sem party, o lacaio com a linha ou o mercenário). A regra inerte que restava ("…entre os Jogadores Vinculados") vale agora (`velocidade_igual_vinculados`). As outras duas já caíam nas regras de cima.
+- **A Punição:** é a gema Castigo (Punishment, act_str.lua:8753 do PoB), que já estava no jogo (lote G-C). A linha "Punição pode afetar Inimigos Infeitiçáveis" passa a `feitico_afeta_aprova:Punishment`: o Castigo pega também no monstro à Prova de Maldições. A linha de outra maldição não serve para ele.
+- Teste novo: `game/testes/mundo-100.test.mjs` (10 testes).
+- **Quebras pela regra nova, sem aval (os testes não foram editados):**
+  - `encontros.test.mjs:268`: espera `e.hunt.instancia.encontros === undefined` na área sem encontros cadastrados. Agora vêm os 3 baús do PoE (`bau-poe-1..3`).
+  - `mapas-endgame-unicos.test.mjs:130`: espera `['The_Cowards_Trial', 'Vaults_of_Atziri', 'Hall_of_Grandmasters']` como os únicos sem nenhuma linha com efeito. As Câmaras de Atziri saem da lista, porque "Baús têm a Raridade de Itens aumentada" age.
+  - `zerar-arvore-lote69.test.mjs:29`: espera "Punição pode afetar Inimigos Infeitiçáveis" como `inerte` com "não se aplica". Agora é `novo` (`feitico_afeta_aprova:Punishment`).
+- **Sem fonte (as escolhas, com as opções para o dono):** o PoE não publica quantos baús há por área, a raridade deles, o loot exato de cada um nem o alcance do "abrir ao passar". Escolhas feitas:
+  - 3 por instância. Alternativas: 1 a cada N monstros, ou de 2 a 5 sorteados.
+  - A raridade pela tabela dos monstros.
+  - O loot pela tabela do monstro da mesma raridade. Alternativa: um nível acima (o Normal como Mágico).
+  - O alcance de 2 casas, o mesmo da interação. Alternativa: 1 casa, só adjacente.
+  - O loot vai para quem abre. A party não divide o loot do baú (alternativa: o rodízio do loot dos monstros).
+
+## 100% — dados: as Habilidades Prismáticas e as Tatuagens (03/11)
+
+Dono, 03/11: "nada pode ficar como 'não se aplica ao jogo'". Este lote tirou as notas das Habilidades Prismáticas (o Foco de Combate) e das Tatuagens (o Conto do Guerreiro) e fez o efeito de verdade.
+
+- **As gemas prismáticas já estavam na coleção.** O Acerto Elemental, o Acerto Elemental do Espectro, o Golpe Selvagem e o Golpe Selvagem dos Extremos já vinham do importador das gemas (`gemas-poe.json`, `poedb-gemas.json`), com a origem na campanha (`origem-das-gemas.json`). A nota "não estão na coleção" estava velha. Não foi preciso baixar gema nenhuma. O do Espectro não tem a tag Prismático no PoE: ele causa os três elementos.
+- **A escolha do elemento** (`systems/itens-poe/prismaticas.mjs`):
+  - o Acerto Elemental e o Golpe Selvagem (e o dos Extremos) escolhem o elemento no uso, sem repetir o anterior ("Ela evitará escolher o mesmo elemento duas vezes consecutivas"), e o guardam até o uso sair, como o Acerto já fazia;
+  - nenhuma prismática escolhe um elemento que o Foco de Combate proíbe. Isso vale para o Acerto e o Golpe, a conversão "em Fogo, Gelo ou Raio" (`GemasPoe.partesDoAtaque` / `partesDaMagia`, opção `proibidos`; só nas habilidades com a tag `prismatico`), o Tornado da Turbulência Elemental (o elemento do objeto), a Explosão Prismática (os pesos pelos atributos ficam, sem o proibido) e o Esqueleto Mago (`LacaiosHabilidades.principalDaVez`: a magia do elemento proibido não sai, e a escolhida que ficou proibida é refeita).
+- **A forma do Golpe Selvagem pelo elemento** (o PoB, act_dex.lua WildStrike):
+  - Fogo: a explosão em volta do alvo, com o raio de 2,4 m da gema × a Área;
+  - Raio: o raio que ricocheteia, com os "Raios Ricocheteiam N Vezes" como saltos da cadeia;
+  - Gelo: a onda, com os 3 projéteis que perfuram todos.
+  Antes saíam os projéteis, a perfuração e o ricochete juntos, e cada golpe sorteava o próprio elemento.
+- **O Foco de Combate na árvore** (`passivas/arvore.raiosDasJoias`): a soma dos dois atributos das passivas alocadas no raio. Os pares são os do PoB: Fogo usa Inteligência e Destreza (o poedb pt escreve só "Destreza", e a regra aceita); Gelo usa Força e Inteligência; Raio usa Destreza e Força. Com a soma no limiar, ele dá `prisma_nao_escolhe_<el>` e `mais_dano_<el>@prismatico` −50 (a tag nova `prismatico`, de "Prismático" do poedb).
+- **As TATUAGENS** (`systems/passivas/tatuagens.mjs`). Os dados vêm de `gamedata/itens-poe/tatuagens-poe.json` (`tools/importar-tatuagens-poe.mjs`, do poedb pt pelo Scrapling): as 60 tatuagens (50 comuns, 3 da Jornada, 7 Proibidas) e os 11 ícones oficiais. As regras:
+  - é um item empilhável. "Tatuar uma passiva da árvore…" no botão direito abre a árvore. No nó alocado, o quadro "Tatuagem" mostra a que está nele e as da mochila que ele aceita (`{t:'passivas', action:'tatuar', no, id}`);
+  - o nó passa a dar as linhas da tatuagem no lugar das dele. Outra tatuagem no mesmo nó toma o lugar (a de antes se perde). A tatuagem fica no nó mesmo com a passiva tirada;
+  - onde entra: a comum, na pequena que só dá "+10 de <atributo>" do atributo dela; a da Jornada, no notável de "+30 de <atributo>"; a Proibida, num notável da SUA ascendência. A passiva conquistada por uma Atemporal e os nós da Ramificadora não aceitam. O máximo é de 50; as Proibidas são "Limitado a: 1";
+  - a Jornada dá "+25 de Vida máxima por Tatuagem da Jornada do Corpo Alocada": cada uma vale 25 × as do mesmo tipo alocadas (com 2, +100), como o multiplicador do PoB;
+  - a Proibida sorteia, ao ser aplicada, um notável das ascendências da classe dela (fora os que você já tem). O nó dá as linhas dele;
+  - o Conto do Guerreiro ("Efeito das Tatuagens no Raio aumentado em 100%") multiplica os números da tatuagem do nó alocado no raio (`efeitosNoRaio`);
+  - a linha nova "Golpes Abatedores têm 4% de chance de Consumir cadáveres para recuperar 10% da Vida Máxima" (o Devorador de Corações de Kitava) é a ação `consumirCadaverChance` no Golpe de Misericórdia: o morto não deixa cadáver, marca o "Consumiu um cadáver Recentemente" e recupera a Vida. As outras 49 linhas comuns já tinham regra;
+  - a tela da árvore mostra o nome e as linhas da tatuagem no balão do nó, e o "Antes: …";
+  - o balão do item mostra o "Substitui …", as linhas e o "Limitado a".
+- **Escolhas sem fonte** (o dono decide):
+  1. **O drop das tatuagens.** No PoE elas vêm da liga Ancestral (o Julgamento dos Ancestrais e as tribos), que o jogo não tem. A fonte simples (`Tatuagens.DROP`) é esta: todo monstro do PoE tem a chance pela raridade (normal 0,04%, mágico 0,12%, raro 0,6%, único 3%, chefe 15%) × a quantidade de itens. Os pesos são comum 100, Jornada 4, Proibida 2, e a da Jornada só cai na área 81+ (o DropLevel dela). Opções: (a) assim; (b) só nos mapas; (c) só a loja da Zuma; (d) outra taxa.
+  2. **Os três elementos proibidos** (três Focos de Combate, um de cada): o PoE não diz o que acontece. A regra cai e sorteia entre os três. Opções: (a) assim; (b) o golpe não sai.
+  3. **A Proibida** sorteia entre os notáveis das ascendências da classe da tatuagem, fora os que você já tem (inclusive os da sua classe, se for a mesma). As mecânicas que o jogo lê pelo id do notável alocado (`temHabilidade`) não ligam pelo sorteado: valem as linhas dele. Opções: (a) assim; (b) ligar também a mecânica pelo id.
+  4. **As Tatuagens de Lealdade** (Loyalty_Tattoo_of_Kaom e as outras, que concedem a habilidade de um Chefe Guerreiro Espiritual): o poedb as marca "Drop disabled" e elas ficaram fora.
+- Testes novos: `game/testes/prismaticas-poe.test.mjs` (8) e `game/testes/tatuagens-poe.test.mjs` (11). VERSAO_DA_TRADUCAO 75 → 76.
+- **Quebras pela regra nova, sem aval (não editadas):**
+  - salvaguarda-unicos:78 espera `J.VERSAO_DA_TRADUCAO` = 75. Agora é 76 (a tradução mudou neste lote).
+  - zerar-arvore-lote49:85 espera a nota "não se aplica ao jogo" em "Com um total de 40 de Destreza no Raio, Habilidades Prismáticas não podem escolher Fogo". Agora a linha vale (`equivalente`, `raio_prisma_nao_escolhe_fire` 40).
+- **Notas que ficam:** as Flechas de Clones Prismáticos (a Flecha Relâmpago e a do Espelho) têm a tag Prismático, mas o clone não escolhe um elemento no jogo. O Foco de Combate não muda nada nelas.
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.
@@ -1678,7 +2176,7 @@ Bateria: 153 arquivos, 1648 testes — 1612 passam, 33 pulados, 3 falham (os tr�
 4. **As mecânicas compartilhadas maiores:** canalização por estágios (12 gemas), repetições do golpe (11), uso de cadáveres (11), deslocamento (21, hoje "golpe na área"), armadilhas/minas nos suportes (14 suportes: "armadilhas e minas ainda não existem no jogo" — conferir, porque as ativas já plantam), buffs sem equivalente (22: Marcas, Manto Arcano, Desgraça…).
 5. **"Dano Físico Base como a Mão Secundária"** (8 gemas de escudo) e os bônus do escudo (crítico pelo Escudo de Energia, dano pela armadura do escudo).
 6. **Os outros suportes:** 157 parciais e 31 sem efeito; gatilhos que faltam (Conjurar ao Morrer, ao ser Atordoado, enquanto Canaliza), os suportes que viram totem (G20b; a velocidade de posicionamento e a vida do totem feitas no G20a), auras (efeito), maldições (efeito em área, duração).
-7. **A interface:** o balão da gema mostra as linhas da qualidade que não valem; marcar cada linha (feita / não feita) e o motivo, nos encaixes e na barra.
+7. ~~**A interface:** o balão da gema mostra as linhas da qualidade que não valem; marcar cada linha (feita / não feita) e o motivo, nos encaixes e na barra.~~ — feito em 02/11 ("Balão de todas as gemas").
 8. ~~Testes parametrizados~~ feito no G16 (uso real e dano/buff de toda ativa `funciona`; efeito lido de todo suporte `funciona`). Falta: medir o efeito de CADA suporte num uso (com e sem), não só que o código o lê.
 9. ~~O "Dano de Fogo/Gelo/Raio aumentado" dos suportes vale para todo o dano da habilidade que tem a tag~~ — feito no C2 da rodada 4 (28/10): o "mais" e o "aumentado" de um tipo valem só na parte daquele tipo (`gemas-r4c2.mjs`).
 10. **Acertos secundários de ataque de itens** (A5b, revisão): a Rajada Vulcânica e outros acertos de ataque que vêm de itens não rolam a precisão.

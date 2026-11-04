@@ -531,6 +531,18 @@ function juntar(convidado, anfitriao, { semExtrato = false } = {}) {
   return { ok: true, notice: `Você entrou na caçada de ${nomeDe(anfitriao)} (${Cacadas.nomeDaHunt(sala.huntId)}).` };
 }
 
+/**
+ * (o Portal da gema — dono, 02/11: "como o PoE", `itens-poe/portal-da-gema.mjs`) A volta pelo portal entra na sala da party que ainda está na
+ * MESMA instância de onde você saiu (`instanciaId`): como entrar na caçada de alguém da party (as mesmas regras — `juntar`). Ninguém da party lá:
+ * null (a volta é sozinha, à cópia guardada).
+ */
+export function voltarPeloPortal(s, instanciaId) {
+  const p = minhaParty(s);
+  if (!instanciaId || !p) return null;
+  const quem = [...vivas.values()].find((o) => o !== s && p.membros.includes(nomeDe(o)) && Cacadas.salaDe(o.estado?.hunt)?.instancia?.id === instanciaId);
+  return quem ? juntar(s, quem, { semExtrato: true }) : null;
+}
+
 export function comandoDaCaca(s, m) {
   const eu = nomeDe(s);
   const p = minhaParty(s);

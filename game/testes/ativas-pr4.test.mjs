@@ -10,7 +10,7 @@ import { existsSync } from 'node:fs';
 process.env.ITENS_POE = '1';
 const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
 const SEM = (!existsSync(Catalogo.ARQUIVO) || !Catalogo.ligado()) && 'só no modo PoE, com o catálogo do PoE';
-const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
+const { personagemDeTeste, PERSONAGEM, pousarVoos } = await import('./apoio.mjs');
 const Acoes = await import('../systems/acoes.mjs');
 const GS = await import('../systems/skills/gemas.mjs');
 const G = await import('../systems/itens-poe/gemas-poe.mjs');
@@ -60,8 +60,10 @@ async function montar(slug, { nivel = 20, qualidade = 0, arma = 'Bows/Crude_Bow'
 function usar(e, b, v = 0.5) {
   return travado(v, () => {
     const x = Acoes.disparar(e, e.hunt, PERSONAGEM, 0, b, { manual: true });
-    if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; return { ...x, eventos: Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM) }; }
-    return x;
+    let fim = x;
+    if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; fim = { ...x, eventos: Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM) }; }
+    // aval do dono 03/11: o voo de verdade — o golpe do projétil cai no tique em que ele chega (`pousarVoos`)
+    return { ...fim, eventos: [...(fim.eventos ?? []), ...pousarVoos(e.hunt)] };
   });
 }
 /** Libera a barra para o próximo uso (a recarga do grupo e a da gema). */
@@ -289,7 +291,7 @@ test('PR4 no jogo: a Concha Somática — no primeiro acertado, 6214; os acertos
   const c = b.poeConchas?.[QUEM];
   assert.ok(c, 'a concha no alvo');
   assert.equal(c.hp, 6214);
-  assert.equal(c.ate - e.hunt.clock, 5000);
+  assert.equal(c.ate - c.desde, 5000); // aval do dono 03/11: o voo de verdade — a concha nasce no tique de chegada (o relógio já andou)
   liberar(e);
   assert.ok(usar(e, b).ok);
   assert.equal(b.poeConchas[QUEM].hp, 6214, 'os acertos da própria Concha não a gastam');
@@ -307,7 +309,7 @@ test('PR4 no jogo: a Concha Somática — no primeiro acertado, 6214; os acertos
   delete vizinho.poeConchas;
   liberar(e);
   e.hunt.clock = t + 100;
-  b.poeConchaImuneAte = t + 200;
+  b.poeConchaImuneAte = t + 200 + 2000; // aval do dono 03/11: o voo de verdade — a imunidade cobre o tique de chegada da Concha (0,85 s de voo)
   assert.ok(usar(e, b).ok);
   assert.equal(b.poeConchas?.[QUEM], undefined);
 });

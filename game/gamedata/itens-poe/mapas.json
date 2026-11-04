@@ -4180,8 +4180,13 @@
       "texto": "Área contém um Grande Baú",
       "modelo": "Área contém um Grande Baú",
       "faixas": [],
-      "efeitos": [],
-      "nota": "as áreas dos mapas não têm baús"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "grandesBaus",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -4814,8 +4819,13 @@
         3500
        ]
       ],
-      "efeitos": [],
-      "nota": "as áreas dos mapas não têm baús"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "bausRaridadePct",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",

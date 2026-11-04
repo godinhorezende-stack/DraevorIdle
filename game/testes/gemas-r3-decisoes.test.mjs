@@ -53,12 +53,12 @@ const daFonte = (ev, fonte) => ev.filter((x) => x.t === 'dmg' && x.fonte === fon
 
 // ---------------------------------------------------------------- 1. o Conjurar ao Perder Salvaguarda
 
-test('R3: o Conjurar ao Perder Salvaguarda não se aplica (o jogo não tem Salvaguarda) — sem efeito, com a nota do aval', { skip: SEM }, () => {
+// (aval do dono 02/11: o jogo agora tem a Salvaguarda como o PoE — o Conjurar ao Perder Salvaguarda fica 'funciona', sem a nota de 27/10)
+test('R3: o Conjurar ao Perder Salvaguarda funciona (a Salvaguarda como o PoE — aval do dono 02/11)', { skip: SEM }, () => {
   const r = SP.doSlug('Cast_on_Ward_Break_Support');
-  assert.equal(r.status, 'nao');
-  assert.match(r.naoSeAplica, /^não se aplica: .*Salvaguarda.*aval do dono 27\/10/);
-  assert.deepEqual(r.motivos, [r.naoSeAplica]);
-  assert.equal(SP.NAO_SE_APLICA.Cast_on_Ward_Break_Support, r.naoSeAplica);
+  assert.equal(r.status, 'funciona');
+  assert.ok(!r.naoSeAplica, r.naoSeAplica);
+  assert.equal(SP.NAO_SE_APLICA.Cast_on_Ward_Break_Support, undefined);
 });
 
 // ---------------------------------------------------------------- 2. o Devorar Maior

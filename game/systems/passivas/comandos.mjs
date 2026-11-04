@@ -5,10 +5,12 @@
 // O cliente só PEDE: `alocar` um nó (ou um caminho, nó por nó, cada um
 // validado), `respec` (uns nós, com ou sem os que ficariam ilhados, ou tudo),
 // `planoRespec` (o que sairia e quanto custa, sem tirar nada), `encaixarJoia` /
-// `retirarJoia` (as joias nos encaixes da árvore do PoE). Quem decide é
+// `retirarJoia` (as joias nos encaixes da árvore do PoE), `tatuar` (a Tatuagem num nó alocado). Quem decide é
 // `passivas/arvore.mjs`.
 import * as Passivas from './arvore.mjs';
 import * as Joias from './joias.mjs';
+// (100% — dados, 03/11) as Tatuagens do PoE (`tatuar`: o item num nó alocado — `passivas/tatuagens.mjs`, que se registra na árvore)
+import * as Tatuagens from './tatuagens.mjs';
 import * as Afixos from '../afixos.mjs';
 import * as Gemas from '../gemas.mjs';
 import * as Ficha from '../ficha.mjs';
@@ -56,6 +58,11 @@ export function comando(estado, m, emCacada = false) {
   if (acao === 'encaixarJoia' || acao === 'retirarJoia') {
     // (lote 27) as joias nos encaixes da árvore do PoE (`passivas/joias.mjs`).
     const r = acao === 'encaixarJoia' ? Joias.encaixar(estado, m) : Joias.retirar(estado, m);
+    if (r.ok) depoisDeMudar(estado);
+    return r;
+  }
+  if (acao === 'tatuar') {
+    const r = Tatuagens.tatuar(estado, { no: m.no, id: m.id });
     if (r.ok) depoisDeMudar(estado);
     return r;
   }

@@ -181,6 +181,9 @@ const SUFIXOS_DE_CONDICAO = [
   [/^(.+?),? (?:se você Conjurou|caso você tenha Conjurado) Avanço recentemente$/i, 'conjurouAvancoRecente'],
   [/^(.+?),? se você não houver Conjurado Avanço recentemente$/i, 'naoConjurouAvancoRecente'],
   [/^(.+?),? durante (?:qualquer|um) Efeito de Frasco$/, 'duranteFrasco'],
+  // (02/11, as Atemporais — o PoB: `Condition:UnbrokenWard` e a negação) a Salvaguarda intacta / rompida (`condicoes-poe`, `personagem/salvaguarda.intacta`)
+  [/^(.+?),? enquanto você tiver Salvaguarda Intacta$/, 'salvaguardaIntacta'],
+  [/^(.+?),? enquanto sua Salvaguarda estiver Rompida$/, 'salvaguardaRompida'],
   [/^(.+?),? enquanto (?:se move|se movendo|movendo-se)$/, 'movendo'],
   [/^(.+?),? enquanto parado$/, 'parado'],
   [/^(.+?),? enquanto (?:você )?(?:estiver )?Sangrando$/, 'sangrandoProprio'],

@@ -89,7 +89,8 @@ export function criarCamada() {
     const saida = { efeitos: [], projeteis: [] };
     const v = ev.sk ? visuais.skills?.[ev.sk] ?? null : null;
     const m = ev.sk ? memo.get(ev.sk) ?? {} : {};
-    const vooAte = (alvo) => (m.x != null ? distancia(m, alvo) * (v?.projetil?.velocidade ?? VELOCIDADE_PADRAO) : m.voo ?? 0);
+    // (lote "projetil", dono 02/11: o golpe do projétil que VOOU — `ev.voou` — já chega na hora da chegada, do servidor: o impacto não espera o voo de novo)
+    const vooAte = (alvo) => (ev.voou ? 0 : m.x != null ? distancia(m, alvo) * (v?.projetil?.velocidade ?? VELOCIDADE_PADRAO) : m.voo ?? 0);
     if (ev.t === 'skill' || ev.t === 'cast') {
       if (ev.sk) memo.set(ev.sk, { x: ev.x, y: ev.y, voo: 0 });
       if (v?.lancamento && !ev.semLancamento) {
@@ -101,7 +102,8 @@ export function criarCamada() {
       const sprite = p?.sprite ?? { tipo: 'projetil', id: ev.id };
       const dist = Math.max(Math.abs(ev.tx - ev.x), Math.abs(ev.ty - ev.y));
       // (`ev.vel`: a "Velocidade do Projétil aumentada" do PoE — o voo encurta.)
-      const vida = Math.max(80, (dist * (p?.velocidade ?? VELOCIDADE_PADRAO)) / Math.max(0.2, Number(ev.vel) || 1));
+      // (lote "projetil", dono 02/11: `ev.ms` — o tempo do voo de verdade, o do servidor: a velocidade do PoE da habilidade × a Velocidade de Projétil)
+      const vida = Number(ev.ms) > 0 ? Math.max(80, Number(ev.ms)) : Math.max(80, (dist * (p?.velocidade ?? VELOCIDADE_PADRAO)) / Math.max(0.2, Number(ev.vel) || 1));
       if (ev.sk) memo.set(ev.sk, { ...m, voo: Math.max(m.voo ?? 0, vida) });
       if (sprite.tipo !== 'nenhum') {
         saida.projeteis.push({ sprite, x: ev.x, y: ev.y, tx: ev.tx, ty: ev.ty, born: agora + (p?.atraso ?? 0), life: vida, parte: p ?? null, asset: sprite.tipo === 'asset' ? visuais.assets?.[sprite.id] ?? null : null, rotulo: 'projetil' });

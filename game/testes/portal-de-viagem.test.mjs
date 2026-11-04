@@ -14,6 +14,7 @@ const B = await import('../database/banco.mjs');
 const { Sessao, vivas } = await import('../websocket/sessao.mjs');
 const Party = await import('../systems/party.mjs');
 const Cacadas = await import('../systems/cacadas.mjs');
+const BausPoe = await import('../systems/itens-poe/baus-poe.mjs');
 const Campanha = await import('../systems/campanha.mjs');
 const Bolsa = await import('../systems/bolsa.mjs');
 const R = await import('../systems/regras.mjs');
@@ -102,6 +103,8 @@ test('troca de instância: o portal abre sob cada um da sala e, um instante depo
   // Limpa (só o dono anda) e espera a pausa do "Hunt Clear!".
   for (let i = 0; i < 40 && a.hunt.instancia.status !== 'limpa'; i++) {
     for (const m of vivos(a)) m.hp = 0;
+    // aval do dono 03/11: os baús do PoE fechados seguram o CLEAR no automático (até 60 s — `BausPoe.seguramOClear`); o teste abre os baús junto com matar tudo
+    BausPoe.abrirNoRaio(a, a.hunt, PERSONAGEM, 1e9, { so: BausPoe.ehBauPoe });
     andar(a, 250, relogio);
   }
   assert.equal(a.hunt.instancia.status, 'limpa');

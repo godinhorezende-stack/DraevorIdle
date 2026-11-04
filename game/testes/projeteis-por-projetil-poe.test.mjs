@@ -9,7 +9,7 @@ import { existsSync } from 'node:fs';
 process.env.ITENS_POE = '1';
 const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
 const SEM = (!existsSync(Catalogo.ARQUIVO) || !Catalogo.ligado()) && 'só no modo PoE, com o catálogo do PoE';
-const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
+const { personagemDeTeste, PERSONAGEM, pousarVoos } = await import('./apoio.mjs');
 const Acoes = await import('../systems/acoes.mjs');
 const GS = await import('../systems/skills/gemas.mjs');
 const G = await import('../systems/itens-poe/gemas-poe.mjs');
@@ -70,6 +70,7 @@ function disparo(e, alvos) {
     e.hunt.clock += 10_000;
     const r = Acoes.disparar(e, e.hunt, PERSONAGEM, 0, alvos[0], {});
     assert.ok(r.ok, r.erro);
+    r.eventos = [...(r.eventos ?? []), ...pousarVoos(e.hunt)]; // aval do dono 03/11: o voo de verdade — o golpe do projétil cai no tique em que ele chega (`pousarVoos`)
     return alvos.map((b) => (r.eventos ?? []).filter((x) => x.t === 'dmg' && x.foe && x.uid === b.uid).reduce((t, x) => t + x.v, 0));
   } finally {
     Math.random = antes;

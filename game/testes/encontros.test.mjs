@@ -265,7 +265,10 @@ test('compatibilidade: a campanha sem encontros se comporta como sempre (CLEAR s
   } finally {
     restaurar();
   }
-  assert.equal(e.hunt.instancia.encontros, undefined, 'sem encontros cadastrados: nada é criado');
+  // aval do dono 03/11: 100% — mundo, os baús do PoE nascem em toda área da campanha (3 por instância, opcionais: não seguram o CLEAR)
+  const encontros = Object.values(e.hunt.instancia.encontros ?? {});
+  assert.ok(encontros.every((x) => x.defId === 'bau-poe' && x.obrigatorio === false), 'sem encontros cadastrados: só os baús do PoE');
+  assert.ok(encontros.length <= 3, 'sem encontros cadastrados: só os baús do PoE');
   matarTodos(e);
   assert.equal(Instancia.marcarSeLimpou(e.hunt, 1), true);
   assert.ok(Campanha.faseDe(HUNT_DE_TESTE));

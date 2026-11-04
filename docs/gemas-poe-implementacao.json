@@ -2,8 +2,7 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 561,
-   "não se aplica": 1
+   "implementada e testada": 562
   },
   "ataques": {
    "total": 210,
@@ -11,8 +10,7 @@
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 261,
-   "não se aplica": 1
+   "implementada e testada": 262
   },
   "variantes": {
    "vaal": {
@@ -2182,9 +2180,6 @@
    "ausentes": [],
    "idle": [],
    "outros": [],
-   "linhasNaoSeAplicam": [
-    "não se aplica: \"Desaceleração do Projétil reduzida\" (Arremesso Espectral da Materialização) só muda a trajetória — o PoB não a usa na conta"
-   ],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -2679,9 +2674,6 @@
    "ausentes": [],
    "idle": [],
    "outros": [],
-   "linhasNaoSeAplicam": [
-    "não se aplica: \"Minas não podem ser Re-armadas\" (Mina de Fumaça) — o jogo não tem Re-armar Minas (aval do dono 27/10)"
-   ],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -3137,9 +3129,6 @@
    "ausentes": [],
    "idle": [],
    "outros": [],
-   "linhasNaoSeAplicam": [
-    "não se aplica: \"Gira por N rotações\" (Hélice Espectral) só muda a trajetória da espiral — o PoB não a usa na conta, e o projétil do jogo acerta no tique"
-   ],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -3153,9 +3142,6 @@
    "ausentes": [],
    "idle": [],
    "outros": [],
-   "linhasNaoSeAplicam": [
-    "não se aplica: \"Gira por N rotações\" (Hélice Espectral) só muda a trajetória da espiral — o PoB não a usa na conta, e o projétil do jogo acerta no tique"
-   ],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -3299,9 +3285,6 @@
    "ausentes": [],
    "idle": [],
    "outros": [],
-   "linhasNaoSeAplicam": [
-    "não se aplica: \"Velocidade de Movimento do Orbe aumentada em X%\" (Morto Volátil) só muda a trajetória do orbe até o inimigo — o PoB não a usa na conta, e o orbe do jogo acerta no uso"
-   ],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -3328,9 +3311,6 @@
    "ausentes": [],
    "idle": [],
    "outros": [],
-   "linhasNaoSeAplicam": [
-    "não se aplica: \"Velocidade de Movimento do Orbe aumentada em X%\" (Morto Volátil) só muda a trajetória do orbe até o inimigo — o PoB não a usa na conta, e o orbe do jogo acerta no uso"
-   ],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -4478,9 +4458,6 @@
    "ausentes": [],
    "idle": [],
    "outros": [],
-   "linhasNaoSeAplicam": [
-    "não se aplica: \"Projéteis mudam de direção N vezes\" (Raio Cinético) só muda a trajetória — o projétil não acerta de novo a cada mudança"
-   ],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -4494,9 +4471,6 @@
    "ausentes": [],
    "idle": [],
    "outros": [],
-   "linhasNaoSeAplicam": [
-    "não se aplica: \"Projéteis mudam de direção N vezes\" (Raio Cinético) só muda a trajetória — o projétil não acerta de novo a cada mudança"
-   ],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -5355,9 +5329,6 @@
    "ausentes": [],
    "idle": [],
    "outros": [],
-   "linhasNaoSeAplicam": [
-    "não se aplica: \"A Segunda forma possui X% mais Velocidade de Projétil\" (Lança de Gelo) só muda a trajetória da segunda forma — o PoB não a usa na conta, e o projétil do jogo acerta no tique"
-   ],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -5371,9 +5342,6 @@
    "ausentes": [],
    "idle": [],
    "outros": [],
-   "linhasNaoSeAplicam": [
-    "não se aplica: \"A Segunda forma possui X% mais Velocidade de Projétil\" (Lança de Gelo) só muda a trajetória da segunda forma — o PoB não a usa na conta, e o projétil do jogo acerta no tique"
-   ],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -7319,12 +7287,11 @@
    "nome": "Portal",
    "variante": "normal",
    "ataque": false,
-   "arquetipo": "generico",
-   "estado": "não se aplica",
+   "arquetipo": "portal",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
-   "nota": "não se aplica: a caçada já tem a saída para a cidade, e os 6 portais do mapa são gastos pela morte (mapa-aberto.mjs) — o portal do PoE não tem o que fazer no jogo",
    "icone": true,
    "iconeHabilidade": true
   },
@@ -8582,13 +8549,10 @@
   {
    "slug": "Cast_on_Ward_Break_Support",
    "nome": "Conjurar ao Perder Salvaguarda (Reforço)",
-   "estado": "não se aplica",
+   "estado": "implementada e testada",
    "ausentes": [],
-   "outros": [
-    "não se aplica: o jogo não tem Salvaguarda (Ward), então a salvaguarda nunca quebra e a magia nunca seria ativada (aval do dono 27/10)"
-   ],
-   "icone": true,
-   "nota": "não se aplica: o jogo não tem Salvaguarda (Ward), então a salvaguarda nunca quebra e a magia nunca seria ativada (aval do dono 27/10)"
+   "outros": [],
+   "icone": true
   },
   {
    "slug": "Companionship_Support",

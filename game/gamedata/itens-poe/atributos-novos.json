@@ -242,7 +242,8 @@
     "light_radius": {
       "nome": "Raio de Iluminação aumentado",
       "unidade": "%",
-      "combate": false
+      "combate": true,
+      "efeito": "itens-poe/iluminacao.mjs: o raio da luz em volta de você na caçada (a escuridão fora dele) e o que depende da luz (dano, área, precisão, o Eclipse Solaris, a Glória Dourada — a escala stat:light_radius)"
     },
     "dot_multi": {
       "nome": "Multiplicador do Dano Degenerativo",
@@ -265,7 +266,19 @@
       "nome": "Velocidade do Projétil aumentada",
       "unidade": "%",
       "combate": true,
-      "efeito": "hunt/combate (evento shot: o projétil voa mais rápido)"
+      "efeito": "o voo de verdade (itens-poe/projeteis-voo, hunt/voos — lote projetil, 02/11): o projétil anda mais rápido e chega antes"
+    },
+    "proj_vel_mais": {
+      "nome": "Mais/menos Velocidade de Projéteis",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o voo de verdade (acoes.velocidadeDoProjetil — o \"mais\" multiplica por cima da \"aumentada\"; negativo = menos) (lote projetil, 02/11)"
+    },
+    "proj_difusao_angulo_inc": {
+      "nome": "Ângulo da Difusão de Projéteis aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "os filhos da difusão saem a ± o ângulo dela (skills/golpes-secundarios com o voo; negativo = reduzido) (lote projetil, 02/11)"
     },
     "crit_dmg_taken_red": {
       "nome": "Dano extra de Críticos recebidos reduzido",
@@ -4212,7 +4225,13 @@
       "nome": "Chance de abrir Baús próximos ao Conjurar",
       "unidade": "%",
       "combate": true,
-      "efeito": "a magia usada (`acoes.abrirBausAoConjurar`)"
+      "efeito": "a magia usada (`acoes.abrirBausAoConjurar`) — os baús do PoE nas caçadas (`itens-poe/baus-poe.mjs`, 03/11)"
+    },
+    "clamor_abre_baus": {
+      "nome": "Seus Clamores abrem Baús",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o Clamor usado abre os baús no raio dele (`itens-poe/baus-poe.abrirNoRaio`, 03/11)"
     },
     "estandarte_remove_afeccao_min": {
       "nome": "Plantar o Estandarte remove uma Afecção (Valor mínimo)",
@@ -6296,6 +6315,102 @@
       "combate": true,
       "efeito": "o Escudo de Energia das peças de armadura vira Vida (afixos.sincronizarMaximos, ficha.defesasDaFicha) (13/10)"
     },
+    "salvaguarda": {
+      "nome": "Salvaguarda (+N, global)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.defesasDaFicha → ficha.salvaguarda (personagem/salvaguarda.mjs) (02/11)"
+    },
+    "salvaguarda_pct": {
+      "nome": "Salvaguarda aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.defesasDaFicha: × (1 + X%) a Salvaguarda das peças (02/11)"
+    },
+    "salvaguarda_local": {
+      "nome": "Salvaguarda da peça (+N, local)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/jogo.baseDaPeca: soma na Salvaguarda da base da própria peça (Svalinn) (02/11)"
+    },
+    "salvaguarda_pct_local": {
+      "nome": "Salvaguarda da peça aumentada (local)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/jogo.baseDaPeca: × (1 + qualidade + X%) a Salvaguarda da base da própria peça (02/11)"
+    },
+    "salvaguarda_restauracao_pct": {
+      "nome": "Restauração da Salvaguarda mais rápida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "personagem/salvaguarda.espera: divide os 2 s da espera (o PoB: WardRechargeDelay, WardRechargeFaster) (02/11)"
+    },
+    "salvaguarda_ignorada_pct": {
+      "nome": "Dano sofrido que ignora a Salvaguarda",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "personagem/salvaguarda.absorver: essa parte do acerto passa direto (02/11)"
+    },
+    "salvaguarda_mais": {
+      "nome": "Salvaguarda mais/menos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.defesasDaFicha: multiplica a Salvaguarda (02/11)"
+    },
+    "salvaguarda_nao_quebra": {
+      "nome": "A Salvaguarda não quebra",
+      "unidade": "",
+      "combate": true,
+      "efeito": "personagem/salvaguarda.absorver: segura cada acerto até o que ela tem e não desce — a Decisão de Olroth, durante o efeito (o PoB: WardNotBreak) (02/11)"
+    },
+    "salvaguarda_chance_nao_romper": {
+      "nome": "Chance de a Salvaguarda não se Romper",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "personagem/salvaguarda.absorver: o acerto que a levaria a 0 não a tira (o PoB: WardAvoidBreakChance) (02/11)"
+    },
+    "peitoral_em_salvaguarda_pct": {
+      "nome": "Armadura e Evasão do peitoral viram Salvaguarda",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.defesasDaFicha: essa parte da Armadura e da Evasão do peitoral vira Salvaguarda da base — a Postura de Ynda (o PoB: BodyArmourArmourEvasionToWardPercent) (02/11)"
+    },
+    "evasao_pela_salvaguarda_pct": {
+      "nome": "Chance de Evadir pela Salvaguarda",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.evasaoDaEsquiva: a chance de evadir usa essa parte da Salvaguarda no lugar da Evasão (o PoB: EvadeChanceBasedOnWard) (02/11)"
+    },
+    "armadura_pela_salvaguarda_pct": {
+      "nome": "Redução física pela Salvaguarda",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.armaduraDaReducao: a redução física dos acertos usa essa parte da Salvaguarda no lugar da Armadura (o PoB: PhysicalReductionBasedOnWard) (02/11)"
+    },
+    "ataque_rompe_salvaguarda": {
+      "nome": "O ataque rompe a Salvaguarda",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.mjs → personagem/salvaguarda.romper: o ataque sem canalização usado com a Salvaguarda Intacta a rompe (a Joia Atemporal) (02/11)"
+    },
+    "frasco_restaura_salvaguarda": {
+      "nome": "O frasco restaura a Salvaguarda",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/frascos.usar: a Salvaguarda volta inteira no uso (o Frasco de Ferro) (02/11)"
+    },
+    "frasco_sai_na_quebra_da_salvaguarda": {
+      "nome": "O efeito do frasco sai na quebra da Salvaguarda",
+      "unidade": "",
+      "combate": true,
+      "efeito": "personagem/salvaguarda.quebrar: o efeito do frasco acaba quando ela quebra (a Preparação de Vorana) (02/11)"
+    },
+    "es_inc_na_salvaguarda": {
+      "nome": "O Escudo de Energia aumentado vai para a Salvaguarda",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.defesasDaFicha: o Escudo de Energia aumentado (peças, árvore, Inteligência) sai do Escudo e aumenta a Salvaguarda — o Guardião da Fé (02/11)"
+    },
     "sem_es_da_base": {
       "nome": "Sem Escudo de Energia na base",
       "unidade": "",
@@ -8173,6 +8288,174 @@
       "unidade": "",
       "combate": true,
       "efeito": "personagem/defesa.absorver: o dano não reinicia a espera da recarga (lote E1b, 26/10)"
+    },
+    "luz_pelo_escudo": {
+      "nome": "Raio de Iluminação pelo Escudo de Energia",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/iluminacao.mjs.fracaoDaLuz: a luz encolhe com o Escudo de Energia que falta, não com a vida"
+    },
+    "cegueira_sem_luz": {
+      "nome": "Cegueira não afeta o Raio de Iluminação",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/iluminacao.mjs.raioDaLuz: a Cegueira em você não encolhe a luz"
+    },
+    "luz_no_vinculo_mercenario": {
+      "nome": "Raio de Iluminação no Efeito dos Vínculos no mercenário",
+      "unidade": "",
+      "combate": true,
+      "efeito": "vinculos.doLacaio: o aumentado da luz soma no Efeito do Buff dos Vínculos no mercenário (a foto do Vínculo)"
+    },
+    "tamanho_personagem": {
+      "nome": "Tamanho do Personagem aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/iluminacao.mjs.tamanhoDoPersonagem: o desenho do personagem na escala (no PoE o tamanho só muda o desenho)"
+    },
+    "tamanho_zumbi": {
+      "nome": "Tamanho dos Zumbis aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/iluminacao.mjs.tamanhoDoLacaio: o desenho dos zumbis na escala"
+    },
+    "tamanho_golem": {
+      "nome": "Tamanho dos Golens aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/iluminacao.mjs.tamanhoDoLacaio: o desenho dos golens na escala"
+    },
+    "lacaios_sangrar_andando_sem_extra": {
+      "nome": "Se mover enquanto Sangrando não faz os Lacaios sofrerem Dano extra",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cacadas.tiqueDosLacaios → combate-100.tiqueDoLacaio (100% — combate, 02/11)"
+    },
+    "imune_empurrao": {
+      "nome": "Não pode ser Empurrado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "poderes.dispararMagia → combate-100.empurrarJogador (100% — combate, 02/11)"
+    },
+    "arqueiros_nao_grudados": {
+      "nome": "Arqueiros Ilusórios não são grudados em você",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueR3B → combate-100.grudarArqueiros (100% — combate, 02/11)"
+    },
+    "arqueiro_sem_convocar_perto": {
+      "nome": "Não pode Convocar Arqueiros Ilusórios perto dos seus Arqueiros Ilusórios",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.arqueiroIlusorioR3B → combate-100.podeConvocarArqueiro (100% — combate, 02/11)"
+    },
+    "cadaver_vida_inc": {
+      "nome": "Vida Máxima dos Cadáveres criados aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.criarCadaveres (100% — combate, 02/11)"
+    },
+    "imune_solo_congelado": {
+      "nome": "Inafetado por Solo Congelado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mobs/mecanicas (os solos dos monstros) → combate-100.resfriarPeloSolo (100% — combate, 02/11)"
+    },
+    "minas_detonacoes_extra": {
+      "nome": "Minas podem ser Detonadas vezes adicionais (Re-armar)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDasPlantadas → combate-100.rearmarMina (100% — combate, 02/11)"
+    },
+    "raio_prisma_nao_escolhe_fire": {
+      "nome": "Joia (raio): o Foco de Combate — o total dos dois atributos alocados no raio para as Habilidades Prismáticas não escolherem Fogo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias → `prisma_nao_escolhe_fire` (100% — dados)"
+    },
+    "raio_prisma_menos_fire_limiar": {
+      "nome": "Joia (raio): o Foco de Combate — o total dos dois atributos alocados no raio para o \"menos Dano de Fogo\" das Habilidades Prismáticas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (100% — dados)"
+    },
+    "raio_prisma_menos_fire": {
+      "nome": "Joia (raio): o Foco de Combate — X% menos Dano de Fogo das Habilidades Prismáticas",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias → `mais_dano_<el>@prismatico` (100% — dados)"
+    },
+    "prisma_nao_escolhe_fire": {
+      "nome": "As Habilidades Prismáticas não podem escolher Fogo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/prismaticas.proibidos → a escolha do elemento (100% — dados)"
+    },
+    "raio_prisma_nao_escolhe_ice": {
+      "nome": "Joia (raio): o Foco de Combate — o total dos dois atributos alocados no raio para as Habilidades Prismáticas não escolherem Gelo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias → `prisma_nao_escolhe_ice` (100% — dados)"
+    },
+    "raio_prisma_menos_ice_limiar": {
+      "nome": "Joia (raio): o Foco de Combate — o total dos dois atributos alocados no raio para o \"menos Dano de Gelo\" das Habilidades Prismáticas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (100% — dados)"
+    },
+    "raio_prisma_menos_ice": {
+      "nome": "Joia (raio): o Foco de Combate — X% menos Dano de Gelo das Habilidades Prismáticas",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias → `mais_dano_<el>@prismatico` (100% — dados)"
+    },
+    "prisma_nao_escolhe_ice": {
+      "nome": "As Habilidades Prismáticas não podem escolher Gelo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/prismaticas.proibidos → a escolha do elemento (100% — dados)"
+    },
+    "raio_prisma_nao_escolhe_energy": {
+      "nome": "Joia (raio): o Foco de Combate — o total dos dois atributos alocados no raio para as Habilidades Prismáticas não escolherem Raio",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias → `prisma_nao_escolhe_energy` (100% — dados)"
+    },
+    "raio_prisma_menos_energy_limiar": {
+      "nome": "Joia (raio): o Foco de Combate — o total dos dois atributos alocados no raio para o \"menos Dano de Raio\" das Habilidades Prismáticas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (100% — dados)"
+    },
+    "raio_prisma_menos_energy": {
+      "nome": "Joia (raio): o Foco de Combate — X% menos Dano de Raio das Habilidades Prismáticas",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias → `mais_dano_<el>@prismatico` (100% — dados)"
+    },
+    "prisma_nao_escolhe_energy": {
+      "nome": "As Habilidades Prismáticas não podem escolher Raio",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/prismaticas.proibidos → a escolha do elemento (100% — dados)"
+    },
+    "raio_efeito_tatuagens": {
+      "nome": "Joia (raio): Efeito das Tatuagens no Raio aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.efeitosNoRaio — os números das Tatuagens dos nós do raio (100% — dados)"
+    },
+    "solo_congelado_efeito": {
+      "nome": "Efeito do Solo Congelado aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.criarSoloCongelado: o Resfriamento do Solo Congelado que você cria (10% × o aumentado — a Harpa de Nuro; 03/11)"
+    },
+    "frasco_solo_congelado": {
+      "nome": "Cria Solo Congelado ao Utilizar (o frasco)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "frascos.aoUsarOFrasco → condicoes-poe.criarSoloCongelado: o Solo Congelado no chão onde você está, ao usar o Frasco de Água-marinha (03/11)"
     }
   }
 }

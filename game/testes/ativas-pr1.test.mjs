@@ -10,7 +10,7 @@ import { existsSync } from 'node:fs';
 process.env.ITENS_POE = '1';
 const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
 const SEM = (!existsSync(Catalogo.ARQUIVO) || !Catalogo.ligado()) && 'só no modo PoE, com o catálogo do PoE';
-const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
+const { personagemDeTeste, PERSONAGEM, pousarVoos } = await import('./apoio.mjs');
 const Acoes = await import('../systems/acoes.mjs');
 const GS = await import('../systems/skills/gemas.mjs');
 const G = await import('../systems/itens-poe/gemas-poe.mjs');
@@ -64,8 +64,11 @@ async function montar(slug, { nivel = 20, qualidade = 0, arma = 'Wands/Driftwood
 function usar(e, b, v = 0) {
   return travado(v, () => {
     const x = Acoes.disparar(e, e.hunt, PERSONAGEM, 0, b, { manual: true });
-    if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM); }
-    return x;
+    let ev = [...(x.eventos ?? [])];
+    if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; ev.push(...(Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM) ?? [])); }
+    // aval do dono 03/11: o voo de verdade — o golpe do projétil cai no tique em que ele chega (`pousarVoos`)
+    ev.push(...pousarVoos(e.hunt));
+    return { ...x, eventos: ev };
   });
 }
 /** Um segundo monstro imortal em `(dx, dy)` de você. */
@@ -78,7 +81,8 @@ test('PR1: as gemas do lote saem de parcial (as linhas do PoE têm leitor); a H�
     const r = G.REGISTRO.get(s);
     assert.deepEqual([s, r.statusNoJogo, r.motivosNoJogo], [s, 'funciona', []]);
   }
-  assert.ok(G.REGISTRO.get('Spectral_Helix').linhasNaoSeAplicam.some((n) => /Gira por N rotações/.test(n)));
+  // aval do dono 03/11: 100% — projétil, o voo de verdade: o "Gira por N rotações" da Hélice vale (antes registrado como "não se aplica")
+  assert.ok(!(G.REGISTRO.get('Spectral_Helix').linhasNaoSeAplicam ?? []).some((n) => /Gira por N rotações/.test(n)));
 });
 
 // ---------------------------------------------------------------- o dano adicional pela Vida/Mana máxima
@@ -163,7 +167,6 @@ test('PR1: o de Trarthus — o escudo para no alvo; as rajadas de 6, a primeira 
   const { e, b, resto } = await montar('Spectral_Shield_Throw_of_Trarthus', { arma: 'One_Hand_Swords/Rusted_Sword', escudo: 'Shields/Splintered_Tower_Shield' });
   // (o de trás, a 3 casas do alvo no rumo do tiro: o escudo não o acerta; as estilhas do sorteio 0 — o leste — sim)
   const m2 = outro(e, resto, 4, 0);
-  const t0 = e.hunt.clock;
   const vidaB = b.hp;
   const r = usar(e, b, 0);
   assert.ok(r.ok, r.erro);
@@ -172,11 +175,13 @@ test('PR1: o de Trarthus — o escudo para no alvo; as rajadas de 6, a primeira 
   assert.equal(m2.hp, 1e12, 'o escudo não passa do local mirado');
   const o = e.hunt.poeObjetos.find((x) => x.tipo === 'escudo');
   assert.deepEqual([o.n, o.porVez, o.maisPct, o.x, o.y], [23, 6, -50, b.x, b.y]);
+  const t0 = o.proxima - 600; // aval do dono 03/11: o voo de verdade — o escudo para no alvo quando chega (o tique de chegada), não no uso
   const tique = (dt) => travado(0, () => Acoes.tiqueDosObjetos(e, e.hunt, PERSONAGEM, [], t0 + dt));
   tique(599);
   assert.equal(o.feitos, 0);
   tique(600);
   assert.equal(o.feitos, 6);
+  pousarVoos(e.hunt, { sorte: 0 }); // aval do dono 03/11: o voo de verdade — as estilhas voam até o de trás (o tique de chegada)
   // (6 estilhas × 50% = 3 × o golpe do escudo)
   assert.ok(perto((1e12 - m2.hp) / doEscudo, 3, 0.02), `razão ${(1e12 - m2.hp) / doEscudo}`);
   tique(1028);
@@ -199,8 +204,8 @@ test('PR1: a Flecha Galvânica — o cone na sua frente (2,8 m + a qualidade), a
   const r = usar(e, b, 0);
   assert.ok(r.ok, r.erro);
   const golpesEm = (m) => r.eventos.filter((ev) => ev.t === 'dmg' && ev.uid === m.uid).length;
-  // (o alvo: a flecha e o cone; o do lado: a flecha a mais e o cone)
-  assert.deepEqual([golpesEm(b), golpesEm(m2)], [2, 2]);
+  // (o alvo: a flecha e o cone; o do lado: só o cone)
+  assert.deepEqual([golpesEm(b), golpesEm(m2)], [2, 1]); // aval do dono 03/11: a geometria do leque — a flecha a mais a 10° não vai no do lado (2 → 1)
 });
 
 // ---------------------------------------------------------------- o Desenterrar

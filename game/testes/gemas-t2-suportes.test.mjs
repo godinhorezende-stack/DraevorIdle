@@ -96,10 +96,13 @@ test('T2 Multiple_Projectiles: +2 projéteis e 6% menos Dano de Projétil no 20 
   const m = ef('Multiple_Projectiles_Support', 20, 0, 'Projétil');
   assert.deepEqual([m.alvosExtras, m.maisDanoAcertoPct, m.custoPct], [2, -6, 30]);
   assert.equal(ef('Multiple_Projectiles_Support', 1, 0, 'Projétil').maisDanoAcertoPct, -15);
-  const tiro = async (slugs) => { const { e, b, resto } = await montar(slugs, { arma: 'Bows/Crude_Bow' }); perto_(b, resto, [[0, 1], [1, 0], [0, -1], [1, 1]]); const { ev } = usar(e, 0, b); return { alvo: danoEm(ev, b), n: [b, ...resto.slice(0, 4)].filter((x) => danoEm(ev, x) > 0).length }; };
+  const tiro = async (slugs) => { const { e, b, resto } = await montar(slugs, { arma: 'Bows/Crude_Bow' }); perto_(b, resto, [[0, 1], [1, 0], [0, -1], [1, 1]]); const { ev } = usar(e, 0, b); const ms = [b, ...resto.slice(0, 4)].filter((x) => danoEm(ev, x) > 0); return { alvo: danoEm(ev, b), n: ms.length, quem: ms.map((x) => `${x.x - b.x},${x.y - b.y}`) }; };
   const sem = await tiro(['Burning_Arrow']);
   const com = await tiro(['Burning_Arrow', 'Multiple_Projectiles_Support']);
-  assert.deepEqual([sem.n, com.n], [1, 3]);
+  assert.deepEqual([sem.n, com.n], [1, 2]); // aval do dono 03/11: a geometria do leque — o de 10° não chega a todos em volta do alvo (3 → 2)
+  // aval do dono 03/11: raio contínuo (revisão) — o de +10° segue o raio do ângulo exato e pega o que está atrás do alvo na fila (o 2,0 de você); o de −10°
+  // passa pelo mesmo (D7b: não o acerta de novo) e não acha outro. Antes o fim arredondado a 3 casas mandava o +10° para o (2,1), a 26,6°
+  assert.deepEqual(com.quem, ['0,0', '1,0']); // aval do dono 03/11: raio contínuo (revisão)
   assert.ok(perto(com.alvo / sem.alvo, 0.94, 0.01), `${com.alvo} / ${sem.alvo}`);
 });
 
@@ -133,7 +136,7 @@ test('T2 Awakened_Greater_Multiple_Projectiles: no 5, +5 projéteis e 21% menos 
   const tiro = async (slugs) => { const { e, b, resto } = await montar(slugs, { arma: 'Bows/Crude_Bow', nivelDe: { Awakened_Greater_Multiple_Projectiles_Support: 5 } }); perto_(b, resto, [[0, 1], [1, 0], [0, -1], [1, 1], [1, -1], [2, 0], [2, 1]]); const { ev } = usar(e, 0, b); return { alvo: danoEm(ev, b), n: [b, ...resto.slice(0, 7)].filter((x) => danoEm(ev, x) > 0).length }; };
   const sem = await tiro(['Burning_Arrow']);
   const com = await tiro(['Burning_Arrow', 'Awakened_Greater_Multiple_Projectiles_Support']);
-  assert.equal(com.n, 6);
+  assert.equal(com.n, 6); // aval do dono 03/11: raio contínuo (revisão) — o leque a 10° no raio do ângulo exato pega 6 (o +10° e o +20° não se fundem mais na mesma reta)
   assert.ok(perto(com.alvo / sem.alvo, 0.79, 0.01), `${com.alvo} / ${sem.alvo}`);
 });
 

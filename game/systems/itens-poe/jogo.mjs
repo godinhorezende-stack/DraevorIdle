@@ -223,6 +223,9 @@ function baseDaPeca(a, af, fq = 1) {
     ...(a.armadura ? { armor: mult([a.armadura, a.armadura]) } : {}),
     ...(a.evasao ? { evasion: mult([a.evasao, a.evasao]) } : {}),
     ...(a.escudo_energia && !(Number(af.sem_es_da_base) > 0) ? { es: mult([a.escudo_energia, a.escudo_energia]) } : {}),
+    // (02/11, dono: a Salvaguarda como o PoE) a SALVAGUARDA da peça (as bases Rúnicas: `protecao`): (a base + o "+N de Proteção" LOCAL — Svalinn) × (1 + a qualidade +
+    // o "Proteção aumentada em X%" LOCAL — os únicos Rúnicos; o poedb: "local ward +%") — a ficha soma (`ficha.defesasDaFicha`, `personagem/salvaguarda.mjs`)
+    ...(Number(a.protecao) || Number(af.salvaguarda_local) ? { ward: ((v) => [v, v])(Math.round(((Number(a.protecao) || 0) + (Number(af.salvaguarda_local) || 0)) * Math.max(0, fq + (Number(af.salvaguarda_pct_local) || 0) / 100))) } : {}),
   };
 }
 
@@ -462,7 +465,28 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (72 — 20/10, lote A5b: a precisão "+X de Precisão" da arma é local — `accuracy_local`)
 // (73 — 20/10, dono: "Adiciona X a Y de Dano Físico em Ataques" (e as variantes por arma, por atributo, por carga) com +X no mínimo e +Y no máximo —
 // `phys_add_min`/`phys_add_max` —, como no PoE; antes a média em `phys_add`, com o máximo 2×)
-export const VERSAO_DA_TRADUCAO = 73;
+// (74 — 02/11, dono: a SALVAGUARDA (Ward) como o PoE — a das bases Rúnicas na peça (`base.ward`), as linhas da "Proteção" dos únicos e as da Salvaguarda das Joias
+// Atemporais com efeito — `personagem/salvaguarda.mjs`)
+// (75 — 02/11: as linhas da Salvaguarda que faltavam — o Caos do Aperto Noturno, a Decisão de Olroth, a Preparação de Vorana, a Postura de Ynda e as das Joias
+// Atemporais: a Intacta/Rompida, o "+N por N de Armadura/Evasão/Escudo da peça", a Evasão e a redução física pela Salvaguarda, a chance de não se Romper, o ataque que
+// rompe, os Frascos de Ferro e a Afecção removida na restauração — `personagem/salvaguarda.mjs`)
+// (76 — 03/11, lote "luz": o RAIO DE ILUMINAÇÃO (`light_radius`, a escuridão em volta na caçada), o que depende da luz (dano, área, precisão, o
+// Eclipse Solaris, a Glória Dourada), o Campo de Visão pelo Escudo, a Cegueira sem luz e o tamanho no desenho — `itens-poe/iluminacao.mjs`)
+// (77 — 03/11, lote "projetil" do dono: o voo de verdade dos projéteis — "X% mais/menos Velocidade de Projéteis" (`proj_vel_mais`) e o "Ângulo da Difusão de
+// Projéteis aumentado/reduzido" (`proj_difusao_angulo_inc`) valem; eram "não se aplica ao jogo")
+// (78 — 02/11, 100% — combate: os lacaios sangram (e o "Se Mover enquanto Sangrando não faz com que Lacaios sofram Dano extra"), o Agravar no Amaldiçoado, o
+// alcance em décimos de metro (o Escudo, o Encaixe Branco, o do suporte), "Não Pode ser Empurrado", a Força Ocupante, a Furtividade, a Vida dos Cadáveres, o Solo
+// Congelado e o Re-armar das Minas — `itens-poe/combate-100.mjs`)
+// (79 — 03/11, "100%" lote mundo: os baús do PoE — "abrir Baús próximos", "Seus Clamores abrem Baús" —, o Estandarte ("Bônus do seu estandarte permanecem"),
+// a aura (a área e a duração), o Vínculo e "Punição pode afetar Inimigos Infeitiçáveis" — `itens-poe/baus-poe.mjs`)
+// (80 — 03/11, 100% — dados: as Habilidades Prismáticas — o Foco de Combate na árvore, `itens-poe/prismaticas.mjs` — e as Tatuagens — o Conto do Guerreiro, o
+// Devorador de Corações; `passivas/tatuagens.mjs`)
+// (82 — 03/11, combate + luz + árvore: o Solo Congelado que você cria — a Harpa de Nuro, a Coroa da Salmoura, o Frasco de Água-marinha — com o "Efeito do Solo
+// Congelado aumentado" e a Vida Regenerada "sobre Solo Congelado" (`condicoes-poe.criarSoloCongelado`/`noSoloCongelado`); a nota larga dos solos diz quais ainda
+// não existem; o "tamanho do Personagem reduzido" (t minúsculo — o Ninho do Rato) casa)
+// (83 — 03/11, frente mundo + dados: o Foco de Combate só nos 3 elementos do PoE — Fogo, Gelo e Raio; o curinga {E} também casava "Caos" e gerava
+// `raio_prisma_*_chaos`, não cadastrado)
+export const VERSAO_DA_TRADUCAO = 83;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
@@ -560,7 +584,8 @@ export function qualidadeDoDrop(peca, rng = Math.random, regras = Catalogo.REGRA
   const p = peca?.poe;
   if (!p || !q?.chance) return peca;
   // (a Tintura não tem qualidade: nada nela escala com a qualidade)
-  const temBase = !!(p.atributos?.dano_fisico || p.atributos?.armadura || p.atributos?.evasao || p.atributos?.escudo_energia) || (FRASCOS.includes(p.classe) && p.classe !== 'Tinctures');
+  // (02/11: + as Rúnicas — a qualidade aumenta a Salvaguarda da base, como no PoE)
+  const temBase = !!(p.atributos?.dano_fisico || p.atributos?.armadura || p.atributos?.evasao || p.atributos?.escudo_energia || p.atributos?.protecao) || (FRASCOS.includes(p.classe) && p.classe !== 'Tinctures');
   if (!temBase || rng() >= q.chance) return peca;
   p.qualidade = 1 + Math.floor(rng() * Math.max(1, q.maximo ?? 20));
   return recalcular(peca, regras);

@@ -50,6 +50,8 @@ import * as Gemas from '../gemas.mjs';
 import * as Charms from '../charms.mjs';
 import * as ItensPoeJogo from '../itens-poe/jogo.mjs';
 import * as MoedasPoe from '../itens-poe/moedas.mjs';
+// (100% — dados, 03/11) as Tatuagens do PoE (a fonte simples, sem a liga Ancestral — `passivas/tatuagens.dropDoMonstro`)
+import * as Tatuagens from '../passivas/tatuagens.mjs';
 import * as Pinaculos from '../itens-poe/pinaculos.mjs';
 import { tipoDoBicho } from './escalonamento.mjs';
 import * as Mapas from '../itens-poe/mapas.mjs';
@@ -64,6 +66,9 @@ import { BESTIARY, RESPAWN_MS } from './monstros.mjs';
 export const nivelDoDropPoe = (hunt, alvo) => BESTIARY[alvo?.key]?.poe?.nivel ?? hunt?.escala?.nivel ?? AtributosDoPersonagem.levelDoBicho(hunt, { ...alvo, levelExtra: 0 });
 import { resistido, resistenciaEfetivaDe, resistenciaDe } from './resistencia.mjs';
 import * as ModsPoe from '../itens-poe/mods-poe.mjs';
+// (lote "projetil", dono 02/11) o golpe básico de longe VOA (o projétil da arma — `hunt/voos.mjs`)
+import * as GemasVoo from '../itens-poe/projeteis-voo.mjs';
+import * as Voos from './voos.mjs';
 import * as GemasA2 from '../itens-poe/gemas-a2.mjs';
 // (lotes G-B e G-D, dono 25/10: as Guardas no acerto em você — a absorção, o Imortal, o gelo da Armadura Ártica Vaal, o Resfriar de quem acerta)
 import * as GemasGBD from '../itens-poe/gemas-gbd.mjs';
@@ -79,6 +84,7 @@ import { distancia } from './caminho.mjs';
 import { tirarMonstro, salaDe } from './sala.mjs';
 import { alvoAtual } from './alvo.mjs';
 import * as Defesa from '../personagem/defesa.mjs';
+import * as Salvaguarda from '../personagem/salvaguarda.mjs';
 import * as Anuncios from '../anuncios.mjs';
 import * as Tags from '../skills/tags.mjs';
 import * as GemasDeSkill from '../skills/gemas.mjs';
@@ -87,6 +93,7 @@ import * as FrascosPoe from '../itens-poe/frascos.mjs';
 import * as Protecao from '../protecao.mjs';
 import * as GemasR3D from '../itens-poe/gemas-r3d.mjs';
 import * as Testador from '../personagem/testador.mjs';
+import * as Combate100 from '../itens-poe/combate-100.mjs';
 
 /** Depois de qualquer dano de ação (magia/runa) — mata e dá loot de quem chegou a 0. */
 export function processarMortes(estado, personagem, eventos) {
@@ -146,8 +153,10 @@ function feiticosDoMorto(hunt, m, eventos) {
  * + o atributo "Armadura" (`armor_flat`). Antes somava só o catálogo e o
  * atributo aparecia na ficha sem cortar nada (auditoria dos atributos, 29/09).
  */
+// (02/11, a Joia Atemporal: "A Redução de Dano Físico de Acertos se baseia em 200% da sua Salvaguarda em vez da sua Armadura" — `ficha.armaduraDaReducao`)
 export function armorDoPersonagem(estado) {
-  return Ficha.combate(estado).armor ?? 0;
+  const f = Ficha.combate(estado);
+  return f.armaduraDaReducao ?? f.armor ?? 0;
 }
 
 /** O ML de BÔNUS (itens, proficiência, imbuement): +1% de dano/cura por ponto em magia, runa e wand (decisão do dono). */
@@ -179,7 +188,10 @@ export function categoriaDaArma(arma) {
 
 export function alcanceDaArma(arma, estado = null) {
   // + o "alcance" da proficiência (arco, besta, wand), com a arma na mão. PoE: "+N metros ao Alcance de Golpes Corpo a Corpo" (1 casa = 2 m).
-  return categoriaDaArma(arma) === 'melee' ? 1 + (estado ? Ficha.combate(estado).alcanceCorpoExtra ?? 0 : 0) : (arma?.range ?? 3);
+  // (100% — combate, 02/11: + a casa a mais na chance da fração dos metros — `Combate100.casaDaFracao`, a sorte do golpe)
+  if (categoriaDaArma(arma) !== 'melee') return arma?.range ?? 3;
+  const f = estado ? Ficha.combate(estado) : null;
+  return 1 + (f?.alcanceCorpoExtra ?? 0) + (f?.alcanceCorpoFracao > 0 ? Combate100.casaDaFracao(estado.hunt, f.alcanceCorpoFracao) : 0);
 }
 
 /*
@@ -624,9 +636,9 @@ function escolherDono({ estado, personagem, juntos, id, peca, origem, verificar 
  * Entrega `n` moedas (`id`) de um drop. Moeda do loot cai no bolso (carregado), como o resto do ouro ganho caçando — só vai para o banco
  * quando o jogador deposita de propósito no Banqueiro. (Uma versão anterior mandava direto para `bank`, a partir de uma medição do original
  * que o dono do projeto confirmou estar errada.) Na party: partes iguais; o resto (unidades que não dividem) roda entre os integrantes,
- * evento a evento (`dividirOuro`).
+ * evento a evento (`dividirOuro`). (03/11: exportada — o baú do PoE divide o ouro dele pelo mesmo caminho, `itens-poe/baus-poe.pagar`.)
  */
-function entregarMoedas({ estado, juntos, sala, caiu, conta }, id, n) {
+export function entregarMoedas({ estado, juntos, sala, caiu, conta }, id, n) {
   if (!(n > 0)) return;
   const total = n * VALOR_DA_MOEDA[id];
   caiu.push({ id, count: n });
@@ -1042,7 +1054,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // As MOEDAS do PoE (Transmutação, Caos, Exaltado... — `itens-poe/moedas.mjs`, chances em `regras.json → moedas.drop`).
   // (+ as do chefe do mapa ÚNICO — "Chefe Único derruba N Itens Monetários adicionais": `efeitos.chefe.moedasExtras`.)
   const moedasDoChefe = noMapa && alvo.chefeDoMapa ? MoedasPoe.moedasAvulsas(Number(noMapa.efeitos?.chefe?.moedasExtras) || 0) : [];
-  for (const moeda of [...MoedasPoe.dropDoMonstro(tipoDoBicho(alvo), Math.random, quantidadeDoJogador), ...moedasDoChefe]) {
+  // (100% — dados, 03/11: + as TATUAGENS — a chance pela raridade do bicho, a da Jornada só na área 81+; o filtro e a bolsa como as moedas)
+  for (const moeda of [...MoedasPoe.dropDoMonstro(tipoDoBicho(alvo), Math.random, quantidadeDoJogador), ...moedasDoChefe, ...(BESTIARY[alvo.key]?.poe ? Tatuagens.dropDoMonstro(tipoDoBicho(alvo), nivelDoDropPoe(hunt, alvo), Math.random, quantidadeDoJogador) : [])]) {
     // A moeda marcada em "Não coletar" (a lista) fica no chão.
     if (Bolsa.ignora(estado, moeda.id)) {
       conta('ignorado', moeda.id, moeda.count);
@@ -1258,11 +1271,16 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   if (final > 0) ModsPoe.antesDeSerAcertado(estado, hunt, ficha);
   // "Conjurar ao Receber Dano" (suporte de gatilho do PoE): o dano recebido (antes do Escudo de Energia, como no PoE) soma no limiar.
   if (final > 0) Acoes.aoReceberDano(estado, hunt, personagem, final, eventos);
+  // (02/11, dono: a SALVAGUARDA como o PoE) o acerto sai primeiro da Salvaguarda — antes da Égide, do Escudo Gélido, da Guarda, do Vínculo e do Escudo de Energia —;
+  // na quebra, o Conjurar ao Perder Salvaguarda e o evento `salvaguardaQuebra` (`personagem/salvaguarda.mjs`). As partes de cada tipo (a Égide, o Físico que ignora o
+  // Escudo, o Caos que o atravessa) seguem na proporção do que sobrou dela.
+  if (final > 0) final = Salvaguarda.absorver(estado, hunt, ficha, final, eventos, { uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: bicho.name, golpe: 'corpo a corpo' }, personagem);
+  const fatorDaSalvaguarda = danoDoAcerto > 0 ? final / danoDoAcerto : 1;
   // (14/10, as Égides — a Primitiva do Elementalist e as dos únicos: a parte de cada tipo do acerto sai da Égide dele antes do Escudo e da
   // Vida — `ModsPoe.absorverNaEgide`)
   if (final > 0 && hunt.egides) {
-    const porTipo = { physical: fisicoProtegido * fatorFinal };
-    for (const [el, v] of Object.entries(partes)) porTipo[el] = (porTipo[el] ?? 0) + v * fatorFinal;
+    const porTipo = { physical: fisicoProtegido * fatorFinal * fatorDaSalvaguarda };
+    for (const [el, v] of Object.entries(partes)) porTipo[el] = (porTipo[el] ?? 0) + v * fatorFinal * fatorDaSalvaguarda;
     const tomou = Math.min(final, Math.round(ModsPoe.absorverNaEgide(hunt, porTipo, hunt.clock ?? 0)));
     if (tomou > 0) { final -= tomou; eventos.push({ t: 'dmg', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, v: tomou, foe: false, de: bicho.name, golpe: 'corpo a corpo', color: '#c8a2ff' }); }
   }
@@ -1296,7 +1314,7 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // "X% do Dano … recebido como Dano de Caos" — também atravessa o Escudo: `ModsPoe.caosNasPartes`)
   const caosFisico = Math.min(fisicoProtegido, brutoFisico * ModsPoe.parteCaosRecebida(ficha, 'physical'));
   // (revisão PR2, dono 21/10: o Escudo Gélido e o Vínculo também levam a parte deles do Físico que ignora o Escudo — a mesma proporção do Caos)
-  const depoisDosDesvios = depoisDaEgide > 0 ? final / depoisDaEgide : 0;
+  const depoisDosDesvios = depoisDaEgide > 0 ? (final / depoisDaEgide) * fatorDaSalvaguarda : 0;
   const fisicoDireto = ModsPoe.valor(ficha, 'fisico_ignora_escudo') > 0 ? Math.min(final, Math.round((fisicoProtegido - caosFisico) * fatorFinal * depoisDosDesvios)) : 0;
   if (fisicoDireto > 0) Defesa.reiniciarEspera(estado, ficha);
   // (dono, 20/10 — o lote PR2: "o Caos dos monstros atravessa o Escudo de Energia, como no PoE") a parte de Caos do golpe — a do monstro (`danoExtra`, o
@@ -1556,8 +1574,18 @@ export function elementalDosAtributos(estado, hunt, alvo, ficha, fisico, rolagem
 }
 
 export function round(estado, personagem) {
+  const r = golpeDoRound(estado, personagem);
+  // (100% — combate, 02/11; 03/11: só DEPOIS do golpe inteiro — o principal, os alvos do Impelido, as flechas a mais e o ataque duplo usam a mesma sorte;
+  // antes ela mudava logo no `bateu` e os alvos extras do mesmo golpe viam outra casa a mais) o golpe saiu: a sorte da casa a mais do alcance do próximo é
+  // outra (`Combate100.renovarSorteDoAlcance`)
+  if (r.bateu && itensPoeLigado()) Combate100.renovarSorteDoAlcance(estado.hunt);
+  return r;
+}
+
+function golpeDoRound(estado, personagem) {
   const hunt = estado.hunt;
-  const eventos = [];
+  // (lote "projetil": `let` — o golpe do projétil que chega depois sai com os eventos da chegada)
+  let eventos = [];
   // No duelo, mirando o adversário: o golpe básico é dele (`Arena.antesDoTique`).
   if (hunt.alvoPvp) return { eventos, bateu: false };
   const alvo = alvoAtual(hunt);
@@ -1605,6 +1633,8 @@ export function round(estado, personagem) {
        */
       // (revisão G) os alvos a mais do golpe Impelido pelo Clamor Ancestral (o golpe principal os anota; o tique os golpeia depois dele)
       let alvosDoImpelido = 0;
+      // (lote "projetil") o tiro que já saiu na tela (o golpe que chega depois não o desenha de novo)
+      let tiroJaSaiu = false;
       const golpear = (segundo, alvo = alvoDoTique, extraDoImpelido = false) => {
         // A ficha DESTE golpe (PoE): os mods condicionais pelas tags do golpe básico (ataque, corpo a corpo/projétil, físico, arco) e pelo
         // alvo, e os sorteios do golpe (dano dobrado, ignorar a redução física) — `itens-poe/mods-poe.mjs`. Sem o PoE, a mesma ficha.
@@ -1646,7 +1676,7 @@ export function round(estado, personagem) {
         // Accuracy: o golpe pode errar o bicho (a perícia treina igual, como no Tibia).
         if (Defesa.errou(ficha, hunt, alvo)) {
           Treino.treinar(estado, pericia);
-          if (categoriaDaArma(arma) === 'distancia') eventos.push({ t: 'shot', id: tiroDaArma(estado, arma), x: hunt.pos.x, y: hunt.pos.y, tx: alvo.x, ty: alvo.y });
+          if (categoriaDaArma(arma) === 'distancia' && !tiroJaSaiu) eventos.push({ t: 'shot', id: tiroDaArma(estado, arma), x: hunt.pos.x, y: hunt.pos.y, tx: alvo.x, ty: alvo.y });
           eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', esquiva: true, errou: true });
           return false;
         }
@@ -1729,7 +1759,7 @@ export function round(estado, personagem) {
         if (!segundo && (ficha.vidaPorAcerto || ficha.manaPorAcerto)) Ficha.curar(estado, ficha.vidaPorAcerto, ficha.manaPorAcerto, eventos, personagem.nome, hunt.pos);
         // Arma de distância (spear, arco, besta, estrela...): o projétil voa até o
         // alvo antes do dano, igual ao original — antes só a wand mandava `shot`.
-        if (categoriaDaArma(arma) === 'distancia') {
+        if (categoriaDaArma(arma) === 'distancia' && !tiroJaSaiu) {
           // (PoE: "Velocidade do Projétil aumentada" — o projétil voa mais rápido na tela.)
           const vel = 1 + ModsPoe.valor(ficha, 'projectile_speed') / 100;
           eventos.push({ t: 'shot', id: tiroDaArma(estado, arma), x: hunt.pos.x, y: hunt.pos.y, tx: alvo.x, ty: alvo.y, ...(vel !== 1 ? { vel } : {}) });
@@ -1789,11 +1819,50 @@ export function round(estado, personagem) {
         for (const x of [{ ...marcou, bicho: alvo }, ...(marcou.espalhou ?? [])]) if (x.amaldicoouSemMaldicao) ModsPoe.evento(estado, hunt, 'amaldicoarSemMaldicao', ficha, { alvo: x.bicho, eventos, personagem });
         return true;
       };
-      const acertouOPrincipal = golpear(false);
+      /*
+       * (lote "projetil", dono 02/11) O TIRO DE VERDADE: o golpe de longe (arco, varinha, arremesso) sai como um projétil — a 32.6 m/s do poedb (a das flechas e
+       * varinhas, D1 de `projeteis-voo.mjs`) × a Velocidade de Projétil da ficha — e acerta o primeiro que encontra no caminho (o terreno o para); o golpe sai
+       * no contato: na hora, se chega a até meio tique, senão no tique em que chega (`Voos.tique`), com a ficha deste golpe. O tiro que se perde não acerta.
+       */
+      const voaOTiro = itensPoeLigado() && categoriaDaArma(arma) === 'distancia';
+      const depoisDoTiro = (m, fn) => {
+        if (estado.hunt !== hunt || !(estado.hp > 0)) return [];
+        const ev0 = eventos;
+        eventos = [];
+        tiroJaSaiu = true;
+        try { fn(); } finally { tiroJaSaiu = false; }
+        if (m.dummy) m.hp = m.maxHp;
+        else if (m.hp <= 0) { feiticosDoMorto(hunt, m, eventos); matarMonstro(estado, hunt, personagem, m, eventos); }
+        processarMortes(estado, personagem, eventos);
+        const saida = eventos;
+        eventos = ev0;
+        return saida;
+      };
+      const tirar = (segundo, alvoDoTiro = alvoDoTique, extra = false) => {
+        if (!voaOTiro) return golpear(segundo, alvoDoTiro, extra);
+        const z = hunt.z ?? 0;
+        const fichaDoVoo = ModsPoe.fichaDoGolpe(fichaDoPersonagem, ModsPoe.tagsDoGolpeBasico(estado, 'distancia'), { estado });
+        const mod = Math.max(0.05, (1 + ModsPoe.valor(fichaDoVoo, 'projectile_speed') / 100) * (1 + ModsPoe.valor(fichaDoVoo, 'proj_vel_mais') / 100));
+        let contato = null;
+        let perdeu = false;
+        const voo = Voos.lancar(hunt, {
+          de: { x: hunt.pos.x, y: hunt.pos.y }, para: { x: alvoDoTiro.x, y: alvoDoTiro.y }, z, alcance: Math.max(1, alcanceDaArma(arma, estado)), v0: GemasVoo.casasPorSegundo(GemasVoo.VOO.padraoAtaqueM, mod), agora: hunt.clock ?? 0,
+          colide: (c) => hunt.monstros.find((b) => b.hp > 0 && b.x === c.x && b.y === c.y && (b.z ?? hunt.z ?? 0) === z) ?? null,
+          parede: (c) => { const g = ModsPoe.gradeDoCombate(hunt)?.andavel; return !!g && !g.has(`${c.x},${c.y}`); },
+          aoContato: (m, casa, { adiado }) => { if (!adiado) { contato = m; return []; } return depoisDoTiro(m, () => golpear(segundo, m, extra)); },
+          aoFim: (casa, { adiado }) => { if (!adiado) perdeu = true; return []; },
+        });
+        if (contato) return golpear(segundo, contato, extra);
+        const vel = 1 + ModsPoe.valor(fichaDoVoo, 'projectile_speed') / 100;
+        eventos.push({ t: 'shot', id: tiroDaArma(estado, arma), x: hunt.pos.x, y: hunt.pos.y, tx: alvoDoTiro.x, ty: alvoDoTiro.y, ...(vel !== 1 ? { vel } : {}), ...(voo.ms > 0 ? { ms: voo.ms } : {}) });
+        // (o que está no ar conta como o golpe que saiu — os extras e o ataque duplo saem também; o que se perdeu, não)
+        return !perdeu;
+      };
+      const acertouOPrincipal = tirar(false);
       // (revisão G) "Golpes Impelidos focam em N Inimigos adicionais" (o Ancestral): os vivos mais perto do alvo, ao alcance da arma, com o mesmo golpe
       const extrasDoImpelido = alvosDoImpelido;
       alvosDoImpelido = 0;
-      if (extrasDoImpelido > 0) for (const outro of ModsPoe.alvosDosProjeteisExtras(hunt, alvo, extrasDoImpelido, alcanceDaArma(arma, estado))) if (outro.hp > 0) golpear(false, outro, true);
+      if (extrasDoImpelido > 0) for (const outro of ModsPoe.alvosDosProjeteisExtras(hunt, alvo, extrasDoImpelido, alcanceDaArma(arma, estado))) if (outro.hp > 0) tirar(false, outro, true);
       if (!acertouOPrincipal) { if (extrasDoImpelido > 0) processarMortes(estado, personagem, eventos); return { eventos, bateu }; }
       // PoE: os projéteis a mais e a perfuração do golpe básico de longe ("Ataques com Arco disparam N Flechas adicionais", "Projéteis
       // Perfuram N Alvos adicionais"): cada um acerta OUTRO bicho (os mais perto do alvo, ao alcance), com o golpe inteiro.
@@ -1802,10 +1871,10 @@ export function round(estado, personagem) {
         // (revisão S1: as flechas a mais são o MESMO ataque — `extraDoImpelido`: não gastam outro Impelir de cada Clamor; no PoE, um ataque com vários projéteis é um
         // ataque Impelido só)
         for (const outro of ModsPoe.alvosDosProjeteisExtras(hunt, alvo, ModsPoe.projeteisDoGolpeBasico(fichaDoTiro), alcanceDaArma(arma, estado))) {
-          if (outro.hp > 0) golpear(false, outro, true);
+          if (outro.hp > 0) tirar(false, outro, true);
         }
       }
-      if (alvo.hp > 0 && Math.random() < (fichaDoPersonagem.ataqueDuplo ?? 0)) golpear(true);
+      if (alvo.hp > 0 && Math.random() < (fichaDoPersonagem.ataqueDuplo ?? 0)) tirar(true);
     }
     // Momentum (tier do elmo): a cada golpe, chance de tirar 2s de todas as recargas.
     if (Tiers.rolar(estado, 'head')) {
@@ -1820,6 +1889,8 @@ export function round(estado, personagem) {
     // Quem caiu com o dano extra da árvore (Chuva de flechas, Flecha que atravessa).
     processarMortes(estado, personagem, eventos);
   }
+  // (lote "projetil": o modo instantâneo dos voos — só para conferir — descarrega aqui)
+  if (Voos.instantaneo() && hunt) eventos.push(...Voos.descarregar(hunt));
   return { eventos, bateu };
 }
 

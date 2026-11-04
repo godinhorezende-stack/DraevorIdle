@@ -64,6 +64,7 @@ test('a validação do ato avisa a fase que só abre depois de uma de número ma
 // quando a fase é concluída NESTA rodada — completou agora, a instância limpou (os 100%) ou o botão acabou de ser ligado.
 const Cacadas = await import('../systems/cacadas.mjs');
 const Instancia = await import('../systems/hunt/instancia.mjs');
+const BausPoe = await import('../systems/itens-poe/baus-poe.mjs');
 const { PERSONAGEM } = await import('./apoio.mjs');
 const doAto1 = () => Campanha.FASES.filter((f) => f.ato === 1);
 function naFase(numero, { completas = [], modo = 'seguir' } = {}) {
@@ -78,6 +79,8 @@ function naFase(numero, { completas = [], modo = 'seguir' } = {}) {
 function limpar(e) {
   let agora = Date.now();
   for (const m of e.hunt.monstros) m.hp = 0;
+  // aval do dono 03/11: os baús do PoE fechados seguram o CLEAR no automático (até 60 s — `BausPoe.seguramOClear`); o teste abre os baús junto com matar tudo
+  BausPoe.abrirNoRaio(e, e.hunt, PERSONAGEM, 1e9, { so: BausPoe.ehBauPoe });
   for (let i = 0; i < 8; i++) Cacadas.tique(e, PERSONAGEM, (agora += 250));
 }
 

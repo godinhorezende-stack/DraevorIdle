@@ -7,6 +7,8 @@ import { portaDoItemDeAcesso } from '/packages/shared/src/portas-de-acesso.mjs';
 import * as Arma from '/packages/shared/src/arma.mjs';
 import { itemCanvas, outfitCanvas, drawItem, drawEffect, drawMissile, effectDuration } from './sprites.mjs';
 import { balaoPoe } from './itens-poe-balao.mjs';
+// (balão de todas as gemas, 02/11) a parte pura do balão da gema do PoE — a mesma no inventário, nos encaixes, na barra e na "Configurar ação"
+import { partesDoBalaoDaGema } from './balao-da-gema.mjs';
 
 const el = (tag, className, text) => {
   const node = document.createElement(tag);
@@ -1109,61 +1111,47 @@ export function blocoDoReforco(entry) {
  * que vale no Draevor (o dano de agora, com os bônus do personagem, e o que a gema ainda não faz no jogo). Um desenho para o balão da
  * barra e para a tela "Configurar ação".
  */
-const STATUS_POE = { funciona: ['✓ Funciona no jogo', 'ok'], parcial: ['◐ Funciona em parte no jogo', 'parcial'], nao: ['✕ Ainda não funciona no jogo', 'nao'] };
+// (balão de todas as gemas, 02/11: as partes vêm de `partesDoBalaoDaGema` — sem a marca "✓ Funciona no jogo" nem os motivos velhos; a linha da qualidade que o
+// jogo não faz também sai riscada, a que não se aplica fica em cinza, e as notas do registro vão embaixo, discretas)
 export function corpoDaGemaPoe(entry) {
-  const f = entry?.poeFicha;
-  if (!f) return null;
+  const p = partesDoBalaoDaGema(entry);
+  if (!p) return null;
   const corpo = el('div', 'tip-poe-gema');
-  if (f.tags.length) corpo.append(el('div', 'tip-poe-tags', f.tags.join(', ')));
+  if (p.tags.length) corpo.append(el('div', 'tip-poe-tags', p.tags.join(', ')));
   const props = el('div', 'tip-poe-props');
-  for (const [rotulo, valor] of f.props) {
+  for (const [rotulo, valor] of p.props) {
     const row = el('div');
     row.append(el('span', null, valor ? `${rotulo}: ` : rotulo), el('b', null, valor));
     props.append(row);
   }
   const req = el('div', 'tip-poe-req');
-  req.append(el('span', null, 'Requer Nível '), el('b', null, String(f.nivelReq)));
+  req.append(el('span', null, 'Requer Nível '), el('b', null, String(p.nivelReq)));
   props.append(req);
   corpo.append(props);
-  if (f.desc) corpo.append(el('div', 'tip-poe-desc', f.desc));
-  if (f.mods.length) {
+  if (p.desc) corpo.append(el('div', 'tip-poe-desc', p.desc));
+  const classeDaLinha = (l) => (l.fora ? 'fora' : l.naoSeAplica ? 'nsa' : null);
+  if (p.mods.length) {
     const mods = el('div', 'tip-poe-mods');
-    for (const m of f.mods) mods.append(el('div', f.naoFeitas.includes(m) ? 'fora' : null, m));
+    for (const l of p.mods) mods.append(el('div', classeDaLinha(l), l.texto));
     corpo.append(mods);
   }
-  if (f.modsDaQualidade.length) {
+  if (p.qualidade) {
     const q = el('div', 'tip-poe-qualidade');
-    q.append(el('div', 'tip-poe-rotulo', `Qualidade +${f.qualidade}%`));
-    for (const m of f.modsDaQualidade) q.append(el('div', null, m));
+    q.append(el('div', 'tip-poe-rotulo', p.qualidade.rotulo));
+    for (const l of p.qualidade.linhas) q.append(el('div', classeDaLinha(l), l.texto));
     corpo.append(q);
   }
   // ---- o que vale no Draevor ----
   const jogo = el('div', 'tip-poe-jogo');
-  const [rotulo, classe] = STATUS_POE[f.status] ?? STATUS_POE.nao;
-  jogo.append(el('div', `tip-poe-status ${classe}`, rotulo));
-  // Os TEMPOS no jogo (os do PoE): o de uso (conjuração com a sua velocidade, ou o golpe da sua arma × a velocidade da gema) e a recarga.
-  const seg = (ms) => `${(ms / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} s`;
-  const tempos = el('div', 'tip-poe-tempos');
-  const linhaDeTempo = (rotulo, valor) => { const row = el('div'); row.append(el('span', null, `${rotulo}: `), el('b', null, valor)); tempos.append(row); };
-  const t = entry.tempoPoe;
-  const tb = f.tempos ?? {};
-  if (t) linhaDeTempo(t.ataque ? 'Tempo de ataque' : 'Tempo de conjuração', `${seg(t.uso)} ${t.ataque ? `(a sua arma × ${t.velAtaqueBase}%)` : '(com a sua velocidade)'}`);
-  else if (f.ataque) linhaDeTempo('Tempo de ataque', `o da arma × ${tb.velAtaqueBase ?? 100}%`);
-  else if (tb.conjuracaoMs != null) linhaDeTempo('Tempo de conjuração', tb.conjuracaoMs ? seg(tb.conjuracaoMs) : 'instantânea');
-  const recarga = t ? t.recarga : tb.recargaMs ?? 0;
-  if (!f.suporte) linhaDeTempo('Recarga', recarga ? `${seg(recarga)}${(t?.cargas ?? tb.cargas ?? 1) > 1 ? ` (${t?.cargas ?? tb.cargas} usos)` : ''}` : 'sem recarga (como no PoE)');
-  // O suporte de GATILHO: quando as magias ligadas saem sozinhas e a recarga do gatilho.
-  const QUANDO = { critico: 'quando o ataque ligado acerta um crítico', abate: 'quando o ataque corpo a corpo ligado mata', danoRecebido: `a cada ${f.gatilho?.limiar ?? '?'} de dano que você recebe` };
-  if (f.gatilho) linhaDeTempo('Ativa as magias ligadas', `${QUANDO[f.gatilho.quando] ?? f.gatilho.quando} · recarga ${seg(f.gatilho.recargaMs)}`);
-  if (entry.ativadaPor) linhaDeTempo('Ativada por', `${entry.ativadaPor} (não se conjura à mão)`);
-  if (tempos.children.length) jogo.append(tempos);
-  if (entry.damage) {
-    const cor = entry.element ? `el-${entry.element}` : 'atk';
-    jogo.append(el('div', cor, `Dano agora: ${Math.round(Math.abs(entry.damage.min))} a ${Math.round(Math.abs(entry.damage.max))} (com os seus bônus)`));
+  if (p.status) jogo.append(el('div', `tip-poe-status ${p.status.classe}`, p.status.texto));
+  if (p.tempos.length) {
+    const tempos = el('div', 'tip-poe-tempos');
+    for (const [rotulo, valor] of p.tempos) { const row = el('div'); row.append(el('span', null, `${rotulo}: `), el('b', null, valor)); tempos.append(row); }
+    jogo.append(tempos);
   }
-  if (f.naoFeitas.length) jogo.append(el('div', 'tip-poe-nota', 'Riscado: o efeito ainda não age no jogo.'));
-  for (const m of f.status === 'funciona' ? [] : f.motivos.slice(0, 2)) jogo.append(el('div', 'tip-poe-nota', m));
-  corpo.append(jogo);
+  if (p.dano) jogo.append(el('div', p.dano.classe, p.dano.texto));
+  for (const n of p.notas) jogo.append(el('div', 'tip-poe-nota', n));
+  if (jogo.children.length) corpo.append(jogo);
   return corpo;
 }
 
@@ -2927,7 +2915,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
       : null;
   const linha = [
     semRaridade ? null : tier.name,
-    meta.moedaPoe ? 'Moedas Empilháveis' : TYPE_NAMES[meta.type] ?? meta.type,
+    meta.moedaPoe || meta.tatuagemPoe ? 'Moedas Empilháveis' : TYPE_NAMES[meta.type] ?? meta.type,
     meta.twoHanded ? 'duas mãos' : null,
     // A Draevor Over não se distingue da Draevor normal por nenhum número: a
     // diferença é o golpe pegar em área. Ver a linha inteira logo abaixo.
@@ -2944,7 +2932,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
    * onde ela pode entrar, então é ela que a linha tem de dizer.
    */
   // Moeda e gema do PoE: o cabeçalho só com o nome (a moeda diz o tipo e a pilha no corpo, logo abaixo; a gema, as tags).
-  if (!meta.moedaPoe && !meta.gemaDef?.poe) identidade.append(el('em', null, essencia ? linhaDaEssencia(peca) : linha));
+  if (!meta.moedaPoe && !meta.tatuagemPoe && !meta.gemaDef?.poe) identidade.append(el('em', null, essencia ? linhaDaEssencia(peca) : linha));
   // O Item Level: o da fase onde a peça caiu (libera os tiers dos adds); peça sem drop, o level do item-base.
   if (!essencia && meta.slot) identidade.append(el('em', 'item-level', `Item Level ${peca?.ilvl ?? meta.minLevel ?? 1}`));
   head.append(identidade, el('div', 'tip-art', null));
@@ -2974,7 +2962,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     return linha;
   };
   // A moeda do PoE, como no PoE: "Moedas Empilháveis" e "Tamanho da Pilha: 1 / 100" (o teto de todo empilhável — `itens/pilha.mjs`).
-  if (meta.moedaPoe) {
+  if (meta.moedaPoe || meta.tatuagemPoe) {
     add(linha, 'moeda-tipo');
     prop('Tamanho da Pilha', `${(peca?.count ?? 1).toLocaleString('pt-BR')} / ${(meta.pilha ?? 100).toLocaleString('pt-BR')}`);
   }
@@ -3031,7 +3019,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
    */
   if (meta.aoVestir) add('Os atributos abaixo valem com a peça VESTIDA', 'plain');
   // As moedas de uso (lapidadora, fundidora, orbes de socket) dizem o que fazem.
-  if (meta.type === 'moeda' && meta.descricao && !meta.moedaPoe) add(meta.descricao, 'plain');
+  if (meta.type === 'moeda' && meta.descricao && !meta.moedaPoe && !meta.tatuagemPoe) add(meta.descricao, 'plain');
   for (const aug of meta.augments ?? []) {
     const linha = add(aug.texto, aug.vale ? 'area' : 'plain');
     if (linha && !aug.vale) {
@@ -3106,6 +3094,13 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   }
   if (stats.children.length) node.append(stats);
   // A moeda do PoE: o que ela faz (no azul dos mods) e como usar (em cinza), cada um no seu bloco, como no PoE.
+  // (100% — dados, 03/11) a Tatuagem do PoE: o "Substitui …", as linhas (no azul dos mods) e como usar
+  if (meta.tatuagemPoe) {
+    node.append(el('div', 'tip-extra tip-moeda-ajuda', meta.tatuagemPoe.substitui));
+    for (const l of meta.tatuagemPoe.linhas ?? []) node.append(el('div', 'tip-extra tip-moeda-efeito', l));
+    if (meta.tatuagemPoe.limite) node.append(el('div', 'tip-extra tip-moeda-ajuda', `Limitado a: ${meta.tatuagemPoe.limite.n} Tatuagem de Ascendência`));
+    node.append(el('div', 'tip-extra tip-moeda-ajuda', 'Clique com o botão direito e escolha uma Habilidade Passiva alocada na árvore. Máximo de 50 Tatuagens.'));
+  }
   if (meta.moedaPoe) {
     if (meta.descricao) node.append(el('div', 'tip-extra tip-moeda-efeito', meta.descricao));
     node.append(el('div', 'tip-extra tip-moeda-ajuda', 'Clique com o botão direito para usá-la na Forja.'));

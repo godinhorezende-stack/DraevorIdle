@@ -1324,16 +1324,16 @@
     },
     {
       "padrao": "^Se Mover enquanto Sangrando não faz com que Lacaios sofram Dano extra$",
+      "_nova": true,
+      "_ciclo7": true,
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "lacaios_sangrar_andando_sem_extra",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: os lacaios do jogo não sangram (o golpe do monstro neles não põe afecção)",
-      "_nova": true,
-      "_ciclo7": true
+      "nota": "o Sangramento triplica no alvo em movimento (o lembrete do PoE: \"O Dano é 200% maior enquanto em movimento\"): o golpe do monstro no lacaio põe o Sangramento (e as outras afecções de dano dele), e no lacaio que anda ele dói 3× — esta linha o tira",
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de chance de Agravar o Sangramento em alvos que você Acertar com Ataques$",
@@ -1416,19 +1416,6 @@
         }
       ],
       "nota": "o Sangramento Agravado (e o do monstro que anda) causa o triplo por pulso — \"O Dano é 200% maior enquanto em movimento\" (`combate/dot`)",
-      "_nova": true,
-      "_ciclo7": true
-    },
-    {
-      "padrao": "^Mover enquanto Sangrando faz com que você não sofra Dano extra$|^Se Mover enquanto Sangrando não faz com que Lacaios sofram Dano extra$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: o Sangramento em você (e nos lacaios) não tem o dano extra em movimento: não há o que tirar",
       "_nova": true,
       "_ciclo7": true
     },
@@ -4244,6 +4231,18 @@
       "_lote3": "12/10 — Armadilhas e Minas plantadas"
     },
     {
+      "padrao": "^Minas podem ser Detonadas \\{(\\d+)\\} vezes adicionais$",
+      "efeitos": [
+        {
+          "stat": "minas_detonacoes_extra",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o Re-armar do PoE: a Mina detonada volta armada no mesmo lugar, até N vezes (a da gema com \"Minas não podem ser Re-armadas\" não volta)",
+      "_nova": true,
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
+    },
+    {
       "padrao": "^\\{(\\d+)\\}% de chance de receber uma Carga do Poder quando sua Armadilha for ativada por um Inimigo$",
       "efeitos": [
         {
@@ -6142,53 +6141,66 @@
       "padrao": "^Campo de Visão é baseado no Escudo de Energia em vez de na Vida$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "luz_pelo_escudo",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: o jogo não tem raio de luz nem campo de visão",
+      "estado": "novo",
+      "nota": "o raio da luz encolhe com o Escudo de Energia que falta, e não com a vida (o stat do PoE: light radius scales with energy shield)",
       "_nova": true,
-      "_ciclo7": true
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
     },
     {
-      "padrao": "^.*metros ao Alcance de Golpes Corpo a Corpo.*$",
+      "padrao": "^\\+\\{(\\d+)\\} metros ao Alcance de Golpes Corpo a Corpo enquanto Portando um Escudo$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "alcance_corpo_m@comEscudo",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: o alcance do jogo é em casas (2 m): décimos de metro não mudam casa",
+      "nota": "o alcance em metros (o da arma + os metros; 1 casa = 2 m): a fração das casas é a CHANCE de uma casa a mais no golpe, como na área",
       "_nova": true,
-      "_ciclo7": true
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
+    },
+    {
+      "padrao": "^Habilidades Suportadas têm \\+\\{(\\d+)\\} metros ao Alcance de Golpes Corpo a Corpo$",
+      "_nova": true,
+      "_ciclo7": true,
+      "efeitos": [
+        {
+          "stat": "alcance_corpo_m",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o alcance em metros (o da arma + os metros; 1 casa = 2 m): a fração das casas é a CHANCE de uma casa a mais no golpe, como na área",
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
     },
     {
       "padrao": "^Não Pode ser Empurrado$",
+      "_nova": true,
+      "_ciclo7": true,
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "imune_empurrao",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: os monstros do jogo não empurram você",
-      "_nova": true,
-      "_ciclo7": true
+      "nota": "a habilidade de monstro do PoE que empurra (o Salto Impactante dos chefes) leva você uma casa para longe dele — esta linha impede",
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
     },
     {
-      "padrao": "^.*(?:chance de abrir Baús próximos).*$",
+      "padrao": "^\\{(\\d+)\\}% de chance de abrir Baús próximos.*$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "abrir_bau_ao_conjurar",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: as caçadas não têm baús",
+      "estado": "equivalente",
+      "nota": "os baús do PoE nas caçadas (`itens-poe/baus-poe.mjs`): os da sala a até 4 casas abrem na chance (`acoes.abrirBausAoConjurar`)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_mundo100": "03/11 — 100%, lote mundo (os baús, o Estandarte e a aura no chão, o Vínculo, a Punição)"
     },
     {
       "padrao": "^Você pode contratar um mercenário de forma permanente$",
@@ -6382,30 +6394,30 @@
       "_lote39": "16/10 — lote 39 (P060: a aura do arquétipo do mercenário, × o efeito — vale nele e em você; a decisão do dono \"Uma aura por arquétipo\")"
     },
     {
-      "padrao": "^.*[Mm]ercenário.*$",
+      "padrao": "^Aumentos e reduções de campo de visão também se aplicam ao efeito dos seus bônus de habilidade de conexão no seu mercenário$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "luz_no_vinculo_mercenario",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: o jogo não tem raio de luz nem campo de visão (o mercenário do Luminary existe — esta linha depende do Raio de Iluminação)",
+      "estado": "novo",
+      "nota": "o \"aumentado\" do Raio de Iluminação soma no Efeito do Buff dos seus Vínculos no mercenário",
       "_nova": true,
-      "_ciclo7": true
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
     },
     {
-      "padrao": "^Habilidades de Retaliação se tornam Utilizáveis.*$|^.*que uma Habilidade de Retaliação diferente se torne Utilizável$|^.*Habilidades de Retaliação utilizadas continuarem Utilizáveis.*$|^Habilidades de Retaliação Nocivas se tornam Utilizáveis.*$",
+      "padrao": "^Habilidades de Retaliação se tornam Utilizáveis por um tempo \\(\\{(\\d+)\\} ?— ?\\{(\\d+)\\}\\) ?% maior$",
+      "_nova": true,
+      "_ciclo7": true,
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "retaliacao_janela_inc",
+          "valor": "media({1},{2})"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: as habilidades de Retaliação do jogo são usáveis sempre (não têm a janela do PoE)",
-      "_nova": true,
-      "_ciclo7": true
+      "nota": "a janela da Retaliação do PoE (usável por um tempo depois de bloquear, evadir ou ser acertado — `condicoes-poe.abrirRetaliacao`): a faixa vale a média",
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
     },
     {
       "padrao": "^Alcance do Ricochete aumentado em \\{(\\d+)\\}%$",
@@ -6469,56 +6481,119 @@
       "_lote42": "16/10 — lote 42 (dono: \"Fazer todos\" — a canalização contínua, as direções aleatórias, o terreno)"
     },
     {
-      "padrao": "^.*Velocidade de Projéteis$|^Ângulo da Difusão de Projéteis .*$",
+      "padrao": "^\\{(\\d+)\\}% mais Velocidade de Projéteis$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "proj_vel_mais",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: o projétil do jogo vai direto ao alvo: sem velocidade, ângulo, terreno ou volta",
+      "estado": "novo",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_projetil": "02/11 — lote projetil (dono: o voo de verdade dos projéteis — a velocidade, o ângulo, o terreno e a volta valem: hunt/voos.mjs)"
     },
     {
-      "padrao": "^Bônus do seu estandarte permanecem por .* segundos após você sair da área$",
+      "padrao": "^\\{(\\d+)\\}% menos Velocidade de Projéteis$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "proj_vel_mais",
+          "valor": "-{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: o Estandarte do jogo é uma aura em você (não tem área no chão)",
+      "estado": "novo",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_projetil": "02/11 — lote projetil (dono: o voo de verdade dos projéteis — a velocidade, o ângulo, o terreno e a volta valem: hunt/voos.mjs)"
     },
     {
-      "padrao": "^Habilidades de Aura Não Maldições têm Duração aumentada em .*$|^Efeito em Área de Habilidades de Aura aumentado em .*$",
+      "padrao": "^Ângulo da Difusão de Projéteis aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "proj_difusao_angulo_inc",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: a aura do jogo fica ligada enquanto a gema está na barra e vale em você (sem duração nem área)",
+      "estado": "novo",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_projetil": "02/11 — lote projetil (dono: o voo de verdade dos projéteis — a velocidade, o ângulo, o terreno e a volta valem: hunt/voos.mjs)"
     },
     {
-      "padrao": "^.*Agrava.*Sangramento.*$|^Sangramentos que você infligir são Agravados$|^Mover enquanto Sangrando faz com que você não sofra Dano extra$|^Seu Sangramento não causa Dano extra enquanto o Inimigo se move$|^Se Mover enquanto Sangrando não faz com que Lacaios sofram Dano extra$",
+      "padrao": "^Ângulo da Difusão de Projéteis reduzido em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "proj_difusao_angulo_inc",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "novo",
+      "_nova": true,
+      "_ciclo7": true,
+      "_projetil": "02/11 — lote projetil (dono: o voo de verdade dos projéteis — a velocidade, o ângulo, o terreno e a volta valem: hunt/voos.mjs)"
+    },
+    {
+      "padrao": "^Bônus do seu estandarte permanecem por \\{(\\d+)\\} segundos após você sair da área$",
+      "efeitos": [
+        {
+          "stat": "estandarte_fica_s",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o Estandarte plantado no chão (a área do PoB, a duração): fora da área o bônus fica N s (`mods-poe.aurasProximas`)",
+      "_nova": true,
+      "_ciclo7": true,
+      "_mundo100": "03/11 — 100%, lote mundo (os baús, o Estandarte e a aura no chão, o Vínculo, a Punição)"
+    },
+    {
+      "padrao": "^Habilidades de Aura Não Maldições têm Duração aumentada em \\{(\\d+)\\} ?%$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@aura",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "a duração das auras com duração — as Vaal e os Estandartes (as outras ficam ligadas enquanto reservam)",
+      "_nova": true,
+      "_ciclo7": true,
+      "_mundo100": "03/11 — 100%, lote mundo (os baús, o Estandarte e a aura no chão, o Vínculo, a Punição)"
+    },
+    {
+      "padrao": "^Efeito em Área de Habilidades de Aura aumentado em \\{(\\d+)\\} ?%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@aura",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o raio da aura (o da gema × √ da área — `acoes.raioDaAuraDe`): até onde ela vale nos aliados da party; o do Estandarte é o raio dele no chão",
+      "_nova": true,
+      "_mundo100": "03/11 — 100%, lote mundo (os baús, o Estandarte e a aura no chão, o Vínculo, a Punição)"
+    },
+    {
+      "padrao": "^Seus Clamores abrem Baús$",
+      "efeitos": [
+        {
+          "stat": "clamor_abre_baus",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: o Sangramento do jogo não tem o dano extra em movimento (que o Agravar dá)",
+      "nota": "os baús do PoE no raio do Clamor abrem (`itens-poe/baus-poe.abrirNoRaio`)",
       "_nova": true,
-      "_ciclo7": true
+      "_mundo100": "03/11 — 100%, lote mundo (os baús, o Estandarte e a aura no chão, o Vínculo, a Punição)"
+    },
+    {
+      "padrao": "^Acertos de Ataques contra Inimigos Amaldiçoados têm \\{(\\d+)\\} ?% de chance de Agravar o Sangramento$",
+      "_nova": true,
+      "_ciclo7": true,
+      "efeitos": [
+        {
+          "stat": "chance_agravar@ataque+alvoAmaldicoado",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o Sangramento Agravado causa o triplo por pulso, como se o alvo andasse — o Sangramento triplica no alvo em movimento (o lembrete do PoE: \"O Dano é 200% maior enquanto em movimento\") (`combate/dot`)",
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
     },
     {
       "padrao": "^Habilidades de Golpe também miram no local anterior que foram Usadas$",
@@ -6533,30 +6608,42 @@
       "_lote41": "16/10 — lote 41 (dono: \"Fazer todos\" — os limites do motor)"
     },
     {
-      "padrao": "^Arqueiros Ilusórios não são grudados em você$|^Não pode Convocar Arqueiros Ilusórios enquanto próximo dos seus Arqueiros Ilusórios$",
+      "padrao": "^Arqueiros Ilusórios não são grudados em você$",
+      "_nova": true,
+      "_ciclo7": true,
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "arqueiros_nao_grudados",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: é posicionamento do PoE; o jogo não tem isso",
-      "_nova": true,
-      "_ciclo7": true
+      "nota": "no PoE o Arqueiro Ilusório anda com você (grudado); com esta linha ele fica onde nasceu",
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
     },
     {
-      "padrao": "^Sua Velocidade de Movimento é igual a maior Velocidade de Movimento entre os Jogadores Vinculados$|^Alvos Vinculados compartilham Cargas de Tolerância, Frenesi e Poder com você$|^Maldições são infligidas em Você ao invés dos alvos Vinculados$",
+      "padrao": "^Não pode Convocar Arqueiros Ilusórios enquanto próximo dos seus Arqueiros Ilusórios$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "arqueiro_sem_convocar_perto",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: a habilidade de Vínculo do jogo reforça só você (não liga outros jogadores)",
+      "nota": "\"próximo\" = a até 2 casas (4 m), como os outros \"Próximos\" do jogo — o PoE não publica a distância",
       "_nova": true,
-      "_ciclo7": true
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
+    },
+    {
+      "padrao": "^Sua Velocidade de Movimento é igual a maior Velocidade de Movimento entre os Jogadores Vinculados$",
+      "efeitos": [
+        {
+          "stat": "velocidade_igual_vinculados",
+          "valor": "1"
+        }
+      ],
+      "nota": "o Vínculo liga você ao aliado da party (ou ao seu lacaio) — `itens-poe/vinculos.mjs`",
+      "_nova": true,
+      "_ciclo7": true,
+      "_mundo100": "03/11 — 100%, lote mundo (os baús, o Estandarte e a aura no chão, o Vínculo, a Punição)"
     },
     {
       "padrao": "^Penalidades de Movimento das Armaduras são Ignoradas$",
@@ -6990,17 +7077,18 @@
       "_lote19": "14/10 — a árvore principal (lote 19)"
     },
     {
-      "padrao": "^Furtividade aumentada em .*$",
+      "padrao": "^Furtividade aumentada em \\{(\\d+)\\}%$",
+      "_nova": true,
+      "_ciclo7": true,
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "furtividade",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: o jogo não tem Furtividade (os monstros sempre veem você)",
-      "_nova": true,
-      "_ciclo7": true
+      "estado": "equivalente",
+      "nota": "exceção do dono (16/10: \"Manter e registrar\"): o PoE não publica a fórmula da Furtividade — encolhe o raio em que os monstros notam você (8 casas ÷ (1 + X%)); quem já persegue segue perseguindo",
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
     },
     {
       "padrao": "^Projéteis causam Dano aumentado em \\{(\\d+)\\}% com Acertos e Afecções para cada Inimigo Atravessado$",
@@ -7393,17 +7481,17 @@
       "_lote7": "13/10 — os aliados de verdade (lote 7)"
     },
     {
-      "padrao": "^Cadáveres Criados por você tem Vida Máxima aumentada em .*$",
+      "padrao": "^Cadáveres Criados por você tem Vida Máxima aumentada em \\{(\\d+)\\}%$",
+      "_nova": true,
+      "_ciclo7": true,
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "cadaver_vida_inc",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: os cadáveres do jogo não têm vida",
-      "_nova": true,
-      "_ciclo7": true
+      "nota": "o cadáver criado (o Profanar, o Desenterrar) tem a Vida Máxima do monstro que deu o desenho — o que explode pelo % da vida dele usa esta",
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
     },
     {
       "padrao": "^Vida Máxima torna-se \\{(\\d+)\\}, Imune a Dano de Caos$",
@@ -8161,31 +8249,139 @@
       "_lote29": "15/10 — os raios das joias únicas (lote 29)"
     },
     {
-      "padrao": "^Com um total de \\{(\\d+)\\} de .+ no Raio, Habilidades Prismáticas .+$",
+      "padrao": "^Com um total de \\{(\\d+)\\} de (?:Inteligência e Destreza|Força e Inteligência|Destreza e Força|Destreza) no Raio, Habilidades Prismáticas não podem escolher Fogo$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "raio_prisma_nao_escolhe_fire",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: as Habilidades Prismáticas (Golpe Elemental, Golpe Selvagem) não estão na coleção de gemas do jogo",
+      "estado": "equivalente",
+      "nota": "o Foco de Combate: a soma dos dois atributos das passivas alocadas no raio (os pares do PoB — Fogo: Inteligência e Destreza, que o poedb pt escreve só \"Destreza\"; Gelo: Força e Inteligência; Raio: Destreza e Força); com ela, o Acerto Elemental, o Golpe Selvagem (e o dos Extremos), o Tornado da Turbulência Elemental, os Esqueletos Magos e a Explosão Prismática escolhem só entre os outros elementos (`itens-poe/prismaticas.mjs`)",
       "_nova": true,
       "_lote29": "15/10 — os raios das joias únicas (lote 29)",
-      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)",
+      "_100dados": "03/11 — 100% (lote dados): as Habilidades Prismáticas e as Tatuagens",
+      "_03-11": "03/11 — o curinga {E} trocado pelos 3 elementos do Foco de Combate (Fogo, Gelo, Raio — os do PoE): com ele, 'Caos' também casava e gerava atributos não cadastrados (raio_prisma_*_chaos)"
+    },
+    {
+      "padrao": "^Com um total de \\{(\\d+)\\} de (?:Inteligência e Destreza|Força e Inteligência|Destreza e Força|Destreza) no Raio, Habilidades Prismáticas não podem escolher Gelo$",
+      "efeitos": [
+        {
+          "stat": "raio_prisma_nao_escolhe_ice",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o Foco de Combate: a soma dos dois atributos das passivas alocadas no raio (os pares do PoB — Fogo: Inteligência e Destreza, que o poedb pt escreve só \"Destreza\"; Gelo: Força e Inteligência; Raio: Destreza e Força); com ela, o Acerto Elemental, o Golpe Selvagem (e o dos Extremos), o Tornado da Turbulência Elemental, os Esqueletos Magos e a Explosão Prismática escolhem só entre os outros elementos (`itens-poe/prismaticas.mjs`)",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)",
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)",
+      "_100dados": "03/11 — 100% (lote dados): as Habilidades Prismáticas e as Tatuagens",
+      "_03-11": "03/11 — o curinga {E} trocado pelos 3 elementos do Foco de Combate (Fogo, Gelo, Raio — os do PoE): com ele, 'Caos' também casava e gerava atributos não cadastrados (raio_prisma_*_chaos)"
+    },
+    {
+      "padrao": "^Com um total de \\{(\\d+)\\} de (?:Inteligência e Destreza|Força e Inteligência|Destreza e Força|Destreza) no Raio, Habilidades Prismáticas não podem escolher Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_prisma_nao_escolhe_energy",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o Foco de Combate: a soma dos dois atributos das passivas alocadas no raio (os pares do PoB — Fogo: Inteligência e Destreza, que o poedb pt escreve só \"Destreza\"; Gelo: Força e Inteligência; Raio: Destreza e Força); com ela, o Acerto Elemental, o Golpe Selvagem (e o dos Extremos), o Tornado da Turbulência Elemental, os Esqueletos Magos e a Explosão Prismática escolhem só entre os outros elementos (`itens-poe/prismaticas.mjs`)",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)",
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)",
+      "_100dados": "03/11 — 100% (lote dados): as Habilidades Prismáticas e as Tatuagens",
+      "_03-11": "03/11 — o curinga {E} trocado pelos 3 elementos do Foco de Combate (Fogo, Gelo, Raio — os do PoE): com ele, 'Caos' também casava e gerava atributos não cadastrados (raio_prisma_*_chaos)"
+    },
+    {
+      "padrao": "^Com um total de \\{(\\d+)\\} de (?:Inteligência e Destreza|Força e Inteligência|Destreza e Força|Destreza) no Raio, Habilidades Prismáticas causam \\{(\\d+)\\}% menos Dano de Fogo$",
+      "efeitos": [
+        {
+          "stat": "raio_prisma_menos_fire_limiar",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_prisma_menos_fire",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o Foco de Combate: com a soma dos dois atributos alocados no raio, o \"X% menos Dano\" daquele elemento nos golpes das habilidades prismáticas (a tag Prismático)",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)",
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)",
+      "_100dados": "03/11 — 100% (lote dados): as Habilidades Prismáticas e as Tatuagens",
+      "_03-11": "03/11 — o curinga {E} trocado pelos 3 elementos do Foco de Combate (Fogo, Gelo, Raio — os do PoE): com ele, 'Caos' também casava e gerava atributos não cadastrados (raio_prisma_*_chaos)"
+    },
+    {
+      "padrao": "^Com um total de \\{(\\d+)\\} de (?:Inteligência e Destreza|Força e Inteligência|Destreza e Força|Destreza) no Raio, Habilidades Prismáticas causam \\{(\\d+)\\}% menos Dano de Gelo$",
+      "efeitos": [
+        {
+          "stat": "raio_prisma_menos_ice_limiar",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_prisma_menos_ice",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o Foco de Combate: com a soma dos dois atributos alocados no raio, o \"X% menos Dano\" daquele elemento nos golpes das habilidades prismáticas (a tag Prismático)",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)",
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)",
+      "_100dados": "03/11 — 100% (lote dados): as Habilidades Prismáticas e as Tatuagens",
+      "_03-11": "03/11 — o curinga {E} trocado pelos 3 elementos do Foco de Combate (Fogo, Gelo, Raio — os do PoE): com ele, 'Caos' também casava e gerava atributos não cadastrados (raio_prisma_*_chaos)"
+    },
+    {
+      "padrao": "^Com um total de \\{(\\d+)\\} de (?:Inteligência e Destreza|Força e Inteligência|Destreza e Força|Destreza) no Raio, Habilidades Prismáticas causam \\{(\\d+)\\}% menos Dano de Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_prisma_menos_energy_limiar",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_prisma_menos_energy",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o Foco de Combate: com a soma dos dois atributos alocados no raio, o \"X% menos Dano\" daquele elemento nos golpes das habilidades prismáticas (a tag Prismático)",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)",
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)",
+      "_100dados": "03/11 — 100% (lote dados): as Habilidades Prismáticas e as Tatuagens",
+      "_03-11": "03/11 — o curinga {E} trocado pelos 3 elementos do Foco de Combate (Fogo, Gelo, Raio — os do PoE): com ele, 'Caos' também casava e gerava atributos não cadastrados (raio_prisma_*_chaos)"
     },
     {
       "padrao": "^Efeito das Tatuagens no Raio aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "raio_efeito_tatuagens",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: o jogo não tem Tatuagens",
+      "estado": "equivalente",
+      "nota": "o Conto do Guerreiro: os números das Tatuagens dos nós alocados no raio (`passivas/tatuagens.mjs`) × (1 + X%)",
       "_nova": true,
-      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)",
+      "_100dados": "03/11 — 100% (lote dados): as Habilidades Prismáticas e as Tatuagens"
+    },
+    {
+      "padrao": "^Golpes Abatedores têm \\{(\\d+)\\}% de chance de Consumir cadáveres para recuperar \\{(\\d+)\\}% da Vida Máxima$",
+      "efeitos": [
+        {
+          "stat": "ev:golpeDeMisericordia:consumirCadaverChance:hp:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a Tatuagem do Devorador de Corações de Kitava: o Golpe de Misericórdia que mata tem a chance de consumir o cadáver do morto (ele não deixa cadáver; marca o \"Consumiu um cadáver Recentemente\") e recuperar X% da Vida máxima",
+      "_nova": true,
+      "_100dados": "03/11 — 100% (lote dados): as Habilidades Prismáticas e as Tatuagens"
     },
     {
       "padrao": "^Joias Não Únicas fazem com que Aumentos e Reduções aos Tipos de Dano em um Grande Raio sejam Transformados para serem aplicados ao Dano de Fogo$",
@@ -8758,17 +8954,98 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^.*Raio de Iluminação.*$",
+      "padrao": "^Aumentos e Reduções ao Raio de Iluminação também são aplicados ao Dano$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "dmg_inc%stat:light_radius",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: no PoE o raio de luz só muda o quanto se enxerga em volta: o jogo mostra a tela inteira",
+      "estado": "novo",
+      "nota": "o PoB: LightRadiusAppliesToDamage — o \"aumentado\" da luz entra no Dano aumentado",
       "_nova": true,
-      "_ciclo7": true
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
+    },
+    {
+      "padrao": "^Aumentos e Reduções ao Raio de Iluminação também são aplicados ao Efeito em Área em \\{(\\d+)\\}% de seu valor$",
+      "efeitos": [
+        {
+          "stat": "area_inc%stat:light_radius",
+          "valor": "pct({1})"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o PoB: LightRadiusAppliesToAreaOfEffect — metade do \"aumentado\" da luz na Área de Efeito",
+      "_nova": true,
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
+    },
+    {
+      "padrao": "^Aumentos e Reduções ao Raio de Iluminação também (?:são aplicados|se aplicam) à Precisão$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc%stat:light_radius",
+          "valor": "1"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o PoB: LightRadiusAppliesToAccuracy — o \"aumentado\" da luz entra na Precisão",
+      "_nova": true,
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
+    },
+    {
+      "padrao": "^Adiciona de \\{(\\d+)\\} a \\{(\\d+)\\} de dano de fogo aos ataques por \\{(\\d+)\\}% de campo de visão aumentada$",
+      "efeitos": [
+        {
+          "stat": "added_fire_dmg_min%stat:light_radius",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_fire_dmg_max%stat:light_radius",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o Eclipse Solaris: o PoB — o Fogo adicionado aos ataques por 1% de Raio de Iluminação acima da base (LightRadiusInc)",
+      "_nova": true,
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
+    },
+    {
+      "padrao": "^Cegueira não afeta seu (?:Campo de Visão|Raio de Iluminação)$",
+      "efeitos": [
+        {
+          "stat": "cegueira_sem_luz",
+          "valor": "1"
+        }
+      ],
+      "estado": "novo",
+      "nota": "a Cegueira em você não encolhe a luz",
+      "_nova": true,
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
+    },
+    {
+      "padrao": "^Raio de Iluminação aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "light_radius",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "_nova": true,
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
+    },
+    {
+      "padrao": "^Raio aumentado em \\{(\\d+)\\}%(?: durante o Efeito)?$",
+      "efeitos": [
+        {
+          "stat": "light_radius",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o \"Raio aumentado durante o Efeito\" do frasco é o Raio de Iluminação (poedb: FlaskLightRadius)",
+      "_nova": true,
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
     },
     {
       "padrao": "^Inimigos esfriados pelos seus ataques sofrem dano de frio aumentado pelo esfriamento$",
@@ -9808,13 +10085,13 @@
       "padrao": "^\\{(\\d+)\\}% de redução do Raio de Iluminação$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "light_radius",
+          "valor": "-{1}"
         }
       ],
+      "estado": "novo",
       "_nova": true,
-      "estado": "inerte",
-      "nota": "no PoE o raio de luz só muda o quanto se enxerga em volta: o jogo mostra a tela inteira"
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% do Dano Físico Convertido em Dano de Fogo$",
@@ -14570,13 +14847,13 @@
       "padrao": "^\\{(\\d+)\\}% de aumento do Raio de Iluminação$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "light_radius",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "no PoE o raio de luz só muda o quanto se enxerga em volta: o jogo mostra a tela inteira",
-      "_nova": true
+      "estado": "novo",
+      "_nova": true,
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
     },
     {
       "padrao": "^Recuperação de Bloqueio aumentada em \\{(\\d+)\\}%$",
@@ -17948,6 +18225,417 @@
       "_lote12": "13/10 — as correções das notas da árvore (lote 12)"
     },
     {
+      "padrao": "^Proteção aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_pct_local",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)",
+      "_local": "LOCAL na peça (o poedb: local ward +%): × a Salvaguarda da base dela, com a qualidade (itens-poe/jogo.baseDaPeca)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Proteção$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_local",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)",
+      "_local": "LOCAL na peça (o poedb: local ward — Svalinn): soma na Salvaguarda da base dela (itens-poe/jogo.baseDaPeca)"
+    },
+    {
+      "padrao": "^Proteção é Restaurada \\{(\\d+)\\}% mais rápido$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_restauracao_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
+      "padrao": "^Proteção é Restaurada \\{(\\d+)\\}% mais lento$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_restauracao_pct",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano sofrido ignora a Proteção$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_ignorada_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
+      "padrao": "^Ganha Adrenalina por \\{(\\d+)\\} segundos quando a Proteção for Quebrada$",
+      "efeitos": [
+        {
+          "stat": "ev:salvaguardaQuebra:buff:adrenalina",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
+      "padrao": "^Aumentos e Reduções ao Escudo de Energia Máximo se aplicam a Proteção$",
+      "efeitos": [
+        {
+          "stat": "es_inc_na_salvaguarda",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)",
+      "nota": "o poedb: \"energy shield additive modifiers instead apply to ward\" — o Escudo de Energia aumentado vai para a Salvaguarda, e não para o Escudo"
+    },
+    {
+      "padrao": "^Salvaguarda aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
+      "padrao": "^Salvaguarda aumentada em \\{(\\d+)\\}% dos itens de armadura equipados$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)",
+      "nota": "toda Salvaguarda do jogo vem de itens de armadura (as bases Rúnicas e o escudo Svalinn)"
+    },
+    {
+      "padrao": "^Restauração da Salvaguarda \\{(\\d+)\\}% mais rápida$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_restauracao_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
+      "padrao": "^Salvaguarda \\{(\\d+)\\}% menor$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_mais",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} Carga de Tolerância quando a Salvaguarda se Rompe$",
+      "efeitos": [
+        {
+          "stat": "ev:salvaguardaQuebra:carga:tolerancia",
+          "valor": "100"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} Carga de Poder quando a Salvaguarda se Rompe$",
+      "efeitos": [
+        {
+          "stat": "ev:salvaguardaQuebra:carga:poder",
+          "valor": "100"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} Carga de Frenesi quando a Salvaguarda se Rompe$",
+      "efeitos": [
+        {
+          "stat": "ev:salvaguardaQuebra:carga:frenesi",
+          "valor": "100"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Restaurar a Salvaguarda ao Bloquear$",
+      "efeitos": [
+        {
+          "stat": "ev:bloquear:salvaguarda",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance da Salvaguarda ser Restaurada ao usar um Frasco$",
+      "efeitos": [
+        {
+          "stat": "ev:usarFrasco:salvaguarda",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda": "02/11 — a Salvaguarda (Ward) como o PoE (personagem/salvaguarda.mjs)"
+    },
+    {
+      "padrao": "^Ganha Dano de Caos Adicional igual a \\{(\\d+)\\}% da Proteção$",
+      "efeitos": [
+        {
+          "stat": "added_chaos_dmg_min%pctSalvaguarda:{V1}",
+          "valor": "1"
+        },
+        {
+          "stat": "added_chaos_dmg_max%pctSalvaguarda:{V1}",
+          "valor": "1"
+        },
+        {
+          "stat": "spell_added_chaos_dmg_min%pctSalvaguarda:{V1}",
+          "valor": "1"
+        },
+        {
+          "stat": "spell_added_chaos_dmg_max%pctSalvaguarda:{V1}",
+          "valor": "1"
+        }
+      ],
+      "estado": "novo",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o PoB: ChaosMin/ChaosMax BASE com PercentStat Ward — o Dano de Caos adicionado aos ataques e às magias, N% da Salvaguarda máxima (a segunda passada da ficha)"
+    },
+    {
+      "padrao": "^Proteção não Quebra(?: durante o Efeito)?$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_nao_quebra",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o PoB: WardNotBreak durante o efeito do frasco — a Salvaguarda segura cada acerto até o que ela tem e não desce (frascos.mjs, personagem/salvaguarda.absorver)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Proteção(?: durante o Efeito)?$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_mais",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "a Salvaguarda máxima × (1 − N%) enquanto o frasco dura (o \"durante o Efeito\" do frasco)"
+    },
+    {
+      "padrao": "^Restaura Proteção ao usar$",
+      "efeitos": [
+        {
+          "stat": "frasco_restaura_salvaguarda",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o Frasco de Ferro: a Salvaguarda volta inteira no uso (frascos.mjs)"
+    },
+    {
+      "padrao": "^Efeito é removido quando a Proteção Quebrar$",
+      "efeitos": [
+        {
+          "stat": "frasco_sai_na_quebra_da_salvaguarda",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o efeito do frasco acaba quando a Salvaguarda quebra (frascos.mjs, personagem/salvaguarda.quebrar)"
+    },
+    {
+      "padrao": "^Ganhe Proteção ao invés de \\{(\\d+)\\}% da Armadura e Evasão do Peitoral Equipado$",
+      "efeitos": [
+        {
+          "stat": "peitoral_em_salvaguarda_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o PoB: ConvertBodyArmourArmourEvasionToWard — N% da Armadura e da Evasão do peitoral (a da peça, com os locais) saem delas e viram Salvaguarda da base, que a Salvaguarda aumentada multiplica (ficha.defesasDaFicha)"
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\} de Salvaguarda por \\{(\\d+)\\} de Armadura no Elmo Equipado$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda%armaduraElmo:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o PoB: Ward BASE com PerStat ArmourOnHelmet — a Armadura do elmo vestido (com os locais)"
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\} de Salvaguarda por \\{(\\d+)\\} de Evasão nas Luvas Equipadas$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda%evasaoLuvas:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o PoB: Ward BASE com PerStat EvasionOnGloves — a Evasão das luvas vestidas (com os locais)"
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\} de Salvaguarda por \\{(\\d+)\\} de Escudo de Energia nas Botas Equipadas$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda%esBotas:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o PoB: Ward BASE com PerStat EnergyShieldOnBoots — o Escudo de Energia das botas vestidas (com os locais)"
+    },
+    {
+      "padrao": "^Remove uma Afecção Danificadora aleatória quando a Salvaguarda é Restaurada$",
+      "efeitos": [
+        {
+          "stat": "ev:salvaguardaRestaurada:removerAfeccao:danificadoraAleatoria",
+          "valor": "100"
+        }
+      ],
+      "estado": "novo",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "uma afecção danificadora em você (Incêndio, Sangramento ou Veneno), sorteada, sai quando a Salvaguarda volta depois de descer"
+    },
+    {
+      "padrao": "^Frascos de Ferro ganham \\{(\\d+)\\} cargas? quando sua Salvaguarda se Rompe$",
+      "efeitos": [
+        {
+          "stat": "ev:salvaguardaQuebra:frasco:ferro",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o PoB: IronFlaskChargesGeneratedOnWardBreak — os Frascos de Ferro do cinto ganham as cargas na quebra"
+    },
+    {
+      "padrao": "^A Chance de Evadir Acertos se baseia em \\{(\\d+)\\}% da sua Salvaguarda em vez da sua Evasão$",
+      "efeitos": [
+        {
+          "stat": "evasao_pela_salvaguarda_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o PoB: EvadeChanceBasedOnWard — a chance de evadir usa N% da Salvaguarda máxima no lugar da Evasão (a Evasão segue na ficha para o resto)"
+    },
+    {
+      "padrao": "^A Redução de Dano Físico de Acertos se baseia em \\{(\\d+)\\}% da sua Salvaguarda em vez da sua Armadura$",
+      "efeitos": [
+        {
+          "stat": "armadura_pela_salvaguarda_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o PoB: PhysicalReductionBasedOnWard — a redução física dos acertos usa N% da Salvaguarda máxima no lugar da Armadura (a Armadura segue na ficha para o resto)"
+    },
+    {
+      "padrao": "^A Salvaguarda tem \\{(\\d+)\\}% de chance de não se Romper$",
+      "efeitos": [
+        {
+          "stat": "salvaguarda_chance_nao_romper",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o PoB: WardAvoidBreakChance — o acerto que a levaria a 0 é absorvido e ela não desce nesse acerto (personagem/salvaguarda.absorver)"
+    },
+    {
+      "padrao": "^Enquanto você tiver Salvaguarda Intacta, seu próximo Ataque sem canalização usado por você rompe sua Salvaguarda para ganhar Dano de Gelo Adicional igual a \\{(\\d+)\\}% da Salvaguarda$",
+      "efeitos": [
+        {
+          "stat": "added_ice_dmg_min%pctSalvaguarda:{V1}@salvaguardaRompivel+naoCanalizar",
+          "valor": "1"
+        },
+        {
+          "stat": "added_ice_dmg_max%pctSalvaguarda:{V1}@salvaguardaRompivel+naoCanalizar",
+          "valor": "1"
+        },
+        {
+          "stat": "ataque_rompe_salvaguarda@salvaguardaRompivel",
+          "valor": "1"
+        }
+      ],
+      "estado": "novo",
+      "_nova": true,
+      "_salvaguarda2": "02/11 — as linhas da Salvaguarda dos únicos e das Atemporais que faltavam (personagem/salvaguarda.mjs)",
+      "nota": "o PoB: ColdMin/ColdMax BASE com PercentStat Ward, só nos ataques sem canalização, com a Salvaguarda Intacta e sem o \"não Quebra\" do frasco — o ataque usado leva o Gelo e rompe a Salvaguarda (acoes.mjs → personagem/salvaguarda.romper)"
+    },
+    {
       "padrao": "^.*Proteção.*$",
       "efeitos": [
         {
@@ -17956,7 +18644,7 @@
         }
       ],
       "estado": "inerte",
-      "nota": "a Proteção (Ward) não existe no jogo",
+      "nota": "esta variação da Proteção (Salvaguarda/Ward) não tem regra no jogo (as linhas da Proteção dos únicos e das Atemporais têm as regras acima)",
       "_nova": true,
       "_unico": true
     },
@@ -18014,18 +18702,57 @@
       "_unico": true
     },
     {
-      "padrao": "^.*(?:Raio de Iluminação|Campo de Visão|redução do Tamanho|Tamanho do (?:Personagem|Zumbi|Golem)).*$",
+      "padrao": "^[Tt]amanho do Personagem aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "tamanho_personagem",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: efeito só visual (luz, visão, tamanho) — o jogo mostra a tela inteira e o tamanho não muda nada",
+      "estado": "novo",
+      "nota": "no PoE só muda o desenho: o personagem aparece maior na tela",
       "_nova": true,
-      "_unico": true,
-      "_lote49": "16/10 — lote 49 (como na árvore: luz, visão e tamanho não se aplicam ao jogo)"
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)",
+      "_03_11": "03/11 — o \"t\" minúsculo do poedb (o Ninho do Rato: \"tamanho do Personagem reduzido em 10%\" — a versão reduzida desta regra) também casa"
+    },
+    {
+      "padrao": "^Tamanho do Zumbi aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "tamanho_zumbi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "no PoE só muda o desenho: os zumbis aparecem maiores",
+      "_nova": true,
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de redução do Tamanho dos Golens$",
+      "efeitos": [
+        {
+          "stat": "tamanho_golem",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "no PoE só muda o desenho: os golens aparecem menores",
+      "_nova": true,
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Tamanho dos Golens$",
+      "efeitos": [
+        {
+          "stat": "tamanho_golem",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "no PoE só muda o desenho: os golens aparecem maiores",
+      "_nova": true,
+      "_luz": "02/11 — lote \"luz\": o Raio de Iluminação (a escuridão em volta, o que depende da luz e o tamanho no desenho)"
     },
     {
       "padrao": "^Acertos Corpo a Corpo com Maças, Cetros ou Cajados Fortificam por \\{(\\d+)\\} segundos$",
@@ -18079,16 +18806,36 @@
     },
     {
       "padrao": "^Inafetado por Solo Congelado$",
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "imune_solo_congelado",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: nada no jogo cria Solo Congelado (dono, 17/10)",
+      "nota": "o Solo Congelado dos monstros (\"Solo Resfriado ao Morrer\") Resfria quem está nele (10%) — esta linha impede",
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
+    },
+    {
+      "padrao": "^Imunidade a Solo Ardente, Solo Eletrizado e Solo Congelado$",
+      "efeitos": [
+        {
+          "stat": "imune_solo_ardente",
+          "valor": "1"
+        },
+        {
+          "stat": "imune_solo_eletrizado",
+          "valor": "1"
+        },
+        {
+          "stat": "imune_solo_congelado",
+          "valor": "1"
+        }
+      ],
+      "nota": "os três solos dos monstros do PoE (ao morrer): o Ardente queima, o Eletrizado Eletriza, o Congelado Resfria",
       "_nova": true,
-      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+      "_100combate": "02/11 — 100% (combate): as linhas que estavam como \"não se aplica ao jogo\" (itens-poe/combate-100.mjs)"
     },
     {
       "padrao": "^Inafetado por Solo Ardente$",
@@ -18113,6 +18860,84 @@
       "_lote70": "17/10 — lote 70 (as Ramificadoras: os notáveis — os solos dos monstros e os totens)"
     },
     {
+      "padrao": "^\\{(\\d+)\\}% de chance de criar Solo Congelado ao Congelar um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:congelar:soloCongelado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o seu Solo Congelado (6 s, 1 casa) onde está o inimigo Congelado: Resfria os monstros nele (10%)",
+      "_nova": true,
+      "_03_11": "03/11 — combate, luz e árvore: o Solo Congelado que você cria e o \"sobre Solo Congelado\""
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de criar Solo Resfriado ao Acertar com um Ataque$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:soloCongelado@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o Solo Resfriado é o Solo Congelado do PoE (Chilled Ground): o seu (6 s, 1 casa) onde está o inimigo acertado; Resfria os monstros nele (10%)",
+      "_nova": true,
+      "_03_11": "03/11 — combate, luz e árvore: o Solo Congelado que você cria e o \"sobre Solo Congelado\""
+    },
+    {
+      "padrao": "^Efeito do Solo Congelado aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "solo_congelado_efeito",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o Resfriamento do Solo Congelado que você cria (10% × o aumentado)",
+      "_nova": true,
+      "_03_11": "03/11 — combate, luz e árvore: o Solo Congelado que você cria e o \"sobre Solo Congelado\""
+    },
+    {
+      "padrao": "^\\{(\\d+(?:\\.\\d+)?)\\}% de Vida Regenerada por segundo sobre Solo Congelado$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct@soloCongelado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "com você sobre qualquer Solo Congelado (o dos monstros ou o seu)",
+      "_nova": true,
+      "_03_11": "03/11 — combate, luz e árvore: o Solo Congelado que você cria e o \"sobre Solo Congelado\""
+    },
+    {
+      "padrao": "^Cria Solo Congelado ao Utilizar$",
+      "efeitos": [
+        {
+          "stat": "frasco_solo_congelado",
+          "valor": "1"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o Frasco de Água-marinha: o Solo Congelado no chão onde você está (3 casas, 5 s) ao usar — quem lê é o frasco (`frascos.aoUsarOFrasco`)",
+      "_nova": true,
+      "_03_11": "03/11 — combate, luz e árvore: o Solo Congelado que você cria e o \"sobre Solo Congelado\""
+    },
+    {
+      "padrao": "^(?:Deixa )?Solo (?:Ardente|Eletrizado|Congelado|Resfriado) ao Morrer$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "modificador de MONSTRO: o solo que ele deixa ao morrer vale no monstro (`mobs/mecanicas` — o Ardente queima, o Eletrizado Eletriza, o Congelado Resfria quem está nele)",
+      "_nova": true,
+      "_03_11": "03/11 — os solos dos monstros existem (lote 70 e 100% combate): a linha do modificador não cai mais na nota larga dos solos"
+    },
+    {
       "padrao": "^(?!Você tem Solo Sagrado ao seu redor enquanto parado|\\{\\d+\\}% de chance de criar Solo Profano no Golpe Crítico|Efeitos do Solo Profano criados por você Perduram).*(?:Solo (?:Ardente|Eletrizado|Congelado|Profano|Profanado|Fúngico|Cáustico|Sagrado|Resfriado)|Áreas Resfriadas|Piche).*$",
       "efeitos": [
         {
@@ -18121,9 +18946,10 @@
         }
       ],
       "estado": "inerte",
-      "nota": "os solos (ardente, sagrado, fúngico…) não existem no jogo",
+      "nota": "estes solos ainda não têm efeito no jogo: o Solo Fúngico, o Cáustico, o Profanado (o de dano de Caos em você), o Piche, as \"Áreas Resfriadas\" do Algor Mortis, o Solo Ardente e o Eletrizado criados por você (os dos monstros existem — \"Inafetado por Solo Ardente/Eletrizado\" vale), as imunidades \"enquanto afetado por Pureza\" e as linhas do Solo Sagrado/Profano sem regra própria (o raio, o bloqueio, o Fanatismo, o do frasco). O Solo Sagrado e o Profano que você cria, o Solo Congelado (o dos monstros e o seu) e as imunidades aos solos têm regra própria e valem",
       "_nova": true,
-      "_unico": true
+      "_unico": true,
+      "_03_11": "03/11 — a nota dizia que nenhum solo existe no jogo: agora diz quais ainda não existem"
     },
     {
       "padrao": "^Efeitos do Dreno de Vida não são removidos quando a Vida Não Reservada estiver Cheia$",
@@ -26961,7 +27787,7 @@
       "_unico": true
     },
     {
-      "padrao": "^Efeito de Auras Não[ -]Maldiç(?:ões|ão) das suas Habilidades aumentado em \\{(\\d+)\\}%$",
+      "padrao": "^Efeito d(?:e|as) Auras Não[ -]Maldiç(?:ões|ão) das suas [Hh]abilidades aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
           "stat": "efeito_buff_gema:aura",
@@ -43203,14 +44029,14 @@
       "padrao": "^Punição pode afetar Inimigos Infeitiçáveis$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "feitico_afeta_aprova:Punishment",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: a maldição Punição não existe no PoE 3.29 — não há a gema (dono, 17/10)",
+      "nota": "a Punição do texto é a gema Castigo (Punishment, act_str.lua:8753 do PoB): pega também no monstro à Prova de Maldições",
       "_nova": true,
-      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)",
+      "_mundo100": "03/11 — 100%, lote mundo (os baús, o Estandarte e a aura no chão, o Vínculo, a Punição)"
     },
     {
       "padrao": "^Alcance do Posicionamento de Totens aumentado em \\{(\\d+)\\}%$",

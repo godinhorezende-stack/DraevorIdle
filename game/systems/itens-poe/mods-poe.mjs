@@ -5,7 +5,7 @@ import * as QuemFeriu from '../hunt/quem-feriu.mjs';
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo, porExposicao } from './condicoes-poe.mjs';
+import { RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, criarSoloCongelado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo, porExposicao } from './condicoes-poe.mjs';
 import * as Plantadas from './armas-plantadas.mjs';
 // (lotes G-A e G-C, dono 25/10: as Marcas no acerto — as Cargas, as Cargas de Frasco — e a Punição em quem acerta você)
 import * as GemasGAC from './gemas-gac.mjs';
@@ -13,6 +13,7 @@ import { porLento } from './gemas-gbd.mjs';
 // (lote S2B, 27/10: o Exemplar conta os seus críticos de ataque)
 import { notarCriticoDeAtaque } from './suportes-s2b.mjs';
 import * as Testador from '../personagem/testador.mjs';
+import * as Salvaguarda from '../personagem/salvaguarda.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -1094,12 +1095,16 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
         if (agora - (intervalos[`frasco:${ev.param}`] ?? -Infinity) < Number(cadaS) * 1000) return;
         intervalos[`frasco:${ev.param}`] = agora;
       }
-      for (const p of estado.frascos ?? []) if (p?.poe && (so !== 'vida' || p.poe.classe === 'Life_Flasks')) p.poe.cargas = (p.poe.cargas ?? 0) + v;
+      // (02/11, a Joia Atemporal: "Frascos de Ferro ganham 2 cargas quando sua Salvaguarda se Rompe" — `frasco:ferro`, só os Frascos de Ferro)
+      const doTipo = (p) => (so === 'vida' ? p.poe.classe === 'Life_Flasks' : so === 'ferro' ? String(p.poe.base ?? '').split('/')[1] === 'Iron_Flask' : true);
+      for (const p of estado.frascos ?? []) if (p?.poe && doTipo(p)) p.poe.cargas = (p.poe.cargas ?? 0) + v;
       return;
     }
     // "X% de chance de ganhar uma Carga de Frasco ao causar um Golpe Crítico": a CHANCE de cada frasco do cinto ganhar uma carga.
     case 'frascoChance': { if (sorte(v)) for (const p of estado.frascos ?? []) if (p?.poe) p.poe.cargas = (p.poe.cargas ?? 0) + 1; return; }
     case 'recargaEs': if (sorte(v)) estado.esEspera = 0; return;
+    // (02/11) "X% de chance de Restaurar a Salvaguarda ao Bloquear / ao usar um Frasco": ela volta inteira (`personagem/salvaguarda.restaurar`)
+    case 'salvaguarda': if (sorte(v)) Salvaguarda.restaurar(estado, ficha); return;
     // `removerAfeccao:elementais` ("Remove Afecções Elementais quando você Conjurar uma Magia Maldição"): o Incêndio, a Eletrização, o
     // Resfriamento e o Congelamento em você; sem parâmetro, a afecção mais antiga.
     case 'removerAfeccao': if (sorte(v)) {
@@ -1116,6 +1121,11 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
         for (const t of ['queimadura', 'sangramento', 'veneno', 'venenoPoe']) Dot.removerDoJogador(hunt, t);
       } else if (ev.param === 'lento') {
         if (hunt.controle) delete hunt.controle.lento;
+      } else if (ev.param === 'danificadoraAleatoria') {
+        // (02/11, a Joia Atemporal: "Remove uma Afecção Danificadora aleatória quando a Salvaguarda é Restaurada") UMA das danificadoras em você — o Incêndio, o
+        // Sangramento ou o Veneno —, sorteada
+        const tem = AFECCOES_NO_JOGADOR.filter((a) => ['incendio', 'sangramento', 'veneno'].includes(a.nome) && a.tem(hunt, agora));
+        if (tem.length) tem[Math.floor(rng() * tem.length)].tirar(hunt);
       } else if (ev.param === 'naoElemental' || ev.param === 'aleatoria') {
         // (13/10) UMA afecção aleatória (a de todas as pilhas do tipo, como no PoE): `naoElemental` — o Sangramento ou o Veneno (a Maestria de
         // Frascos); `aleatoria` — qualquer uma, as elementais também: o Incêndio, o Congelamento, o Resfriamento e a Eletrização (a Maestria de
@@ -1164,6 +1174,9 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     case 'soloProfano': if (sorte(v)) criarSoloProfano(hunt, Number(ev.param) || SOLO_PROFANO.duracaoS, agora); return;
     // (lote G) `soloSagrado:<segundos>` = a CHANCE de criar Solo Sagrado onde você está; `valor` = ganha N de Valor (com um Estandarte ligado).
     case 'soloSagrado': if (sorte(v)) criarSoloSagrado(hunt, Number(ev.param) || 4, agora); return;
+    // (03/11) `soloCongelado` = a CHANCE de criar o seu Solo Congelado onde está o inimigo do evento (o Congelado da Harpa de Nuro, o acertado da Coroa da
+    // Salmoura) — ou em você, sem alvo (`condicoes-poe.criarSoloCongelado`)
+    case 'soloCongelado': if (sorte(v)) criarSoloCongelado(hunt, ficha, { x: alvo?.x ?? hunt.pos?.x, y: alvo?.y ?? hunt.pos?.y, agora }); return;
     case 'valor': ganharValor(hunt, v, ficha?.afPoe, agora, { semIntervalo: true }); return;
     // (lote H) `mortalha:<máximo>` = ganha N Mortalhas Fantasmas (a keystone Mortalhas Fantasmas — `aoSerAcertado` gasta uma).
     case 'mortalha': hunt.mortalhas = Math.min(Number(ev.param) || 3, (hunt.mortalhas ?? 0) + v); return;
@@ -1221,6 +1234,22 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
         const max = recurso === 'es' ? esMax : recurso === 'mana' ? estado.maxMana ?? 0 : estado.maxHp ?? 0;
         curar(recurso, max, (max * v) / 100);
       }
+      return;
+    }
+    // (100% — dados, 03/11) `consumirCadaverChance:<hp|mana|es>:<pct>` = a CHANCE (%): "Golpes Abatedores têm 4% de chance de Consumir cadáveres para recuperar 10% da
+    // Vida Máxima" (a Tatuagem do Devorador de Corações de Kitava) — no Golpe de Misericórdia, o cadáver do morto é consumido (ele não deixa cadáver: `poeDevorado`,
+    // como o Devorar — `hunt/combate`), marca o "Consumiu um cadáver Recentemente" e recupera pct% do máximo
+    case 'consumirCadaverChance': {
+      if (!sorte(v)) return;
+      const [rec, pct] = String(ev.param ?? '').split(':');
+      if (alvo) alvo.poeDevorado = true;
+      marcar(hunt, 'consumiuCadaver', agora);
+      ((hunt.poeUsosRecentes ??= {}).cadaver ??= []).push(agora);
+      while (hunt.poeUsosRecentes.cadaver.length > 60) hunt.poeUsosRecentes.cadaver.shift();
+      evento(estado, hunt, 'consumirCadaver', ficha, { agora, eventos });
+      const recurso = rec === 'es' ? 'es' : rec === 'mana' ? 'mana' : 'hp';
+      const max = recurso === 'es' ? esMax : recurso === 'mana' ? estado.maxMana ?? 0 : estado.maxHp ?? 0;
+      curar(recurso, max, (max * (Number(pct) || 0)) / 100);
       return;
     }
     // `vidaDaRegen:<por>` = N: recupera N de Vida por cada `<por>` de Vida Regenerada por segundo ("A cada 4 segundos, Recupere 1 de vida por

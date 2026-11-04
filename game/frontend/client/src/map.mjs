@@ -7,6 +7,7 @@ import { comecarPasso, teleportar } from './interpolacao.mjs';
 import { desenharMarcadores, assinaturaDosEncontros } from './encontros-na-tela.mjs';
 // (lote A3b, dono 19/10: D13) os objetos das gemas do PoE no chão ou no tempo — a bola, o tornado, as lâminas, os marcadores, o chão, os capturados
 import { desenharObjetosDoPoe } from './objetos-do-poe.mjs';
+import { raioEmPixels, desenharEscuridao, alfaNaLuz, escalaDoDesenho, suavizarRaio } from './iluminacao.mjs';
 import { drawItem, drawCreature, outfitInfo, image, isAnimated, drawEffect, drawMissile, effectDuration, itemCanvas } from './sprites.mjs';
 import { criarCamada, desenharEfeito, desenharProjetil, desenharContinuo, visuaisAtuais, desenharQuadroDeAsset, duracaoDoAsset } from './efeitos-visuais.mjs';
 import { quadroDoCiclo, quadroDaChegada, casaDoPortal, ordemDaSaida, ORDEM_DA_CHEGADA, direcaoDoPasso, entradaNova } from './portal-ciclo.mjs';
@@ -984,6 +985,9 @@ export class MapView {
     }
     this.faltando = null;
     payload.map = payload.map ?? this.mapData;
+    // (lote "luz") o Raio de Iluminação da caçada do PoE (`snapshotDaHunt.luz`): sem ele (a cidade, o clássico), a tela inteira acesa.
+    this.luz = payload.luz ?? null;
+    if (!this.luz) this.raioDaLuzVisto = null;
 
     this.snapshot = payload.map ? payload : null;
     if (!payload.map) return;
@@ -1227,6 +1231,8 @@ export class MapView {
       marca: data.marca ?? null,
       isPlayer: key === 'player',
       isOther: !!data.isOther,
+      // (lote "luz") o tamanho do desenho (o "Tamanho do Personagem" do monstro, o "Tamanho do Zumbi/dos Golens" do lacaio): ver `drawEntity`.
+      escala: data.escala ?? 1,
       // O familiar. Ele nao e alvo, nao se convida e nao tem barra de vida —
       // ver a nota do laco que o registra, em setSnapshot.
       summon: !!data.summon,
@@ -2607,6 +2613,30 @@ export class MapView {
    * mapa — ele vai numa camada de texto própria —, então repintá-lo empilharia
    * dois traçados no mesmo lugar. Foi assim que o boneco virou um borrão escuro.
    */
+  /**
+   * (lote "luz") O centro e o raio da luz NESTE quadro (em pixels do mundo): o personagem andando, e o raio visto andando até o do servidor.
+   * Sem `luz` no retrato, nada (`luzAgora` null: a tela inteira acesa).
+   */
+  prepararLuz(entities, now) {
+    const alvo = raioEmPixels(this.luz, TILE);
+    const eu = alvo ? entities.find((entity) => entity.isPlayer) : null;
+    if (!alvo || !eu) {
+      this.luzAgora = null;
+      return;
+    }
+    this.raioDaLuzVisto = suavizarRaio(this.raioDaLuzVisto, alvo, now - (this.luzMedidaEm ?? now));
+    this.luzMedidaEm = now;
+    const pos = this.position(eu, now);
+    this.luzAgora = { x: pos.x + TILE / 2, y: pos.y + TILE / 2, raio: this.raioDaLuzVisto };
+  }
+
+  /** (lote "luz") A escuridão fora do raio: o gradiente em volta do personagem (`iluminacao.mjs`). */
+  drawEscuridao() {
+    const l = this.luzAgora;
+    if (!l) return;
+    desenharEscuridao(this.ctx, l.x - this.camera.x, l.y - this.camera.y, l.raio, this.canvas.width, this.canvas.height);
+  }
+
   drawEntity(entity, now, semNome = false) {
     const pos = this.position(entity, now);
     /*
@@ -2662,6 +2692,21 @@ export class MapView {
     const absorcao = entity.isPlayer && this.portalDeSaida ? this.quadroDoPortal(now)?.personagem : chegando?.personagem ?? null;
     const semONome = !!(entity.isPlayer && this.portalDeSaida) || chegando?.fase === 'surgindo' || chegando?.fase === 'saindo';
     if (absorcao && absorcao.alpha <= 0.01) return;
+    // (lote "luz") o TAMANHO do desenho (pelos pés) e o monstro APAGADO fora da luz
+    const escala = escalaDoDesenho(entity.isPlayer ? this.luz?.tamanho : entity.escala);
+    const alfaDaLuz = !entity.isPlayer && !entity.isOther && this.luzAgora ? alfaNaLuz(Math.hypot(pos.x + TILE / 2 - this.luzAgora.x, pos.y + TILE / 2 - this.luzAgora.y), this.luzAgora.raio) : 1;
+    const mudaODesenho = escala !== 1 || alfaDaLuz < 1;
+    if (mudaODesenho) {
+      ctx.save();
+      ctx.globalAlpha *= alfaDaLuz;
+      if (escala !== 1) {
+        const pesX = px + TILE / 2;
+        const pesY = py + TILE;
+        ctx.translate(pesX, pesY);
+        ctx.scale(escala, escala);
+        ctx.translate(-pesX, -pesY);
+      }
+    }
     if (absorcao) {
       ctx.save();
       ctx.globalAlpha *= absorcao.alpha;
@@ -2690,6 +2735,7 @@ export class MapView {
       );
     }
     if (absorcao) ctx.restore();
+    if (mudaODesenho) ctx.restore();
     if (semONome) return;
 
     // Moldura vermelha em cima do alvo, como o quadrado de ataque do client.
@@ -3792,6 +3838,8 @@ export class MapView {
       this.precisaDesenhar = false;
       return false;
     }
+    // (lote "luz") o raio da luz ainda andando até o do servidor (a vida caiu, a cegueira passou).
+    if (this.luz && this.raioDaLuzVisto !== raioEmPixels(this.luz, TILE)) return false;
     // A rede de segurança: no máximo meio segundo sem repintar.
     if (now - (this.desenhadoEm ?? -Infinity) > 500) return false;
     // A câmera está deslizando (alguém está andando).
@@ -3965,6 +4013,7 @@ export class MapView {
      * empilharia dois traçados e o escureceria.
      */
     const entities = [...this.entities.values()].sort((a, b) => a.y - b.y || (a.isPlayer ? 1 : -1));
+    this.prepararLuz(entities, now);
 
     /*
      * ---- Em que CASA a criatura é desenhada, enquanto ela anda ----
@@ -4151,6 +4200,8 @@ export class MapView {
     });
     if (graficoLigado('efeitos')) this.drawEffects(now);
     if (graficoLigado('projeteis')) this.drawMissiles(now);
+    // (lote "luz") a ESCURIDÃO fora do Raio de Iluminação: por cima do mapa, das criaturas e dos efeitos; o portal e os textos ficam por cima.
+    this.drawEscuridao();
     // O portal de saída da viagem: sempre (não é enfeite — é a viagem), por cima de tudo, com a barra na camada de texto.
     this.drawPortalDeSaida(now);
     this.drawPortalDeChegada(now);

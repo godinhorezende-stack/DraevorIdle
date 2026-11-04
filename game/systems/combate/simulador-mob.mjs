@@ -61,10 +61,10 @@ function ataquesDe(m, nivelDoMob) {
 /** As defesas do jogador contra UM ataque do mob — cada uma como um fator (1 = não reduz): esquiva, bloqueio, armadura, proteção, crítico. */
 function defesasContra(ficha, m, nivelDoMob, a, danoMedio) {
   const melee = a.tipo === 'melee';
-  const esquiva = melee ? Atributos.chanceDeEsquiva(ficha.evasion ?? 0, nivelDoMob, Mobs.precisaoDe(m, nivelDoMob)) : 0;
+  const esquiva = melee ? Atributos.chanceDeEsquiva(ficha.evasaoDaEsquiva ?? ficha.evasion ?? 0, nivelDoMob, Mobs.precisaoDe(m, nivelDoMob)) : 0;
   const bloqueio = melee ? ((ficha.blockChance ?? 0)) : 0;
   const prot = Limites.resistenciaDoJogador(ficha.protection?.[a.elemento] ?? 0);
-  const armadura = a.elemento === 'physical' ? F.reducaoDeArmaduraPoe(ficha.armor ?? 0, danoMedio) : 0;
+  const armadura = a.elemento === 'physical' ? F.reducaoDeArmaduraPoe(ficha.armaduraDaReducao ?? ficha.armor ?? 0, danoMedio) : 0;
   const crit = Mobs.critico(m);
   const fatorCritico = 1 + crit.chance * (crit.fator - 1);
   return {

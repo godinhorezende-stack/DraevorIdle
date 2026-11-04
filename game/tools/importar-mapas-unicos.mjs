@@ -96,6 +96,9 @@ export const REGRAS = [
   [/^Jogadores são Amaldiçoados com (\S+)$/, (m) => (MALDICAO[m[1]] ? [{ alvo: 'jogador', stat: 'maldicao', fixo: MALDICAO[m[1]] }] : null)],
   [/^\{0\} Cargas de Frasco recuperadas a cada \{1\} segundos$/, () => [{ alvo: 'jogador', stat: 'frasco_regen_n:todos', de: 0 }, { alvo: 'jogador', stat: 'frasco_regen_s:todos', de: 1 }]],
   // (As mesmas mecânicas dos mods dos mapas comuns — `tools/montar-mapas-poe.mjs → EFEITOS`.)
+  // (dono, 03/11 — "100%") os BAÚS do PoE nas instâncias (`itens-poe/baus-poe.mjs`): o Grande Baú a mais e a Raridade de Itens dos baús.
+  [/^Área contém um Grande Baú$/, () => [{ alvo: 'instancia', stat: 'grandesBaus', fixo: 1 }]],
+  [/^Baús têm a Raridade de Itens aumentada em \{0\}%$/, () => [{ alvo: 'instancia', stat: 'bausRaridadePct', de: 0 }]],
   [/^Velocidade de Movimento dos Monstros aumentada em \{0\}%$/, () => [{ alvo: 'monstros', stat: 'velocidadePct', de: 0 }]],
   [/^Velocidade de Ataque dos Monstros aumentada em \{0\}%$/, () => [{ alvo: 'monstros', stat: 'velocidadeDeAtaquePct', de: 0 }]],
   [/^Velocidade de Conjuração dos Monstros aumentada em \{0\}%$/, () => [{ alvo: 'monstros', stat: 'velocidadeDeConjuracaoPct', de: 0 }]],

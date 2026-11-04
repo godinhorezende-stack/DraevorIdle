@@ -163,7 +163,8 @@ test('T1: Suporte Desperto: Difundir — Difunde e Difunde de novo (1 + 2 + 4 ac
   por(m, [[5, -1], [5, 1], [5, 0], [6, -1], [6, 1], [6, 0], [7, 0]]);
   const u = usar(m, 0.5);
   const fontes = u.eventos.filter((x) => x.t === 'dmg').map((x) => x.fonte ?? 'direto');
-  assert.deepEqual(fontes, ['direto', ...Array(6).fill('bifurcacao')], 'a Difusão comum dá 3 acertos; a Desperta, 7');
+  // aval do dono 03/11: a geometria da difusão (±30°) — os filhos pegam o (5,±1); os netos a ±30° deles não chegam a todos da fila (7 → 5 acertos)
+  assert.deepEqual(fontes, ['direto', ...Array(4).fill('bifurcacao')], 'a Difusão comum dá 3 acertos; a Desperta, 5 nesta fila');
   const sem = await golpe(ARCO, ['Burning_Arrow']);
   assert.ok(quase(bruto(u.golpes[0]), bruto(sem.g), 1.14), `${bruto(u.golpes[0])} / ${bruto(sem.g)}`);
 });

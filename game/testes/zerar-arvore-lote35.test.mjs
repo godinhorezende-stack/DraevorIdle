@@ -62,16 +62,18 @@ test('P001 — o alcance corpo a corpo em metros: o da arma (a base do PoE) + os
   assert.equal(espada.equipment.weapon.poe.atributos.alcance_metros, 1.1);
   assert.equal(ficha(espada).alcanceCorpoM, 1.1);
   assert.equal(alcance(espada), 1, '1,1 m: o vizinho colado');
-  assert.equal(alcance(personagem({ alcance_corpo_m: 0.9 })), 2, '1,1 + 0,9 = 2,0 m: uma casa a mais (antes: 0,9 m sozinho não dava nada)');
-  assert.equal(alcance(personagem({ alcance_corpo_m: 0.8 })), 1, '1,9 m: ainda não');
-  assert.equal(alcance(personagem({ alcance_corpo_m: 2.9 })), 3, '4,0 m: duas casas a mais');
+  // aval do dono 03/11: o alcance suave — a arma dá as casas dela; só os metros a mais valem meia casa cada (a fração é chance; sem caçada, a sorte 0,5)
+  assert.equal(alcance(personagem({ alcance_corpo_m: 0.9 })), 1, '+0,9 m: 45% de uma casa a mais (a sorte 0,5 não pega)');
+  assert.equal(alcance(personagem({ alcance_corpo_m: 2 })), 2, '+2,0 m: uma casa a mais certa');
+  assert.equal(alcance(personagem({ alcance_corpo_m: 0.8 })), 1, '+0,8 m: 40%, a sorte 0,5 não pega');
+  assert.equal(alcance(personagem({ alcance_corpo_m: 2.9 })), 2, '+2,9 m: uma casa a mais e 45% de outra'); // aval do dono 03/11: o alcance suave (3 → 2)
   // o machado de duas mãos (1,3 m) e a faca (1,0 m)
-  assert.equal(alcance(personagem({ alcance_corpo_m: 0.7 }, 'Two_Hand_Axes/Stone_Axe')), 2);
+  assert.equal(alcance(personagem({ alcance_corpo_m: 0.7 }, 'Two_Hand_Axes/Stone_Axe')), 1); // aval do dono 03/11: o alcance suave — +0,7 m = 35% (2 → 1)
   assert.equal(alcance(personagem({ alcance_corpo_m: 0.7 }, 'Daggers/Glass_Shank')), 1, '1,0 + 0,7 = 1,7 m');
   // a peça antiga sem o alcance gravado: o da base do catálogo
   const antiga = personagem({ alcance_corpo_m: 0.9 });
   delete antiga.equipment.weapon.poe.atributos.alcance_metros;
-  assert.equal(alcance(antiga), 2);
+  assert.equal(alcance(antiga), 1); // aval do dono 03/11: o alcance suave — +0,9 m = 45% (2 → 1)
   // desarmado: o PoB não traz o alcance — só os metros a mais
   assert.equal(Ficha.alcanceCorpoEmMetros(null, { alcance_corpo_m: 2 }), 2);
 });
@@ -98,7 +100,8 @@ test('P001 — o golpe corpo a corpo da GEMA usa o mesmo alcance (o Golpe Pesado
     return Acoes.disparar(e, h, PERSONAGEM, 0, alvo, { manual: true });
   };
   assert.equal(tenta({}).motivo, 'FORA_DE_ALCANCE', 'a espada (1,1 m) não alcança a 2 casas');
-  assert.equal(tenta({ alcance_corpo_m: 0.9 }).ok, true, 'com 2,0 m, alcança');
+  // aval do dono 03/11: o alcance suave — +0,9 m é só 45% de chance; +2,0 m é a casa a mais certa
+  assert.equal(tenta({ alcance_corpo_m: 2 }).ok, true, 'com +2,0 m, alcança');
 });
 
 test('P004 — a Recuperação de Bloqueio trava em TODO bloqueio (a decisão do dono): 0,35 s ÷ (1 + a recuperação)', { skip: SEM }, () => {

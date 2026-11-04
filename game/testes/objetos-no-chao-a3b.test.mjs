@@ -9,7 +9,8 @@ import { existsSync } from 'node:fs';
 process.env.ITENS_POE = '1';
 const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
 const SEM = (!existsSync(Catalogo.ARQUIVO) || !Catalogo.ligado()) && 'só no modo PoE, com o catálogo do PoE';
-const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
+const { personagemDeTeste, PERSONAGEM, pousarVoos } = await import('./apoio.mjs');
+const Voos = await import('../systems/hunt/voos.mjs');
 const Acoes = await import('../systems/acoes.mjs');
 const GS = await import('../systems/skills/gemas.mjs');
 const G = await import('../systems/itens-poe/gemas-poe.mjs');
@@ -59,6 +60,7 @@ function usar({ e, bs }, i = 0, v = 0.5, alvo = bs[0]) {
     assert.ok(r.ok, `${r.motivo} ${r.erro}`);
     const ev = [...(r.eventos ?? [])];
     if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; ev.push(...(Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM) ?? [])); }
+    ev.push(...pousarVoos(e.hunt)); // aval do dono 03/11: o voo de verdade — o golpe do projétil cai no tique em que ele chega (`pousarVoos`)
     // (a próxima ação já pode sair: o relógio do grupo fica para trás)
     delete e.hunt.cooldowns?.[Acoes.GRUPO_DO_POE];
     return ev;
@@ -72,6 +74,7 @@ function correr({ e }, ms, { passo = 50, v = 0.5, prender = null } = {}) {
       e.hunt.clock += passo;
       if (prender) prender();
       ev.push(...Acoes.tiqueDasPlantadas(e, e.hunt, PERSONAGEM, []));
+      ev.push(...Voos.tique(e.hunt, e.hunt.clock)); // aval do dono 03/11: o voo de verdade — o que está no ar anda no tique (como o da caçada)
     }
   });
   return ev;
@@ -201,7 +204,7 @@ test('A3b D10: a Faísca Vaal solta 100 projéteis em 3 s (+ os "+N projéteis")
   assert.equal(esp.n, 100 + extras);
   assert.equal(esp.angulo, null, 'as direções aleatórias da gema');
   // (o sorteio travado no leste: todas no alvo)
-  const depois = correr(m, 3100, { v: () => 0 });
+  const depois = [...correr(m, 3100, { v: () => 0 }), ...pousarVoos(m.e.hunt, { sorte: 0 })]; // aval do dono 03/11: o voo de verdade — os últimos da espiral chegam depois dos 3 s
   assert.equal(tiros(depois).length, esp.n, 'todos os projéteis saem em 3 s');
   assert.equal(acertosEm(depois, m.bs[0]), esp.n);
   assert.equal(objetos(m.e, 'espiral').length, 0);
@@ -387,8 +390,10 @@ test('A3b D9: a Espiral Venenosa captura cada projétil que voltou (até 30 + 0,
   const n = objetos(m.e, 'capturado').length;
   const proj = Acoes.comOsAlvosDaGema(Acoes.POR_ID_PUBLICO(G.doSlug('Venom_Gyre').acao), GS.efeitoNaSkill(m.e, G.doSlug('Venom_Gyre').acao), m.e);
   assert.equal(n, Math.max(1, Math.round(proj.projeteisBase ?? 1)) + Math.round(proj.alvosExtras ?? 0), 'um por projétil do uso');
-  assert.equal(objetos(m.e, 'capturado')[0].ate - m.e.hunt.clock, 12000);
-  for (let i = 0; i < 40; i++) usar(m, 0);
+  assert.equal(objetos(m.e, 'capturado')[0].ate - objetos(m.e, 'capturado')[0].desde, 12000); // aval do dono 03/11: o voo de verdade — a captura nasce na volta do projétil (o relógio já andou)
+  // aval do dono 03/11: o voo de verdade — cada uso espera a volta dos projéteis; o relógio volta ao mesmo instante (os 40 usos seguidos, sem os 12 s vencerem)
+  const t1 = m.e.hunt.clock;
+  for (let i = 0; i < 40; i++) { usar(m, 0); m.e.hunt.clock = t1; }
   assert.equal(objetos(m.e, 'capturado').length, 30, 'o teto da gema');
   // as Lâminas Giratórias: todos saem (o sorteio dos 40%: 0,5 — nenhum fica; 0,1 — todos ficam)
   Object.assign(m.bs[1], { x: m.e.hunt.pos.x + 3, y: m.e.hunt.pos.y });

@@ -23,7 +23,7 @@ const P = await import('../systems/passivas/arvore.mjs');
 const J = await import('../systems/itens-poe/jogo.mjs');
 const { gerarPeca } = await import('../systems/itens-poe/gerar.mjs');
 const { ITEM_CATALOG } = await import('../systems/dados.mjs');
-const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
+const { personagemDeTeste, PERSONAGEM, pousarVoos } = await import('./apoio.mjs');
 if (!SEM) J.iniciar(ITEM_CATALOG);
 
 const ef = (slug, nivel = 20, q = 0) => S.efeitoNoNivel(slug, nivel, q).efeito;
@@ -112,6 +112,7 @@ test('de ponta a ponta: a gema ligada ao Chance de Envenenar põe o Veneno do Po
     const r = Acoes.disparar(e, e.hunt, PERSONAGEM, 0, b, { manual: true });
     assert.ok(r.ok, r.erro);
     if (r.conjurando) { e.hunt.clock += 3000; Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM); }
+    pousarVoos(e.hunt); // aval do dono 03/11: o voo de verdade — o golpe do projétil cai no tique em que ele chega (`pousarVoos`)
   } finally {
     Math.random = original;
   }
@@ -158,6 +159,7 @@ function bolaDeFogo(suportes = []) {
     assert.ok(r.ok, r.erro);
     eventos = r.eventos ?? [];
     if (r.conjurando) { e.hunt.clock += 3000; eventos = Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM); }
+    eventos = [...eventos, ...pousarVoos(e.hunt)]; // aval do dono 03/11: o voo de verdade — o golpe do projétil cai no tique em que ele chega (`pousarVoos`)
   } finally {
     Math.random = original;
   }

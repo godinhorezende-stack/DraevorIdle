@@ -20,6 +20,8 @@ import { PROPRIAS_R3B, completarEfeito as completarEfeitoR3B } from './gemas-r3b
 import { PROPRIAS_R3C, ajustarEfeitoR3c } from './gemas-r3c.mjs';
 import { PROPRIAS_R3D } from './gemas-r3d.mjs';
 import { PROPRIAS_P4, DEVASTADOR } from './gemas-p4.mjs';
+// (balão de todas as gemas, 02/11) as propriedades, as linhas internas e as notas curtas do balão
+import { propDoBalao, notaCurta, linhaEscondida, linhaEmPortugues } from './balao-das-gemas.mjs';
 // (lote T2, rodada 4 — 27/10: as linhas com condição que as regras gerais davam sem ela)
 import { REGRAS_T2 } from './gemas-t2.mjs';
 import { REGRAS_C2R4 } from './gemas-r4c2.mjs';
@@ -119,6 +121,9 @@ export function textosDoNivel(s, nivel = 1, qualidade = 0) {
     // (lote A2: a faixa "(a—b)" do poedb vai do nível 1 ao 20 — ou ao máximo das Excepcionais, o 3)
     else add(m.includes('—') ? interpolar(m, (n - 1) / passos) : m);
   }
+  // (achado da revisão de 02/11) o Conjurar ao Perder Salvaguarda: no 14 e no 15 a penalidade já passou de 0 e vira "mais" (o efeito — `efeitoNoNivel`); o texto da coluna
+  // do poedb guarda só o número com o sinal de menos — o balão mostra o sinal do efeito, "+2%" e "+4%"
+  if (s.slug === 'Cast_on_Ward_Break_Support' && n >= 14) for (let i = 0; i < out.length; i++) out[i] = out[i].replace(/causam -(\d+(?:[.,]\d+)?)% de dano mágico/, 'causam +$1% de dano mágico');
   const q = Math.max(0, Math.min(20, qualidade || 0)) / 20;
   // (lote T3, 27/10: a RESERVA pela coluna "Mana" da tabela do nível, quando ela existe — a Blasfêmia Desperta: a faixa da propriedade, "(34—32)%", é a dos níveis 1 a 5
   // ("Nível: (1—5)"), e a interpolação de 20 passos dava 32% no nível 20; a tabela do poedb diz 28%)
@@ -180,6 +185,10 @@ const REGRAS = [
   ...REGRAS_T2,
   // ---- (lote T3, 27/10: as correções que os testes do lote acharam — `suportes-t3.mjs`: o adicionado da Imolação só contra o alvo Queimando) ----
   ...REGRAS_T3,
+  // (02/11) o Conjurar ao Perder Salvaguarda: o gatilho (`gatilhoDe`, 'salvaguarda') e a recarga "5% mais rápida por 100 Salvaguarda, até 400%" — da recarga do GATILHO
+  // (`Salvaguarda.recargaDoGatilho`, em `Acoes.ativarGatilhos`); antes a regra larga da "velocidade de recarga aumentada" a lia como 5% sempre
+  [/^Ativa esta magia reforçada quando sua salvaguarda quebra$/i, () => ({})],
+  [new RegExp(`^Magias reforçadas têm a velocidade de recarga aumentada em ${N}% por 100 Salvaguarda, até ${N}%$`, 'i'), () => ({})],
   // ---- (lote C2 da rodada 4, 28/10: o "mais" e o "aumentado" de um tipo só na parte daquele tipo do golpe — `gemas-r4c2.REGRAS_C2R4`) ----
   ...REGRAS_C2R4,
   // ---- (lote S2B, 27/10: a segunda metade das parciais — `suportes-s2b.mjs`; antes das gerais, que pegavam o começo de algumas e davam o "mais" sem a condição) ----
@@ -758,6 +767,12 @@ function gatilhoDe(s, textos) {
   const atordoado = tudo.match(/(\d+(?:\.\d+)?)% de chance de Ativar Magias Suportadas quando você for Atordoado/i);
   if (atordoado) return { quando: 'atordoado', recargaMs, chance: parseFloat(atordoado[1]) };
   if (/chance de Ativar Magias de Não-Lacaios Suportadas ao Morrer/i.test(tudo)) return { quando: 'morte', recargaMs };
+  // (02/11, dono: a Salvaguarda como o PoE) o Conjurar ao Perder Salvaguarda: as magias saem quando a Salvaguarda quebra (`personagem/salvaguarda.mjs` → `Acoes`), com a
+  // recarga de 1 s ÷ (1 + 5% por 100 de Salvaguarda máxima, até 400%)
+  if (/Ativa esta magia reforçada quando sua salvaguarda quebra/i.test(tudo)) {
+    const por = /velocidade de recarga aumentada em (\d+(?:\.\d+)?)% por 100 Salvaguarda, até (\d+(?:\.\d+)?)%/i.exec(tudo);
+    return { quando: 'salvaguarda', recargaMs, ...(por ? { porSalvaguardaPct: parseFloat(por[1]), porSalvaguardaMaxPct: parseFloat(por[2]) } : {}) };
+  }
   // (lote S2A, 27/10) o Marcar ao Acertar: a Marca suportada sai quando você Acerta um Inimigo Raro ou Único com um Ataque (a recarga do suporte, 4 s)
   if (ehGatilhoDoMarcar(tudo)) return { quando: 'acertoRaro', recargaMs };
   // (lote S2A) a Flecha Forjada com Mana: os Ataques de Arco suportados saem quando a Mana gasta em OUTROS Ataques de Arco passa de X% do custo deles (a recarga, 0,5 s)
@@ -950,6 +965,9 @@ export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
   if (slug === 'Earthbreaker_Support' && efeito.viraTotem) Object.assign(efeito, { ativacaoM: 7, devastadorAreaCorpoPct: DEVASTADOR.areaCorpoIncPct });
   // (lote R3C) o sinal do "Efeito das Auras" da Bênção do Guardião pelo nível
   ajustarEfeitoR3c(slug, nivel, efeito);
+  // (02/11) o Conjurar ao Perder Salvaguarda: a coluna do poedb ("-30% de dano mágico") traz só o número — 30, 26, …, 2, nada no 13, 2 e 4 no 14 e no 15: a penalidade
+  // diminui até 0 e vira "mais" depois dele (o mesmo passo de 2); no 14 e no 15 o sinal sai positivo
+  if (slug === 'Cast_on_Ward_Break_Support' && nivel >= 14) for (const k of ['maisDanoAcertoPct', 'maisDanoMagicoPct']) if (efeito[k] < 0) efeito[k] = -efeito[k];
   return { efeito, naoFeitas };
 }
 
@@ -969,9 +987,8 @@ const MOMENTUM_CANALIZANDO = /Ganhe \S+ de Momentum a cada \S+ segundos enquanto
  * (R3, dono 27/10 — aval do dono 27/10) O suporte que NÃO SE APLICA ao jogo, com a nota do porquê (como as gemas — `GemasPoe.NAO_SE_APLICA`): fica sem efeito e o relatório o
  * mostra como "não se aplica" (`tools/relatorio-gemas-poe.mjs`, `naoSeAplica`).
  */
-export const NAO_SE_APLICA = {
-  Cast_on_Ward_Break_Support: 'não se aplica: o jogo não tem Salvaguarda (Ward), então a salvaguarda nunca quebra e a magia nunca seria ativada (aval do dono 27/10)',
-};
+// (02/11, dono: "resolva essa que não se aplica" — a Salvaguarda existe como no PoE, `personagem/salvaguarda.mjs`: o Conjurar ao Perder Salvaguarda saiu daqui)
+export const NAO_SE_APLICA = {};
 function avaliar(s) {
   if (NAO_SE_APLICA[s.slug]) return { status: 'nao', motivos: [NAO_SE_APLICA[s.slug]], naoSeAplica: NAO_SE_APLICA[s.slug] };
   // Pelo que o suporte É (as tags) e pelo gatilho dos mods — a descrição fala do que ele NÃO suporta ("não pode suportar totens").
@@ -1061,10 +1078,18 @@ export function fichaNoNivel(slug, nivel = 1, qualidade = 0) {
   const n = Math.max(1, Math.min(nivel | 0 || 1, s.linhas.length || 1));
   const t = textosDoNivel(s, n, qualidade);
   const req = Number(linhaDoNivel(s, n)[s.colunas.indexOf('RequerNível')]) || s.nivelReq || 1;
-  const props = t.props.map((p) => (/^Nível:/.test(p) ? ['Nível', String(n)] : p.includes(': ') ? [p.slice(0, p.indexOf(': ')), p.slice(p.indexOf(': ') + 2).replace(/\((\d+) Times\)/, '($1 usos)')] : [p, '']));
-  const { naoFeitas } = efeitoNoNivel(slug, n, qualidade, { tags: ['Magia', 'Ataque', 'Projétil', 'Área', 'Corpo a Corpo', 'Fogo', 'Gelo', 'Raio', 'Caos', 'Físico'].map((x) => `poe:${x}`) });
+  // (balão de todas as gemas, 02/11: o "(Máx)" no nível máximo, como nas ativas; as propriedades em português — `propDoBalao`; sem as linhas do nível vazias, internas
+  // ou que valem 0 — `linhaEscondida`)
+  // (o máximo por XP: o da propriedade "Nível: (1—20)" — 20, ou 3 nas Excepcionais; a tabela segue até o 40 para os bônus de nível das peças)
+  const faixa = (s.props ?? []).map((p) => /^Nível: \((\d+)\s*—\s*(\d+)\)/.exec(p)).find(Boolean);
+  const max = faixa ? Number(faixa[2]) : nivelMaximoDe(s);
+  const props = t.props.map((p) => (/^Nível:/.test(p) ? ['Nível', `${n}${n >= max ? ' (Máx)' : ''}`] : propDoBalao(p.includes(': ') ? [p.slice(0, p.indexOf(': ')), p.slice(p.indexOf(': ') + 2)] : [p, '']))).filter(Boolean);
+  // (balão de todas as gemas, 02/11: as linhas não feitas com as MESMAS etiquetas da avaliação do status — `avaliar` — para o balão não riscar o que o status
+  // dá por feito)
+  const { naoFeitas } = efeitoNoNivel(slug, n, qualidade, { tags: ['Magia', 'Ataque', 'Projétil', 'Área', 'Corpo a Corpo', 'Fogo', 'Gelo', 'Raio', 'Caos', 'Físico', 'Duração', 'Aura', 'Golpe'].map((x) => `poe:${x}`) });
   return {
-    nome: s.nome, en: s.en, cor: s.cor, tags: s.tags, nivel: n, nivelReq: req, props, desc: s.desc, mods: t.mods, qualidade: Math.max(0, Math.min(20, qualidade || 0)), modsDaQualidade: t.qualidade,
-    status: r.status, motivos: r.motivos, naoFeitas, suporte: true, gatilho: gatilhoDe(s, t),
+    nome: s.nome, en: s.en, cor: s.cor, tags: s.tags, nivel: n, nivelMax: max, nivelReq: req, props, desc: s.desc, mods: t.mods.filter((m) => !linhaEscondida(m)).map(linhaEmPortugues), qualidade: Math.max(0, Math.min(20, qualidade || 0)), modsDaQualidade: t.qualidade,
+    status: r.status, motivos: r.motivos, naoFeitas: naoFeitas.filter((l) => !linhaEscondida(l) || t.qualidade.includes(l)).map(linhaEmPortugues), suporte: true, gatilho: gatilhoDe(s, t),
+    ...(r.naoSeAplica ? { naoSeAplica: notaCurta(r.naoSeAplica) } : {}),
   };
 }

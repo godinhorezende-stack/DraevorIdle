@@ -24,10 +24,12 @@ test('as linhas dos lacaios e dos inimigos; as 2 exceções do dono como "não s
   assert.deepEqual(efeitos('Lacaios têm Velocidade de Movimento aumentada em 10% para cada Arauto afetando você'), { 'minion_move%arautosAtivos': 10 });
   assert.deepEqual(efeitos('Inimigos Incendiados por você têm -5% de Resistêcia a Fogo'), { res_menos_fogo_incendiado: -5 });
   assert.deepEqual(efeitos('Magias de Caos têm 10% de chance de Desacelerar Inimigos ao Acertar'), { 'chance_desacelerar@magia+caos': 10 });
-  for (const l of ['Inafetado por Solo Congelado', 'Punição pode afetar Inimigos Infeitiçáveis']) {
+  // aval do dono 03/11: 100% — combate (o Solo Congelado) e mundo (a Punição = o Castigo): as 2 linhas valem (antes "inerte", "não se aplica ao jogo")
+  for (const [l, add] of [['Inafetado por Solo Congelado', 'imune_solo_congelado'], ['Punição pode afetar Inimigos Infeitiçáveis', 'feitico_afeta_aprova:Punishment']]) {
     const t = A.traduzirLinha(l);
-    assert.equal(t.estado, 'inerte', l);
-    assert.match(t.nota, /^não se aplica ao jogo:/, l);
+    assert.equal(t.estado, 'novo', l);
+    assert.deepEqual(t.efeitos, [{ add, valor: 1 }], l);
+    assert.doesNotMatch(t.nota, /não se aplica/, l);
   }
 });
 

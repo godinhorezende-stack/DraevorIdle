@@ -88,8 +88,8 @@ test('B3: as 15 gemas do lote saem de parcial (as linhas do PoE têm leitor; as 
     const r = G.REGISTRO.get(s);
     assert.deepEqual([s, r.statusNoJogo, r.motivosNoJogo], [s, 'funciona', []]);
   }
-  // (a velocidade do orbe do Morto Volátil não se aplica: só a trajetória — fica como nota, como as linhas de trajetória do lote A3)
-  for (const s of ['Volatile_Dead', 'Volatile_Dead_of_Seething']) assert.ok(G.linhasQueNaoSeAplicam(G.linhasDaQualidadeDe(s, 20)).some((n) => /Velocidade de Movimento do Orbe/.test(n)), s);
+  // (aval do dono 03/11: 100% — projétil, o voo de verdade: a velocidade do orbe do Morto Volátil vale — o orbe anda do cadáver ao inimigo; antes ficava como nota)
+  for (const s of ['Volatile_Dead', 'Volatile_Dead_of_Seething']) assert.ok(!G.linhasQueNaoSeAplicam(G.linhasDaQualidadeDe(s, 20)).some((n) => /Velocidade de Movimento do Orbe/.test(n)), s);
   // ("Empurra Inimigos ao Acertar" — o global_knockback do PoB — é o Empurrão do jogo em todo acerto da gema)
   assert.deepEqual(LinhasDasGemas.atributosDaLinha('Empurra Inimigos ao Acertar'), { chance_empurrar: 100 });
 });

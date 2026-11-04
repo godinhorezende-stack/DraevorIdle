@@ -92,6 +92,8 @@ function aplicarDoPoe(ficha, id, principais, estado) {
       // Não evade; não pode ser Atordoado — só o Atordoamento, como no PoE (13/10: antes, o teto da resistência a todo controle, o Congelamento
       // e o Resfriamento também): a imunidade do controle do PoE (`ModsPoe.controleNoJogador`, `imune_atordoamento`).
       ficha.evasion = 0;
+      // (02/11: nem pela Salvaguarda — "A Chance de Evadir Acertos se baseia em 200% da sua Salvaguarda")
+      delete ficha.evasaoDaEsquiva;
       ficha.afPoe = { ...(ficha.afPoe ?? {}), imune_atordoamento: Math.max(1, Number(ficha.afPoe?.imune_atordoamento) || 0) };
       break;
     case 'tecnicaResoluta':

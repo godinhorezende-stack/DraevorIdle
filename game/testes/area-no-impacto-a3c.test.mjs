@@ -9,7 +9,7 @@ import { existsSync } from 'node:fs';
 process.env.ITENS_POE = '1';
 const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
 const SEM = (!existsSync(Catalogo.ARQUIVO) || !Catalogo.ligado()) && 'só no modo PoE, com o catálogo do PoE';
-const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
+const { personagemDeTeste, PERSONAGEM, pousarVoos } = await import('./apoio.mjs');
 const Acoes = await import('../systems/acoes.mjs');
 const GS = await import('../systems/skills/gemas.mjs');
 const G = await import('../systems/itens-poe/gemas-poe.mjs');
@@ -74,6 +74,7 @@ function usar(e, alvo, v = 0.5) {
     assert.ok(r.ok, r.erro);
     eventos.push(...(r.eventos ?? []));
     if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; eventos.push(...(Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM) ?? [])); }
+    eventos.push(...pousarVoos(e.hunt)); // aval do dono 03/11: o voo de verdade — o golpe do projétil cai no tique em que ele chega
   });
   return eventos;
 }
@@ -256,7 +257,7 @@ test('o TOTEM (Totem de Magia): a Bola de Fogo lançada por ele explode igual �
   assert.ok(l, 'o totem foi posto');
   Object.assign(alvo, { x: l.x + 2, y: l.y });
   Object.assign(vizinho, { x: l.x + 3, y: l.y + 1 });
-  const ev = sorte(0.5, () => Cacadas.golpeDoTotem(e, e.hunt, l, alvo, Ficha.combate(e), PERSONAGEM, e.hunt.clock));
+  const ev = sorte(0.5, () => [...Cacadas.golpeDoTotem(e, e.hunt, l, alvo, Ficha.combate(e), PERSONAGEM, e.hunt.clock), ...pousarVoos(e.hunt)]); // aval do dono 03/11: o voo de verdade (o tique de chegada)
   assert.equal(acertosEm(ev, alvo).length, 1);
   assert.deepEqual(acertosEm(ev, vizinho).map((x) => [x.fonte, x.lacaio]), [['impacto', true]]);
   assert.equal(danoEm(ev, vizinho), danoEm(ev, alvo));

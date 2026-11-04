@@ -127,7 +127,7 @@ test('os 26 mapas únicos, em português, em TODOS os tiers: a peça sai no tier
     Mao_Kun: ['% do Dano dos Monstros é convertido em Raio', 'Monstros ganham uma Carga de Tolerância ao Acertar', 'Monstros ganham uma Carga de Poder ao Acertar'],
   });
   // Os que o PoE define por mecânicas que o jogo ainda não tem ficam sem nenhuma linha com efeito (a aba Mapas da engine mostra).
-  assert.deepEqual(Mapas.unicos().filter((u) => !u.modificadores.some((m) => m.efeitos.length)).map((u) => u.slug), ['The_Cowards_Trial', 'Vaults_of_Atziri', 'Hall_of_Grandmasters']);
+  assert.deepEqual(Mapas.unicos().filter((u) => !u.modificadores.some((m) => m.efeitos.length)).map((u) => u.slug), ['The_Cowards_Trial', 'Hall_of_Grandmasters']); // aval do dono 03/11: 100% — mundo, os baús do PoE (as Câmaras de Atziri agem: "Baús têm a Raridade de Itens aumentada")
   // As linhas cruas do poedb (Quantidade/Raridade/Grupo, "map item drop quantity +% [100]") viram a linha em português e agem.
   const cortex = unicoNoTier('Cortex', 12);
   assert.deepEqual([cortex.poe.mapa.quantidade, cortex.poe.mapa.grupo], [100, 25]);

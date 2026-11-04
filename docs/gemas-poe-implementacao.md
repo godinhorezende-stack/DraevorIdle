@@ -8,8 +8,7 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 561 |
-| não se aplica | 1 |
+| implementada e testada | 562 |
 
 Só os ataques:
 
@@ -21,8 +20,7 @@ Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 261 |
-| não se aplica | 1 |
+| implementada e testada | 262 |
 
 ### Variantes
 
@@ -51,35 +49,6 @@ Só os ataques:
 ## Gemas de suporte pendentes
 
 
-
-## Não se aplicam ao jogo
-
-- **Portal** (Portal) — não se aplica (não se aplica: a caçada já tem a saída para a cidade, e os 6 portais do mapa são gastos pela morte (mapa-aberto.mjs) — o portal do PoE não tem o que fazer no jogo)
-- **Cast_on_Ward_Break_Support** (Conjurar ao Perder Salvaguarda (Reforço)) — não se aplica (não se aplica: o jogo não tem Salvaguarda (Ward), então a salvaguarda nunca quebra e a magia nunca seria ativada (aval do dono 27/10))
-  - não se aplica: o jogo não tem Salvaguarda (Ward), então a salvaguarda nunca quebra e a magia nunca seria ativada (aval do dono 27/10)
-
-## Linhas que não se aplicam ao jogo
-
-- **Spectral_Throw_of_Materialising** (Arremesso Espectral da Materialização) — implementada e testada
-  - não se aplica: "Desaceleração do Projétil reduzida" (Arremesso Espectral da Materialização) só muda a trajetória — o PoB não a usa na conta
-- **Smoke_Mine** (Mina de Fumaça) — implementada e testada
-  - não se aplica: "Minas não podem ser Re-armadas" (Mina de Fumaça) — o jogo não tem Re-armar Minas (aval do dono 27/10)
-- **Spectral_Helix** (Hélice Espectral) — implementada e testada
-  - não se aplica: "Gira por N rotações" (Hélice Espectral) só muda a trajetória da espiral — o PoB não a usa na conta, e o projétil do jogo acerta no tique
-- **Spectral_Helix_of_Trarthus** (Hélice Espectral de Trarthus) — implementada e testada
-  - não se aplica: "Gira por N rotações" (Hélice Espectral) só muda a trajetória da espiral — o PoB não a usa na conta, e o projétil do jogo acerta no tique
-- **Volatile_Dead** (Morto Volátil) — implementada e testada
-  - não se aplica: "Velocidade de Movimento do Orbe aumentada em X%" (Morto Volátil) só muda a trajetória do orbe até o inimigo — o PoB não a usa na conta, e o orbe do jogo acerta no uso
-- **Volatile_Dead_of_Seething** (Morto Volátil do Fervor) — implementada e testada
-  - não se aplica: "Velocidade de Movimento do Orbe aumentada em X%" (Morto Volátil) só muda a trajetória do orbe até o inimigo — o PoB não a usa na conta, e o orbe do jogo acerta no uso
-- **Kinetic_Bolt** (Tiro Cinético) — implementada e testada
-  - não se aplica: "Projéteis mudam de direção N vezes" (Raio Cinético) só muda a trajetória — o projétil não acerta de novo a cada mudança
-- **Kinetic_Bolt_of_Fragmentation** (Tiro Cinético da Fragmentação) — implementada e testada
-  - não se aplica: "Projéteis mudam de direção N vezes" (Raio Cinético) só muda a trajetória — o projétil não acerta de novo a cada mudança
-- **Ice_Spear** (Lança Gélida) — implementada e testada
-  - não se aplica: "A Segunda forma possui X% mais Velocidade de Projétil" (Lança de Gelo) só muda a trajetória da segunda forma — o PoB não a usa na conta, e o projétil do jogo acerta no tique
-- **Ice_Spear_of_Splitting** (Lança de Gelo da Divisão) — implementada e testada
-  - não se aplica: "A Segunda forma possui X% mais Velocidade de Projétil" (Lança de Gelo) só muda a trajetória da segunda forma — o PoB não a usa na conta, e o projétil do jogo acerta no tique
 
 ## Implementadas sem teste próprio
 

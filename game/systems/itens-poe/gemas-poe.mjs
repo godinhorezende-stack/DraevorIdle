@@ -80,8 +80,14 @@ import * as GemasT1 from './gemas-t1.mjs';
 import * as GemasT2 from './gemas-t2.mjs';
 import * as GemasT3 from './gemas-t3.mjs';
 import * as GemasR4C2 from './gemas-r4c2.mjs';
+// (lote "projetil", dono 02/11) o voo de verdade dos projéteis: a velocidade base, a 2ª forma, a desaceleração, o ziguezague, a espiral e o orbe
+import * as GemasVoo from './projeteis-voo.mjs';
 // (rodada 4, lote L: o motor das habilidades dos lacaios pelo PoB — a gema que segue o PoB perde o motivo "o lacaio ataca do jeito do tipo dele")
 import * as LacaiosHabilidades from './lacaios-habilidades.mjs';
+// (balão de todas as gemas, 02/11) as propriedades e as notas curtas do balão
+import { propDoBalao, notaCurta, linhaEmPortugues, linhaEscondida, partirLinhaColada } from './balao-das-gemas.mjs';
+// (100% — combate, 02/11: o Re-armar das Minas — a linha "Minas não podem ser Re-armadas" vale de fato)
+import * as Combate100 from './combate-100.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
 const ARQ_GEMAS = new URL('../../gamedata/itens-poe/gemas-poe.json', import.meta.url);
@@ -133,14 +139,14 @@ const SEM_NO_JOGO = { generico: 'a gema não tem comportamento de combate reconh
 // reserva, quando a gema reserva — `reserva.pedida`) — com a mecânica própria de cada uma (`itens-poe/gemas-a2.mjs`). O Emblema do Poder, o Escudo
 // Gélido e a Parede de Força também: o uso põe o objeto no chão e liga o buff enquanto ele dura.
 const DO_LOTE_A2 = ['Blood_Rage', 'Berserk', 'Petrified_Blood', 'Temporal_Rift', 'Automation', 'Energy_Blade', 'Frost_Shield', 'Mana-Infused_Staff', 'Sigil_of_Power', 'Wall_of_Force'];
-const ARQUETIPO_PROPRIO = { Plague_Bearer: 'praga', Spellslinger: 'feiticeiro', Herald_of_Agony: 'arauto', Old_Phase_Run: 'guarda', Withering_Step: 'guarda', ...Object.fromEntries(DO_LOTE_A2.map((s) => [s, 'guarda'])), ...GemasB4.ARQUETIPO_B4, ...GemasGAC.ARQUETIPO_GAC, ...GemasGBD.ARQUETIPO_GBD, ...GemasE2a.ARQUETIPO_E2A, ...GemasR3B.ARQUETIPO_R3B, ...GemasT2.ARQUETIPO_T2 };
+// (o Portal — dono, 02/11: "como o PoE") o PORTAL: o uso leva você para a cidade e a caçada fica guardada para a volta (`itens-poe/portal-da-gema.mjs`)
+const ARQUETIPO_PROPRIO = { Plague_Bearer: 'praga', Spellslinger: 'feiticeiro', Portal: 'portal', Herald_of_Agony: 'arauto', Old_Phase_Run: 'guarda', Withering_Step: 'guarda', ...Object.fromEntries(DO_LOTE_A2.map((s) => [s, 'guarda'])), ...GemasB4.ARQUETIPO_B4, ...GemasGAC.ARQUETIPO_GAC, ...GemasGBD.ARQUETIPO_GBD, ...GemasE2a.ARQUETIPO_E2A, ...GemasR3B.ARQUETIPO_R3B, ...GemasT2.ARQUETIPO_T2 };
 /**
  * (lote A2, dono 19/10: "o Portal passa a não se aplica") A gema que NÃO SE APLICA ao jogo, com a nota do porquê — o relatório a mostra assim
  * (`tools/relatorio-gemas-poe.mjs`). Ela segue sem efeito (a skill avisa — `poeGema.bloqueio`).
+ * (dono, 02/11: "resolva essa que não se aplica" — o Portal saiu daqui: ele abre o portal para a cidade, como no PoE — `ARQUETIPO_PROPRIO`)
  */
-export const NAO_SE_APLICA = {
-  Portal: 'não se aplica: a caçada já tem a saída para a cidade, e os 6 portais do mapa são gastos pela morte (mapa-aberto.mjs) — o portal do PoE não tem o que fazer no jogo',
-};
+export const NAO_SE_APLICA = {};
 /**
  * (lote A2, dono 19/10) As LINHAS das gemas do lote A2 que o jogo faz: `[regex, (m, x) => void]` — `x.af` (os atributos do buff, na ficha enquanto
  * ele está ligado) e `x.a2` (os números da mecânica própria, guardados no buff — `itens-poe/gemas-a2.mjs`). Os números são os do nível (e da
@@ -485,6 +491,9 @@ const REGRAS_DE_ALVOS = [
   // adicionais ao invés" — e a mudança de direção não se aplica (`LINHAS_QUE_NAO_SE_APLICAM`): a Difusão não vale nesta gema
   [/^Modificadores que fariam com que projéteis se Difundissem fazem com que eles mudem de direção vezes adicionais ao invés$/i, (m, a) => { a.semDifundir = true; }],
   [/^Projéteis se Difundem$/i, (m, a) => { a.bifurcar = Math.max(a.bifurcar, 2); }],
+  // (lote "projetil", dono 02/11 — o voo de verdade) "Dispara Projéteis em um círculo" (as Facas Etéreas do Massacre, a Faísca da Nova): o círculo de você — os projéteis a
+  // 360° ÷ N um do outro a partir do rumo do alvo (`Secundarios.resolver`, `emCirculo`); antes os a mais iam "nos mais perto", o que dava as voltas sem o círculo
+  [/^Dispara Projéteis em um círculo$/i, (m, a) => { a.emCirculo = true; }],
   // (18/10, lote G20a) a Balista de Cerco Fragmentadora: os filhos da difusão difundem de novo e a chance de 1 filho a mais (a da qualidade —
   // act_dex.lua:14056-14061)
   [/^Projéteis podem Difundir (\d+) Vez\w* adicionais$/i, (m, a) => { a.difundirDeNovo = (a.difundirDeNovo ?? 0) + Number(m[1]); }],
@@ -594,19 +603,14 @@ const DESCRICAO_DO_PROJETIL = [
   [/^Ice_Spear_of_Splitting$/, { perfuraNaPrimeiraForma: 99 }],
 ];
 /**
- * (lote A3, dono 19/10 — D1, D6) As linhas de projétil que NÃO SE APLICAM ao jogo (só a trajetória — o projétil do jogo acerta no tique, e o PoB
- * não as usa na conta): saem dos motivos e ficam como nota (`linhasQueNaoSeAplicam`, o relatório as mostra).
+ * (lote A3, dono 19/10 — D1, D6) As linhas que NÃO SE APLICAM ao jogo: saem dos motivos e ficam como nota (`linhasQueNaoSeAplicam`, o relatório as mostra). As de
+ * trajetória do projétil (a 2ª forma, a desaceleração, o ziguezague, a espiral, o orbe) saíram daqui no lote "projetil" (02/11: o voo de verdade).
  */
 const LINHAS_QUE_NAO_SE_APLICAM = [
-  [/^A Segunda forma possui [\d.]+ ?% mais Velocidade de Projétil$/i, 'não se aplica: "A Segunda forma possui X% mais Velocidade de Projétil" (Lança de Gelo) só muda a trajetória da segunda forma — o PoB não a usa na conta, e o projétil do jogo acerta no tique'],
-  [/^Desaceleração do Projétil reduzida em [\d.]+ ?%$/i, 'não se aplica: "Desaceleração do Projétil reduzida" (Arremesso Espectral da Materialização) só muda a trajetória — o PoB não a usa na conta'],
-  [/^Projéteis mudam de direção \d+ vezes$/i, 'não se aplica: "Projéteis mudam de direção N vezes" (Raio Cinético) só muda a trajetória — o projétil não acerta de novo a cada mudança'],
-  // (lote PR1, dono 20/10 — D1 do plano: como a 2ª forma da Lança de Gelo) a Hélice Espectral
-  [/^Gira por [\d.]+ rotações$/i, 'não se aplica: "Gira por N rotações" (Hélice Espectral) só muda a trajetória da espiral — o PoB não a usa na conta, e o projétil do jogo acerta no tique'],
-  // (lote B3, dono 21/10) o Morto Volátil e o do Fervor (a qualidade)
-  [GemasB3.LINHA_VELOCIDADE_DO_ORBE, 'não se aplica: "Velocidade de Movimento do Orbe aumentada em X%" (Morto Volátil) só muda a trajetória do orbe até o inimigo — o PoB não a usa na conta, e o orbe do jogo acerta no uso'],
-  // (lote D1, aval do dono 27/10) a Mina de Fumaça: o jogo não tem Re-armar
-  [/^Minas não podem ser Re-armadas$/i, 'não se aplica: "Minas não podem ser Re-armadas" (Mina de Fumaça) — o jogo não tem Re-armar Minas (aval do dono 27/10)'],
+  // (lote "projetil", dono 02/11: o voo de verdade — "A Segunda forma possui X% mais Velocidade de Projétil", "Desaceleração do Projétil reduzida", "Projéteis
+  // mudam de direção N vezes", "Gira por N rotações" e "Velocidade de Movimento do Orbe aumentada" valem agora: `GemasVoo.perfilDaGema`, `hunt/voos.mjs`)
+  // (lote D1, aval do dono 27/10: a Mina de Fumaça — "Minas não podem ser Re-armadas" — saía daqui; 100% — combate, 02/11: o jogo agora Re-arma as Minas — "Minas
+  // podem ser Detonadas N vezes adicionais" —, e a linha vale de fato: a Mina de Fumaça não volta — `Combate100.rearmarMina`, `ehLinhaCombate100`)
 ];
 /**
  * (lote A3, dono 19/10) O que o projétil da gema faz só no PoB, sem linha (o status não o vê): a Vaal Faísca lança 100 projéteis em espiral por 3 s
@@ -658,6 +662,14 @@ export function danoNoNivel(slug, nivel) {
  * Devolve `{ elemento: [min, max] }` (no jogo: physical, fire, ice, energy, chaos).
  */
 const EL_DA_ARENA = { fisico: 'physical', fogo: 'fire', gelo: 'ice', raio: 'energy', caos: 'chaos' };
+// (100% — dados, 03/11) o sorteio do "em Fogo, Gelo ou Raio": um dos três, sem os PROIBIDOS (o Foco de Combate — `itens-poe/prismaticas.mjs`; com os três
+// proibidos, os três)
+const ELEMENTOS_PRISMA = ['fire', 'ice', 'energy'];
+function sortearElemento(proibidos, rng = Math.random) {
+  const livres = ELEMENTOS_PRISMA.filter((el) => !proibidos?.has?.(el));
+  const lista = livres.length ? livres : ELEMENTOS_PRISMA;
+  return lista[Math.min(lista.length - 1, Math.floor(rng() * lista.length))];
+}
 /**
  * (lote A5c, dono 20/10) A CONVERSÃO do Físico do golpe, a mesma nos ataques e nas magias (a ordem do PoE): a da GEMA (`conversoes`; `escolher` dá o elemento
  * do "aleatorio"), depois as das OUTRAS fontes só no que a gema deixou e o "Físico como Extra" sobre o Físico de antes (`outras(fisico, tetoPct)`). Muda `p`
@@ -690,7 +702,9 @@ const podarOrigens = (p, origens) => { if (origens) for (const el of Object.keys
 // (lote C1, dono 20/10: `escolhido` — o elemento do Acerto Elemental já escolhido no uso, para o raio contra a afecção dele; fora dos presentes, o sorteio)
 // (revisão do lote da eficácia, 20/10: `conversoesExtras` — a conversão do Físico dos SUPORTES, `[{ para: 'raio', pct }]`: a da habilidade, com a da gema; as outras
 // fontes ficam com o que sobrou)
-export function partesDoAtaque(slug, nivel, arma = { min: 1, max: 1 }, extras = {}, rng = Math.random, { outras = null, origens = null, escolhido = null, conversoesExtras = [] } = {}) {
+// (100% — dados, 03/11: `proibidos` — os elementos que o Foco de Combate proíbe às Habilidades Prismáticas; e o `escolhido` também vale na conversão "em Fogo, Gelo ou
+// Raio" — o Golpe Selvagem converte no elemento do uso)
+export function partesDoAtaque(slug, nivel, arma = { min: 1, max: 1 }, extras = {}, rng = Math.random, { outras = null, origens = null, escolhido = null, conversoesExtras = [], proibidos = null } = {}) {
   const st = compilada(slug, nivel)?.stats ?? {};
   const ef = st.efetividade ?? 1;
   const p = {};
@@ -700,11 +714,11 @@ export function partesDoAtaque(slug, nivel, arma = { min: 1, max: 1 }, extras = 
   for (const [el, v] of Object.entries(st.adicional ?? {})) somar(EL_DA_ARENA[el] ?? 'physical', v, ef);
   for (const [el, v] of Object.entries(extras)) if (v && (v[0] || v[1])) somar(el, v);
   // (lote E1b, 26/10: + a conversão para um elemento aleatório da Devastação da Refração — GemasE1b.conversaoAleatoriaDasLinhas)
-  converterOFisico(p, origens, [...(st.conversao ?? []), ...conversaoAleatoriaDaGema(slug, nivel), ...conversoesExtras], outras, () => ['fire', 'ice', 'energy'][Math.floor(rng() * 3)]);
+  converterOFisico(p, origens, [...(st.conversao ?? []), ...conversaoAleatoriaDaGema(slug, nivel), ...conversoesExtras], outras, () => (ELEMENTOS_PRISMA.includes(escolhido) ? escolhido : sortearElemento(proibidos, rng)));
   const ex = extrasDoAtaque(slug, nivel);
   if (ex.soElemental) { delete p.physical; delete p.chaos; }
   // "Apenas Causa Dano do Elemento escolhido" (Acerto Elemental): cada uso sorteia fogo, gelo ou raio e só ele fica.
-  if (ex.umElemento) { const els = ['fire', 'ice', 'energy'].filter((el) => p[el]); const fica = els.includes(escolhido) ? escolhido : els[Math.floor(rng() * els.length)]; for (const el of Object.keys(p)) if (el !== fica) delete p[el]; }
+  if (ex.umElemento) { const todos = ['fire', 'ice', 'energy'].filter((el) => p[el]); const livres = todos.filter((el) => !proibidos?.has?.(el)); const els = livres.length ? livres : todos; const fica = els.includes(escolhido) ? escolhido : els[Math.floor(rng() * els.length)]; for (const el of Object.keys(p)) if (el !== fica) delete p[el]; }
   for (const el of Object.keys(p)) if (!(p[el][1] > 0)) delete p[el];
   podarOrigens(p, origens);
   return p;
@@ -728,13 +742,13 @@ export const conversoesDosSuportes = (efeito) => Object.entries(efeito ?? {}).fl
 // (lote B1, dono 20/10: `basePor` — o multiplicador do dano BASE da gema por elemento, `{ energy: 2, … }`: a Descarga, "por Carga removida")
 // (lote B2, dono 20/10: `baseExtra` — o dano BASE a mais do uso, `{ elemento: [min, max] }`, sem a eficácia: o Caos do sacrifício da Barganha de Trarthus — o PoB soma
 // ao ChaosMin/ChaosMax da habilidade)
-export function partesDaMagia(slug, nivel, extras = {}, { rng = Math.random, elementoSorteado = null, outras = null, origens = null, basePor = null, baseExtra = null, conversoesExtras = [] } = {}) {
+export function partesDaMagia(slug, nivel, extras = {}, { rng = Math.random, elementoSorteado = null, outras = null, origens = null, basePor = null, baseExtra = null, conversoesExtras = [], proibidos = null } = {}) {
   const p = {};
   const somar = (k, [a, b], m = 1) => { if (!m) return; const x = p[k] ?? [0, 0]; p[k] = [x[0] + a * m, x[1] + b * m]; somarOrigem(origens, k, [], [a, b], m); };
   for (const [el, v] of Object.entries(compilada(slug, nivel)?.stats?.dano ?? {})) { const k = EL_DA_ARENA[el] ?? 'physical'; somar(k, v, basePor ? Math.max(0, Number(basePor[k]) || 0) : 1); }
   for (const [el, v] of Object.entries(baseExtra ?? {})) if (v && (v[0] > 0 || v[1] > 0)) somar(el, v);
   for (const [el, v] of Object.entries(extras ?? {})) if (v && (v[0] || v[1])) somar(el, v);
-  converterOFisico(p, origens, [...conversaoDaMagia(slug, nivel), ...conversoesExtras], outras, () => (['fire', 'ice', 'energy'].includes(elementoSorteado) ? elementoSorteado : ['fire', 'ice', 'energy'][Math.floor(rng() * 3)]));
+  converterOFisico(p, origens, [...conversaoDaMagia(slug, nivel), ...conversoesExtras], outras, () => (ELEMENTOS_PRISMA.includes(elementoSorteado) ? elementoSorteado : sortearElemento(proibidos, rng)));
   for (const el of Object.keys(p)) if (!(p[el][0] > 0 || p[el][1] > 0)) delete p[el];
   podarOrigens(p, origens);
   return p;
@@ -1135,6 +1149,15 @@ export const snipeDaGema = (slug, nivel = 1) => comCache(A4, `sni|${slug}@${nive
 /*
  * ---- (lote A3b, dono 19/10) o leitor no nível do lote A3b (`itens-poe/gemas-a3b.mjs`: os objetos que ficam no chão ou no tempo) ----
  */
+/*
+ * ---- (lote "projetil", dono 02/11) o VOO da gema (`itens-poe/projeteis-voo.mjs`): a velocidade base (m/s — o poedb, `props`) e o perfil (as linhas) ----
+ */
+const VOO = new Map();
+/** `{ metros, perfil }`: a velocidade base da gema (null sem o número do poedb — `GemasVoo.metrosBase` dá a do ataque ou da magia) e o perfil do voo. */
+export const vooDaGema = (slug, nivel = 1, qualidade = 0) => comCache(VOO, `voo|${slug}@${nivel | 0}@${qualidade | 0}`, () => {
+  const t = textosDaGema(slug, nivel);
+  return { metros: GemasVoo.metrosDasProps(t.props?.length ? t.props : POR_SLUG.get(slug)?.props ?? []) ?? GemasVoo.metrosDasProps(POR_SLUG.get(slug)?.props ?? []), perfil: GemasVoo.perfilDaGema(slug, t.linhas, linhasDaQualidadeDe(slug, qualidade)) };
+});
 const A3B = new Map();
 /** O objeto que o uso da gema deixa (`GemasA3b.objetoDaGema`): a bola, o tornado, a espiral, o olho, o marcador, o chão, as lâminas, a captura. */
 // (lote B1, dono 20/10 — D-B1.10: + o marcador da Invocar Tormenta, `GemasB1.tormentaDasLinhas`; lote B2: + a Explosão Voltáxica e a Tormenta Flamejante Vaal)
@@ -1702,8 +1725,50 @@ export function projeteisDaGema(slug, nivel = 1, qualidade = 0) {
   const st = compilada(slug, nivel, qualidade)?.stats ?? {};
   return st.maisProjetilPct || st.quintoMaisPct || st.quintoProjeteis ? { pct: st.maisProjetilPct ?? 0, quintoPct: st.quintoMaisPct ?? 0, quintoProjeteis: st.quintoProjeteis ?? 0 } : null;
 }
-/** O custo de mana da gema no nível. */
-export const custoNoNivel = (slug, nivel) => Math.max(0, Math.round(compilada(slug, nivel)?.stats?.custo ?? 0));
+/**
+ * (balão de todas as gemas, 02/11 — achado) O custo AO LONGO DO TEMPO dos Vínculos ("Custo: 15 Mana por segundo" no poedb): a coluna "Mana" da tabela é a do PoB,
+ * `cost = { ManaPerMinute = 900 }` (act_str.lua, FlameLink), por MINUTO — o jogo cobrava os 900 no uso e 900 a cada segundo. Agora: nada no uso
+ * (`skill_cost_over_time_is_not_removed_with_skill`, só o custo por segundo) e 900 ÷ 60 = 15 por segundo (`custoPorSegundoNoNivel`, `acoes` → `Vinculos.criar`).
+ */
+function custoPorMinuto(slug, nivel) {
+  const g = POR_SLUG.get(slug);
+  if (!g || !COMPILADOR?.propsDoNivel) return false;
+  const n = Math.max(1, Math.min(nivel | 0 || 1, COMPILADOR.nivelMaximo?.(g) ?? 40));
+  return COMPILADOR.propsDoNivel(g, n).some((p) => /^Custo: [\d.]+ Mana por segundo$/i.test(p));
+}
+/**
+ * (balão de todas as gemas, 02/11 — achado) O custo das gemas cuja tabela do poedb veio SEM a coluna "Mana" (o Evocar Zumbi do Impacto, a Mina de Pingentes da
+ * Sabotagem, a Explosão Cinética do Agrupamento: o jogo cobrava 0) — o da propriedade "Custo: (9 — 28) Mana" no nível, que é o do PoB (act_int.lua: Mana 9 → 28,
+ * 3 → 6, 6 → 9) —; e a Mina Piroclástica da Sabotagem, cuja coluna veio com 16 → 24: a do PoB é a da base, 4 → 6.
+ */
+const CUSTO_DA_BASE = { Pyroclast_Mine_of_Sabotage: 'Pyroclast_Mine' };
+function custoDaPropriedade(slug, nivel) {
+  const g = POR_SLUG.get(slug);
+  if (!g || !COMPILADOR?.propsDoNivel) return 0;
+  const n = Math.max(1, Math.min(nivel | 0 || 1, COMPILADOR.nivelMaximo?.(g) ?? 40));
+  const m = (COMPILADOR.propsDoNivel(g, n).find((p) => /^Custo:/.test(p)) ?? '').match(/^Custo: ([\d.]+) (?:Mana|Vida|Escudo de Energia)/);
+  return m ? Number(m[1]) : 0;
+}
+/** O custo de mana da gema no nível (o do USO: 0 na gema de custo por segundo — `custoPorSegundoNoNivel`). */
+export const custoNoNivel = (slug, nivel) => {
+  if (custoPorMinuto(slug, nivel)) return 0;
+  if (CUSTO_DA_BASE[slug]) return custoNoNivel(CUSTO_DA_BASE[slug], nivel);
+  const st = compilada(slug, nivel)?.stats;
+  return Math.max(0, Math.round(st?.custo ?? custoDaPropriedade(slug, nivel)));
+};
+/**
+ * (achado da revisão de 02/11) O custo em % da MANA MÁXIMA no uso ("Custo: 5% Mana" — o Vínculo de Mana; o PoB: `cost = { ManaPercent = 5 }`, act_int.lua): o %, ou 0.
+ * O custo por segundo em % (a Chuva de Lâminas de Trarthus) é o dela (`GemasB3.custoDaTrarthus`), não este.
+ */
+export function custoPctDaManaNoNivel(slug, nivel = 1) {
+  const g = POR_SLUG.get(slug);
+  if (!g || !COMPILADOR?.propsDoNivel) return 0;
+  const n = Math.max(1, Math.min(nivel | 0 || 1, COMPILADOR.nivelMaximo?.(g) ?? 40));
+  const m = (COMPILADOR.propsDoNivel(g, n).find((p) => /^Custo:/.test(p)) ?? '').match(/^Custo: ([\d.]+)\s*% Mana$/i);
+  return m ? Number(m[1]) : 0;
+}
+/** (02/11) O custo de mana POR SEGUNDO da gema no nível (os Vínculos: a coluna por minuto ÷ 60, com uma casa — 15; 32,7 no 20); 0 nas outras. */
+export const custoPorSegundoNoNivel = (slug, nivel) => (custoPorMinuto(slug, nivel) ? Math.round(((compilada(slug, nivel)?.stats?.custo ?? 0) / 60) * 10) / 10 : 0);
 /**
  * (lote A2, dono 19/10) O RECURSO do custo da gema no nível ("Custo: 29 Vida" — a Fúria Sangrenta; "Custo: 624 Escudo de Energia" — a Lâmina de
  * Energia; o resto, Mana): `'vida'`, `'es'` ou `'mana'`.
@@ -1878,7 +1943,7 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
  * os dois não se separarem — `h`: a gema compilada com `slug`, `arquetipo` e `nivel`; `q`: a qualidade.
  */
 function ehLinhaFeita(h, l, q) {
-  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasPR3.ehLinhaPR3(h.slug, l) && !GemasPR4.ehLinhaPR4(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l) && !GemasB3.ehLinhaB3(h.slug, l) && !GemasC4.ehLinhaC4(h.slug, l) && !GemasC3.ehLinhaC3(h.slug, l) && !GemasB4.ehLinhaB4(h.slug, l) && !GemasGAC.ehLinhaGAC(h.slug, l, h.arquetipo) && !GemasGBD.ehLinhaGBD(h.slug, l) && !GemasE1a.ehLinhaE1a(h.slug, l, h.arquetipo) && !GemasE1b.ehLinhaE1b(h.slug, l) && !GemasE2a.ehLinhaE2a(h.slug, l, h.arquetipo) && !GemasE2b.ehLinhaE2b(h.slug, l) && !GemasD1.ehLinhaD1(h.slug, l) && !GemasR3B.ehLinhaR3B(h.slug, l) && !GemasR3D.ehLinhaR3D(h.slug, l) && !GemasT2.ehLinhaT2(h.slug, l) && !GemasT3.ehLinhaT3(h.slug, l));
+  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasPR3.ehLinhaPR3(h.slug, l) && !GemasPR4.ehLinhaPR4(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l) && !GemasB3.ehLinhaB3(h.slug, l) && !GemasC4.ehLinhaC4(h.slug, l) && !GemasC3.ehLinhaC3(h.slug, l) && !GemasB4.ehLinhaB4(h.slug, l) && !GemasGAC.ehLinhaGAC(h.slug, l, h.arquetipo) && !GemasGBD.ehLinhaGBD(h.slug, l) && !GemasE1a.ehLinhaE1a(h.slug, l, h.arquetipo) && !GemasE1b.ehLinhaE1b(h.slug, l) && !GemasE2a.ehLinhaE2a(h.slug, l, h.arquetipo) && !GemasE2b.ehLinhaE2b(h.slug, l) && !GemasD1.ehLinhaD1(h.slug, l) && !GemasR3B.ehLinhaR3B(h.slug, l) && !GemasR3D.ehLinhaR3D(h.slug, l) && !GemasT2.ehLinhaT2(h.slug, l) && !GemasT3.ehLinhaT3(h.slug, l) && !GemasVoo.ehLinhaDoVoo(h.slug, l) && !Combate100.ehLinhaCombate100(l));
 }
 function avaliarNoJogo(h, formato) {
   const st = h.stats;
@@ -1893,6 +1958,9 @@ function avaliarNoJogo(h, formato) {
   // ligada na barra, segue alternando sozinha (o automático do jogo)
   if (h.arquetipo === 'praga') return { status: 'funciona', motivos: [] };
   if (h.arquetipo === 'feiticeiro') return { status: 'funciona', motivos: [] };
+  // (o Portal — dono, 02/11) a cidade e a volta ao mesmo lugar da área, com os monstros que ficaram (`itens-poe/portal-da-gema.mjs`); a conjuração e a qualidade (a
+  // Velocidade de Conjuração) pelo uso da gema (`Acoes.usarPortalDaGema`)
+  if (h.arquetipo === 'portal') return { status: 'funciona', motivos: [] };
   // (lote 74 — dono, 17/10: "Implementar a gema") a Convocar Runas: traz as suas Runas, Ativa as vinculadas pagando 20% do custo de cada uma e dá o
   // Alcance de Vínculo da gema até se vincularem de novo (`acoes.convocarRunas`).
   if (h.slug === 'Brand_Recall') return { status: 'funciona', motivos: [] };
@@ -2020,7 +2088,8 @@ function acaoDaGema(g, h, itemId, formato, elemento) {
   else if (h.arquetipo === 'praga') moldeId = 'spell-haste';
   // O lacaio só invoca (o visual é o do estilo da gema): o molde sem alvo. O totem usa o molde da skill que ele vai usar (o projétil, a área).
   // (lote 74: a Convocar Runas também — no PoE ela sai em você, sem alvo nem área: `acoes.convocarRunas`)
-  else if (h.arquetipo === 'lacaio' || convocaRunas) moldeId = 'spell-haste';
+  // (o Portal também: sai em você, sem alvo)
+  else if (h.arquetipo === 'lacaio' || convocaRunas || h.arquetipo === 'portal') moldeId = 'spell-haste';
   else if (h.arquetipo === 'corpo_a_corpo') moldeId = tagsArea ? 'spell-front-sweep' : 'spell-brutal-strike';
   else if (h.arquetipo === 'movimento') moldeId = h.ataque || Object.keys(h.stats.dano ?? {}).length ? 'spell-ethereal-barrage' : 'spell-haste';
   else moldeId = MOLDES[formato]?.[visual] ?? MOLDES.projetil[visual] ?? 'spell-brutal-strike';
@@ -2055,8 +2124,9 @@ function acaoDaGema(g, h, itemId, formato, elemento) {
     kind: 'spell',
     vocations: null,
     // Lacaio e totem são de SUPORTE na barra (invocam; quem bate é o invocado).
-    papeis: buff || ['lacaio', 'totem'].includes(h.arquetipo) || convocaRunas ? ['suporte'] : moldeId === 'spell-haste' ? ['velocidade'] : ['attack'],
-    group: buff || moldeId === 'spell-haste' || ['lacaio', 'totem'].includes(h.arquetipo) ? 'support' : 'attack',
+    // (o Portal: de suporte — não é ataque, nem entra no combo)
+    papeis: buff || ['lacaio', 'totem', 'portal'].includes(h.arquetipo) || convocaRunas ? ['suporte'] : moldeId === 'spell-haste' ? ['velocidade'] : ['attack'],
+    group: buff || moldeId === 'spell-haste' || ['lacaio', 'totem', 'portal'].includes(h.arquetipo) ? 'support' : 'attack',
     // Para os ganchos do combate (dano pelo nível da gema, custo, buff, bloqueio).
     poeGema: { slug: g.slug, arquetipo: h.arquetipo, ataque: !!h.ataque, buff: buff && !vinculo, molde: moldeId, ...(vinculo ? { vinculo: true } : {}), ...(['lacaio', 'totem'].includes(h.arquetipo) ? { lacaio: h.arquetipo } : {}), ...(iconeDaHabilidade(g.slug) ? { iconeHabilidade: iconeDaHabilidade(g.slug) } : {}),
       // (lote A1: a gema que DESLOCA — o "Configurar ação" mostra a opção "direção", e a de fuga a aceita)
@@ -2128,32 +2198,86 @@ const inteiros = (t) => t.replace(/\d+\.\d+/g, (x) => (parseFloat(x) >= 10 ? Str
  * (nível, custo, conjuração, crítico, eficácia, requisito), a descrição, os modificadores com os números DESTE nível e os da qualidade —
  * e o que vale no jogo (status, motivos, as linhas que o combate ainda não faz).
  */
+// (balão de todas as gemas, 02/11: com cache — a ficha agora passa pela avaliação do status, e o catálogo da barra a pede a cada envio; os dados não mudam
+// depois do `iniciar`)
+const FICHAS = new Map();
 export function fichaNoNivel(slug, nivel = 1, qualidade = 0) {
+  const k = `${slug}@${nivel | 0}@${qualidadeDasContas(qualidade)}`;
+  if (FICHAS.has(k)) return FICHAS.get(k);
+  const f = montarFicha(slug, nivel, qualidade);
+  if (f && INICIADO) {
+    if (FICHAS.size > 5000) FICHAS.clear();
+    FICHAS.set(k, f);
+  }
+  return f;
+}
+function montarFicha(slug, nivel = 1, qualidade = 0) {
   const g = POR_SLUG.get(slug);
   const r = REGISTRO.get(slug);
   const h = compilada(slug, nivel);
   if (!g || !h || !COMPILADOR?.textosDoNivel) return null;
   const n = h.nivel;
   const b = COMPILADOR.basicosDoNivel(g, n);
-  const props = [];
-  for (const p of COMPILADOR.propsDoNivel(g, n)) {
-    if (/^Nível:/.test(p)) props.push(['Nível', `${n}${n >= maximoPorXp(g) ? ' (Máx)' : ''}`]);
-    else if (/^Custo:/.test(p)) props.push(['Custo', `${b.custo ?? 0} Mana`]);
-    else if (/^Eficácia do Dano Adicionado:/.test(p)) props.push(['Eficácia do Dano Adicionado', `${Math.round((b.efetividade ?? 1) * 100)}%`]);
-    else {
-      const i = p.indexOf(': ');
-      // "(3 Times)" do poedb em português (as cargas da recarga).
-      const valor = p.slice(i + 2).replace(/\((\d+) Times\)/, '($1 usos)');
-      props.push(i > 0 ? [p.slice(0, i), valor] : [p, '']);
-    }
-  }
   // (revisão do A5 — D2: o balão mostra a qualidade que vale no uso, acima de 20 com o Aprimorar/Eclipse)
   const q = qualidadeDasContas(qualidade);
+  // (balão de todas as gemas, 02/11) os NÚMEROS QUE O JOGO USA nas propriedades — o custo (`custoNoNivel`, no recurso da gema: Vida, Escudo de Energia ou os
+  // três), a eficácia do dano adicionado (a do PoB, `eficaciaDoAdicionado`), o dano de ataque (`eficaciaNoNivel`, com as correções do PoB), o tempo de
+  // conjuração e a recarga com os usos (`temposNoNivel`, com a qualidade) — e o resto do poedb em português, sem o raio em unidades (`propDoBalao`)
+  const tempos = temposNoNivel(slug, n, q);
+  const seg = (ms) => `${(ms / 1000).toFixed(2)} seg`;
+  const custo = custoNoNivel(slug, n);
+  const RECURSO = { mana: `${custo} Mana`, vida: `${custo} Vida`, es: `${custo} Escudo de Energia`, todos: `${custo} Mana, ${custo} Vida, ${custo} Escudo de Energia` };
+  const props = [];
+  for (const p of COMPILADOR.propsDoNivel(g, n)) {
+    const i = p.indexOf(': ');
+    const [rotulo, valor] = i > 0 ? [p.slice(0, i), p.slice(i + 2)] : [p, ''];
+    if (rotulo === 'Nível') props.push(['Nível', `${n}${n >= maximoPorXp(g) ? ' (Máx)' : ''}`]);
+    // (o custo em % da Mana — a Chuva de Lâminas de Trarthus, o Vínculo de Mana — segue o do poedb; o dos Vínculos, por segundo)
+    else if (rotulo === 'Custo') props.push(['Custo', /%/.test(valor) ? valor : custoPorSegundoNoNivel(slug, n) ? `${custoPorSegundoNoNivel(slug, n)} Mana por segundo` : RECURSO[recursoDoCusto(slug, n)] ?? RECURSO.mana]);
+    else if (rotulo === 'Eficácia do Dano Adicionado') props.push([rotulo, `${Math.round(eficaciaDoAdicionado(slug, n) * 100)}%`]);
+    else if (rotulo === 'Dano de Ataque' && /% de base$/.test(valor)) props.push([rotulo, `${Math.round(eficaciaNoNivel(slug, n) * 100)}% de base`]);
+    else if (rotulo === 'Tempo de Conjuração' && tempos.conjuracaoMs) props.push([rotulo, seg(tempos.conjuracaoMs)]);
+    else if (rotulo === 'Recarga' && tempos.recargaMs) props.push([rotulo, `${seg(tempos.recargaMs)}${tempos.cargas > 1 ? ` (${tempos.cargas} usos)` : ''}`]);
+    else {
+      const prop = propDoBalao([rotulo, valor]);
+      if (prop) props.push(prop);
+    }
+  }
+  // (balão de todas as gemas, 02/11) as linhas NÃO FEITAS pela MESMA regra do status (`avaliarNoJogo`, por arquétipo: o lacaio, o vínculo, o totem sem golpe, a
+  // praga…), neste nível e nesta qualidade — antes o balão usava só a regra das gemas de uso e riscava as linhas dos Vínculos, do Portador da Praga e da
+  // Convocar Runas, que o jogo faz; e as da QUALIDADE nunca eram vistas. `naoFeitas` traz o texto do balão (das linhas do nível e das da qualidade).
+  const hq = compilada(slug, n, q) ?? h;
+  const aval = NAO_SE_APLICA[slug] ? { motivos: [] } : avaliarNoJogo({ ...hq, slug, nivel: n, qualidade: q }, r?.formato ?? null);
+  const norm = (t) => String(t).replace(/(\d)\s*%/g, '$1 %').replace(/\\b/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+  const fora = new Set(aval.motivos.filter((m) => m.startsWith('efeito não simulado: ')).map((m) => norm(m.slice('efeito não simulado: '.length))));
+  // (sem as colunas mal rotuladas — `ehColunaMalRotulada` —, sem as linhas vazias ou que valem 0 neste nível — `linhaEscondida`; e as que vieram em inglês, em
+  // português — `linhaEmPortugues`, só no texto, depois de ver se é feita)
+  const modsBrutos = COMPILADOR.textosDoNivel(g, n).map(inteiros).filter((m) => !ehColunaMalRotulada(slug, m) && !linhaEscondida(m));
+  const qualidadeBruta = (g.qualidade ?? []).map((t) => naFracao(t, q / 20));
+  const vistas = new Set();
+  const ehFora = (texto, partes) => partes.some((x) => fora.has(norm(x)) && vistas.add(norm(x)));
+  const naoFeitas = [
+    ...modsBrutos.filter((m) => ehFora(m, [m])),
+    ...qualidadeBruta.filter((m) => ehFora(m, [m, ...partirQualidade(m).map((x) => x.replace(/^O raio Base é de ([\d.]+) metros?$/i, '+$1 metros de raio'))])),
+  ].map(linhaEmPortugues).flatMap(partirLinhaColada);
+  // (as linhas grudadas pelo poedb — os Vínculos — separadas no texto: `partirLinhaColada`)
+  const mods = modsBrutos.map(linhaEmPortugues).flatMap(partirLinhaColada);
+  const modsDaQualidade = qualidadeBruta.map(linhaEmPortugues);
+  // (a linha não feita que não está no texto do balão — a mecânica da descrição: vai como nota)
+  const semLinha = aval.motivos.filter((m) => !m.startsWith('efeito não simulado: ') || !vistas.has(norm(m.slice('efeito não simulado: '.length))));
+  // (as notas: o "não se aplica" da gema, as escolhas do dono e as linhas que não se aplicam — curtas, sem o arquivo nem a data)
+  // (achado da revisão de 02/11: também as da QUALIDADE — a "Velocidade de Movimento do Orbe" do Morto Volátil —, a linha inteira ou uma das partes dela)
+  const naoSeAplicam = [
+    ...mods.filter((m) => ehLinhaQueNaoSeAplica(m)),
+    ...modsDaQualidade.filter((t, i) => [t, qualidadeBruta[i], ...partirQualidade(qualidadeBruta[i])].some((x) => ehLinhaQueNaoSeAplica(x))),
+  ];
+  const notas = [...(r?.notas ?? []), ...linhasQueNaoSeAplicam(naoSeAplicam)].map(notaCurta).filter(Boolean);
   return {
     nome: g.nome, en: g.en, cor: g.cor, tags: g.tags ?? [], nivel: n, nivelMax: maximoPorXp(g), nivelReq: b.nivelReq ?? g.nivelReq ?? 1,
-    props, desc: g.desc ?? '', mods: COMPILADOR.textosDoNivel(g, n).map(inteiros), qualidade: q, modsDaQualidade: (g.qualidade ?? []).map((t) => naFracao(t, q / 20)),
-    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeLacaio(l) && !ehLinhaFeita({ ...h, slug, nivel: n }, l, q)),
-    ataque: !!h.ataque, tempos: temposNoNivel(slug, n),
+    props, desc: g.desc ?? '', mods, qualidade: q, modsDaQualidade,
+    status: r?.statusNoJogo ?? 'nao', motivos: r?.statusNoJogo === 'funciona' ? semLinha : r?.motivosNoJogo ?? [], naoFeitas,
+    ...(r?.naoSeAplica ? { naoSeAplica: notaCurta(r.naoSeAplica) } : {}), ...(notas.length ? { notas } : {}), ...(naoSeAplicam.length ? { naoSeAplicam } : {}),
+    ataque: !!h.ataque, tempos,
   };
 }
 

@@ -33,6 +33,7 @@ import * as Areas from '../engine/areas.mjs';
 import * as Prey from './prey.mjs';
 import * as Charms from './charms.mjs';
 import * as Defesa from './personagem/defesa.mjs';
+import * as Salvaguarda from './personagem/salvaguarda.mjs';
 import * as AtributosDoPersonagem from './personagem/atributos.mjs';
 import * as Reforcos from './skills/reforcos.mjs';
 import * as CargasPoe from './itens-poe/cargas.mjs';
@@ -44,6 +45,12 @@ import * as Protecao from './protecao.mjs';
 import * as Plantadas from './itens-poe/armas-plantadas.mjs';
 import * as Vinculos from './itens-poe/vinculos.mjs';
 import * as Testador from './personagem/testador.mjs';
+// (lote "projetil", dono 02/11) o projétil do monstro VOA (`hunt/voos.mjs`)
+import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
+import * as GemasVoo from './itens-poe/projeteis-voo.mjs';
+import * as Voos from './hunt/voos.mjs';
+// (100% — combate, 02/11: o empurrão dos monstros em você — `itens-poe/combate-100.mjs`)
+import * as Combate100 from './itens-poe/combate-100.mjs';
 
 const ler = (arquivo) => JSON.parse(readFileSync(new URL(`../gamedata/${arquivo}`, import.meta.url), 'utf8'));
 const PODERES = { ...ler('monstro-poderes.json').monstros, ...ler('boss-poderes.json').bosses };
@@ -156,6 +163,54 @@ function casasDa(a, bicho, alvo) {
   return [{ x: alvo.x, y: alvo.y }];
 }
 
+/**
+ * (lote "projetil", dono 02/11) O PROJÉTIL DO MONSTRO VOA: a magia com projétil (`a.tiro`, sem ser feixe) sai do bicho na velocidade do PoE (D1 de `projeteis-voo.mjs`:
+ * o físico — o Ataque de Projétil — a 32.6 m/s; a magia a 10.4 m/s) e anda reta até você (ou o lacaio `l`): sai no CONTATO — na hora, se chega a até meio tique,
+ * senão no tique em que chega. Você que saiu da frente não leva; a de área no alvo ("noAlvo") cai no ponto mirado (ou onde encontrou você) e pega quem está na área
+ * ali. O golpe é o de sempre (`dispararMagia`, `magiaNoLacaio`), com a sua ficha da hora.
+ */
+// (03/11: a área em VOLTA do próprio bicho — `forma` 'area' sem `noAlvo`: a nova do Devorador do Medo, do Verme Pálido, do Indesejado, de Urmahlullu — não voa:
+// cai na hora, em volta dele)
+export const voaDoBicho = (a) => itensPoeLigado() && a?.tiro != null && a.forma !== 'feixe' && !(a.forma === 'area' && !a.noAlvo);
+export function voarDoBicho({ estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo }, a, l = null) {
+  const z = bicho.z ?? hunt.z ?? 0;
+  const de = { x: bicho.x, y: bicho.y };
+  const quem = l ?? hunt.pos;
+  const para = { x: quem.x, y: quem.y };
+  const area = a.forma === 'area' && a.noAlvo;
+  const alcance = area ? Math.max(1, distancia(de, para)) : Math.max(1, a.alcance || 7);
+  const clock0 = hunt.clock ?? 0;
+  const v0 = GemasVoo.casasPorSegundo(a.ataque || a.elemento === 'physical' ? GemasVoo.VOO.padraoAtaqueM : GemasVoo.VOO.padraoMagiaM, 1);
+  const naCasa = (c) => (l ? l.hp > 0 && l.x === c.x && l.y === c.y : hunt.pos.x === c.x && hunt.pos.y === c.y && (hunt.z ?? 0) === z);
+  const golpe = (ponto, adiado) => {
+    const sair = (ev) => {
+      const ctx = { estado, hunt, personagem, bicho, eventos: ev, agora: agora + ((hunt.clock ?? 0) - clock0), ficha: adiado ? ModsPoe.fichaDa(hunt) ?? ficha : ficha, temEscudo };
+      if (l) { if (l.hp > 0 && magiaNoLacaio) magiaNoLacaio({ ...ctx, l, a, semTiro: true }); return; }
+      const casas = area ? casasDa(a, bicho, ponto) : [{ x: ponto.x, y: ponto.y }];
+      if (casas.some((c) => c.x === hunt.pos.x && c.y === hunt.pos.y)) dispararMagia(ctx, a, { casas, semTiro: true });
+      else if (casas.length > 1) ev.push({ t: 'area', id: a.efeito ?? EFEITO_PADRAO[a.elemento], x: ponto.x, y: ponto.y, casas: Areas.paraTela(casas, ponto) });
+    };
+    if (!adiado) { sair(eventos); return []; }
+    if (estado.hunt !== hunt || !((estado.hp ?? 0) > 0)) return [];
+    const ev = [];
+    sair(ev);
+    return ev;
+  };
+  const tiro = { t: 'shot', id: a.tiro, x: de.x, y: de.y, tx: para.x, ty: para.y };
+  eventos.push(tiro);
+  const r = Voos.lancar(hunt, {
+    de, para, z, alcance, v0, agora: clock0,
+    colide: (c) => (naCasa(c) ? quem : null),
+    parede: (c) => { const g = ModsPoe.gradeDoCombate(hunt)?.andavel; return !!g && !g.has(`${c.x},${c.y}`); },
+    aoContato: (m, casa, { adiado }) => golpe(casa, adiado),
+    aoFim: (casa, { adiado }) => (area ? golpe(casa, adiado) : []),
+  });
+  if (r.ms > 0) tiro.ms = r.ms;
+  return 0;
+}
+/** (lote "projetil") A magia do bicho em você: a de projétil voa (`voarDoBicho`); as outras, na hora (`dispararMagia`). */
+export const magiaDoBicho = (ctx, a) => (voaDoBicho(a) ? voarDoBicho(ctx, a, null) : dispararMagia(ctx, a));
+
 /** As casas que uma magia de monstro pega saindo de `origem` na direção de `alvo` (o espectro do PoE usa as do monstro erguido). */
 export const casasDaMagia = (a, origem, alvo) => casasDa(a, origem, alvo);
 
@@ -233,7 +288,7 @@ function chanceDeBloquearAtaque(ficha, hunt, bicho) {
   return Math.min(Math.max(teto, ficha.blockChance ?? 0), min + Math.random() * (max - min) + contraAmaldicoado);
 }
 
-export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo }, a, { casas: casasFixas = null } = {}) {
+export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo }, a, { casas: casasFixas = null, semTiro = false } = {}) {
   const alvo = hunt.pos;
   // Esquiva das gemas: a magia inteira não pega (o efeito na tela sai igual).
   // "Chance to Avoid Damage" (add) também evita a magia inteira (a Evasion não: só o golpe corpo a corpo).
@@ -282,7 +337,7 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   }
 
   const efeito = a.efeito ?? EFEITO_PADRAO[a.elemento];
-  if (a.tiro != null) eventos.push({ t: 'shot', id: a.tiro, x: bicho.x, y: bicho.y, tx: alvo.x, ty: alvo.y });
+  if (a.tiro != null && !semTiro) eventos.push({ t: 'shot', id: a.tiro, x: bicho.x, y: bicho.y, tx: alvo.x, ty: alvo.y });
   // A área na tela: um evento só, com as casas que acertam (antes: um `fx` por casa, cortado em 90).
   const casas = casasFixas ?? casasDa(a, bicho, alvo);
   // (PoE, 12/10) A magia em área do bicho destrói as Armadilhas e Minas plantadas que pega ("… não podem ser Danificadas" impede).
@@ -350,7 +405,7 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // ("Armadura contra Projéteis aumentada em X%": a armadura do personagem no projétil físico do bicho.)
   // (+ "Defende com X% da Armadura contra Ataques de Projéteis" — a armadura × X%.)
   const defendeCom = projetil ? ModsPoe.valor(ficha, 'armadura_projetil_defende_pct') : 0;
-  const armaduraContra = (ficha.armor ?? 0) * (projetil ? 1 + ModsPoe.valor(ficha, 'armadura_projetil_inc') / 100 : 1) * (defendeCom > 0 ? defendeCom / 100 : 1);
+  const armaduraContra = (ficha.armaduraDaReducao ?? ficha.armor ?? 0) * (projetil ? 1 + ModsPoe.valor(ficha, 'armadura_projetil_inc') / 100 : 1) * (defendeCom > 0 ? defendeCom / 100 : 1);
   const daParteDaMagia = a.elemento === 'physical' && ModsPoe.somaFisicaDoPoe() ? ModsPoe.acertoFisicoRecebido(ficha, daMagia, armaduraContra) : daMagia * fatorDaResistencia * ModsPoe.armaduraNoElemento(ficha, a.elemento, daMagia);
   somarParte(a.elemento, daMagia, daParteDaMagia);
   const bruto = daParteDaMagia + doutrosTipos + extraDoMapa + convertido;
@@ -417,6 +472,9 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // (14/10, as Égides — a Primitiva do Elementalist e as dos únicos: a parte de cada tipo do acerto, na proporção das partes, sai da Égide dele
   // antes do Escudo e da Vida — `ModsPoe.absorverNaEgide`)
   const somaDasPartes = Object.values(partes).reduce((t, v) => t + Math.max(0, v), 0);
+  // (02/11, dono: a SALVAGUARDA como o PoE) a magia do monstro é um acerto: sai primeiro da Salvaguarda, antes da Égide e do resto (`personagem/salvaguarda.mjs`)
+  if (dano > 0) dano = Salvaguarda.absorver(estado, hunt, ficha, dano, eventos, base, personagem);
+  const fatorDaSalvaguarda = danoDoAcerto > 0 ? dano / danoDoAcerto : 1;
   if (dano > 0 && hunt.egides && somaDasPartes > 0) {
     const porTipo = Object.fromEntries(Object.entries(partes).map(([el, v]) => [el, (Math.max(0, v) * dano) / somaDasPartes]));
     const tomou = Math.min(dano, Math.round(ModsPoe.absorverNaEgide(hunt, porTipo, hunt.clock ?? 0)));
@@ -437,7 +495,7 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   dano = Vinculos.desviarParaOEscudo(estado, dano);
   // (revisão PR2, 21/10) só a parte de CAOS da magia atravessa o Escudo de Energia: a de cada tipo (`ModsPoe.caosNasPartes` — o Caos e o recebido como Caos), na
   // proporção do que sobrou do acerto (a Égide não toma Caos; o Escudo Gélido e o Vínculo levam de cada tipo na proporção)
-  const caosDaMagia = somaDasPartes > 0 ? Math.min(dano, Math.round(((danoDoAcerto * ModsPoe.caosNasPartes(ficha, brutas, partes)) / somaDasPartes) * (depoisDaEgide > 0 ? dano / depoisDaEgide : 0))) : 0;
+  const caosDaMagia = somaDasPartes > 0 ? Math.min(dano, Math.round(((danoDoAcerto * fatorDaSalvaguarda * ModsPoe.caosNasPartes(ficha, brutas, partes)) / somaDasPartes) * (depoisDaEgide > 0 ? dano / depoisDaEgide : 0))) : 0;
   dano = aplicarNoJogador({ estado, hunt, bicho, dano, elemento: a.elemento, eventos, base, ficha, temEscudo, suprimiu, caos: caosDaMagia });
   // PoE: o "acertado/dano recentemente", a recuperação do dano sofrido e o congelar quem acerta (a magia não é corpo a corpo: sem Reflexo).
   ModsPoe.aoSerAcertado(estado, hunt, bicho, ficha, { dano: Math.max(0, dano), corpoACorpo: ataqueDoPoe && !!a.corpoACorpo, ataque: projetil || ataqueDoPoe, magia: !projetil && !ataqueDoPoe, tipo: a.elemento, eventos });
@@ -451,6 +509,9 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // (revisão G: todo acerto com dano conta — o de antes das absorções; o que o Chamado Imortal impediu, não)
   if (danoDoAcerto > 0 && GemasGBD.contarAcertoNoGelo(hunt, agora)) GemasGBD.quebrarGelo(hunt, agora);
   if (aoAcertarJogador && bruto > 0) aoAcertarJogador(estado, hunt, personagem, bicho, { dano: danoDoAcerto, bruto: Object.values(brutas).reduce((t, x) => t + x, 0), partes, brutas, critico: critDoMob.critico, ataque: projetilDeAtaque || ataqueDoPoe, eventos });
+  // (100% — combate, 02/11) a habilidade do monstro que EMPURRA (`a.empurra` — o Salto Impactante): o acerto leva você uma casa para longe dele; "Não Pode ser
+  // Empurrado" impede (`Combate100.empurrarJogador`)
+  if (a.empurra && bruto > 0 && estado.hp > 0 && Combate100.empurrarJogador(hunt, bicho, ficha, hunt.clock ?? agora)) eventos.push({ t: 'estado', uid: 'player', quem: personagem?.nome, x: hunt.pos.x, y: hunt.pos.y, estado: 'empurrado', de: bicho.name });
   if (dano <= 0) return 0;
   if (a.elemento === 'lifedrain') bicho.hp = Math.min(bicho.maxHp, bicho.hp + dano);
   return dano;
@@ -461,10 +522,13 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
  * caminho inteiro: a proteção do elemento, a prey de defesa, a mitigação das
  * gemas e `aplicarNoJogador`. `golpe`: o nome que aparece ("Explosão"...).
  */
-export function danoDeElementoNoJogador(estado, hunt, personagem, bicho, valor, elemento, eventos, golpe, ficha, temEscudo) {
+// (02/11) `acerto`: o dano é um ACERTO (a explosão do monstro ao morrer) — passa antes pela Salvaguarda (`personagem/salvaguarda.mjs`); o dano contínuo (a aura, o solo, o
+// degenerativo) não passa por ela, como no PoE.
+export function danoDeElementoNoJogador(estado, hunt, personagem, bicho, valor, elemento, eventos, golpe, ficha, temEscudo, { acerto = false } = {}) {
   if (!(valor > 0) || estado.hp <= 0 || Protecao.imune(hunt)) return 0;
-  const dano = Math.round(valor * ModsPoe.fatorDaResistenciaRecebida(ficha, elemento) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
   const base = { uid: 'player', quem: personagem?.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: bicho.name, golpe };
+  const doAcerto = Math.round(valor * ModsPoe.fatorDaResistenciaRecebida(ficha, elemento) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
+  const dano = acerto && doAcerto > 0 && !GemasGBD.imortal(hunt, hunt?.clock ?? 0) ? Salvaguarda.absorver(estado, hunt, ficha, doAcerto, eventos, base, personagem) : doAcerto;
   return dano > 0 ? aplicarNoJogador({ estado, hunt, bicho, dano, elemento, eventos, base, ficha, temEscudo }) : 0;
 }
 
@@ -515,8 +579,14 @@ export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, t
     bicho.proximoPoder[i] = agora + a.intervalo / Math.max(0.1, (Number(bicho.velocidadeDeConjuracao) || 1) * eletrizado * recarga);
     if (Math.random() * 100 >= a.chance) return;
     // (lote 41, P019) o lacaio mais perto do bicho que você leva a magia de dano
-    if (noLacaio && noLacaio.hp > 0 && (a.min > 0 || a.max > 0) && alcanca(a, bicho, noLacaio)) return void magiaNoLacaio({ estado, hunt, bicho, l: noLacaio, a, eventos, agora, ficha });
+    if (noLacaio && noLacaio.hp > 0 && (a.min > 0 || a.max > 0) && alcanca(a, bicho, noLacaio)) {
+      // (lote "projetil") o projétil da magia voa até o lacaio
+      if (voaDoBicho(a)) return void voarDoBicho({ estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo }, a, noLacaio);
+      return void magiaNoLacaio({ estado, hunt, bicho, l: noLacaio, a, eventos, agora, ficha });
+    }
     if (isca || !alcanca(a, bicho, alvo)) return;
+    // (lote "projetil") o projétil da magia voa até você: o golpe sai no contato (quem saiu da frente não leva)
+    if (voaDoBicho(a)) return void voarDoBicho({ estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo }, a, null);
     total += dispararMagia({ estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo }, a);
   });
   // As curas do boss (`monster.defenses` do arquivo).

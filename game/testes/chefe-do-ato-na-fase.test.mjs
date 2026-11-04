@@ -12,6 +12,7 @@ const Cacadas = await import('../systems/cacadas.mjs');
 const Campanha = await import('../systems/campanha.mjs');
 const Bolsa = await import('../systems/bolsa.mjs');
 const Instancia = await import('../systems/hunt/instancia.mjs');
+const BausPoe = await import('../systems/itens-poe/baus-poe.mjs');
 
 const ULTIMA = () => Campanha.ultimaFaseDoAto(1).huntId; // a Caverna da Ira
 const vivos = (e) => [...e.hunt.monstros, ...Object.values(e.hunt.outrosAndares ?? {}).flat()].filter((m) => m.hp > 0);
@@ -40,6 +41,8 @@ function limpar(e, relogio) {
   const eventos = [];
   for (let i = 0; i < 40 && e.hunt.instancia.status !== 'limpa'; i++) {
     for (const m of vivos(e)) if (!m.chefeDoAto) m.hp = 0;
+    // aval do dono 03/11: os baús do PoE fechados seguram o CLEAR no automático (até 60 s — `BausPoe.seguramOClear`); o teste abre os baús junto com matar tudo
+    BausPoe.abrirNoRaio(e, e.hunt, PERSONAGEM, 1e9, { so: BausPoe.ehBauPoe });
     eventos.push(...andar(e, 250, relogio));
   }
   assert.equal(e.hunt.instancia.status, 'limpa', 'a instância limpou');

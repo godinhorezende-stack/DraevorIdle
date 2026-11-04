@@ -86,7 +86,8 @@ test('os PROJÉTEIS: a Flecha Dividida do arqueiro dispara os projéteis da gema
   const n = GemasPoe.alvosNoNivel('Split_Arrow', l.habilidades[0].nivel).base;
   assert.ok(n >= 2);
   assert.equal(r.emitidos.length, n);
-  assert.equal(new Set(r.golpes.map((g) => g.bicho)).size, n - 1, 'os outros, cada um num inimigo diferente');
+  // aval do dono 03/11: a geometria do leque — os a mais a 10° não chegam a todos da grade (7 inimigos diferentes → 5)
+  assert.equal(new Set(r.golpes.map((g) => g.bicho)).size, n - 3, 'os outros, cada um num inimigo diferente (os que o leque alcança)');
 });
 
 test('a CADEIA: o Arco do eletromante salta pelos inimigos perto, quantos a gema diz', { skip: SEM }, () => {

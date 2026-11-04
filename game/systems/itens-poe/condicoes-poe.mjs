@@ -30,6 +30,7 @@ import { fatorDaInsanidade } from './gemas-r3c.mjs';
 // (lote S2B, 27/10: o Passe Enfeitiçado — "Inimigos afetados por feitiços … não podem causar golpes críticos")
 import { semCriticoPeloFeitico } from './suportes-s2b.mjs';
 import * as Testador from '../personagem/testador.mjs';
+import * as Salvaguarda from '../personagem/salvaguarda.mjs';
 
 /** "Recentemente" no PoE: nos últimos 4 segundos. */
 export const RECENTE_MS = 4000;
@@ -91,6 +92,9 @@ export const noSoloProfano = (m, agora) => (m?.estados?.soloProfano?.ate ?? 0) >
 export const AREAS_FRIAS = Object.freeze({
   efeitoPct: 10,
   maximo: 12,
+  // (03/11, rodada 2) o teto dos SEUS Solos Congelados (`criarSoloCongelado`), à parte: a enxurrada deles (a Coroa da Salmoura, 15% por acerto) não expulsa as áreas das
+  // gemas (escolha sem fonte: o mesmo número das gemas)
+  maximoDeSolos: 12,
   porGema: Object.freeze({
     Frostblink: { raioM: 2 }, Creeping_Frost: { raioM: 2, noAlvo: true }, Cold_Snap: { raioM: 3 }, Vaal_Cold_Snap: { raioM: 3.6 }, Vortex: { raioM: 2.3 },
     Frost_Blades_of_Katabasis: { raioM: 2, noAlvo: true },
@@ -104,15 +108,51 @@ export const AREAS_FRIAS = Object.freeze({
 // (lote B1, dono 20/10 — D-B1.6/D-B1.7: + `cresce` — o chão dos Estalos Gélidos, `{ deM, ateM, fator, sorte }`: o raio vai de `deM` a `ateM` pela duração,
 // `atualizarAreasFrias`; + `aoMorrer` — `{ tipo, chance }`, a carga quando um inimigo morre nela, `cargasAoMorrerNaAreaFria`; + `porSegundo` — o tipo da carga a
 // cada segundo com um inimigo nela, `cargasPorSegundoDasAreasFrias`)
-export function criarAreaFria(h, { x, y, raioM, segundos, agora = h?.clock ?? 0, efeitoPct = null, obj = null, fragilGelo = false, cresce = null, aoMorrer = null, porSegundo = null }) {
+// (03/11: + `soloCongelado` — a área é o SOLO CONGELADO que você cria (`criarSoloCongelado`): conta para o "sobre Solo Congelado" — `noSoloCongelado`)
+export function criarAreaFria(h, { x, y, raioM, segundos, agora = h?.clock ?? 0, efeitoPct = null, obj = null, fragilGelo = false, cresce = null, aoMorrer = null, porSegundo = null, soloCongelado = false }) {
   if (!h || !(segundos > 0) || !Number.isFinite(x) || !Number.isFinite(y)) return;
   // (revisão do B1: a do Frenesi por segundo que acaba agora fica até pagar o último — `cargasPorSegundoDasAreasFrias`)
   const lista = (h.areasFrias ??= []).filter((a) => a.ate > agora || (a.porSegundo && a.proximaCarga <= a.ate));
   const durMs = Math.round(segundos * 1000);
   const doCrescer = cresce ? { ...cresce, inicio: agora, durMs } : null;
-  lista.push({ x, y, raio: doCrescer ? raioQueCresce(doCrescer, agora) : Math.max(0, Math.round((Number(raioM) || 0) / 2)), ate: agora + durMs, ...(efeitoPct > 0 ? { efeitoPct } : {}), ...(obj ? { obj } : {}), ...(fragilGelo ? { fragilGelo: true } : {}),
-    ...(doCrescer ? { cresce: doCrescer } : {}), ...(aoMorrer ? { aoMorrer } : {}), ...(porSegundo ? { porSegundo, proximaCarga: agora + 1000 } : {}) });
-  h.areasFrias = lista.slice(-AREAS_FRIAS.maximo);
+  const raio = doCrescer ? raioQueCresce(doCrescer, agora) : Math.max(0, Math.round((Number(raioM) || 0) / 2));
+  // (03/11, rodada 2) o SEU Solo Congelado na casa de um que ainda está lá RENOVA esse (a duração, e o maior raio e Resfriamento) em vez de somar outro por cima
+  const mesmo = soloCongelado ? lista.find((a) => a.soloCongelado && a.ate > agora && a.x === x && a.y === y) : null;
+  if (mesmo) {
+    mesmo.ate = Math.max(mesmo.ate, agora + durMs);
+    mesmo.raio = Math.max(mesmo.raio, raio);
+    if (efeitoPct > 0) mesmo.efeitoPct = Math.max(mesmo.efeitoPct ?? 0, efeitoPct);
+  } else {
+    lista.push({ x, y, raio, ate: agora + durMs, ...(efeitoPct > 0 ? { efeitoPct } : {}), ...(obj ? { obj } : {}), ...(fragilGelo ? { fragilGelo: true } : {}), ...(soloCongelado ? { soloCongelado: true } : {}),
+      ...(doCrescer ? { cresce: doCrescer } : {}), ...(aoMorrer ? { aoMorrer } : {}), ...(porSegundo ? { porSegundo, proximaCarga: agora + 1000 } : {}) });
+  }
+  // (03/11, rodada 2: os tetos à parte — as áreas das gemas, `maximo`, e os seus Solos Congelados, `maximoDeSolos`: um não expulsa o outro; a ordem fica)
+  const dasGemas = new Set(lista.filter((a) => !a.soloCongelado).slice(-AREAS_FRIAS.maximo));
+  const solos = new Set(lista.filter((a) => a.soloCongelado).slice(-AREAS_FRIAS.maximoDeSolos));
+  h.areasFrias = lista.filter((a) => dasGemas.has(a) || solos.has(a));
+}
+/**
+ * (03/11 — o SOLO CONGELADO que VOCÊ cria, como o PoE: "15% de chance de criar Solo Congelado ao Congelar um Inimigo" (a Harpa de Nuro), "15% de chance de criar
+ * Solo Resfriado ao Acertar com um Ataque" (a Coroa da Salmoura — o Solo Resfriado é o mesmo Chilled Ground) e o Frasco de Água-marinha ("Cria Solo Congelado ao
+ * Utilizar" — `frascos.aoUsarOFrasco`). É uma das suas ÁREAS FRIAS (`criarAreaFria`): os MONSTROS nela ficam Resfriados (`cacadas.resfriarNasAreasFrias`) — o seu
+ * solo não resfria você, como no PoE. O Resfriamento: os 10% do Solo Congelado do PoE × "Efeito do Solo Congelado aumentado em X%" (`solo_congelado_efeito`, a
+ * Harpa de Nuro). O raio e a duração (o PoE não publica os do solo criado pelo item): os do solo do monstro ("Solo Resfriado ao Morrer", 1,6 m → 1 casa, 6 s).
+ */
+export const SOLO_CONGELADO_SEU = Object.freeze({ efeitoPct: 10, raioM: 2, segundos: 6 });
+export function criarSoloCongelado(h, ficha, { x = h?.pos?.x, y = h?.pos?.y, raioM = SOLO_CONGELADO_SEU.raioM, segundos = SOLO_CONGELADO_SEU.segundos, agora = h?.clock ?? 0 } = {}) {
+  const efeitoPct = Math.round(SOLO_CONGELADO_SEU.efeitoPct * Math.max(0, 1 + valor(ficha, 'solo_congelado_efeito') / 100) * 100) / 100;
+  criarAreaFria(h, { x, y, raioM, segundos, agora, efeitoPct, soloCongelado: true });
+}
+/**
+ * (03/11) Você está SOBRE SOLO CONGELADO agora ("X% de Vida Regenerada por segundo sobre Solo Congelado" — o Passo Natal)? Qualquer um: o do monstro ("Solo Resfriado
+ * ao Morrer" — `mobs/mecanicas`, no seu andar) ou o que você criou (`criarSoloCongelado`). Estar sobre ele não depende de ser afetado ("Inafetado por Solo Congelado"
+ * só tira o Resfriamento).
+ */
+export function noSoloCongelado(h, agora = h?.clock ?? 0) {
+  const p = h?.pos;
+  if (!p) return false;
+  const dentro = (s) => s.ate > agora && Math.max(Math.abs(s.x - p.x), Math.abs(s.y - p.y)) <= s.raio;
+  return (h.solosDosMonstros ?? []).some((s) => s.tipo === 'congelado' && (s.z ?? h.z ?? 0) === (h.z ?? 0) && dentro(s)) || (h.areasFrias ?? []).some((a) => a.soloCongelado && dentro(a));
 }
 /** (lote B1, D-B1.7) O raio das áreas frias que crescem, no instante `agora` (o tique — `cacadas.resfriarNasAreasFrias`). */
 export function atualizarAreasFrias(h, agora = h?.clock ?? 0) {
@@ -302,7 +342,7 @@ const A_DISTANCIA = new Set(['Bows', 'Wands']);
 export const CONDICOES_DE_ESTADO = new Set([
   ...new Set(Object.values(COND_DA_CLASSE)), 'umaMao', 'duasMaos', 'armaCorpo', 'comEscudo', 'duasArmas',
   'matouRecente', 'naoMatouRecente', 'criticoRecente', 'naoCriticoRecente', 'acertadoRecente', 'semDanoRecente', 'movendo', 'vidaBaixa',
-  'lacaioMorreuRecente', 'usouLacaioRecente', 'elusivo', 'soloSagrado', 'vidaCheia', 'furiaCheia', 'drenoRemovidoCheio',
+  'lacaioMorreuRecente', 'usouLacaioRecente', 'elusivo', 'soloSagrado', 'soloCongelado', 'vidaCheia', 'furiaCheia', 'drenoRemovidoCheio',
   // (07/10, os únicos:) mana, escudo, afecções em você, frasco, roubo, parado, mão secundária, e os "recentemente" dos acontecimentos.
   'manaBaixa', 'naoManaBaixa', 'escudoCheio', 'semEscudo', 'ardendo', 'naoArdendo', 'congeladoProprio', 'eletrizadoProprio', 'resfriadoProprio',
   'sangrandoProprio', 'envenenadoProprio', 'amaldicoadoProprio', 'semAfeccaoElemental', 'duranteFrasco', 'semFrasco', 'drenando', 'drenandoVida', 'parado',
@@ -366,6 +406,9 @@ export const CONDICOES_DE_ESTADO = new Set([
   // (11/10, os únicos:) nenhum item equipado corrompido / todos corrompidos; um Anel Mágico (em qualquer lado, no esquerdo, no direito); drenando
   // Escudo de Energia / Mana; as garras no desarmado (`garra_desarmado` dá o "com Garra" ao desarmado).
   'semItemCorrompido', 'todosCorrompidos', 'semVidaNosOutros', 'anelMagico', 'anelMagicoEsquerdo', 'anelMagicoDireito', 'drenandoEs', 'drenandoMana',
+  // (02/11, a Salvaguarda — o PoB: `Condition:UnbrokenWard`) "enquanto você tiver Salvaguarda Intacta", "enquanto sua Salvaguarda estiver Rompida" (a negação, como no
+  // PoB: sem Salvaguarda também conta) e a intacta que pode romper (o ataque da Joia Atemporal: sem o "não Quebra" do frasco — `WardNotBreak`)
+  'salvaguardaIntacta', 'salvaguardaRompida', 'salvaguardaRompivel',
 ]);
 /** O raio da PRESENÇA (PoE: a área em volta do personagem que os implícitos eldritch olham), em casas. */
 export const RAIO_DA_PRESENCA = 6;
@@ -415,6 +458,9 @@ export const TAGS_DE_GOLPE = new Set([
   // (15/10, lote 31) o abate por um ACERTO (o golpe fatal não foi dano contínuo — `quem-feriu.tagsDoAbate`); o inimigo Provocado pelo seu
   // CLAMOR (`Reforcos.provocar` — `provocadoAte`); o morto na área do seu Estandarte plantado (`pertoDoEstandarte`).
   'acerto', 'alvoProvocadoClamor', 'alvoPertoDoEstandarte',
+  // (100% — dados, 03/11) a habilidade PRISMÁTICA (a tag Prismático do poedb — o RandomElement do PoB): "Habilidades Prismáticas causam 50% menos Dano de Gelo"
+  // (o Foco de Combate — `itens-poe/prismaticas.mjs`)
+  'prismatico',
 ]);
 /**
  * As condições que dependem do ESPAÇO em que a peça está (resolvidas peça a peça em `Afixos.somaDeItens`): o anel (esquerdo/direito) e a
@@ -471,6 +517,18 @@ export function defesaDaPecaVestida(p) {
   return { armadura: meio('armor', 'armadura'), evasao: meio('evasion', 'evasao'), escudo: meio('es', 'escudo') };
 }
 
+/**
+ * (02/11) O personagem TEM Salvaguarda (sem a ficha — as condições vêm antes dela)? Uma peça vestida com Salvaguarda (`base.ward`: as Rúnicas, Svalinn), o "+N" global
+ * (também o "por N de Armadura no Elmo" das Atemporais) ou o peitoral com Armadura/Evasão e a Postura de Ynda.
+ */
+export function temSalvaguarda(estado, total) {
+  const eq = estado?.equipment ?? {};
+  if (Object.entries(eq).some(([slot, p]) => p && slot !== 'backpack' && Number(p.base?.ward?.[0]) > 0)) return true;
+  for (const k in total ?? {}) if (k.startsWith('salvaguarda') && /^salvaguarda(?:$|[%@])/.test(k) && Number(total[k]) > 0) return true;
+  const d = Number(total?.peitoral_em_salvaguarda_pct) > 0 ? defesaDaPecaVestida(eq.body) : null;
+  return !!d && d.armadura + d.evasao > 0;
+}
+
 export function condicoesDe(estado, total = null, principais = null) {
   const v = new Set();
   v.parametros = { estado, total, principais };
@@ -524,6 +582,14 @@ export function condicoesDe(estado, total = null, principais = null) {
   if ((estado?.maxMana ?? 0) > 0 && (estado.mana ?? 0) <= VIDA_BAIXA * estado.maxMana) v.add('manaBaixa');
   else v.add('naoManaBaixa');
   if (!(estado?.es > 0)) v.add('semEscudo');
+  // (02/11) a Salvaguarda INTACTA ou ROMPIDA (`personagem/salvaguarda.intacta`): com Salvaguarda (as peças vestidas, o "+N" global, o peitoral da Postura de Ynda) e sem
+  // ter quebrado — até a restauração
+  if (ligado()) {
+    if (Salvaguarda.intacta(estado, temSalvaguarda(estado, total))) {
+      v.add('salvaguardaIntacta');
+      if (!(Number(total?.salvaguarda_nao_quebra) > 0)) v.add('salvaguardaRompivel');
+    } else v.add('salvaguardaRompida');
+  }
   if (!(estado?.hunt?.monstros ?? []).some((m) => m.hp > 0 && Object.values(m.maldicoes ?? {}).some((x) => x?.marca && x.ate > (estado.hunt.clock ?? 0)))) v.add('semMarca');
   // (09/10) As peças vestidas: o Peitoral sem modificador de Vida; as quatro armaduras com Evasão / com Armadura na base (`defesasDaPeca`).
   const eq = estado?.equipment ?? {};
@@ -604,6 +670,8 @@ export function condicoesDe(estado, total = null, principais = null) {
     // (lote G) Elusivo (o buff — antes a condição nunca valia), o Solo Sagrado, a Postura e o Estandarte.
     if (buffAtivo(estado, 'elusivo', total)) v.add('elusivo');
     if (noSoloSagrado(h, agora)) v.add('soloSagrado');
+    // (03/11) sobre Solo Congelado (o do monstro ou o seu — `noSoloCongelado`)
+    if (noSoloCongelado(h, agora)) v.add('soloCongelado');
     v.add(posturaDe(h, agora) === 'areia' ? 'posturaAreia' : 'posturaSangue');
     if (emTempestadeSangrenta(h, agora)) v.add('emTempestadeSangrenta');
     if (estandarteAtivo(h, agora)) v.add('estandarteAtivo');
@@ -1008,7 +1076,7 @@ export function resolver(estado, total, principais = null) {
 }
 
 /** As escalas que só a ficha sabe (a segunda passada). */
-export const ESCALAS_DA_FICHA = /^(precisao|armadura|evasao|esMax|bloqueio|bloqueioMagico|armaduraEscudo|evasaoEscudo|esEscudo|armEvaEscudo|bloqueioEscudo|resFogo|resGelo|resRaio|resCaos|evasaoPeitoral|esElmo|resFogoExcedente|resGeloExcedente|resRaioExcedente):/;
+export const ESCALAS_DA_FICHA = /^(pctSalvaguarda|precisao|armadura|evasao|esMax|bloqueio|bloqueioMagico|armaduraEscudo|evasaoEscudo|esEscudo|armEvaEscudo|bloqueioEscudo|resFogo|resGelo|resRaio|resCaos|evasaoPeitoral|esElmo|resFogoExcedente|resGeloExcedente|resRaioExcedente):/;
 
 /**
  * O fator de uma ESCALA ("por X"): `nivel`, `atr:dex:10` (a cada 10 de Destreza), `carga:frenesi`, `cargaMax:poder`, `furia`, `furia:5`,
@@ -1113,6 +1181,11 @@ export function fatorDaEscala(estado, total, principais, escala) {
     // com teto.)
     case 'cadaveresPerto': { const r = Number(a) || 4; const p = h?.pos; const n = p ? (h.cadaveres ?? []).filter((c) => Math.max(Math.abs(c.x - p.x), Math.abs(c.y - p.y)) <= r).length : 0; return b ? Math.min(Number(b), n) : n; }
     case 'manaReservada': return cada(reservadoAgora(estado, 'mana', total), a);
+    // (02/11, as Atemporais: "+2 de Salvaguarda por 10 de Armadura no Elmo Equipado", "…de Evasão nas Luvas", "…de Escudo de Energia nas Botas" — o PoB: `PerStat`
+    // ArmourOnHelmet / EvasionOnGloves / EnergyShieldOnBoots, a defesa da peça com os locais dela)
+    case 'armaduraElmo': return cada((defesaDaPecaVestida(estado?.equipment?.head) ?? {}).armadura ?? 0, a);
+    case 'evasaoLuvas': return cada((defesaDaPecaVestida(estado?.equipment?.gloves) ?? {}).evasao ?? 0, a);
+    case 'esBotas': return cada((defesaDaPecaVestida(estado?.equipment?.feet) ?? {}).escudo ?? 0, a);
     // (13/10) "por cada N de Mana Máxima Não Reservada" (o Santuário do Pensamento): a máxima menos a reservada.
     case 'manaNaoReservada': return cada(Math.max(0, (estado?.maxMana ?? 0) - reservadoAgora(estado, 'mana', total)), a);
     default: return 0;
@@ -1148,7 +1221,8 @@ export function escalasDaFicha(estado, total, ficha) {
       // (a resistência EXCEDENTE — acima do máximo: "Armadura é aumentada pela Resistência a Fogo Excedente"; "por X% de resistência a dano de gelo excedente")
       resFogoExcedente: ficha.excedentes?.protection?.fire ?? 0, resGeloExcedente: ficha.excedentes?.protection?.ice ?? 0, resRaioExcedente: ficha.excedentes?.protection?.energy ?? 0,
     }[tipo] ?? 0;
-    const m = Math.floor(Math.max(0, base) / Math.max(1, Number(n) || 1));
+    // (02/11, o Aperto Noturno: "Ganha Dano de Caos Adicional igual a 10% da Proteção" — o PoB: `PercentStat` Ward) `pctSalvaguarda:N`: N% da Salvaguarda máxima
+    const m = tipo === 'pctSalvaguarda' ? Math.floor((Math.max(0, Number(ficha.salvaguarda) || 0) * (Number(n) || 0)) / 100) : Math.floor(Math.max(0, base) / Math.max(1, Number(n) || 1));
     const chave = golpe.length ? `${stat}@${golpe.join('+')}` : stat;
     if (m) saida[chave] = (saida[chave] ?? 0) + comTeto(v, m, teto);
   }
@@ -1202,8 +1276,9 @@ export const BUFFS = {
   // Gritos dos Dessecados — `ALTARES_DO_SORTEIO`; o Ressonante do PoE antigo é o Carregado de hoje) e os Menores dos únicos (o Erro Crasso).
   // "Efeito dos Buffs de Altares em você aumentado" multiplica os números (`efeito_altar` — não o nível das gemas disparadas). As Novas e os
   // Esqueletos dos Maiores: o poedb não publica o dano nem a frequência — as gemas do jogo (Nova Glacial, Nova Elétrica, Convocar Esqueleto)
-  // nível 20, a cada 2 s (4 s os Esqueletos). O Altar de Aceleração: a Velocidade de Projéteis não se aplica (o projétil do jogo vai direto ao alvo).
-  altarAceleracao: { nome: 'Altar de Aceleração', altar: true, af: { action_speed: 50 } },
+  // nível 20, a cada 2 s (4 s os Esqueletos). O Altar de Aceleração (o poedb, Acceleration Shrine: "50% increased Action Speed", "80% increased Projectile Speed"):
+  // (lote "projetil", dono 02/11: a Velocidade de Projéteis vale — o voo de verdade, `hunt/voos.mjs`)
+  altarAceleracao: { nome: 'Altar de Aceleração', altar: true, af: { action_speed: 50, projectile_speed: 80 } },
   altarBrutal: { nome: 'Altar Brutal', altar: true, af: { chance_empurrar: 100, stun_duration: 30, dmg_inc: 50 } },
   altarDiamante: { nome: 'Altar Diamante', altar: true, af: { critico_sempre: 1 } },
   altarEcoante: { nome: 'Altar Ecoante', altar: true, af: { repeticoes_extra: 1 } },
@@ -1540,6 +1615,8 @@ const TAG_DO_POE = {
   // Ativação = Trigger.
   Golpear: 'golpe', Impacto: 'pancada', Nova: 'nova', Canalização: 'canalizar', Feitiço: 'feitico', Vínculo: 'vinculo', Marca: 'marca',
   Runa: 'runa', Ativação: 'ativada', Retaliação: 'retaliacao', Postura: 'postura',
+  // (100% — dados, 03/11) as Habilidades Prismáticas (o Foco de Combate)
+  Prismático: 'prismatico',
 };
 /** As tags de golpe de uma lista de tags do poedb (`['Ataque','Projétil','Arco']` → `['ataque','projetil','arco']`), + `elemental`. */
 export function tagsDoPoe(lista = []) {
@@ -2181,21 +2258,29 @@ export const EVENTOS = new Set(['incendiarNovo', 'ganharAdrenalina', 'amaldicoar
   // `hunt/combate.matarMonstro`, pelo carimbo de `hunt/quem-feriu`.
   'matarLacaio', 'matarTotem', 'inimigoMorrer',
   // (lote 70) ao Convocar um Totem (`acoes.invocarLacaios`)
-  'convocarTotem']);
+  'convocarTotem',
+  // (02/11) quando a Salvaguarda se Rompe (`personagem/salvaguarda.absorver` → `acoes.mjs`)
+  'salvaguardaQuebra',
+  // (02/11, as Atemporais) quando a Salvaguarda é Restaurada (`personagem/salvaguarda.restaurar` → `acoes.mjs`)
+  'salvaguardaRestaurada']);
 export const ACOES = new Set(['transferirMarca', 'frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
-  'dano', 'danoPctVida', 'furia', 'frasco', 'recargaEs', 'explodir', 'gatilho', 'espalhar', 'roubarCargas', 'maldicao', 'soloSagrado', 'soloProfano', 'fumaca', 'removerAfeccao', 'perdeVidaPct', 'perdeEsPct', 'perdeManaPct',
+  'dano', 'danoPctVida', 'furia', 'frasco', 'recargaEs', 'explodir', 'gatilho', 'espalhar', 'roubarCargas', 'maldicao', 'soloSagrado', 'soloProfano', 'soloCongelado', 'fumaca', 'removerAfeccao', 'perdeVidaPct', 'perdeEsPct', 'perdeManaPct',
   // (11/10, os únicos)
   'perdeVida', 'esDaArmadura', 'vidaParaEs', 'degenEmVoce', 'statTemp', 'statTempPorMana', 'furiaPorMana', 'transferirMaldicoes', 'degenNoAlvo', 'danoPorMana', 'empurrarProximos',
   // (ciclo 7, lote D) `mods-poe.aplicarAcao`
   'regenPct', 'fortificacao', 'atordoarProximos',
   // (lote E)
   'consumirCadaver', 'vidaDaRegen',
+  // (100% — dados, 03/11) a Tatuagem do Devorador de Corações: a chance de consumir o cadáver do morto (o do Golpe de Misericórdia) — `mods-poe.aplicarAcao`
+  'consumirCadaverChance',
   // (lote F)
   'stat', 'congelarProximos', 'regenDaDefesa', 'vidaChance', 'vidaPorDefinhamento', 'vidaPorVeneno', 'furiaPorPoder',
   // (lote 72) `mods-poe.aplicarAcao`: a carga aleatória por Poder do Clamor e o atributo temporário por Poder
   'cargaAleatoriaPorPoder', 'statTempPorPoder',
   // (lote G)
-  'valor', 'mortalha']);
+  'valor', 'mortalha',
+  // (02/11) restaurar a Salvaguarda (`personagem/salvaguarda.restaurar`)
+  'salvaguarda']);
 /** Os prefixos de atributo montados pelo nome (`sempre:<buff>`, `efeito_buff:<buff>`, `concede:<gema>`, `suporte_local:<gema>`). */
 /**
  * Quem sabe se uma gema existe pelo NOME ("Concede a Habilidade X", "Suportadas por X"): as gemas do PoE carregam depois e `skills/gemas.mjs`
@@ -2276,7 +2361,7 @@ export function dinamicoValido(stat) {
   return DINAMICOS.test(stat) || PARAMETRICOS.some((re) => re.test(stat));
 }
 /** A escala é conhecida? */
-export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|joiasAbissais|joiaUnica|devocao|itemMagico|maldicoesEmVoce|abissalLocal|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|vinhas|desdeUsou|afetadoPorClamor|valor|valorDoEstandarte|forcaDosVentos|stat)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
+export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|joiasAbissais|joiaUnica|devocao|itemMagico|maldicoesEmVoce|abissalLocal|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|vinhas|desdeUsou|afetadoPorClamor|valor|valorDoEstandarte|forcaDosVentos|stat|armaduraElmo|evasaoLuvas|esBotas)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
 
 /** Os números base do PoE dos efeitos de acerto. */
 export const NO_ACERTO = {

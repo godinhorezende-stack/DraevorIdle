@@ -33,6 +33,7 @@ import { salaDe, tirarMonstro } from './hunt/sala.mjs';
 import * as Controle from './combate/controle.mjs';
 import * as AtributosDoMob from './mobs/atributos.mjs';
 import * as Defesa from './personagem/defesa.mjs';
+import * as Salvaguarda from './personagem/salvaguarda.mjs';
 import { ACTION_CATALOG, ACTION_CATALOG_ALTO, LEVELS_DAS_CAPTURAS, ITEM_CATALOG, CHARACTER_TEMPLATE, CATALOGO } from './dados.mjs';
 import { removerItem } from './inventario.mjs';
 import * as Treino from './treino.mjs';
@@ -46,12 +47,15 @@ import * as GemasE1a from './itens-poe/gemas-e1a.mjs';
 import * as Virulencia from './itens-poe/virulencia.mjs';
 import * as Poderes from './poderes.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
+// (o Portal da gema — dono, 02/11: "como o PoE")
+import * as PortalDaGema from './itens-poe/portal-da-gema.mjs';
 import * as LinhasDasGemas from './itens-poe/linhas-das-gemas.mjs';
 import { defesaDaPecaVestida } from './itens-poe/condicoes-poe.mjs';
 import * as Reserva from './itens-poe/reserva.mjs';
 import * as Plantadas from './itens-poe/armas-plantadas.mjs';
 import * as Runas from './itens-poe/runas-vinculadas.mjs';
 import * as Vinculos from './itens-poe/vinculos.mjs';
+import * as Iluminacao from './itens-poe/iluminacao.mjs';
 import * as Aco from './itens-poe/convocar-o-aco.mjs';
 import * as Mercenarios from './itens-poe/mercenarios.mjs';
 import * as CargasDoPoe from './itens-poe/cargas.mjs';
@@ -78,6 +82,7 @@ import { aliadosPorCasa } from './hunt/aliados.mjs';
 import { casaLivrePerto, proximoPassoAte } from './hunt/caminho.mjs';
 import { criarSoloSagrado, porExposicao } from './itens-poe/condicoes-poe.mjs';
 import * as Encontros from './encontros/estado.mjs';
+import * as BausPoe from './itens-poe/baus-poe.mjs';
 import * as GemasA2 from './itens-poe/gemas-a2.mjs';
 import * as GemasA4 from './itens-poe/gemas-a4.mjs';
 import * as GemasA3b from './itens-poe/gemas-a3b.mjs';
@@ -90,6 +95,8 @@ import * as GemasPR2 from './itens-poe/gemas-pr2.mjs';
 import * as GemasPR3 from './itens-poe/gemas-pr3.mjs';
 import * as GemasPR4 from './itens-poe/gemas-pr4.mjs';
 import * as GemasC1 from './itens-poe/gemas-c1.mjs';
+// (100% — dados, 03/11) as Habilidades PRISMÁTICAS: o elemento sem os proibidos do Foco de Combate e sem repetir; a forma do Golpe Selvagem pelo elemento
+import * as Prismaticas from './itens-poe/prismaticas.mjs';
 // (lote C2, dono 20/10: os contadores próprios e as cargas consumidas das gemas de corpo a corpo, impacto e canalização)
 import * as GemasC2 from './itens-poe/gemas-c2.mjs';
 // (lote C3, dono 25/10: a postura e os objetos no tempo das gemas de corpo a corpo, impacto e canalização)
@@ -136,6 +143,11 @@ import * as GemasT1 from './itens-poe/gemas-t1.mjs';
 import { JANELA } from '../websocket/quadro.mjs';
 import * as ItensPoeJogo from './itens-poe/jogo.mjs';
 import * as Testador from './personagem/testador.mjs';
+// (lote "projetil", dono 02/11) o voo de verdade dos projéteis: as contas e os projéteis no ar
+import * as GemasVoo from './itens-poe/projeteis-voo.mjs';
+import * as Voos from './hunt/voos.mjs';
+// (100% — combate, 02/11: o alcance em décimos de metro, o Arqueiro Ilusório grudado, o Re-armar das Minas — `itens-poe/combate-100.mjs`)
+import * as Combate100 from './itens-poe/combate-100.mjs';
 
 // A BARRA DO PoE (dono, 07/10: "frascos 1 a 5 e mais 8 que podem ser ataques, auras, suporte e etc"): com o PoE ligado a barra tem
 // 8 slots de HABILIDADE numa fileira só (qualquer gema cabe em qualquer um — não há mais os ofícios vida/mana/velocidade/suporte/ataque
@@ -189,8 +201,16 @@ const custoDoCatalogo = (entry) => Math.round((entry.mana ?? 0) * (Gemas.defDaGe
 // (E a maldição com a Blasfêmia, que vira aura e reserva.)
 const custoDaSkill = (entry, efeitoDaGema, estado = null) => (entry.poeGema
   // (lote R3C: a aura com a Bênção Divina — "Habilidades Suportadas Custam +N de Mana": a reserva vira esse custo base; a Eterna e a do Guardião, sem custo)
-  ? entry.poeGema.buff && (Reserva.daGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) || Reserva.ehMaldicaoEmAura(entry, efeitoDaGema)) ? (GemasR3c.bencaoDaAura(entry.poeGema.arquetipo, entry.poeGema.slug, efeitoDaGema)?.custoMana ?? 0) : GemasPoe.custoNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) + custoBaseDoSuporte(estado, efeitoDaGema)
+  ? entry.poeGema.buff && (Reserva.daGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) || Reserva.ehMaldicaoEmAura(entry, efeitoDaGema)) ? (GemasR3c.bencaoDaAura(entry.poeGema.arquetipo, entry.poeGema.slug, efeitoDaGema)?.custoMana ?? 0) : GemasPoe.custoNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) + custoPctDaManaMaxima(entry, efeitoDaGema, estado) + custoBaseDoSuporte(estado, efeitoDaGema)
   : custoDoCatalogo(entry));
+/**
+ * (achado da revisão de 02/11) O custo em % da Mana máxima ("Custo: 5% Mana" — o Vínculo de Mana; o PoB: `cost = { ManaPercent = 5 }`): o % × a Mana máxima, como
+ * o custo base que os multiplicadores escalam (como o da Trarthus, `custoDaTrarthus` com a Mana máxima). Sem o estado, 0 (antes o jogo cobrava 0 sempre).
+ */
+function custoPctDaManaMaxima(entry, ef, estado) {
+  const pct = estado ? GemasPoe.custoPctDaManaNoNivel(entry.poeGema.slug, ef?.nivel ?? 1) : 0;
+  return pct > 0 ? (pct / 100) * Math.max(0, estado.maxMana ?? 0) : 0;
+}
 /**
  * (lote S1, 26/10) O custo de Mana BASE a mais dos suportes (o Arquimago: "custo de mana base equivalente a 5% do mana máximo não reservado"; o Mago do Gelo: "…do mana
  * máximo reservado" — o PoB: ManaCostBase BASE pelo PercentStat ManaUnreserved/ManaReserved): soma ao custo da gema antes dos multiplicadores. Sem o estado, 0.
@@ -548,7 +568,10 @@ export function alcanceCorpoDoUso(estado, entry, efeito = undefined) {
   const base = Ficha.combate(estado);
   const f = comAsLinhasDaGema(estado, base, entry, efeito);
   const metrosExtra = ModsPoe.valor(f, 'alcance_corpo_m') + (f !== base && f?.porTag ? ModsPoe.somaPorTags(f, tagsPoeDaSkill(entry)).alcance_corpo_m ?? 0 : 0);
-  const casas = itensPoeLigado() ? Math.floor(Ficha.alcanceCorpoEmMetros(estado.equipment?.weapon ?? null, { alcance_corpo_m: metrosExtra }) / 2) : base.alcanceCorpoExtra ?? 0;
+  // (100% — combate, 02/11: com metros a mais, + a casa na chance da fração — `Combate100.casaDaFracao`, a sorte do golpe)
+  // (DECISÃO DO DONO, 03/11 — o alcance "suave": as casas da arma sozinha + meia casa por metro A MAIS, a fração só desses metros — `Combate100.casasDoAlcance`)
+  const doAlcance = itensPoeLigado() ? Combate100.casasDoAlcance(Ficha.alcanceCorpoEmMetros(estado.equipment?.weapon ?? null, {}), metrosExtra) : null;
+  const casas = doAlcance ? doAlcance.inteiras + Combate100.casaDaFracao(estado.hunt, doAlcance.fracao) : base.alcanceCorpoExtra ?? 0;
   return { metrosExtra, casas };
 }
 
@@ -708,7 +731,7 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
       // (lote A5c, dono 20/10: a mesma ordem das magias — a conversão da GEMA primeiro, as das outras fontes só no Físico que sobrou, proporcionais se passarem
       // dele, e o "como Extra" sobre o Físico de antes da conversão, todo o Físico do golpe; antes saíam da arma crua, sem a eficácia, e a gema convertia o resto)
       const outras = (fis, teto) => ModsPoe.extrasDoFisico(fichaBase, fis, Math.random, teto);
-      for (const [el, v] of Object.entries(GemasPoe.partesDoAtaque(daGemaPoe.slug, nivelPoe, { min: armaDoGolpe.min, max: armaDoGolpe.max, elemento: armaDoGolpe.elemento ?? 'physical' }, extras, Math.random, { outras, origens, escolhido: elementoSorteado, conversoesExtras: GemasPoe.conversoesDosSuportes(efeitoDaGema) }))) somar(el, v);
+      for (const [el, v] of Object.entries(GemasPoe.partesDoAtaque(daGemaPoe.slug, nivelPoe, { min: armaDoGolpe.min, max: armaDoGolpe.max, elemento: armaDoGolpe.elemento ?? 'physical' }, extras, Math.random, { outras, origens, escolhido: elementoSorteado, conversoesExtras: GemasPoe.conversoesDosSuportes(efeitoDaGema), proibidos: tagsDoUso.includes('prismatico') ? Prismaticas.proibidos(fichaBase) : null }))) somar(el, v);
     } else {
       // (lote A5c, dono 20/10: "corrigir como o PoE") o adicionado vai JUNTO com o dano da gema para `GemasPoe.partesDaMagia`, que converte o Físico de
       // tudo — a conversão da gema, depois a das outras fontes (`ModsPoe.extrasDoFisico`, só no que a gema deixou) e o Físico como Extra —, como nos ataques
@@ -733,7 +756,7 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
       const doRecurso = baseDoRecursoNoUso(estado, daGemaPoe.slug, nivelPoe, efeitoDaGema, fichaBase);
       if (doRecurso > 0) adicionar('chaos', [doRecurso, doRecurso]);
       // (lote B1: + `basePor` — a Descarga, o dano base de cada elemento × as cargas do tipo dele; o adicionado não multiplica)
-      const daMagia = GemasPoe.partesDaMagia(daGemaPoe.slug, nivelPoe, adicionado, { elementoSorteado, origens, outras: (fis, teto) => ModsPoe.extrasDoFisico(fichaBase, fis, Math.random, teto), basePor: efeitoDaGema?.danoBasePor ?? null, baseExtra: efeitoDaGema?.danoBaseExtra ?? null, conversoesExtras: GemasPoe.conversoesDosSuportes(efeitoDaGema) });
+      const daMagia = GemasPoe.partesDaMagia(daGemaPoe.slug, nivelPoe, adicionado, { elementoSorteado, proibidos: tagsDoUso.includes('prismatico') ? Prismaticas.proibidos(fichaBase) : null, origens, outras: (fis, teto) => ModsPoe.extrasDoFisico(fichaBase, fis, Math.random, teto), basePor: efeitoDaGema?.danoBasePor ?? null, baseExtra: efeitoDaGema?.danoBaseExtra ?? null, conversoesExtras: GemasPoe.conversoesDosSuportes(efeitoDaGema) });
       for (const [el, v] of Object.entries(daMagia)) somar(el, v);
     }
     // PoE (únicos): as conversões entre elementos, os ganhos extras e a máscara de dano ("Não Causa Dano Elemental"…).
@@ -1317,7 +1340,9 @@ export function prismaNoAcerto(estado, hunt, personagem, entry, ef, alvo, rng = 
   const recargaMs = Math.round((ef.prismaRecargaMs ?? 800) / Math.max(0.1, 1 + (ef.prismaRecargaIncPct ?? 0) / 100));
   if (!SuportesS2B.gastarUso(hunt, `prisma:${entry.id}`, recargaMs, 1, hunt.clock ?? 0)) return eventos;
   const at = Ficha.combate(estado).atributos ?? {};
-  const el = SuportesS2B.elementoDoPrisma(at.str, at.dex, at.int, rng);
+  // (100% — dados, 03/11: a Explosão Prismática é prismática — sem os elementos que o Foco de Combate proíbe; os pesos pelos atributos ficam)
+  const proib = Prismaticas.proibidos(Ficha.combate(estado));
+  const el = proib.size ? Prismaticas.elementoPorPesos([['fire', Math.max(0, Number(at.str) || 0)], ['ice', Math.max(0, Number(at.dex) || 0)], ['energy', Math.max(0, Number(at.int) || 0)]], proib, rng) : SuportesS2B.elementoDoPrisma(at.str, at.dex, at.int, rng);
   const faixas = { fire: [ef.prismaMin_fire, ef.prismaMax_fire], ice: [ef.prismaMin_ice, ef.prismaMax_ice], energy: [ef.prismaMin_energy, ef.prismaMax_energy] };
   const [min, max] = (faixas[el] ?? []).map((x) => x ?? 0);
   if (!(max > 0)) return eventos;
@@ -2111,7 +2136,8 @@ export function alvosDoGolpeDoMercenario(estado, l, alvo, vivos, rng = Math.rand
   if (!tags.includes('projectile')) return null;
   // (lote A3c, dono 19/10: "Sim, igual") + a área no impacto do projétil da gema dele, com o mesmo raio do seu (`areaNoImpactoDoUso`); o golpe da
   // área vai como 'area' (a caçada não desenha um voo para ele), com `impacto: true` e o `doImpacto`
-  const r = Secundarios.resolver({ efeito, tags, origem, alvo, atingidos: [alvo], vivos, alcance: entry.range || ALCANCE_PADRAO, rng, areaNoImpacto: areaNoImpactoDoUso(entry, efeito, 0, rng), cinetica: cineticaDoUso(entry, efeito, 0, rng) });
+  // (lote "projetil": + o voo de verdade — o leque e os ângulos da difusão)
+  const r = Secundarios.resolver({ efeito, tags, origem, alvo, atingidos: [alvo], vivos, alcance: entry.range || ALCANCE_PADRAO, rng, areaNoImpacto: areaNoImpactoDoUso(entry, efeito, 0, rng), cinetica: cineticaDoUso(entry, efeito, 0, rng), voo: itensPoeLigado() && !projeteisNaoDoUsuario(entry) && !Voos.geometriaAntiga() });
   return { golpes: r.golpes.map((g) => (g.tipo === 'impacto' ? { ...g, tipo: 'area', impacto: true } : g)), eventos: [], emitidos: r.emitidos, explosoes: r.explosoes };
 }
 /**
@@ -2349,7 +2375,8 @@ export function criarCadaveres(estado, hunt, slug, nivelDaGema = 1, onde = hunt?
     const y = onde.y + (i ? Math.floor(rng() * 3) - 1 : 0);
     // (17/10, lote G12: + a Vida Máxima — a do monstro da área que deu o desenho; o Arqueiro de Ossos, a média dos monstros da área)
     const vidaDaArea = daArea.length ? daArea.reduce((t, m) => t + (m.maxHp ?? 0), 0) / daArea.length : 0;
-    const vidaInc = qualidade > 0 ? GemasPoe.vidaDoCadaverDaGema(slug, qualidade) : 0;
+    // (100% — combate, 02/11: + "Cadáveres Criados por você tem Vida Máxima aumentada em X%" — a árvore, `cadaver_vida_inc`; soma com o da qualidade da gema)
+    const vidaInc = (qualidade > 0 ? GemasPoe.vidaDoCadaverDaGema(slug, qualidade) : 0) + ModsPoe.valor(Ficha.combate(estado), 'cadaver_vida_inc');
     lista.push({ key: base?.key ?? 'skeleton', nome: base?.name ?? 'Arqueiro de Ossos', look: desenho.look, lookItem: desenho.lookItem ?? 0, colors: desenho.colors ?? null, x, y, nivel, maxHp: Math.round((base?.maxHp ?? vidaDaArea) * (1 + vidaInc / 100)), criadoPor: slug, criadoEm: hunt.clock ?? 0 });
   }
   const dela = lista.filter((c) => c.criadoPor === slug);
@@ -3126,7 +3153,7 @@ export function projeteisDoTotem(estado, entry, { origem, alvo, vivos }) {
     Object.assign(efeito, Aco.projeteisNoUso(doAco, gastos, { base: efeito.projeteisBase ?? 1, extras: efeito.alvosExtras ?? 0, divisao: efeito.divisao ?? 0 }));
   }
   const area = !!entry.forma;
-  return Secundarios.resolver({ efeito, tags, origem, alvo: area ? null : alvo, atingidos: [alvo], vivos, alcance: entry.range || ALCANCE_PADRAO, area, andavel: ModsPoe.gradeDoCombate(estado?.hunt)?.andavel ?? null });
+  return Secundarios.resolver({ efeito, tags, origem, alvo: area ? null : alvo, atingidos: [alvo], vivos, alcance: entry.range || ALCANCE_PADRAO, area, andavel: ModsPoe.gradeDoCombate(estado?.hunt)?.andavel ?? null, voo: itensPoeLigado() && !projeteisNaoDoUsuario(entry) && !Voos.geometriaAntiga() });
 }
 /** (PoE, 12/10) O que a gema de Aço diz (`Aco.daGema`) por slug e nível — as linhas do nível não mudam (cache). null: não gasta fragmentos. */
 const DO_ACO = new Map();
@@ -3167,7 +3194,7 @@ export function projeteisDoLacaio(estado, acaoDaGema, { origem, alvo, vivos, alc
   if (!entry || !Gemas.ehSkillDeGema(entry)) return null;
   const efeito = Gemas.efeitoNaSkill(estado, entry.id);
   if (!efeito) return null;
-  return Secundarios.resolver({ efeito, tags: ['projectile', 'single', 'hit'], origem, alvo, atingidos: [alvo], vivos, alcance });
+  return Secundarios.resolver({ efeito, tags: ['projectile', 'single', 'hit'], origem, alvo, atingidos: [alvo], vivos, alcance, voo: itensPoeLigado() && !Voos.geometriaAntiga() });
 }
 
 /**
@@ -3230,6 +3257,8 @@ export function comOsAlvosDaGema(entry, efeito, estado = null) {
   // (11/10) A quantidade BASE de projéteis da gema ("Dispara 15 projéteis") e "em sequência": a emissão em `Secundarios.resolver`.
   if ((a.base ?? 0) > 1) e.projeteisBase = a.base;
   if (a.sequencia) e.sequencia = true;
+  // (lote "projetil") o círculo da própria gema ("Dispara Projéteis em um círculo")
+  if (a.emCirculo) e.emCirculo = true;
   // (09/10, a maestria da árvore) "Habilidades de Golpe Não Vaal focam em N Inimigo próximo adicional": a gema de Golpear (não Vaal).
   const gemaDoGolpe = GemasPoe.doSlug(entry.poeGema.slug)?.gema;
   if (estado && gemaDoGolpe?.tags?.includes('Golpear') && !gemaDoGolpe.tags.includes('Vaal')) e.alvosExtras += Math.max(0, Math.round(ModsPoe.valor(Ficha.combate(estado), 'golpe_alvos_extra')));
@@ -3248,6 +3277,9 @@ export function comOsAlvosDaGema(entry, efeito, estado = null) {
     e.ricocheteTerrenoChance = ModsPoe.valor(fichaDoAlvo, 'proj_ricochete_terreno_chance') + GemasPoe.ricocheteNoTerrenoDaGema(entry.poeGema.slug, efeito.nivel ?? 1);
     if (ModsPoe.valor(fichaDoAlvo, 'proj_direcoes_aleatorias') > 0) e.direcoesAleatorias = true;
     if (ModsPoe.valor(fichaDoAlvo, 'barragem_nao_propaga') > 0) e.semPropagar = true;
+    // (lote "projetil", dono 02/11) o ângulo da difusão ("Ângulo da Difusão de Projéteis aumentado/reduzido em X%" — o Ângulo Bifurcado da árvore): os filhos
+    // saem a ± este ângulo da reta do projétil (`Secundarios.resolver` com o voo)
+    e.difusaoMeioAngulo = GemasVoo.meioAnguloDaDifusao(ModsPoe.valor(fichaDoAlvo, 'proj_difusao_angulo_inc'));
   }
   // (lote A3, dono 19/10 — D10: a perfuração SOMA a da gema, a dos suportes e a das peças, como no PoE — antes valia a maior da gema e do suporte;
   // 99 = "todos")
@@ -3372,9 +3404,88 @@ export function velocidadeDoProjetil(estado, entry, efeito) {
   const a = entry?.poeGema && !entry.poeGema.buff ? GemasPoe.alvosNoNivel(entry.poeGema.slug, efeito?.nivel ?? 1, efeito?.qualidade ?? 0) : null;
   const global = estado ? ModsPoe.valor(Ficha.combate(estado), 'projectile_speed') : 0;
   const localIncPct = (a?.velInc ?? 0) + (Number(efeito?.['af:projectile_speed']) || 0);
-  const mais = (a?.velMais ?? 1) * Math.max(0, 1 + (Number(efeito?.velProjetilMaisPct) || 0) / 100);
+  // (lote "projetil", dono 02/11: + o "X% mais/menos Velocidade de Projéteis" da ficha — a Maestria de Projéteis da árvore, `proj_vel_mais`)
+  const mais = (a?.velMais ?? 1) * Math.max(0, 1 + (Number(efeito?.velProjetilMaisPct) || 0) / 100) * Math.max(0.05, 1 + (estado ? ModsPoe.valor(Ficha.combate(estado), 'proj_vel_mais') : 0) / 100);
   return { incPct: global + localIncPct, localIncPct, mais, mod: Math.max(0.05, (1 + (global + localIncPct) / 100) * mais) };
 }
+
+/**
+ * (lote "projetil", dono 02/11) O VOO do projétil deste uso (`GemasVoo`): `{ v0, perfil, fator, alcance }` — a velocidade em casas por segundo (a base da gema no
+ * poedb, ou a do ataque / da magia sem número — D1 — × o ProjectileSpeedMod `mod` do uso, `velocidadeDoProjetil`), o perfil das linhas (a 2ª forma, a
+ * desaceleração, o ziguezague, a espiral), o quanto o caminho anda por casa de reta e o alcance (7 casas, o de sempre).
+ */
+export function vooDaGemaNoUso(estado, entry, efeito, mod = 1) {
+  const slug = entry?.poeGema?.slug;
+  const g = slug ? GemasPoe.vooDaGema(slug, efeito?.nivel ?? 1, efeito?.qualidade ?? 0) : null;
+  const ataque = !!entry?.poeGema?.ataque;
+  const metros = g?.metros ?? GemasVoo.metrosBase({ ataque });
+  const alcance = entry?.range || ALCANCE_PADRAO;
+  const perfil = g?.perfil ?? null;
+  return { v0: GemasVoo.casasPorSegundo(metros, mod), perfil, fator: GemasVoo.fatorDoCaminho(perfil, alcance), alcance, ataque };
+}
+
+/**
+ * (03/11) O VOO do projétil de um LACAIO `l` (o golpe de longe — `cacadas.mjs`): `{ v0, perfil, fator }`.
+ *   - o MERCENÁRIO: o da gema da vez dele (a velocidade do poedb — ou a D1 — × a Velocidade de Projétil dele: a ficha dele, a gema e os suportes, como o seu uso —
+ *     `velocidadeDoProjetil` / `vooDaGemaNoUso` com o estado do mercenário), com o perfil dela (o ziguezague, a espiral);
+ *   - o LACAIO: a base D1 (o PoE não publica a do golpe do lacaio: o ataque 32.6 m/s, a magia 10.4) × a Velocidade de Projétil dos suportes ligados na gema que o
+ *     invocou (o "aumentada" e o "mais" deles — como os outros suportes de projétil valem no lacaio, `projeteisDoLacaio`); as suas peças e a sua árvore não (são suas).
+ */
+// (03/11, rodada 2 — o desempenho: era chamado em todo golpe de todo lacaio, 0,34 ms cada) o voo GUARDADO por lacaio/gema: a chave é a gema que invocou o lacaio (ou a
+// gema da vez do mercenário, com a versão dele — `merc.v`, como `efeitosDoMercenario`) e a ficha do dono — trocar as gemas ou as peças refaz a ficha (`Ficha.invalidar`)
+const VOO_DO_LACAIO_GUARDADO = new WeakMap();
+export function vooDoLacaio(estado, l, opcoes = {}) {
+  const ficha = Ficha.fichaGuardada(estado);
+  if (!ficha || !l || !itensPoeLigado()) return vooDoLacaioSemGuardar(estado, l, opcoes);
+  const h = l.mercenario ? l.habilidades?.[l.habilidade ?? 0] : null;
+  const chave = l.mercenario
+    ? `m:${l.mercId}:${h?.acao ?? ''}:${h?.gema ?? ''}:${opcoes.magia ? 1 : 0}:${Mercenarios.contratado(estado, l.mercId)?.v ?? 0}`
+    : `l:${l.acao ?? ''}:${opcoes.magia ? 1 : 0}`;
+  let porChave = VOO_DO_LACAIO_GUARDADO.get(ficha);
+  if (!porChave) VOO_DO_LACAIO_GUARDADO.set(ficha, (porChave = new Map()));
+  const guardado = porChave.get(chave);
+  if (guardado) return guardado;
+  const v = Object.freeze(vooDoLacaioSemGuardar(estado, l, opcoes));
+  porChave.set(chave, v);
+  return v;
+}
+/** (03/11, rodada 2) Quantos voos de lacaio estão guardados na ficha de agora do dono (o golpe de perto não calcula o voo — o teste do desempenho). */
+export function voosDoLacaioGuardados(estado) {
+  const f = Ficha.fichaGuardada(estado);
+  return f ? VOO_DO_LACAIO_GUARDADO.get(f)?.size ?? 0 : 0;
+}
+function vooDoLacaioSemGuardar(estado, l, { magia = false } = {}) {
+  const base = { v0: GemasVoo.casasPorSegundo(magia ? GemasVoo.VOO.padraoMagiaM : GemasVoo.VOO.padraoAtaqueM, 1), perfil: null, fator: 1 };
+  if (!itensPoeLigado() || !l) return base;
+  if (l.mercenario) {
+    const h = l.habilidades?.[l.habilidade ?? 0];
+    const entry = h ? POR_ID.get(h.acao) : null;
+    const merc = entry ? Mercenarios.contratado(estado, l.mercId) : null;
+    if (!merc || !tagsPoeDaSkill(entry).includes('projetil')) return base;
+    const { m, porAcao } = efeitosDoMercenario(merc, Ficha.combate(estado).afPoe ?? {});
+    const efeito = porAcao.get(entry.id);
+    if (!efeito) return base;
+    const g = vooDaGemaNoUso(m, entry, efeito, velocidadeDoProjetil(m, entry, efeito).mod);
+    return { v0: g.v0, perfil: g.perfil, fator: g.fator };
+  }
+  const entry = l.acao ? POR_ID.get(l.acao) : null;
+  const efeito = entry && Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id) : null;
+  if (!efeito) return base;
+  const mod = Math.max(0.05, (1 + (Number(efeito['af:projectile_speed']) || 0) / 100) * Math.max(0, 1 + (Number(efeito.velProjetilMaisPct) || 0) / 100));
+  return { ...base, v0: GemasVoo.casasPorSegundo(magia ? GemasVoo.VOO.padraoMagiaM : GemasVoo.VOO.padraoAtaqueM, mod) };
+}
+
+/**
+ * (03/11) As CASAS do caminho do projétil do uso de `de` até o alcance na direção de `fim` (o ziguezague do Raio Cinético, a espiral da Hélice — `GemasVoo.caminho`
+ * com o perfil da gema): os projéteis a mais andam o mesmo caminho do principal (D3/D4 de `projeteis-voo.mjs`), cada um no ângulo dele. Sem a casa de onde sai.
+ * (03/11, revisão do raio contínuo: `angulo` — o rumo EXATO do projétil, que o resolvedor passa; sem ele, a direção de `de` a `fim`)
+ */
+function casasDoCaminhoDoVoo(de, fim, voo, angulo = null) {
+  return GemasVoo.casasDoCaminho(de, fim, { alcance: voo.alcance, perfil: voo.perfil, angulo });
+}
+
+/** (lote "projetil") A gema cujos projéteis NÃO saem de quem usa ("ProjectilesNotFromUser" do PoE — o Golpe Vulcânico, as Lâminas Gélidas…): sem o leque. */
+const projeteisNaoDoUsuario = (entry) => !!entry?.poeGema && !!GemasPoe.doSlug(entry.poeGema.slug)?.gema?.tipos?.includes('ProjectilesNotFromUser');
 
 /** O personagem olha para `para` (0 norte, 1 leste, 2 sul, 3 oeste — o eixo de maior distância), se não está na mesma casa. */
 export function virarParaOAlvo(hunt, para) {
@@ -4690,7 +4801,17 @@ export function condicoesParaCliente(estado, hunt, alvo) {
   return r;
 }
 
-function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = false, mira = null, gatilho = null, manual = false, plantada = null } = {}) {
+// (lote "projetil") o modo instantâneo dos voos (`Voos.instantaneo`, só para conferir): o uso de fora descarrega os golpes guardados no fim
+let profundidadeDoUso = 0;
+function dispararSemMarcar(estado, hunt, personagem, slot, alvo, opcoes) {
+  if (!Voos.instantaneo()) return dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, opcoes);
+  profundidadeDoUso++;
+  let r;
+  try { r = dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, opcoes); } finally { profundidadeDoUso--; }
+  if (profundidadeDoUso === 0 && hunt) { const mais = Voos.descarregar(hunt); if (mais.length) { if (r?.eventos) r.eventos.push(...mais); else if (r) r.eventos = mais; } }
+  return r;
+}
+function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { concluir = false, mira = null, gatilho = null, manual = false, plantada = null } = {}) {
   // Morto não lança nada (o clique manual chegava aqui entre o golpe e o fim da caçada).
   if ((estado.hp ?? 0) <= 0) return { ok: false, erro: 'Você está morto.', motivo: 'MORTO' };
   // (PoE, 12/10) `plantada`: a ARMADILHA que um inimigo ativou / a MINA detonada (`itens-poe/armas-plantadas.mjs`) — a habilidade da gema sai
@@ -4738,8 +4859,11 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (lote P4, 27/10: como o PoE — o uso À MÃO alterna entre Incubando e Infestando, na recarga de 0,5 s — `alternarPragaP4`)
   if (entry.poeGema?.arquetipo === 'praga' && manual && !gatilho) return alternarPragaP4(estado, hunt, entry);
   if (entry.poeGema?.arquetipo === 'praga') return { ok: false, erro: 'O Infestador alterna sozinho entre Incubando e Infestando.', motivo: 'SOZINHA' };
+  // (o Portal — dono, 02/11: "como o PoE") o uso abre o portal para a cidade: a conjuração da gema e, no fim, a saída (`usarPortalDaGema`)
+  if (entry.poeGema?.arquetipo === 'portal') return usarPortalDaGema(estado, hunt, personagem, slot, entry, { concluir, manual, gatilho, plantada });
 
-  const agora = hunt.clock ?? 0;
+  // (lote "projetil": `let` — o golpe do projétil que chega depois roda no instante da chegada, `vooDoUso`)
+  let agora = hunt.clock ?? 0;
   const cds = (hunt.cooldowns ??= {});
   const cd = cds[action.id];
   /*
@@ -4954,10 +5078,20 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   }
   //  - o Acerto Elemental: o elemento do uso é escolhido agora, sem repetir o anterior (guardado até o uso sair, como o raio sorteado), e o raio fica "80% mais"
   //    contra o alvo com a afecção daquele elemento
+  // (100% — dados, 03/11) + o GOLPE SELVAGEM (e o dos Extremos): "Ela evitará escolher o mesmo elemento duas vezes consecutivas"; e os dois sem os elementos que o
+  // Foco de Combate proíbe ("Habilidades Prismáticas não podem escolher Fogo" — `Prismaticas.proibidos`)
   let elementoDoAcerto = null;
-  if (c1?.raioContraAfeccaoPct && !plantada) {
+  const golpeSelvagem = itensPoeLigado() && entry.poeGema && !plantada && Prismaticas.ehGolpeSelvagem(entry.poeGema.slug);
+  if ((c1?.raioContraAfeccaoPct || golpeSelvagem) && !plantada && hunt) {
     const pend = (hunt.poeElementoPendente ??= {});
-    elementoDoAcerto = pend[entry.id] ??= GemasC1.escolherElemento(hunt.poeElementoAnterior?.[entry.id] ?? null);
+    elementoDoAcerto = pend[entry.id] ??= Prismaticas.escolherElemento(hunt.poeElementoAnterior?.[entry.id] ?? null, Prismaticas.proibidos(Ficha.combate(estado)));
+  }
+  //  - o Golpe Selvagem pelo elemento escolhido (o PoB, act_dex.lua WildStrike): FOGO — a explosão de 2,4 m em volta do alvo; RAIO — o raio que ricocheteia (os
+  //    "Raios Ricocheteiam N Vezes"); GELO — a onda: os projéteis que perfuram todos
+  if (golpeSelvagem && elementoDoAcerto && efeitoDaGema) {
+    const u = Prismaticas.usoDoGolpeSelvagem(entry, efeitoDaGema, elementoDoAcerto, (r) => Areas.circulo({ x: 0, y: 0 }, r).map((c) => [c.x, c.y]));
+    entry = u.entry;
+    efeitoDaGema = u.efeito;
   }
   const raioDaAfeccao = elementoDoAcerto && alvo && GemasC1.temAfeccaoDoElemento(alvo, elementoDoAcerto, agora) ? (GemasPoe.areaNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0).raioM ?? 0) * (c1.raioContraAfeccaoPct / 100) : 0;
   entry = formaNoRaioDoPoe(entry, efeitoDaGema, Math.random, { hunt, minimo: plantada?.tipo === 'armadilha' ? plantada.raioDeAtivacao ?? Plantadas.PADRAO.armadilha.raioDeAtivacao : 0, raioExtraM: (estagioDoUso?.raioExtraM ?? 0) + raioDaFuria + raioDosInimigos + raioDaAfeccao + (b2?.chicote?.raioExtraM ?? 0) + (plantada?.raioExtraM ?? 0) });
@@ -5179,7 +5313,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
 
   const papel = entry.papeis[0];
   const ataque = papel === 'attack';
-  const vivos = hunt.monstros.filter((b) => b.hp > 0);
+  let vivos = hunt.monstros.filter((b) => b.hp > 0);
   // (lote A1, dono 19/10) o DESLOCAMENTO da gema de movimento (`planoDoDeslocamento`): para onde ela leva, antes de gastar nada; sem destino, não
   // sai (o alvo longe demais do salto, ou perto demais para a viagem). Não vale no ativado por gatilho, na plantada nem no totem.
   const desloc = itensPoeLigado() && entry.poeGema && !gatilho && !plantada && !doTotem ? GemasPoe.deslocamentoDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
@@ -5207,6 +5341,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // orbe vai). Sem cadáver, não sai. `cadaveresDoUso` explodem depois da faixa (`explodirCadaveres`).
   const doCadaver = itensPoeLigado() && entry.poeGema && !plantada && !gatilho ? GemasPoe.cadaverDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
   let cadaveresDoUso = null;
+  // (lote "projetil", dono 02/11) o ORBE do Morto Volátil: do cadáver até o inimigo (o golpe espera o caminho dele — `orbeDoMorto`, no golpe)
+  let orbeDoMorto = null;
   if (doCadaver) {
     const centro = mira ?? alvo ?? hunt.pos;
     const alcance = entry.range || ALCANCE_PADRAO;
@@ -5225,6 +5361,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     if (cadeiaT1) cadaveresDoUso = GemasT1.encadearCadaveres(cadaveresDoUso, podem, Math.max(1, Math.round(doCadaver.raioExplosaoM / 2)), cadeiaT1);
     const primeiro = cadaveresDoUso[0];
     const doOrbe = doCadaver.modo === 'consumir' ? vivos.filter((b) => !b.dummy).sort((a, b) => distanciaChebyshev(a, primeiro) - distanciaChebyshev(b, primeiro))[0] : null;
+    if (doOrbe) orbeDoMorto = { de: { x: primeiro.x, y: primeiro.y }, para: { x: doOrbe.x, y: doOrbe.y } };
     mira = doOrbe ? { x: doOrbe.x, y: doOrbe.y } : { x: primeiro.x, y: primeiro.y };
     // sem enemigo na explosão nem no dano mágico, não vale o uso
     const raioDaExplosao = Math.max(1, Math.round(doCadaver.raioExplosaoM / 2)) + (doCadaver.modo === 'geiser' ? 2 : 0);
@@ -5408,6 +5545,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (lote B1, D-B1.8) os anéis das sequências da Chuva de Flechas Vaal (as casas de cada um), para a tela
   let aneisDaChuva = null;
   let laminasDoUso = null;
+  // (03/11) as facas emitidas no uso até aqui (a Lâmina Persistente a cada N — os a mais saem num passe e o principal em outro)
+  let facasDoUso = 0;
   const emitidosDoUso = [];
   // (lote A1) a SEGUNDA PONTA do deslocamento (as casas da área lá) e quem ele acertou nas duas (a recarga do Piscar Gélido conta os da área)
   let segundaPonta = null;
@@ -5524,6 +5663,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // Decapitar —, pela ficha do uso: `alcanceCorpoDoUso`)
       const alcanceDoGolpe = (entry.range || 1) + (corpoDaGemaNoAlvo ? (entry.poeGema ? alcanceCorpoDoUso(estado, entry, efeitoDaGema).casas : Ficha.combate(estado).alcanceCorpoExtra ?? 0) : 0);
       if (distanciaChebyshev(hunt.pos, alvo) > alcanceDoGolpe) return { ok: false, erro: 'Alvo fora de alcance.', motivo: 'FORA_DE_ALCANCE' };
+      // (100% — combate, 02/11) o golpe corpo a corpo saiu: a sorte da casa a mais do alcance do próximo é outra
+      if (corpoDaGemaNoAlvo) Combate100.renovarSorteDoAlcance(hunt);
       atingidos = [alvo];
       // (lote S1, 26/10) os ALVOS EXTRAS do Golpe corpo a corpo da gema ("focam em N Inimigos próximos adicionais" — o Chamado Ancestral, o Impelido pelo Clamor
       // Ancestral, a maestria dos Golpes): os N vivos mais perto do alvo a até o alcance do golpe a partir de você ("Os alvos extras precisam estar em uma distância
@@ -6223,7 +6364,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     if (regrasDasCargas && CargasPoe.aoGastarMana(estado, regrasDasCargas, custoDeMana).length) Ficha.invalidar(estado);
   }
 
-  const eventos = [];
+  let eventos = [];
   // (lote S1, 26/10) o SACRIFICAR e o SACRIFÍCIO VAAL no uso que você paga (`sacrificioDoUsoS1`)
   if (itensPoeLigado() && efeitoDaGema && !doTotem && !plantada) efeitoDaGema = doUsoS1(estado, entry, efeitoDaGema, agora);
   // (lote S2B, 27/10) o uso saiu: a Gula e a Intensidade perdida (`SuportesS2B.aposPagar`)
@@ -6483,6 +6624,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     if (buff.tipo === 'desafio') Reforcos.provocar(hunt, buff, distanciaChebyshev);
     // (lote 46) o raio do Clamor: o da gema em casas × √ da "Área de Efeito aumentada/mais" (a geral e a dos Clamores — `area_inc@clamor`)
     if (doPoe?.efeitos.some((e) => e.efeito === 'provocar')) Reforcos.provocar(hunt, { efeitos: doPoe.efeitos.map((e) => (e.efeito === 'provocar' ? { ...e, raio: raioDoClamor(estado, entry, e.raio) } : e)), dur: duracaoDoClamor }, distanciaChebyshev);
+    // (dono, 03/11 — "100%") "Seus Clamores abrem Baús": os baús no raio do Clamor (o da gema, × a área — `raioDoClamor`) abrem (`BausPoe.abrirNoRaio`)
+    if (buff.tipo === 'poe-clamor' && itensPoeLigado() && ModsPoe.valor(Ficha.combate(estado), 'clamor_abre_baus') > 0) {
+      BausPoe.abrirNoRaio(estado, hunt, personagem, raioDoClamor(estado, entry, doPoe?.efeitos.find((e) => e.efeito === 'provocar')?.raio ?? 3));
+    }
     // (lote G-A, dono 26/10) o Clamor Sísmico: "Empurra e Interrompe Inimigos em uma pequena Área" — os inimigos a até 1 casa do alvo, empurrados (3 casas com os +200%)
     // e interrompidos (`empurraoDoClamor`)
     if (buff.tipo === 'poe-clamor' && entry.poeGema && itensPoeLigado()) empurraoDoClamor(hunt, entry, efeitoDaGema, alvo, agora, eventos);
@@ -6584,7 +6729,112 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (lote A3, dono 19/10 — D1: o ProjectileSpeedMod do uso — o da ficha, o da gema e o dos suportes, o "mais" multiplicando: `velocidadeDoProjetil`;
     // vai em todos os tiros do uso)
     // (lote A3b: o uso que só deixa o objeto não tem o tiro no alvo — o objeto é desenhado; o pulso do objeto é o raio no acertado)
-    if (entry.projetil && alvo && !projeteisAleatorios() && !objetoDoUso?.semAcerto) eventos.push({ t: 'shot', id: entry.projetil, x, y, tx: alvo.x, ty: alvo.y, ...(velDoTiro !== 1 ? { vel: velDoTiro } : {}) });
+    const tiroNoAlvo = entry.projetil && alvo && !projeteisAleatorios() && !objetoDoUso?.semAcerto ? { t: 'shot', id: entry.projetil, x, y, tx: alvo.x, ty: alvo.y, ...(velDoTiro !== 1 ? { vel: velDoTiro } : {}) } : null;
+    if (tiroNoAlvo) eventos.push(tiroNoAlvo);
+    /*
+     * (lote "projetil", dono 02/11) O VOO DE VERDADE: o projétil do uso sai de quem lança na velocidade da gema (`vooDaGemaNoUso`) e anda pelo caminho dele
+     * (`Voos.lancar`): acerta o PRIMEIRO que encontra (quem entrou na frente leva; quem saiu da frente, não), bate no terreno ou se perde no fim do alcance. O
+     * golpe do uso inteiro (o acerto, os suportes, os saltos) sai NO CONTATO — no mesmo tique se chega a até meio tique (`GemasVoo.VOO.meioTiqueMs`), senão no
+     * tique em que chega (`golpeDoUso`, abaixo, pelo `comoNoUso`: o instante e os eventos da chegada, a casa do totem). Os saltos que o resolvedor mede
+     * (perfuração, ricochete, difusão, divisão, volta) caem no instante em que o projétil chega neles (`Voos.adiar`, no passe). Sem principal (as direções
+     * aleatórias, os projéteis do objeto), o uso sai na hora e cada projétil chega no tempo dele.
+     */
+    const vooBase = itensPoeLigado() && entry.poeGema && !casas && tagsPoeDaSkill(entry).includes('projetil') && !['contragolpe', 'barganha'].includes(plantada?.tipo) ? vooDaGemaNoUso(estado, entry, efeitoDaGema, velDoTiro) : null;
+    // (de onde o projétil sai: de você; da mina, da armadilha, do gêiser… — a plantada que tem lugar; o totem já está na casa dele)
+    const deOndeVoa = plantada && plantada.tipo !== 'totem' && Number.isFinite(plantada.x) && Number.isFinite(plantada.y) ? { x: plantada.x, y: plantada.y } : { x, y };
+    const saiDoVoo = agora;
+    // (os projéteis que NÃO saem de você — "ProjectilesNotFromUser" do PoE: o Golpe Vulcânico, as Lâminas Gélidas, o Golpe Relampejante, o Golpe Selvagem…: o golpe
+    // direto é o corpo a corpo, na hora; as bolas e os projéteis saem do alvo — sem o leque, nos de perto como antes —, cada um no tempo do caminho dele)
+    const naoDoUsuario = !!vooBase && !!GemasPoe.doSlug(entry.poeGema.slug)?.gema?.tipos?.includes('ProjectilesNotFromUser');
+    // (o círculo — a Nova de Flechas, as Facas do Massacre, a Faísca da Nova — também não tem o principal no alvo: cada projétil do círculo no tempo dele)
+    const vooPrincipal = vooBase && !naoDoUsuario && !efeitoDaGema?.emCirculo && alvo && atingidos.length === 1 && atingidos[0] === alvo && !projeteisAleatorios() && !objetoDoUso?.semAcerto && plantada?.tipo !== 'objeto' && !plano && !miragemDoUso && !golpesDaSequencia && !entry.cadeia && !estagioDoUso?.soCarrega && !semGolpeDireto && !atirarSuportadas;
+    let vooNoAr = false;
+    let vooErrou = false;
+    let rumoDoVoo = null;
+    let golpeDoUso = null;
+    // (03/11 — cada projétil é independente, como no PoE) os projéteis a mais do leque saem no USO e caem cada um no tempo dele (`parteDoPasse` 'extras', no fim do
+    // uso); o golpe do contato do principal leva só ele e o que vem dele (`soOPrincipal`: o primeiro passe do golpe — as repetições disparam todos de novo)
+    let parteDoPasse = null;
+    let soOPrincipal = false;
+    /*
+     * (03/11, rodada 2 do voo de verdade) cada inimigo leva no máximo o que o PoE daria: o primeiro acerto de cada projétil a mais é "no primeiro do caminho que nenhum
+     * outro do uso acertou" (D7b) também com os projéteis independentes — o bicho do caminho do principal que ainda voa fica RESERVADO para ele (`reservadosDoPasse`,
+     * pela previsão do voo — `Voos.previsto`), e o conflito que sobra (alguém andou) se resolve no INSTANTE do acerto (`tomadosDoUso`: quem um projétil do uso já
+     * pegou; o principal passa por ele, o a mais que chega depois nele não acerta — nem o que viria dele)
+     * (+ a separação nas repetições do uso: os a mais de cada repetição saem no uso, `dobrosDasRepeticoes`/`ataqueDuploDoUso` guardam o sorteio delas)
+     */
+    const extrasIndependentes = !!vooPrincipal && Secundarios.extrasIndependentes({ efeito: efeitoDaGema, tags: Tags.tagsDaAcao(entry), voo: !Voos.geometriaAntiga() });
+    const tomadosDoUso = extrasIndependentes ? new Set() : null;
+    let tomadosNoPasse = null;
+    let reservadosDoPasse = null;
+    let reservadoDoVoo = null;
+    let alvoMiradoDoUso = null;
+    let miraDoUso = null;
+    let dobrosDasRepeticoes = null;
+    let ataqueDuploDoUso = null;
+    let repetindoOUso = false;
+    const huntDoUso = hunt;
+    const posDoTotemNoUso = doTotem && plantada ? { x: plantada.x, y: plantada.y } : null;
+    // o golpe que chega depois: no instante e com os eventos da chegada (e, no do totem, na casa dele — como `usarComoTotem`)
+    const comoNoUso = (fn) => {
+      if (estado.hunt !== huntDoUso || !(estado.hp > 0 || doTotem)) return [];
+      const ev0 = eventos;
+      const ag0 = agora;
+      const pos0 = hunt.pos;
+      eventos = [];
+      agora = hunt.clock ?? 0;
+      vivos = hunt.monstros.filter((b) => b.hp > 0);
+      if (posDoTotemNoUso) hunt.pos = { ...pos0, x: posDoTotemNoUso.x, y: posDoTotemNoUso.y };
+      try { fn(); } finally { if (posDoTotemNoUso) hunt.pos = pos0; }
+      const saida = eventos;
+      eventos = ev0;
+      agora = ag0;
+      if (doTotem) for (const ev of saida) if (ev?.t === 'dmg' && ev.foe) ev.lacaio = true;
+      // (os eventos da chegada com a marca da habilidade — o desenho do impacto dela na tela —, como os do uso: `marcarDaSkill`)
+      if (entry.poeGema || Gemas.ehSkillDeGema(entry)) for (const ev of saida) if (ev && EVENTOS_DE_DESENHO.has(ev.t) && ev.sk === undefined && !(ev.t === 'dmg' && !ev.foe)) ev.sk = entry.id;
+      return saida;
+    };
+    // o instante em que o projétil chega a `dist` casas andadas (o resolvedor mede em reta; o caminho curvo anda × `fator`)
+    const chegadaDoVoo = (dist) => saiDoVoo + GemasVoo.tempoAte((Number(dist) || 0) * vooBase.fator, vooBase.v0, vooBase.perfil, { alcance: vooBase.alcance, fator: vooBase.fator });
+    if (vooPrincipal) {
+      const z = hunt.z ?? 0;
+      const mira = { x: alvo.x, y: alvo.y };
+      const alvoDoUso = alvo;
+      alvoMiradoDoUso = alvo;
+      miraDoUso = mira;
+      const soNoLocal = !!efeitoDaGema?.tornado || Voos.geometriaAntiga();
+      let contatoAgora = null;
+      const opcoesDoVoo = {
+        de: deOndeVoa, para: mira, z, alcance: vooBase.alcance, v0: vooBase.v0, perfil: vooBase.perfil, fator: vooBase.fator, agora: saiDoVoo,
+        // (o Tiro Tornado "viaja até o local mirado": só o alvo, ou o lugar dele)
+        // (03/11, rodada 2: o principal passa por quem um projétil a mais do uso já acertou — `tomadosDoUso`, D7b)
+        colide: (c) => (soNoLocal ? ((alvoDoUso.hp > 0 && alvoDoUso.x === c.x && alvoDoUso.y === c.y) || (c.x === mira.x && c.y === mira.y) ? alvoDoUso : null) : hunt.monstros.find((m) => m.hp > 0 && m.x === c.x && m.y === c.y && (m.z ?? hunt.z ?? 0) === z && !tomadosDoUso?.has(m)) ?? null),
+        parede: (c) => { const g = ModsPoe.gradeDoCombate(hunt)?.andavel; return !!g && !g.has(`${c.x},${c.y}`); },
+      };
+      const voo = Voos.lancar(hunt, {
+        ...opcoesDoVoo,
+        aoContato: (m, casa, { adiado }) => {
+          tomadosDoUso?.add(m);
+          if (!adiado) { contatoAgora = m; return []; }
+          return comoNoUso(() => {
+            alvo = m;
+            atingidos = [m];
+            if (entry.efeito && !objetoDoUso?.semAcerto) eventos.push({ t: 'fx', id: entry.efeito, uid: m.uid, x: m.x, y: m.y });
+            golpeDoUso?.();
+          });
+        },
+        aoFim: (casa, { adiado }) => {
+          if (!adiado) { vooErrou = true; return []; }
+          return comoNoUso(() => { alvo = null; atingidos = []; vooErrou = true; rumoDoVoo = mira; golpeDoUso?.(); });
+        },
+      });
+      if (tiroNoAlvo && voo.ms > 0) tiroNoAlvo.ms = voo.ms;
+      vooNoAr = voo.noAr;
+      if (contatoAgora && contatoAgora !== alvo) { alvo = contatoAgora; atingidos = [contatoAgora]; }
+      if (vooErrou) rumoDoVoo = mira;
+      // (03/11, rodada 2) o bicho que o principal ainda no ar vai pegar, com todos onde estão agora: reservado para ele (os a mais escolhem outro)
+      if (extrasIndependentes) reservadoDoVoo = vooErrou ? null : contatoAgora ?? (vooNoAr ? (() => { const p = Voos.previsto(opcoesDoVoo); return p?.tipo === 'contato' ? p.alvo : null; })() : null);
+    } else if (tiroNoAlvo && vooBase) tiroNoAlvo.ms = Math.round(chegadaDoVoo(Math.hypot(alvo.x - x, alvo.y - y)) - saiDoVoo);
     const cor = COR_DO_ELEMENTO[entry.element] ?? COR_DO_ELEMENTO.physical;
     // A área vai para a tela num evento SÓ, com as MESMAS casas que causam dano (o cliente
     // desenha cada uma). Antes era um `fx` por casa — e a tela, que guardava os 60 últimos,
@@ -6594,7 +6844,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (lote A1b: o uso da miragem que não pulsa não desenha área — a onda final tem o evento dela)
     // (revisão do B1: a Chuva de Flechas Vaal desenha só os anéis das sequências — `aneisDaChuva`)
     else if (casas && entry.efeito) { if (!aneisDaChuva && (casas.length || !miragemDoUso)) eventos.push({ t: 'area', id: entry.efeito, x, y, casas: Areas.paraTela(casas, { x, y }) }); }
-    else if (entry.efeito && !objetoDoUso?.semAcerto) eventos.push({ t: 'fx', id: entry.efeito, uid: alvo.uid, x: alvo.x, y: alvo.y });
+    else if (entry.efeito && !objetoDoUso?.semAcerto && !vooNoAr && !vooErrou) eventos.push({ t: 'fx', id: entry.efeito, uid: alvo.uid, x: alvo.x, y: alvo.y });
     // A cadeia: o salto de um bicho para o outro (o projétil, se a magia tem) e o efeito em cada um.
     if (entry.cadeia) {
       for (let i = 1; i < atingidos.length; i++) {
@@ -6765,6 +7015,34 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // Críticos exceto na Repetição final"; sem repetição, o lançamento é o final)
     let naRepeticaoFinal = true;
     let fatorDoAtaque = 100; // 100% no ataque normal; o do 2º golpe do ataque duplo vem de `combate/limites.json`
+    /*
+     * (03/11, rodada 3 do voo de verdade) o 2º golpe do ATAQUE DUPLO fica fora do roubo de vida/mana e das habilidades da árvore (contam só do primeiro — o
+     * comentário do ataque, abaixo): `semContarNoRoubo` — no contato e no passe dos a mais feito no uso. E o golpe que cai DEPOIS (`Voos.adiar` no passe) com o
+     * estado do passe que o soltou (`noEstadoDoPasse`): o fator do 2º golpe, a repetição da vez (o "mais Dano" dela, o crítico da final, o Dano Dobrado do Eco
+     * Desperto), o Selo — não o do passe que estiver de pé quando ele chega
+     */
+    let noSegundoAtaque = false;
+    const semContarNoRoubo = (fn) => {
+      const antes = { total, danoCritico, danoFisico, totalSemDreno, totalSemDrenoEs, danos: danos.slice(), vida: rouboDosAlvos.vida, mana: rouboDosAlvos.mana };
+      try { return fn(); } finally {
+        total = antes.total;
+        danoCritico = antes.danoCritico;
+        danoFisico = antes.danoFisico;
+        totalSemDreno = antes.totalSemDreno;
+        totalSemDrenoEs = antes.totalSemDrenoEs;
+        danos.length = 0;
+        danos.push(...antes.danos);
+        rouboDosAlvos.vida = antes.vida;
+        rouboDosAlvos.mana = antes.mana;
+      }
+    };
+    const estadoDoPasse = () => ({ fatorDoAtaque, dobroNaFinal, repeticaoAtual, naRepeticaoFinal, reocorrendo, noSegundoAtaque });
+    const porNoPasse = (p) => { ({ fatorDoAtaque, dobroNaFinal, repeticaoAtual, naRepeticaoFinal, reocorrendo, noSegundoAtaque } = p); };
+    const noEstadoDoPasse = (p, fn) => {
+      const antes = estadoDoPasse();
+      porNoPasse(p);
+      try { return p.noSegundoAtaque && !antes.noSegundoAtaque ? semContarNoRoubo(fn) : fn(); } finally { porNoPasse(antes); }
+    };
     let danoVezesMaldicoes = 0;
     // (lote T1, rodada 4) o Arco Elétrico Vaal liga o buff (4 s × a Duração): com ele, o dano dos Arcos Elétricos é Sortudo — o deste uso também (`GemasT1`)
     if (itensPoeLigado() && entry.poeGema?.slug === GemasT1.ARCO_VAAL && !doTotem) GemasT1.ligarArcoSortudo(hunt, agora + Math.round((GemasPoe.compilada(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0)?.stats?.duracao ?? 4) * 1000 * fatorDeDuracao(estado, entry, efeitoDaGema)));
@@ -7456,6 +7734,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const atacar = (segundo) => {
       // (lote A5b) os acertados DESTE passe
       acertadosNoPasse = new Set();
+      // (03/11) o passe só dos projéteis a mais do leque (no uso — `parteDoPasse`): sem o golpe direto e sem o que sai dele; só o motor dos projéteis e o que vem
+      // dos impactos deles
+      const soExtras = parteDoPasse === 'extras';
       // (lote G10: o uso que só CARREGA estágios — a Rajada de Chamas, a Flecha Flagelante antes do máximo — não acerta ninguém)
       // (lote A4, dono 19/10: o uso de carga da Ira Divina acerta os inimigos perto — `zapsDaIra`)
       // (lote A3b: + o uso que só deixa o objeto — a bola, o tornado, a espiral, o olho: o dano é o dele, no tique)
@@ -7464,14 +7745,15 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const cp = efeitoDaGema?.cadeiaPoe;
       // (lote G11: a sequência de áreas — cada área e cada Onda de Choque é um acerto, com o "menos Dano" da Onda de Choque)
       // (lote A4, dono 19/10: + o "aumento da Chance de Acerto Crítico" de cada rajada das Saraivadas — `critIncPct` do golpe)
-      if (golpesDaSequencia) { for (const g of golpesDaSequencia) if (g.bicho.hp > 0 || !segundo) acertar(g.bicho, g.pct, g.choque ? 'choque' : null, g.critIncPct ? { critIncPct: g.critIncPct } : null); }
+      if (soExtras) { /* (03/11) o golpe direto é o do principal, no contato dele */ }
+      else if (golpesDaSequencia) { for (const g of golpesDaSequencia) if (g.bicho.hp > 0 || !segundo) acertar(g.bicho, g.pct, g.choque ? 'choque' : null, g.critIncPct ? { critIncPct: g.critIncPct } : null); }
       // (lote A3, D3: o Arremesso Espectral da Materialização não acerta na ida — o golpe é o da volta, `Secundarios.resolver`)
       // (lote A1b, dono 19/10: × o % do uso — a miragem parada, a onda final)
       // (lote C1, dono 20/10: × os acertos da gema em cada inimigo — a Tormenta de Espadas, "Causa Dano nos Inimigos 8 vezes": swordstorm_num_hits do PoB)
       else if (!projeteisAleatorios() && !soNaVolta()) atingidos.forEach((bicho, i) => { for (let k = 0; k < golpesPorAlvo + (duasOndas?.has(bicho) ? 1 : 0); k++) if ((!segundo && !k) || bicho.hp > 0) acertar(bicho, ((cp?.pct ? 100 * (1 + (cp.pct * Math.max(0, cp.saltos - i)) / 100) : !casas && i === 0 && efeitoDaGema?.pctPorRicocheteRestante ? 100 * (1 + (efeitoDaGema.pctPorRicocheteRestante * Math.max(0, efeitoDaGema.encadear ?? 0)) / 100) : 100) * escalaDoUso) / 100); });
       // (lote T3, 27/10 — o PoB: arc_enhanced_behaviour) o ARCO ELÉTRICO DA OSCILAÇÃO: a cada salto do arco, um arco SECUNDÁRIO de quem saltou para outro inimigo perto
       // dele (o alcance do ricochete), que não ricocheteia — sem ricochetes restantes, sem o "mais por Ricochete restante"; cada inimigo leva um arco secundário só
-      if (itensPoeLigado() && entry.poeGema && GemasT3.ARCO_SECUNDARIO.test(entry.poeGema.slug) && !casas && !segundo && atingidos.length > 1) {
+      if (itensPoeLigado() && entry.poeGema && GemasT3.ARCO_SECUNDARIO.test(entry.poeGema.slug) && !casas && !segundo && !soExtras && atingidos.length > 1) {
         const ja = new Set(atingidos);
         const alcanceSec = alcanceDoRicochete(DISTANCIA_DA_CADEIA_POE(), efeitoDaGema);
         for (let i = 1; i < atingidos.length; i++) {
@@ -7486,7 +7768,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // (lote C1, dono 20/10 — D1.4) o raio do Castigo do Julgamento Divino nos alvos dele, com o "mais Dano em Área" (a parte "Area Hit" do PoB)
       // (revisão do C1: + a ÁREA em volta de cada alvo do raio — cada inimigo leva o acerto do raio uma vez só, e quem o golpe corpo a corpo pegou não leva: "Cada alvo
       // só pode ser acertado uma vez por esta habilidade"; o acerto do raio não é corpo a corpo — `fatorDoRaioSemCorpo`, e o `naoCorpo` do `acertar`)
-      if (raiosDoCastigo?.length) {
+      if (raiosDoCastigo?.length && !soExtras) {
         const jaDoRaio = new Set(atingidos);
         const pctDoRaio = 100 * (1 + (c1.raioDoCastigo.maisAreaPct ?? 0) / 100) * fatorDoRaioSemCorpo();
         for (const b of raiosDoCastigo) {
@@ -7529,7 +7811,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         // (lote A5b: o Dano Propagado sai do acerto — não em volta de quem o golpe errou)
         for (const b of atingidos.filter(acertouNoPasse)) for (const m of vivos) if (m.hp > 0 && !ja.has(m) && Math.max(Math.abs(m.x - b.x), Math.abs(m.y - b.y)) <= raio) { ja.add(m); acertar(m, pct, 'propagado'); }
       }
-      if (localAnterior && !segundo) {
+      if (localAnterior && !segundo && !soExtras) {
         const ja = new Set(atingidos);
         const longe = (m) => Math.max(Math.abs(m.x - localAnterior.x), Math.abs(m.y - localAnterior.y));
         const la = vivos.filter((m) => m.hp > 0 && !ja.has(m) && longe(m) <= 1).sort((a, b) => longe(a) - longe(b))[0];
@@ -7559,36 +7841,90 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         cinetica: cineticaNoUso,
         // (lote G-C) a divisão do projétil que acerta o marcado pela Marca do Atirador
         divisaoNoAlvo: deProjetil ? (b) => GemasGAC.divisaoDaMarca(b, agora) : null,
+        // (lote "projetil") o voo de verdade: o leque dos projéteis a mais e os ângulos da difusão; o rumo do tiro que se perdeu
+        voo: !!vooBase && !naoDoUsuario && !Voos.geometriaAntiga(),
+        rumo: rumoDoVoo,
+        // (03/11) os a mais no uso, o principal no contato (`parteDoPasse`, `soOPrincipal`); o caminho da gema nos a mais (o ziguezague, a espiral)
+        // (03/11, rodada 2: + as repetições do uso — `repetindoOUso` —, e no passe dos a mais o bicho reservado para o principal — `reservadosDoPasse`)
+        parte: soExtras ? 'extras' : soOPrincipal && (!segundo || repetindoOUso) ? 'principal' : null,
+        reservados: soExtras ? reservadosDoPasse : null,
+        casasDoCaminho: vooBase?.perfil && (vooBase.perfil.zigueZague > 0 || vooBase.perfil.rotacoes > 0) ? (de, fim, angulo) => casasDoCaminhoDoVoo(de, fim, vooBase, angulo) : null,
       });
       // (lote A3b, dono 19/10) os projéteis que saíram do uso (o primeiro passe): o marcador do Disparo Congelante, a captura da Espiral Venenosa, a
       // Lâmina Persistente das Facas Etéreas (D8: 1 a cada N facas, onde a faca parou), o Tornado que os absorve (D7)
       if (!segundo) {
         emitidosDoUso.push(...emitidos);
-        if (objetoDoUso?.tipo === 'laminas' && objetoDoUso.por === 'faca') emitidos.forEach((p, k) => { if ((k + 1) % Math.max(1, objetoDoUso.cada) === 0) (laminasDoUso ??= []).push({ x: p.para.x, y: p.para.y }); });
+        // (03/11: a conta das facas segue entre o passe dos a mais e o do principal — `facasDoUso`)
+        if (objetoDoUso?.tipo === 'laminas' && objetoDoUso.por === 'faca') emitidos.forEach((p) => { if (++facasDoUso % Math.max(1, objetoDoUso.cada) === 0) (laminasDoUso ??= []).push({ x: p.para.x, y: p.para.y }); });
       }
       // A EMISSÃO na tela: cada projétil do total da skill sai de quem lança (o principal já saiu, acima) — o que acerta e o que erra,
       // mesmo que o bicho dele morra antes. (Nas direções aleatórias, todos — o principal não saiu no alvo.)
-      if (entry.projetil) for (const p of emitidos.slice(alvo && !casas && !projeteisAleatorios() ? 1 : 0)) eventos.push({ t: 'shot', id: entry.projetil, x: p.de.x, y: p.de.y, tx: p.para.x, ty: p.para.y, ...(velDoTiro !== 1 ? { vel: velDoTiro } : {}) });
+      // (lote "projetil": `ms` — o tempo do voo de cada um, o desenho do voo de verdade; o principal que se perdeu já saiu)
+      // (03/11: o passe dos a mais não tem o principal)
+      if (entry.projetil) for (const p of emitidos.slice((alvo || vooErrou) && !casas && !projeteisAleatorios() && !soExtras ? 1 : 0)) eventos.push({ t: 'shot', id: entry.projetil, x: p.de.x, y: p.de.y, tx: p.para.x, ty: p.para.y, ...(velDoTiro !== 1 ? { vel: velDoTiro } : {}), ...(vooBase && p.dist != null ? { ms: Math.max(0, Math.round(chegadaDoVoo(p.dist) - Math.max(saiDoVoo, chegadaDoVoo((p.dist ?? 0) - Math.hypot(p.para.x - p.de.x, p.para.y - p.de.y))))) } : {}) });
       // A explosão na tela: UM evento por detonação (o cliente desenha o quadrado inteiro).
       for (const ex of explosoes) eventos.push({ t: 'explosao', id: entry.efeito || EFEITO_DA_EXPLOSAO, x: ex.x, y: ex.y, lado: ex.lado });
+      // (lote "projetil") os golpes deste passe que caem depois (`quandoDosAdiados`) e quem eles acertaram (`acertadosDepois`) — o que vem depois dos impactos (a
+      // concha, as flechas que grudam, os cones) sai quando o último chega
+      const quandoDosAdiados = [];
+      const acertadosDepois = new Set(atingidos.filter(acertouNoPasse));
+      const doPasse = estadoDoPasse();
+      // (03/11, rodada 2) no passe dos a mais: o primeiro acerto `exclusivo` (D7b) num bicho que outro projétil do uso já pegou não acontece — nem o resto daquele projétil
+      // (`projDoUso`: os saltos, os filhos, as explosões dele); confere no instante do acerto
+      const tomados = soExtras ? tomadosNoPasse : null;
+      const projeteisQueNaoAcertaram = tomados ? new Set() : null;
+      const caiNoInstante = (s) => {
+        if (!tomados) return true;
+        if (s.projDoUso != null && projeteisQueNaoAcertaram.has(s.projDoUso)) return false;
+        if (s.exclusivo && s.tipo === 'projetil') {
+          if (tomados.has(s.bicho)) { if (s.projDoUso != null) projeteisQueNaoAcertaram.add(s.projDoUso); return false; }
+          tomados.add(s.bicho);
+        }
+        return true;
+      };
       for (const s of golpes) {
         if (s.bicho.hp <= 0) continue;
         // (o 1º voo de cada projétil já foi desenhado na emissão; aqui, os saltos: perfuração, bifurcação, encadeamento, retorno)
         // (lote A3c: o acerto da área no impacto não é um voo)
-        if (s.tipo !== 'explosao' && s.tipo !== 'projetil' && s.tipo !== 'impacto' && entry.projetil) eventos.push({ t: 'shot', id: entry.projetil, x: s.de.x, y: s.de.y, tx: s.bicho.x, ty: s.bicho.y, ...(velDoTiro !== 1 ? { vel: velDoTiro } : {}) });
+        const tiroDoSalto = s.tipo !== 'explosao' && s.tipo !== 'projetil' && s.tipo !== 'impacto' && entry.projetil;
+        // (lote "projetil", dono 02/11) o golpe cai no instante em que o projétil chega nele (as casas andadas — `s.dist`); o bicho que saiu de onde estava (mais
+        // de 1 casa) não é acertado
+        const quando = vooBase && s.dist != null ? chegadaDoVoo(s.dist) : null;
+        if (quando != null) {
+          const bicho = s.bicho;
+          const onde = { x: bicho.x, y: bicho.y };
+          const ms = Math.max(0, Math.round(quando - (hunt.clock ?? 0)));
+          if (Voos.adiar(hunt, quando, () => comoNoUso(() => {
+            if (!(bicho.hp > 0) || distanciaChebyshev(bicho, onde) > 1) return;
+            if (!caiNoInstante(s)) return;
+            // (03/11, rodada 3: no estado do passe que o soltou — `noEstadoDoPasse`)
+            noEstadoDoPasse(doPasse, () => acertar(bicho, s.pct, s.tipo, s));
+            if (acertouNoPasse(bicho)) acertadosDepois.add(bicho);
+          }), hunt.clock ?? 0)) {
+            if (tiroDoSalto) eventos.push({ t: 'shot', id: entry.projetil, x: s.de.x, y: s.de.y, tx: onde.x, ty: onde.y, ...(velDoTiro !== 1 ? { vel: velDoTiro } : {}), ms });
+            quandoDosAdiados.push(quando);
+            continue;
+          }
+        }
+        if (!caiNoInstante(s)) continue;
+        if (tiroDoSalto) eventos.push({ t: 'shot', id: entry.projetil, x: s.de.x, y: s.de.y, tx: s.bicho.x, ty: s.bicho.y, ...(velDoTiro !== 1 ? { vel: velDoTiro } : {}) });
         acertar(s.bicho, s.pct, s.tipo, s);
+        if (acertouNoPasse(s.bicho)) acertadosDepois.add(s.bicho);
       }
       // (lote PR3) as áreas da espiral do Pacto de Beidat: um acerto em cada um de cada área
-      if (golpesDoPacto) for (const g of golpesDoPacto) { if (g.evento) { if (!segundo) eventos.push(g.evento); } else if (g.bicho.hp > 0) acertar(g.bicho, 100, 'pacto'); }
+      if (golpesDoPacto && !soExtras) for (const g of golpesDoPacto) { if (g.evento) { if (!segundo) eventos.push(g.evento); } else if (g.bicho.hp > 0) acertar(g.bicho, 100, 'pacto'); }
+      // (lote "projetil") o que vem DEPOIS dos impactos, numa função: no fim do passe — ou, com golpes que caem depois, quando o último chega (`quandoDosAdiados`)
+      const diretosDoPasse = !casas && !projeteisAleatorios() && !soNaVolta() ? atingidos : [];
+      const aposOsImpactos = (acertouNoPasse) => {
       // (lote PR4, dono 25/10) o que gruda nos alvos finais das flechas, a concha no primeiro acertado de cada projétil, a energia estática e os Relâmpagos
       // Concentrados do ataque que acertou (`aposOPasseDoPR4`)
-      if (pr4DoUso) aposOPasseDoPR4(estado, hunt, personagem, pr4DoUso, { diretos: !casas && !projeteisAleatorios() && !soNaVolta() ? atingidos : [], golpes, acertou: acertouNoPasse, agora });
+      if (pr4DoUso) aposOPasseDoPR4(estado, hunt, personagem, pr4DoUso, { diretos: diretosDoPasse, golpes, acertou: acertouNoPasse, agora });
       // (lote A4, dono 19/10: D7) o CONE do Tiro Gélido: em cada impacto da flecha (o alvo direto e os dos projéteis — a perfuração, a difusão…), o
       // cone sai do acertado na direção do tiro, no raio da gema, aberto pelo "Ângulo do Efeito em Área aumentado"; os do cone levam um acerto com
       // todo o Físico como Gelo (os +40% de conversão do PoB); o acertado não leva o do próprio cone
       if (coneDoTiro) {
         // (lote A5b: o cone sai do impacto que acertou)
-        const impactos = [...(!casas && !projeteisAleatorios() && !soNaVolta() ? atingidos : []), ...golpes.filter((g) => FONTES_DE_PROJETIL.has(g.tipo)).map((g) => g.bicho)].filter(acertouNoPasse);
+        const impactos = [...diretosDoPasse, ...golpes.filter((g) => FONTES_DE_PROJETIL.has(g.tipo)).map((g) => g.bicho)].filter(acertouNoPasse);
         // (revisão do A4: o da Penetração — dois cones perpendiculares ao tiro, um de cada lado do alvo)
         const perpendiculares = GemasA4.conesPerpendiculares(entry.poeGema.slug);
         for (const b of impactos) {
@@ -7602,7 +7938,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       }
       // (revisão do PR1) o cone do Surto: sai de cada acertado pela flecha, na direção do tiro; o acertado não leva o do próprio cone
       if (coneDoSurto) {
-        const impactos = [...(!casas && !projeteisAleatorios() && !soNaVolta() ? atingidos : []), ...golpes.filter((g) => FONTES_DE_PROJETIL.has(g.tipo)).map((g) => g.bicho)].filter(acertouNoPasse);
+        const impactos = [...diretosDoPasse, ...golpes.filter((g) => FONTES_DE_PROJETIL.has(g.tipo)).map((g) => g.bicho)].filter(acertouNoPasse);
         for (const b of impactos) {
           const cs = Areas.daForma(coneDoSurto, { x: b.x, y: b.y }, ordemDosLados({ x, y }, b)[0]);
           for (const m of Areas.dentro(cs, vivos)) if (m !== b && m.hp > 0) acertar(m, 100, 'cone');
@@ -7612,15 +7948,18 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // (lote C2 da rodada 4, dono 28/10) o cone do Aço Estraçalhador: cada projétil que acerta despedaça à frente do acertado, na direção do tiro; quem está no cone leva o
       // acerto dele (um cone por projétil — vários cones, vários acertos); o acertado não leva o do próprio cone (o projétil já o acertou)
       if (coneDoAco) {
-        const impactos = [...(!casas && !projeteisAleatorios() && !soNaVolta() ? atingidos : []), ...golpes.filter((g) => FONTES_DE_PROJETIL.has(g.tipo)).map((g) => g.bicho)].filter(acertouNoPasse);
+        const impactos = [...diretosDoPasse, ...golpes.filter((g) => FONTES_DE_PROJETIL.has(g.tipo)).map((g) => g.bicho)].filter(acertouNoPasse);
         for (const b of impactos) {
           const cs = Areas.daForma(coneDoAco, { x: b.x, y: b.y }, ordemDosLados({ x, y }, b)[0]);
           for (const m of Areas.dentro(cs, vivos)) if (m !== b && m.hp > 0) acertar(m, 100, 'cone');
           if (entry.efeito) eventos.push({ t: 'area', id: entry.efeito, x: b.x, y: b.y, casas: Areas.paraTela(cs, b) });
         }
       }
+      };
+      if (!quandoDosAdiados.length) aposOsImpactos(acertouNoPasse);
+      else if (!Voos.adiar(hunt, Math.max(...quandoDosAdiados), () => comoNoUso(() => noEstadoDoPasse(doPasse, () => aposOsImpactos((b) => acertadosDepois.has(b)))), hunt.clock ?? 0)) aposOsImpactos((b) => acertadosDepois.has(b));
       // (lote PR1) o cone da Galvânica: cada um no cone leva o acerto dele (o alvo também — a flecha e o cone são acertos à parte, como as duas partes do PoB)
-      if (coneGalvanico) {
+      if (coneGalvanico && !soExtras) {
         const cs = Areas.daForma(coneGalvanico, { x, y }, ordemDosLados({ x, y }, alvo)[0]);
         for (const m of Areas.dentro(cs, vivos)) if (m.hp > 0) acertar(m, 100 * escalaDoUso / 100, 'cone');
         if (entry.efeito) eventos.push({ t: 'area', id: entry.efeito, x, y, casas: Areas.paraTela(cs, { x, y }) });
@@ -7749,6 +8088,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const cintilante = itensPoeLigado() && entry.poeGema?.slug === 'Vaal_Flicker_Strike' && !gatilho && !plantada && !doTotem && atingidos.length ? GemasA4.GOLPE_CINTILANTE_VAAL : null;
     fatorDoTempo = doTotem ? 1 : cintilante ? cintilante.golpes : 1 + repeticoes;
     naRepeticaoFinal = repeticoes === 0;
+    // (lote "projetil", dono 02/11) daqui até o fim do golpe: o que sai NO CONTATO do projétil (`vooPrincipal` — na hora, ou no tique em que ele chega)
+    golpeDoUso = () => {
     // (17/10, lote G12) os CADÁVERES deste uso explodem (e a Cremação deixa os gêiseres) — `explodirCadaveres`
     // (lote B3, dono 21/10: + a Cremação da Exumação — o gêiser explode um cadáver perto a cada disparo, `explodeAoDisparar`)
     if (cadaveresDoUso?.length) eventos.push(...explodirCadaveres(estado, hunt, entry, efeitoDaGema, b3?.explodeAoDisparar ? { ...doCadaver, explodeAoDisparar: true } : doCadaver, cadaveresDoUso, ficha, agora));
@@ -7959,10 +8300,31 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       }
       // (lote A3b: D2: a nova dos Disparos repete dos mesmos pontos — a primeira pode estar vazia)
       if (novasDosDisparos) atingidos = daPrimeiraNova.filter((b) => b.hp > 0);
+      // (03/11, rodada 3) com os a mais da repetição já no ar (saíram no uso — `dobrosDasRepeticoes`), a repetição sai INTEIRA também sem ninguém vivo (o principal
+      // matou o alvo, ou se perdeu): cada repetição é outro uso no PoE, que sai de todo jeito; o principal dela vai no rumo do tiro e erra (`principalDaRepeticaoSemAlvo`)
+      const principalDaRepeticaoSemAlvo = !!dobrosDasRepeticoes && !atingidos.some((b) => b.hp > 0) && !novasDosDisparos?.casas.length;
+      if (principalDaRepeticaoSemAlvo) {
+        naRepeticaoFinal = r === repeticoes - 1;
+        repeticaoAtual = r + 1;
+        dobroNaFinal = dobrosDasRepeticoes[r] ?? false;
+        const alvo0 = alvo;
+        const atingidos0 = atingidos;
+        const rumo0 = rumoDoVoo;
+        const errou0 = vooErrou;
+        alvo = null;
+        atingidos = [];
+        rumoDoVoo = rumoDoVoo ?? miraDoUso;
+        // (o tiro do principal da repetição é outro projétil: vai para a tela também quando o do uso se perdeu — esse já saiu)
+        vooErrou = false;
+        repetindoOUso = true;
+        try { atacar(true); } finally { repetindoOUso = false; alvo = alvo0; atingidos = atingidos0; rumoDoVoo = rumo0; vooErrou = errou0; }
+        continue;
+      }
       if (!atingidos.some((b) => b.hp > 0) && !novasDosDisparos?.casas.length) break;
       naRepeticaoFinal = r === repeticoes - 1;
       repeticaoAtual = r + 1;
-      dobroNaFinal = naRepeticaoFinal && (efeitoDaGema?.repeticaoFinalDobroPct ?? 0) > 0 && !ficha.danoDobradoNoGolpe && Math.random() * 100 < efeitoDaGema.repeticaoFinalDobroPct;
+      // (03/11, rodada 2: com os a mais da repetição já no ar — saíram no uso —, o sorteio do Eco Desperto é o de lá: `dobrosDasRepeticoes`)
+      dobroNaFinal = dobrosDasRepeticoes?.[r] ?? (naRepeticaoFinal && (efeitoDaGema?.repeticaoFinalDobroPct ?? 0) > 0 && !ficha.danoDobradoNoGolpe && Math.random() * 100 < efeitoDaGema.repeticaoFinalDobroPct);
       // (PoE: "Repetição Final das Magias têm Efeito em Área aumentado em X%" — lote 36, P002: o X soma no "aumentado" da área da última
       // repetição, e o raio da forma cresce × √ como o resto da área.)
       const areaFinal = naRepeticaoFinal && areaNoUso && ehMagiaDaConta ? ModsPoe.valor(ficha, 'repeticao_final_area') : 0;
@@ -7972,7 +8334,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const areaRepT2 = areaNoUso ? GemasT2.areaDaRepeticao(efeitoDaGema, repeticaoAtual) : 0;
       if (areaFinal > 0 || semMaximizado > 0 || areaRepT2 > 0) atingidos = Areas.dentro(areaNoUso(areaFinal - semMaximizado + areaRepT2), vivos.filter((b) => b.hp > 0));
       escalaDoUso = escalaDaPrimeira;
-      atacar(true);
+      // (03/11, rodada 2: a repetição do projétil que voa leva só o principal — os a mais dela saíram no uso, no tempo deles)
+      repetindoOUso = true;
+      try { atacar(true); } finally { repetindoOUso = false; }
       escalaDoUso = 100;
       // (lote C2: cada repetição é um ataque — o pulso, os martelos, o ramo)
       extrasDoC2();
@@ -7999,19 +8363,14 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (revisão B4: "ganha Intensidade quando você Conjurá-la" — a ativada por gatilho, a armadilha e a mina — `plantada` também tem o `gatilho` — não ganham; o
     // Community Wiki: "cannot gain a stack of Intensity when this spell is repeated, triggered, or cast by a totem"; usa os acúmulos que já existem)
     if (efeitoDaGema?.intensidadeMax > 0 && !gatilho) ganharIntensidade(hunt, entry.id, efeitoDaGema, ModsPoe.valor(ficha, 'intensidade_max_extra'), hunt.clock ?? 0, ficha.afPoe);
-    const totalDoPrimeiro = total;
-    const criticoDoPrimeiro = danoCritico;
-    const fisicoDoPrimeiro = danoFisico;
-    const danosDoPrimeiro = danos.slice();
-    if (Math.random() < (ficha.ataqueDuplo ?? 0)) {
+    // (03/11, rodada 2: com os a mais já no ar, o sorteio do ataque duplo é o do uso — `ataqueDuploDoUso` —, e o 2º golpe leva só o principal)
+    // (03/11, rodada 3: o roubo e a árvore só do primeiro pelo `semContarNoRoubo` — o mesmo do passe dos a mais; `noSegundoAtaque` vai com o que cai depois)
+    if (ataqueDuploDoUso ?? Math.random() < (ficha.ataqueDuplo ?? 0)) {
       fatorDoAtaque = Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct;
-      atacar(true);
+      repetindoOUso = ataqueDuploDoUso != null;
+      noSegundoAtaque = true;
+      try { semContarNoRoubo(() => atacar(true)); } finally { repetindoOUso = false; noSegundoAtaque = false; }
       fatorDoAtaque = 100;
-      total = totalDoPrimeiro;
-      danoCritico = criticoDoPrimeiro;
-      danoFisico = fisicoDoPrimeiro;
-      danos.length = 0;
-      danos.push(...danosDoPrimeiro);
     }
     // Cataclismo, Arco voltaico, Inverno sem fim, Raiz venenosa (ver `Arvore.depoisDaMagia`).
     if (entry.kind === 'spell') total += Arvore.depoisDaMagia(estado, hunt, entry.element, danos, eventos, cor);
@@ -8090,7 +8449,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         const vezes = objetoDoUso?.tipo === 'tormenta' || objetoDoUso?.tipo === 'escudo' ? 1 + repeticoesDoUso(entry, efeitoDaGema, ficha, { gatilho, plantada }) : 1;
         for (let k = 0; k < vezes; k++) eventos.push(...criarObjetosDoUso(estado, hunt, entry, efeitoDaGema, { obj: objetoDoUso, alvo, mira, x, y, formaNoUso, emitidos: emitidosDoUso, laminas: k ? null : laminasDoUso, novas: k ? null : novasDosDisparos, velDoTiro, conta, doTotem, dono: doTotem ? plantada?.dono ?? null : null, cadaveres: k ? null : cadaveresDoUso, agora }));
       }
-      if (deProjetil && !doTotem && emitidosDoUso.length && hunt.poeObjetos?.length) absorverNosTornados(hunt, emitidosDoUso, danoMedio, agora);
+      // (03/11 — a integração do voo de verdade: o golpe do projétil sai no CONTATO, mas o projétil passou pela casa do Tornado logo que saiu — a fase inicial
+      // conta pelo instante em que ele saiu, `saiDoVoo`, não pelo da chegada: a Faísca que vagueia 1,8 s até o alvo era absorvida no PoE e aqui não)
+      if (deProjetil && !doTotem && emitidosDoUso.length && hunt.poeObjetos?.length) absorverNosTornados(hunt, emitidosDoUso, danoMedio, saiDoVoo);
       // (lote C3, dono 25/10) a VARRIDA SAGRADA: "Convoca Martelos Sagrados em até N inimigos atingidos" — N dos atingidos, sorteados; cada martelo cai neles no raio do
       // martelo (1,2 m × √ da Área), com o "−35%", sem poder ser evadido (`pulsarObjetoC3`, no tique)
       if (c3?.martelos?.alvos > 0 && !plantada && !doTotem && atingidos?.length) {
@@ -8253,6 +8614,83 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (lote A4, dono 19/10: E2) o Devastar que acertou ganha 1 estágio
     // (lote A5b: só o uso que acertou alguém)
     if (semCanalizar?.est.modo === 'acerto' && atingidos.some(acertouNoUso)) devastarAcertou(hunt, entry, semCanalizar.est, inicio);
+    };
+    // (lote "projetil") o projétil que já chegou (ou se perdeu) neste tique: o golpe agora; o que está no ar, no contato (`Voos.tique`). O que se perdeu (o terreno,
+    // o fim do alcance): o passe sem ninguém — só os que erram, com as regras do terreno (`Secundarios.resolver` sem alvo, no rumo do tiro)
+    // (lote "projetil", dono 02/11 — D5 de `projeteis-voo.mjs`) o ORBE do Morto Volátil anda do cadáver até o inimigo a 10.4 m/s × (1 + a "Velocidade de Movimento do Orbe
+    // aumentada" — a qualidade): a área cai na chegada, em quem está nela ali
+    if (orbeDoMorto && itensPoeLigado() && casas && !vooNoAr && entry.poeGema) {
+      const perfil = GemasPoe.vooDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0)?.perfil;
+      const v0 = GemasVoo.casasPorSegundo(GemasVoo.VOO.orbeM * Math.max(0.05, 1 + (perfil?.orbeMaisPct ?? 0) / 100), 1);
+      const quando = saiDoVoo + (1000 * Math.hypot(orbeDoMorto.para.x - orbeDoMorto.de.x, orbeDoMorto.para.y - orbeDoMorto.de.y)) / v0;
+      const casasDoOrbe = casas;
+      const z = hunt.z ?? 0;
+      if (Voos.adiar(hunt, quando, () => comoNoUso(() => { atingidos = Areas.dentro(casasDoOrbe, hunt.monstros.filter((b) => b.hp > 0 && (b.z ?? hunt.z ?? 0) === z)); golpeDoUso(); }), agora)) vooNoAr = true;
+    }
+    /*
+     * (03/11 — a revisão do voo de verdade: cada projétil é INDEPENDENTE, como no PoE) os projéteis a mais do leque não esperam o principal: saem AGORA (os tiros na
+     * tela, no uso) e cada um cai no tempo do caminho dele (`Voos.adiar` no passe, pelas casas andadas) — o bicho perto no leque leva antes do alvo longe; o principal
+     * que se perde não leva os outros junto. O golpe do contato do principal fica só com ele (`soOPrincipal`).
+     */
+    // (03/11, rodada 2: em TODA geometria de projéteis a mais — `Secundarios.extrasIndependentes` —, com o bicho do caminho do principal reservado para ele, e nas
+    // REPETIÇÕES do uso — Eco de Magia, Altar Ecoante, o ataque duplo —: os a mais de cada uma saem também aqui; o principal delas, no contato)
+    if (extrasIndependentes) {
+      soOPrincipal = true;
+      const alvo0 = alvo;
+      const atingidos0 = atingidos;
+      const rumo0 = rumoDoVoo;
+      // (o alvo mirado é a âncora da geometria — o leque, as origens laterais, o rodízio do Aço Perfurador —, mas não fica fora dos a mais: fica o do caminho do
+      // principal; o principal que se perdeu não reserva ninguém)
+      alvo = alvoMiradoDoUso?.hp > 0 ? alvoMiradoDoUso : null;
+      rumoDoVoo = { x: miraDoUso.x, y: miraDoUso.y };
+      atingidos = [];
+      reservadosDoPasse = reservadoDoVoo ? [reservadoDoVoo] : [];
+      parteDoPasse = 'extras';
+      try {
+        tomadosNoPasse = tomadosDoUso;
+        atacar(false);
+        // as repetições: cada uma é outro uso no PoE (os a mais dela podem pegar quem os do primeiro pegaram)
+        if (repeticoes > 0) {
+          dobrosDasRepeticoes = [];
+          for (let rr = 0; rr < repeticoes; rr++) {
+            naRepeticaoFinal = rr === repeticoes - 1;
+            repeticaoAtual = rr + 1;
+            dobroNaFinal = dobrosDasRepeticoes[rr] = naRepeticaoFinal && (efeitoDaGema?.repeticaoFinalDobroPct ?? 0) > 0 && !ficha.danoDobradoNoGolpe && Math.random() * 100 < efeitoDaGema.repeticaoFinalDobroPct;
+            tomadosNoPasse = new Set();
+            atacar(true);
+          }
+          repeticaoAtual = 0;
+          dobroNaFinal = false;
+          naRepeticaoFinal = false;
+        }
+        ataqueDuploDoUso = Math.random() < (ficha.ataqueDuplo ?? 0);
+        if (ataqueDuploDoUso) {
+          fatorDoAtaque = Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct;
+          tomadosNoPasse = new Set();
+          // (03/11, rodada 3: o 2º golpe fora do roubo de vida/mana e da árvore, como no contato — os a mais dele que acertam neste tique não somam no `total`)
+          noSegundoAtaque = true;
+          try { semContarNoRoubo(() => atacar(true)); } finally { noSegundoAtaque = false; }
+          fatorDoAtaque = 100;
+        }
+      } finally {
+        parteDoPasse = null;
+        tomadosNoPasse = null;
+        reservadosDoPasse = null;
+        alvo = alvo0;
+        atingidos = atingidos0;
+        rumoDoVoo = rumo0 ?? rumoDoVoo;
+        naRepeticaoFinal = repeticoes === 0;
+      }
+    }
+    if (!vooNoAr) {
+      if (vooErrou) {
+        const alvo0 = alvo;
+        alvo = null;
+        atingidos = [];
+        golpeDoUso();
+        alvo = alvo0;
+      } else golpeDoUso();
+    }
   }
 
   // Gemas: "-Ns recarga de <magia>" (supremo), sem passar de zero.
@@ -8337,6 +8775,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const ctxDoUso = { alvo, eventos, personagem, tags: tagsPoe };
     ModsPoe.evento(estado, hunt, 'usarHabilidade', fichaDoUso, ctxDoUso);
     ModsPoe.evento(estado, hunt, tagsPoe.includes('ataque') ? 'usarAtaque' : 'usarMagia', fichaDoUso, ctxDoUso);
+    // (02/11, a Joia Atemporal: "Enquanto você tiver Salvaguarda Intacta, seu próximo Ataque sem canalização usado por você rompe sua Salvaguarda para ganhar Dano de
+    // Gelo Adicional igual a 25% da Salvaguarda") o ataque já saiu com o Gelo (a ficha com a Salvaguarda Intacta); agora ele a rompe
+    if (tagsPoe.includes('ataque') && !tagsPoe.includes('canalizar') && ModsPoe.valor(fichaDoUso, 'ataque_rompe_salvaguarda') > 0) Salvaguarda.romper(estado, hunt, fichaDoUso, personagem, eventos);
     // ("se você usou uma Habilidade de Fogo Recentemente"; "por cada Magia Não Instantânea que você tenha Conjurado Recentemente".)
     if (tagsPoe.includes('fogo')) ModsPoe.marcar(hunt, 'usouFogo');
     // (14/10, a Infusão Espiritual: "enquanto canaliza uma magia" — `ModsPoe.tiqueDaInfusao`)
@@ -8567,6 +9008,8 @@ function fotoDoVinculo(estado, hunt, ficha, lk) {
     vidaMax: estado.maxHp ?? 0, bloqueioPct: Math.round((ficha.blockChance ?? 0) * 1000) / 10, critPct: Math.round((ficha.critChance ?? 0) * 1000) / 10,
     efeitoPct: v('efeito_buff_gema:vinculo'), porMetadePct: v('vinculo_efeito_por_metade'), mov2: v('vinculos2_move_speed'), defesas4: v('vinculos4_defesas'),
     velocidadeIgual: v('velocidade_igual_vinculados') > 0, maldicoesEmVoce: v('maldicoes_em_voce_vinculo') > 0, feixe: v('feixe_sem_afeccao') > 0,
+    // (lote "luz", a Glória Dourada do Luminary: o "aumentado" do Raio de Iluminação no Efeito dos Vínculos no mercenário — `Iluminacao.luzNoMercenarioPct`)
+    ...(Iluminacao.luzNoMercenarioPct(ficha.afPoe) ? { luzNoMercenarioPct: Iluminacao.luzNoMercenarioPct(ficha.afPoe) } : {}),
     ...(v('vinculo_compartilha_cargas') > 0 && ficha.cargas ? { cargas: CargasDoPoe.adds(estado, ficha.cargas) ?? {} } : {}),
   };
   if (lk.foto.velocidadeIgual) lk.velocidadeDosAlvos = Math.max(0, ...lk.alvos.filter((a) => a.tipo === 'jogador').map((a) => { const quem = Vinculos.resolver(hunt, a); return quem ? Ficha.combate(quem).speed ?? 0 : 0; }));
@@ -8586,7 +9029,11 @@ function criarVinculo(estado, hunt, entry, action, efeitoDaGema, agora) {
   const alvos = [cand[0], ...resto.slice(0, Vinculos.quantosVincula(ficha.afPoe) - 1)];
   // (14/10, o Juramento de Fidelidade do Luminary: "Habilidades de conexão têm duração de fixação infinita" — o Vínculo não acaba pelo tempo)
   const duracaoMs = ModsPoe.valor(ficha, 'vinculo_duracao_infinita') > 0 ? DURACAO_INFINITA_MS : Math.round(props.duracaoMs * fatorDeDuracao(estado, entry, efeitoDaGema));
-  const lk = Vinculos.criar(hunt, { acao: entry.id, slug, nome: entry.name, props, alvos, duracaoMs, custoPorSegundo: GemasPoe.custoNoNivel(slug, nivel), agora });
+  // (02/11: o custo por segundo do PoB — a coluna é por MINUTO, `GemasPoe.custoPorSegundoNoNivel`; antes cobrava os 900 do nível 1 a cada segundo)
+  // (achado da revisão de 02/11) o custo ao longo do tempo passa pelos multiplicadores do custo — o dos suportes, o de Mana aumentado/reduzido, o "mais/menos" e a
+  // eficiência (como no PoE, e como a Chuva de Lâminas de Trarthus aqui: `fatorDoCustoDeMana`); com uma casa
+  const custoPorSegundo = Math.round(GemasPoe.custoPorSegundoNoNivel(slug, nivel) * fatorDoCustoDeMana(estado, entry, efeitoDaGema) * 10) / 10;
+  const lk = Vinculos.criar(hunt, { acao: entry.id, slug, nome: entry.name, props, alvos, duracaoMs, custoPorSegundo, agora });
   fotoDoVinculo(estado, hunt, ficha, lk);
   return alvos.map((a) => { const p = Vinculos.posicao(a, Vinculos.resolver(hunt, a)); return p ? { t: 'fx', id: 13, x: p.x, y: p.y } : null; }).filter(Boolean);
 }
@@ -8672,6 +9119,31 @@ function raioDaPragaP4(estado, nivel, rng = Math.random) {
   const bonus = Number(GemasPoe.compilada('Plague_Bearer', nivel ?? 1)?.stats?.raioBonus) || 0;
   return raioDoAtivadoR3A(estado, entry, GemasP4.raioDoInfestadorM(bonus), entry ? tagsPoeDaSkill(entry) : ['magia', 'area', 'caos'], {}, rng);
 }
+/**
+ * (o Portal — dono, 02/11: "como o PoE", `itens-poe/portal-da-gema.mjs`) O uso da gema Portal: à mão (a barra automática não leva ninguém para a
+ * cidade sozinha), com a conjuração dela (2,5 s × a Velocidade de Conjuração — a qualidade dá até 60%: `temposDaGemaPoe`); no fim, a saída fica
+ * marcada (`hunt.saidaPeloPortal`) e a sessão faz a viagem (a caçada guardada, a sala que fica com a party — `Sessao.entrarNoPortalDaGema`). Não
+ * custa nada (o PoE: sem custo). A armadilha, a mina, o totem e o gatilho não levam ninguém: o portal é o seu.
+ */
+function usarPortalDaGema(estado, hunt, personagem, slot, entry, { concluir = false, manual = false, gatilho = null, plantada = null } = {}) {
+  if (gatilho || plantada) return { ok: false, erro: 'O Portal só abre pelo seu uso.', motivo: 'PORTAL_A_MAO' };
+  const motivo = PortalDaGema.motivoParaNaoAbrir(hunt);
+  if (motivo) return { ok: false, erro: motivo, motivo: 'PORTAL' };
+  const agora = hunt.clock ?? 0;
+  if (concluir) {
+    hunt.saidaPeloPortal = { em: agora };
+    return { ok: true, eventos: [] };
+  }
+  if (!manual) return { ok: false, erro: 'O Portal se usa à mão (clique ou tecla): ele leva você para a cidade.', motivo: 'PORTAL_A_MAO' };
+  const castMs = Math.max(0, temposDaGemaPoe(estado, entry, Gemas.efeitoNaSkill(estado, entry.id)).conjuracaoMs || 0);
+  if (!(castMs > 0)) {
+    hunt.saidaPeloPortal = { em: agora };
+    return { ok: true, eventos: [] };
+  }
+  hunt.conjurando = { slot, id: entry.id, alvo: null, inicio: agora, fim: agora + castMs, castFim: agora + castMs };
+  return { ok: true, conjurando: true, eventos: [{ t: 'cast', uid: 'player', quem: personagem?.nome, skill: entry.name, ms: castMs, sk: entry.id, x: hunt.pos.x, y: hunt.pos.y }] };
+}
+
 /** (lote P4) A troca À MÃO do Infestador (`GemasP4.alternarPraga`): Incubando com Valor → Infestando; Infestando → Incubando. */
 function alternarPragaP4(estado, hunt, entry) {
   const agora = hunt.clock ?? 0;
@@ -9258,6 +9730,9 @@ export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora 
   for (const { p, alvo } of [...Plantadas.armadilhasQueAtivam(hunt, ficha, agora), ...Plantadas.minasQueDetonam(hunt, ficha, agora, doDetonar)]) {
     if ((estado.hp ?? 0) <= 0) break;
     Plantadas.tirar(hunt, p);
+    // (100% — combate, 02/11) o RE-ARMAR: "Minas podem ser Detonadas N vezes adicionais" — a Mina detonada volta armada no mesmo lugar (até N vezes); a da gema com
+    // "Minas não podem ser Re-armadas" (a Mina de Fumaça) não volta (`Combate100.rearmarMina`)
+    if (p.tipo === 'mina') Combate100.rearmarMina(hunt, p, ficha, { agora, naoRearma: (GemasPoe.textosDaGema(String(p.acao ?? '').replace(GemasPoe.PREFIXO, ''), Gemas.efeitoNaSkill(estado, p.acao)?.nivel ?? 1)?.linhas ?? []).some(Combate100.ehLinhaCombate100) });
     // (lote R3D, 27/10) a Armadilha Conversora: o inimigo que a ativou vira seu aliado (`conversoraNaAtivacao`); a Mina de Fumaça: o teleporte, as nuvens e o buff (`fumacaNaDetonacao`)
     const slugR3D = String(p.acao ?? '').replace(GemasPoe.PREFIXO, '');
     if (p.tipo === 'armadilha' && GemasR3D.ehConversora(slugR3D)) { conversoraNaAtivacao(estado, hunt, p, alvo, eventos); ativouArmadilha(p, alvo); continue; }
@@ -9672,7 +10147,8 @@ export function ativarGatilhos(estado, hunt, personagem, evento, { acao = null, 
       }
     }
     // (o Feiticeiro: 0,6 s ÷ a "Recuperação da Recarga" do nível dele; lote A2: a Automação, a recarga dela — 0,6 s)
-    const recargaMs = g.feiticeiro ? GemasPoe.feiticeiroNoNivel(g.nivel).recargaMs : g.automacao ? GemasPoe.temposNoNivel('Automation', g.nivel).recargaMs || AUTOMACAO.recargaMs : g.gatilho.recargaMs;
+    // (02/11: o Conjurar ao Perder Salvaguarda — "5% de recarga mais rápida por 100 Salvaguarda, até 400%", pela Salvaguarda máxima — `Salvaguarda.recargaDoGatilho`)
+    const recargaMs = g.feiticeiro ? GemasPoe.feiticeiroNoNivel(g.nivel).recargaMs : g.automacao ? GemasPoe.temposNoNivel('Automation', g.nivel).recargaMs || AUTOMACAO.recargaMs : g.gatilho.porSalvaguardaPct ? Salvaguarda.recargaDoGatilho(g.gatilho.recargaMs, Ficha.combate(estado), { porCemPct: g.gatilho.porSalvaguardaPct, maxPct: g.gatilho.porSalvaguardaMaxPct }) : g.gatilho.recargaMs;
     if (saiu && recargaMs) cds[chave] = { ate: agora + recargaMs, total: recargaMs };
   }
   return n;
@@ -10845,7 +11321,8 @@ function criarObjetosDoUso(estado, hunt, entry, ef, { obj, alvo, mira, x, y, for
   const q = ef?.qualidade ?? 0;
   // (lote A5c, dono 20/10) a conversão "em Fogo, Gelo ou Raio" da gema (o Tornado da Turbulência Elemental — "Cria um Tornado de um elemento aleatório",
   // o PoB): o elemento é sorteado UMA vez por objeto, ao criá-lo, e vale em todos os golpes dele (`golpeDoObjeto` → `contaDoDano`)
-  const sorteado = GemasPoe.conversaoDaMagia(slug, nivel).some((c) => c.para === 'aleatorio') ? ['fire', 'ice', 'energy'][Math.floor(Math.random() * 3)] : null;
+  // (100% — dados: sem os elementos que o Foco de Combate proíbe — `Prismaticas.proibidos`)
+  const sorteado = GemasPoe.conversaoDaMagia(slug, nivel).some((c) => c.para === 'aleatorio') ? Prismaticas.escolherElemento(null, Prismaticas.proibidos(Ficha.combate(estado))) : null;
   const base = { acao: entry.id, slug, el: entry.element ?? null, dono: doTotem ? 'totem' : 'voce', ...(doTotem && dono ? { donoPos: { x: dono.x, y: dono.y } } : {}), ...(sorteado ? { elementoSorteado: sorteado } : {}) };
   const raioEmCasas = (m) => Math.max(0, casasDoRaio(m * Math.sqrt(ModsPoe.fatorDaArea(ef?.areaIncPct ?? 0, ef?.areaMaisPct ?? 0))));
   const rumo = (para) => (para && (para.x !== x || para.y !== y) ? Math.atan2(para.y - y, para.x - x) : RUMO_DA_DIRECAO[hunt.pos?.dir ?? 2] ?? 0);
@@ -11295,7 +11772,7 @@ export function tiqueDoC3(estado, hunt, personagem, eventos = [], agora = hunt?.
 }
 
 /**
- * (D7) O TORNADO na fase inicial absorve os SEUS projéteis cuja reta passa pela casa dele (até 20 por tornado): guarda 10% do dano médio do acerto de
+ * (D7) O TORNADO na fase inicial absorve os SEUS projéteis cujo caminho passa pela casa dele (até 20 por tornado): guarda 10% do dano médio do acerto de
  * cada um (antes da resistência), que a perseguição soma a cada golpe dela (`pulsarObjeto`).
  */
 function absorverNosTornados(hunt, emitidos, danoMedio, agora) {
@@ -11303,7 +11780,8 @@ function absorverNosTornados(hunt, emitidos, danoMedio, agora) {
     if (o.tipo !== 'tornado' || !o.absorve || o.dono !== 'voce' || o.fase !== 1 || !(agora < (o.depois?.em ?? -Infinity)) || (o.z ?? 0) !== (hunt.z ?? 0)) continue;
     for (const p of emitidos) {
       if (o.absorve.n >= o.absorve.max) break;
-      const reta = [p.de, ...Areas.reta(p.de, p.para, distanciaChebyshev(p.de, p.para))];
+      // (03/11, revisão do raio contínuo: o caminho do projétil é o do acerto — o raio do ângulo exato, `Secundarios.casasDoEmitido` —, não a reta até o fim arredondado)
+      const reta = [p.de, ...Secundarios.casasDoEmitido(p)];
       if (!reta.some((c) => c.x === o.x && c.y === o.y)) continue;
       o.absorve.n++;
       o.absorve.guardado += (Math.max(0, danoMedio) * o.absorve.pct) / 100;
@@ -12902,6 +13380,22 @@ export function aoReceberDano(estado, hunt, personagem, dano, eventos = []) {
   return n;
 }
 
+/**
+ * (02/11, dono: a Salvaguarda como o PoE) A QUEBRA da Salvaguarda (`personagem/salvaguarda.absorver`, no acerto que a leva a 0): o Conjurar ao Perder Salvaguarda (o
+ * gatilho 'salvaguarda', com a recarga dele) e o evento `salvaguardaQuebra` dos mods ("Ganha 1 Carga de Poder quando a Salvaguarda se Rompe", a Adrenalina da Investida
+ * de Olroth).
+ */
+Salvaguarda.definirAoQuebrar((estado, hunt, personagem, eventos) => {
+  if (!itensPoeLigado() || !hunt) return;
+  ativarGatilhos(estado, hunt, personagem, 'salvaguarda', {}, eventos);
+  ModsPoe.evento(estado, hunt, 'salvaguardaQuebra', Ficha.combate(estado), { eventos, personagem });
+});
+/** (02/11, a Joia Atemporal) A Salvaguarda RESTAURADA depois de descer: o evento `salvaguardaRestaurada` ("Remove uma Afecção Danificadora aleatória"). */
+Salvaguarda.definirAoRestaurar((estado, hunt) => {
+  if (!itensPoeLigado() || !hunt) return;
+  ModsPoe.evento(estado, hunt, 'salvaguardaRestaurada', Ficha.combate(estado), {});
+});
+
 const fracaoDeVida = (e) => (e?.hp ?? 0) / Math.max(1, e?.maxHp ?? 1);
 /** Os da caçada em grupo (`hunt.partilha.membros`, vivo) — sozinho, só eu. */
 const membrosDaSala = (estado, hunt) => hunt?.partilha?.membros?.length ? hunt.partilha.membros : [{ estado, nome: estado.name ?? null }];
@@ -13223,10 +13717,13 @@ export function colmeiaNaOferendaR3B(estado, hunt, entry, ef, rng = Math.random)
 }
 
 /** O ARQUEIRO ILUSÓRIO: o acerto com flecha da suportada o convoca (no seu lugar, 4 s), se não houver o máximo dele; ele usa a habilidade sozinho (`tiqueR3B`). */
-function arqueiroIlusorioR3B(hunt, entry, ef, agora, eventos) {
+// (100% — combate, 02/11: + "+N ao número máximo de Arqueiros Ilusórios Convocados" e o "Não pode Convocar … enquanto próximo dos seus Arqueiros Ilusórios" da Força
+// Ocupante — `Combate100.maximoDeArqueiros`, `podeConvocarArqueiro`)
+function arqueiroIlusorioR3B(hunt, entry, ef, agora, eventos, ficha = null) {
   const s = estadoR3B(hunt);
   s.espelhos = (s.espelhos ?? []).filter((m) => m.ate > agora);
-  if (s.espelhos.length >= Math.max(1, ef.arqueiroMax ?? 1)) return;
+  if (s.espelhos.length >= Combate100.maximoDeArqueiros(ef.arqueiroMax ?? 1, ficha)) return;
+  if (!Combate100.podeConvocarArqueiro(s.espelhos, hunt.pos, ficha)) return;
   s.espelhos.push({ acao: entry.id, x: hunt.pos.x, y: hunt.pos.y, z: hunt.z ?? 0, ate: agora + Math.max(1, ef.arqueiroMs ?? 4000), proximoEm: agora });
   eventos.push({ t: 'fx', id: 11, x: hunt.pos.x, y: hunt.pos.y, sk: entry.id });
 }
@@ -13301,7 +13798,7 @@ export function usoR3B(estado, hunt, personagem, entry, efeitoDaGema, { acertado
   if (entry.poeGema.slug === GemasR3B.GOLPE_SAGRADO && acertados.length) eventos.push(...invocarLacaios(hunt, entry, efeitoDaGema, acertados[0], estado));
   if (efeitoDaGema?.relampagoVivo && acertados.length && causouRaioR3B(partes, entry)) eventos.push(...relampagoVivoR3B(estado, hunt, entry, efeitoDaGema, agora));
   if (gatilho) return eventos;
-  if (efeitoDaGema?.arqueiroIlusorio && acertados.length && ehFlechaR3B(estado, entry)) arqueiroIlusorioR3B(hunt, entry, efeitoDaGema, agora, eventos);
+  if (efeitoDaGema?.arqueiroIlusorio && acertados.length && ehFlechaR3B(estado, entry)) arqueiroIlusorioR3B(hunt, entry, efeitoDaGema, agora, eventos, Ficha.combate(estado));
   if (efeitoDaGema?.espiritosSagrados) eventos.push(...espiritosSagradosR3B(estado, hunt, personagem, entry, efeitoDaGema, alvo, acertados, agora, rng));
   return eventos;
 }
@@ -13368,6 +13865,8 @@ export function tiqueR3B(estado, hunt, personagem, agora = hunt?.clock ?? 0) {
   if (!s.espelhos?.length) return eventos;
   const z = hunt.z ?? 0;
   s.espelhos = s.espelhos.filter((m) => m.ate > agora && (m.z ?? 0) === z);
+  // (100% — combate, 02/11) o Arqueiro Ilusório anda com você (o PoE: grudado em você) — menos com "Arqueiros Ilusórios não são grudados em você" (`Combate100.grudarArqueiros`)
+  Combate100.grudarArqueiros(s.espelhos, hunt.pos, Ficha.combate(estado));
   for (const m of s.espelhos) {
     if (agora < (m.proximoEm ?? 0)) continue;
     const entry = POR_ID.get(m.acao);

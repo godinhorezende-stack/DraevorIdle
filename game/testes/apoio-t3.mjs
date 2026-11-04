@@ -6,7 +6,7 @@ import { existsSync, readFileSync } from 'node:fs';
 process.env.ITENS_POE = '1';
 export const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
 export const SEM = (!existsSync(Catalogo.ARQUIVO) || !Catalogo.ligado()) && 'só no modo PoE, com o catálogo do PoE';
-const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
+const { personagemDeTeste, PERSONAGEM, pousarVoos } = await import('./apoio.mjs');
 export { PERSONAGEM };
 export const Acoes = await import('../systems/acoes.mjs');
 export const GS = await import('../systems/skills/gemas.mjs');
@@ -96,6 +96,7 @@ export function usar(e, alvo, { slot = 0, passo = 60_000, v = 0.5 } = {}) {
   const r = travado(v, () => Acoes.disparar(e, e.hunt, PERSONAGEM, slot, alvo, { manual: true }));
   const eventos = [...(r.eventos ?? [])];
   if (r.ok && e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; eventos.push(...(travado(v, () => Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM)) ?? [])); }
+  eventos.push(...pousarVoos(e.hunt, { sorte: v })); // aval do dono 03/11: o voo de verdade — o golpe do projétil cai no tique em que ele chega (`pousarVoos`)
   return { r, eventos, inicio };
 }
 /** O tempo andando `n` passos de `dt` ms: as plantadas (Armadilhas, Minas, Torres), as Runas e os objetos. */

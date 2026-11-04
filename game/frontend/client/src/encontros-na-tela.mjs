@@ -32,7 +32,11 @@ export const assinaturaDosEncontros = (lista) => (lista ?? []).map((e) => `enc:$
 /** O sprite de item de cada tipo (os do próprio jogo): baú, baú ornamentado, baú do coração (amaldiçoado) e pedestal de cristal (altar). */
 export const ITEM_DO_TIPO = { 'bau-comum': 2472, 'bau-raro': 26164, 'bau-amaldicoado': 33043, altar: 9063, sobrevivencia: 9064, fenda: 9065, aprisionado: 9066, 'area-secreta': 9067, escolta: 9068 };
 
-const COR = { portal: '#8a6bff', 'bau-comum': '#e0b84a', 'bau-raro': '#4ab3ff', 'bau-amaldicoado': '#b04aff', altar: '#ffd24c', sobrevivencia: '#ff6a4a', fenda: '#7a5cff', aprisionado: '#4fd0b0', 'area-secreta': '#5cc8ff', escolta: '#8fd06a' };
+// (dono, 03/11) os BAÚS do PoE (`itens-poe/baus-poe.mjs`), desenhados em código (sem o sprite do Draevor) na cor da raridade do PoE: Normal
+// branco, Mágico azul, Raro amarelo e o Grande Baú (o do mapa único) laranja.
+const COR_DO_BAU_POE = { 'bau-poe-normal': '#d8d0c0', 'bau-poe-magico': '#8888ff', 'bau-poe-raro': '#ffff77', 'bau-poe-grande': '#af6025' };
+
+const COR = { ...COR_DO_BAU_POE, portal: '#8a6bff', 'bau-comum': '#e0b84a', 'bau-raro': '#4ab3ff', 'bau-amaldicoado': '#b04aff', altar: '#ffd24c', sobrevivencia: '#ff6a4a', fenda: '#7a5cff', aprisionado: '#4fd0b0', 'area-secreta': '#5cc8ff', escolta: '#8fd06a' };
 
 /**
  * Desenha os marcadores: o SPRITE do jogo (`desenharItem`, que devolve `false` enquanto a folha não chegou) ou, até lá,

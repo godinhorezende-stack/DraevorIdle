@@ -670,6 +670,8 @@ function acaoDoDireito(event, id, { from, pilha = null, alvo = null, peca = null
   if (meta?.orbeDeSocket && from !== 'equipment') return void usarOrbe(ctx, meta.orbeDeSocket);
   // As moedas do PoE: abrem a Forja do PoE com a moeda já escolhida (`forja-poe.mjs`).
   if (meta?.moedaPoe && from !== 'equipment') return void abrirForjaPoe(ctx, { moeda: id });
+  // (100% — dados) a Tatuagem: a árvore de passivas abre (o nó alocado e "Tatuar")
+  if (meta?.tatuagemPoe && from !== 'equipment') return void ctx.openArvore?.();
   if (meta?.usavel) return void (ctx.pedirUso ? ctx.pedirUso(id, onde) : ctx.send({ t: 'usar', id, onde }));
 }
 
@@ -852,6 +854,8 @@ function itemMenu(event, id, { from, pilha = null, alvo = null, peca = null, slo
     meta?.frasco && from === 'bag' ? { label: 'Pôr no cinto de frascos', action: () => send({ t: 'frasco', action: 'por', pilha }) } : null,
     // (lote 27) a joia vai para um encaixe da árvore de passivas: a árvore abre (escolher o encaixe alocado e "Encaixar").
     meta?.joia && from === 'bag' ? { label: 'Encaixar na árvore de passivas…', action: () => ctx.openArvore?.() } : null,
+    // (100% — dados, 03/11) a Tatuagem do PoE: "Clique com o botão direito neste item, depois clique em uma Habilidade Passiva alocada" — a árvore abre (o nó e "Tatuar")
+    meta?.tatuagemPoe && from === 'bag' ? { label: 'Tatuar uma passiva da árvore…', action: () => ctx.openArvore?.() } : null,
     from === 'equipment' ? { label: 'Desequipar', action: () => send({ t: 'unequip', slot: slotNoCorpo ?? meta.slot }) } : null,
     // Os sockets da peça vestida: encaixar/tirar gemas de skill (ver soquetes.mjs).
     from === 'equipment' && temSoquetes(peca)

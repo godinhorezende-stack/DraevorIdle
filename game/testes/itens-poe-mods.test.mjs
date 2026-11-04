@@ -98,8 +98,9 @@ test('tradução: condicionais, "reduzida", sinal, lembrete e inerte', () => {
   assert.deepEqual(traduzirParte('Espaço esquerdo de anel: Efeito de Maldições em Você reduzido em {0}%', [20]).efeitos, [{ stat: 'efeito_maldicao_proprio@anelEsquerdo', valor: -20 }]);
   assert.equal(traduzirParte('(Atributos são Força, Destreza e Inteligência)', []).estado, 'lembrete');
   const luz = traduzirParte('{1}% de aumento do Raio de Iluminação', [0, 10]);
-  assert.equal(luz.estado, 'inerte');
-  assert.ok(/tela inteira/.test(luz.nota));
+  // aval do dono 03/11: 100% — luz, o Raio de Iluminação do PoE existe (antes "inerte", a tela inteira)
+  assert.equal(luz.estado, 'novo');
+  assert.deepEqual(luz.efeitos, [{ stat: 'light_radius', valor: 10 }]);
   assert.equal(traduzirMod({ modelo: 'Armadura aumentada em {0}% / Recuperação de Atordoamentos e Bloqueios aumentada em {1}%', valores: [20, 11] }).estado, 'novo');
   assert.deepEqual(traduzirParte('+{0} Modificador Prefixo permitido', [1]).efeitos, [{ stat: 'prefixos_permitidos', valor: 1 }]);
 });

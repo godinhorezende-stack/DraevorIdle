@@ -9,7 +9,7 @@ import { existsSync } from 'node:fs';
 process.env.ITENS_POE = '1';
 const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
 const SEM = (!existsSync(Catalogo.ARQUIVO) || !Catalogo.ligado()) && 'só no modo PoE, com o catálogo do PoE';
-const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
+const { personagemDeTeste, PERSONAGEM, pousarVoos } = await import('./apoio.mjs');
 const Acoes = await import('../systems/acoes.mjs');
 const GS = await import('../systems/skills/gemas.mjs');
 const G = await import('../systems/itens-poe/gemas-poe.mjs');
@@ -62,8 +62,10 @@ async function montar(slugs, { niveis = [], qualidade = 0, arma = 'Wands/Driftwo
 function usar(e, b, { slot = 0, v = 0.5 } = {}) {
   return travado(v, () => {
     const x = Acoes.disparar(e, e.hunt, PERSONAGEM, slot, b, { manual: true });
-    if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; return { ...x, eventos: [...(x.eventos ?? []), ...Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM)] }; }
-    return x;
+    let fim = x;
+    if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; fim = { ...x, eventos: [...(x.eventos ?? []), ...Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM)] }; }
+    // aval do dono 03/11: o voo de verdade — o golpe do projétil cai no tique em que ele chega (`pousarVoos`)
+    return { ...fim, eventos: [...(fim.eventos ?? []), ...pousarVoos(e.hunt)] };
   });
 }
 /** O próximo uso pode sair (a recarga, o tempo de uso). */

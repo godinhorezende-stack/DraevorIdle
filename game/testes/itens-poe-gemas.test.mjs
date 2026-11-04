@@ -35,7 +35,8 @@ test('as 562 gemas viram magias do jogo com o molde do Draevor, item com ícone,
   assert.equal(G.doSlug('Raise_Zombie').statusNoJogo, 'funciona', 'o lacaio invoca e usa as habilidades dele do PoB');
   const st = [...G.REGISTRO.values()].reduce((o, r) => ((o[r.statusNoJogo] = (o[r.statusNoJogo] ?? 0) + 1), o), {});
   // (lote B1, dono 20/10 — aval: sem o piso de parciais, que cai a cada lote que zera gemas)
-  assert.ok(st.funciona > 30 && st.nao < 40, JSON.stringify(st));
+  // (aval do dono 02/11: sem nenhuma 'nao', st.nao fica undefined — conta como 0)
+  assert.ok(st.funciona > 30 && (st.nao ?? 0) < 40, JSON.stringify(st));
   for (const r of G.REGISTRO.values()) if (r.statusNoJogo !== 'funciona') assert.ok(r.motivosNoJogo.length, `${r.gema.slug}: sem motivo`);
 });
 

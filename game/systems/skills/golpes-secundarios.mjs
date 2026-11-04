@@ -24,6 +24,12 @@
 //   8. as rebatidas não contam como Ricochete para os modificadores "por Ricochete";
 //   9. na volta que atravessa, cada bicho leva o golpe uma vez.
 //
+// (lote "projetil", dono 02/11 — o VOO DE VERDADE, `voo`): cada golpe e cada projétil emitido levam `dist` — as casas (de verdade, a diagonal √2) que o projétil
+// andou desde quem lançou até ali, pelo caminho dele (a reta até o 1º, a perfuração adiante, o salto do ricochete, o filho da difusão e da divisão, a batida na
+// parede, a volta até o ponto de virada — o fim do alcance no que atravessa todos, senão o último acertado); quem lança faz o golpe cair no instante da chegada
+// (`hunt/voos.mjs`). Com `voo`, os projéteis a mais saem em LEQUE (os ângulos do leque dos que erram, alternando os lados a partir do rumo do principal —
+// substitui o "nos mais perto de você" de 01/10) e acertam o primeiro do caminho que nenhum outro do uso acertou; a DIFUSÃO solta os filhos nos ângulos dela
+// (`efeito.difusaoMeioAngulo`, radianos: ± a reta do projétil; 3 filhos: o do meio na reta), cada um no primeiro do caminho até o alcance.
 // (lote A3c, dono 19/10: "Fazer como o PoE") a ÁREA NO IMPACTO dos projéteis com raio-base no PoB (`areaNoImpacto` — a Bola de Fogo, o Magma
 // Rolante, o Aço Divisor, a Fuzilaria Cinética…): todo impacto do projétil que acerta (o principal e os extras, a perfuração, a divisão, a difusão,
 // o ricochete, a rebatida e o retorno) é um acerto em ÁREA — quem está no quadrado do raio em volta do atingido leva um acerto com o mesmo % do
@@ -42,6 +48,65 @@ const cheb = Areas.distancia;
 export const casasDaReta = Areas.reta;
 /** A área aumentada (`n` > 0) ou concentrada (`n` < 0) — ver `Areas.mudar`. */
 export const mudarArea = Areas.mudar;
+
+/*
+ * (03/11, revisão do leque) O RAIO CONTÍNUO de um projétil: as casas que o segmento de `de` no ângulo EXATO `angulo` atravessa até `alcance` casas (Chebyshev, como o
+ * alcance do voo — `itens-poe/projeteis-voo.mjs`), na ordem, sem `de`. Cada ponto do segmento cai na casa do arredondamento SIMÉTRICO a partir de `de` (a meia casa
+ * vai para fora, dos dois lados — o Math.round puxava o −0,5 para dentro e o +0,5 para fora, e montagens simétricas saíam assimétricas); a casa vale quando o
+ * segmento passa por dentro dela (o canto exato — a diagonal — não pega as vizinhas). Antes o projétil seguia a reta até o FIM arredondado: com alcance curto
+ * dois ângulos do leque (10° e 20°, a 3 casas) davam o mesmo fim e viravam a mesma reta.
+ */
+const EPS = 1e-9;
+/** O arredondamento simétrico (a meia casa sai para longe do zero, dos dois lados). */
+export const arredondarSimetrico = (v) => Math.sign(v) * Math.round(Math.abs(v) + EPS) || 0;
+/** O fim do raio: a casa a `alcance` casas (Chebyshev) de `de`, no ângulo `angulo`. */
+export function fimDoRaio(de, angulo, alcance) {
+  const ux = Math.abs(Math.cos(angulo)) < EPS ? 0 : Math.cos(angulo);
+  const uy = Math.abs(Math.sin(angulo)) < EPS ? 0 : Math.sin(angulo);
+  const L = alcance / Math.max(Math.abs(ux), Math.abs(uy));
+  return { x: de.x + arredondarSimetrico(ux * L), y: de.y + arredondarSimetrico(uy * L) };
+}
+/** As casas do raio contínuo (ver acima). */
+export function casasDoRaio(de, angulo, alcance) {
+  const ux = Math.abs(Math.cos(angulo)) < EPS ? 0 : Math.cos(angulo);
+  const uy = Math.abs(Math.sin(angulo)) < EPS ? 0 : Math.sin(angulo);
+  if (!(alcance > 0)) return [];
+  const L = alcance / Math.max(Math.abs(ux), Math.abs(uy));
+  // os pontos em que o segmento cruza uma borda de casa (a meia casa de cada eixo); os quase iguais (o canto exato) contam como um só
+  const cortes = [0];
+  for (const u of [ux, uy]) if (u) for (let k = 0; (k + 0.5) / Math.abs(u) < L - EPS; k++) cortes.push((k + 0.5) / Math.abs(u));
+  cortes.sort((a, b) => a - b);
+  const ts = cortes.filter((t, i) => !i || t - cortes[i - 1] > EPS);
+  ts.push(L);
+  const casas = [];
+  const vistas = new Set(['0,0']);
+  const em = (t) => {
+    const c = { x: arredondarSimetrico(ux * t), y: arredondarSimetrico(uy * t) };
+    const k = `${c.x},${c.y}`;
+    if (vistas.has(k)) return;
+    vistas.add(k);
+    casas.push({ x: de.x + c.x, y: de.y + c.y });
+  };
+  // (o meio de cada trecho entre dois cortes, e o fim — o ponto exato do alcance)
+  for (let i = 1; i < ts.length; i++) em((ts[i - 1] + ts[i]) / 2);
+  em(L);
+  return casas;
+}
+/**
+ * (03/11, revisão do raio contínuo) As casas que um projétil EMITIDO (`resolver(...).emitidos`) andou, sem `de`: o raio contínuo do ângulo exato quando ele saiu
+ * num ângulo (`angulo`/`alcanceDoRaio`, o que `noAngulo` guarda) — até o bicho que ele acertou, ou até o fim do alcance —; senão a reta de `de` até `para` (`ate`
+ * casas; sem `ate`, até `para`). É o MESMO caminho do acerto e do terreno (`primeiroNaReta`, `terrenoNaReta`): quem refaz o voo fora do resolvedor (onde a explosão
+ * cinética cai, o Tornado que absorve) usa este, e não a reta até o fim arredondado.
+ */
+export function casasDoEmitido(p, ate = null) {
+  if (Number.isFinite(p.angulo)) {
+    const casas = casasDoRaio(p.de, p.angulo, p.alcanceDoRaio);
+    if (!p.bicho) return casas;
+    const i = casas.findIndex((c) => c.x === p.para.x && c.y === p.para.y);
+    if (i >= 0) return casas.slice(0, i + 1);
+  }
+  return casasDaReta(p.de, p.para, ate ?? Math.max(Math.abs(p.para.x - p.de.x), Math.abs(p.para.y - p.de.y)));
+}
 
 /** Os `n` bichos vivos mais perto de `ponto`, a até `distancia`, fora de `fora`. */
 function maisPerto(vivos, ponto, distancia, n, fora) {
@@ -95,7 +160,7 @@ function maisPerto(vivos, ponto, distancia, n, fora) {
  * adicionais em pontos sorteados no quadrado do raio secundário (`GemasPR3.pontoDaExplosao`), cada uma o quadrado do raio, pegando todos dentro (o atingido também —
  * a exceção 5 do lote); o % de cada uma: o do impacto × o do "menos Dano em Área". Devolve false quando bateu no teto (`max`).
  */
-function explosoesCineticas({ ponto, z, kin, porCasa, pctDoImpacto, rng, golpes, explosoes, conta, max, andavel = null }) {
+function explosoesCineticas({ ponto, z, kin, porCasa, pctDoImpacto, rng, golpes, explosoes, conta, max, andavel = null, dist = 0 }) {
   const pct = (pctDoImpacto * kin.pct) / 100;
   const raio = Math.max(0, Math.round(kin.raio ?? 0));
   // (dono, 21/10) com o terreno do andar, a explosão a mais só cai numa casa andável com a linha livre até o ponto do impacto (não dentro nem atrás da parede)
@@ -108,7 +173,7 @@ function explosoesCineticas({ ponto, z, kin, porCasa, pctDoImpacto, rng, golpes,
     explosoes.push({ ...c0, lado: 2 * raio + 1, cinetica: true });
     for (const c of Areas.quadrado(c0, raio)) {
       const b = porCasa.get(Areas.chave(c));
-      if (b && b.hp > 0 && (b.z ?? 0) === z) golpes.push({ bicho: b, pct, de: c0, tipo: 'explosao', cinetica: true });
+      if (b && b.hp > 0 && (b.z ?? 0) === z) golpes.push({ bicho: b, pct, de: c0, tipo: 'explosao', cinetica: true, dist });
     }
   }
   return true;
@@ -120,7 +185,7 @@ function explosoesCineticas({ ponto, z, kin, porCasa, pctDoImpacto, rng, golpes,
  * golpe direto conta como o primeiro).
  */
 export function resolver(args) {
-  const r = resolverDoUso(args);
+  const r = comDistancias(resolverDoUso(args));
   const { efeito, tags, origem, vivos = [], area = false, rng = Math.random, cinetica = null, atingidos = [], andavel = null, alcance } = args;
   const t = new Set(tags ?? []);
   if (cinetica && efeito && t.has('projectile') && !area) {
@@ -130,24 +195,29 @@ export function resolver(args) {
     const max = G().limites?.explosoesCineticasPorUso ?? 90;
     // (revisão do PR3, 21/10) onde o voo PARA: o projétil que erra e bate no TERRENO no caminho explode ali ("pequenas explosões em volta do ponto de impacto" —
     // bater no terreno é o impacto), não no fim do alcance; o mesmo critério de `terrenoNaReta`
+    // (03/11, revisão do raio contínuo: o mesmo CAMINHO também — `casasDoEmitido`, o raio do ângulo exato, e não a reta até o fim arredondado)
     const fimDoVoo = (p) => {
       if (!andavel) return p.para;
-      const reta = casasDaReta(p.de ?? origem, p.para, alcance);
-      const i = reta.findIndex((c) => !andavel.has(`${c.x},${c.y}`));
       const de = p.de ?? origem;
+      const reta = casasDoEmitido({ ...p, de }, alcance);
+      const i = reta.findIndex((c) => !andavel.has(`${c.x},${c.y}`));
       return i < 0 ? p.para : i > 0 ? { x: reta[i - 1].x, y: reta[i - 1].y } : { x: de.x, y: de.y };
     };
     for (const p of r.emitidos) {
       if (p.bicho || !p.para) continue;
       const pct = p.tipo === 'direto' ? 100 : (Number(efeito.danoDosExtrasPct) || 100);
-      if (!explosoesCineticas({ ponto: fimDoVoo(p), z: origem?.z ?? 0, kin: cinetica, porCasa, pctDoImpacto: pct, rng, golpes: r.golpes, explosoes: r.explosoes, conta, max, andavel })) { r.cortado = true; break; }
+      const fim = fimDoVoo(p);
+      if (!explosoesCineticas({ ponto: fim, z: origem?.z ?? 0, kin: cinetica, porCasa, pctDoImpacto: pct, rng, golpes: r.golpes, explosoes: r.explosoes, conta, max, andavel, dist: (p.ate ?? 0) + Math.hypot(fim.x - (p.de ?? origem).x, fim.y - (p.de ?? origem).y) })) { r.cortado = true; break; }
     }
   }
-  if (efeito?.lanca?.menosPct > 0) GemasPR3.menosAposOPrimeiro(r.golpes, efeito.lanca.menosPct, atingidos);
+  // (03/11: no passe dos a mais, o primeiro acerto é o do principal no bicho do caminho dele — `reservados`)
+  if (efeito?.lanca?.menosPct > 0) GemasPR3.menosAposOPrimeiro(r.golpes, efeito.lanca.menosPct, args.parte === 'extras' && args.reservados ? args.reservados : atingidos);
   return r;
 }
 
-function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alcance, area = false, rumo = null, rng = Math.random, andavel = null, areaNoImpacto = null, cinetica = null, divisaoNoAlvo = null }) {
+// (03/11, rodada 2 do voo de verdade: + `reservados` — no passe dos a mais (`parte` 'extras'), os bichos que ficam fora do primeiro acerto deles: o do caminho do
+// principal que ainda voa (`Acoes.disparar`); sem ele, o alvo e os atingidos, como antes)
+function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alcance, area = false, rumo = null, rng = Math.random, andavel = null, areaNoImpacto = null, cinetica = null, divisaoNoAlvo = null, voo = false, parte = null, casasDoCaminho = null, reservados = null }) {
   const golpes = [];
   const explosoes = [];
   const emitidos = [];
@@ -165,6 +235,11 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
   const pctsDaExplosao = t.has('hit') ? [efeito.explosaoPct, efeito.segundaExplosaoPct].filter((p) => p > 0) : [];
   let impactos = 0;
   let nExplosoes = 0;
+  // (lote "projetil") as casas de verdade entre dois pontos, e a do impacto de agora (as explosões e a área dele caem junto)
+  const hyp = (a, b) => Math.hypot(b.x - a.x, b.y - a.y);
+  let distDoImpacto = 0;
+  // (03/11) o projétil do impacto de agora (`projDoUso` — a `ordem` dele): as explosões dele levam a marca (o acerto que não acontece no instante leva as dele junto)
+  let projDoImpacto = null;
   // (lote A3c) a área no impacto: o raio em casas (já sorteado no uso — `Acoes.disparar`) e o teto de áreas por uso
   const raioNoImpacto = areaNoImpacto && t.has('projectile') && !area ? Math.max(0, Math.round(Number(areaNoImpacto.raio) || 0)) : null;
   const maxAreas = cfg.limites?.areasNoImpactoPorUso ?? 60;
@@ -192,7 +267,7 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
       const b = porCasa.get(Areas.chave(c));
       if (!b || b === centro || !(b.hp > 0) || (b.z ?? 0) !== z || ja.has(b)) continue;
       ja.add(b);
-      golpes.push({ bicho: b, pct, de: ponto, tipo: 'impacto', doImpacto: tipo === 'direto' ? null : tipo, ...(meta ?? {}) });
+      golpes.push({ bicho: b, pct, de: ponto, tipo: 'impacto', doImpacto: tipo === 'direto' ? null : tipo, dist: distDoImpacto, ...(meta ?? {}) });
     }
   };
 
@@ -209,7 +284,7 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
       // O quadrado da explosão: a MESMA conta que a tela usa para desenhá-la (`Areas.casasDoEvento`).
       for (const c of Areas.quadrado(ponto, raio)) {
         const b = porCasa.get(Areas.chave(c));
-        if (b) golpes.push({ bicho: b, pct, de: ponto, tipo: 'explosao' });
+        if (b) golpes.push({ bicho: b, pct, de: ponto, tipo: 'explosao', dist: distDoImpacto, ...(projDoImpacto != null ? { projDoUso: projDoImpacto } : {}) });
       }
     }
   };
@@ -220,18 +295,20 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
    */
   // (lote A3c: + `ja` — os que este projétil já acertou na passada; com ele, o impacto é em área — `areaDoImpacto`)
   const impacto = (bicho, pct, de, tipo, direto, meta = null, ja = null) => {
+    distDoImpacto = meta?.dist ?? hyp(origem, bicho);
+    projDoImpacto = meta?.projDoUso ?? null;
     if (!direto) {
       if (impactos >= maxImpactos) {
         r.cortado = true;
         return false;
       }
       impactos++;
-      golpes.push({ bicho, pct, de, tipo, ...(meta ?? {}) });
+      golpes.push({ bicho, pct, de, tipo, dist: distDoImpacto, ...(meta ?? {}) });
     }
     explodir(bicho, pct);
     areaDoImpacto(bicho, pct, tipo, meta, ja);
     // (lote PR3) as explosões da Explosão Cinética em todo impacto que acerta
-    if (kin && !explosoesCineticas({ ponto: bicho, z: bicho.z ?? 0, kin, porCasa, pctDoImpacto: pct, rng, golpes, explosoes, conta: contaCinetica, max: cfg.limites?.explosoesCineticasPorUso ?? 90, andavel })) r.cortado = true;
+    if (kin && !explosoesCineticas({ ponto: bicho, z: bicho.z ?? 0, kin, porCasa, pctDoImpacto: pct, rng, golpes, explosoes, conta: contaCinetica, max: cfg.limites?.explosoesCineticasPorUso ?? 90, andavel, dist: distDoImpacto })) r.cortado = true;
     return true;
   };
 
@@ -247,7 +324,7 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
     const a = anguloDoRumo + (k - (total - 1) / 2) * passo;
     return { x: Math.round(origem.x + Math.cos(a) * alcance), y: Math.round(origem.y + Math.sin(a) * alcance) };
   };
-  const emitir = (bicho, tipo, k) => emitidos.push({ de: { x: origem.x, y: origem.y }, para: bicho ? { x: bicho.x, y: bicho.y } : pontoDoProjetil(k), bicho: bicho ?? null, tipo });
+  const emitir = (bicho, tipo, k) => { const para = bicho ? { x: bicho.x, y: bicho.y } : pontoDoProjetil(k); emitidos.push({ de: { x: origem.x, y: origem.y }, para, bicho: bicho ?? null, tipo, dist: hyp(origem, para) }); };
 
 
   const pctDe = (k) => efeito[k] || 100;
@@ -261,10 +338,26 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
     return Math.floor(salto) + (rng() < salto % 1 ? 1 : 0);
   };
   // (lote A3) o PONTO a `alcance` casas de `de`, no ângulo `a` (os projéteis que erram, a divisão sem alvo, o círculo, as origens laterais)
-  const noAngulo = (de, a, dist = alcance) => ({ x: Math.round(de.x + Math.cos(a) * dist), y: Math.round(de.y + Math.sin(a) * dist) });
+  // (03/11, revisão: o fim do RAIO contínuo — `fimDoRaio`, a `dist` casas em Chebyshev, como o voo —, e o ponto guarda o ângulo exato: quem procura o primeiro do
+  // caminho até ele anda o raio de verdade, `casasDoRaio`, e não a reta até o fim arredondado)
+  const raios = new WeakMap();
+  const noAngulo = (de, a, dist = alcance) => {
+    const fim = fimDoRaio(de, a, dist);
+    raios.set(fim, { x: de.x, y: de.y, a, dist });
+    return fim;
+  };
+  /** As casas do caminho de `de` até `fim`, até `ate` casas: o raio contínuo, quando `fim` veio de `noAngulo` a partir de `de`; senão a reta. */
+  const casasAte = (de, fim, ate) => {
+    const r = raioDe(de, fim);
+    return r ? casasDoRaio(de, r.a, Math.min(ate, r.dist)) : casasDaReta(de, fim, ate);
+  };
+  /** O raio (`{ a, dist }`) de `fim`, quando ele veio de `noAngulo` a partir de `de`; senão null. */
+  const raioDe = (de, fim) => { const q = raios.get(fim); return q && q.x === de.x && q.y === de.y ? q : null; };
+  /** O emitido `e` (que saiu de `de` no rumo de `fim`) guarda o ângulo exato e o alcance do raio, para quem refaz o caminho dele (`casasDoEmitido`). */
+  const comRaio = (e, fim) => { const q = raioDe(e.de, fim); if (q) { e.angulo = q.a; e.alcanceDoRaio = q.dist; } return e; };
   const anguloDe = (de, para) => (para.x === de.x && para.y === de.y ? anguloDoRumo : Math.atan2(para.y - de.y, para.x - de.x));
   /** O primeiro bicho vivo na reta de `de` a `fim` (até `alcance` casas), fora de `fora`. */
-  const primeiroNaReta = (de, fim, fora) => casasDaReta(de, fim, alcance).map((c) => porCasa.get(`${c.x},${c.y}`)).find((b) => b && b.hp > 0 && !fora.has(b)) ?? null;
+  const primeiroNaReta = (de, fim, fora) => casasAte(de, fim, alcance).map((c) => porCasa.get(`${c.x},${c.y}`)).find((b) => b && b.hp > 0 && !fora.has(b)) ?? null;
   /**
    * (lote A3, dono 19/10 — D5: "o projétil se divide a partir do alvo atingido em N projéteis para os mais próximos", como no PoE) A DIVISÃO: de
    * `ponto`, `n` projéteis inteiros para os `n` bichos vivos mais perto dele (no alcance da habilidade), fora dos que o projétil já acertou; os que
@@ -277,16 +370,16 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
     if (!n) return;
     const de = { x: ponto.x, y: ponto.y };
     const alvos = maisPerto(vivosNoInicio, de, alcance, n, p.acertados);
-    for (const b of alvos) voar({ de, pct, perfurar: p.perfurar, bifurcar: p.bifurcar, deNovo: p.deNovo, encadear: p.encadear, volta: false, dividir: 0, acertados: new Set(p.acertados), perfurados: p.perfurados, ricocheteou: p.ricocheteou, ordem: p.ordem }, b, 'divisao');
+    for (const b of alvos) voar({ de, ate: p.percorrido ?? p.ate ?? 0, pct, perfurar: p.perfurar, bifurcar: p.bifurcar, deNovo: p.deNovo, encadear: p.encadear, volta: false, dividir: 0, acertados: new Set(p.acertados), perfurados: p.perfurados, ricocheteou: p.ricocheteou, ordem: p.ordem }, b, 'divisao');
     const rumoDaDivisao = anguloDe(origem, de);
-    for (let k = alvos.length; k < n; k++) emitidos.push({ de, para: noAngulo(de, rumoDaDivisao + (k - (n - 1) / 2) * (Math.PI / 8)), bicho: null, tipo: 'divisao' });
+    for (let k = alvos.length; k < n; k++) { const para = noAngulo(de, rumoDaDivisao + (k - (n - 1) / 2) * (Math.PI / 8)); emitidos.push(comRaio({ de, para, bicho: null, tipo: 'divisao', dist: (p.percorrido ?? p.ate ?? 0) + hyp(de, para) }, para)); }
   };
   /**
    * (lote PR1, dono 20/10) as ESTILHAS do Arremesso de Escudo Espectral (`efeito.estilhas`: `{ n, pct }`): a cada colisão do escudo com um inimigo, N projéteis
    * saem dele em direções sorteadas, cada um com o % das estilhas ("50% menos Dano": 50), perfurando todos; o inimigo em que o escudo colidiu não leva a dele
    * (exceção 1 do lote). Elas não ricocheteiam, não difundem e não voltam (atravessam todos — no PoE o atravessar vem antes).
    */
-  const soltarEstilhas = (ponto) => {
+  const soltarEstilhas = (ponto, ate = 0) => {
     const n = Math.max(0, Math.round(Number(efeito.estilhas?.n) || 0));
     const pct = Number(efeito.estilhas?.pct) || 0;
     for (let k = 0; k < n; k++) {
@@ -294,13 +387,18 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
       const fim = noAngulo(de, rng() * 2 * Math.PI);
       const fora = new Set([ponto]);
       const bicho = primeiroNaReta(de, fim, fora);
-      emitidos.push({ de, para: bicho ? { x: bicho.x, y: bicho.y } : fim, bicho, tipo: 'estilha' });
-      if (bicho && pct > 0) voar({ perfurar: 99, bifurcar: 0, deNovo: 0, encadear: 0, volta: false, dividir: 0, rebatidas: 0, soNaVolta: false, ordem: ordens++, de, pct, acertados: fora }, bicho, 'estilha');
+      const para = bicho ? { x: bicho.x, y: bicho.y } : fim;
+      emitidos.push(comRaio({ de, para, bicho, tipo: 'estilha', dist: ate + hyp(de, para) }, fim));
+      if (bicho && pct > 0) voar({ perfurar: 99, bifurcar: 0, deNovo: 0, encadear: 0, volta: false, dividir: 0, rebatidas: 0, soNaVolta: false, ordem: ordens++, de, ate, pct, acertados: fora }, bicho, 'estilha');
     }
   };
   /** Um projétil: sai de `de` com `pct`% e acerta `primeiro`; daí segue as supports. */
   const voar = (projetil, primeiro, tipo, direto = false) => {
     const p = { acertados: new Set(), ida: [], perfurados: 0, ricocheteou: 0, ...projetil };
+    // (lote "projetil") as casas andadas até `de` (`ate`) e até o impacto de agora (`percorrido`); `pos`: onde ele está
+    p.percorrido = p.ate ?? 0;
+    let pos = p.de;
+    let anterior = p.de;
     let atual = primeiro;
     let pct = p.pct * doRestante(p.encadear);
     let de = p.de;
@@ -312,18 +410,25 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
     let difundiu = false;
     const atravessaTodos = (p.perfurar ?? 0) >= 99;
     // (lote A3: + `ordem` — o índice do projétil no uso, para o "por projétil disparado anteriormente em sequência")
-    const meta = () => ({ atravessados: p.perfurados, ricochetes: p.ricocheteou, restantes: Math.max(0, p.encadear ?? 0), ordem: p.ordem ?? 0 });
+    // (03/11: + `projDoUso` — o projétil (a ordem dele no uso: os saltos e os filhos levam a do pai) — e `exclusivo` no PRIMEIRO acerto do projétil a mais que escolheu
+    // o bicho "que nenhum outro do uso acertou" (D7b): `Acoes.disparar` confere no instante do acerto se outro projétil do uso já o pegou)
+    let primeiroAcerto = true;
+    const meta = () => ({ atravessados: p.perfurados, ricochetes: p.ricocheteou, restantes: Math.max(0, p.encadear ?? 0), ordem: p.ordem ?? 0, dist: p.percorrido, projDoUso: p.ordem ?? 0, ...(p.exclusivo && primeiroAcerto ? { exclusivo: true } : {}) });
     while (atual) {
+      p.percorrido += hyp(pos, atual);
+      anterior = pos;
+      pos = atual;
       // (lote A3, D3: o Arremesso Espectral da Materialização "só acerta e causa dano enquanto retorna" — a ida só marca quem está no caminho)
       // (lote A3c: o impacto em área — os que ela pega entram nos acertados deste projétil)
       if (!p.soNaVolta && !impacto(atual, pct, de, tipoAtual, eDireto, meta(), p.acertados)) return;
+      primeiroAcerto = false;
       p.acertados.add(atual);
       p.ida.push(atual);
       ultimo = atual;
       eDireto = false;
       de = atual;
       // (lote PR1) as ESTILHAS do Arremesso de Escudo Espectral: a cada colisão do escudo com um inimigo
-      if (p.estilhas) soltarEstilhas(atual);
+      if (p.estilhas) soltarEstilhas(atual, p.percorrido);
       // (lote A3, D5) a DIVISÃO no primeiro acerto (o projétil segue o caminho dele)
       if (p.dividir > 0) dividir(p, atual, p.pct);
       // (lote G-C, dono 25/10) a Marca do Atirador: "Projéteis que Acertarem Inimigos Amaldiçoados se Dividem na direção de N alvos adicionais" — o projétil que acerta
@@ -359,9 +464,21 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
         // (13/10) "Projéteis têm X% de chance de receber um Projétil adicional quando Difundindo": um filho a mais. Os filhos levam o que o
         // projétil já atravessou e ricocheteou.
         const filhos = p.bifurcar + (efeito.bifurcarExtraChance > 0 && rng() * 100 < efeito.bifurcarExtraChance ? 1 : 0);
-        for (const b of maisPerto(vivosNoInicio, atual, cfg.distanciaDaBifurcacao ?? 4, filhos, p.acertados)) {
-          voar({ de: atual, pct: pctDoFilho, perfurar: p.perfurar, bifurcar: (p.deNovo ?? 0) > 0 ? 2 : 0, deNovo: Math.max(0, (p.deNovo ?? 0) - 1), encadear: p.encadear, volta: false, acertados: new Set(p.acertados), perfurados: p.perfurados, ricocheteou: p.ricocheteou, ordem: p.ordem }, b, 'bifurcacao');
-        }
+        const filho = (b) => voar({ de: atual, ate: p.percorrido, pct: pctDoFilho, perfurar: p.perfurar, bifurcar: (p.deNovo ?? 0) > 0 ? 2 : 0, deNovo: Math.max(0, (p.deNovo ?? 0) - 1), encadear: p.encadear, volta: false, acertados: new Set(p.acertados), perfurados: p.perfurados, ricocheteou: p.ricocheteou, ordem: p.ordem }, b, 'bifurcacao');
+        if (voo) {
+          // (lote "projetil") os filhos nos ângulos da difusão a partir da reta em que o projétil vinha; cada um no primeiro do caminho até o alcance
+          const a0 = anterior.x === atual.x && anterior.y === atual.y ? anguloDoRumo : Math.atan2(atual.y - anterior.y, atual.x - anterior.x);
+          const meio = Number.isFinite(efeito.difusaoMeioAngulo) ? efeito.difusaoMeioAngulo : Math.PI / 6;
+          const ja = new Set(p.acertados);
+          for (let k = 0; k < filhos; k++) {
+            const a = filhos === 1 ? a0 : a0 - meio + (2 * meio * k) / (filhos - 1);
+            const fim = noAngulo(atual, a);
+            const b = primeiroNaReta(atual, fim, ja);
+            const para = b ? { x: b.x, y: b.y } : fim;
+            emitidos.push(comRaio({ de: { x: atual.x, y: atual.y }, para, bicho: b ?? null, tipo: 'bifurcacao', dist: p.percorrido + hyp(atual, para) }, fim));
+            if (b) { ja.add(b); filho(b); }
+          }
+        } else for (const b of maisPerto(vivosNoInicio, atual, cfg.distanciaDaBifurcacao ?? 4, filhos, p.acertados)) filho(b);
         difundiu = true;
         break;
       }
@@ -391,7 +508,7 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
           const pctDoSalto = ((p.pct * pctDe('danoDoEncadeamentoPct')) / 100) * doRestante(p.encadear);
           for (const c of Areas.quadrado(centro, raioDoSalto)) {
             const b = porCasa.get(Areas.chave(c));
-            if (b && b.hp > 0 && !impacto(b, pctDoSalto, centro, 'encadeamento', false, meta())) return;
+            if (b && b.hp > 0 && !impacto(b, pctDoSalto, centro, 'encadeamento', false, { ...meta(), dist: p.percorrido + hyp(atual, centro) })) return;
           }
         }
         break;
@@ -436,6 +553,7 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
         const [b] = maisPerto(vivosNoInicio, de, distanciaDoSalto(), 1, p.acertados);
         if (!b) break;
         vindoDe = de;
+        p.percorrido += hyp(ponto, de) + hyp(de, b);
         if (!impacto(b, p.pct, de, 'rebatida', false, meta(), p.acertados)) return;
         p.acertados.add(b);
         p.ida.push(b);
@@ -460,10 +578,15 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
       let naVoltaAtravessados = 0;
       // (lote A3c: a volta é outra passada — a área no impacto de cada retorno; quem uma área da volta já pegou não leva o retorno de novo)
       const daVolta = raioNoImpacto == null ? null : new Set();
+      // (lote "projetil") o ponto de virada: o fim do alcance no que atravessa todos (a reta do último acerto, a partir de quem lançou), senão o último acertado; a
+      // volta é a reta dele até quem lançou
+      const virada = atravessaTodos && ultimo ? noAngulo(p.de, anguloDe(p.de, ultimo)) : ultimo ?? p.de;
+      const distDaVirada = p.percorrido + (virada === ultimo ? 0 : hyp(ultimo ?? p.de, virada));
       for (const b of naVolta) {
         if (daVolta?.has(b)) continue;
         daVolta?.add(b);
-        const m = p.soNaVolta ? { ...meta(), atravessados: naVoltaAtravessados++ } : meta();
+        const m0 = p.soNaVolta ? { ...meta(), atravessados: naVoltaAtravessados++ } : meta();
+        const m = { ...m0, dist: distDaVirada + hyp(virada, b) };
         if (!impacto(b, pctDaVolta, b, 'retorno', false, m, daVolta)) return;
       }
     }
@@ -486,7 +609,7 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
   /** (lote A3) Onde a reta de `de` a `para` bate no TERRENO (a casa antes da que não se anda), ou null. */
   const terrenoNaReta = (de, para) => {
     if (!andavel) return null;
-    const reta = casasDaReta(de, para, alcance);
+    const reta = casasAte(de, para, alcance);
     const i = reta.findIndex((c) => !andavel.has(`${c.x},${c.y}`));
     return i < 0 ? null : i > 0 ? { x: reta[i - 1].x, y: reta[i - 1].y } : { x: de.x, y: de.y };
   };
@@ -498,16 +621,16 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
    * (lote A3, dono 19/10 — D5) o projétil que erra também se DIVIDE: "podem se Dividir ao acertar o terreno" (na batida) e "podem se Dividir sem
    * acertar um alvo" (no fim do voo, se não bateu antes).
    */
-  const naParede = (para, pct, de = origem) => {
+  const naParede = (para, pct, de = origem, ate = 0) => {
     const parede = terrenoNaReta(de, para);
     if ((efeito.divisao || 0) > 0 && (efeito.dividirNoTerreno || efeito.dividirSemAcertar)) {
       const ponto = parede && efeito.dividirNoTerreno ? parede : efeito.dividirSemAcertar ? (parede ?? para) : null;
-      if (ponto) dividir({ dividir: efeito.divisao, acertados: new Set(), perfurar: efeito.perfurar || 0, bifurcar: 0, deNovo: 0, encadear: efeito.encadear || 0, perfurados: 0, ricocheteou: 0, ordem: 0 }, ponto, pct);
+      if (ponto) dividir({ dividir: efeito.divisao, acertados: new Set(), perfurar: efeito.perfurar || 0, bifurcar: 0, deNovo: 0, encadear: efeito.encadear || 0, perfurados: 0, ricocheteou: 0, ordem: 0, percorrido: ate + hyp(de, ponto) }, ponto, pct);
     }
     if (!parede || !(efeito.ricocheteTerrenoChance > 0) || !((efeito.encadear || 0) >= 1)) return;
     if (!(rng() * 100 < efeito.ricocheteTerrenoChance)) return;
     const [b] = maisPerto(vivosNoInicio, parede, distanciaDoSalto(), 1, new Set());
-    if (b) voar({ ...base(), encadear: (efeito.encadear || 0) - 1, de: parede, pct: (pct * pctDe('danoDoEncadeamentoPct')) / 100, ricocheteou: 1 }, b, 'encadeamento');
+    if (b) voar({ ...base(), encadear: (efeito.encadear || 0) - 1, de: parede, ate: ate + hyp(de, parede), pct: (pct * pctDe('danoDoEncadeamentoPct')) / 100, ricocheteou: 1 }, b, 'encadeamento');
   };
   /**
    * (lote 42, P067 — dono: "Fazer todos") "Projéteis são disparados em direções aleatórias": TODOS os projéteis — o principal também (o
@@ -525,7 +648,7 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
       const naOrigem = efeito.acertaNaOrigem ? porCasa.get(`${origem.x},${origem.y}`) : null;
       const bicho = (naOrigem?.hp > 0 ? naOrigem : null) ?? primeiroNaReta(origem, fim, new Set());
       const pct = k ? pctDe('danoDosExtrasPct') : 100;
-      emitidos.push({ de: { x: origem.x, y: origem.y }, para: bicho ? { x: bicho.x, y: bicho.y } : fim, bicho, tipo: 'projetil' });
+      emitidos.push(comRaio({ de: { x: origem.x, y: origem.y }, para: bicho ? { x: bicho.x, y: bicho.y } : fim, bicho, tipo: 'projetil' }, fim));
       if (bicho) voar({ ...base(), de: origem, pct }, bicho, 'projetil');
       else naParede(fim, pct);
     }
@@ -537,40 +660,251 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
    * até o alcance; cada secundário acerta o primeiro vivo do caminho (não o alvo do tiro, onde nasce — a exceção 2) e segue os modificadores do projétil
    * (perfurar, difundir, ricochetear, retornar). Os projéteis adicionais são mais tiros (o PoB: ProjectileCount × os secundários), nos mais perto de você.
    */
+  const extras = total - 1;
+  const tornado = efeito.tornado && deProjetil ? Math.max(0, Math.round(Number(efeito.tornado.n) || 0)) : 0;
+  const soltar = (ponto, pct) => {
+    const de = { x: ponto.x, y: ponto.y };
+    const a0 = anguloDe(origem, de);
+    for (let k = 0; k < tornado; k++) {
+      const fim = noAngulo(de, GemasPR3.anguloDoSecundario(k, tornado, a0, rng));
+      const bicho = primeiroNaReta(de, fim, new Set());
+      const ate = hyp(origem, de);
+      const para = bicho ? { x: bicho.x, y: bicho.y } : fim;
+      emitidos.push(comRaio({ de, para, bicho, tipo: 'secundario', dist: ate + hyp(de, para) }, fim));
+      if (bicho) voar({ ...base(), de, ate, pct }, bicho, 'secundario');
+      else naParede(fim, pct, de, ate);
+    }
+  };
+  const tiro = (destino, bicho, k) => {
+    const direto = k === 0;
+    const pct = direto ? 100 : pctDe('danoDosExtrasPct');
+    emitidos.push({ de: { x: origem.x, y: origem.y }, para: { x: destino.x, y: destino.y }, bicho: bicho ?? null, tipo: direto ? 'direto' : 'projetil' });
+    const ja = new Set();
+    for (const c of casasDaReta(origem, destino, cheb(origem, destino))) {
+      const b = porCasa.get(Areas.chave(c));
+      if (!b || !(b.hp > 0) || b === bicho || ja.has(b)) continue;
+      ja.add(b);
+      if (!impacto(b, (pct * pctDe('danoDaPerfuracaoPct')) / 100, origem, 'perfuracao', false)) return;
+    }
+    if (bicho && !impacto(bicho, pct, origem, direto ? 'direto' : 'projetil', direto)) return;
+    soltar(destino, pct);
+  };
+  /*
+   * (03/11 — a revisão do voo de verdade: cada projétil é INDEPENDENTE, como no PoE) o LEQUE dos projéteis a mais (`leque`, D7b de `itens-poe/projeteis-voo.mjs`):
+   * cada um no ângulo dele a partir do rumo do principal, no primeiro do caminho que nenhum outro do uso acertou (`fora`); sem ninguém, erra (e pode bater no
+   * terreno). O caminho de cada um é o da gema (`casasDoCaminho`: o ziguezague do Raio Cinético, a espiral da Hélice — o mesmo do principal); sem ele, a reta.
+   * `parte` (o voo de verdade, `Acoes.disparar`): 'extras' — só os projéteis a mais (saem no uso e caem no tempo de cada um); 'principal' — só o principal e o
+   * que vem dele (o golpe do contato). Sem `parte`, todos (como antes).
+   * (03/11, rodada 2: a separação vale em TODA geometria — as origens laterais da Saraivada, a sequência, a Fuzilaria, o Aço Perfurador, o círculo, o Tiro Tornado, o
+   * "em até N inimigos ao redor" e os simultâneos —, `extrasDoUso`; o primeiro acerto do a mais que escolheu o bicho "que nenhum outro acertou" leva `exclusivo`)
+   */
+  const extrasDoLeque = total - 1;
+  const primeiroNoCaminho = (de, fim, fora) => {
+    if (!casasDoCaminho) return primeiroNaReta(de, fim, fora);
+    // (03/11, revisão do raio contínuo: o caminho curvo também sai no ângulo EXATO do projétil — `raioDe` —, não na direção do fim arredondado)
+    return (casasDoCaminho(de, fim, raioDe(de, fim)?.a ?? null) ?? []).map((c) => porCasa.get(`${c.x},${c.y}`)).find((b) => b && b.hp > 0 && !fora.has(b)) ?? null;
+  };
+  const passoDoLeque = total > 1 ? Math.min(((Number(efeito.lequeGraus) || 10) * Math.PI) / 180, (2 * Math.PI) / total) : 0;
+  const anguloNoLeque = (k) => anguloDoRumo + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * passoDoLeque;
+  const leque = (fora) => {
+    for (let k = 1; k <= extrasDoLeque; k++) {
+      const fim = noAngulo(origem, anguloNoLeque(k));
+      const b = primeiroNoCaminho(origem, fim, fora);
+      const para = b ? { x: b.x, y: b.y } : fim;
+      emitidos.push(comRaio({ de: { x: origem.x, y: origem.y }, para, bicho: b ?? null, tipo: 'projetil', dist: hyp(origem, para) }, fim));
+      if (b) { fora.add(b); voar({ ...base(), exclusivo: true, de: origem, pct: pctDe('danoDosExtrasPct') }, b, 'projetil'); }
+      else naParede(fim, pctDe('danoDosExtrasPct'));
+    }
+  };
+  /*
+   * (03/11, rodada 2) o projétil a mais que MIRA um bicho (ou um ponto), no voo de verdade: sai de `de` na direção dele e acerta o primeiro vivo do CAMINHO (fora
+   * `fora`) — quem entrou na frente leva; sem ninguém, erra no fim do alcance (e pode bater no terreno). `exclusivo`: o bicho acertado entra em `fora` (D7b).
+   */
+  const tiroMirado = (de, mirado, fora, pct, exclusivo) => {
+    const fim = noAngulo(de, anguloDe(de, mirado));
+    const b = primeiroNoCaminho(de, fim, fora);
+    const para = b ? { x: b.x, y: b.y } : fim;
+    emitidos.push(comRaio({ de: { x: de.x, y: de.y }, para, bicho: b ?? null, tipo: 'projetil', dist: hyp(de, para) }, fim));
+    if (b) { if (exclusivo) fora.add(b); voar({ ...base(), ...(exclusivo ? { exclusivo: true } : {}), de, pct }, b, 'projetil'); }
+    else naParede(fim, pct, de);
+    return b;
+  };
+  /**
+   * (03/11, rodada 2) OS PROJÉTEIS A MAIS do uso, por geometria (o que vinha depois do principal): `anc` — o alvo do uso (null: o principal se perdeu; o rumo do tiro,
+   * `mira`, no lugar dele); `fora` — os que ficam fora do primeiro acerto deles. No voo de verdade cada um anda o caminho dele e acerta quem está nele; no modo
+   * clássico (sem `voo`), como antes.
+   */
+  const extrasDoUso = (anc, fora) => {
+    const ponto = anc ?? mira;
+    const pctExtras = pctDe('danoDosExtrasPct');
+    // (o Tiro Tornado: os tiros a mais, nos mais perto de você; os que sobram, no leque — no voo — ou em volta do rumo)
+    if (efeito.tornado) {
+      const com = extras > 0 ? maisPerto(vivosNoInicio, origem, alcance, extras, fora) : [];
+      com.forEach((b, i) => { fora.add(b); tiro(b, b, i + 1); });
+      for (let k = com.length + 1; k <= extras; k++) tiro(voo ? noAngulo(origem, anguloNoLeque(k)) : pontoDoProjetil(k), null, k);
+      return;
+    }
+    /*
+     * (lote A3, dono 19/10 — F7) "Dispara Projéteis extras em até N Inimigos ao redor" (o Rito Proibido) e "Dispara Projéteis em cada inimigo
+     * Próximo" (a Vaal Sifão de Poder): um projétil inteiro em cada inimigo vivo no alcance, os mais perto de você, até N — só os que existem.
+     */
+    if (efeito.aoRedor > 0) {
+      for (const b of maisPerto(vivosNoInicio, origem, alcance, Math.round(efeito.aoRedor), fora)) {
+        if (voo) { if (!fora.has(b)) tiroMirado(origem, b, fora, 100, true); continue; }
+        fora.add(b);
+        emitidos.push({ de: { x: origem.x, y: origem.y }, para: { x: b.x, y: b.y }, bicho: b, tipo: 'projetil' });
+        voar({ ...base(), de: origem, pct: 100 }, b, 'projetil');
+      }
+    }
+    /*
+     * (revisão do A3) a Saraivada de Projéteis (Barrage_of_Volley_Fire): "O primeiro e último disparo da sequência dispara N Projéteis adicionais
+     * simultâneos" — os N do primeiro e os N do último saem em LEQUE para os OUTROS inimigos (os mais perto de você, sem repetir o alvo nem entre
+     * si); os que não acham bicho saem e erram. No PoB a linha não entra no ProjectileCount (act_dex.lua:1129): num alvo único ficam os 4 da sequência.
+     */
+    if (efeito.simultaneos > 0) {
+      const n = 2 * Math.round(efeito.simultaneos);
+      const com = maisPerto(vivosNoInicio, origem, alcance, n, fora);
+      for (const b of com) {
+        if (voo) { tiroMirado(origem, b, fora, pctExtras, true); continue; }
+        fora.add(b);
+        emitidos.push({ de: { x: origem.x, y: origem.y }, para: { x: b.x, y: b.y }, bicho: b, tipo: 'projetil' });
+        voar({ ...base(), de: origem, pct: pctExtras }, b, 'projetil');
+      }
+      for (let k = com.length; k < n; k++) { const fim = noAngulo(origem, anguloDoRumo + (k - (n - 1) / 2) * (Math.PI / 8)); emitidos.push(comRaio({ de: { x: origem.x, y: origem.y }, para: fim, bicho: null, tipo: 'projetil' }, fim)); }
+    }
+    /*
+     * (lote A3, dono 19/10 — D7) a GEOMETRIA da emissão:
+     * - a Nova de Flechas e a Nuvem ("disparam uma Flecha Carregada no ar … Disparam de onde a Flecha Carregada cair" + "Disparam Projéteis em um
+     *   círculo"): os outros projéteis saem do PONTO DO ALVO, em círculo (os ângulos 2πk/N), cada um em linha reta até o alcance — acerta o primeiro
+     *   vivo do caminho que nenhum outro projétil do uso acertou; o principal é o que cai no alvo. Só o círculo (sem a Flecha Carregada): de você;
+     * - a Saraivada ("também disparam Projéteis de até N pontos de cada lado seu"): cada projétil a mais sai de um ponto ao LADO de você, na
+     *   perpendicular do rumo — um de cada lado, alternando, a 1, 2… casas, até N — e voa paralelo ao principal, acertando o primeiro vivo da reta.
+     */
+    if (extras > 0 && efeito.emCirculo) {
+      const centro = efeito.doPontoDoAlvo ? { x: ponto.x, y: ponto.y } : { x: origem.x, y: origem.y };
+      const a0 = anguloDe(origem, ponto);
+      for (let k = 1; k <= extras; k++) {
+        const fim = noAngulo(centro, a0 + (2 * Math.PI * k) / total);
+        const bicho = primeiroNaReta(centro, fim, fora);
+        emitidos.push(comRaio({ de: centro, para: bicho ? { x: bicho.x, y: bicho.y } : fim, bicho, tipo: 'projetil' }, fim));
+        if (bicho) { fora.add(bicho); voar({ ...base(), ...(voo ? { exclusivo: true } : {}), de: centro, pct: pctExtras }, bicho, 'projetil'); }
+        else naParede(fim, pctExtras, centro);
+      }
+      return;
+    }
+    if (extras > 0 && efeito.origensLaterais > 0) {
+      const n = Math.max(1, Math.round(efeito.origensLaterais));
+      const a0 = anguloDe(origem, ponto);
+      const px = -Math.sin(a0);
+      const py = Math.cos(a0);
+      for (let k = 1; k <= extras; k++) {
+        const j = Math.min(n, Math.ceil(k / 2));
+        const lado = k % 2 ? 1 : -1;
+        const de = { x: origem.x + arredondarSimetrico(px * j * lado), y: origem.y + arredondarSimetrico(py * j * lado) };
+        const fim = noAngulo(de, a0);
+        const bicho = primeiroNaReta(de, fim, fora);
+        emitidos.push(comRaio({ de, para: bicho ? { x: bicho.x, y: bicho.y } : fim, bicho, tipo: 'projetil' }, fim));
+        if (bicho) { fora.add(bicho); voar({ ...base(), ...(voo ? { exclusivo: true } : {}), de, pct: pctExtras }, bicho, 'projetil'); }
+        else naParede(fim, pctExtras, de);
+      }
+      return;
+    }
+    /*
+     * (lote PR3, dono 21/10 — D4) o AÇO PERFURADOR: "aiming at enemies in front of or close to it" — os projéteis miram o alvo e os vizinhos dele (a até
+     * `lanca.raio` casas, os mais perto primeiro), em rodízio (a exceção 7): o 1º no alvo (o golpe direto), o 2º no vizinho mais perto… e de volta ao alvo. O
+     * "menos Dano após o primeiro acerto em cada inimigo" sai no fim (`resolver`).
+     * (03/11, rodada 2: no voo, cada um sai na direção do mirado dele e acerta o primeiro do caminho — o rodízio pode repetir o mesmo, como no PoE)
+     */
+    if (extras > 0 && efeito.lanca) {
+      const raioDaLanca = Math.max(0, Math.round(efeito.lanca.raio ?? 1));
+      const roda = anc ? [anc, ...maisPerto(vivosNoInicio, anc, raioDaLanca, 99, new Set([anc]))] : maisPerto(vivosNoInicio, ponto, raioDaLanca, 99, new Set());
+      for (let k = 1; k <= extras; k++) {
+        const b = roda.length ? roda[k % roda.length] : null;
+        if (voo) { tiroMirado(origem, b ?? ponto, new Set(), pctExtras, false); continue; }
+        emitir(b, 'projetil', k);
+        voar({ ...base(), de: origem, pct: pctExtras }, b, 'projetil');
+      }
+      return;
+    }
+    // Os extras (o total menos o principal): os bichos mais perto de quem lança (fora o alvo), cada um um projétil inteiro; os que sobram
+    // sem bicho saem e erram — ou, "em sequência", vão no alvo.
+    if (extras > 0) {
+      // (14/10) "Barragens de Projéteis não se propagam": a barragem (em sequência) vai toda no alvo; "Projéteis são disparados em direções
+      // aleatórias": os extras vão em bichos sorteados no alcance (não nos mais perto)
+      const todosNoAlvo = efeito.sequencia && efeito.semPropagar;
+      const noAlcance = (vivosNoInicio ?? []).filter((b) => b.hp > 0 && !fora.has(b) && cheb(origem, b) <= alcance);
+      const sorteados = () => { const l = [...noAlcance]; const saida = []; while (l.length && saida.length < extras) saida.push(l.splice(Math.floor(rng() * l.length), 1)[0]); return saida; };
+      // (lote "projetil", dono 02/11 — o voo de verdade: o LEQUE) cada projétil a mais no ângulo dele — `efeito.lequeGraus` entre os vizinhos (D7b de
+      // `itens-poe/projeteis-voo.mjs`: 10°, sem passar da volta inteira), alternando os lados a partir do rumo do principal —, no primeiro do caminho que nenhum outro do
+      // uso acertou; sem ninguém, erra (e pode bater no terreno)
+      if (voo && !todosNoAlvo && !efeito.direcoesAleatorias && !efeito.extrasNoAlvo && !efeito.sequencia) {
+        leque(fora);
+        return;
+      }
+      const comBicho = todosNoAlvo ? [] : efeito.direcoesAleatorias ? sorteados() : maisPerto(vivosNoInicio, origem, alcance, extras, fora);
+      /*
+       * (03/11, rodada 2) no voo de verdade: cada um sai na direção do bicho dele e acerta o primeiro do caminho (D7b: o que nenhum outro do uso acertou); os da
+       * sequência e da Fuzilaria que sobram vão na direção do alvo (o mesmo pode levar vários, como no PoE); os outros que sobram, no leque (não em volta, nem para trás)
+       */
+      if (voo) {
+        comBicho.forEach((b) => { if (!fora.has(b)) tiroMirado(origem, b, fora, pctExtras, true); else tiroMirado(origem, ponto, new Set(), pctExtras, false); });
+        for (let k = comBicho.length + 1; k <= extras; k++) {
+          if ((efeito.sequencia || efeito.extrasNoAlvo) && (!anc || anc.hp > 0)) tiroMirado(origem, ponto, new Set(), pctExtras, false);
+          else {
+            const fim = noAngulo(origem, anguloNoLeque(k));
+            emitidos.push(comRaio({ de: { x: origem.x, y: origem.y }, para: fim, bicho: null, tipo: 'projetil', dist: hyp(origem, fim) }, fim));
+            naParede(fim, pctExtras);
+          }
+        }
+        return;
+      }
+      comBicho.forEach((b, i) => { emitir(b, 'projetil', i + 1); voar({ ...base(), de: origem, pct: pctExtras }, b, 'projetil'); });
+      for (let k = comBicho.length + 1; k <= extras; k++) {
+        // (revisão do A3: + a Fuzilaria Cinética — `extrasNoAlvo`: "tentarão atingir inimigos diferentes", mas os que não acham outro vão no alvo,
+        // cada um com a sua ordem, como o PoB conta — ProjectileCount, act_int.lua:11016)
+        if ((efeito.sequencia || efeito.extrasNoAlvo) && anc.hp > 0) {
+          emitir(anc, 'projetil', k);
+          voar({ ...base(), de: origem, pct: pctExtras }, anc, 'projetil');
+        } else {
+          emitir(null, 'projetil', k);
+          naParede(pontoDoProjetil(k), pctExtras);
+        }
+      }
+    }
+  };
+  // (03/11) só os projéteis a mais (o passe do uso — `Acoes.disparar`): fora do primeiro acerto deles, o do caminho do principal (`reservados`) — ou, sem ele, o alvo
+  // e os já acertados
+  if (parte === 'extras') {
+    // (a ordem dos a mais segue a do principal, que é a 0 — o "por projétil disparado anteriormente em sequência")
+    ordens = 1;
+    if (deProjetil && (alvo || rumo)) extrasDoUso(alvo, new Set((reservados ?? [alvo, ...atingidos]).filter(Boolean)));
+    return r;
+  }
+  /*
+   * (lote PR3, dono 21/10) o TIRO TORNADO: cada tiro atravessa todos até o local mirado (o alvo; o que erra, o fim do voo — a exceção 1) e lá solta os N
+   * projéteis SECUNDÁRIOS (`efeito.tornado.n`), cada um num rumo sorteado na sua fatia do círculo (`GemasPR3.anguloDoSecundario` — D2 do dono, a exceção 3),
+   * até o alcance; cada secundário acerta o primeiro vivo do caminho (não o alvo do tiro, onde nasce — a exceção 2) e segue os modificadores do projétil
+   * (perfurar, difundir, ricochetear, retornar). Os projéteis adicionais são mais tiros (o PoB: ProjectileCount × os secundários), nos mais perto de você.
+   */
   if (efeito.tornado && deProjetil && alvo) {
-    const n = Math.max(0, Math.round(Number(efeito.tornado.n) || 0));
-    const soltar = (ponto, pct) => {
-      const de = { x: ponto.x, y: ponto.y };
-      const a0 = anguloDe(origem, de);
-      for (let k = 0; k < n; k++) {
-        const fim = noAngulo(de, GemasPR3.anguloDoSecundario(k, n, a0, rng));
-        const bicho = primeiroNaReta(de, fim, new Set());
-        emitidos.push({ de, para: bicho ? { x: bicho.x, y: bicho.y } : fim, bicho, tipo: 'secundario' });
-        if (bicho) voar({ ...base(), de, pct }, bicho, 'secundario');
-        else naParede(fim, pct, de);
-      }
-    };
-    const tiro = (destino, bicho, k) => {
-      const direto = k === 0;
-      const pct = direto ? 100 : pctDe('danoDosExtrasPct');
-      emitidos.push({ de: { x: origem.x, y: origem.y }, para: { x: destino.x, y: destino.y }, bicho: bicho ?? null, tipo: direto ? 'direto' : 'projetil' });
-      const ja = new Set();
-      for (const c of casasDaReta(origem, destino, cheb(origem, destino))) {
-        const b = porCasa.get(Areas.chave(c));
-        if (!b || !(b.hp > 0) || b === bicho || ja.has(b)) continue;
-        ja.add(b);
-        if (!impacto(b, (pct * pctDe('danoDaPerfuracaoPct')) / 100, origem, 'perfuracao', false)) return;
-      }
-      if (bicho && !impacto(bicho, pct, origem, direto ? 'direto' : 'projetil', direto)) return;
-      soltar(destino, pct);
-    };
     tiro(alvo, alvo, 0);
     for (const b of atingidos) if (b !== alvo) impacto(b, 100, origem, 'direto', true);
-    const fora = new Set([alvo, ...atingidos]);
-    const extras = total - 1;
-    const com = extras > 0 ? maisPerto(vivosNoInicio, origem, alcance, extras, fora) : [];
-    com.forEach((b, i) => { fora.add(b); tiro(b, b, i + 1); });
-    for (let k = com.length + 1; k <= extras; k++) tiro(pontoDoProjetil(k), null, k);
+    if (parte === 'principal') return r;
+    extrasDoUso(alvo, new Set([alvo, ...atingidos]));
+    return r;
+  }
+  /*
+   * (03/11) o PRINCIPAL QUE SE PERDEU (o voo de verdade: o fim do alcance, a parede, o alvo que saiu da reta): ele sai no rumo do tiro e erra (pode bater no terreno)
+   * — e os projéteis a mais seguem por conta própria, como no PoE: cada um no caminho dele, acertando o primeiro que encontra (antes saíam todos e erravam).
+   * (03/11, rodada 2: em toda geometria — `extrasDoUso` sem o alvo, no rumo do tiro)
+   */
+  if (deProjetil && voo && !alvo && rumo) {
+    for (const b of atingidos) impacto(b, 100, origem, 'direto', true);
+    const fim = noAngulo(origem, anguloDoRumo);
+    emitidos.push(comRaio({ de: { x: origem.x, y: origem.y }, para: fim, bicho: null, tipo: 'direto', dist: hyp(origem, fim) }, fim));
+    naParede(fim, 100);
+    if (parte === 'principal') return r;
+    extrasDoUso(null, new Set(atingidos));
     return r;
   }
   if (!(t.has('projectile') && alvo)) {
@@ -589,107 +923,41 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
   voar({ ...base(), de: origem, pct: 100 }, alvo, 'direto', true);
   // Outros golpes principais da skill (a cadeia da própria magia): impactos.
   for (const b of atingidos) if (b !== alvo) impacto(b, 100, origem, 'direto', true);
-  const fora = new Set([alvo, ...atingidos]);
-  /*
-   * (lote A3, dono 19/10 — F7) "Dispara Projéteis extras em até N Inimigos ao redor" (o Rito Proibido) e "Dispara Projéteis em cada inimigo
-   * Próximo" (a Vaal Sifão de Poder): um projétil inteiro em cada inimigo vivo no alcance, os mais perto de você, até N — só os que existem.
-   */
-  if (efeito.aoRedor > 0) {
-    for (const b of maisPerto(vivosNoInicio, origem, alcance, Math.round(efeito.aoRedor), fora)) {
-      fora.add(b);
-      emitidos.push({ de: { x: origem.x, y: origem.y }, para: { x: b.x, y: b.y }, bicho: b, tipo: 'projetil' });
-      voar({ ...base(), de: origem, pct: 100 }, b, 'projetil');
-    }
-  }
-  /*
-   * (revisão do A3) a Saraivada de Projéteis (Barrage_of_Volley_Fire): "O primeiro e último disparo da sequência dispara N Projéteis adicionais
-   * simultâneos" — os N do primeiro e os N do último saem em LEQUE para os OUTROS inimigos (os mais perto de você, sem repetir o alvo nem entre
-   * si); os que não acham bicho saem e erram. No PoB a linha não entra no ProjectileCount (act_dex.lua:1129): num alvo único ficam os 4 da sequência.
-   */
-  if (efeito.simultaneos > 0) {
-    const n = 2 * Math.round(efeito.simultaneos);
-    const com = maisPerto(vivosNoInicio, origem, alcance, n, fora);
-    for (const b of com) {
-      fora.add(b);
-      emitidos.push({ de: { x: origem.x, y: origem.y }, para: { x: b.x, y: b.y }, bicho: b, tipo: 'projetil' });
-      voar({ ...base(), de: origem, pct: pctDe('danoDosExtrasPct') }, b, 'projetil');
-    }
-    for (let k = com.length; k < n; k++) emitidos.push({ de: { x: origem.x, y: origem.y }, para: noAngulo(origem, anguloDoRumo + (k - (n - 1) / 2) * (Math.PI / 8)), bicho: null, tipo: 'projetil' });
-  }
-  const extras = total - 1;
-  /*
-   * (lote A3, dono 19/10 — D7) a GEOMETRIA da emissão:
-   * - a Nova de Flechas e a Nuvem ("disparam uma Flecha Carregada no ar … Disparam de onde a Flecha Carregada cair" + "Disparam Projéteis em um
-   *   círculo"): os outros projéteis saem do PONTO DO ALVO, em círculo (os ângulos 2πk/N), cada um em linha reta até o alcance — acerta o primeiro
-   *   vivo do caminho que nenhum outro projétil do uso acertou; o principal é o que cai no alvo. Só o círculo (sem a Flecha Carregada): de você;
-   * - a Saraivada ("também disparam Projéteis de até N pontos de cada lado seu"): cada projétil a mais sai de um ponto ao LADO de você, na
-   *   perpendicular do rumo — um de cada lado, alternando, a 1, 2… casas, até N — e voa paralelo ao principal, acertando o primeiro vivo da reta.
-   */
-  if (extras > 0 && efeito.emCirculo) {
-    const centro = efeito.doPontoDoAlvo ? { x: alvo.x, y: alvo.y } : { x: origem.x, y: origem.y };
-    const a0 = anguloDe(origem, alvo);
-    for (let k = 1; k <= extras; k++) {
-      const fim = noAngulo(centro, a0 + (2 * Math.PI * k) / total);
-      const bicho = primeiroNaReta(centro, fim, fora);
-      emitidos.push({ de: centro, para: bicho ? { x: bicho.x, y: bicho.y } : fim, bicho, tipo: 'projetil' });
-      if (bicho) { fora.add(bicho); voar({ ...base(), de: centro, pct: pctDe('danoDosExtrasPct') }, bicho, 'projetil'); }
-      else naParede(fim, pctDe('danoDosExtrasPct'), centro);
-    }
-    return r;
-  }
-  if (extras > 0 && efeito.origensLaterais > 0) {
-    const n = Math.max(1, Math.round(efeito.origensLaterais));
-    const a0 = anguloDe(origem, alvo);
-    const px = -Math.sin(a0);
-    const py = Math.cos(a0);
-    for (let k = 1; k <= extras; k++) {
-      const j = Math.min(n, Math.ceil(k / 2));
-      const lado = k % 2 ? 1 : -1;
-      const de = { x: Math.round(origem.x + px * j * lado), y: Math.round(origem.y + py * j * lado) };
-      const fim = noAngulo(de, a0);
-      const bicho = primeiroNaReta(de, fim, fora);
-      emitidos.push({ de, para: bicho ? { x: bicho.x, y: bicho.y } : fim, bicho, tipo: 'projetil' });
-      if (bicho) { fora.add(bicho); voar({ ...base(), de, pct: pctDe('danoDosExtrasPct') }, bicho, 'projetil'); }
-      else naParede(fim, pctDe('danoDosExtrasPct'), de);
-    }
-    return r;
-  }
-  /*
-   * (lote PR3, dono 21/10 — D4) o AÇO PERFURADOR: "aiming at enemies in front of or close to it" — os projéteis miram o alvo e os vizinhos dele (a até
-   * `lanca.raio` casas, os mais perto primeiro), em rodízio (a exceção 7): o 1º no alvo (o golpe direto), o 2º no vizinho mais perto… e de volta ao alvo. O
-   * "menos Dano após o primeiro acerto em cada inimigo" sai no fim (`resolver`).
-   */
-  if (extras > 0 && efeito.lanca) {
-    const roda = [alvo, ...maisPerto(vivosNoInicio, alvo, Math.max(0, Math.round(efeito.lanca.raio ?? 1)), 99, new Set([alvo]))];
-    for (let k = 1; k <= extras; k++) {
-      const b = roda[k % roda.length];
-      emitir(b, 'projetil', k);
-      voar({ ...base(), de: origem, pct: pctDe('danoDosExtrasPct') }, b, 'projetil');
-    }
-    return r;
-  }
-  // Os extras (o total menos o principal): os bichos mais perto de quem lança (fora o alvo), cada um um projétil inteiro; os que sobram
-  // sem bicho saem e erram — ou, "em sequência", vão no alvo.
-  if (extras > 0) {
-    // (14/10) "Barragens de Projéteis não se propagam": a barragem (em sequência) vai toda no alvo; "Projéteis são disparados em direções
-    // aleatórias": os extras vão em bichos sorteados no alcance (não nos mais perto)
-    const todosNoAlvo = efeito.sequencia && efeito.semPropagar;
-    const noAlcance = (vivosNoInicio ?? []).filter((b) => b.hp > 0 && !fora.has(b) && cheb(origem, b) <= alcance);
-    const sorteados = () => { const l = [...noAlcance]; const saida = []; while (l.length && saida.length < extras) saida.push(l.splice(Math.floor(rng() * l.length), 1)[0]); return saida; };
-    const comBicho = todosNoAlvo ? [] : efeito.direcoesAleatorias ? sorteados() : maisPerto(vivosNoInicio, origem, alcance, extras, fora);
-    comBicho.forEach((b, i) => { emitir(b, 'projetil', i + 1); voar({ ...base(), de: origem, pct: pctDe('danoDosExtrasPct') }, b, 'projetil'); });
-    for (let k = comBicho.length + 1; k <= extras; k++) {
-      // (revisão do A3: + a Fuzilaria Cinética — `extrasNoAlvo`: "tentarão atingir inimigos diferentes", mas os que não acham outro vão no alvo,
-      // cada um com a sua ordem, como o PoB conta — ProjectileCount, act_int.lua:11016)
-      if ((efeito.sequencia || efeito.extrasNoAlvo) && alvo.hp > 0) {
-        emitir(alvo, 'projetil', k);
-        voar({ ...base(), de: origem, pct: pctDe('danoDosExtrasPct') }, alvo, 'projetil');
-      } else {
-        emitir(null, 'projetil', k);
-        naParede(pontoDoProjetil(k), pctDe('danoDosExtrasPct'));
-      }
-    }
-  }
+  // (03/11: com `parte` 'principal', os a mais já saíram no uso — `Acoes.disparar`)
+  if (parte === 'principal') return r;
+  extrasDoUso(alvo, new Set([alvo, ...atingidos]));
+  return r;
+}
+
+/**
+ * (03/11) Os projéteis a mais deste uso saem em LEQUE pelo voo de verdade — cada um independente (o seu tempo, o seu caminho): a geometria comum (sem as direções
+ * aleatórias, o Tiro Tornado, o círculo, as origens laterais da Saraivada, o Aço Perfurador, a sequência e o "nos inimigos diferentes, senão no alvo"). Com ela,
+ * `Acoes.disparar` solta os a mais no uso (`parte: 'extras'`) e o principal no contato dele (`parte: 'principal'`).
+ */
+export function lequeIndependente({ efeito, tags, area = false, voo = false }) {
+  const t = new Set(tags ?? []);
+  if (!voo || !efeito || !t.has('projectile') || area) return false;
+  const total = Math.max(1, Math.round(Number(efeito.projeteisBase) || 1)) + Math.max(0, Math.round(Number(efeito.alvosExtras) || 0));
+  return total > 1 && !efeito.direcoesAleatorias && !efeito.angulos?.length && !efeito.tornado && !efeito.emCirculo && !(efeito.origensLaterais > 0) && !efeito.lanca && !efeito.sequencia && !efeito.extrasNoAlvo;
+}
+
+/**
+ * (03/11, rodada 2 do voo de verdade) O uso tem projéteis A MAIS que voam por conta própria (cada um no seu tempo e no seu caminho), em QUALQUER geometria — o leque,
+ * as origens laterais da Saraivada, a sequência, a Fuzilaria, o Aço Perfurador, o círculo, o Tiro Tornado, o "em até N inimigos ao redor", os simultâneos; fora as
+ * direções aleatórias e os ângulos do objeto (lá não há principal no alvo: o uso inteiro sai na hora, cada um no tempo dele). Com ela, `Acoes.disparar` solta os a
+ * mais no uso (`parte: 'extras'`) e o principal no contato dele (`parte: 'principal'`).
+ */
+export function extrasIndependentes({ efeito, tags, area = false, voo = false }) {
+  const t = new Set(tags ?? []);
+  if (!voo || !efeito || !t.has('projectile') || area) return false;
+  if (efeito.direcoesAleatorias || efeito.angulos?.length) return false;
+  const total = Math.max(1, Math.round(Number(efeito.projeteisBase) || 1)) + Math.max(0, Math.round(Number(efeito.alvosExtras) || 0));
+  return total > 1 || efeito.aoRedor > 0 || efeito.simultaneos > 0;
+}
+
+/** (lote "projetil") A `dist` (as casas andadas desde quem lançou) nos emitidos que saíram sem ela — os que partem de quem lança ou do centro do círculo. */
+function comDistancias(r) {
+  for (const e of r.emitidos) if (e.dist == null && e.de && e.para) e.dist = Math.hypot(e.para.x - e.de.x, e.para.y - e.de.y);
   return r;
 }
 

@@ -10,7 +10,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 process.env.ITENS_POE = '1';
 const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
 const SEM = (!existsSync(Catalogo.ARQUIVO) || !Catalogo.ligado()) && 'só no modo PoE, com o catálogo do PoE';
-const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
+const { personagemDeTeste, PERSONAGEM, pousarVoos } = await import('./apoio.mjs');
 const Acoes = await import('../systems/acoes.mjs');
 const GS = await import('../systems/skills/gemas.mjs');
 const G = await import('../systems/itens-poe/gemas-poe.mjs');
@@ -134,6 +134,7 @@ function usar({ e, b }, slug) {
     if (!r.ok) return { ok: false, erro: r.motivo ?? r.erro };
     ev.push(...(r.eventos ?? []));
     if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; ev.push(...(Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM) ?? [])); }
+    ev.push(...pousarVoos(e.hunt)); // aval do dono 03/11: o voo de verdade — o golpe do projétil cai no tique em que ele chega (`pousarVoos`)
   }
   // (lote A3b, com o aval do dono: a gema cujo dano sai por outra — a outra logo depois, no fim do tempo de uso desta)
   if (DANO_POR_OUTRA[slug]) {
@@ -142,6 +143,7 @@ function usar({ e, b }, slug) {
     if (!r2.ok) return { ok: false, erro: `${DANO_POR_OUTRA[slug]}: ${r2.motivo ?? r2.erro}` };
     ev.push(...(r2.eventos ?? []));
     if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; ev.push(...(Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM) ?? [])); }
+    ev.push(...pousarVoos(e.hunt)); // aval do dono 03/11: o voo de verdade — o golpe do projétil cai no tique em que ele chega (`pousarVoos`)
   }
   // (a Mina detona com você parado e o inimigo perto; a Armadilha, com o inimigo a 1 casa; o gêiser e a torre, no tempo)
   for (let i = 0; i < 6; i++) { e.hunt.clock += 400; ev.push(...Acoes.tiqueDasPlantadas(e, e.hunt, PERSONAGEM, [])); ev.push(...Acoes.tiqueDasRunas(e, e.hunt, PERSONAGEM, [])); }
@@ -149,6 +151,8 @@ function usar({ e, b }, slug) {
   if (slug === 'Penance_Brand') for (let i = 0; i < 40 && e.hunt.runas?.length; i++) { e.hunt.clock += 100; ev.push(...Acoes.tiqueDasRunas(e, e.hunt, PERSONAGEM, [])); }
   // (lote B2, com o aval do dono 20/10: a Explosão Voltáxica solta 2,5 s × a Duração depois do uso — a montagem espera mais 200 ms, além dos 2,4 s acima)
   if (slug === 'Voltaxic_Burst') { e.hunt.clock += 200; ev.push(...Acoes.tiqueDasPlantadas(e, e.hunt, PERSONAGEM, [])); }
+  // aval do dono 03/11: o voo de verdade — o que os tiques acima soltaram (a espiral, a bola, o olho, a mina) cai no tique em que chega (`pousarVoos`)
+  ev.push(...pousarVoos(e.hunt));
   // (lote G20a, com o aval do dono: o TOTEM — o seu uso o coloca; o dano é o do totem usando a habilidade, uma vez, no alvo)
   if (G.doSlug(slug).arquetipo === 'totem') for (const l of (e.hunt.lacaios ?? []).filter((x) => x.tipo === 'totem' && x.hp > 0)) ev.push(...Cacadas.golpeDoTotem(e, e.hunt, l, b, Ficha.combate(e), PERSONAGEM, e.hunt.clock));
   // (lote G20c, com o aval do dono: o totem SEM golpe é conferido pelo efeito dele — a aura do Rejuvenescedor na sua soma, perto dele; o Devorador
@@ -200,11 +204,14 @@ function usar({ e, b }, slug) {
   }
   // (aval do dono 28/10: os Robôs Rastejantes não causam dano no PoE — as auras Eletrizam e Resfriam quem está nelas)
   const afligiu = ['chocado', 'resfriado', 'congelado'].some((k) => !!b.estados?.[k]);
-  return { ok: true, dano, debuff, afligiu, provocou, cegou, converteu, praga, buff: !!e.hunt.buffs?.[G.doSlug(slug).acao] || !!e.hunt.vinculos?.length, deslocou, febre: (b.dots ?? []).some((d) => d.chave === 'Corrupting_Fever' && d.falta > 0) };
+  // (aval do dono 02/11: o Portal não causa dano no PoE — é conferido pela viagem: o fim da conjuração marca a saída, `hunt.saidaPeloPortal`)
+  const viajou = !!e.hunt.saidaPeloPortal;
+  return { ok: true, dano, debuff, afligiu, provocou, cegou, converteu, praga, viajou, buff: !!e.hunt.buffs?.[G.doSlug(slug).acao] || !!e.hunt.vinculos?.length, deslocou, febre: (b.dots ?? []).some((d) => d.chave === 'Corrupting_Fever' && d.falta > 0) };
 }
 
 // (aval do dono 27/10, R3) as gemas que não causam dano no PoE (base_deal_no_damage): o critério próprio de cada uma
-const SEM_DANO_NO_POE = { Decoy_Totem: (u) => u.provocou, Smoke_Mine: (u) => u.deslocou || u.cegou, Conversion_Trap: (u) => u.converteu, Summon_Skitterbots: (u) => u.afligiu };
+// (aval do dono 02/11: o Portal, pela viagem — hunt.saidaPeloPortal —, como o Chamariz)
+const SEM_DANO_NO_POE = { Portal: (u) => u.viajou, Decoy_Totem: (u) => u.provocou, Smoke_Mine: (u) => u.deslocou || u.cegou, Conversion_Trap: (u) => u.converteu, Summon_Skitterbots: (u) => u.afligiu };
 test('G16: toda gema ativa "funciona" faz no jogo o que o status promete (o dano, ou o buff ligado)', { skip: SEM, timeout: 600_000 }, async () => {
   J = await import('../systems/itens-poe/jogo.mjs');
   ({ gerarPeca } = await import('../systems/itens-poe/gerar.mjs'));

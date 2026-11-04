@@ -7,7 +7,7 @@ import { existsSync } from 'node:fs';
 process.env.ITENS_POE = '1';
 const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
 const SEM = (!existsSync(Catalogo.ARQUIVO) || !Catalogo.ligado()) && 'só no modo PoE, com o catálogo do PoE';
-const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
+const { personagemDeTeste, PERSONAGEM, pousarVoos } = await import('./apoio.mjs');
 const Acoes = await import('../systems/acoes.mjs');
 const GS = await import('../systems/skills/gemas.mjs');
 const G = await import('../systems/itens-poe/gemas-poe.mjs');
@@ -66,6 +66,7 @@ function montar(gemas, { arma = 'One_Hand_Swords/Rusted_Sword', escudo = null, n
 const usar = ({ e, b }, slot = 0, opcoes = { manual: true }) => {
   const r = Acoes.disparar(e, e.hunt, PERSONAGEM, slot, b, opcoes);
   if (r.ok && e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; r.eventos = [...(r.eventos ?? []), ...(Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM) ?? [])]; }
+  if (r.ok) r.eventos = [...(r.eventos ?? []), ...pousarVoos(e.hunt)]; // aval do dono 03/11: o voo de verdade — o golpe do projétil cai no tique em que ele chega (`pousarVoos`)
   return r;
 };
 
@@ -76,8 +77,9 @@ test('A2: as 10 ativas viram buff com efeito e o Portal não se aplica; os 6 sup
     assert.notEqual(r.statusNoJogo, 'nao', `${s}: ${r.motivosNoJogo.join(' | ')}`);
   }
   const portal = G.doSlug('Portal');
-  assert.equal(portal.statusNoJogo, 'nao');
-  assert.match(portal.naoSeAplica, /^não se aplica/);
+  // (aval do dono 02/11: o Portal funciona como o PoE — à mão, a viagem para a cidade e a volta —, sem naoSeAplica)
+  assert.equal(portal.statusNoJogo, 'funciona');
+  assert.ok(!portal.naoSeAplica, portal.naoSeAplica);
   for (const s of ['Item_Rarity_Support', 'Chance_to_Flee_Support', 'Block_Chance_Reduction_Support', 'Pacifism_Support', 'Bonespire_Support', 'Divine_Sentinel_Support']) assert.notEqual(SP.doSlug(s).status, 'nao', s);
 });
 

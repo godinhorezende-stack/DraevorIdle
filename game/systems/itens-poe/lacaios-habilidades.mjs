@@ -24,6 +24,8 @@
 //   - os PROJÉTEIS (1 + "number_of_additional_projectiles"), o alcance (o corpo a corpo: 1 casa; o de longe: as 5 casas do jogo × (1 + o
 //     "spell_maximum_action_distance_+%"), no mínimo 1), as chances (Congelar, Incendiar, Eletrizar, Provocar) e o "não pode ser crítico".
 // O dano sai pelo GOLPE DO LACAIO de sempre (`cacadas.golpeDoLacaioNoBicho`): as auras, o crítico, os suportes do lote S2B, as afecções, o erro do ataque.
+// (100% — dados) o elemento da magia do Esqueleto Mago pelo nome do PoB (o Foco de Combate)
+import { elementoDoNome, escolherElemento } from './prismaticas.mjs';
 import { readFileSync } from 'node:fs';
 
 export const DADOS = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/pob-habilidades-lacaios.json', import.meta.url), 'utf8'));
@@ -77,6 +79,9 @@ export const GEMAS = [
   [/^Summon_Reaper_of_Eviscerating$/, { principal: [], semGolpe: true, porUso: 'SummonedReaperUltimate' }],
   [/^Summon_Reaper_of_Revenants$/, { principal: ['SummonedReaperMelee'] }],
   [/^Summon_Reaper$/, { principal: ['SummonedReaperMelee'], porUso: 'SummonedReaperUltimate' }],
+  // (03/11) o clone das Flechas dos Clones Prismáticos: "flechas de elementos aleatórios que convertem todo o dano físico para o elemento escolhido" (o poedb) —
+  // `prismatica`: cada flecha sorteia Fogo, Gelo ou Raio (sem os que o Foco de Combate proíbe) e converte 100% do Físico nele (`principalDaVez`)
+  [/^(?:Blink|Mirror)_Arrow_of_Prismatic_Clones$/, { principal: ['BlinkMirrorArrowMelee'], arma: 'sua', prismatica: true }],
   [/^(?:Blink|Mirror)_Arrow/, { principal: ['BlinkMirrorArrowMelee'], arma: 'sua' }],
   [/^Holy_Strike$/, { principal: ['HolyStrikeMinionAttack'], arma: 'sua' }],
   [/^Animate_Weapon_of_Self_Reflection$/, { principal: ['Melee'], arma: 'sua' }],
@@ -228,7 +233,7 @@ export function doLacaio(slug, pobId, n, extra = {}) {
   const inicio = c.inicio ? habilidade(c.inicio, pobId, n) : null;
   const vidaBaixa = (c.vidaBaixa ?? []).map((id) => habilidade(id, pobId, n)).filter(Boolean);
   const porUso = c.porUso ? habilidade(c.porUso, pobId, n) : null;
-  return { principal, ...(c.fixa || doGrupo?.fixa ? { fixa: true } : {}), ...(c.semGolpe ? { semGolpe: true } : {}), recargas, ...(inicio ? { inicio } : {}), ...(vidaBaixa.length ? { vidaBaixa } : {}), ...(porUso ? { porUso } : {}), ...(c.arma ? { arma: c.arma } : {}) };
+  return { principal, ...(c.fixa || doGrupo?.fixa ? { fixa: true } : {}), ...(c.semGolpe ? { semGolpe: true } : {}), recargas, ...(inicio ? { inicio } : {}), ...(vidaBaixa.length ? { vidaBaixa } : {}), ...(porUso ? { porUso } : {}), ...(c.arma ? { arma: c.arma } : {}), ...(c.prismatica ? { prismatica: true } : {}) };
 }
 
 /**
@@ -267,12 +272,26 @@ export function recargasDoMotor(hab) {
 }
 
 /** A habilidade principal da vez (a variante sorteada; `fixa`: a mesma do lacaio inteiro, sorteada no primeiro golpe e guardada em `l.habPobIndice`). */
-export function principalDaVez(l, rng = Math.random) {
+// (100% — dados, 03/11: `proibidos` — os elementos que o Foco de Combate proíbe às Habilidades Prismáticas: o Esqueleto Mago não escolhe a magia daquele elemento;
+// a escolhida que ficou proibida é refeita)
+export function principalDaVez(l, rng = Math.random, proibidos = null) {
   const lista = l?.habPob?.principal;
   if (!lista?.length) return null;
+  // (03/11) a PRISMÁTICA (o clone dos Clones Prismáticos): o elemento da flecha, sorteado a cada golpe sem os proibidos, e todo o Físico convertido nele
+  if (l.habPob.prismatica) {
+    const h = lista.length === 1 ? lista[0] : lista[Math.floor(rng() * lista.length)];
+    const el = escolherElemento(null, proibidos ?? new Set(), rng);
+    l.prismaElemento = el;
+    return { ...h, elemento: el, conversao: { [el]: 100 } };
+  }
   if (lista.length === 1) return lista[0];
   if (l.habPob.fixa) {
-    if (l.habPobIndice == null || !lista[l.habPobIndice]) l.habPobIndice = Math.floor(rng() * lista.length);
+    const vale = (i) => !!lista[i] && !proibidos?.has?.(elementoDoNome(lista[i].id));
+    if (l.habPobIndice == null || !vale(l.habPobIndice)) {
+      const livres = lista.map((_, i) => i).filter(vale);
+      const de = livres.length ? livres : lista.map((_, i) => i);
+      l.habPobIndice = de[Math.min(de.length - 1, Math.floor(rng() * de.length))];
+    }
     return lista[l.habPobIndice];
   }
   return lista[Math.floor(rng() * lista.length)];
@@ -397,10 +416,16 @@ export function usar(l, h, alvo0, c) {
     const o = outrosAtingidos(l, h, alvo, vivos, rng);
     atingidos = [alvo, ...o.projeteis];
   }
-  if (h.projetil || h.magia) for (const m of atingidos) if (!h.area || h.centro !== 'lacaio') eventos.push({ t: 'shot', id: PROJETIL[op.tipo] ?? 12, x: l.x, y: l.y, tx: m.x, ty: m.y });
+  // (lote "projetil", dono 02/11: o projétil da habilidade VOA — `c.depoisDoVoo` (a caçada): o golpe em cada um no tempo do voo do lacaio até ele; a da área em volta
+  // do lacaio não voa)
+  // (03/11: só o PROJÉTIL voa — a magia sem projétil, a área no alvo (a Absolvição Fortalecida do Juiz, o cone do Elemental de Fogo, a Absolvição Vaal), cai na hora)
+  const voa = !!h.projetil && !(h.area && h.centro === 'lacaio') && typeof c.depoisDoVoo === 'function';
+  const tiros = new Map();
+  if (h.projetil || h.magia) for (const m of atingidos) if (!h.area || h.centro !== 'lacaio') { const ev = { t: 'shot', id: PROJETIL[op.tipo] ?? 12, x: l.x, y: l.y, tx: m.x, ty: m.y }; tiros.set(m, ev); eventos.push(ev); }
   // (a Investida: até +30% no alcance máximo — pela distância percorrida)
   const maisDaInvestida = h.investidaMaxPct ? 1 + ((h.investidaMaxPct / 100) * Math.min(1, dist(l, alvo) / Math.max(1, h.alcance ?? ALCANCE_DE_LONGE))) : 1;
   for (const m of atingidos) {
+    const golpearEste = () => {
     for (let k = 0; k < (h.hits ?? 1); k++) {
       if (!(m.hp > 0)) break;
       const r = c.golpe(m, 100 * maisDaInvestida, op);
@@ -408,9 +433,12 @@ export function usar(l, h, alvo0, c) {
       // (o Provocar da habilidade — a Pancada do Golem de Pedra: 33%)
       if (h.chances?.provocar > 0 && m.hp > 0 && rng() * 100 < h.chances.provocar) {
         (m.estados ??= {}).provocado = { ate: (c.relogio ?? 0) + 3000, por: l.nome, deLacaio: true };
-        eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'provocado' });
+        (c.eventosDaChegada?.() ?? eventos).push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'provocado' });
       }
     }
+    };
+    if (voa && tiros.has(m)) { const ms = c.depoisDoVoo(m, { magia: !!h.magia }, golpearEste); if (ms > 0) tiros.get(m).ms = ms; }
+    else golpearEste();
   }
   // (o Meteoro: o Fogo no chão — o dano por segundo nos atingidos, pela duração, pela resistência a Fogo deles; × o "aumentado/mais" do lacaio)
   if (h.dotPorSegundo > 0 && c.queimar) for (const m of atingidos) if (m.hp > 0) c.queimar(m, h.dotPorSegundo * (l?.poe?.fatorDoDano ?? 1), h.dotMs);

@@ -6,7 +6,7 @@ import { existsSync } from 'node:fs';
 process.env.ITENS_POE = '1';
 export const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
 export const SEM = (!existsSync(Catalogo.ARQUIVO) || !Catalogo.ligado()) && 'só no modo PoE, com o catálogo do PoE';
-const { personagemDeTeste } = await import('./apoio.mjs');
+const { personagemDeTeste, pousarVoos } = await import('./apoio.mjs');
 export const Acoes = await import('../systems/acoes.mjs');
 export const GS = await import('../systems/skills/gemas.mjs');
 export const G = await import('../systems/itens-poe/gemas-poe.mjs');
@@ -69,6 +69,7 @@ export function usar(e, slot, b, v = 0.5) {
   const r = travado(v, () => Acoes.disparar(e, e.hunt, { nome: 'T' }, slot, b, { manual: true }));
   ev.push(...(r.eventos ?? []));
   if (r.ok && e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; ev.push(...(travado(v, () => Acoes.concluirConjuracao(e, e.hunt, { nome: 'T' })) ?? [])); }
+  ev.push(...pousarVoos(e.hunt, { sorte: v })); // aval do dono 03/11: o voo de verdade — o golpe do projétil cai no tique em que ele chega (`pousarVoos`)
   return { r, ev };
 }
 /** O dano (os balões) no monstro `m` nos eventos. */
