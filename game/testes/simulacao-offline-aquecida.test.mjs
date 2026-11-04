@@ -142,7 +142,8 @@ test('a thread guarda só os últimos mapas que usou (SIMULADOR_MAPAS_NA_MEMORIA
   let id = 0;
   const pedir = (msg) => new Promise((resolve, reject) => {
     const meu = ++id;
-    const ouvir = (m) => { if (m.id !== meu) return; w.off('message', ouvir); m.ok ? resolve(m) : reject(new Error(m.erro)); };
+    // (o andamento do login — `progresso`, a tela de entrada — não é a resposta)
+    const ouvir = (m) => { if (m.id !== meu || m.progresso) return; w.off('message', ouvir); m.ok ? resolve(m) : reject(new Error(m.erro)); };
     w.on('message', ouvir);
     w.postMessage({ id: meu, ...msg });
   });

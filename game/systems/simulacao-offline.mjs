@@ -37,9 +37,10 @@ const PARA_CONSOLIDAR = Math.max(1, QUANTAS - 1);
  * O teto do heap de cada thread (`SIMULADOR_HEAP_MB`, 0 = o do Node). Sem ele o V8 deixa o lixo das caçadas crescer muito antes de
  * coletar: medido (2 threads, 16 terrenos, 3 a 8 rodadas), o rss do pool subia sem parar (1.173 MB na 3ª rodada); com 320 MB ele para em
  * ~930. A thread vive com ~150–200 MB (o jogo + os últimos mapas — ver `simulacao-offline-worker.mjs`). Se uma estourar o teto, ela morre
- * (o login que estava nela simula na thread do jogo, como em qualquer falha — `sessao.mjs`) e outra nasce aquecida.
+ * (o login que estava nela simula na thread do jogo, como em qualquer falha — `sessao.mjs`) e outra nasce aquecida. (04/11: o padrão ficou em
+ * 448 MB, não 320 — folga para a caçada longa de quem mata muito, porque a falha trava a thread do jogo; o pool continua limitado.)
  */
-const LIMITE_HEAP_MB = Math.max(0, Number(process.env.SIMULADOR_HEAP_MB ?? 320) || 0);
+const LIMITE_HEAP_MB = Math.max(0, Number(process.env.SIMULADOR_HEAP_MB ?? 448) || 0);
 
 const threads = []; // { worker, pendentes: Map<id, {resolve, reject}>, aquecendo: id | null, consolidando: Set<id>, criadaEm }
 let proximoId = 1;
@@ -61,6 +62,8 @@ function nova() {
   t.worker.on('message', (msg) => {
     const p = t.pendentes.get(msg.id);
     if (!p) return;
+    // O andamento da simulação (a tela de entrada): só repassa, a resposta ainda vem.
+    if (msg.progresso) return void p.aoProgredir?.(msg.progresso.feito, msg.progresso.total);
     t.pendentes.delete(msg.id);
     t.consolidando.delete(msg.id);
     if (t.aquecendo === msg.id) t.aquecendo = null;
@@ -121,10 +124,10 @@ function escolher(modo) {
 }
 
 /** Manda um trabalho para a thread `t`; `segurar`: o processo fica aberto até a resposta (o aquecimento não segura). */
-function enviar(t, mensagem, { segurar = true } = {}) {
+function enviar(t, mensagem, { segurar = true, aoProgredir = null } = {}) {
   const id = proximoId++;
   return new Promise((resolve, reject) => {
-    t.pendentes.set(id, { resolve, reject });
+    t.pendentes.set(id, { resolve, reject, aoProgredir });
     if (mensagem.modo === 'consolidar') t.consolidando.add(id);
     if (!segurar && t.aquecendo == null) t.aquecendo = id;
     if (segurar) t.worker.ref();
@@ -157,10 +160,11 @@ export async function aquecer() {
  * Simula a ausência de `estado` numa thread à parte. Devolve `{estado,
  * ausencia}` — o estado é uma CÓPIA já simulada (com a caçada compacta, como
  * no banco: passe por `Cacadas.huntAoCarregar`), e `ausencia` é o mesmo que
- * `Cacadas.simularAusencia` devolveria.
+ * `Cacadas.simularAusencia` devolveria. `aoProgredir(feitoMs, totalMs)` (opcional):
+ * o andamento da parte simulada, a cada ~1 min de jogo (a tela de entrada).
  */
-export function simular(estado, personagem, agora = Date.now(), modo = 'login') {
-  return enviar(escolher(modo), { estado, personagem, agora, modo }).then(({ estado: simulado, ausencia }) => ({ estado: simulado, ausencia }));
+export function simular(estado, personagem, agora = Date.now(), modo = 'login', aoProgredir = null) {
+  return enviar(escolher(modo), { estado, personagem, agora, modo }, { aoProgredir }).then(({ estado: simulado, ausencia }) => ({ estado: simulado, ausencia }));
 }
 
 /**
