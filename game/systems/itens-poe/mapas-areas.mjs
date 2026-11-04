@@ -11,7 +11,7 @@ import * as Monstros from './monstros.mjs';
 import * as DefesaPoe from './defesa-poe.mjs';
 import { CATALOGO } from '../dados.mjs';
 import { BESTIARY } from '../hunt/monstros.mjs';
-import { acharHunt, apelidarMapa, definirTransformadorDeSpawns, spawnsDaHunt } from '../hunt/terreno.mjs';
+import { acharHunt, apelidarMapa, definirTransformadorDeSpawns, spawnsDaHunt, spawnsDaHuntSemGuardar } from '../hunt/terreno.mjs';
 
 const C = Monstros.CAMPANHA;
 export const CONFIG = Mapas.DADOS.instancia ?? { porTier: [], crescimentoPorNivel: {} };
@@ -65,7 +65,7 @@ function unicoPeloSlug(slug) {
   return achado;
 }
 /** As criaturas do Draevor dos spawns de um terreno (o desenho dos monstros do PoE que não têm um pelo nome). */
-const nativosDoTerreno = (terreno) => [...new Set((spawnsDaHunt(terreno) ?? []).flatMap((s) => (s.criaturas ?? []).map((c) => c.key)))].filter((k) => BESTIARY[k]);
+const nativosDoTerreno = (terreno, lerSpawns = spawnsDaHunt) => [...new Set((lerSpawns(terreno) ?? []).flatMap((s) => (s.criaturas ?? []).map((c) => c.key)))].filter((k) => BESTIARY[k]);
 
 // tier → { comuns: [chaves], chefe: chave }
 const DO_TIER = new Map();
@@ -79,7 +79,8 @@ let INICIADO = null;
  * Monta as áreas dos mapas (uma vez): as hunts virtuais com o apelido do terreno, os monstros e o chefe de cada tier no nível do mapa, e o
  * transformador que põe os monstros do tier nos spawns do terreno. Sem o jogo oficial, nada. `{ tiers, problemas }`.
  */
-export function iniciar() {
+/** `mapasSobDemanda`: os bichos nativos de cada terreno sem deixar os mapas na memória (a thread da caçada offline — ver `CampanhaPoe.iniciar`). */
+export function iniciar({ mapasSobDemanda = false } = {}) {
   if (!ligado()) return { tiers: 0, problemas: [] };
   if (INICIADO) return INICIADO;
   const problemas = [];
@@ -92,7 +93,7 @@ export function iniciar() {
     else if (!area || area.cidade) problemas.push(`T${tier}: a área "${t.area}" não existe na campanha do PoE`);
     else if (!base || base.poeArea || base.poeMapa) problemas.push(`T${tier}: o terreno "${t.terreno}" não é uma hunt do Draevor`);
     if (problemas.length && problemas.at(-1).startsWith(`T${tier}:`)) continue;
-    const nativos = nativosDoTerreno(t.terreno);
+    const nativos = nativosDoTerreno(t.terreno, mapasSobDemanda ? spawnsDaHuntSemGuardar : spawnsDaHunt);
     const comuns = (area.monstros ?? []).filter((m) => !m.unico).map((m, i) => Monstros.registrar(noNivel(m, nivel), nativos[i % Math.max(1, nativos.length)] ?? 'skeleton'));
     if (!comuns.length) {
       problemas.push(`T${tier}: a área "${t.area}" não tem monstros comuns`);

@@ -1973,6 +1973,8 @@ export class Sessao {
     if (this.carregando) return;
     // Manutenção com indisponibilidade (desligada por padrão): ninguém NOVO entra; a caçada offline segue correndo.
     if (Manutencao.bloqueada()) return this.erro(Manutencao.mensagemDeBloqueio());
+    // A tela de entrada do cliente acompanha as etapas (ver `avisarEntrada`).
+    this.enviar({ t: 'entrando', etapa: 'carregando' });
     // A conexão pode cair (ou o jogador sair) enquanto a entrada espera o banco: depois de cada `await`, a entrada abandonada para em
     // silêncio — nada foi gravado nem mexido em outra sessão (ver `concluirEntrada`).
     const saidas = this.saidas;
@@ -2129,13 +2131,19 @@ export class Sessao {
        */
       const agora = Date.now();
       // `concluindo`: a outra aba que soltar esta entrada no meio de `concluirEntrada` espera ela terminar (ver acima).
-      const concluir = (final, ausencia) => (pedido.concluindo = this.concluirEntrada(personagem, final, ausencia));
+      const concluir = (final, ausencia) => {
+        this.avisarEntrada(pedido, 'entrando');
+        return (pedido.concluindo = this.concluirEntrada(personagem, final, ausencia));
+      };
       if (!Cacadas.temAusenciaParaSimular(estado, agora)) {
         return await concluir(estado, Cacadas.simularAusencia(estado, personagem, agora));
       }
       const quem = { id: personagem.id, nome: personagem.nome, conta: personagem.conta, vocacao: personagem.vocacao };
       const ida = { ...estado, hunt: Cacadas.huntParaGravar(estado.hunt) };
-      return await SimulacaoOffline.simular(ida, quem, agora).then(
+      // "Preparando o mundo": a thread ainda carrega os dados do jogo (ou espera a vez); o primeiro andamento dela troca para "simulando".
+      this.avisarEntrada(pedido, 'preparando');
+      const aoProgredir = (feitoMs, totalMs) => this.avisarEntrada(pedido, 'simulando', feitoMs, totalMs);
+      return await SimulacaoOffline.simular(ida, quem, agora, 'login', aoProgredir).then(
         ({ estado: simulado, ausencia }) => {
           if (this.carregando !== pedido) return;
           // Trocou de conta no meio (login em outra): este personagem não é mais dela.
@@ -2177,6 +2185,27 @@ export class Sessao {
     this.avisoPendente = [this.avisoPendente, `Seguindo para a próxima fase: ${proxima.nome}.`].filter(Boolean).join(' ');
     Party.seguirOLider(this);
     Party.avancarJunto(this, juntos);
+  }
+
+  /**
+   * `{t:'entrando', etapa, feito?, total?}`: a etapa da entrada para a tela do cliente — 'carregando' (o banco), 'preparando' (a thread da
+   * caçada offline carregando), 'simulando' (`feito` de `total` minutos de jogo simulados) e 'entrando' (logo antes do `welcome`). Só a
+   * entrada que ainda vale (`pedido`) avisa; o andamento da simulação vai no máximo 5 vezes por segundo (o fim, `total` de `total`, sempre).
+   */
+  avisarEntrada(pedido, etapa, feitoMs = null, totalMs = null) {
+    if (this.carregando !== pedido) return;
+    if (etapa !== 'simulando') {
+      pedido.etapa = etapa;
+      return this.enviar({ t: 'entrando', etapa });
+    }
+    const total = Math.max(1, Math.ceil(totalMs / 60_000));
+    const feito = feitoMs >= totalMs ? total : Math.min(total, Math.floor(feitoMs / 60_000));
+    const agora = Date.now();
+    if (pedido.etapa === 'simulando' && (pedido.feito === total || (feito < total && (feito === pedido.feito || agora - pedido.avisouEm < 200)))) return;
+    pedido.etapa = 'simulando';
+    pedido.avisouEm = agora;
+    pedido.feito = feito;
+    this.enviar({ t: 'entrando', etapa, feito, total });
   }
 
   pararDeCarregar() {

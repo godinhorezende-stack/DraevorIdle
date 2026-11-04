@@ -15,6 +15,7 @@ import {
   setTitle,
 } from './windows.mjs';
 import { createGate, marcarVisto, cartaoDePersonagem } from './auth.mjs';
+import { avancarEntrada, concluirEntrada, entradaAberta, erroNaEntrada, fecharEntrada, FIM_DA_ENTRADA_NO_SERVIDOR } from './entrada-servidor.mjs';
 import { initHud, renderHud, artOrUiIcon, linhasDeEfeito, modoDosEfeitos, pintarBotaoDaFase } from './hud.mjs';
 import { ARTES } from './artes.mjs';
 import { abrirNaPilha, fechouNaPilha, fechouNaPilhaTudoQue } from './pilha.mjs';
@@ -679,6 +680,10 @@ $('cartaz-beta-report')?.addEventListener('click', () => openReport('bug'));
 $('aviso-dev-report')?.addEventListener('click', () => openReport('bug'));
 
 function handle(message) {
+  // A tela de entrada (do clique até o `welcome` — ver `entrada-servidor.mjs`): a etapa do servidor, ou a recusa com o botão de voltar.
+  if (message.t === 'entrando') return void avancarEntrada(message);
+  if (entradaAberta() && (message.t === 'authError' || message.t === 'error')) erroNaEntrada(message.message, () => gate.mostrarLista());
+  if (message.t === 'released' || message.t === 'sessionTaken') fecharEntrada();
   if (gate.handle(message)) {
     if (message.catalog) {
       state.catalog = message.catalog;
@@ -7518,10 +7523,12 @@ async function entrarNoPersonagem(message) {
   const tela = $('entrada');
   if (!tela) return;
 
+  // Vindo da tela de entrada do servidor (o clique), a barra segue de onde parou; numa reconexão começa do zero.
+  const base = concluirEntrada() ? FIM_DA_ENTRADA_NO_SERVIDOR : 0;
   $('entrada-nome').textContent = message.character?.name ?? state.character?.name ?? '';
-  $('entrada-passo').textContent = 'preparando';
+  $('entrada-passo').textContent = base ? 'Entrando no mundo' : 'preparando';
   $('entrada-detalhe').textContent = '';
-  $('entrada-progresso').style.width = '0%';
+  $('entrada-progresso').style.width = `${base}%`;
   tela.classList.remove('saindo');
   tela.hidden = false;
 
@@ -7533,7 +7540,7 @@ async function entrarNoPersonagem(message) {
     const qual = () => (typeof pecas[i].src === 'function' ? pecas[i].src() : pecas[i].src);
     $('entrada-passo').textContent = passo;
     $('entrada-detalhe').textContent = `${i + 1} de ${pecas.length}`;
-    $('entrada-progresso').style.width = `${Math.round((i / pecas.length) * 100)}%`;
+    $('entrada-progresso').style.width = `${Math.round(base + (i / pecas.length) * (100 - base))}%`;
 
     /*
      * O teto vale por cima de tudo.

@@ -27,10 +27,14 @@ import { marcarDia } from './site.mjs';
 import { estaNoJogo } from '../websocket/sessao.mjs';
 import * as Legado from './personagem/legado.mjs';
 
-/** De quanto em quanto tempo a rodada passa. */
-export const INTERVALO_MS = 10 * 60_000;
-/** Só quem está fora há pelo menos isto (menos que isso, a volta resolve sozinha). */
-export const MINIMO_FORA_MS = 10 * 60_000;
+/*
+ * De quanto em quanto tempo a rodada passa, e quem ela pega (fora há pelo menos `MINIMO_FORA_MS`). (04/11, dono: "tem como deixar quase
+ * instantânea?") Eram 10 min e 10 min: quem voltava entre 10 e 40 min depois de sair esperava, no login, a parte simulada tique a tique
+ * que ainda faltava (até 30 min de caçada). Com 1 min, a rodada vai avançando a ausência quase junto com o relógio e o login só termina o
+ * último minuto — a mesma conta, em pedaços menores (o resultado não muda: `consolidarAusencia` continua de onde parou).
+ */
+export const INTERVALO_MS = 60_000;
+export const MINIMO_FORA_MS = 60_000;
 /** Quantos personagens por rodada, no máximo (os mais antigos primeiro). */
 export const POR_RODADA = 40;
 

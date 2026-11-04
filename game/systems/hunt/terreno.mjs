@@ -273,6 +273,43 @@ export function spawnsDaHunt(huntId) {
   return spawns;
 }
 
+/**
+ * (04/11) Os spawns da hunt SEM deixar o mapa inteiro na memória: o tile a tile (`stacks`/`blocked`) de cada mapa é o que pesa — os ~180 MB
+ * de heap que a campanha do PoE deixava na thread da caçada offline só para saber os bichos nativos de cada mapa. O mesmo resultado de
+ * `spawnsDaHunt`; o mapa que já estava carregado continua carregado, e o que não estava é lido de novo (igual) quando alguém usar.
+ */
+export function spawnsDaHuntSemGuardar(huntId) {
+  const id = mapaDe(huntId);
+  if (mapasReaisCacheados.has(id)) return spawnsDaHunt(huntId);
+  try {
+    return spawnsDaHunt(huntId);
+  } finally {
+    mapasReaisCacheados.delete(id);
+  }
+}
+
+/**
+ * (04/11) Tira da memória o mapa `id` (o tile a tile) e a grade feita dele — a thread da caçada offline (`simulacao-offline-worker.mjs`)
+ * guarda só os últimos mapas que usou (`manterSoOsMapas`). Quem pedir de novo lê o mesmo arquivo e monta a mesma grade.
+ */
+export function esquecerMapa(id) {
+  const mapa = mapasReaisCacheados.get(id);
+  mapasReaisCacheados.delete(id);
+  for (const [chave, grade] of gradesCacheadas) if (chave === id || (mapa && grade.mapa === mapa)) gradesCacheadas.delete(chave);
+}
+
+/**
+ * Deixa na memória só os mapas de `manter` (os ids de mapa — `mapaDe`), e só até `maximo` deles: os primeiros da lista são os mais antigos e
+ * saem primeiro. Os mapas carregados que não estão na lista saem todos. Devolve os ids que ficaram, do mais antigo ao mais novo.
+ */
+export function manterSoOsMapas(manter, maximo) {
+  const carregados = [...new Set(manter)].filter((id) => mapasReaisCacheados.has(id));
+  const ficam = maximo > 0 ? carregados.slice(-maximo) : [];
+  const conjunto = new Set(ficam);
+  for (const id of [...mapasReaisCacheados.keys()]) if (!conjunto.has(id)) esquecerMapa(id);
+  return ficam;
+}
+
 /** Os encontros que o arquivo do mapa define (ver `encontros/modelo.mjs`); lista vazia = nenhum. */
 export function encontrosDaHunt(huntId) {
   // O arquivo próprio da fase (`gamedata/encontros/`), ou o bloco do mapa (formato antigo).
