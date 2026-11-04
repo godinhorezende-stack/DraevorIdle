@@ -317,7 +317,7 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
   const R = regras.raridades[gerada.raridade] ?? {};
   // Frasco: não dá atributo ao personagem (só enquanto o efeito dura, pelo cinto — `frascos.mjs`); o balão leva o resumo com os mods aplicados.
   if (FRASCOS.includes(gerada.classe)) {
-    const poe = { base: gerada.base, classe: gerada.classe, raridade: gerada.raridade, raridadeNome: R.nome ?? gerada.raridade, cor: R.cor ?? null, ilvl: gerada.ilvl, nome: gerada.nome, ...(gerada.unico ? { unico: gerada.unico } : {}),
+    const poe = { base: gerada.base, classe: gerada.classe, raridade: gerada.raridade, raridadeNome: R.nome ?? gerada.raridade, cor: R.cor ?? null, ilvl: gerada.ilvl, nome: gerada.nome, ...(gerada.unico ? { unico: gerada.unico } : {}), ...(gerada.corrompido ? { corrompido: true } : {}),
       atributos: a, implicitos: gerada.implicitos ?? [], prefixos: gerada.prefixos ?? [], sufixos: gerada.sufixos ?? [], modificadores: gerada.modificadores ?? [] };
     const par = Frascos.parametros({ poe });
     return { id, count: 1, poe: { ...poe, estados: par.estadosPorMod, af: {}, frasco: Frascos.resumo({ poe }), tv: VERSAO_DA_TRADUCAO } };
@@ -326,7 +326,7 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
   // quantidade/raridade de itens, tamanho do grupo, os efeitos) e o estado de cada linha.
   // (O MAPA ÚNICO leva qual é — `unico`, o slug —: os efeitos de cada linha vêm do cadastro dele; e as notas das linhas sem efeito.)
   if (gerada.classe === Mapas.CLASSE) {
-    const poe = { base: gerada.base, classe: gerada.classe, raridade: gerada.raridade, raridadeNome: R.nome ?? gerada.raridade, cor: R.cor ?? null, ilvl: gerada.ilvl, nome: gerada.nome, ...(gerada.unico ? { unico: gerada.unico } : {}),
+    const poe = { base: gerada.base, classe: gerada.classe, raridade: gerada.raridade, raridadeNome: R.nome ?? gerada.raridade, cor: R.cor ?? null, ilvl: gerada.ilvl, nome: gerada.nome, ...(gerada.unico ? { unico: gerada.unico } : {}), ...(gerada.corrompido ? { corrompido: true } : {}),
       atributos: a, implicitos: gerada.implicitos ?? [], prefixos: gerada.prefixos ?? [], sufixos: gerada.sufixos ?? [], modificadores: gerada.modificadores ?? [] };
     const mapa = Mapas.resumo({ poe });
     // (O único tem o id dele no tier — o desenho do único com o número —; sem id cadastrado, o da base do tier.)

@@ -174,6 +174,8 @@ function virarUnico(p, rng, mesmaClasse = false) {
   const gerada = Gerar.gerarPeca({ catalogo: CAT(), regras: R(), base: base?.id ?? p.base, raridade: 'unico', ilvl: p.ilvl, rng, unico: u });
   if (gerada.erro) return null;
   Object.assign(p, { base: gerada.base, nome: gerada.nome, unico: gerada.unico, raridade: 'unico', atributos: gerada.atributos, implicitos: gerada.implicitos, prefixos: [], sufixos: [], modificadores: gerada.modificadores });
+  // (Frente D) o único que o PoE já dá corrompido (a Corda da Servidão, as Vaal, a Vozes… — `gerar.gerarPeca`) sai corrompido daqui também
+  if (gerada.corrompido) p.corrompido = true;
   // (lote 79) a Ramificadora que vira única deixa o encantamento de antes: fica a da única (ou nenhuma)
   if (gerada.ramificadora) p.ramificadora = gerada.ramificadora;
   else delete p.ramificadora;
