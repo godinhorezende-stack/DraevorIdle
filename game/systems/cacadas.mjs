@@ -58,6 +58,7 @@ import { aliadosPorCasa } from './hunt/aliados.mjs';
 import * as Defesa from './personagem/defesa.mjs';
 import * as Salvaguarda from './personagem/salvaguarda.mjs';
 import * as Voos from './hunt/voos.mjs';
+import * as Ambiente from './ambiente-fixo.mjs';
 import * as GemasVoo from './itens-poe/projeteis-voo.mjs';
 import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, ATAQUE_DO_MONSTRO_MS, round, golpesDosMonstros, contextoDoDrop, pagarRecompensaDeAto, nivelDoDropPoe, raridadeDoDrop, naSalaDaPartilha, fatorDaCacaOnline, entregarMoedas } from './hunt/combate.mjs';
 import { gerarItem, aceitaAtributos } from './itens/gerar.mjs';
@@ -1803,9 +1804,12 @@ export function zerarAnalisador(estado) {
  * (`personagem/testador.mjs`): a sessão e a caçada offline, que conferem a morte depois daqui, nunca o veem com a vida zerada.
  */
 export function tique(estado, personagem, agora = Date.now()) {
-  const eventos = tiqueDaCacada(estado, personagem, agora);
-  Testador.segurarVida(estado);
-  return eventos;
+  // (04/11) o tique inteiro lê o ambiente uma vez só (o modo do jogo, as chaves dos voos — `ambiente-fixo.mjs`)
+  return Ambiente.fixar(() => {
+    const eventos = tiqueDaCacada(estado, personagem, agora);
+    Testador.segurarVida(estado);
+    return eventos;
+  });
 }
 
 function tiqueDaCacada(estado, personagem, agora) {

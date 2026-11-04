@@ -12,6 +12,7 @@
 // hora (o voo de antes); cada projétil anda no máximo `VOO.maxCasasPorTique` casas por tique. A troca de instância (outra lista de bichos) e a de andar
 // esquecem o que estava no ar.
 import { VOO, caminho, pontoEm, distanciaNoTempo, tempoAte } from '../itens-poe/projeteis-voo.mjs';
+import { ler as lerDoAmbiente } from '../ambiente-fixo.mjs';
 
 const REGISTRO = new WeakMap();
 const doHunt = (hunt) => {
@@ -24,11 +25,11 @@ const doHunt = (hunt) => {
  * já, mas pelo MESMO caminho do golpe que chega depois (`descarregar`, no fim do uso de fora — `Acoes.dispararSemMarcar` — e no tique). Serve para separar, nos
  * testes antigos, o que mudou só de TEMPO (passa neste modo) do que mudou de geometria (o leque, a difusão, o terreno, quem entrou na frente).
  */
-export const instantaneo = () => process.env.VOO_INSTANTANEO === '1';
+export const instantaneo = () => lerDoAmbiente('VOO_INSTANTANEO') === '1';
 /** (só para conferir, com o instantâneo: `VOO_GEOMETRIA_ANTIGA=1` — sem o leque, sem os ângulos da difusão e sem o que entra na frente: o que sobra de diferente é outra coisa) */
-export const geometriaAntiga = () => process.env.VOO_GEOMETRIA_ANTIGA === '1';
+export const geometriaAntiga = () => lerDoAmbiente('VOO_GEOMETRIA_ANTIGA') === '1';
 /** (só para conferir: `VOO_REGISTRO=1` escreve cada projétil que fica no ar e cada golpe adiado — a conta do tempo de cada teste) */
-const registrar = () => process.env.VOO_REGISTRO === '1';
+const registrar = () => lerDoAmbiente('VOO_REGISTRO') === '1';
 const chave = (c) => `${c.x},${c.y}`;
 
 /** Quantos projéteis estão no ar e quantos golpes esperam (os testes e o desempenho). */

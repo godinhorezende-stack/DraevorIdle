@@ -2309,8 +2309,9 @@ export const ACAO_DA_PRAGA = 'poe-gema:Plague_Bearer';
 export function tiqueDaPraga(estado, hunt, ms = 250, agora = hunt?.clock ?? 0) {
   const eventos = [];
   if (!itensPoeLigado() || !hunt?.pos) return eventos;
-  const gema = Gemas.skillsAtivas(estado).get(ACAO_DA_PRAGA);
   const naBarra = (estado.actions ?? []).some((a) => a?.id === ACAO_DA_PRAGA && a.enabled !== false);
+  // (04/11: fora da barra a gema nem é procurada — as `skillsAtivas` refaziam todas as peças a cada tique, para nada)
+  const gema = naBarra ? Gemas.skillsAtivas(estado).get(ACAO_DA_PRAGA) : null;
   if (!gema || !naBarra) {
     if (hunt.praga) { delete hunt.praga; hunt.poeFichaMudou = true; }
     return eventos;
@@ -2504,9 +2505,10 @@ export const COR_DO_ELEMENTO = {
  * level e o magic level — o magic level baixo de um knight já é o limite
  * natural das magias fortes de sorcerer.
  */
-function bloqueio(entry, estado) {
+function bloqueio(entry, estado, ativas = null) {
   // Magia e runa vêm da GEMA encaixada numa peça vestida (modelo Path of Exile): sem ela, sem skill.
-  if (Gemas.ehSkillDeGema(entry) && !Gemas.temSkill(estado, entry.id)) return 'sem a gema';
+  // (04/11: `ativas` — as `skillsAtivas` que o uso já calculou, `dispararSemMarcarDentro`)
+  if (Gemas.ehSkillDeGema(entry) && !(ativas ? ativas().has(entry.id) : Gemas.temSkill(estado, entry.id))) return 'sem a gema';
   // Gema do PoE sem equivalente no jogo (lacaio, totem...): o motivo (`itens-poe/gemas-poe.mjs`).
   if (entry.poeGema?.bloqueio) return entry.poeGema.bloqueio;
   // A skill de gema não tem level nem magic level próprios (decisão do dono): quem pede level é o NÍVEL da gema.
@@ -3224,7 +3226,7 @@ const recargaDe = (entry, ms) => (entry.papeis?.[0] === 'attack' ? Math.round(ms
  * (`cadeiaPoe`: os da gema + os do suporte de corrente, com o "% mais dano por ricochete restante"), que não passam também pelos
  * golpes secundários (senão saltaria duas vezes).
  */
-export function comOsAlvosDaGema(entry, efeito, estado = null) {
+export function comOsAlvosDaGema(entry, efeito, estado = null, ativas = null) {
   if (!entry.poeGema || entry.poeGema.buff || !efeito) return efeito;
   const a = GemasPoe.alvosNoNivel(entry.poeGema.slug, efeito.nivel ?? 1, efeito.qualidade ?? 0);
   const e = { ...efeito };
@@ -3244,7 +3246,7 @@ export function comOsAlvosDaGema(entry, efeito, estado = null) {
   // (lote S1, dono 26/10) o Esforço Excessivo: "X% mais Dano por cada Clamor que os Impelir" — × os Clamores que impelem este ataque
   // (revisão S1: os dois "mais" do Esforço Excessivo — o "se Impelidos" e o "por cada Clamor" — são stats final distintos no PoE: MULTIPLICAM, 1,14 × (1 + 0,10·n))
   if (impelidoAgora && e.impelidoPorClamorMaisPct > 0) e['af:mais_dano@impelido'] = ((1 + (e['af:mais_dano@impelido'] ?? 0) / 100) * (1 + (e.impelidoPorClamorMaisPct * impelidoAgora.clamores) / 100) - 1) * 100;
-  const dasPecas = estado ? ModsPoe.alvosDasPecas(estado, comAsLinhasDaGema(estado, Ficha.combate(estado), entry, efeito), entry, tagsDoUso, Gemas.skillsAtivas(estado).get(entry.id)?.onde?.slot ?? null) : null;
+  const dasPecas = estado ? ModsPoe.alvosDasPecas(estado, comAsLinhasDaGema(estado, Ficha.combate(estado), entry, efeito), entry, tagsDoUso, (ativas ? ativas() : Gemas.skillsAtivas(estado)).get(entry.id)?.onde?.slot ?? null) : null;
   if (impelidoAgora?.alvosExtra && tagsDoUso.includes('golpe')) e.alvosExtras = (e.alvosExtras ?? 0) + impelidoAgora.alvosExtra;
   // (lote A3, D5: o `divide` do feixe; a divisão do projétil — `partir` — é do alvo atingido, `comOsProjeteisDaGema`)
   e.alvosExtras = (e.alvosExtras ?? 0) + a.projeteis + a.divide - (a.partir ?? 0) + (dasPecas?.projeteis ?? 0);
@@ -4848,13 +4850,20 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
   // Defesa em profundidade: `definir()` já recusa vocação/level errados ao
   // configurar o slot, mas um arranjo salvo (`actionPresets`) antes de um
   // level up, por exemplo, não passa por ali de novo.
-  if (!doTotem && bloqueio(entry, estado)) return { ok: false, erro: 'Você não pode mais usar isso.', motivo: 'BLOQUEADA' };
+  /*
+   * (04/11, velocidade da caçada offline) As `skillsAtivas` do personagem: as conferências do começo do uso (a gema encaixada, a ativada pelo
+   * item, a janela da Retaliação, o efeito da gema) as pediam até 5 vezes, cada uma refazendo todas as peças. Até o efeito da gema
+   * (`efeitoDaGema`, abaixo) o uso só confere — nada muda as peças, as gemas nem a árvore —: uma conta só, a primeira que precisar.
+   */
+  let ativasDoUso = null;
+  const ativas = () => (ativasDoUso ??= Gemas.skillsAtivas(estado));
+  if (!doTotem && bloqueio(entry, estado, ativas)) return { ok: false, erro: 'Você não pode mais usar isso.', motivo: 'BLOQUEADA' };
   // Numa Safe Zone o jogador não ataca (`protecao.mjs`): a cura, o buff e a poção saem; a magia de ataque, não.
   if (entry.papeis?.[0] === 'attack' && Protecao.imune(hunt)) return { ok: false, erro: 'Numa zona segura não se ataca.', motivo: 'ZONA_SEGURA' };
   // A magia ligada a um suporte de gatilho só sai pelo gatilho (como no PoE: não se conjura à mão).
   if (!gatilho && entry.poeGema && Gemas.ativadaPor(estado, entry.id)) return { ok: false, erro: `Ativada por ${Gemas.ativadaPor(estado, entry.id)}.`, motivo: 'ATIVADA_POR_GATILHO' };
   // A habilidade que um ÚNICO ativa ("Ativa X quando…"): só sai pelo evento, como no PoE.
-  if (!gatilho && entry.poeGema && Gemas.skillsAtivas(estado).get(entry.id)?.ativadaPorItem) return { ok: false, erro: 'Ativada pelo item.', motivo: 'ATIVADA_POR_GATILHO' };
+  if (!gatilho && entry.poeGema && ativas().get(entry.id)?.ativadaPorItem) return { ok: false, erro: 'Ativada pelo item.', motivo: 'ATIVADA_POR_GATILHO' };
   // (14/10) O Infestador alterna sozinho, ligado na barra (`tiqueDaPraga`).
   // (lote P4, 27/10: como o PoE — o uso À MÃO alterna entre Incubando e Infestando, na recarga de 0,5 s — `alternarPragaP4`)
   if (entry.poeGema?.arquetipo === 'praga' && manual && !gatilho) return alternarPragaP4(estado, hunt, entry);
@@ -4900,7 +4909,7 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
   // (PoE, 11/10) A RETALIAÇÃO só se usa na janela: depois de bloquear um acerto (ou de um Acerto Selvagem) — `ModsPoe.abrirRetaliacao`. (lote A5, dono 20/10 —
   // D8: com a janela desta gema — o "X% maior" da Retaliação Experiente que a suporta)
   const gatilhoDaRetaliacao = !gatilho && entry.poeGema ? GemasPoe.gatilhoDeRetaliacao(entry.poeGema.slug) : null;
-  if (gatilhoDaRetaliacao && !concluir && !ModsPoe.retaliacaoUsavel(hunt, gatilhoDaRetaliacao, entry.poeGema.slug, hunt.clock ?? 0, Gemas.efeitoNaSkill(estado, entry.id)?.retaliacaoJanelaPct ?? 0)) {
+  if (gatilhoDaRetaliacao && !concluir && !ModsPoe.retaliacaoUsavel(hunt, gatilhoDaRetaliacao, entry.poeGema.slug, hunt.clock ?? 0, Gemas.efeitoNaSkill(estado, entry.id, ativas())?.retaliacaoJanelaPct ?? 0)) {
     return { ok: false, erro: gatilhoDaRetaliacao === 'selvagem' ? 'Só depois de sofrer um Acerto Selvagem (Retaliação).' : 'Só depois de bloquear um acerto (Retaliação).', motivo: 'RETALIACAO' };
   }
   const grupo = `grupo:${entry.group ?? entry.kind}`;
@@ -4927,7 +4936,9 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
     ? Math.min(agora, hunt.conjurando?.inicio ?? agora)
     : R.instanteLogico(agora, hunt.relogioAnterior, [globalLibera, cd?.ate, grupoQueConta ? cds[grupoQueConta]?.ate : null]);
   // A gema da skill: o nível dela e as supports ligadas (`skills/gemas.mjs`) — custo, dano, crítico, alvos, cura, recarga.
-  let efeitoDaGema = comOsAlvosDaGema(entry, Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id) : null, estado);
+  let efeitoDaGema = comOsAlvosDaGema(entry, Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id, ativas()) : null, estado, ativas);
+  // (daqui em diante o uso sai — as peças podem mudar: as contas seguintes são novas)
+  ativasDoUso = null;
   // (lote T3, 27/10) o Tiro Gélido Vaal usado pelos Atiradores Ilusórios: "Modificadores à quantidade de Projéteis não se aplicam a esta Habilidade quando usada por
   // Atiradores Ilusórios de Elite" — um projétil só
   if (gatilho?.t3Atirador && efeitoDaGema) efeitoDaGema = { ...efeitoDaGema, projeteisBase: 1, alvosExtras: 0 };

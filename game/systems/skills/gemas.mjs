@@ -383,10 +383,11 @@ const ENCAIXE_DA_COR = { R: 'encaixeVermelho', G: 'encaixeVerde', B: 'encaixeAzu
  */
 const EXCEPCIONAL = /(?:^|_)(?:Empower|Enhance|Enlighten)_Support$/;
 const ehExcepcional = (def) => !!def?.poe?.excepcional || EXCEPCIONAL.test(def?.poe?.slug ?? '');
-export function extrasDaGemaPoe(estado, peca, def, indice = null) {
+// (04/11: `soquetes` — os `soquetesDe(peca)` que quem chama já tem na mão, a mesma conta: `skillsAtivas` os passa, sem refazer por gema)
+export function extrasDaGemaPoe(estado, peca, def, indice = null, soquetes = null) {
   const cor = ATRIBUTO_DA_COR.find(([re]) => re.test(def?.poe?.cor ?? ''))?.[1];
   // (+ a cor do ENCAIXE em que a gema está: "Gemas Encaixadas nos Encaixes Vermelhos têm +N de Nível" — `gem_level_local@encaixeVermelho`.)
-  const s = indice != null && peca ? soquetesDe(peca) : null;
+  const s = indice != null && peca ? soquetes ?? soquetesDe(peca) : null;
   const doEncaixe = ENCAIXE_DA_COR[s?.cores?.[indice]];
   // (lote 57: + `naoExcepcional` — o suporte que não é Excepcional: "+1 ao nível de todas as gemas de suporte não excepcionais", o Limitado pelo Destino)
   const tags = new Set([...ModsPoe.tagsDoPoe(def?.tags ?? []), def?.tipo === 'support' ? 'suporte' : 'habilidade', ...(def?.tipo === 'support' && !ehExcepcional(def) ? ['naoExcepcional'] : []), ...(cor ? [cor] : []), ...(doEncaixe ? [doEncaixe] : []), ...(def?.nome ? [`gema:${ModsPoe.slugDoNome(def.nome)}`] : [])]);
@@ -394,7 +395,7 @@ export function extrasDaGemaPoe(estado, peca, def, indice = null) {
   // personagem, as gemas encaixadas na peça ("-1 … por Gema Encaixada") e as outras escalas do PoE; com o teto.
   const fator = (escala) => {
     if (!escala) return 1;
-    if (escala === 'gemasNaPeca') return (peca && soquetesDe(peca)?.gemas.filter(Boolean).length) || 0;
+    if (escala === 'gemasNaPeca') return (peca && (soquetes ?? soquetesDe(peca))?.gemas.filter(Boolean).length) || 0;
     return ModsPoe.fatorDaEscala(estado, null, null, escala);
   };
   const vale = (chave, base) => {
@@ -469,10 +470,24 @@ export const corDaGema = (g) => SocketsPoe.corDaGema(DEFS.get(Number(g?.id))?.po
  * As CORES dos sockets da peça: as gravadas; a peça que ainda não tinha sorteia de um jeito FIXO (pelos requisitos de atributo da base),
  * e o socket que já tem gema fica com a cor dela — a gema que já estava encaixada nunca fica no socket errado.
  */
+/*
+ * (04/11, velocidade da caçada offline) As cores FIXAS saem do texto da peça (o sorteio fixo): o mesmo texto, o mesmo número de sockets e os
+ * mesmos requisitos dão sempre as mesmas cores — guardadas aqui (o `skillsAtivas` refazia o sorteio várias vezes por tique, por peça).
+ * A conta da constante (`sockets.cores.constante` das regras) entra na chave: mudou, sorteia de novo.
+ */
+const CORES_FIXAS = new Map();
+function coresFixas(texto, max, requisitos) {
+  const chave = `${max}|${SocketsPoe.pesosDeCor(requisitos).R - (Number(requisitos?.str) || 0)}|${texto}`;
+  const guardada = CORES_FIXAS.get(chave);
+  if (guardada && guardada.requisitos === requisitos) return guardada.cores;
+  const cores = SocketsPoe.sortearCores(max, requisitos, SocketsPoe.sorteioFixo(texto));
+  if (CORES_FIXAS.size >= 20_000) CORES_FIXAS.clear();
+  CORES_FIXAS.set(chave, { requisitos, cores });
+  return cores;
+}
 function coresDe(peca, max, gemas) {
   const gravadas = peca.soquetes?.cores;
-  const rng = SocketsPoe.sorteioFixo(`${peca.id}|${peca.poe?.ilvl ?? ''}|${JSON.stringify(peca.poe?.modificadores ?? peca.af ?? '')}`);
-  const fixas = SocketsPoe.sortearCores(max, ITEM_CATALOG[peca.id]?.poe?.requisitos ?? null, rng);
+  const fixas = coresFixas(`${peca.id}|${peca.poe?.ilvl ?? ''}|${JSON.stringify(peca.poe?.modificadores ?? peca.af ?? '')}`, max, ITEM_CATALOG[peca.id]?.poe?.requisitos ?? null);
   return Array.from({ length: max }, (_, i) => {
     const c = ['R', 'G', 'B', 'W'].includes(gravadas?.[i]) ? gravadas[i] : fixas[i];
     return gemas[i] && !SocketsPoe.cabe(c, corDaGema(gemas[i])) ? corDaGema(gemas[i]) : c;
@@ -611,7 +626,7 @@ export function skillsAtivas(estado) {
       const feiticeiro = noGrupo.find((y) => ehFeiticeiro(y.def));
       for (const x of noGrupo.filter((y) => y.def.tipo === 'ativa')) {
         const anterior = saida.get(x.def.acao);
-        const doPoe = extrasDaGemaPoe(estado, peca, x.def, x.i);
+        const doPoe = extrasDaGemaPoe(estado, peca, x.def, x.i, s);
         if (anterior && anterior.nivel >= x.g.nivel + bonus + doPoe.nivel) continue;
         saida.set(x.def.acao, {
           acao: x.def.acao,
@@ -628,7 +643,7 @@ export function skillsAtivas(estado) {
             supports
               // (17/10, lote G3: + o tipo que outro suporte do grupo acrescenta — `compativelNoGrupo`)
               .filter((sp) => compativelNoGrupo(sp.def.suporte, x.def.tags, supports.map((o) => o.def.suporte)))
-              .map((sp) => { const e = extrasDaGemaPoe(estado, peca, sp.def, sp.i); return { def: sp.def, nivel: sp.g.nivel + bonus + e.nivel, raridade: raridadeDaGema(sp.g.raridade), qualidade: qualidadeDaGema((sp.g.qualidade ?? 0) + e.qualidade) }; }),
+              .map((sp) => { const e = extrasDaGemaPoe(estado, peca, sp.def, sp.i, s); return { def: sp.def, nivel: sp.g.nivel + bonus + e.nivel, raridade: raridadeDaGema(sp.g.raridade), qualidade: qualidadeDaGema((sp.g.qualidade ?? 0) + e.qualidade) }; }),
           ),
           onde: { slot, indice: x.i },
           // (o Feiticeiro: a magia ligada a ele — o nível dele —, e ele com quantas magias suporta)

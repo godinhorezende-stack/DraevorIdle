@@ -9,6 +9,7 @@
 // (`PASTA_ORIGINAL`). `ITENS_POE` não é mais lida.
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { ler as lerDoAmbiente } from '../ambiente-fixo.mjs';
 import { fileURLToPath } from 'node:url';
 
 export const ARQUIVO = fileURLToPath(new URL('../../gamedata/itens-poe/catalogo-itens.json', import.meta.url));
@@ -21,7 +22,8 @@ export const REGRAS = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/
 /** Os dados do PoE estão presentes? (conferido UMA vez: `ligado()` é chamada no caminho quente do combate.) */
 const TEM_DADOS = existsSync(ARQUIVO);
 /** O processo está no Draevor CLÁSSICO (só a transição: o legado ainda não migrado e os testes dele)? */
-export const classico = () => process.env.DRAEVOR_CLASSICO === '1';
+// (04/11: pela leitura de `ambiente-fixo.mjs` — no tique, uma vez só; fora dele, a de sempre)
+export const classico = () => lerDoAmbiente('DRAEVOR_CLASSICO') === '1';
 /** O jogo do PoE está ligado neste processo? (o oficial: sempre, salvo o clássico da transição — e com os dados presentes) */
 export const ligado = () => !classico() && TEM_DADOS;
 /** O jogo oficial precisa dos dados do PoE: o que falta (para o boot parar com a mensagem), ou null. */
