@@ -77,8 +77,10 @@ export function imagensDoCatalogo(dados) {
  * endgame (`poe-itens/Mapas/`: `icones/Map_Tier_N.png`, `unicos/<Único>.png` e `unicos/<Único>_T<N>.png`) são gravados por
  * game/tools/importar-icones-mapas.mjs, importar-mapas-unicos.mjs e montar-mapas-poe.mjs e referenciados por `mapas.json` (os `_T<N>`
  * nem aparecem lá: `itens-poe/mapas.mjs` `iconeDoUnico` monta o nome) — apagar a pasta inteira sumia com eles (visto em 11/10).
+ * E `poe-itens/Unicos_poedb/`: os ícones dos únicos que a coleção não tem (os `novos` de `unicos-correcoes.json`), baixados à parte do
+ * poedb (dono, 04/11) — `systems/itens-poe/catalogo.mjs` `corrigirUnicos` os liga.
  */
-export const PASTAS_DE_OUTROS_TOOLS = ['poe-itens/Mapas'];
+export const PASTAS_DE_OUTROS_TOOLS = ['poe-itens/Mapas', 'poe-itens/Unicos_poedb'];
 
 /** Apaga o conteúdo de `pasta`, menos os caminhos de `preservar` (relativos a ela) — as pastas no caminho até eles ficam. */
 function limparMenos(pasta, preservar) {
@@ -254,8 +256,8 @@ export function slugsDistintos(bases) {
  * não nasce nele (o "Vida Recuperada… / Retira…% da Mana"), e o que tem a tag da própria página (`life_flask` no de Vida) só nasce na classe
  * dela (o "Recupera um adicional de…% em 10 segundos" — o híbrido tem as tags `hybrid_flask, flask`). O peso é o `DropChance` (o da tag `flask`).
  * (04/11, auditoria dos itens: os 4 que faltavam; o dono pediu a linha inteira, com o Grande e o Consagrado — no poedb são bases normais,
- * DropLevel 30 e 60, além de serem as dos únicos Divinação Destilada e O Jarro Contorcido.) O ÍCONE não está na coleção: `icone` fica null
- * e o relatório dá o link.
+ * DropLevel 30 e 60, além de serem as dos únicos Divinação Destilada e O Jarro Contorcido.) O ÍCONE veio à parte (dono, 04/11: baixado
+ * do poedb para `original/poe-itens/Frascos/Hybrid_Flasks/icones/`); enquanto o arquivo não está lá, `icone` fica null e o relatório dá o link.
  */
 export const POEDB_HTML = process.env.POEDB_HTML ?? '/home/deploy/scrapling/saida/html';
 export const FRASCOS_HIBRIDOS = ['Small_Hybrid_Flask', 'Medium_Hybrid_Flask', 'Large_Hybrid_Flask', 'Colossal_Hybrid_Flask', 'Sacred_Hybrid_Flask', 'Hallowed_Hybrid_Flask'];
@@ -345,7 +347,7 @@ export function poolHibrido(paginas, tagsDaFamilia = {}) {
 
 /**
  * A classe `Hybrid_Flasks` do catálogo (as bases de `FRASCOS_HIBRIDOS` e o pool) lida das páginas do poedb em `html`. `classes`: as que o
- * importador já montou (as tags das famílias vêm das de Vida e de Mana). Devolve `{ classe, icones: [{ slug, url }], faltando: [...] }`.
+ * importador já montou (as tags das famílias vêm das de Vida e de Mana). Devolve `{ classe, icones: [{ slug, url }] (os que ainda faltam na coleção), faltando: [...] }`.
  */
 export function classeHibrida(html = POEDB_HTML, classes = {}) {
   const ler = (slug) => (existsSync(join(html, `${slug}.html`)) ? readFileSync(join(html, `${slug}.html`), 'utf8') : null);
@@ -365,7 +367,9 @@ export function classeHibrida(html = POEDB_HTML, classes = {}) {
     const h = ler(slug);
     const b = h ? baseHibridaDoHtml(h) : null;
     if (!b?.vida || !b?.mana || !b.cargasMaximas) { faltando.push(`${slug}.html`); continue; }
-    icones.push({ slug, url: b.iconeUrl });
+    const icone = `poe-itens/Frascos/Hybrid_Flasks/icones/${slug}.png`;
+    const temIcone = existsSync(join(ORIGINAL, icone));
+    if (!temIcone) icones.push({ slug, url: b.iconeUrl });
     bases.push({
       id: `Hybrid_Flasks/${slug}`,
       slug,
@@ -380,7 +384,7 @@ export function classeHibrida(html = POEDB_HTML, classes = {}) {
         cargas_atuais: b.cargasMaximas,
       },
       implicitos: [],
-      icone: null,
+      icone: temIcone ? icone : null,
       pool: paginas.length ? '*' : null,
     });
   }
@@ -514,7 +518,7 @@ if (import.meta.url === `file://${process.argv[1]}` && process.argv.includes('--
   console.log(`tiers sem faixa numérica no texto: ${r.textosSemFaixa}`);
   if (r.hibridos) {
     console.log(`frascos híbridos: ${dados.classes.Hybrid_Flasks?.bases.length ?? 0} bases${r.hibridos.faltando.length ? ` — faltando: ${r.hibridos.faltando.join(', ')}` : ''}`);
-    // (O ícone não está na coleção: o link do poedb, para baixar à parte.)
+    // (O ícone que ainda não está na coleção: o link do poedb, para baixar à parte.)
     for (const i of r.hibridos.icones) console.log(`  ícone a baixar: ${i.slug} ← ${i.url}`);
   }
   if (!process.argv.includes('--checar')) {

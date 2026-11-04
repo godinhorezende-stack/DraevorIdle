@@ -91,4 +91,9 @@ As gemas não entraram nesta comparação: o balão delas é o `balao-da-gema.mj
   - **Ducado de Ukatoa:** o jogo não tem os mods sobrenaturais de amuleto.
   - **Os 4 "suportes" das Varas de Pesca:** são gemas de teste do PoE ("[DNT] Supports bla").
   - **As 6 Peças do Harbinger:** os dados não dizem qual único cada conjunto forma.
-- **Pendentes:** os ícones dos 6 híbridos e dos 10 únicos novos precisam ser baixados do poedb. Os links estão nos relatórios dos importadores.
+- **Ícones (baixados com o aval do dono, 04/11):**
+  - Os 6 Híbridos estão na coleção, em `poe-itens/Frascos/Hybrid_Flasks/icones/`, e o importador liga cada um à sua base.
+  - Os 11 únicos que a coleção não tinha estão em `icones-itens/poe-itens/Unicos_poedb/`, ligados em `catalogo.mjs`. São as 9 Réplicas, o Filho da Violência e a Réplica do Ensinamento de Maata, que já estava sem ícone.
+  - Todos vieram do CDN do poedb, menos o do Filho da Violência: o poedb recusa essa imagem (403), e a mesma arte veio do CDN oficial do PoE (`web.poecdn.com`, `PitfighterJewel.png`).
+  - O formato é o da coleção: PNG 64×64, centralizado e transparente.
+  - Agora todas as 1085 bases e todos os 1645 únicos têm ícone.

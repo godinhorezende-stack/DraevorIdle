@@ -50,7 +50,9 @@ function corrigirUnicos(cat) {
   for (const n of novos) {
     const classe = cat.classes[n.classe];
     if (!classe || classe.unicos?.some((x) => x.slug === n.slug)) continue;
-    (classe.unicos ??= []).push({ slug: n.slug, nome: n.nome, base: n.base, requisitos: {}, atributosDaBase: {}, modificadores: n.modificadores, icone: null, corrigidoPeloPoedb: true });
+    // (O ícone deles não está na coleção: baixado à parte do poedb — dono, 04/11 — em `icones-itens/poe-itens/Unicos_poedb/<slug>.png`.)
+    const icone = `poe-itens/Unicos_poedb/${n.slug}.png`;
+    (classe.unicos ??= []).push({ slug: n.slug, nome: n.nome, base: n.base, requisitos: {}, atributosDaBase: {}, modificadores: n.modificadores, icone: existsSync(join(PASTA_DAS_IMAGENS, icone)) ? icone : null, corrigidoPeloPoedb: true });
   }
 }
 const ARQUIVO_DOS_IMPLICITOS_SORTEADOS = new URL('../../gamedata/itens-poe/implicitos-sorteados.json', import.meta.url);
