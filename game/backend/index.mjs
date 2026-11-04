@@ -369,10 +369,10 @@ ServerSave.iniciar().catch((e) => console.error('[SERVER-SAVE] não iniciou ->',
 // `ENDERECO` (opcional): só nesse endereço — o servidor de desenvolvimento local usa 127.0.0.1 (acesso por túnel SSH). Sem ele, todas as interfaces.
 http.listen(PORTA, ...(process.env.ENDERECO ? [process.env.ENDERECO] : []), () => {
   console.log(`\n  Draevor Idle (restaurado)  ->  http://localhost:${PORTA}/jogar\n`);
-  // (04/11) A thread da caçada offline carrega o jogo AGORA, com a porta já aberta (não atrasa o listen): quem voltar de uma caçada offline não
-  // espera os ~10 s da carga fria dela no "selecionar personagem". Se ela morrer, outra nasce aquecida (`simulacao-offline.mjs`).
+  // (04/11) As threads da caçada offline carregam o jogo AGORA, com a porta já aberta (não atrasa o listen): quem voltar de uma caçada offline
+  // não espera os ~10 s da carga fria no "selecionar personagem". Se uma morrer, outra nasce aquecida (`simulacao-offline.mjs`).
   SimulacaoOffline.aquecer().then(
-    ({ ms, heapMb }) => console.log(`  simulação offline: thread aquecida em ${(ms / 1000).toFixed(1)} s (heap ${heapMb} MB)`),
+    ({ ms, heapMb, threads }) => console.log(`  simulação offline: ${threads} thread(s) aquecida(s) em ${(ms / 1000).toFixed(1)} s (heap da última ${heapMb} MB)`),
     (e) => console.error('[SIMULAÇÃO OFFLINE] a thread não aqueceu ->', e.message),
   );
 });
