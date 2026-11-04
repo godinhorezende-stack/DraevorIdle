@@ -126,7 +126,7 @@ function sabores(cat) {
       // (no PoE, a linha vem depois da conquista e antes do lembrete entre parênteses)
       if (u.modificadores?.length && !u.modificadores.some((m) => m.texto === 'Histórico')) {
         const lembrete = u.modificadores.findIndex((m) => /^\(/.test(m.texto));
-        u.modificadores = lembrete < 0 ? [...u.modificadores, LINHA_HISTORICO] : [...u.modificadores.slice(0, lembrete), LINHA_HISTORICO, ...u.modificadores.slice(lembrete)];
+        u.modificadores = lembrete < 0 ? [...u.modificadores, { ...LINHA_HISTORICO }] : [...u.modificadores.slice(0, lembrete), { ...LINHA_HISTORICO }, ...u.modificadores.slice(lembrete)];
       }
     }
     for (const b of c.bases ?? []) if (bases[b.id]?.corrompidoDeFabrica) b.corrompidoDeFabrica = true;

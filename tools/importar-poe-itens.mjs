@@ -253,11 +253,12 @@ export function slugsDistintos(bases) {
  * #ModifiersCalc) que podem nascer no híbrido — o poedb lista em `spawn_no` as tags do peso fora a `flask`: o mod que tem `hybrid_flask` ali
  * não nasce nele (o "Vida Recuperada… / Retira…% da Mana"), e o que tem a tag da própria página (`life_flask` no de Vida) só nasce na classe
  * dela (o "Recupera um adicional de…% em 10 segundos" — o híbrido tem as tags `hybrid_flask, flask`). O peso é o `DropChance` (o da tag `flask`).
- * (04/11, auditoria dos itens — frente A: os 4 que faltavam. O Grande e o Consagrado, as bases dos únicos Divinação Destilada e O Jarro
- * Contorcido, ficam fora desta leva — entram pondo o slug aqui.) O ÍCONE não está na coleção: `icone` fica null e o relatório dá o link.
+ * (04/11, auditoria dos itens: os 4 que faltavam; o dono pediu a linha inteira, com o Grande e o Consagrado — no poedb são bases normais,
+ * DropLevel 30 e 60, além de serem as dos únicos Divinação Destilada e O Jarro Contorcido.) O ÍCONE não está na coleção: `icone` fica null
+ * e o relatório dá o link.
  */
 export const POEDB_HTML = process.env.POEDB_HTML ?? '/home/deploy/scrapling/saida/html';
-export const FRASCOS_HIBRIDOS = ['Small_Hybrid_Flask', 'Medium_Hybrid_Flask', 'Colossal_Hybrid_Flask', 'Sacred_Hybrid_Flask'];
+export const FRASCOS_HIBRIDOS = ['Small_Hybrid_Flask', 'Medium_Hybrid_Flask', 'Large_Hybrid_Flask', 'Colossal_Hybrid_Flask', 'Sacred_Hybrid_Flask', 'Hallowed_Hybrid_Flask'];
 const PAGINAS_DO_POOL_HIBRIDO = [['Life_Flasks', 'life_flask'], ['Mana_Flasks', 'mana_flask']];
 const tirarHtml = (s) => String(s ?? '').replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"').trim();
 
@@ -468,6 +469,15 @@ export function importar(origem = ORIGEM, { html = origem === ORIGEM ? POEDB_HTM
   andar(origem);
   // (04/11) os FRASCOS HÍBRIDOS, das páginas do poedb (a coleção não tem a classe — `classeHibrida`). Só com a coleção de verdade (os testes
   // que montam uma coleção de mentira não passam `html`).
+  // Sem as páginas (outra máquina), a classe do catálogo que já está no repositório fica como está — senão os híbridos salvos perdiam a base.
+  if (html && !existsSync(html) && existsSync(DESTINO)) {
+    const antiga = JSON.parse(readFileSync(DESTINO, 'utf8')).classes?.Hybrid_Flasks;
+    if (antiga) {
+      classes.Hybrid_Flasks = antiga;
+      relatorio.hibridos = { icones: [], faltando: [`${html} (sem as páginas do poedb: mantida a classe que já estava no catálogo)`] };
+      console.warn(`AVISO: ${html} não existe — os Frascos Híbridos ficam como estavam no catálogo.`);
+    }
+  }
   if (html && existsSync(html)) {
     const h = classeHibrida(html, classes);
     relatorio.hibridos = { icones: h.icones, faltando: h.faltando };

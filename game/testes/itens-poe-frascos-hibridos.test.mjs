@@ -23,17 +23,19 @@ const comMod = (p, modelo, valores, lado = 'prefixos') => {
   return p;
 };
 
-test('as 4 bases do poedb: Vida e Mana por 5 s, 20 de 40 cargas, o requisito pelo DropLevel (10, 20, 40, 50); sem o Grande e o Consagrado', { skip: SEM }, () => {
+test('as 6 bases do poedb (dono, 04/11: a linha inteira): Vida e Mana por 5 s, 20 de 40 cargas, o requisito pelo DropLevel (10 a 60)', { skip: SEM }, () => {
   const c = Catalogo.catalogo().classes.Hybrid_Flasks;
   assert.equal(c.grupo, 'Frascos');
   const numeros = c.bases.map((b) => [b.slug, b.nome, b.requisitos.nivel, b.atributos.recupera.quantidade, b.atributos.recupera_mana.quantidade, b.atributos.recupera.segundos, b.atributos.recupera_mana.segundos, b.atributos.cargas_por_uso, b.atributos.cargas_maximas]);
   assert.deepEqual(numeros, [
     ['Small_Hybrid_Flask', 'Frasco Híbrido Pequeno', 10, 100, 70, 5, 5, 20, 40],
     ['Medium_Hybrid_Flask', 'Frasco Híbrido Médio', 20, 230, 100, 5, 5, 20, 40],
+    ['Large_Hybrid_Flask', 'Frasco Híbrido Grande', 30, 510, 140, 5, 5, 20, 40],
     ['Colossal_Hybrid_Flask', 'Frasco Híbrido Colossal', 40, 690, 200, 5, 5, 20, 40],
     ['Sacred_Hybrid_Flask', 'Frasco Híbrido Sagrado', 50, 1440, 400, 5, 5, 20, 40],
+    ['Hallowed_Hybrid_Flask', 'Frasco Híbrido Consagrado', 60, 1740, 480, 5, 5, 20, 40],
   ]);
-  assert.deepEqual(c.bases.map((b) => [b.atributos.recupera.recurso, b.atributos.recupera_mana.recurso]), Array(4).fill(['vida', 'mana']));
+  assert.deepEqual(c.bases.map((b) => [b.atributos.recupera.recurso, b.atributos.recupera_mana.recurso]), Array(6).fill(['vida', 'mana']));
 });
 
 test('o pool do híbrido: os mods de Vida e de Mana que nascem nele (sem o "Vida/Mana Recuperada… / Retira…" e sem o adicional em 10 s da Vida)', { skip: SEM }, () => {
@@ -65,12 +67,12 @@ test('importador: a regra do spawn_no do poedb (hybrid_flask ou a tag da própri
 test('o jogo: os híbridos vão para o cinto (ids depois de todos os outros, o requisito de nível) e caem pelo nível do item', { skip: SEM }, () => {
   const ids = [...Jogo.registro().porBase.keys()];
   const hibridos = ids.filter((b) => b.startsWith('Hybrid_Flasks/'));
-  assert.equal(hibridos.length, 4);
+  assert.equal(hibridos.length, 6);
   const maiorOutro = Math.max(...ids.filter((b) => !b.startsWith('Hybrid_Flasks/') && !Jogo.JOIAS[b]).map(Jogo.idDaBase));
   assert.ok(hibridos.every((b) => Jogo.idDaBase(b) > maiorOutro), 'nenhum id que já existia muda');
   const meta = ITEM_CATALOG[Jogo.idDaBase('Hybrid_Flasks/Sacred_Hybrid_Flask')];
   assert.deepEqual([meta.frasco, meta.slot, meta.type, meta.minLevel], [true, undefined, 'flasks', 50]);
-  // O Item Level do bicho: o Sagrado (nível 50) não cai num bicho de nível 30 (nem com a janela de 3 do dono); o Pequeno cai.
+  // O Item Level do bicho: o Sagrado (nível 50) não cai num bicho de nível 30 (nem com a janela de 3 do dono); um dos de até 30 cai.
   const rng = semente(11);
   const vistos = new Set();
   for (let i = 0; i < 6000; i++) {
@@ -80,8 +82,8 @@ test('o jogo: os híbridos vão para o cinto (ids depois de todos os outros, o r
       assert.notEqual(p.poe.raridade, 'raro', 'frasco não é Raro no PoE');
     }
   }
-  assert.ok(vistos.has('Hybrid_Flasks/Medium_Hybrid_Flask') || vistos.has('Hybrid_Flasks/Small_Hybrid_Flask'), [...vistos].join());
-  assert.ok(!vistos.has('Hybrid_Flasks/Sacred_Hybrid_Flask') && !vistos.has('Hybrid_Flasks/Colossal_Hybrid_Flask'));
+  assert.ok(['Small', 'Medium', 'Large'].some((t) => vistos.has(`Hybrid_Flasks/${t}_Hybrid_Flask`)), [...vistos].join());
+  assert.ok(!vistos.has('Hybrid_Flasks/Sacred_Hybrid_Flask') && !vistos.has('Hybrid_Flasks/Colossal_Hybrid_Flask') && !vistos.has('Hybrid_Flasks/Hallowed_Hybrid_Flask'));
   // O Mágico com mods do pool do híbrido.
   const magico = frasco('Hybrid_Flasks/Colossal_Hybrid_Flask', 'magico', 5, 70);
   assert.ok((magico.poe.prefixos?.length ?? 0) + (magico.poe.sufixos?.length ?? 0) >= 1);

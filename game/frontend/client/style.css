@@ -3603,6 +3603,8 @@ body {
 .hotbar .slot.frasco-slot .frasco-cargas > i { display: block; width: 100%; background: #d8b56a; border-radius: 2px; }
 .hotbar .slot.frasco-slot.vida .frasco-cargas > i { background: #d24a3c; }
 .hotbar .slot.frasco-slot.mana .frasco-cargas > i { background: #3c7fd2; }
+/* (04/11) o FRASCO HÍBRIDO: metade vida, metade mana. */
+.hotbar .slot.frasco-slot.hibrido .frasco-cargas > i { background: linear-gradient(#d24a3c 50%, #3c7fd2 50%); }
 /* (12/10) A TINTURA: a barrinha verde-musgo (a recarga enchendo; cheia = pronta ou ativa); ativa, o número é a Queima de Mana. */
 .hotbar .slot.frasco-slot.tintura .frasco-cargas > i { background: #7fae4e; }
 .hotbar .slot.frasco-slot .frasco-num { position: absolute; right: 1px; bottom: 0; font: 600 8px/11px system-ui; letter-spacing: -.2px; color: #e8dcc0; background: #0b0f10cc; border-radius: 3px; padding: 0 3px; pointer-events: none; }
