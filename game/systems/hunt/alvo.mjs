@@ -32,12 +32,14 @@ export function alvoAtual(hunt) {
    */
   const aPe = hunt.percurso ? distanciasAPe(hunt) : null;
   const passos = (m) => (aPe ? aPe.em(m.x, m.y) ?? Infinity : distancia(hunt.pos, m));
+  // (04/11, velocidade da caçada offline) o trecho do corredor é o mesmo para todos os bichos desta escolha: montado uma vez só
+  let trecho;
   const aoAlcance = (m) =>
     !hunt.percurso ||
     (distancia(hunt.pos, m) <= (m.perseguindo ? ALCANCE_DE_PERSEGUICAO : ALCANCE_DE_PERCEPCAO) &&
       passos(m) <= ALCANCE_DO_COMPROMISSO &&
       (m.semCaminhoAte ?? 0) <= (hunt.clock ?? 0) &&
-      noCorredor(hunt, m));
+      noCorredorDoTrecho(hunt, m, trecho === undefined ? (trecho = trechoDoCorredor(hunt)) : trecho));
   const vivos = hunt.monstros.filter((m) => m.hp > 0 && aoAlcance(m));
   const perto = (a, b) => passos(a) - passos(b);
   // "Menos vida"/"Mais vida" é em PORCENTAGEM (o `title` da opção no client),
@@ -105,13 +107,23 @@ export const CORREDOR = 5;
 export const TRECHO_ANTES = 5;
 export const TRECHO_DEPOIS = 15;
 export function noCorredor(hunt, m) {
+  return noCorredorDoTrecho(hunt, m, trechoDoCorredor(hunt));
+}
+/** Os pontos do laço (do andar dele) no trecho por onde ele passa agora — ou null, sem percurso na grade (aí todo bicho está "no corredor"). */
+function trechoDoCorredor(hunt) {
   const pontos = gradeDaHunt(huntOuMapaCustom(hunt.huntId)).percurso;
-  if (!pontos) return true;
+  if (!pontos) return null;
   const n = pontos.length;
+  const trecho = [];
   for (let k = -TRECHO_ANTES; k <= TRECHO_DEPOIS; k++) {
     const p = pontos[(((hunt.percurso.passo + k) % n) + n) % n];
-    if (noAndar(p, hunt.z) && distancia(p, m) <= CORREDOR) return true;
+    if (noAndar(p, hunt.z)) trecho.push(p);
   }
+  return trecho;
+}
+function noCorredorDoTrecho(hunt, m, trecho) {
+  if (!trecho) return true;
+  for (const p of trecho) if (distancia(p, m) <= CORREDOR) return true;
   return distancia(hunt.pos, m) <= 2; // colado nele, briga de qualquer jeito
 }
 
