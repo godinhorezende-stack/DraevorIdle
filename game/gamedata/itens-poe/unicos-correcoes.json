@@ -2693,6 +2693,440 @@
      "faixas": []
     }
    ]
+  },
+  {
+   "classe": "One_Hand_Axes",
+   "slug": "Replica_Soul_Taker",
+   "nome": "Réplica: Ladrão de Almas",
+   "base": "Machado de Cerco",
+   "modificadores": [
+    {
+     "tipo": "explicit",
+     "texto": "Dano Físico aumentado em (140—180)%",
+     "modelo": "Dano Físico aumentado em {0}%",
+     "faixas": [
+      [
+       140,
+       180
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Adiciona 30 a 40 de Dano Físico",
+     "modelo": "Adiciona {0} a {1} de Dano Físico",
+     "faixas": [
+      [
+       30,
+       30
+      ],
+      [
+       40,
+       40
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Chance de Crítico aumentada em (60—80)%",
+     "modelo": "Chance de Crítico aumentada em {0}%",
+     "faixas": [
+      [
+       60,
+       80
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(20—25)% de Resistência a Gelo",
+     "modelo": "+{0}% de Resistência a Gelo",
+     "faixas": [
+      [
+       20,
+       25
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Seu Dano Físico pode Congelar",
+     "modelo": "Seu Dano Físico pode Congelar",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Bateria Anciã",
+     "modelo": "Bateria Anciã",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Congelamento desacelera os Inimigos completamente, prevenindo que realizem qualquer ação. A Duração é baseada no Dano de Gelo do Acerto)",
+     "modelo": "(Congelamento desacelera os Inimigos completamente, prevenindo que realizem qualquer ação. A Duração é baseada no Dano de Gelo do Acerto)",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Gasta Escudo de Energia antes da Mana para Custo de Mana de Habilidades. Escudo de Energia protégé a Mana ao invés da Vida. 50% menos Recarga do Escudo de Energia.)",
+     "modelo": "(Gasta Escudo de Energia antes da Mana para Custo de Mana de Habilidades. Escudo de Energia protégé a Mana ao invés da Vida. {0}% menos Recarga do Escudo de Energia.)",
+     "faixas": [
+      [
+       50,
+       50
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "classe": "Helmets",
+   "slug": "Replica_Forbidden_Shako",
+   "nome": "Réplica: Shako Proibido",
+   "base": "Coroa Grande",
+   "modificadores": [
+    {
+     "tipo": "explicit",
+     "texto": "Gemas Encaixadas são Suportadas por (1—172) Nível (1—10)",
+     "modelo": "Gemas Encaixadas são Suportadas por {0} Nível {1}",
+     "faixas": [
+      [
+       1,
+       172
+      ],
+      [
+       1,
+       10
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Gemas Encaixadas são Suportadas por (1—172) Nível (25—35)",
+     "modelo": "Gemas Encaixadas são Suportadas por {0} Nível {1}",
+     "faixas": [
+      [
+       1,
+       172
+      ],
+      [
+       25,
+       35
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(25—30) de todos Atributos",
+     "modelo": "+{0} de todos Atributos",
+     "faixas": [
+      [
+       25,
+       30
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Atributos são Força, Destreza e Inteligência)",
+     "modelo": "(Atributos são Força, Destreza e Inteligência)",
+     "faixas": []
+    }
+   ]
+  },
+  {
+   "classe": "Jewels",
+   "slug": "Replica_Blood_Sacrifice",
+   "nome": "Réplica: Sacrifício de Sangue",
+   "base": "Joia Carmesim",
+   "modificadores": [
+    {
+     "tipo": "explicit",
+     "texto": "Recupera 1% da Vida ao Matar",
+     "modelo": "Recupera {0}% da Vida ao Matar",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Recupera 1% do Escudo de Energia ao Matar",
+     "modelo": "Recupera {0}% do Escudo de Energia ao Matar",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Não Pode Drenar ou Regenerar Mana",
+     "modelo": "Não Pode Drenar ou Regenerar Mana",
+     "faixas": []
+    }
+   ]
+  },
+  {
+   "classe": "Jewels",
+   "slug": "Replica_Cheap_Construction",
+   "nome": "Réplica: Construção Barata",
+   "base": "Joia Viridiana",
+   "modificadores": [
+    {
+     "tipo": "explicit",
+     "texto": "Chance de Crítico com Armadilhas aumentada em (100—120)%",
+     "modelo": "Chance de Crítico com Armadilhas aumentada em {0}%",
+     "faixas": [
+      [
+       100,
+       120
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Pode ter até 5 Armadilhas a menos plantadas por vez",
+     "modelo": "Pode ter até {0} Armadilhas a menos plantadas por vez",
+     "faixas": [
+      [
+       5,
+       5
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "classe": "Jewels",
+   "slug": "Replica_Conquerors_Efficiency",
+   "nome": "Réplica: Eficiência do Conquistador",
+   "base": "Joia Carmesim",
+   "modificadores": [
+    {
+     "tipo": "explicit",
+     "texto": "Duração do Efeito da Habilidade aumentada em 4%",
+     "modelo": "Duração do Efeito da Habilidade aumentada em {0}%",
+     "faixas": [
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+5 à Fúria máxima",
+     "modelo": "+{0} à Fúria máxima",
+     "faixas": [
+      [
+       5,
+       5
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Habilidades Não Canalizadoras tem -9 de Custo de Mana Total",
+     "modelo": "Habilidades Não Canalizadoras tem {0} de Custo de Mana Total",
+     "faixas": [
+      [
+       -9,
+       -9
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Você tem 1% a mais de Dano de Ataque a cada Raiva. A Raiva Máxima é 30. Perca 10 de Raiva por segundo se você não tiver sido atingido ou ganhado Raiva nos últimos 2 segundos)",
+     "modelo": "(Você tem {0}% a mais de Dano de Ataque a cada Raiva. A Raiva Máxima é {1}. Perca {2} de Raiva por segundo se você não tiver sido atingido ou ganhado Raiva nos últimos {3} segundos)",
+     "faixas": [
+      [
+       1,
+       1
+      ],
+      [
+       30,
+       30
+      ],
+      [
+       10,
+       10
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "classe": "Jewels",
+   "slug": "Replica_Fragile_Bloom",
+   "nome": "Réplica: Florescer Frágil",
+   "base": "Joia Carmesim",
+   "modificadores": [
+    {
+     "tipo": "explicit",
+     "texto": "Máximo de 5 Crescimento Frágil",
+     "modelo": "Máximo de {0} Crescimento Frágil",
+     "faixas": [
+      [
+       5,
+       5
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "0.7% de Vida Regenerada por segundo por Crescimento Frágil",
+     "modelo": "{0}% de Vida Regenerada por segundo por Crescimento Frágil",
+     "faixas": [
+      [
+       0.7,
+       0.7
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Perde 1 Crescimento Frágil por segundo",
+     "modelo": "Perde {0} Crescimento Frágil por segundo",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Ganha até o máximo de Crescimento Frágil quando Acertado",
+     "modelo": "Ganha até o máximo de Crescimento Frágil quando Acertado",
+     "faixas": []
+    }
+   ]
+  },
+  {
+   "classe": "Jewels",
+   "slug": "Replica_Hotheaded",
+   "nome": "Réplica: Cabeça Quente",
+   "base": "Joia Viridiana",
+   "modificadores": [
+    {
+     "tipo": "explicit",
+     "texto": "Velocidade de Ataque enquanto Resfriado aumentada em (10—20)%",
+     "modelo": "Velocidade de Ataque enquanto Resfriado aumentada em {0}%",
+     "faixas": [
+      [
+       10,
+       20
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Velocidade de Conjuração aumentada em (10—20)% enquanto Resfriado",
+     "modelo": "Velocidade de Conjuração aumentada em {0}% enquanto Resfriado",
+     "faixas": [
+      [
+       10,
+       20
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Velocidade de Movimento enquanto Resfriado aumentada em (10—20)%",
+     "modelo": "Velocidade de Movimento enquanto Resfriado aumentada em {0}%",
+     "faixas": [
+      [
+       10,
+       20
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "classe": "Jewels",
+   "slug": "Replica_Pure_Talent",
+   "nome": "Réplica: Talento Puro",
+   "base": "Joia Viridiana",
+   "modificadores": [
+    {
+     "tipo": "explicit",
+     "texto": "Enquanto sua Árvore Passiva se conectar com o local de início de uma classe, você ganhan Marauder: 1% de Vida Regenerada por segundo Duelista: +0.2 de Alcance de Golpe Corpo a Corpo\\Caçadora: 20% Cargas de Frasco recebidas aumentadas em\\Sombra: Velocidade de Ataque e Conjuração aumentadas em 12% \\Bruxa: Duração do Efeito de Habilidade aumentada em 20% Templário: +4% de Chance de Bloquear o Dano de Ataques e Magias Herdeira: Dano aumentado em 30%",
+     "modelo": "Enquanto sua Árvore Passiva se conectar com o local de início de uma classe, você ganhan Marauder: {0}% de Vida Regenerada por segundo Duelista: +{1} de Alcance de Golpe Corpo a Corpo\\Caçadora: {2}% Cargas de Frasco recebidas aumentadas em\\Sombra: Velocidade de Ataque e Conjuração aumentadas em {3}% \\Bruxa: Duração do Efeito de Habilidade aumentada em {4}% Templário: +{5}% de Chance de Bloquear o Dano de Ataques e Magias Herdeira: Dano aumentado em {6}%",
+     "faixas": [
+      [
+       1,
+       1
+      ],
+      [
+       0.2,
+       0.2
+      ],
+      [
+       20,
+       20
+      ],
+      [
+       12,
+       12
+      ],
+      [
+       20,
+       20
+      ],
+      [
+       4,
+       4
+      ],
+      [
+       30,
+       30
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "classe": "Jewels",
+   "slug": "Replica_Unstable_Payload",
+   "nome": "Réplica: Carga Instável",
+   "base": "Joia Cobalto",
+   "modificadores": [
+    {
+     "tipo": "explicit",
+     "texto": "Recupere (20—30) da Vida quando sua Armadilha for ativada por um Inimigo",
+     "modelo": "Recupere {0} da Vida quando sua Armadilha for ativada por um Inimigo",
+     "faixas": [
+      [
+       20,
+       30
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "classe": "Jewels",
+   "slug": "Child_of_Violence",
+   "nome": "Filho da Violência",
+   "base": "Joia Ramificadora Pequeno",
+   "modificadores": [
+    {
+     "tipo": "explicit",
+     "texto": "Adiciona Combatente",
+     "modelo": "Adiciona Combatente",
+     "faixas": []
+    }
+   ]
   }
  ]
 }

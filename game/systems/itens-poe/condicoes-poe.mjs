@@ -1047,6 +1047,10 @@ export function buffsDoCliente(estado) {
   // (revisão do A2: a Fúria de agora no HUD — a condição "Fúria ≥ N" do slot, o Berserk)
   const furia = furiaAtual(estado);
   if (furia > 0) saida.push({ icone: null, nome: 'Fúria', resta: 0, tipo: 'furia', contador: furia, dica: `Fúria: ${furia} de ${maximoDeFuria(fichaDa(h)?.afPoe)} (1% mais Dano de Ataque por ponto; perde ${FURIA.perdaPorS} por segundo depois de ${FURIA.esperaMs / 1000} s sem ganhar Fúria nem ser Acertado)` });
+  // (04/11) o Crescimento Frágil (a Réplica: Florescer Frágil)
+  const afDaFicha = fichaDa(h)?.afPoe;
+  const crescimento = crescimentoFragil(afDaFicha, h);
+  if (crescimento > 0) saida.push({ icone: null, nome: 'Crescimento Frágil', resta: 0, tipo: 'crescimentoFragil', contador: crescimento, dica: `Crescimento Frágil: ${crescimento} de ${afDaFicha.crescimento_fragil_max} (vai ao máximo quando você é Acertado; perde ${afDaFicha.crescimento_fragil_perda_por_s ?? 0} por segundo)` });
   if (h.furiaLiberta?.n > 0) saida.push({ icone: null, nome: 'Fúria Liberta', resta: 0, tipo: 'furiaLiberta', contador: h.furiaLiberta.n, dica: `Fúria Liberta: ${h.furiaLiberta.n} de ${FURIA_LIBERTA.maximo} (com ${FURIA_LIBERTA.maximo}, o Avatar Liberto deixa Liberto por ${FURIA_LIBERTA.libertoS} s)` });
   return saida;
 }
@@ -1088,6 +1092,13 @@ export const ESCALAS_DA_FICHA = /^(pctSalvaguarda|precisao|armadura|evasao|esMax
 const segundosParado = (h, agora) => { const r = h?.poeRecente ?? {}; return r.moveu != null && agora - r.moveu <= MOVENDO_MS ? 0 : Math.floor((agora - (r.moveu ?? h?.poeEntrou ?? agora)) / 1000); };
 /** (lote 80) O teto das Vinhas Constringentes (o PoB). */
 const VINHAS_MAXIMO = 10;
+/** (04/11) O Crescimento Frágil agora (a Réplica: Florescer Frágil): 0 sem o "Ganha até o máximo… quando Acertado" ou sem acerto sofrido. */
+export function crescimentoFragil(total, h, agora = h?.clock ?? 0) {
+  const max = Number(total?.crescimento_fragil_max) || 0;
+  const t = h?.poeRecente?.acertado;
+  if (max <= 0 || !(Number(total?.crescimento_fragil_ao_ser_acertado) > 0) || t == null) return 0;
+  return Math.max(0, max - (Number(total?.crescimento_fragil_perda_por_s) || 0) * Math.floor(Math.max(0, agora - t) / 1000));
+}
 export function fatorDaEscala(estado, total, principais, escala) {
   const [tipo, a, b] = escala.split(':');
   const h = estado?.hunt;
@@ -1163,6 +1174,9 @@ export function fatorDaEscala(estado, total, principais, escala) {
     // (lote 80, a Paciência da Natureza) "por Vinha Constringente": 2 por segundo parado ("Ganha 2 Vinhas Constringentes a cada segundo enquanto
     // parado" — `vinhas_constringentes_por_s`), até 10 — o PoB (`Multiplier:GraspingVinesCount`, limitTotal 10); ao andar, voltam a 0
     case 'vinhas': return Math.min(VINHAS_MAXIMO, (Number(total?.vinhas_constringentes_por_s) || 0) * segundosParado(h, agora));
+    // (04/11, a Réplica: Florescer Frágil) "por Crescimento Frágil": "Ganha até o máximo de Crescimento Frágil quando Acertado" e "Perde N
+    // Crescimento Frágil por segundo" — o máximo no último acerto que você sofreu (`poeRecente.acertado`), menos N por segundo inteiro desde ele
+    case 'crescimentoFragil': return crescimentoFragil(total, h, agora);
     // (lote F) "por Habilidade Passiva de Maestria Alocada" (`maestrias`) e "para cada tipo diferente de Maestria Alocada" (`tiposDeMaestria`).
     case 'maestrias': return leitorDeMaestrias?.(estado, null) ?? 0;
     case 'tiposDeMaestria': return leitorDeMaestrias?.(estado, '*') ?? 0;
@@ -2362,7 +2376,7 @@ export function dinamicoValido(stat) {
   return DINAMICOS.test(stat) || PARAMETRICOS.some((re) => re.test(stat));
 }
 /** A escala é conhecida? */
-export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|joiasAbissais|joiaUnica|devocao|itemMagico|maldicoesEmVoce|abissalLocal|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|vinhas|desdeUsou|afetadoPorClamor|valor|valorDoEstandarte|forcaDosVentos|stat|armaduraElmo|evasaoLuvas|esBotas)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
+export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|joiasAbissais|joiaUnica|devocao|itemMagico|maldicoesEmVoce|abissalLocal|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|vinhas|crescimentoFragil|desdeUsou|afetadoPorClamor|valor|valorDoEstandarte|forcaDosVentos|stat|armaduraElmo|evasaoLuvas|esBotas)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
 
 /** Os números base do PoE dos efeitos de acerto. */
 export const NO_ACERTO = {

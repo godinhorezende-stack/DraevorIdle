@@ -8456,6 +8456,66 @@
       "unidade": "",
       "combate": true,
       "efeito": "frascos.aoUsarOFrasco → condicoes-poe.criarSoloCongelado: o Solo Congelado no chão onde você está, ao usar o Frasco de Água-marinha (03/11)"
+    },
+    "crescimento_fragil_max": {
+      "nome": "Máximo de Crescimento Frágil",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.crescimentoFragil — a escala 'crescimentoFragil' (04/11, a Réplica: Florescer Frágil)"
+    },
+    "crescimento_fragil_perda_por_s": {
+      "nome": "Crescimento Frágil perdido por segundo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.crescimentoFragil — a escala 'crescimentoFragil' (04/11, a Réplica: Florescer Frágil)"
+    },
+    "crescimento_fragil_ao_ser_acertado": {
+      "nome": "Ganha até o máximo de Crescimento Frágil quando Acertado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.crescimentoFragil — a escala 'crescimentoFragil' (04/11, a Réplica: Florescer Frágil)"
+    },
+    "talento_puro_r_marauder": {
+      "nome": "Réplica: Talento Puro: Marauder — % de Vida Regenerada por segundo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "com a árvore ligada ao início da classe (`passivas/arvore.raiosDasJoias`; 04/11)"
+    },
+    "talento_puro_r_duelist": {
+      "nome": "Réplica: Talento Puro: Duelista — metros ao Alcance de Golpes Corpo a Corpo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "com a árvore ligada ao início da classe (`passivas/arvore.raiosDasJoias`; 04/11)"
+    },
+    "talento_puro_r_ranger": {
+      "nome": "Réplica: Talento Puro: Caçadora — Cargas de Frasco recebidas aumentadas",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "com a árvore ligada ao início da classe (`passivas/arvore.raiosDasJoias`; 04/11)"
+    },
+    "talento_puro_r_shadow": {
+      "nome": "Réplica: Talento Puro: Sombra — Velocidade de Ataque e Conjuração aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "com a árvore ligada ao início da classe (`passivas/arvore.raiosDasJoias`; 04/11)"
+    },
+    "talento_puro_r_witch": {
+      "nome": "Réplica: Talento Puro: Bruxa — Duração do Efeito da Habilidade aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "com a árvore ligada ao início da classe (`passivas/arvore.raiosDasJoias`; 04/11)"
+    },
+    "talento_puro_r_templar": {
+      "nome": "Réplica: Talento Puro: Templário — Chance de Bloquear o Dano de Ataques e Magias",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "com a árvore ligada ao início da classe (`passivas/arvore.raiosDasJoias`; 04/11)"
+    },
+    "talento_puro_r_scion": {
+      "nome": "Réplica: Talento Puro: Herdeira — Dano aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "com a árvore ligada ao início da classe (`passivas/arvore.raiosDasJoias`; 04/11)"
     }
   }
 }

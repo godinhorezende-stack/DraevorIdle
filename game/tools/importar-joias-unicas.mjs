@@ -7,6 +7,8 @@
 // no Path of Building (decisão do dono, 15/10: "Como no PoE/PoB").
 //
 //   node tools/importar-joias-unicas.mjs [caminho do unicos.json]     (padrão: /home/deploy/scrapling/saida/unicos/unicos.json)
+//
+// (04/11) Mais as joias únicas de fora da lista de Unique_item (`gamedata/itens-poe/unicos-fora-da-lista.json` — as Réplicas que faltavam).
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -38,7 +40,8 @@ export function joiasUnicas(unicos) {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const fonte = process.argv[2] ?? FONTE_PADRAO;
-  const joias = joiasUnicas(JSON.parse(readFileSync(fonte, 'utf8')));
+  const foraDaLista = JSON.parse(readFileSync(join(RAIZ, '..', 'gamedata', 'itens-poe', 'unicos-fora-da-lista.json'), 'utf8')).unicos;
+  const joias = joiasUnicas({ ...foraDaLista, ...JSON.parse(readFileSync(fonte, 'utf8')) });
   const dados = {
     _nota: 'O RAIO (pelo nome — o tamanho em unidades da árvore está em passivas/arvore.RAIOS_DE_JOIA) e o "Limitado a: N" de cada joia única, do poedb (tools/importar-joias-unicas.mjs).',
     joias: Object.fromEntries(Object.entries(joias).sort(([a], [b]) => a.localeCompare(b))),
