@@ -1,6 +1,7 @@
 // A AUDITORIA DOS ÚNICOS contra o poedb (dono, 11/10: "extraia pelo scraping todas as abas de https://poedb.tw/pt/Unique_item, verifique se
 // tem no jogo, e os atributos implícitos/únicos — se está funcionando o sorteio"). Lê o que o Scrapling extraiu (/home/deploy/scrapling:
-// `extrair/unicos_lista.py` e `extrair/unicos.py` → saida/unicos/{unicos,foulborn,receitas}.json) e compara com o catálogo do jogo.
+// `extrair/unicos_lista.py` e `extrair/unicos.py` → saida/unicos/{unicos,foulborn,receitas}.json) e compara com o catálogo do jogo. Mais os
+// únicos de fora da lista (gamedata/itens-poe/unicos-fora-da-lista.json — as Réplicas que faltavam e o Filho da Violência).
 //
 // Uso (em game/): node tools/auditar-unicos-poedb.mjs <pasta saida/unicos> [--gravar]
 //   Sem --gravar: só o resumo. Com --gravar: os dados do poedb vão para o repositório (gamedata/itens-poe/poedb-unicos.json — os únicos
@@ -18,6 +19,16 @@ const LISTA = ler('lista.json');
 const PAGINAS = ler('unicos.json');
 const FOULBORN = ler('foulborn.json');
 const RECEITAS = ler('receitas.json');
+// (04/11, a auditoria dos itens) Os únicos que a lista de Unique_item não traz — as 9 Réplicas da página Replica_unique_item e a Ramificadora
+// Filho da Violência —: as páginas ficam no repositório (gamedata/itens-poe/unicos-fora-da-lista.json, pelo mesmo extrator) e entram aqui como
+// se fossem da lista, na aba delas; entram no jogo como os `novos` (as joias também — a classe Jewels fica fora só da correção).
+const FORA_DA_LISTA = JSON.parse(readFileSync(new URL('../gamedata/itens-poe/unicos-fora-da-lista.json', import.meta.url), 'utf8')).unicos;
+const ABA_DA_LISTA = { Armas: 'WeaponÚnicos', Armaduras: 'ArmourÚnicos', Outros: 'OtherÚnicos' };
+for (const [slug, p] of Object.entries(FORA_DA_LISTA)) {
+  if (PAGINAS[slug] || Object.values(LISTA).some((l) => l.includes(slug))) continue;
+  PAGINAS[slug] = { slug, versoes: p.versoes };
+  (LISTA[ABA_DA_LISTA[p.aba]] ??= []).push(slug);
+}
 
 const mesmaFaixa = (a, b) => a.length === b.length && a.every((f, i) => Math.min(...f) === Math.min(...b[i]) && Math.max(...f) === Math.max(...b[i]));
 const fx = (fs) => fs.map(([a, b]) => (a === b ? `${a}` : `${a}–${b}`)).join(', ') || '—';
@@ -63,7 +74,7 @@ for (const [aba, rotulo] of Object.entries(ABAS)) {
     const jogo = DO_JOGO.get(slug) ?? porNome.get(v.nome);
     if (!jogo) {
       achados.faltando.push({ slug, nome: v.nome, base: v.base, aba: rotulo });
-      const dona = Object.entries(cat.classes).find(([id, c]) => !CLASSES_FORA.has(id) && c.bases.some((b) => b.nome === v.base));
+      const dona = Object.entries(cat.classes).find(([id, c]) => (!CLASSES_FORA.has(id) || (id === 'Jewels' && FORA_DA_LISTA[slug])) && c.bases.some((b) => b.nome === v.base));
       if (dona) correcoes.novos.push({ classe: dona[0], slug, nome: v.nome, base: v.base, modificadores: linhas.map((l) => ({ tipo: l.tipo, texto: l.jogo.texto, modelo: l.jogo.modelo, faixas: l.jogo.faixas })) });
       continue;
     }

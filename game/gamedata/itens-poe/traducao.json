@@ -44465,6 +44465,137 @@
       ],
       "_nova": true,
       "_lote75": "17/10 — lote 75 (as Ramificadoras: a Pura Agonia — o Arauto da Agonia com a Virulência, decisão do dono \"No máximo, como o PoB\")"
+    },
+    {
+      "padrao": "^Seu Dano Físico pode Congelar$",
+      "efeitos": [
+        {
+          "stat": "pode:congelamento:physical",
+          "valor": "1"
+        }
+      ],
+      "_unico": true,
+      "_nova": true,
+      "_04_11": "04/11 — a auditoria dos itens: as Réplicas que faltavam (Ladrão de Almas, Sacrifício de Sangue, Cabeça Quente, Florescer Frágil)"
+    },
+    {
+      "padrao": "^Não Pode Drenar ou Regenerar Mana$",
+      "efeitos": [
+        {
+          "stat": "sem_roubo_mana",
+          "valor": "1"
+        },
+        {
+          "stat": "sem_regen_mana",
+          "valor": "1"
+        }
+      ],
+      "_unico": true,
+      "_nova": true,
+      "_04_11": "04/11 — a auditoria dos itens: as Réplicas que faltavam (Ladrão de Almas, Sacrifício de Sangue, Cabeça Quente, Florescer Frágil)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque enquanto Resfriado aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@resfriadoProprio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_04_11": "04/11 — a auditoria dos itens: as Réplicas que faltavam (Ladrão de Almas, Sacrifício de Sangue, Cabeça Quente, Florescer Frágil)"
+    },
+    {
+      "padrao": "^Velocidade de Movimento enquanto Resfriado aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "move_speed@resfriadoProprio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_04_11": "04/11 — a auditoria dos itens: as Réplicas que faltavam (Ladrão de Almas, Sacrifício de Sangue, Cabeça Quente, Florescer Frágil)"
+    },
+    {
+      "padrao": "^Máximo de \\{(\\d+)\\} Crescimento Frágil$",
+      "efeitos": [
+        {
+          "stat": "crescimento_fragil_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_04_11": "04/11 — a auditoria dos itens: as Réplicas que faltavam (Ladrão de Almas, Sacrifício de Sangue, Cabeça Quente, Florescer Frágil)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Vida Regenerada por segundo por Crescimento Frágil$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct%crescimentoFragil",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_04_11": "04/11 — a auditoria dos itens: as Réplicas que faltavam (Ladrão de Almas, Sacrifício de Sangue, Cabeça Quente, Florescer Frágil)"
+    },
+    {
+      "padrao": "^Perde \\{(\\d+)\\} Crescimento Frágil por segundo$",
+      "efeitos": [
+        {
+          "stat": "crescimento_fragil_perda_por_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_04_11": "04/11 — a auditoria dos itens: as Réplicas que faltavam (Ladrão de Almas, Sacrifício de Sangue, Cabeça Quente, Florescer Frágil)"
+    },
+    {
+      "padrao": "^Ganha até o máximo de Crescimento Frágil quando Acertado$",
+      "efeitos": [
+        {
+          "stat": "crescimento_fragil_ao_ser_acertado",
+          "valor": "1"
+        }
+      ],
+      "nota": "o Crescimento Frágil vai ao máximo a cada acerto que você sofre e perde o \"Perde N por segundo\" a cada segundo inteiro desde ele (itens-poe/condicoes-poe.crescimentoFragil)",
+      "_nova": true,
+      "_04_11": "04/11 — a auditoria dos itens: as Réplicas que faltavam (Ladrão de Almas, Sacrifício de Sangue, Cabeça Quente, Florescer Frágil)"
+    },
+    {
+      "padrao": "^Enquanto sua Árvore Passiva se conectar com o local de início de uma classe, você ganhan?(?:\\s*\\\\\\s*|\\s+)Marauder: \\{(\\d+)\\}% de Vida Regenerada por segundo(?:\\s*\\\\\\s*|\\s+)Duelista: \\+\\{(\\d+)\\} de Alcance de Golpe Corpo a Corpo(?:\\s*\\\\\\s*|\\s+)Caçadora: \\{(\\d+)\\}% Cargas de Frasco recebidas aumentadas em(?:\\s*\\\\\\s*|\\s+)Sombra: Velocidade de Ataque e Conjuração aumentadas em \\{(\\d+)\\}%(?:\\s*\\\\\\s*|\\s+)Bruxa: Duração do Efeito de Habilidade aumentada em \\{(\\d+)\\}%(?:\\s*\\\\\\s*|\\s+)Templário: \\+\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques e Magias(?:\\s*\\\\\\s*|\\s+)Herdeira: Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "talento_puro_r_marauder",
+          "valor": "{1}"
+        },
+        {
+          "stat": "talento_puro_r_duelist",
+          "valor": "{2}"
+        },
+        {
+          "stat": "talento_puro_r_ranger",
+          "valor": "{3}"
+        },
+        {
+          "stat": "talento_puro_r_shadow",
+          "valor": "{4}"
+        },
+        {
+          "stat": "talento_puro_r_witch",
+          "valor": "{5}"
+        },
+        {
+          "stat": "talento_puro_r_templar",
+          "valor": "{6}"
+        },
+        {
+          "stat": "talento_puro_r_scion",
+          "valor": "{7}"
+        }
+      ],
+      "nota": "como o Talento Puro: o início da sua classe conta (a árvore sempre sai dele) e o de outra classe, quando uma passiva sua encosta nele (passivas/arvore.raiosDasJoias); o \"+0.2 de Alcance\" é em metros",
+      "_nova": true,
+      "_04_11": "04/11 — a auditoria dos itens: as Réplicas que faltavam (o Talento Puro)"
     }
   ]
 }

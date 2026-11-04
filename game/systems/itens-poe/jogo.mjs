@@ -486,7 +486,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // não existem; o "tamanho do Personagem reduzido" (t minúsculo — o Ninho do Rato) casa)
 // (83 — 03/11, frente mundo + dados: o Foco de Combate só nos 3 elementos do PoE — Fogo, Gelo e Raio; o curinga {E} também casava "Caos" e gerava
 // `raio_prisma_*_chaos`, não cadastrado)
-export const VERSAO_DA_TRADUCAO = 83;
+// (84 — 04/11, a auditoria dos itens: as Réplicas que faltavam — "Seu Dano Físico pode Congelar", "Não Pode Drenar ou Regenerar Mana", a Velocidade de
+// Ataque/Movimento "enquanto Resfriado", o Crescimento Frágil (`condicoes-poe.crescimentoFragil`) e a Réplica: Talento Puro (`passivas/arvore` TALENTO_PURO))
+export const VERSAO_DA_TRADUCAO = 84;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

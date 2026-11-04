@@ -1,0 +1,799 @@
+{
+ "_nota": "Os ÚNICOS do poedb que a lista de Unique_item (o que o Scrapling extraiu em saida/unicos) não traz: 9 Réplicas (a página Replica_unique_item) e a Joia Ramificadora única Filho da Violência (a página Cluster_Jewel). Cada página (saida/html/<slug>.html) lida pelo mesmo extrator dos outros (extrair/unicos.py, ler); o Filho da Violência não tem página baixada, vem do card de saida/itens/lista.json (1 linha sem número). No formato de saida/unicos/unicos.json, com a aba do poedb (Armas/Armaduras/Outros). Quem lê: tools/auditar-unicos-poedb.mjs (poedb-unicos.json e os novos de unicos-correcoes.json) e tools/importar-joias-unicas.mjs (o Limitado a).",
+ "unicos": {
+  "Replica_Blood_Sacrifice": {
+   "aba": "Outros",
+   "fonte": "saida/html/Replica_Blood_Sacrifice.html",
+   "versoes": [
+    {
+     "nome": "Réplica: Sacrifício de Sangue",
+     "base": "Joia Carmesim",
+     "propriedades": [
+      "Joias"
+     ],
+     "requisitos": "",
+     "linhas": [
+      {
+       "tipo": "explicit",
+       "texto": "Recupera 1 % da Vida ao Matar",
+       "faixas": [
+        [
+         1.0,
+         1.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Recupera 1% da Vida ao Matar",
+        "modelo": "Recupera {0}% da Vida ao Matar",
+        "faixas": [
+         [
+          1.0,
+          1.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Recupera 1 % do Escudo de Energia ao Matar",
+       "faixas": [
+        [
+         1.0,
+         1.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Recupera 1% do Escudo de Energia ao Matar",
+        "modelo": "Recupera {0}% do Escudo de Energia ao Matar",
+        "faixas": [
+         [
+          1.0,
+          1.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Não Pode Drenar ou Regenerar Mana",
+       "faixas": [],
+       "jogo": {
+        "texto": "Não Pode Drenar ou Regenerar Mana",
+        "modelo": "Não Pode Drenar ou Regenerar Mana",
+        "faixas": []
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "Replica_Cheap_Construction": {
+   "aba": "Outros",
+   "fonte": "saida/html/Replica_Cheap_Construction.html",
+   "versoes": [
+    {
+     "nome": "Réplica: Construção Barata",
+     "base": "Joia Viridiana",
+     "propriedades": [
+      "Joias"
+     ],
+     "requisitos": "",
+     "linhas": [
+      {
+       "tipo": "explicit",
+       "texto": "Chance de Crítico com Armadilhas aumentada em (100 — 120) %",
+       "faixas": [
+        [
+         100.0,
+         120.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Chance de Crítico com Armadilhas aumentada em (100—120)%",
+        "modelo": "Chance de Crítico com Armadilhas aumentada em {0}%",
+        "faixas": [
+         [
+          100.0,
+          120.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Pode ter até 5 Armadilhas a menos plantadas por vez",
+       "faixas": [
+        [
+         5.0,
+         5.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Pode ter até 5 Armadilhas a menos plantadas por vez",
+        "modelo": "Pode ter até {0} Armadilhas a menos plantadas por vez",
+        "faixas": [
+         [
+          5.0,
+          5.0
+         ]
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "Replica_Conquerors_Efficiency": {
+   "aba": "Outros",
+   "fonte": "saida/html/Replica_Conquerors_Efficiency.html",
+   "versoes": [
+    {
+     "nome": "Réplica: Eficiência do Conquistador",
+     "base": "Joia Carmesim",
+     "propriedades": [
+      "Joias",
+      "Limitado a: 1"
+     ],
+     "requisitos": "",
+     "linhas": [
+      {
+       "tipo": "explicit",
+       "texto": "Duração do Efeito da Habilidade aumentada em 4 %",
+       "faixas": [
+        [
+         4.0,
+         4.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Duração do Efeito da Habilidade aumentada em 4%",
+        "modelo": "Duração do Efeito da Habilidade aumentada em {0}%",
+        "faixas": [
+         [
+          4.0,
+          4.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "+5 à Fúria máxima",
+       "faixas": [
+        [
+         5.0,
+         5.0
+        ]
+       ],
+       "jogo": {
+        "texto": "+5 à Fúria máxima",
+        "modelo": "+{0} à Fúria máxima",
+        "faixas": [
+         [
+          5.0,
+          5.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Habilidades Não Canalizadoras tem -9 de Custo de Mana Total",
+       "faixas": [
+        [
+         -9.0,
+         -9.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Habilidades Não Canalizadoras tem -9 de Custo de Mana Total",
+        "modelo": "Habilidades Não Canalizadoras tem {0} de Custo de Mana Total",
+        "faixas": [
+         [
+          -9.0,
+          -9.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "(Você tem 1% a mais de Dano de Ataque a cada Raiva. A Raiva Máxima é 30. Perca 10 de Raiva por segundo se você não tiver sido atingido ou ganhado Raiva nos últimos 2 segundos)",
+       "faixas": [],
+       "jogo": {
+        "texto": "(Você tem 1% a mais de Dano de Ataque a cada Raiva. A Raiva Máxima é 30. Perca 10 de Raiva por segundo se você não tiver sido atingido ou ganhado Raiva nos últimos 2 segundos)",
+        "modelo": "(Você tem {0}% a mais de Dano de Ataque a cada Raiva. A Raiva Máxima é {1}. Perca {2} de Raiva por segundo se você não tiver sido atingido ou ganhado Raiva nos últimos {3} segundos)",
+        "faixas": [
+         [
+          1.0,
+          1.0
+         ],
+         [
+          30.0,
+          30.0
+         ],
+         [
+          10.0,
+          10.0
+         ],
+         [
+          2.0,
+          2.0
+         ]
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "Replica_Forbidden_Shako": {
+   "aba": "Armaduras",
+   "fonte": "saida/html/Replica_Forbidden_Shako.html",
+   "versoes": [
+    {
+     "nome": "Réplica: Shako Proibido",
+     "base": "Coroa Grande",
+     "propriedades": [
+      "Elmos",
+      "Qualidade: +20%",
+      "Armadura: (171.6-193.2)",
+      "Escudo de Energia: (34.8-39.6)"
+     ],
+     "requisitos": "Requer Nível 68 , 59 For, 59 Int",
+     "linhas": [
+      {
+       "tipo": "explicit",
+       "texto": "Gemas Encaixadas são Suportadas por (1 — 172) Nível (1 — 10)",
+       "faixas": [
+        [
+         1.0,
+         172.0
+        ],
+        [
+         1.0,
+         10.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Gemas Encaixadas são Suportadas por (1—172) Nível (1—10)",
+        "modelo": "Gemas Encaixadas são Suportadas por {0} Nível {1}",
+        "faixas": [
+         [
+          1.0,
+          172.0
+         ],
+         [
+          1.0,
+          10.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Gemas Encaixadas são Suportadas por (1 — 172) Nível (25 — 35)",
+       "faixas": [
+        [
+         1.0,
+         172.0
+        ],
+        [
+         25.0,
+         35.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Gemas Encaixadas são Suportadas por (1—172) Nível (25—35)",
+        "modelo": "Gemas Encaixadas são Suportadas por {0} Nível {1}",
+        "faixas": [
+         [
+          1.0,
+          172.0
+         ],
+         [
+          25.0,
+          35.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "+(25 — 30) de todos Atributos",
+       "faixas": [
+        [
+         25.0,
+         30.0
+        ]
+       ],
+       "jogo": {
+        "texto": "+(25—30) de todos Atributos",
+        "modelo": "+{0} de todos Atributos",
+        "faixas": [
+         [
+          25.0,
+          30.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "(Atributos são Força, Destreza e Inteligência)",
+       "faixas": [],
+       "jogo": {
+        "texto": "(Atributos são Força, Destreza e Inteligência)",
+        "modelo": "(Atributos são Força, Destreza e Inteligência)",
+        "faixas": []
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "Replica_Fragile_Bloom": {
+   "aba": "Outros",
+   "fonte": "saida/html/Replica_Fragile_Bloom.html",
+   "versoes": [
+    {
+     "nome": "Réplica: Florescer Frágil",
+     "base": "Joia Carmesim",
+     "propriedades": [
+      "Joias",
+      "Limitado a: 1"
+     ],
+     "requisitos": "",
+     "linhas": [
+      {
+       "tipo": "explicit",
+       "texto": "Máximo de 5 Crescimento Frágil",
+       "faixas": [
+        [
+         5.0,
+         5.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Máximo de 5 Crescimento Frágil",
+        "modelo": "Máximo de {0} Crescimento Frágil",
+        "faixas": [
+         [
+          5.0,
+          5.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "0.7 % de Vida Regenerada por segundo por Crescimento Frágil",
+       "faixas": [
+        [
+         0.7,
+         0.7
+        ]
+       ],
+       "jogo": {
+        "texto": "0.7% de Vida Regenerada por segundo por Crescimento Frágil",
+        "modelo": "{0}% de Vida Regenerada por segundo por Crescimento Frágil",
+        "faixas": [
+         [
+          0.7,
+          0.7
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Perde 1 Crescimento Frágil por segundo",
+       "faixas": [
+        [
+         1.0,
+         1.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Perde 1 Crescimento Frágil por segundo",
+        "modelo": "Perde {0} Crescimento Frágil por segundo",
+        "faixas": [
+         [
+          1.0,
+          1.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Ganha até o máximo de Crescimento Frágil quando Acertado",
+       "faixas": [],
+       "jogo": {
+        "texto": "Ganha até o máximo de Crescimento Frágil quando Acertado",
+        "modelo": "Ganha até o máximo de Crescimento Frágil quando Acertado",
+        "faixas": []
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "Replica_Hotheaded": {
+   "aba": "Outros",
+   "fonte": "saida/html/Replica_Hotheaded.html",
+   "versoes": [
+    {
+     "nome": "Réplica: Cabeça Quente",
+     "base": "Joia Viridiana",
+     "propriedades": [
+      "Joias",
+      "Limitado a: 1"
+     ],
+     "requisitos": "",
+     "linhas": [
+      {
+       "tipo": "explicit",
+       "texto": "Velocidade de Ataque enquanto Resfriado aumentada em (10 — 20) %",
+       "faixas": [
+        [
+         10.0,
+         20.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Velocidade de Ataque enquanto Resfriado aumentada em (10—20)%",
+        "modelo": "Velocidade de Ataque enquanto Resfriado aumentada em {0}%",
+        "faixas": [
+         [
+          10.0,
+          20.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Velocidade de Conjuração aumentada em (10 — 20) % enquanto Resfriado",
+       "faixas": [
+        [
+         10.0,
+         20.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Velocidade de Conjuração aumentada em (10—20)% enquanto Resfriado",
+        "modelo": "Velocidade de Conjuração aumentada em {0}% enquanto Resfriado",
+        "faixas": [
+         [
+          10.0,
+          20.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Velocidade de Movimento enquanto Resfriado aumentada em (10 — 20) %",
+       "faixas": [
+        [
+         10.0,
+         20.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Velocidade de Movimento enquanto Resfriado aumentada em (10—20)%",
+        "modelo": "Velocidade de Movimento enquanto Resfriado aumentada em {0}%",
+        "faixas": [
+         [
+          10.0,
+          20.0
+         ]
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "Replica_Pure_Talent": {
+   "aba": "Outros",
+   "fonte": "saida/html/Replica_Pure_Talent.html",
+   "versoes": [
+    {
+     "nome": "Réplica: Talento Puro",
+     "base": "Joia Viridiana",
+     "propriedades": [
+      "Joias",
+      "Limitado a: 1"
+     ],
+     "requisitos": "",
+     "linhas": [
+      {
+       "tipo": "explicit",
+       "texto": "Enquanto sua Árvore Passiva se conectar com o local de início de uma classe, você ganhan Marauder: 1 % de Vida Regenerada por segundo Duelista: +0.2 de Alcance de Golpe Corpo a Corpo\\Caçadora: 20 % Cargas de Frasco recebidas aumentadas em\\Sombra: Velocidade de Ataque e Conjuração aumentadas em 12 % \\Bruxa: Duração do Efeito de Habilidade aumentada em 20 % Templário: +4 % de Chance de Bloquear o Dano de Ataques e Magias Herdeira: Dano aumentado em 30 %",
+       "faixas": [
+        [
+         1.0,
+         1.0
+        ],
+        [
+         0.2,
+         0.2
+        ],
+        [
+         20.0,
+         20.0
+        ],
+        [
+         12.0,
+         12.0
+        ],
+        [
+         20.0,
+         20.0
+        ],
+        [
+         4.0,
+         4.0
+        ],
+        [
+         30.0,
+         30.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Enquanto sua Árvore Passiva se conectar com o local de início de uma classe, você ganhan Marauder: 1% de Vida Regenerada por segundo Duelista: +0.2 de Alcance de Golpe Corpo a Corpo\\Caçadora: 20% Cargas de Frasco recebidas aumentadas em\\Sombra: Velocidade de Ataque e Conjuração aumentadas em 12% \\Bruxa: Duração do Efeito de Habilidade aumentada em 20% Templário: +4% de Chance de Bloquear o Dano de Ataques e Magias Herdeira: Dano aumentado em 30%",
+        "modelo": "Enquanto sua Árvore Passiva se conectar com o local de início de uma classe, você ganhan Marauder: {0}% de Vida Regenerada por segundo Duelista: +{1} de Alcance de Golpe Corpo a Corpo\\Caçadora: {2}% Cargas de Frasco recebidas aumentadas em\\Sombra: Velocidade de Ataque e Conjuração aumentadas em {3}% \\Bruxa: Duração do Efeito de Habilidade aumentada em {4}% Templário: +{5}% de Chance de Bloquear o Dano de Ataques e Magias Herdeira: Dano aumentado em {6}%",
+        "faixas": [
+         [
+          1.0,
+          1.0
+         ],
+         [
+          0.2,
+          0.2
+         ],
+         [
+          20.0,
+          20.0
+         ],
+         [
+          12.0,
+          12.0
+         ],
+         [
+          20.0,
+          20.0
+         ],
+         [
+          4.0,
+          4.0
+         ],
+         [
+          30.0,
+          30.0
+         ]
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "Replica_Soul_Taker": {
+   "aba": "Armas",
+   "fonte": "saida/html/Replica_Soul_Taker.html",
+   "versoes": [
+    {
+     "nome": "Réplica: Ladrão de Almas",
+     "base": "Machado de Cerco",
+     "propriedades": [
+      "Machados de Uma Mão",
+      "Qualidade: +20%",
+      "Dano Físico: (177-204) to (286-330)",
+      "Chance de Crítico: (8-9)%",
+      "Ataques por Segundo: 1.5",
+      "Alcance da Arma: 1.1 metros"
+     ],
+     "requisitos": "Requer Nível 59 , 119 For, 82 Des",
+     "linhas": [
+      {
+       "tipo": "explicit",
+       "texto": "Dano Físico aumentado em (140 — 180) %",
+       "faixas": [
+        [
+         140.0,
+         180.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Dano Físico aumentado em (140—180)%",
+        "modelo": "Dano Físico aumentado em {0}%",
+        "faixas": [
+         [
+          140.0,
+          180.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Adiciona 30 a 40 de Dano Físico",
+       "faixas": [
+        [
+         30.0,
+         30.0
+        ],
+        [
+         40.0,
+         40.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Adiciona 30 a 40 de Dano Físico",
+        "modelo": "Adiciona {0} a {1} de Dano Físico",
+        "faixas": [
+         [
+          30.0,
+          30.0
+         ],
+         [
+          40.0,
+          40.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Chance de Crítico aumentada em (60 — 80) %",
+       "faixas": [
+        [
+         60.0,
+         80.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Chance de Crítico aumentada em (60—80)%",
+        "modelo": "Chance de Crítico aumentada em {0}%",
+        "faixas": [
+         [
+          60.0,
+          80.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "+(20 — 25) % de Resistência a Gelo",
+       "faixas": [
+        [
+         20.0,
+         25.0
+        ]
+       ],
+       "jogo": {
+        "texto": "+(20—25)% de Resistência a Gelo",
+        "modelo": "+{0}% de Resistência a Gelo",
+        "faixas": [
+         [
+          20.0,
+          25.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Seu Dano Físico pode Congelar",
+       "faixas": [],
+       "jogo": {
+        "texto": "Seu Dano Físico pode Congelar",
+        "modelo": "Seu Dano Físico pode Congelar",
+        "faixas": []
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Bateria Anciã",
+       "faixas": [],
+       "jogo": {
+        "texto": "Bateria Anciã",
+        "modelo": "Bateria Anciã",
+        "faixas": []
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "(Congelamento desacelera os Inimigos completamente, prevenindo que realizem qualquer ação. A Duração é baseada no Dano de Gelo do Acerto)",
+       "faixas": [],
+       "jogo": {
+        "texto": "(Congelamento desacelera os Inimigos completamente, prevenindo que realizem qualquer ação. A Duração é baseada no Dano de Gelo do Acerto)",
+        "modelo": "(Congelamento desacelera os Inimigos completamente, prevenindo que realizem qualquer ação. A Duração é baseada no Dano de Gelo do Acerto)",
+        "faixas": []
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "(Gasta Escudo de Energia antes da Mana para Custo de Mana de Habilidades. Escudo de Energia protégé a Mana ao invés da Vida. 50% menos Recarga do Escudo de Energia.)",
+       "faixas": [],
+       "jogo": {
+        "texto": "(Gasta Escudo de Energia antes da Mana para Custo de Mana de Habilidades. Escudo de Energia protégé a Mana ao invés da Vida. 50% menos Recarga do Escudo de Energia.)",
+        "modelo": "(Gasta Escudo de Energia antes da Mana para Custo de Mana de Habilidades. Escudo de Energia protégé a Mana ao invés da Vida. {0}% menos Recarga do Escudo de Energia.)",
+        "faixas": [
+         [
+          50.0,
+          50.0
+         ]
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "Replica_Unstable_Payload": {
+   "aba": "Outros",
+   "fonte": "saida/html/Replica_Unstable_Payload.html",
+   "versoes": [
+    {
+     "nome": "Réplica: Carga Instável",
+     "base": "Joia Cobalto",
+     "propriedades": [
+      "Joias"
+     ],
+     "requisitos": "",
+     "linhas": [
+      {
+       "tipo": "explicit",
+       "texto": "Recupere (20 — 30) da Vida quando sua Armadilha for ativada por um Inimigo",
+       "faixas": [
+        [
+         20.0,
+         30.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Recupere (20—30) da Vida quando sua Armadilha for ativada por um Inimigo",
+        "modelo": "Recupere {0} da Vida quando sua Armadilha for ativada por um Inimigo",
+        "faixas": [
+         [
+          20.0,
+          30.0
+         ]
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "Child_of_Violence": {
+   "aba": "Outros",
+   "fonte": "saida/itens/lista.json (card da página Cluster_Jewel; o poedb não tem página baixada)",
+   "versoes": [
+    {
+     "nome": "Filho da Violência",
+     "base": "Joia Ramificadora Pequeno",
+     "propriedades": [],
+     "requisitos": "Requer Nível 1",
+     "linhas": [
+      {
+       "tipo": "explicit",
+       "texto": "Adiciona Combatente",
+       "faixas": [],
+       "jogo": {
+        "texto": "Adiciona Combatente",
+        "modelo": "Adiciona Combatente",
+        "faixas": []
+       }
+      }
+     ]
+    }
+   ]
+  }
+ }
+}
