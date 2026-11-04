@@ -26,9 +26,11 @@ function nova() {
     const i = threads.indexOf(t);
     if (i >= 0) threads.splice(i, 1);
   };
-  t.worker.on('message', ({ id, ok, estado, ausencia, erro }) => {
+  t.worker.on('message', ({ id, ok, estado, ausencia, erro, progresso }) => {
     const p = t.pendentes.get(id);
     if (!p) return;
+    // O andamento da simulação (a tela de entrada): só repassa, a resposta ainda vem.
+    if (progresso) return void p.aoProgredir?.(progresso.feito, progresso.total);
     t.pendentes.delete(id);
     if (!t.pendentes.size) t.worker.unref();
     if (ok) p.resolve({ estado, ausencia });
@@ -54,13 +56,14 @@ function escolher() {
  * Simula a ausência de `estado` numa thread à parte. Devolve `{estado,
  * ausencia}` — o estado é uma CÓPIA já simulada (com a caçada compacta, como
  * no banco: passe por `Cacadas.huntAoCarregar`), e `ausencia` é o mesmo que
- * `Cacadas.simularAusencia` devolveria.
+ * `Cacadas.simularAusencia` devolveria. `aoProgredir(feitoMs, totalMs)` (opcional):
+ * o andamento da parte simulada, a cada ~1 min de jogo (a tela de entrada).
  */
-export function simular(estado, personagem, agora = Date.now(), modo = 'login') {
+export function simular(estado, personagem, agora = Date.now(), modo = 'login', aoProgredir = null) {
   const t = escolher();
   const id = proximoId++;
   return new Promise((resolve, reject) => {
-    t.pendentes.set(id, { resolve, reject });
+    t.pendentes.set(id, { resolve, reject, aoProgredir });
     t.worker.ref();
     t.worker.postMessage({ id, estado, personagem, agora, modo });
   });

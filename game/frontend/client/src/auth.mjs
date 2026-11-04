@@ -47,6 +47,8 @@ import { artOrUiIcon } from './hud.mjs';
  * SEM que o segredo da conta saia desta máquina. Ver `desenharQrDoApp`.
  */
 import { qrcode } from '/packages/shared/src/qrcode.mjs';
+// A tela de entrada do clique até o `welcome` (as etapas do servidor).
+import { abrirEntrada } from './entrada-servidor.mjs';
 
 /*
  * Quantos personagens cabem numa conta.
@@ -1390,6 +1392,22 @@ export function createGate({ send, onPlay }) {
     }
   }
 
+  /*
+   * A tela de entrada já no clique (ver `entrada-servidor.mjs`). Cancelar é sair da entrada como fechar a aba: o `release` solta o
+   * carregamento no servidor (`cancelarCarregamento` — nada é gravado) e a lista volta, sem a reconexão trazer o personagem de novo.
+   */
+  function mostrarEntrando(nome) {
+    abrirEntrada(nome, () => {
+      send({ t: 'release' });
+      entrouNestaAba = false;
+      esquecerPersonagem();
+      document.getElementById('game').hidden = true;
+      document.getElementById('gate').hidden = false;
+      show('pane-characters');
+      renderCharacters();
+    });
+  }
+
   function renderCharacters() {
     const list = $('character-list');
     list.innerHTML = '';
@@ -1446,6 +1464,7 @@ export function createGate({ send, onPlay }) {
         lembrarPersonagem(character.name);
         // A partir daqui, uma queda de conexão volta sozinha para ele.
         entrouNestaAba = true;
+        mostrarEntrando(character.name);
         send({ t: 'play', name: character.name, visto: ultimoVisto(character.name) });
       };
       list.append(card);
@@ -1560,6 +1579,7 @@ export function createGate({ send, onPlay }) {
       send({ t: 'release' });
       lembrarPersonagem(nome);
       entrouNestaAba = true;
+      mostrarEntrando(nome);
       send({ t: 'play', name: nome, visto: ultimoVisto(nome) });
     },
 

@@ -306,7 +306,7 @@ export function temAusenciaParaSimular(estado, agora = Date.now()) {
  * antes de sair), `fora` (o que a ausência rendeu até aqui — o relatório), `base`.
  * Sem pedaço nenhum no meio, o login faz exatamente o que fazia.
  */
-function avancarAusencia(estado, personagem, agora, final) {
+function avancarAusencia(estado, personagem, agora, final, aoProgredir = null) {
   // (a caçada que ACABOU num pedaço da consolidação fica em `estado.ausenciaSemCacada` até o login — ver o fim desta função)
   let hunt = estado.hunt?.offlineDesde ? estado.hunt : (estado.ausenciaSemCacada ?? estado.hunt);
   if (!hunt?.offlineDesde) return null;
@@ -341,7 +341,20 @@ function avancarAusencia(estado, personagem, agora, final) {
     hunt.modo = 'auto';
     const fim = Math.min(ate, fimDaSimulacao);
     let t = hunt.offlineDesde;
+    /*
+     * (04/11) O progresso para a tela de entrada (`aoProgredir(feitoMs, totalMs)`, só no login pela thread — ver
+     * `simulacao-offline-worker.mjs`): avisa no começo, a cada minuto de jogo simulado e no fim (sempre `total` de `total`, mesmo se
+     * morreu ou parou antes). Só LÊ o relógio do laço: não mexe em nada do estado, então o resultado é o mesmo com ou sem ele.
+     */
+    const inicioDoPedaco = t;
+    const totalDoPedaco = Math.max(0, fim - inicioDoPedaco);
+    let proximoAviso = inicioDoPedaco + 60_000;
+    aoProgredir?.(0, totalDoPedaco);
     for (; t <= fim; t += R.PASSO_MS) {
+      if (aoProgredir && t >= proximoAviso) {
+        aoProgredir(Math.min(t - inicioDoPedaco, totalDoPedaco), totalDoPedaco);
+        proximoAviso += 60_000;
+      }
       const doTique = tique(estado, personagem, t);
       // A caçada ACABOU no meio (o mapa do endgame concluído, a sala do boss): a ausência para aqui — não há caçada para continuar nem
       // para projetar (antes o laço seguia sem caçada e a projeção repetia o loot dela por horas).
@@ -380,6 +393,7 @@ function avancarAusencia(estado, personagem, agora, final) {
     hunt.modo = modo;
     hunt.offlineDesde = a.morreu ? a.morreuEm : a.semStamina || a.acabou ? a.parouEm : t;
     avancou = true;
+    aoProgredir?.(totalDoPedaco, totalDoPedaco);
     // Os 30 min inteiros simulados: o ritmo deles é a base da projeção — e o
     // fator de exp da stamina com que ele foi medido. (O MAPA do endgame não se projeta: ele acaba ao limpar — offline ele é só simulado,
     // e o que passar dos 30 min espera a volta.)
@@ -478,9 +492,12 @@ function passarOTempoOffline(estado, hunt, ms, extra) {
   Prey.consumir(estado, ms);
 }
 
-/** Na volta (login): termina a ausência e devolve `{report, morreu}` — ou `null`, sem ausência. */
-export function simularAusencia(estado, personagem, agora = Date.now()) {
-  return avancarAusencia(estado, personagem, agora, true);
+/**
+ * Na volta (login): termina a ausência e devolve `{report, morreu}` — ou `null`, sem ausência.
+ * `aoProgredir(feitoMs, totalMs)` (opcional): o andamento da parte simulada tique a tique, para a tela de entrada — não muda o resultado.
+ */
+export function simularAusencia(estado, personagem, agora = Date.now(), aoProgredir = null) {
+  return avancarAusencia(estado, personagem, agora, true, aoProgredir);
 }
 
 /**

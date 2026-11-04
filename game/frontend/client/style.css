@@ -11372,6 +11372,14 @@ body.mirando #map { cursor: crosshair; }
 #entrada-nome { font-family: var(--font-heading); font-size: 18px; color: var(--accent); letter-spacing: .05em; }
 #entrada-passo { font-family: var(--font-heading); font-size: 13px; letter-spacing: .04em; color: var(--accent); }
 #entrada-detalhe { font-size: 11px; color: var(--muted); min-height: 14px; }
+/* (04/11) Do clique até o `welcome` (ver `entrada-servidor.mjs`): o botão de cancelar, discreto, e a recusa no vermelho da casa. */
+.entrada-botoes { display: flex; justify-content: center; margin-top: 4px; }
+.entrada-botoes[hidden] { display: none; }
+.entrada-botoes button.ghost { font-family: var(--font-heading); font-size: 12px; letter-spacing: .03em; padding: 6px 18px; }
+.entrada-botoes button.ghost:hover { border-color: var(--accent-dim); color: var(--accent); }
+#entrada.com-erro #entrada-passo { color: var(--danger); }
+#entrada.com-erro #entrada-detalhe { color: var(--text); font-size: 12px; max-width: 100%; }
+#entrada.com-erro .boot-barra i { background: linear-gradient(90deg, #5a2a26, var(--danger)); }
 
 
 /* ---------- A tela do pagamento (QR do donate) ---------- */

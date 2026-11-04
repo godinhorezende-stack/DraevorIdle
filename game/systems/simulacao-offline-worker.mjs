@@ -19,7 +19,9 @@ parentPort.on('message', async ({ id, estado, personagem, agora, modo }) => {
     Cacadas.huntAoCarregar(estado.hunt);
     // `consolidar`: o avanço em segundo plano (ver `consolidacao-offline.mjs`);
     // o personagem continua ausente. O padrão é o login de sempre.
-    const ausencia = modo === 'consolidar' ? Cacadas.consolidarAusencia(estado, personagem, agora) : Cacadas.simularAusencia(estado, personagem, agora);
+    // No login, o andamento vai para a tela de entrada (`progresso`, antes da resposta — ver `simulacao-offline.mjs`).
+    const aoProgredir = (feito, total) => parentPort.postMessage({ id, progresso: { feito, total } });
+    const ausencia = modo === 'consolidar' ? Cacadas.consolidarAusencia(estado, personagem, agora) : Cacadas.simularAusencia(estado, personagem, agora, aoProgredir);
     if (estado.hunt) estado.hunt = Cacadas.huntParaGravar(estado.hunt);
     parentPort.postMessage({ id, ok: true, estado, ausencia });
   } catch (e) {
