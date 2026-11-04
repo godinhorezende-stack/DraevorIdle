@@ -311,6 +311,8 @@ export function gerarPeca({ catalogo, regras, base: idDaBase, raridade, ilvl, rn
     atributos: rolarAtributos(base.atributos, rng),
     implicitos: implicitosDaBase(base, rng),
     prefixos: [], sufixos: [],
+    // (Frente D) a base que o PoE já dá corrompida (o Anel da Fenda, o Adorno do Ladrão — `sabores.json`, o card do poedb)
+    ...(base.corrompidoDeFabrica ? { corrompido: true } : {}),
   };
   if (R.fixos) {
     const lista = classe.unicos.filter((u) => u.base === base.nome);
@@ -328,7 +330,8 @@ export function gerarPeca({ catalogo, regras, base: idDaBase, raridade, ilvl, rn
     // saem das linhas do único (`passivas/ramificadoras.leituraDaJoia`)
     const ramificadora = Ramificadoras.tamanhoDaBase(base.id) ? Ramificadoras.ramificadoraDoUnico(base.id) : null;
     const implicitos = s ? implicitosDoUnico(s, nivel, rng) : proprios || ramificadora ? [] : peca.implicitos;
-    return { ...peca, ...comMagnitudeNosImplicitos({ implicitos, modificadores }), ...(s?.corrompido ? { corrompido: true } : {}), ...(ramificadora ? { ramificadora } : {}), nome: u.nome, unico: u.slug };
+    // (Frente D) e o único que o PoE já dá corrompido (o card do poedb com "Corrompido": as Vaal, a Vozes, o Megalomaníaco… — `sabores.json`)
+    return { ...peca, ...comMagnitudeNosImplicitos({ implicitos, modificadores }), ...(s?.corrompido || u.corrompidoDeFabrica ? { corrompido: true } : {}), ...(ramificadora ? { ramificadora } : {}), nome: u.nome, unico: u.slug };
   }
   const quantos = Number(porPeso(Object.entries(quantidadeDa(R, classe.id)).map(([n, p]) => [n, p]), rng)) || 0;
   // (lote 61) a RAMIFICADORA: o encantamento e os mods pelos pesos do PoE (`itens-poe/ramificadoras.mjs` — o catálogo traz os dados)

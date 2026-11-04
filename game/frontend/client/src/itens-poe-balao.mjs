@@ -91,6 +91,39 @@ function resumoDoMapa(m) {
     no('div', null, 'Use no Dispositivo de Mapas (depois do Ato 10).'));
 }
 
+/*
+ * (Frente D, 04/11) O TEXTO DE SABOR do PoE (o FlavourText do card do poedb), no fim do balão, em itálico, na cor do PoE. Os textos ficam em
+ * `/gamedata/itens-poe/sabores.json` (tools/importar-sabores-poedb.mjs: ~1.170 únicos e as bases com sabor, como os Talismãs — ~190 KB, que
+ * o servidor manda em Brotli com ETag): o cliente busca o arquivo UMA vez, no primeiro balão, como já faz com os outros dados estáticos de
+ * `/gamedata/` (item-sprites.json, effect-sprites.json — `sprites.mjs`), e não a peça: o texto não muda a peça, e guardá-lo em cada uma
+ * encheria o banco e deixaria de fora as que já caíram. Até o arquivo chegar, a vaga do sabor fica vazia e é preenchida quando ele chega.
+ * Liga pelo que a peça já guarda: o único pelo `unico` (o slug), a peça comum pela `base` ("Amulets/Ape_Talisman").
+ */
+export const URL_DOS_SABORES = '/gamedata/itens-poe/sabores.json';
+let SABORES = null;
+let pedidoDosSabores = null;
+/** O sabor da peça (texto com "\n" entre os versos), ou null. Puro: `sabores` é o conteúdo do sabores.json. */
+export const saborDaPeca = (p, sabores) => (p?.unico ? sabores?.unicos?.[p.unico]?.sabor : sabores?.bases?.[p?.base]?.sabor) ?? null;
+function carregarSabores() {
+  if (SABORES || typeof fetch !== 'function') return null;
+  pedidoDosSabores ??= fetch(URL_DOS_SABORES)
+    .then((r) => (r.ok ? r.json() : null))
+    .catch(() => null)
+    .then((d) => (SABORES = d ?? { unicos: {}, bases: {} }));
+  return pedidoDosSabores;
+}
+/** A vaga do sabor no balão: preenchida já (com o arquivo em mãos) ou quando ele chegar. */
+function vagaDoSabor(p) {
+  const vaga = no('div', 'poe-sabor-vaga');
+  const preencher = () => {
+    const texto = saborDaPeca(p, SABORES);
+    if (texto) vaga.append(no('div', 'poe-sep'), no('div', 'poe-sabor', texto.split('\n').map((l, i) => [i ? no('br') : null, l])));
+  };
+  if (SABORES) preencher();
+  else carregarSabores()?.then(preencher);
+  return vaga;
+}
+
 export function balaoPoe(p, { cor = p.cor ?? '#ddd', raridadeNome = p.raridadeNome ?? p.raridade, nomeDaBase = null, estados = p.estados ?? null, af = p.af ?? null, requisitos = null, tem = null } = {}) {
   const fila = [...(estados ?? [])];
   // `notas` (o servidor manda, na ordem dos mods): por que a mecânica não existe no jogo — o balão mostra ao passar o mouse.
@@ -142,6 +175,10 @@ export function balaoPoe(p, { cor = p.cor ?? '#ddd', raridadeNome = p.raridadeNo
     p.modificadores?.length ? [sep(), p.modificadores.map((m) => no('div', 'poe-mod uni', estados ? marca() : null, no('span', null, m.texto), m.consumido ? Object.assign(no('i', null, 'consumido'), { title: `da ${m.consumido}` }) : null))] : null,
     // (lote 28) as Joias Abissais encaixadas nos Encaixes Abissais da peça (o nome, na cor da raridade).
     p.abissais?.some(Boolean) ? [sep(), titulo('Encaixes Abissais'), p.abissais.map((j, i) => no('div', `poe-abissal${j ? ` r-${j.poe?.raridade ?? 'normal'}` : ' vazio'}`, j ? `${i + 1}. ${j.poe?.nome ?? 'Joia Abissal'}` : `${i + 1}. vazio`))] : null,
+    // (Frente D) "Corrompido" no fim das linhas, em vermelho, como no PoE (a peça do Orbe Vaal e a que já cai corrompida — `sabores.json`)
+    p.corrompido ? no('div', 'poe-corrompido', 'Corrompido') : null,
+    // (Frente D) o texto de sabor, depois de tudo o que é da peça (como no card do poedb: abaixo do "Corrompido", com o separador)
+    vagaDoSabor(p),
     // A faixa "No Draevor: STR +20 ..." saiu do balão (dono, 07/10): o que a peça dá já está nas linhas do PoE.
     p.aviso ? no('div', 'poe-aviso', p.aviso) : null,
     p.erro ? no('div', 'poe-aviso', p.erro) : null);
