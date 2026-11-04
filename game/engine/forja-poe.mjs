@@ -98,7 +98,7 @@ const CLASSES = {
   armas: ['One_Hand_Swords', 'Thrusting_One_Hand_Swords', 'Two_Hand_Swords', 'One_Hand_Axes', 'Two_Hand_Axes', 'One_Hand_Maces', 'Two_Hand_Maces', 'Sceptres', 'Staves', 'Warstaves', 'Claws', 'Daggers', 'Rune_Daggers', 'Bows', 'Wands', 'Quivers'],
   armaduras: ['Body_Armours', 'Helmets', 'Boots', 'Gloves', 'Shields'],
   acessorios: ['Rings', 'Amulets', 'Belts'],
-  frascos: ['Life_Flasks', 'Mana_Flasks', 'Utility_Flasks'],
+  frascos: ['Life_Flasks', 'Mana_Flasks', 'Hybrid_Flasks', 'Utility_Flasks'],
   mapas: ['Maps'],
 };
 const TIPO_DA_CLASSE = new Map(Object.entries(CLASSES).flatMap(([tipo, lista]) => lista.map((c) => [c, tipo])));

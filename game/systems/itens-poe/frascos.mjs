@@ -25,8 +25,17 @@ import * as Salvaguarda from '../personagem/salvaguarda.mjs';
 import { quebrarGelo, porLento } from './gemas-gbd.mjs';
 
 // (12/10: + as TINTURAS — `itens-poe/tinturas.mjs`: vão no mesmo cinto, sem cargas; ativam e desativam.)
-export const CLASSES = ['Life_Flasks', 'Mana_Flasks', 'Utility_Flasks', Tinturas.CLASSE];
-const TIPO_DA_CLASSE = { Life_Flasks: 'vida', Mana_Flasks: 'mana', Utility_Flasks: 'utilidade', [Tinturas.CLASSE]: 'tintura' };
+// (04/11: + os FRASCOS HÍBRIDOS — recuperam Vida E Mana no mesmo uso, cada um com a quantidade da base: `recupera` e `recupera_mana`.)
+export const CLASSES = ['Life_Flasks', 'Mana_Flasks', 'Utility_Flasks', Tinturas.CLASSE, 'Hybrid_Flasks'];
+const TIPO_DA_CLASSE = { Life_Flasks: 'vida', Mana_Flasks: 'mana', Utility_Flasks: 'utilidade', [Tinturas.CLASSE]: 'tintura', Hybrid_Flasks: 'hibrido' };
+/**
+ * O frasco conta como de `tipo` ('vida', 'mana', 'utilidade')? O HÍBRIDO conta como de Vida E de Mana, como no PoE (o PoB: `flask.life` e
+ * `flask.mana` na base do híbrido — a recuperação de cada um, as condições "durante o efeito de um Frasco de Vida/Mana" e os usos).
+ */
+export const contaComo = (peca, tipo) => {
+  const t = TIPO_DA_CLASSE[peca?.poe?.classe ?? ITEM_CATALOG[peca?.id]?.poe?.classe];
+  return t === tipo || (t === 'hibrido' && (tipo === 'vida' || tipo === 'mana'));
+};
 const ehTinturaDoCinto = (p) => Tinturas.ehTintura(p?.poe);
 const F = () => REGRAS.frascos ?? {};
 export const VAGAS = () => F().vagas ?? 5;
@@ -56,8 +65,9 @@ const REGRAS_DO_FRASCO = [
   [/^Velocidade de Recuperação reduzida em \{\d+\}%$/, (p, v) => (p.velocidadePct -= v)],
   [/^Quantidade Recuperada aumentada em \{\d+\}%$/, (p, v) => (p.quantidadePct += v)],
   [/^Quantidade Recuperada reduzida em \{\d+\}%$/, (p, v) => (p.quantidadePct -= v)],
-  [/^(Vida|Mana) Recuperada aumentada em \{\d+\}%$/, (p, v) => (p.quantidadePct += v)],
-  [/^(Vida|Mana) Recuperada reduzida em \{\d+\}%$/, (p, v) => (p.quantidadePct -= v)],
+  // ("Vida Recuperada…" só na Vida, "Mana Recuperada…" só na Mana — no Frasco Híbrido faz diferença; nos outros é a quantidade dele.)
+  [/^(Vida|Mana) Recuperada aumentada em \{\d+\}%$/, (p, v, m) => (p[m[1] === 'Mana' ? 'quantidadeManaPct' : 'quantidadeVidaPct'] += v)],
+  [/^(Vida|Mana) Recuperada reduzida em \{\d+\}%$/, (p, v, m) => (p[m[1] === 'Mana' ? 'quantidadeManaPct' : 'quantidadeVidaPct'] -= v)],
   [/^Recuperação Instantânea$/, (p) => (p.instantaneo = true)],
   [/^Recuperação de Cargas aumentada em \{\d+\}%$/, (p, v) => (p.recargaPct += v)],
   [/^Recuperação de Cargas reduzida em \{\d+\}%$/, (p, v) => (p.recargaPct -= v)],
@@ -113,13 +123,15 @@ export function parametros(peca, afDoPersonagem = null) {
   if (Tinturas.ehTintura(poe)) return Tinturas.parametros(peca, afDoPersonagem);
   const a = poe.atributos ?? {};
   const tipo = TIPO_DA_CLASSE[poe.classe] ?? null;
-  const p = { velocidadePct: 0, quantidadePct: 0, instantaneo: false, recargaPct: 0, cargasMaximas: Number(a.cargas_maximas) || 0, custoPct: 0, duracaoPct: 0, duracaoMenos: 1, efeitoPct: 0, maisNaVidaBaixaPct: 0,
-    instantaneoPct: 0, instantaneoNaVidaBaixa: false, instantaneoNoFim: false, naoParaNoCheio: false, naoAcumula: false, saiNoPvp: false, custoDaOutraPct: 0, lacaiosPct: 0, cargaNoCriticoPct: 0, cargasAoSerAcertado: 0,
+  const p = { velocidadePct: 0, quantidadePct: 0, quantidadeVidaPct: 0, quantidadeManaPct: 0, instantaneo: false, recargaPct: 0, cargasMaximas: Number(a.cargas_maximas) || 0, custoPct: 0, duracaoPct: 0, duracaoMenos: 1, efeitoPct: 0, maisNaVidaBaixaPct: 0,
+    instantaneoPct: 0, instantaneoNaVidaBaixa: false, instantaneoNaManaBaixa: false, instantaneoNoFim: false, naoParaNoCheio: false, naoAcumula: false, saiNoPvp: false, custoDaOutraPct: 0, lacaiosPct: 0, cargaNoCriticoPct: 0, cargasAoSerAcertado: 0,
     aoUsar: { imunidades: [] } };
   // Os mods do PERSONAGEM (cinto, anéis…): recuperação de vida/mana dos frascos, duração e efeito dos de Utilidade, cargas usadas.
   const pp = afDoPersonagem ?? {};
   const n = (k) => Number(pp[k]) || 0;
-  p.quantidadePct += tipo === 'vida' ? n('frasco_vida_rec') : tipo === 'mana' ? n('frasco_mana_rec') : 0;
+  // (o Híbrido: a de Vida na Vida dele e a de Mana na Mana — o PoB, `FlaskLifeRecovery`/`FlaskManaRecovery` por recurso)
+  p.quantidadeVidaPct += tipo === 'vida' || tipo === 'hibrido' ? n('frasco_vida_rec') : 0;
+  p.quantidadeManaPct += tipo === 'mana' || tipo === 'hibrido' ? n('frasco_mana_rec') : 0;
   if (tipo === 'utilidade') { p.duracaoPct += n('frasco_duracao'); p.efeitoPct += n('frasco_efeito'); }
   // (13/10, a Dádiva da Natureza: "Frascos Utilitários Mágicos aplicados em você têm Efeito aumentado em X%" — só os Mágicos)
   if (tipo === 'utilidade' && poe.raridade === 'magico') p.efeitoPct += n('frasco_efeito_magico');
@@ -128,6 +140,9 @@ export function parametros(peca, afDoPersonagem = null) {
   p.velocidadePct += n('frasco_velocidade');
   // ("Frascos de Vida usados enquanto em Vida Baixa aplicam sua Recuperação Instantaneamente", o mesmo da Mana em Mana Baixa.)
   if (tipo && n(`frasco_instantaneo_baixa:${tipo}`) > 0) p.instantaneoNaVidaBaixa = true;
+  // (o Híbrido é de Vida e de Mana: na Vida Baixa pela de Vida, na Mana Baixa pela de Mana — o PoB soma as duas no frasco)
+  if (tipo === 'hibrido' && n('frasco_instantaneo_baixa:vida') > 0) p.instantaneoNaVidaBaixa = true;
+  if (tipo === 'hibrido' && n('frasco_instantaneo_baixa:mana') > 0) p.instantaneoNaManaBaixa = true;
   const durante = {};
   const linhas = [];
   // A QUALIDADE do frasco (a Bolha do Vidreiro — poedb › Quality): vida/mana recuperada +qualidade%; no frasco de Utilidade, a duração +qualidade%.
@@ -172,14 +187,20 @@ export function parametros(peca, afDoPersonagem = null) {
   for (const [k, v] of Object.entries(daBase?.af ?? {})) af[k] = Math.round(v * fatorDoEfeito * 100) / 100;
   for (const [k, v] of Object.entries(durante)) af[k] = Math.round(((af[k] ?? 0) + v * fatorDoEfeito) * 100) / 100;
   const rec = a.recupera ?? null;
-  const ms = rec ? Math.max(100, Math.round((Number(rec.segundos) * 1000) / Math.max(0.1, 1 + p.velocidadePct / 100))) : 0;
+  const duracaoDe = (r) => (r ? Math.max(100, Math.round((Number(r.segundos) * 1000) / Math.max(0.1, 1 + p.velocidadePct / 100))) : 0);
+  const ms = duracaoDe(rec);
   // (13/10) "X% menos Vida Recuperada de Frascos" (a Mestre Cirurgiã): multiplica — antes entrava somado ao aumentado.
-  const maisRecuperada = tipo === 'vida' ? Math.max(0, 1 + n('frasco_vida_rec_mais') / 100) : 1;
+  const maisRecuperada = tipo === 'vida' || tipo === 'hibrido' ? Math.max(0, 1 + n('frasco_vida_rec_mais') / 100) : 1;
+  const recursoDe = rec?.recurso === 'mana' ? 'mana' : rec ? 'vida' : null;
+  const pctDoRecurso = recursoDe === 'mana' ? p.quantidadeManaPct : p.quantidadeVidaPct;
+  // (04/11) a MANA do Frasco Híbrido (`recupera_mana`): a mesma conta, com o aumentado da Mana; `quantidadeMana`/`msMana` só nele.
+  const recMana = tipo === 'hibrido' ? a.recupera_mana ?? null : null;
   return {
     tipo,
-    recurso: rec?.recurso === 'mana' ? 'mana' : rec ? 'vida' : null,
-    quantidade: rec ? Math.round(Number(rec.quantidade) * Math.max(0, 1 + p.quantidadePct / 100) * maisRecuperada) : 0,
+    recurso: recursoDe,
+    quantidade: rec ? Math.round(Number(rec.quantidade) * Math.max(0, 1 + (p.quantidadePct + pctDoRecurso) / 100) * (recursoDe === 'vida' ? maisRecuperada : 1)) : 0,
     ms,
+    ...(recMana ? { quantidadeMana: Math.round(Number(recMana.quantidade) * Math.max(0, 1 + (p.quantidadePct + p.quantidadeManaPct) / 100)), msMana: duracaoDe(recMana), instantaneoNaManaBaixa: p.instantaneoNaManaBaixa } : {}),
     instantaneo: p.instantaneo,
     maisNaVidaBaixaPct: p.maisNaVidaBaixaPct,
     cargasPorUso: Math.max(1, Math.round((Number(a.cargas_por_uso) || 1) * Math.max(0, 1 + p.custoPct / 100))),
@@ -204,6 +225,7 @@ export function resumo(peca) {
   const par = parametros(peca);
   return {
     tipo: par.tipo, recurso: par.recurso, quantidade: par.quantidade, segundos: par.ms / 1000, instantaneo: par.instantaneo,
+    ...(par.quantidadeMana != null ? { quantidadeMana: par.quantidadeMana, segundosMana: par.msMana / 1000 } : {}),
     cargasPorUso: par.cargasPorUso, cargasMaximas: par.cargasMaximas, duracao: par.duracaoMs / 1000, efeitoDaBase: par.efeitoDaBase, af: par.af,
   };
 }
@@ -285,20 +307,22 @@ export function usar(estado, v, eventos = null, quem = null) {
   // A TINTURA: usar ATIVA (ou DESATIVA a que está ativa) — `tinturas.mjs`.
   if (ehTinturaDoCinto(peca)) return alternarTintura(estado, v, peca, afp);
   if (Number(afp[`sem_frasco:${TIPO_DA_CLASSE[peca.poe?.classe]}`]) > 0 || Number(afp.frascos_nao_aplicam) > 0) return false;
+  // (o Híbrido conta como de Vida e de Mana: "Não pode usar Frascos de Vida" ou "…de Mana" também o barram)
+  if (TIPO_DA_CLASSE[peca.poe?.classe] === 'hibrido' && (Number(afp['sem_frasco:vida']) > 0 || Number(afp['sem_frasco:mana']) > 0)) return false;
   const par = parametros(peca, afp);
   const cargas = cargasDe(peca, par);
   if (cargas < par.cargasPorUso) return false;
   const st = estadoDaCacada(hunt);
   const agora = hunt.clock ?? 0;
   // (o Pathfinder: "Efeitos do Frasco de Vida não se Enfileram" — o frasco de vida usado de novo troca o efeito que corre pelo novo.)
-  if (st.ativos[v]?.ate > agora && !(peca.poe?.classe === 'Life_Flasks' && Number(afp.frasco_vida_sem_fila) > 0)) return false;
+  if (st.ativos[v]?.ate > agora && !(contaComo(peca, 'vida') && Number(afp.frasco_vida_sem_fila) > 0)) return false;
   // (ciclo 7, lote F) "X% de chance de Frascos usados por você não consumirem Cargas".
   if (!(Math.random() * 100 < (Number(afp.frasco_sem_consumo) || 0))) peca.poe.cargas = cargas - par.cargasPorUso;
   aoUsarOFrasco(estado, par, eventos, quem, afp);
   // (02/11) "Restaura Proteção ao usar" (o Frasco de Ferro): a Salvaguarda volta inteira
   if (par.restauraSalvaguarda) Salvaguarda.restaurar(estado);
   // (12/10, a Tintura: "…se você usou um Frasco de Vida Recentemente")
-  if (par.tipo === 'vida') marcar(hunt, 'usouFrascoVida', agora);
+  if (par.tipo === 'vida' || par.tipo === 'hibrido') marcar(hunt, 'usouFrascoVida', agora);
   if (par.tipo === 'utilidade') {
     // ("Frascos adjacentes às Tinturas aplicadas têm Efeito aumentado em 10% quando utilizados se você Acertou um inimigo com uma Arma
     // Recentemente" — a Maestria de Tinturas: o frasco ao lado de uma Tintura ativa.)
@@ -308,6 +332,7 @@ export function usar(estado, v, eventos = null, quem = null) {
     st.ativos[v] = { ate: agora + par.duracaoMs, af, nome: peca.poe.nome, ...(par.saiNoPvp ? { saiNoPvp: true } : {}), ...(par.saiNaQuebra ? { saiNaQuebra: true } : {}) };
     return true;
   }
+  if (par.tipo === 'hibrido') return usarHibrido(estado, v, peca, par, st, agora, eventos, quem, afp);
   // Vida/Mana: na vida baixa (abaixo de 50%), o "mais Recuperação se usado enquanto em Vida Baixa" (o de mana olha a Mana Baixa).
   const vidaBaixa = par.recurso === 'mana' && Number(afp['frasco_instantaneo_baixa:mana']) > 0 ? (estado.mana ?? 0) <= (estado.maxMana ?? 1) * 0.5 : (estado.hp ?? 0) < (estado.maxHp ?? 1) * 0.5;
   const total = par.quantidade * (vidaBaixa ? 1 + par.maisNaVidaBaixaPct / 100 : 1);
@@ -326,6 +351,34 @@ export function usar(estado, v, eventos = null, quem = null) {
   // "Recuperação de Mana ocorre instantaneamente no término do Efeito": nada ao longo do tempo, tudo no fim.
   if (par.instantaneoNoFim) st.ativos[v] = { ate: agora + par.ms, recurso: par.recurso, nome: peca.poe.nome, noFim: resto, extras };
   else st.ativos[v] = { ate: agora + par.ms, de: agora, ultimo: agora, porMs: resto / par.ms, recurso: par.recurso, nome: peca.poe.nome, extras, ...(par.naoParaNoCheio ? { naoParaNoCheio: true } : {}) };
+  return true;
+}
+
+/**
+ * (04/11) O FRASCO HÍBRIDO: a Vida e a Mana da base no mesmo uso, cada uma ao longo do tempo dela (`ms`/`msMana`). Como no PoB: o "mais
+ * Recuperação se usado enquanto em Vida Baixa" vale só na Vida; a Recuperação Instantânea (a do mod, a da Vida Baixa e a da Mana Baixa)
+ * vale no frasco inteiro; "Recuperação de Mana ocorre instantaneamente no término do Efeito" só na Mana. O repasse aos lacaios, o "Retira…"
+ * e o Pacto Vaal ficam na parte da Vida. O efeito acaba quando a Vida e a Mana (não reservadas) estão cheias — `tique`.
+ */
+function usarHibrido(estado, v, peca, par, st, agora, eventos, quem, afp) {
+  const vidaBaixa = (estado.hp ?? 0) < (estado.maxHp ?? 1) * 0.5;
+  const manaBaixa = (estado.mana ?? 0) <= (estado.maxMana ?? 1) * 0.5;
+  const vida = par.quantidade * (vidaBaixa ? 1 + par.maisNaVidaBaixaPct / 100 : 1);
+  const mana = par.quantidadeMana ?? 0;
+  const extras = { custoDaOutraPct: par.custoDaOutraPct, lacaiosPct: par.lacaiosPct, ...(vidaSoPeloDreno(afp) ? { semVida: true } : {}) };
+  if (par.instantaneo || (par.instantaneoNaVidaBaixa && vidaBaixa) || (par.instantaneoNaManaBaixa && manaBaixa)) {
+    recuperar(estado, 'vida', vida, eventos, quem, extras);
+    recuperar(estado, 'mana', mana, eventos, quem);
+    st.ativos[v] = { ate: agora + 250, recurso: 'vida', mana: { ate: agora + 250 }, nome: peca.poe.nome };
+    return true;
+  }
+  const naHora = (par.instantaneoPct ?? 0) / 100;
+  if (naHora > 0) { recuperar(estado, 'vida', vida * naHora, eventos, quem, extras); recuperar(estado, 'mana', mana * naHora, eventos, quem); }
+  const restoVida = vida * (1 - naHora);
+  const restoMana = mana * (1 - naHora);
+  const msMana = par.msMana || par.ms;
+  const daMana = par.instantaneoNoFim ? { ate: agora + msMana, noFim: restoMana } : { ate: agora + msMana, porMs: restoMana / msMana };
+  st.ativos[v] = { ate: agora + Math.max(par.ms, msMana), de: agora, ultimo: agora, porMs: restoVida / par.ms, vidaAte: agora + par.ms, recurso: 'vida', mana: daMana, nome: peca.poe.nome, extras, ...(par.naoParaNoCheio ? { naoParaNoCheio: true } : {}) };
   return true;
 }
 
@@ -419,7 +472,23 @@ export function tique(estado, eventos = null, quem = null) {
   const doDono = doPersonagem(estado);
   // A recuperação ao longo do tempo e o vencimento.
   for (const [v, a] of Object.entries(st.ativos)) {
-    if (a.porMs) {
+    // (04/11) o HÍBRIDO: a Vida e a Mana, cada uma até o fim dela; acaba quando as duas (não reservadas) estão cheias.
+    if (a.mana) {
+      const ate = Math.min(agora, a.ate);
+      if (ate > a.ultimo) {
+        const dtVida = Math.max(0, Math.min(ate, a.vidaAte ?? a.ate) - a.ultimo);
+        const dtMana = Math.max(0, Math.min(ate, a.mana.ate ?? a.ate) - a.ultimo);
+        if (a.porMs && dtVida > 0) recuperar(estado, 'vida', a.porMs * dtVida, eventos, quem, a.extras);
+        if (a.mana.porMs && dtMana > 0) {
+          recuperar(estado, 'mana', a.mana.porMs * dtMana, eventos, quem);
+          if (Number(doDono.mana_frasco_tambem_vida) > 0 && !vidaSoPeloDreno(doDono)) recuperar(estado, 'vida', a.mana.porMs * dtMana, eventos, quem);
+        }
+      }
+      a.ultimo = Math.max(a.ultimo ?? ate, ate);
+      const vidaCheia = Number(doDono.frasco_vida_nao_para) > 0 ? false : (estado.hp ?? 0) >= (estado.maxHp ?? 0) - reservadoAgora(estado, 'vida');
+      const manaCheia = a.naoParaNoCheio || Number(doDono.frasco_mana_nao_para) > 0 ? false : (estado.mana ?? 0) >= (estado.maxMana ?? 0) - reservadoAgora(estado, 'mana');
+      if (a.de != null && vidaCheia && manaCheia) a.ate = Math.min(a.ate, agora);
+    } else if (a.porMs) {
       const ate = Math.min(agora, a.ate);
       if (ate > a.ultimo) {
         recuperar(estado, a.recurso, a.porMs * (ate - a.ultimo), eventos, quem, a.extras);
@@ -434,6 +503,7 @@ export function tique(estado, eventos = null, quem = null) {
     }
     if (a.ate <= agora) {
       if (a.noFim > 0) recuperar(estado, a.recurso, a.noFim, eventos, quem, a.extras);
+      if (a.mana?.noFim > 0) recuperar(estado, 'mana', a.mana.noFim, eventos, quem);
       if (a.af) mudou = true;
       delete st.ativos[v];
     }
@@ -454,7 +524,7 @@ export function tique(estado, eventos = null, quem = null) {
     st[chave] ??= agora + cadaS * 1000;
     while (agora >= st[chave]) {
       st[chave] += cadaS * 1000;
-      for (const p of c) if (p && !ehTinturaDoCinto(p) && (tipoR === 'todos' || TIPO_DA_CLASSE[p.poe?.classe] === tipoR)) { const par = parametros(p, afp); p.poe.cargas = Math.min(par.cargasMaximas, cargasDe(p, par) + quantas); }
+      for (const p of c) if (p && !ehTinturaDoCinto(p) && (tipoR === 'todos' || contaComo(p, tipoR))) { const par = parametros(p, afp); p.poe.cargas = Math.min(par.cargasMaximas, cargasDe(p, par) + quantas); }
     }
   }
   const criticos = hunt.poeCriticosParaFrascos ?? 0;
@@ -480,7 +550,7 @@ export function tique(estado, eventos = null, quem = null) {
   if (estado.hp <= 0) return mudou;
   // O uso automático.
   const emCombate = (hunt.monstros ?? []).some((m) => m.hp > 0);
-  const recuperando = (r) => Object.values(st.ativos).some((a) => a.recurso === r && a.ate > agora);
+  const recuperando = (r) => Object.values(st.ativos).some((a) => (a.recurso === r || (r === 'mana' && a.mana)) && a.ate > agora);
   for (let v = 0; v < c.length; v++) {
     const p = c[v];
     if (p && ehTinturaDoCinto(p)) {
@@ -492,7 +562,9 @@ export function tique(estado, eventos = null, quem = null) {
     // A regra de CADA frasco (dono, 07/10: configurada clicando nele na barra): vida/mana abaixo de X%; utilidade em combate.
     const r = regraDe(p);
     const precisa = tipo === 'vida' ? (estado.hp ?? 0) < (estado.maxHp ?? 0) * (r.abaixoPct / 100) : tipo === 'mana' ? (estado.mana ?? 0) < (estado.maxMana ?? 0) * (r.abaixoPct / 100) : false;
-    const quer = tipo === 'utilidade' ? emCombate && r.emCombate : precisa && !recuperando(tipo === 'mana' ? 'mana' : 'vida');
+    // (o Híbrido: a Vida OU a Mana abaixo do X% da regra, e aquela que está baixa sem outro frasco recuperando)
+    const hibrido = tipo === 'hibrido' && (((estado.hp ?? 0) < (estado.maxHp ?? 0) * (r.abaixoPct / 100) && !recuperando('vida')) || ((estado.mana ?? 0) < (estado.maxMana ?? 0) * (r.abaixoPct / 100) && !recuperando('mana')));
+    const quer = tipo === 'utilidade' ? emCombate && r.emCombate : tipo === 'hibrido' ? hibrido : precisa && !recuperando(tipo === 'mana' ? 'mana' : 'vida');
     if (quer && usar(estado, v, eventos, quem) && tipo === 'utilidade') mudou = true;
   }
   return mudou;
@@ -554,7 +626,7 @@ export function configurar(estado, { vaga, abaixoPct, emCombate } = {}) {
   const pct = Math.round(Number(abaixoPct));
   if (!(pct >= 1 && pct <= 100)) return { ok: false, erro: 'A porcentagem vai de 1 a 100.' };
   peca.poe.usarAbaixoPct = pct;
-  return { ok: true, notice: `${peca.poe.nome}: usa quando a ${tipo} estiver abaixo de ${pct}%.` };
+  return { ok: true, notice: `${peca.poe.nome}: usa quando a ${tipo === 'hibrido' ? 'vida ou a mana' : tipo} estiver abaixo de ${pct}%.` };
 }
 
 /** Enche todos os frascos do cinto (a cidade). Só no jogo do PoE: no clássico o cinto nem existe — e criá-lo (`cinto`) marcava o
