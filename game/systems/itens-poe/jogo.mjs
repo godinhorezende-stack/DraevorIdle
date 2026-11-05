@@ -844,6 +844,28 @@ export function pecaNormalDaBase(base, ilvl = 1, regras = Catalogo.REGRAS) {
   return pecaDoJogo(gerarPeca({ catalogo: cat, regras, base, raridade: 'normal', ilvl: Math.max(1, Math.min(100, Math.round(ilvl))), rng: () => 0.5 }), regras, () => 0.5);
 }
 
+/**
+ * (05/11) A peça de RECOMPENSA de missão (a aba Missões — dono: "pode vir o tipo random, comum, mágico, raro… igual no baú de boss"): a
+ * base escolhida, com a raridade sorteada pelos pesos do loot (regras.json → drop.raridades) só entre Normal, Mágico e Raro — o Único fica
+ * de fora —, o frasco Raro vira Mágico (como no drop) e a qualidade do drop. `ilvl`: o level do personagem. Null se a base não existe.
+ */
+export function pecaDaRecompensa(base, ilvl = 1, rng = Math.random, regras = Catalogo.REGRAS) {
+  const cat = Catalogo.catalogo();
+  const [classe] = String(base ?? '').split('/');
+  const b = cat?.classes?.[classe]?.bases?.find((x) => x.id === base);
+  if (!b) return null;
+  const pesos = ['normal', 'magico', 'raro'].map((r) => [r, Number(regras.drop?.raridades?.[r]) || 0]).filter(([r, p]) => p > 0 && regras.raridades?.[r] && podeCairComo(cat.classes[classe], b, r));
+  const total = pesos.reduce((n, [, p]) => n + p, 0);
+  let raridade = 'normal';
+  if (total > 0) {
+    let sorte = rng() * total;
+    raridade = pesos.find(([, p]) => (sorte -= p) < 0)?.[0] ?? pesos[pesos.length - 1][0];
+  }
+  if (raridade === 'raro' && FRASCOS.includes(classe)) raridade = 'magico';
+  const nivel = Math.max(1, Math.min(regras.drop?.ilvlMaximo ?? 100, Math.round(Number(ilvl) || 1)));
+  return qualidadeDoDrop(pecaDoJogo(gerarPeca({ catalogo: cat, regras, base, raridade, ilvl: nivel, rng }), regras, rng), rng, regras);
+}
+
 // (09/10) As defesas da BASE de uma peça do PoE (as condições "se o Elmo, Peitoral, Luvas e Botas tiverem Evasão/Armadura"): o catálogo.
 const DEFESAS_DA_BASE = new Map();
 definirLeitorDeBase((poe) => {

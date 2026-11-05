@@ -1449,7 +1449,7 @@ export class Sessao {
       // (05/11) A aba Missões (a janela Tarefas no jogo do PoE): a ficha (o estado de cada missão) e as escolhas (Bandidos, item de recompensa).
       case 'missoes': {
         const r = Missoes.comando(this.estado, m, {
-          criarPeca: (base) => ItensPoeJogo.pecaNormalDaBase(base, this.estado.level),
+          criarPeca: (base) => ItensPoeJogo.pecaDaRecompensa(base, this.estado.level),
           darItem: Inventario.darItem,
           darPeca: Inventario.darPeca,
           darGema: (estado, id) => (estado.inventory ??= []).push(GemasDeSkill.itemDaGema(GemasDeSkill.novaGema(id))),
