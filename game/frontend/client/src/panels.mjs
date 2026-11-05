@@ -7,6 +7,7 @@ import { listaDetalhe } from './lista-detalhe.mjs';
 import { desenharMundo, preferencia as preferenciaDoMundo } from './world.mjs';
 import { desenharDispositivo } from './mapas-dispositivo.mjs';
 import { montarAosPoucos } from './aos-poucos.mjs';
+import { renderMissoes } from './aba-missoes.mjs';
 import { ehTelefone } from './perfil.mjs';
 import { analogicoLigado, ligarAnalogico } from './celular.mjs';
 import { arteTeimosa, fundoTeimoso } from './arte-teimosa.mjs';
@@ -5169,12 +5170,24 @@ function lojaDeTaskTokenNoCanto() {
  * duas são task, e a diferença entre elas é o que se caça.
  */
 export function openQuests(aba) {
-  if (aba) ctx.tabs.tarefas = aba;
+  /*
+   * ---- No jogo do PoE, as MISSÕES no lugar das Tasks ----
+   *
+   * "use onde fica task para implementar essas quests" (05/11) — e, na
+   * pergunta, o dono escolheu SUBSTITUIR: a primeira aba vira Missões
+   * (aba-missoes.mjs) e as tasks de criatura saem desta janela. O clássico
+   * (o servidor sem o sistema do PoE: `frascosPoe` null) segue com as Tasks.
+   */
+  const poe = ctx.state.character?.frascosPoe != null;
+  const abas = poe ? { missoes: 'Missões', mounts: 'Tasks de Montarias' } : { tasks: 'Tasks', mounts: 'Tasks de Montarias' };
+  if (aba && abas[aba]) ctx.tabs.tarefas = aba;
+  else if (!abas[ctx.tabs.tarefas]) ctx.tabs.tarefas = Object.keys(abas)[0];
   tabbedModal(
     'Tarefas',
-    { tasks: 'Tasks', mounts: 'Tasks de Montarias' },
+    abas,
     'tarefas',
     (body, tab) => {
+      if (tab === 'missoes') return void renderMissoes(body, ctx);
       lojaDeTaskTokenNoCanto();
       if (tab === 'mounts') return void renderEntregas(body, 'mount');
       /*
@@ -5196,7 +5209,9 @@ export function openQuests(aba) {
     },
     undefined,
     {
-      padrao: aba ?? 'tasks',
+      padrao: aba && abas[aba] ? aba : Object.keys(abas)[0],
+      icones: { missoes: 'aba-tasks' },
+      alertas: { missoes: () => ((ctx.state.character?.missoesPendentes ?? 0) + (ctx.state.character?.missoesPoe?.length ?? 0)) > 0 },
       /*
        * Nenhuma efêmera sobrou: as duas abas de agora são para ficar. As três
        * que eram (`recompensas`, `diario`) saíram para janelas próprias — a

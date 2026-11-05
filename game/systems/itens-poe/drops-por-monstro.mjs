@@ -8,6 +8,7 @@
 // sem peso e sem preço (a venda automática não os vende).
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { ligado } from './catalogo.mjs';
+import * as Missoes from './missoes.mjs';
 
 const ARQ_ITENS = new URL('../../gamedata/itens-poe/itens-de-missao.json', import.meta.url);
 const ARQ_DROPS = new URL('../../gamedata/itens-poe/drops-por-monstro.json', import.meta.url);
@@ -34,6 +35,8 @@ export function registrarItens(itemCatalog) {
     if (itemCatalog[it.id]) continue;
     itemCatalog[it.id] = { id: it.id, name: it.nome, type: 'quest items', weight: 0, hasSprite: false, rarity: 'comum', stackable: false, descricao: it.descricao, missao: { nome: it.missao, ato: it.ato, area: it.area } };
   }
+  // (05/11) E os itens do registro de missões (os 244 do poedb, com o ícone; os 16 acima ganham o ícone e as linhas — itens-poe/missoes.mjs).
+  Missoes.registrarItens(itemCatalog);
   return ITENS_DE_MISSAO.length;
 }
 

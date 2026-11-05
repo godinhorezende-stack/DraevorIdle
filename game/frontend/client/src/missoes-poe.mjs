@@ -44,6 +44,12 @@ function atualizarBotao(pendentes) {
   botao.textContent = `🎁 Recompensa de missão${pendentes.length > 1 ? ` (${pendentes.length})` : ''}`;
 }
 
+/** (05/11) A aba Missões abre a escolha da gema de uma missão pendente (a janela daqui). */
+export function abrirRecompensaDeGema(slug) {
+  const m = (ctx?.state.character?.missoesPoe ?? []).find((p) => p.slug === slug);
+  if (m) abrir(m);
+}
+
 function abrir(missao) {
   abertasNestaSessao.add(missao.slug);
   escolhida = null;

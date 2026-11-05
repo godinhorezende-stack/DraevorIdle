@@ -78,9 +78,10 @@ export function imagensDoCatalogo(dados) {
  * game/tools/importar-icones-mapas.mjs, importar-mapas-unicos.mjs e montar-mapas-poe.mjs e referenciados por `mapas.json` (os `_T<N>`
  * nem aparecem lá: `itens-poe/mapas.mjs` `iconeDoUnico` monta o nome) — apagar a pasta inteira sumia com eles (visto em 11/10).
  * E `poe-itens/Unicos_poedb/`: os ícones dos únicos que a coleção não tem (os `novos` de `unicos-correcoes.json`), baixados à parte do
- * poedb (dono, 04/11) — `systems/itens-poe/catalogo.mjs` `corrigirUnicos` os liga.
+ * poedb (dono, 04/11) — `systems/itens-poe/catalogo.mjs` `corrigirUnicos` os liga. E `poe-itens/Missoes/`: os ícones dos itens e das missões
+ * do PoE (05/11, baixados do poedb; `game/tools/montar-missoes-poe.mjs` os liga em `missoes.json`).
  */
-export const PASTAS_DE_OUTROS_TOOLS = ['poe-itens/Mapas', 'poe-itens/Unicos_poedb'];
+export const PASTAS_DE_OUTROS_TOOLS = ['poe-itens/Mapas', 'poe-itens/Unicos_poedb', 'poe-itens/Missoes'];
 
 /** Apaga o conteúdo de `pasta`, menos os caminhos de `preservar` (relativos a ela) — as pastas no caminho até eles ficam. */
 function limparMenos(pasta, preservar) {

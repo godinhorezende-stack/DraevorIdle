@@ -27,6 +27,7 @@ import { classeDe as classeDoPoe } from '../itens-poe/classes.mjs';
 import { definirLeitorDeMaestrias, definirLeitorDeJoias, slugDoNome } from '../itens-poe/condicoes-poe.mjs';
 // (100% — dados, 03/11) as Habilidades Prismáticas (o Foco de Combate no raio — `raiosDasJoias`)
 import * as Prismaticas from '../itens-poe/prismaticas.mjs';
+import * as Missoes from '../itens-poe/missoes.mjs';
 
 const ler = (arq) => JSON.parse(readFileSync(new URL(`../../gamedata/passivas/${arq}`, import.meta.url), 'utf8'));
 export const CONFIG = ler('config.json');
@@ -261,7 +262,8 @@ export function garantir(estado) {
 export function pontos(estado) {
   const { passivas } = garantir(estado);
   // (+ os nós que concedem pontos de passiva — "Concede 1 Ponto de Habilidade Passiva", na Ascendente: `pontos_passiva`.)
-  const total = pontosDoLevel(estado.level) + Math.max(0, Math.round(efeitos(estado).adds?.pontos_passiva ?? 0));
+  // (05/11) + os Pontos de Habilidade Passiva das missões concluídas (os Livros de Habilidade do PoE — itens-poe/missoes.mjs).
+  const total = pontosDoLevel(estado.level) + Math.max(0, Math.round(efeitos(estado).adds?.pontos_passiva ?? 0)) + Missoes.pontos(estado);
   // Os nós de ascendência gastam os pontos de ASCENDÊNCIA (`pontosDeAscendencia`), não estes.
   const usados = passivas.alocados.reduce((s, id) => (noDe(estado, id)?.ascendencia ? s : s + custoDe(noDe(estado, id))), 0);
   // `deficit`: pontos gastos A MAIS do que o personagem tem (um personagem antigo que caiu de level na morte, antes da regra do PoE; um nó
@@ -279,7 +281,7 @@ function pontosSe(estado, ficam) {
     if (!no.ascendencia) usados += custoDe(no);
     for (const ef of efeitosDoNo(no, estado.passivas)) if (ef.add === 'pontos_passiva') concedidos += ef.valor;
   }
-  return { total: pontosDoLevel(estado.level) + Math.max(0, Math.round(concedidos)), usados };
+  return { total: pontosDoLevel(estado.level) + Math.max(0, Math.round(concedidos)) + Missoes.pontos(estado), usados };
 }
 
 // ------------------------------------------------------------ as ascendências (árvore do PoE, incremento 4e)
@@ -962,7 +964,8 @@ export function efeitos(estado) {
   if (!estado) return VAZIO;
   const alocados = estado.passivas?.alocados ?? [];
   // (100% — dados: + a versão das Tatuagens — tatuar muda os efeitos sem mudar a alocação)
-  const joias = `${estado.passivas?.joiasVersao ?? 0}:${estado.passivas?.tatuagensVersao ?? 0}`;
+  // (05/11: + a escolha dos Bandidos — o bônus da missão entra aqui, e escolher muda os efeitos sem mudar a alocação)
+  const joias = `${estado.passivas?.joiasVersao ?? 0}:${estado.passivas?.tatuagensVersao ?? 0}:${Missoes.versao(estado)}`;
   const guardado = CACHE.get(estado);
   // Caminho rápido: o mesmo array, do mesmo tamanho e com a mesma ponta (alocar põe no fim; respec muda o tamanho).
   if (guardado && guardado.ref === alocados && guardado.n === alocados.length && guardado.ultimo === alocados[alocados.length - 1] && guardado.primeiro === alocados[0] && guardado.joias === joias) return guardado.valor;
@@ -973,6 +976,12 @@ export function efeitos(estado) {
   }
   const r = { adds: {}, dano: {}, stats: {}, legado: {}, keystones: [], habilidades: new Set(), fontes: {}, dominios: {} };
   const fonte = (chave, nome, v) => (r.fontes[chave] ??= []).push({ especializacao: `Árvore: ${nome}`, pct: v });
+  // (05/11) o bônus permanente da missão concluída (a escolha dos Bandidos: "+40 de Vida máxima"…) — itens-poe/missoes.mjs.
+  for (const ef of Missoes.efeitos(estado)) {
+    if (ef.tag) { r.dano[ef.tag] = (r.dano[ef.tag] ?? 0) + ef.dano; fonte(ef.tag, ef.fonte, ef.dano); }
+    else if (ef.stat) { r.stats[ef.stat] = (r.stats[ef.stat] ?? 0) + ef.pct; fonte(ef.stat, ef.fonte, ef.pct); }
+    else if (ef.add) r.adds[ef.add] = (r.adds[ef.add] ?? 0) + ef.valor;
+  }
   // (lotes 27 e 29) o que as joias fazem nos nós do raio delas, e o que dão por joia.
   const raios = raiosDasJoias(estado, alocados);
   for (const [k, v] of Object.entries(raios?.extras ?? {})) r.adds[k] = (r.adds[k] ?? 0) + v;

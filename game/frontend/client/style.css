@@ -20402,6 +20402,14 @@ html.arrastando-item .tooltip { display: none !important; }
   font-size: 12px;
 }
 #tbicho-busca:focus { outline: none; border-color: var(--accent-dim); }
+/* (05/11) a busca da aba Missões tem o mesmo feitio (aba-missoes.mjs) */
+#missao-busca {
+  width: 100%; box-sizing: border-box;
+  padding: 6px 9px; border-radius: 6px;
+  background: #0d1315; border: 1px solid #ffffff1f; color: var(--text);
+  font-size: 12px;
+}
+#missao-busca:focus { outline: none; border-color: var(--accent-dim); }
 
 .tbicho-faixas { display: flex; flex-wrap: wrap; gap: 5px; }
 .tbicho-faixa {
@@ -27941,6 +27949,69 @@ html[data-perfil="retrato"] .inv-selo-texto b, html[data-perfil="retrato"] .inv-
 .missao-poe-gema em { font-size: 11px; color: #a39b8c; }
 .missao-poe-gema:hover { border-color: #e8c66a; }
 .missao-poe-gema.escolhida { border-color: #e8c66a; box-shadow: 0 0 0 2px #e8c66a, 0 0 10px #e8c66a66; }
+/* (05/11) o texto de sabor do item de missão no balão: o itálico cor de laranja do PoE, como o dos únicos */
+.tip-sabor-missao { white-space: pre-line; font-style: italic; color: #af6025; }
+
+/*
+ * ---- A aba MISSÕES (05/11, aba-missoes.mjs) ----
+ *
+ * A lista e a ficha são as da Cyclopedia (`.ciclo-layout`); aqui só o que é
+ * da missão: o ícone do poedb, a marca do estado (✓ feita, ! recompensa,
+ * – sem caminho), os passos, as escolhas e os Bandidos. O dourado é o do
+ * prêmio, como no resto do jogo.
+ */
+.missoes-layout .ciclo-lista { max-height: 58vh; }
+.missao-ficha { max-height: 58vh; overflow-y: auto; }
+.missao-icone { display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.missao-icone img { max-width: 100%; max-height: 100%; image-rendering: auto; }
+.missao-icone-vazio { font-style: normal; font-weight: 700; color: #e0b45a; font-size: 14px; }
+.missao-marca { font-style: normal; font-size: 12px; width: 14px; text-align: center; flex: none; color: #55646a; }
+.missao-marca-feita { color: var(--accent); }
+.missao-marca-recompensa { color: #e0b45a; font-weight: 700; }
+.missao-linha.missao-sem-caminho .ciclo-item-texto b { color: var(--muted); }
+.missao-linha.missao-abandonada { opacity: 0.6; }
+.missao-linha.missao-recompensa { box-shadow: inset 0 0 0 1px #e0b45a44; }
+.missao-selo { margin-left: auto; font-size: 10px; font-style: normal; padding: 2px 8px; border-radius: 999px; background: #ffffff0d; color: var(--muted); white-space: nowrap; }
+.missao-selo.missao-feita { background: #3fbfa81f; color: var(--accent); }
+.missao-selo.missao-recompensa { background: #4a3a14; color: #ffe9b8; }
+.missao-selo.missao-sem-caminho { background: #ffffff08; color: #7f8a8e; }
+.missao-descricao { font-size: 12px; color: var(--text); line-height: 1.45; margin: 4px 0 8px; }
+.missao-recompensa { font-size: 12px; color: #f0cf7a; margin: 3px 0; }
+.missao-escolhas { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; margin: 6px 0 8px; }
+.missao-escolha {
+  display: flex; align-items: center; gap: 6px; padding: 5px 8px; text-align: left;
+  border: 1px solid #ffffff1a; border-radius: 6px; background: #0d1315; color: var(--text); font-size: 11px;
+}
+.missao-escolha:not(:disabled) { cursor: pointer; border-color: #e0b45a66; }
+.missao-escolha:not(:disabled):hover { border-color: #e8c66a; box-shadow: 0 0 10px -3px #e0b45a; }
+.missao-escolha.escolhida { border-color: #e8c66a; box-shadow: 0 0 0 1px #e8c66a; }
+.missao-escolha:disabled { opacity: 0.75; }
+.missao-escolha.escolhida:disabled { opacity: 1; }
+.missao-itens { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 8px; }
+.missao-item {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; width: 74px; padding: 4px;
+  border-radius: 6px; background: #ffffff08; text-align: center;
+}
+.missao-item span { font-size: 9px; color: var(--muted); line-height: 1.2; }
+.missao-item.obtido { box-shadow: inset 0 0 0 1px #3fbfa855; }
+.missao-passos { list-style: none; padding: 0; margin: 6px 0 0; display: flex; flex-direction: column; gap: 4px; }
+.missao-passos li { display: flex; gap: 8px; align-items: flex-start; font-size: 11px; color: var(--muted); }
+.missao-passos li > div { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.missao-passos li b { color: var(--text); font-weight: 600; }
+.missao-passos li span { color: var(--muted); }
+.missao-passos li em { color: #55646a; font-size: 10px; }
+.missao-passos li.feito b { color: var(--accent); }
+.missao-passo-marca { font-style: normal; width: 12px; flex: none; text-align: center; color: #55646a; }
+.missao-passos li.feito .missao-passo-marca { color: var(--accent); }
+.missao-bandidos { padding: 10px 12px; margin: 0 0 10px; border-radius: 8px; box-shadow: inset 0 0 0 1px #e0b45a55; background: linear-gradient(180deg, #1d1809, #0c1215); }
+.missao-bandidos-titulo { display: block; color: #ffe9b8; font-size: 13px; margin-bottom: 4px; }
+.missao-bandidos-botoes { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; margin-top: 6px; }
+.missao-bandido {
+  display: flex; flex-direction: column; gap: 2px; padding: 6px 9px; text-align: left; cursor: pointer;
+  border: 1px solid #e0b45a66; border-radius: 6px; background: #0d1315; color: var(--text); font-size: 12px;
+}
+.missao-bandido em { font-size: 10px; color: #f0cf7a; font-style: normal; }
+.missao-bandido:hover:not(:disabled) { border-color: #e8c66a; box-shadow: 0 0 10px -3px #e0b45a; }
 
 /*
  * ---- A FORJA do PoE (forja-poe.mjs — dono, 12/10: "reformulação completa da Forja", o modelo compacto do UNDECEMBER e a estética do

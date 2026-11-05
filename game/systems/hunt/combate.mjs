@@ -53,6 +53,7 @@ import * as MoedasPoe from '../itens-poe/moedas.mjs';
 // (100% — dados, 03/11) as Tatuagens do PoE (a fonte simples, sem a liga Ancestral — `passivas/tatuagens.dropDoMonstro`)
 import * as Tatuagens from '../passivas/tatuagens.mjs';
 import * as Pinaculos from '../itens-poe/pinaculos.mjs';
+import * as Missoes from '../itens-poe/missoes.mjs';
 import { tipoDoBicho } from './escalonamento.mjs';
 import * as Mapas from '../itens-poe/mapas.mjs';
 import * as AtributosDoPersonagem from '../personagem/atributos.mjs';
@@ -480,6 +481,8 @@ export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
   }
   // O cooldown já começou na ENTRADA (`Bosses.marcarEntrada`); aqui o de task fecha.
   Bosses.marcarVitoria(estado, hunt.bossId ?? (naFase ? Campanha.bossDoAto(atoDoChefe)?.bossId : null));
+  // (05/11) O pináculo vencido conta para as missões do Atlas (A Maven, O Ancião… — itens-poe/missoes.mjs).
+  if (hunt.bossId && Pinaculos.pinaculo(hunt.bossId)) Missoes.aoVencerPinaculo(estado, hunt.bossId);
   if (naFase) {
     // Na fase: o chefe sai do mapa e a caçada segue (sem a faixa de vitória que encerra a sala). A pausa do "Hunt Clear!" recomeça na
     // morte dele: a instância seguinte não vem no mesmo instante em que ele cai (a pausa da limpeza já passou enquanto ele lutava).

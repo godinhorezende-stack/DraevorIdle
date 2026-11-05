@@ -1094,6 +1094,11 @@ function handle(message) {
       state.tasksDeBicho = message.ficha;
       panelCtx.redraw?.();
       break;
+    // (05/11) A aba Missões (o jogo do PoE): o estado de cada missão, pedido sob demanda — aba-missoes.mjs.
+    case 'missoes':
+      state.missoes = message.ficha;
+      (panelCtx.redrawSuave ?? panelCtx.redraw)?.();
+      break;
     /*
      * ---- O pagamento abriu ----
      *
@@ -2959,6 +2964,8 @@ const DO_PERSONAGEM = [
  * Para quem olha a barra nada mudou: os cinco botões continuam aqui, e o
  * caminho até cada um continua sendo um clique.
  */
+/** O jogo é o do PoE? (o servidor manda `frascosPoe` — a lista dos frascos — só quando o sistema do PoE está ligado; no clássico, null) */
+const jogoDoPoe = () => state.character?.frascosPoe != null;
 const TAREFAS = [
   { id: 'tarefas-recompensas', label: 'Level Reward', curto: 'Level Rw.', icone: 'aba-recompensas',
     /* A janela do calendário já existe: é a do presente da faixa de baixo. */
@@ -2970,8 +2977,12 @@ const TAREFAS = [
     abre: () => openDiario(),
     tip: 'O baú do dia. Pegar em dias seguidos sobe o prêmio.',
     alerta: () => !!state.character?.diario?.podePegar || !!state.character?.diario?.pendente },
-  { id: 'tarefas-tasks', label: 'Tasks', icone: 'aba-tasks', abre: () => openQuests('tasks'),
-    tip: 'As boss tasks e as tasks de criatura: matar até a conta fechar.' },
+  /* (05/11) No jogo do PoE as Missões ocupam o lugar das Tasks ("use onde fica task" — o dono escolheu substituir): o mesmo botão, a
+     mesma janela, a aba Missões (aba-missoes.mjs). O clássico continua com as Tasks. */
+  { id: 'tarefas-tasks', icone: 'aba-tasks', abre: () => openQuests(),
+    get label() { return jogoDoPoe() ? 'Missões' : 'Tasks'; },
+    get tip() { return jogoDoPoe() ? 'As missões do PoE: a campanha, o Atlas e as de liga — passos, recompensas e itens de missão.' : 'As boss tasks e as tasks de criatura: matar até a conta fechar.'; },
+    alerta: () => jogoDoPoe() && ((state.character?.missoesPendentes ?? 0) + (state.character?.missoesPoe?.length ?? 0)) > 0 },
   { id: 'tarefas-outfits', label: 'Outfits', icone: 'aba-outfits', abre: () => openOutfits(),
     tip: 'Entrega o loot que o bicho larga e leva a roupa — ou o addon dela.' },
   /*
@@ -3238,7 +3249,7 @@ const BARRA = [
     tip: 'A ficha, a mochila, a análise da caçada, a bolsa de loot e a Cyclopedia.',
     gaveta: DO_PERSONAGEM },
   { id: 'tarefas', label: 'Tarefas', icone: 'quests',
-    tip: 'Level reward, recompensa diária, tasks, outfits e montarias.',
+    get tip() { return `Level reward, recompensa diária, ${jogoDoPoe() ? 'missões' : 'tasks'}, outfits e montarias.`; },
     gaveta: TAREFAS },
 
   { id: 'social', label: 'Social', icone: 'socialiconetop', reserva: 'amigos',
