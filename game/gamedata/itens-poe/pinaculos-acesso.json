@@ -1,0 +1,698 @@
+{
+ "_nota": "A ENTRADA dos pináculos como no PoE (dono, 05/11): sem trava de level; cada pináculo abre no Dispositivo de Mapas com os itens de `entradas` (um de cada, gastos ao abrir). Os itens saem dos 12 chefes de `chefes` (garantido), que nascem nos mapas com o encontro: o mapa do guardião do Criador (T16, o guardião é o chefe do mapa) ou o mapa comum \"ocupado\"/\"com a Cidadela\" (o chefe a mais no fundo do mapa). Os mapas com encontro caem dos chefes de mapa a partir de `drop.tierMinimo`, com `drop.chancePorChefe` por grupo (sem a taxa no poedb: números do jogo). Gerado por tools/montar-pinaculos-acesso.mjs a partir do poedb.",
+ "drop": {
+  "tierMinimo": 14,
+  "chancePorChefe": {
+   "criador": 0.08,
+   "anciao": 0.08,
+   "conquistador": 0.08
+  }
+ },
+ "influencias": {
+  "exarca": {
+   "nome": "O Exarca Cauterizado",
+   "tierMinimo": 14
+  },
+  "devorador": {
+   "nome": "O Devorador de Mundos",
+   "tierMinimo": 14
+  }
+ },
+ "entradas": {
+  "poe-the-shaper": [
+   7750001,
+   7750002,
+   7750003,
+   7750004
+  ],
+  "poe-the-elder": [
+   7750005,
+   7750006,
+   7750007,
+   7750008
+  ],
+  "poe-sirus": [
+   7750009,
+   7750010,
+   7750011,
+   7750012
+  ],
+  "poe-a-estrela-negra": [
+   7750013
+  ],
+  "poe-the-searing-exarch": [
+   7750014
+  ],
+  "poe-a-fome-infinita": [
+   7750015
+  ],
+  "poe-the-eater-of-worlds": [
+   7750016
+  ]
+ },
+ "arenas": [
+  {
+   "id": "poe-a-estrela-negra",
+   "nome": "A Estrela Negra",
+   "en": "The Black Star",
+   "poedb": "https://poedb.tw/us/The_Black_Star",
+   "variante": "TheBlackStarBlackStarBoss",
+   "vidaPct": 1400,
+   "danoPct": 160,
+   "expPct": 200,
+   "resistencias": {
+    "fire": 50,
+    "ice": 50,
+    "energy": 50,
+    "chaos": 30
+   },
+   "vidaMult": 3.5,
+   "base": "anomaly",
+   "unicos": [
+    {
+     "slug": "Polaric_Devastation",
+     "nome": "Devastação Polar",
+     "nomeOriginal": "Polaric Devastation",
+     "classe": "Rings",
+     "base": "Anel de Opala"
+    },
+    {
+     "slug": "Sudden_Dawn",
+     "nome": "Amanhecer Repentino",
+     "nomeOriginal": "Sudden Dawn",
+     "classe": "Helmets",
+     "base": "Tiara de Aço"
+    },
+    {
+     "slug": "The_Eternal_Struggle",
+     "nome": "A Eterna Batalha",
+     "nomeOriginal": "The Eternal Struggle",
+     "classe": "Amulets",
+     "base": "Amuleto de Ônix"
+    }
+   ]
+  },
+  {
+   "id": "poe-a-fome-infinita",
+   "nome": "A Fome Infinita",
+   "en": "The Infinite Hunger",
+   "poedb": "https://poedb.tw/us/The_Infinite_Hunger",
+   "variante": "TheInfiniteHungerDoomBoss_",
+   "vidaPct": 1800,
+   "danoPct": 280,
+   "expPct": 200,
+   "resistencias": {
+    "fire": 50,
+    "ice": 50,
+    "energy": 50,
+    "chaos": 30
+   },
+   "vidaMult": 4.5,
+   "base": "the-nightmare-beast",
+   "unicos": [
+    {
+     "slug": "Black_Zenith",
+     "nome": "Zenith Negro",
+     "nomeOriginal": "Black Zenith",
+     "classe": "Gloves",
+     "base": "Luvas de Seda sem Dedos"
+    },
+    {
+     "slug": "Ceaseless_Feast",
+     "nome": "Banquete Sem Fim",
+     "nomeOriginal": "Ceaseless Feast",
+     "classe": "Gloves",
+     "base": "Luvas Cravejadas"
+    }
+   ]
+  }
+ ],
+ "itens": [
+  {
+   "slug": "Fragment_of_the_Hydra",
+   "tipo": "Metadata/Items/MapFragments/CurrencyShaperFragment4",
+   "nome": "Fragmento da Hidra",
+   "en": "Fragment of the Hydra",
+   "linhas": [
+    "Quantidade de Itens encontrados nesta Área aumentada em 5%"
+   ],
+   "sabor": "Encare o julgamento. A ligação do\nnada e o equilíbrio da eternidade.",
+   "icone": "poe-itens/Pinaculos/Fragment_of_the_Hydra.png",
+   "nivelDrop": 84,
+   "itemId": 7750001,
+   "chefe": "poe-guardiao-da-hidra",
+   "grupo": "criador"
+  },
+  {
+   "slug": "Fragment_of_the_Phoenix",
+   "tipo": "Metadata/Items/MapFragments/CurrencyShaperFragment1",
+   "nome": "Fragmento da Fênix",
+   "en": "Fragment of the Phoenix",
+   "linhas": [
+    "Quantidade de Itens encontrados nesta Área aumentada em 5%"
+   ],
+   "sabor": "Encare o julgamento. A ligação do\nnada e o equilíbrio da eternidade.",
+   "icone": "poe-itens/Pinaculos/Fragment_of_the_Phoenix.png",
+   "nivelDrop": 84,
+   "itemId": 7750002,
+   "chefe": "poe-guardiao-da-fenix",
+   "grupo": "criador"
+  },
+  {
+   "slug": "Fragment_of_the_Minotaur",
+   "tipo": "Metadata/Items/MapFragments/CurrencyShaperFragment2",
+   "nome": "Fragmento do Minotauro",
+   "en": "Fragment of the Minotaur",
+   "linhas": [
+    "Quantidade de Itens encontrados nesta Área aumentada em 5%"
+   ],
+   "sabor": "Encare o julgamento. A ligação do\nnada e o equilíbrio da eternidade.",
+   "icone": "poe-itens/Pinaculos/Fragment_of_the_Minotaur.png",
+   "nivelDrop": 84,
+   "itemId": 7750003,
+   "chefe": "poe-guardiao-do-minotauro",
+   "grupo": "criador"
+  },
+  {
+   "slug": "Fragment_of_the_Chimera",
+   "tipo": "Metadata/Items/MapFragments/CurrencyShaperFragment3",
+   "nome": "Fragmento da Quimera",
+   "en": "Fragment of the Chimera",
+   "linhas": [
+    "Quantidade de Itens encontrados nesta Área aumentada em 5%"
+   ],
+   "sabor": "Encare o julgamento. A ligação do\nnada e o equilíbrio da eternidade.",
+   "icone": "poe-itens/Pinaculos/Fragment_of_the_Chimera.png",
+   "nivelDrop": 84,
+   "itemId": 7750004,
+   "chefe": "poe-guardiao-da-quimera",
+   "grupo": "criador"
+  },
+  {
+   "slug": "Fragment_of_Enslavement",
+   "tipo": "Metadata/Items/MapFragments/CurrencyElderFragment1",
+   "nome": "Fragmento do Escravisador",
+   "en": "Fragment of Enslavement",
+   "linhas": [
+    "Quantidade de Itens encontrados nesta Área aumentada em 5%"
+   ],
+   "sabor": "A liberdade é conquistada, não dada.",
+   "icone": "poe-itens/Pinaculos/Fragment_of_Enslavement.png",
+   "nivelDrop": 80,
+   "itemId": 7750005,
+   "chefe": "poe-o-escravizador",
+   "grupo": "anciao"
+  },
+  {
+   "slug": "Fragment_of_Eradication",
+   "tipo": "Metadata/Items/MapFragments/CurrencyElderFragment2",
+   "nome": "Fragmento do Erradicador",
+   "en": "Fragment of Eradication",
+   "linhas": [
+    "Quantidade de Itens encontrados nesta Área aumentada em 5%"
+   ],
+   "sabor": "Pragas se cansam, não acabam.",
+   "icone": "poe-itens/Pinaculos/Fragment_of_Eradication.png",
+   "nivelDrop": 80,
+   "itemId": 7750006,
+   "chefe": "poe-o-erradicador",
+   "grupo": "anciao"
+  },
+  {
+   "slug": "Fragment_of_Constriction",
+   "tipo": "Metadata/Items/MapFragments/CurrencyElderFragment3",
+   "nome": "Fragmento do Constritor",
+   "en": "Fragment of Constriction",
+   "linhas": [
+    "Quantidade de Itens encontrados nesta Área aumentada em 5%"
+   ],
+   "sabor": "Teias são destruídas, não desfeitas.",
+   "icone": "poe-itens/Pinaculos/Fragment_of_Constriction.png",
+   "nivelDrop": 80,
+   "itemId": 7750007,
+   "chefe": "poe-o-constritor",
+   "grupo": "anciao"
+  },
+  {
+   "slug": "Fragment_of_Purification",
+   "tipo": "Metadata/Items/MapFragments/CurrencyElderFragment4",
+   "nome": "Fragmento do Purificador",
+   "en": "Fragment of Purification",
+   "linhas": [
+    "Quantidade de Itens encontrados nesta Área aumentada em 5%"
+   ],
+   "sabor": "A Corrupção é purgada, não purificada.",
+   "icone": "poe-itens/Pinaculos/Fragment_of_Purification.png",
+   "nivelDrop": 80,
+   "itemId": 7750008,
+   "chefe": "poe-a-purificadora",
+   "grupo": "anciao"
+  },
+  {
+   "slug": "Barans_Crest",
+   "tipo": "Metadata/Items/MapFragments/CurrencySirusFragment2",
+   "nome": "Coroa de Baran",
+   "en": "Baran's Crest",
+   "linhas": [
+    "Quantidade de Itens encontrados nesta Área aumentada em 10%"
+   ],
+   "sabor": "Ele buscou Deus,\nmas se perdeu.",
+   "icone": "poe-itens/Pinaculos/Barans_Crest.png",
+   "nivelDrop": 80,
+   "itemId": 7750009,
+   "chefe": "poe-baran",
+   "grupo": "conquistador"
+  },
+  {
+   "slug": "Veritanias_Crest",
+   "tipo": "Metadata/Items/MapFragments/CurrencySirusFragment4",
+   "nome": "Coroa de Veritania",
+   "en": "Veritania's Crest",
+   "linhas": [
+    "Quantidade de Itens encontrados nesta Área aumentada em 10%"
+   ],
+   "sabor": "Ele buscou trazer salvação,\nmas perdeu sua compaixão.",
+   "icone": "poe-itens/Pinaculos/Veritanias_Crest.png",
+   "nivelDrop": 80,
+   "itemId": 7750010,
+   "chefe": "poe-veritania",
+   "grupo": "conquistador"
+  },
+  {
+   "slug": "Al-Hezmins_Crest",
+   "tipo": "Metadata/Items/MapFragments/CurrencySirusFragment1",
+   "nome": "Coroa de Al-Hezmin",
+   "en": "Al-Hezmin's Crest",
+   "linhas": [
+    "Quantidade de Itens encontrados nesta Área aumentada em 10%"
+   ],
+   "sabor": "Ele tentou ser o melhor,\nmas perdeu sua família.",
+   "icone": "poe-itens/Pinaculos/Al-Hezmins_Crest.png",
+   "nivelDrop": 80,
+   "itemId": 7750011,
+   "chefe": "poe-al-hezmin",
+   "grupo": "conquistador"
+  },
+  {
+   "slug": "Droxs_Crest",
+   "tipo": "Metadata/Items/MapFragments/CurrencySirusFragment3",
+   "nome": "Coroa de Drox",
+   "en": "Drox's Crest",
+   "linhas": [
+    "Quantidade de Itens encontrados nesta Área aumentada em 10%"
+   ],
+   "sabor": "Ele buscou um reino,\nmas perdeu seu povo.",
+   "icone": "poe-itens/Pinaculos/Droxs_Crest.png",
+   "nivelDrop": 80,
+   "itemId": 7750012,
+   "chefe": "poe-drox",
+   "grupo": "conquistador"
+  },
+  {
+   "slug": "Polaric_Invitation",
+   "tipo": "Metadata/Items/MapFragments/Primordial/CurrencyCleansingFireKey",
+   "nome": "Convite Polarizado",
+   "en": "Polaric Invitation",
+   "linhas": [
+    "Modificadores a Quantidade de Itens afetam a quantidade de recompensas derrubadas pelo chefe"
+   ],
+   "sabor": "Uma vez ao alcance da Estrela Negra\nnão há para onde fugir.",
+   "icone": "poe-itens/Pinaculos/Polaric_Invitation.png",
+   "nivelDrop": 1,
+   "itemId": 7750013,
+   "convite": true,
+   "influencia": "exarca",
+   "aCada": 14,
+   "abre": "poe-a-estrela-negra"
+  },
+  {
+   "slug": "Incandescent_Invitation",
+   "tipo": "Metadata/Items/MapFragments/Primordial/CurrencyCleansingFireBossKey",
+   "nome": "Convite Incandescente",
+   "en": "Incandescent Invitation",
+   "linhas": [
+    "Modificadores a Quantidade de Itens afetam a quantidade de recompensas derrubadas pelo chefe"
+   ],
+   "sabor": "Da coroa de uma estrela antiga,\no Exarca Cauterizado intenta a dominação do Atlas.",
+   "icone": "poe-itens/Pinaculos/Incandescent_Invitation.png",
+   "nivelDrop": 1,
+   "itemId": 7750014,
+   "convite": true,
+   "influencia": "exarca",
+   "aCada": 28,
+   "abre": "poe-the-searing-exarch",
+   "depoisDe": "poe-a-estrela-negra"
+  },
+  {
+   "slug": "Writhing_Invitation",
+   "tipo": "Metadata/Items/MapFragments/Primordial/CurrencyTangleKey",
+   "nome": "Convite Contorcido",
+   "en": "Writhing Invitation",
+   "linhas": [
+    "Modificadores a Quantidade de Itens afetam a quantidade de recompensas derrubadas pelo chefe"
+   ],
+   "sabor": "A Fome Infinita espera em um estômago cósmico onde\ncivilizações inteiras são digeridas - mas não morrem",
+   "icone": "poe-itens/Pinaculos/Writhing_Invitation.png",
+   "nivelDrop": 1,
+   "itemId": 7750015,
+   "convite": true,
+   "influencia": "devorador",
+   "aCada": 14,
+   "abre": "poe-a-fome-infinita"
+  },
+  {
+   "slug": "Screaming_Invitation",
+   "tipo": "Metadata/Items/MapFragments/Primordial/CurrencyTangleBossKey",
+   "nome": "Convite Gritante",
+   "en": "Screaming Invitation",
+   "linhas": [
+    "Modificadores a Quantidade de Itens afetam a quantidade de recompensas derrubadas pelo chefe"
+   ],
+   "sabor": "Do coração do Emaranhado, O Devorador de Mundos\nbusca o controle do Atlas.",
+   "icone": "poe-itens/Pinaculos/Screaming_Invitation.png",
+   "nivelDrop": 1,
+   "itemId": 7750016,
+   "convite": true,
+   "influencia": "devorador",
+   "aCada": 28,
+   "abre": "poe-the-eater-of-worlds",
+   "depoisDe": "poe-a-fome-infinita"
+  }
+ ],
+ "mapas": [
+  {
+   "slug": "Lair_of_the_Hydra_Map",
+   "tipo": "Metadata/Items/Maps/MapWorldsHydra",
+   "nome": "Covil da Hidra",
+   "en": "Lair of the Hydra Map",
+   "linhas": [
+    "Área é influenciada pelo Criador"
+   ],
+   "sabor": null,
+   "icone": "poe-itens/Pinaculos/Lair_of_the_Hydra_Map.png",
+   "nivelDrop": 83,
+   "itemId": 7751001,
+   "chefe": "poe-guardiao-da-hidra",
+   "tier": 16
+  },
+  {
+   "slug": "Forge_of_the_Phoenix_Map",
+   "tipo": "Metadata/Items/Maps/MapWorldsPhoenix",
+   "nome": "Fornalha da Fênix",
+   "en": "Forge of the Phoenix Map",
+   "linhas": [
+    "Área é influenciada pelo Criador"
+   ],
+   "sabor": null,
+   "icone": "poe-itens/Pinaculos/Forge_of_the_Phoenix_Map.png",
+   "nivelDrop": 83,
+   "itemId": 7751002,
+   "chefe": "poe-guardiao-da-fenix",
+   "tier": 16
+  },
+  {
+   "slug": "Maze_of_the_Minotaur_Map",
+   "tipo": "Metadata/Items/Maps/MapWorldsMinotaur",
+   "nome": "Labirinto do Minotauro",
+   "en": "Maze of the Minotaur Map",
+   "linhas": [
+    "Área é influenciada pelo Criador"
+   ],
+   "sabor": null,
+   "icone": "poe-itens/Pinaculos/Maze_of_the_Minotaur_Map.png",
+   "nivelDrop": 83,
+   "itemId": 7751003,
+   "chefe": "poe-guardiao-do-minotauro",
+   "tier": 16
+  },
+  {
+   "slug": "Pit_of_the_Chimera_Map",
+   "tipo": "Metadata/Items/Maps/MapWorldsChimera",
+   "nome": "Fosso da Quimera",
+   "en": "Pit of the Chimera Map",
+   "linhas": [
+    "Área é influenciada pelo Criador"
+   ],
+   "sabor": null,
+   "icone": "poe-itens/Pinaculos/Pit_of_the_Chimera_Map.png",
+   "nivelDrop": 83,
+   "itemId": 7751004,
+   "chefe": "poe-guardiao-da-quimera",
+   "tier": 16
+  }
+ ],
+ "chefes": [
+  {
+   "id": "poe-guardiao-da-hidra",
+   "nome": "Guardião da Hidra",
+   "en": "Guardian of the Hydra",
+   "poedb": "https://poedb.tw/us/Guardian_of_the_Hydra",
+   "variante": "GuardianoftheHydraHydraBoss",
+   "vidaPct": 1000,
+   "danoPct": 200,
+   "expPct": 200,
+   "resistencias": {
+    "fire": 50,
+    "ice": 50,
+    "energy": 50,
+    "chaos": 30
+   },
+   "vidaMult": 2.5,
+   "base": "timira-the-many-headed",
+   "grupo": "criador",
+   "fragmento": 7750001,
+   "mapa": 7751001
+  },
+  {
+   "id": "poe-guardiao-da-fenix",
+   "nome": "Guardião da Fênix",
+   "en": "Guardian of the Phoenix",
+   "poedb": "https://poedb.tw/us/Guardian_of_the_Phoenix",
+   "variante": "GuardianofthePhoenixPhoenixBoss",
+   "vidaPct": 1300,
+   "danoPct": 140,
+   "expPct": 200,
+   "resistencias": {
+    "fire": 50,
+    "ice": 50,
+    "energy": 50,
+    "chaos": 30
+   },
+   "vidaMult": 3.25,
+   "base": "mawhawk",
+   "grupo": "criador",
+   "fragmento": 7750002,
+   "mapa": 7751002
+  },
+  {
+   "id": "poe-guardiao-do-minotauro",
+   "nome": "Guardião do Minotauro",
+   "en": "Guardian of the Minotaur",
+   "poedb": "https://poedb.tw/us/Guardian_of_the_Minotaur",
+   "variante": "GuardianoftheMinotaurMinotaurBoss",
+   "vidaPct": 1300,
+   "danoPct": 184,
+   "expPct": 200,
+   "resistencias": {
+    "fire": 50,
+    "ice": 50,
+    "energy": 50,
+    "chaos": 30
+   },
+   "vidaMult": 3.25,
+   "base": "the-ravager",
+   "grupo": "criador",
+   "fragmento": 7750003,
+   "mapa": 7751003
+  },
+  {
+   "id": "poe-guardiao-da-quimera",
+   "nome": "Guardião da Quimera",
+   "en": "Guardian of the Chimera",
+   "poedb": "https://poedb.tw/us/Guardian_of_the_Chimera",
+   "variante": "GuardianoftheChimeraChimeraBoss",
+   "vidaPct": 1000,
+   "danoPct": 200,
+   "expPct": 200,
+   "resistencias": {
+    "fire": 50,
+    "ice": 50,
+    "energy": 50,
+    "chaos": 30
+   },
+   "vidaMult": 2.5,
+   "base": "urmahlullu-the-immaculate",
+   "grupo": "criador",
+   "fragmento": 7750004,
+   "mapa": 7751004
+  },
+  {
+   "id": "poe-o-escravizador",
+   "nome": "O Escravizador",
+   "en": "The Enslaver",
+   "poedb": "https://poedb.tw/us/The_Enslaver",
+   "variante": "TheEnslaverElderGuardian1",
+   "vidaPct": 1200,
+   "danoPct": 150,
+   "expPct": 200,
+   "resistencias": {
+    "fire": 50,
+    "ice": 50,
+    "energy": 50,
+    "chaos": 30
+   },
+   "vidaMult": 3,
+   "base": "foreshock",
+   "grupo": "anciao",
+   "fragmento": 7750005,
+   "linha": "Mapa ocupado pelo Escravizador"
+  },
+  {
+   "id": "poe-o-erradicador",
+   "nome": "O Erradicador",
+   "en": "The Eradicator",
+   "poedb": "https://poedb.tw/us/The_Eradicator",
+   "variante": "TheEradicatorElderGuardian2",
+   "vidaPct": 1200,
+   "danoPct": 150,
+   "expPct": 200,
+   "resistencias": {
+    "fire": 50,
+    "ice": 50,
+    "energy": 50,
+    "chaos": 30
+   },
+   "vidaMult": 3,
+   "base": "outburst",
+   "grupo": "anciao",
+   "fragmento": 7750006,
+   "linha": "Mapa ocupado pelo Erradicador"
+  },
+  {
+   "id": "poe-o-constritor",
+   "nome": "O Constritor",
+   "en": "The Constrictor",
+   "poedb": "https://poedb.tw/us/The_Constrictor",
+   "variante": "TheConstrictorElderGuardian3",
+   "vidaPct": 1200,
+   "danoPct": 150,
+   "expPct": 200,
+   "resistencias": {
+    "fire": 50,
+    "ice": 50,
+    "energy": 50,
+    "chaos": 30
+   },
+   "vidaMult": 3,
+   "base": "the-pale-worm",
+   "grupo": "anciao",
+   "fragmento": 7750007,
+   "linha": "Mapa ocupado pelo Constritor"
+  },
+  {
+   "id": "poe-a-purificadora",
+   "nome": "A Purificadora",
+   "en": "The Purifier",
+   "poedb": "https://poedb.tw/us/The_Purifier",
+   "variante": "ThePurifierElderGuardian4_",
+   "vidaPct": 1200,
+   "danoPct": 150,
+   "expPct": 200,
+   "resistencias": {
+    "fire": 50,
+    "ice": 50,
+    "energy": 50,
+    "chaos": 30
+   },
+   "vidaMult": 3,
+   "base": "plagirath",
+   "grupo": "anciao",
+   "fragmento": 7750008,
+   "linha": "Mapa ocupado pela Purificadora"
+  },
+  {
+   "id": "poe-baran",
+   "nome": "Baran, o Cruzado",
+   "en": "Baran, The Crusader",
+   "poedb": "https://poedb.tw/us/Baran%2C_The_Crusader",
+   "variante": "BaranTheCrusaderAtlasExile1",
+   "vidaPct": 1300,
+   "danoPct": 150,
+   "expPct": 200,
+   "resistencias": {
+    "fire": 50,
+    "ice": 50,
+    "energy": 50,
+    "chaos": 30
+   },
+   "vidaMult": 3.25,
+   "base": "sir-baeloc",
+   "grupo": "conquistador",
+   "fragmento": 7750009,
+   "linha": "Mapa contém a Cidadela de Baran"
+  },
+  {
+   "id": "poe-veritania",
+   "nome": "Veritania, a Redentora",
+   "en": "Veritania, The Redeemer",
+   "poedb": "https://poedb.tw/us/Veritania%2C_The_Redeemer",
+   "variante": "VeritaniaTheRedeemerAtlasExile2_",
+   "vidaPct": 1300,
+   "danoPct": 150,
+   "expPct": 200,
+   "resistencias": {
+    "fire": 50,
+    "ice": 50,
+    "energy": 50,
+    "chaos": 30
+   },
+   "vidaMult": 3.25,
+   "base": "melting-frozen-horror",
+   "grupo": "conquistador",
+   "fragmento": 7750010,
+   "linha": "Mapa contém a Cidadela de Veritania"
+  },
+  {
+   "id": "poe-al-hezmin",
+   "nome": "Al-Hezmin, o Caçador",
+   "en": "Al-Hezmin, The Hunter",
+   "poedb": "https://poedb.tw/us/Al-Hezmin%2C_The_Hunter",
+   "variante": "Al-HezminTheHunterAtlasExile3",
+   "vidaPct": 1300,
+   "danoPct": 150,
+   "expPct": 200,
+   "resistencias": {
+    "fire": 50,
+    "ice": 50,
+    "energy": 50,
+    "chaos": 30
+   },
+   "vidaMult": 3.25,
+   "base": "grand-master-oberon",
+   "grupo": "conquistador",
+   "fragmento": 7750011,
+   "linha": "Mapa contém a Cidadela de Al-Hezmin"
+  },
+  {
+   "id": "poe-drox",
+   "nome": "Drox, o Senhor da Guerra",
+   "en": "Drox, The Warlord",
+   "poedb": "https://poedb.tw/us/Drox%2C_The_Warlord",
+   "variante": "DroxTheWarlordAtlasExile4",
+   "vidaPct": 1300,
+   "danoPct": 150,
+   "expPct": 200,
+   "resistencias": {
+    "fire": 50,
+    "ice": 50,
+    "energy": 50,
+    "chaos": 30
+   },
+   "vidaMult": 3.25,
+   "base": "king-zelos",
+   "grupo": "conquistador",
+   "fragmento": 7750012,
+   "linha": "Mapa contém a Cidadela de Drox"
+  }
+ ]
+}

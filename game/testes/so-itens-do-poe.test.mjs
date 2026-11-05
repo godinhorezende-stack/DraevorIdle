@@ -23,7 +23,7 @@ import { CATALOGO, ITEM_CATALOG } from '../systems/dados.mjs';
 import { gerarPeca } from '../systems/itens-poe/gerar.mjs';
 import * as JogoDoPoe from '../systems/itens-poe/jogo.mjs';
 import * as B from '../database/banco.mjs';
-import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE, abrirPinaculoDeTeste } from './apoio.mjs';
 
 const SEM = !existsSync(Catalogo.ARQUIVO) && 'dados do PoE ausentes nesta máquina';
 if (!SEM) await iniciarJogoDoPoe();
@@ -59,15 +59,15 @@ test('a regra: é do PoE o que tem id do PoE (bases, suportes, moedas, gemas) ou
   }
 });
 
-test('A1 — só conteúdo do PoE: hunt e boss do Draevor recusados; área, chefe de ato, pináculo e arena PvP entram', { skip: SEM }, () => {
+test('A1 — só conteúdo do PoE: hunt e boss do Draevor recusados; área, chefe de ato, pináculo e arena PvP entram', { skip: SEM }, async () => {
   const recusa = /Draevor clássico/;
   assert.match(Cacadas.entrar(doPoe(), { huntId: 'troll-cave', mode: 'auto' }).erro, recusa);
   const bossDoDraevor = CATALOGO.bosses.find((b) => !b.poePinaculo && b.poeChefeDeAto == null);
   assert.match(Cacadas.entrar(doPoe(), { huntId: bossDoDraevor.id, mode: 'auto' }).erro, recusa);
   assert.equal(Cacadas.entrar(doPoe(), { huntId: AREA, mode: 'auto' }).ok, true);
-  const pinaculo = CATALOGO.bosses.find((b) => b.poePinaculo);
-  const alto = Object.assign(doPoe(), { level: Math.max(100, pinaculo.level ?? 0) });
-  const r = Cacadas.entrar(alto, { huntId: pinaculo.id, mode: 'auto' });
+  // (05/11, aval do dono) o pináculo abre pelo Dispositivo com os itens dele, como no PoE (sem level) — o Shaper
+  const pinaculo = CATALOGO.bosses.find((b) => b.id === 'poe-the-shaper');
+  const r = await abrirPinaculoDeTeste(doPoe(), pinaculo.id);
   assert.equal(r.ok, true, r.erro);
   assert.equal(Cacadas.entrar(doPoe(), { huntId: CATALOGO.bosses.find((b) => b.poeChefeDeAto != null).id, mode: 'auto' }).ok, true);
   assert.equal(Cacadas.entrar(doPoe(), { huntId: 'arena-livraria-de-fogo', mode: 'auto', arenaPvp: true }).ok, true, 'a arena PvP (o servidor marca)');

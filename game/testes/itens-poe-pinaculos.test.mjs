@@ -41,19 +41,20 @@ test('a luta: entrar na arena faz nascer o boss único (vida/dano do PoE) e a vi
   const Cacadas = await import('../systems/cacadas.mjs');
   const Bau = await import('../systems/bau.mjs');
   const { vitoriaNoBoss } = await import('../systems/hunt/combate.mjs');
-  const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
+  const { personagemDeTeste, PERSONAGEM, abrirPinaculoDeTeste } = await import('./apoio.mjs');
   const { BESTIARY } = await import('../systems/hunt/monstros.mjs');
   Jogo.iniciar(ITEM_CATALOG);
   Pinaculos.iniciar();
+  // (05/11, aval do dono) o pináculo abre pelo Dispositivo com os itens dele, como no PoE — o Shaper (a Maven só abre na etapa 3)
   const e = personagemDeTeste({ vocacao: 'knight', level: 300 });
-  const r = Cacadas.entrar(e, { huntId: 'poe-the-maven', mode: 'auto' });
+  const r = await abrirPinaculoDeTeste(e, 'poe-the-shaper');
   assert.equal(r.ok, true, r.erro);
   assert.equal(e.hunt.isBoss, true);
   const m = e.hunt.monstros.find((x) => x.boss);
   assert.ok(m, 'o boss único nasceu na arena');
-  assert.equal(m.boss.id, 'poe-the-maven');
-  assert.equal(m.name, 'The Maven');
-  assert.equal(m.maxHp, Math.round(BESTIARY['the-brainstealer'].hp * bossUnico('poe-the-maven').atributos.vidaMult));
+  assert.equal(m.boss.id, 'poe-the-shaper');
+  assert.equal(m.name, 'The Shaper');
+  assert.equal(m.maxHp, Math.round(BESTIARY['the-time-guardian'].hp * bossUnico('poe-the-shaper').atributos.vidaMult));
   assert.equal(m.resist.chaos, 30);
   Bau.garantir(e);
   const antes = e.rewards.length;
@@ -61,7 +62,7 @@ test('a luta: entrar na arena faz nascer o boss único (vida/dano do PoE) e a vi
   assert.equal(e.rewards.length, antes + 1, 'uma sacola do boss');
   const itens = e.rewards.at(-1).itens;
   const doPoe = itens.filter((i) => i.poe);
-  const slugs = new Set(Pinaculos.pinaculo('poe-the-maven').unicos.map((u) => u.slug));
-  assert.ok(doPoe.some((i) => i.poe.raridade === 'unico' && slugs.has(i.poe.unico)), 'o Único exclusivo da Maven está na sacola');
+  const slugs = new Set(Pinaculos.pinaculo('poe-the-shaper').unicos.map((u) => u.slug));
+  assert.ok(doPoe.some((i) => i.poe.raridade === 'unico' && slugs.has(i.poe.unico)), 'o Único exclusivo do Shaper está na sacola');
   assert.ok(doPoe.length >= 5, `drop do PoE de monstro Único (4,72) + o exclusivo: ${doPoe.length}`);
 });

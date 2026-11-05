@@ -45,7 +45,7 @@ test('a vitória no chefe do ato (oficial): nenhuma peça do gerador do Draevor 
   const Bau = await import('../systems/bau.mjs');
   const Pinaculos = await import('../systems/itens-poe/pinaculos.mjs');
   const { vitoriaNoBoss } = await import('../systems/hunt/combate.mjs');
-  const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
+  const { personagemDeTeste, PERSONAGEM, abrirPinaculoDeTeste } = await import('./apoio.mjs');
   Pinaculos.iniciar();
   let pecas = 0;
   // (as peças garantidas do clássico eram sorteadas: dez lutas pegam com folga a que saía numa base do PoE; um personagem por luta — o
@@ -53,7 +53,8 @@ test('a vitória no chefe do ato (oficial): nenhuma peça do gerador do Draevor 
   for (let luta = 0; luta < 10; luta++) {
     const e = personagemDeTeste({ vocacao: 'knight', level: 300 });
     Bau.garantir(e);
-    const r = Cacadas.entrar(e, { huntId: 'poe-the-maven', mode: 'auto' });
+    // (05/11, aval do dono) o pináculo abre pelo Dispositivo com os itens dele, como no PoE — o Shaper (a Maven só abre na etapa 3)
+    const r = await abrirPinaculoDeTeste(e, 'poe-the-shaper');
     assert.equal(r.ok, true, r.erro);
     const m = e.hunt.monstros.find((x) => x.boss);
     // O chefe de FIM DE ATO (a campanha: `bossDoAto` — o que pedia as peças garantidas, 1 na dificuldade fácil).

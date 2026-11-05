@@ -81,14 +81,106 @@ function resumoDaPeca(peca) {
     el('span', null, el('b', null, pct(r.raridade ?? 0)), ' raridade'),
     el('span', null, el('b', null, pct(r.grupo ?? 0)), ' grupo'));
   bloco.append(nums);
+  // (05/11) o implícito do ENCONTRO ("Área é influenciada pelo Criador", "Mapa ocupado pelo…", "Mapa contém a Cidadela de…"): o chefe
+  // a mais que solta o fragmento de um pináculo (`itens-poe/pinaculos-acesso.mjs`)
+  const implicitos = (peca?.poe?.implicitos ?? []).filter((i) => i?.texto);
+  if (implicitos.length) bloco.append(el('ul', 'mp-afixos mp-implicitos', ...implicitos.map((i) => el('li', `mp-afixo implicito${peca.poe.encontro ? ' encontro' : ''}`, i.texto))));
   if (r.linhas?.length) {
     bloco.append(el('ul', 'mp-afixos', ...r.linhas.map((l) => {
       const li = el('li', `mp-afixo ${l.estado}`, l.texto);
       if (l.nota) li.title = `Ainda não age por inteiro: ${l.nota}.`;
       return li;
     })));
-  } else bloco.append(el('p', 'mp-sem-afixo', 'Sem afixos: um mapa Normal (sem riscos e sem recompensa extra).'));
+  } else if (!implicitos.length) bloco.append(el('p', 'mp-sem-afixo', 'Sem afixos: um mapa Normal (sem riscos e sem recompensa extra).'));
   return bloco;
+}
+
+/** A influência dos mapas: os botões (nenhuma, Exarca, Devorador) e, de cada convite, a barra "N de 14". */
+function blocoDaInfluencia(inf, h) {
+  const bloco = el('div', 'mp-influencia');
+  const nav = el('nav', 'mp-abas');
+  nav.setAttribute('aria-label', 'Influência dos mapas');
+  for (const o of [{ id: null, nome: 'Nenhuma' }, ...inf.opcoes]) {
+    const ativo = (inf.escolhida ?? null) === o.id;
+    const b = botao(`mp-aba${ativo ? ' ativa' : ''}`, null, () => {
+      if (ativo) return;
+      b.disabled = true;
+      h.send({ t: 'influenciaDoAtlas', influencia: o.id });
+    });
+    b.setAttribute('aria-pressed', ativo ? 'true' : 'false');
+    b.append(el('b', null, o.nome));
+    nav.append(b);
+  }
+  bloco.append(el('span', 'mp-rotulo', 'Influência dos próximos mapas'), nav);
+  const linhas = el('ul', 'mp-convites');
+  for (const c of inf.convites ?? []) {
+    const barra = el('div', 'mp-loop-barra', el('i', null));
+    barra.firstChild.style.width = `${Math.round((100 * c.feitos) / c.aCada)}%`;
+    const li = el('li', `mp-convite${c.influencia === inf.escolhida ? ' ativo' : ''}${c.conta ? '' : ' espera'}`,
+      el('span', null, el('b', null, c.nome), ` → ${c.abre}`),
+      barra,
+      el('small', null, c.conta ? `${c.feitos} de ${c.aCada} chefes de mapa T14+` : 'conta depois da primeira vitória na arena anterior'));
+    linhas.append(li);
+  }
+  bloco.append(linhas, el('p', 'mp-nota', 'Como no PoE: com uma influência escolhida, cada chefe de mapa T14+ vencido conta. A cada 14 cai o convite da arena (Estrela Negra, Fome Infinita); a cada 28, o do pináculo (Exarca, Devorador). Os altares e os monstros influenciados ainda não existem no jogo.'));
+  return bloco;
+}
+
+/**
+ * A seção dos PINÁCULOS: o aberto (portais, voltar, abandonar) e um cartão por pináculo com os itens que ele pede (o ícone, quantos você
+ * tem) e o "Abrir". Os que ainda não abrem no jogo (as próximas etapas) ficam numa linha só. `ocupado`: há um mapa aberto ou um loop.
+ */
+export function secaoDosPinaculos(mapas, h, avisar = () => {}, ocupado = false) {
+  const sec = el('section', 'mp-cartao mp-pinaculos');
+  sec.append(el('h4', 'mp-titulo', 'Pináculos'));
+  const aberto = mapas.pinaculoAberto;
+  if (aberto) {
+    const acoes = el('div', 'mp-acoes');
+    if (!aberto.naArena) acoes.append(botao('w2-entrar', 'Voltar à arena', () => { h.send({ t: 'voltarAoPinaculo', mode: 'auto' }); h.fechar(); }));
+    // (a confirmação NA tela: os itens já foram gastos)
+    const desistir = botao('mp-desistir', 'Abandonar', () => {
+      if (desistir.dataset.certeza) return h.send({ t: 'abandonarPinaculo' });
+      desistir.dataset.certeza = '1';
+      desistir.textContent = 'Tem certeza? Os itens se perdem';
+    });
+    acoes.append(desistir);
+    sec.append(el('div', 'mp-pin-aberto',
+      el('div', 'mp-info',
+        el('span', 'mp-rotulo', 'Pináculo aberto'),
+        el('h4', 'mp-nome', aberto.nome),
+        el('span', 'mp-linha', portais(aberto.portais, aberto.portaisMax), ` ${aberto.portais} de ${aberto.portaisMax} portais${aberto.naArena ? ' · você está na arena' : ''}`)),
+      acoes));
+  } else sec.append(el('p', 'mp-nota', 'Como no PoE, os pináculos não pedem level: cada um abre aqui com os itens dele (um de cada, gastos ao abrir), com 6 portais. Os fragmentos e as coroas caem garantidos dos Guardiões e dos Conquistadores, que aparecem nos mapas que os chefes de mapa T14+ soltam.'));
+  // (etapa 2) a INFLUÊNCIA dos próximos mapas (Exarca, Devorador ou nenhuma) e quanto falta para cada convite
+  if (mapas.influencia?.opcoes?.length) sec.append(blocoDaInfluencia(mapas.influencia, h));
+  const comItens = mapas.pinaculos.filter((p) => p.itens);
+  const grade = el('div', 'mp-grade mp-pin-grade');
+  for (const p of comItens) {
+    const c = el('article', `mp-pin${p.pronto ? ' pronto' : ''}`);
+    c.append(el('header', null, el('h5', 'mp-nome', p.nome), p.vitorias ? el('small', 'mp-pin-vitorias', `${p.vitorias} vitória${p.vitorias === 1 ? '' : 's'}`) : null));
+    const itens = el('div', 'mp-pin-itens');
+    for (const it of p.itens) {
+      const ic = h.itemCanvas(it.id, 32);
+      h.tipFor(ic, it.id);
+      const fig = el('figure', `mp-pin-item${it.tem >= 1 ? ' tem' : ''}`, ic, el('figcaption', null, `${it.tem}`));
+      fig.title = `${it.nome}: você tem ${it.tem}`;
+      itens.append(fig);
+    }
+    c.append(itens);
+    const abrir = botao('w2-entrar mp-abrir', aberto ? (aberto.id === p.id ? 'Aberto' : 'Outro aberto') : ocupado ? 'Mapa aberto' : p.pronto ? 'Abrir' : 'Faltam itens', () => {
+      abrir.disabled = true;
+      avisar('');
+      h.send({ t: 'abrirPinaculo', pinaculo: p.id, mode: 'auto' });
+      h.fechar();
+    });
+    abrir.disabled = !!aberto || ocupado || !p.pronto;
+    c.append(el('footer', 'mp-pe', abrir));
+    grade.append(c);
+  }
+  sec.append(grade);
+  const depois = mapas.pinaculos.filter((p) => !p.itens);
+  if (depois.length) sec.append(el('p', 'mp-nota', `Ainda sem caminho no jogo (próximas etapas): ${depois.map((p) => p.nome).join(', ')}.`));
+  return sec;
 }
 
 /**
@@ -129,8 +221,9 @@ export function desenharDispositivo(body, { mapas, faixaDaCampanha = null, h }) 
     return;
   }
 
-  // ---- o mapa aberto
+  // ---- o mapa aberto (e o pináculo aberto: um de cada vez no Dispositivo)
   const a = mapas.aberto;
+  const pin = !!mapas.pinaculoAberto;
   const topo = el('section', 'mp-cartao mp-aberto');
   if (a) {
     const fig = el('div', 'mp-fig');
@@ -285,14 +378,15 @@ export function desenharDispositivo(body, { mapas, faixaDaCampanha = null, h }) 
       pe.append(el('label', 'mp-usar', el('span', null, 'usar'), qtd));
     }
     // Com o loop rodando, abrir à mão fica travado (na pausa do concluído também: abrir outro mapa encerraria o loop sem você pedir).
-    const abrir = botao('w2-entrar mp-abrir', a ? 'Há um mapa aberto' : loop ? 'Loop rodando' : 'Abrir mapa', () => {
+    const abrir = botao('w2-entrar mp-abrir', a ? 'Há um mapa aberto' : loop ? 'Loop rodando' : pin ? 'Pináculo aberto' : 'Abrir mapa', () => {
       abrir.disabled = true;
       avisar('');
       h.send({ t: 'abrirMapa', onde: m.onde, indice: m.indice, assinatura: m.assinatura, mode: 'auto' });
       h.fechar();
     });
-    abrir.disabled = !!a || !!loop;
+    abrir.disabled = !!a || !!loop || pin;
     if (loop && !a) abrir.title = 'Pare o loop para abrir um mapa à mão.';
+    else if (pin) abrir.title = 'Vença (ou abandone) o pináculo aberto antes de abrir um mapa.';
     pe.append(abrir);
     c.append(pe);
     return c;
@@ -325,12 +419,15 @@ export function desenharDispositivo(body, { mapas, faixaDaCampanha = null, h }) 
       MEMORIA.selecao.clear();
       h.fechar();
     });
-    iniciar.disabled = !!a || !!loop || !sel.grupos.length;
+    iniciar.disabled = !!a || !!loop || pin || !sel.grupos.length;
     if (a && !loop) iniciar.title = 'Termine (ou abandone) o mapa aberto antes de começar o loop.';
     barra.append(el('div', 'mp-barra-acoes', marcarAba, limpar, iniciar));
     return barra;
   }
   desenharLista();
+
+  // ---- os PINÁCULOS (05/11, dono: "quero igual do poe"): cada um abre aqui com os itens dele (um de cada, gastos ao abrir), 6 portais
+  if (mapas.pinaculos?.length) corpo.append(secaoDosPinaculos(mapas, h, avisar, !!a || !!loop));
 
   // ---- as estatísticas
   const e = mapas.estatisticas ?? {};

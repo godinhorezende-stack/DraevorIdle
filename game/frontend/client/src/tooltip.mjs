@@ -3107,6 +3107,16 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     if (meta.missaoPoe.sabor) node.append(el('div', 'tip-extra tip-sabor-missao', meta.missaoPoe.sabor));
     node.append(el('div', 'tip-extra tip-moeda-ajuda', meta.missao?.nome ? `Item da missão ${meta.missao.nome}. Veja em Tarefas → Missões.` : 'Item de Missão. Veja em Tarefas → Missões.'));
   }
+  // (05/11) O FRAGMENTO de pináculo (os dos Guardiões, as Coroas dos Conquistadores — `itens-poe/pinaculos-acesso.mjs`): as linhas do poedb, o
+  // sabor, quem solta e o pináculo que ele abre no Dispositivo de Mapas.
+  if (meta.fragmentoPoe) {
+    const f = meta.fragmentoPoe;
+    for (const l of f.linhas ?? []) node.append(el('div', 'tip-extra tip-moeda-efeito', l));
+    if (f.sabor) node.append(el('div', 'tip-extra tip-sabor-missao', f.sabor));
+    const abre = (f.abre ?? []).join(', ');
+    const quem = f.conjunto > 1 ? `Um dos ${f.conjunto} que abrem ${abre}` : `Abre ${abre}`;
+    node.append(el('div', 'tip-extra tip-moeda-ajuda', `${abre ? quem : 'Abre um pináculo'} no Dispositivo de Mapas${f.chefe ? `. Solto por ${f.chefe}` : ''}${f.convite ? `. Cai a cada ${f.convite.aCada} chefes de mapa T14+ vencidos sob a influência de ${f.convite.influencia}` : ''}.`));
+  }
   if (meta.moedaPoe) {
     if (meta.descricao) node.append(el('div', 'tip-extra tip-moeda-efeito', meta.descricao));
     node.append(el('div', 'tip-extra tip-moeda-ajuda', 'Clique com o botão direito para usá-la na Forja.'));

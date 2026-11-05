@@ -54,6 +54,7 @@ import * as MoedasPoe from '../itens-poe/moedas.mjs';
 import * as Tatuagens from '../passivas/tatuagens.mjs';
 import * as Pinaculos from '../itens-poe/pinaculos.mjs';
 import * as Missoes from '../itens-poe/missoes.mjs';
+import * as PinaculosAcesso from '../itens-poe/pinaculos-acesso.mjs';
 import { tipoDoBicho } from './escalonamento.mjs';
 import * as Mapas from '../itens-poe/mapas.mjs';
 import * as AtributosDoPersonagem from '../personagem/atributos.mjs';
@@ -432,7 +433,8 @@ function sacolaDoChefe(estado, hunt, alvo, quem, atoDoChefe) {
   // Sistema de itens do PoE (só com ITENS_POE=1): o drop do PoE do boss (raridade do monstro: Único) e, no chefe pináculo, 1 Único
   // da tabela EXCLUSIVA dele (`itens-poe/pinaculos.mjs`). Vão na sacola do boss junto com o resto.
   {
-    const quantidade = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * fatorDaCacaOnline(hunt);
+    // (05/11) os fragmentos gastos no Dispositivo: "Quantidade de Itens encontrados nesta Área aumentada em N%" (`hunt.quantidadeDoPinaculo`)
+    const quantidade = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * fatorDaCacaOnline(hunt) * (1 + Math.max(0, Number(hunt.quantidadeDoPinaculo) || 0) / 100);
     // A SACOLA DO CHEFE NÃO PASSA PELO FILTRO DE LOOT (dono, 10/10: "sacola do boss do ato não tem filtro, vai direto para o baú do
     // boss"): tudo o que ele solta — peças, moedas, o mapa, o Único do pináculo — vai inteiro para o baú. O filtro vale no loot da caçada.
     for (const daPoe of ItensPoeJogo.dropsDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidade, raridadeDoDrop(estado, alvo))) {
@@ -482,7 +484,11 @@ export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
   // O cooldown já começou na ENTRADA (`Bosses.marcarEntrada`); aqui o de task fecha.
   Bosses.marcarVitoria(estado, hunt.bossId ?? (naFase ? Campanha.bossDoAto(atoDoChefe)?.bossId : null));
   // (05/11) O pináculo vencido conta para as missões do Atlas (A Maven, O Ancião… — itens-poe/missoes.mjs).
-  if (hunt.bossId && Pinaculos.pinaculo(hunt.bossId)) Missoes.aoVencerPinaculo(estado, hunt.bossId);
+  // (05/11) E fecha o pináculo aberto no Dispositivo (`pinaculos-acesso.mjs`): a próxima luta pede os itens de novo.
+  if (hunt.bossId && Pinaculos.doDispositivo(hunt.bossId)) {
+    Missoes.aoVencerPinaculo(estado, hunt.bossId);
+    PinaculosAcesso.aoVencer(estado, hunt.bossId);
+  }
   if (naFase) {
     // Na fase: o chefe sai do mapa e a caçada segue (sem a faixa de vitória que encerra a sala). A pausa do "Hunt Clear!" recomeça na
     // morte dele: a instância seguinte não vem no mesmo instante em que ele cai (a pausa da limpeza já passou enquanto ele lutava).
@@ -1052,6 +1058,44 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
       if (!Bolsa.porNaBolsa(estado, mapa.id, 1, mapa)) break;
       caiu.push({ id: mapa.id, count: 1 });
       conta('loot', mapa.id, 1);
+    }
+    // (05/11) Os MAPAS COM ENCONTRO (`pinaculos-acesso.mjs`): o chefe de um mapa T14+ pode soltar o mapa de um Guardião do Criador (T16), um
+    // mapa "ocupado" por um Guardião do Ancião ou um com a Cidadela de um Conquistador — os chefes dos fragmentos dos pináculos.
+    if (alvo.chefeDoMapa) {
+      for (const { chefe: doEncontro } of PinaculosAcesso.sortearEncontros(noMapa.tier)) {
+        const tier = doEncontro.mapa ? PinaculosAcesso.mapaDoGuardiao(doEncontro.mapa)?.tier : Mapas.tierDoDrop(noMapa.tier, 'boss');
+        // (o mapa Único não leva encontro: sai o Normal no lugar)
+        const sorteado = ItensPoeJogo.mapaSorteado(tier, { raridadeAumentada: raridadeDoMorto });
+        const mapa = PinaculosAcesso.comEncontro(sorteado?.poe?.unico ? ItensPoeJogo.mapaSorteado(tier, { raridade: 'normal' }) : sorteado, doEncontro);
+        if (!mapa) continue;
+        if (Bolsa.ignora(estado, mapa.id, mapa)) {
+          conta('ignorado', mapa.id, 1);
+          continue;
+        }
+        if (!Bolsa.porNaBolsa(estado, mapa.id, 1, mapa)) break;
+        caiu.push({ id: mapa.id, count: 1 });
+        conta('loot', mapa.id, 1);
+      }
+    }
+  }
+  // (05/11, etapa 2) O chefe de mapa T14+ sob a influência do Exarca/Devorador (`pinaculos-acesso.mjs`): conta para os convites; a cada 14
+  // (o Polarizado/Contorcido) e a cada 28 (o Incandescente/Gritante) cai o convite, para quem matou.
+  if (noMapa?.influencia && alvo.chefeDoMapa) {
+    for (const id of PinaculosAcesso.aoVencerChefeDeMapa(estado, noMapa)) {
+      if (Bolsa.porNaBolsa(estado, id, 1)) {
+        caiu.push({ id, count: 1 });
+        conta('loot', id, 1);
+      }
+    }
+  }
+  // (05/11) O FRAGMENTO/COROA do chefe do encontro (Guardião, Conquistador): garantido, para quem matou — o poedb: "It is guaranteed to drop
+  // upon killing the map's unique boss". Vai como a moeda (só a lista "Não coletar" o deixa no chão).
+  if (alvo.fragmentoPoe) {
+    const id = Number(alvo.fragmentoPoe);
+    if (Bolsa.ignora(estado, id)) conta('ignorado', id, 1);
+    else if (Bolsa.porNaBolsa(estado, id, 1)) {
+      caiu.push({ id, count: 1 });
+      conta('loot', id, 1);
     }
   }
   // As MOEDAS do PoE (Transmutação, Caos, Exaltado... — `itens-poe/moedas.mjs`, chances em `regras.json → moedas.drop`).

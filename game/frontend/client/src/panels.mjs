@@ -497,7 +497,10 @@ export function openHunts() {
     }
     else if (tab === 'bosses') {
       body.append(atalhoDaArenaDeBoss());
-      huntCards(body, ctx.state.catalog.bosses, true);
+      // (05/11, dono: "quero igual do poe") Os PINÁCULOS do PoE não entram por aqui: abrem no Dispositivo de Mapas, com os fragmentos.
+      const bosses = ctx.state.catalog.bosses ?? [];
+      if (bosses.some((b) => b.poePinaculo)) body.append(el('p', 'shop-note', 'Os pináculos do PoE (Shaper, Elder, Sirus…) abrem no Dispositivo de Mapas (Campanha → Mapas), com os fragmentos de cada um, como no PoE.'));
+      huntCards(body, bosses.filter((b) => !b.poePinaculo), true);
     }
     // A Campanha do jogo oficial numa janela GRANDE: o mapa é o protagonista (dono, 09/10 — `world.css`, `.modal-box.campanha`).
   }, ctx.state.classesPoe ? 'campanha' : undefined);
@@ -1610,6 +1613,8 @@ function escolherAutoBoss(lista) {
        * — ver o comentário no alto desta função.
        */
       const abertas = (lista ?? []).filter((boss) => {
+        // (05/11) o pináculo do PoE abre só no Dispositivo de Mapas, com os fragmentos: fora da rotação
+        if (boss.poePinaculo) return false;
         if (state.character.level < boss.level) return false;
         const task = (state.character.bossTasks ?? []).find((linha) => linha.boss === boss.id);
         return !task || (task.feito && !task.matou);

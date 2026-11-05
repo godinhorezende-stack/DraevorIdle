@@ -19,6 +19,8 @@ import * as MapasLoop from './itens-poe/mapas-loop.mjs';
 import * as Campanha from './campanha.mjs';
 import * as Cacadas from './cacadas.mjs';
 import * as Deposito from './deposito.mjs';
+import * as Pinaculos from './itens-poe/pinaculos.mjs';
+import * as PinaculosAcesso from './itens-poe/pinaculos-acesso.mjs';
 
 const CFG = () => Mapas.DADOS.dispositivo ?? {};
 /** O ato cujo chefe libera o dispositivo (mapas.json → dispositivo.atoQueLibera; 10). */
@@ -88,6 +90,7 @@ export function abrir(estado, { onde = 'inventory', indice, assinatura: aDaTela,
   if (fechado) return { ok: false, erro: fechado };
   const st = MapaAberto.doPersonagem(estado);
   if (st.aberto) return { ok: false, erro: 'Você já tem um mapa aberto: volte a ele ou abandone-o antes de abrir outro.' };
+  if (estado?.pinaculoAberto) return { ok: false, erro: 'Você tem um pináculo aberto: vença-o (ou abandone-o) antes de abrir um mapa.' };
   // O `onde` só vale se for uma fonte que EXISTE (a mochila, a bolsa, uma caixa do depósito do personagem): nunca uma caixa inventada.
   const fonte = typeof onde === 'string' ? fontes(estado).find((f) => f.onde === onde) : null;
   if (!fonte) return { ok: false, erro: 'Esse mapa não está com você.' };
@@ -153,6 +156,88 @@ export function abandonar(estado) {
 }
 
 /*
+ * ---- Os PINÁCULOS (dono, 05/11: "quero igual do poe" — `itens-poe/pinaculos-acesso.mjs`) ----
+ * O pináculo abre aqui, como no PoE: os itens dele (os 4 fragmentos dos Guardiões, as 4 Coroas dos Conquistadores) saem da mochila, da bolsa
+ * ou do depósito do personagem (as mesmas fontes dos mapas) e a arena abre com 6 portais. Tudo ou nada, como o mapa: os itens só saem
+ * depois de a arena nascer. Com um mapa aberto não se abre pináculo (e vice-versa): um de cada vez no Dispositivo.
+ */
+const contarItem = (estado, id) => fontes(estado).reduce((t, { lista }) => t + lista.filter((x) => Number(x?.id) === Number(id)).reduce((u, x) => u + (Number(x.count) || 1), 0), 0);
+function gastarItem(estado, id, n) {
+  let falta = n;
+  for (const { lista, caixa } of fontes(estado)) {
+    for (let i = lista.length - 1; i >= 0 && falta > 0; i--) {
+      const x = lista[i];
+      if (Number(x?.id) !== Number(id)) continue;
+      const tira = Math.min(falta, Number(x.count) || 1);
+      falta -= tira;
+      if ((Number(x.count) || 1) > tira) x.count -= tira;
+      else lista.splice(i, 1);
+      // (a caixa do depósito: a contagem e a `rev`, como no `abrir` do mapa)
+      if (caixa) {
+        caixa.tipos = caixa.itens.length;
+        caixa.rev = (Number(caixa.rev) || 0) + 1;
+      }
+    }
+    if (falta <= 0) break;
+  }
+  return n - falta;
+}
+
+/** Abre o pináculo `pinaculo` (o id do boss) gastando os itens dele e entra na arena. `{ ok, erro? }`. */
+export function abrirPinaculo(estado, { pinaculo, mode, strategy } = {}, { antes = null } = {}) {
+  const fechado = motivoFechado(estado);
+  if (fechado) return { ok: false, erro: fechado };
+  if (!Pinaculos.doDispositivo(pinaculo)) return { ok: false, erro: 'Esse pináculo não existe.' };
+  if (MapaAberto.doPersonagem(estado).aberto) return { ok: false, erro: 'Você tem um mapa aberto: termine-o (ou abandone-o) antes de abrir um pináculo.' };
+  const r = PinaculosAcesso.abrir(estado, pinaculo, {
+    contar: contarItem,
+    gastar: gastarItem,
+    entrar: () => {
+      antes?.();
+      return Cacadas.entrar(estado, { huntId: pinaculo, mode, strategy });
+    },
+  });
+  return r.ok ? { ok: true, pinaculo: estado.pinaculoAberto } : r;
+}
+
+/** Volta ao pináculo aberto (depois de morrer com portal sobrando ou de sair): a arena de novo. `{ ok, erro? }`. */
+export function voltarAoPinaculo(estado, { mode, strategy } = {}, { antes = null } = {}) {
+  const p = estado?.pinaculoAberto;
+  if (!p) return { ok: false, erro: 'Você não tem um pináculo aberto.' };
+  if (estado.hunt?.bossId === p.id) return { ok: false, erro: 'Você já está na arena.' };
+  antes?.();
+  return Cacadas.entrar(estado, { huntId: p.id, mode, strategy });
+}
+
+/** Desiste do pináculo aberto (os itens já foram gastos, como no PoE): sai da arena se estiver nela. */
+export function abandonarPinaculo(estado) {
+  const p = estado?.pinaculoAberto;
+  if (!p) return { ok: false, erro: 'Você não tem um pináculo aberto.' };
+  if (estado.hunt?.bossId === p.id) estado.hunt = null;
+  return PinaculosAcesso.abandonar(estado);
+}
+
+/** A influência dos próximos mapas (Exarca, Devorador ou nenhuma — `pinaculos-acesso.mjs`). */
+export const definirInfluencia = (estado, influencia) => PinaculosAcesso.definirInfluencia(estado, influencia);
+
+/**
+ * Os pináculos para a tela: os itens que cada um pede (e quantos você tem) e quantas vezes você venceu cada um. As arenas intermediárias (A
+ * Estrela Negra, A Fome Infinita) vêm logo antes do pináculo que abrem.
+ */
+export function pinaculosParaTela(estado) {
+  const lista = [...Pinaculos.todos()];
+  for (const a of Pinaculos.arenas()) {
+    const depois = PinaculosAcesso.DADOS.itens.find((i) => i.depoisDe === a.id)?.abre;
+    const i = lista.findIndex((c) => c.id === depois);
+    lista.splice(i >= 0 ? i : lista.length, 0, a);
+  }
+  return lista.map((c) => {
+    const itens = PinaculosAcesso.itensDaEntrada(estado, c.id, contarItem);
+    return { id: c.id, nome: c.nome, itens, pronto: !!itens?.every((i) => i.tem >= 1), vitorias: Number(estado?.pinaculosVencidos?.[c.id]) || 0 };
+  });
+}
+
+/*
  * ---- O LOOP DE MAPAS (dono, 27/10 — a fila em `itens-poe/mapas-loop.mjs`) ----
  * O jogador marca um ou vários grupos de mapas iguais (quantos de cada: todos, ou um número) e inicia: abre o primeiro da fila. Cada mapa
  * do loop CONCLUÍDO (limpou 100%) deixa o próximo pendente, e ele abre quando a caçada do concluído acaba (passada a pausa do aviso — o
@@ -165,6 +250,7 @@ export function iniciarLoop(estado, { grupos, mode } = {}, { antes = null } = {}
   const fechado = motivoFechado(estado);
   if (fechado) return { ok: false, erro: fechado };
   if (MapaAberto.doPersonagem(estado).aberto) return { ok: false, erro: 'Você já tem um mapa aberto: termine-o (ou abandone-o) antes de começar o loop.' };
+  if (estado?.pinaculoAberto) return { ok: false, erro: 'Você tem um pináculo aberto: vença-o (ou abandone-o) antes de começar o loop.' };
   // (o loop que ficou para trás sem a caçada dele não trava o novo — `MapasLoop.semCacada`; a sessão o confere a cada tique)
   if (MapasLoop.semCacada(estado)) MapasLoop.parar(estado, 'O loop anterior ficou sem caçada: parou.');
   if (MapasLoop.doPersonagem(estado)) return { ok: false, erro: 'O loop de mapas já está rodando: pare-o antes de começar outro.' };
@@ -280,6 +366,10 @@ export function paraTela(estado, { versaoDaTela = null } = {}) {
     // Os do Baú da Conta não abrem (é compartilhado entre os personagens): a tela só diz quantos há lá.
     noBauDaConta: mapasNoBauDaConta(estado),
     loop: MapasLoop.paraTela(estado),
+    // (05/11) os pináculos: o que cada um pede no Dispositivo e o aberto (os portais)
+    pinaculos: pinaculosParaTela(estado),
+    influencia: PinaculosAcesso.influenciaParaTela(estado),
+    pinaculoAberto: estado?.pinaculoAberto ? { ...estado.pinaculoAberto, nome: Pinaculos.doDispositivo(estado.pinaculoAberto.id)?.nome ?? estado.pinaculoAberto.id, naArena: estado.hunt?.bossId === estado.pinaculoAberto.id } : null,
     estatisticas: { concluidos: st.concluidos, falhos: st.falhos, mortes: st.mortes, maiorTier: st.maiorTier, porTier: st.porTier, ultimo: st.ultimo },
     tiers: Mapas.TIERS,
   };

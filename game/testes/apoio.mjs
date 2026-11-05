@@ -153,3 +153,15 @@ export function pousarVoos(hunt, { passoMs = 250, tetoMs = 30_000, sorte = null 
   }
   return eventos;
 }
+
+/**
+ * (05/11) Abre o pináculo `id` pelo Dispositivo de Mapas, como no PoE (`itens-poe/pinaculos-acesso.mjs`): o Ato 10 vencido (o Dispositivo
+ * liberado) e os itens da entrada na mochila, gastos ao abrir. Devolve o resultado do `abrirPinaculo` (a caçada da arena em `e.hunt`).
+ */
+export async function abrirPinaculoDeTeste(e, id, { mode = 'auto' } = {}) {
+  const Dispositivo = await import('../systems/mapas-dispositivo.mjs');
+  const Acesso = await import('../systems/itens-poe/pinaculos-acesso.mjs');
+  for (const d of Object.keys(e.campanha ?? {})) e.campanha[d].bosses = [...new Set([...(e.campanha[d].bosses ?? []), 10])];
+  for (const item of Acesso.entrada(id) ?? []) (e.inventory ??= []).push({ id: item, count: 1 });
+  return Dispositivo.abrirPinaculo(e, { pinaculo: id, mode });
+}

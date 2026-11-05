@@ -31,6 +31,7 @@ import * as Stamina from '../systems/stamina.mjs';
 import * as SemTreino from '../systems/sem-treino.mjs';
 import * as MissoesDeGemas from '../systems/itens-poe/missoes-de-gemas.mjs';
 import * as Missoes from '../systems/itens-poe/missoes.mjs';
+import * as PinaculosAcesso from '../systems/itens-poe/pinaculos-acesso.mjs';
 import * as MoedasPoe from '../systems/itens-poe/moedas.mjs';
 import * as ForjaPoe from '../systems/itens-poe/forja.mjs';
 import * as Mercenarios from '../systems/itens-poe/mercenarios.mjs';
@@ -1574,6 +1575,24 @@ export class Sessao {
       case 'abandonarMapa': {
         const r = MapasDispositivo.abandonar(this.estado);
         this.aplicar(r);
+        return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
+      }
+      // (05/11) Os PINÁCULOS no Dispositivo, como no PoE (`MapasDispositivo.abrirPinaculo`): os itens dele gastos, a arena com 6 portais.
+      case 'abrirPinaculo':
+      case 'voltarAoPinaculo': {
+        const antes = { antes: () => Party.antesDeSairDaCacada(this) };
+        const r = m.t === 'abrirPinaculo' ? MapasDispositivo.abrirPinaculo(this.estado, { pinaculo: String(m.pinaculo ?? ''), mode: m.mode, strategy: m.strategy }, antes) : MapasDispositivo.voltarAoPinaculo(this.estado, { mode: m.mode, strategy: m.strategy }, antes);
+        this.aplicar(r);
+        if (r.ok) Party.seguirOLider(this);
+        return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
+      }
+      // (05/11, etapa 2) a influência dos próximos mapas (Exarca/Devorador): os chefes T14+ contam para os convites
+      case 'influenciaDoAtlas': {
+        this.aplicar(MapasDispositivo.definirInfluencia(this.estado, m.influencia ?? null));
+        return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
+      }
+      case 'abandonarPinaculo': {
+        this.aplicar(MapasDispositivo.abandonarPinaculo(this.estado));
         return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
       }
       // O LOOP DE MAPAS (27/10): os grupos marcados na tela (`[{ chave, quantos }]`) viram a fila no estado do personagem e o primeiro abre
@@ -3153,6 +3172,9 @@ export class Sessao {
     // servidor não gasta portal (nem para o loop de mapas: ele espera a volta, como depois de morrer).
     const doMapa = MapaAberto.guardarAoSair(this.estado, { morreu: real, manterLoop: !real });
     if (doMapa) morte.mapa = doMapa;
+    // (05/11) Na arena do pináculo aberto: a morte gasta um portal dele (sem portal, ele fecha — `pinaculos-acesso.mjs`).
+    const doPinaculo = real ? PinaculosAcesso.aoMorrer(this.estado, this.estado.hunt?.bossId) : null;
+    if (doPinaculo) morte.pinaculo = doPinaculo;
     this.estado.hunt = null;
     this.estado.hp = this.estado.maxHp;
     this.estado.es = null; // Energy Shield cheio de novo

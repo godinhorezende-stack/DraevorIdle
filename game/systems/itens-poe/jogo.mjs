@@ -17,6 +17,7 @@ import * as DropsPorMonstro from './drops-por-monstro.mjs';
 import * as SocketsPoe from './sockets.mjs';
 import * as Frascos from './frascos.mjs';
 import * as Mapas from './mapas.mjs';
+import * as PinaculosAcesso from './pinaculos-acesso.mjs';
 import { estadosDaRamificadora } from './ramificadoras.mjs';
 
 export const PRIMEIRO_ID = 7_000_000;
@@ -183,6 +184,8 @@ export function iniciar(itemCatalog) {
       };
     }
   }
+  // (05/11) A entrada dos PINÁCULOS como no PoE: os fragmentos/coroas e os mapas dos Guardiões do Criador (`pinaculos-acesso.mjs`).
+  PinaculosAcesso.registrarItens(itemCatalog);
   // As JOIAS (lote 27): sem slot de equipamento — vão para os encaixes de joia da árvore —, com o id fixo de `JOIAS`. Entram em `porBase`:
   // caem como as outras peças (a classe segue em `naoEquipaveis`, como a dos mapas: não veste).
   for (const [baseId, id] of Object.entries(JOIAS)) {
