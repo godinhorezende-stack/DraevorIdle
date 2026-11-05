@@ -48,6 +48,21 @@
   ],
   "poe-the-eater-of-worlds": [
    7750016
+  ],
+  "poe-the-maven": [
+   7750018
+  ],
+  "poe-crisol-atlas": [
+   7750019
+  ],
+  "poe-crisol-deformados": [
+   7750020
+  ],
+  "poe-crisol-distorcidos": [
+   7750021
+  ],
+  "poe-crisol-matadores": [
+   7750022
   ]
  },
  "arenas": [
@@ -127,6 +142,71 @@
    ]
   }
  ],
+ "maven": {
+  "tierMinimo": 14,
+  "contador": 10,
+  "fragmentosParaCitacao": 10,
+  "base": "the-brainstealer",
+  "fragmento": 7750017,
+  "citacao": 7750018,
+  "crisois": [
+   {
+    "id": "poe-crisol-atlas",
+    "nome": "Calvário da Conhecedora (Atlas)",
+    "convite": 7750019,
+    "chefes": "testemunhados",
+    "fragmentos": [
+     6,
+     7
+    ]
+   },
+   {
+    "id": "poe-crisol-deformados",
+    "nome": "Calvário da Conhecedora (Deformados)",
+    "convite": 7750020,
+    "chefes": [
+     "poe-guardiao-da-hidra",
+     "poe-guardiao-da-fenix",
+     "poe-guardiao-do-minotauro",
+     "poe-guardiao-da-quimera"
+    ],
+    "fragmentos": [
+     3,
+     4
+    ]
+   },
+   {
+    "id": "poe-crisol-distorcidos",
+    "nome": "Calvário da Conhecedora (Distorcidos)",
+    "convite": 7750021,
+    "chefes": [
+     "poe-o-escravizador",
+     "poe-o-erradicador",
+     "poe-o-constritor",
+     "poe-a-purificadora"
+    ],
+    "fragmentos": [
+     3,
+     4
+    ]
+   },
+   {
+    "id": "poe-crisol-matadores",
+    "nome": "Calvário da Conhecedora (Matadores do Ancião)",
+    "convite": 7750022,
+    "chefes": [
+     "poe-baran",
+     "poe-veritania",
+     "poe-al-hezmin",
+     "poe-drox"
+    ],
+    "fragmentos": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
  "itens": [
   {
    "slug": "Fragment_of_the_Hydra",
@@ -377,6 +457,85 @@
    "aCada": 28,
    "abre": "poe-the-eater-of-worlds",
    "depoisDe": "poe-a-fome-infinita"
+  },
+  {
+   "slug": "Crescent_Splinter",
+   "tipo": "Metadata/Items/MapFragments/CurrencyMavenKeyFragment",
+   "nome": "Fragmento Crescente",
+   "en": "Crescent Splinter",
+   "linhas": [],
+   "sabor": "Precioso e perigoso,\nTentador e terrível.",
+   "icone": "poe-itens/Pinaculos/Crescent_Splinter.png",
+   "nivelDrop": 83,
+   "itemId": 7750017,
+   "crescente": true,
+   "pilha": 10
+  },
+  {
+   "slug": "The_Mavens_Writ",
+   "tipo": "Metadata/Items/MapFragments/CurrencyMavenKey",
+   "nome": "A Citação de Maven",
+   "en": "The Maven's Writ",
+   "linhas": [],
+   "sabor": "Seria tolice obedecer às exigências da Maven.\nTambém o seria não obedecer.",
+   "icone": "poe-itens/Pinaculos/The_Mavens_Writ.png",
+   "nivelDrop": 83,
+   "itemId": 7750018,
+   "citacao": true
+  },
+  {
+   "slug": "Mavens_Invitation:_The_Atlas",
+   "tipo": "Metadata/Items/MapFragments/Maven/MavenMapAtlas5New",
+   "nome": "Convite da Maven: Atlas",
+   "en": "Maven's Invitation: The Atlas",
+   "linhas": [],
+   "sabor": "Àqueles que não devem suportar, podem encontrar uma alegria perversa em observar a luta pela sobrevivência.",
+   "icone": "poe-itens/Pinaculos/Mavens_Invitation_The_Atlas.png",
+   "nivelDrop": 1,
+   "itemId": 7750019,
+   "conviteDaMaven": "poe-crisol-atlas"
+  },
+  {
+   "slug": "Mavens_Invitation:_The_Formed",
+   "tipo": "Metadata/Items/MapFragments/Maven/MavenMapVoid1New",
+   "nome": "Convite de Maven: Deformados",
+   "en": "Maven's Invitation: The Formed",
+   "linhas": [
+    "Modificadores a Quantidade de Itens afetarão o número de recompensas derrubadas"
+   ],
+   "sabor": "Àqueles que não devem suportar, podem encontrar uma alegria perversa em observar a luta pela sobrevivência.",
+   "icone": "poe-itens/Pinaculos/Mavens_Invitation_The_Formed.png",
+   "nivelDrop": 1,
+   "itemId": 7750020,
+   "conviteDaMaven": "poe-crisol-deformados"
+  },
+  {
+   "slug": "Mavens_Invitation:_The_Twisted",
+   "tipo": "Metadata/Items/MapFragments/Maven/MavenMapVoid2New",
+   "nome": "Convite de Maven: Distorcidos",
+   "en": "Maven's Invitation: The Twisted",
+   "linhas": [
+    "Modificadores a Quantidade de Itens afetarão o número de recompensas derrubadas"
+   ],
+   "sabor": "Àqueles que não devem suportar, podem encontrar uma alegria perversa em observar a luta pela sobrevivência.",
+   "icone": "poe-itens/Pinaculos/Mavens_Invitation_The_Twisted.png",
+   "nivelDrop": 1,
+   "itemId": 7750021,
+   "conviteDaMaven": "poe-crisol-distorcidos"
+  },
+  {
+   "slug": "Mavens_Invitation:_The_Elderslayers",
+   "tipo": "Metadata/Items/MapFragments/Maven/MavenMapVoid6New",
+   "nome": "Convite de Maven: Matadores do Ancião",
+   "en": "Maven's Invitation: The Elderslayers",
+   "linhas": [
+    "Modificadores a Quantidade de Itens afetarão o número de recompensas derrubadas"
+   ],
+   "sabor": "Àqueles que não devem suportar, podem encontrar uma alegria perversa em observar a luta pela sobrevivência.",
+   "icone": "poe-itens/Pinaculos/Mavens_Invitation_The_Elderslayers.png",
+   "nivelDrop": 1,
+   "itemId": 7750022,
+   "conviteDaMaven": "poe-crisol-matadores"
   }
  ],
  "mapas": [

@@ -27,8 +27,13 @@ const ARENAS = new Map();
 /** A arena intermediária pelo id do boss, ou null. */
 export const arena = (id) => ARENAS.get(id) ?? null;
 export const arenas = () => [...ARENAS.values()];
-/** O pináculo ou a arena intermediária (o que abre no Dispositivo), ou null. */
-export const doDispositivo = (id) => pinaculo(id) ?? arena(id);
+// (05/11, etapa 3) os CALVÁRIOS DA CONHECEDORA (os convites da Maven — `pinaculos-acesso.json → maven.crisois`): a arena da Maven, com os
+// chefes do convite nascendo em pares (`cacadas.mjs`); vencidos todos, os Fragmentos Crescentes (`hunt/combate.mjs`).
+const CRISOIS = new Map();
+/** O Calvário pelo id do boss (`poe-crisol-atlas`…), ou null. */
+export const crisol = (id) => CRISOIS.get(id) ?? null;
+/** O pináculo, a arena intermediária ou o Calvário (o que abre no Dispositivo), ou null. */
+export const doDispositivo = (id) => pinaculo(id) ?? arena(id) ?? crisol(id);
 
 /** A definição de boss único do pináculo. */
 export function definicao(c) {
@@ -87,6 +92,22 @@ export function iniciar() {
     if (!CATALOGO.bosses.some((b) => b.id === c.id)) CATALOGO.bosses.push(entradaDoCatalogo(c, def));
     ARENAS.set(c.id, c);
   }
+  // Os Calvários: a arena da criatura-base da Maven (a mesma sala), sem boss único (os chefes do convite nascem em `cacadas.mjs`).
+  const daMaven = PinaculosAcesso.MAVEN;
+  for (const c of daMaven?.crisois ?? []) {
+    if (!BESTIARY[daMaven.base]) continue;
+    const sala = CATALOGO.bosses.find((b) => b.creatures?.[0]?.key === daMaven.base);
+    if (!CATALOGO.bosses.some((b) => b.id === c.id)) {
+      CATALOGO.bosses.push({
+        id: c.id, name: c.nome, custom: true, level: DADOS.regra.nivel, density: 1, blurb: 'convite da Maven',
+        ...(sala ? { origin: sala.origin, crop: sala.crop, limite: sala.limite, partida: sala.partida } : { limite: { caixas: { 7: { x: 0, y: 0, w: 40, h: 40 } }, w: 40, h: 40 }, partida: { x: 20, y: 34, z: 7 } }),
+        modo: null, online: null, boss: true, cooldownHours: DADOS.regra.cooldownHours, exp: 0, hp: 0, lootCount: 0,
+        creatures: [{ key: daMaven.base, name: c.nome, look: BESTIARY[daMaven.base]?.look ?? 0, exp: 0, hp: 0 }],
+        task: false, crisolMaven: c.id, poePinaculo: true,
+      });
+    }
+    CRISOIS.set(c.id, c);
+  }
   for (const c of DADOS.chefes) {
     if (!BESTIARY[c.base]) continue;
     const def = BossesUnicos.registrar(definicao(c));
@@ -118,7 +139,7 @@ export function exclusivosEquipaveis(c) {
  */
 export function dropExclusivo(bossId, { rng = Math.random, ilvl = DADOS.regra.nivel } = {}) {
   const c = doDispositivo(bossId);
-  if (!c || rng() * 100 >= DADOS.regra.chanceDoExclusivoPct) return null;
+  if (!c?.unicos?.length || rng() * 100 >= DADOS.regra.chanceDoExclusivoPct) return null;
   const lista = exclusivosEquipaveis(c);
   if (!lista.length) return null;
   const u = lista[Math.floor(rng() * lista.length)];

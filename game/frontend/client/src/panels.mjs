@@ -634,7 +634,13 @@ function campanhaCards(body) {
       return void desenharDispositivo(body, {
         mapas: campanha.mapas,
         faixaDaCampanha: campanha.dificuldades[0]?.faixa ?? null,
+        // (05/11) a aba Pináculos, ao lado de Mapas
+        aba: ctx.tabs.campanhaMapas === 'pinaculos' ? 'pinaculos' : 'mapas',
         h: {
+          irPara: (aba) => {
+            ctx.tabs.campanhaMapas = aba === 'pinaculos' ? 'pinaculos' : true;
+            ctx.redraw();
+          },
           send,
           itemCanvas,
           tipFor,
@@ -681,8 +687,8 @@ function campanhaCards(body) {
         },
         // O Dispositivo de Mapas (a aba Mapas e o atalho na cidade do Ato 10).
         abrirMapas: campanha.mapas
-          ? () => {
-              ctx.tabs.campanhaMapas = true;
+          ? (aba = 'mapas') => {
+              ctx.tabs.campanhaMapas = aba === 'pinaculos' ? 'pinaculos' : true;
               send({ t: 'campanha' });
               ctx.redraw();
             }

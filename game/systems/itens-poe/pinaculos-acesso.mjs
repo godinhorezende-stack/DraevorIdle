@@ -68,6 +68,13 @@ export function iniciar(BossesUnicos, bestiario) {
  * Os itens no catálogo: os fragmentos (empilham, vão para a bolsa e o depósito, com o ícone do PoE e as linhas do poedb no balão) e os
  * mapas dos Guardiões do Criador (a base do T16, com o desenho do mapa e o encontro). Ids fixos (7.750.001… e 7.751.001…).
  */
+/** O que o balão do convite da Maven diz: quem nasce no Calvário e quantos Fragmentos Crescentes ele solta. */
+const mavenDoConvite = (crisolId) => {
+  const c = crisol(crisolId);
+  if (!c) return null;
+  return { chefes: c.chefes === 'testemunhados' ? `os ${MAVEN.contador} chefes de mapa que a Maven testemunhou` : c.chefes.map((id) => chefe(id)?.nome ?? id).join(', '), fragmentos: c.fragmentos };
+};
+
 export function registrarItens(itemCatalog) {
   if (!ligado()) return 0;
   for (const it of DADOS.itens) {
@@ -77,6 +84,8 @@ export function registrarItens(itemCatalog) {
       poe: { icone: it.icone, iconeLado: 64 },
       fragmentoPoe: { slug: it.slug, linhas: it.linhas ?? [], sabor: it.sabor ?? null, chefe: c?.nome ?? null, abre: Object.entries(DADOS.entradas).filter(([, ids]) => ids.includes(it.itemId)).map(([p]) => NOME_DO_PINACULO.get(p) ?? DADOS.arenas?.find((a) => a.id === p)?.nome ?? p),
         conjunto: Object.values(DADOS.entradas).find((ids) => ids.includes(it.itemId))?.length ?? 1,
+        ...(it.crescente ? { crescente: { citacao: fragmento(MAVEN?.citacao)?.nome ?? 'A Citação de Maven', n: MAVEN?.fragmentosParaCitacao ?? 10 } } : {}),
+        ...(it.conviteDaMaven ? { conviteDaMaven: mavenDoConvite(it.conviteDaMaven) } : {}),
         ...(it.convite ? { convite: { influencia: INFLUENCIAS_DO_ARQUIVO[it.influencia]?.nome ?? it.influencia, aCada: it.aCada } } : {}) },
     };
   }
@@ -136,7 +145,8 @@ export const portais = () => Math.max(1, Number(Mapas.DADOS.dispositivo?.portais
 export function itensDaEntrada(estado, pinaculoId, contar) {
   const ids = entrada(pinaculoId);
   if (!ids) return null;
-  return ids.map((id) => ({ id, nome: fragmento(id)?.nome ?? String(id), tem: contar(estado, id) }));
+  const conta = contarComFragmentos(contar);
+  return ids.map((id) => ({ id, nome: fragmento(id)?.nome ?? String(id), tem: conta(estado, id) }));
 }
 
 /** A Quantidade de Itens que os itens dão na área do pináculo ("Quantidade de Itens encontrados nesta Área aumentada em N%", somadas). */
@@ -148,10 +158,14 @@ export const quantidadeDosItens = (ids) =>
  * `Cacadas.entrar` do Dispositivo). Os itens só saem depois de a arena nascer; se a entrada falha, nada muda. `contar(estado, id)` e
  * `gastar(estado, id, n)`: os da mochila e do depósito do personagem (as funções das moedas). Devolve o resultado da entrada.
  */
-export function abrir(estado, pinaculoId, { contar, gastar, entrar, agora = Date.now() }) {
+export function abrir(estado, pinaculoId, { contar: contarNaFonte, gastar: gastarNaFonte, entrar, agora = Date.now() }) {
+  const contar = contarComFragmentos(contarNaFonte);
+  const gastar = gastarComFragmentos(contarNaFonte, gastarNaFonte);
   const ids = entrada(pinaculoId);
   if (!ids) return { ok: false, erro: 'Esse pináculo ainda não abre no Dispositivo de Mapas.' };
   if (estado.pinaculoAberto) return { ok: false, erro: 'Você já tem um pináculo aberto: volte a ele ou abandone-o antes de abrir outro.' };
+  const fechado = motivoDoCrisolFechado(estado, pinaculoId);
+  if (fechado) return { ok: false, erro: fechado };
   const faltam = ids.filter((id) => contar(estado, id) < 1);
   if (faltam.length) return { ok: false, erro: `Faltam: ${faltam.map((id) => fragmento(id)?.nome ?? id).join(', ')}.` };
   estado.pinaculoAberto = { id: pinaculoId, portais: portais(), portaisMax: portais(), mortes: 0, abertoEm: agora, quantidadePct: quantidadeDosItens(ids) };
@@ -173,7 +187,10 @@ export function aoMorrer(estado, bossId) {
   if (!p || p.id !== bossId) return null;
   p.portais = Math.max(0, p.portais - 1);
   p.mortes = (p.mortes ?? 0) + 1;
-  if (p.portais <= 0) estado.pinaculoAberto = null;
+  if (p.portais <= 0) {
+    estado.pinaculoAberto = null;
+    aoFecharCrisol(estado, bossId);
+  }
   return { portais: p.portais, falhou: p.portais <= 0 };
 }
 
@@ -181,6 +198,7 @@ export function aoMorrer(estado, bossId) {
 export function aoVencer(estado, bossId) {
   if (!estado || !bossId) return;
   if (estado.pinaculoAberto?.id === bossId) estado.pinaculoAberto = null;
+  aoFecharCrisol(estado, bossId);
   (estado.pinaculosVencidos ??= {})[bossId] = (Number(estado.pinaculosVencidos[bossId]) || 0) + 1;
 }
 
@@ -244,3 +262,122 @@ export function influenciaParaTela(estado) {
     convites: CONVITES.map((c) => ({ id: c.itemId, nome: c.nome, influencia: c.influencia, abre: NOME_DO_PINACULO.get(c.abre) ?? DADOS.arenas?.find((x) => x.id === c.abre)?.nome ?? c.abre, feitos: (Number(a.contagem?.[c.itemId]) || 0) % c.aCada, aCada: c.aCada, conta: contaJa(estado, c) })),
   };
 }
+
+// ---------------------------------------------------------------- a MAVEN (etapa 3)
+/*
+ * Dono (05/11): a Maven se liga no Dispositivo (como no PoE) e TESTEMUNHA os chefes de mapa T14+ dos mapas abertos com ela. Cada um vencido
+ * soma 1, até 10 (`contador`), e fica guardado (`testemunhados`: quem nasce no Calvário do Atlas); no 10º cai o Convite da Maven: Atlas
+ * (garantido, uma vez por ciclo). Os chefes dos encontros (Guardiões do Criador e do Ancião, Conquistadores) testemunhados ficam em `vistos`:
+ * com os 4 de um grupo cai o convite dele (Deformados, Distorcidos, Matadores do Ancião) e o grupo recomeça. O Calvário (o Crisol) do Atlas
+ * pede os 10; vencido — ou perdidos os 6 portais —, a Maven esquece os testemunhados, como no PoE. Mora em `estado.maven`:
+ *   { ligada, contador, testemunhados: [{ chave | bossUnico, nome }], conviteDoAtlas, vistos: { [id do chefe]: true } }
+ */
+export const MAVEN = DADOS.maven ?? null;
+const CRISOIS = new Map((MAVEN?.crisois ?? []).map((c) => [c.id, c]));
+/** O Calvário da Conhecedora pelo id (`poe-crisol-atlas`…), ou null. */
+export const crisol = (id) => CRISOIS.get(id) ?? null;
+export const crisois = () => [...CRISOIS.values()];
+
+/** O registro da Maven do personagem (criado na primeira vez). */
+export function daMaven(estado) {
+  const m = (estado.maven ??= {});
+  m.ligada ??= false;
+  m.contador ??= 0;
+  m.testemunhados ??= [];
+  m.conviteDoAtlas ??= false;
+  m.vistos ??= {};
+  return m;
+}
+
+/** Liga ou desliga a Maven nos próximos mapas. `{ ok }`. */
+export function definirMaven(estado, ligada) {
+  if (!MAVEN) return { ok: false, erro: 'A Maven ainda não existe neste servidor.' };
+  daMaven(estado).ligada = !!ligada;
+  return { ok: true };
+}
+
+/**
+ * Um chefe vencido num mapa do tier `tier` aberto com a Maven (`hunt.mapa.maven`): o chefe do mapa soma no contador (até 10) e os chefes dos
+ * encontros ficam vistos. Devolve os ids dos convites que caem agora. `alvo`: o monstro (o chefe do mapa — `chefeDoMapa` —, o do encontro —
+ * `boss.id` de um dos 12).
+ */
+export function aoVencerComMaven(estado, { tier, maven }, alvo) {
+  if (!MAVEN || !maven || !(Number(tier) >= MAVEN.tierMinimo) || !alvo) return [];
+  const st = daMaven(estado);
+  const caem = [];
+  const doEncontro = alvo.boss?.id && chefe(alvo.boss.id) ? alvo.boss.id : null;
+  if (alvo.chefeDoMapa && st.contador < MAVEN.contador) {
+    st.testemunhados.push(doEncontro ? { bossUnico: doEncontro, nome: alvo.name } : { chave: alvo.key, nome: alvo.name });
+    st.contador++;
+    if (st.contador >= MAVEN.contador && !st.conviteDoAtlas) {
+      st.conviteDoAtlas = true;
+      const atlas = crisois().find((c) => c.chefes === 'testemunhados');
+      if (atlas) caem.push(atlas.convite);
+    }
+  }
+  if (doEncontro) {
+    st.vistos[doEncontro] = true;
+    for (const c of crisois()) {
+      if (!Array.isArray(c.chefes) || !c.chefes.includes(doEncontro) || !c.chefes.every((id) => st.vistos[id])) continue;
+      for (const id of c.chefes) delete st.vistos[id];
+      caem.push(c.convite);
+    }
+  }
+  return caem;
+}
+
+/** O Calvário abre? (o do Atlas pede os 10 testemunhados) — o motivo, ou null. */
+export function motivoDoCrisolFechado(estado, crisolId) {
+  const c = crisol(crisolId);
+  if (!c) return null;
+  if (c.chefes === 'testemunhados' && (Number(estado?.maven?.contador) || 0) < MAVEN.contador) return `A Maven precisa ter testemunhado ${MAVEN.contador} chefes de mapa (${Number(estado?.maven?.contador) || 0} de ${MAVEN.contador}).`;
+  return null;
+}
+
+/** Os chefes do Calvário, na ordem em que nascem (em pares): `[{ chave } | { bossUnico }]`. */
+export function chefesDoCrisol(estado, crisolId) {
+  const c = crisol(crisolId);
+  if (!c) return [];
+  if (c.chefes === 'testemunhados') return (estado?.maven?.testemunhados ?? []).slice(0, MAVEN.contador).map((t) => ({ ...t }));
+  return c.chefes.map((id) => ({ bossUnico: id, nome: chefe(id)?.nome ?? id }));
+}
+
+/** Os Fragmentos Crescentes que o Calvário solta ao ser vencido (Atlas 6–7, os outros 3–4 — dono, pela poewiki). */
+export function fragmentosDoCrisol(crisolId, rng = Math.random) {
+  const [min, max] = crisol(crisolId)?.fragmentos ?? [0, 0];
+  return min + Math.floor(rng() * (max - min + 1));
+}
+
+/** O Calvário acabou (vencido, ou os portais acabaram): o do Atlas faz a Maven esquecer os testemunhados (o próximo ciclo recomeça). */
+export function aoFecharCrisol(estado, crisolId) {
+  if (crisol(crisolId)?.chefes !== 'testemunhados') return;
+  const st = daMaven(estado);
+  st.contador = 0;
+  st.testemunhados = [];
+  st.conviteDoAtlas = false;
+}
+
+/** A Maven para a tela: ligada, o contador, quem ela testemunhou e os vistos de cada convite dos guardiões. */
+export function mavenParaTela(estado) {
+  if (!MAVEN) return null;
+  const st = estado?.maven ?? {};
+  return {
+    ligada: !!st.ligada,
+    contador: Number(st.contador) || 0,
+    meta: MAVEN.contador,
+    tierMinimo: MAVEN.tierMinimo,
+    testemunhados: (st.testemunhados ?? []).map((t) => t.nome),
+    grupos: crisois().filter((c) => Array.isArray(c.chefes)).map((c) => ({ id: c.id, nome: fragmento(c.convite)?.nome ?? c.nome, chefes: c.chefes.map((id) => ({ nome: chefe(id)?.nome ?? id, visto: !!st.vistos?.[id] })) })),
+  };
+}
+
+/*
+ * A CITAÇÃO DE MAVEN: 10 Fragmentos Crescentes valem uma (no PoE se juntam; aqui o Dispositivo conta os 10 como uma Citação e os gasta se
+ * faltar a Citação inteira). `contarComFragmentos`/`gastarComFragmentos` embrulham o contar/gastar do Dispositivo.
+ */
+const citacaoDosFragmentos = (id) => MAVEN && Number(id) === MAVEN.citacao;
+export const contarComFragmentos = (contar) => (estado, id) => contar(estado, id) + (citacaoDosFragmentos(id) ? Math.floor(contar(estado, MAVEN.fragmento) / MAVEN.fragmentosParaCitacao) : 0);
+export const gastarComFragmentos = (contar, gastar) => (estado, id, n) => {
+  if (!citacaoDosFragmentos(id) || contar(estado, id) >= n) return gastar(estado, id, n);
+  return gastar(estado, MAVEN.fragmento, n * MAVEN.fragmentosParaCitacao);
+};

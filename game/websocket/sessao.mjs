@@ -1591,6 +1591,11 @@ export class Sessao {
         this.aplicar(MapasDispositivo.definirInfluencia(this.estado, m.influencia ?? null));
         return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
       }
+      // (05/11, etapa 3) a Maven nos próximos mapas: os chefes T14+ ela testemunha (os convites dela)
+      case 'mavenDoAtlas': {
+        this.aplicar(MapasDispositivo.definirMaven(this.estado, !!m.ligada));
+        return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
+      }
       case 'abandonarPinaculo': {
         this.aplicar(MapasDispositivo.abandonarPinaculo(this.estado));
         return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });

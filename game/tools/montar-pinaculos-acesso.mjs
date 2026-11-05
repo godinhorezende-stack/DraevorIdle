@@ -78,6 +78,22 @@ const ARENAS = [
   { id: 'poe-a-estrela-negra', pagina: 'The_Black_Star', variante: /BlackStarBoss$/, base: 'anomaly' },
   { id: 'poe-a-fome-infinita', pagina: 'The_Infinite_Hunger', variante: /DoomBoss_$/, base: 'the-nightmare-beast' },
 ];
+/*
+ * Etapa 3 (dono, 05/11): a MAVEN. No PoE ela se liga no Dispositivo e TESTEMUNHA os chefes de mapa T14+: cada um vencido com ela soma 1,
+ * até 10 (o guia da Steam: "killing a witnessed boss guarantees +1 Maven counter"); no 10º cai o Convite da Maven: Atlas (dono: garantido,
+ * sem a chance que o PoE não publica). Os convites dos guardiões caem quando ela testemunhou os 4 do grupo (Deformados: os Guardiões do
+ * Criador; Distorcidos: os do Ancião; Matadores do Ancião: os Conquistadores). Cada convite abre o Calvário da Conhecedora (o Crisol): os
+ * chefes dele saem em PARES (o padrão do PoE) e, vencidos todos, caem os Fragmentos Crescentes — Atlas 6–7, os outros 3–4 (a poewiki:
+ * "~6,16" e "~3,04" de base). 10 Fragmentos Crescentes = A Citação de Maven, que abre The Maven. Esquecidos, Ocultos e Temidos pedem mapas
+ * de Síntese, Domínios da Fenda e o Córtex/Chayula, que o jogo não tem: ficam de fora.
+ */
+const MAVEN = { tierMinimo: 14, contador: 10, fragmentosParaCitacao: 10, base: 'the-brainstealer' };
+const CRISOIS = [
+  { id: 'poe-crisol-atlas', slug: 'Mavens_Invitation%3A_The_Atlas', tipo: /MavenMapAtlas5New$/, chefes: 'testemunhados', fragmentos: [6, 7] },
+  { id: 'poe-crisol-deformados', slug: 'Mavens_Invitation%3A_The_Formed', tipo: /MavenMapVoid1New$/, chefes: 'criador', fragmentos: [3, 4] },
+  { id: 'poe-crisol-distorcidos', slug: 'Mavens_Invitation%3A_The_Twisted', tipo: /MavenMapVoid2New$/, chefes: 'anciao', fragmentos: [3, 4] },
+  { id: 'poe-crisol-matadores', slug: 'Mavens_Invitation%3A_The_Elderslayers', tipo: /MavenMapVoid6New$/, chefes: 'conquistador', fragmentos: [3, 4] },
+];
 const INFLUENCIAS = { exarca: { nome: 'O Exarca Cauterizado', tierMinimo: 14 }, devorador: { nome: 'O Devorador de Mundos', tierMinimo: 14 } };
 
 const ELEMENTO = { Fire: 'fire', Cold: 'ice', Lightning: 'energy', Chaos: 'chaos' };
@@ -104,7 +120,9 @@ function varianteDoChefe(html, re) {
 function item(slug, pasta = ITENS_HTML, tipo = null) {
   const v = variantesDoItem(ler(join(pasta, `${slug}.html`)), slug).find((x) => x.id && (!tipo || tipo.test(x.id))) ?? null;
   if (!v) throw new Error(`item ${slug} sem variante`);
-  const icone = existsSync(join(ICONES, `${slug}.png`)) ? `poe-itens/Pinaculos/${slug}.png` : null;
+  // (o arquivo do ícone sem o "%3A" do nome da página — os convites da Maven)
+  const arquivo = `${slug.replace(/%3A/g, '')}.png`;
+  const icone = existsSync(join(ICONES, arquivo)) ? `poe-itens/Pinaculos/${arquivo}` : null;
   return { slug, tipo: v.id, nome: v.nome, en: v.en, linhas: v.linhas, sabor: v.sabor, icone, nivelDrop: v.nivelDrop };
 }
 
@@ -166,6 +184,22 @@ for (const c of CONVITES) {
   convites.push(it);
   entradas[c.abre] = [it.itemId];
 }
+// A Maven: os Fragmentos Crescentes (empilham até 10, como no PoE), A Citação e os 4 convites; cada convite abre o Crisol dele.
+const fragmentoCrescente = { ...item('Crescent_Splinter'), itemId: ID_DOS_FRAGMENTOS + itens.length, crescente: true, pilha: MAVEN.fragmentosParaCitacao };
+itens.push(fragmentoCrescente);
+const citacao = { ...item('The_Mavens_Writ'), itemId: ID_DOS_FRAGMENTOS + itens.length, citacao: true };
+itens.push(citacao);
+entradas['poe-the-maven'] = [citacao.itemId];
+const crisois = [];
+for (const c of CRISOIS) {
+  const it = { ...item(c.slug, ITENS_HTML, c.tipo), itemId: ID_DOS_FRAGMENTOS + itens.length, conviteDaMaven: c.id };
+  it.slug = c.slug.replace(/%3A/g, ':');
+  itens.push(it);
+  entradas[c.id] = [it.itemId];
+  crisois.push({ id: c.id, nome: `Calvário da Conhecedora (${it.nome.replace(/^Convite d[ae] Maven:\s*/, '')})`, convite: it.itemId, chefes: c.chefes === 'testemunhados' ? 'testemunhados' : chefes.filter((x) => x.grupo === c.chefes).map((x) => x.id), fragmentos: c.fragmentos });
+}
+const maven = { ...MAVEN, fragmento: fragmentoCrescente.itemId, citacao: citacao.itemId, crisois };
+
 const saida = {
   _nota:
     'A ENTRADA dos pináculos como no PoE (dono, 05/11): sem trava de level; cada pináculo abre no Dispositivo de Mapas com os itens de `entradas` (um de cada, gastos ao abrir). Os itens saem dos 12 chefes de `chefes` (garantido), que nascem nos mapas com o encontro: o mapa do guardião do Criador (T16, o guardião é o chefe do mapa) ou o mapa comum "ocupado"/"com a Cidadela" (o chefe a mais no fundo do mapa). Os mapas com encontro caem dos chefes de mapa a partir de `drop.tierMinimo`, com `drop.chancePorChefe` por grupo (sem a taxa no poedb: números do jogo). Gerado por tools/montar-pinaculos-acesso.mjs a partir do poedb.',
@@ -173,6 +207,7 @@ const saida = {
   influencias: INFLUENCIAS,
   entradas,
   arenas,
+  maven,
   itens,
   mapas,
   chefes,
@@ -180,5 +215,6 @@ const saida = {
 writeFileSync(DESTINO, `${JSON.stringify(saida, null, 1)}\n`);
 console.log(`${itens.length} fragmentos, ${mapas.length} mapas, ${chefes.length} chefes → ${fileURLToPath(DESTINO)}`);
 for (const a of arenas) console.log(`  arena ${a.nome}: vida ${a.vidaPct}% (×${a.vidaMult}), dano ${a.danoPct}%, únicos ${a.unicos.map((u) => u.nome).join(', ')}`);
+console.log(`  Maven: ${maven.contador} chefes T${maven.tierMinimo}+ testemunhados → ${crisois.map((c) => `${c.nome} [${c.fragmentos.join('–')} fragmentos]`).join('; ')}`);
 for (const c of convites) console.log(`  ${c.nome} (${c.itemId}): a cada ${c.aCada} chefes T14+ sob ${c.influencia} → ${c.abre}`);
 for (const c of chefes) console.log(`  ${c.nome} (${c.variante}): vida ${c.vidaPct}% (×${c.vidaMult}), dano ${c.danoPct}%, exp ${c.expPct}%, base ${c.base}`);

@@ -217,6 +217,9 @@ export function abandonarPinaculo(estado) {
   return PinaculosAcesso.abandonar(estado);
 }
 
+/** (05/11, etapa 3) Liga ou desliga a Maven nos próximos mapas (`pinaculos-acesso.mjs`). */
+export const definirMaven = (estado, ligada) => PinaculosAcesso.definirMaven(estado, ligada);
+
 /** A influência dos próximos mapas (Exarca, Devorador ou nenhuma — `pinaculos-acesso.mjs`). */
 export const definirInfluencia = (estado, influencia) => PinaculosAcesso.definirInfluencia(estado, influencia);
 
@@ -231,9 +234,13 @@ export function pinaculosParaTela(estado) {
     const i = lista.findIndex((c) => c.id === depois);
     lista.splice(i >= 0 ? i : lista.length, 0, a);
   }
+  // (etapa 3) os Calvários da Maven, logo antes dela
+  const daMaven = lista.findIndex((c) => c.id === 'poe-the-maven');
+  lista.splice(daMaven >= 0 ? daMaven : lista.length, 0, ...PinaculosAcesso.crisois().filter((c) => Pinaculos.crisol(c.id)));
   return lista.map((c) => {
     const itens = PinaculosAcesso.itensDaEntrada(estado, c.id, contarItem);
-    return { id: c.id, nome: c.nome, itens, pronto: !!itens?.every((i) => i.tem >= 1), vitorias: Number(estado?.pinaculosVencidos?.[c.id]) || 0 };
+    const fechado = PinaculosAcesso.motivoDoCrisolFechado(estado, c.id);
+    return { id: c.id, nome: c.nome, itens, pronto: !!itens?.every((i) => i.tem >= 1) && !fechado, ...(fechado ? { fechado } : {}), ...(PinaculosAcesso.crisol(c.id) ? { crisol: true } : {}), vitorias: Number(estado?.pinaculosVencidos?.[c.id]) || 0 };
   });
 }
 
@@ -369,6 +376,7 @@ export function paraTela(estado, { versaoDaTela = null } = {}) {
     // (05/11) os pináculos: o que cada um pede no Dispositivo e o aberto (os portais)
     pinaculos: pinaculosParaTela(estado),
     influencia: PinaculosAcesso.influenciaParaTela(estado),
+    maven: PinaculosAcesso.mavenParaTela(estado),
     pinaculoAberto: estado?.pinaculoAberto ? { ...estado.pinaculoAberto, nome: Pinaculos.doDispositivo(estado.pinaculoAberto.id)?.nome ?? estado.pinaculoAberto.id, naArena: estado.hunt?.bossId === estado.pinaculoAberto.id } : null,
     estatisticas: { concluidos: st.concluidos, falhos: st.falhos, mortes: st.mortes, maiorTier: st.maiorTier, porTier: st.porTier, ultimo: st.ultimo },
     tiers: Mapas.TIERS,
