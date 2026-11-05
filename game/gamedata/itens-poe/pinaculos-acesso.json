@@ -6,7 +6,9 @@
    "criador": 0.08,
    "anciao": 0.08,
    "conquistador": 0.08
-  }
+  },
+  "chanceDoCortex": 0.02,
+  "chanceDaMemoria": 0.03
  },
  "influencias": {
   "exarca": {
@@ -63,6 +65,18 @@
   ],
   "poe-crisol-matadores": [
    7750022
+  ],
+  "poe-venarius": [
+   7750023
+  ],
+  "poe-incarnation-of-neglect": [
+   7750024
+  ],
+  "poe-incarnation-of-dread": [
+   7750025
+  ],
+  "poe-incarnation-of-fear": [
+   7750026
   ]
  },
  "arenas": [
@@ -536,6 +550,101 @@
    "nivelDrop": 1,
    "itemId": 7750022,
    "conviteDaMaven": "poe-crisol-matadores"
+  },
+  {
+   "slug": "Cortex",
+   "tipo": "Metadata/Items/Maps/SynthesisBossGuardianMap",
+   "nome": "Córtex",
+   "en": "Cortex",
+   "linhas": [
+    "Ganho de Experiência aumentado em 100%",
+    "Nível dos Monstros: 83"
+   ],
+   "sabor": "Apesar de minha vida ter acabado, meu propósito remanesce.\nMinha vontade permaneceu, mais forte e empoderada\npela justiça da minha causa.",
+   "icone": "poe-itens/Pinaculos/Cortex.png",
+   "itemId": 7750023,
+   "cortex": true
+  },
+  {
+   "slug": "Echo_of_Loneliness",
+   "tipo": "Metadata/Items/MapFragments/AtlasMemory/CurrencyIgnoranceKey",
+   "nome": "Eco da Solidão",
+   "en": "Echo of Loneliness",
+   "linhas": [],
+   "sabor": "O luto pode separar mais do que qualquer abismo.",
+   "icone": "poe-itens/Pinaculos/Echo_of_Loneliness.png",
+   "nivelDrop": 1,
+   "itemId": 7750024,
+   "chefe": "poe-a-chama-abandonada",
+   "grupo": "memoria"
+  },
+  {
+   "slug": "Echo_of_Reverence",
+   "tipo": "Metadata/Items/MapFragments/AtlasMemory/CurrencyBenevolenceKey",
+   "nome": "Eco da Reverência",
+   "en": "Echo of Reverence",
+   "linhas": [],
+   "sabor": "A simples bondade cria a mais poderosa das memórias.",
+   "icone": "poe-itens/Pinaculos/Echo_of_Reverence.png",
+   "nivelDrop": 1,
+   "itemId": 7750025,
+   "chefe": "poe-o-deus-enganador",
+   "grupo": "memoria"
+  },
+  {
+   "slug": "Echo_of_Trauma",
+   "tipo": "Metadata/Items/MapFragments/AtlasMemory/CurrencyFearKey",
+   "nome": "Eco do Trauma",
+   "en": "Echo of Trauma",
+   "linhas": [],
+   "sabor": "Uma única palavra dura pode nos assombrar para sempre.",
+   "icone": "poe-itens/Pinaculos/Echo_of_Trauma.png",
+   "nivelDrop": 1,
+   "itemId": 7750026,
+   "chefe": "poe-o-cardeal-do-medo",
+   "grupo": "memoria"
+  },
+  {
+   "slug": "Memory_of_Loneliness",
+   "tipo": "Metadata/Items/Currency/IgnoranceMemoryThread",
+   "nome": "Memória da Solidão",
+   "en": "Memory of Loneliness",
+   "linhas": [
+    "Adiciona um Segmento de Memória ao Atlas que leva à Encarnação do Abandono"
+   ],
+   "sabor": null,
+   "icone": "poe-itens/Pinaculos/Memory_of_Loneliness.png",
+   "nivelDrop": 1,
+   "itemId": 7750027,
+   "memoria": "poe-a-chama-abandonada"
+  },
+  {
+   "slug": "Memory_of_Reverence",
+   "tipo": "Metadata/Items/Currency/BenevolenceMemoryThread",
+   "nome": "Memória da Reverência",
+   "en": "Memory of Reverence",
+   "linhas": [
+    "Adiciona um Segmento de Memória ao Atlas que leva à Encarnação do Pavor"
+   ],
+   "sabor": null,
+   "icone": "poe-itens/Pinaculos/Memory_of_Reverence.png",
+   "nivelDrop": 1,
+   "itemId": 7750028,
+   "memoria": "poe-o-deus-enganador"
+  },
+  {
+   "slug": "Memory_of_Trauma",
+   "tipo": "Metadata/Items/Currency/FearMemoryThread",
+   "nome": "Memória do Trauma",
+   "en": "Memory of Trauma",
+   "linhas": [
+    "Adiciona um Segmento de Memória ao Atlas que leva à Encarnação do Medo"
+   ],
+   "sabor": null,
+   "icone": "poe-itens/Pinaculos/Memory_of_Trauma.png",
+   "nivelDrop": 1,
+   "itemId": 7750029,
+   "memoria": "poe-o-cardeal-do-medo"
   }
  ],
  "mapas": [
@@ -597,6 +706,30 @@
    "nivelDrop": 83,
    "itemId": 7751004,
    "chefe": "poe-guardiao-da-quimera",
+   "tier": 16
+  },
+  {
+   "slug": "Courtyard_of_Wasting",
+   "nome": "Pátio do Definhamento",
+   "icone": null,
+   "itemId": 7751005,
+   "chefe": "poe-a-chama-abandonada",
+   "tier": 16
+  },
+  {
+   "slug": "Theatre_of_Lies",
+   "nome": "Teatro das Mentiras",
+   "icone": null,
+   "itemId": 7751006,
+   "chefe": "poe-o-deus-enganador",
+   "tier": 16
+  },
+  {
+   "slug": "Chambers_of_Impurity",
+   "nome": "Câmaras da Impureza",
+   "icone": null,
+   "itemId": 7751007,
+   "chefe": "poe-o-cardeal-do-medo",
    "tier": 16
   }
  ],
@@ -852,6 +985,72 @@
    "grupo": "conquistador",
    "fragmento": 7750012,
    "linha": "Mapa contém a Cidadela de Drox"
+  },
+  {
+   "id": "poe-a-chama-abandonada",
+   "nome": "A Chama Abandonada",
+   "en": "The Neglected Flame",
+   "poedb": "https://poedb.tw/us/The_Neglected_Flame",
+   "variante": "TheNeglectedFlameFragmentOfIgnorance__",
+   "vidaPct": 1120,
+   "danoPct": 200,
+   "expPct": 200,
+   "resistencias": {
+    "fire": 50,
+    "ice": 50,
+    "energy": 50,
+    "chaos": 30
+   },
+   "vidaMult": 2.8,
+   "base": "vemiath",
+   "grupo": "memoria",
+   "fragmento": 7750024,
+   "mapa": 7751005,
+   "abre": "poe-incarnation-of-neglect"
+  },
+  {
+   "id": "poe-o-deus-enganador",
+   "nome": "O Deus Enganador",
+   "en": "The Deceitful God",
+   "poedb": "https://poedb.tw/us/The_Deceitful_God",
+   "variante": "TheDeceitfulGodFragmentOfBenevolence",
+   "vidaPct": 1120,
+   "danoPct": 200,
+   "expPct": 200,
+   "resistencias": {
+    "fire": 50,
+    "ice": 50,
+    "energy": 50,
+    "chaos": 30
+   },
+   "vidaMult": 2.8,
+   "base": "the-false-god",
+   "grupo": "memoria",
+   "fragmento": 7750025,
+   "mapa": 7751006,
+   "abre": "poe-incarnation-of-dread"
+  },
+  {
+   "id": "poe-o-cardeal-do-medo",
+   "nome": "O Cardeal do Medo",
+   "en": "The Cardinal of Fear",
+   "poedb": "https://poedb.tw/us/The_Cardinal_of_Fear",
+   "variante": "TheCardinalofFearFragmentOfAnger",
+   "vidaPct": 1120,
+   "danoPct": 200,
+   "expPct": 200,
+   "resistencias": {
+    "fire": 50,
+    "ice": 50,
+    "energy": 50,
+    "chaos": 30
+   },
+   "vidaMult": 2.8,
+   "base": "lady-tenebris",
+   "grupo": "memoria",
+   "fragmento": 7750026,
+   "mapa": 7751007,
+   "abre": "poe-incarnation-of-fear"
   }
  ]
 }

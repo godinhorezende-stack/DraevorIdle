@@ -34,7 +34,7 @@ export const mapaDoGuardiao = (itemId) => MAPAS.get(Number(itemId)) ?? null;
 /** Os ids dos itens que o pináculo pede no Dispositivo (um de cada), ou null (o pináculo ainda não tem a entrada no jogo). */
 export const entrada = (pinaculoId) => DADOS.entradas?.[pinaculoId] ?? null;
 /** As linhas do mapa com encontro do grupo (o texto do implícito: "Mapa ocupado pelo…", "Mapa contém a Cidadela de…"). */
-export const linhaDoEncontro = (c) => (c?.mapa ? 'Área é influenciada pelo Criador' : c?.linha ?? null);
+export const linhaDoEncontro = (c) => (c?.grupo === 'memoria' ? 'Mapa final de uma Linha de Memória' : c?.mapa ? 'Área é influenciada pelo Criador' : c?.linha ?? null);
 
 /** A definição de boss único do chefe (como `pinaculos.definicao`). */
 export function definicao(c) {
@@ -84,6 +84,8 @@ export function registrarItens(itemCatalog) {
       poe: { icone: it.icone, iconeLado: 64 },
       fragmentoPoe: { slug: it.slug, linhas: it.linhas ?? [], sabor: it.sabor ?? null, chefe: c?.nome ?? null, abre: Object.entries(DADOS.entradas).filter(([, ids]) => ids.includes(it.itemId)).map(([p]) => NOME_DO_PINACULO.get(p) ?? DADOS.arenas?.find((a) => a.id === p)?.nome ?? p),
         conjunto: Object.values(DADOS.entradas).find((ids) => ids.includes(it.itemId))?.length ?? 1,
+        ...(it.cortex ? { cortex: true } : {}),
+        ...(it.memoria ? { memoria: { chefe: chefe(it.memoria)?.nome ?? null, mapa: DADOS.mapas.find((m) => m.chefe === it.memoria)?.nome ?? null, eco: fragmento(chefe(it.memoria)?.fragmento)?.nome ?? null } } : {}),
         ...(it.crescente ? { crescente: { citacao: fragmento(MAVEN?.citacao)?.nome ?? 'A Citação de Maven', n: MAVEN?.fragmentosParaCitacao ?? 10 } } : {}),
         ...(it.conviteDaMaven ? { conviteDaMaven: mavenDoConvite(it.conviteDaMaven) } : {}),
         ...(it.convite ? { convite: { influencia: INFLUENCIAS_DO_ARQUIVO[it.influencia]?.nome ?? it.influencia, aCada: it.aCada } } : {}) },
@@ -94,7 +96,8 @@ export function registrarItens(itemCatalog) {
     const id = Mapas.idDoTier(m.tier);
     const daBase = id ? itemCatalog[id] : null;
     if (!daBase) continue;
-    itemCatalog[m.itemId] = { ...daBase, id: m.itemId, name: m.nome, poe: { ...daBase.poe, base, icone: m.icone, iconeLado: 64, encontro: m.chefe } };
+    // (etapa 4: o mapa final da Memória não tem desenho próprio no PoE — fica o do T16)
+    itemCatalog[m.itemId] = { ...daBase, id: m.itemId, name: m.nome, poe: { ...daBase.poe, base, icone: m.icone ?? daBase.poe?.icone, iconeLado: 64, encontro: m.chefe } };
   }
   return DADOS.itens.length + DADOS.mapas.length;
 }
@@ -381,3 +384,37 @@ export const gastarComFragmentos = (contar, gastar) => (estado, id, n) => {
   if (!citacaoDosFragmentos(id) || contar(estado, id) >= n) return gastar(estado, id, n);
   return gastar(estado, MAVEN.fragmento, n * MAVEN.fragmentosParaCitacao);
 };
+
+// ---------------------------------------------------------------- o VENARIUS e as ENCARNAÇÕES (etapa 4)
+/*
+ * Dono (05/11): o CÓRTEX (o mapa Único do Venarius no PoE) abre o Venarius no Dispositivo, como os outros; as MEMÓRIAS (Solidão, Reverência,
+ * Trauma — PoE 3.26) viram o MAPA FINAL da linha delas (T16, com o nome da área do PoE), cujo chefe (a Chama Abandonada, o Deus Enganador, o
+ * Cardeal do Medo — feitos como os guardiões) solta o ECO garantido; o Eco abre a Encarnação. Os dois caem dos chefes de mapa T14+: o Córtex
+ * com `drop.chanceDoCortex` (2%), uma Memória sorteada com `drop.chanceDaMemoria` (3%) — sem taxa no PoE, números do dono.
+ */
+const MEMORIAS = DADOS.itens.filter((i) => i.memoria);
+/** A Memória pelo id do item, ou null. */
+export const memoria = (itemId) => MEMORIAS.find((m) => m.itemId === Number(itemId)) ?? null;
+export const memorias = () => [...MEMORIAS];
+
+/** O que o chefe de um mapa do tier solta da etapa 4 (o Córtex, uma Memória): os ids dos itens. Abaixo do tier mínimo, nada. */
+export function sortearDoAtlas(tierDaArea, rng = Math.random) {
+  const D = DADOS.drop ?? {};
+  if (!(Number(tierDaArea) >= (Number(D.tierMinimo) || Infinity))) return [];
+  const saida = [];
+  const cortex = DADOS.itens.find((i) => i.cortex);
+  if (cortex && rng() < (Number(D.chanceDoCortex) || 0)) saida.push(cortex.itemId);
+  if (MEMORIAS.length && rng() < (Number(D.chanceDaMemoria) || 0)) saida.push(MEMORIAS[Math.floor(rng() * MEMORIAS.length)].itemId);
+  return saida;
+}
+
+/** A peça do mapa final da Memória (`criarMapa(tier)`: a peça de mapa sorteada do T16 — o Único vira Normal, como os do encontro). */
+export function mapaDaMemoria(memoriaId, criarMapa) {
+  const m = memoria(memoriaId);
+  const c = m ? chefe(m.memoria) : null;
+  const doMapa = c?.mapa ? mapaDoGuardiao(c.mapa) : null;
+  if (!doMapa) return null;
+  let peca = criarMapa(doMapa.tier);
+  if (peca?.poe?.unico) peca = criarMapa(doMapa.tier, 'normal');
+  return comEncontro(peca, c);
+}

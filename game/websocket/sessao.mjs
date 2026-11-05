@@ -1591,6 +1591,13 @@ export class Sessao {
         this.aplicar(MapasDispositivo.definirInfluencia(this.estado, m.influencia ?? null));
         return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
       }
+      // (05/11, etapa 4) a Memória vira o mapa final da linha dela e abre (o chefe dele solta o Eco)
+      case 'usarMemoria': {
+        const r = MapasDispositivo.usarMemoria(this.estado, { memoria: m.memoria, mode: m.mode, strategy: m.strategy }, { antes: () => Party.antesDeSairDaCacada(this) });
+        this.aplicar(r);
+        if (r.ok && this.estado.hunt?.mapa) Party.seguirOLider(this);
+        return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
+      }
       // (05/11, etapa 3) a Maven nos próximos mapas: os chefes T14+ ela testemunha (os convites dela)
       case 'mavenDoAtlas': {
         this.aplicar(MapasDispositivo.definirMaven(this.estado, !!m.ligada));
