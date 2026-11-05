@@ -1,0 +1,6 @@
+{
+ "_nota": "Correções dos TIERS de prefixo/sufixo que a coleção importou errados (entram por cima na leitura — systems/itens-poe/catalogo.mjs → corrigirAfixos —, para uma nova importação não desfazer). 05/11: o tier 1 do sufixo de frasco \"do Antídoto\" (FlaskDispellPoison, ilvl 82) dos Frascos de Vida e de Mana veio com o texto \"Adiciona a de Dano de Raio\" e sem faixa; o poedb (e o mesmo tier do Frasco Híbrido) é a imunidade a Envenenamento por 15–17 s.",
+ "tiers": [
+  { "classes": ["Life_Flasks", "Mana_Flasks"], "familia": "FlaskDispellPoison", "nome": "do Antídoto", "modelo": "Concede Imunidade a Envenenamento por {0} segundos se usado enquanto Envenenado", "faixas": [[15, 17]] }
+ ]
+}
