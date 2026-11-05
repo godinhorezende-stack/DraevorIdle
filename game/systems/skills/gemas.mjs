@@ -1382,6 +1382,8 @@ export function catalogoDaLoja(estado) {
       categoria: def.categoria,
       categoriaNome: CATEGORIAS[def.categoria],
       nome: `Gema: ${def.nomePt ?? def.nome} (${r})${def.tipo === 'support' ? ' · suporte' : ''}`,
+      // (05/11, dono: "colocar uma busca, separar filtro, ataques, suportes e etc") as tags do PoE da gema (Ataque, Magia, Fogo…): os filtros da loja
+      ...(def.poe ? { tags: (def.tags ?? []).filter((t) => t.startsWith('poe:')).map((t) => t.slice(4)) } : {}),
       buy: precoNaLoja(def, r),
       tenho: tenho(def.itemId, r),
     }))

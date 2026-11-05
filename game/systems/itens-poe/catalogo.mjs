@@ -55,6 +55,30 @@ function corrigirUnicos(cat) {
     (classe.unicos ??= []).push({ slug: n.slug, nome: n.nome, base: n.base, requisitos: {}, atributosDaBase: {}, modificadores: n.modificadores, icone: existsSync(join(PASTA_DAS_IMAGENS, icone)) ? icone : null, corrigidoPeloPoedb: true });
   }
 }
+const ARQUIVO_DAS_CORRECOES_DE_AFIXOS = new URL('../../gamedata/itens-poe/afixos-correcoes.json', import.meta.url);
+/**
+ * (05/11) As CORREÇÕES DOS TIERS de prefixo/sufixo (`gamedata/itens-poe/afixos-correcoes.json`): o tier que a coleção importou com o texto
+ * errado ("Adiciona a de Dano de Raio" no lugar da imunidade a Envenenamento do "do Antídoto") recebe o modelo e as faixas certas na leitura.
+ */
+function corrigirAfixos(cat) {
+  if (!existsSync(ARQUIVO_DAS_CORRECOES_DE_AFIXOS)) return;
+  const { tiers = [] } = JSON.parse(readFileSync(ARQUIVO_DAS_CORRECOES_DE_AFIXOS, 'utf8'));
+  for (const c of tiers) {
+    for (const classe of c.classes ?? []) {
+      for (const pool of Object.values(cat.classes[classe]?.paginas ?? {})) {
+        for (const g of [...(pool.prefixos ?? []), ...(pool.sufixos ?? [])]) {
+          if (g.familia !== c.familia) continue;
+          for (const t of g.tiers ?? []) {
+            if (t.nome !== c.nome) continue;
+            t.modelo = c.modelo;
+            t.faixas = c.faixas;
+            t.texto = c.modelo.replace(/\{(\d+)\}/g, (_, i) => `(${c.faixas[i][0]}—${c.faixas[i][1]})`);
+          }
+        }
+      }
+    }
+  }
+}
 const ARQUIVO_DOS_IMPLICITOS_SORTEADOS = new URL('../../gamedata/itens-poe/implicitos-sorteados.json', import.meta.url);
 /**
  * Os IMPLÍCITOS SORTEADOS (dono, 11/10 — `gamedata/itens-poe/implicitos-sorteados.json`, do poedb): a base que no PoE não tem implícito
@@ -149,6 +173,7 @@ export function catalogo() {
     if (mapas) mapas.unicos = (mapas.unicos ?? []).flatMap((u) => (mapas.bases ?? []).filter((b) => !u.tiers?.length || u.tiers.includes(b.atributos?.tier)).map((b) => ({ ...u, base: b.nome })));
     if (mapas) cache.classes[mapas.id] = mapas;
     corrigirUnicos(cache);
+    corrigirAfixos(cache);
     implicitosSorteados(cache);
     linhasSorteadas(cache);
     ramificadoras(cache);

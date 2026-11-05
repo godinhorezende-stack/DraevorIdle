@@ -23471,6 +23471,10 @@ function fileiraDaLoja(body, { sub, linhas, lado, loja, vazio }) {
   if (!existe(ctx.tabs[chave])) ctx.tabs[chave] = chaveDa(linhas[0]);
 
   const lista = el('div', 'loja-npc');
+  // (05/11, dono: "colocar uma busca, separar filtro, ataques, suportes e etc") a BUSCA e os FILTROS da loja de gemas (as tags do PoE de cada
+  // linha): filtram a lista na hora, sem redesenhar (a busca não perde o foco); a escolha fica em `ctx.tabs` (a tela se refaz a cada compra).
+  const filtros = linhas.some((l) => l.tags) ? barraDeFiltrosDaLoja(lista) : null;
+  if (filtros) body.append(filtros.barra);
   let categoriaAnterior = null;
   for (const linha of linhas) {
     // As categorias (a loja de gemas: Ataque, Cura, Reforço, Suporte — como no Path of Exile).
@@ -23503,11 +23507,101 @@ function fileiraDaLoja(body, { sub, linhas, lado, loja, vazio }) {
       ctx.tabs[chave] = chaveDa(linha);
       ctx.redraw();
     };
+    card.dataset.busca = semAcento(linha.nome);
+    card.__linha = linha;
     lista.append(card);
   }
   body.append(lista);
+  filtros?.aplicar();
 
   body.append(balcaoDaLoja({ linha: linhas.find((l) => chaveDa(l) === ctx.tabs[chave]), lado, loja }));
+}
+
+/** Os TIPOS do filtro da loja de gemas (pelas tags do PoE; Suporte e Moedas pela categoria da linha). */
+const TIPOS_DA_LOJA = [
+  { id: 'todas', nome: 'Todas', cabe: () => true },
+  { id: 'ataque', nome: 'Ataques', cabe: (l) => l.categoria !== 'suporte' && l.tags?.includes('Ataque') },
+  { id: 'magia', nome: 'Magias', cabe: (l) => l.categoria !== 'suporte' && l.tags?.includes('Magia') },
+  { id: 'lacaio', nome: 'Lacaios', cabe: (l) => l.categoria !== 'suporte' && l.tags?.includes('Lacaio') },
+  { id: 'aura', nome: 'Auras e Arautos', cabe: (l) => l.categoria !== 'suporte' && (l.tags?.includes('Aura') || l.tags?.includes('Arauto')) },
+  { id: 'maldicao', nome: 'Maldições', cabe: (l) => l.categoria !== 'suporte' && (l.tags?.includes('Maldição') || l.tags?.includes('Marca')) },
+  { id: 'armadilha', nome: 'Armadilhas, Minas e Totens', cabe: (l) => l.categoria !== 'suporte' && ['Armadilha', 'Mina', 'Totem'].some((t) => l.tags?.includes(t)) },
+  { id: 'vaal', nome: 'Vaal', cabe: (l) => l.tags?.includes('Vaal') },
+  { id: 'suporte', nome: 'Suportes', cabe: (l) => l.categoria === 'suporte' },
+  { id: 'moedas', nome: 'Moedas', cabe: (l) => l.categoria === 'orbes' },
+];
+const ELEMENTOS_DA_LOJA = ['Fogo', 'Gelo', 'Raio', 'Físico', 'Caos'];
+
+/**
+ * A barra de filtros da loja de gemas: a busca pelo nome, o tipo (Ataques, Magias, Lacaios… Suportes, Moedas) e o elemento. Filtra os cartões
+ * de `lista` (e esconde o título da categoria que ficou vazia, com a contagem do que sobrou). `{ barra, aplicar }`.
+ */
+function barraDeFiltrosDaLoja(lista) {
+  const { tabs } = ctx;
+  tabs.lojaTipo ??= 'todas';
+  tabs.lojaElemento ??= null;
+  tabs.lojaBusca ??= '';
+  const barra = el('div', 'loja-filtros');
+  const busca = el('input', 'loja-busca');
+  busca.type = 'search';
+  busca.placeholder = 'Buscar gema pelo nome…';
+  busca.value = tabs.lojaBusca;
+  const contagem = el('small', 'loja-filtros-conta');
+  const linhaDaBusca = el('div', 'loja-filtros-linha');
+  linhaDaBusca.append(busca, contagem);
+  const chips = (lista0, atual, aoEscolher, nomeDe = (x) => x) => {
+    const nav = el('div', 'loja-chips');
+    for (const x of lista0) {
+      const id = x.id ?? x;
+      const b = el('button', `loja-chip${atual() === id ? ' ativo' : ''}`, nomeDe(x));
+      b.type = 'button';
+      b.onclick = () => {
+        aoEscolher(id);
+        for (const o of nav.children) o.classList.toggle('ativo', o === b && atual() === id);
+        aplicar();
+      };
+      nav.append(b);
+    }
+    return nav;
+  };
+  const tipos = chips(TIPOS_DA_LOJA, () => tabs.lojaTipo, (id) => (tabs.lojaTipo = id), (t) => t.nome);
+  const elementos = chips(ELEMENTOS_DA_LOJA, () => tabs.lojaElemento, (id) => (tabs.lojaElemento = tabs.lojaElemento === id ? null : id));
+  barra.append(linhaDaBusca, tipos, elementos);
+  function aplicar() {
+    const termo = semAcento(tabs.lojaBusca.trim());
+    const tipo = TIPOS_DA_LOJA.find((t) => t.id === tabs.lojaTipo) ?? TIPOS_DA_LOJA[0];
+    let visiveis = 0;
+    let titulo = null;
+    let noTitulo = 0;
+    const fechar = () => {
+      if (titulo) titulo.hidden = noTitulo === 0;
+      if (titulo) titulo.textContent = `${titulo.dataset.nome} · ${noTitulo}`;
+    };
+    for (const n of lista.children) {
+      if (n.tagName === 'H4') {
+        fechar();
+        titulo = n;
+        titulo.dataset.nome ??= n.textContent.replace(/ · \d+$/, '');
+        noTitulo = 0;
+        continue;
+      }
+      const l = n.__linha;
+      if (!l) continue;
+      const vale = (!termo || n.dataset.busca.includes(termo)) && tipo.cabe(l) && (!tabs.lojaElemento || l.tags?.includes(tabs.lojaElemento));
+      n.hidden = !vale;
+      if (vale) {
+        visiveis++;
+        noTitulo++;
+      }
+    }
+    fechar();
+    contagem.textContent = `${visiveis} ${visiveis === 1 ? 'item' : 'itens'}`;
+  }
+  busca.oninput = () => {
+    tabs.lojaBusca = busca.value;
+    aplicar();
+  };
+  return { barra, aplicar };
 }
 
 /*

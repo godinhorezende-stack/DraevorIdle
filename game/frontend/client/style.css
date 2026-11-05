@@ -28509,3 +28509,14 @@ html[data-perfil="deitado"] #actionbar .controls > #auto-movel .auto-toggle { wi
 .merc-mochila h5 { margin: 0; font: 700 11px/1.2 var(--font-heading); letter-spacing: .1em; text-transform: uppercase; color: var(--mc-apagado); }
 .merc-mochila-grade { display: flex; flex-wrap: wrap; gap: 6px; }
 .merc-peca { width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; padding: 0; }
+
+/* (05/11) A busca e os filtros da loja de gemas (Zuma): a busca pelo nome, o tipo (Ataques, Magias… Suportes, Moedas) e o elemento. */
+.loja-filtros { display: grid; gap: 6px; margin: 4px 0 8px; }
+.loja-filtros-linha { display: flex; align-items: center; gap: 10px; }
+.loja-busca { flex: 1 1 auto; min-width: 0; padding: 7px 10px; border: 1px solid #2c4a4a; border-radius: 6px; background: #0d1718; color: #dfe9e8; font: inherit; }
+.loja-busca:focus { outline: none; border-color: #1ba29b; box-shadow: 0 0 0 2px #1ba29b33; }
+.loja-filtros-conta { color: #8aa3a1; white-space: nowrap; }
+.loja-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.loja-chip { padding: 3px 10px; border: 1px solid #2c4a4a; border-radius: 999px; background: #101b1c; color: #9fb6b4; font-size: 12px; cursor: pointer; }
+.loja-chip:hover { color: #dfe9e8; border-color: #3d6766; }
+.loja-chip.ativo { background: #13403e; border-color: #1ba29b; color: #e6fbf9; }
