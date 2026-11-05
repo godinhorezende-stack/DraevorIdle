@@ -63,7 +63,8 @@ const REG = { porBase: new Map(), porId: new Map(), naoEquipaveis: [], mapas: ne
  * As classes de frasco que entram no jogo (o cinto de frascos — `itens-poe/frascos.mjs`). (12/10: + as Tinturas, POR ÚLTIMO — os ids das
  * bases delas vêm depois dos frascos, sem mudar nenhum id que já existia; `itens-poe/tinturas.mjs`.)
  */
-export const FRASCOS = ['Life_Flasks', 'Mana_Flasks', 'Utility_Flasks', 'Tinctures'];
+// (04/11: + os Frascos Híbridos, DEPOIS das Tinturas — os ids das bases deles vêm por último, sem mudar nenhum id que já existia.)
+export const FRASCOS = ['Life_Flasks', 'Mana_Flasks', 'Utility_Flasks', 'Tinctures', 'Hybrid_Flasks'];
 /**
  * (15/10, lote 27) As JOIAS dos encaixes da árvore de passivas (dono, 14/10: "Criar os encaixes de joia" — `passivas/joias.mjs`), com o id
  * FIXO de cada base (7.800.000 + n, fora da sequência das bases: nenhum id que já existia muda). As Ramificadoras (os encaixes das Joias
@@ -317,7 +318,7 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
   const R = regras.raridades[gerada.raridade] ?? {};
   // Frasco: não dá atributo ao personagem (só enquanto o efeito dura, pelo cinto — `frascos.mjs`); o balão leva o resumo com os mods aplicados.
   if (FRASCOS.includes(gerada.classe)) {
-    const poe = { base: gerada.base, classe: gerada.classe, raridade: gerada.raridade, raridadeNome: R.nome ?? gerada.raridade, cor: R.cor ?? null, ilvl: gerada.ilvl, nome: gerada.nome, ...(gerada.unico ? { unico: gerada.unico } : {}),
+    const poe = { base: gerada.base, classe: gerada.classe, raridade: gerada.raridade, raridadeNome: R.nome ?? gerada.raridade, cor: R.cor ?? null, ilvl: gerada.ilvl, nome: gerada.nome, ...(gerada.unico ? { unico: gerada.unico } : {}), ...(gerada.corrompido ? { corrompido: true } : {}),
       atributos: a, implicitos: gerada.implicitos ?? [], prefixos: gerada.prefixos ?? [], sufixos: gerada.sufixos ?? [], modificadores: gerada.modificadores ?? [] };
     const par = Frascos.parametros({ poe });
     return { id, count: 1, poe: { ...poe, estados: par.estadosPorMod, af: {}, frasco: Frascos.resumo({ poe }), tv: VERSAO_DA_TRADUCAO } };
@@ -326,7 +327,7 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
   // quantidade/raridade de itens, tamanho do grupo, os efeitos) e o estado de cada linha.
   // (O MAPA ÚNICO leva qual é — `unico`, o slug —: os efeitos de cada linha vêm do cadastro dele; e as notas das linhas sem efeito.)
   if (gerada.classe === Mapas.CLASSE) {
-    const poe = { base: gerada.base, classe: gerada.classe, raridade: gerada.raridade, raridadeNome: R.nome ?? gerada.raridade, cor: R.cor ?? null, ilvl: gerada.ilvl, nome: gerada.nome, ...(gerada.unico ? { unico: gerada.unico } : {}),
+    const poe = { base: gerada.base, classe: gerada.classe, raridade: gerada.raridade, raridadeNome: R.nome ?? gerada.raridade, cor: R.cor ?? null, ilvl: gerada.ilvl, nome: gerada.nome, ...(gerada.unico ? { unico: gerada.unico } : {}), ...(gerada.corrompido ? { corrompido: true } : {}),
       atributos: a, implicitos: gerada.implicitos ?? [], prefixos: gerada.prefixos ?? [], sufixos: gerada.sufixos ?? [], modificadores: gerada.modificadores ?? [] };
     const mapa = Mapas.resumo({ poe });
     // (O único tem o id dele no tier — o desenho do único com o número —; sem id cadastrado, o da base do tier.)
@@ -486,7 +487,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // não existem; o "tamanho do Personagem reduzido" (t minúsculo — o Ninho do Rato) casa)
 // (83 — 03/11, frente mundo + dados: o Foco de Combate só nos 3 elementos do PoE — Fogo, Gelo e Raio; o curinga {E} também casava "Caos" e gerava
 // `raio_prisma_*_chaos`, não cadastrado)
-export const VERSAO_DA_TRADUCAO = 83;
+// (84 — 04/11, a auditoria dos itens: as Réplicas que faltavam — "Seu Dano Físico pode Congelar", "Não Pode Drenar ou Regenerar Mana", a Velocidade de
+// Ataque/Movimento "enquanto Resfriado", o Crescimento Frágil (`condicoes-poe.crescimentoFragil`) e a Réplica: Talento Puro (`passivas/arvore` TALENTO_PURO))
+export const VERSAO_DA_TRADUCAO = 84;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

@@ -7,7 +7,7 @@ import { CATEGORIA } from './itens-poe-balao.mjs';
 export const SECOES = [
   { id: 'currency', titulo: 'Moedas', sub: 'Moedas, Orbs, fragmentos e itens de troca' },
   { id: 'equipamentos', titulo: 'Equipáveis', sub: 'Armas, armaduras e acessórios, por categoria' },
-  { id: 'frascos', titulo: 'Frascos', sub: 'Frascos de Vida, Mana e Utilidade, e Tinturas' },
+  { id: 'frascos', titulo: 'Frascos', sub: 'Frascos de Vida, Mana, Híbridos e Utilidade, e Tinturas' },
   { id: 'gemas', titulo: 'Gemas', sub: 'Gemas de habilidade e de suporte' },
   { id: 'mapas', titulo: 'Mapas', sub: 'Mapas do Atlas' },
   { id: 'quest', titulo: 'Itens de quest', sub: 'Itens de missão dos Atos' },
@@ -15,7 +15,7 @@ export const SECOES = [
 ];
 /** As seções que se dividem pela categoria do PoE (`grupos`). */
 const COM_GRUPOS = new Set(['equipamentos', 'frascos']);
-const FRASCOS = new Set(['Life_Flasks', 'Mana_Flasks', 'Utility_Flasks', 'Tinctures']);
+const FRASCOS = new Set(['Life_Flasks', 'Mana_Flasks', 'Hybrid_Flasks', 'Utility_Flasks', 'Tinctures']);
 
 /** A ordem dos GRUPOS (Equipáveis e Frascos): armas, mão secundária, armaduras, acessórios, frascos e joias (o que não está aqui vai no fim). */
 export const ORDEM_DAS_CLASSES = [
@@ -24,7 +24,7 @@ export const ORDEM_DAS_CLASSES = [
   'Shields', 'Quivers',
   'Body_Armours', 'Helmets', 'Gloves', 'Boots',
   'Belts', 'Rings', 'Amulets', 'Trinkets',
-  'Life_Flasks', 'Mana_Flasks', 'Utility_Flasks', 'Tinctures',
+  'Life_Flasks', 'Mana_Flasks', 'Hybrid_Flasks', 'Utility_Flasks', 'Tinctures',
   'Jewels', 'Abyss_Jewels',
 ];
 
@@ -36,7 +36,7 @@ const PLURAL = {
   One_Hand_Axes: 'Machados de Uma Mão', Two_Hand_Axes: 'Machados de Duas Mãos', One_Hand_Maces: 'Maças de Uma Mão', Two_Hand_Maces: 'Maças de Duas Mãos',
   Sceptres: 'Cetros', Staves: 'Cajados', Warstaves: 'Cajados de Guerra', Claws: 'Garras', Daggers: 'Adagas', Rune_Daggers: 'Adagas Rúnicas',
   Bows: 'Arcos', Wands: 'Varinhas', Fishing_Rods: 'Varas de Pesca',
-  Life_Flasks: 'Frascos de Vida', Mana_Flasks: 'Frascos de Mana', Utility_Flasks: 'Frascos de Utilidade', Tinctures: 'Tinturas',
+  Life_Flasks: 'Frascos de Vida', Mana_Flasks: 'Frascos de Mana', Hybrid_Flasks: 'Frascos Híbridos', Utility_Flasks: 'Frascos de Utilidade', Tinctures: 'Tinturas',
 };
 export const rotuloDoGrupo = (classe) => PLURAL[classe] ?? CATEGORIA[classe] ?? 'Outros equipamentos';
 

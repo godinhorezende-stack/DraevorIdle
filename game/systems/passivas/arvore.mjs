@@ -759,6 +759,10 @@ const TALENTO_PURO = {
   'talento_puro_marauder': ['Marauder', ['area_inc@corpo']], 'talento_puro_duelist': ['Duelist', ['life_leech']], 'talento_puro_ranger': ['Ranger', ['move_speed']],
   'talento_puro_shadow': ['Shadow', ['crit_chance']], 'talento_puro_witch': ['Witch', ['mana_regen_max_pct']], 'talento_puro_templar': ['Templar', ['elem_pen']],
   'talento_puro_scion': ['Scion', ['str', 'dex', 'int']],
+  // (04/11) a Réplica: Talento Puro — a mesma ligação, os bônus dela
+  'talento_puro_r_marauder': ['Marauder', ['life_regen_max_pct']], 'talento_puro_r_duelist': ['Duelist', ['alcance_corpo_m']], 'talento_puro_r_ranger': ['Ranger', ['frasco_cargas_recebidas']],
+  'talento_puro_r_shadow': ['Shadow', ['atk_speed', 'cast_speed']], 'talento_puro_r_witch': ['Witch', ['duracao_habilidades']], 'talento_puro_r_templar': ['Templar', ['block', 'spell_block']],
+  'talento_puro_r_scion': ['Scion', ['dmg_inc']],
 };
 /** A árvore alocada (`meus`) se conecta ao início de `classe`? O da sua classe, sempre; o de outra, com uma passiva sua encostada nele. */
 function conectaAoInicio(estado, meus, classe) {

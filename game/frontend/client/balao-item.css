@@ -267,6 +267,10 @@
 /* (lote 78) o encantamento (a Ramificadora), na cor do encantamento do PoE */
 .poe-mod.enc { color: #b8daf2; }
 .poe-mod.uni { color: #c8a26a; }
+/* (Frente D, 04/11) "Corrompido" no fim das linhas, no vermelho do PoE; e o texto de sabor do card, em itálico, no laranja-escuro do PoE (o
+   mesmo do `.poe-flavor` da árvore — style.css). A vaga do sabor fica vazia até o sabores.json chegar (itens-poe-balao.mjs). */
+.poe-balao .poe-corrompido { padding: 1px 10px; text-align: center; color: #d20000; }
+.poe-balao .poe-sabor { padding: 4px 14px 0; text-align: center; color: #af6025; font-style: italic; line-height: 1.35; }
 .poe-mod i { font: 10.5px var(--eng-mono); color: #5d6475; align-self: center; white-space: nowrap; }
 .poe-balao > :last-child { padding-bottom: 8px; }
 .poe-aviso { padding: 4px 10px 8px; color: var(--eng-aviso); font: 12px var(--eng-fonte); text-align: center; }

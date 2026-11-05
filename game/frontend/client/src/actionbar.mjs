@@ -616,7 +616,8 @@ export function configurarFrasco(vaga) {
       }
       body.append(acoes);
     } else {
-      const recurso = f.tipo === 'mana' ? 'mana' : 'vida';
+      // (o Frasco Híbrido: a vida OU a mana abaixo da porcentagem)
+      const recurso = f.tipo === 'mana' ? 'mana' : f.tipo === 'hibrido' ? 'vida ou mana' : 'vida';
       body.append(el('p', 'shop-note', `Na caçada o frasco é bebido sozinho quando a sua ${recurso} cair abaixo desta porcentagem (e não está recuperando de outro frasco).`));
       const linha = el('div', 'frasco-config');
       const faixa = document.createElement('input');

@@ -50,7 +50,9 @@ function corrigirUnicos(cat) {
   for (const n of novos) {
     const classe = cat.classes[n.classe];
     if (!classe || classe.unicos?.some((x) => x.slug === n.slug)) continue;
-    (classe.unicos ??= []).push({ slug: n.slug, nome: n.nome, base: n.base, requisitos: {}, atributosDaBase: {}, modificadores: n.modificadores, icone: null, corrigidoPeloPoedb: true });
+    // (O ícone deles não está na coleção: baixado à parte do poedb — dono, 04/11 — em `icones-itens/poe-itens/Unicos_poedb/<slug>.png`.)
+    const icone = `poe-itens/Unicos_poedb/${n.slug}.png`;
+    (classe.unicos ??= []).push({ slug: n.slug, nome: n.nome, base: n.base, requisitos: {}, atributosDaBase: {}, modificadores: n.modificadores, icone: existsSync(join(PASTA_DAS_IMAGENS, icone)) ? icone : null, corrigidoPeloPoedb: true });
   }
 }
 const ARQUIVO_DOS_IMPLICITOS_SORTEADOS = new URL('../../gamedata/itens-poe/implicitos-sorteados.json', import.meta.url);
@@ -106,6 +108,32 @@ function ramificadoras(cat) {
   const { tamanhos, notaveis, pedras, deslocamentos, mods } = JSON.parse(readFileSync(ARQUIVO_DAS_RAMIFICADORAS, 'utf8'));
   Object.defineProperty(cat, 'ramificadoras', { value: { tamanhos, notaveis, pedras, deslocamentos, mods }, enumerable: false });
 }
+// (Frente D, 04/11) Os SABORES (`gamedata/itens-poe/sabores.json`, tools/importar-sabores-poedb.mjs — o card do poedb): as MARCAS que mudam a
+// peça entram no catálogo na leitura — `corrompidoDeFabrica` no único e na base que o PoE já dá corrompidos (as ~50 únicas Vaal/corrompidas
+// do poedb, o Anel da Fenda, o Adorno do Ladrão: o gerador põe `corrompido` na peça, que não aceita mais moeda que altere) e `historico`
+// nas Joias Atemporais (a linha "Histórico" do card — a do "Limitado a: 1 Histórico" — entra na que o cadastro não trazia). O TEXTO de
+// sabor não entra aqui: o servidor não precisa dele (o balão do cliente busca o mesmo arquivo — `itens-poe-balao.mjs`).
+const ARQUIVO_DOS_SABORES = new URL('../../gamedata/itens-poe/sabores.json', import.meta.url);
+const LINHA_HISTORICO = { tipo: 'explicit', texto: 'Histórico', modelo: 'Histórico', faixas: [] };
+function sabores(cat) {
+  if (!existsSync(ARQUIVO_DOS_SABORES)) return;
+  const { unicos = {}, bases = {} } = JSON.parse(readFileSync(ARQUIVO_DOS_SABORES, 'utf8'));
+  for (const c of Object.values(cat.classes)) {
+    for (const u of c.unicos ?? []) {
+      const s = unicos[u.slug];
+      if (!s) continue;
+      if (s.corrompidoDeFabrica) u.corrompidoDeFabrica = true;
+      if (!s.historico) continue;
+      u.historico = true;
+      // (no PoE, a linha vem depois da conquista e antes do lembrete entre parênteses)
+      if (u.modificadores?.length && !u.modificadores.some((m) => m.texto === 'Histórico')) {
+        const lembrete = u.modificadores.findIndex((m) => /^\(/.test(m.texto));
+        u.modificadores = lembrete < 0 ? [...u.modificadores, { ...LINHA_HISTORICO }] : [...u.modificadores.slice(0, lembrete), { ...LINHA_HISTORICO }, ...u.modificadores.slice(lembrete)];
+      }
+    }
+    for (const b of c.bases ?? []) if (bases[b.id]?.corrompidoDeFabrica) b.corrompidoDeFabrica = true;
+  }
+}
 // Os MAPAS do endgame (classe Mapas — `gamedata/itens-poe/mapas.json`, tools/montar-mapas-poe.mjs): ficam num arquivo à parte (o importador
 // refaz este inteiro) e entram no catálogo na leitura, como mais uma classe. Os ids deles são fixos (`itens-poe/jogo.iniciar`).
 const ARQUIVO_DOS_MAPAS = new URL('../../gamedata/itens-poe/mapas.json', import.meta.url);
@@ -124,6 +152,7 @@ export function catalogo() {
     implicitosSorteados(cache);
     linhasSorteadas(cache);
     ramificadoras(cache);
+    sabores(cache);
   }
   return cache;
 }

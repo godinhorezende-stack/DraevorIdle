@@ -3,7 +3,8 @@
 // Lê a coleção local (`poe-itens/**`, extraída do PoEDB; ver docs/engine/02-referencia-poe.md) e grava UM catálogo normalizado:
 // classes de item → bases (requisitos, atributos, implícitos, ícone) e o pool `normal` de cada arquétipo (prefixos e sufixos por
 // FAMÍLIA, com os tiers: nome, iLvl, peso, texto e as faixas numéricas), mais os únicos (mods fixos em texto). Nada é inventado: o que
-// a fonte não traz fica `null`, e cada classe guarda as URLs de origem.
+// a fonte não traz fica `null`, e cada classe guarda as URLs de origem. (04/11: + os FRASCOS HÍBRIDOS, que a coleção não tem — vêm das
+// páginas do poedb já baixadas com o Scrapling, `POEDB_HTML`; ver `classeHibrida`.)
 //
 // A COLEÇÃO fica fora do repositório (`REFERENCIAS_POE`, padrão `/home/deploy/referencias-poe`): é só a fonte deste tool. O que o JOGO
 // usa entra no repositório (dono, 08/10, revogando a decisão de 04/10 de deixar tudo fora): o catálogo em
@@ -64,7 +65,8 @@ export function imagensDoCatalogo(dados) {
   const andar = (x) => {
     if (Array.isArray(x)) for (const v of x) andar(v);
     else if (x && typeof x === 'object') for (const v of Object.values(x)) andar(v);
-    else if (typeof x === 'string' && /\.(png|webp|jpe?g|gif|svg)$/i.test(x)) refs.add(x.replace(/^\/+/, ''));
+    // (O link do poedb — `relatorio.hibridos.icones`, o ícone que falta baixar — não é imagem da coleção.)
+    else if (typeof x === 'string' && !/^https?:/i.test(x) && /\.(png|webp|jpe?g|gif|svg)$/i.test(x)) refs.add(x.replace(/^\/+/, ''));
   };
   andar(dados);
   return [...refs].sort();
@@ -75,8 +77,10 @@ export function imagensDoCatalogo(dados) {
  * endgame (`poe-itens/Mapas/`: `icones/Map_Tier_N.png`, `unicos/<Único>.png` e `unicos/<Único>_T<N>.png`) são gravados por
  * game/tools/importar-icones-mapas.mjs, importar-mapas-unicos.mjs e montar-mapas-poe.mjs e referenciados por `mapas.json` (os `_T<N>`
  * nem aparecem lá: `itens-poe/mapas.mjs` `iconeDoUnico` monta o nome) — apagar a pasta inteira sumia com eles (visto em 11/10).
+ * E `poe-itens/Unicos_poedb/`: os ícones dos únicos que a coleção não tem (os `novos` de `unicos-correcoes.json`), baixados à parte do
+ * poedb (dono, 04/11) — `systems/itens-poe/catalogo.mjs` `corrigirUnicos` os liga.
  */
-export const PASTAS_DE_OUTROS_TOOLS = ['poe-itens/Mapas'];
+export const PASTAS_DE_OUTROS_TOOLS = ['poe-itens/Mapas', 'poe-itens/Unicos_poedb'];
 
 /** Apaga o conteúdo de `pasta`, menos os caminhos de `preservar` (relativos a ela) — as pastas no caminho até eles ficam. */
 function limparMenos(pasta, preservar) {
@@ -242,7 +246,160 @@ export function slugsDistintos(bases) {
   });
 }
 
-export function importar(origem = ORIGEM) {
+/**
+ * Os FRASCOS HÍBRIDOS do PoE 1 (classe "Frascos Híbridos" — `Hybrid_Flasks`): a coleção `poe-itens` não tem a classe, então vêm das páginas do
+ * poedb pt já baixadas com o Scrapling (`POEDB_HTML`, padrão `/home/deploy/scrapling/saida/html`; leitura só como dado). A base, de
+ * `<Slug>.html`: "Recupera N de Vida por S Segundo", "Recupera N de Mana por S Segundo", "Consome X de Y Cargas na utilização" e o DropLevel
+ * (o requisito de nível dos frascos é o DropLevel: Médio de Vida 3 → "Requer Nível 3", Divino 60 → 60; o card do híbrido não traz a linha,
+ * mas o único do Grande — Divinação Destilada — pede o 30 do DropLevel dele). O POOL: os mods das páginas de Vida e de Mana (o `ModsView` do
+ * #ModifiersCalc) que podem nascer no híbrido — o poedb lista em `spawn_no` as tags do peso fora a `flask`: o mod que tem `hybrid_flask` ali
+ * não nasce nele (o "Vida Recuperada… / Retira…% da Mana"), e o que tem a tag da própria página (`life_flask` no de Vida) só nasce na classe
+ * dela (o "Recupera um adicional de…% em 10 segundos" — o híbrido tem as tags `hybrid_flask, flask`). O peso é o `DropChance` (o da tag `flask`).
+ * (04/11, auditoria dos itens: os 4 que faltavam; o dono pediu a linha inteira, com o Grande e o Consagrado — no poedb são bases normais,
+ * DropLevel 30 e 60, além de serem as dos únicos Divinação Destilada e O Jarro Contorcido.) O ÍCONE veio à parte (dono, 04/11: baixado
+ * do poedb para `original/poe-itens/Frascos/Hybrid_Flasks/icones/`); enquanto o arquivo não está lá, `icone` fica null e o relatório dá o link.
+ */
+export const POEDB_HTML = process.env.POEDB_HTML ?? '/home/deploy/scrapling/saida/html';
+export const FRASCOS_HIBRIDOS = ['Small_Hybrid_Flask', 'Medium_Hybrid_Flask', 'Large_Hybrid_Flask', 'Colossal_Hybrid_Flask', 'Sacred_Hybrid_Flask', 'Hallowed_Hybrid_Flask'];
+const PAGINAS_DO_POOL_HIBRIDO = [['Life_Flasks', 'life_flask'], ['Mana_Flasks', 'mana_flask']];
+const tirarHtml = (s) => String(s ?? '').replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"').trim();
+
+/** O objeto do `new ModsView({...})` de uma página de classe do poedb (o JSON com `normal`, `master`…), ou null. */
+export function modsViewDoHtml(html) {
+  const i = html.indexOf('new ModsView(');
+  if (i < 0) return null;
+  const ini = html.indexOf('{', i);
+  let prof = 0;
+  let aspas = false;
+  for (let k = ini; k < html.length; k++) {
+    const ch = html[k];
+    if (aspas) {
+      if (ch === '\\') k++;
+      else if (ch === '"') aspas = false;
+      continue;
+    }
+    if (ch === '"') aspas = true;
+    else if (ch === '{') prof++;
+    else if (ch === '}' && --prof === 0) return JSON.parse(html.slice(ini, k + 1));
+  }
+  return null;
+}
+
+/** A base do frasco híbrido pela página dela no poedb (`<Slug>.html`): `{ nome, nivelDrop, vida, mana, cargasPorUso, cargasMaximas, iconeUrl }`. */
+export function baseHibridaDoHtml(html) {
+  const texto = tirarHtml(html.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<style[\s\S]*?<\/style>/g, '').replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ');
+  const rec = (recurso) => {
+    const m = texto.match(new RegExp(`Recupera (\\d+(?:\\.\\d+)?) de ${recurso} por (\\d+(?:\\.\\d+)?) Segundo`));
+    return m ? { quantidade: Number(m[1]), segundos: Number(m[2]) } : null;
+  };
+  const cargas = texto.match(/Consome (\d+) de (\d+) Cargas na utilização/);
+  const drop = html.match(/DropLevel[\s\S]*?<\/td>\s*<td[^>]*>\s*(\d+)/);
+  const nome = tirarHtml(html.match(/<meta property="og:title" content="([^"]+)"/)?.[1] ?? html.match(/<title>([^<]+?) - PoEDB/)?.[1]) || null;
+  return {
+    nome,
+    nivelDrop: drop ? Number(drop[1]) : null,
+    vida: rec('Vida'),
+    mana: rec('Mana'),
+    cargasPorUso: cargas ? Number(cargas[1]) : null,
+    cargasMaximas: cargas ? Number(cargas[2]) : null,
+    iconeUrl: html.match(/https:\/\/cdn\.poedb\.tw\/image\/Art\/2DItems\/Flasks\/hybridflask\d+\.webp/)?.[0] ?? null,
+  };
+}
+
+/** O nome do mod no poedb pt ("<if:MS>{Catalisado}<elif:FS>{Catalisada}…" → "Catalisado"). */
+const nomeDoMod = (n) => tirarHtml(String(n ?? '').match(/^<if:MS>\{([^}]*)\}/)?.[1] ?? n);
+
+/**
+ * O pool `normal` do frasco híbrido (prefixos e sufixos por família, no formato do catálogo) a partir dos `ModsView` das páginas de Vida e de
+ * Mana: os mods que nascem no híbrido (regra no comentário de `POEDB_HTML`), sem repetir o mesmo mod das duas páginas. `tagsDaFamilia`: as
+ * tags que o catálogo já dá a cada família (as das páginas de Vida/Mana).
+ */
+export function poolHibrido(paginas, tagsDaFamilia = {}) {
+  const vistos = new Set();
+  const grupos = new Map();
+  let ordem = 0;
+  for (const [view, tagDaPagina] of paginas) {
+    for (const m of view?.normal ?? []) {
+      const nao = m.spawn_no ?? [];
+      if (nao.includes('hybrid_flask') || nao.includes(tagDaPagina)) continue;
+      const lado = String(m.ModGenerationTypeID) === '1' ? 'prefixo' : String(m.ModGenerationTypeID) === '2' ? 'sufixo' : null;
+      if (!lado) continue;
+      const familia = (m.ModFamilyList ?? [])[0] ?? null;
+      const texto = String(m.str ?? '').split(/<br\s*\/?>/).map(tirarHtml).filter(Boolean).join(' / ');
+      const chave = `${lado}|${familia}|${m.Level}|${nomeDoMod(m.Name)}|${texto}`;
+      if (vistos.has(chave)) continue;
+      vistos.add(chave);
+      const g = grupos.get(`${lado}|${familia}`) ?? { familia, lado, tiers: [] };
+      grupos.set(`${lado}|${familia}`, g);
+      g.tiers.push({ nome: nomeDoMod(m.Name), nivel: Number(m.Level), peso: Number(m.DropChance) || 0, texto, ordem: ordem++ });
+    }
+  }
+  const pool = { prefixos: [], sufixos: [] };
+  for (const g of grupos.values()) {
+    // (Como na coleção: o tier 1 é o de iLvl mais alto e o mesmo iLvl dá o mesmo tier; no empate, a ordem do poedb.)
+    const niveis = [...new Set(g.tiers.map((t) => t.nivel))].sort((a, b) => b - a);
+    const tiers = g.tiers.sort((a, b) => b.nivel - a.nivel || a.ordem - b.ordem).map((t) => ({ tier: niveis.indexOf(t.nivel) + 1, nome: t.nome, nivel: t.nivel, peso: t.peso, texto: t.texto }));
+    const grupo = normalizarGrupo({ familia: g.familia, tags: tagsDaFamilia[g.familia] ?? [], ilvl_max: Math.max(...tiers.map((t) => t.nivel)), tiers }, g.lado);
+    (g.lado === 'prefixo' ? pool.prefixos : pool.sufixos).push(grupo);
+  }
+  return pool;
+}
+
+/**
+ * A classe `Hybrid_Flasks` do catálogo (as bases de `FRASCOS_HIBRIDOS` e o pool) lida das páginas do poedb em `html`. `classes`: as que o
+ * importador já montou (as tags das famílias vêm das de Vida e de Mana). Devolve `{ classe, icones: [{ slug, url }] (os que ainda faltam na coleção), faltando: [...] }`.
+ */
+export function classeHibrida(html = POEDB_HTML, classes = {}) {
+  const ler = (slug) => (existsSync(join(html, `${slug}.html`)) ? readFileSync(join(html, `${slug}.html`), 'utf8') : null);
+  const faltando = [];
+  const paginas = [];
+  for (const [pagina, tag] of PAGINAS_DO_POOL_HIBRIDO) {
+    const h = ler(pagina);
+    const view = h ? modsViewDoHtml(h) : null;
+    if (!view) faltando.push(`${pagina}.html (ModsView)`);
+    else paginas.push([view, tag]);
+  }
+  const tagsDaFamilia = {};
+  for (const id of ['Life_Flasks', 'Mana_Flasks']) for (const g of Object.values(classes[id]?.paginas ?? {}).flatMap((p) => [...p.prefixos, ...p.sufixos])) tagsDaFamilia[g.familia] ??= g.tags;
+  const icones = [];
+  const bases = [];
+  for (const slug of FRASCOS_HIBRIDOS) {
+    const h = ler(slug);
+    const b = h ? baseHibridaDoHtml(h) : null;
+    if (!b?.vida || !b?.mana || !b.cargasMaximas) { faltando.push(`${slug}.html`); continue; }
+    const icone = `poe-itens/Frascos/Hybrid_Flasks/icones/${slug}.png`;
+    const temIcone = existsSync(join(ORIGINAL, icone));
+    if (!temIcone) icones.push({ slug, url: b.iconeUrl });
+    bases.push({
+      id: `Hybrid_Flasks/${slug}`,
+      slug,
+      nome: b.nome,
+      requisitos: { nivel: b.nivelDrop > 1 ? b.nivelDrop : null, forca: null, destreza: null, inteligencia: null },
+      // (Os dois recursos: `recupera` é o de Vida — o mesmo campo dos Frascos de Vida — e `recupera_mana` o de Mana.)
+      atributos: {
+        recupera: { recurso: 'vida', quantidade: b.vida.quantidade, segundos: b.vida.segundos },
+        recupera_mana: { recurso: 'mana', quantidade: b.mana.quantidade, segundos: b.mana.segundos },
+        cargas_por_uso: b.cargasPorUso,
+        cargas_maximas: b.cargasMaximas,
+        cargas_atuais: b.cargasMaximas,
+      },
+      implicitos: [],
+      icone: temIcone ? icone : null,
+      pool: paginas.length ? '*' : null,
+    });
+  }
+  const classe = {
+    id: 'Hybrid_Flasks',
+    grupo: 'Frascos',
+    fontes: ['https://poedb.tw/pt/Life_Flasks#ModifiersCalc', 'https://poedb.tw/pt/Mana_Flasks#ModifiersCalc', ...FRASCOS_HIBRIDOS.map((s) => `https://poedb.tw/pt/${s}`)],
+    bases,
+    paginas: paginas.length ? { '*': poolHibrido(paginas, tagsDaFamilia) } : {},
+    unicos: [],
+  };
+  return { classe, icones, faltando };
+}
+
+export function importar(origem = ORIGEM, { html = origem === ORIGEM ? POEDB_HTML : null } = {}) {
   const relatorio = { classes: 0, bases: 0, basesSemPool: [], familias: 0, tiers: 0, unicos: 0, textosSemFaixa: 0, arquivos: {} };
   const classes = {};
   const andar = (dir) => {
@@ -314,6 +471,32 @@ export function importar(origem = ORIGEM) {
     };
   };
   andar(origem);
+  // (04/11) os FRASCOS HÍBRIDOS, das páginas do poedb (a coleção não tem a classe — `classeHibrida`). Só com a coleção de verdade (os testes
+  // que montam uma coleção de mentira não passam `html`).
+  // Sem as páginas (outra máquina), a classe do catálogo que já está no repositório fica como está — senão os híbridos salvos perdiam a base.
+  if (html && !existsSync(html) && existsSync(DESTINO)) {
+    const antiga = JSON.parse(readFileSync(DESTINO, 'utf8')).classes?.Hybrid_Flasks;
+    if (antiga) {
+      classes.Hybrid_Flasks = antiga;
+      relatorio.hibridos = { icones: [], faltando: [`${html} (sem as páginas do poedb: mantida a classe que já estava no catálogo)`] };
+      console.warn(`AVISO: ${html} não existe — os Frascos Híbridos ficam como estavam no catálogo.`);
+    }
+  }
+  if (html && existsSync(html)) {
+    const h = classeHibrida(html, classes);
+    relatorio.hibridos = { icones: h.icones, faltando: h.faltando };
+    for (const f of ['Life_Flasks.html', 'Mana_Flasks.html', ...FRASCOS_HIBRIDOS.map((s) => `${s}.html`)]) if (existsSync(join(html, f))) relatorio.arquivos[`poedb-html/${f}`] = hashDe(join(html, f));
+    if (h.classe.bases.length) {
+      classes.Hybrid_Flasks = h.classe;
+      relatorio.classes++;
+      relatorio.bases += h.classe.bases.length;
+      for (const g of Object.values(h.classe.paginas).flatMap((p) => [...p.prefixos, ...p.sufixos])) {
+        relatorio.familias++;
+        relatorio.tiers += g.tiers.length;
+        relatorio.textosSemFaixa += g.tiers.filter((t) => !t.faixas.length).length;
+      }
+    }
+  }
   return { geradoEm: new Date().toISOString(), origem: 'poe-itens (PoEDB) — no repositório por decisão do dono (08/10)', classes, relatorio };
 }
 
@@ -333,6 +516,11 @@ if (import.meta.url === `file://${process.argv[1]}` && process.argv.includes('--
   console.log(`classes ${r.classes} · bases ${r.bases} · famílias ${r.familias} · tiers ${r.tiers} · únicos ${r.unicos}`);
   console.log(`bases sem pool de mods: ${r.basesSemPool.length}${r.basesSemPool.length ? ` (${r.basesSemPool.slice(0, 8).join(', ')}${r.basesSemPool.length > 8 ? '…' : ''})` : ''}`);
   console.log(`tiers sem faixa numérica no texto: ${r.textosSemFaixa}`);
+  if (r.hibridos) {
+    console.log(`frascos híbridos: ${dados.classes.Hybrid_Flasks?.bases.length ?? 0} bases${r.hibridos.faltando.length ? ` — faltando: ${r.hibridos.faltando.join(', ')}` : ''}`);
+    // (O ícone que ainda não está na coleção: o link do poedb, para baixar à parte.)
+    for (const i of r.hibridos.icones) console.log(`  ícone a baixar: ${i.slug} ← ${i.url}`);
+  }
   if (!process.argv.includes('--checar')) {
     mkdirSync(ITENS_POE, { recursive: true });
     writeFileSync(DESTINO, JSON.stringify(dados));

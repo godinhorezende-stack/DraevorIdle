@@ -49,6 +49,8 @@ const NADA = Object.freeze({ id: null, nome: 'Nada', en: 'Nothingness', linhas: 
 const PEDRA_DO_UNICO = Object.freeze({
   One_With_Nothing: 'Hollow Palm Technique', Kitavas_Teachings: 'Disciple of Kitava', The_Interrogation: 'Secrets of Suffering', Calamitous_Visions: 'Lone Messenger',
   Natural_Affinity: "Nature's Patience", The_Siege: 'Kineticism', The_Front_Line: "Veteran's Awareness",
+  // (04/11) o Filho da Violência: o Combatente (a linha dele é de pesca — "Força da Linha de Pesca aumentada em 1%" —, inerte no jogo)
+  Child_of_Violence: 'Pitfighter',
 });
 /** As linhas da pedra fundamental (uma por linha: o poedb junta com "\n"). */
 const linhasDaPedra = (pedra) => (pedra?.linhas ?? []).flatMap((l) => String(l).split('\n')).filter(Boolean);

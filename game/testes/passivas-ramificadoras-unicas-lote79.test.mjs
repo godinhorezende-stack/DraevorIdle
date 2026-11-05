@@ -138,8 +138,12 @@ test('as 7 PEQUENAS: cada uma a sua pedra (por slug — "Mensageiro" é o Mensag
 
 test('o ORBE DIVINO de verdade: o Megalomaníaco com um modelo repetido (Olho Perverso, Inspiração Ancestral) fica com os mesmos notáveis; a Vozes, na variante dela', { skip: SEM }, async () => {
   const M = await import('../systems/itens-poe/moedas.mjs');
-  const usar = (p, s) => {
-    const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 90 }), { inventory: [structuredClone(p), { id: M.idDa('Divine_Orb'), count: 1 }] });
+  // (aval do dono 04/11: o Megalomaníaco e a Vozes caem CORROMPIDOS como no PoE, e peça corrompida não aceita o Divino — a recusa é
+  // conferida aqui; a conta do Divino segue conferida na mesma peça sem a marca de corrompida)
+  const usar = (p, s, { corrompida = false } = {}) => {
+    const q = structuredClone(p);
+    if (!corrompida) delete q.poe.corrompido;
+    const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 90 }), { inventory: [q, { id: M.idDa('Divine_Orb'), count: 1 }] });
     const r = M.usar(e, { moeda: M.idDa('Divine_Orb'), alvo: { onde: 'inventory', indice: 0 } }, semeado(s));
     return { r, peca: e.inventory[0] };
   };
@@ -157,6 +161,9 @@ test('o ORBE DIVINO de verdade: o Megalomaníaco com um modelo repetido (Olho Pe
     }
   }
   assert.ok(conferidas >= 2, `${conferidas} Megalomaníacos com notável de modelo repetido`);
+  const megalo = unica('Megalomaniac', 1);
+  assert.equal(megalo.poe.corrompido, true);
+  assert.equal(usar(megalo, 1, { corrompida: true }).r.ok, false);
   // a Vozes de 5 pequenas (a 2ª variante do catálogo) continua com 5 depois do Divino
   const variantes = cat().classes.Jewels.unicos.filter((u) => u.slug === 'Voices');
   const de5 = variantes.find((u) => u.modificadores.some((m) => /Pequenas Habilidades Passivas que não concedem nada/.test(m.modelo) && m.faixas?.[0]?.[0] === 5));

@@ -5,7 +5,7 @@
 const ROTULO = {
   armadura: 'Armadura', evasao: 'Evasão', escudo_energia: 'Escudo de Energia', velocidade_movimento_pct: 'Velocidade de Movimento',
   chance_bloqueio_pct: 'Chance de Bloqueio', dano_fisico: 'Dano Físico', chance_critico_pct: 'Chance de Crítico', ataques_por_segundo: 'Ataques por Segundo',
-  alcance_metros: 'Alcance', protecao: 'Proteção', recupera: 'Recupera', cargas_por_uso: 'Cargas por uso', cargas_maximas: 'Cargas máximas', duracao_segundos: 'Duração',
+  alcance_metros: 'Alcance', protecao: 'Proteção', recupera: 'Recupera', recupera_mana: 'Recupera', cargas_por_uso: 'Cargas por uso', cargas_maximas: 'Cargas máximas', duracao_segundos: 'Duração',
   // (12/10, a Tintura: "Inflige Queima de Mana a cada X Segundos", "N Segundos de Recarga quando Desativado")
   queima_mana_intervalo_s: 'Inflige Queima de Mana a cada', recarga_desativado_s: 'Recarga quando Desativada',
 };
@@ -14,9 +14,9 @@ const SUFIXO = { velocidade_movimento_pct: '%', chance_bloqueio_pct: '%', chance
 // diferença (mesma conta, aproximado, atributo novo, não existe no jogo) fica no texto ao passar o mouse.
 const SIMBOLO = { equivalente: '✓', aproximado: '✓', novo: '✓', parcial: '◐', inerte: '✗', lembrete: '', registrado: '✗' };
 const ESTADO = { parcial: 'tem efeito no jogo em parte', equivalente: 'tem efeito no jogo (mesma conta do PoE)', aproximado: 'tem efeito no jogo (com diferença)', novo: 'atributo do PoE, com efeito no jogo', inerte: 'mecânica do PoE que não existe no jogo', lembrete: 'texto de lembrete do PoE (explica a mecânica do mod de cima)', registrado: 'registrado, ainda sem efeito no combate' };
-/** O valor de um atributo da base no balão. `recupera` (frasco): "70 de Vida em 3 s"; faixa: "min–max"; o resto com o sufixo. */
+/** O valor de um atributo da base no balão. `recupera` (frasco): "70 de Vida em 3 s" (o Híbrido: + `recupera_mana`, "70 de Mana em 5 s"); faixa: "min–max"; o resto com o sufixo. */
 export const valorDoAtributo = (k, v) => {
-  if (k === 'recupera' && v && typeof v === 'object') return `${v.quantidade} de ${v.recurso === 'mana' ? 'Mana' : 'Vida'} em ${String(v.segundos).replace('.', ',')} s`;
+  if ((k === 'recupera' || k === 'recupera_mana') && v && typeof v === 'object') return `${v.quantidade} de ${v.recurso === 'mana' ? 'Mana' : 'Vida'} em ${String(v.segundos).replace('.', ',')} s`;
   if (k === 'cargas_atuais') return String(v);
   return v && typeof v === 'object' ? `${v.min}–${v.max}` : `${v}${SUFIXO[k] ?? ''}`;
 };
@@ -43,7 +43,7 @@ export const CATEGORIA = {
   One_Hand_Axes: 'Machado de Uma Mão', Two_Hand_Axes: 'Machado de Duas Mãos', One_Hand_Maces: 'Maça de Uma Mão', Two_Hand_Maces: 'Maça de Duas Mãos',
   Sceptres: 'Cetro', Staves: 'Cajado', Warstaves: 'Cajado de Guerra', Claws: 'Garra', Daggers: 'Adaga', Rune_Daggers: 'Adaga Rúnica',
   Bows: 'Arco', Wands: 'Varinha', Fishing_Rods: 'Vara de Pesca',
-  Life_Flasks: 'Frasco de Vida', Mana_Flasks: 'Frasco de Mana', Utility_Flasks: 'Frasco de Utilidade', Tinctures: 'Tintura',
+  Life_Flasks: 'Frasco de Vida', Mana_Flasks: 'Frasco de Mana', Hybrid_Flasks: 'Frasco Híbrido', Utility_Flasks: 'Frasco de Utilidade', Tinctures: 'Tintura',
   Maps: 'Mapa',
 };
 const categoriaDe = (p) => CATEGORIA[p.classe ?? String(p.base ?? '').split('/')[0]] ?? null;
@@ -62,10 +62,12 @@ function resumoDoFrasco(f) {
     return no('div', 'poe-props poe-frasco-resumo', linhas.map((l) => no('div', null, l)));
   }
   if (f.recurso) linhas.push(f.instantaneo ? `Recupera ${n(f.quantidade)} de ${f.recurso === 'mana' ? 'Mana' : 'Vida'} na hora` : `Recupera ${n(f.quantidade)} de ${f.recurso === 'mana' ? 'Mana' : 'Vida'} em ${n(f.segundos)} s`);
+  // (04/11) o Frasco Híbrido: a Mana dele também
+  if (f.quantidadeMana != null) linhas.push(f.instantaneo ? `Recupera ${n(f.quantidadeMana)} de Mana na hora` : `Recupera ${n(f.quantidadeMana)} de Mana em ${n(f.segundosMana)} s`);
   if (f.duracao) linhas.push(`Dura ${n(f.duracao)} s`);
   if (f.efeitoDaBase) linhas.push(f.efeitoDaBase);
   linhas.push(`Usa ${f.cargasPorUso} de ${f.cargasMaximas} cargas`);
-  linhas.push(f.tipo === 'utilidade' ? 'No cinto: usado sozinho em combate' : `No cinto: usado sozinho com a ${f.recurso === 'mana' ? 'mana' : 'vida'} baixa`);
+  linhas.push(f.tipo === 'utilidade' ? 'No cinto: usado sozinho em combate' : f.tipo === 'hibrido' ? 'No cinto: usado sozinho com a vida ou a mana baixa' : `No cinto: usado sozinho com a ${f.recurso === 'mana' ? 'mana' : 'vida'} baixa`);
   return no('div', 'poe-props poe-frasco-resumo', linhas.map((l) => no('div', null, l)));
 }
 
@@ -89,6 +91,39 @@ function resumoDoMapa(m) {
     no('div', null, 'Use no Dispositivo de Mapas (depois do Ato 10).'));
 }
 
+/*
+ * (Frente D, 04/11) O TEXTO DE SABOR do PoE (o FlavourText do card do poedb), no fim do balão, em itálico, na cor do PoE. Os textos ficam em
+ * `/gamedata/itens-poe/sabores.json` (tools/importar-sabores-poedb.mjs: ~1.170 únicos e as bases com sabor, como os Talismãs — ~190 KB, que
+ * o servidor manda em Brotli com ETag): o cliente busca o arquivo UMA vez, no primeiro balão, como já faz com os outros dados estáticos de
+ * `/gamedata/` (item-sprites.json, effect-sprites.json — `sprites.mjs`), e não a peça: o texto não muda a peça, e guardá-lo em cada uma
+ * encheria o banco e deixaria de fora as que já caíram. Até o arquivo chegar, a vaga do sabor fica vazia e é preenchida quando ele chega.
+ * Liga pelo que a peça já guarda: o único pelo `unico` (o slug), a peça comum pela `base` ("Amulets/Ape_Talisman").
+ */
+export const URL_DOS_SABORES = '/gamedata/itens-poe/sabores.json';
+let SABORES = null;
+let pedidoDosSabores = null;
+/** O sabor da peça (texto com "\n" entre os versos), ou null. Puro: `sabores` é o conteúdo do sabores.json. */
+export const saborDaPeca = (p, sabores) => (p?.unico ? sabores?.unicos?.[p.unico]?.sabor : sabores?.bases?.[p?.base]?.sabor) ?? null;
+function carregarSabores() {
+  if (SABORES || typeof fetch !== 'function') return null;
+  pedidoDosSabores ??= fetch(URL_DOS_SABORES)
+    .then((r) => (r.ok ? r.json() : null))
+    .catch(() => null)
+    .then((d) => (SABORES = d ?? { unicos: {}, bases: {} }));
+  return pedidoDosSabores;
+}
+/** A vaga do sabor no balão: preenchida já (com o arquivo em mãos) ou quando ele chegar. */
+function vagaDoSabor(p) {
+  const vaga = no('div', 'poe-sabor-vaga');
+  const preencher = () => {
+    const texto = saborDaPeca(p, SABORES);
+    if (texto) vaga.append(no('div', 'poe-sep'), no('div', 'poe-sabor', texto.split('\n').map((l, i) => [i ? no('br') : null, l])));
+  };
+  if (SABORES) preencher();
+  else carregarSabores()?.then(preencher);
+  return vaga;
+}
+
 export function balaoPoe(p, { cor = p.cor ?? '#ddd', raridadeNome = p.raridadeNome ?? p.raridade, nomeDaBase = null, estados = p.estados ?? null, af = p.af ?? null, requisitos = null, tem = null } = {}) {
   const fila = [...(estados ?? [])];
   // `notas` (o servidor manda, na ordem dos mods): por que a mecânica não existe no jogo — o balão mostra ao passar o mouse.
@@ -108,10 +143,10 @@ export function balaoPoe(p, { cor = p.cor ?? '#ddd', raridadeNome = p.raridadeNo
   const titulo = (texto) => no('div', 'poe-secao', texto);
   // A QUALIDADE (poedb › Quality): a linha "Qualidade: +X%" em cima e o dano físico/defesa já escalados (em azul, como no PoE).
   const q = Number(p.qualidade) || 0;
-  const QUALIFICAM = new Set(['dano_fisico', 'armadura', 'evasao', 'escudo_energia', 'recupera']);
+  const QUALIFICAM = new Set(['dano_fisico', 'armadura', 'evasao', 'escudo_energia', 'recupera', 'recupera_mana']);
   const comQ = (k, v) => {
     if (!q || !QUALIFICAM.has(k)) return v;
-    if (k === 'recupera') return v && typeof v === 'object' ? { ...v, quantidade: Math.round(v.quantidade * (1 + q / 100)) } : v;
+    if (k === 'recupera' || k === 'recupera_mana') return v && typeof v === 'object' ? { ...v, quantidade: Math.round(v.quantidade * (1 + q / 100)) } : v;
     return v && typeof v === 'object' ? { min: Math.round(v.min * (1 + q / 100)), max: Math.round(v.max * (1 + q / 100)) } : Math.round(v * (1 + q / 100));
   };
   // A Velocidade de Ataque LOCAL da arma (`af.atk_speed_local`, separada no servidor): os Ataques por Segundo já com ela, em azul, como no PoE.
@@ -140,6 +175,10 @@ export function balaoPoe(p, { cor = p.cor ?? '#ddd', raridadeNome = p.raridadeNo
     p.modificadores?.length ? [sep(), p.modificadores.map((m) => no('div', 'poe-mod uni', estados ? marca() : null, no('span', null, m.texto), m.consumido ? Object.assign(no('i', null, 'consumido'), { title: `da ${m.consumido}` }) : null))] : null,
     // (lote 28) as Joias Abissais encaixadas nos Encaixes Abissais da peça (o nome, na cor da raridade).
     p.abissais?.some(Boolean) ? [sep(), titulo('Encaixes Abissais'), p.abissais.map((j, i) => no('div', `poe-abissal${j ? ` r-${j.poe?.raridade ?? 'normal'}` : ' vazio'}`, j ? `${i + 1}. ${j.poe?.nome ?? 'Joia Abissal'}` : `${i + 1}. vazio`))] : null,
+    // (Frente D) "Corrompido" no fim das linhas, em vermelho, como no PoE (a peça do Orbe Vaal e a que já cai corrompida — `sabores.json`)
+    p.corrompido ? no('div', 'poe-corrompido', 'Corrompido') : null,
+    // (Frente D) o texto de sabor, depois de tudo o que é da peça (como no card do poedb: abaixo do "Corrompido", com o separador)
+    vagaDoSabor(p),
     // A faixa "No Draevor: STR +20 ..." saiu do balão (dono, 07/10): o que a peça dá já está nas linhas do PoE.
     p.aviso ? no('div', 'poe-aviso', p.aviso) : null,
     p.erro ? no('div', 'poe-aviso', p.erro) : null);
