@@ -1586,6 +1586,11 @@ export class Sessao {
         if (r.ok) Party.seguirOLider(this);
         return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
       }
+      // (05/11, etapa 2) a influência dos próximos mapas (Exarca/Devorador): os chefes T14+ contam para os convites
+      case 'influenciaDoAtlas': {
+        this.aplicar(MapasDispositivo.definirInfluencia(this.estado, m.influencia ?? null));
+        return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
+      }
       case 'abandonarPinaculo': {
         this.aplicar(MapasDispositivo.abandonarPinaculo(this.estado));
         return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });

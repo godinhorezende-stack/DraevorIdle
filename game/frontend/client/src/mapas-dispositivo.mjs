@@ -95,6 +95,37 @@ function resumoDaPeca(peca) {
   return bloco;
 }
 
+/** A influência dos mapas: os botões (nenhuma, Exarca, Devorador) e, de cada convite, a barra "N de 14". */
+function blocoDaInfluencia(inf, h) {
+  const bloco = el('div', 'mp-influencia');
+  const nav = el('nav', 'mp-abas');
+  nav.setAttribute('aria-label', 'Influência dos mapas');
+  for (const o of [{ id: null, nome: 'Nenhuma' }, ...inf.opcoes]) {
+    const ativo = (inf.escolhida ?? null) === o.id;
+    const b = botao(`mp-aba${ativo ? ' ativa' : ''}`, null, () => {
+      if (ativo) return;
+      b.disabled = true;
+      h.send({ t: 'influenciaDoAtlas', influencia: o.id });
+    });
+    b.setAttribute('aria-pressed', ativo ? 'true' : 'false');
+    b.append(el('b', null, o.nome));
+    nav.append(b);
+  }
+  bloco.append(el('span', 'mp-rotulo', 'Influência dos próximos mapas'), nav);
+  const linhas = el('ul', 'mp-convites');
+  for (const c of inf.convites ?? []) {
+    const barra = el('div', 'mp-loop-barra', el('i', null));
+    barra.firstChild.style.width = `${Math.round((100 * c.feitos) / c.aCada)}%`;
+    const li = el('li', `mp-convite${c.influencia === inf.escolhida ? ' ativo' : ''}${c.conta ? '' : ' espera'}`,
+      el('span', null, el('b', null, c.nome), ` → ${c.abre}`),
+      barra,
+      el('small', null, c.conta ? `${c.feitos} de ${c.aCada} chefes de mapa T14+` : 'conta depois da primeira vitória na arena anterior'));
+    linhas.append(li);
+  }
+  bloco.append(linhas, el('p', 'mp-nota', 'Como no PoE: com uma influência escolhida, cada chefe de mapa T14+ vencido conta. A cada 14 cai o convite da arena (Estrela Negra, Fome Infinita); a cada 28, o do pináculo (Exarca, Devorador). Os altares e os monstros influenciados ainda não existem no jogo.'));
+  return bloco;
+}
+
 /**
  * A seção dos PINÁCULOS: o aberto (portais, voltar, abandonar) e um cartão por pináculo com os itens que ele pede (o ícone, quantos você
  * tem) e o "Abrir". Os que ainda não abrem no jogo (as próximas etapas) ficam numa linha só. `ocupado`: há um mapa aberto ou um loop.
@@ -120,6 +151,8 @@ export function secaoDosPinaculos(mapas, h, avisar = () => {}, ocupado = false) 
         el('span', 'mp-linha', portais(aberto.portais, aberto.portaisMax), ` ${aberto.portais} de ${aberto.portaisMax} portais${aberto.naArena ? ' · você está na arena' : ''}`)),
       acoes));
   } else sec.append(el('p', 'mp-nota', 'Como no PoE, os pináculos não pedem level: cada um abre aqui com os itens dele (um de cada, gastos ao abrir), com 6 portais. Os fragmentos e as coroas caem garantidos dos Guardiões e dos Conquistadores, que aparecem nos mapas que os chefes de mapa T14+ soltam.'));
+  // (etapa 2) a INFLUÊNCIA dos próximos mapas (Exarca, Devorador ou nenhuma) e quanto falta para cada convite
+  if (mapas.influencia?.opcoes?.length) sec.append(blocoDaInfluencia(mapas.influencia, h));
   const comItens = mapas.pinaculos.filter((p) => p.itens);
   const grade = el('div', 'mp-grade mp-pin-grade');
   for (const p of comItens) {

@@ -187,7 +187,7 @@ function gastarItem(estado, id, n) {
 export function abrirPinaculo(estado, { pinaculo, mode, strategy } = {}, { antes = null } = {}) {
   const fechado = motivoFechado(estado);
   if (fechado) return { ok: false, erro: fechado };
-  if (!Pinaculos.pinaculo(pinaculo)) return { ok: false, erro: 'Esse pináculo não existe.' };
+  if (!Pinaculos.doDispositivo(pinaculo)) return { ok: false, erro: 'Esse pináculo não existe.' };
   if (MapaAberto.doPersonagem(estado).aberto) return { ok: false, erro: 'Você tem um mapa aberto: termine-o (ou abandone-o) antes de abrir um pináculo.' };
   const r = PinaculosAcesso.abrir(estado, pinaculo, {
     contar: contarItem,
@@ -217,9 +217,21 @@ export function abandonarPinaculo(estado) {
   return PinaculosAcesso.abandonar(estado);
 }
 
-/** Os pináculos para a tela: os itens que cada um pede (e quantos você tem) e quantas vezes você venceu cada um. */
+/** A influência dos próximos mapas (Exarca, Devorador ou nenhuma — `pinaculos-acesso.mjs`). */
+export const definirInfluencia = (estado, influencia) => PinaculosAcesso.definirInfluencia(estado, influencia);
+
+/**
+ * Os pináculos para a tela: os itens que cada um pede (e quantos você tem) e quantas vezes você venceu cada um. As arenas intermediárias (A
+ * Estrela Negra, A Fome Infinita) vêm logo antes do pináculo que abrem.
+ */
 export function pinaculosParaTela(estado) {
-  return Pinaculos.todos().map((c) => {
+  const lista = [...Pinaculos.todos()];
+  for (const a of Pinaculos.arenas()) {
+    const depois = PinaculosAcesso.DADOS.itens.find((i) => i.depoisDe === a.id)?.abre;
+    const i = lista.findIndex((c) => c.id === depois);
+    lista.splice(i >= 0 ? i : lista.length, 0, a);
+  }
+  return lista.map((c) => {
     const itens = PinaculosAcesso.itensDaEntrada(estado, c.id, contarItem);
     return { id: c.id, nome: c.nome, itens, pronto: !!itens?.every((i) => i.tem >= 1), vitorias: Number(estado?.pinaculosVencidos?.[c.id]) || 0 };
   });
@@ -356,7 +368,8 @@ export function paraTela(estado, { versaoDaTela = null } = {}) {
     loop: MapasLoop.paraTela(estado),
     // (05/11) os pináculos: o que cada um pede no Dispositivo e o aberto (os portais)
     pinaculos: pinaculosParaTela(estado),
-    pinaculoAberto: estado?.pinaculoAberto ? { ...estado.pinaculoAberto, nome: Pinaculos.pinaculo(estado.pinaculoAberto.id)?.nome ?? estado.pinaculoAberto.id, naArena: estado.hunt?.bossId === estado.pinaculoAberto.id } : null,
+    influencia: PinaculosAcesso.influenciaParaTela(estado),
+    pinaculoAberto: estado?.pinaculoAberto ? { ...estado.pinaculoAberto, nome: Pinaculos.doDispositivo(estado.pinaculoAberto.id)?.nome ?? estado.pinaculoAberto.id, naArena: estado.hunt?.bossId === estado.pinaculoAberto.id } : null,
     estatisticas: { concluidos: st.concluidos, falhos: st.falhos, mortes: st.mortes, maiorTier: st.maiorTier, porTier: st.porTier, ultimo: st.ultimo },
     tiers: Mapas.TIERS,
   };

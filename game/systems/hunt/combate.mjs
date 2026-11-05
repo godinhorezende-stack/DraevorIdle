@@ -485,7 +485,7 @@ export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
   Bosses.marcarVitoria(estado, hunt.bossId ?? (naFase ? Campanha.bossDoAto(atoDoChefe)?.bossId : null));
   // (05/11) O pináculo vencido conta para as missões do Atlas (A Maven, O Ancião… — itens-poe/missoes.mjs).
   // (05/11) E fecha o pináculo aberto no Dispositivo (`pinaculos-acesso.mjs`): a próxima luta pede os itens de novo.
-  if (hunt.bossId && Pinaculos.pinaculo(hunt.bossId)) {
+  if (hunt.bossId && Pinaculos.doDispositivo(hunt.bossId)) {
     Missoes.aoVencerPinaculo(estado, hunt.bossId);
     PinaculosAcesso.aoVencer(estado, hunt.bossId);
   }
@@ -1075,6 +1075,16 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
         if (!Bolsa.porNaBolsa(estado, mapa.id, 1, mapa)) break;
         caiu.push({ id: mapa.id, count: 1 });
         conta('loot', mapa.id, 1);
+      }
+    }
+  }
+  // (05/11, etapa 2) O chefe de mapa T14+ sob a influência do Exarca/Devorador (`pinaculos-acesso.mjs`): conta para os convites; a cada 14
+  // (o Polarizado/Contorcido) e a cada 28 (o Incandescente/Gritante) cai o convite, para quem matou.
+  if (noMapa?.influencia && alvo.chefeDoMapa) {
+    for (const id of PinaculosAcesso.aoVencerChefeDeMapa(estado, noMapa)) {
+      if (Bolsa.porNaBolsa(estado, id, 1)) {
+        caiu.push({ id, count: 1 });
+        conta('loot', id, 1);
       }
     }
   }

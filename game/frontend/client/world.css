@@ -329,6 +329,12 @@ h5.mp-nome { font-size: 13.5px; }
 .mp-estat { display: grid; gap: 10px; }
 .mp-pinaculos { grid-column: 1 / -1; display: grid; gap: 10px; }
 .mp-pin-aberto { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 240px); gap: 12px; align-items: center; padding: 8px 10px; border: 1px solid var(--w-bronze2); border-radius: 4px; background: #17130a; }
+.mp-influencia { display: grid; gap: 6px; padding-bottom: 8px; border-bottom: 1px solid #2f3236; }
+.mp-convites { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 6px 12px; }
+.mp-convite { display: grid; gap: 3px; font-size: 12px; color: var(--w-txt2); opacity: .7; }
+.mp-convite.ativo { opacity: 1; }
+.mp-convite.espera small { color: var(--w-txt3); font-style: italic; }
+.mp-convite small { color: var(--w-txt3); font-variant-numeric: tabular-nums; }
 .mp-pin-grade { grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); }
 .mp-pin { display: grid; gap: 8px; align-content: start; padding: 10px; background: linear-gradient(180deg, #121518, #0b0d0f); border: 1px solid #2f3236; border-left: 3px solid #3a3f45; border-radius: 4px; }
 .mp-pin.pronto { border-left-color: var(--w-ouro2); }

@@ -71,9 +71,30 @@ Fontes:
   - resistências 50/50/50/30 em todos;
   - a vida é relativa ao pináculo mais fraco, como nos pináculos (Venarius 400% = 1×).
 
+## Etapa 2: Exarca e Devorador (05/11)
+
+Fonte: o guia da Steam ("the 14th grants the Polaric Invitation", "the 28th grants the Incandescent Invitation") e o Maxroll (Atlas Questlines).
+
+- **A influência:** o Dispositivo escolhe a influência dos próximos mapas: nenhuma, O Exarca Cauterizado ou O Devorador de Mundos. Ela fica gravada no mapa ao abrir, e vale também no loop. Mora em `estado.atlas`.
+- **A contagem:** cada chefe de mapa T14+ vencido num mapa com a influência conta para os convites dela, só para quem matou.
+  - A cada 14 cai o **Convite Polarizado** (Exarca) ou o **Contorcido** (Devorador).
+  - A cada 28 cai o **Incandescente** ou o **Gritante**, mas esse só começa a contar depois de vencer a arena anterior uma vez, como na ordem da missão do PoE.
+- **As arenas intermediárias:** **A Estrela Negra** (1400% de vida, 160% de dano) e **A Fome Infinita** (1800% de vida, 280% de dano). São feitas como os pináculos: boss único, arena da criatura-base e a tabela exclusiva de Únicos do poedb.
+  - Estrela Negra: Devastação Polar, Amanhecer Repentino e A Eterna Batalha.
+  - Fome Infinita: Zenith Negro e Banquete Sem Fim.
+  - Abrem no Dispositivo com o convite delas, com 6 portais.
+- **O pináculo:** The Searing Exarch abre com o Convite Incandescente, e The Eater of Worlds com o Gritante.
+- **Os convites:** é a variante "moeda" do poedb, a que se usa de novo. Os 4 têm ícone, e o balão diz o que abrem e quando caem.
+- **Onde está no código:**
+  - `pinaculos-acesso.json` → `influencias`, `arenas` e os 4 convites em `itens` (`convite`, `aCada`, `abre`, `depoisDe`);
+  - `pinaculos.mjs` → `arena`, `arenas` e `doDispositivo`;
+  - `pinaculos-acesso.mjs` → `definirInfluencia`, `aoVencerChefeDeMapa` e `influenciaParaTela`.
+- **Ainda não existe no jogo:** os altares eldritch e os monstros influenciados dos mapas. A influência, por enquanto, só conta para os convites.
+
 ## Pontos em aberto
 
 - **A taxa dos mapas com encontro** (8% por grupo por chefe T14+) não tem fonte. Ajustar se ficar raro ou frequente demais.
 - **Arena de novo a cada entrada:** voltar pelo portal começa a luta do zero, porque a arena é uma caçada nova. No PoE a vida do chefe se mantém na mesma instância.
 - **As Cidadelas:** no PoE, o Conquistador é enfrentado numa área própria (a Cidadela). Aqui ele aparece dentro do mapa.
-- **Etapas 2–4:** Exarca e Devorador, Maven, Venarius e as Encarnações continuam fechados. A tela os lista como "próximas etapas".
+- **Etapas 3–4:** Maven, Venarius e as Encarnações continuam fechados. A tela os lista como "próximas etapas".
+- **Altares eldritch:** os mapas com influência ainda não têm os altares nem os monstros influenciados do PoE.

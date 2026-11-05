@@ -20,7 +20,7 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { variantesDoItem, texto } from './importar-missoes-poedb.mjs';
-import { abas } from './extrair-poedb-pinaculos.mjs';
+import { abas, lerChefe } from './extrair-poedb-pinaculos.mjs';
 
 const ITENS_HTML = process.env.POEDB_HTML ?? '/home/deploy/scrapling/saida/html';
 const CHEFES_HTML = join(ITENS_HTML, 'pinaculos');
@@ -61,6 +61,25 @@ const CHEFES = [
 /** O que cada pináculo pede no Dispositivo (os 4 do grupo, um de cada). Os outros pináculos entram nas próximas etapas. */
 const ENTRADAS = { 'poe-the-shaper': 'criador', 'poe-the-elder': 'anciao', 'poe-sirus': 'conquistador' };
 
+/*
+ * Etapa 2 (dono, 05/11): o EXARCA e o DEVORADOR. No PoE a influência deles se escolhe no Dispositivo; cada chefe de mapa T14+ vencido sob a
+ * influência avança a contagem: a cada `aCada` dela cai o convite (o guia: "the 14th grants the Polaric Invitation", "the 28th grants the
+ * Incandescent Invitation"). O Polarizado/Contorcido abre a arena intermediária (A Estrela Negra / A Fome Infinita, com os Únicos dela); o
+ * Incandescente/Gritante abre o pináculo — depois da arena intermediária vencida uma vez (a missão do PoE vem nessa ordem).
+ */
+const CONVITES = [
+  { slug: 'Polaric_Invitation', influencia: 'exarca', aCada: 14, abre: 'poe-a-estrela-negra' },
+  { slug: 'Incandescent_Invitation', influencia: 'exarca', aCada: 28, abre: 'poe-the-searing-exarch', depoisDe: 'poe-a-estrela-negra' },
+  { slug: 'Writhing_Invitation', influencia: 'devorador', aCada: 14, abre: 'poe-a-fome-infinita' },
+  { slug: 'Screaming_Invitation', influencia: 'devorador', aCada: 28, abre: 'poe-the-eater-of-worlds', depoisDe: 'poe-a-fome-infinita' },
+];
+/** As arenas intermediárias (como os pináculos: um boss único numa arena própria, com a tabela exclusiva de Únicos do poedb). */
+const ARENAS = [
+  { id: 'poe-a-estrela-negra', pagina: 'The_Black_Star', variante: /BlackStarBoss$/, base: 'anomaly' },
+  { id: 'poe-a-fome-infinita', pagina: 'The_Infinite_Hunger', variante: /DoomBoss_$/, base: 'the-nightmare-beast' },
+];
+const INFLUENCIAS = { exarca: { nome: 'O Exarca Cauterizado', tierMinimo: 14 }, devorador: { nome: 'O Devorador de Mundos', tierMinimo: 14 } };
+
 const ELEMENTO = { Fire: 'fire', Cold: 'ice', Lightning: 'energy', Chaos: 'chaos' };
 const pct = (s) => Number(String(s ?? '').replace(/[^\d.-]/g, '')) || null;
 const ler = (arquivo) => {
@@ -81,9 +100,9 @@ function varianteDoChefe(html, re) {
   throw new Error(`variante ${re} não encontrada`);
 }
 
-/** O item da página do poedb (a primeira variante com Type). */
-function item(slug, pasta = ITENS_HTML) {
-  const v = variantesDoItem(ler(join(pasta, `${slug}.html`)), slug).find((x) => x.id) ?? null;
+/** O item da página do poedb (a primeira variante com Type; `tipo`: a que casa, quando há várias — os convites: a de moeda, não a de missão). */
+function item(slug, pasta = ITENS_HTML, tipo = null) {
+  const v = variantesDoItem(ler(join(pasta, `${slug}.html`)), slug).find((x) => x.id && (!tipo || tipo.test(x.id))) ?? null;
   if (!v) throw new Error(`item ${slug} sem variante`);
   const icone = existsSync(join(ICONES, `${slug}.png`)) ? `poe-itens/Pinaculos/${slug}.png` : null;
   return { slug, tipo: v.id, nome: v.nome, en: v.en, linhas: v.linhas, sabor: v.sabor, icone, nivelDrop: v.nivelDrop };
@@ -119,15 +138,47 @@ for (const c of CHEFES) {
 }
 
 const entradas = Object.fromEntries(Object.entries(ENTRADAS).map(([pin, grupo]) => [pin, itens.filter((i) => i.grupo === grupo).map((i) => i.itemId)]));
+
+// Os convites (a variante de moeda — "Itens Mapas Variados" —, a que se usa de novo; a de missão fica nos itens de missão) e as arenas.
+const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
+const doCatalogo = new Map();
+for (const [classe, c] of Object.entries(Catalogo.catalogo()?.classes ?? {})) for (const u of c.unicos ?? []) if (!doCatalogo.has(u.slug)) doCatalogo.set(u.slug, { classe, nome: u.nome, base: u.base });
+const arenas = ARENAS.map((a) => {
+  const us = ler(join(CHEFES_HTML, `us-${a.pagina}.html`));
+  const pt = ler(join(CHEFES_HTML, `pt-${a.pagina}.html`));
+  const v = varianteDoChefe(us, a.variante);
+  const { unicos } = lerChefe(us);
+  return {
+    id: a.id,
+    nome: texto(pt.match(/<span class="lc">([\s\S]*?)<\/span>/)?.[1] ?? '') || a.pagina,
+    en: a.pagina.replace(/_/g, ' '),
+    poedb: `https://poedb.tw/us/${a.pagina}`,
+    ...v,
+    vidaMult: Math.round((v.vidaPct / VIDA_DE_REFERENCIA_PCT) * 100) / 100,
+    base: a.base,
+    unicos: unicos.filter((u) => doCatalogo.has(u.slug)).map((u) => ({ slug: u.slug, nome: doCatalogo.get(u.slug).nome, nomeOriginal: u.nome, classe: doCatalogo.get(u.slug).classe, base: doCatalogo.get(u.slug).base })),
+  };
+});
+const convites = [];
+for (const c of CONVITES) {
+  const it = { ...item(c.slug, ITENS_HTML, /\/Currency/), itemId: ID_DOS_FRAGMENTOS + itens.length, convite: true, influencia: c.influencia, aCada: c.aCada, abre: c.abre, ...(c.depoisDe ? { depoisDe: c.depoisDe } : {}) };
+  itens.push(it);
+  convites.push(it);
+  entradas[c.abre] = [it.itemId];
+}
 const saida = {
   _nota:
     'A ENTRADA dos pináculos como no PoE (dono, 05/11): sem trava de level; cada pináculo abre no Dispositivo de Mapas com os itens de `entradas` (um de cada, gastos ao abrir). Os itens saem dos 12 chefes de `chefes` (garantido), que nascem nos mapas com o encontro: o mapa do guardião do Criador (T16, o guardião é o chefe do mapa) ou o mapa comum "ocupado"/"com a Cidadela" (o chefe a mais no fundo do mapa). Os mapas com encontro caem dos chefes de mapa a partir de `drop.tierMinimo`, com `drop.chancePorChefe` por grupo (sem a taxa no poedb: números do jogo). Gerado por tools/montar-pinaculos-acesso.mjs a partir do poedb.',
   drop: DROP,
+  influencias: INFLUENCIAS,
   entradas,
+  arenas,
   itens,
   mapas,
   chefes,
 };
 writeFileSync(DESTINO, `${JSON.stringify(saida, null, 1)}\n`);
 console.log(`${itens.length} fragmentos, ${mapas.length} mapas, ${chefes.length} chefes → ${fileURLToPath(DESTINO)}`);
+for (const a of arenas) console.log(`  arena ${a.nome}: vida ${a.vidaPct}% (×${a.vidaMult}), dano ${a.danoPct}%, únicos ${a.unicos.map((u) => u.nome).join(', ')}`);
+for (const c of convites) console.log(`  ${c.nome} (${c.itemId}): a cada ${c.aCada} chefes T14+ sob ${c.influencia} → ${c.abre}`);
 for (const c of chefes) console.log(`  ${c.nome} (${c.variante}): vida ${c.vidaPct}% (×${c.vidaMult}), dano ${c.danoPct}%, exp ${c.expPct}%, base ${c.base}`);

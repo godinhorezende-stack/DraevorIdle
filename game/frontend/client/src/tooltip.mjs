@@ -3114,7 +3114,8 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     for (const l of f.linhas ?? []) node.append(el('div', 'tip-extra tip-moeda-efeito', l));
     if (f.sabor) node.append(el('div', 'tip-extra tip-sabor-missao', f.sabor));
     const abre = (f.abre ?? []).join(', ');
-    node.append(el('div', 'tip-extra tip-moeda-ajuda', `${abre ? `Um dos quatro que abrem ${abre}` : 'Abre um pináculo'} no Dispositivo de Mapas${f.chefe ? `. Solto por ${f.chefe}` : ''}.`));
+    const quem = f.conjunto > 1 ? `Um dos ${f.conjunto} que abrem ${abre}` : `Abre ${abre}`;
+    node.append(el('div', 'tip-extra tip-moeda-ajuda', `${abre ? quem : 'Abre um pináculo'} no Dispositivo de Mapas${f.chefe ? `. Solto por ${f.chefe}` : ''}${f.convite ? `. Cai a cada ${f.convite.aCada} chefes de mapa T14+ vencidos sob a influência de ${f.convite.influencia}` : ''}.`));
   }
   if (meta.moedaPoe) {
     if (meta.descricao) node.append(el('div', 'tip-extra tip-moeda-efeito', meta.descricao));

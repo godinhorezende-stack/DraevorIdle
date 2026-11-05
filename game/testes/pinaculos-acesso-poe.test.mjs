@@ -37,10 +37,10 @@ function abrirMapa(e, peca) {
   return Dispositivo.abrir(e, { onde: m.onde, indice: m.indice, assinatura: m.assinatura, mode: 'auto' });
 }
 
-test('os dados do poedb: 12 itens (ícone no disco), 4 mapas dos Guardiões do Criador, 12 chefes registrados como bosses únicos', { skip: SEM }, () => {
-  assert.equal(Acesso.DADOS.itens.length, 12);
+test('os dados do poedb: 12 fragmentos/coroas e 4 convites (ícone no disco), 4 mapas dos Guardiões do Criador, 12 chefes registrados como bosses únicos', { skip: SEM }, () => {
+  assert.equal(Acesso.DADOS.itens.length, 16, '12 fragmentos/coroas + 4 convites (etapa 2)');
   assert.equal(Acesso.DADOS.mapas.length, 4);
-  assert.deepEqual(Object.keys(Acesso.DADOS.entradas).sort(), ['poe-sirus', 'poe-the-elder', SHAPER]);
+  assert.deepEqual(Object.keys(Acesso.DADOS.entradas).sort(), ['poe-a-estrela-negra', 'poe-a-fome-infinita', 'poe-sirus', 'poe-the-eater-of-worlds', 'poe-the-elder', 'poe-the-searing-exarch', SHAPER]);
   for (const it of Acesso.DADOS.itens) {
     const meta = ITEM_CATALOG[it.itemId];
     assert.equal(meta?.type, 'fragmento', it.nome);
@@ -161,11 +161,76 @@ test('o drop: só os chefes de mapa T14+ soltam os mapas com encontro, um sortei
   if (unico?.poe?.unico) assert.equal(Acesso.comEncontro(unico, Acesso.chefe('poe-drox')), null);
 });
 
-test('a tela: o Dispositivo lista os 11 pináculos com os itens (e quantos você tem)', { skip: SEM }, () => {
+test('a tela: o Dispositivo lista os 11 pináculos e as 2 arenas da etapa 2 com os itens (e quantos você tem)', { skip: SEM }, () => {
   const e = personagem();
   const tela = Dispositivo.paraTela(e);
-  assert.equal(tela.pinaculos.length, Pinaculos.todos().length);
+  assert.equal(tela.pinaculos.length, Pinaculos.todos().length + Pinaculos.arenas().length);
   const sirus = tela.pinaculos.find((p) => p.id === 'poe-sirus');
   assert.deepEqual(sirus.itens.map((i) => [i.nome, i.tem]), [['Coroa de Baran', 0], ['Coroa de Veritania', 0], ['Coroa de Al-Hezmin', 0], ['Coroa de Drox', 0]]);
   assert.equal(tela.pinaculoAberto, null);
+});
+
+// ---------------------------------------------------------------- etapa 2: o Exarca e o Devorador
+const POLARIZADO = Acesso.entrada('poe-a-estrela-negra')[0];
+const INCANDESCENTE = Acesso.entrada('poe-the-searing-exarch')[0];
+const CONTORCIDO = Acesso.entrada('poe-a-fome-infinita')[0];
+
+test('etapa 2 — os convites do poedb (a variante de moeda) e as duas arenas registradas como os pináculos, com os Únicos delas', { skip: SEM }, () => {
+  assert.deepEqual([POLARIZADO, INCANDESCENTE, CONTORCIDO].map((id) => ITEM_CATALOG[id].name), ['Convite Polarizado', 'Convite Incandescente', 'Convite Contorcido']);
+  for (const id of [POLARIZADO, INCANDESCENTE]) assert.ok(existsSync(`${Catalogo.PASTA_DAS_IMAGENS}/${ITEM_CATALOG[id].poe.icone}`));
+  assert.deepEqual(ITEM_CATALOG[POLARIZADO].fragmentoPoe.abre, ['A Estrela Negra']);
+  const estrela = Pinaculos.arena('poe-a-estrela-negra');
+  assert.equal(estrela.vidaPct, 1400);
+  assert.deepEqual(estrela.unicos.map((u) => u.slug).sort(), ['Polaric_Devastation', 'Sudden_Dawn', 'The_Eternal_Struggle']);
+  assert.ok(bossUnico('poe-a-fome-infinita'));
+  assert.equal(Pinaculos.todos().length, 11, 'os 11 pináculos continuam os mesmos');
+  const p = Pinaculos.dropExclusivo('poe-a-fome-infinita');
+  assert.ok(['Black_Zenith', 'Ceaseless_Feast'].includes(p.poe.unico), p.poe.unico);
+});
+
+test('etapa 2 — a influência: cada chefe T14+ conta; a cada 14 o Polarizado; o Incandescente só conta depois da Estrela Negra vencida, a cada 28', { skip: SEM }, () => {
+  const e = personagem();
+  assert.equal(Acesso.definirInfluencia(e, 'nada').ok, false);
+  assert.equal(Acesso.definirInfluencia(e, 'exarca').ok, true);
+  const vencer = (tier = 14, influencia = 'exarca') => Acesso.aoVencerChefeDeMapa(e, { tier, influencia });
+  assert.deepEqual(vencer(13), [], 'abaixo do T14 não conta');
+  assert.deepEqual(vencer(16, null), [], 'sem influência não conta');
+  for (let i = 1; i < 14; i++) assert.deepEqual(vencer(), []);
+  assert.deepEqual(vencer(), [POLARIZADO], 'o 14º');
+  assert.equal(e.atlas.contagem[INCANDESCENTE] ?? 0, 0, 'antes da Estrela Negra o Incandescente não conta');
+  Acesso.aoVencer(e, 'poe-a-estrela-negra');
+  for (let i = 1; i < 28; i++) vencer();
+  const caiu = vencer();
+  assert.ok(caiu.includes(INCANDESCENTE), 'o 28º depois da Estrela Negra');
+  assert.ok(caiu.includes(POLARIZADO), 'e o Polarizado segue a cada 14');
+  assert.deepEqual(vencer(15, 'devorador'), [], 'a outra influência conta à parte');
+  const tela = Acesso.influenciaParaTela(e);
+  assert.equal(tela.escolhida, 'exarca');
+  assert.deepEqual(tela.convites.find((c) => c.id === CONTORCIDO), { id: CONTORCIDO, nome: 'Convite Contorcido', influencia: 'devorador', abre: 'A Fome Infinita', feitos: 1, aCada: 14, conta: true });
+});
+
+test('etapa 2 — no jogo: o mapa T14 aberto com a influência conta o chefe; o 14º solta o Polarizado, que abre a Estrela Negra no Dispositivo', { skip: SEM }, () => {
+  const e = personagem();
+  Dispositivo.definirInfluencia(e, 'exarca');
+  e.atlas.contagem[POLARIZADO] = 13;
+  assert.equal(abrirMapa(e, Jogo.mapaSorteado(14, { raridade: 'normal' })).ok, true);
+  assert.equal(e.hunt.mapa.influencia, 'exarca');
+  const chefe = todos(e).find((m) => m.chefeDoMapa);
+  Combate.matarMonstro(e, e.hunt, PERSONAGEM, chefe, []);
+  assert.ok(e.pouch.some((x) => x.id === POLARIZADO), 'o Convite Polarizado na bolsa');
+  Dispositivo.abandonar(e);
+  e.hunt = null;
+  const r = Dispositivo.abrirPinaculo(e, { pinaculo: 'poe-a-estrela-negra', mode: 'auto' });
+  assert.equal(r.ok, true, r.erro);
+  const estrela = todos(e).find((m) => m.boss?.id === 'poe-a-estrela-negra');
+  assert.ok(estrela, 'A Estrela Negra nasceu');
+  assert.ok(!e.pouch.some((x) => x.id === POLARIZADO), 'o convite foi gasto');
+  Combate.vitoriaNoBoss(e, e.hunt, estrela, PERSONAGEM);
+  assert.equal(e.pinaculosVencidos['poe-a-estrela-negra'], 1);
+  assert.equal(e.pinaculoAberto, null);
+  const slugs = new Set(Pinaculos.arena('poe-a-estrela-negra').unicos.map((u) => u.slug));
+  assert.ok(e.rewards.at(-1).itens.some((i) => i.poe?.raridade === 'unico' && slugs.has(i.poe.unico)), 'o Único exclusivo da Estrela Negra');
+  // a tela lista a arena logo antes do Exarca
+  const ids = Dispositivo.pinaculosParaTela(e).map((p) => p.id);
+  assert.equal(ids.indexOf('poe-a-estrela-negra') + 1, ids.indexOf('poe-the-searing-exarch'));
 });

@@ -20,6 +20,7 @@ const CHEFES = new Map(DADOS.chefes.map((c) => [c.id, c]));
 const ITENS = new Map(DADOS.itens.map((i) => [i.itemId, i]));
 const MAPAS = new Map(DADOS.mapas.map((m) => [m.itemId, m]));
 const GRUPOS = ['criador', 'anciao', 'conquistador'];
+const INFLUENCIAS_DO_ARQUIVO = DADOS.influencias ?? {};
 // O nome de cada pináculo (o balão do fragmento diz qual ele abre) — de `pinaculos.json`, sem importar `pinaculos.mjs` (que importa o jogo).
 const ARQUIVO_DOS_PINACULOS = new URL('../../gamedata/itens-poe/pinaculos.json', import.meta.url);
 const NOME_DO_PINACULO = new Map((existsSync(ARQUIVO_DOS_PINACULOS) ? JSON.parse(readFileSync(ARQUIVO_DOS_PINACULOS, 'utf8')).chefes : []).map((c) => [c.id, c.nome]));
@@ -74,7 +75,9 @@ export function registrarItens(itemCatalog) {
     itemCatalog[it.itemId] = {
       id: it.itemId, name: it.nome, type: 'fragmento', weight: 0.1, hasSprite: false, rarity: 'comum', stackable: true, pilha: 100, sell: 0,
       poe: { icone: it.icone, iconeLado: 64 },
-      fragmentoPoe: { slug: it.slug, linhas: it.linhas ?? [], sabor: it.sabor ?? null, chefe: c?.nome ?? null, abre: Object.entries(DADOS.entradas).filter(([, ids]) => ids.includes(it.itemId)).map(([p]) => NOME_DO_PINACULO.get(p) ?? p) },
+      fragmentoPoe: { slug: it.slug, linhas: it.linhas ?? [], sabor: it.sabor ?? null, chefe: c?.nome ?? null, abre: Object.entries(DADOS.entradas).filter(([, ids]) => ids.includes(it.itemId)).map(([p]) => NOME_DO_PINACULO.get(p) ?? DADOS.arenas?.find((a) => a.id === p)?.nome ?? p),
+        conjunto: Object.values(DADOS.entradas).find((ids) => ids.includes(it.itemId))?.length ?? 1,
+        ...(it.convite ? { convite: { influencia: INFLUENCIAS_DO_ARQUIVO[it.influencia]?.nome ?? it.influencia, aCada: it.aCada } } : {}) },
     };
   }
   for (const m of DADOS.mapas) {
@@ -186,4 +189,58 @@ export function abandonar(estado) {
   if (!estado?.pinaculoAberto) return { ok: false, erro: 'Você não tem um pináculo aberto.' };
   estado.pinaculoAberto = null;
   return { ok: true };
+}
+
+// ---------------------------------------------------------------- a INFLUÊNCIA do Exarca e do Devorador (etapa 2)
+/*
+ * No PoE a influência se escolhe no Dispositivo (uma por vez, ou nenhuma). Cada chefe de mapa T14+ vencido num mapa aberto sob a influência
+ * conta para cada convite dela; a cada `aCada` cai o convite (`drop` garantido para quem matou). O convite do pináculo (Incandescente,
+ * Gritante) só começa a contar depois da arena intermediária vencida uma vez (`depoisDe`). Mora em `estado.atlas`:
+ *   { influencia: 'exarca' | 'devorador' | null, contagem: { [itemId do convite]: n } }
+ */
+export const INFLUENCIAS = DADOS.influencias ?? {};
+const CONVITES = DADOS.itens.filter((i) => i.convite);
+const atlas = (estado) => {
+  const a = (estado.atlas ??= {});
+  a.influencia ??= null;
+  a.contagem ??= {};
+  return a;
+};
+
+/** Escolhe a influência dos próximos mapas (`null`: nenhuma). `{ ok, erro? }`. */
+export function definirInfluencia(estado, influencia) {
+  const v = influencia == null || influencia === '' ? null : String(influencia);
+  if (v != null && !INFLUENCIAS[v]) return { ok: false, erro: 'Essa influência não existe.' };
+  atlas(estado).influencia = v;
+  return { ok: true };
+}
+
+/** O convite já conta? (o do pináculo, só depois da arena intermediária vencida uma vez) */
+const contaJa = (estado, c) => !c.depoisDe || (Number(estado?.pinaculosVencidos?.[c.depoisDe]) || 0) > 0;
+
+/**
+ * Um chefe de mapa vencido num mapa do tier `tier` aberto sob a `influencia` (`hunt.mapa.influencia`): conta para os convites dela e devolve
+ * os ids dos que caem agora (a cada `aCada`). Abaixo do tier mínimo, sem influência: nada.
+ */
+export function aoVencerChefeDeMapa(estado, { tier, influencia }) {
+  const inf = INFLUENCIAS[influencia];
+  if (!inf || !(Number(tier) >= inf.tierMinimo)) return [];
+  const a = atlas(estado);
+  const caem = [];
+  for (const c of CONVITES.filter((x) => x.influencia === influencia)) {
+    if (!contaJa(estado, c)) continue;
+    const n = (a.contagem[c.itemId] = (Number(a.contagem[c.itemId]) || 0) + 1);
+    if (n % c.aCada === 0) caem.push(c.itemId);
+  }
+  return caem;
+}
+
+/** A influência para a tela: a escolhida e, de cada convite, quanto falta (`{ id, nome, abre, feitos, aCada, conta }`). */
+export function influenciaParaTela(estado) {
+  const a = estado?.atlas ?? {};
+  return {
+    escolhida: a.influencia ?? null,
+    opcoes: Object.entries(INFLUENCIAS).map(([id, i]) => ({ id, nome: i.nome, tierMinimo: i.tierMinimo })),
+    convites: CONVITES.map((c) => ({ id: c.itemId, nome: c.nome, influencia: c.influencia, abre: NOME_DO_PINACULO.get(c.abre) ?? DADOS.arenas?.find((x) => x.id === c.abre)?.nome ?? c.abre, feitos: (Number(a.contagem?.[c.itemId]) || 0) % c.aCada, aCada: c.aCada, conta: contaJa(estado, c) })),
+  };
 }

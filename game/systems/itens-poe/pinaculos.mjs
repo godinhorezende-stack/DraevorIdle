@@ -21,6 +21,14 @@ const PORID = new Map();
 /** O chefe pináculo pelo id do boss (`poe-the-maven`…), ou null. */
 export const pinaculo = (id) => PORID.get(id) ?? null;
 export const todos = () => [...PORID.values()];
+// (05/11, etapa 2) As ARENAS INTERMEDIÁRIAS do Exarca e do Devorador (A Estrela Negra, A Fome Infinita — `pinaculos-acesso.json → arenas`):
+// como os pináculos (boss único, arena da criatura-base, tabela exclusiva de Únicos), abertas no Dispositivo com o convite delas.
+const ARENAS = new Map();
+/** A arena intermediária pelo id do boss, ou null. */
+export const arena = (id) => ARENAS.get(id) ?? null;
+export const arenas = () => [...ARENAS.values()];
+/** O pináculo ou a arena intermediária (o que abre no Dispositivo), ou null. */
+export const doDispositivo = (id) => pinaculo(id) ?? arena(id);
 
 /** A definição de boss único do pináculo. */
 export function definicao(c) {
@@ -73,6 +81,12 @@ export function iniciar() {
   if (!Catalogo.ligado()) return [];
   PinaculosAcesso.iniciar(BossesUnicos, BESTIARY);
   if (PORID.size) return [...PORID.keys()];
+  for (const c of PinaculosAcesso.DADOS.arenas ?? []) {
+    if (!BESTIARY[c.base]) continue;
+    const def = BossesUnicos.registrar(definicao(c));
+    if (!CATALOGO.bosses.some((b) => b.id === c.id)) CATALOGO.bosses.push(entradaDoCatalogo(c, def));
+    ARENAS.set(c.id, c);
+  }
   for (const c of DADOS.chefes) {
     if (!BESTIARY[c.base]) continue;
     const def = BossesUnicos.registrar(definicao(c));
@@ -103,7 +117,7 @@ export function exclusivosEquipaveis(c) {
  * `ilvl`: o Item Level (o nível do chefe).
  */
 export function dropExclusivo(bossId, { rng = Math.random, ilvl = DADOS.regra.nivel } = {}) {
-  const c = pinaculo(bossId);
+  const c = doDispositivo(bossId);
   if (!c || rng() * 100 >= DADOS.regra.chanceDoExclusivoPct) return null;
   const lista = exclusivosEquipaveis(c);
   if (!lista.length) return null;

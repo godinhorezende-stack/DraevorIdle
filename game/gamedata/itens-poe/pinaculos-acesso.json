@@ -8,6 +8,16 @@
    "conquistador": 0.08
   }
  },
+ "influencias": {
+  "exarca": {
+   "nome": "O Exarca Cauterizado",
+   "tierMinimo": 14
+  },
+  "devorador": {
+   "nome": "O Devorador de Mundos",
+   "tierMinimo": 14
+  }
+ },
  "entradas": {
   "poe-the-shaper": [
    7750001,
@@ -26,8 +36,97 @@
    7750010,
    7750011,
    7750012
+  ],
+  "poe-a-estrela-negra": [
+   7750013
+  ],
+  "poe-the-searing-exarch": [
+   7750014
+  ],
+  "poe-a-fome-infinita": [
+   7750015
+  ],
+  "poe-the-eater-of-worlds": [
+   7750016
   ]
  },
+ "arenas": [
+  {
+   "id": "poe-a-estrela-negra",
+   "nome": "A Estrela Negra",
+   "en": "The Black Star",
+   "poedb": "https://poedb.tw/us/The_Black_Star",
+   "variante": "TheBlackStarBlackStarBoss",
+   "vidaPct": 1400,
+   "danoPct": 160,
+   "expPct": 200,
+   "resistencias": {
+    "fire": 50,
+    "ice": 50,
+    "energy": 50,
+    "chaos": 30
+   },
+   "vidaMult": 3.5,
+   "base": "anomaly",
+   "unicos": [
+    {
+     "slug": "Polaric_Devastation",
+     "nome": "Devastação Polar",
+     "nomeOriginal": "Polaric Devastation",
+     "classe": "Rings",
+     "base": "Anel de Opala"
+    },
+    {
+     "slug": "Sudden_Dawn",
+     "nome": "Amanhecer Repentino",
+     "nomeOriginal": "Sudden Dawn",
+     "classe": "Helmets",
+     "base": "Tiara de Aço"
+    },
+    {
+     "slug": "The_Eternal_Struggle",
+     "nome": "A Eterna Batalha",
+     "nomeOriginal": "The Eternal Struggle",
+     "classe": "Amulets",
+     "base": "Amuleto de Ônix"
+    }
+   ]
+  },
+  {
+   "id": "poe-a-fome-infinita",
+   "nome": "A Fome Infinita",
+   "en": "The Infinite Hunger",
+   "poedb": "https://poedb.tw/us/The_Infinite_Hunger",
+   "variante": "TheInfiniteHungerDoomBoss_",
+   "vidaPct": 1800,
+   "danoPct": 280,
+   "expPct": 200,
+   "resistencias": {
+    "fire": 50,
+    "ice": 50,
+    "energy": 50,
+    "chaos": 30
+   },
+   "vidaMult": 4.5,
+   "base": "the-nightmare-beast",
+   "unicos": [
+    {
+     "slug": "Black_Zenith",
+     "nome": "Zenith Negro",
+     "nomeOriginal": "Black Zenith",
+     "classe": "Gloves",
+     "base": "Luvas de Seda sem Dedos"
+    },
+    {
+     "slug": "Ceaseless_Feast",
+     "nome": "Banquete Sem Fim",
+     "nomeOriginal": "Ceaseless Feast",
+     "classe": "Gloves",
+     "base": "Luvas Cravejadas"
+    }
+   ]
+  }
+ ],
  "itens": [
   {
    "slug": "Fragment_of_the_Hydra",
@@ -208,6 +307,76 @@
    "itemId": 7750012,
    "chefe": "poe-drox",
    "grupo": "conquistador"
+  },
+  {
+   "slug": "Polaric_Invitation",
+   "tipo": "Metadata/Items/MapFragments/Primordial/CurrencyCleansingFireKey",
+   "nome": "Convite Polarizado",
+   "en": "Polaric Invitation",
+   "linhas": [
+    "Modificadores a Quantidade de Itens afetam a quantidade de recompensas derrubadas pelo chefe"
+   ],
+   "sabor": "Uma vez ao alcance da Estrela Negra\nnão há para onde fugir.",
+   "icone": "poe-itens/Pinaculos/Polaric_Invitation.png",
+   "nivelDrop": 1,
+   "itemId": 7750013,
+   "convite": true,
+   "influencia": "exarca",
+   "aCada": 14,
+   "abre": "poe-a-estrela-negra"
+  },
+  {
+   "slug": "Incandescent_Invitation",
+   "tipo": "Metadata/Items/MapFragments/Primordial/CurrencyCleansingFireBossKey",
+   "nome": "Convite Incandescente",
+   "en": "Incandescent Invitation",
+   "linhas": [
+    "Modificadores a Quantidade de Itens afetam a quantidade de recompensas derrubadas pelo chefe"
+   ],
+   "sabor": "Da coroa de uma estrela antiga,\no Exarca Cauterizado intenta a dominação do Atlas.",
+   "icone": "poe-itens/Pinaculos/Incandescent_Invitation.png",
+   "nivelDrop": 1,
+   "itemId": 7750014,
+   "convite": true,
+   "influencia": "exarca",
+   "aCada": 28,
+   "abre": "poe-the-searing-exarch",
+   "depoisDe": "poe-a-estrela-negra"
+  },
+  {
+   "slug": "Writhing_Invitation",
+   "tipo": "Metadata/Items/MapFragments/Primordial/CurrencyTangleKey",
+   "nome": "Convite Contorcido",
+   "en": "Writhing Invitation",
+   "linhas": [
+    "Modificadores a Quantidade de Itens afetam a quantidade de recompensas derrubadas pelo chefe"
+   ],
+   "sabor": "A Fome Infinita espera em um estômago cósmico onde\ncivilizações inteiras são digeridas - mas não morrem",
+   "icone": "poe-itens/Pinaculos/Writhing_Invitation.png",
+   "nivelDrop": 1,
+   "itemId": 7750015,
+   "convite": true,
+   "influencia": "devorador",
+   "aCada": 14,
+   "abre": "poe-a-fome-infinita"
+  },
+  {
+   "slug": "Screaming_Invitation",
+   "tipo": "Metadata/Items/MapFragments/Primordial/CurrencyTangleBossKey",
+   "nome": "Convite Gritante",
+   "en": "Screaming Invitation",
+   "linhas": [
+    "Modificadores a Quantidade de Itens afetam a quantidade de recompensas derrubadas pelo chefe"
+   ],
+   "sabor": "Do coração do Emaranhado, O Devorador de Mundos\nbusca o controle do Atlas.",
+   "icone": "poe-itens/Pinaculos/Screaming_Invitation.png",
+   "nivelDrop": 1,
+   "itemId": 7750016,
+   "convite": true,
+   "influencia": "devorador",
+   "aCada": 28,
+   "abre": "poe-the-eater-of-worlds",
+   "depoisDe": "poe-a-fome-infinita"
   }
  ],
  "mapas": [

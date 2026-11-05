@@ -752,7 +752,7 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
   // nem matava os bichos de lá).
   if (itensPoeLigado() && !conteudoDoJogoOficial({ hunt, boss, arenaPvp })) return { ok: false, erro: 'Essa caçada é do Draevor clássico e não existe no jogo oficial.' };
   // O MAPA do endgame só se abre pelo Dispositivo de Mapas (com a peça): o tier da hunt é o da peça.
-  const mapa = hunt?.poeMapa ? (mapaAberto?.peca ? Mapas.resumoNaCacada(mapaAberto.id, mapaAberto.peca) : null) : null;
+  const mapa = hunt?.poeMapa ? (mapaAberto?.peca ? { ...Mapas.resumoNaCacada(mapaAberto.id, mapaAberto.peca), ...(mapaAberto.influencia ? { influencia: mapaAberto.influencia } : {}) } : null) : null;
   if (hunt?.poeMapa && (!mapa || mapa.tier !== hunt.poeMapa)) return { ok: false, erro: 'Os mapas se abrem no Dispositivo de Mapas, com a peça do mapa.' };
   // Hunts Vip / Instance / Divine: premium, o acesso e o level (ver `premium.mjs`).
   const tranca = Premium.trancaDaHunt(hunt);
@@ -785,7 +785,7 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
   // (05/11, dono: "quero igual do poe") O PINÁCULO não tem level nem recarga: abre no Dispositivo de Mapas, com os itens dele gastos
   // (`itens-poe/pinaculos-acesso.mjs` — os fragmentos dos Guardiões, as Coroas dos Conquistadores). Vale também no modo beta (dono, 05/11).
   if (boss?.poePinaculo && !PinaculosAcesso.aberto(estado, boss.id)) {
-    return { ok: false, erro: PinaculosAcesso.entrada(boss.id) ? `${boss.name} se abre no Dispositivo de Mapas, com os fragmentos dele.` : `${boss.name} ainda não se abre no jogo: o caminho até ele vem numa próxima etapa.` };
+    return { ok: false, erro: PinaculosAcesso.entrada(boss.id) ? `${boss.name} se abre no Dispositivo de Mapas, com os itens dele (fragmentos, coroas ou convite).` : `${boss.name} ainda não se abre no jogo: o caminho até ele vem numa próxima etapa.` };
   }
   // Modo beta: bosses sem level, task nem recarga (a regra do portal do boss de ato, acima, continua valendo).
   if (boss && !boss.poePinaculo && !primeiraDoAto && !Beta.ativo()) {

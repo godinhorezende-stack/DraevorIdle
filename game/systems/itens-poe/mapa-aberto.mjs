@@ -51,6 +51,8 @@ export function abrir(estado, peca, { agora = Date.now() } = {}) {
     portaisMax: portaisPorMapa(),
     mortes: 0,
     abertoEm: agora,
+    // (05/11) a influência escolhida no Dispositivo ao abrir (Exarca/Devorador — `pinaculos-acesso.mjs`): os chefes T14+ dele contam para os convites
+    influencia: estado.atlas?.influencia ?? null,
     cacada: null,
   };
   return st.aberto;
