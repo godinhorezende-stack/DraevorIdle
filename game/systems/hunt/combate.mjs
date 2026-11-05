@@ -460,7 +460,37 @@ function sacolaDoChefe(estado, hunt, alvo, quem, atoDoChefe) {
   return itens;
 }
 
+/*
+ * (05/11, etapa 3) O CALVÁRIO DA CONHECEDORA (o convite da Maven): cada chefe que cai deixa a sacola dele; morto o par, entram os dois
+ * seguintes da fila (`hunt.crisol.fila` — `cacadas.mjs`); morto o último, caem os Fragmentos Crescentes (Atlas 6–7, os outros 3–4) e o
+ * Calvário fecha (o do Atlas: a Maven esquece os testemunhados). Devolve true se tratou a morte (a sala do Calvário).
+ */
+function mortoNoCrisol(estado, hunt, alvo, personagem) {
+  const c = hunt.crisol;
+  if (!c || hunt.vitoria) return !!c;
+  Bau.novaSacola(estado, alvo.name, sacolaDoChefe(estado, hunt, alvo, personagem?.nome ?? null, null));
+  tirarMonstro(hunt, alvo);
+  if (hunt.alvo === alvo.uid) hunt.alvo = null;
+  c.mortos = (Number(c.mortos) || 0) + 1;
+  const sala = salaDe(hunt);
+  if ((sala.monstros ?? []).some((m) => m.hp > 0 && m.doCrisol)) return true;
+  if (c.fila?.length) {
+    const par = c.fila.splice(0, 2);
+    (sala.monstros ??= []).push(...par);
+    return true;
+  }
+  const n = PinaculosAcesso.fragmentosDoCrisol(c.id);
+  const fragmento = PinaculosAcesso.MAVEN?.fragmento;
+  if (n > 0 && fragmento) Bau.novaSacola(estado, PinaculosAcesso.crisol(c.id)?.nome ?? 'Calvário da Conhecedora', [{ id: fragmento, count: n }]);
+  Missoes.aoVencerPinaculo(estado, hunt.bossId);
+  PinaculosAcesso.aoVencer(estado, hunt.bossId);
+  hunt.vitoria = { boss: PinaculosAcesso.crisol(c.id)?.nome ?? alvo.name, exp: alvo.exp, loot: fragmento && n ? { [fragmento]: n } : {} };
+  hunt.fimEm = (hunt.clock ?? 0) + 5000;
+  return true;
+}
+
 export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
+  if (hunt.crisol && mortoNoCrisol(estado, hunt, alvo, personagem)) return;
   // O chefe do ato que saiu do PORTAL na última fase (jogo oficial — `abrirPortalDoChefe`, cacadas.mjs): a mesma sacola e a mesma
   // vitória da sala do boss, mas a caçada continua (a instância nova vem depois), e a vitória do ato vale para a party da sala.
   const naFase = !hunt.isBoss && !!alvo.chefeDoAto;
@@ -1082,6 +1112,16 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // (o Polarizado/Contorcido) e a cada 28 (o Incandescente/Gritante) cai o convite, para quem matou.
   if (noMapa?.influencia && alvo.chefeDoMapa) {
     for (const id of PinaculosAcesso.aoVencerChefeDeMapa(estado, noMapa)) {
+      if (Bolsa.porNaBolsa(estado, id, 1)) {
+        caiu.push({ id, count: 1 });
+        conta('loot', id, 1);
+      }
+    }
+  }
+  // (05/11, etapa 3) A MAVEN testemunhando (o mapa aberto com ela — `pinaculos-acesso.mjs`): o chefe do mapa T14+ soma no contador (no 10º,
+  // o Convite: Atlas) e o chefe do encontro fica visto (os 4 do grupo: o convite dele) — os convites caem para quem matou.
+  if (noMapa?.maven && (alvo.chefeDoMapa || alvo.fragmentoPoe)) {
+    for (const id of PinaculosAcesso.aoVencerComMaven(estado, noMapa, alvo)) {
       if (Bolsa.porNaBolsa(estado, id, 1)) {
         caiu.push({ id, count: 1 });
         conta('loot', id, 1);

@@ -3123,7 +3123,10 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     if (f.sabor) node.append(el('div', 'tip-extra tip-sabor-missao', f.sabor));
     const abre = (f.abre ?? []).join(', ');
     const quem = f.conjunto > 1 ? `Um dos ${f.conjunto} que abrem ${abre}` : `Abre ${abre}`;
-    node.append(el('div', 'tip-extra tip-moeda-ajuda', `${abre ? quem : 'Abre um pináculo'} no Dispositivo de Mapas${f.chefe ? `. Solto por ${f.chefe}` : ''}${f.convite ? `. Cai a cada ${f.convite.aCada} chefes de mapa T14+ vencidos sob a influência de ${f.convite.influencia}` : ''}.`));
+    // (etapa 3) o Fragmento Crescente (10 = A Citação) e os convites da Maven (quem nasce no Calvário, os fragmentos que ele solta)
+    if (f.crescente) node.append(el('div', 'tip-extra tip-moeda-ajuda', `${f.crescente.n} Fragmentos Crescentes valem ${f.crescente.citacao} no Dispositivo de Mapas. Caem dos Calvários da Conhecedora (os convites da Maven).`));
+    else if (f.conviteDaMaven) node.append(el('div', 'tip-extra tip-moeda-ajuda', `Abre o Calvário da Conhecedora no Dispositivo de Mapas: ${f.conviteDaMaven.chefes}, em pares. Vencido, solta ${f.conviteDaMaven.fragmentos.join('–')} Fragmentos Crescentes.`));
+    else node.append(el('div', 'tip-extra tip-moeda-ajuda', `${abre ? quem : 'Abre um pináculo'} no Dispositivo de Mapas${f.chefe ? `. Solto por ${f.chefe}` : ''}${f.convite ? `. Cai a cada ${f.convite.aCada} chefes de mapa T14+ vencidos sob a influência de ${f.convite.influencia}` : ''}.`));
   }
   if (meta.moedaPoe) {
     if (meta.descricao) node.append(el('div', 'tip-extra tip-moeda-efeito', meta.descricao));

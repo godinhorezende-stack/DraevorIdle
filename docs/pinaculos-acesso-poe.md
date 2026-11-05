@@ -91,10 +91,42 @@ Fonte: o guia da Steam ("the 14th grants the Polaric Invitation", "the 28th gran
   - `pinaculos-acesso.mjs` → `definirInfluencia`, `aoVencerChefeDeMapa` e `influenciaParaTela`.
 - **Ainda não existe no jogo:** os altares eldritch e os monstros influenciados dos mapas. A influência, por enquanto, só conta para os convites.
 
+## Etapa 3: a Maven (05/11)
+
+Fontes:
+- o guia da Steam ("killing a witnessed boss guarantees +1 Maven counter");
+- o Maxroll (Maven's Invitations): "pairs in succession";
+- a poewiki: Fragmentos Crescentes "~6,16" no Atlas e "~3,04" nos outros.
+
+Decisões do dono:
+- **A Maven no Dispositivo:** os botões "Desligada" e "A Maven testemunha" ficam ao lado da influência. Ela vale para os mapas abertos com ela ligada (`estado.maven`, gravado no mapa ao abrir).
+- **O contador:** cada chefe de mapa T14+ vencido com a Maven soma 1, até 10.
+  - No 10º cai o **Convite da Maven: Atlas**, garantido e uma vez por ciclo.
+  - Os 10 testemunhados ficam guardados: são eles que nascem no Calvário.
+- **Os convites dos guardiões:** com os 4 chefes de um grupo testemunhados, cai o convite dele, e o grupo recomeça.
+  - **Deformados:** os 4 Guardiões do Criador.
+  - **Distorcidos:** os 4 Guardiões do Ancião.
+  - **Matadores do Ancião:** os 4 Conquistadores.
+- **O Calvário da Conhecedora** (o Crisol): o convite abre a arena da Maven no Dispositivo, com 6 portais.
+  - Os chefes entram **em pares**: morto o par, entram os dois seguintes. Cada chefe deixa a sacola dele.
+  - Vencido o último, caem os **Fragmentos Crescentes**: 6–7 no Atlas, 3–4 nos outros.
+  - O Calvário do Atlas, vencido ou perdido, faz a Maven esquecer os testemunhados.
+- **A Citação de Maven:** 10 Fragmentos Crescentes valem uma. O Dispositivo conta os 10 como uma Citação e os gasta se faltar a Citação inteira. A Citação abre **The Maven**.
+- **Ficam de fora:** os convites Esquecidos, Ocultos e Temidos. Eles pedem mapas de Síntese, os Domínios da Fenda e o Córtex/Chayula, que o jogo não tem.
+
+Onde está no código:
+- `pinaculos-acesso.json` → `maven` (`crisois`, `fragmento`, `citacao`) e os 6 itens;
+- `pinaculos-acesso.mjs` → `aoVencerComMaven`, `chefesDoCrisol`, `fragmentosDoCrisol`, `aoFecharCrisol`, `mavenParaTela`, `contarComFragmentos`;
+- `pinaculos.mjs` → `crisol`;
+- `cacadas.mjs` → os chefes em pares (`hunt.crisol.fila`);
+- `combate.mjs` → `mortoNoCrisol` e a contagem nos mapas.
+
 ## Pontos em aberto
 
 - **A taxa dos mapas com encontro** (8% por grupo por chefe T14+) não tem fonte. Ajustar se ficar raro ou frequente demais.
 - **Arena de novo a cada entrada:** voltar pelo portal começa a luta do zero, porque a arena é uma caçada nova. No PoE a vida do chefe se mantém na mesma instância.
 - **As Cidadelas:** no PoE, o Conquistador é enfrentado numa área própria (a Cidadela). Aqui ele aparece dentro do mapa.
-- **Etapas 3–4:** Maven, Venarius e as Encarnações continuam fechados. A tela os lista como "próximas etapas".
+- **Etapa 4:** Venarius e as Encarnações continuam fechados. A tela os lista como "próximas etapas".
+- **Nucleus of the Maven:** continua sem caminho. O poedb o lista como chefe próprio (a variante `MavenBrainBoss`), mas não diz como se entra nele: fica para uma decisão do dono.
+- **O Calvário recomeça a cada entrada,** como as arenas: os pares voltam do começo.
 - **Altares eldritch:** os mapas com influência ainda não têm os altares nem os monstros influenciados do PoE.

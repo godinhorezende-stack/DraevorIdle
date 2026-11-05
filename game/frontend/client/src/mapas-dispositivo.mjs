@@ -127,6 +127,46 @@ function blocoDaInfluencia(inf, h) {
 }
 
 /**
+ * (05/11, etapa 3) A MAVEN: o botão que a liga nos próximos mapas, o contador "N de 10" (no 10º cai o Convite: Atlas), quem ela testemunhou
+ * e, de cada convite dos guardiões, os 4 chefes (os vistos acesos).
+ */
+function blocoDaMaven(mv, h) {
+  const bloco = el('div', 'mp-influencia mp-maven');
+  const nav = el('nav', 'mp-abas');
+  nav.setAttribute('aria-label', 'A Maven');
+  for (const o of [{ ligada: false, nome: 'Desligada' }, { ligada: true, nome: 'A Maven testemunha' }]) {
+    const ativo = !!mv.ligada === o.ligada;
+    const b = botao(`mp-aba${ativo ? ' ativa' : ''}`, null, () => {
+      if (ativo) return;
+      b.disabled = true;
+      h.send({ t: 'mavenDoAtlas', ligada: o.ligada });
+    });
+    b.setAttribute('aria-pressed', ativo ? 'true' : 'false');
+    b.append(el('b', null, o.nome));
+    nav.append(b);
+  }
+  bloco.append(el('span', 'mp-rotulo', 'A Maven nos próximos mapas'), nav);
+  const linhas = el('ul', 'mp-convites');
+  const barra = el('div', 'mp-loop-barra', el('i', null));
+  barra.firstChild.style.width = `${Math.round((100 * Math.min(mv.contador, mv.meta)) / mv.meta)}%`;
+  linhas.append(el('li', `mp-convite${mv.ligada ? ' ativo' : ''}`,
+    el('span', null, el('b', null, 'Convite da Maven: Atlas'), ' → Calvário da Conhecedora'),
+    barra,
+    el('small', null, `${mv.contador} de ${mv.meta} chefes de mapa T${mv.tierMinimo}+ testemunhados${mv.testemunhados?.length ? `: ${mv.testemunhados.join(', ')}` : ''}`)));
+  for (const g of mv.grupos ?? []) {
+    const vistos = g.chefes.filter((c) => c.visto).length;
+    const b2 = el('div', 'mp-loop-barra', el('i', null));
+    b2.firstChild.style.width = `${Math.round((100 * vistos) / g.chefes.length)}%`;
+    linhas.append(el('li', `mp-convite${mv.ligada ? ' ativo' : ''}`,
+      el('span', null, el('b', null, g.nome)),
+      b2,
+      el('small', null, g.chefes.map((c) => `${c.visto ? '✓' : '·'} ${c.nome}`).join('  '))));
+  }
+  bloco.append(linhas, el('p', 'mp-nota', `Como no PoE: com a Maven ligada, cada chefe de mapa T${mv.tierMinimo}+ vencido soma 1; no ${mv.meta}º cai o Convite: Atlas, que leva os ${mv.meta} ao Calvário (em pares). Os Guardiões e os Conquistadores testemunhados (os 4 do grupo) dão o convite deles. O Calvário solta os Fragmentos Crescentes: 10 valem A Citação de Maven.`));
+  return bloco;
+}
+
+/**
  * A seção dos PINÁCULOS: o aberto (portais, voltar, abandonar) e um cartão por pináculo com os itens que ele pede (o ícone, quantos você
  * tem) e o "Abrir". Os que ainda não abrem no jogo (as próximas etapas) ficam numa linha só. `ocupado`: há um mapa aberto ou um loop.
  */
@@ -153,6 +193,7 @@ export function secaoDosPinaculos(mapas, h, avisar = () => {}, ocupado = false) 
   } else sec.append(el('p', 'mp-nota', 'Como no PoE, os pináculos não pedem level: cada um abre aqui com os itens dele (um de cada, gastos ao abrir), com 6 portais. Os fragmentos e as coroas caem garantidos dos Guardiões e dos Conquistadores, que aparecem nos mapas que os chefes de mapa T14+ soltam.'));
   // (etapa 2) a INFLUÊNCIA dos próximos mapas (Exarca, Devorador ou nenhuma) e quanto falta para cada convite
   if (mapas.influencia?.opcoes?.length) sec.append(blocoDaInfluencia(mapas.influencia, h));
+  if (mapas.maven) sec.append(blocoDaMaven(mapas.maven, h));
   const comItens = mapas.pinaculos.filter((p) => p.itens);
   const grade = el('div', 'mp-grade mp-pin-grade');
   for (const p of comItens) {
@@ -167,7 +208,8 @@ export function secaoDosPinaculos(mapas, h, avisar = () => {}, ocupado = false) 
       itens.append(fig);
     }
     c.append(itens);
-    const abrir = botao('w2-entrar mp-abrir', aberto ? (aberto.id === p.id ? 'Aberto' : 'Outro aberto') : ocupado ? 'Mapa aberto' : p.pronto ? 'Abrir' : 'Faltam itens', () => {
+    if (p.fechado) c.append(el('small', 'mp-pin-fechado', p.fechado));
+    const abrir = botao('w2-entrar mp-abrir', aberto ? (aberto.id === p.id ? 'Aberto' : 'Outro aberto') : ocupado ? 'Mapa aberto' : p.pronto ? 'Abrir' : p.fechado ? 'Fechado' : 'Faltam itens', () => {
       abrir.disabled = true;
       avisar('');
       h.send({ t: 'abrirPinaculo', pinaculo: p.id, mode: 'auto' });

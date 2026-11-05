@@ -592,7 +592,7 @@ function chaveDoChefe(alvo, nivel = null) {
   return chaves.reduce((m, k) => (Math.abs(nivelDe(k) - (nivel ?? nivelDe(k))) < Math.abs(nivelDe(m) - (nivel ?? nivelDe(m))) ? k : m));
 }
 
-function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = null }) {
+function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = null, crisol = null }) {
   const grade = gradeDaHunt(hunt ?? { id: huntId });
   const posicoes = boss ? posicaoDoBoss(boss, grade) : hunt?.posicoes?.length ? pontosNoMapa(hunt, grade.mapa?.floors ? grade.mapa : null) : spawnsCapturados(huntId) ?? grade.posicoes ?? mapaCustom?.posicoes ?? pontosDosSpawns(spawnsDaHunt(huntId));
   /*
@@ -685,7 +685,28 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = n
   }
   // Os chefes que só aparecem depois de outros (a Trindade Depravada do Ato 9): guardados na instância (`Instancia.liberarReserva`).
   const reserva = comInstancia && !mapa ? Instancia.separarReserva(todos, Campanha.chefesAntesDe, Campanha.ehOMonstro) : [];
-  for (const p of comInstancia ? [] : posicoes) {
+  // (05/11, etapa 3) O CALVÁRIO DA CONHECEDORA (o convite da Maven — `crisol`: os chefes dele, de `PinaculosAcesso.chefesDoCrisol`): todos
+  // nascem perto do ponto do boss, e só o primeiro PAR entra na sala; os outros esperam na fila (`filaDoCrisol`) e entram dois a dois quando
+  // o par anterior morre (`hunt/combate.mjs`), como no PoE.
+  const filaDoCrisol = [];
+  if (crisol?.length && posicoes.length) {
+    const p = posicoes[0];
+    const z = andarDe(p);
+    const g = Protecao.gradeDosBichos(andarDaGrade(grade, z));
+    for (const c of crisol) {
+      const casa = casaLivrePerto(g, p, (x) => casasDeSpawn.has(`${x.x},${x.y},${z}`));
+      if (!casa) break;
+      casasDeSpawn.add(`${casa.x},${casa.y},${z}`);
+      const def = c.bossUnico ? bossUnico(c.bossUnico) : null;
+      const m = def ? criarBossUnico(def, { x: casa.x, y: casa.y, z }) : c.chave && BESTIARY[c.chave] ? criarMonstro({ key: c.chave, x: casa.x, y: casa.y, z }, hunt) : null;
+      if (!m) continue;
+      delete m.spawn;
+      if (!def) m.raridade = 'unico';
+      m.doCrisol = true;
+      (todos.filter(({ m: x }) => x.doCrisol).length < 2 ? todos : filaDoCrisol).push({ z, m });
+    }
+  }
+  for (const p of comInstancia || crisol ? [] : posicoes) {
     const z = andarDe(p);
     if (!andaresDaRota.has(z)) continue;
     // (Nunca numa Safe Zone: a grade dos bichos — `protecao.mjs`.)
@@ -724,7 +745,7 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = n
     // (dono, 03/11 — "100%") os BAÚS do PoE nas áreas da campanha e nos mapas (`itens-poe/baus-poe.mjs`): perto dos monstros, abrem ao passar.
     if (itensPoeLigado() && (hunt?.poeArea || hunt?.poeMapa)) BausPoe.porNaInstancia(instancia, { grade, inicio, todos, nivel: mapa?.nivel ?? escala?.nivel ?? null, baus: doMapa?.baus ?? null });
   }
-  return { grade, inicio, andarInicial, monstros, outrosAndares, instancia };
+  return { grade, inicio, andarInicial, monstros, outrosAndares, instancia, filaDoCrisol };
 }
 
 /** Quanto o portal do boss de ato espera aberto, com a hunt limpa, antes de a instância seguinte começar (e fechá-lo). */
@@ -752,7 +773,7 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
   // nem matava os bichos de lá).
   if (itensPoeLigado() && !conteudoDoJogoOficial({ hunt, boss, arenaPvp })) return { ok: false, erro: 'Essa caçada é do Draevor clássico e não existe no jogo oficial.' };
   // O MAPA do endgame só se abre pelo Dispositivo de Mapas (com a peça): o tier da hunt é o da peça.
-  const mapa = hunt?.poeMapa ? (mapaAberto?.peca ? { ...Mapas.resumoNaCacada(mapaAberto.id, mapaAberto.peca), ...(mapaAberto.influencia ? { influencia: mapaAberto.influencia } : {}) } : null) : null;
+  const mapa = hunt?.poeMapa ? (mapaAberto?.peca ? { ...Mapas.resumoNaCacada(mapaAberto.id, mapaAberto.peca), ...(mapaAberto.influencia ? { influencia: mapaAberto.influencia } : {}), ...(mapaAberto.maven ? { maven: true } : {}) } : null) : null;
   if (hunt?.poeMapa && (!mapa || mapa.tier !== hunt.poeMapa)) return { ok: false, erro: 'Os mapas se abrem no Dispositivo de Mapas, com a peça do mapa.' };
   // Hunts Vip / Instance / Divine: premium, o acesso e o level (ver `premium.mjs`).
   const tranca = Premium.trancaDaHunt(hunt);
@@ -803,7 +824,10 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
   }
 
   const escala = fase ? Campanha.escalaDaFase(huntId, dif) : atoDoBoss != null ? Campanha.escalaDoBoss(atoDoBoss, dif) : null;
-  const { grade, inicio, andarInicial, monstros, outrosAndares, instancia } = povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa });
+  // (05/11, etapa 3) o Calvário da Maven: os chefes do convite (os testemunhados, ou os 4 do grupo)
+  const crisol = boss?.crisolMaven ? PinaculosAcesso.chefesDoCrisol(estado, boss.crisolMaven) : null;
+  if (crisol && !crisol.length) return { ok: false, erro: 'A Maven não testemunhou nenhum chefe para este Calvário.' };
+  const { grade, inicio, andarInicial, monstros, outrosAndares, instancia, filaDoCrisol } = povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa, crisol });
   // A cidade do personagem fora da caçada é a do ato onde ele caçou por último (o nó azul do mapa da campanha — `Campanha.paraCliente`).
   if (fase?.ato != null) estado.atoDaCidade = fase.ato;
   else if (atoDoBoss != null) estado.atoDaCidade = atoDoBoss;
@@ -864,7 +888,9 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
     isBoss: !!boss,
     bossId: boss?.id ?? null,
     // o chefe PINÁCULO (o "Chefe Final do Atlas" dos implícitos eldritch — `condicoes-poe.mjs`, `chefeFinalNaPresenca`)
-    ...(boss?.poePinaculo ? { bossPinaculo: true } : {}),
+    ...(boss?.poePinaculo && !boss.crisolMaven ? { bossPinaculo: true } : {}),
+    // (05/11, etapa 3) o Calvário da Maven: os chefes que ainda vão entrar (em pares) e quantos são ao todo
+    ...(boss?.crisolMaven ? { crisol: { id: boss.crisolMaven, fila: filaDoCrisol.map(({ m }) => m), total: monstros.length + filaDoCrisol.length } } : {}),
     // (05/11) a Quantidade de Itens dos fragmentos gastos ("…aumentada em 5%" cada — `pinaculos-acesso.mjs`), na sacola do pináculo
     ...(boss?.poePinaculo && estado.pinaculoAberto?.id === boss.id ? { quantidadeDoPinaculo: Number(estado.pinaculoAberto.quantidadePct) || 0 } : {}),
     // A campanha: a fase (ou o boss do ato) e a dificuldade — o progresso, a

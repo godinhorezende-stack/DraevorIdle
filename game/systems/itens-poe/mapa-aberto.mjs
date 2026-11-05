@@ -53,6 +53,8 @@ export function abrir(estado, peca, { agora = Date.now() } = {}) {
     abertoEm: agora,
     // (05/11) a influência escolhida no Dispositivo ao abrir (Exarca/Devorador — `pinaculos-acesso.mjs`): os chefes T14+ dele contam para os convites
     influencia: estado.atlas?.influencia ?? null,
+    // (05/11, etapa 3) a Maven ligada no Dispositivo ao abrir: os chefes T14+ dele contam para ela (`pinaculos-acesso.mjs → aoVencerComMaven`)
+    maven: !!estado.maven?.ligada,
     cacada: null,
   };
   return st.aberto;

@@ -38,9 +38,9 @@ function abrirMapa(e, peca) {
 }
 
 test('os dados do poedb: 12 fragmentos/coroas e 4 convites (ícone no disco), 4 mapas dos Guardiões do Criador, 12 chefes registrados como bosses únicos', { skip: SEM }, () => {
-  assert.equal(Acesso.DADOS.itens.length, 16, '12 fragmentos/coroas + 4 convites (etapa 2)');
+  assert.equal(Acesso.DADOS.itens.length, 22, '12 fragmentos/coroas + 4 convites (etapa 2) + Fragmento Crescente, Citação e 4 convites da Maven (etapa 3)');
   assert.equal(Acesso.DADOS.mapas.length, 4);
-  assert.deepEqual(Object.keys(Acesso.DADOS.entradas).sort(), ['poe-a-estrela-negra', 'poe-a-fome-infinita', 'poe-sirus', 'poe-the-eater-of-worlds', 'poe-the-elder', 'poe-the-searing-exarch', SHAPER]);
+  assert.deepEqual(Object.keys(Acesso.DADOS.entradas).sort(), ['poe-a-estrela-negra', 'poe-a-fome-infinita', 'poe-crisol-atlas', 'poe-crisol-deformados', 'poe-crisol-distorcidos', 'poe-crisol-matadores', 'poe-sirus', 'poe-the-eater-of-worlds', 'poe-the-elder', 'poe-the-maven', 'poe-the-searing-exarch', SHAPER]);
   for (const it of Acesso.DADOS.itens) {
     const meta = ITEM_CATALOG[it.itemId];
     assert.equal(meta?.type, 'fragmento', it.nome);
@@ -61,7 +61,7 @@ test('sem level: o pináculo só entra aberto no Dispositivo (mesmo no modo beta
   const e = personagem();
   e.level = 100;
   assert.match(Cacadas.entrar(e, { huntId: SHAPER, mode: 'auto' }).erro, /Dispositivo de Mapas/);
-  assert.match(Cacadas.entrar(e, { huntId: 'poe-the-maven', mode: 'auto' }).erro, /próxima etapa/);
+  assert.match(Cacadas.entrar(e, { huntId: 'poe-venarius', mode: 'auto' }).erro, /próxima etapa/);
   const beta = Beta.ativo();
   Beta.definir(true);
   try {
@@ -81,7 +81,7 @@ test('abrir o Shaper: os 4 fragmentos (da bolsa e do depósito) saem só depois 
   for (const id of ids.slice(1)) e.inventory.push({ id, count: 1 });
   const tela = Dispositivo.pinaculosParaTela(e).find((p) => p.id === SHAPER);
   assert.ok(tela.pronto);
-  assert.equal(Dispositivo.pinaculosParaTela(e).find((p) => p.id === 'poe-the-maven').itens, null, 'a Maven ainda não abre');
+  assert.equal(Dispositivo.pinaculosParaTela(e).find((p) => p.id === 'poe-venarius').itens, null, 'o Venarius ainda não abre (etapa 4)');
   const r = Dispositivo.abrirPinaculo(e, { pinaculo: SHAPER, mode: 'auto' });
   assert.equal(r.ok, true, r.erro);
   assert.equal(e.hunt.bossId, SHAPER);
@@ -164,7 +164,7 @@ test('o drop: só os chefes de mapa T14+ soltam os mapas com encontro, um sortei
 test('a tela: o Dispositivo lista os 11 pináculos e as 2 arenas da etapa 2 com os itens (e quantos você tem)', { skip: SEM }, () => {
   const e = personagem();
   const tela = Dispositivo.paraTela(e);
-  assert.equal(tela.pinaculos.length, Pinaculos.todos().length + Pinaculos.arenas().length);
+  assert.equal(tela.pinaculos.length, Pinaculos.todos().length + Pinaculos.arenas().length + Acesso.crisois().length);
   const sirus = tela.pinaculos.find((p) => p.id === 'poe-sirus');
   assert.deepEqual(sirus.itens.map((i) => [i.nome, i.tem]), [['Coroa de Baran', 0], ['Coroa de Veritania', 0], ['Coroa de Al-Hezmin', 0], ['Coroa de Drox', 0]]);
   assert.equal(tela.pinaculoAberto, null);
@@ -233,4 +233,85 @@ test('etapa 2 — no jogo: o mapa T14 aberto com a influência conta o chefe; o 
   // a tela lista a arena logo antes do Exarca
   const ids = Dispositivo.pinaculosParaTela(e).map((p) => p.id);
   assert.equal(ids.indexOf('poe-a-estrela-negra') + 1, ids.indexOf('poe-the-searing-exarch'));
+});
+
+// ---------------------------------------------------------------- etapa 3: a Maven
+const ATLAS = Acesso.entrada('poe-crisol-atlas')[0];
+const DEFORMADOS = Acesso.entrada('poe-crisol-deformados')[0];
+const CITACAO = Acesso.entrada('poe-the-maven')[0];
+const CRESCENTE = Acesso.MAVEN?.fragmento;
+
+test('etapa 3 — os itens da Maven do poedb (Fragmento Crescente, A Citação, os 4 convites, com ícone) e os 4 Calvários na arena da Maven', { skip: SEM }, () => {
+  assert.deepEqual([CRESCENTE, CITACAO, ATLAS, DEFORMADOS].map((id) => ITEM_CATALOG[id].name), ['Fragmento Crescente', 'A Citação de Maven', 'Convite da Maven: Atlas', 'Convite de Maven: Deformados']);
+  for (const id of [CRESCENTE, CITACAO, ATLAS, DEFORMADOS]) assert.ok(existsSync(`${Catalogo.PASTA_DAS_IMAGENS}/${ITEM_CATALOG[id].poe.icone}`), ITEM_CATALOG[id].name);
+  assert.deepEqual(Acesso.crisois().map((c) => [c.id, c.fragmentos]), [['poe-crisol-atlas', [6, 7]], ['poe-crisol-deformados', [3, 4]], ['poe-crisol-distorcidos', [3, 4]], ['poe-crisol-matadores', [3, 4]]]);
+  assert.deepEqual(Acesso.crisol('poe-crisol-deformados').chefes, ['poe-guardiao-da-hidra', 'poe-guardiao-da-fenix', 'poe-guardiao-do-minotauro', 'poe-guardiao-da-quimera']);
+  for (const c of Acesso.crisois()) assert.ok(Pinaculos.crisol(c.id), `${c.nome}: registrado`);
+  assert.equal(Pinaculos.todos().length, 11, 'os 11 pináculos continuam os mesmos');
+});
+
+test('etapa 3 — a Maven testemunha: só ligada e T14+; cada chefe de mapa soma 1 até 10 e o 10º solta o Atlas; os 4 Guardiões do Criador soltam os Deformados', { skip: SEM }, () => {
+  const e = personagem();
+  const chefeDoMapa = { chefeDoMapa: true, key: 'x', name: 'Chefe' };
+  assert.deepEqual(Acesso.aoVencerComMaven(e, { tier: 16, maven: false }, chefeDoMapa), [], 'sem a Maven não conta');
+  assert.deepEqual(Acesso.aoVencerComMaven(e, { tier: 13, maven: true }, chefeDoMapa), [], 'abaixo do T14 não conta');
+  for (let i = 1; i < 10; i++) assert.deepEqual(Acesso.aoVencerComMaven(e, { tier: 14, maven: true }, chefeDoMapa), []);
+  assert.deepEqual(Acesso.aoVencerComMaven(e, { tier: 14, maven: true }, chefeDoMapa), [ATLAS], 'o 10º');
+  assert.deepEqual(Acesso.aoVencerComMaven(e, { tier: 14, maven: true }, chefeDoMapa), [], 'depois do 10º não soma (o convite cai uma vez por ciclo)');
+  assert.equal(e.maven.contador, 10);
+  assert.equal(e.maven.testemunhados.length, 10);
+  const guardioes = Acesso.crisol('poe-crisol-deformados').chefes;
+  for (const id of guardioes.slice(0, 3)) assert.deepEqual(Acesso.aoVencerComMaven(e, { tier: 16, maven: true }, { boss: { id }, name: id, fragmentoPoe: 1 }), []);
+  assert.deepEqual(Acesso.aoVencerComMaven(e, { tier: 16, maven: true }, { boss: { id: guardioes[3] }, name: 'Quimera', fragmentoPoe: 1 }), [DEFORMADOS], 'os 4 vistos');
+  assert.ok(!guardioes.some((id) => e.maven.vistos[id]), 'o grupo recomeça');
+  const tela = Acesso.mavenParaTela(e);
+  assert.equal(tela.contador, 10);
+  assert.equal(tela.grupos.length, 3);
+  Acesso.aoFecharCrisol(e, 'poe-crisol-atlas');
+  assert.deepEqual([e.maven.contador, e.maven.testemunhados.length, e.maven.conviteDoAtlas], [0, 0, false], 'o Calvário do Atlas fechado: a Maven esquece');
+});
+
+test('etapa 3 — no jogo: o mapa T14 com a Maven conta o chefe; o 10º solta o Atlas; o Calvário nasce com os 10 em pares e solta 6–7 Fragmentos Crescentes', { skip: SEM }, () => {
+  const e = personagem();
+  assert.equal(Dispositivo.definirMaven(e, true).ok, true);
+  assert.match(Dispositivo.abrirPinaculo(e, { pinaculo: 'poe-crisol-atlas', mode: 'auto' }).erro, /0 de 10/, 'o Atlas pede os 10');
+  for (let i = 0; i < 10; i++) {
+    assert.equal(abrirMapa(e, Jogo.mapaSorteado(14 + (i % 3), { raridade: 'normal' })).ok, true);
+    assert.equal(e.hunt.mapa.maven, true);
+    const chefe = todos(e).find((m) => m.chefeDoMapa);
+    Combate.matarMonstro(e, e.hunt, PERSONAGEM, chefe, []);
+    Dispositivo.abandonar(e);
+    e.hunt = null;
+  }
+  assert.equal(e.maven.contador, 10);
+  assert.ok(e.pouch.some((x) => x.id === ATLAS), 'o Convite: Atlas na bolsa');
+  const r = Dispositivo.abrirPinaculo(e, { pinaculo: 'poe-crisol-atlas', mode: 'auto' });
+  assert.equal(r.ok, true, r.erro);
+  assert.ok(!e.pouch.some((x) => x.id === ATLAS), 'o convite foi gasto');
+  assert.equal(e.hunt.crisol.total, 10);
+  for (let par = 0; par < 5; par++) {
+    const vivos = e.hunt.monstros.filter((m) => m.doCrisol && m.hp > 0);
+    assert.equal(vivos.length, 2, `o par ${par + 1}`);
+    for (const m of vivos) {
+      m.hp = 0;
+      Combate.vitoriaNoBoss(e, e.hunt, m, PERSONAGEM);
+    }
+  }
+  assert.ok(e.hunt.vitoria, 'os 10 vencidos: a vitória');
+  const fragmentos = e.rewards.at(-1).itens.find((i) => i.id === CRESCENTE)?.count;
+  assert.ok(fragmentos >= 6 && fragmentos <= 7, `6–7 Fragmentos Crescentes (${fragmentos})`);
+  assert.equal(e.pinaculoAberto, null);
+  assert.equal(e.maven.contador, 0, 'a Maven esqueceu os testemunhados');
+});
+
+test('etapa 3 — 10 Fragmentos Crescentes valem A Citação: a Maven abre com eles (gastos ao abrir)', { skip: SEM }, () => {
+  const e = personagem();
+  e.inventory.push({ id: CRESCENTE, count: 9 });
+  assert.equal(Dispositivo.pinaculosParaTela(e).find((p) => p.id === 'poe-the-maven').pronto, false, '9 não bastam');
+  e.inventory.find((x) => x.id === CRESCENTE).count = 12;
+  assert.equal(Dispositivo.pinaculosParaTela(e).find((p) => p.id === 'poe-the-maven').pronto, true);
+  const r = Dispositivo.abrirPinaculo(e, { pinaculo: 'poe-the-maven', mode: 'auto' });
+  assert.equal(r.ok, true, r.erro);
+  assert.ok(todos(e).some((m) => m.boss?.id === 'poe-the-maven'), 'The Maven nasceu');
+  assert.equal(e.inventory.find((x) => x.id === CRESCENTE)?.count, 2, 'gastou 10');
 });
