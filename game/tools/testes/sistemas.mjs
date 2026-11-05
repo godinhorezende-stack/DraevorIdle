@@ -100,10 +100,11 @@ export const SISTEMAS = {
     nome: 'Mapas do endgame (T1–T16, o Dispositivo de Mapas)',
     apelidos: ['endgame', 'atlas', 'dispositivo'],
     fontes: [
-      /^systems\/mapas-dispositivo\.mjs$/, /^systems\/itens-poe\/(mapas|mapas-areas|mapa-aberto)\.mjs$/, /^gamedata\/itens-poe\/mapas\.json$/,
+      /^systems\/mapas-dispositivo\.mjs$/, /^systems\/itens-poe\/(mapas|mapas-areas|mapa-aberto|pinaculos-acesso)\.mjs$/, /^gamedata\/itens-poe\/(mapas|pinaculos-acesso)\.json$/,
+      /^gamedata\/itens-poe\/icones-itens\/poe-itens\/Pinaculos\//, /^tools\/montar-pinaculos-acesso\.mjs$/,
       /^gamedata\/itens-poe\/icones-itens\/poe-itens\/Mapas\//, /^tools\/montar-mapas-poe\.mjs$/, /^frontend\/client\/src\/mapas-dispositivo\.mjs$/,
     ],
-    testes: [/^mapas-endgame/, /^mapas-dispositivo/, /^chefe-do-ato-na-fase/, /^itens-poe-frascos/, /^raridade-dos-mapas/],
+    testes: [/^mapas-endgame/, /^mapas-dispositivo/, /^chefe-do-ato-na-fase/, /^itens-poe-frascos/, /^raridade-dos-mapas/, /^pinaculos-acesso/, /^itens-poe-pinaculos/],
   },
   offline: {
     nome: 'Caçada offline e Server Save',

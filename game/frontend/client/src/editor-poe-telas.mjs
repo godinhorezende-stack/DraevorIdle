@@ -214,7 +214,7 @@ export function criarTelaDosChefesPoe({ raiz }) {
     T.dados = await api('chefes');
     T.sel = resto[0] ?? T.sel;
     raiz().replaceChildren(
-      cabecalho('Chefes do PoE', `${T.dados.pinaculos.length} pináculos (endgame, nível ${T.dados.regra.nivel}) e ${T.dados.atos.length} chefes de ato da campanha. Pináculo: a vida, o dano e a experiência do PoE em % por cima de uma criatura do Draevor. Chefe de ato: os status e as habilidades do poedb no nível da área.`),
+      cabecalho('Chefes do PoE', `${T.dados.pinaculos.length} pináculos (endgame; abrem no Dispositivo de Mapas com os fragmentos, como no PoE) e ${T.dados.atos.length} chefes de ato da campanha. Pináculo: a vida, o dano e a experiência do PoE em % por cima de uma criatura do Draevor. Chefe de ato: os status e as habilidades do poedb no nível da área.`),
       el('div', { class: 'poe-v painel-largo' }, el('section', { id: 'ch-lista', style: 'grid-column: span 2' }), el('aside', { class: 'bib-painel', id: 'ch-painel' })));
     pintar();
   }

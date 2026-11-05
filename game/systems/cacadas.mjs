@@ -65,6 +65,7 @@ import { gerarItem, aceitaAtributos } from './itens/gerar.mjs';
 import * as Campanha from './campanha.mjs';
 import { bossUnico } from './bosses-unicos/catalogo.mjs';
 import { criarBossUnico } from './bosses-unicos/boss.mjs';
+import * as PinaculosAcesso from './itens-poe/pinaculos-acesso.mjs';
 import { resistido, resistenciaEfetivaDe } from './hunt/resistencia.mjs';
 import * as Controle from './combate/controle.mjs';
 import * as Dot from './combate/dot.mjs';
@@ -654,8 +655,10 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = n
   }
   // O CHEFE do mapa (dois com "A área contém dois Chefes Únicos"): um Único da campanha no nível do mapa, no fundo da área (o primeiro; o
   // segundo, perto dele), com os efeitos do mapa nos monstros e os do chefe. Ele conta na limpeza: concluir o mapa é matar tudo, ele junto.
+  // (05/11) O mapa do GUARDIÃO DO CRIADOR (`pinaculos-acesso.mjs`): o guardião é o chefe do mapa — o chefe do tier não nasce.
+  const doEncontro = mapa?.encontro ? PinaculosAcesso.chefe(mapa.encontro) : null;
   if (mapa && comInstancia) {
-    const chave = MapasAreas.chefeDoTier(mapa.tier);
+    const chave = doEncontro?.mapa ? null : MapasAreas.chefeDoTier(mapa.tier);
     for (let i = 0; chave && i < doMapa.chefes; i++) {
       const chefe = Instancia.chefeNaInstancia({ grade, todos, chave, inicio, escala, aplicarEscala: Campanha.aplicarEscala, dadosDaHunt: hunt, instanciaId });
       if (!chefe) break;
@@ -664,6 +667,20 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = n
       MapasAreas.aplicarEfeitos(chefe.m, mapa.efeitos?.monstros);
       MapasAreas.aplicarEfeitos(chefe.m, mapa.efeitos?.chefe);
       todos.push(chefe);
+    }
+    // O CHEFE DO ENCONTRO (Guardião do Criador ou do Ancião, Conquistador): o boss único dele, no fundo do mapa, com os efeitos do mapa; solta
+    // o fragmento/coroa garantido (`fragmentoPoe` — `combate.mjs`). O Guardião do Criador conta como o chefe do mapa (os mapas que ele solta).
+    const def = doEncontro ? bossUnico(doEncontro.id) : null;
+    const lugar = def ? Instancia.chefeNaInstancia({ grade, todos, chave: def.base, inicio, escala: null, aplicarEscala: (m) => m, dadosDaHunt: hunt, instanciaId }) : null;
+    const m = lugar ? criarBossUnico(def, { x: lugar.m.x, y: lugar.m.y, z: lugar.z }, { instanciaId }) : null;
+    if (m) {
+      m.setor = lugar.m.setor;
+      m.chefeDaFase = true;
+      m.fragmentoPoe = doEncontro.fragmento;
+      if (doEncontro.mapa) m.chefeDoMapa = true;
+      MapasAreas.aplicarEfeitos(m, mapa.efeitos?.monstros);
+      MapasAreas.aplicarEfeitos(m, mapa.efeitos?.chefe);
+      todos.push({ z: lugar.z, m });
     }
   }
   // Os chefes que só aparecem depois de outros (a Trindade Depravada do Ato 9): guardados na instância (`Instancia.liberarReserva`).
@@ -765,8 +782,13 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
   // O boss de fim de ato pela campanha: a PRIMEIRA vez sem level, task nem
   // recarga; depois da vitória, repetir segue a recarga dele (sem level/task:
   // a força é a da dificuldade).
+  // (05/11, dono: "quero igual do poe") O PINÁCULO não tem level nem recarga: abre no Dispositivo de Mapas, com os itens dele gastos
+  // (`itens-poe/pinaculos-acesso.mjs` — os fragmentos dos Guardiões, as Coroas dos Conquistadores). Vale também no modo beta (dono, 05/11).
+  if (boss?.poePinaculo && !PinaculosAcesso.aberto(estado, boss.id)) {
+    return { ok: false, erro: PinaculosAcesso.entrada(boss.id) ? `${boss.name} se abre no Dispositivo de Mapas, com os fragmentos dele.` : `${boss.name} ainda não se abre no jogo: o caminho até ele vem numa próxima etapa.` };
+  }
   // Modo beta: bosses sem level, task nem recarga (a regra do portal do boss de ato, acima, continua valendo).
-  if (boss && !primeiraDoAto && !Beta.ativo()) {
+  if (boss && !boss.poePinaculo && !primeiraDoAto && !Beta.ativo()) {
     // Level e a recarga real de cada boss (`cooldownHours`, `bossCooldownsAte`).
     if (atoDoBoss == null && (estado.level ?? 0) < (boss.level ?? 0)) return { ok: false, erro: `Precisa de level ${boss.level}.` };
     // Boss de task: abre com a task feita e sai uma vez por personagem (`bosses.mjs`).
@@ -843,6 +865,8 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
     bossId: boss?.id ?? null,
     // o chefe PINÁCULO (o "Chefe Final do Atlas" dos implícitos eldritch — `condicoes-poe.mjs`, `chefeFinalNaPresenca`)
     ...(boss?.poePinaculo ? { bossPinaculo: true } : {}),
+    // (05/11) a Quantidade de Itens dos fragmentos gastos ("…aumentada em 5%" cada — `pinaculos-acesso.mjs`), na sacola do pináculo
+    ...(boss?.poePinaculo && estado.pinaculoAberto?.id === boss.id ? { quantidadeDoPinaculo: Number(estado.pinaculoAberto.quantidadePct) || 0 } : {}),
     // A campanha: a fase (ou o boss do ato) e a dificuldade — o progresso, a
     // escala dos bichos que renascem e o ato/dificuldade do loot saem daqui.
     campanha: fase ? { huntId, dificuldade: dif, ato: fase.ato } : atoDoBoss != null ? { bossDoAto: atoDoBoss, dificuldade: dif, ato: atoDoBoss } : null,

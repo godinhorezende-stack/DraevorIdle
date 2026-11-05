@@ -11,6 +11,7 @@ import * as Catalogo from './catalogo.mjs';
 import { idDaBase, pecaDoJogo } from './jogo.mjs';
 import { gerarPeca } from './gerar.mjs';
 import * as BossesUnicos from '../bosses-unicos/catalogo.mjs';
+import * as PinaculosAcesso from './pinaculos-acesso.mjs';
 import { CATALOGO } from '../dados.mjs';
 import { BESTIARY } from '../hunt/monstros.mjs';
 
@@ -64,9 +65,14 @@ export function entradaDoCatalogo(c, def = BossesUnicos.bossUnico(c.id)) {
   };
 }
 
-/** Registra os 11 chefes (uma vez). Sem o sistema ligado, não faz nada. Devolve os ids registrados. */
+/**
+ * Registra os 11 chefes (uma vez). Sem o sistema ligado, não faz nada. Devolve os ids registrados. (05/11) Junto, os 12 chefes que soltam os
+ * fragmentos da entrada deles (`pinaculos-acesso.mjs` — Guardiões do Criador e do Ancião, Conquistadores).
+ */
 export function iniciar() {
-  if (!Catalogo.ligado() || PORID.size) return [...PORID.keys()];
+  if (!Catalogo.ligado()) return [];
+  PinaculosAcesso.iniciar(BossesUnicos, BESTIARY);
+  if (PORID.size) return [...PORID.keys()];
   for (const c of DADOS.chefes) {
     if (!BESTIARY[c.base]) continue;
     const def = BossesUnicos.registrar(definicao(c));

@@ -218,5 +218,6 @@ export function fatoresDaInstancia(r) {
 export const resumoNaCacada = (id, peca) => {
   // (refeito da peça: os números são sempre os do mapas.json atual, não os de quando a peça caiu)
   const r = resumo({ poe: peca?.poe });
-  return { id, tier: r.tier, nivel: r.nivel, quantidade: r.quantidade, raridade: r.raridade, grupo: r.grupo, efeitos: r.efeitos };
+  // (05/11) `encontro`: o chefe a mais do mapa (o Guardião, o Conquistador — `pinaculos-acesso.mjs`), que nasce na instância
+  return { id, tier: r.tier, nivel: r.nivel, quantidade: r.quantidade, raridade: r.raridade, grupo: r.grupo, efeitos: r.efeitos, ...(peca?.poe?.encontro ? { encontro: peca.poe.encontro } : {}) };
 };
