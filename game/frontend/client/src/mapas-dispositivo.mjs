@@ -229,17 +229,30 @@ export function secaoDosPinaculos(mapas, h, avisar = () => {}, ocupado = false) 
  * Desenha o dispositivo dentro de `body`. `mapas`: o que o servidor mandou; `faixaDaCampanha`: os níveis da campanha (a aba dela). `h`:
  * `send(msg)`, `itemCanvas(id, tamanho)`, `tipFor(el, id, extra, slot, peca)`, `voltarParaCampanha()`, `fechar()`.
  */
-export function desenharDispositivo(body, { mapas, faixaDaCampanha = null, h }) {
+/** O subtítulo da aba Pináculos: quantos já podem abrir (os itens na mão), ou o que ela é. */
+export const resumoDosPinaculos = (mapas) => {
+  const prontos = (mapas?.pinaculos ?? []).filter((p) => p.pronto).length;
+  return mapas?.pinaculoAberto ? 'um aberto' : prontos ? `${prontos} para abrir` : 'fim do Atlas';
+};
+
+export function desenharDispositivo(body, { mapas, faixaDaCampanha = null, aba: abaEscolhida = 'mapas', h }) {
   const raiz = el('div', 'w2 w2-mapas');
-  // ---- o topo: as mesmas abas da Campanha (Campanha | Mapas)
+  // ---- o topo: as mesmas abas da Campanha (Campanha | Mapas | Pináculos — dono, 05/11: "coloque uma aba ao lado de mapas de pinaculos")
+  const naAbaDosPinaculos = abaEscolhida === 'pinaculos' && !!mapas.pinaculos?.length;
   const abas = el('nav', 'w2-dificuldades');
-  abas.setAttribute('aria-label', 'Campanha ou Mapas');
+  abas.setAttribute('aria-label', 'Campanha, Mapas ou Pináculos');
   const campanha = botao('w2-dif aberta', null, () => h.voltarParaCampanha());
   campanha.append(el('b', null, 'Campanha'), el('small', null, faixaDaCampanha ? `Nível ${faixaDaCampanha[0]} – ${faixaDaCampanha[1]}` : 'Atos I – X'));
-  const aba = botao('w2-dif selecionada mapas', null);
-  aba.setAttribute('aria-pressed', 'true');
+  const aba = botao(`w2-dif ${naAbaDosPinaculos ? 'aberta' : 'selecionada'} mapas`, null, () => naAbaDosPinaculos && h.irPara?.('mapas'));
+  aba.setAttribute('aria-pressed', naAbaDosPinaculos ? 'false' : 'true');
   aba.append(el('b', null, 'Mapas'), el('small', null, faixaDosMapas(mapas)));
   abas.append(campanha, aba);
+  if (mapas.pinaculos?.length) {
+    const pin = botao(`w2-dif ${naAbaDosPinaculos ? 'selecionada' : mapas.liberado ? 'aberta' : 'bloqueada'} pinaculos`, null, () => !naAbaDosPinaculos && mapas.liberado && h.irPara?.('pinaculos'));
+    pin.setAttribute('aria-pressed', naAbaDosPinaculos ? 'true' : 'false');
+    pin.append(el('b', null, mapas.liberado ? null : el('i', 'w2-cad', iconeDeBotao('cadeado')), 'Pináculos'), el('small', null, resumoDosPinaculos(mapas)));
+    abas.append(pin);
+  }
   raiz.append(abas);
 
   const aviso = el('div', 'mp-aviso');
@@ -260,6 +273,12 @@ export function desenharDispositivo(body, { mapas, faixaDaCampanha = null, h }) 
       el('h4', null, 'Dispositivo de Mapas'),
       el('p', null, mapas.motivo ?? `Abre depois do chefe do Ato ${mapas.ato}.`),
       el('p', 'mp-nota', 'Depois dele, a primeira vitória dá um Mapa (Nível 1) Mágico; as outras, um Normal.')));
+    return;
+  }
+
+  // ---- a aba PINÁCULOS: só a seção deles (o mapa aberto ou o loop rodando seguram o "Abrir", como antes)
+  if (naAbaDosPinaculos) {
+    corpo.append(secaoDosPinaculos(mapas, h, avisar, !!mapas.aberto || !!mapas.loop?.ativo));
     return;
   }
 
@@ -468,8 +487,8 @@ export function desenharDispositivo(body, { mapas, faixaDaCampanha = null, h }) 
   }
   desenharLista();
 
-  // ---- os PINÁCULOS (05/11, dono: "quero igual do poe"): cada um abre aqui com os itens dele (um de cada, gastos ao abrir), 6 portais
-  if (mapas.pinaculos?.length) corpo.append(secaoDosPinaculos(mapas, h, avisar, !!a || !!loop));
+  // ---- os PINÁCULOS (05/11, dono: "quero igual do poe") moram na aba deles, ao lado de Mapas: aqui, só o aviso do aberto
+  if (mapas.pinaculoAberto) corpo.append(el('section', 'mp-cartao mp-pin-aviso', el('span', 'mp-rotulo', 'Pináculo aberto'), el('p', 'mp-nota', `${mapas.pinaculoAberto.nome}: ${mapas.pinaculoAberto.portais} de ${mapas.pinaculoAberto.portaisMax} portais. Veja na aba Pináculos.`)));
 
   // ---- as estatísticas
   const e = mapas.estatisticas ?? {};

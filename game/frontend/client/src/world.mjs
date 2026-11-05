@@ -9,7 +9,7 @@
 // Os dados e as contas moram em `world-dados.mjs` (testável sem DOM); a arte procedural em `world-arte.mjs`.
 import { LARGURA, ALTURA, RAIO_DA_FASE, RAIO_DO_BOSS, TIPOS_DE_NO, TEXTO_DO_ESTADO, atosDaCampanha, faseDaFronteira, ondeEstaNoMapa, posicoesDoAto, conexoesDoAto, tracadoDaEstrada, tipoDaFase, estadoDoNo } from './world-dados.mjs';
 import { svg, fundoDoAto, nomeDoTema, ICONES, ICONE_DO_TIPO, iconeDeBotao } from './world-arte.mjs';
-import { faixaDosMapas } from './mapas-dispositivo.mjs';
+import { faixaDosMapas, resumoDosPinaculos } from './mapas-dispositivo.mjs';
 
 export { layoutDoAto, colunasPara, estadoDoNo, RAIO_DA_FASE, RAIO_DO_BOSS } from './world-dados.mjs';
 
@@ -325,6 +325,13 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     b.append(el('b', null, m.liberado ? null : el('i', 'w2-cad', iconeDeBotao('cadeado')), 'Mapas'), el('small', null, faixaDosMapas(m)));
     b.onclick = () => (m.liberado ? h.abrirMapas() : mostrarAviso(m.motivo ?? `Os mapas abrem depois do chefe do Ato ${romano(m.ato)}.`));
     dif.append(b);
+    // (05/11, dono) a aba PINÁCULOS, ao lado de Mapas (abre com o Dispositivo)
+    if (m.pinaculos?.length) {
+      const p = botao(`w2-dif pinaculos ${m.liberado ? 'aberta' : 'bloqueada'}`, null);
+      p.append(el('b', null, m.liberado ? null : el('i', 'w2-cad', iconeDeBotao('cadeado')), 'Pináculos'), el('small', null, resumoDosPinaculos(m)));
+      p.onclick = () => (m.liberado ? h.abrirMapas('pinaculos') : mostrarAviso(m.motivo ?? `Os pináculos abrem com os mapas, depois do chefe do Ato ${romano(m.ato)}.`));
+      dif.append(p);
+    }
   }
 
   // ---- 2. a faixa dos Atos: setas, o número romano e o progresso de cada um
