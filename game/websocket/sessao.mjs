@@ -1455,7 +1455,7 @@ export class Sessao {
           darGema: (estado, id) => (estado.inventory ??= []).push(GemasDeSkill.itemDaGema(GemasDeSkill.novaGema(id))),
         });
         if (!r.ok) return this.erro(r.erro);
-        this.enviar({ t: 'missoes', ficha: Missoes.ficha(this.estado) });
+        this.enviar({ t: 'missoes', ficha: { ...Missoes.ficha(this.estado), previas: Missoes.previasDasRecompensas(this.estado.level, ItensPoeJogo.pecaNormalDaBase) } });
         return m.action ? this.aplicarComSkills(r) : undefined;
       }
       case 'tasksDeBicho': {
