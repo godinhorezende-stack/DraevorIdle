@@ -127,3 +127,20 @@ test('a tela: no jogo do PoE a janela Tarefas abre as Missões no lugar das Task
   assert.match(aba, /\/gamedata\/itens-poe\/missoes\.json/);
   assert.ok(existsSync(new URL('../gamedata/itens-poe/missoes.json', import.meta.url)));
 });
+
+test('(05/11, dono) a recompensa de base sorteia a raridade: Normal, Mágico ou Raro (nunca Único); o frasco só Normal ou Mágico; o Item Level é o do personagem', { skip: SEM }, () => {
+  let semente = 7;
+  const rng = () => ((semente = (semente * 16807) % 2147483647) / 2147483647);
+  const vistas = new Set();
+  for (let i = 0; i < 400; i++) {
+    const p = Jogo.pecaDaRecompensa('Body_Armours/Plate_Vest', 20, rng);
+    assert.ok(p?.poe, 'a peça existe');
+    assert.equal(p.poe.ilvl ?? p.ilvl, 20);
+    vistas.add(p.poe.raridade);
+  }
+  assert.deepEqual([...vistas].sort(), ['magico', 'normal', 'raro']);
+  const frascos = new Set();
+  for (let i = 0; i < 400; i++) frascos.add(Jogo.pecaDaRecompensa('Utility_Flasks/Quicksilver_Flask', 20, rng).poe.raridade);
+  assert.deepEqual([...frascos].sort(), ['magico', 'normal']);
+  assert.equal(Jogo.pecaDaRecompensa('Nada/Nada', 20, rng), null);
+});

@@ -120,7 +120,7 @@ export function ficha(estado) {
 
 /**
  * O pedido da aba: `{ action: 'bandido', bandido }` (todos | kraityn | alira | oak) ou `{ action: 'escolher', missao, opcao }` (o índice da
- * opção em `recompensas.escolha`). `criarPeca(base)`: a peça Normal da base (o jogo injeta — itens-poe/jogo.mjs); `darItem(estado, id, n)`
+ * opção em `recompensas.escolha`). `criarPeca(base)`: a peça da base com a raridade sorteada (Normal, Mágico ou Raro — o jogo injeta `pecaDaRecompensa`, itens-poe/jogo.mjs); `darItem(estado, id, n)`
  * e `darGema(estado, id)`: como entram na mochila. Devolve `{ ok, erro?, notice? }`.
  */
 export function comando(estado, m, { criarPeca, darItem, darGema, darPeca } = {}) {
