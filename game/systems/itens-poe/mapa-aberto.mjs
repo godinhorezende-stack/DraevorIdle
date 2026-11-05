@@ -16,6 +16,7 @@
 import { compactarMonstro, completarMonstro, garantirUidAcimaDe } from '../hunt/monstros.mjs';
 import * as Mapas from './mapas.mjs';
 import * as MapasLoop from './mapas-loop.mjs';
+import * as Missoes from './missoes.mjs';
 
 /** Os portais de cada mapa aberto (mapas.json → dispositivo.portais; 6, como no PoE). */
 export const portaisPorMapa = () => Math.max(1, Number(Mapas.DADOS.dispositivo?.portais) || 6);
@@ -68,6 +69,8 @@ export function encerrar(estado, resultado, agora = Date.now()) {
   const a = st.aberto;
   if (!a) return null;
   if (resultado === 'concluido') contarConclusao(estado, a.tier);
+  // (05/11) O mapa ÚNICO concluído conta para a missão do Atlas (Segmentos da Originadora — itens-poe/missoes.mjs).
+  if (resultado === 'concluido' && a.peca?.poe?.unico) Missoes.aoConcluirMapa(estado, a.peca.poe.unico);
   else st.falhos++;
   st.ultimo = { tier: a.tier, resultado, em: agora, duracaoMs: Math.max(0, agora - (a.abertoEm ?? agora)), mortes: a.mortes ?? 0 };
   st.aberto = null;

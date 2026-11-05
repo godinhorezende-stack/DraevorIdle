@@ -3101,6 +3101,12 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     if (meta.tatuagemPoe.limite) node.append(el('div', 'tip-extra tip-moeda-ajuda', `Limitado a: ${meta.tatuagemPoe.limite.n} Tatuagem de Ascendência`));
     node.append(el('div', 'tip-extra tip-moeda-ajuda', 'Clique com o botão direito e escolha uma Habilidade Passiva alocada na árvore. Máximo de 50 Tatuagens.'));
   }
+  // (05/11) O ITEM DE MISSÃO do PoE (itens-poe/missoes.mjs): as linhas do poedb (no azul dos mods), o texto de sabor e a missão.
+  if (meta.missaoPoe) {
+    for (const l of meta.missaoPoe.linhas ?? []) node.append(el('div', 'tip-extra tip-moeda-efeito', l));
+    if (meta.missaoPoe.sabor) node.append(el('div', 'tip-extra tip-sabor-missao', meta.missaoPoe.sabor));
+    node.append(el('div', 'tip-extra tip-moeda-ajuda', meta.missao?.nome ? `Item da missão ${meta.missao.nome}. Veja em Tarefas → Missões.` : 'Item de Missão. Veja em Tarefas → Missões.'));
+  }
   if (meta.moedaPoe) {
     if (meta.descricao) node.append(el('div', 'tip-extra tip-moeda-efeito', meta.descricao));
     node.append(el('div', 'tip-extra tip-moeda-ajuda', 'Clique com o botão direito para usá-la na Forja.'));

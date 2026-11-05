@@ -82,7 +82,8 @@ test('4c — com ITENS_POE=1 a árvore em uso é a do PoE: início da classe, 1 
     const Atributos = await import('./systems/personagem/atributos.mjs');
     const Afixos = await import('./systems/afixos.mjs');
     const { personagemDeTeste } = await import('./testes/apoio.mjs');
-    const e = personagemDeTeste({ vocacao: 'knight', level: 30 });
+    // (05/11, com o aval do dono: sem campanha — as missões concluídas dão Pontos de Habilidade Passiva; aqui só os do level)
+    const e = personagemDeTeste({ vocacao: 'knight', level: 30, campanha: {} });
     e.passivas = { alocados: ['inicio_knight', 'anel_0'], respecsGratis: 0, migrado: true, versaoDaArvore: 2 };
     P.garantir(e);
     const inicio = P.inicioDe(e);

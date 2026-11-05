@@ -834,6 +834,13 @@ export function armaInicial(slugDaClasse, regras = Catalogo.REGRAS) {
   return pecaDoJogo(gerarPeca({ catalogo: cat, regras, base, raridade: 'normal', ilvl: 1, rng: () => 0.5 }), regras, () => 0.5);
 }
 
+/** (05/11) A peça NORMAL de uma base (`Classe/Slug`), no Item Level dado — a recompensa de missão (itens-poe/missoes.mjs). Null sem a base. */
+export function pecaNormalDaBase(base, ilvl = 1, regras = Catalogo.REGRAS) {
+  const cat = Catalogo.catalogo();
+  if (!cat || !Object.values(cat.classes).some((c) => c.bases?.some((b) => b.id === base))) return null;
+  return pecaDoJogo(gerarPeca({ catalogo: cat, regras, base, raridade: 'normal', ilvl: Math.max(1, Math.min(100, Math.round(ilvl))), rng: () => 0.5 }), regras, () => 0.5);
+}
+
 // (09/10) As defesas da BASE de uma peça do PoE (as condições "se o Elmo, Peitoral, Luvas e Botas tiverem Evasão/Armadura"): o catálogo.
 const DEFESAS_DA_BASE = new Map();
 definirLeitorDeBase((poe) => {

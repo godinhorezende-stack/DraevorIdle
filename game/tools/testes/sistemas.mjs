@@ -64,15 +64,16 @@ export const SISTEMAS = {
     apelidos: ['campaign', 'atos', 'bosses', 'encontros'],
     fontes: [
       /^systems\/(campanha|campanha-conteudo|campanha-mapa|atos-carregar|atos-legado|atos-modelo|bosses|recompensas|promocao|cidades)\.mjs$/,
-      /^systems\/itens-poe\/(campanha|monstros|pinaculos|previa-da-area|drops-por-monstro)\.mjs$/, /^systems\/(encontros|bosses-unicos)\//,
+      /^systems\/itens-poe\/(campanha|monstros|pinaculos|previa-da-area|drops-por-monstro|missoes)\.mjs$/, /^systems\/(encontros|bosses-unicos)\//,
       /^gamedata\/(atos|encontros)\//, /^gamedata\/(campanha|campanha-conteudo|encontros|bosses-unicos|instancias|sets-de-marco)\.json$/,
       /^gamedata\/itens-poe\/(campanha|monstros|pinaculos|atos|drops)[^/]*$/,
-      /^admin\/(atos|campanha-editor|conteudo|conteudo-http)\.mjs$/, /^frontend\/client\/src\/(world|world-dados|world-arte|editor-atos[^/]*|editor-campanha|encontros-na-tela)\.mjs$/,
+      /^admin\/(atos|campanha-editor|conteudo|conteudo-http)\.mjs$/, /^frontend\/client\/src\/(world|world-dados|world-arte|editor-atos[^/]*|editor-campanha|encontros-na-tela|aba-missoes)\.mjs$/,
+      /^tools\/(importar-missoes-poedb|montar-missoes-poe)\.mjs$/,
     ],
     testes: [
       /^campanha/, /^cidades/, /^chefe-da-fase/, /^itens-poe-(campanha|atos|pinaculos)/, /^atos-/, /^boss-do-ato/, /^bosses/, /^conteudo-dos-atos/, /^encontros/,
       /^captura/, /^decisao/, /^ondas/, /^world/, /^mapa-editor/, /^extrair-poedb-pinaculos/, /^sets-de-marco/, /^raridade-minima-boss-bau/,
-      /^site-poe/, /^party-objetivo-da-fase/, /^avancar-em-grupo/, /^missoes-de-gemas/, /^roupa-da-classe/, /^chefe-do-ato-na-fase/,
+      /^site-poe/, /^party-objetivo-da-fase/, /^avancar-em-grupo/, /^missoes-de-gemas/, /^roupa-da-classe/, /^chefe-do-ato-na-fase/, /^missoes-poe/,
     ],
   },
   cacada: {

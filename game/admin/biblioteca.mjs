@@ -113,7 +113,8 @@ function linhasDeItens() {
   // As MOEDAS EMPILHÁVEIS do PoE (dono, 07/10: "os itens empilháveis não aparecem na Engine e têm que ser classificados corretamente"):
   // entram na lista com a classe do PoE, "Stackable Currency", o ícone delas e o estado no jogo (funciona / parcial / sem efeito) como raridade.
   if (CatalogoPoe.ligado()) {
-    return Object.values(ITEM_CATALOG).filter((i) => i.poe || i.moedaPoe).map((i) => (i.poe
+    // (05/11: os itens de missão têm `poe.icone` — o desenho do poedb — mas não são bases: ficam fora, a base é o que tem `poe.base`)
+    return Object.values(ITEM_CATALOG).filter((i) => i.poe?.base || i.moedaPoe).map((i) => (i.poe?.base
       ? { id: String(i.id), nome: i.name ?? null, categoria: 'itens', tipo: humanoPoe(i.poe.classe), nivel: ou(i.minLevel), desenho: desenhoPoe(i.poe.icone), raridade: null, usos: 0, alertas: 0, slot: ou(i.slot), sockets: null }
       : { id: String(i.id), nome: i.name ?? null, categoria: 'itens', tipo: TIPO_DA_MOEDA, nivel: null, desenho: desenhoDaMoeda(i), raridade: ESTADO_DA_MOEDA[i.moedaPoe.status] ?? null, usos: 0, alertas: 0, slot: null, sockets: null, empilhavel: true }));
   }
@@ -428,7 +429,7 @@ function detalheDaMoeda(i) {
 function detalheDeItem(id) {
   const i = ITEM_CATALOG[id];
   if (!i) return null;
-  if (i.poe && CatalogoPoe.ligado()) return detalheDeItemPoe(i);
+  if (i.poe?.base && CatalogoPoe.ligado()) return detalheDeItemPoe(i);
   if (i.moedaPoe && CatalogoPoe.ligado()) return detalheDaMoeda(i);
   const equipavel = !!i.slot && !i.stackable;
   return {

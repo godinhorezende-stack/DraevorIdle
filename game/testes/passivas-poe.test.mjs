@@ -19,8 +19,10 @@ const Especializacoes = await import('../systems/personagem/especializacoes.mjs'
 const { personagemDeTeste } = await import('./apoio.mjs');
 
 /** Um personagem da classe do PoE `classe` no level `level`, com a árvore do PoE garantida e os máximos sincronizados. */
-function novo({ level = 60, classe = 'Scion', ascendencia = null } = {}) {
-  const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level }), { sistema: 'poe', classePoe: classe });
+// (05/11, com o aval do dono) `campanha`: os testes que contam SÓ os pontos do level pedem o personagem sem campanha — as missões
+// concluídas dão os Pontos de Habilidade Passiva do PoE (itens-poe/missoes.mjs; o teste delas é missoes-poe.test.mjs).
+function novo({ level = 60, classe = 'Scion', ascendencia = null, campanha } = {}) {
+  const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level, ...(campanha ? { campanha } : {}) }), { sistema: 'poe', classePoe: classe });
   delete e.classe;
   P.garantir(e);
   if (ascendencia) e.passivas.ascendencia = ascendencia;
@@ -58,7 +60,7 @@ const vizinhoLivre = (e) => {
 // ------------------------------------------------------------ a árvore no servidor
 
 test('personagem novo: o início da classe do PoE vem alocado e os pontos são os do PoE (1 por level depois do 1º)', { skip: SEM }, () => {
-  const e = novo({ level: 30, classe: 'Ranger' });
+  const e = novo({ level: 30, classe: 'Ranger', campanha: {} });
   assert.deepEqual(e.passivas.alocados, [P.arvore().inicios.Ranger]);
   assert.deepEqual(P.pontos(e), { total: 29, usados: 0, livres: 29 });
   e.level = 31;
@@ -81,7 +83,7 @@ test('alocar: o nó ligado entra e gasta 1 ponto; o desligado, o repetido, o que
 });
 
 test('pontos: sem ponto livre não aloca; o caminho pedido para no primeiro que não cabe (os de antes ficam)', { skip: SEM }, () => {
-  const e = novo({ level: 3 });
+  const e = novo({ level: 3, campanha: {} });
   const alvo = achar('Dano Corpo a Corpo aumentado em 12%');
   const c = P.caminhoAte(e, alvo.id);
   assert.ok(c.length > 2);
@@ -177,7 +179,8 @@ test('Caçadora de Relíquias: os notáveis de escolha (a 9 nós do início) cab
 });
 
 test('pontos que um nó CONCEDE (Ascendente: "Concede 1 Ponto de Habilidade Passiva"): somam no total; tirar o nó com os pontos gastos é recusado', { skip: SEM }, () => {
-  const e = novo({ level: 4, classe: 'Scion', ascendencia: 'Ascendant' });
+  // (os chefes dos Atos 1–4 dão os 8 pontos de Ascendência; as missões deles não dão Pontos de Habilidade Passiva)
+  const e = novo({ level: 4, classe: 'Scion', ascendencia: 'Ascendant', campanha: { facil: { completas: [], bosses: [1, 2, 3, 4] } } });
   const concede = P.arvore().nos.find((n) => n.ascendencia === 'Ascendant' && (n.efeitos ?? []).some((x) => x.add === 'pontos_passiva' && x.valor === 1) && (n.textos ?? []).length === 1);
   Comandos.comando(e, { action: 'alocar', ids: P.caminhoAte(e, concede.id) });
   assert.ok(e.passivas.alocados.includes(concede.id));
@@ -192,7 +195,7 @@ test('pontos que um nó CONCEDE (Ascendente: "Concede 1 Ponto de Habilidade Pass
 });
 
 test('déficit de pontos (um personagem antigo que caiu de level): a tela recebe o déficit, nada novo se aloca, e tirar nós volta ao normal', { skip: SEM }, () => {
-  const e = novo({ level: 5 });
+  const e = novo({ level: 5, campanha: {} });
   for (let i = 0; i < 4; i++) assert.ok(alocar(e, vizinhoLivre(e)).ok);
   e.level = 3; // (antes da regra do PoE, a morte derrubava level)
   assert.deepEqual(P.pontos(e), { total: 2, usados: 4, livres: 0, deficit: 2 });

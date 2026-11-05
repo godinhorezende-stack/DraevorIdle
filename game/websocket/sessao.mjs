@@ -30,6 +30,7 @@ import * as Boosts from '../systems/boosts.mjs';
 import * as Stamina from '../systems/stamina.mjs';
 import * as SemTreino from '../systems/sem-treino.mjs';
 import * as MissoesDeGemas from '../systems/itens-poe/missoes-de-gemas.mjs';
+import * as Missoes from '../systems/itens-poe/missoes.mjs';
 import * as MoedasPoe from '../systems/itens-poe/moedas.mjs';
 import * as ForjaPoe from '../systems/itens-poe/forja.mjs';
 import * as Mercenarios from '../systems/itens-poe/mercenarios.mjs';
@@ -420,6 +421,8 @@ function characterParaCliente(personagem, estado) {
     arvoreBonus: Arvore.bonus(estado),
     // As recompensas das missões do PoE esperando a escolha da gema (só com ITENS_POE=1).
     missoesPoe: MissoesDeGemas.pendentes(estado),
+    // (05/11) quantas recompensas do registro de missões esperam o jogador (o alerta da aba Missões)
+    missoesPendentes: Missoes.pendentes(estado),
     // A árvore de passivas única: os pontos (o alerta do botão) e o que está alocado.
     passivas: Passivas.vista(estado, !!estado.hunt),
     // Stamina de verdade: gasta caçando, volta na cidade (ver game/systems/stamina.mjs).
@@ -1442,6 +1445,18 @@ export class Sessao {
         return Amigos.comando(this.personagem.nome, m).then((r) => this.enviar(r));
       case 'perfil':
         return Amigos.perfil(m.name).then((r) => this.enviar(r));
+      // (05/11) A aba Missões (a janela Tarefas no jogo do PoE): a ficha (o estado de cada missão) e as escolhas (Bandidos, item de recompensa).
+      case 'missoes': {
+        const r = Missoes.comando(this.estado, m, {
+          criarPeca: (base) => ItensPoeJogo.pecaNormalDaBase(base, this.estado.level),
+          darItem: Inventario.darItem,
+          darPeca: Inventario.darPeca,
+          darGema: (estado, id) => (estado.inventory ??= []).push(GemasDeSkill.itemDaGema(GemasDeSkill.novaGema(id))),
+        });
+        if (!r.ok) return this.erro(r.erro);
+        this.enviar({ t: 'missoes', ficha: Missoes.ficha(this.estado) });
+        return m.action ? this.aplicarComSkills(r) : undefined;
+      }
       case 'tasksDeBicho': {
         const r = Tarefas.comando(this.estado, m);
         if (!r.ok) return this.erro(r.erro);
