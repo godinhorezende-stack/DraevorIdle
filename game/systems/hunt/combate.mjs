@@ -1108,6 +1108,17 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
       }
     }
   }
+  // (05/11, etapa 4) O CÓRTEX (abre o Venarius) e as MEMÓRIAS (o mapa final da linha → o Eco → a Encarnação): do chefe de mapa T14+, para quem
+  // matou (`pinaculos-acesso.mjs → sortearDoAtlas`). Vão como a moeda (só a lista "Não coletar" os deixa no chão).
+  if (noMapa && alvo.chefeDoMapa) {
+    for (const id of PinaculosAcesso.sortearDoAtlas(noMapa.tier)) {
+      if (Bolsa.ignora(estado, id)) conta('ignorado', id, 1);
+      else if (Bolsa.porNaBolsa(estado, id, 1)) {
+        caiu.push({ id, count: 1 });
+        conta('loot', id, 1);
+      }
+    }
+  }
   // (05/11, etapa 2) O chefe de mapa T14+ sob a influência do Exarca/Devorador (`pinaculos-acesso.mjs`): conta para os convites; a cada 14
   // (o Polarizado/Contorcido) e a cada 28 (o Incandescente/Gritante) cai o convite, para quem matou.
   if (noMapa?.influencia && alvo.chefeDoMapa) {

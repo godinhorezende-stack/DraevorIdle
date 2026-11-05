@@ -38,9 +38,9 @@ function abrirMapa(e, peca) {
 }
 
 test('os dados do poedb: 12 fragmentos/coroas e 4 convites (ícone no disco), 4 mapas dos Guardiões do Criador, 12 chefes registrados como bosses únicos', { skip: SEM }, () => {
-  assert.equal(Acesso.DADOS.itens.length, 22, '12 fragmentos/coroas + 4 convites (etapa 2) + Fragmento Crescente, Citação e 4 convites da Maven (etapa 3)');
-  assert.equal(Acesso.DADOS.mapas.length, 4);
-  assert.deepEqual(Object.keys(Acesso.DADOS.entradas).sort(), ['poe-a-estrela-negra', 'poe-a-fome-infinita', 'poe-crisol-atlas', 'poe-crisol-deformados', 'poe-crisol-distorcidos', 'poe-crisol-matadores', 'poe-sirus', 'poe-the-eater-of-worlds', 'poe-the-elder', 'poe-the-maven', 'poe-the-searing-exarch', SHAPER]);
+  assert.equal(Acesso.DADOS.itens.length, 29, '12 fragmentos/coroas + 4 convites (etapa 2) + Fragmento Crescente, Citação e 4 convites da Maven (etapa 3) + Córtex, 3 Ecos e 3 Memórias (etapa 4)');
+  assert.equal(Acesso.DADOS.mapas.length, 7, 'os 4 dos Guardiões do Criador + os 3 mapas finais das Memórias (etapa 4)');
+  assert.deepEqual(Object.keys(Acesso.DADOS.entradas).sort(), ['poe-a-estrela-negra', 'poe-a-fome-infinita', 'poe-crisol-atlas', 'poe-crisol-deformados', 'poe-crisol-distorcidos', 'poe-crisol-matadores', 'poe-incarnation-of-dread', 'poe-incarnation-of-fear', 'poe-incarnation-of-neglect', 'poe-sirus', 'poe-the-eater-of-worlds', 'poe-the-elder', 'poe-the-maven', 'poe-the-searing-exarch', SHAPER, 'poe-venarius'].sort());
   for (const it of Acesso.DADOS.itens) {
     const meta = ITEM_CATALOG[it.itemId];
     assert.equal(meta?.type, 'fragmento', it.nome);
@@ -61,7 +61,7 @@ test('sem level: o pináculo só entra aberto no Dispositivo (mesmo no modo beta
   const e = personagem();
   e.level = 100;
   assert.match(Cacadas.entrar(e, { huntId: SHAPER, mode: 'auto' }).erro, /Dispositivo de Mapas/);
-  assert.match(Cacadas.entrar(e, { huntId: 'poe-venarius', mode: 'auto' }).erro, /próxima etapa/);
+  assert.match(Cacadas.entrar(e, { huntId: 'poe-nucleus-of-the-maven', mode: 'auto' }).erro, /próxima etapa/);
   const beta = Beta.ativo();
   Beta.definir(true);
   try {
@@ -81,7 +81,7 @@ test('abrir o Shaper: os 4 fragmentos (da bolsa e do depósito) saem só depois 
   for (const id of ids.slice(1)) e.inventory.push({ id, count: 1 });
   const tela = Dispositivo.pinaculosParaTela(e).find((p) => p.id === SHAPER);
   assert.ok(tela.pronto);
-  assert.equal(Dispositivo.pinaculosParaTela(e).find((p) => p.id === 'poe-venarius').itens, null, 'o Venarius ainda não abre (etapa 4)');
+  assert.equal(Dispositivo.pinaculosParaTela(e).find((p) => p.id === 'poe-nucleus-of-the-maven').itens, null, 'o Nucleus of the Maven ainda não abre');
   const r = Dispositivo.abrirPinaculo(e, { pinaculo: SHAPER, mode: 'auto' });
   assert.equal(r.ok, true, r.erro);
   assert.equal(e.hunt.bossId, SHAPER);
@@ -314,4 +314,59 @@ test('etapa 3 — 10 Fragmentos Crescentes valem A Citação: a Maven abre com e
   assert.equal(r.ok, true, r.erro);
   assert.ok(todos(e).some((m) => m.boss?.id === 'poe-the-maven'), 'The Maven nasceu');
   assert.equal(e.inventory.find((x) => x.id === CRESCENTE)?.count, 2, 'gastou 10');
+});
+
+// ---------------------------------------------------------------- etapa 4: o Venarius e as Encarnações
+const CORTEX = Acesso.entrada('poe-venarius')[0];
+const SOLIDAO = Acesso.memorias().find((m) => m.slug === 'Memory_of_Loneliness').itemId;
+const ECO_SOLIDAO = Acesso.entrada('poe-incarnation-of-neglect')[0];
+
+test('etapa 4 — os itens do poedb (Córtex, 3 Memórias, 3 Ecos, com ícone), os 3 chefes das Memórias registrados e os ids antigos no lugar', { skip: SEM }, () => {
+  assert.deepEqual([CORTEX, SOLIDAO, ECO_SOLIDAO].map((id) => ITEM_CATALOG[id].name), ['Córtex', 'Memória da Solidão', 'Eco da Solidão']);
+  for (const it of Acesso.DADOS.itens.filter((i) => i.cortex || i.memoria || Acesso.chefe(i.chefe)?.grupo === 'memoria')) assert.ok(existsSync(`${Catalogo.PASTA_DAS_IMAGENS}/${ITEM_CATALOG[it.itemId].poe.icone}`), it.nome);
+  for (const id of ['poe-a-chama-abandonada', 'poe-o-deus-enganador', 'poe-o-cardeal-do-medo']) {
+    assert.ok(bossUnico(id), id);
+    assert.equal(Acesso.chefe(id).vidaPct, 1120);
+  }
+  assert.equal(Acesso.entrada('poe-a-estrela-negra')[0], 7750013, 'os ids das etapas anteriores não mudaram');
+  assert.equal(Acesso.entrada('poe-the-maven')[0], 7750018);
+});
+
+test('etapa 4 — o drop: só os chefes T14+; o Córtex com 2% e uma Memória com 3%', { skip: SEM }, () => {
+  assert.deepEqual(Acesso.sortearDoAtlas(13, () => 0), [], 'abaixo do T14 nada');
+  const tudo = Acesso.sortearDoAtlas(14, () => 0);
+  assert.equal(tudo[0], CORTEX);
+  assert.ok(Acesso.memoria(tudo[1]));
+  assert.deepEqual(Acesso.sortearDoAtlas(16, () => 0.025), [Acesso.memorias()[0].itemId], '2,5%: só a Memória (o Córtex é 2%)');
+  assert.deepEqual(Acesso.sortearDoAtlas(16, () => 0.05), [], '5%: nada');
+});
+
+test('etapa 4 — no jogo: a Memória vira o mapa final (T16); o chefe dele solta o Eco garantido, e o Eco abre a Encarnação no Dispositivo', { skip: SEM }, () => {
+  const e = personagem();
+  e.inventory.push({ id: SOLIDAO, count: 1 });
+  const r = Dispositivo.usarMemoria(e, { memoria: SOLIDAO, mode: 'auto' });
+  assert.equal(r.ok, true, r.erro);
+  assert.ok(!e.inventory.some((x) => x.id === SOLIDAO), 'a Memória foi gasta');
+  assert.equal(e.hunt.mapa.tier, 16);
+  assert.equal(e.hunt.mapa.encontro, 'poe-a-chama-abandonada');
+  const chefes = todos(e).filter((m) => m.chefeDoMapa);
+  assert.equal(chefes.length, 1, 'o chefe da Memória é o chefe do mapa');
+  assert.equal(chefes[0].boss?.id, 'poe-a-chama-abandonada');
+  Combate.matarMonstro(e, e.hunt, PERSONAGEM, chefes[0], []);
+  assert.ok(e.pouch.some((x) => x.id === ECO_SOLIDAO), 'o Eco da Solidão na bolsa');
+  Dispositivo.abandonar(e);
+  e.hunt = null;
+  const p = Dispositivo.abrirPinaculo(e, { pinaculo: 'poe-incarnation-of-neglect', mode: 'auto' });
+  assert.equal(p.ok, true, p.erro);
+  assert.ok(todos(e).some((m) => m.boss?.id === 'poe-incarnation-of-neglect'), 'a Encarnação do Abandono nasceu');
+});
+
+test('etapa 4 — o Córtex abre o Venarius no Dispositivo', { skip: SEM }, () => {
+  const e = personagem();
+  assert.equal(Dispositivo.pinaculosParaTela(e).find((p) => p.id === 'poe-venarius').pronto, false);
+  e.inventory.push({ id: CORTEX, count: 1 });
+  const r = Dispositivo.abrirPinaculo(e, { pinaculo: 'poe-venarius', mode: 'auto' });
+  assert.equal(r.ok, true, r.erro);
+  assert.ok(todos(e).some((m) => m.boss?.id === 'poe-venarius'), 'o Venarius nasceu');
+  assert.ok(!e.inventory.some((x) => x.id === CORTEX), 'o Córtex foi gasto');
 });

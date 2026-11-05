@@ -167,6 +167,32 @@ function blocoDaMaven(mv, h) {
 }
 
 /**
+ * (05/11, etapa 4) As MEMÓRIAS (Solidão, Reverência, Trauma): quantas você tem e o "Abrir o mapa" — a Memória vira o mapa final da linha dela
+ * (T16), e o chefe dele solta o Eco que abre a Encarnação. `ocupado`: um mapa, o loop ou um pináculo aberto (o mapa vai para a mochila).
+ */
+function blocoDasMemorias(lista, h, ocupado) {
+  const bloco = el('div', 'mp-influencia mp-memorias');
+  bloco.append(el('span', 'mp-rotulo', 'Memórias do Atlas'));
+  const linhas = el('ul', 'mp-convites');
+  for (const m of lista) {
+    const ic = h.itemCanvas(m.id, 32);
+    h.tipFor(ic, m.id);
+    const abrir = botao('w2-entrar mp-abrir', ocupado ? 'Para a mochila' : 'Abrir o mapa', () => {
+      abrir.disabled = true;
+      h.send({ t: 'usarMemoria', memoria: m.id, mode: 'auto' });
+      if (!ocupado) h.fechar();
+    });
+    abrir.disabled = m.tem < 1;
+    linhas.append(el('li', `mp-convite mp-memoria${m.tem ? ' ativo' : ''}`,
+      el('span', null, ic, ' ', el('b', null, m.nome), ` (${m.tem})`),
+      el('small', null, `${m.mapa} · ${m.chefe} solta o Eco`),
+      abrir));
+  }
+  bloco.append(linhas, el('p', 'mp-nota', 'Como no PoE 3.26: os chefes de mapa T14+ soltam as Memórias (3%) e o Córtex do Venarius (2%). A Memória vira o mapa final da linha dela; o chefe dele solta o Eco, que abre a Encarnação aqui.'));
+  return bloco;
+}
+
+/**
  * A seção dos PINÁCULOS: o aberto (portais, voltar, abandonar) e um cartão por pináculo com os itens que ele pede (o ícone, quantos você
  * tem) e o "Abrir". Os que ainda não abrem no jogo (as próximas etapas) ficam numa linha só. `ocupado`: há um mapa aberto ou um loop.
  */
@@ -194,6 +220,7 @@ export function secaoDosPinaculos(mapas, h, avisar = () => {}, ocupado = false) 
   // (etapa 2) a INFLUÊNCIA dos próximos mapas (Exarca, Devorador ou nenhuma) e quanto falta para cada convite
   if (mapas.influencia?.opcoes?.length) sec.append(blocoDaInfluencia(mapas.influencia, h));
   if (mapas.maven) sec.append(blocoDaMaven(mapas.maven, h));
+  if (mapas.memorias?.length) sec.append(blocoDasMemorias(mapas.memorias, h, !!mapas.aberto || !!mapas.loop?.ativo || !!mapas.pinaculoAberto));
   const comItens = mapas.pinaculos.filter((p) => p.itens);
   const grade = el('div', 'mp-grade mp-pin-grade');
   for (const p of comItens) {
@@ -221,7 +248,7 @@ export function secaoDosPinaculos(mapas, h, avisar = () => {}, ocupado = false) 
   }
   sec.append(grade);
   const depois = mapas.pinaculos.filter((p) => !p.itens);
-  if (depois.length) sec.append(el('p', 'mp-nota', `Ainda sem caminho no jogo (próximas etapas): ${depois.map((p) => p.nome).join(', ')}.`));
+  if (depois.length) sec.append(el('p', 'mp-nota', `Ainda sem caminho no jogo: ${depois.map((p) => p.nome).join(', ')} (o poedb não diz como se entra).`));
   return sec;
 }
 

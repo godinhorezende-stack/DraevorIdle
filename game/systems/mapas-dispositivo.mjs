@@ -21,6 +21,7 @@ import * as Cacadas from './cacadas.mjs';
 import * as Deposito from './deposito.mjs';
 import * as Pinaculos from './itens-poe/pinaculos.mjs';
 import * as PinaculosAcesso from './itens-poe/pinaculos-acesso.mjs';
+import { mapaSorteado } from './itens-poe/jogo.mjs';
 
 const CFG = () => Mapas.DADOS.dispositivo ?? {};
 /** O ato cujo chefe libera o dispositivo (mapas.json → dispositivo.atoQueLibera; 10). */
@@ -217,6 +218,27 @@ export function abandonarPinaculo(estado) {
   return PinaculosAcesso.abandonar(estado);
 }
 
+/**
+ * (05/11, etapa 4) Usa uma MEMÓRIA (Solidão, Reverência, Trauma): ela vira o mapa final da linha dela (T16, com o chefe que solta o Eco), que vai
+ * para a mochila e abre na hora, como "Abrir mapa". Se o mapa não abrir (outro aberto, o loop…), ele fica na mochila — a Memória já virou
+ * o mapa. `{ ok, erro?, notice? }`.
+ */
+export function usarMemoria(estado, { memoria: memoriaId, mode, strategy } = {}, { antes = null } = {}) {
+  const fechado = motivoFechado(estado);
+  if (fechado) return { ok: false, erro: fechado };
+  const m = PinaculosAcesso.memoria(memoriaId);
+  if (!m) return { ok: false, erro: 'Essa Memória não existe.' };
+  if (contarItem(estado, m.itemId) < 1) return { ok: false, erro: `Você não tem ${m.nome}.` };
+  const peca = PinaculosAcesso.mapaDaMemoria(m.itemId, (tier, raridade) => mapaSorteado(tier, raridade ? { raridade } : {}));
+  if (!peca) return { ok: false, erro: 'O mapa da Memória não está no jogo.' };
+  gastarItem(estado, m.itemId, 1);
+  (estado.inventory ??= []).push(peca);
+  if (MapaAberto.doPersonagem(estado).aberto || estado.pinaculoAberto || MapasLoop.doPersonagem(estado)) return { ok: true, notice: `${m.nome}: ${peca.poe?.nome ?? 'o mapa'} está na mochila (termine o que está aberto para entrar).` };
+  const carregado = mapasCarregados(estado).find((x) => x.peca === peca);
+  const r = carregado ? abrir(estado, { onde: carregado.onde, indice: carregado.indice, assinatura: carregado.assinatura, mode, strategy }, { antes }) : null;
+  return r?.ok ? r : { ok: true, notice: `${m.nome}: ${peca.poe?.nome ?? 'o mapa'} está na mochila.${r?.erro ? ` (${r.erro})` : ''}` };
+}
+
 /** (05/11, etapa 3) Liga ou desliga a Maven nos próximos mapas (`pinaculos-acesso.mjs`). */
 export const definirMaven = (estado, ligada) => PinaculosAcesso.definirMaven(estado, ligada);
 
@@ -377,6 +399,8 @@ export function paraTela(estado, { versaoDaTela = null } = {}) {
     pinaculos: pinaculosParaTela(estado),
     influencia: PinaculosAcesso.influenciaParaTela(estado),
     maven: PinaculosAcesso.mavenParaTela(estado),
+    // (etapa 4) as Memórias: quantas você tem, o mapa e o Eco de cada uma
+    memorias: PinaculosAcesso.memorias().map((m) => ({ id: m.itemId, nome: m.nome, tem: contarItem(estado, m.itemId), mapa: PinaculosAcesso.DADOS.mapas.find((x) => x.chefe === m.memoria)?.nome ?? null, chefe: PinaculosAcesso.chefe(m.memoria)?.nome ?? null })),
     pinaculoAberto: estado?.pinaculoAberto ? { ...estado.pinaculoAberto, nome: Pinaculos.doDispositivo(estado.pinaculoAberto.id)?.nome ?? estado.pinaculoAberto.id, naArena: estado.hunt?.bossId === estado.pinaculoAberto.id } : null,
     estatisticas: { concluidos: st.concluidos, falhos: st.falhos, mortes: st.mortes, maiorTier: st.maiorTier, porTier: st.porTier, ultimo: st.ultimo },
     tiers: Mapas.TIERS,

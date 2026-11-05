@@ -33,7 +33,7 @@ const VIDA_DE_REFERENCIA_PCT = JSON.parse(readFileSync(new URL('../gamedata/iten
  * encontro (o grupo sorteia qual dos 4). O poedb e os guias dizem só "drop from T14+ map bosses", sem a taxa: estes números são do jogo
  * (ajustáveis aqui).
  */
-const DROP = { tierMinimo: 14, chancePorChefe: { criador: 0.08, anciao: 0.08, conquistador: 0.08 } };
+const DROP = { tierMinimo: 14, chancePorChefe: { criador: 0.08, anciao: 0.08, conquistador: 0.08 }, chanceDoCortex: 0.02, chanceDaMemoria: 0.03 };
 
 // Os ids do catálogo (fixos, fora das outras faixas): os fragmentos em 7.750.001…, os mapas dos guardiões em 7.751.001…
 const ID_DOS_FRAGMENTOS = 7_750_001;
@@ -56,6 +56,11 @@ const CHEFES = [
   { id: 'poe-veritania', pagina: 'Veritania,_The_Redeemer', variante: /AtlasExile2_$/, base: 'melting-frozen-horror', grupo: 'conquistador', fragmento: 'Veritanias_Crest', linha: 'Mapa contém a Cidadela de Veritania', nome: 'Veritania, a Redentora' },
   { id: 'poe-al-hezmin', pagina: 'Al-Hezmin,_The_Hunter', variante: /AtlasExile3$/, base: 'grand-master-oberon', grupo: 'conquistador', fragmento: 'Al-Hezmins_Crest', linha: 'Mapa contém a Cidadela de Al-Hezmin', nome: 'Al-Hezmin, o Caçador' },
   { id: 'poe-drox', pagina: 'Drox,_The_Warlord', variante: /AtlasExile4$/, base: 'king-zelos', grupo: 'conquistador', fragmento: 'Droxs_Crest', linha: 'Mapa contém a Cidadela de Drox' },
+  // (etapa 4 — dono, 05/11) os chefes do MAPA FINAL de cada Memória (PoE 3.26): o mapa T16 com o nome da área do PoE (o poedb não tem item
+  // dela: o desenho é o do T16); o chefe solta o ECO garantido (a variante de fragmento), que abre a Encarnação no Dispositivo.
+  { id: 'poe-a-chama-abandonada', pagina: 'The_Neglected_Flame', variante: /FragmentOfIgnorance__$/, base: 'vemiath', grupo: 'memoria', fragmento: 'Echo_of_Loneliness', tipoDoFragmento: /\/Currency/, areaFinal: 'Courtyard_of_Wasting', memoria: 'Memory_of_Loneliness', abre: 'poe-incarnation-of-neglect' },
+  { id: 'poe-o-deus-enganador', pagina: 'The_Deceitful_God', variante: /FragmentOfBenevolence$/, base: 'the-false-god', grupo: 'memoria', fragmento: 'Echo_of_Reverence', tipoDoFragmento: /\/Currency/, areaFinal: 'Theatre_of_Lies', memoria: 'Memory_of_Reverence', abre: 'poe-incarnation-of-dread' },
+  { id: 'poe-o-cardeal-do-medo', pagina: 'The_Cardinal_of_Fear', variante: /FragmentOfAnger$/, base: 'lady-tenebris', grupo: 'memoria', fragmento: 'Echo_of_Trauma', tipoDoFragmento: /\/Currency/, areaFinal: 'Chambers_of_Impurity', memoria: 'Memory_of_Trauma', abre: 'poe-incarnation-of-fear' },
 ];
 
 /** O que cada pináculo pede no Dispositivo (os 4 do grupo, um de cada). Os outros pináculos entram nas próximas etapas. */
@@ -110,7 +115,7 @@ function varianteDoChefe(html, re) {
     const at = {};
     for (const m of a.html.matchAll(/<div class="th"><i[^>]*><\/i>([^<]+)<\/div><div>([\s\S]*?)<\/div><\/div>/g)) at[m[1]] = texto(m[2]);
     const resistencias = {};
-    for (const m of a.html.matchAll(/IconEnemyResistance(Fire|Cold|Lightning|Chaos)\w*\.webp"[^>]*\/>(?:<span[^>]*>)?(-?\d+)/g)) resistencias[ELEMENTO[m[1]]] = Number(m[2]);
+    for (const m of a.html.matchAll(/IconEnemyResistance(Fire|Cold|Lightning|Chaos)\w*\.webp"[^>]*\/?>\s*(?:<span[^>]*>)?(-?\d+)/g)) resistencias[ELEMENTO[m[1]]] = Number(m[2]);
     return { variante: a.id, vidaPct: pct(at.Life), danoPct: pct(at.Damage) ?? 100, expPct: pct(at.Experience) ?? 100, resistencias };
   }
   throw new Error(`variante ${re} não encontrada`);
@@ -129,14 +134,25 @@ function item(slug, pasta = ITENS_HTML, tipo = null) {
 const itens = [];
 const mapas = [];
 const chefes = [];
+const ecos = [];
 for (const c of CHEFES) {
   const us = ler(join(CHEFES_HTML, `us-${c.pagina}.html`));
   const pt = ler(join(CHEFES_HTML, `pt-${c.pagina}.html`));
   const v = varianteDoChefe(us, c.variante);
-  const fragmento = { ...item(c.fragmento), itemId: ID_DOS_FRAGMENTOS + itens.length, chefe: c.id, grupo: c.grupo };
-  itens.push(fragmento);
+  // (os Ecos da etapa 4 ganham o id no FIM — `ecos`, abaixo —: os ids dos itens que já existiam não mudam, as peças dos jogadores seguem valendo)
+  const fragmento = { ...item(c.fragmento, ITENS_HTML, c.tipoDoFragmento ?? null), itemId: null, chefe: c.id, grupo: c.grupo };
+  if (c.grupo === 'memoria') ecos.push(fragmento);
+  else {
+    fragmento.itemId = ID_DOS_FRAGMENTOS + itens.length;
+    itens.push(fragmento);
+  }
   let mapa = null;
-  if (c.mapa) {
+  if (c.areaFinal) {
+    // (etapa 4) o mapa final da Memória: a área do PoE não é item — o nome dela (pt) num mapa T16 com o desenho da base
+    const area = ler(join(CHEFES_HTML, `pt-${c.areaFinal}.html`));
+    mapa = { slug: c.areaFinal, nome: texto(area.match(/<span class="lc">([\s\S]*?)<\/span>/)?.[1] ?? '') || c.areaFinal.replace(/_/g, ' '), icone: null, itemId: ID_DOS_MAPAS + mapas.length, chefe: c.id, tier: 16 };
+    mapas.push(mapa);
+  } else if (c.mapa) {
     const m = item(c.mapa, CHEFES_HTML);
     mapa = { ...m, nome: m.nome.replace(/^Mapa:\s*/, ''), itemId: ID_DOS_MAPAS + mapas.length, chefe: c.id, tier: 16 };
     mapas.push(mapa);
@@ -152,10 +168,12 @@ for (const c of CHEFES) {
     grupo: c.grupo,
     fragmento: fragmento.itemId,
     ...(mapa ? { mapa: mapa.itemId } : { linha: c.linha }),
+    ...(c.abre ? { abre: c.abre } : {}),
   });
 }
 
 const entradas = Object.fromEntries(Object.entries(ENTRADAS).map(([pin, grupo]) => [pin, itens.filter((i) => i.grupo === grupo).map((i) => i.itemId)]));
+
 
 // Os convites (a variante de moeda — "Itens Mapas Variados" —, a que se usa de novo; a de missão fica nos itens de missão) e as arenas.
 const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
@@ -200,6 +218,28 @@ for (const c of CRISOIS) {
 }
 const maven = { ...MAVEN, fragmento: fragmentoCrescente.itemId, citacao: citacao.itemId, crisois };
 
+// (etapa 4 — dono, 05/11) o CÓRTEX (o mapa Único do Venarius no PoE: aqui, o item que o abre no Dispositivo) e as MEMÓRIAS (cada uma vira o mapa
+// final da linha dela, com o chefe que solta o Eco). Caem dos chefes de mapa T14+: o Córtex com `drop.chanceDoCortex`, uma Memória sorteada com
+// `drop.chanceDaMemoria` (sem taxa no PoE — números do dono).
+const doCortex = variantesDoItem(ler(join(ITENS_HTML, 'Cortex.html')), 'Cortex').find((v) => v.classe === 'Mapas');
+const cortex = { slug: 'Cortex', tipo: 'Metadata/Items/Maps/SynthesisBossGuardianMap', nome: 'Córtex', en: 'Cortex', linhas: doCortex?.linhas?.filter((l) => !/\[|Modificadores/.test(l)) ?? [], sabor: doCortex?.sabor ?? null, icone: existsSync(join(ICONES, 'Cortex.png')) ? 'poe-itens/Pinaculos/Cortex.png' : null, itemId: ID_DOS_FRAGMENTOS + itens.length, cortex: true };
+itens.push(cortex);
+entradas['poe-venarius'] = [cortex.itemId];
+// os Ecos (no fim: ids novos), cada Encarnação abre com o dela
+for (const eco of ecos) {
+  eco.itemId = ID_DOS_FRAGMENTOS + itens.length;
+  itens.push(eco);
+  const ch = chefes.find((x) => x.id === eco.chefe);
+  ch.fragmento = eco.itemId;
+  entradas[ch.abre] = [eco.itemId];
+}
+const memorias = [];
+for (const c of CHEFES.filter((x) => x.memoria)) {
+  const it = { ...item(c.memoria), itemId: ID_DOS_FRAGMENTOS + itens.length, memoria: c.id };
+  itens.push(it);
+  memorias.push(it);
+}
+
 const saida = {
   _nota:
     'A ENTRADA dos pináculos como no PoE (dono, 05/11): sem trava de level; cada pináculo abre no Dispositivo de Mapas com os itens de `entradas` (um de cada, gastos ao abrir). Os itens saem dos 12 chefes de `chefes` (garantido), que nascem nos mapas com o encontro: o mapa do guardião do Criador (T16, o guardião é o chefe do mapa) ou o mapa comum "ocupado"/"com a Cidadela" (o chefe a mais no fundo do mapa). Os mapas com encontro caem dos chefes de mapa a partir de `drop.tierMinimo`, com `drop.chancePorChefe` por grupo (sem a taxa no poedb: números do jogo). Gerado por tools/montar-pinaculos-acesso.mjs a partir do poedb.',
@@ -216,5 +256,6 @@ writeFileSync(DESTINO, `${JSON.stringify(saida, null, 1)}\n`);
 console.log(`${itens.length} fragmentos, ${mapas.length} mapas, ${chefes.length} chefes → ${fileURLToPath(DESTINO)}`);
 for (const a of arenas) console.log(`  arena ${a.nome}: vida ${a.vidaPct}% (×${a.vidaMult}), dano ${a.danoPct}%, únicos ${a.unicos.map((u) => u.nome).join(', ')}`);
 console.log(`  Maven: ${maven.contador} chefes T${maven.tierMinimo}+ testemunhados → ${crisois.map((c) => `${c.nome} [${c.fragmentos.join('–')} fragmentos]`).join('; ')}`);
+console.log(`  Córtex (${cortex.itemId}) → Venarius; Memórias: ${memorias.map((m) => `${m.nome} → ${mapas.find((x) => x.chefe === m.memoria)?.nome}`).join('; ')}`);
 for (const c of convites) console.log(`  ${c.nome} (${c.itemId}): a cada ${c.aCada} chefes T14+ sob ${c.influencia} → ${c.abre}`);
 for (const c of chefes) console.log(`  ${c.nome} (${c.variante}): vida ${c.vidaPct}% (×${c.vidaMult}), dano ${c.danoPct}%, exp ${c.expPct}%, base ${c.base}`);

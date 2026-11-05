@@ -121,12 +121,33 @@ Onde está no código:
 - `cacadas.mjs` → os chefes em pares (`hunt.crisol.fila`);
 - `combate.mjs` → `mortoNoCrisol` e a contagem nos mapas.
 
+## Etapa 4: o Venarius e as Encarnações (05/11)
+
+Fontes:
+- o poedb: os itens e os chefes das Memórias (A Chama Abandonada, O Deus Enganador, O Cardeal do Medo: 1120% de vida, 200% de dano);
+- a poewiki: a Linha de Memória do PoE 3.26;
+- um guia 3.25: o Córtex cai dos chefes de mapa T14+.
+
+Decisões do dono:
+- **O Córtex:** cai dos chefes de mapa T14+ com **2%** e abre o **Venarius** no Dispositivo, com 6 portais. No PoE ele é um mapa Único; aqui é o item da entrada.
+- **As Memórias** (Solidão, Reverência, Trauma) caem dos chefes de mapa T14+ com **3%**, uma das 3 sorteada.
+  - Na aba Pináculos, "Abrir o mapa" transforma a Memória no **mapa final** da linha dela: um T16 com o desenho da base e o nome da área do PoE (Pátio do Definhamento, Teatro das Mentiras, Câmaras da Impureza).
+  - O chefe desse mapa (Chama Abandonada, Deus Enganador, Cardeal do Medo) é feito como os guardiões e solta o **Eco** garantido.
+  - O Eco abre a **Encarnação** no Dispositivo: Solidão → Abandono, Reverência → Pavor, Trauma → Medo.
+  - Os mapas do meio da linha ficam de fora.
+- **Os ids:** os itens novos ganham ids no fim (7.750.023…). Os das etapas anteriores não mudam, então as peças dos jogadores seguem valendo.
+
+Onde está no código:
+- `pinaculos-acesso.json` → `drop.chanceDoCortex` e `drop.chanceDaMemoria`, os 3 chefes `grupo: 'memoria'` e os 3 mapas finais;
+- `pinaculos-acesso.mjs` → `sortearDoAtlas`, `memoria`/`memorias` e `mapaDaMemoria`;
+- `mapas-dispositivo.mjs` → `usarMemoria`;
+- `combate.mjs` → o drop do chefe T14+.
+
 ## Pontos em aberto
 
 - **A taxa dos mapas com encontro** (8% por grupo por chefe T14+) não tem fonte. Ajustar se ficar raro ou frequente demais.
 - **Arena de novo a cada entrada:** voltar pelo portal começa a luta do zero, porque a arena é uma caçada nova. No PoE a vida do chefe se mantém na mesma instância.
 - **As Cidadelas:** no PoE, o Conquistador é enfrentado numa área própria (a Cidadela). Aqui ele aparece dentro do mapa.
-- **Etapa 4:** Venarius e as Encarnações continuam fechados. A tela os lista como "próximas etapas".
 - **Nucleus of the Maven:** continua sem caminho. O poedb o lista como chefe próprio (a variante `MavenBrainBoss`), mas não diz como se entra nele: fica para uma decisão do dono.
 - **O Calvário recomeça a cada entrada,** como as arenas: os pares voltam do começo.
 - **Altares eldritch:** os mapas com influência ainda não têm os altares nem os monstros influenciados do PoE.
