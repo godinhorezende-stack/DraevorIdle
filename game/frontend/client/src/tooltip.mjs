@@ -2800,6 +2800,14 @@ function blocoDosSoquetes(sq) {
 }
 
 export function fichaDeItem(id, extra = null, slot = null, peca = null) {
+  // (05/11, dono: "tem que ser só PoE") Item do PoE sem a peça (o resumo da caçada, a recompensa, o filtro…): o balão do PoE da BASE, como a
+  // peça Normal dela — as propriedades e os implícitos que o servidor manda no catálogo (`poe.previa` — itens-poe/jogo.mjs), no lugar do
+  // balão do Draevor.
+  const metaDoId = getItems()[id];
+  if (!peca?.poe && metaDoId?.poe?.previa) {
+    const v = metaDoId.poe.previa;
+    peca = { ...(peca ?? {}), id, poe: { base: metaDoId.poe.base, classe: metaDoId.poe.classe, raridade: 'normal', raridadeNome: 'Normal', cor: '#f6f6f6', ilvl: Number(peca?.ilvl) || metaDoId.minLevel || 1, nome: metaDoId.name, atributos: v.atributos ?? {}, implicitos: (v.implicitos ?? []).map((texto) => ({ texto })), prefixos: [], sufixos: [], modificadores: [], af: {} } };
+  }
   // A peça do sistema de itens do PoE (só existe com ITENS_POE=1 no servidor): o balão próprio, com Prefixos e Sufixos separados.
   if (peca?.poe) {
     const metaPoe = getItems()[id];

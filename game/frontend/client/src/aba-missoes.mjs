@@ -275,7 +275,9 @@ function desenharDetalhe(caixa, m, e, ctx, gemaPendente) {
         const id = op.id ?? Object.values(state.items ?? {}).find((it) => it.poe?.base === op.base)?.id;
         if (id) {
           card.append(itemCanvas(id, 32));
-          tipFor(card, id);
+          // (05/11, dono: "tem que ser só PoE") a base: o balão do PoE da peça Normal (a prévia do servidor — `previasDasRecompensas`); a
+          // raridade só é sorteada ao resgatar
+          tipFor(card, id, null, null, op.tipo === 'base' ? state.missoes?.previas?.[op.base] ?? null : null);
         }
         card.append(el('b', null, op.nome));
         card.disabled = !e?.escolher;

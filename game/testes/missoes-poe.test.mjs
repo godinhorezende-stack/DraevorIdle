@@ -144,3 +144,18 @@ test('(05/11, dono) a recompensa de base sorteia a raridade: Normal, Mágico ou 
   assert.deepEqual([...frascos].sort(), ['magico', 'normal']);
   assert.equal(Jogo.pecaDaRecompensa('Nada/Nada', 20, rng), null);
 });
+
+test('(05/11, dono: "tem que ser só PoE") o balão do PoE: as prévias das recompensas são peças Normais do PoE; as bases no catálogo levam a prévia (propriedades e implícitos)', { skip: SEM }, () => {
+  const previas = M.previasDasRecompensas(20, Jogo.pecaNormalDaBase);
+  const bases = new Set(M.MISSOES.flatMap((m) => (m.recompensas?.escolha ?? []).filter((o) => o.tipo === 'base').map((o) => o.base)));
+  assert.equal(Object.keys(previas).length, bases.size);
+  for (const [base, p] of Object.entries(previas)) {
+    assert.ok(p?.poe, base);
+    assert.equal(p.poe.raridade, 'normal', base);
+    assert.equal(p.poe.ilvl, 20, base);
+  }
+  const anel = ITEM_CATALOG[Jogo.idDaBase('Rings/Coral_Ring')];
+  assert.deepEqual(anel.poe.previa.implicitos, ['+(20—30) de Vida máxima']);
+  const colete = ITEM_CATALOG[Jogo.idDaBase('Body_Armours/Plate_Vest')];
+  assert.deepEqual(colete.poe.previa.atributos.armadura, { min: 19, max: 27 });
+});

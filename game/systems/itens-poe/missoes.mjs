@@ -156,6 +156,22 @@ export function comando(estado, m, { criarPeca, darItem, darGema, darPeca } = {}
   return { ok: false, erro: 'Ação desconhecida.' };
 }
 
+/**
+ * (05/11, dono: "tem que ser só PoE") As PRÉVIAS das recompensas de base para o balão da aba: a peça Normal de cada base (a do PoE, com o
+ * balão do PoE — a raridade só é sorteada ao resgatar), no Item Level `ilvl`. `criarPrevia(base, ilvl)`: a do jogo (`pecaNormalDaBase`).
+ * Guardadas por Item Level (as bases e as linhas não mudam).
+ */
+const PREVIAS = new Map();
+export function previasDasRecompensas(ilvl, criarPrevia) {
+  const nivel = Math.max(1, Math.round(Number(ilvl) || 1));
+  if (!PREVIAS.has(nivel)) {
+    const saida = {};
+    for (const m of MISSOES) for (const op of m.recompensas?.escolha ?? []) if (op.tipo === 'base' && !(op.base in saida)) saida[op.base] = criarPrevia(op.base, nivel) ?? null;
+    PREVIAS.set(nivel, saida);
+  }
+  return PREVIAS.get(nivel);
+}
+
 /** Um pináculo caiu (hunt/combate.mjs `vitoriaNoBoss`): fica registrado para as missões do Atlas. */
 export function aoVencerPinaculo(estado, bossId) {
   if (!ligado() || !bossId || !MISSOES.some((m) => m.gatilho?.pinaculo?.includes(bossId))) return;

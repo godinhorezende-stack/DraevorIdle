@@ -105,6 +105,17 @@ const requisitosDaBase = (b) => {
 };
 
 /** Registra as bases equipáveis do catálogo do PoE em `ITEM_CATALOG` (uma vez). Devolve o registro. Sem o sistema ligado, não faz nada. */
+/**
+ * (05/11, dono: "tem que ser só PoE") O que o balão do PoE mostra da BASE quando a tela só tem o id (o resumo da caçada, o filtro de loot…,
+ * sem a peça): as propriedades (com a faixa da base) e os implícitos. O cliente monta o balão do PoE da peça Normal com isto
+ * (`tooltip.mjs → fichaDeItem`), no lugar do balão do Draevor.
+ */
+function previaDaBase(b) {
+  const atributos = Object.fromEntries(Object.entries(b.atributos ?? {}).filter(([, v]) => v != null));
+  const implicitos = (b.implicitos ?? []).map((i) => i.texto).filter(Boolean);
+  return Object.keys(atributos).length || implicitos.length ? { previa: { ...(Object.keys(atributos).length ? { atributos } : {}), ...(implicitos.length ? { implicitos } : {}) } } : { previa: {} };
+}
+
 export function iniciar(itemCatalog) {
   const cat = Catalogo.catalogo();
   if (!cat || REG.porBase.size) return REG;
@@ -136,7 +147,7 @@ export function iniciar(itemCatalog) {
         ...(a.armadura ? { armor: media(a.armadura) } : {}),
         // Marca de item do PoE: o cliente desenha o ícone da coleção e o balão próprio; o servidor acha a base.
         // Os requisitos de atributo da base, como no PoE (todos valem: `personagem/requisitos.falta`, incremento 4d).
-        poe: { base: b.id, classe: c.id, icone: b.icone ?? null, ...requisitosDaBase(b) },
+        poe: { base: b.id, classe: c.id, icone: b.icone ?? null, ...requisitosDaBase(b), ...previaDaBase(b) },
       };
       REG.porBase.set(b.id, id);
       REG.porId.set(id, b.id);
@@ -154,7 +165,7 @@ export function iniciar(itemCatalog) {
       itemCatalog[id] = {
         id, name: b.nome, type: 'flasks', weight: 3, hasSprite: false, rarity: 'comum', stackable: false, frasco: true, ...(classe === 'Tinctures' ? { tintura: true } : {}),
         ...(b.requisitos?.nivel ? { minLevel: b.requisitos.nivel } : {}),
-        poe: { base: b.id, classe: c.id, icone: b.icone ?? null },
+        poe: { base: b.id, classe: c.id, icone: b.icone ?? null, ...previaDaBase(b) },
       };
       REG.porBase.set(b.id, id);
       REG.porId.set(id, b.id);
@@ -194,7 +205,7 @@ export function iniciar(itemCatalog) {
     itemCatalog[id] = {
       id, name: b.nome, type: 'jewels', weight: 1, hasSprite: false, rarity: 'comum', stackable: false, joia: true, ...(baseId.startsWith('Abyss_Jewels/') ? { abissal: true } : {}),
       ...(b.requisitos?.nivel ? { minLevel: b.requisitos.nivel } : {}),
-      poe: { base: b.id, classe: b.id.split('/')[0], icone: b.icone ?? null },
+      poe: { base: b.id, classe: b.id.split('/')[0], icone: b.icone ?? null, ...previaDaBase(b) },
     };
     REG.porBase.set(b.id, id);
     REG.porId.set(id, b.id);
