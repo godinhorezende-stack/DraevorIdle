@@ -11,7 +11,7 @@
 import * as Catalogo from './catalogo.mjs';
 import { definirLeitorDeBase } from './condicoes-poe.mjs';
 import { traduzirPeca } from './traduzir.mjs';
-import { gerarPeca } from './gerar.mjs';
+import { gerarPeca, caiNoSorteio } from './gerar.mjs';
 import { darPeca } from '../inventario.mjs';
 import * as DropsPorMonstro from './drops-por-monstro.mjs';
 import * as SocketsPoe from './sockets.mjs';
@@ -718,7 +718,7 @@ export function pecaDoBauInicial(rng = Math.random, regras = Catalogo.REGRAS) {
  * recompensa, ex.: as do Demigod) e as Rúnicas/Ward (da Expedição; a coleção não traz o pool delas). Antes caíam Raras sem nenhum mod.
  */
 // (lote 27) A Joia Prismática só cai Única (o PoE não tem Prismática Normal, Mágica nem Rara; a coleção traz o pool genérico das joias nela).
-export const podeCairComo = (classe, base, raridade) => (RAMIFICADORAS_NO_DROP || !ehRamificadora(base)) && (!SO_UNICAS.has(base?.id) || raridade === 'unico') && (!!base?.pool || ehRamificadora(base) || (raridade === 'unico' && !!classe?.unicos?.some((u) => u.base === base?.nome)));
+export const podeCairComo = (classe, base, raridade) => (RAMIFICADORAS_NO_DROP || !ehRamificadora(base)) && (!SO_UNICAS.has(base?.id) || raridade === 'unico') && (!!base?.pool || ehRamificadora(base) || (raridade === 'unico' && !!classe?.unicos?.some((u) => u.base === base?.nome && caiNoSorteio(u))));
 /** (lote 82) A vaga das Ramificadoras no sorteio das bases (`pecaSorteada`). */
 const RAMIFICADORA_NO_SORTEIO = Symbol('ramificadora');
 /** (lote 82) A Ramificadora só cai do Item Level mínimo dela para cima (dono: "Só nos mapas"). */
@@ -746,7 +746,7 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
     const b = c?.bases.find((x) => x.id === baseFixa);
     if (!b) return null;
     // (O MAPA ÚNICO está em todas as bases de mapa — `catalogo.mjs` —: o Único sorteado num drop de mapa sai no tier dele.)
-    if (raridade === 'unico' && !c.unicos.some((u) => u.base === b.nome)) raridade = 'raro';
+    if (raridade === 'unico' && !c.unicos.some((u) => u.base === b.nome && caiNoSorteio(u))) raridade = 'raro';
     if (!podeCairComo(c, b, raridade) || !caiNoNivel(b, ilvl)) return null;
     const r = raridade === 'raro' && FRASCOS.includes(classe) ? 'magico' : raridade;
     return qualidadeDoDrop(pecaDoJogo(gerarPeca({ catalogo: cat, regras, base: baseFixa, raridade: r, ilvl, rng }), regras, rng), rng, regras);
@@ -769,7 +769,7 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
     // As bases "Royale" são do modo Battle Royale do PoE: ficam no catálogo (os ids não mudam), mas não caem. A "Lâmina de Energia" também
     // não: no PoE ela é a arma que a habilidade Lâmina de Energia cria.
     if (b.slug?.startsWith('Royale_') || b.slug === 'Energy_Blade') continue;
-    if (raridade === 'unico' && !c.unicos.some((u) => u.base === b.nome)) continue;
+    if (raridade === 'unico' && !c.unicos.some((u) => u.base === b.nome && caiNoSorteio(u))) continue;
     if (!podeCairComo(c, b, raridade) || !caiNoNivel(b, ilvl)) continue;
     if (ehRamificadora(b)) { ramificadoras.push(baseId); continue; }
     if (!porClasse.has(classe)) porClasse.set(classe, []);

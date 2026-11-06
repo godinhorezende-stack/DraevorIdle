@@ -12,11 +12,12 @@ Levantamento pelo balão: cada um dos 1.154 Únicos gerado como cai no jogo, e c
 | 06/11 | **260** | lote 3 (cintos, 53 → 0): a Vulnerabilidade da própria peça (os Covardes), a aura de Caos nos de perto (o Fim da Fome), o Dreno como Caos (A Ânsia), o Destino Certo, as Armadilhas da Explosão Solar, o Sangue Mágico, a Oferenda de cada tipo, o Robô Calcinante, o Caçador de Cabeças e a Réplica (a tag `alvoMagico` passa a sair no Mágico do jogo); 8 viram inertes (a Concentração, o frasco nos lacaios, a Dádiva dos Pactos, o Emissário do Tempo) |
 | 06/11 | **147** | lote 4 (armaduras de corpo, luvas, elmos, escudos e botas, 118 → 0): a Corrosão, os Totens Espectrais, o Escudo dos lacaios pela Resistência a Caos (o Forjador da Carne), a Tolerância do grupo (Ambu), as Oferendas da Fome da Rainha, o empurrão invertido, a Fúria pela regeneração (Kaom), o alvo Marcado que absorve, os cadáveres amaldiçoados (Asenath), os abates por perto (Vínculo do Túmulo), o Atirar das encaixadas (Assailum), o Escudeiro, a Vigilância do Imperador, Kiloava, a Parede de Névoa, o Reflete Feitiços (Atziri), as Vinhas nos inimigos, o Atordoamento pela Mana, a Causticação, o Sofrimento Compartilhado, os projéteis do Inexperiente; 25 viram inertes (as habilidades e lacaios que o jogo não tem — a Efígie, o Rebento, a Forma Sombria, os Emissários, a Fúria como custo…); teste `itens-poe-mods:253` com o exemplo trocado (aval do dono) |
 | 06/11 | **0** | lote 5 (anéis, amuletos, armas, aljavas, frascos e tinturas, e as variantes que só saem em outros sorteios do mesmo único, 147 → 0): o Veneno a mais e espalhado, a Lamúria, a Maré da Gula, o altar aleatório, o Dano adiado (a Princesa), a Vontade das auras pelo elemento, os suportes emprestados (escudo → arma, pescoço → corpo), as Cargas de frasco ao consumir cadáver, o Medalhão, o Vosso Abraço, a cegueira refletida, o Proxy Profano, a Salva Espinhal, os projéteis que perfuram queimando e por ponto de disparo, o "caso Corrompido" da própria peça (a Nebulis); os frascos passam a levar a nota das linhas inertes ao balão. Conferido com 300 sorteios de cada único e com todo o pool sorteável (as 789 linhas dos implícitos de Síntese da Nebulis e do Corrompido da Corda) |
+| 06/11 | **0** | os 8 únicos que entraram (os 6 base do Emissário — Pensamentos Agitados, Força Inabalada, Divina Inimizade, Fluxo Livre, Rotação Fraturante, Conexão da Tempestade — e os 2 dos Frascos Híbridos — Divinação Destilada, O Jarro Contorcido): 13 linhas novas, todas com regra; o Emissário das Direções menor vale (+1 em vez de +2), 7 inertes *(06/11b)* |
 
 | Estado | Linhas | Únicos |
 |---|---|---|
 | ○ registrado (texto do PoE ainda sem efeito no jogo) | **0** | 0 |
-| – inerte (mecânica que não existe no jogo, com o motivo no balão) | 391 | 248 |
+| – inerte (mecânica que não existe no jogo, com o motivo no balão) | 398 | 254 |
 | – inerte nos implícitos das bases | 14 | — |
 
 ## ○ Registrados: sem efeito ainda
@@ -25,7 +26,7 @@ Nenhum (06/11, lote 5). A varredura gera cada Único 300 vezes (as variantes sor
 
 ## – Inertes, pelo motivo
 
-As marcadas *(nova)* ficaram inertes nos lotes 1 a 5 (06/11).
+As marcadas *(nova)* ficaram inertes nos lotes 1 a 5 (06/11); as marcadas *(06/11b)* são dos únicos que entraram depois (os 6 base do Emissário e os 2 dos Frascos Híbridos).
 
 ### as habilidades de Aspecto (dadas por únicos) não existem no jogo (45)
 
@@ -520,9 +521,10 @@ As marcadas *(nova)* ficaram inertes nos lotes 1 a 5 (06/11).
 
 - Juramento da Morte: Ativa Aura da Morte Nível 20 quando Equipado
 
-### a habilidade "Cascata da Tempestade" não está na coleção de gemas do jogo (1)
+### a habilidade "Cascata da Tempestade" não está na coleção de gemas do jogo (2)
 
 - Os Pensamentos Afluentes: Ativa Cascata da Tempestade nível 20 quando você Atacar
+- Pensamentos Agitados: Ativa Cascata da Tempestade nível 20 quando você Atacar *(06/11b)*
 
 ### a habilidade "Chamas Próximas" não está na coleção de gemas do jogo (1)
 
@@ -744,21 +746,41 @@ As marcadas *(nova)* ficaram inertes nos lotes 1 a 5 (06/11).
 
 - A Mortalidade Elevada: Concede a Habilidade Convocar Grande Emissário da Brutalidade *(nova)*
 
+### o jogo não tem a gema Convocar Emissário da Brutalidade (1)
+
+- Divina Inimizade: Concede a Habilidade Convocar Emissário da Brutalidade *(06/11b)*
+
 ### o jogo não tem a gema Convocar Grande Emissário das Tormentas (1)
 
 - A Liberação da Tempestade: Concede a Habilidade Convocar Grande Emissário das Tormentas *(nova)*
+
+### o jogo não tem a gema Convocar Emissário das Tormentas (1)
+
+- Conexão da Tempestade: Concede a Habilidade Convocar Emissário das Tormentas *(06/11b)*
 
 ### o jogo não tem a gema Convocar Grande Emissário do Arcano (1)
 
 - Os Pensamentos Afluentes: Concede a Habilidade Convocar Grande Emissário do Arcano *(nova)*
 
+### o jogo não tem a gema Convocar Emissário do Arcano (1)
+
+- Pensamentos Agitados: Concede a Habilidade Convocar Emissário do Arcano *(06/11b)*
+
 ### o jogo não tem a gema Convocar Grande Emissário do Foco (1)
 
 - A Vontade Imortal: Concede a Habilidade Convocar Grande Emissário do Foco *(nova)*
 
+### o jogo não tem a gema Convocar Emissário do Foco (1)
+
+- Força Inabalada: Concede a Habilidade Convocar Emissário do Foco *(06/11b)*
+
 ### o jogo não tem a gema Convocar Grande Emissário do Tempo (1)
 
 - A Recuperação Torrencial: Concede a Habilidade Convocar Grande Emissário do Tempo *(nova)*
+
+### o jogo não tem a gema Convocar Emissário do Tempo (1)
+
+- Fluxo Livre: Concede a Habilidade Convocar Emissário do Tempo *(06/11b)*
 
 ### o jogo não tem a Onda de Choque Sangrenta (1)
 
@@ -823,6 +845,10 @@ As marcadas *(nova)* ficaram inertes nos lotes 1 a 5 (06/11).
 ### o jogo não tem o Verme Retorcido (1)
 
 - Terror Irrequieto: Um Verme Retorcido inimigo surge a cada 2 segundos *(nova)*
+
+### o jogo não tem os Vermes Contorcidos (1)
+
+- O Jarro Contorcido: 2 Vermes Contorcidos Inimigos escapam do Frasco quando utilizado Vermes Contorcidos são destruídos quando Acertados *(06/11b)*
 
 ### o jogo não tem os bônus de Adivinhação (1)
 

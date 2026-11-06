@@ -1349,6 +1349,13 @@ export const BUFFS = {
   emissarioPerfuracao: { nome: 'Direções: Perfuração', af: { perfurar: 2 } },
   emissarioDifusao: { nome: 'Direções: Difusão', af: { bifurcar: 2, bifurcar_de_novo: 1 } },
   emissarioTodos: { nome: 'Direções: Todos', af: { extra_projectiles: 2, ricochetes: 2, perfurar: 2, bifurcar: 2, bifurcar_de_novo: 1 } },
+  // (06/11, o Emissário das Direções — o MENOR, da Rotação Fraturante: "1 Projétil adicional, +1 Ricochete, Atravessa 1 Alvo adicional ou Projéteis se
+  // Difundem" — a página da habilidade no poedb)
+  emissarioMenorProjeteis: { nome: 'Direções: Projétil', af: { extra_projectiles: 1 } },
+  emissarioMenorRicochetes: { nome: 'Direções: Ricochete', af: { ricochetes: 1 } },
+  emissarioMenorPerfuracao: { nome: 'Direções: Perfuração', af: { perfurar: 1 } },
+  emissarioMenorDifusao: { nome: 'Direções: Difusão', af: { bifurcar: 1 } },
+  emissarioMenorTodos: { nome: 'Direções: Todos', af: { extra_projectiles: 1, ricochetes: 1, perfurar: 1, bifurcar: 1 } },
   // (lote F) Vento Favorável (o lembrete do PoE: Velocidade de Ação aumentada — aqui, as velocidades de ataque, conjuração e movimento).
   // (lote 30, P027: "Vento Favorável aumenta a Velocidade de Ação em 8%" — o lembrete do próprio nó; era +10% de ataque, conjuração e movimento)
   ventoFavoravel: { nome: 'Vento Favorável', af: { action_speed: 8 } },

@@ -9272,6 +9272,12 @@
       "combate": true,
       "nome": "Ataques com Arco sacrificam um lacaio por Flechas",
       "efeito": "acoes (o disparo) (06/11, Únicos lote 5)"
+    },
+    "emissario_direcoes_menor": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Emissário das Direções",
+      "efeito": "acoes.tiqueDoEmissario (06/11)"
     }
   }
 }

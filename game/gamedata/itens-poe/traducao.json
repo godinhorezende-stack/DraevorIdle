@@ -49952,6 +49952,127 @@
       ],
       "_06_11": "06/11 — lote 5 dos Únicos: as últimas linhas do pool de Síntese da Nebulis",
       "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Convocar Emissário do Tempo$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a gema Convocar Emissário do Tempo",
+      "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Convocar Emissário das Tormentas$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a gema Convocar Emissário das Tormentas",
+      "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Convocar Emissário do Arcano$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a gema Convocar Emissário do Arcano",
+      "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Convocar Emissário do Foco$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a gema Convocar Emissário do Foco",
+      "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Convocar Emissário da Brutalidade$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a gema Convocar Emissário da Brutalidade",
+      "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Convocar Emissário das Direções$",
+      "efeitos": [
+        {
+          "stat": "emissario_direcoes_menor",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e, a cada 6 s, lança em você um buff de 6 s com um ao acaso — +1 Projétil, +1 Ricochete, Perfuram +1 alvo, ou Difundem — ou todos (1 em 5); os tempos são os do Grande Emissário (nenhuma fonte publica a frequência, a duração do buff nem a chance de \"todos\")",
+      "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Raridade dos Itens encontrados aumentada em \\{(\\d+)\\}%(?: durante o Efeito)?$",
+      "efeitos": [
+        {
+          "stat": "item_rarity",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistências Elementais(?: durante o Efeito)?$",
+      "efeitos": [
+        {
+          "stat": "fire_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} Vermes Contorcidos Inimigos escapam do Frasco quando utilizado Vermes Contorcidos são destruídos quando Acertados$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem os Vermes Contorcidos",
+      "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
+      "_nova": true
     }
   ]
 }

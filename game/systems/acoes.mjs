@@ -1818,17 +1818,21 @@ export function tiqueDoArautoDaAgonia(estado, hunt, agora = hunt?.clock ?? 0) {
 }
 
 export const EMISSARIO = Object.freeze({ nome: 'Grande Emissário das Direções', periodoMs: 6000, duracaoS: 6, buffs: ['emissarioProjeteis', 'emissarioRicochetes', 'emissarioPerfuracao', 'emissarioDifusao', 'emissarioTodos'] });
+// (06/11) o MENOR (a Rotação Fraturante): o mesmo Emissário, com +1 em vez de +2 (e a Difusão sem o "de novo"); com os dois, vale o Grande
+export const EMISSARIO_MENOR = Object.freeze({ ...EMISSARIO, nome: 'Emissário das Direções', buffs: ['emissarioMenorProjeteis', 'emissarioMenorRicochetes', 'emissarioMenorPerfuracao', 'emissarioMenorDifusao', 'emissarioMenorTodos'] });
 export function tiqueDoEmissario(estado, hunt, agora = hunt?.clock ?? 0, rng = Math.random) {
   if (!itensPoeLigado() || !hunt?.pos) return;
   const af = Ficha.combate(estado).afPoe ?? {};
   hunt.lacaios ??= [];
+  const qual = Number(af.emissario_direcoes) > 0 ? EMISSARIO : Number(af.emissario_direcoes_menor) > 0 ? EMISSARIO_MENOR : null;
   const vivo = hunt.lacaios.find((l) => l.emissario && l.hp > 0);
-  if (!(Number(af.emissario_direcoes) > 0)) { if (vivo) vivo.hp = 0; return; }
-  if (!vivo) hunt.lacaios.push(lacaioDoGuardian(estado, hunt, hunt.ultimoTique ?? Date.now(), af, EMISSARIO.nome, 'physical', { emissario: true, intocavel: true, semAtaque: true }));
+  if (vivo && vivo.nome !== qual?.nome) vivo.hp = 0;
+  if (!qual) return;
+  if (!vivo || vivo.nome !== qual.nome) hunt.lacaios.push(lacaioDoGuardian(estado, hunt, hunt.ultimoTique ?? Date.now(), af, qual.nome, 'physical', { emissario: true, intocavel: true, semAtaque: true }));
   if (agora < (hunt.poeEmissarioEm ?? 0)) return;
-  hunt.poeEmissarioEm = agora + EMISSARIO.periodoMs;
-  for (const b of EMISSARIO.buffs) if (hunt.poeBuffs?.[b]) delete hunt.poeBuffs[b];
-  ModsPoe.ganharBuff(hunt, EMISSARIO.buffs[Math.floor(rng() * EMISSARIO.buffs.length)], EMISSARIO.duracaoS, agora);
+  hunt.poeEmissarioEm = agora + qual.periodoMs;
+  for (const b of [...EMISSARIO.buffs, ...EMISSARIO_MENOR.buffs]) if (hunt.poeBuffs?.[b]) delete hunt.poeBuffs[b];
+  ModsPoe.ganharBuff(hunt, qual.buffs[Math.floor(rng() * qual.buffs.length)], qual.duracaoS, agora);
 }
 
 /**

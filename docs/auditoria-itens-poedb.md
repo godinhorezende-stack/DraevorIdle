@@ -88,12 +88,22 @@ As gemas não entraram nesta comparação: o balão delas é o `balao-da-gema.mj
   - "Histórico";
   - os 51 únicos e as 2 bases que o PoE dá corrompidos caem corrompidos.
 - **Ficaram fora, por decisão do dono:**
-  - **Ducado de Ukatoa:** o jogo não tem os mods sobrenaturais de amuleto.
   - **Os 4 "suportes" das Varas de Pesca:** são gemas de teste do PoE ("[DNT] Supports bla").
-  - **As 6 Peças do Harbinger:** os dados não dizem qual único cada conjunto forma.
 - **Ícones (baixados com o aval do dono, 04/11):**
   - Os 6 Híbridos estão na coleção, em `poe-itens/Frascos/Hybrid_Flasks/icones/`, e o importador liga cada um à sua base.
   - Os 11 únicos que a coleção não tinha estão em `icones-itens/poe-itens/Unicos_poedb/`, ligados em `catalogo.mjs`. São as 9 Réplicas, o Filho da Violência e a Réplica do Ensinamento de Maata, que já estava sem ícone.
   - Todos vieram do CDN do poedb, menos o do Filho da Violência: o poedb recusa essa imagem (403), e a mesma arte veio do CDN oficial do PoE (`web.poecdn.com`, `PitfighterJewel.png`).
   - O formato é o da coleção: PNG 64×64, centralizado e transparente.
   - Agora todas as 1085 bases e todos os 1645 únicos têm ícone.
+
+## 6. Depois (06/11, decisões do dono)
+
+- **Partes do Emissário (Harbinger): "Cadeia completa", como no PoE.**
+  - As 18 Partes (6 conjuntos de 2 a 4) entram como moedas, com o nome e o ícone do poedb (`gamedata/itens-poe/moedas-poe-extras.json`).
+  - Juntas, as Partes formam o único base do conjunto. Os 6 únicos base não estavam no jogo e entraram pelas páginas do poedb (`unicos-fora-da-lista.json`): Pensamentos Agitados, Força Inabalada, Divina Inimizade, Fluxo Livre, Rotação Fraturante e Conexão da Tempestade.
+  - O Pergaminho do conjunto (6, também novos) aprimora o base no único que o jogo já tinha (Os Pensamentos Afluentes, A Vontade Imortal, A Mortalidade Elevada, A Recuperação Torrencial, A Divindade Despedaçada, A Liberação da Tempestade). O mapeamento é o da receita "Harbinger Recipe" de cada página.
+  - Os 12 únicos do Emissário deixam de cair no drop comum e de sair da Chance: só pela cadeia, como no PoE.
+  - As Partes e os Pergaminhos caem dos chefes de mapa (`regras.json → moedas.chefeDeMapa`: 3% uma Parte, 1% um Pergaminho).
+- **Ducado de Ukatoa.** Num amuleto não Único sem implícito sobrenatural, troca o implícito por um do Exarca ou do Devorador (meio a meio), com o tier pelos pesos do poedb. Cai dos chefes de mapa (1%).
+- **Junto (a auditoria dos únicos):** os 2 únicos dos Frascos Híbridos que faltavam (Divinação Destilada e O Jarro Contorcido) entraram, agora que as bases existem.
+

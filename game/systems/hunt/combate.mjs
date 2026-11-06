@@ -1115,8 +1115,9 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   }
   // (05/11, etapa 4) O CÓRTEX (abre o Venarius) e as MEMÓRIAS (o mapa final da linha → o Eco → a Encarnação): do chefe de mapa T14+, para quem
   // matou (`pinaculos-acesso.mjs → sortearDoAtlas`). Vão como a moeda (só a lista "Não coletar" os deixa no chão).
+  // (06/11) e as PARTES e os PERGAMINHOS do Emissário e o DUCADO DE UKATOA, do chefe de qualquer mapa (`moedas.mjs → dropDoChefeDeMapa`)
   if (noMapa && alvo.chefeDoMapa) {
-    for (const id of PinaculosAcesso.sortearDoAtlas(noMapa.tier)) {
+    for (const id of [...PinaculosAcesso.sortearDoAtlas(noMapa.tier), ...MoedasPoe.dropDoChefeDeMapa()]) {
       if (Bolsa.ignora(estado, id)) conta('ignorado', id, 1);
       else if (Bolsa.porNaBolsa(estado, id, 1)) {
         caiu.push({ id, count: 1 });
