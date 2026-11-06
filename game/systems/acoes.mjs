@@ -420,7 +420,8 @@ export function comCriticoDaIntensidade(ficha, intensidade) {
 export function duracaoDasPecas(estado, entry) {
   // (17/10: + a "Duração do Efeito de Habilidades aumentada" da própria gema — a da qualidade — `comAsLinhasDaGema`)
   const f = comAsLinhasDaGema(estado, Ficha.combate(estado), entry);
-  return ModsPoe.valor(f, 'duracao_habilidades') + (ModsPoe.somaPorTags(f, tagsPoeDaSkill(entry)).duracao_habilidades ?? 0);
+  // (06/11, a Estrela de Wraeclast: "Teleporte Gélido tem Duração aumentada em X%" — `duracao_gema:<slug>`)
+  return ModsPoe.valor(f, 'duracao_habilidades') + (ModsPoe.somaPorTags(f, tagsPoeDaSkill(entry)).duracao_habilidades ?? 0) + (entry?.poeGema?.slug ? ModsPoe.valor(f, `duracao_gema:${entry.poeGema.slug}`) : 0);
 }
 /**
  * (13/10) O FATOR da duração de uma habilidade: (1 + o aumentado da gema e das peças) × (1 + "X% mais/menos Duração do Efeito de
@@ -3098,7 +3099,8 @@ export function efeitosDaMaldicao(efeitos, efeitoDaGema, estado = null, entry = 
   // (lote S2B, 27/10) as regras dos suportes do lote no Feitiço (`SuportesS2B.regrasDoFeitico`): o Passe Enfeitiçado ("afetam inimigos imunes a feitiços"; "não podem
   // causar golpes críticos"), o Toque Maldito Desperto (34% de chance nos imunes), o Propagar Feitiço (a transferência na morte) e a Destruição Iminente — guardadas na
   // maldição do monstro (`Reforcos.marcar`)
-  const limiteDoFeitico = marca ? 1 : 1 + Math.max(0, valorPoe(f, 'maldicoes_adicionais'));
+  // (06/11, o Anathema: "Seu Limite de Maldições é igual ao seu máximo de Cargas de Poder")
+  const limiteDoFeitico = marca ? 1 : valorPoe(f, 'limite_maldicoes_pelo_poder') > 0 ? Math.max(1, CargasPoe.maximo(f?.afPoe ?? {}, 'poder')) : 1 + Math.max(0, valorPoe(f, 'maldicoes_adicionais'));
   const s2b = ehFeitico && !marca ? SuportesS2B.regrasDoFeitico(efeitoDaGema) : null;
   return [...saida, {
     efeito: 'maldicaoRegras', limite: limiteDoFeitico, nome: GemasPoe.doSlug(entry.poeGema.slug)?.gema?.nome ?? null,
@@ -3282,6 +3284,15 @@ export function comOsAlvosDaGema(entry, efeito, estado = null, ativas = null) {
     // (06/11: + o das tags da habilidade — o Zenith Negro: "Projéteis Mágicos Encaixados disparam Projéteis em um círculo", `proj_direcoes_aleatorias@magia+projetil`)
     if (ModsPoe.valor(fichaDoAlvo, 'proj_direcoes_aleatorias') > 0 || (ModsPoe.somaPorTags(fichaDoAlvo, tagsPoeDaSkill(entry)).proj_direcoes_aleatorias ?? 0) > 0) e.direcoesAleatorias = true;
     if (ModsPoe.valor(fichaDoAlvo, 'barragem_nao_propaga') > 0) e.semPropagar = true;
+    // (06/11, as armas do lote 5: a Origem de Xoph — atravessa os Queimando —, a Extensão do Conselho — por ponto de disparo —, a Língua das Serpentes — o
+    // filho da difusão perfura todos, o crítico das que Difundiram e das que Perfuram; `Secundarios.resolver`)
+    const tagsDoProjetil = ModsPoe.somaPorTags(fichaDoAlvo, tagsPoeDaSkill(entry));
+    const doProjetil = (k) => ModsPoe.valor(fichaDoAlvo, k) + (tagsDoProjetil[k] ?? 0);
+    if (doProjetil('proj_atravessa_queimando') > 0) e.atravessaQueimando = true;
+    if (doProjetil('flechas_por_ponto_de_disparo') > 0) e.porPontoDeDisparo = true;
+    if (doProjetil('flechas_perfuram_apos_difundir') > 0) e.perfuraAposDifundir = true;
+    if (doProjetil('crit_inc_flechas_difundidas') > 0) e.critIncDifundidas = doProjetil('crit_inc_flechas_difundidas');
+    if (doProjetil('crit_mult_flechas_perfurando') > 0) e.critMultPerfurando = doProjetil('crit_mult_flechas_perfurando');
     // (lote "projetil", dono 02/11) o ângulo da difusão ("Ângulo da Difusão de Projéteis aumentado/reduzido em X%" — o Ângulo Bifurcado da árvore): os filhos
     // saem a ± este ângulo da reta do projétil (`Secundarios.resolver` com o voo)
     e.difusaoMeioAngulo = GemasVoo.meioAnguloDaDifusao(ModsPoe.valor(fichaDoAlvo, 'proj_difusao_angulo_inc'));
@@ -3318,6 +3329,10 @@ export function comOsAlvosDaGema(entry, efeito, estado = null, ativas = null) {
     if (e.cadeiaPoe) e.cadeiaPoe = { ...e.cadeiaPoe, saltos: mais(e.cadeiaPoe.saltos) };
     else e.encadear = mais(e.encadear);
   }
+  // (06/11, o Ninho das Cobras: cada um dos três, sozinho)
+  if (dasPecas?.semPerfurar) e.perfurar = 0;
+  if (dasPecas?.semDifusao) { e.bifurcar = 0; e.bifurcarDeNovo = 0; }
+  if (dasPecas?.semRicochete) { e.encadear = 0; e.ricocheteTerrenoChance = 0; if (e.cadeiaPoe) e.cadeiaPoe = { ...e.cadeiaPoe, saltos: 0 }; }
   // ("Projéteis param ao colidir com um alvo": sem perfurar, difundir nem ricochetear.)
   if (dasPecas?.param) {
     e.perfurar = 0;
@@ -3846,6 +3861,20 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
     // (lote E2A, 26/10) os ROBÔS RASTEJANTES: o Resfriante e o Eletrizante, cada um com a aura dele (sem dano) e o buff da habilidade num só (`GemasE2a.roboDaInvocacao`)
     const robo = GemasE2a.roboDaInvocacao(q.robos, i);
     if (robo) Object.assign(l, { elemento: robo.elemento, nome: robo.nome, auraNaoDano: robo.auraNaoDano, afDono: robo.afDono });
+    // (06/11, os Ensinamentos de Maata: "A Chance de Golpe Crítico Base dos Lacaios é igual a Chance de Golpe Crítico da sua Arma da Mão Principal")
+    if (estado && itensPoeLigado()) {
+      const fm = Ficha.combate(estado);
+      if (ModsPoe.valor(fm, 'lacaio_crit_base_da_arma') > 0 && fm.arma?.critChance?.final > 0) l.critChanceBase = fm.arma.critChance.final / 100;
+    }
+    // (06/11, o Proxy Profano: "Espaço de Anel Esquerdo: A Aura de Resfriante dos seus Robôs Rastejantes aplica a Maldição Feitiço Encaixada ao invés" — e a de
+    // Eletrização, no Direito: a Maldição encaixada no anel daquele lado, no nível dela — `cacadas.auraDoRobo`)
+    if (robo && estado && itensPoeLigado()) {
+      const fr = Ficha.combate(estado);
+      const lado = robo.auraNaoDano.tipo === 'resfriar' && ModsPoe.valor(fr, 'robo_frio_amaldicoa') > 0 ? 'ring' : robo.auraNaoDano.tipo === 'eletrizar' && ModsPoe.valor(fr, 'robo_raio_amaldicoa') > 0 ? 'ring2' : null;
+      const acaoDaMaldicao = lado ? Gemas.encaixadasNaPeca(estado.equipment?.[lado], 'maldicao')[0] : null;
+      const slugDaMaldicao = acaoDaMaldicao ? POR_ID.get(acaoDaMaldicao)?.poeGema?.slug : null;
+      if (slugDaMaldicao) l.auraNaoDano = { ...l.auraNaoDano, maldicao: { acao: acaoDaMaldicao, slug: slugDaMaldicao, nivel: Gemas.efeitoNaSkill(estado, acaoDaMaldicao)?.nivel ?? 1 } };
+    }
     // O ESPECTRO (Erguer Espectro do PoE): ergue o ÚLTIMO CADÁVER da caçada (o tipo do bicho que morreu por último e que tem magias),
     // ou, sem cadáver, um bicho da área. Fica com o desenho e o nome dele e usa as MAGIAS dele (`cacadas.tiqueDosLacaios`).
     if (/spectre/i.test(GemasPoe.doSlug(slug)?.gema?.en ?? '')) {
@@ -4961,6 +4990,13 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
   // (lote T3, 27/10) o Tiro Gélido Vaal usado pelos Atiradores Ilusórios: "Modificadores à quantidade de Projéteis não se aplicam a esta Habilidade quando usada por
   // Atiradores Ilusórios de Elite" — um projétil só
   if (gatilho?.t3Atirador && efeitoDaGema) efeitoDaGema = { ...efeitoDaGema, projeteisBase: 1, alvosExtras: 0 };
+  // (06/11, a Salva Espinhal: "Ataques com arco sacrificam um lacaio aleatório que pode ser ferido para disparar N flechas adicionais" — o seu ataque de Arco)
+  const sacrificaPorFlechas = itensPoeLigado() && efeitoDaGema && !gatilho && !plantada && entry.poeGema?.ataque && tagsPoeDaSkill(entry).includes('arco') ? ModsPoe.valor(Ficha.combate(estado), 'arco_sacrifica_lacaio') : 0;
+  if (sacrificaPorFlechas > 0) {
+    const feriveis = (hunt.lacaios ?? []).filter((l) => l.hp > 0 && l.tipo === 'lacaio' && !l.intocavel && !l.mercenario && !l.p4Duplo);
+    const vitima = feriveis.length ? feriveis[Math.floor(Math.random() * feriveis.length)] : null;
+    if (vitima) { vitima.hp = 0; efeitoDaGema = { ...efeitoDaGema, alvosExtras: (efeitoDaGema.alvosExtras ?? 0) + Math.round(sacrificaPorFlechas) }; }
+  }
   // (lote A3b, dono 19/10) o projétil que o OBJETO solta (a espiral, o fragmento do Olho Invernal, o capturado das Lâminas Giratórias): `angulos` — um projétil
   // por ângulo (null: a direção aleatória da gema), sem os "+N projéteis" (já contados no objeto); `semVolta` — o capturado solto não volta de novo (D9)
   if (plantada?.tipo === 'objeto' && plantada.emitir && efeitoDaGema) {
@@ -5586,7 +5622,9 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
   const detonacaoDoUso = itensPoeLigado() && entry.poeGema ? GemasPoe.detonacaoNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
   const feiticosAntes = detonacaoDoUso ? new Map(vivos.map((b) => [b, GemasGAC.feiticosNoBicho(b, agora)])) : null;
   if (ataque) {
-    const centradoNoAlvo = entry.miraNoChao || entry.alvoNoCentro;
+    // (06/11, o Projetor Astral: "Magias de nova são conjuradas no local escolhido, não ao seu redor" — a Nova de magia no alvo)
+    const novaNoAlvo = itensPoeLigado() && !!entry.poeGema && !plantada && tagsPoeDaSkill(entry).includes('nova') && tagsPoeDaSkill(entry).includes('magia') && ModsPoe.valor(Ficha.combate(estado), 'nova_no_alvo') > 0;
+    const centradoNoAlvo = entry.miraNoChao || entry.alvoNoCentro || novaNoAlvo;
     if (miragemDoUso) {
       // (lote A1b, dono 19/10: I4/I6) o PULSO da miragem: em volta dela, no raio do estágio (a Área de Efeito já entrou no raio — `planoDaMiragem`); o uso
       // sem pulso (os pares) e a liberação fora do uso não acertam aqui (a onda final sai depois do pulso, abaixo)
@@ -7085,7 +7123,8 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
     // (PoE, o Vínculo Ancestral: "Você não pode causar Dano com Habilidades por si só" — o acerto das gemas do personagem não fere, nem o dano
     // degenerativo delas; os totens e os lacaios, sim — eles têm o golpe deles, `cacadas.tiqueDosLacaios`.)
     // (lote G20a: "Você não pode causar Dano com suas Habilidades" — o totem causa: é ele quem usa)
-    const semDanoProprio = itensPoeLigado() && !!entry.poeGema && !entry.poeGema.lacaio && !doTotem && ModsPoe.valor(ficha, 'sem_dano_proprio') > 0;
+    // (06/11, a Deusa Desprezada: "Você só pode causar Dano com essa Arma e Incendiar" — as suas magias não causam dano)
+    const semDanoProprio = itensPoeLigado() && !!entry.poeGema && !entry.poeGema.lacaio && !doTotem && (ModsPoe.valor(ficha, 'sem_dano_proprio') > 0 || (!entry.poeGema.ataque && ModsPoe.valor(ficha, 'so_dano_da_arma') > 0));
     // (lote C4, dono 21/10) a MAGIA SEM ACERTO (a Praga, o Definhar, o Contágio, o Raio Abrasador…): o uso põe o debuff e não acerta — sem o "1" do piso da faixa, sem
     // crítico, sem afecções nem os efeitos de acerto (o fator do golpe é 0, como o do Vínculo Ancestral); o degenerativo e os debuffs da gema seguem (`GemasPoe.magiaSemAcerto`)
     const semAcertoDaGema = itensPoeLigado() && !!entry.poeGema && !entry.poeGema.lacaio && GemasPoe.magiaSemAcerto(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0);
@@ -7126,7 +7165,8 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
       // (lote 73, o Acompanhamento: "… aumentado em X% por cada propagação restante, até Y%" — os ricochetes que faltam; o acerto direto tem todos)
       const restantes = golpe ? golpe.restantes ?? 0 : Math.max(0, Math.round(Number(efeitoDaGema?.encadear) || 0));
       const porRestante = restantes > 0 ? Math.min(ModsPoe.valor(ficha, 'proj_inc_por_ricochete_restante_max') || Infinity, restantes * ModsPoe.valor(ficha, 'proj_inc_por_ricochete_restante')) : 0;
-      const inc = noAlvo.incPct + (golpe?.atravessados ?? 0) * ModsPoe.valor(ficha, 'proj_inc_por_atravessado') + (golpe?.ricochetes ?? 0) * ModsPoe.valor(ficha, 'proj_inc_por_ricochete') + porRestante;
+      // (06/11, o Fura-Pescoço: "Flechas causam X% de Dano aumentado com Acertos e Afecções em Alvos Perfurados" — o alvo que a flecha ainda atravessa)
+      const inc = noAlvo.incPct + (golpe?.atravessados ?? 0) * ModsPoe.valor(ficha, 'proj_inc_por_atravessado') + (golpe?.ricochetes ?? 0) * ModsPoe.valor(ficha, 'proj_inc_por_ricochete') + porRestante + (golpe?.perfura ? ModsPoe.valor(ficha, 'proj_inc_perfurando') : 0);
       return (inc && mult > 0 ? (mult + (inc / 100) * (sintonia ?? 1)) / mult : 1) * noAlvo.mais * doUso;
     };
     // (lote 33, P045 — o Impacto: "Causa até X% mais Dano Corpo a Corpo aos Inimigos, baseado na proximidade": o golpe corpo a corpo da gema,
@@ -7267,6 +7307,15 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
         if (fisico) fisico.dano += v;
         else pedacos.push({ elemento: 'physical', dano: v });
       }
+      // (06/11, a Origem de Xoph: "Flechas causam 30 a 50 de Dano de Fogo Adicional para cada vez que Atravessaram" — o Fogo adicionado × as perfurações deste projétil,
+      // com a eficácia do dano adicionado, o "aumentado" do Fogo e os "mais" do golpe; o crítico e a defesa do alvo vêm depois, com o resto)
+      const fogoPorPerfuracao = pedacos && (golpe?.atravessados ?? 0) > 0 ? [ModsPoe.valor(ficha, 'fogo_por_perfuracao_min'), ModsPoe.valor(ficha, 'fogo_por_perfuracao_max')] : null;
+      if (fogoPorPerfuracao && fogoPorPerfuracao[1] > 0) {
+        const v = (fogoPorPerfuracao[0] + Math.random() * (fogoPorPerfuracao[1] - fogoPorPerfuracao[0])) * golpe.atravessados * (eficaciaDoAdicionado ?? 1) * fator * multDosTipos(['fire'], 'fire') * Reforcos.vulnerabilidade(bicho, 'fire', agora);
+        const fogo = pedacos.find((p) => p.elemento === 'fire');
+        if (fogo) fogo.dano += v;
+        else pedacos.push({ elemento: 'fire', dano: v });
+      }
       // (lote G7: "Adiciona X a Y de Dano Físico aos Acertos contra Inimigos Amaldiçoados" — a Marca do Caçador — na parte Física, como o do
       // Empalamento acima)
       if (pedacos && noAlvo?.somado && (noAlvo.somado[0] || noAlvo.somado[1])) {
@@ -7351,7 +7400,8 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
       // qualidade) no acerto a ≥ 2 casas de você (`GemasPR3.naSegundaForma`)
       const daSegunda = segundaForma && GemasPR3.naSegundaForma(segundaForma, { x, y }, bicho) ? segundaForma : null;
       const incDoGolpe = (golpe?.critIncPct ?? 0) + (daSegunda?.critIncPct ?? 0);
-      const multDoUso = (estagioDoUso?.critMultPct ?? 0) + (daSegunda?.critMultPct ?? 0);
+      // (06/11: + o do projétil — a Língua das Serpentes, `golpe.critMultPct` —; o Ladrão de Nomes: "+X% de Multiplicador de Golpe Crítico por Poder do Inimigo")
+      const multDoUso = (estagioDoUso?.critMultPct ?? 0) + (daSegunda?.critMultPct ?? 0) + (golpe?.critMultPct ?? 0) + (entry.poeGema?.ataque ? ModsPoe.valor(ficha, 'crit_mult_por_poder_do_inimigo') * ModsPoe.poderDoInimigo(bicho) : 0);
       const fichaDoCritico2 = incDoGolpe || multDoUso ? (() => {
         const inc = Number(fichaDoCritico.critMagiaPoe?.aumentada ?? fichaDoCritico.critInc ?? 0) || 0;
         const k = incDoGolpe ? (1 + (inc + incDoGolpe) / 100) / Math.max(0.01, 1 + inc / 100) : 1;
@@ -13255,6 +13305,12 @@ export function consumirObjetos(hunt, quais = []) {
   return n;
 }
 
+/** (06/11, o Proxy Profano) A Maldição da gema encaixada no anel, posta pelo Robô Rastejante no inimigo da aura dele. */
+export function amaldicoarPeloRobo(hunt, bicho, m, agora = hunt?.clock ?? 0) {
+  const b = m?.slug ? GemasPoe.buffNoNivel(m.slug, m.nivel ?? 1) : null;
+  return b?.efeitos?.length ? Reforcos.amaldicoar(bicho, m.acao, b.efeitos, { agora, dur: b.dur || 6000, hunt }) : false;
+}
+
 /**
  * (lote A2) A Pancada nas torres: cada torre nas casas do uso explode — o dano de ataque da habilidade de Tomar a Carne ("Dano de Ataque: 250% de
  * base": o físico médio da sua arma × isso), no raio da explosão (4,5 m), com o Sangramento ("Causa Sangramento", "200% mais Dano com
@@ -13296,6 +13352,8 @@ export function ehAtaqueDeVarinha(estado, entry = null) {
  */
 // (lote G-A, dono 25/10) as Cargas de Frasco da Marca do Alquimista no acerto (`ModsPoe.aoAcertar` → `FrascosPoe.ganharCargas`)
 ModsPoe.definirCargasDeFrasco((estado, n) => FrascosPoe.ganharCargas(estado, n));
+ModsPoe.definirLamuria((estado) => FrascosPoe.cargasDaLamuria(estado));
+ModsPoe.definirFrascosAoConsumirCadaver((estado) => FrascosPoe.aoConsumirCadaver(estado));
 ModsPoe.definirDisparo((estado, hunt, personagem, nome, nivel, alvo, eventos = []) => {
   const def = Gemas.ativaPeloNome(nome);
   if (!def || !hunt) return;

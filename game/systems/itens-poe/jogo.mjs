@@ -335,7 +335,7 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
     const poe = { base: gerada.base, classe: gerada.classe, raridade: gerada.raridade, raridadeNome: R.nome ?? gerada.raridade, cor: R.cor ?? null, ilvl: gerada.ilvl, nome: gerada.nome, ...(gerada.unico ? { unico: gerada.unico } : {}), ...(gerada.corrompido ? { corrompido: true } : {}),
       atributos: a, implicitos: gerada.implicitos ?? [], prefixos: gerada.prefixos ?? [], sufixos: gerada.sufixos ?? [], modificadores: gerada.modificadores ?? [] };
     const par = Frascos.parametros({ poe });
-    return { id, count: 1, poe: { ...poe, estados: par.estadosPorMod, af: {}, frasco: Frascos.resumo({ poe }), tv: VERSAO_DA_TRADUCAO } };
+    return { id, count: 1, poe: { ...poe, estados: par.estadosPorMod, notas: par.notasPorMod, af: {}, frasco: Frascos.resumo({ poe }), tv: VERSAO_DA_TRADUCAO } };
   }
   // O MAPA: não dá atributo ao personagem (os mods mexem na INSTÂNCIA — `itens-poe/mapas.mjs`); a peça leva o resumo (tier, nível da área,
   // quantidade/raridade de itens, tamanho do grupo, os efeitos) e o estado de cada linha.
@@ -503,7 +503,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // `raio_prisma_*_chaos`, não cadastrado)
 // (84 — 04/11, a auditoria dos itens: as Réplicas que faltavam — "Seu Dano Físico pode Congelar", "Não Pode Drenar ou Regenerar Mana", a Velocidade de
 // Ataque/Movimento "enquanto Resfriado", o Crescimento Frágil (`condicoes-poe.crescimentoFragil`) e a Réplica: Talento Puro (`passivas/arvore` TALENTO_PURO))
-export const VERSAO_DA_TRADUCAO = 84;
+// (85 — 06/11, os Únicos sem efeito, lotes 1 a 5 — de 423 linhas para 0: as regras novas dos frascos, anéis, cintos, armaduras, amuletos, armas e
+// aljavas únicos, e as notas das linhas inertes nos frascos; `docs/unicos-sem-efeito.md`)
+export const VERSAO_DA_TRADUCAO = 85;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
@@ -559,6 +561,7 @@ export function recalcular(peca, regras = Catalogo.REGRAS) {
   if (FRASCOS.includes(p.classe)) {
     const par = Frascos.parametros({ poe: p });
     p.estados = par.estadosPorMod;
+    p.notas = par.notasPorMod;
     p.af = {};
     p.frasco = Frascos.resumo({ poe: p });
     p.tv = VERSAO_DA_TRADUCAO;

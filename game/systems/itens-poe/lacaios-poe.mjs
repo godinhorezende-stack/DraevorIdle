@@ -488,7 +488,8 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
       // (lote 67: + a Resistência a Caos e a regeneração dos TOTENS — "Totens ganham +25% de Resistência a Caos", "Totens Regeneram 2% de Vida")
       // (lote E1a: + a regeneração, o movimento e a recarga da QUALIDADE da gema — `e1aQ`)
       // (lote S2B: + o Exército Elemental — "+X% de todas as Resistências Elementais" e "X% ao máximo de todas as Resistências Elementais")
-      res: m0(totem ? 'totem_res' : 'minion_res') + (totem ? 0 : efeito?.lacaioResPct ?? 0), resCaos: mn('minion_chaos_res') + (totem ? m0('totem_res_caos') : 0) + (pob?.res.chaos ?? 0), danoRecebidoPct: mn('lacaios_dano_recebido'), regenPct: mn('minion_regen_pct') + porTipo('lacaio_regen_pct') + (totem ? m0('totem_regen_pct') : 0) + e1aQ.regenPct, regen: mn('minion_regen'),
+      // (06/11, a Ossofusão: "Lacaios ganham resistências adicionadas equivalente a 50% de suas resistências" — × (1 + X%))
+      res: (m0(totem ? 'totem_res' : 'minion_res') + (totem ? 0 : efeito?.lacaioResPct ?? 0)) * (1 + mn('minion_res_mais_pct') / 100), resCaos: (mn('minion_chaos_res') + (totem ? m0('totem_res_caos') : 0) + (pob?.res.chaos ?? 0)) * (1 + mn('minion_res_mais_pct') / 100), danoRecebidoPct: mn('lacaios_dano_recebido'), regenPct: mn('minion_regen_pct') + porTipo('lacaio_regen_pct') + (totem ? m0('totem_regen_pct') : 0) + e1aQ.regenPct, regen: mn('minion_regen'),
       roubo: mn('minion_leech'), movimentoPct: mn('minion_move') + porTipo('lacaio_mov') + e1aQ.movimentoPct + (totem ? 0 : efeito?.lacaioMovPct ?? 0), dotMulti: mn('minion_dot_multi'), degenPct: porTipo('lacaio_degen'),
       // (lote E2A: + o "+X% de todas Resistências Elementais" dos Espectros — `e2a.resElemPct`)
       bloqueio: mn('minion_block'), resFogo: mn('minion_fire_res') + (pob?.res.fire ?? 0) + (e2a.resElemPct ?? 0), resGelo: mn('minion_ice_res') + (pob?.res.ice ?? 0) + (e2a.resElemPct ?? 0), resRaio: mn('minion_energy_res') + (pob?.res.energy ?? 0) + (e2a.resElemPct ?? 0),
@@ -514,7 +515,7 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
       // lacaio, o dreno para o dono — `aplicarNoLacaio`, `golpeDoLacaio`, `danoNoLacaio`, `aoMatarDoLacaio`.
       // (lote S2B: + a qualidade do Exemplar e da Carne Fresca — "Lacaios … têm Chance de Golpe Crítico aumentada em X%")
       critInc: mn('minion_crit_inc') + (/mag[oa]|mage|espectro|spectre/i.test(`${nome} ${t.nome}`) ? mn('minion_crit_magico') : 0) + (e2a.critIncPct ?? 0) + (totem ? 0 : efeito?.lacaioCritIncPct ?? 0), critMult: mn('minion_crit_mult'), areaPct: mn('minion_area'), recargaPct: mn('minion_cdr') + porTipo('lacaio_cdr') + e1aQ.recargaPct,
-      bloqueioMagico: mn('minion_spell_block'), reducaoFisica: mn('minion_phys_red') + (totem ? m0('totem_phys_red') : 0), esDaVidaPct: mn('minion_es_da_vida'), resMax: mn('minion_res_max') + (totem ? 0 : efeito?.lacaioResMaxPct ?? 0),
+      bloqueioMagico: mn('minion_spell_block'), reducaoFisica: mn('minion_phys_red') + (totem ? m0('totem_phys_red') : 0), esDaVidaPct: mn('minion_es_da_vida') + porTipo('lacaio_es_da_vida'), resMax: mn('minion_res_max') + (totem ? 0 : efeito?.lacaioResMaxPct ?? 0),
       // (lote 86, dono 19/10: a Égide Necromântica, parte A) o máximo de UMA resistência (o do escudo — `tetoDaResDoLacaio`); os efeitos AO
       // BLOQUEAR do escudo (Causticar/Enfraquecer/Exaurir e os eventos `ev:bloquear*` — `cacadas.aoBloquearDoLacaio`) e o "se Bloqueou
       // Recentemente" (a armadura — `danoNoLacaio`; a penetração e o Fogo adicional — `golpeDoLacaio`; o bloqueio Sortudo — `cacadas`)
@@ -563,6 +564,7 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
       propagadoSoFogo: /espírito furioso|raging spirit/i.test(`${nome} ${t.nome}`) && mn('espiritos_propagam_fogo') > 0,
       // (06/11, o Crânio Antigo: "Lacaios podem ouvir os sussurros por 5 segundos após causarem um Golpe Crítico" — `cacadas`)
       sussurrosS: mn('lacaios_sussurros_s'),
+      critMultPorDefinhado: mn('minion_crit_mult_por_definhado'),
       // (06/11, o Devorador de Mentes: "Lacaios têm a mesma quantidade do número Máximo de Cargas…" e "contam como tendo a mesma quantidade de Cargas… que você"
       // — as suas Cargas de agora valem no lacaio: `golpeDoLacaio`, `danoNoLacaio`)
       cargasDoDono: mn('lacaios_cargas_do_dono') > 0,
@@ -594,7 +596,7 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
     // (lote E2A: os Robôs Rastejantes — "Máximo de 1 … de cada tipo": o Resfriante e o Eletrizante, os dois num uso)
     // (06/11, a Trilha Guerreira de Alberon: "Guerreiros Esqueletos Convocados são Permanentes e Seguem você" e "Convocar Esqueletos não podem Convocar mais do que 1
     // Guerreiro Esqueleto" — o Convocar Esqueletos: um só, sem duração)
-    tipo: totem ? 'totem' : 'lacaio', nome: totem ? (/totem/i.test(t.nome) ? t.nome : `Totem de ${t.nome}`) : e2a.robos ? 'Robô Rastejante' : nome, maximo: /^Summon_Skeletons$/.test(slug) && m0('esqueleto_permanente') > 0 ? 1 : e2a.robos ? (e2a.robos.calcinante ? 3 : 2) : Math.max(1, maximo), porUso: /^Summon_Skeletons$/.test(slug) && m0('esqueleto_permanente') > 0 ? 1 : e2a.robos ? (e2a.robos.calcinante ? 3 : 2) : Math.max(1, Math.min(porUso, maximo)), duracaoMs: /^Summon_Skeletons$/.test(slug) && m0('esqueleto_permanente') > 0 ? 0 : duracao, nivel: n,
+    tipo: totem ? 'totem' : 'lacaio', nome: totem ? (/totem/i.test(t.nome) ? t.nome : `Totem de ${t.nome}`) : e2a.robos ? 'Robô Rastejante' : nome, maximo: /^Summon_Skeletons$/.test(slug) && m0('esqueleto_permanente') > 0 ? 1 : e2a.robos ? (e2a.robos.calcinante ? 3 : 2) : Math.max(1, maximo), porUso: /^Summon_Skeletons$/.test(slug) && m0('esqueleto_permanente') > 0 ? 1 : e2a.robos ? (e2a.robos.calcinante ? 3 : 2) : Math.max(1, Math.min(porUso, maximo)) + (/^(Vaal_)?Animate_Weapon/.test(slug) ? Math.max(0, Math.round(m0('arma_animada_copias'))) : 0), duracaoMs: /^Summon_Skeletons$/.test(slug) && m0('esqueleto_permanente') > 0 ? 0 : duracao, nivel: n,
     vida, dano: { min: Math.max(1, Math.round(golpe * (1 - spread))), max: Math.max(1, Math.round(golpe * (1 + spread))) }, intervaloMs: Math.round(f.tempo * 1000), elemento,
     // (lote 44: o lacaio que no PoE não pode sofrer dano — os Robôs Rastejantes, o Armamento Sagrado; lote 75: + o tipo da gema
     // "MinionsAreUndamagable", o Rastejador Agonizante)
@@ -715,8 +717,11 @@ export function aplicarNoLacaio(l) {
   return l;
 }
 /** (06/11, o Crânio Antigo: os Sussurros por N segundos depois do Golpe Crítico do lacaio — `cacadas`: a velocidade e o dano em si mesmo) */
-export function aoCriticarDoLacaio(l, agora) {
+// (+ 06/11, o Decepado no Sono: "Lacaios têm +X% de Multiplicador de Golpe Crítico por Debuff de Definhamento no Inimigo" — no `critico` deste golpe, pelo alvo)
+export function aoCriticarDoLacaio(l, agora, critico = null, alvo = null, relogio = agora) {
   if (l?.poe?.sussurrosS > 0) (l.buffs ??= {}).sussurros = agora + l.poe.sussurrosS * 1000;
+  const d = alvo?.estados?.definhado;
+  if (critico && l?.poe?.critMultPorDefinhado > 0 && d && d.ate > relogio) critico.mult += ((d.n ?? 1) * l.poe.critMultPorDefinhado) / 100;
 }
 /** Um buff do lacaio (Poder Profano, Agressividade) ativo agora? */
 export const buffDoLacaio = (l, nome, agora) => (nome === 'poderProfano' && (l?.poe?.poderProfano ?? 0) > 0) || (l?.buffs?.[nome] ?? 0) > agora;

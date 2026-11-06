@@ -98,6 +98,8 @@ export function daSoma(af = {}) {
     // Eletrização a regra já soma em `efeito_resfriamento`/`efeito_eletrizacao`)
     efeitoNaoDano: n('efeito_nao_dano'),
     efeitoEletrizacao: n('efeito_eletrizacao'),
+    // (06/11, a Chama Negra: "Inimigos Incendiados por você sofrem Dano de Caos ao invés de Dano de Fogo do Incêndio")
+    incendioDeCaos: n('incendio_de_caos') > 0,
     maisRapido: n('dot_mais_rapido'),
     // (a Crueldade: "mais Dano Degenerativo" — multiplica todas as afecções e o degenerativo das gemas)
     dotMais: n('dano_dot_mais'),
@@ -302,6 +304,8 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     const posto = dot('queimadura', BASE.incendio.porSegundo, duracaoDe(a.incendioDuracaoBaseMs > 0 ? a.incendioDuracaoBaseMs : BASE.incendio.duracaoMs, a.duracaoIncendio ?? 0), fogo, multiplicadorBase + a.multiplicadorFogo + (crit ? a.multiplicadorIncendioCritico ?? 0 : 0), (a.danoIncendio ?? 0) + aumDoSuporte('incendio'), { mais: comSuporte('incendio', a.incendioMais ?? 0), chave: chaveDoIncendio() });
     // (o "ao Incendiar um Inimigo não Incendiado" — `mods-poe.aoPorAfeccoes` lê e apaga)
     if (posto && !jaIncendiado) (bicho.estados ??= {}).incendiadoNovo = true;
+    // (06/11, a Chama Negra: o seu Incêndio dói como Caos — a resistência a Caos do monstro)
+    if (posto && a.incendioDeCaos) for (const d of bicho.dots ?? []) if (d.tipo === 'queimadura' && d.falta > 0 && String(d.chave ?? '').startsWith('incendio:')) d.elemento = 'chaos';
   }
   // (lote A1b, dono 19/10: D-f) "X% de chance de Causticar Inimigos": a Causticação pela chance, no acerto com Fogo (sem repetir a do Warden)
   if (fogo > 0 && a.chanceCausticar > 0 && !postos.includes('causticado') && sorte(a.chanceCausticar)) causticar();

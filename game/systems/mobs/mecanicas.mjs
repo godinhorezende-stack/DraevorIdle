@@ -318,12 +318,16 @@ export function aoAcertarJogador(estado, hunt, personagem, m, { dano = 0, bruto 
   // é crítico também aplica a afecção do elemento dele, na chance; o crítico segue inerente, sem sortear de novo.)
   const inerente = critico && !(Number(ficha.afPoe?.critico_recebido_sem_afeccao) > 0);
   const chanceExtra = Number(ficha.afPoe?.chance_ser_afetado) || 0;
-  if ((inerente || chanceExtra > 0) && estado.hp > 0 && !Vinculos.noFeixe(hunt, m)) {
+  if ((inerente || chanceExtra > 0 || Number(ficha.afPoe?.chance_ser_incendiado) > 0) && estado.hp > 0 && !Vinculos.noFeixe(hunt, m)) {
     const N = NoJogador.NUMEROS;
     const vidaMax = Math.max(1, estado.maxHp ?? 0);
     const pega = () => inerente || rng() * 100 < chanceExtra;
-    if ((brutas.fire ?? 0) > 0 && pega()) {
-      const posto = ModsPoe.dotNoJogador(hunt, { tipo: 'queimadura', total: (brutas.fire * N.incendio.pctDoFogo) / 100, duracaoMs: N.incendio.duracaoMs, origem }, agora, rng);
+    // (06/11, o Abraço de Mokou: "+X% de chance de ser Incendiado" — só o Incêndio — e "Todo o Dano Sofrido de Acertos pode te Incendiar" — o Incêndio do
+    // dano todo do acerto, não só o de Fogo)
+    const chanceDoFogo = chanceExtra + (Number(ficha.afPoe?.chance_ser_incendiado) || 0);
+    const fogoDoIncendio = Number(ficha.afPoe?.todo_dano_incendeia_voce) > 0 ? Object.values(brutas).reduce((t, x) => t + (Number(x) || 0), 0) : brutas.fire ?? 0;
+    if (fogoDoIncendio > 0 && (inerente || rng() * 100 < chanceDoFogo)) {
+      const posto = ModsPoe.dotNoJogador(hunt, { tipo: 'queimadura', total: (fogoDoIncendio * N.incendio.pctDoFogo) / 100, duracaoMs: N.incendio.duracaoMs, origem }, agora, rng);
       if (posto) naTela(posto);
     }
     // (06/11, o Auxium: "Efeito de Resfriamento e Duração de Congelamento em você são baseados em X% do seu Escudo de Energia" — o limiar do Congelamento é o

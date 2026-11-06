@@ -47555,6 +47555,2403 @@
       ],
       "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
       "_nova": true
+    },
+    {
+      "padrao": "^Você é Resfriado quando for Envenenado$",
+      "efeitos": [
+        {
+          "stat": "resfriado_ao_envenenado",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você é Resfriado enquanto Sangrando$",
+      "efeitos": [
+        {
+          "stat": "resfriado_sangrando",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos Não-Resfriados que você inflija Sangramento são Resfriados$",
+      "efeitos": [
+        {
+          "stat": "ev:sangrar:alvo:resfriado",
+          "valor": "100"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} de armadura do peitoral equipado$",
+      "efeitos": [
+        {
+          "stat": "armadura_do_peitoral_pct",
+          "valor": "{1}"
+        },
+        {
+          "stat": "armadura_do_peitoral_tem",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^O Efeito do Resfriamento em você é revertido$",
+      "efeitos": [
+        {
+          "stat": "resfriamento_revertido",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Ativar Convocar Espírito de Akoya ao Matar$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem o Espírito de Akoya",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Feitiços não-Aura expiram ao atingirem (?:\\{(\\d+)\\})?% do Efeito base$",
+      "efeitos": [
+        {
+          "stat": "feitico_expira_no_efeito_pct",
+          "valor": "200"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "o número do poedb veio vazio; o do PoE: 200% do efeito base"
+    },
+    {
+      "padrao": "^Feitiços não-Auras ganham Efeito aumentado em \\{(\\d+)\\}% por segundo$",
+      "efeitos": [
+        {
+          "stat": "feitico_efeito_por_segundo",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Magias de nova são conjuradas no local escolhido, não ao seu redor$",
+      "efeitos": [
+        {
+          "stat": "nova_no_alvo",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço para Anel Esquerdo: Projéteis de Magias não podem Ricochetear$",
+      "efeitos": [
+        {
+          "stat": "proj_sem_ricochete@magia+anelEsquerdo",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço para Anel da Direita: Projéteis das Magias não podem Difundir$",
+      "efeitos": [
+        {
+          "stat": "proj_sem_difusao@magia+anelDireito",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Projéteis de Magias não podem Perfurar$",
+      "efeitos": [
+        {
+          "stat": "proj_sem_perfurar@magia",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Todo o Dano Sofrido de Acertos podem te Resfriar$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "os acertos dos monstros do jogo só Resfriam pelo controle dos Elites e Chefes",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de ser Incendiado$",
+      "efeitos": [
+        {
+          "stat": "chance_ser_incendiado",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Todo o Dano Sofrido de Acertos pode te Incendiar$",
+      "efeitos": [
+        {
+          "stat": "todo_dano_incendeia_voce",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Dano Físico sofrido por Morte de Lacaio$",
+      "efeitos": [
+        {
+          "stat": "dano_na_morte_de_lacaio",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Vida perdida inteira, sem a redução de Dano Físico (não mata: fica em 1)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Seu Limite de Maldições é igual ao seu máximo de Cargas de Poder$",
+      "efeitos": [
+        {
+          "stat": "limite_maldicoes_pelo_poder",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Magias fazem você ganhar escudo de energia equivalente ao custo inicial delas a cada três vezes que você pagar por ele$",
+      "efeitos": [
+        {
+          "stat": "ev:gastarMana:esPeloCusto:3@magia",
+          "valor": "100"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos Incendiados por você sofrem Dano de Caos ao invés de Dano de Fogo do Incêndio$",
+      "efeitos": [
+        {
+          "stat": "incendio_de_caos",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Definhar não expira em Inimigos Incendiados por você$",
+      "efeitos": [
+        {
+          "stat": "definhar_fica_no_incendiado",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Alvos não são afetados pelos seus feitiços$",
+      "efeitos": [
+        {
+          "stat": "feiticos_sem_efeito",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Quando \\{(\\d+)\\}% da duração do seu feitiço expira em um inimigo, consome \\{(\\d+)\\} alma por cada poder dele$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem as almas consumidas pelo Feitiço",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Raridade de Itens Derrubados por Inimigos mortos com um Acerto Crítico aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "raridade_abate_critico",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Gemas Encaixadas possuem Equilíbrio Elemental$",
+      "efeitos": [
+        {
+          "stat": "equilibrio_exposicao",
+          "valor": "1"
+        },
+        {
+          "stat": "equilibrio_exposicao_pct",
+          "valor": "-25"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "em todos os seus acertos (o jogo não separa os das gemas encaixadas no anel)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Gemas Encaixadas têm Segredos do Sofrimento$",
+      "efeitos": [
+        {
+          "stat": "keystone_sofrimento",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "em todos os seus acertos (o jogo não separa os das gemas encaixadas no anel)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito de Buffs concedidos por Habilidades de Golens Encaixadas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:golem",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "em todos os seus Golens",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades de Golens Encaixadas ganham \\{(\\d+)\\}% de Vida Máxima como Escudo de Energia Máximo Extra$",
+      "efeitos": [
+        {
+          "stat": "lacaio_es_da_vida:golem",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "em todos os seus Golens",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha Agressividade por \\{(\\d+)\\} segundos quando você Conjura uma Habilidade de Golem Encaixada$",
+      "efeitos": [
+        {
+          "stat": "ev:usarHabilidade:buff:agressividade@golem",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "com todas as suas Habilidades de Golem",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Gemas Encaixadas não têm Reserva$",
+      "efeitos": [
+        {
+          "stat": "sem_reserva_local",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Suas Habilidades Bênção são Desabilitadas$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem as Habilidades Bênção",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Consome Gemas de Suporte Encaixadas Não Corrompidas ao atingir seu Nível Máximo$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não consome gemas de suporte",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pode Consumir \\{(\\d+)\\} Gemas de Suporte Não Corrompidas$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não consome gemas de suporte",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não Consumiu nenhuma Gema$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não consome gemas de suporte",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço de Anel Esquerdo: A Aura de Resfriante dos seus Robôs Rastejantes aplica a Maldição Feitiço Encaixada ao invés$",
+      "efeitos": [
+        {
+          "stat": "robo_frio_amaldicoa@anelEsquerdo",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Maldição encaixada no anel, no nível dela, em quem está na aura do Robô",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço de Anel Direito: A Aura de Eletrização dos seus Robôs Rastejantes aplica a Maldição Feitiço Encaixada ao invés$",
+      "efeitos": [
+        {
+          "stat": "robo_raio_amaldicoa@anelDireito",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Maldição encaixada no anel, no nível dela, em quem está na aura do Robô",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Auras de Maldições de Habilidades Encaixadas também afetam você$",
+      "efeitos": [
+        {
+          "stat": "aura_de_maldicao_em_voce",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "todas as suas Maldições em aura (a Blasfêmia)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Um Verme Retorcido inimigo surge a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem o Verme Retorcido",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de \\{(\\d+)\\}% de ativar magia encaixada ao matar, com tempo de recarga de \\{(\\d+)\\}(?:,\\{(\\d+)\\})? segundo$",
+      "efeitos": [
+        {
+          "stat": "gatilho_local:matar:magia",
+          "valor": "0.5"
+        },
+        {
+          "stat": "gatilho_chance_local",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aumentos e reduções de dano de frio também se aplicam ao efeito de auras das habilidades de frio em \\{(\\d+)\\}% de seu valor$",
+      "efeitos": [
+        {
+          "stat": "aura_efeito_pelo_dano:ice",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aumentos e reduções de dano de fogo também se aplicam ao efeito de auras das habilidades de fogo em \\{(\\d+)\\}% de seu valor$",
+      "efeitos": [
+        {
+          "stat": "aura_efeito_pelo_dano:fire",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aumentos e reduções de dano elétrico também se aplicam ao efeito de auras das habilidades elétricas em \\{(\\d+)\\}% de seu valor$",
+      "efeitos": [
+        {
+          "stat": "aura_efeito_pelo_dano:energy",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aumentos e reduções de dano físico também se aplicam ao efeito de auras das habilidades físicas em \\{(\\d+)\\}% de seu valor$",
+      "efeitos": [
+        {
+          "stat": "aura_efeito_pelo_dano:physical",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aumentos e reduções de dano de caos também se aplicam ao efeito de auras das habilidades de caos em \\{(\\d+)\\}% de seu valor$",
+      "efeitos": [
+        {
+          "stat": "aura_efeito_pelo_dano:chaos",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de infligir um envenenamento adicional no mesmo alvo ao envenenar$",
+      "efeitos": [
+        {
+          "stat": "ev:envenenar:venenoExtra",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ataques com habilidades prismáticas sempre Abrasam$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:causticado@ataque+prismatico",
+          "valor": "100"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano ignora a resistência a dano de fogo equivalente ao excedente de sua própria resistência, até \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "fire_pen%resFogoExcedente:1~{V1}",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^A cada \\{(\\d+)\\} segundos:$",
+      "efeitos": [
+        {
+          "stat": "medalhao_cada_s",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\}% de Vida por Inimigo Acertado com Ataques por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "medalhao_vida_acerto",
+          "valor": "{1}"
+        },
+        {
+          "stat": "medalhao_s",
+          "valor": "{2}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\}% de Vida por Inimigo Morto por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "medalhao_vida_abate",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ao realizar um ataque não canalizador, define um frasco de vida com mais de \\{(\\d+)\\}% das cargas máximas restantes para \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ev:usarAtaque:lamuria",
+          "valor": "2"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o multiplicador vale logo depois do ataque, por 1 s",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Para cada carga removida dessa maneira, esse ataque ganha \\+\\{(\\d+)\\}% ao multiplicador de dano degenerativo$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o multiplicador da linha de cima",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aumentos e reduções no efeito dos frascos aplicados a você também se aplicam ao efeito de Fúria Arcana em você em \\{(\\d+)\\}% de seu valor$",
+      "efeitos": [
+        {
+          "stat": "furia_arcana_pelo_frasco_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeitos do frasco de mana não se enfileiram$",
+      "efeitos": [
+        {
+          "stat": "frasco_mana_sem_fila",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você possui Confluência Causticante, Confluência Enfraquecedora e Confluência Exaustora enquanto seus dois maiores Atributos forem iguais$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:causticado@doisMaioresIguais",
+          "valor": "100"
+        },
+        {
+          "stat": "ev:acertar:alvo:fragilizado@doisMaioresIguais",
+          "valor": "100"
+        },
+        {
+          "stat": "ev:acertar:alvo:exaurido@doisMaioresIguais",
+          "valor": "100"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de todas as Gemas de \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o texto do poedb veio sem o nome da gema (só o número)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de perder uma Carga de Poder ao ganhar Elusivo$",
+      "efeitos": [
+        {
+          "stat": "ev:ganharElusivo:perdeUmaCarga:poder",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Modificadores do número de Projéteis são aplicados ao número de alvos nos quais os Projéteis Partidos se focam ao invés$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem os Projéteis Partidos que focam alvos",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de conceder Agressividade aos Inimigos próximos ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:buffNosProximos:agressividade",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os de perto do morto: 20% de Velocidade de Ataque por 4 s",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de conceder Poder Caótico aos Inimigos próximos ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:buffNosProximos:poderCaotico",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os de perto do morto: 20% de dano a mais por 4 s",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Cegueira infligida por você é Refletida para você$",
+      "efeitos": [
+        {
+          "stat": "cegueira_refletida",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Cegueira dos seus eventos e acertos (a das gemas que Cegam em área, não)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Frenesi ao Acertar enquanto Cego$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:carga:frenesi@cegoProprio",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Teleporte Gélido tem Duração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_gema:Frostblink",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Gemas de Suporte Encaixadas também podem Suportar Habilidades do seu Peitoral$",
+      "efeitos": [
+        {
+          "stat": "suportes_no_peitoral",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você tem Confluxo Elemental se as estrelas estiverem alinhadas$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem o \"estrelas alinhadas\" do Astrolábio",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao nível de todas as gemas de habilidade elemental se as estrelas estiverem alinhadas$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem o \"estrelas alinhadas\" do Astrolábio",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao nível de todas as gemas de suporte elemental se as estrelas estiverem alinhadas$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem o \"estrelas alinhadas\" do Astrolábio",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios ganham resistências adicionadas equivalente a \\{(\\d+)\\}% de suas resistências$",
+      "efeitos": [
+        {
+          "stat": "minion_res_mais_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Projéteis Atravessam todos os Inimigos Queimando$",
+      "efeitos": [
+        {
+          "stat": "proj_atravessa_queimando",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Flechas causam \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Fogo Adicional para cada vez qa?ue Atravessaram$",
+      "efeitos": [
+        {
+          "stat": "fogo_por_perfuracao_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "fogo_por_perfuracao_max",
+          "valor": "{2}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Perde todas as Cargas de Frenesi ao atingir o Máximo de Cargas de Frenesi para executar o próximo Ataque com Arco que você executar disparar a mesma quantidade de Flechas$",
+      "efeitos": [
+        {
+          "stat": "ev:maxFrenesi:mareDaGula",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as Flechas a mais valem por 4 s nos Ataques com Arco (o PoE: só o próximo)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Magias de Lacaios Encaixadas ao Matar com esta Arma$",
+      "efeitos": [
+        {
+          "stat": "gatilho_local:matar:lacaio",
+          "valor": "0.25"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Magias de Lacaios Ativadas por este Item têm \\{(\\d+)\\} segundo de Recarga com \\{(\\d+)\\} Usos$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "a recarga do gatilho da linha de cima (o jogo usa 0,25 s, sem os usos)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de evitar dano de cada elemento de ataques por carga de frenesi$",
+      "efeitos": [
+        {
+          "stat": "evitar_dano_elemental_ataque%carga:frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^use unique purple shock effect \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "só o efeito visual da Eletrização (a roxa)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Flechas disparadas dos primeiros pontos de disparo sempre Perfuram$",
+      "efeitos": [
+        {
+          "stat": "flechas_por_ponto_de_disparo",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Flechas disparadas dos segundos pontos de disparo se Difundem$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "a segunda das quatro (a Extensão do Conselho: pela ordem da flecha no uso)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Flechas disparadas dos terceiros pontos de disparo Retornam à você$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "a terceira das quatro (a Extensão do Conselho: pela ordem da flecha no uso)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Flechas disparadas dos quartos pontos de disparo Ricocheteiam \\+\\{(\\d+)\\} vezes$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "a quarta das quatro (a Extensão do Conselho: pela ordem da flecha no uso)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ataques executados por você têm \\+\\{(\\d+)\\}% de velocidade de ataque$",
+      "efeitos": [
+        {
+          "stat": "atk_speed",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "em todos os seus ataques (o jogo não separa os executados por você dos ativados)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Crítico com flechas que Difundem aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_inc_flechas_difundidas",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Flechas Perfuram todos os Alvos após se Difundirem$",
+      "efeitos": [
+        {
+          "stat": "flechas_perfuram_apos_difundir",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Flechas que Perfuram possuem \\+\\{(\\d+)\\}% de Multiplicador de Acerto Crítico$",
+      "efeitos": [
+        {
+          "stat": "crit_mult_flechas_perfurando",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Causa Exposição ao Fogo ao atingir inimigos com \\{(\\d+)\\} Escórias em Chamas, aplicando \\{(\\d+)\\}% à resistência a dano de fogo$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem as Escórias da Chama da Esperança",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha Vosso Abraço por \\{(\\d+)\\} segundos quando você Incendeia um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:incendiar:buff:vossoAbraco",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Enquanto em Vosso Abraço, sofra \\{(\\d+)\\}% da sua Vida Máxima e Escudo de Energia totais como Dano de Fogo por segundo por Nível$",
+      "efeitos": [
+        {
+          "stat": "vosso_abraco_degen_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano recebido de Esqueletos aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dano_de_esqueletos_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano recebido de Fantasmas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dano_de_fantasmas_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você só pode causar Dano com essa Arma e Incendiar$",
+      "efeitos": [
+        {
+          "stat": "so_dano_da_arma",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as suas magias não causam dano; os ataques com a arma e o Incêndio, sim",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios têm \\+\\{(\\d+)\\}% de Multiplicador de Golpe Crítico por Debuff de Definhamento no Inimigo$",
+      "efeitos": [
+        {
+          "stat": "minion_crit_mult_por_definhado",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Acertos com esta Arma têm \\+\\{(\\d+)\\}% de Multiplicador de Golpe Crítico por Poder do Inimigo$",
+      "efeitos": [
+        {
+          "stat": "crit_mult_por_poder_do_inimigo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "nos acertos das gemas de ataque",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dreno dos Acertos com esta Arma é Instantâneo por Poder do Inimigo$",
+      "efeitos": [
+        {
+          "stat": "dreno_instantaneo_por_poder",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Guerreiros e Soldados Esqueletos Convocados portam esta Arma enquanto ela estiver em sua Mão Principal$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "os Esqueletos do jogo não empunham armas",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Guerreiros e Soldados Esqueletos Convocados causam Dano Triplicado com esta$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "os Esqueletos do jogo não empunham armas",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Arma se você Acertou com esta Arma Recentemente$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "os Esqueletos do jogo não empunham armas",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^summon mirage warrior on crit \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o número interno da Reflexão (a linha \"Ativa Reflexão Nível 20 quando Equipado\")",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Convocar Grande Emissário do Arcano$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a gema Convocar Grande Emissário do Arcano",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pode ser criado com Omnichama como se fosse raro$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "só o ofício (o jogo não tem a Omnichama)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não pode ganhar Intangibilidade$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a Intangibilidade",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Todo dano causado por golpes críticos pode aplicar afecções de frio durante o efeito$",
+      "efeitos": [
+        {
+          "stat": "pode:congelamento:physical@duranteFrasco",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:physical@duranteFrasco",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:congelamento:fire@duranteFrasco",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:fire@duranteFrasco",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:congelamento:energy@duranteFrasco",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:energy@duranteFrasco",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:congelamento:chaos@duranteFrasco",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:chaos@duranteFrasco",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "todo o dano do acerto Resfria e Congela durante o efeito (o PoE: só o dos Golpes Críticos)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Petreficado durante o Efeito do Frasco$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem o Petrificado",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não pode receber Mana durante o efeito$",
+      "efeitos": [
+        {
+          "stat": "sem_regen_mana@duranteFrasco",
+          "valor": "1"
+        },
+        {
+          "stat": "sem_roubo_mana@duranteFrasco",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem a Regeneração e o Dreno de Mana (os eventos de Mana seguem)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades Vaal utilizadas durante o efeito possuem \\{(\\d+)\\}% de redução de Duração da Prevenção do Ganho de Almas$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a Prevenção do Ganho de Almas",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ao usar, concede um bônus de Adivinhação aleatório por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem os bônus de Adivinhação",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de atualizar a Duração do Incêndio no Acerto com Armas Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:renovarIncendio@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de infligir Vinha Constringente no Acerto com Armas Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:vinhaNoAlvo@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não Afetado por Cegueira$",
+      "efeitos": [
+        {
+          "stat": "imune_cegueira",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ataques com esta arma infligem Chama Santificada ao atingir$",
+      "efeitos": [
+        {
+          "stat": "chama_santificada_corpo",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "nos golpes corpo a corpo",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^A Chance de Golpe Crítico Base dos Lacaios é igual a Chance de Golpe$",
+      "efeitos": [
+        {
+          "stat": "lacaio_crit_base_da_arma",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Crítico da sua Arma da Mão Principal$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "continuação da linha de cima (o poedb quebrou a frase em duas)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Comprimento do Raio Escaldante aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem o comprimento do Raio Escaldante",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Duração da Prevenção do Ganho de Almas reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a Prevenção do Ganho de Almas",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pastor das Almas$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a Prevenção do Ganho de Almas (o Pastor das Almas)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano elemental aumentado em \\{(\\d+)\\}% por \\{(\\d+)\\}% de resistência a dano de fogo, frio ou elétrico faltante, até \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "fire_dmg%resElemFaltando:{V2}~{V3}",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_dmg%resElemFaltando:{V2}~{V3}",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_dmg%resElemFaltando:{V2}~{V3}",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Gemas Encaixadas disparam Projéteis em círculo$",
+      "efeitos": [
+        {
+          "stat": "proj_direcoes_aleatorias@projetil",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "em direções aleatórias (o jogo não tem o círculo certinho); em todos os seus projéteis",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Carne Incessante nível \\{(\\d+)\\} uma vez por segundo$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a Carne Incessante",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ao morrer, um lacaio próximo concede Paredão Podre equivalente a \\{(\\d+)\\}% da própria vida máxima$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem o Paredão Podre",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa a Habilidade Convocar Fantasma Nível \\{(\\d+)\\} ao Consumir um Corpo$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a gema ativa Convocar Fantasma",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Geada Cortante$",
+      "efeitos": [
+        {
+          "stat": "resfriado_fragil",
+          "valor": "1"
+        },
+        {
+          "stat": "so_dano:ice",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ordem da Rainha pode Ativar Chamas do Julgamento Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a Ordem da Rainha",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ordem da Rainha pode Ativar Tormenta do Julgamento Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a Ordem da Rainha",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^O Dervixe Dançarino Manifestado desativa ambos espaços de arma$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem o Manifesto dos Dervixes Dançarinos",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^O Dervixe Dançarino Manifestado morre quando a Fúria termina$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem o Manifesto dos Dervixes Dançarinos",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você possui Pacto Vaal enquanto todas as Gemas Encaixadas forem Vermelhas$",
+      "efeitos": [
+        {
+          "stat": "sempre:pactoVaal%todasGemasVermelhasLocal",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha um bônus de altar aleatório por \\{(\\d+)\\} segundos ao matar um inimigo raro ou único$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:altarAleatorio:{V1}@alvoRaro",
+          "valor": "100"
+        },
+        {
+          "stat": "ev:matar:altarAleatorio:{V1}@alvoUnico",
+          "valor": "100"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^local use skill on crit % \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o número interno do gatilho da arma (a linha de ativação da peça)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^local use skill on hit % \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o número interno do gatilho da arma (a linha de ativação da peça)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ceifador Fantasma$",
+      "efeitos": [
+        {
+          "stat": "roubo_vida_no_escudo",
+          "valor": "1"
+        },
+        {
+          "stat": "roubo_teto_es_dobrado",
+          "valor": "1"
+        },
+        {
+          "stat": "sem_recarga_es",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Chance de fazer Inimigos Sangrando fugirem ao acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:fugindo:2@alvoSangrando",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Totens têm a velocidade de movimento aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "os totens do jogo não andam",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Chama Voraz$",
+      "efeitos": [
+        {
+          "stat": "incendios_extra",
+          "valor": "1"
+        },
+        {
+          "stat": "incendio_duracao_base_s",
+          "valor": "1"
+        },
+        {
+          "stat": "incendio_mais",
+          "valor": "-25"
+        },
+        {
+          "stat": "so_dano:fire",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Convocar Grande Emissário da Brutalidade$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a gema Convocar Grande Emissário da Brutalidade",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Duração da Arma Animada$",
+      "efeitos": [
+        {
+          "stat": "lacaio_duracao:arma",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "como \"reduzida\" (soma com os outros aumentos de Duração)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Armas que você Animar criam \\{(\\d+)\\} cópias adicionais$",
+      "efeitos": [
+        {
+          "stat": "arma_animada_copias",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Escolhido de Tawhoa Nível \\{(\\d+)\\} quando você Atacar com uma Habilidade de Pancada ou Golpe Não Vaal$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem o Escolhido de Tawhoa",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades de caos causam até \\{(\\d+)\\} penalidades de Atrofia ao atingir por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:definhado:{V2}@caos+alvoVidaCheia",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "um Definhar por acerto de Caos no alvo com a Vida cheia (a linha de baixo), até as 15 do jogo",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não pode infligir Atrofia em alvos que não estejam com vida cheia$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "a condição da linha de cima (o alvo com a Vida cheia)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não Pode ser utilizado com Inoculação do Caos$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "a restrição de uso da peça (o jogo não a cobra)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Golpe Invisível Nível \\{(\\d+)\\} a cada \\{(\\d+)\\} segundos enquanto Trespassando$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem o Golpe Invisível",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} segundos à Duração das Cargas de Frenesi e Poder no Golpe de Misericórdia$",
+      "efeitos": [
+        {
+          "stat": "ev:golpeDeMisericordia:duracaoCargas:frenesi,poder",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Devora \\{(\\d+)\\} almas ao matar um inimigo raro ou único com esta arma$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:buff:devoradorDeAlmas@alvoRaro",
+          "valor": "4"
+        },
+        {
+          "stat": "ev:matar:buff:devoradorDeAlmas@alvoUnico",
+          "valor": "4"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Devorador de Almas do jogo por 4 s (ele não conta as almas)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Flechas causam \\{(\\d+)\\}% de Dano aumentado com Acertos e Afecções em Alvos Perfurados$",
+      "efeitos": [
+        {
+          "stat": "proj_inc_perfurando",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ataques com arco sacrificam um lacaio aleatório que pode ser ferido para disparar \\{(\\d+)\\} flechas adicionais$",
+      "efeitos": [
+        {
+          "stat": "arco_sacrifica_lacaio",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Conta como dano de ataque bloqueado do primeiro alvo atingido por cada ataque com escudo$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem o ataque com escudo que conta como bloqueio",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ao matar um inimigo envenenado, os inimigos em um raio de \\{(\\d+)\\} metros também ficam envenenados e você e seus aliados regeneram \\{(\\d+)\\} de vida por segundo durante a duração do veneno, caso estejam dentro desse raio$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:espalharVeneno:{V2}@alvoEnvenenado",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Veneno do morto nos de perto (2 casas) e a regeneração em você",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^unique spread poison to nearby allies as \\{(\\d+)\\} life regeneration per second on kill \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o número interno da linha de cima",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Onda de Choque Sangrenta Nível \\{(\\d+)\\} no Acerto Corpo a Corpo caso tenha ao menos \\{(\\d+)\\} de Força$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a Onda de Choque Sangrenta",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% se você sofreu um Golpe Brutal Recentemente$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@sofreuAcertoSelvagemRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos que Matar têm \\{(\\d+)\\}% de chance de Explodirem, causando um décimo de sua Vida máxima como Dano Físico$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:explodirChance:10:physical",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes que só saem em outros sorteios do mesmo único",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano Mágico por cada \\{(\\d+)\\} de Inteligência$",
+      "efeitos": [
+        {
+          "stat": "spell_dmg%atr:int:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes que só saem em outros sorteios do mesmo único",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano Mágico por cada \\{(\\d+)\\} de Destreza$",
+      "efeitos": [
+        {
+          "stat": "spell_dmg%atr:dex:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes que só saem em outros sorteios do mesmo único",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano Mágico por cada \\{(\\d+)\\} de Força$",
+      "efeitos": [
+        {
+          "stat": "spell_dmg%atr:str:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes que só saem em outros sorteios do mesmo único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Magias Ativadas causam Dano Mágico aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "spell_dmg@ativada",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes que só saem em outros sorteios do mesmo único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano com Acertos e Afecções contra Monstros Abissais aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem os Monstros Abissais",
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes que só saem em outros sorteios do mesmo único",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} to Strength$",
+      "efeitos": [
+        {
+          "stat": "str",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes que só saem em outros sorteios do mesmo único",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} to Dexterity$",
+      "efeitos": [
+        {
+          "stat": "dex",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes que só saem em outros sorteios do mesmo único",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} to Intelligence$",
+      "efeitos": [
+        {
+          "stat": "int",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes que só saem em outros sorteios do mesmo único",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} to all Attributes$",
+      "efeitos": [
+        {
+          "stat": "str",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dex",
+          "valor": "{1}"
+        },
+        {
+          "stat": "int",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes que só saem em outros sorteios do mesmo único",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} to Strength and Intelligence$",
+      "efeitos": [
+        {
+          "stat": "str",
+          "valor": "{1}"
+        },
+        {
+          "stat": "int",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes que só saem em outros sorteios do mesmo único",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} to Strength and Dexterity$",
+      "efeitos": [
+        {
+          "stat": "str",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dex",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes que só saem em outros sorteios do mesmo único",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} to Dexterity and Intelligence$",
+      "efeitos": [
+        {
+          "stat": "dex",
+          "valor": "{1}"
+        },
+        {
+          "stat": "int",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes que só saem em outros sorteios do mesmo único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Todo dano causado por golpes críticos pode aplicar afecções elétricas$",
+      "efeitos": [
+        {
+          "stat": "pode:eletrizacao:physical",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:fire",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:ice",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:chaos",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "todo o dano do acerto Eletriza durante o efeito (o PoE: só o dos Golpes Críticos)",
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes que só saem em outros sorteios do mesmo único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Todo dano causado por golpes críticos pode aplicar afecções de fogo$",
+      "efeitos": [
+        {
+          "stat": "pode:incendio:physical",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:incendio:ice",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:incendio:energy",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:incendio:chaos",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "todo o dano do acerto Incendeia durante o efeito (o PoE: só o dos Golpes Críticos)",
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes que só saem em outros sorteios do mesmo único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Todo dano causado por golpes críticos pode aplicar afecções de frio$",
+      "efeitos": [
+        {
+          "stat": "pode:congelamento:physical",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:physical",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:congelamento:fire",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:fire",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:congelamento:energy",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:energy",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:congelamento:chaos",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:chaos",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "todo o dano do acerto Resfria e Congela durante o efeito (o PoE: só o dos Golpes Críticos)",
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes que só saem em outros sorteios do mesmo único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Mágico aumentado em \\{(\\d+)\\}% caso Corrompido$",
+      "efeitos": [
+        {
+          "stat": "spell_dmg%corrompidaLocal",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as últimas variantes da Nebulis (caso Corrompido = esta peça)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano de Ataque aumentado em \\{(\\d+)\\}% caso Corrompido$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%corrompidaLocal@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as últimas variantes da Nebulis (caso Corrompido = esta peça)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo aos Ataques com esta Arma a cada \\{(\\d+)\\} de Destreza$",
+      "efeitos": [
+        {
+          "stat": "added_ice_dmg_min%atr:dex:{V3}",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_ice_dmg_max%atr:dex:{V3}",
+          "valor": "{2}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as últimas variantes da Nebulis (caso Corrompido = esta peça)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% (?:à|de) Qualidade (?:das|de) Gemas de Raio Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local@raio",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes da Nebulis (qualidade das gemas por tipo, Dano Mágico por Mana Máxima)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% (?:à|de) Qualidade (?:das|de) Gemas de Fogo Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local@fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes da Nebulis (qualidade das gemas por tipo, Dano Mágico por Mana Máxima)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% (?:à|de) Qualidade (?:das|de) Gemas de Gelo Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local@gelo",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes da Nebulis (qualidade das gemas por tipo, Dano Mágico por Mana Máxima)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% (?:à|de) Qualidade (?:das|de) Gemas de Caos Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local@caos",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes da Nebulis (qualidade das gemas por tipo, Dano Mágico por Mana Máxima)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% (?:à|de) Qualidade (?:das|de) Gemas de Destreza Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local@destreza",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes da Nebulis (qualidade das gemas por tipo, Dano Mágico por Mana Máxima)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% (?:à|de) Qualidade (?:das|de) Gemas de Força Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local@forca",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes da Nebulis (qualidade das gemas por tipo, Dano Mágico por Mana Máxima)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% (?:à|de) Qualidade (?:das|de) Gemas Corpo a Corpo Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes da Nebulis (qualidade das gemas por tipo, Dano Mágico por Mana Máxima)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% (?:à|de) Qualidade (?:das|de) Gemas de Arco Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local@arco",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes da Nebulis (qualidade das gemas por tipo, Dano Mágico por Mana Máxima)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% (?:à|de) Qualidade (?:das|de) Gemas Mágicas Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local@magia",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes da Nebulis (qualidade das gemas por tipo, Dano Mágico por Mana Máxima)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% (?:à|de) Qualidade (?:das|de) Gemas de Lacaios Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local@lacaio",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes da Nebulis (qualidade das gemas por tipo, Dano Mágico por Mana Máxima)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% (?:à|de) Qualidade (?:das|de) Gemas de Aura Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local@aura",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes da Nebulis (qualidade das gemas por tipo, Dano Mágico por Mana Máxima)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% (?:à|de) Qualidade (?:das|de) Gemas Elementais Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local@elemental",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes da Nebulis (qualidade das gemas por tipo, Dano Mágico por Mana Máxima)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% (?:à|de) Qualidade (?:das|de) Gemas de Movimento Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local@movimento",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes da Nebulis (qualidade das gemas por tipo, Dano Mágico por Mana Máxima)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% (?:à|de) Qualidade (?:das|de) Gemas de Maldição Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local@maldicao",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes da Nebulis (qualidade das gemas por tipo, Dano Mágico por Mana Máxima)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% (?:à|de) Qualidade (?:das|de) Gemas de Arauto Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local@arauto",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes da Nebulis (qualidade das gemas por tipo, Dano Mágico por Mana Máxima)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% (?:à|de) Qualidade (?:das|de) Gemas de Clamor Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local@clamor",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes da Nebulis (qualidade das gemas por tipo, Dano Mágico por Mana Máxima)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% (?:à|de) Qualidade (?:das|de) Gemas Vaal Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local@vaal",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes da Nebulis (qualidade das gemas por tipo, Dano Mágico por Mana Máxima)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% (?:à|de) Qualidade (?:das|de) Gemas de Habilidade Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local@habilidade",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes da Nebulis (qualidade das gemas por tipo, Dano Mágico por Mana Máxima)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Mágico aumentado em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Mana Máxima$",
+      "efeitos": [
+        {
+          "stat": "spell_dmg%manaMax:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as variantes da Nebulis (qualidade das gemas por tipo, Dano Mágico por Mana Máxima)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% (?:à|de) Qualidade (?:das|de) Gemas de Inteligência Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local@inteligencia",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as últimas linhas do pool de Síntese da Nebulis",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano de Ataque aumentado em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Mana Máxima$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%manaMax:{V2}@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos: as últimas linhas do pool de Síntese da Nebulis",
+      "_nova": true
     }
   ]
 }

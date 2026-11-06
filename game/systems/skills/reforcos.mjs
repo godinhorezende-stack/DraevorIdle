@@ -75,7 +75,8 @@ export const maldicoesAtivas = (bicho, agora) => Object.entries(bicho?.maldicoes
 /** O monstro está amaldiçoado por você agora? */
 export const amaldicoado = (bicho, agora) => maldicoesAtivas(bicho, agora).length > 0;
 /** O fator do "Efeito aumentado se Y% da Duração expirou" desta maldição agora (1 = nada). */
-const fatorDoExpirou = (m, agora) => 1 + (m.expirou ?? []).reduce((s, x) => s + ((agora - m.desde) >= x.apos * m.dur ? x.pct : 0), 0) / 100;
+// (06/11, o Fim Predestinado: + o "Efeito aumentado em X% por segundo" do Feitiço — `m.cresce`, posto ao amaldiçoar; o Sussurro Serpenteante: o Feitiço sem efeito — `m.semEfeito`)
+const fatorDoExpirou = (m, agora) => (m.semEfeito ? 0 : 1 + ((m.expirou ?? []).reduce((s, x) => s + ((agora - m.desde) >= x.apos * m.dur ? x.pct : 0), 0) + (m.cresce ? (m.cresce * Math.max(0, agora - m.desde)) / 1000 : 0)) / 100);
 /**
  * As REGRAS das maldições ativas no monstro, da ficha de quem conjurou: "têm Regeneração de Vida reduzida em X%" (a maior — `regenMenos`),
  * "não podem Recuperar Escudo de Energia" (`semRecargaEs`) e "Inimigos Amaldiçoados Mortos por você são destruídos" (`destruir`: sem cadáver).
@@ -249,6 +250,18 @@ export function marcarCom(hunt, bicho, lista, agora = hunt?.clock ?? Date.now(),
           // (lote S2B) as regras dos suportes do lote no Feitiço: "não podem causar golpes críticos", a transferência na morte, a Explosão Destruidora
           ...(regras.s2b ? { s2b: regras.s2b } : {}), ...(opcoes.solo ? { solo: opcoes.solo } : {}),
           ...(contra ? { contra: { golpe: contra.golpe ?? {}, morte: contra.morte ?? {}, atordoar: contra.atordoar ?? {}, fator } } : {}) };
+        // (06/11, o Fim Predestinado: o Feitiço não-aura cresce X% por segundo e acaba ao chegar a N% do efeito base; o Sussurro Serpenteante: sem efeito)
+        if (regras.feitico && !emAura && hunt?.poeFeiticoCresce) {
+          const fc = hunt.poeFeiticoCresce;
+          maldicoes[id].cresce = fc.porS;
+          if (fc.teto > 100) maldicoes[id].ate = Math.min(maldicoes[id].ate, agora + Math.round(((fc.teto - 100) / fc.porS) * 1000));
+        }
+        if (regras.feitico && !emAura && hunt?.poeFeiticosSemEfeito) maldicoes[id].semEfeito = true;
+        // (06/11, a Promessa de Rotblood: "Auras de Maldições de Habilidades Encaixadas também afetam você" — a Maldição da aura em você também)
+        if (emAura && hunt?.poeAuraDeMaldicaoEmVoce) {
+          const af = afDaMaldicaoNoJogador(efeitos);
+          if (Object.keys(af).length) (hunt.maldicoesNoJogador ??= {})[`aura:${id}`] = { ate: maldicoes[id].ate, nome: regras.nome ?? 'Maldição', af };
+        }
         // "100% de chance de Refletir Feitiços": o Feitiço posto nele volta para VOCÊ (os mesmos efeitos, pela duração dele — `afDaMaldicaoNoJogador`).
         // (06/11, os Grilhões dos Miseráveis: "Feitiços aplicados por Habilidades Maldição Encaixadas são Refletidos à você" — `hunt.poeFeiticosRefletidos`)
         if (regras.feitico && ((bicho.refleteFeiticos > 0 && Math.random() * 100 < bicho.refleteFeiticos) || (hunt.poeFeiticosRefletidos && !emAura))) {

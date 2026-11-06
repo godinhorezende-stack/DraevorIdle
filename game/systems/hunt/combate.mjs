@@ -1377,7 +1377,9 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // (lote 30, P029: + "Sofre X% menos Dano de Acertos" — `menos_dano_acertos`, só nos acertos)
   // (17/10, lote G15: + a Canalização Infundida — "Enquanto Canalizando uma Habilidade Suportada, sofra X% menos Dano dos Acertos")
   // (lote G-B — D7: + a Armadura Ártica Vaal, "Você sofre 90% menos Dano de Acertos" — o MORE do PoB, `GemasGBD.fatorDoGeloVaal`)
-  const fatorFinal = Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100) * Math.max(0, 1 - ModsPoe.valor(ficha, 'menos_dano_acertos') / 100) * Math.max(0, 1 - Acoes.menosDanoDaCanalizacao(estado, hunt) / 100) * GemasGBD.fatorDoGeloVaal(hunt, hunt.clock ?? 0);
+  // (06/11, A Princesa: "Dano recebido de Esqueletos / de Fantasmas aumentado em X%" — pelo nome do monstro)
+  const daPrincesa = itensPoeLigado() ? ((/esqueleto|skeleton/i.test(bicho.name ?? '') ? ModsPoe.valor(ficha, 'dano_de_esqueletos_inc') : 0) + (/fantasma|ghost|phantasm/i.test(bicho.name ?? '') ? ModsPoe.valor(ficha, 'dano_de_fantasmas_inc') : 0)) : 0;
+  const fatorFinal = (1 + daPrincesa / 100) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100) * Math.max(0, 1 - ModsPoe.valor(ficha, 'menos_dano_acertos') / 100) * Math.max(0, 1 - Acoes.menosDanoDaCanalizacao(estado, hunt) / 100) * GemasGBD.fatorDoGeloVaal(hunt, hunt.clock ?? 0);
   let final = Math.round((fisicoProtegido + doutrosTipos) * fatorFinal);
   // (lote G-B — D6) o Chamado Imortal Vaal: você não pode morrer — o PoB: immortal_call_prevent_all_damage (todo dano impedido)
   if (final > 0 && GemasGBD.imortal(hunt, hunt.clock ?? 0)) final = 0;
@@ -1483,6 +1485,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // (revisão G, 26/10: todo acerto com dano conta — também o que a Égide, a Guarda, o Vínculo ou o Escudo de Energia absorveram inteiro; o que o Chamado Imortal
   // impediu, não — o `danoDoAcerto` é o de depois dele e antes das absorções)
   if (danoDoAcerto > 0 && GemasGBD.contarAcertoNoGelo(hunt, hunt.clock ?? 0) && GemasGBD.quebrarGelo(hunt, hunt.clock ?? 0)) Ficha.invalidar(estado);
+  // (06/11, a Progênese: parte da Vida perdida sai ao longo de 4 s)
+  if (final > 0 && itensPoeLigado()) final = ModsPoe.adiarDano(hunt, ficha, final);
   if (final > 0) {
     // (o personagem de teste não morre: a vida para no piso dele — `personagem/testador.mjs`)
     estado.hp = Math.max(Testador.pisoDaVida(estado), estado.hp - final);
@@ -1683,7 +1687,8 @@ export function danoSomadoDoPoe(estado, hunt, alvo, ficha, rolagem) {
 
 /** A "Raridade de Itens encontrados aumentada" para o drop deste morto (PoE: com as condições dele — "por Inimigos Congelados/Eletrizados"). */
 // (lote A2: + a Raridade de Itens do suporte do golpe que matou — `alvo.poeRaridadeDoGolpe`, `Acoes.acertoDosSuportesA2`)
-export const raridadeDoDrop = (estado, alvo) => ModsPoe.valor(ModsPoe.fichaDoGolpe(Ficha.combate(estado), [], { alvo, estado }), 'item_rarity') + (Number(alvo?.poeRaridadeDoGolpe) || 0);
+// (06/11: + os Presentes do Céu — a Raridade do morto com um Acerto Crítico seu)
+export const raridadeDoDrop = (estado, alvo) => { const f = ModsPoe.fichaDoGolpe(Ficha.combate(estado), [], { alvo, estado }); return ModsPoe.valor(f, 'item_rarity') + (Number(alvo?.poeRaridadeDoGolpe) || 0) + (alvo?.poeUltimoCritico ? ModsPoe.valor(f, 'raridade_abate_critico') : 0); };
 
 /** Soma faixas por elemento (`{ fire: [a, b] }`). */
 const somarFaixas = (a = {}, b = {}) => {

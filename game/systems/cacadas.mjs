@@ -3047,7 +3047,7 @@ export function impactoDaQueda(estado, hunt, l, ficha, personagem, agora, { alia
     const critico0 = SuportesS2B.comCriticoDoLote(l, LacaiosPoe.criticoDoLacaio(l, oferenda, relogio), doLote);
     const critico = vinculo ? { chance: vinculo.critPct > 0 ? vinculo.critPct : critico0.chance, mult: critico0.mult + vinculo.critMult / 100 } : critico0;
     const crit = Math.random() * 100 < critico.chance;
-    if (crit) LacaiosPoe.aoCriticarDoLacaio(l, agora);
+    if (crit) LacaiosPoe.aoCriticarDoLacaio(l, agora, critico, m, relogio);
     const doGolpe = LacaiosPoe.golpeDoLacaio(l, m, ficha, tipo, agora, Math.random, hunt.lacaios, relogio);
     const [carnMin, carnMax] = LacaiosPoe.danoDoGolemDaCarnica(l, hunt.lacaios, (g) => GemasPoe.fatorDoBuffDoGolem(estado, g) * fatorDoDano);
     const k = (l.queda.mult ?? 1) * (crit ? critico.mult : 1) * doGolpe.fator * doAliado;
@@ -3083,6 +3083,8 @@ export function auraDoRobo(hunt, l) {
   const ate = relogio + 1250;
   for (const m of hunt.monstros) {
     if (m.hp <= 0 || m.dummy || (m.z != null && hunt.z != null && m.z !== hunt.z) || distancia(m, l) > raio) continue;
+    // (06/11, o Proxy Profano: a aura deste Robô põe a Maldição encaixada no anel, no lugar do Resfriamento/Eletrização)
+    if (a.maldicao) { if (Acoes.amaldicoarPeloRobo(hunt, m, a.maldicao, relogio)) eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'amaldicoado' }); continue; }
     if (a.tipo === 'resfriar') {
       // (pelo caminho de sempre do Resfriamento — o chefe, o teto e a duração —, como as áreas frias: só renova o que está para acabar)
       const lento = m.estados?.lento;
@@ -3171,6 +3173,9 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       }
       // (PoE: "se um Lacaio foi Morto Recentemente".)
       if (l.hp <= 0) { ModsPoe.marcar(hunt, 'lacaioMorreu'); lacaioMorreu = true; }
+      // (06/11, o Laço do Coração: "N de Dano Físico sofrido por Morte de Lacaio" — a Vida perdida, sem matar)
+      const naMorte = l.hp <= 0 && itensPoeLigado() ? ModsPoe.valor(ficha, 'dano_na_morte_de_lacaio') : 0;
+      if (naMorte > 0 && (estado.hp ?? 0) > 1) { estado.hp = Math.max(1, estado.hp - naMorte); eventos.push({ t: 'dmg', uid: 'player', quem: personagem?.nome, x: hunt.pos?.x, y: hunt.pos?.y, v: Math.round(naMorte), foe: false, color: '#ff4d4d' }); }
       // (06/11, o Manto d'Alma: "Inflige um Feitiço aleatório em você quando seus Totens morrem" — uma das Maldições dos monstros, sorteada)
       if (l.hp <= 0 && l.tipo === 'totem' && itensPoeLigado() && ModsPoe.valor(ficha, 'totem_morre_maldicao') > 0) {
         const ids = Object.keys(ModsPoe.MALDICOES_DOS_MONSTROS);
@@ -3703,7 +3708,7 @@ export function golpeDoLacaioNoBicho(c, b, pct, g) {
     const critico = vinculo ? { chance: vinculo.critPct > 0 ? vinculo.critPct : critico0.chance, mult: critico0.mult + vinculo.critMult / 100 } : critico0;
     // (rodada 4, lote L: a habilidade do PoB — o crítico de base da linha dela, `critBase`, sobre o do lacaio; o "não pode ser crítico" da Investida)
     const crit = !g.semCritico && Math.random() * 100 < critico.chance * (g.critBase != null ? g.critBase / Math.max(0.1, l.critChanceBase ?? l.critChance ?? 5) : 1);
-    if (crit) LacaiosPoe.aoCriticarDoLacaio(l, agora);
+    if (crit) LacaiosPoe.aoCriticarDoLacaio(l, agora, critico, b, hunt.clock ?? agora);
     // (ciclo 7) o dano dobrado, ignorar a Redução de Dano Físico, a penetração no amaldiçoado e o Caos extra do Poder Profano.
     const doGolpe = LacaiosPoe.golpeDoLacaio(l, b, ficha, tipo, agora, Math.random, hunt.lacaios, hunt.clock ?? agora);
     // (o dano "aumentado" das suas auras de aliado soma ao do lacaio — `danoIncPct`, o da invocação —; o "mais" multiplica)
@@ -3934,7 +3939,7 @@ function habilidadesComRecarga(estado, hunt, l, agora, ficha, oferenda = null, g
     // o ataque em área: o golpe do lacaio × o multiplicador, em todos em volta do alvo
     const tipo = l.elemento ?? 'physical';
     const crit = Math.random() * 100 < critico.chance;
-    if (crit) LacaiosPoe.aoCriticarDoLacaio(l, agora);
+    if (crit) LacaiosPoe.aoCriticarDoLacaio(l, agora, critico, alvo, relogio);
     const doGolpe = LacaiosPoe.golpeDoLacaio(l, alvo, ficha, tipo, agora, Math.random, hunt.lacaios, relogio);
     const bruto0 = (l.dano.min + Math.random() * Math.max(0, l.dano.max - l.dano.min)) * (h.mult ?? 1) * (crit ? critico.mult : 1) * doGolpe.fator;
     const raio = LacaiosPoe.raioDaAreaDoLacaio(l);

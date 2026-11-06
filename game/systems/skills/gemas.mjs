@@ -428,6 +428,8 @@ export function extrasDaGemaPoe(estado, peca, def, indice = null, soquetes = nul
   // (11/10) A peça onde a gema está: "Gemas Encaixadas têm Eficácia da Reserva aumentada em X%" (`eficiencia_reserva_local`, com a tag da
   // gema — `@maldicao`) e "Gemas Encaixadas Custam e Reservam Vida ao invés de Mana" (`custo_vida_local`).
   const eficienciaReserva = somar(peca?.poe?.af, 'eficiencia_reserva_local');
+  // (06/11, o Verme da Essência: "Gemas Encaixadas não têm Reserva")
+  const semReserva = somar(peca?.poe?.af, 'sem_reserva_local') > 0;
   const custoEmVida = somar(peca?.poe?.af, 'custo_vida_local') > 0;
   // (+ "Habilidades Encaixadas causam Dano Dobrado" — `mais_dano_local`, o "mais" das gemas da peça — e "Gemas encaixadas custam -50% de
   // mana" — `custo_local`, o "mais/menos" do custo.)
@@ -437,7 +439,7 @@ export function extrasDaGemaPoe(estado, peca, def, indice = null, soquetes = nul
   // Recarga", "Habilidades de Arco Encaixadas ganham N segundos de Recarga" — `recarga_local@<tags>`, em segundos.)
   const usos = somar(peca?.poe?.af, 'usos_local');
   const recarga = somar(peca?.poe?.af, 'recarga_local');
-  return { nivel: Math.round(nivel), qualidade: Math.round(qualidade), ...(eficienciaReserva ? { eficienciaReserva } : {}), ...(custoEmVida ? { custoEmVida } : {}), ...(maisDano ? { maisDano } : {}), ...(custo ? { custo } : {}), ...(usos ? { usos } : {}), ...(recarga ? { recarga } : {}) };
+  return { nivel: Math.round(nivel), qualidade: Math.round(qualidade), ...(semReserva ? { semReserva } : {}), ...(eficienciaReserva ? { eficienciaReserva } : {}), ...(custoEmVida ? { custoEmVida } : {}), ...(maisDano ? { maisDano } : {}), ...(custo ? { custo } : {}), ...(usos ? { usos } : {}), ...(recarga ? { recarga } : {}) };
 }
 
 // ---------------------------------------------------------------- sockets
@@ -617,10 +619,14 @@ const magiaDaAutomacao = (def) => def?.tipo === 'ativa' && !ehAutomacao(def) && 
 
 export function skillsAtivas(estado) {
   const saida = new Map();
-  // (06/11, O Escudeiro: "Gemas de Suporte Encaixadas também podem Suportar Habilidades da sua Mão Principal" — os suportes do escudo entram nos grupos da arma)
-  const doEscudo = estado?.equipment?.shield;
-  const sEscudo = Number(doEscudo?.poe?.af?.suportes_na_mao_principal) > 0 ? soquetesDe(doEscudo) : null;
-  const suportesDoEscudo = sEscudo ? sEscudo.gemas.map((g, i) => ({ i, g, def: g && DEFS.get(Number(g.id)), peca: doEscudo, s: sEscudo })).filter((x) => x.def?.tipo === 'support') : [];
+  // (06/11, O Escudeiro: "Gemas de Suporte Encaixadas também podem Suportar Habilidades da sua Mão Principal" — os suportes do escudo entram nos grupos da arma; o
+  // Voto de Uul-Netol: "…Habilidades do seu Peitoral" — os do amuleto, nos do peitoral)
+  const emprestados = (slotDe, chave) => {
+    const peca = estado?.equipment?.[slotDe];
+    const sp = Number(peca?.poe?.af?.[chave]) > 0 ? soquetesDe(peca) : null;
+    return sp ? sp.gemas.map((g, i) => ({ i, g, def: g && DEFS.get(Number(g.id)), peca, s: sp })).filter((x) => x.def?.tipo === 'support') : [];
+  };
+  const suportesEmprestados = { weapon: emprestados('shield', 'suportes_na_mao_principal'), body: emprestados('neck', 'suportes_no_peitoral') };
   for (const slot of SLOTS_COM_SOCKET) {
     const peca = estado?.equipment?.[slot];
     const s = peca && soquetesDe(peca);
@@ -628,7 +634,7 @@ export function skillsAtivas(estado) {
     const bonus = bonusDeNivelDaPeca(peca);
     for (const grupo of gruposLigados(s)) {
       const noGrupo = grupo.map((i) => ({ i, g: s.gemas[i], def: s.gemas[i] && DEFS.get(Number(s.gemas[i].id)) })).filter((x) => x.def);
-      const supports = [...noGrupo.filter((x) => x.def.tipo === 'support'), ...(slot === 'weapon' ? suportesDoEscudo : [])];
+      const supports = [...noGrupo.filter((x) => x.def.tipo === 'support'), ...(suportesEmprestados[slot] ?? [])];
       const feiticeiro = noGrupo.find((y) => ehFeiticeiro(y.def));
       for (const x of noGrupo.filter((y) => y.def.tipo === 'ativa')) {
         const anterior = saida.get(x.def.acao);
@@ -655,7 +661,7 @@ export function skillsAtivas(estado) {
           // (o Feiticeiro: a magia ligada a ele — o nível dele —, e ele com quantas magias suporta)
           ...(feiticeiro && magiaDoFeiticeiro(x.def) ? { feiticeiro: { nivel: feiticeiro.g.nivel + bonus } } : {}),
           ...(ehFeiticeiro(x.def) ? { magiasDoFeiticeiro: noGrupo.filter((y) => magiaDoFeiticeiro(y.def)).length } : {}),
-          ...(doPoe.eficienciaReserva || doPoe.custoEmVida || doPoe.maisDano || doPoe.custo || doPoe.usos || doPoe.recarga ? { local: { eficienciaReserva: doPoe.eficienciaReserva ?? 0, custoEmVida: !!doPoe.custoEmVida, maisDano: doPoe.maisDano ?? 0, custo: doPoe.custo ?? 0, usos: doPoe.usos ?? 0, recarga: doPoe.recarga ?? 0 } } : {}),
+          ...(doPoe.semReserva || doPoe.eficienciaReserva || doPoe.custoEmVida || doPoe.maisDano || doPoe.custo || doPoe.usos || doPoe.recarga ? { local: { semReserva: !!doPoe.semReserva, eficienciaReserva: doPoe.eficienciaReserva ?? 0, custoEmVida: !!doPoe.custoEmVida, maisDano: doPoe.maisDano ?? 0, custo: doPoe.custo ?? 0, usos: doPoe.usos ?? 0, recarga: doPoe.recarga ?? 0 } } : {}),
         });
       }
     }
@@ -929,6 +935,7 @@ export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
   if (e.qualidadeExtra) e.qualidade = (e.qualidade ?? 0) + e.qualidadeExtra;
   // (11/10) O que a PEÇA onde a gema está dá a ela: a Eficácia da Reserva local e o custo/reserva em Vida (`extrasDaGemaPoe`).
   if (a.local?.eficienciaReserva) e.eficienciaReservaLocal = a.local.eficienciaReserva;
+  if (a.local?.semReserva) e.semReservaLocal = true;
   if (a.local?.custoEmVida) e.custoEmVida = 1;
   if (a.feiticeiro) e.feiticeiro = a.feiticeiro;
   if (a.magiasDoFeiticeiro != null) e.magiasDoFeiticeiro = a.magiasDoFeiticeiro;

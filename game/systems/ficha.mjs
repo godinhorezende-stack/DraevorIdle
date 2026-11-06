@@ -987,7 +987,13 @@ function defesasDaFicha(estado, af, doAtributo, espStat = () => 0) {
   const semEscudo = itensPoeLigado() && Number(af.sem_escudo_energia) > 0;
   // (lote A2, dono 19/10: + o "mais/menos Escudo de Energia Máximo" — a Lâmina de Energia: "Buff concede 50% menos Escudo de Energia Máximo", o PoB
   // `EnergyShield MORE`)
-  return { armour: Math.round((armour + armourDaPeca) * mais('armour_mais')), evasion: Math.round((evasion + evasionDaPeca) * mais('evasion_mais')), energyShield: semEscudo ? 0 : Math.round((energyShield + esDaPeca) * mais('es_mais')), salvaguarda: Math.max(0, salvaguarda) };
+  // (06/11, a Proteção de Prospero: "Ganha 0 de armadura do peitoral equipado" — a Armadura da base do Peitoral, com os aumentos dela, sai; `armadura_do_peitoral_pct` = o
+  // que dela vale, em %)
+  const peitoral = estado.equipment?.body;
+  const doPeitoral = itensPoeLigado() && Number(af.armadura_do_peitoral_tem) > 0 && armour > 0 && peitoral && !fora(peitoral, 'armor')
+    ? (((faixa(peitoral, 'armor')[0] + faixa(peitoral, 'armor')[1]) / 2) * ((1 + ((af.armour_pct ?? 0) + espStat('armour')) / 100) + (Number(af.armour_pct_peitoral) || 0) / 100) * (100 - Math.min(100, Math.max(0, Number(af.armadura_do_peitoral_pct) || 0)))) / 100
+    : 0;
+  return { armour: Math.round(Math.max(0, armour + armourDaPeca - doPeitoral) * mais('armour_mais')), evasion: Math.round((evasion + evasionDaPeca) * mais('evasion_mais')), energyShield: semEscudo ? 0 : Math.round((energyShield + esDaPeca) * mais('es_mais')), salvaguarda: Math.max(0, salvaguarda) };
 }
 
 /** Os totais da vida do personagem (monstros, ouro, mortes, tempo caçando). */
@@ -1205,7 +1211,10 @@ export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = comb
   const mana = ModsPoe.valor(ficha, 'sem_roubo_mana') > 0 ? 0 : Math.floor(danoTotal * ((ficha.manaLeech ?? 0) + doCharm.mana) + manaDoFisico);
   if (itensPoeLigado()) {
     // "X% do Dano é Drenado como Escudo de Energia" (de todo dano — o ataque também; o "Dano Mágico", `es_leech_magia`, só nas magias, acima).
-    drenarPoe(estado, { vida, mana, es: (paraEs * ModsPoe.valor(ficha, 'es_leech')) / 100 }, ficha, eventos, quem, pos);
+    // (06/11, o Ladrão de Nomes: "X% do Dreno dos Acertos com esta Arma é Instantâneo por Poder do Inimigo")
+    const porPoder = alvo && ataque ? ModsPoe.valor(ficha, 'dreno_instantaneo_por_poder') * ModsPoe.poderDoInimigo(alvo) : 0;
+    const fichaDoDreno = porPoder > 0 ? { ...ficha, afPoe: { ...ficha.afPoe, roubo_instantaneo_pct: (Number(ficha.afPoe?.roubo_instantaneo_pct) || 0) + porPoder } } : ficha;
+    drenarPoe(estado, { vida, mana, es: (paraEs * ModsPoe.valor(ficha, 'es_leech')) / 100 }, fichaDoDreno, eventos, quem, pos);
     // (06/11, A Ânsia: a Vida drenada também vira dano de Caos no alvo — `ModsPoe.drenoEmCaos`)
     if (alvo) ModsPoeEfeitos.drenoEmCaos(alvo, vida, ficha, estado.maxHp ?? 0, estado.hunt?.clock ?? 0);
     return;

@@ -133,6 +133,12 @@ const REGRAS_DO_FRASCO = [
   [/^Inimigos Incendiados por você durante o Efeito sofrem Dano aumentado em \{\d+\}%$/, (p, v) => (p.duranteExtra['dmg_inc@alvoIncendiado'] = (p.duranteExtra['dmg_inc@alvoIncendiado'] ?? 0) + v)],
   [/^Inimigos Mortos por você durante o Efeito têm \{\d+\}% de chance de Explodirem, causando um décimo de sua Vida máxima como Dano de um Elemento Aleatório$/, (p, v) => (p.duranteExtra['ev:matar:explodirChance:10:aleatorio'] = v)],
   [/^Eletriza Inimigos próximos durante o Efeito, causando \{\d+\}% de Dano sofrido aumentado$/, (p, v) => (p.eletrizaProximosPct = v)],
+  // (06/11, os Únicos — lote 5) a Progênese (a Vida perdida adiada — `mods-poe.adiarDano`), o Cálice Transbordante (sem Cargas de Frasco durante o efeito), o
+  // Último Suspiro de Zerphi (a Vida pelo custo de Mana, durante o efeito) e a Urna Come-Cinzas (as Cargas ao consumir um cadáver — `aoConsumirCadaver`)
+  [/^Quando Acertado durante o Efeito, \{\d+\}% da Vida perdida do Dano sofrido ocorre durante \{\d+\} segundos ao invés$/, (p, v) => (p.duranteExtra.dano_adiado_pct = (p.duranteExtra.dano_adiado_pct ?? 0) + v)],
+  [/^Não Recebe Cargas durante o Efeito de qualquer Frasco Cálice Transbordante$/, (p) => (p.duranteExtra.sem_cargas_de_frasco = 1)],
+  [/^Concede Último Suspiro quando você Usa uma Habilidade durante o Efeito, por \{\d+\}% do Custo de Mana$/, (p, v) => (p.duranteExtra['ev:gastarMana:vidaPorMana'] = (p.duranteExtra['ev:gastarMana:vidaPorMana'] ?? 0) + v)],
+  [/^Recarrega \{\d+\} Cargas ao consumir um Corpo Incendiado$/, (p, v) => (p.cargasAoConsumirCadaver = (p.cargasAoConsumirCadaver ?? 0) + v)],
   [/^Você fica Eletrizado durante o Efeito, recebendo um aumento de \{\d+\}% do Dano sofrido$/, (p, v) => (p.duranteExtra.dano_recebido_inc = (p.duranteExtra.dano_recebido_inc ?? 0) + v)],
 
 ];
@@ -190,6 +196,8 @@ export function parametros(peca, afDoPersonagem = null) {
   }
   // O estado de cada MOD (o balão marca por mod, na ordem implícitos, prefixos, sufixos, mods do único): o pior das partes.
   const estadosPorMod = [];
+  // (06/11) a NOTA de cada mod inerte (o motivo no balão, como nas peças — `jogo.notasDe`)
+  const notasPorMod = [];
   for (const mod of [...(poe.implicitos ?? []), ...(poe.prefixos ?? []), ...(poe.sufixos ?? []), ...(poe.modificadores ?? [])]) {
     const antes = linhas.length;
     for (const parte of String(mod.modelo ?? mod.texto ?? '').split(' / ')) {
@@ -215,9 +223,10 @@ export function parametros(peca, afDoPersonagem = null) {
       const tr = traduzirParte(parte, mod.valores ?? []);
       // (05/11) o texto de LEMBRETE do PoE (entre parênteses: "(Efeitos de Frascos de Vida ainda são removidos…)") é nota, como na peça —
       // antes ficava "registrado" (sem efeito) no balão do frasco único
-      linhas.push({ texto, estado: tr.estado === 'inerte' ? 'inerte' : tr.estado === 'lembrete' ? 'lembrete' : 'registrado' });
+      linhas.push({ texto, estado: tr.estado === 'inerte' ? 'inerte' : tr.estado === 'lembrete' ? 'lembrete' : 'registrado', nota: tr.estado === 'inerte' ? tr.nota ?? null : null });
     }
     const minhas = linhas.slice(antes).filter((l) => l.estado !== 'lembrete');
+    notasPorMod.push(minhas.length && minhas.every((l) => l.estado === 'inerte') ? minhas.find((l) => l.nota)?.nota ?? null : null);
     estadosPorMod.push(!minhas.length ? 'lembrete' : minhas.every((l) => l.estado === 'efeito') ? 'equivalente' : minhas.some((l) => l.estado === 'efeito') ? 'aproximado' : minhas.every((l) => l.estado === 'inerte') ? 'inerte' : 'registrado');
   }
   // O efeito da BASE do frasco de Utilidade (o Rubi, o Mercúrio...): `regras.frascos.utilidade[slug]`.
@@ -256,10 +265,12 @@ export function parametros(peca, afDoPersonagem = null) {
     ...(Object.keys(p.noFim).length ? { noFim: p.noFim } : {}), ...(p.perdeAoEntrar ? { perdeAoEntrar: true } : {}), ...(Object.keys(p.sabio).length ? { sabio: p.sabio } : {}), ...(p.eletrizaProximosPct ? { eletrizaProximosPct: p.eletrizaProximosPct } : {}),
     ...(p.restauraSalvaguarda ? { restauraSalvaguarda: true } : {}),
     ...(p.saiNaQuebra ? { saiNaQuebra: true } : {}),
+    ...(p.cargasAoConsumirCadaver ? { cargasAoConsumirCadaver: p.cargasAoConsumirCadaver } : {}),
     af,
     efeitoDaBase: daBase?.texto ?? null,
     linhas,
     estadosPorMod,
+    notasPorMod,
   };
 }
 
@@ -364,7 +375,8 @@ export function usar(estado, v, eventos = null, quem = null) {
   const st = estadoDaCacada(hunt);
   const agora = hunt.clock ?? 0;
   // (o Pathfinder: "Efeitos do Frasco de Vida não se Enfileram" — o frasco de vida usado de novo troca o efeito que corre pelo novo.)
-  if (st.ativos[v]?.ate > agora && !(contaComo(peca, 'vida') && Number(afp.frasco_vida_sem_fila) > 0)) return false;
+  // (06/11, o Gêiser de Khatal: "Efeitos do frasco de mana não se enfileiram" — o mesmo, no de Mana)
+  if (st.ativos[v]?.ate > agora && !(contaComo(peca, 'vida') && Number(afp.frasco_vida_sem_fila) > 0) && !(contaComo(peca, 'mana') && Number(afp.frasco_mana_sem_fila) > 0)) return false;
   // (ciclo 7, lote F) "X% de chance de Frascos usados por você não consumirem Cargas".
   if (!(Math.random() * 100 < (Number(afp.frasco_sem_consumo) || 0))) peca.poe.cargas = cargas - par.cargasPorUso;
   aoUsarOFrasco(estado, par, eventos, quem, afp);
@@ -820,6 +832,7 @@ export function aoMatar(estado, tipoDoMonstro = 'normal', morto = null) {
   // concedem X% de Cargas de Frascos aumentadas" — o morto Incendiado, Congelado, Eletrizado ou Resfriado; + "Inimigos nos quais você infligiu
   // Sangramento concedem X% de aumento das Cargas de Frasco" — o morto sangrando.)
   const afp = doPersonagem(estado);
+  if (Number(afp.sem_cargas_de_frasco) > 0) return;
   const agora = estado?.hunt?.clock ?? 0;
   const e = morto?.estados ?? {};
   const elemental = !!morto && (['congelado', 'chocado', 'lento'].some((k) => e[k]?.ate > agora) || (morto.dots ?? []).some((d) => d.tipo === 'queimadura' && d.falta > 0));
@@ -841,9 +854,37 @@ export function aoMatar(estado, tipoDoMonstro = 'normal', morto = null) {
  * (lote G-A, dono 25/10) As CARGAS DE FRASCO ganhas por fora do abate (a Marca do Alquimista: "Ganha 1 Cargas de Frasco quando você Acertar um Inimigo Amaldiçoado"): `n` em
  * cada frasco do cinto (as Tinturas não), × a "Recarga de Frasco recebida aumentada" do frasco e do personagem, até o máximo de cada um. Devolve se algum ganhou.
  */
+/**
+ * (06/11, a Lamúria de Khatal: "Ao realizar um ataque não canalizador, define um frasco de vida com mais de 50% das cargas máximas restantes para 50%") o primeiro
+ * frasco de Vida do cinto acima da metade volta à metade; devolve quantas cargas saíram (o "+2% ao multiplicador de dano degenerativo" por carga — `mods-poe`).
+ */
+export function cargasDaLamuria(estado) {
+  for (const p of cinto(estado)) {
+    if (!p?.poe || ehTinturaDoCinto(p) || !contaComo(p, 'vida')) continue;
+    const max = parametros(p).cargasMaximas;
+    const atual = cargasDe(p, parametros(p));
+    if (!(max > 0) || !(atual > max / 2)) continue;
+    const metade = Math.floor(max / 2);
+    p.poe.cargas = metade;
+    return atual - metade;
+  }
+  return 0;
+}
+
+/** (06/11, a Urna Come-Cinzas: "Recarrega N Cargas ao consumir um Corpo Incendiado") os frascos com a linha ganham as cargas ao consumir um cadáver (qualquer: o jogo não guarda o Incêndio no cadáver). */
+export function aoConsumirCadaver(estado) {
+  for (const p of cinto(estado)) {
+    if (!p?.poe || ehTinturaDoCinto(p)) continue;
+    const par = parametros(p);
+    if (par.cargasAoConsumirCadaver > 0) p.poe.cargas = Math.min(par.cargasMaximas, cargasDe(p, par) + par.cargasAoConsumirCadaver);
+  }
+}
+
 export function ganharCargas(estado, n = 1) {
   if (!ligado() || !(n > 0)) return false;
   const afp = doPersonagem(estado);
+  // (06/11, o Cálice Transbordante: "Não Recebe Cargas durante o Efeito de qualquer Frasco Cálice Transbordante" — `sem_cargas_de_frasco`, durante o efeito)
+  if (Number(afp.sem_cargas_de_frasco) > 0) return false;
   let mudou = false;
   for (const p of cinto(estado)) {
     if (!p || ehTinturaDoCinto(p)) continue;

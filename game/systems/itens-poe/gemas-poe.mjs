@@ -2362,6 +2362,8 @@ function doEquipamento(estado, chave) {
 
 /** (ciclo 7) As tags de gema que têm "Efeito do Buff" próprio na árvore (as que o arquétipo não separa). */
 const TAGS_DE_BUFF = { Vínculo: 'vinculo', Guarda: 'guarda' };
+/** (06/11, as Vontades: "Aumentos e reduções de dano de frio também se aplicam ao efeito de auras das habilidades de frio em X% de seu valor") a tag da aura → o elemento e o "aumentado" do dano dele. */
+const DANO_DA_TAG_DA_AURA = { Fogo: ['fire', 'fire_dmg'], Gelo: ['ice', 'ice_dmg'], Raio: ['energy', 'energy_dmg'], Físico: ['physical', 'phys_dmg'], Caos: ['chaos', 'chaos_dmg'] };
 /**
  * (lote A4, dono 19/10) O que a gema CANALIZADA agora dá a você enquanto canaliza (o PoB: Condition ChannellingCyclone, GlobalEffect Buff): o "X% menos
  * Velocidade de Movimento" do Ciclone (e o "por Estágio" do Ciclone do Tumulto — o estágio do tempo, `hunt.canalizacao.estagioDaFicha`) e o "50% menos
@@ -2392,7 +2394,9 @@ export function efeitoDoBuff(estado, tipo, id, b = null, dono = estado, { emVoce
   const g = String(id ?? '').startsWith(PREFIXO) ? REGISTRO.get(String(id).slice(PREFIXO.length))?.gema : null;
   const daGema = g?.nome ? `efeito_buff_gema:${slugDoNome(g.nome)}` : null;
   // (ciclo 7) + pela TAG da gema ("Habilidades de Vínculo têm Efeito do Buff aumentado" — o Vínculo não tem arquétipo próprio)
-  const porTag = (g?.tags ?? []).filter((t) => TAGS_DE_BUFF[t]).reduce((n, t) => n + doEquipamento(dono, `efeito_buff_gema:${TAGS_DE_BUFF[t]}`), 0);
+  const porTag = (g?.tags ?? []).filter((t) => TAGS_DE_BUFF[t]).reduce((n, t) => n + doEquipamento(dono, `efeito_buff_gema:${TAGS_DE_BUFF[t]}`), 0)
+    // (06/11, as Vontades: a parte do "aumentado" do dano do elemento da aura, nas auras daquele elemento)
+    + (tipo === 'poe-aura' ? (g?.tags ?? []).reduce((n, t) => { const x = DANO_DA_TAG_DA_AURA[String(t).replace(/^poe:/, '')]; const pct = x ? doEquipamento(dono, `aura_efeito_pelo_dano:${x[0]}`) : 0; return pct ? n + (pct * doEquipamento(dono, x[1])) / 100 : n; }, 0) : 0);
   // (ciclo 7, lote G) o ESTANDARTE: "Habilidades de Estandarte têm Efeito de Aura aumentado"; (11/10) e o "X% mais Efeito de Aura por Valor
   // consumido" do Estandarte plantado (`estandarte.efeitoMais` — `mods-poe.plantarEstandarte`), que multiplica.
   const estandarte = /_Banner/.test(String(id)) ? doEquipamento(dono, 'efeito_buff_gema:estandarte') : 0;

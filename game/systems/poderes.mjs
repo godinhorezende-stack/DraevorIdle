@@ -265,6 +265,8 @@ export function aplicarNoJogador({ estado, hunt, bicho, dano, elemento, eventos,
   // As cargas do PoE: a magia do bicho também conta como "acertado" (recentemente, e a chance de Tolerância).
   if (ficha?.cargas) CargasPoe.aoSerAcertado(estado, ficha.cargas);
   if (dano <= 0) return 0;
+  // (06/11, a Progênese: parte da Vida perdida sai ao longo de 4 s)
+  dano = ModsPoe.adiarDano(hunt, ficha, dano);
   // (o personagem de teste não morre: a vida para no piso dele — `personagem/testador.mjs`)
   estado.hp = Math.max(Testador.pisoDaVida(estado), estado.hp - dano);
   eventos.push({ t: 'fx', id: EFEITO_DO_SANGUE, uid: 'player', x: base.x, y: base.y });
