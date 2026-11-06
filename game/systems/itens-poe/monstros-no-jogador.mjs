@@ -130,6 +130,22 @@ export function eletrizar(hunt, ficha, dano, vidaMax, { agora = hunt?.clock ?? 0
   imunidadeApos(hunt, ficha, 'eletrizacao', agora);
   return final;
 }
+/**
+ * (06/11, a Repreensão de Maligaro: "Eletrizações que você causar são refletidas para você") a Eletrização de `pct`% em você, sem o acerto — a mesma regra
+ * de `eletrizar` (o efeito em você, evitar, a duração em você; vale a mais forte). Devolve o % posto (0: nada).
+ */
+export function eletrizarComPct(hunt, ficha, pct0, { agora = hunt?.clock ?? 0, rng = Math.random } = {}) {
+  const E = NUMEROS.eletrizacao;
+  if (!ligado() || !hunt || !(pct0 > 0)) return 0;
+  const pct = Math.min(E.maximoPct, pct0 * Math.max(0, 1 + v(ficha, 'efeito_eletrizacao_proprio') / 100));
+  if (pct < E.minimoPct || evitou(hunt, ficha, 'eletrizacao', { elemental: true, rng, agora })) return 0;
+  const d = registro(hunt);
+  const antes = ativo(d.eletrizado, agora) ? d.eletrizado : null;
+  const final = Math.round(Math.max(antes?.pct ?? 0, pct) * 10) / 10;
+  d.eletrizado = { ate: Math.max(antes?.ate ?? 0, agora + Math.round(E.duracaoMs * fatorDaDuracao(ficha, 'eletrizacao'))), pct: final };
+  imunidadeApos(hunt, ficha, 'eletrizacao', agora);
+  return final;
+}
 /** A duração do CONGELAMENTO do crítico do monstro (ms; 0 abaixo do mínimo do PoE): `dano` de Gelo que o acerto causou. */
 export function msDoCongelamento(dano, vidaMax) {
   const C = NUMEROS.congelamento;

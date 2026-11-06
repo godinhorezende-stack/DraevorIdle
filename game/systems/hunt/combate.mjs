@@ -282,7 +282,7 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segun
   // As cargas do PoE no acerto da varinha (Poder no crítico, no crítico com varinhas, no acerto não crítico...).
   if (CargasPoe.reageAoAcerto(ficha.cargas) && CargasPoe.aoAcertar(estado, ficha.cargas, alvo, { crit, varinha: true }).length) Ficha.invalidar(estado);
   if (!segundo) {
-    Ficha.aplicarLeech(estado, golpe, eventos, personagem?.nome, hunt.pos, ficha, alvo.key, { danoCritico: crit ? golpe : 0, semDrenoDeVida: alvo.semDreno ? golpe : 0, semDrenoDeEs: Mecanicas.semDrenoDeEs(alvo) ? golpe : 0 });
+    Ficha.aplicarLeech(estado, golpe, eventos, personagem?.nome, hunt.pos, ficha, alvo.key, { danoCritico: crit ? golpe : 0, semDrenoDeVida: alvo.semDreno ? golpe : 0, semDrenoDeEs: Mecanicas.semDrenoDeEs(alvo) ? golpe : 0, alvo });
     Charms.aoAcertar(estado, hunt, alvo, eventos);
   }
   return true;
@@ -1267,7 +1267,10 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
     return;
   }
   // Evasion (DEX, bases de Evasion e adds) e "Chance to Avoid Damage": o golpe inteiro não pega.
-  if (Defesa.esquivou(ficha, hunt, bicho) || Defesa.evitou(ficha)) {
+  // (06/11, o Destino Certo: "Ataques não podem te Acertar" — o golpe não pega; "Ataques contra você sempre Acertam" — sem a Evasão)
+  const naoAcertam = itensPoeLigado() && ModsPoe.valor(ficha, 'ataques_nao_acertam') > 0;
+  const sempreAcertam = itensPoeLigado() && ModsPoe.valor(ficha, 'ataques_sempre_acertam') > 0;
+  if (naoAcertam || (!sempreAcertam && Defesa.esquivou(ficha, hunt, bicho)) || Defesa.evitou(ficha)) {
     eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, color: '#999999', esquiva: true });
     return;
   }
@@ -1304,8 +1307,10 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // Elemental" — as partes elementais.)
   const agoraDoGolpe = hunt.clock ?? 0;
   const emFogoPct = ModsPoe.ativo(bicho.estados?.fisicoEmFogo, agoraDoGolpe) ? bicho.estados.fisicoEmFogo.pct : 0;
+  // (06/11, o Aperto Pirotécnico Chocante: o Eletrizado por você converte parte do Físico em Raio — `mods-poe.aurasProximas` põe `fisicoEmRaio`)
+  const emRaioPct = Math.min(100 - emFogoPct, ModsPoe.ativo(bicho.estados?.fisicoEmRaio, agoraDoGolpe) ? bicho.estados.fisicoEmRaio.pct : 0);
   const elemFator = (el) => (['fire', 'ice', 'energy'].includes(el) && ModsPoe.ativo(bicho.estados?.elemMenos, agoraDoGolpe) ? Math.max(0, 1 - bicho.estados.elemMenos.pct / 100) : 1);
-  const brutoFisico = bruto * (1 - emFogoPct / 100);
+  const brutoFisico = bruto * (1 - (emFogoPct + emRaioPct) / 100);
   // O golpe ACERTOU (passou da esquiva e do bloqueio): boss e elite podem CONGELAR, ATORDOAR ou fazer LENTIDÃO no jogador
   // (`combate/controle.mjs`), mesmo que o Energy Shield engula o dano; a resistência a controle dele encurta o efeito.
   if (bruto > 0) {
@@ -1352,7 +1357,7 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   const brutas = { physical: brutoFisico };
   const partes = {};
   const somarParte = (el, antes, depois) => { brutas[el] = (brutas[el] ?? 0) + antes; partes[el] = (partes[el] ?? 0) + depois; return depois; };
-  const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(bicho).reduce((n, x) => { const parte = rolarParte(x) * forcaDoGolpe * critDoMob.fator * elemFator(x.elemento); return n + somarParte(x.elemento, parte, Math.round(parte * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento) * ModsPoe.armaduraNoElemento(ficha, x.elemento, parte))); }, 0) + somarParte('fire', bruto * (emFogoPct / 100) * elemFator('fire'), Math.round(bruto * (emFogoPct / 100) * elemFator('fire') * ModsPoe.fatorDaResistenciaRecebida(ficha, 'fire'))) + Math.round(ModsPoe.extraDoFisicoRecebido(ficha, brutoFisico)) + AtributosDoMob.danoExtraPctDoBicho(bicho).reduce((n, x) => n + somarParte(x.elemento, bruto * (x.pct / 100), Math.round(bruto * (x.pct / 100) * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento))), 0);
+  const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(bicho).reduce((n, x) => { const parte = rolarParte(x) * forcaDoGolpe * critDoMob.fator * elemFator(x.elemento); return n + somarParte(x.elemento, parte, Math.round(parte * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento) * ModsPoe.armaduraNoElemento(ficha, x.elemento, parte))); }, 0) + somarParte('fire', bruto * (emFogoPct / 100) * elemFator('fire'), Math.round(bruto * (emFogoPct / 100) * elemFator('fire') * ModsPoe.fatorDaResistenciaRecebida(ficha, 'fire'))) + somarParte('energy', bruto * (emRaioPct / 100) * elemFator('energy'), Math.round(bruto * (emRaioPct / 100) * elemFator('energy') * ModsPoe.fatorDaResistenciaRecebida(ficha, 'energy'))) + Math.round(ModsPoe.extraDoFisicoRecebido(ficha, brutoFisico)) + AtributosDoMob.danoExtraPctDoBicho(bicho).reduce((n, x) => n + somarParte(x.elemento, bruto * (x.pct / 100), Math.round(bruto * (x.pct / 100) * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento))), 0);
   // Prey de defesa: corta o que SOBROU da armadura. Antes dela, a armadura
   // (redução fixa) ampliava o corte — "Defesa +30%" virava -69% num golpe de 13.
   const fisicoProtegido = somaFisica ? protegido : R.danoRecebido(protegido, armorDoPersonagem(estado));
@@ -1419,7 +1424,10 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // `danoExtraPct` do mapa), depois das resistências e do fator final — vai direto à Vida, salvo as exceções do PoE (`Defesa.absorverComOCaos`); no limite
   // do que sobrou do golpe depois da Égide, do Escudo Gélido e do Vínculo
   const caosDoGolpe = Math.min(final - fisicoDireto, Math.round((caosFisico + ModsPoe.caosNasPartes(ficha, { ...brutas, physical: (brutas.physical ?? 0) - brutoFisico }, partes)) * fatorFinal * depoisDosDesvios));
-  final = fisicoDireto + Defesa.absorverComOCaos(estado, ficha, final - fisicoDireto, caosDoGolpe, eventos, { uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: bicho.name, golpe: 'corpo a corpo' });
+  // (06/11, o Peso da Verdade: "X% do Dano Não Caótico sofrido ignora o Escudo de Energia" — essa parte do resto vai direto à Vida)
+  const naoCaosDireto = Math.round(Math.max(0, final - fisicoDireto - caosDoGolpe) * Math.min(100, ModsPoe.valor(ficha, 'nao_caos_ignora_escudo_pct')) / 100);
+  if (naoCaosDireto > 0) Defesa.reiniciarEspera(estado, ficha);
+  final = fisicoDireto + naoCaosDireto + Defesa.absorverComOCaos(estado, ficha, final - fisicoDireto - naoCaosDireto, caosDoGolpe, eventos, { uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: bicho.name, golpe: 'corpo a corpo' });
   // (o "X% do Dano de Acertos é sofrido na Vida do seu Totem mais próximo antes da sua" sai no `Arvore.danoRecebido`, logo abaixo.)
   // Magic shield ligado: o golpe sai da MANA primeiro (o que sobra, da vida).
   if (final > 0 && Acoes.temBuff(hunt, 'shield') && (estado.mana ?? 0) > 0) {
@@ -1624,7 +1632,8 @@ export function danoSomadoDoPoe(estado, hunt, alvo, ficha, rolagem) {
     // PoE: "Golpes Críticos de Ataques ignoram a Resistência Elemental dos Monstros Inimigos" — no crítico, a resistência positiva não vale.
     const ignoraRes = !!rolagem?.crit && ModsPoe.valor(ficha, 'critico_ignora_res') > 0 && tipo !== 'physical' && tipo !== 'chaos';
     if (!(max > 0) || (!ignoraRes && resistenciaEfetivaDe(hunt, alvo, tipo, f) >= 100)) continue;
-    const sortudo = (elemental && elementalSortudo) || (tipo === 'energy' && raioSortudo);
+    // (06/11: + "Seu Dano com Acertos é Sortudo" — o Destino Certo)
+    const sortudo = (elemental && elementalSortudo) || (tipo === 'energy' && raioSortudo) || ModsPoe.valor(ficha, 'dano_acertos_sortudo') > 0;
     const rolar = () => min + Math.random() * (max - min);
     const sorteio = sortudo === azarado ? rolar() : sortudo ? Math.max(rolar(), rolar()) : Math.min(rolar(), rolar());
     // (lote A5c, dono 20/10: "regra do PoE") a parte que veio de outro tipo (o Físico como Fogo extra, o Fogo convertido em Caos…) soma o "aumentado" de todos os
@@ -1796,12 +1805,16 @@ function golpeDoRound(estado, personagem) {
         const fisico = 1 + (fisicoDoGolpe + (poe ? 0 : Ficha.afinidadePara(ficha, tagsDoGolpe).pct) + Reforcos.bonus(hunt, 'dano', tagsDoGolpe)) / 100;
         // O físico sem a resistência: é dele que sai o dano elemental dos atributos (abaixo).
         // (Duas armas: a faixa da mão escolhida no começo do golpe.)
-        const [faixaMin, faixaMax0] = daSecundaria ? [ficha.ataqueSecundarioMin, ficha.ataqueSecundarioMax] : [ficha.ataqueMin, ficha.ataqueMax];
+        const [faixaMin0, faixaMax0] = daSecundaria ? [ficha.ataqueSecundarioMin, ficha.ataqueSecundarioMax] : [ficha.ataqueMin, ficha.ataqueMax];
+        // (06/11, a Bobina de Ryslatha: "X% menos Dano de Ataque Físico Mínimo" — o mínimo da arma)
+        const faixaMin = poe ? faixaMin0 * Math.max(0, 1 + ModsPoe.valor(ficha, 'fisico_min_mais') / 100) : faixaMin0;
         // (PoE: "X% mais Dano Físico Máximo de Ataques" — o máximo da arma.)
         const faixaMax = poe ? faixaMax0 * Math.max(0, 1 + ModsPoe.valor(ficha, 'fisico_max_mais') / 100) : faixaMax0;
         // (lote 31, P018 — o Sabotador: "Dano com Acertos é Azarado" também no golpe básico — o sorteio da arma duas vezes, fica o menor)
         const rolarArma = () => R.golpeDoJogador({ ...arma, attack: Math.round((faixaMin + faixaMax) / 2), attackMin: faixaMin, attackMax: faixaMax }, ficha.skillValue, estado.level);
-        const fisicoCheio = (poe && ModsPoe.valor(ficha, 'dano_acertos_azarado') > 0 ? Math.min(rolarArma(), rolarArma()) : rolarArma()) * fisico * fatorDoGolpe;
+        // (06/11: + o Sortudo — "Seu Dano com Acertos é Sortudo", o Destino Certo; os dois juntos se anulam)
+        const sorteDaArma = poe ? (ModsPoe.valor(ficha, 'dano_acertos_sortudo') > 0 ? 1 : 0) - (ModsPoe.valor(ficha, 'dano_acertos_azarado') > 0 ? 1 : 0) : 0;
+        const fisicoCheio = (sorteDaArma < 0 ? Math.min(rolarArma(), rolarArma()) : sorteDaArma > 0 ? Math.max(rolarArma(), rolarArma()) : rolarArma()) * fisico * fatorDoGolpe;
         // PoE: "Ganha X% do Dano Físico como Dano de Caos/Fogo extra" e "X% do Dano Físico … Convertido para um Elemento Aleatório" — do Físico
         // BASE do golpe (antes dos "aumentado"); o convertido sai do Físico. As partes extras entram como o dano somado (`danoSomadoDoPoe`).
         const { extras: extrasDoFisico, convertidoPct } = poe ? ModsPoe.extrasDoFisico(ficha, fisicoCheio / Math.max(0.01, fisico)) : { extras: {}, convertidoPct: 0 };
@@ -1850,7 +1863,7 @@ function golpeDoRound(estado, personagem) {
         const extra = segundo ? 0 : Arvore.depoisDoGolpe(estado, hunt, alvo, golpe, categoriaDaArma(arma) === 'distancia' ? 'distancia' : 'corpo', eventos);
         if (!segundo) {
           const doGolpe = golpe + (elemental?.v ?? 0) + (doImbuement?.v ?? 0) + dosAtributos.reduce((n, d) => n + d.v, 0) + extra;
-          Ficha.aplicarLeech(estado, doGolpe, eventos, personagem.nome, hunt.pos, ficha, alvo.key, { danoFisico: golpe, danoCritico: critico ? doGolpe : 0, semDrenoDeVida: alvo.semDreno ? doGolpe : 0, semDrenoDeEs: Mecanicas.semDrenoDeEs(alvo) ? doGolpe : 0 });
+          Ficha.aplicarLeech(estado, doGolpe, eventos, personagem.nome, hunt.pos, ficha, alvo.key, { danoFisico: golpe, danoCritico: critico ? doGolpe : 0, semDrenoDeVida: alvo.semDreno ? doGolpe : 0, semDrenoDeEs: Mecanicas.semDrenoDeEs(alvo) ? doGolpe : 0 , alvo});
         }
         // Vida/mana por acerto (proficiência).
         // Vida/mana por acerto das peças do PoE ("Concede X de Vida por Inimigo Acertado").

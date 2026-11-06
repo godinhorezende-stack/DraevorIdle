@@ -8522,6 +8522,168 @@
       "unidade": "",
       "combate": true,
       "efeito": "itens-poe/frascos (recuperar): a vida que os frascos recuperam também enche o Escudo de Energia (O Sofrimento do Divino; 05/11)"
+    },
+    "dreno_vida_em_caos": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dreno de Vida aplicado nos inimigos como Dano de Caos",
+      "efeito": "itens-poe/mods-poe.drenoEmCaos (06/11, Únicos lote 3)"
+    },
+    "vida_cheia_vulneravel": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Conta como em Vida Cheia enquanto Amaldiçoado com Vulnerabilidade",
+      "efeito": "itens-poe/condicoes-poe.condicoesDe (06/11, Únicos lote 3)"
+    },
+    "vida_baixa_vulneravel": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Conta como em Vida Baixa enquanto Amaldiçoado com Vulnerabilidade",
+      "efeito": "itens-poe/condicoes-poe.condicoesDe (06/11, Únicos lote 3)"
+    },
+    "cegados_sem_afeccao_danosa": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Inimigos Cegados por você não infligem Afecções Danosas",
+      "efeito": "itens-poe/mods-poe.dotNoJogador (06/11, Únicos lote 3)"
+    },
+    "cacador_raro_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Ganha os Modificadores do Raro morto (segundos)",
+      "efeito": "itens-poe/mods-poe.aprenderDoRaro (06/11, Únicos lote 3)"
+    },
+    "cacador_magico_chance": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Chance de ganhar os Modificadores do Mágico morto",
+      "efeito": "itens-poe/mods-poe.aprenderDoRaro (06/11, Únicos lote 3)"
+    },
+    "cacador_magico_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Duração dos Modificadores do Mágico morto (segundos)",
+      "efeito": "itens-poe/mods-poe.aprenderDoRaro (06/11, Únicos lote 3)"
+    },
+    "frascos_em_zumbis": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Frascos de Vida usados curam os Zumbis e Espectros",
+      "efeito": "itens-poe/frascos.usarNosZumbis (06/11, Únicos lote 3)"
+    },
+    "eletrizados_fisico_em_raio": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Eletrizados convertem Físico em Raio",
+      "efeito": "itens-poe/mods-poe.aurasProximas → hunt/combate (06/11, Únicos lote 3)"
+    },
+    "sangue_magico": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Frascos Utilitários Mágicos não podem ser usados",
+      "efeito": "itens-poe/frascos.usar (06/11, Únicos lote 3)"
+    },
+    "sangue_magico_constantes": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Frascos Utilitários Mágicos da esquerda sempre ligados",
+      "efeito": "itens-poe/frascos.constantesDoSangueMagico (06/11, Únicos lote 3)"
+    },
+    "duracao_armadilha": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Duração das Armadilhas",
+      "efeito": "itens-poe/armas-plantadas.duracaoMs (06/11, Únicos lote 3)"
+    },
+    "armadilhas_sem_ativacao": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Armadilhas não são ativadas por Inimigos",
+      "efeito": "itens-poe/armas-plantadas.armadilhasQueAtivam (06/11, Únicos lote 3)"
+    },
+    "armadilhas_aleatorias": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Armadilhas arremessadas aleatoriamente em volta do lugar",
+      "efeito": "acoes.plantarArmas (06/11, Únicos lote 3)"
+    },
+    "destino_certo": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Um efeito do Destino Certo a cada N segundos",
+      "efeito": "itens-poe/mods-poe.aurasProximas (06/11, Únicos lote 3)"
+    },
+    "recebe_sempre_critico": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Acertos contra você são sempre Críticos",
+      "efeito": "itens-poe/condicoes-poe.criticoDoBicho (06/11, Únicos lote 3)"
+    },
+    "ataques_nao_acertam": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Ataques não podem te acertar",
+      "efeito": "hunt/combate (o golpe do monstro) (06/11, Únicos lote 3)"
+    },
+    "ataques_sempre_acertam": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Ataques contra você sempre acertam",
+      "efeito": "hunt/combate (o golpe do monstro) (06/11, Únicos lote 3)"
+    },
+    "dano_acertos_sortudo": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano com Acertos Sortudo",
+      "efeito": "acoes (as gemas) e hunt/combate (o golpe básico) (06/11, Únicos lote 3)"
+    },
+    "robo_calcinante": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Robôs Rastejantes: o Calcinante a mais",
+      "efeito": "itens-poe/lacaios-poe.oQueInvoca → gemas-e2a.roboDaInvocacao (06/11, Únicos lote 3)"
+    },
+    "robos_afetam_voce": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Auras dos Robôs Rastejantes também em você",
+      "efeito": "cacadas.auraDoRobo (06/11, Únicos lote 3)"
+    },
+    "robos_afeccao_mais": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Efeito das afecções dos Robôs Rastejantes (mais)",
+      "efeito": "itens-poe/gemas-e2a.roboDaInvocacao (06/11, Únicos lote 3)"
+    },
+    "oferenda_uma_de_cada": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Uma Oferenda de cada tipo",
+      "efeito": "acoes (a Oferenda) e gemas-e1a.oferendaAtiva (06/11, Únicos lote 3)"
+    },
+    "oferenda_duracao": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Duração das Oferendas",
+      "efeito": "acoes (a Oferenda) (06/11, Únicos lote 3)"
+    },
+    "fisico_min_mais": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano Físico Mínimo de Ataques (mais/menos)",
+      "efeito": "acoes (as gemas de ataque) e hunt/combate (o golpe básico) (06/11, Únicos lote 3)"
+    },
+    "congelamento_pelo_escudo_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Congelamento em você pelo Escudo de Energia",
+      "efeito": "mobs/mecanicas.aoAcertarJogador (06/11, Únicos lote 3)"
+    },
+    "nao_caos_ignora_escudo_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano Não Caótico sofrido que ignora o Escudo de Energia",
+      "efeito": "hunt/combate e poderes.aplicarNoJogador (06/11, Únicos lote 3)"
     }
   }
 }

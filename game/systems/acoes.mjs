@@ -656,7 +656,9 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   const armaDoGolpe0 = golpeDaLamina ?? (escudoDaGema?.base ? { min: escudoDaGema.base.min, max: escudoDaGema.base.max, elemento: escudoDaGema.base.elemento } : armaDoUso ?? fichaBase.damage ?? { min: 1, max: 1 });
   // (PoE: "X% mais Dano Físico Máximo de Ataques" — o máximo da arma no golpe de ataque.)
   const maisNoMaximo = (armaDoGolpe0.elemento ?? 'physical') === 'physical' ? ModsPoe.valor(fichaBase, 'fisico_max_mais') : 0;
-  const armaDoGolpe1 = maisNoMaximo ? { ...armaDoGolpe0, max: armaDoGolpe0.max * Math.max(0, 1 + maisNoMaximo / 100) } : armaDoGolpe0;
+  // (06/11, a Bobina de Ryslatha: "X% menos Dano de Ataque Físico Mínimo" — o mínimo da arma)
+  const maisNoMinimo = (armaDoGolpe0.elemento ?? 'physical') === 'physical' ? ModsPoe.valor(fichaBase, 'fisico_min_mais') : 0;
+  const armaDoGolpe1 = maisNoMaximo || maisNoMinimo ? { ...armaDoGolpe0, min: armaDoGolpe0.min * Math.max(0, 1 + maisNoMinimo / 100), max: armaDoGolpe0.max * Math.max(0, 1 + maisNoMaximo / 100) } : armaDoGolpe0;
   // (lote PR4, dono 25/10) o "X% menos Dano Base" do golpe (a explosão da Flecha Explosiva — o baseMultiplier 0,5 do PoB): só a base da arma; o adicionado, não
   const fatorDaBase = Math.max(0, (Number(efeitoDaGema?.basePctDoAtaque) || 100) / 100);
   const armaDoGolpe = fatorDaBase !== 1 ? { ...armaDoGolpe1, min: armaDoGolpe1.min * fatorDaBase, max: armaDoGolpe1.max * fatorDaBase } : armaDoGolpe1;
@@ -3747,8 +3749,12 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
     const usados = new Set(cadaveres);
     hunt.cadaveres = (hunt.cadaveres ?? []).filter((c) => !usados.has(c));
     for (const c of cadaveres) eventos.push({ t: 'fx', id: 13, x: c.x, y: c.y, sk: entry.id });
-    const duracaoMs = GemasE1a.duracaoDaOferenda(q, cadaveres.length);
-    for (const l of hunt.lacaios) if (l.hp > 0 && l.tipo === 'lacaio' && !l.p4Duplo) { l.oferenda = { ...q.bonus, ate: agora + duracaoMs }; eventos.push({ t: 'fx', id: 13, uid: l.uid, x: l.x, y: l.y, sk: entry.id }); }
+    // (06/11, a Correia da Oferenda: "Habilidades de Oferenda têm Duração reduzida em X%" — `oferenda_duracao`; "Você pode ter uma Oferenda de cada tipo" —
+    // `oferenda_uma_de_cada`: cada tipo fica no lacaio, a do mesmo tipo troca — `GemasE1a.oferendaAtiva`)
+    const fichaDaOferenda = estado ? Ficha.combate(estado) : null;
+    const duracaoMs = Math.round(GemasE1a.duracaoDaOferenda(q, cadaveres.length) * Math.max(0, 1 + ModsPoe.valor(fichaDaOferenda, 'oferenda_duracao') / 100));
+    const deCadaTipo = ModsPoe.valor(fichaDaOferenda, 'oferenda_uma_de_cada') > 0;
+    for (const l of hunt.lacaios) if (l.hp > 0 && l.tipo === 'lacaio' && !l.p4Duplo) { if (deCadaTipo) (l.oferendas ??= {})[slug] = { ...q.bonus, ate: agora + duracaoMs }; else l.oferenda = { ...q.bonus, ate: agora + duracaoMs }; eventos.push({ t: 'fx', id: 13, uid: l.uid, x: l.x, y: l.y, sk: entry.id }); }
     // (PoE, o Necromante: "Suas Habilidades de Oferenda também afetam você" — `condicoes-poe.adds`, com o "redução do Efeito em você".)
     if (estado && ModsPoe.valor(Ficha.combate(estado), 'oferenda_em_voce') > 0) { hunt.oferendaEmVoce = { ...q.bonus, ate: (hunt.clock ?? agora) + duracaoMs }; Ficha.invalidar(estado); }
     // (lote R3B, 27/10) o Nascido da Colmeia: a Oferenda suportada que saiu ativa a invocação (`colmeiaNaOferendaR3B`)
@@ -7059,7 +7065,8 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
     if (itensPoeLigado() && entry.poeGema?.slug === GemasT1.ARCO_VAAL && !doTotem) GemasT1.ligarArcoSortudo(hunt, agora + Math.round((GemasPoe.compilada(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0)?.stats?.duracao ?? 4) * 1000 * fatorDeDuracao(estado, entry, efeitoDaGema)));
     const arcoSortudoT1 = itensPoeLigado() && !!entry.poeGema && GemasT1.arcoSortudo(hunt, entry.poeGema.slug, agora);
     const sorteDoGolpe = {
-      sempre: new Set(arcoSortudoT1 ? ['physical', 'fire', 'ice', 'energy', 'chaos'] : ModsPoe.valor(ficha, 'elemental_sortudo') > 0 ? ['fire', 'ice', 'energy'] : []),
+      // (06/11, o Destino Certo: "Seu Dano com Acertos é Sortudo" — `dano_acertos_sortudo`, todos os tipos)
+      sempre: new Set(arcoSortudoT1 || ModsPoe.valor(ficha, 'dano_acertos_sortudo') > 0 ? ['physical', 'fire', 'ice', 'energy', 'chaos'] : ModsPoe.valor(ficha, 'elemental_sortudo') > 0 ? ['fire', 'ice', 'energy'] : []),
       naoCritico: new Set(ModsPoe.valor(ficha, 'raio_nao_critico_sortudo') > 0 ? ['energy'] : []),
     };
     // (PoE, o Vínculo Ancestral: "Você não pode causar Dano com Habilidades por si só" — o acerto das gemas do personagem não fere, nem o dano
@@ -8489,7 +8496,7 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
     }
     // (No PoE as magias não roubam: só os ataques — `Ficha.aplicarLeech`.)
     const fichaDoRoubo = total > 0 && (rouboDosAlvos.vida > 0 || rouboDosAlvos.mana > 0) ? { ...ficha, lifeLeech: (ficha.lifeLeech ?? 0) + rouboDosAlvos.vida / total, manaLeech: (ficha.manaLeech ?? 0) + rouboDosAlvos.mana / total } : ficha;
-    if (!doTotem) Ficha.aplicarLeech(estado, total, eventos, personagem?.nome, { x, y }, fichaDoRoubo, null, { ataque: !ehMagiaDaConta, danoCritico, danoFisico, danoVezesMaldicoes, semDrenoDeVida: Math.min(total, totalSemDreno), semDrenoDeEs: Math.min(total, totalSemDrenoEs) });
+    if (!doTotem) Ficha.aplicarLeech(estado, total, eventos, personagem?.nome, { x, y }, fichaDoRoubo, null, { ataque: !ehMagiaDaConta, danoCritico, danoFisico, danoVezesMaldicoes, semDrenoDeVida: Math.min(total, totalSemDreno), semDrenoDeEs: Math.min(total, totalSemDrenoEs), alvo: alvo?.hp > 0 ? alvo : null });
     // Life Leech / Mana Leech (supports): % do dano desta skill volta em vida/mana.
     const vidaDoLeech = doTotem ? 0 : Math.round((total * (efeitoDaGema?.leechVidaPct ?? 0)) / 100);
     const manaDoLeech = doTotem ? 0 : Math.round((total * (efeitoDaGema?.leechManaPct ?? 0)) / 100);
@@ -8986,7 +8993,9 @@ function plantarArmas(estado, hunt, personagem, slot, entry, action, lugar, efei
   // `GemasR3c.casasDoArco`); "não podem ser Detonadas enquanto dentro de 3 metros de você" (o raio sorteado ao plantar — `GemasR3c.minaPertoDeVoce`)
   const lugarR3c = tipo === 'mina' && itensPoeLigado() ? GemasR3c.lugarDaMina(efeitoDaGema, lugar, hunt.pos) : lugar;
   const quantasExtras = Plantadas.extrasDoArremesso(ficha, tipo, Math.random, efeitoDaGema) + extrasDaGema;
-  const casasDoUso = tipo === 'mina' && itensPoeLigado() && efeitoDaGema?.minaEmArcoR3c > 0 ? GemasR3c.casasDoArco(lugarR3c, hunt.pos?.dir ?? 2, 1 + quantasExtras) : Plantadas.casasDoArremesso(lugarR3c.x, lugarR3c.y, quantasExtras);
+  const casasDoUso0 = tipo === 'mina' && itensPoeLigado() && efeitoDaGema?.minaEmArcoR3c > 0 ? GemasR3c.casasDoArco(lugarR3c, hunt.pos?.dir ?? 2, 1 + quantasExtras) : Plantadas.casasDoArremesso(lugarR3c.x, lugarR3c.y, quantasExtras);
+  // (06/11, a Explosão Solar: "Armadilhas de Habilidades são arremessadas aleatoriamente ao redor do local alvo" — cada uma numa casa sorteada a até 2 do lugar)
+  const casasDoUso = tipo === 'armadilha' && itensPoeLigado() && ModsPoe.valor(ficha, 'armadilhas_aleatorias') > 0 ? casasDoUso0.map(() => ({ x: lugarR3c.x + Math.floor(Math.random() * 5) - 2, y: lugarR3c.y + Math.floor(Math.random() * 5) - 2 })) : casasDoUso0;
   for (const c of casasDoUso) {
     const p = Plantadas.plantar(hunt, ficha, { tipo, acao: action.id, slot, x: c.x, y: c.y, z: hunt.z ?? 0, duracaoMs: dur, detonacaoMs, agora, maximoExtra: tipo === 'armadilha' ? efeitoDaGema?.maxArmadilhasExtra ?? 0 : efeitoDaGema?.maxMinasExtra ?? 0 });
     // (revisão F2) a Mina arremessada com a reserva do custo (a Cadeia Explosiva, o Alto Impacto) conta na reserva enquanto plantada (`ModsPoe.minasDaReserva`)

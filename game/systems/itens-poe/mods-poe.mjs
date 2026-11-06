@@ -7,6 +7,7 @@ import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
 import { RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, criarSoloCongelado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo, porExposicao } from './condicoes-poe.mjs';
 import * as Plantadas from './armas-plantadas.mjs';
+import { eletrizarComPct } from './monstros-no-jogador.mjs';
 // (lotes G-A e G-C, dono 25/10: as Marcas no acerto — as Cargas, as Cargas de Frasco — e a Punição em quem acerta você)
 import * as GemasGAC from './gemas-gac.mjs';
 import { porLento } from './gemas-gbd.mjs';
@@ -648,6 +649,8 @@ export function dotNoJogador(hunt, ef, agora, rng = Math.random) {
   if (evitar > 0 && rng() * 100 < evitar) return null;
   // ("Inimigos Amaldiçoados não podem infligir Afecções Elementais em Você": o monstro amaldiçoado por você.)
   if (a.elemental && quem && v('amaldicoados_sem_afeccao_elemental') > 0 && Object.values(quem.maldicoes ?? {}).some((m) => m && m.ate > agora)) return null;
+  // (06/11, o Esplendor de Solerai: "Inimigos cegados por você não podem infligir afecções danosas" — o Incêndio, o Sangramento e o Veneno do monstro Cego.)
+  if (a.danifica && quem && v('cegados_sem_afeccao_danosa') > 0 && ativo(quem.estados?.cego, agora)) return null;
   // (+ "Dano Degenerativo de Caos sofrido reduzido em X%": o veneno em você.)
   const caos = a.nome === 'veneno' ? Math.max(0, 1 - v('dot_caos_sofrido_red') / 100) : 1;
   // (+ "X% mais Duração de Afecções em você" — multiplica.)
@@ -853,6 +856,17 @@ export function eventosDoFrasco(estado, classe, ficha, ctx = {}) {
   if (classe === 'Life_Flasks' || classe === 'Hybrid_Flasks') evento(estado, hunt, 'usarFrascoVida', ficha, ctx);
 }
 
+/**
+ * (06/11, A Ânsia: "200% do Dreno de Vida é aplicado em Inimigos como Dano de Caos" — `dreno_vida_em_caos`) a Vida que o acerto drenou, × X%, como dano
+ * degenerativo de Caos no alvo, no tempo do dreno (a instância recupera 2% da vida máxima por segundo: o mesmo tempo aqui, de 1 a 5 s).
+ */
+export function drenoEmCaos(alvo, vida, ficha, maxHp, agora) {
+  const pct = valor(ficha, 'dreno_vida_em_caos');
+  if (!(pct > 0) || !(vida > 0) || !alvo || !(alvo.hp > 0)) return;
+  const s = Math.min(5, Math.max(1, vida / Math.max(1, (maxHp * 2) / 100)));
+  Dot.aplicar(alvo, { tipo: 'degenCaos', total: (vida * pct) / 100, duracaoMs: Math.round(s * 1000), chave: 'drenoEmCaos', origem: { fonte: 'poe' } }, agora);
+}
+
 /** Os GATILHOS das peças ("Ativa uma Magia Encaixada quando você Atacar com esta Arma"): quem registra é `acoes.mjs` (o disparo das gemas). */
 // eslint-disable-next-line no-var
 var gatilhosDeItem;
@@ -873,9 +887,22 @@ export function definirEfeitosDoModDeMonstro(fn) { efeitosDoModDeMonstro = fn; }
  * ficam em `hunt.poeTemporarios` (`adds`). Devolve os ids ganhos.
  */
 export function aprenderDoRaro(estado, hunt, ficha, alvo, agora = hunt?.clock ?? 0, rng = Math.random) {
-  const n = Math.floor(valor(ficha, 'aprendizado_inspirado_n'));
-  const s = valor(ficha, 'aprendizado_inspirado_s');
-  if (!hunt || !(n > 0) || !(s > 0) || !efeitosDoModDeMonstro || !['raro', 'elite'].includes(alvo?.raridade)) return [];
+  let n = Math.floor(valor(ficha, 'aprendizado_inspirado_n'));
+  let s = valor(ficha, 'aprendizado_inspirado_s');
+  // (06/11, o Caçador de Cabeças: "Quando você Matar um monstro Raro, você ganha seus Modificadores por 60 segundos" — todos, `cacador_raro_s`; a Réplica:
+  // "X% de chance de, ao Matar um Monstro mágico, você ganhar seus Modificadores por 60 segundos" — `cacador_magico_chance`/`_s`. A mesma regra do
+  // Aprendizado: os que têm equivalente em você.)
+  const magico = alvo?.raridade === 'magico' || alvo?.raridade === 'modificado';
+  if (magico) {
+    const chance = valor(ficha, 'cacador_magico_chance');
+    if (!(chance > 0) || !(rng() * 100 < chance)) return [];
+    n = 99;
+    s = valor(ficha, 'cacador_magico_s');
+  } else if (valor(ficha, 'cacador_raro_s') > 0) {
+    n = 99;
+    s = Math.max(s, valor(ficha, 'cacador_raro_s'));
+  }
+  if (!hunt || !(n > 0) || !(s > 0) || !efeitosDoModDeMonstro || !(magico || ['raro', 'elite'].includes(alvo?.raridade))) return [];
   const pool = (alvo.mods ?? []).filter((id) => efeitosDoModDeMonstro(id).length);
   const ganhos = [];
   while (ganhos.length < n && pool.length) ganhos.push(pool.splice(Math.floor(rng() * pool.length), 1)[0]);
@@ -1053,6 +1080,8 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
       }
       return;
     }
+    // (06/11, a Repreensão de Maligaro: "Eletrizações que você causar são refletidas para você") a Eletrização que você acabou de pôr no alvo, em você também.
+    case 'eletrizarVoce': { if (sorte(v)) eletrizarComPct(hunt, ficha, alvo?.estados?.chocado?.pct ?? 0, { agora, rng }); return; }
     case 'degenEmVoce': {
       const [tipo, seg] = String(ev.param).split(':');
       const s = Number(seg) || 1;
@@ -1579,6 +1608,33 @@ export function aurasProximas(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
         ESTADOS_NO_ALVO.resfriado(e, agora + 1000, agora);
         ESTADOS_NO_ALVO.eletrizado(e, agora + 1000);
       }
+    }
+  }
+  // (06/11, os Únicos — lote 3) "Causa N de Dano de Caos por segundo em inimigos Próximos" (`aura_degen:<tipo>`): o dano degenerativo nos de perto (3 casas),
+  // renovado a cada tique enquanto estão perto (a chave própria: não briga com o das gemas).
+  for (const [k, x] of Object.entries(ficha.afPoe)) {
+    if (!k.startsWith('aura_degen:') || !(x > 0) || !hunt.pos) continue;
+    const tipo = { physical: 'degenFisico', fire: 'degenFogo', ice: 'degenGelo', energy: 'degenRaio', chaos: 'degenCaos' }[k.slice('aura_degen:'.length)];
+    for (const m of hunt.monstros ?? []) {
+      if (!(m.hp > 0) || m.dummy || Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) > 3) continue;
+      Dot.aplicar(m, { tipo, total: x, duracaoMs: 1000, chave: 'auraDaPeca', origem: { fonte: 'poe' } }, agora);
+    }
+  }
+  // (06/11, o Aperto Pirotécnico Chocante: "Inimigos Eletrizados por você têm X% do Dano Físico causado por eles convertido Raio" — o golpe deles lê `fisicoEmRaio`)
+  const emRaio = valor(ficha, 'eletrizados_fisico_em_raio');
+  if (emRaio > 0) for (const m of hunt.monstros ?? []) if (m.hp > 0 && !m.dummy && ativo(m.estados?.chocado, agora)) (m.estados ??= {}).fisicoEmRaio = { ate: agora + 1000, pct: Math.min(100, emRaio) };
+  // (06/11, o Destino Certo: "A cada 5 segundos, ganha um dos seguintes efeitos por 5 segundos" — `destino_certo` = os segundos): um dos seis, sorteado, nos
+  // atributos temporários (`hunt.poeTemporarios`)
+  const destino = valor(ficha, 'destino_certo');
+  if (destino > 0) {
+    const prox = (hunt.poePeriodicos ??= {});
+    if (agora >= (prox.destinoCerto ?? 0)) {
+      const efeitos = [['critico_sempre'], ['recebe_sempre_critico'], ['ataques_nao_acertam'], ['ataques_sempre_acertam'], ['dano_acertos_sortudo'], ['dano_recebido_sortudo']];
+      const t = (hunt.poeTemporarios ??= {});
+      for (const k of Object.keys(t)) if (k.startsWith('destino:')) delete t[k];
+      for (const stat of efeitos[Math.floor(Math.random() * efeitos.length)]) t[`destino:${stat}`] = { stat, valor: 1, ate: agora + destino * 1000 };
+      prox.destinoCerto = agora + destino * 1000;
+      hunt.poeFichaMudou = true;
     }
   }
   const auras = Object.entries(ficha.afPoe).filter(([k, x]) => k.startsWith('aura_proximos:') && x > 0).map(([k]) => k.slice('aura_proximos:'.length));

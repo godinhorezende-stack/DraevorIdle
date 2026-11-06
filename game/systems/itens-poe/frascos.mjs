@@ -350,7 +350,12 @@ export function usar(estado, v, eventos = null, quem = null) {
   if (v === 4 && Number(afp.sem_quinto_frasco) > 0) return false;
   // A TINTURA: usar ATIVA (ou DESATIVA a que está ativa) — `tinturas.mjs`.
   if (ehTinturaDoCinto(peca)) return alternarTintura(estado, v, peca, afp);
+  // (06/11, o Umbilicus Immortalis: "Frascos que você Usar se aplicam aos seus Zumbis e Espectros Convocados" — `frascos_em_zumbis`) com "Frascos não são aplicados em
+  // Você", o frasco de Vida (e o Híbrido) gasta as cargas e cura cada Zumbi e Espectro vivo pela quantidade dele; o de Utilidade não tem efeito nos lacaios do jogo
+  if (Number(afp.frascos_nao_aplicam) > 0 && Number(afp.frascos_em_zumbis) > 0) return usarNosZumbis(estado, peca, afp);
   if (Number(afp[`sem_frasco:${TIPO_DA_CLASSE[peca.poe?.classe]}`]) > 0 || Number(afp.frascos_nao_aplicam) > 0) return false;
+  // (06/11, o Sangue Mágico: "Frascos Utilitários Mágicos não podem ser Usados" — os dois mais à esquerda ficam sempre ligados: `constantesDoSangueMagico`)
+  if (Number(afp.sangue_magico) > 0 && TIPO_DA_CLASSE[peca.poe?.classe] === 'utilidade' && peca.poe?.raridade === 'magico') return false;
   // (o Híbrido conta como de Vida e de Mana: "Não pode usar Frascos de Vida" ou "…de Mana" também o barram)
   if (TIPO_DA_CLASSE[peca.poe?.classe] === 'hibrido' && (Number(afp['sem_frasco:vida']) > 0 || Number(afp['sem_frasco:mana']) > 0)) return false;
   const par = parametros(peca, afp);
@@ -399,6 +404,31 @@ export function usar(estado, v, eventos = null, quem = null) {
   if (par.instantaneoNoFim) st.ativos[v] = { ate: agora + par.ms, recurso: par.recurso, nome: peca.poe.nome, noFim: resto, extras, ...doEfeito };
   else st.ativos[v] = { ate: agora + par.ms, de: agora, ultimo: agora, porMs: resto / par.ms, recurso: par.recurso, nome: peca.poe.nome, extras, ...(par.naoParaNoCheio ? { naoParaNoCheio: true } : {}), ...doEfeito };
   return true;
+}
+
+/** (06/11, o Umbilicus Immortalis) o frasco de Vida usado nos seus Zumbis e Espectros: gasta as cargas e cura cada um pela quantidade do frasco. */
+function usarNosZumbis(estado, peca, afp) {
+  const par = parametros(peca, afp);
+  if (!(par.tipo === 'vida' || par.tipo === 'hibrido') || cargasDe(peca, par) < par.cargasPorUso) return false;
+  const alvos = (estado.hunt?.lacaios ?? []).filter((l) => l.hp > 0 && (l.espectro || /zumbi|zombie|espectro|spectre/i.test(l.nome ?? '')));
+  if (!alvos.length) return false;
+  peca.poe.cargas = cargasDe(peca, par) - par.cargasPorUso;
+  for (const l of alvos) l.hp = Math.min(l.maxHp ?? l.hp, l.hp + (par.quantidade ?? 0));
+  return true;
+}
+
+/**
+ * (06/11, o Sangue Mágico: "Frascos Utilitários Mágicos 2 mais à Esquerda aplicam seu Efeito de Frasco constantemente em você") os efeitos dos dois primeiros frascos
+ * de Utilidade Mágicos do cinto (da esquerda), sempre ligados — guardados no tique (`st.constantes`), que `adds` soma.
+ */
+function constantesDoSangueMagico(estado, st, afp) {
+  if (!(Number(afp.sangue_magico_constantes) > 0)) { if (st.constantes) { delete st.constantes; return true; } return false; }
+  const n = Math.round(Number(afp.sangue_magico_constantes));
+  const lista = cinto(estado).filter((p) => p && !ehTinturaDoCinto(p) && TIPO_DA_CLASSE[p.poe?.classe] === 'utilidade' && p.poe?.raridade === 'magico').slice(0, n);
+  const novas = lista.map((p) => ({ nome: p.poe.nome, af: parametros(p, afp).af ?? {} }));
+  const mudou = JSON.stringify(novas) !== JSON.stringify(st.constantes ?? []);
+  st.constantes = novas;
+  return mudou;
 }
 
 /**
@@ -605,6 +635,7 @@ export function tique(estado, eventos = null, quem = null) {
   // (do personagem: "A Mana não-instantânea recuperada dos Frascos também recupera Vida"; "Efeitos do frasco de mana não são removidos quando o
   // mana não reservado é preenchido")
   const doDono = doPersonagem(estado);
+  if (constantesDoSangueMagico(estado, st, doDono)) mudou = true;
   // A recuperação ao longo do tempo e o vencimento.
   for (const [v, a] of Object.entries(st.ativos)) {
     // (04/11) o HÍBRIDO: a Vida e a Mana, cada uma até o fim dela; acaba quando as duas (não reservadas) estão cheias.
@@ -840,6 +871,8 @@ export function adds(estado) {
   const agora = estado.hunt.clock ?? 0;
   const total = {};
   for (const a of [...Object.values(st.ativos), ...(st.extras ?? [])]) if (a.af && a.ate > agora) for (const [k, v] of Object.entries(a.af)) total[k] = (total[k] ?? 0) + v;
+  // (06/11, o Sangue Mágico: os frascos Mágicos sempre ligados — `constantesDoSangueMagico`)
+  for (const a of st.constantes ?? []) for (const [k, v] of Object.entries(a.af ?? {})) total[k] = (total[k] ?? 0) + v;
   // + as TINTURAS ativas (e as que perduram) — a foto do tique (`tinturas.adds`).
   for (const [k, v] of Object.entries(Tinturas.adds(st, agora) ?? {})) total[k] = (total[k] ?? 0) + v;
   return Object.keys(total).length ? total : null;

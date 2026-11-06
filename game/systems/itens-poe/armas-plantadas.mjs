@@ -147,6 +147,8 @@ export function armadilhasQueAtivam(hunt, ficha, agora = hunt?.clock ?? 0) {
   const todas = plantadas(hunt, 'armadilha', agora);
   const fila = [];
   const na = new Set();
+  // (06/11, a Explosão Solar: "Armadilhas não podem ser ativadas por Inimigos" — nenhuma ativa pelo inimigo perto; elas vencem no fim da duração)
+  if (v(ficha, 'armadilhas_sem_ativacao') > 0) return fila;
   for (const p of todas) {
     // (lote S2A, 27/10: o raio de ativação da própria Armadilha — o "Efeito em Área da Ativação de Armadilhas aumentado" dos suportes, `p.raioDeAtivacao`)
     const alvo = inimigoPerto(hunt, p, p.raioDeAtivacao ?? A.raioDeAtivacao);

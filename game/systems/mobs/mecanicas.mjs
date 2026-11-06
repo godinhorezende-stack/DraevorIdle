@@ -326,7 +326,10 @@ export function aoAcertarJogador(estado, hunt, personagem, m, { dano = 0, bruto 
       const posto = ModsPoe.dotNoJogador(hunt, { tipo: 'queimadura', total: (brutas.fire * N.incendio.pctDoFogo) / 100, duracaoMs: N.incendio.duracaoMs, origem }, agora, rng);
       if (posto) naTela(posto);
     }
-    const msGelo = NoJogador.msDoCongelamento(partes.ice ?? 0, vidaMax);
+    // (06/11, o Auxium: "Efeito de Resfriamento e Duração de Congelamento em você são baseados em X% do seu Escudo de Energia" — o limiar do Congelamento é o
+    // Escudo de Energia máximo × X%, não a Vida)
+    const peloEscudo = Number(ficha.afPoe?.congelamento_pelo_escudo_pct) || 0;
+    const msGelo = NoJogador.msDoCongelamento(partes.ice ?? 0, peloEscudo > 0 ? Math.max(1, ((Number(ficha.energyShield) || 0) * peloEscudo) / 100) : vidaMax);
     if (msGelo > 0 && pega() && Controle.congelar(hunt, ficha, msGelo, agora, rng)) naTela('congelado');
     if ((partes.energy ?? 0) > 0 && pega()) {
       const eletrizou = NoJogador.eletrizar(hunt, ficha, partes.energy ?? 0, vidaMax, { agora, rng });

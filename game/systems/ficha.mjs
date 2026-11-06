@@ -1160,7 +1160,7 @@ export function tetoDoRouboPct(ficha, recurso) {
 }
 const CAMPO_DO_ROUBO = { vida: 'hp', mana: 'mana', es: 'es' };
 const COR_DO_ROUBO = { vida: '#00ff66', mana: '#4fc3ff', es: '#8fd3ff' };
-export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = combate(estado), key = null, { ataque = true, danoCritico = 0, danoVezesMaldicoes = 0, semDrenoDeVida = 0, semDrenoDeEs = 0, danoFisico = 0 } = {}) {
+export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = combate(estado), key = null, { ataque = true, danoCritico = 0, danoVezesMaldicoes = 0, semDrenoDeVida = 0, semDrenoDeEs = 0, danoFisico = 0, alvo = null } = {}) {
   // (PoE, os únicos: "X% do Dano de Golpes Críticos é Drenado como Vida" — `roubo_vida_critico`, sobre a parte do dano que veio de crítico —
   // e "Não pode Drenar Vida com Golpes Críticos" — `sem_roubo_vida_critico`: essa parte não drena.)
   const critico = itensPoeLigado() ? Math.min(Math.max(0, Number(danoCritico) || 0), Math.max(0, danoTotal)) : 0;
@@ -1203,6 +1203,8 @@ export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = comb
   if (itensPoeLigado()) {
     // "X% do Dano é Drenado como Escudo de Energia" (de todo dano — o ataque também; o "Dano Mágico", `es_leech_magia`, só nas magias, acima).
     drenarPoe(estado, { vida, mana, es: (paraEs * ModsPoe.valor(ficha, 'es_leech')) / 100 }, ficha, eventos, quem, pos);
+    // (06/11, A Ânsia: a Vida drenada também vira dano de Caos no alvo — `ModsPoe.drenoEmCaos`)
+    if (alvo) ModsPoeEfeitos.drenoEmCaos(alvo, vida, ficha, estado.maxHp ?? 0, estado.hunt?.clock ?? 0);
     return;
   }
   const ganhoVida = Math.min(vida, Math.max(0, (estado.maxHp ?? 0) - (estado.hp ?? 0)));

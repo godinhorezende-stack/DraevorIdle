@@ -343,7 +343,10 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
   if (grupo?.nome) nome = grupo.nome;
   // (lote E2A) o que o lote lê nas linhas do nível e da qualidade (`GemasE2a.doLacaioE2a`): o máximo das Sentinelas Ascendidas e da Queda, o "mais Dano" delas e o
   // sinal certo do Golpe Sagrado (o PoB), o nome do Zumbi da Queda
-  const e2a = !totem && !doSuporte ? GemasE2a.doLacaioE2a(slug, t.linhas, GemasPoe.linhasDaQualidadeDe(slug, efeito?.qualidade ?? 0), nivelDaGema) : {};
+  const e2a0 = !totem && !doSuporte ? GemasE2a.doLacaioE2a(slug, t.linhas, GemasPoe.linhasDaQualidadeDe(slug, efeito?.qualidade ?? 0), nivelDaGema) : {};
+  // (06/11, As Ferramentas de Arkhon: "Invocar Robôs Rastejantes também invoca um Robô Rastejante Calcinante", "Auras dos Robôs Rastejantes invocados afetam você e
+  // os inimigos", "Mais X% de efeito de afecções não danosas causadas por Robôs Rastejantes invocados" — `GemasE2a.roboDaInvocacao`, `cacadas.auraDoRobo`)
+  const e2a = e2a0.robos ? { ...e2a0, robos: { ...e2a0.robos, calcinante: m0('robo_calcinante') > 0, emVoce: m0('robos_afetam_voce') > 0, efeitoMaisPct: m0('robos_afeccao_mais') } } : e2a0;
   if (e2a.maximoBase != null) maximo = e2a.maximoBase;
   if (e2a.maximoExtra) maximo += e2a.maximoExtra;
   if (e2a.nome && nome === 'Lacaio') nome = e2a.nome;
@@ -576,7 +579,7 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
     // (lote E2A) o alcance a mais do golpe corpo a corpo (o Golpe Sagrado, em metros), a Queda do Zumbi e os dois Robôs Rastejantes (`acoes.invocarLacaios`, `cacadas`)
     ...(e2a.alcanceM ? { alcanceExtraM: e2a.alcanceM } : {}), ...(e2a.queda ? { queda: e2a.queda } : {}), ...(e2a.robos ? { robos: e2a.robos } : {}),
     // (lote E2A: os Robôs Rastejantes — "Máximo de 1 … de cada tipo": o Resfriante e o Eletrizante, os dois num uso)
-    tipo: totem ? 'totem' : 'lacaio', nome: totem ? (/totem/i.test(t.nome) ? t.nome : `Totem de ${t.nome}`) : e2a.robos ? 'Robô Rastejante' : nome, maximo: e2a.robos ? 2 : Math.max(1, maximo), porUso: e2a.robos ? 2 : Math.max(1, Math.min(porUso, maximo)), duracaoMs: duracao, nivel: n,
+    tipo: totem ? 'totem' : 'lacaio', nome: totem ? (/totem/i.test(t.nome) ? t.nome : `Totem de ${t.nome}`) : e2a.robos ? 'Robô Rastejante' : nome, maximo: e2a.robos ? (e2a.robos.calcinante ? 3 : 2) : Math.max(1, maximo), porUso: e2a.robos ? (e2a.robos.calcinante ? 3 : 2) : Math.max(1, Math.min(porUso, maximo)), duracaoMs: duracao, nivel: n,
     vida, dano: { min: Math.max(1, Math.round(golpe * (1 - spread))), max: Math.max(1, Math.round(golpe * (1 + spread))) }, intervaloMs: Math.round(f.tempo * 1000), elemento,
     // (lote 44: o lacaio que no PoE não pode sofrer dano — os Robôs Rastejantes, o Armamento Sagrado; lote 75: + o tipo da gema
     // "MinionsAreUndamagable", o Rastejador Agonizante)

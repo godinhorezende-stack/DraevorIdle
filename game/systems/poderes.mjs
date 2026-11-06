@@ -240,7 +240,10 @@ export function aplicarNoJogador({ estado, hunt, bicho, dano, elemento, eventos,
   // (lote G-B — D6) o Chamado Imortal Vaal: todo dano em você é impedido (o PoB: immortal_call_prevent_all_damage) — a magia, a mecânica e o dano contínuo
   if (GemasGBD.imortal(hunt, hunt?.clock ?? 0)) return 0;
   // (PoE: "X% do dano mágico sofrido suprimido ignora o escudo de energia" — essa parte vai direto.)
-  const direto = suprimiu ? Math.round((dano * Math.min(100, ModsPoe.valor(ficha, 'suprimido_ignora_escudo'))) / 100) : 0;
+  let direto = suprimiu ? Math.round((dano * Math.min(100, ModsPoe.valor(ficha, 'suprimido_ignora_escudo'))) / 100) : 0;
+  // (06/11, o Peso da Verdade: "X% do Dano Não Caótico sofrido ignora o Escudo de Energia" — a parte do que não é Caos)
+  const naoCaos = Math.min(100, ModsPoe.valor(ficha, 'nao_caos_ignora_escudo_pct'));
+  if (naoCaos > 0 && elemento !== 'chaos') direto += Math.round(((dano - direto) * naoCaos) / 100);
   dano -= direto;
   // PoE: o dano de CAOS atravessa o Escudo de Energia (a menos que um único diga que não); a espera da recarga reinicia do mesmo jeito.
   // (+ ciclo 7, lote E: "X% do dano de caos sofrido não ignora o escudo de energia" — essa parte passa pelo escudo.)

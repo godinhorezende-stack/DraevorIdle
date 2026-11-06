@@ -45273,6 +45273,716 @@
       ],
       "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
       "_nova": true
+    },
+    {
+      "padrao": "^Dano Elemental com Habilidades de Ataque aumentado em \\{(\\d+)\\}% durante qualquer Efeito de Frasco$",
+      "efeitos": [
+        {
+          "stat": "fire_dmg@ataque+duranteFrasco",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_dmg@ataque+duranteFrasco",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_dmg@ataque+duranteFrasco",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Regeneração de Mana aumentada em \\{(\\d+)\\}% durante qualquer Efeito de Frasco$",
+      "efeitos": [
+        {
+          "stat": "mana_regen_pct@duranteFrasco",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Causa \\{(\\d+)\\} de Dano de Caos por segundo em inimigos? Próximos$",
+      "efeitos": [
+        {
+          "stat": "aura_degen:chaos",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dreno de Vida é aplicado em Inimigos como Dano de Caos$",
+      "efeitos": [
+        {
+          "stat": "dreno_vida_em_caos",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Eletrizações que você causar são refletidas para você$",
+      "efeitos": [
+        {
+          "stat": "ev:eletrizar:eletrizarVoce",
+          "valor": "100"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Movimento enquanto Eletrizado aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "move_speed@eletrizadoProprio",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^O Dano dos Inimigos te Acertando é Azarado enquanto estiver Amaldiçoado com Vulnerabilidade$",
+      "efeitos": [
+        {
+          "stat": "dano_recebido_azarado@amaldicoadoProprio",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "enquanto Amaldiçoado (qualquer Maldição); com a peça você está sempre com a Vulnerabilidade",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você conta como se estivesse em Vida Cheia enquanto Amaldiçoado com Vulnerabilidade$",
+      "efeitos": [
+        {
+          "stat": "vida_cheia_vulneravel",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você é Amaldiçoado com Vulnerabilidade$",
+      "efeitos": [
+        {
+          "stat": "maldicao_propria:vulnerabilidade",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você conta como em Vida Baixa enquando estiver Amaldiçoado por Vulnerabilidade$",
+      "efeitos": [
+        {
+          "stat": "vida_baixa_vulneravel",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos cegados por você não podem infligir afecções danosas$",
+      "efeitos": [
+        {
+          "stat": "cegados_sem_afeccao_danosa",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Quando você Matar um monstro Raro, você ganha seus Modificadores por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "cacador_raro_s",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Modificadores do Raro que têm equivalente em você (a regra do Aprendizado Inspirado)",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Frascos que você Usar se aplicam aos seus Zumbis e Espectros Convocados$",
+      "efeitos": [
+        {
+          "stat": "frascos_em_zumbis",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o frasco de Vida cura os Zumbis e Espectros pela quantidade dele; o de Utilidade não tem efeito nos lacaios do jogo",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Receba \\{(\\d+)\\} de Dano Físico ao utilizar uma Habilidade de Movimento$",
+      "efeitos": [
+        {
+          "stat": "ev:usarMovimento:perdeVida",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Vida perdida inteira, sem a redução de Dano Físico (não mata: fica em 1)",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Resfria Inimigos próximos quando você se Concentra, causando \\{(\\d+)\\}% de redução da Velocidade de Ação$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a Concentração (a habilidade Foco do PoE)",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade da Recuperação da Recarga da Concentração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a Concentração (a habilidade Foco do PoE)",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^grant focus skill \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a Concentração (a habilidade Foco do PoE)",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você pode ter uma Ofe?re?nda de cada tipo$",
+      "efeitos": [
+        {
+          "stat": "oferenda_uma_de_cada",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades de Oferenda têm Duração reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "oferenda_duracao",
+          "valor": "-{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos Próximos são Esmagados enquanto você tiver ao menos \\{(\\d+)\\} de Fúria$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos:esmagado@furiaMin:{V1}",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano com Acertos contra monstros Mágicos aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@alvoMagico",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de, ao Matar um Monstro mágico, você ganhar seus Modificadores por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "cacador_magico_chance",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cacador_magico_s",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Modificadores do Mágico que têm equivalente em você (a regra do Aprendizado Inspirado)",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos Eletrizados por você têm \\{(\\d+)\\}% do Dano Físico causado por eles convertido Raio$",
+      "efeitos": [
+        {
+          "stat": "eletrizados_fisico_em_raio",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^is intimidated \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "dano_ataque_recebido_mais",
+          "valor": "10"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "você Intimidado: 10% de Dano de Ataques sofrido a mais (o PoE: aumentado)",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Seus Lacaios usam seus Frascos quando convocados$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "os lacaios do jogo não carregam efeitos de frasco",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios têm Cargas de Frasco usadas reduzidas em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "os lacaios do jogo não carregam efeitos de frasco",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios têm Duração do Efeito do Frasco aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "os lacaios do jogo não carregam efeitos de frasco",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Guarda Desequilibrada$",
+      "efeitos": [
+        {
+          "stat": "defender_armadura:200",
+          "valor": "100"
+        },
+        {
+          "stat": "reducao_maxima",
+          "valor": "50"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Frascos Utilitários Mágicos não podem ser Usados$",
+      "efeitos": [
+        {
+          "stat": "sangue_magico",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Frascos Utilitários Mágicos \\{(\\d+)\\} mais a Esquerda aplica seu Efeito de Frasco constantemente em você$",
+      "efeitos": [
+        {
+          "stat": "sangue_magico_constantes",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeitos dos Frascos Utilitários Mágicos não podem ser removidos$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "os efeitos constantes do Sangue Mágico não saem (nada no jogo os tira)",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não sofre Dano Ardente se você parou de sofrer Dano Ardente Recentemente$",
+      "efeitos": [
+        {
+          "stat": "imune_apos_incendio",
+          "valor": "4"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "não pode ser Incendiado por 4 s depois de um Incêndio em você",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Duração da Armadilha reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_armadilha",
+          "valor": "-{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Armadilhas não podem ser ativadas por Inimigos$",
+      "efeitos": [
+        {
+          "stat": "armadilhas_sem_ativacao",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Armadilhas de Habilidades são arremessadas aleatoriamente ao redor do local alvo$",
+      "efeitos": [
+        {
+          "stat": "armadilhas_aleatorias",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha Devorador de Almas durante qualquer Efeito de Frasco$",
+      "efeitos": [
+        {
+          "stat": "sempre:devoradorDeAlmas@duranteFrasco",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Convocar Grande Emissário do Tempo$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a gema Convocar Grande Emissário do Tempo",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^A cada \\{(\\d+)\\} segundos, ganha um dos seguintes efeitos por \\{(\\d+)\\} segundos:$",
+      "efeitos": [
+        {
+          "stat": "destino_certo",
+          "valor": "{2}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Seus Acertos são sempre Golpes Críticos$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "um dos efeitos do Destino Certo (a linha de cima)",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Acertos contra você são sempre Golpes Críticos$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "um dos efeitos do Destino Certo (a linha de cima)",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ataques não podem te Acertar$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "um dos efeitos do Destino Certo (a linha de cima; os ataques corpo a corpo dos monstros)",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ataques contra você sempre Acertam$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "um dos efeitos do Destino Certo (a linha de cima; os ataques corpo a corpo dos monstros)",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Seu Dano com Acertos é Sortudo\\\\Dano de Acertos contra você é Sortudo$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "os dois últimos efeitos do Destino Certo (a linha de cima)",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Invocar Robôs Rastejantes também invoca um Robô Rastejante Calcinante$",
+      "efeitos": [
+        {
+          "stat": "robo_calcinante",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Auras dos Robôs Rastejantes invocados afetam você e os inimigos$",
+      "efeitos": [
+        {
+          "stat": "robos_afetam_voce",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "em você, o Resfriamento e a Eletrização (o Escaldante não tem efeito em você no jogo)",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Mais \\{(\\d+)\\}% de efeito de afecções não danosas causadas por Robôs Rastejantes invocados$",
+      "efeitos": [
+        {
+          "stat": "robos_afeccao_mais",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Arremesso de Armadilhas e Minas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed_tag@armadilha",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed_tag@mina",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades de pacto têm a velocidade de conjuração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed@pacto",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades de pacto têm a velocidade de recarga aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "recarga_gema:Pact_of",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades de pacto concedem Dádivas em vez de Aflições$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "a Aflição dos Pactos não tem dado no PoB nem no poedb (o jogo não a tem), nem a Dádiva",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de causar Dano Triplicado enquanto tiver ao menos \\{(\\d+)\\} de Força$",
+      "efeitos": [
+        {
+          "stat": "chance_dano_triplo@atrMin:str:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Dano de Ataque Físico Mínimo$",
+      "efeitos": [
+        {
+          "stat": "fisico_min_mais",
+          "valor": "-{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano de Ataque aumentado em \\{(\\d+)\\}% a cada \\{(\\d+)\\} do menor valor entre Armadura e Evasão$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%armEvaMenor:{V2}@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Após sofrer um golpe crítico, todos os golpes do seu próximo ataque não canalizado realizado em até \\{(\\d+)\\} segundos serão apenas golpes críticos$",
+      "efeitos": [
+        {
+          "stat": "ev:serAcertadoCritico:stat:critico_sempre:{V1}",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "todos os seus acertos são Críticos pelos 4 s (o PoE: só o próximo ataque)",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito de Resfriamento e Duração de Congelamento em você são baseados em \\{(\\d+)\\}% do seu Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "congelamento_pelo_escudo_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Congelamento em você (o Resfriamento dos monstros do jogo tem a intensidade fixa)",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Ataque é Drenado como Mana por Carga de Poder$",
+      "efeitos": [
+        {
+          "stat": "mana_leech%carga:poder@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Não Caótico sofrido ignora o Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "nao_caos_ignora_escudo_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Decadência Suprema$",
+      "efeitos": [
+        {
+          "stat": "frasco_vida_tambem_es",
+          "valor": "1"
+        },
+        {
+          "stat": "frasco_vida_rec_mais",
+          "valor": "-30"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_nova": true
     }
   ]
 }

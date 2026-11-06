@@ -9,6 +9,7 @@ Levantamento pelo balão: cada um dos 1.154 Únicos gerado como cai no jogo, e c
 | 05/11 | 423 | o levantamento |
 | 06/11 | **356** | lote 1 (frascos e tinturas): lembretes e linha vazia viram nota; "durante o efeito" em qualquer forma; os atributos "durante o Efeito" dos frascos de Vida e de Mana passam a valer; as ações ao usar e no término; Vinktar, Sábio Carvalho, Colhedor de Almas, Sofrimento do Divino |
 | 06/11 | **313** | lote 2 (anéis, 88 → 44): 42 regras (o Salteador, Nimis, Lori, Grattus, a Devastação Polar e as linhas por espaço de anel, Malachai pela cor da gema, os Golens encaixados…); o estado `fugindo` no alvo (o Coração Negro); as regras novas respeitam o "aproximado" (`_nova`) |
+| 06/11 | **260** | lote 3 (cintos, 53 → 0): a Vulnerabilidade da própria peça (os Covardes), a aura de Caos nos de perto (o Fim da Fome), o Dreno como Caos (A Ânsia), o Destino Certo, as Armadilhas da Explosão Solar, o Sangue Mágico, a Oferenda de cada tipo, o Robô Calcinante, o Caçador de Cabeças e a Réplica (a tag `alvoMagico` passa a sair no Mágico do jogo); 8 viram inertes (a Concentração, o frasco nos lacaios, a Dádiva dos Pactos, o Emissário do Tempo) |
 
 | Estado | Linhas | Únicos |
 |---|---|---|

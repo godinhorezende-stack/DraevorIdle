@@ -99,6 +99,17 @@ export function cadaveresDaOferenda(hunt) {
 }
 /** A duração da Oferenda com `n` cadáveres consumidos: a base + N s por cadáver EXTRA (o primeiro é o da Oferenda). */
 export const duracaoDaOferenda = (q, n) => Math.max(0, q?.duracaoMs ?? 0) + Math.max(0, n - 1) * Math.max(0, q?.porCadaverMs ?? 0);
+/**
+ * (06/11, a Correia da Oferenda: "Você pode ter uma Oferenda de cada tipo") a Oferenda que vale agora no lacaio: a de sempre (`l.oferenda`) e as de cada tipo
+ * (`l.oferendas[slug]`, com a linha), somadas — o fim é o da mais longa. `agora`: o relógio em que o fim foi gravado.
+ */
+export function oferendaAtiva(l, agora) {
+  const lista = [l?.oferenda, ...Object.values(l?.oferendas ?? {})].filter((o) => o && o.ate > agora);
+  if (lista.length <= 1) return lista[0] ?? null;
+  const soma = { ate: Math.max(...lista.map((o) => o.ate)) };
+  for (const o of lista) for (const [k, x] of Object.entries(o)) if (k !== 'ate') soma[k] = typeof x === 'number' && typeof soma[k] === 'number' ? soma[k] + x : soma[k] ?? x;
+  return soma;
+}
 
 /**
  * O Golem de Pedra da Proteção: a parte do acerto corpo a corpo que vai para a vida dele antes do seu Escudo de Energia e da sua Vida (até a vida dele).

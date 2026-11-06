@@ -21,6 +21,7 @@ import * as Vinculos from './itens-poe/vinculos.mjs';
 import * as Iluminacao from './itens-poe/iluminacao.mjs';
 import { DADOS as MODS_DE_MONSTRO } from './itens-poe/modificadores-monstro.mjs';
 import * as Aliados from './itens-poe/aliados.mjs';
+import * as GemasE1a from './itens-poe/gemas-e1a.mjs';
 import * as Combo from './combo.mjs';
 import * as Treino from './treino.mjs';
 import * as Bolsa from './bolsa.mjs';
@@ -2532,7 +2533,7 @@ function passoDoFamiliar(hunt, grade, f, agora, ate, { pararEm, longe = 3 }) {
   // (revisão F1: o "aumentado" da Adrenalina e do Frenesi Faminto entra no aumentado — × o "mais" do Espectro/da Relíquia, (1 + aumentado) × (1 + mais) − 1)
   // (lote E2A: + o movimento da Oferenda Carnal no lacaio, no relógio dela — o do tique)
   // (lote D1, decisão do dono 27/10: o teto dos Espectros — +75% no total — vale também com a Adrenalina e o Frenesi Faminto)
-  const movimentoPct = Math.min(f.poe?.movTetoPct ?? Infinity, LacaiosPoe.movimentoDoLacaio(f, hunt.clock ?? 0, (f.oferenda && f.oferenda.ate > agora ? f.oferenda.velMovPct ?? 0 : 0) + SuportesS2B.movDoLacaio(hunt, f, hunt.clock ?? 0)));
+  const movimentoPct = Math.min(f.poe?.movTetoPct ?? Infinity, LacaiosPoe.movimentoDoLacaio(f, hunt.clock ?? 0, (GemasE1a.oferendaAtiva(f, agora)?.velMovPct ?? 0) + SuportesS2B.movDoLacaio(hunt, f, hunt.clock ?? 0)));
   const passos = (d > longe ? 2 : 1) + (movimentoPct > 0 && Math.random() * 100 < movimentoPct ? 1 : 0);
   let deu = 0;
   for (let k = 0; k < passos; k++) {
@@ -2879,7 +2880,7 @@ export function magiaNoLacaio({ estado, hunt, bicho, l, a, eventos, agora, ficha
   const aliado = itensPoeLigado() ? Aliados.doLacaio(estado, ficha.afPoe, ModsPoe.fortificacao(estado, ficha.afPoe)) : null;
   // (revisão F1) o fim da Oferenda é gravado no relógio de PAREDE (`Acoes`, `hunt.ultimoTique` + a duração — como o golpe corpo a corpo lê, `tiqueDosLacaios`); o
   // `agora` daqui é o da caçada (`golpesDosMonstros`) — comparar com ele deixava a Oferenda Óssea para sempre contra as magias
-  const oferenda = l.oferenda && l.oferenda.ate > (hunt.ultimoTique ?? Date.now()) ? l.oferenda : null;
+  const oferenda = GemasE1a.oferendaAtiva(l, hunt.ultimoTique ?? Date.now());
   const vinculo = Vinculos.doLacaio(hunt, l, relogio);
   const forca = Reforcos.forcaDoBicho(bicho, agora) * ModsPoe.doBicho(bicho, relogio, { contraOutro: true }).danoFator * Math.max(0, 1 + (l.poe?.danoRecebidoPct ?? 0) / 100);
   // (lote 86, dono 19/10: o teto de cada elemento — o máximo de uma resistência do escudo da Égide; o do Caos não sobe com o "todas as Elementais")
@@ -3085,7 +3086,22 @@ export function auraDoRobo(hunt, l) {
       // (pelo caminho de sempre do Resfriamento — o chefe, o teto e a duração —, como as áreas frias: só renova o que está para acabar)
       const lento = m.estados?.lento;
       if (!(lento && lento.ate - relogio > 1000 && lento.pct >= a.pct) && Estados.aplicar(m, { lentidaoPct: a.pct }, 1, relogio, Math.random, !!hunt.isBoss).length) eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'lento' });
+    } else if (a.tipo === 'causticar') {
+      // (06/11, o Robô Calcinante das Ferramentas de Arkhon: o Escaldante — vale o mais forte, renovado)
+      const e = (m.estados ??= {});
+      if (!(e.causticado?.ate > relogio && e.causticado.pct > a.pct)) { e.causticado = { ate, pct: a.pct }; eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'causticado' }); }
     } else if (GemasE2a.eletrizarNaAura(m, a.pct, ate, relogio)) eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'eletrizado' });
+  }
+  // (06/11, As Ferramentas de Arkhon: "Auras dos Robôs Rastejantes invocados afetam você e os inimigos" — você na aura fica Resfriado / Eletrizado; o Escaldante não
+  // tem efeito em você no jogo)
+  if (a.emVoce && hunt.pos && (hunt.z == null || l.z == null || hunt.z === l.z) && distancia(hunt.pos, l) <= raio) {
+    if (a.tipo === 'resfriar') {
+      const c = (hunt.controle ??= {});
+      if (!(c.lento?.ate > relogio && c.lento.pct > a.pct)) c.lento = { ate, pct: a.pct };
+    } else if (a.tipo === 'eletrizar') {
+      const d = (hunt.debuffsDoJogador ??= {});
+      if (!(d.eletrizado?.ate > relogio && d.eletrizado.pct > a.pct)) d.eletrizado = { ate, pct: a.pct };
+    }
   }
   return eventos;
 }
@@ -3145,7 +3161,7 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     }
     vivos.push(l);
     // Os bichos colados batem no lacaio (um golpe por bicho a cada ~2 s, metade da força do golpe deles).
-    const oferenda = l.oferenda && l.oferenda.ate > agora ? l.oferenda : null;
+    const oferenda = GemasE1a.oferendaAtiva(l, agora);
     // (PoE, 12/10) os seus Vínculos neste lacaio ("Habilidades de Vínculo podem focar em Lacaios Danificáveis" — `Vinculos.doLacaio`)
     const vinculo = Vinculos.doLacaio(hunt, l, agora);
     // (ciclo 7: a regeneração passa pela "Recuperação de Vida" do lacaio; o escudo dele recarrega)
