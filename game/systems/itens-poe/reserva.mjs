@@ -39,6 +39,8 @@ export function fator(ficha, efeitoDaGema, recurso, arquetipo = null, tipos = nu
   // (11/10, os únicos: "Congelabilidade não tem Reserva se Conjurada como Aura", "Armadura Ártica não tem Reserva" — a gema pelo nome.)
   const nome = slug ? ModsPoe.slugDoNome(doSlug(slug)?.gema?.nome ?? '') : null;
   if (nome && ModsPoe.valor(ficha, `sem_reserva:${nome}`) > 0) return 0;
+  // (06/11, o Verme da Essência: "Gemas Encaixadas não têm Reserva" — a gema encaixada na peça)
+  if (efeitoDaGema?.semReservaLocal) return 0;
   const deMana = recurso === 'mana';
   // (13/10, o Ego Supremo: "X% mais Reserva de Mana de Habilidades Aura" — multiplica.)
   const mais = deMana && arquetipo === 'aura' ? Math.max(0, 1 + ModsPoe.valor(ficha, 'reserva_aura_mais') / 100) : 1;

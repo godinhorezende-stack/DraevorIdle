@@ -22,6 +22,8 @@ export function podeAgir(hunt, agora = hunt?.clock ?? 0) {
 /** Quanto o jogador LENTO demora a mais (1 = normal): o passo e o intervalo do golpe × isto. */
 export function fatorDeLentidao(hunt, agora = hunt?.clock ?? 0) {
   const s = hunt?.controle?.lento;
+  // (06/11, a Fiandeira Invernal: "O Efeito do Resfriamento em você é revertido" — o Resfriado anda e ataca mais depressa, na mesma proporção)
+  if (ativo(s, agora) && hunt.poeResfriamentoRevertido) return Math.max(0.1, 1 - s.pct / 100);
   return ativo(s, agora) ? 1 / (1 - s.pct / 100) : 1;
 }
 

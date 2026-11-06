@@ -250,7 +250,8 @@ test('únicos: buffs por evento, condição de estado, keystone, culling, imunid
   assert.equal(pegadas.estado, 'inerte');
   assert.ok(pegadas.nota);
   // (dono, 11/10: o Mago de Batalha ganhou mecânica na rodada 8 dos únicos — o exemplo passou a ser uma keystone ainda sem efeito)
-  assert.equal(t('Acrobacia').estado, 'registrado');
+  // (dono, 06/11: a Acrobacia ganhou a regra no lote 4 dos únicos — a mesma da árvore; o exemplo passou a ser o Mestre dos Feitiços, que nenhum único traz)
+  assert.equal(t('Mestre dos Feitiços').estado, 'registrado');
   // A família com parâmetro só vale com um parâmetro que o código conhece.
   assert.ok(ModsPoe.dinamicoValido('max_lacaio:golem'));
   assert.ok(!ModsPoe.dinamicoValido('max_lacaio:dragao'));

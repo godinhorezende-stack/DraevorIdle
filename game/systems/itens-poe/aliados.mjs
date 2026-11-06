@@ -12,6 +12,7 @@
 // O que um personagem dá aos outros vai como FOTO no tique (`hunt.aliados`, JSON — da ficha dele): a soma da ficha de quem recebe só lê a foto
 // (sem ficha cruzada), como os Vínculos.
 
+import { maximo as maximoDeCargas } from './cargas.mjs';
 export const PREFIXO = 'aliados:';
 /** (13/10, o Inspirador) "Você e Aliados próximos dos seus Estandartes": `aliados_estandarte:<stat>` — os aliados na área do Estandarte plantado. */
 export const PREFIXO_DO_ESTANDARTE = 'aliados_estandarte:';
@@ -43,6 +44,8 @@ export function fotografar(estado, afPoe, { fortificacao = 0 } = {}) {
   if (!hunt) return null;
   const af = {};
   for (const [k, v] of Object.entries(afPoe ?? {})) if (k.startsWith(PREFIXO) && typeof v === 'number' && v) af[k.slice(PREFIXO.length)] = v;
+  // (06/11, a Investida de Ambu: o máximo de Tolerância de quem tem a peça vai para os companheiros perto — `cargas.maximo`)
+  if (n(afPoe, 'grupo_tolerancia_igual') > 0) af.tolerancia_max_do_grupo = maximoDeCargas(afPoe, 'tolerancia');
   hunt.aliados = {
     af,
     raio: PADRAO.raio,

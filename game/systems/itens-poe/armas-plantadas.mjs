@@ -71,7 +71,8 @@ export function extrasDoArremesso(ficha, tipo, rng = Math.random, efeito = null)
   const chanceDasDuas = v(ficha, 'plantadas_extras_chance');
   const nDasDuas = Math.max(0, Math.round(v(ficha, 'plantadas_extras_n')));
   const dasDuas = chanceDasDuas > 0 && nDasDuas > 0 && rng() * 100 < chanceDasDuas ? nDasDuas : 0;
-  if (tipo !== 'armadilha') return doSuporte + faixa + (tipo === 'mina' ? dasDuas : 0);
+  // (06/11, o Fechamento das Cortinas: "Habilidades que arremessam Minas arremessam até 1 Minas adicionais se você possuir ao menos 800 de Destreza" — `minas_extras`)
+  if (tipo !== 'armadilha') return doSuporte + faixa + (tipo === 'mina' ? dasDuas + Math.max(0, Math.round(v(ficha, 'minas_extras'))) : 0);
   const sempre = Math.max(0, Math.round(v(ficha, 'armadilhas_extras')));
   const chance = v(ficha, 'armadilhas_extras_chance');
   const n = Math.max(0, Math.round(v(ficha, 'armadilhas_extras_n')));
@@ -147,6 +148,8 @@ export function armadilhasQueAtivam(hunt, ficha, agora = hunt?.clock ?? 0) {
   const todas = plantadas(hunt, 'armadilha', agora);
   const fila = [];
   const na = new Set();
+  // (06/11, a Explosão Solar: "Armadilhas não podem ser ativadas por Inimigos" — nenhuma ativa pelo inimigo perto; elas vencem no fim da duração)
+  if (v(ficha, 'armadilhas_sem_ativacao') > 0) return fila;
   for (const p of todas) {
     // (lote S2A, 27/10: o raio de ativação da própria Armadilha — o "Efeito em Área da Ativação de Armadilhas aumentado" dos suportes, `p.raioDeAtivacao`)
     const alvo = inimigoPerto(hunt, p, p.raioDeAtivacao ?? A.raioDeAtivacao);

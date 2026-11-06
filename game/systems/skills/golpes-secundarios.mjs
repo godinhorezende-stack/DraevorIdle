@@ -413,7 +413,8 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
     // (03/11: + `projDoUso` — o projétil (a ordem dele no uso: os saltos e os filhos levam a do pai) — e `exclusivo` no PRIMEIRO acerto do projétil a mais que escolheu
     // o bicho "que nenhum outro do uso acertou" (D7b): `Acoes.disparar` confere no instante do acerto se outro projétil do uso já o pegou)
     let primeiroAcerto = true;
-    const meta = () => ({ atravessados: p.perfurados, ricochetes: p.ricocheteou, restantes: Math.max(0, p.encadear ?? 0), ordem: p.ordem ?? 0, dist: p.percorrido, projDoUso: p.ordem ?? 0, ...(p.exclusivo && primeiroAcerto ? { exclusivo: true } : {}) });
+    // (06/11: + `perfura` — o projétil ainda perfura este alvo (o Fura-Pescoço); o crítico das Flechas que Difundiram e das que Perfuram (a Língua das Serpentes))
+    const meta = () => ({ atravessados: p.perfurados, ricochetes: p.ricocheteou, restantes: Math.max(0, p.encadear ?? 0), ordem: p.ordem ?? 0, dist: p.percorrido, projDoUso: p.ordem ?? 0, ...(p.exclusivo && primeiroAcerto ? { exclusivo: true } : {}) , perfura: (p.perfurar ?? 0) > 0, ...(p.difundido && efeito.critIncDifundidas ? { critIncPct: efeito.critIncDifundidas } : {}), ...((p.perfurar ?? 0) > 0 && efeito.critMultPerfurando ? { critMultPct: efeito.critMultPerfurando } : {}) });
     while (atual) {
       p.percorrido += hyp(pos, atual);
       anterior = pos;
@@ -443,12 +444,14 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
       // (dono, 21/10: + a da Divisão — os projéteis da divisão já são a 2ª forma)
       const primeiraForma = efeito.perfuraNaPrimeiraForma > 0 && tipo !== 'divisao' && !!origem && cheb(origem, atual) < efeito.perfuraNaPrimeiraForma;
       // Pierce: o próximo bicho na MESMA reta, adiante deste.
-      if (p.perfurar > 0 || primeiraForma) {
+      // (06/11, a Origem de Xoph: "Projéteis Atravessam todos os Inimigos Queimando" — sem gastar a perfuração)
+      const queimando = !!efeito.atravessaQueimando && (atual.dots ?? []).some((d) => d.tipo === 'queimadura' && d.falta > 0);
+      if (p.perfurar > 0 || primeiraForma || queimando) {
         const daqui = reta.findIndex((c) => c.x === atual.x && c.y === atual.y);
         const adiante = daqui >= 0 ? reta.slice(daqui + 1) : [];
         const proximo = adiante.map((c) => porCasa.get(`${c.x},${c.y}`)).find((b) => b && !p.acertados.has(b));
         if (proximo) {
-          if (!primeiraForma) p.perfurar--;
+          if (!primeiraForma && !queimando) p.perfurar--;
           // (revisão do A3: na Materialização a ida não acerta — não atravessa ninguém; a contagem é a da volta)
           if (!p.soNaVolta) p.perfurados++;
           atual = proximo;
@@ -464,7 +467,8 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
         // (13/10) "Projéteis têm X% de chance de receber um Projétil adicional quando Difundindo": um filho a mais. Os filhos levam o que o
         // projétil já atravessou e ricocheteou.
         const filhos = p.bifurcar + (efeito.bifurcarExtraChance > 0 && rng() * 100 < efeito.bifurcarExtraChance ? 1 : 0);
-        const filho = (b) => voar({ de: atual, ate: p.percorrido, pct: pctDoFilho, perfurar: p.perfurar, bifurcar: (p.deNovo ?? 0) > 0 ? 2 : 0, deNovo: Math.max(0, (p.deNovo ?? 0) - 1), encadear: p.encadear, volta: false, acertados: new Set(p.acertados), perfurados: p.perfurados, ricocheteou: p.ricocheteou, ordem: p.ordem }, b, 'bifurcacao');
+        // (06/11, a Língua das Serpentes: "Flechas Perfuram todos os Alvos após se Difundirem" — o filho atravessa todos; `difundido`, o crítico dele)
+        const filho = (b) => voar({ de: atual, ate: p.percorrido, pct: pctDoFilho, difundido: true, perfurar: efeito.perfuraAposDifundir ? 99 : p.perfurar, bifurcar: (p.deNovo ?? 0) > 0 ? 2 : 0, deNovo: Math.max(0, (p.deNovo ?? 0) - 1), encadear: p.encadear, volta: false, acertados: new Set(p.acertados), perfurados: p.perfurados, ricocheteou: p.ricocheteou, ordem: p.ordem }, b, 'bifurcacao');
         if (voo) {
           // (lote "projetil") os filhos nos ângulos da difusão a partir da reta em que o projétil vinha; cada um no primeiro do caminho até o alcance
           const a0 = anterior.x === atual.x && anterior.y === atual.y ? anguloDoRumo : Math.atan2(atual.y - anterior.y, atual.x - anterior.x);
@@ -597,7 +601,18 @@ function resolverDoUso({ efeito, tags, origem, alvo, atingidos = [], vivos, alca
   // lote 42 — `naParede`.)
   // (lote A3: + a divisão, as rebatidas e o "só na volta")
   let ordens = 0;
-  const base = () => ({
+  // (06/11, a Extensão do Conselho: "Flechas disparadas dos primeiros pontos de disparo sempre Perfuram", "dos segundos… se Difundem", "dos terceiros… Retornam à
+  // você", "dos quartos… Ricocheteiam +2 vezes" — pela ordem do projétil no uso, de 4 em 4)
+  const doPonto = (o) => {
+    if (!efeito.porPontoDeDisparo) return o;
+    const k = o.ordem % 4;
+    if (k === 0) o.perfurar = 99;
+    else if (k === 1) o.bifurcar = Math.max(o.bifurcar, 2);
+    else if (k === 2) o.volta = true;
+    else o.encadear += 2;
+    return o;
+  };
+  const base = () => doPonto({
     perfurar: efeito.perfurar || 0, bifurcar: efeito.bifurcar || 0, deNovo: efeito.bifurcar > 0 ? efeito.bifurcarDeNovo || 0 : 0,
     encadear: efeito.encadear || 0,
     volta: efeito.retornar > 0 || (efeito.retornarChance > 0 && rng() * 100 < efeito.retornarChance),

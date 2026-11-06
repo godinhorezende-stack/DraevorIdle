@@ -318,15 +318,22 @@ export function aoAcertarJogador(estado, hunt, personagem, m, { dano = 0, bruto 
   // é crítico também aplica a afecção do elemento dele, na chance; o crítico segue inerente, sem sortear de novo.)
   const inerente = critico && !(Number(ficha.afPoe?.critico_recebido_sem_afeccao) > 0);
   const chanceExtra = Number(ficha.afPoe?.chance_ser_afetado) || 0;
-  if ((inerente || chanceExtra > 0) && estado.hp > 0 && !Vinculos.noFeixe(hunt, m)) {
+  if ((inerente || chanceExtra > 0 || Number(ficha.afPoe?.chance_ser_incendiado) > 0) && estado.hp > 0 && !Vinculos.noFeixe(hunt, m)) {
     const N = NoJogador.NUMEROS;
     const vidaMax = Math.max(1, estado.maxHp ?? 0);
     const pega = () => inerente || rng() * 100 < chanceExtra;
-    if ((brutas.fire ?? 0) > 0 && pega()) {
-      const posto = ModsPoe.dotNoJogador(hunt, { tipo: 'queimadura', total: (brutas.fire * N.incendio.pctDoFogo) / 100, duracaoMs: N.incendio.duracaoMs, origem }, agora, rng);
+    // (06/11, o Abraço de Mokou: "+X% de chance de ser Incendiado" — só o Incêndio — e "Todo o Dano Sofrido de Acertos pode te Incendiar" — o Incêndio do
+    // dano todo do acerto, não só o de Fogo)
+    const chanceDoFogo = chanceExtra + (Number(ficha.afPoe?.chance_ser_incendiado) || 0);
+    const fogoDoIncendio = Number(ficha.afPoe?.todo_dano_incendeia_voce) > 0 ? Object.values(brutas).reduce((t, x) => t + (Number(x) || 0), 0) : brutas.fire ?? 0;
+    if (fogoDoIncendio > 0 && (inerente || rng() * 100 < chanceDoFogo)) {
+      const posto = ModsPoe.dotNoJogador(hunt, { tipo: 'queimadura', total: (fogoDoIncendio * N.incendio.pctDoFogo) / 100, duracaoMs: N.incendio.duracaoMs, origem }, agora, rng);
       if (posto) naTela(posto);
     }
-    const msGelo = NoJogador.msDoCongelamento(partes.ice ?? 0, vidaMax);
+    // (06/11, o Auxium: "Efeito de Resfriamento e Duração de Congelamento em você são baseados em X% do seu Escudo de Energia" — o limiar do Congelamento é o
+    // Escudo de Energia máximo × X%, não a Vida)
+    const peloEscudo = Number(ficha.afPoe?.congelamento_pelo_escudo_pct) || 0;
+    const msGelo = NoJogador.msDoCongelamento(partes.ice ?? 0, peloEscudo > 0 ? Math.max(1, ((Number(ficha.energyShield) || 0) * peloEscudo) / 100) : vidaMax);
     if (msGelo > 0 && pega() && Controle.congelar(hunt, ficha, msGelo, agora, rng)) naTela('congelado');
     if ((partes.energy ?? 0) > 0 && pega()) {
       const eletrizou = NoJogador.eletrizar(hunt, ficha, partes.energy ?? 0, vidaMax, { agora, rng });
@@ -350,6 +357,8 @@ export function aoAtacar(estado, hunt, personagem, m, danoDoGolpe, eventos) {
       if (!lista.length) continue;
       m.maldicaoDoMonstro ??= lista[Math.floor(Math.random() * lista.length)];
       const def = ModsPoe.MALDICOES_DOS_MONSTROS[m.maldicaoDoMonstro];
+      // (06/11, a Reflecção de Atziri: "Reflete Feitiços" — a Maldição volta para quem a pôs)
+      ModsPoe.refletirMaldicao(hunt, m, def.nome, Ficha.combate(estado), agora);
       ModsPoe.amaldicoarJogador(hunt, `${m.maldicaoDoMonstro}:${m.uid}`, { nome: def.nome, af: def.af, ms: mec.duracaoMs ?? ModsPoe.DURACAO_DA_MALDICAO_DO_MONSTRO_MS }, agora);
       eventos?.push({ t: 'estado', uid: 'player', quem: personagem?.nome, x: hunt.pos?.x, y: hunt.pos?.y, estado: 'amaldicoado', nome: def.nome, de: m.name });
       Ficha.invalidar(estado);

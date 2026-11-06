@@ -797,7 +797,10 @@ export function regenDoPoe(estado, af) {
   const vidaAumentada = (af.life_regen_pct ?? 0) + (af.recuperacao_inc ?? 0) + (af.recuperacao_vida_inc ?? 0);
   const manaAumentada = (af.mana_regen_pct ?? 0) + (af.recuperacao_mana_inc ?? 0);
   // ("Você não possui Regeneração de Vida", "Espaço de anel direito: Não pode Regenerar Mana"; "X% de Mana Regenerada por segundo".)
-  const regenDaVida = af.sem_regen_vida > 0 ? 0 : Math.max(0, ((af.life_regen ?? 0) + ((estado.maxHp ?? 0) * vidaPctDoMax) / 100) * (1 + vidaAumentada / 100));
+  // (06/11, o Espírito de Kaom: "Regenera 1 de Fúria por segundo por cada 200 de Recuperação de Vida por segundo da Regeneração" — a regeneração de antes do
+  // "não é aplicada": `vidaBruta`, que `condicoes-poe.tiqueDaFuria` lê)
+  const vidaBruta = Math.max(0, ((af.life_regen ?? 0) + ((estado.maxHp ?? 0) * vidaPctDoMax) / 100) * (1 + vidaAumentada / 100));
+  const regenDaVida = af.sem_regen_vida > 0 ? 0 : vidaBruta;
   // (Juramento do Zelote: "Regeneração de Vida é aplicada ao Escudo de Energia" — a vida não regenera; o escudo ganha o mesmo por segundo.)
   // (a keystone da árvore, `regen_vida_no_escudo`, e a que as PEÇAS dão — `keystone:juramentoDoZelote`/`sempre:` — pelo mesmo caminho)
   const noEscudo = Number(af.regen_vida_no_escudo) > 0 || Number(af['keystone:juramentoDoZelote']) > 0 || Number(af['sempre:juramentoDoZelote']) > 0;
@@ -806,7 +809,7 @@ export function regenDoPoe(estado, af) {
   const vidaPorSegundo = noEscudo || ModsPoe.vidaSoPeloDreno(af) ? 0 : regenDaVida * Math.max(0, 1 - (Number(af.regen_vida_menos) || 0) / 100);
   const esDaVida = noEscudo ? regenDaVida : 0;
   const manaPorSegundo = af.sem_regen_mana > 0 ? 0 : Math.max(0, (((estado.maxMana ?? 0) * (MANA_REGEN_BASE_POE + (af.mana_regen_max_pct ?? 0))) / 100 + (af.mana_regen ?? 0)) * (1 + manaAumentada / 100));
-  return { vidaPorSegundo, manaPorSegundo, vidaPctDoMax, vidaAumentada, manaAumentada, vidaFixa: af.life_regen ?? 0, manaFixa: af.mana_regen ?? 0, ...(esDaVida ? { esDaVida } : {}) };
+  return { vidaPorSegundo, manaPorSegundo, vidaPctDoMax, vidaAumentada, manaAumentada, vidaFixa: af.life_regen ?? 0, manaFixa: af.mana_regen ?? 0, vidaBruta, ...(esDaVida ? { esDaVida } : {}) };
 }
 
 function origensDaFicha({ estado, af, arv, doAtributo, esp, principais, somaDosItens, gem, buff }) {
@@ -984,7 +987,13 @@ function defesasDaFicha(estado, af, doAtributo, espStat = () => 0) {
   const semEscudo = itensPoeLigado() && Number(af.sem_escudo_energia) > 0;
   // (lote A2, dono 19/10: + o "mais/menos Escudo de Energia Máximo" — a Lâmina de Energia: "Buff concede 50% menos Escudo de Energia Máximo", o PoB
   // `EnergyShield MORE`)
-  return { armour: Math.round((armour + armourDaPeca) * mais('armour_mais')), evasion: Math.round((evasion + evasionDaPeca) * mais('evasion_mais')), energyShield: semEscudo ? 0 : Math.round((energyShield + esDaPeca) * mais('es_mais')), salvaguarda: Math.max(0, salvaguarda) };
+  // (06/11, a Proteção de Prospero: "Ganha 0 de armadura do peitoral equipado" — a Armadura da base do Peitoral, com os aumentos dela, sai; `armadura_do_peitoral_pct` = o
+  // que dela vale, em %)
+  const peitoral = estado.equipment?.body;
+  const doPeitoral = itensPoeLigado() && Number(af.armadura_do_peitoral_tem) > 0 && armour > 0 && peitoral && !fora(peitoral, 'armor')
+    ? (((faixa(peitoral, 'armor')[0] + faixa(peitoral, 'armor')[1]) / 2) * ((1 + ((af.armour_pct ?? 0) + espStat('armour')) / 100) + (Number(af.armour_pct_peitoral) || 0) / 100) * (100 - Math.min(100, Math.max(0, Number(af.armadura_do_peitoral_pct) || 0)))) / 100
+    : 0;
+  return { armour: Math.round(Math.max(0, armour + armourDaPeca - doPeitoral) * mais('armour_mais')), evasion: Math.round((evasion + evasionDaPeca) * mais('evasion_mais')), energyShield: semEscudo ? 0 : Math.round((energyShield + esDaPeca) * mais('es_mais')), salvaguarda: Math.max(0, salvaguarda) };
 }
 
 /** Os totais da vida do personagem (monstros, ouro, mortes, tempo caçando). */
@@ -1160,7 +1169,7 @@ export function tetoDoRouboPct(ficha, recurso) {
 }
 const CAMPO_DO_ROUBO = { vida: 'hp', mana: 'mana', es: 'es' };
 const COR_DO_ROUBO = { vida: '#00ff66', mana: '#4fc3ff', es: '#8fd3ff' };
-export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = combate(estado), key = null, { ataque = true, danoCritico = 0, danoVezesMaldicoes = 0, semDrenoDeVida = 0, semDrenoDeEs = 0, danoFisico = 0 } = {}) {
+export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = combate(estado), key = null, { ataque = true, danoCritico = 0, danoVezesMaldicoes = 0, semDrenoDeVida = 0, semDrenoDeEs = 0, danoFisico = 0, alvo = null } = {}) {
   // (PoE, os únicos: "X% do Dano de Golpes Críticos é Drenado como Vida" — `roubo_vida_critico`, sobre a parte do dano que veio de crítico —
   // e "Não pode Drenar Vida com Golpes Críticos" — `sem_roubo_vida_critico`: essa parte não drena.)
   const critico = itensPoeLigado() ? Math.min(Math.max(0, Number(danoCritico) || 0), Math.max(0, danoTotal)) : 0;
@@ -1202,7 +1211,12 @@ export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = comb
   const mana = ModsPoe.valor(ficha, 'sem_roubo_mana') > 0 ? 0 : Math.floor(danoTotal * ((ficha.manaLeech ?? 0) + doCharm.mana) + manaDoFisico);
   if (itensPoeLigado()) {
     // "X% do Dano é Drenado como Escudo de Energia" (de todo dano — o ataque também; o "Dano Mágico", `es_leech_magia`, só nas magias, acima).
-    drenarPoe(estado, { vida, mana, es: (paraEs * ModsPoe.valor(ficha, 'es_leech')) / 100 }, ficha, eventos, quem, pos);
+    // (06/11, o Ladrão de Nomes: "X% do Dreno dos Acertos com esta Arma é Instantâneo por Poder do Inimigo")
+    const porPoder = alvo && ataque ? ModsPoe.valor(ficha, 'dreno_instantaneo_por_poder') * ModsPoe.poderDoInimigo(alvo) : 0;
+    const fichaDoDreno = porPoder > 0 ? { ...ficha, afPoe: { ...ficha.afPoe, roubo_instantaneo_pct: (Number(ficha.afPoe?.roubo_instantaneo_pct) || 0) + porPoder } } : ficha;
+    drenarPoe(estado, { vida, mana, es: (paraEs * ModsPoe.valor(ficha, 'es_leech')) / 100 }, fichaDoDreno, eventos, quem, pos);
+    // (06/11, A Ânsia: a Vida drenada também vira dano de Caos no alvo — `ModsPoe.drenoEmCaos`)
+    if (alvo) ModsPoeEfeitos.drenoEmCaos(alvo, vida, ficha, estado.maxHp ?? 0, estado.hunt?.clock ?? 0);
     return;
   }
   const ganhoVida = Math.min(vida, Math.max(0, (estado.maxHp ?? 0) - (estado.hp ?? 0)));

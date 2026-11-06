@@ -233,12 +233,17 @@ export const movimentoComMais = (aumentadoPct, maisPct, tetoPct = null) => {
  * Os ROBÔS RASTEJANTES na invocação: o i-ésimo robô (0 = o Resfriante, 1 = o Eletrizante) — `{ elemento, nome, auraNaoDano: { tipo, pct, raioM }, afDono }` (o buff
  * de "mais Dano de Armadilhas e Minas" vai num só: é o da habilidade, não de cada robô).
  */
+// (06/11, As Ferramentas de Arkhon: o terceiro, o Calcinante — a aura Escaldante, com a intensidade fixa do jogo, 10%; o "Mais X% de efeito" nos três; a aura em você
+// também — `emVoce`)
+export const ESCALDANTE_DO_ROBO_PCT = 10;
 export function roboDaInvocacao(robos, i) {
   if (!robos) return null;
-  const frio = i % 2 === 0;
+  const mais = Math.max(0, 1 + (Number(robos.efeitoMaisPct) || 0) / 100);
+  if (robos.calcinante && i % 3 === 2) return { elemento: 'fire', nome: 'Robô Rastejante Calcinante', auraNaoDano: { tipo: 'causticar', pct: ESCALDANTE_DO_ROBO_PCT * mais, raioM: robos.raioM, ...(robos.emVoce ? { emVoce: true } : {}) }, afDono: null };
+  const frio = i % (robos.calcinante ? 3 : 2) === 0;
   return {
     elemento: frio ? 'ice' : 'energy', nome: frio ? 'Robô Rastejante Resfriante' : 'Robô Rastejante Eletrizante',
-    auraNaoDano: { tipo: frio ? 'resfriar' : 'eletrizar', pct: frio ? robos.resfriarPct : robos.eletrizarPct, raioM: robos.raioM },
+    auraNaoDano: { tipo: frio ? 'resfriar' : 'eletrizar', pct: Math.min(frio ? ROBOS.resfriamento.maximo : ROBOS.eletrizacao.maximo, (frio ? robos.resfriarPct : robos.eletrizarPct) * mais), raioM: robos.raioM, ...(robos.emVoce ? { emVoce: true } : {}) },
     afDono: frio && robos.maisArmadilhaMinaPct > 0 ? { 'mais_dano@armadilha': robos.maisArmadilhaMinaPct, 'mais_dano@mina': robos.maisArmadilhaMinaPct } : null,
   };
 }

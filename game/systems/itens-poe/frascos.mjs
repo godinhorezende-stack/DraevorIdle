@@ -19,7 +19,8 @@ import { ITEM_CATALOG } from '../dados.mjs';
 import { darPeca, cabeNaMochila, erroDeEspaco } from '../inventario.mjs';
 import { camposDaPeca } from '../itens/item.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { vidaSoPeloDreno, marcar, reservadoAgora, criarSoloCongelado } from './condicoes-poe.mjs';
+import { vidaSoPeloDreno, marcar, reservadoAgora, criarSoloCongelado, ganharBuff, empurrar } from './condicoes-poe.mjs';
+import * as CargasPoe from './cargas.mjs';
 import * as Tinturas from './tinturas.mjs';
 import * as Salvaguarda from '../personagem/salvaguarda.mjs';
 import { quebrarGelo, porLento } from './gemas-gbd.mjs';
@@ -101,9 +102,50 @@ const REGRAS_DO_FRASCO = [
   [/^Cria Solo Congelado ao Utilizar$/, (p) => (p.aoUsar.solo = 'congelado')],
   [/^Cria uma Nuvem de Fumaça ao ser Utilizado$/, (p) => (p.aoUsar.fumaca = true)],
   [/^Cria Solo Sagrado ao ser Utilizado$/, (p) => (p.aoUsar.solo = 'sagrado')],
+  // (05/11, lote 1 dos únicos — dono: "resolver as linhas sem efeito dos Únicos") o que os frascos únicos fazem AO SER USADOS e NO TÉRMINO do efeito
+  [/^Ganha \{\d+\} Cargas? de (Tolerância|Frenesi|Poder) ao usar$/, (p, v, m) => p.aoUsar.cargas.push({ tipo: CARGA[m[1]], n: v })],
+  [/^Remove \{\d+\}% do seu Escudo de Energia máximo quando usado$/, (p, v) => (p.aoUsar.perdeEsPct = v)],
+  [/^Você recebe \{\d+\}% da sua Vida máxima como Dano de Caos quando usado$/, (p, v) => (p.aoUsar.danoCaosVidaPct = v)],
+  [/^Remove \{\d+\}% de vida quando usado$/i, (p, v) => (p.aoUsar.perdeVidaPct = v)],
+  [/^Inicia recarga do escudo de energia quando usado$/i, (p) => (p.aoUsar.recargaEs = true)],
+  [/^Recupera \{\d+\}% de Vida ao usar$/, (p, v) => (p.aoUsar.vidaPct += v)],
+  [/^Remove toda Vida deixando sobrar \{\d+\}$/, (p, v) => (p.aoUsar.vidaAte = Math.max(1, v))],
+  [/^Vida Removida é regenerada como Escudo de Energia durante \{\d+\} segundos$/, (p, v) => (p.aoUsar.vidaRemovidaComoEsS = v)],
+  [/^Inimigos são Empurrados em uma Área ao usar o Frasco$/, (p) => (p.aoUsar.empurrar = true)],
+  [/^\{\d+\}% de chance de fazer Inimigos Fugirem quando usado$/, (p, v) => (p.aoUsar.fugaPct = v)],
+  [/^Inflige Exposição a Fogo, Gelo e Raio em Inimigos próximos quando usado$/, (p) => (p.aoUsar.exposicao = true)],
+  [/^Consome Cargas de Frenesi com o uso$/, (p) => (p.aoUsar.consomeFrenesi = true)],
+  [/^Ganhe Agressividade por \{\d+\} segundos por Carga de Frenesi consumida ao usar$/, (p, v) => (p.aoUsar.agressividadePorFrenesiS = v)],
+  [/^Recupera \{\d+\}% da Vida por Carga de Tolerância ao usar$/, (p, v) => (p.aoUsar.vidaPorToleranciaPct = v)],
+  [/^Perde todas as Cargas de Tolerância ao usar$/, (p) => (p.aoUsar.perdeTolerancias = true)],
+  [/^Recupera Toda a Vida ao término do Efeito$/, (p) => (p.noFim.vidaPct = 100)],
+  [/^Debilita os Inimigos próximos por \{\d+\} Segundos no término do Efeito$/, (p, v) => (p.noFim.debilitarS = v)],
+  // (o Colhedor de Almas: "70 ao Máximo de Cargas" — sem o "+" — e "Consome o Máximo de Cargas ao usar")
+  [/^\{\d+\} ao Máximo de Cargas$/, (p, v) => (p.cargasMaximas += v)],
+  [/^Consome o Máximo de Cargas ao usar$/, (p) => (p.consomeTudo = true)],
+  [/^Perde todas as Cargas ao entrar em uma nova área$/, (p) => (p.perdeAoEntrar = true)],
+  // (o Sabor Proibido: o Caos por segundo é do efeito do frasco)
+  [/^\{\d+\}% da Vida máxima sofrida como Dano de Caos por segundo$/, (p, v) => (p.duranteExtra.perde_vida_pct_s = (p.duranteExtra.perde_vida_pct_s ?? 0) + v)],
+  // (O Sábio Carvalho: o elemento é o da sua Resistência total mais baixa / mais alta — escolhido no uso, `usar`)
+  [/^Durante o Efeito, Dano sofrido é reduzido em \{\d+\}% de cada Elemento para o qual sua Resistência Elemental Total for menor$/, (p, v) => (p.sabio.reducao = v)],
+  [/^Durante o Efeito, Dano Penetra \{\d+\}% da Resistência de cada Elemento para o qual sua Resistência Elemental Total for maior$/, (p, v) => (p.sabio.penetra = v)],
+  // (os "durante o Efeito" escritos no meio da frase: entram nos atributos do efeito, como os do fim)
+  [/^Inimigos Incendiados por você durante o Efeito sofrem Dano aumentado em \{\d+\}%$/, (p, v) => (p.duranteExtra['dmg_inc@alvoIncendiado'] = (p.duranteExtra['dmg_inc@alvoIncendiado'] ?? 0) + v)],
+  [/^Inimigos Mortos por você durante o Efeito têm \{\d+\}% de chance de Explodirem, causando um décimo de sua Vida máxima como Dano de um Elemento Aleatório$/, (p, v) => (p.duranteExtra['ev:matar:explodirChance:10:aleatorio'] = v)],
+  [/^Eletriza Inimigos próximos durante o Efeito, causando \{\d+\}% de Dano sofrido aumentado$/, (p, v) => (p.eletrizaProximosPct = v)],
+  // (06/11, os Únicos — lote 5) a Progênese (a Vida perdida adiada — `mods-poe.adiarDano`), o Cálice Transbordante (sem Cargas de Frasco durante o efeito), o
+  // Último Suspiro de Zerphi (a Vida pelo custo de Mana, durante o efeito) e a Urna Come-Cinzas (as Cargas ao consumir um cadáver — `aoConsumirCadaver`)
+  [/^Quando Acertado durante o Efeito, \{\d+\}% da Vida perdida do Dano sofrido ocorre durante \{\d+\} segundos ao invés$/, (p, v) => (p.duranteExtra.dano_adiado_pct = (p.duranteExtra.dano_adiado_pct ?? 0) + v)],
+  [/^Não Recebe Cargas durante o Efeito de qualquer Frasco Cálice Transbordante$/, (p) => (p.duranteExtra.sem_cargas_de_frasco = 1)],
+  [/^Concede Último Suspiro quando você Usa uma Habilidade durante o Efeito, por \{\d+\}% do Custo de Mana$/, (p, v) => (p.duranteExtra['ev:gastarMana:vidaPorMana'] = (p.duranteExtra['ev:gastarMana:vidaPorMana'] ?? 0) + v)],
+  [/^Recarrega \{\d+\} Cargas ao consumir um Corpo Incendiado$/, (p, v) => (p.cargasAoConsumirCadaver = (p.cargasAoConsumirCadaver ?? 0) + v)],
+  [/^Você fica Eletrizado durante o Efeito, recebendo um aumento de \{\d+\}% do Dano sofrido$/, (p, v) => (p.duranteExtra.dano_recebido_inc = (p.duranteExtra.dano_recebido_inc ?? 0) + v)],
 
 ];
-const DURANTE = / durante o (Efeito|efeito do Frasco)$/;
+// (05/11) "durante o Efeito" no fim em qualquer caixa ("durante o efeito" da Promessa de Atziri e do Sabor do Ódio) e "Durante o Efeito, …" no começo
+// (O Sábio Carvalho): antes só a forma com E maiúsculo no fim casava, e essas linhas ficavam sem efeito
+const CARGA = { Tolerância: 'tolerancia', Frenesi: 'frenesi', Poder: 'poder' };
+const DURANTE = /(?: durante o (?:efeito(?: do frasco)?)$|^durante o efeito, )/i;
 /** "Concede Imunidade a X … se usado enquanto X": a afecção do PoE → o efeito do jogo que ela tira (e de que fica imune). */
 const IMUNIDADE = { Desaceleração: 'lento', Mutilação: 'lento', Sangramento: 'sangramento', 'Sangue Corrompido': 'sangramento', Eletrização: 'eletrizacao', Resfriamento: 'resfriamento', Congelamento: 'congelamento', Incêndio: 'incendio', Envenenamento: 'veneno' };
 /** Os mods do PERSONAGEM que mexem nos frascos ("Recuperação de Vida do Frasco aumentada", "Duração do efeito do Frasco"…): quem lê é a ficha. */
@@ -125,7 +167,7 @@ export function parametros(peca, afDoPersonagem = null) {
   const tipo = TIPO_DA_CLASSE[poe.classe] ?? null;
   const p = { velocidadePct: 0, quantidadePct: 0, quantidadeVidaPct: 0, quantidadeManaPct: 0, instantaneo: false, recargaPct: 0, cargasMaximas: Number(a.cargas_maximas) || 0, custoPct: 0, duracaoPct: 0, duracaoMenos: 1, efeitoPct: 0, maisNaVidaBaixaPct: 0,
     instantaneoPct: 0, instantaneoNaVidaBaixa: false, instantaneoNaManaBaixa: false, instantaneoNoFim: false, naoParaNoCheio: false, naoAcumula: false, saiNoPvp: false, custoDaOutraPct: 0, lacaiosPct: 0, cargaNoCriticoPct: 0, cargasAoSerAcertado: 0,
-    aoUsar: { imunidades: [] } };
+    aoUsar: { imunidades: [], cargas: [], vidaPct: 0 }, noFim: {}, duranteExtra: {}, consomeTudo: false, eletrizaProximosPct: 0, perdeAoEntrar: false, sabio: {} };
   // Os mods do PERSONAGEM (cinto, anéis…): recuperação de vida/mana dos frascos, duração e efeito dos de Utilidade, cargas usadas.
   const pp = afDoPersonagem ?? {};
   const n = (k) => Number(pp[k]) || 0;
@@ -154,6 +196,8 @@ export function parametros(peca, afDoPersonagem = null) {
   }
   // O estado de cada MOD (o balão marca por mod, na ordem implícitos, prefixos, sufixos, mods do único): o pior das partes.
   const estadosPorMod = [];
+  // (06/11) a NOTA de cada mod inerte (o motivo no balão, como nas peças — `jogo.notasDe`)
+  const notasPorMod = [];
   for (const mod of [...(poe.implicitos ?? []), ...(poe.prefixos ?? []), ...(poe.sufixos ?? []), ...(poe.modificadores ?? [])]) {
     const antes = linhas.length;
     for (const parte of String(mod.modelo ?? mod.texto ?? '').split(' / ')) {
@@ -166,7 +210,10 @@ export function parametros(peca, afDoPersonagem = null) {
         continue;
       }
       if (DURANTE.test(parte)) {
-        const t = traduzirParte(parte.replace(DURANTE, ''), mod.valores ?? []);
+        // (05/11) a frase sem o "durante o Efeito"; se ela não tiver regra, a frase inteira (há regras escritas com ele: "Habilidades não Custam
+        // Mana durante o Efeito", as das Habilidades Vaal "… durante o efeito")
+        const semDurante = traduzirParte(parte.replace(DURANTE, ''), mod.valores ?? []);
+        const t = semDurante.estado === 'registrado' ? traduzirParte(parte, mod.valores ?? []) : semDurante;
         const vale = t.estado !== 'registrado';
         if (vale) for (const e of t.efeitos) if (typeof e.valor === 'number') durante[e.stat] = (durante[e.stat] ?? 0) + e.valor;
         linhas.push({ texto, estado: vale ? 'efeito' : 'registrado' });
@@ -174,10 +221,13 @@ export function parametros(peca, afDoPersonagem = null) {
       }
       // O resto passa pela tradução (o que ela marca como inerte, como na peça). (02/11: o "Restaura Proteção ao usar" tem efeito — a regra acima.)
       const tr = traduzirParte(parte, mod.valores ?? []);
-      linhas.push({ texto, estado: tr.estado === 'inerte' ? 'inerte' : 'registrado' });
+      // (05/11) o texto de LEMBRETE do PoE (entre parênteses: "(Efeitos de Frascos de Vida ainda são removidos…)") é nota, como na peça —
+      // antes ficava "registrado" (sem efeito) no balão do frasco único
+      linhas.push({ texto, estado: tr.estado === 'inerte' ? 'inerte' : tr.estado === 'lembrete' ? 'lembrete' : 'registrado', nota: tr.estado === 'inerte' ? tr.nota ?? null : null });
     }
-    const minhas = linhas.slice(antes);
-    estadosPorMod.push(minhas.every((l) => l.estado === 'efeito') ? 'equivalente' : minhas.some((l) => l.estado === 'efeito') ? 'aproximado' : minhas.every((l) => l.estado === 'inerte') ? 'inerte' : 'registrado');
+    const minhas = linhas.slice(antes).filter((l) => l.estado !== 'lembrete');
+    notasPorMod.push(minhas.length && minhas.every((l) => l.estado === 'inerte') ? minhas.find((l) => l.nota)?.nota ?? null : null);
+    estadosPorMod.push(!minhas.length ? 'lembrete' : minhas.every((l) => l.estado === 'efeito') ? 'equivalente' : minhas.some((l) => l.estado === 'efeito') ? 'aproximado' : minhas.every((l) => l.estado === 'inerte') ? 'inerte' : 'registrado');
   }
   // O efeito da BASE do frasco de Utilidade (o Rubi, o Mercúrio...): `regras.frascos.utilidade[slug]`.
   const slug = String(poe.base ?? '').split('/')[1];
@@ -186,6 +236,8 @@ export function parametros(peca, afDoPersonagem = null) {
   const af = {};
   for (const [k, v] of Object.entries(daBase?.af ?? {})) af[k] = Math.round(v * fatorDoEfeito * 100) / 100;
   for (const [k, v] of Object.entries(durante)) af[k] = Math.round(((af[k] ?? 0) + v * fatorDoEfeito) * 100) / 100;
+  // (05/11) os "durante o Efeito" do meio da frase (as regras acima) — sem o Efeito do frasco: são números da linha, não do efeito da base
+  for (const [k, v] of Object.entries(p.duranteExtra)) af[k] = Math.round(((af[k] ?? 0) + v) * 100) / 100;
   const rec = a.recupera ?? null;
   const duracaoDe = (r) => (r ? Math.max(100, Math.round((Number(r.segundos) * 1000) / Math.max(0.1, 1 + p.velocidadePct / 100))) : 0);
   const ms = duracaoDe(rec);
@@ -203,19 +255,22 @@ export function parametros(peca, afDoPersonagem = null) {
     ...(recMana ? { quantidadeMana: Math.round(Number(recMana.quantidade) * Math.max(0, 1 + (p.quantidadePct + p.quantidadeManaPct) / 100)), msMana: duracaoDe(recMana), instantaneoNaManaBaixa: p.instantaneoNaManaBaixa } : {}),
     instantaneo: p.instantaneo,
     maisNaVidaBaixaPct: p.maisNaVidaBaixaPct,
-    cargasPorUso: Math.max(1, Math.round((Number(a.cargas_por_uso) || 1) * Math.max(0, 1 + p.custoPct / 100))),
+    cargasPorUso: p.consomeTudo ? Math.max(1, p.cargasMaximas) : Math.max(1, Math.round((Number(a.cargas_por_uso) || 1) * Math.max(0, 1 + p.custoPct / 100))),
     cargasMaximas: Math.max(1, p.cargasMaximas),
     duracaoMs: a.duracao_segundos ? Math.round(Number(a.duracao_segundos) * 1000 * Math.max(0, 1 + p.duracaoPct / 100) * p.duracaoMenos) : 0,
     recargaPct: p.recargaPct,
     efeitoPct: p.efeitoPct,
     instantaneoPct: Math.min(100, p.instantaneoPct), instantaneoNaVidaBaixa: p.instantaneoNaVidaBaixa, instantaneoNoFim: p.instantaneoNoFim, naoParaNoCheio: p.naoParaNoCheio,
     naoAcumula: p.naoAcumula, saiNoPvp: p.saiNoPvp, custoDaOutraPct: p.custoDaOutraPct, lacaiosPct: p.lacaiosPct, cargaNoCriticoPct: p.cargaNoCriticoPct, cargasAoSerAcertado: p.cargasAoSerAcertado, aoUsar: p.aoUsar,
+    ...(Object.keys(p.noFim).length ? { noFim: p.noFim } : {}), ...(p.perdeAoEntrar ? { perdeAoEntrar: true } : {}), ...(Object.keys(p.sabio).length ? { sabio: p.sabio } : {}), ...(p.eletrizaProximosPct ? { eletrizaProximosPct: p.eletrizaProximosPct } : {}),
     ...(p.restauraSalvaguarda ? { restauraSalvaguarda: true } : {}),
     ...(p.saiNaQuebra ? { saiNaQuebra: true } : {}),
+    ...(p.cargasAoConsumirCadaver ? { cargasAoConsumirCadaver: p.cargasAoConsumirCadaver } : {}),
     af,
     efeitoDaBase: daBase?.texto ?? null,
     linhas,
     estadosPorMod,
+    notasPorMod,
   };
 }
 
@@ -306,7 +361,12 @@ export function usar(estado, v, eventos = null, quem = null) {
   if (v === 4 && Number(afp.sem_quinto_frasco) > 0) return false;
   // A TINTURA: usar ATIVA (ou DESATIVA a que está ativa) — `tinturas.mjs`.
   if (ehTinturaDoCinto(peca)) return alternarTintura(estado, v, peca, afp);
+  // (06/11, o Umbilicus Immortalis: "Frascos que você Usar se aplicam aos seus Zumbis e Espectros Convocados" — `frascos_em_zumbis`) com "Frascos não são aplicados em
+  // Você", o frasco de Vida (e o Híbrido) gasta as cargas e cura cada Zumbi e Espectro vivo pela quantidade dele; o de Utilidade não tem efeito nos lacaios do jogo
+  if (Number(afp.frascos_nao_aplicam) > 0 && Number(afp.frascos_em_zumbis) > 0) return usarNosZumbis(estado, peca, afp);
   if (Number(afp[`sem_frasco:${TIPO_DA_CLASSE[peca.poe?.classe]}`]) > 0 || Number(afp.frascos_nao_aplicam) > 0) return false;
+  // (06/11, o Sangue Mágico: "Frascos Utilitários Mágicos não podem ser Usados" — os dois mais à esquerda ficam sempre ligados: `constantesDoSangueMagico`)
+  if (Number(afp.sangue_magico) > 0 && TIPO_DA_CLASSE[peca.poe?.classe] === 'utilidade' && peca.poe?.raridade === 'magico') return false;
   // (o Híbrido conta como de Vida e de Mana: "Não pode usar Frascos de Vida" ou "…de Mana" também o barram)
   if (TIPO_DA_CLASSE[peca.poe?.classe] === 'hibrido' && (Number(afp['sem_frasco:vida']) > 0 || Number(afp['sem_frasco:mana']) > 0)) return false;
   const par = parametros(peca, afp);
@@ -315,7 +375,8 @@ export function usar(estado, v, eventos = null, quem = null) {
   const st = estadoDaCacada(hunt);
   const agora = hunt.clock ?? 0;
   // (o Pathfinder: "Efeitos do Frasco de Vida não se Enfileram" — o frasco de vida usado de novo troca o efeito que corre pelo novo.)
-  if (st.ativos[v]?.ate > agora && !(contaComo(peca, 'vida') && Number(afp.frasco_vida_sem_fila) > 0)) return false;
+  // (06/11, o Gêiser de Khatal: "Efeitos do frasco de mana não se enfileiram" — o mesmo, no de Mana)
+  if (st.ativos[v]?.ate > agora && !(contaComo(peca, 'vida') && Number(afp.frasco_vida_sem_fila) > 0) && !(contaComo(peca, 'mana') && Number(afp.frasco_mana_sem_fila) > 0)) return false;
   // (ciclo 7, lote F) "X% de chance de Frascos usados por você não consumirem Cargas".
   if (!(Math.random() * 100 < (Number(afp.frasco_sem_consumo) || 0))) peca.poe.cargas = cargas - par.cargasPorUso;
   aoUsarOFrasco(estado, par, eventos, quem, afp);
@@ -328,11 +389,14 @@ export function usar(estado, v, eventos = null, quem = null) {
     // Recentemente" — a Maestria de Tinturas: o frasco ao lado de uma Tintura ativa.)
     const adjacente = Number(afp.tintura_frasco_adjacente_efeito) || 0;
     const ao = adjacente > 0 && (hunt.poeRecente?.acertou ?? -Infinity) >= agora - 4000 && Tinturas.ativas(st).some(([w]) => Math.abs(Number(w) - v) === 1);
-    const af = ao ? parametros(peca, { ...afp, frasco_efeito: (Number(afp.frasco_efeito) || 0) + adjacente }).af : par.af;
-    st.ativos[v] = { ate: agora + par.duracaoMs, af, nome: peca.poe.nome, ...(par.saiNoPvp ? { saiNoPvp: true } : {}), ...(par.saiNaQuebra ? { saiNaQuebra: true } : {}) };
+    const af = { ...(ao ? parametros(peca, { ...afp, frasco_efeito: (Number(afp.frasco_efeito) || 0) + adjacente }).af : par.af), ...doSabio(par, afp) };
+    st.ativos[v] = { ate: agora + par.duracaoMs, af, nome: peca.poe.nome, ...(par.saiNoPvp ? { saiNoPvp: true } : {}), ...(par.saiNaQuebra ? { saiNaQuebra: true } : {}), ...extrasDoEfeito(par, false) };
     return true;
   }
   if (par.tipo === 'hibrido') return usarHibrido(estado, v, peca, par, st, agora, eventos, quem, afp);
+  // (05/11) os atributos "durante o Efeito" dos frascos de Vida e de Mana (o Espírito de Lavianga, o Vaso de Vinktar…) — antes só os de Utilidade os
+  // aplicavam — e o que ele faz no término
+  const doEfeito = extrasDoEfeito(par);
   // Vida/Mana: na vida baixa (abaixo de 50%), o "mais Recuperação se usado enquanto em Vida Baixa" (o de mana olha a Mana Baixa).
   const vidaBaixa = par.recurso === 'mana' && Number(afp['frasco_instantaneo_baixa:mana']) > 0 ? (estado.mana ?? 0) <= (estado.maxMana ?? 1) * 0.5 : (estado.hp ?? 0) < (estado.maxHp ?? 1) * 0.5;
   const total = par.quantidade * (vidaBaixa ? 1 + par.maisNaVidaBaixaPct / 100 : 1);
@@ -341,7 +405,7 @@ export function usar(estado, v, eventos = null, quem = null) {
   // "Recuperação Instantânea" (ou "quando em Vida Baixa", na vida baixa): tudo na hora.
   if (par.instantaneo || (par.instantaneoNaVidaBaixa && vidaBaixa)) {
     recuperar(estado, par.recurso, total, eventos, quem, extras);
-    st.ativos[v] = { ate: agora + 250, recurso: par.recurso, nome: peca.poe.nome };
+    st.ativos[v] = { ate: agora + 250, recurso: par.recurso, nome: peca.poe.nome, ...doEfeito };
     return true;
   }
   // "X% da Recuperação aplicada Instantaneamente": essa parte na hora, o resto ao longo do tempo.
@@ -349,9 +413,34 @@ export function usar(estado, v, eventos = null, quem = null) {
   if (naHora > 0) recuperar(estado, par.recurso, naHora, eventos, quem, extras);
   const resto = total - naHora;
   // "Recuperação de Mana ocorre instantaneamente no término do Efeito": nada ao longo do tempo, tudo no fim.
-  if (par.instantaneoNoFim) st.ativos[v] = { ate: agora + par.ms, recurso: par.recurso, nome: peca.poe.nome, noFim: resto, extras };
-  else st.ativos[v] = { ate: agora + par.ms, de: agora, ultimo: agora, porMs: resto / par.ms, recurso: par.recurso, nome: peca.poe.nome, extras, ...(par.naoParaNoCheio ? { naoParaNoCheio: true } : {}) };
+  if (par.instantaneoNoFim) st.ativos[v] = { ate: agora + par.ms, recurso: par.recurso, nome: peca.poe.nome, noFim: resto, extras, ...doEfeito };
+  else st.ativos[v] = { ate: agora + par.ms, de: agora, ultimo: agora, porMs: resto / par.ms, recurso: par.recurso, nome: peca.poe.nome, extras, ...(par.naoParaNoCheio ? { naoParaNoCheio: true } : {}), ...doEfeito };
   return true;
+}
+
+/** (06/11, o Umbilicus Immortalis) o frasco de Vida usado nos seus Zumbis e Espectros: gasta as cargas e cura cada um pela quantidade do frasco. */
+function usarNosZumbis(estado, peca, afp) {
+  const par = parametros(peca, afp);
+  if (!(par.tipo === 'vida' || par.tipo === 'hibrido') || cargasDe(peca, par) < par.cargasPorUso) return false;
+  const alvos = (estado.hunt?.lacaios ?? []).filter((l) => l.hp > 0 && (l.espectro || /zumbi|zombie|espectro|spectre/i.test(l.nome ?? '')));
+  if (!alvos.length) return false;
+  peca.poe.cargas = cargasDe(peca, par) - par.cargasPorUso;
+  for (const l of alvos) l.hp = Math.min(l.maxHp ?? l.hp, l.hp + (par.quantidade ?? 0));
+  return true;
+}
+
+/**
+ * (06/11, o Sangue Mágico: "Frascos Utilitários Mágicos 2 mais à Esquerda aplicam seu Efeito de Frasco constantemente em você") os efeitos dos dois primeiros frascos
+ * de Utilidade Mágicos do cinto (da esquerda), sempre ligados — guardados no tique (`st.constantes`), que `adds` soma.
+ */
+function constantesDoSangueMagico(estado, st, afp) {
+  if (!(Number(afp.sangue_magico_constantes) > 0)) { if (st.constantes) { delete st.constantes; return true; } return false; }
+  const n = Math.round(Number(afp.sangue_magico_constantes));
+  const lista = cinto(estado).filter((p) => p && !ehTinturaDoCinto(p) && TIPO_DA_CLASSE[p.poe?.classe] === 'utilidade' && p.poe?.raridade === 'magico').slice(0, n);
+  const novas = lista.map((p) => ({ nome: p.poe.nome, af: parametros(p, afp).af ?? {} }));
+  const mudou = JSON.stringify(novas) !== JSON.stringify(st.constantes ?? []);
+  st.constantes = novas;
+  return mudou;
 }
 
 /**
@@ -369,7 +458,7 @@ function usarHibrido(estado, v, peca, par, st, agora, eventos, quem, afp) {
   if (par.instantaneo || (par.instantaneoNaVidaBaixa && vidaBaixa) || (par.instantaneoNaManaBaixa && manaBaixa)) {
     recuperar(estado, 'vida', vida, eventos, quem, extras);
     recuperar(estado, 'mana', mana, eventos, quem);
-    st.ativos[v] = { ate: agora + 250, recurso: 'vida', mana: { ate: agora + 250 }, nome: peca.poe.nome };
+    st.ativos[v] = { ate: agora + 250, recurso: 'vida', mana: { ate: agora + 250 }, nome: peca.poe.nome, ...extrasDoEfeito(par) };
     return true;
   }
   const naHora = (par.instantaneoPct ?? 0) / 100;
@@ -378,7 +467,7 @@ function usarHibrido(estado, v, peca, par, st, agora, eventos, quem, afp) {
   const restoMana = mana * (1 - naHora);
   const msMana = par.msMana || par.ms;
   const daMana = par.instantaneoNoFim ? { ate: agora + msMana, noFim: restoMana } : { ate: agora + msMana, porMs: restoMana / msMana };
-  st.ativos[v] = { ate: agora + Math.max(par.ms, msMana), de: agora, ultimo: agora, porMs: restoVida / par.ms, vidaAte: agora + par.ms, recurso: 'vida', mana: daMana, nome: peca.poe.nome, extras, ...(par.naoParaNoCheio ? { naoParaNoCheio: true } : {}) };
+  st.ativos[v] = { ate: agora + Math.max(par.ms, msMana), de: agora, ultimo: agora, porMs: restoVida / par.ms, vidaAte: agora + par.ms, recurso: 'vida', mana: daMana, nome: peca.poe.nome, extras, ...(par.naoParaNoCheio ? { naoParaNoCheio: true } : {}), ...extrasDoEfeito(par) };
   return true;
 }
 
@@ -391,6 +480,31 @@ function alternarTintura(estado, v, peca, afp) {
   return Tinturas.ativar(estado, st, v, peca, afp, agora);
 }
 
+/**
+ * (05/11) O Sábio Carvalho: no uso, o elemento da sua Resistência total MAIS BAIXA recebe o dano reduzido e o da MAIS ALTA é penetrado (Fogo, Gelo e
+ * Raio; empate: o primeiro). `afp`: os atributos do personagem (as resistências somadas).
+ */
+function doSabio(par, afp) {
+  const s = par.sabio;
+  if (!s) return {};
+  const res = ['fire', 'ice', 'energy'].map((e) => [e, Number(afp[`${e}_res`]) || 0]);
+  const menor = res.reduce((a, b) => (b[1] < a[1] ? b : a));
+  const maior = res.reduce((a, b) => (b[1] > a[1] ? b : a));
+  return { ...(s.reducao ? { [`dano_${menor[0]}_recebido_inc`]: -s.reducao } : {}), ...(s.penetra ? { [`${maior[0]}_pen`]: s.penetra } : {}) };
+}
+
+/**
+ * (05/11) O que o efeito ativo leva além da recuperação: os atributos "durante o Efeito" (`af` — os de Vida e de Mana não os levavam; `comAf`
+ * false: o de Utilidade já põe os dele), o que ele faz no término (`noFimAcoes`) e a Eletrização em volta (`eletriza`, o Vaso de Vinktar).
+ */
+function extrasDoEfeito(par, comAf = true) {
+  return {
+    ...(comAf && par.af && Object.keys(par.af).length ? { af: par.af } : {}),
+    ...(par.noFim ? { noFimAcoes: par.noFim } : {}),
+    ...(par.eletrizaProximosPct ? { eletriza: par.eletrizaProximosPct } : {}),
+  };
+}
+
 /** O que o frasco faz AO SER USADO (PoE): tirar Maldições/Incêndios, as imunidades "se usado enquanto…", desacelerar/provocar em volta e os solos. */
 const RAIO_DO_FRASCO = 3;
 const SOLO_MS = 5000;
@@ -400,6 +514,33 @@ function aoUsarOFrasco(estado, par, eventos, quem, afp = {}) {
   const u = par.aoUsar ?? {};
   const agora = hunt.clock ?? 0;
   if (u.removerMaldicao) Dot.removerDoJogador(hunt, 'maldicao');
+  // (05/11, os frascos únicos) as Cargas ao usar (o Elixir de Doedre, o Composto de Rumi Réplica); a Agressividade por Frenesi consumida (a Entranha
+  // Pútrida); a Vida por Tolerância (o Elixir do Círculo Não Quebrado)
+  for (const c of u.cargas ?? []) CargasPoe.ganhar(estado, c.tipo, afp, c.n);
+  if (u.consomeFrenesi) {
+    const gastas = CargasPoe.gastar(estado, 'frenesi', Infinity);
+    if (gastas && u.agressividadePorFrenesiS) ganharBuff(hunt, 'agressividade', gastas * u.agressividadePorFrenesiS, agora);
+  }
+  if (u.vidaPorToleranciaPct || u.perdeTolerancias) {
+    const c = hunt.cargasPoe?.tolerancia;
+    const tem = c && c.ate > agora ? Number(c.n) || 0 : 0;
+    const n = u.perdeTolerancias ? CargasPoe.gastar(estado, 'tolerancia', Infinity) : tem;
+    if (u.vidaPorToleranciaPct && n) recuperar(estado, 'vida', ((estado.maxHp ?? 0) * u.vidaPorToleranciaPct * n) / 100, eventos, quem);
+  }
+  if (u.vidaPct) recuperar(estado, 'vida', ((estado.maxHp ?? 0) * u.vidaPct) / 100, eventos, quem);
+  // o que tira de você: o Escudo de Energia (Doedre), a Vida (o Filactério), o Caos em % da Vida (Doedre — não mata: fica em 1), e o Elixir Coruscante
+  // ("Remove toda Vida deixando sobrar 1 / Vida Removida é regenerada como Escudo de Energia durante 2 segundos")
+  if (u.perdeEsPct) estado.es = Math.max(0, Math.round((estado.es ?? 0) - ((Number(estado.maxEsPoe) || estado.es || 0) * u.perdeEsPct) / 100));
+  if (u.perdeVidaPct) estado.hp = Math.max(1, Math.round((estado.hp ?? 0) - ((estado.maxHp ?? 0) * u.perdeVidaPct) / 100));
+  if (u.danoCaosVidaPct) estado.hp = Math.max(1, Math.round((estado.hp ?? 0) - ((estado.maxHp ?? 0) * u.danoCaosVidaPct) / 100));
+  if (u.vidaAte) {
+    const tirada = Math.max(0, (estado.hp ?? 0) - u.vidaAte);
+    estado.hp = Math.min(estado.hp ?? 0, u.vidaAte);
+    const ms = Math.max(100, (u.vidaRemovidaComoEsS || 1) * 1000);
+    if (tirada > 0 && u.vidaRemovidaComoEsS) (hunt.recuperacoes ??= []).push({ recurso: 'es', porMs: tirada / ms, desde: agora, ate: agora + ms });
+  }
+  // ("Inicia recarga do escudo de energia quando usado")
+  if (u.recargaEs) estado.esEspera = 0;
   if (u.removerIncendio) Dot.removerDoJogador(hunt, 'queimadura');
   for (const im of u.imunidades ?? []) {
     // Só "se usado enquanto" afetado: tira o efeito e fica imune pelo tempo.
@@ -424,6 +565,11 @@ function aoUsarOFrasco(estado, par, eventos, quem, afp = {}) {
     if (u.provocar) { e.provocado = { ate: agora + 3000 }; ev(m, 'provocado'); }
     // Nuvem de Fumaça: Cega quem está em volta.
     if (u.fumaca) { e.cego = { ate: agora + 4000 }; ev(m, 'cego'); }
+    // (05/11) o Rugido do Leão: Empurra em volta e a chance de Fugir (o Raro, o Único e o chefe não fogem; o Mágico evita metade — a regra da Fuga)
+    if (u.empurrar) empurrar(hunt, m);
+    if (u.fugaPct && fogeDoFrasco(m, u.fugaPct)) { e.fugindo = { ate: agora + FUGA_MS }; ev(m, 'fugindo'); }
+    // o Cálice da Luz Estelar: Exposição a Fogo, Gelo e Raio (4 s, a do PoE)
+    if (u.exposicao) { e.exposicao = { ...(e.exposicao ?? {}), fire: agora + EXPOSICAO_MS, ice: agora + EXPOSICAO_MS, energy: agora + EXPOSICAO_MS }; ev(m, 'exposicao'); }
   }
   // (03/11) Solo Congelado: o SOLO de verdade no chão onde você está (antes: só 10% de lentidão nos monstros perto, na hora do uso) — uma das suas áreas frias
   // (`condicoes-poe.criarSoloCongelado`): Resfria os monstros que estão nele ou entram (10% × "Efeito do Solo Congelado aumentado"); conta para o "sobre Solo
@@ -433,11 +579,41 @@ function aoUsarOFrasco(estado, par, eventos, quem, afp = {}) {
   if (u.solo === 'sagrado') (hunt.frascosPoe.extras ??= []).push({ ate: agora + SOLO_MS, af: { life_regen_max_pct: 6 }, nome: 'Solo Sagrado' });
 }
 
+/** A Fuga do frasco (a mesma regra da Chance de Fugir — `acoes.fugir`): o Raro, o Único e o chefe não fogem; o Mágico evita metade. */
+const FUGA_MS = 2000;
+const EXPOSICAO_MS = 4000;
+function fogeDoFrasco(m, chance, rng = Math.random) {
+  const raridade = String(m?.raridade ?? '');
+  if (m.boss || m.chefe || m.isBoss || /raro|elite|unico|único|boss/i.test(raridade)) return false;
+  if (!(rng() * 100 < chance)) return false;
+  return !(/modificado|magic|mágic/i.test(raridade) && rng() < 0.5);
+}
+
+/** (05/11) O que o frasco faz NO TÉRMINO do efeito: recuperar a Vida (o Sangue dos Karui), Debilitar em volta (a Preparação de Vorana). */
+function noFimDoFrasco(estado, a, eventos, quem) {
+  const f = a.noFimAcoes;
+  const hunt = estado.hunt;
+  if (!f || !hunt) return;
+  if (f.vidaPct) recuperar(estado, 'vida', ((estado.maxHp ?? 0) * f.vidaPct) / 100, eventos, quem);
+  if (f.debilitarS && hunt.pos) {
+    const agora = hunt.clock ?? 0;
+    for (const m of hunt.monstros ?? []) {
+      if (m.hp <= 0 || m.dummy || Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) > RAIO_DO_FRASCO) continue;
+      const e = (m.estados ??= {});
+      e.debilitado = { ate: agora + f.debilitarS * 1000 };
+      porLento(e, agora + f.debilitarS * 1000, 20, agora);
+      eventos?.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'debilitado' });
+    }
+  }
+}
+
 function recuperar(estado, recurso, valor, eventos, quem, extras = null) {
   const [campo, maximo, cor] = recurso === 'mana' ? ['mana', 'maxMana', '#4fc3ff'] : ['hp', 'maxHp', '#00ff66'];
   const ganho = Math.min(Math.max(0, valor), Math.max(0, (estado[maximo] ?? 0) - (estado[campo] ?? 0)));
   // "Repassa X% da Recuperação de Vida para Lacaios" (o que o frasco recupera, mesmo com a vida cheia).
   if (extras?.lacaiosPct > 0 && recurso !== 'mana') for (const l of estado.hunt?.lacaios ?? []) if (l.hp > 0) l.hp = Math.min(l.maxHp, l.hp + (valor * extras.lacaiosPct) / 100);
+  // (05/11, O Sofrimento do Divino) "Recuperação de Vida de Frascos também se aplica ao Escudo de Energia": a mesma quantidade enche o escudo
+  if (recurso !== 'mana' && valor > 0 && Number(doPersonagem(estado).frasco_vida_tambem_es) > 0) estado.es = Math.min(Number(estado.maxEsPoe) || 0, (estado.es ?? 0) + valor);
   if (!(ganho > 0) || (extras?.semVida && campo === 'hp')) return 0;
   estado[campo] = (estado[campo] ?? 0) + ganho;
   // "Retira X% de Vida Recuperada da Mana" (e o contrário): a outra barra paga.
@@ -463,13 +639,15 @@ export function tique(estado, eventos = null, quem = null) {
   const agora = hunt.clock ?? 0;
   // Entrou na caçada: todos cheios (no PoE, a cidade enche os frascos).
   if (!st.cheios) {
-    for (const p of c) if (p && !ehTinturaDoCinto(p)) p.poe.cargas = parametros(p).cargasMaximas;
+    // (05/11, o Colhedor de Almas: "Perde todas as Cargas ao entrar em uma nova área")
+    for (const p of c) if (p && !ehTinturaDoCinto(p)) { const par = parametros(p); p.poe.cargas = par.perdeAoEntrar ? 0 : par.cargasMaximas; }
     st.cheios = true;
   }
   let mudou = false;
   // (do personagem: "A Mana não-instantânea recuperada dos Frascos também recupera Vida"; "Efeitos do frasco de mana não são removidos quando o
   // mana não reservado é preenchido")
   const doDono = doPersonagem(estado);
+  if (constantesDoSangueMagico(estado, st, doDono)) mudou = true;
   // A recuperação ao longo do tempo e o vencimento.
   for (const [v, a] of Object.entries(st.ativos)) {
     // (04/11) o HÍBRIDO: a Vida e a Mana, cada uma até o fim dela; acaba quando as duas (não reservadas) estão cheias.
@@ -501,7 +679,16 @@ export function tique(estado, eventos = null, quem = null) {
       if (a.recurso === 'mana' && !a.naoParaNoCheio && !(Number(doDono.frasco_mana_nao_para) > 0) && (estado.mana ?? 0) >= (estado.maxMana ?? 0) - reservadoAgora(estado, 'mana')) a.ate = Math.min(a.ate, agora);
       if (a.recurso === 'vida' && !(Number(doDono.frasco_vida_nao_para) > 0) && (estado.hp ?? 0) >= (estado.maxHp ?? 0) - reservadoAgora(estado, 'vida')) a.ate = Math.min(a.ate, agora);
     }
+    // (05/11, o Vaso de Vinktar) "Eletriza Inimigos próximos durante o Efeito": quem está em volta fica Eletrizado enquanto dura
+    if (a.eletriza && a.ate > agora && hunt.pos) {
+      for (const m of hunt.monstros ?? []) {
+        if (m.hp <= 0 || m.dummy || Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) > RAIO_DO_FRASCO) continue;
+        const e = (m.estados ??= {});
+        e.chocado = { ate: Math.max(e.chocado?.ate ?? 0, agora + 500), pct: Math.max(e.chocado?.ate > agora ? e.chocado.pct ?? 0 : 0, a.eletriza) };
+      }
+    }
     if (a.ate <= agora) {
+      noFimDoFrasco(estado, a, eventos, quem);
       if (a.noFim > 0) recuperar(estado, a.recurso, a.noFim, eventos, quem, a.extras);
       if (a.mana?.noFim > 0) recuperar(estado, 'mana', a.mana.noFim, eventos, quem);
       if (a.af) mudou = true;
@@ -565,7 +752,8 @@ export function tique(estado, eventos = null, quem = null) {
     // (o Híbrido: a Vida OU a Mana abaixo do X% da regra, e aquela que está baixa sem outro frasco recuperando)
     const hibrido = tipo === 'hibrido' && (((estado.hp ?? 0) < (estado.maxHp ?? 0) * (r.abaixoPct / 100) && !recuperando('vida')) || ((estado.mana ?? 0) < (estado.maxMana ?? 0) * (r.abaixoPct / 100) && !recuperando('mana')));
     const quer = tipo === 'utilidade' ? emCombate && r.emCombate : tipo === 'hibrido' ? hibrido : precisa && !recuperando(tipo === 'mana' ? 'mana' : 'vida');
-    if (quer && usar(estado, v, eventos, quem) && tipo === 'utilidade') mudou = true;
+    // (05/11: o de Vida e de Mana com atributos "durante o Efeito" também muda a ficha)
+    if (quer && usar(estado, v, eventos, quem) && (tipo === 'utilidade' || st.ativos[v]?.af)) mudou = true;
   }
   return mudou;
 }
@@ -644,6 +832,7 @@ export function aoMatar(estado, tipoDoMonstro = 'normal', morto = null) {
   // concedem X% de Cargas de Frascos aumentadas" — o morto Incendiado, Congelado, Eletrizado ou Resfriado; + "Inimigos nos quais você infligiu
   // Sangramento concedem X% de aumento das Cargas de Frasco" — o morto sangrando.)
   const afp = doPersonagem(estado);
+  if (Number(afp.sem_cargas_de_frasco) > 0) return;
   const agora = estado?.hunt?.clock ?? 0;
   const e = morto?.estados ?? {};
   const elemental = !!morto && (['congelado', 'chocado', 'lento'].some((k) => e[k]?.ate > agora) || (morto.dots ?? []).some((d) => d.tipo === 'queimadura' && d.falta > 0));
@@ -665,9 +854,37 @@ export function aoMatar(estado, tipoDoMonstro = 'normal', morto = null) {
  * (lote G-A, dono 25/10) As CARGAS DE FRASCO ganhas por fora do abate (a Marca do Alquimista: "Ganha 1 Cargas de Frasco quando você Acertar um Inimigo Amaldiçoado"): `n` em
  * cada frasco do cinto (as Tinturas não), × a "Recarga de Frasco recebida aumentada" do frasco e do personagem, até o máximo de cada um. Devolve se algum ganhou.
  */
+/**
+ * (06/11, a Lamúria de Khatal: "Ao realizar um ataque não canalizador, define um frasco de vida com mais de 50% das cargas máximas restantes para 50%") o primeiro
+ * frasco de Vida do cinto acima da metade volta à metade; devolve quantas cargas saíram (o "+2% ao multiplicador de dano degenerativo" por carga — `mods-poe`).
+ */
+export function cargasDaLamuria(estado) {
+  for (const p of cinto(estado)) {
+    if (!p?.poe || ehTinturaDoCinto(p) || !contaComo(p, 'vida')) continue;
+    const max = parametros(p).cargasMaximas;
+    const atual = cargasDe(p, parametros(p));
+    if (!(max > 0) || !(atual > max / 2)) continue;
+    const metade = Math.floor(max / 2);
+    p.poe.cargas = metade;
+    return atual - metade;
+  }
+  return 0;
+}
+
+/** (06/11, a Urna Come-Cinzas: "Recarrega N Cargas ao consumir um Corpo Incendiado") os frascos com a linha ganham as cargas ao consumir um cadáver (qualquer: o jogo não guarda o Incêndio no cadáver). */
+export function aoConsumirCadaver(estado) {
+  for (const p of cinto(estado)) {
+    if (!p?.poe || ehTinturaDoCinto(p)) continue;
+    const par = parametros(p);
+    if (par.cargasAoConsumirCadaver > 0) p.poe.cargas = Math.min(par.cargasMaximas, cargasDe(p, par) + par.cargasAoConsumirCadaver);
+  }
+}
+
 export function ganharCargas(estado, n = 1) {
   if (!ligado() || !(n > 0)) return false;
   const afp = doPersonagem(estado);
+  // (06/11, o Cálice Transbordante: "Não Recebe Cargas durante o Efeito de qualquer Frasco Cálice Transbordante" — `sem_cargas_de_frasco`, durante o efeito)
+  if (Number(afp.sem_cargas_de_frasco) > 0) return false;
   let mudou = false;
   for (const p of cinto(estado)) {
     if (!p || ehTinturaDoCinto(p)) continue;
@@ -695,6 +912,8 @@ export function adds(estado) {
   const agora = estado.hunt.clock ?? 0;
   const total = {};
   for (const a of [...Object.values(st.ativos), ...(st.extras ?? [])]) if (a.af && a.ate > agora) for (const [k, v] of Object.entries(a.af)) total[k] = (total[k] ?? 0) + v;
+  // (06/11, o Sangue Mágico: os frascos Mágicos sempre ligados — `constantesDoSangueMagico`)
+  for (const a of st.constantes ?? []) for (const [k, v] of Object.entries(a.af ?? {})) total[k] = (total[k] ?? 0) + v;
   // + as TINTURAS ativas (e as que perduram) — a foto do tique (`tinturas.adds`).
   for (const [k, v] of Object.entries(Tinturas.adds(st, agora) ?? {})) total[k] = (total[k] ?? 0) + v;
   return Object.keys(total).length ? total : null;

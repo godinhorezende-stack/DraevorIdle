@@ -8516,6 +8516,762 @@
       "unidade": "%",
       "combate": true,
       "efeito": "com a árvore ligada ao início da classe (`passivas/arvore.raiosDasJoias`; 04/11)"
+    },
+    "frasco_vida_tambem_es": {
+      "nome": "Recuperação de Vida de Frascos também se aplica ao Escudo de Energia",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/frascos (recuperar): a vida que os frascos recuperam também enche o Escudo de Energia (O Sofrimento do Divino; 05/11)"
+    },
+    "dreno_vida_em_caos": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dreno de Vida aplicado nos inimigos como Dano de Caos",
+      "efeito": "itens-poe/mods-poe.drenoEmCaos (06/11, Únicos lote 3)"
+    },
+    "vida_cheia_vulneravel": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Conta como em Vida Cheia enquanto Amaldiçoado com Vulnerabilidade",
+      "efeito": "itens-poe/condicoes-poe.condicoesDe (06/11, Únicos lote 3)"
+    },
+    "vida_baixa_vulneravel": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Conta como em Vida Baixa enquanto Amaldiçoado com Vulnerabilidade",
+      "efeito": "itens-poe/condicoes-poe.condicoesDe (06/11, Únicos lote 3)"
+    },
+    "cegados_sem_afeccao_danosa": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Inimigos Cegados por você não infligem Afecções Danosas",
+      "efeito": "itens-poe/mods-poe.dotNoJogador (06/11, Únicos lote 3)"
+    },
+    "cacador_raro_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Ganha os Modificadores do Raro morto (segundos)",
+      "efeito": "itens-poe/mods-poe.aprenderDoRaro (06/11, Únicos lote 3)"
+    },
+    "cacador_magico_chance": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Chance de ganhar os Modificadores do Mágico morto",
+      "efeito": "itens-poe/mods-poe.aprenderDoRaro (06/11, Únicos lote 3)"
+    },
+    "cacador_magico_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Duração dos Modificadores do Mágico morto (segundos)",
+      "efeito": "itens-poe/mods-poe.aprenderDoRaro (06/11, Únicos lote 3)"
+    },
+    "frascos_em_zumbis": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Frascos de Vida usados curam os Zumbis e Espectros",
+      "efeito": "itens-poe/frascos.usarNosZumbis (06/11, Únicos lote 3)"
+    },
+    "eletrizados_fisico_em_raio": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Eletrizados convertem Físico em Raio",
+      "efeito": "itens-poe/mods-poe.aurasProximas → hunt/combate (06/11, Únicos lote 3)"
+    },
+    "sangue_magico": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Frascos Utilitários Mágicos não podem ser usados",
+      "efeito": "itens-poe/frascos.usar (06/11, Únicos lote 3)"
+    },
+    "sangue_magico_constantes": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Frascos Utilitários Mágicos da esquerda sempre ligados",
+      "efeito": "itens-poe/frascos.constantesDoSangueMagico (06/11, Únicos lote 3)"
+    },
+    "duracao_armadilha": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Duração das Armadilhas",
+      "efeito": "itens-poe/armas-plantadas.duracaoMs (06/11, Únicos lote 3)"
+    },
+    "armadilhas_sem_ativacao": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Armadilhas não são ativadas por Inimigos",
+      "efeito": "itens-poe/armas-plantadas.armadilhasQueAtivam (06/11, Únicos lote 3)"
+    },
+    "armadilhas_aleatorias": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Armadilhas arremessadas aleatoriamente em volta do lugar",
+      "efeito": "acoes.plantarArmas (06/11, Únicos lote 3)"
+    },
+    "destino_certo": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Um efeito do Destino Certo a cada N segundos",
+      "efeito": "itens-poe/mods-poe.aurasProximas (06/11, Únicos lote 3)"
+    },
+    "recebe_sempre_critico": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Acertos contra você são sempre Críticos",
+      "efeito": "itens-poe/condicoes-poe.criticoDoBicho (06/11, Únicos lote 3)"
+    },
+    "ataques_nao_acertam": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Ataques não podem te acertar",
+      "efeito": "hunt/combate (o golpe do monstro) (06/11, Únicos lote 3)"
+    },
+    "ataques_sempre_acertam": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Ataques contra você sempre acertam",
+      "efeito": "hunt/combate (o golpe do monstro) (06/11, Únicos lote 3)"
+    },
+    "dano_acertos_sortudo": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano com Acertos Sortudo",
+      "efeito": "acoes (as gemas) e hunt/combate (o golpe básico) (06/11, Únicos lote 3)"
+    },
+    "robo_calcinante": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Robôs Rastejantes: o Calcinante a mais",
+      "efeito": "itens-poe/lacaios-poe.oQueInvoca → gemas-e2a.roboDaInvocacao (06/11, Únicos lote 3)"
+    },
+    "robos_afetam_voce": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Auras dos Robôs Rastejantes também em você",
+      "efeito": "cacadas.auraDoRobo (06/11, Únicos lote 3)"
+    },
+    "robos_afeccao_mais": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Efeito das afecções dos Robôs Rastejantes (mais)",
+      "efeito": "itens-poe/gemas-e2a.roboDaInvocacao (06/11, Únicos lote 3)"
+    },
+    "oferenda_uma_de_cada": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Uma Oferenda de cada tipo",
+      "efeito": "acoes (a Oferenda) e gemas-e1a.oferendaAtiva (06/11, Únicos lote 3)"
+    },
+    "oferenda_duracao": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Duração das Oferendas",
+      "efeito": "acoes (a Oferenda) (06/11, Únicos lote 3)"
+    },
+    "fisico_min_mais": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano Físico Mínimo de Ataques (mais/menos)",
+      "efeito": "acoes (as gemas de ataque) e hunt/combate (o golpe básico) (06/11, Únicos lote 3)"
+    },
+    "congelamento_pelo_escudo_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Congelamento em você pelo Escudo de Energia",
+      "efeito": "mobs/mecanicas.aoAcertarJogador (06/11, Únicos lote 3)"
+    },
+    "nao_caos_ignora_escudo_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano Não Caótico sofrido que ignora o Escudo de Energia",
+      "efeito": "hunt/combate e poderes.aplicarNoJogador (06/11, Únicos lote 3)"
+    },
+    "qualidade_cor_do_encaixe": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Gemas da cor do encaixe: +10% de Qualidade (da peça)",
+      "efeito": "skills/gemas.extrasDaGemaPoe (06/11, Únicos lote 4)"
+    },
+    "totem_morre_maldicao": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Maldição aleatória em você quando seu Totem morre",
+      "efeito": "cacadas.tiqueDosLacaios (06/11, Únicos lote 4)"
+    },
+    "minion_es_por_res_caos": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Lacaios convertem Vida em Escudo de Energia por % de Resistência a Caos",
+      "efeito": "itens-poe/lacaios-poe.aplicarNoLacaio (06/11, Únicos lote 4)"
+    },
+    "minion_ignora_res_com_es": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Lacaios com Escudo de Energia ignoram a Resistência Elemental",
+      "efeito": "itens-poe/lacaios-poe.golpeDoLacaio → hunt/resistencia (06/11, Únicos lote 4)"
+    },
+    "fome_da_rainha": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Oferendas acionadas em sequência a cada N segundos",
+      "efeito": "acoes.fomeDaRainha (06/11, Únicos lote 4)"
+    },
+    "grupo_tolerancia_igual": {
+      "unidade": "",
+      "combate": true,
+      "nome": "O grupo tem o seu máximo de Cargas de Tolerância",
+      "efeito": "itens-poe/aliados.fotografar → cargas.maximo (06/11, Únicos lote 4)"
+    },
+    "tolerancia_max_do_grupo": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Máximo de Cargas de Tolerância vindo de um aliado",
+      "efeito": "itens-poe/cargas.maximo (06/11, Únicos lote 4)"
+    },
+    "guardiao_dano_por_arma": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Guardião Animado: dano por Arma Animada",
+      "efeito": "itens-poe/lacaios-poe.golpeDoLacaio (06/11, Únicos lote 4)"
+    },
+    "animados_propagado": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Lacaios animados causam dano propagado",
+      "efeito": "cacadas (o golpe do lacaio) (06/11, Únicos lote 4)"
+    },
+    "animados_propagado_menos": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano propagado dos lacaios animados (menos)",
+      "efeito": "cacadas (o golpe do lacaio) (06/11, Únicos lote 4)"
+    },
+    "empurrao_invertido": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Direção do Empurrão invertida",
+      "efeito": "itens-poe/condicoes-poe.empurrar (06/11, Únicos lote 4)"
+    },
+    "furia_por_regen_vida": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Fúria por segundo a cada N de regeneração de Vida",
+      "efeito": "itens-poe/condicoes-poe.tiqueDaFuria (06/11, Únicos lote 4)"
+    },
+    "marcado_absorve_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano dos ataques sofrido pelo Inimigo Marcado antes de você",
+      "efeito": "hunt/combate (o golpe do monstro) (06/11, Únicos lote 4)"
+    },
+    "maldicoes_nos_mortos": {
+      "unidade": "",
+      "combate": true,
+      "nome": "As maldições ficam nos cadáveres",
+      "efeito": "hunt/combate.morrerOsMortos (06/11, Únicos lote 4)"
+    },
+    "cadaver_amaldicoado_cega": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Cadáver amaldiçoado Cega os inimigos perto",
+      "efeito": "itens-poe/mods-poe.aurasProximas (06/11, Únicos lote 4)"
+    },
+    "cadaver_amaldicoado_explode": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Morto perto de cadáver amaldiçoado explode (% da vida)",
+      "efeito": "itens-poe/mods-poe.evento (06/11, Únicos lote 4)"
+    },
+    "praga_tolhe_duracao": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Duração do Tolhimento da Infestação",
+      "efeito": "acoes.debuffsDoC4 (06/11, Únicos lote 4)"
+    },
+    "abates_proximos_seus": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Abates perto de você contam como seus",
+      "efeito": "hunt/combate.morrerOsMortos (06/11, Únicos lote 4)"
+    },
+    "feiticos_refletidos": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Seus Feitiços também em você",
+      "efeito": "skills/reforcos (a maldição) (06/11, Únicos lote 4)"
+    },
+    "malachai_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Tolerância, Frenesi e Poder de Malachai em sequência",
+      "efeito": "itens-poe/mods-poe.aurasProximas (06/11, Únicos lote 4)"
+    },
+    "totens_espectrais_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Totens viram Totens Espectrais (segundos)",
+      "efeito": "cacadas.tiqueDosLacaios (06/11, Únicos lote 4)"
+    },
+    "totens_espectrais_dano": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano dos Totens Espectrais",
+      "efeito": "acoes.usarComoTotem (06/11, Únicos lote 4)"
+    },
+    "totens_espectrais_max": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Máximo de Totens Espectrais",
+      "efeito": "cacadas.tiqueDosLacaios (06/11, Únicos lote 4)"
+    },
+    "reflete_feiticos": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Reflete Feitiços (a Maldição volta ao monstro)",
+      "efeito": "itens-poe/mods-poe.refletirMaldicao (06/11, Únicos lote 4)"
+    },
+    "res_elemental_90_chance": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Chance das Resistências Elementais contarem como 90%",
+      "efeito": "itens-poe/condicoes-poe.fatorDaResistenciaRecebida (06/11, Únicos lote 4)"
+    },
+    "evitar_dano_elemental_ataque": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Chance de evitar o dano de cada elemento dos ataques",
+      "efeito": "hunt/combate (o golpe do monstro) (06/11, Únicos lote 4)"
+    },
+    "evitar_dano_fisico_acerto": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Chance de evitar o Dano Físico dos acertos",
+      "efeito": "hunt/combate (o golpe do monstro) (06/11, Únicos lote 4)"
+    },
+    "espectros_furia_arcana": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Espectros ganham a sua Fúria Arcana",
+      "efeito": "itens-poe/condicoes-poe.ganharBuff (06/11, Únicos lote 4)"
+    },
+    "suportes_na_mao_principal": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Suportes do escudo também na Mão Principal",
+      "efeito": "skills/gemas.skillsAtivas (06/11, Únicos lote 4)"
+    },
+    "bloqueado_pelo_escudo": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Bloqueado pelo Escudo de Energia, o resto o ignora",
+      "efeito": "hunt/combate (o golpe do monstro) (06/11, Únicos lote 4)"
+    },
+    "atirar_aciona_encaixadas": {
+      "unidade": "",
+      "combate": true,
+      "nome": "O Atirar ativa as de arco encaixadas na peça",
+      "efeito": "skills/gemas.gruposComGatilho (06/11, Únicos lote 4)"
+    },
+    "atirar_estagios_extra": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Estágios a mais do Atirar",
+      "efeito": "acoes.estagioDaCanalizacao (06/11, Únicos lote 4)"
+    },
+    "espiritos_propagam_fogo": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Espíritos Furiosos propagam o Fogo",
+      "efeito": "itens-poe/lacaios-poe → cacadas (06/11, Únicos lote 4)"
+    },
+    "projeteis_sem_curto": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Seus projéteis não colidem em Curto Alcance",
+      "efeito": "hunt/voos.lancar (06/11, Únicos lote 4)"
+    },
+    "lacaios_cargas_do_dono": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Lacaios com as suas Cargas",
+      "efeito": "itens-poe/lacaios-poe (06/11, Únicos lote 4)"
+    },
+    "lacaios_vinculados_menos_dano": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Lacaios vinculados sofrem menos dano",
+      "efeito": "itens-poe/vinculos.doLacaio (06/11, Únicos lote 4)"
+    },
+    "minas_extras": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Minas a mais em cada arremesso",
+      "efeito": "itens-poe/armas-plantadas.extrasDoArremesso (06/11, Únicos lote 4)"
+    },
+    "reflexo_drenado_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano refletido drenado como Vida",
+      "efeito": "itens-poe/mods-poe.aoSerAcertado (06/11, Únicos lote 4)"
+    },
+    "lacaios_sussurros_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Lacaios ouvem os Sussurros depois do Crítico (segundos)",
+      "efeito": "itens-poe/lacaios-poe.aoCriticarDoLacaio → cacadas (06/11, Únicos lote 4)"
+    },
+    "totem_reflete_vida_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Totens refletem a Vida como Fogo quando acertados",
+      "efeito": "cacadas (o golpe no lacaio) (06/11, Únicos lote 4)"
+    },
+    "afeccao_conta_movendo": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Com Afecção Elemental, conta como em movimento",
+      "efeito": "itens-poe/condicoes-poe e mods-poe.aurasProximas (06/11, Únicos lote 4)"
+    },
+    "mana_no_ponto_atordoamento_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Ponto de Atordoamento pela Mana",
+      "efeito": "itens-poe/condicoes-poe.controleNoJogador (06/11, Únicos lote 4)"
+    },
+    "efeito_causticacao": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Efeito da Causticação",
+      "efeito": "itens-poe/condicoes-poe.fatorNaoDano (06/11, Únicos lote 4)"
+    },
+    "esqueleto_permanente": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Um Guerreiro Esqueleto permanente",
+      "efeito": "itens-poe/lacaios-poe.oQueInvoca (06/11, Únicos lote 4)"
+    },
+    "vinhas_nos_proximos_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Inimigos próximos parados ganham Vinhas (segundos)",
+      "efeito": "itens-poe/mods-poe.aurasProximas (06/11, Únicos lote 4)"
+    },
+    "resfriado_ao_envenenado": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Você é Resfriado quando Envenenado",
+      "efeito": "itens-poe/mods-poe.dotNoJogador (06/11, Únicos lote 5)"
+    },
+    "resfriado_sangrando": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Você é Resfriado enquanto Sangra",
+      "efeito": "itens-poe/mods-poe.aurasProximas (06/11, Únicos lote 5)"
+    },
+    "armadura_do_peitoral_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Armadura do Peitoral que vale (%)",
+      "efeito": "itens-poe/condicoes-poe.daPeca (06/11, Únicos lote 5)"
+    },
+    "armadura_do_peitoral_tem": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Armadura do Peitoral (ligada)",
+      "efeito": "itens-poe/condicoes-poe.daPeca (06/11, Únicos lote 5)"
+    },
+    "resfriamento_revertido": {
+      "unidade": "",
+      "combate": true,
+      "nome": "O Resfriamento em você é revertido",
+      "efeito": "combate/controle.fatorDeLentidao (06/11, Únicos lote 5)"
+    },
+    "feitico_expira_no_efeito_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Feitiços acabam no N% do efeito base",
+      "efeito": "skills/reforcos (06/11, Únicos lote 5)"
+    },
+    "feitico_efeito_por_segundo": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Feitiços crescem X% por segundo",
+      "efeito": "skills/reforcos (06/11, Únicos lote 5)"
+    },
+    "nova_no_alvo": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Magias de Nova no local escolhido",
+      "efeito": "acoes (a área da Nova) (06/11, Únicos lote 5)"
+    },
+    "proj_sem_ricochete": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Projéteis não podem Ricochetear",
+      "efeito": "itens-poe/condicoes-poe.alvosDasPecas (06/11, Únicos lote 5)"
+    },
+    "proj_sem_difusao": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Projéteis não podem Difundir",
+      "efeito": "itens-poe/condicoes-poe.alvosDasPecas (06/11, Únicos lote 5)"
+    },
+    "proj_sem_perfurar": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Projéteis não podem Perfurar",
+      "efeito": "itens-poe/condicoes-poe.alvosDasPecas (06/11, Únicos lote 5)"
+    },
+    "chance_ser_incendiado": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Chance a mais de ser Incendiado",
+      "efeito": "mobs/mecanicas.aoAcertarJogador (06/11, Únicos lote 5)"
+    },
+    "todo_dano_incendeia_voce": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Todo o dano dos acertos pode te Incendiar",
+      "efeito": "mobs/mecanicas.aoAcertarJogador (06/11, Únicos lote 5)"
+    },
+    "dano_na_morte_de_lacaio": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano sofrido na morte de um lacaio",
+      "efeito": "cacadas.tiqueDosLacaios (06/11, Únicos lote 5)"
+    },
+    "limite_maldicoes_pelo_poder": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Limite de Maldições pelo máximo de Cargas de Poder",
+      "efeito": "acoes (o limite do Feitiço) (06/11, Únicos lote 5)"
+    },
+    "incendio_de_caos": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Seu Incêndio causa Caos",
+      "efeito": "itens-poe/afeccoes (06/11, Únicos lote 5)"
+    },
+    "definhar_fica_no_incendiado": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Definhar não expira no Incendiado",
+      "efeito": "itens-poe/mods-poe.aurasProximas (06/11, Únicos lote 5)"
+    },
+    "feiticos_sem_efeito": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Seus Feitiços não afetam os alvos",
+      "efeito": "skills/reforcos (06/11, Únicos lote 5)"
+    },
+    "raridade_abate_critico": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Raridade de Itens do morto por Crítico",
+      "efeito": "hunt/combate.raridadeDoDrop (06/11, Únicos lote 5)"
+    },
+    "sem_reserva_local": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Gemas encaixadas não têm Reserva (da peça)",
+      "efeito": "skills/gemas → itens-poe/reserva (06/11, Únicos lote 5)"
+    },
+    "robo_frio_amaldicoa": {
+      "unidade": "",
+      "combate": true,
+      "nome": "O Robô Resfriante aplica a Maldição encaixada",
+      "efeito": "acoes (a invocação) → cacadas.auraDoRobo (06/11, Únicos lote 5)"
+    },
+    "robo_raio_amaldicoa": {
+      "unidade": "",
+      "combate": true,
+      "nome": "O Robô Eletrizante aplica a Maldição encaixada",
+      "efeito": "acoes (a invocação) → cacadas.auraDoRobo (06/11, Únicos lote 5)"
+    },
+    "aura_de_maldicao_em_voce": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Suas Maldições em aura também em você",
+      "efeito": "skills/reforcos (06/11, Únicos lote 5)"
+    },
+    "medalhao_cada_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Medalhão: a cada N segundos",
+      "efeito": "itens-poe/mods-poe.aurasProximas (06/11, Únicos lote 5)"
+    },
+    "medalhao_vida_acerto": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Medalhão: Vida por acerto",
+      "efeito": "itens-poe/mods-poe.aurasProximas (06/11, Únicos lote 5)"
+    },
+    "medalhao_vida_abate": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Medalhão: Vida por abate",
+      "efeito": "itens-poe/mods-poe.aurasProximas (06/11, Únicos lote 5)"
+    },
+    "medalhao_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Medalhão: duração",
+      "efeito": "itens-poe/mods-poe.aurasProximas (06/11, Únicos lote 5)"
+    },
+    "furia_arcana_pelo_frasco_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Efeito dos frascos também na Fúria Arcana",
+      "efeito": "itens-poe/condicoes-poe (os buffs) (06/11, Únicos lote 5)"
+    },
+    "frasco_mana_sem_fila": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Frasco de Mana sem fila",
+      "efeito": "itens-poe/frascos.usar (06/11, Únicos lote 5)"
+    },
+    "cegueira_refletida": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Sua Cegueira volta para você",
+      "efeito": "itens-poe/mods-poe.aplicarAcao (06/11, Únicos lote 5)"
+    },
+    "duracao_gema": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Duração de uma gema",
+      "efeito": "acoes.duracaoDasPecas (06/11, Únicos lote 5)"
+    },
+    "suportes_no_peitoral": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Suportes do amuleto também no Peitoral",
+      "efeito": "skills/gemas.skillsAtivas (06/11, Únicos lote 5)"
+    },
+    "minion_res_mais_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Lacaios: resistências a mais (%)",
+      "efeito": "itens-poe/lacaios-poe.oQueInvoca (06/11, Únicos lote 5)"
+    },
+    "proj_atravessa_queimando": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Projéteis atravessam os Queimando",
+      "efeito": "skills/golpes-secundarios (06/11, Únicos lote 5)"
+    },
+    "fogo_por_perfuracao_min": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Fogo adicional por perfuração (mínimo)",
+      "efeito": "acoes (o acerto) (06/11, Únicos lote 5)"
+    },
+    "fogo_por_perfuracao_max": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Fogo adicional por perfuração (máximo)",
+      "efeito": "acoes (o acerto) (06/11, Únicos lote 5)"
+    },
+    "flechas_por_ponto_de_disparo": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Flechas por ponto de disparo",
+      "efeito": "skills/golpes-secundarios (06/11, Únicos lote 5)"
+    },
+    "crit_inc_flechas_difundidas": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Crítico das Flechas que Difundem",
+      "efeito": "skills/golpes-secundarios → acoes (06/11, Únicos lote 5)"
+    },
+    "flechas_perfuram_apos_difundir": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Flechas perfuram todos depois de Difundir",
+      "efeito": "skills/golpes-secundarios (06/11, Únicos lote 5)"
+    },
+    "crit_mult_flechas_perfurando": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Multiplicador das Flechas que Perfuram",
+      "efeito": "skills/golpes-secundarios → acoes (06/11, Únicos lote 5)"
+    },
+    "vosso_abraco_degen_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Vosso Abraço: Fogo por segundo por Nível",
+      "efeito": "itens-poe/mods-poe.aurasProximas (06/11, Únicos lote 5)"
+    },
+    "dano_de_esqueletos_inc": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano sofrido de Esqueletos",
+      "efeito": "hunt/combate (o golpe do monstro) (06/11, Únicos lote 5)"
+    },
+    "dano_de_fantasmas_inc": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano sofrido de Fantasmas",
+      "efeito": "hunt/combate (o golpe do monstro) (06/11, Únicos lote 5)"
+    },
+    "so_dano_da_arma": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Só causa dano com a arma e o Incêndio",
+      "efeito": "acoes (as magias) (06/11, Únicos lote 5)"
+    },
+    "minion_crit_mult_por_definhado": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Lacaios: Multiplicador por Definhar no alvo",
+      "efeito": "itens-poe/lacaios-poe.aoCriticarDoLacaio (06/11, Únicos lote 5)"
+    },
+    "crit_mult_por_poder_do_inimigo": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Multiplicador de Crítico por Poder do Inimigo",
+      "efeito": "acoes (o acerto) (06/11, Únicos lote 5)"
+    },
+    "dreno_instantaneo_por_poder": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dreno instantâneo por Poder do Inimigo",
+      "efeito": "ficha.aplicarLeech (06/11, Únicos lote 5)"
+    },
+    "dano_adiado_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Vida perdida ao longo de 4 s",
+      "efeito": "itens-poe/mods-poe.adiarDano (06/11, Únicos lote 5)"
+    },
+    "sem_cargas_de_frasco": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Não recebe Cargas de Frasco",
+      "efeito": "itens-poe/frascos (06/11, Únicos lote 5)"
+    },
+    "lacaio_crit_base_da_arma": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Lacaios: crítico base da sua arma",
+      "efeito": "acoes (a invocação) (06/11, Únicos lote 5)"
+    },
+    "arma_animada_copias": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Armas Animadas: cópias a mais",
+      "efeito": "itens-poe/lacaios-poe.oQueInvoca (06/11, Únicos lote 5)"
+    },
+    "proj_inc_perfurando": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano das Flechas nos alvos que atravessam",
+      "efeito": "acoes (o acerto) (06/11, Únicos lote 5)"
+    },
+    "arco_sacrifica_lacaio": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Ataques com Arco sacrificam um lacaio por Flechas",
+      "efeito": "acoes (o disparo) (06/11, Únicos lote 5)"
     }
   }
 }

@@ -88,12 +88,14 @@ function comporPoe(qual, m, level, pct) {
 /** A precisão do bicho (o rating com que ele acerta o jogador) neste level. */
 export const precisaoDe = (m, level) => (poeDe(m) ? comporPoe('precisao', m, level, m?.precisaoPct ?? 0) : compor('precisao', daCurva('precisao', level), level, m, { pct: m?.precisaoPct ?? 0 })).valor;
 /** A evasão do bicho (o rating com que ele evita o golpe do jogador) neste level. */
-export const evasaoDe = (m, level) => (poeDe(m) ? comporPoe('evasao', m, level, m?.evasaoPct ?? 0) : compor('evasao', daCurva('evasao', level), level, m, { pct: m?.evasaoPct ?? 0 })).valor;
+// (06/11: − a Corrosão do PoE — `m.corrosaoEvasao`, posta por `itens-poe/mods-poe.aurasProximas`)
+export const evasaoDe = (m, level) => Math.max(0, (poeDe(m) ? comporPoe('evasao', m, level, m?.evasaoPct ?? 0) : compor('evasao', daCurva('evasao', level), level, m, { pct: m?.evasaoPct ?? 0 })).valor - (m?.corrosaoEvasao ?? 0));
 
 /** A armadura do bicho: a do bestiário (`armor`), a curva, os fatores e os modificadores (`armaduraPct`). Sem `key` no bestiário, zero. */
 export function armaduraDe(m, level) {
   // (lote A5e) O monstro do PoE: round(tabela do poedb no nível efetivo × multiplicador do tipo), o `armaduraPct` por cima, o teto (sem a curva do Draevor).
-  if (poeDe(m)) return Math.min(L.armaduraMaxima, comporPoe('armadura', m, level, m?.armaduraPct ?? 0).valor);
+  // (06/11: − a Corrosão do PoE — `m.corrosaoArmadura`)
+  if (poeDe(m)) return Math.max(0, Math.min(L.armaduraMaxima, comporPoe('armadura', m, level, m?.armaduraPct ?? 0).valor) - (m?.corrosaoArmadura ?? 0));
   const base = (BESTIARY[m?.key]?.armor ?? 0) + daCurva('armadura', level);
   return Math.min(L.armaduraMaxima, compor('armadura', base, level, m, { pct: m?.armaduraPct ?? 0 }).valor);
 }
