@@ -9596,6 +9596,24 @@
       "combate": true,
       "nome": "Frascos de Mercúrio nos aliados",
       "efeito": "itens-poe (06/11, lote 9)"
+    },
+    "fortificacao_sem_menos_dano": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Sem o menos dano inerente da Fortificação",
+      "efeito": "condicoes-poe (06/11, lote 10)"
+    },
+    "fortificacao_extra": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Fortificações a mais",
+      "efeito": "condicoes-poe.fortificacao (06/11, lote 10)"
+    },
+    "perde_tolerancia_ao_fortificar": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Chance de perder Tolerância ao Fortificar",
+      "efeito": "condicoes-poe.ganharFortificacao (06/11, lote 10)"
     }
   }
 }

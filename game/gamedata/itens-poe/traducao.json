@@ -14,6 +14,133 @@
   ],
   "regras": [
     {
+      "padrao": "^Acertos Corpo a Corpo das Habilidades de Golpe Fortificam$",
+      "efeitos": [
+        {
+          "stat": "chance_fortificar@corpo+golpe",
+          "valor": "100"
+        }
+      ],
+      "_06_11f": "06/11 — lote 10 das inertes: a Fortificação (o jogo a tem desde o lote D)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% por Fortificação$",
+      "efeitos": [
+        {
+          "stat": "atk_speed%fortificacao",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11f": "06/11 — lote 10 das inertes: a Fortificação (o jogo a tem desde o lote D)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios têm \\{(\\d+)\\}% de chance de causar dano dobrado por Fortificação em você$",
+      "efeitos": [
+        {
+          "stat": "minion_dano_dobrado%fortificacao",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11f": "06/11 — lote 10 das inertes: a Fortificação (o jogo a tem desde o lote D)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de Suprimir Dano Mágico por Fortificação$",
+      "efeitos": [
+        {
+          "stat": "spell_suppression%fortificacao",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11f": "06/11 — lote 10 das inertes: a Fortificação (o jogo a tem desde o lote D)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração aumentada em \\{(\\d+)\\}% enquanto no máximo de Fortificações$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@fortMax:1",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed@fortMax:1",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11f": "06/11 — lote 10 das inertes: a Fortificação (o jogo a tem desde o lote D)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você não sofre menos dano de forma inerente por ter Fortificação$",
+      "efeitos": [
+        {
+          "stat": "fortificacao_sem_menos_dano",
+          "valor": "1"
+        }
+      ],
+      "_06_11f": "06/11 — lote 10 das inertes: a Fortificação (o jogo a tem desde o lote D)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Acertos Corpo a Corpo que Atordoam, Fortificam$",
+      "efeitos": [
+        {
+          "stat": "chance_fortificar@corpo+golpeAtordoou",
+          "valor": "100"
+        }
+      ],
+      "_06_11f": "06/11 — lote 10 das inertes: a Fortificação (o jogo a tem desde o lote D)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você tem Agressividade enquanto Fortificado$",
+      "efeitos": [
+        {
+          "stat": "sempre:agressividade@fortificado",
+          "valor": "1"
+        }
+      ],
+      "_06_11f": "06/11 — lote 10 das inertes: a Fortificação (o jogo a tem desde o lote D)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aliados Próximos têm \\+\\{(\\d+)\\} Fortificações$",
+      "efeitos": [
+        {
+          "stat": "so_aliados:fortificacao_extra",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas",
+      "_06_11f": "06/11 — lote 10 das inertes: a Fortificação (o jogo a tem desde o lote D)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao máximo de Fortificações por Carga de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "max_fortificacao%carga:tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11f": "06/11 — lote 10 das inertes: a Fortificação (o jogo a tem desde o lote D)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de perder uma Carga de Tolerância ao ganhar Fortificação$",
+      "efeitos": [
+        {
+          "stat": "perde_tolerancia_ao_fortificar",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11f": "06/11 — lote 10 das inertes: a Fortificação (o jogo a tem desde o lote D)",
+      "_nova": true
+    },
+    {
       "padrao": "^\\{(\\d+)\\}% da Recuperação de Vida dos Frascos é aplicada aos Aliados próximos ao invés de Você$",
       "efeitos": [
         {
@@ -19961,19 +20088,6 @@
       ],
       "_nova": true,
       "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
-    },
-    {
-      "padrao": "^.*(?:Fortificaç(?:ão|ões)|Fortificad[oa]s?|Fortifica[mr]?)\\b.*$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "a Fortificação não existe no jogo",
-      "_nova": true,
-      "_unico": true
     },
     {
       "padrao": "^.*(?:Experiência|Pergaminho da Sabedoria|Itens Mágicos encontrados são Identificados|Quantidade de Ouro|Quantidade de Itens).*$",

@@ -283,7 +283,8 @@ export function fortificacao(estado, total = null) {
   const max = total ? maxFortificacao(total) : h?.fortificacaoTeto?.max ?? FORTIFICACAO.maximo;
   if (total ? Number(total.fortificacao_sempre_max) > 0 : h?.fortificacaoTeto?.sempre) return max;
   const f = h?.fortificacao;
-  const propria = f && f.ate > (h.clock ?? 0) ? Math.min(f.n, max) : 0;
+  // (06/11, lote 10: + o "+N Fortificações" que um aliado dá — o Regicriador: `fortificacao_extra`, até o máximo)
+  const propria = Math.min(max, (f && f.ate > (h.clock ?? 0) ? Math.min(f.n, max) : 0) + (Number(total?.fortificacao_extra) || 0));
   // (13/10) "Aliados Próximos contam como tendo Fortificação igual a sua" (o Campeão de um companheiro perto — `aliados.mjs`)
   return Math.max(propria, Aliados.fortificacaoDosAliados(estado));
 }
@@ -299,6 +300,10 @@ export function ganharFortificacao(hunt, n, total, agora = hunt?.clock ?? 0, doU
   const dur = Math.round(base * Math.max(0.1, 1 + inc / 100));
   // (revisão do A5: um acerto com duração menor não encurta a Fortificação que já corre — fica o maior fim)
   hunt.fortificacao = { n: Math.min(max, f.n + Math.max(1, Math.round(n))), ate: Math.max(f.ate ?? 0, agora + dur) };
+  // (06/11, lote 10, a Réplica: Distintivo da Irmandade — "X% de chance de perder uma Carga de Tolerância ao ganhar Fortificação")
+  const perde = Number(total?.perde_tolerancia_ao_fortificar) || 0;
+  const t = hunt.cargasPoe?.tolerancia;
+  if (perde > 0 && t?.n > 0 && t.ate > agora && Math.random() * 100 < perde) { t.n--; if (!t.n) delete hunt.cargasPoe.tolerancia; hunt.poeFichaMudou = true; }
   return hunt.fortificacao.n;
 }
 
@@ -418,7 +423,7 @@ export const CONDICOES_DE_ESTADO = new Set([
 export const RAIO_DA_PRESENCA = 6;
 /** As condições de estado com PARÂMETRO: `atrMin:str:200` (ao menos 200 de Força), `atrMaior:dex:int`, `buff:agressividade`,
  * `semCargas:frenesi`, `comCargas:poder`, `cargasMax:tolerancia`, `furiaMin:N`, `lacaio:bestial`. */
-const COND_COM_PARAMETRO = /^(canalizandoHa|matouRecenteMin|afetadoPorAbissal|afetadoPor|maiorAtributo|itensInfluencia|comAbissalLocal|atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|aliadosPerto|nosUltimos|paradoHa|devocaoMin|primordiaisMin|barreirasMin):/;
+const COND_COM_PARAMETRO = /^(canalizandoHa|matouRecenteMin|afetadoPorAbissal|afetadoPor|maiorAtributo|itensInfluencia|comAbissalLocal|atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|aliadosPerto|nosUltimos|paradoHa|devocaoMin|primordiaisMin|barreirasMin|fortMax):/;
 export const ehCondDeEstado = (c) => CONDICOES_DE_ESTADO.has(c) || COND_COM_PARAMETRO.test(c);
 /** As tags de GOLPE conhecidas (as do poedb em português viram estas — `tagsDoPoe`). */
 export const TAGS_DE_GOLPE = new Set([
@@ -800,6 +805,8 @@ export function vale(conds, c) {
     case 'usouTag': return recente(h?.poeRecente?.[`usou:${resto[0]}`], agora);
     // (lote D) "enquanto você tiver ao menos N Fortificações"; o evento aconteceu (ou não) recentemente — `evRecente:suprimir`.
     case 'fortMin': return fortificacao(estado, total) >= Number(resto[0]);
+    // (06/11, lote 10) "enquanto no máximo de Fortificações"
+    case 'fortMax': return fortificacao(estado, total) >= maxFortificacao(total) && maxFortificacao(total) > 0;
     case 'evRecente': return recente(h?.poeRecente?.[`ev:${resto[0]}`], agora);
     // (13/10) "nos últimos N segundos" — o prazo exato, não o "recentemente" (4 s): `nosUltimos:<N>:<o que `marcar` gravou>` (`usouFrascoVida`,
     // `recargaEs`, `ev:usarFrascoMana` — o evento).
@@ -1564,7 +1571,8 @@ export function adds(estado, total = null) {
   // (lote D) A Fortificação: 1% menos Dano de Acertos por Fortificação (`ficha` multiplica — é "menos"). O teto fica na caçada (`fortificacao`).
   if (estado?.hunt && total) estado.hunt.fortificacaoTeto = { max: maxFortificacao(total), sempre: Number(total.fortificacao_sempre_max) > 0 };
   const f = fortificacao(estado, total);
-  if (f > 0) saida.fortificacao_menos_dano = f;
+  // (06/11, lote 10: o Dom de Willow — "Você não sofre menos dano de forma inerente por ter Fortificação")
+  if (f > 0 && !(Number(total?.fortificacao_sem_menos_dano) > 0)) saida.fortificacao_menos_dano = f;
   return Object.keys(saida).length ? saida : null;
 }
 // ---------------------------------------------------------------- as MALDIÇÕES dos monstros em VOCÊ
