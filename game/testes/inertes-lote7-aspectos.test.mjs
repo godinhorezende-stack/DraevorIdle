@@ -44,7 +44,7 @@ function personagem(af = {}) {
 }
 const ficha = (e) => { Ficha.invalidar(e); return Ficha.combate(e); };
 const soma = (e) => { Ficha.invalidar(e); return Afixos.soma(e); };
-const tique = (e, ms) => { e.hunt.clock += ms; ModsPoe.tiqueDosAspectos(e, e.hunt, ficha(e), null, e.hunt.clock); };
+const tique = (e, ms) => { e.hunt.clock += ms; ModsPoe.tiqueDosAspectos(e, e.hunt, ficha(e), e.hunt.clock); };
 
 test('as 43 linhas dos Aspectos têm regra (nenhuma inerte)', { skip: SEM }, () => {
   for (const [texto, stat] of [

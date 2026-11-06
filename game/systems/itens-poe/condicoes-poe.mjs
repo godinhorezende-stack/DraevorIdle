@@ -2819,6 +2819,10 @@ export function tiqueDaDissolucao(estado, hunt, ficha, agora = hunt?.clock ?? 0)
   }
   if ((estado.hp ?? 0) > max - r.reservado) estado.hp = Math.max(Testador.pisoDaVida(estado), max - r.reservado);
 }
+/** (06/11, lote 7) o tique dos Aspectos: `mods-poe` registra (ele dispara os eventos dos gatilhos — este módulo não o importa). */
+// eslint-disable-next-line no-var
+var tiqueDosAspectos;
+export function definirTiqueDosAspectos(fn) { tiqueDosAspectos = fn; }
 export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   if (!ligado() || !hunt) return;
   hunt.poeEntrou ??= agora; // (lote F: "por segundo que você tenha ficado parado" conta desde a entrada, se ainda não andou)
@@ -2840,6 +2844,8 @@ export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   tiqueDaDissolucao(estado, hunt, ficha, agora);
   // (14/10) o Warden: a Casca da Pele de Árvore e o Avatar Liberto
   tiqueDoWarden(estado, hunt, ficha?.afPoe, agora);
+  // (06/11, lote 7) os Aspectos (`aspectos.mjs` — o tique mora em `mods-poe.tiqueDosAspectos`, que dispara os eventos)
+  tiqueDosAspectos?.(estado, hunt, ficha, agora);
   // (lote 72, o Quebra-Maldições) "Remove uma Maldição após Canalizar por N segundos": uma por canalização (a que começou em `desde`).
   const canal = hunt.canalizacao;
   const apos = Number(ficha?.afPoe?.canalizar_remove_maldicao_s) || 0;

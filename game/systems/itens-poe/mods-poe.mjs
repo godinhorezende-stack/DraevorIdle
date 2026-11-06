@@ -5,7 +5,7 @@ import * as QuemFeriu from '../hunt/quem-feriu.mjs';
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, criarSoloCongelado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo, porExposicao, vinhasGanhas as vinhasGanhasDe, fatorDaResistenciaRecebida } from './condicoes-poe.mjs';
+import { definirTiqueDosAspectos, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, criarSoloCongelado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo, porExposicao, vinhasGanhas as vinhasGanhasDe, fatorDaResistenciaRecebida } from './condicoes-poe.mjs';
 import * as Plantadas from './armas-plantadas.mjs';
 import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { eletrizarComPct, cegar as cegarVoce } from './monstros-no-jogador.mjs';
@@ -999,13 +999,14 @@ export const AFECCOES_NO_JOGADOR = [
   { nome: 'eletrizacao', elemental: true, tem: (h, agora) => (h?.debuffsDoJogador?.eletrizado?.ate ?? 0) > agora || dotAtivo(h, ['choque']), tirar: (h) => { if (h.debuffsDoJogador) delete h.debuffsDoJogador.eletrizado; tirarDot(h, ['choque']); } },
 ];
 /**
- * (06/11, lote 7) o tique dos ASPECTOS (`aspectos.mjs` — `cacadas`, depois do `tique`): os buffs em sequência, as Barreiras e as Teias; os eventos que saíram ("ao
+ * (06/11, lote 7) o tique dos ASPECTOS (`aspectos.mjs` — no `tique` do PoE, pelo gancho `definirTiqueDosAspectos`): os buffs em sequência, as Barreiras e as Teias; os eventos que saíram ("ao
  * ganhar Furtividade Felina", "quando perder", "ao ganhar Poder ou Voo da Ave") disparam aqui (os gatilhos das peças).
  */
-export function tiqueDosAspectos(estado, hunt, ficha, personagem = null, agora = hunt?.clock ?? 0) {
+export function tiqueDosAspectos(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
   if (!ligado() || !hunt || !ficha?.afPoe) return;
-  for (const nome of Aspectos.tique(estado, hunt, ficha.afPoe, agora)) evento(estado, hunt, nome, ficha, { personagem, agora, eventos: [] });
+  for (const nome of Aspectos.tique(estado, hunt, ficha.afPoe, agora)) evento(estado, hunt, nome, ficha, { agora, eventos: [] });
 }
+definirTiqueDosAspectos(tiqueDosAspectos);
 export function evento(estado, hunt, nome, ficha, ctx = {}) {
   if (!ligado() || !hunt) return;
   const lista = ficha?.eventosPoe ?? [];
