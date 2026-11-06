@@ -25,7 +25,7 @@ import * as Mecanicas from './mobs/mecanicas.mjs';
 import * as Gemas from './skills/gemas.mjs';
 import * as Tags from './skills/tags.mjs';
 import * as ModsPoe from './itens-poe/mods-poe.mjs';
-import { valor as valorPoe, slugDoNome, NO_ACERTO } from './itens-poe/condicoes-poe.mjs';
+import { valor as valorPoe, slugDoNome, NO_ACERTO, RAIO_DA_PRESENCA } from './itens-poe/condicoes-poe.mjs';
 import { resistido, resistenciaDe, resistenciaEfetivaDe } from './hunt/resistencia.mjs';
 import { registrarGolpe } from './combate/registro.mjs';
 import * as Dot from './combate/dot.mjs';
@@ -1820,19 +1820,75 @@ export function tiqueDoArautoDaAgonia(estado, hunt, agora = hunt?.clock ?? 0) {
 export const EMISSARIO = Object.freeze({ nome: 'Grande Emissário das Direções', periodoMs: 6000, duracaoS: 6, buffs: ['emissarioProjeteis', 'emissarioRicochetes', 'emissarioPerfuracao', 'emissarioDifusao', 'emissarioTodos'] });
 // (06/11) o MENOR (a Rotação Fraturante): o mesmo Emissário, com +1 em vez de +2 (e a Difusão sem o "de novo"); com os dois, vale o Grande
 export const EMISSARIO_MENOR = Object.freeze({ ...EMISSARIO, nome: 'Emissário das Direções', buffs: ['emissarioMenorProjeteis', 'emissarioMenorRicochetes', 'emissarioMenorPerfuracao', 'emissarioMenorDifusao', 'emissarioMenorTodos'] });
+/**
+ * (06/11, lote 6 das inertes) os OUTROS cinco Emissários (o Menor e o Grande de cada — o Grande vale com os dois): um lacaio imortal de cada tipo, que a cada
+ * `periodoMs` lança o buff dele em você (só com a `condicao`). Os números: o poedb em inglês (a seção da wiki e o histórico das versões das páginas dos únicos) e o
+ * poewiki: o Tempo, 8 s de +10% de Velocidade de Ação a cada 20 s (o Grande, a cada 10 s); a Brutalidade, 8 s de 50% de Dano, 30% de Velocidade de Ataque e de
+ * Movimento e 15% de Dano sofrido reduzido a cada 20 s, com um Raro ou Único perto (o Grande: os Sangrando que você mata explodem, 10% da Vida como Físico); o
+ * Foco, canalizando, 4 s a cada 8 s de 20% menos Dano sofrido, sem Atordoamento nem Afecção Elemental (o Grande: nem Maldição); o Arcano, a Fúria Arcana (a da gema
+ * nível 21 — o buff é o mesmo) a cada 6 s (o Grande, junto, 4 s de +15% de chance de Eletrizar e 10% de Penetração de Raio); as Tormentas, a cada 4 s, Resfriam ou
+ * Eletrizam (ao acaso) um inimigo e até 4 por perto por 4 s.
+ */
+export const EMISSARIOS = Object.freeze({
+  tempo: { menor: 'Emissário do Tempo', grande: 'Grande Emissário do Tempo', periodoMs: 20000, periodoGrandeMs: 10000, duracaoS: 8, buffs: ['emissarioTempo'] },
+  brutalidade: { menor: 'Emissário da Brutalidade', grande: 'Grande Emissário da Brutalidade', periodoMs: 20000, duracaoS: 8, buffs: ['emissarioBrutalidade'], buffsGrande: ['emissarioBrutalidade', 'emissarioBrutalidadeExplosao'], condicao: 'raroOuUnicoPerto' },
+  foco: { menor: 'Emissário do Foco', grande: 'Grande Emissário do Foco', periodoMs: 8000, duracaoS: 4, buffs: ['emissarioFoco'], buffsGrande: ['emissarioFoco', 'emissarioFocoMaldicao'], condicao: 'canalizando' },
+  arcano: { menor: 'Emissário do Arcano', grande: 'Grande Emissário do Arcano', periodoMs: 6000, duracaoS: 4, buffs: ['furiaArcana'], buffsGrande: ['furiaArcana', 'emissarioArcanoRaio'] },
+  tormentas: { menor: 'Emissário das Tormentas', grande: 'Grande Emissário das Tormentas', periodoMs: 4000, duracaoS: 4, alvos: 5, resfriaPct: 10, eletrizaPct: 10, resfriaGrandePct: 20, eletrizaGrandePct: 20 },
+});
+function emissarioPresente(estado, hunt, af, nome, chave) {
+  const vivo = hunt.lacaios.find((l) => l.emissario === chave && l.hp > 0);
+  if (vivo && vivo.nome !== nome) vivo.hp = 0;
+  if (!nome) return;
+  if (!vivo || vivo.nome !== nome) hunt.lacaios.push(lacaioDoGuardian(estado, hunt, hunt.ultimoTique ?? Date.now(), af, nome, 'physical', { emissario: chave, intocavel: true, semAtaque: true }));
+}
+function condicaoDoEmissario(hunt, cond, agora) {
+  if (cond === 'canalizando') return ModsPoe.canalizandoAgora(hunt, agora);
+  if (cond === 'raroOuUnicoPerto') return (hunt.monstros ?? []).some((m) => m.hp > 0 && !m.dummy && (m.raridade === 'raro' || m.raridade === 'unico' || m.raridade === 'boss' || m.boss) && Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) <= RAIO_DA_PRESENCA);
+  return true;
+}
+/** As Tormentas: um inimigo vivo ao acaso e os mais perto dele (até `alvos`), Resfriados ou Eletrizados por `duracaoS`. Devolve os atingidos. */
+function tormentasDoEmissario(hunt, def, grande, agora, rng) {
+  const vivos = (hunt.monstros ?? []).filter((m) => m.hp > 0 && !m.dummy && Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) <= RAIO_DA_PRESENCA);
+  if (!vivos.length) return [];
+  const primeiro = vivos[Math.floor(rng() * vivos.length)];
+  const alvos = vivos.sort((a, b) => Math.max(Math.abs(a.x - primeiro.x), Math.abs(a.y - primeiro.y)) - Math.max(Math.abs(b.x - primeiro.x), Math.abs(b.y - primeiro.y))).slice(0, def.alvos);
+  const eletriza = rng() < 0.5;
+  const ate = agora + def.duracaoS * 1000;
+  for (const m of alvos) {
+    if (eletriza) GemasE2a.eletrizarNaAura(m, grande ? def.eletrizaGrandePct : def.eletrizaPct, ate, agora);
+    // (o Resfriamento do jogo dura 3 s: a Duração aumentada leva aos 4 s)
+    else Estados.aplicar(m, { lentidaoPct: grande ? def.resfriaGrandePct : def.resfriaPct, lentidaoDuracaoPct: (def.duracaoS * 1000 / 3000 - 1) * 100 }, 1, agora, rng, !!hunt.isBoss);
+  }
+  return alvos;
+}
 export function tiqueDoEmissario(estado, hunt, agora = hunt?.clock ?? 0, rng = Math.random) {
   if (!itensPoeLigado() || !hunt?.pos) return;
   const af = Ficha.combate(estado).afPoe ?? {};
   hunt.lacaios ??= [];
+  // (o das Direções guarda `emissario: true` — o primeiro, de 14/10)
   const qual = Number(af.emissario_direcoes) > 0 ? EMISSARIO : Number(af.emissario_direcoes_menor) > 0 ? EMISSARIO_MENOR : null;
-  const vivo = hunt.lacaios.find((l) => l.emissario && l.hp > 0);
+  const vivo = hunt.lacaios.find((l) => l.emissario === true && l.hp > 0);
   if (vivo && vivo.nome !== qual?.nome) vivo.hp = 0;
-  if (!qual) return;
-  if (!vivo || vivo.nome !== qual.nome) hunt.lacaios.push(lacaioDoGuardian(estado, hunt, hunt.ultimoTique ?? Date.now(), af, qual.nome, 'physical', { emissario: true, intocavel: true, semAtaque: true }));
-  if (agora < (hunt.poeEmissarioEm ?? 0)) return;
-  hunt.poeEmissarioEm = agora + qual.periodoMs;
-  for (const b of [...EMISSARIO.buffs, ...EMISSARIO_MENOR.buffs]) if (hunt.poeBuffs?.[b]) delete hunt.poeBuffs[b];
-  ModsPoe.ganharBuff(hunt, qual.buffs[Math.floor(rng() * qual.buffs.length)], qual.duracaoS, agora);
+  if (qual) {
+    if (!vivo || vivo.nome !== qual.nome) hunt.lacaios.push(lacaioDoGuardian(estado, hunt, hunt.ultimoTique ?? Date.now(), af, qual.nome, 'physical', { emissario: true, intocavel: true, semAtaque: true }));
+    if (agora >= (hunt.poeEmissarioEm ?? 0)) {
+      hunt.poeEmissarioEm = agora + qual.periodoMs;
+      for (const b of [...EMISSARIO.buffs, ...EMISSARIO_MENOR.buffs]) if (hunt.poeBuffs?.[b]) delete hunt.poeBuffs[b];
+      ModsPoe.ganharBuff(hunt, qual.buffs[Math.floor(rng() * qual.buffs.length)], qual.duracaoS, agora);
+    }
+  }
+  for (const [chave, def] of Object.entries(EMISSARIOS)) {
+    const grande = Number(af[`emissario_${chave}`]) > 0;
+    const menor = !grande && Number(af[`emissario_${chave}_menor`]) > 0;
+    emissarioPresente(estado, hunt, af, grande ? def.grande : menor ? def.menor : null, chave);
+    if (!grande && !menor) continue;
+    const em = (hunt.poeEmissarios ??= {});
+    if (agora < (em[chave] ?? 0) || !condicaoDoEmissario(hunt, def.condicao, agora)) continue;
+    em[chave] = agora + (grande ? def.periodoGrandeMs ?? def.periodoMs : def.periodoMs);
+    if (chave === 'tormentas') tormentasDoEmissario(hunt, def, grande, agora, rng);
+    else for (const b of grande ? def.buffsGrande ?? def.buffs : def.buffs) ModsPoe.ganharBuff(hunt, b, def.duracaoS, agora);
+  }
 }
 
 /**

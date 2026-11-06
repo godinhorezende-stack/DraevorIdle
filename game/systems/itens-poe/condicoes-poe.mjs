@@ -1356,6 +1356,13 @@ export const BUFFS = {
   emissarioMenorPerfuracao: { nome: 'Direções: Perfuração', af: { perfurar: 1 } },
   emissarioMenorDifusao: { nome: 'Direções: Difusão', af: { bifurcar: 1 } },
   emissarioMenorTodos: { nome: 'Direções: Todos', af: { extra_projectiles: 1, ricochetes: 1, perfurar: 1, bifurcar: 1 } },
+  // (06/11, lote 6 das inertes: os outros Emissários — `acoes.EMISSARIOS`; os números, o poedb em inglês e o poewiki)
+  emissarioTempo: { nome: 'Emissário do Tempo', af: { action_speed: 10 } },
+  emissarioBrutalidade: { nome: 'Emissário da Brutalidade', af: { dmg_inc: 50, atk_speed: 30, move_speed: 30, dano_recebido_inc: -15 } },
+  emissarioBrutalidadeExplosao: { nome: 'Brutalidade: Sangrando explodem', af: { 'ev:matar:explodirChance:10:physical@alvoSangrando': 100 } },
+  emissarioFoco: { nome: 'Emissário do Foco', af: { dano_recebido_mais: -20, imune_atordoamento: 1, imune_congelamento: 1, imune_resfriamento: 1, imune_incendio: 1, imune_eletrizacao: 1 } },
+  emissarioFocoMaldicao: { nome: 'Foco: sem Maldições', af: { imune_maldicao: 1 } },
+  emissarioArcanoRaio: { nome: 'Arcano: Raio', af: { chance_shock: 15, energy_pen: 10 } },
   // (lote F) Vento Favorável (o lembrete do PoE: Velocidade de Ação aumentada — aqui, as velocidades de ataque, conjuração e movimento).
   // (lote 30, P027: "Vento Favorável aumenta a Velocidade de Ação em 8%" — o lembrete do próprio nó; era +10% de ataque, conjuração e movimento)
   ventoFavoravel: { nome: 'Vento Favorável', af: { action_speed: 8 } },

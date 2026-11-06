@@ -45718,13 +45718,14 @@
       "padrao": "^Concede a Habilidade Convocar Grande Emissário do Tempo$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "emissario_tempo",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a gema Convocar Grande Emissário do Tempo",
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e a cada 20 s (o Grande, a cada 10 s) lança em você 8 s de +10% de Velocidade de Ação; o do Menor não acelera os inimigos por perto (o jogo não tem Velocidade de Ação nos monstros)",
       "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_06_11c": "06/11 — lote 6 das inertes: os Emissários",
       "_nova": true
     },
     {
@@ -47043,13 +47044,14 @@
       "padrao": "^Concede a Habilidade Convocar Grande Emissário do Foco$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "emissario_foco",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a gema Convocar Grande Emissário do Foco",
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e a cada 8 s, enquanto você canaliza, lança em você 4 s de 20% menos Dano sofrido, sem Atordoamento nem Afecções Elementais; o Grande, junto: Maldições não afetam você — os 20% são do poewiki (sem fonte do jogo)",
       "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_06_11c": "06/11 — lote 6 das inertes: os Emissários",
       "_nova": true
     },
     {
@@ -47298,13 +47300,14 @@
       "padrao": "^Concede a Habilidade Convocar Grande Emissário das Tormentas$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "emissario_tormentas",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a gema Convocar Grande Emissário das Tormentas",
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e a cada 4 s Resfria ou Eletriza (ao acaso) um inimigo e até 4 por perto dele por 4 s, com efeito de 20% — o efeito não é publicado (o Grande: maior)",
       "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_06_11c": "06/11 — lote 6 das inertes: os Emissários",
       "_nova": true
     },
     {
@@ -48717,13 +48720,14 @@
       "padrao": "^Concede a Habilidade Convocar Grande Emissário do Arcano$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "emissario_arcano",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a gema Convocar Grande Emissário do Arcano",
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e a cada 6 s lança em você a Fúria Arcana (4 s); o Grande, junto: 4 s de +15% de chance de Eletrizar e Penetração de 10% de Resistência a Raio — a frequência é a recarga da habilidade (nenhuma fonte publica a do buff)",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_06_11c": "06/11 — lote 6 das inertes: os Emissários",
       "_nova": true
     },
     {
@@ -49218,13 +49222,14 @@
       "padrao": "^Concede a Habilidade Convocar Grande Emissário da Brutalidade$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "emissario_brutalidade",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a gema Convocar Grande Emissário da Brutalidade",
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e a cada 20 s, com um Inimigo Raro ou Único por perto, lança em você 8 s de 50% de Dano aumentado, 30% de Velocidade de Ataque e de Movimento e 15% de Dano sofrido reduzido; o Grande, junto: os Inimigos Sangrando que você mata explodem, 10% da Vida máxima deles como Dano Físico",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_06_11c": "06/11 — lote 6 das inertes: os Emissários",
       "_nova": true
     },
     {
@@ -49957,65 +49962,70 @@
       "padrao": "^Concede a Habilidade Convocar Emissário do Tempo$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "emissario_tempo_menor",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a gema Convocar Emissário do Tempo",
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e a cada 20 s (o Grande, a cada 10 s) lança em você 8 s de +10% de Velocidade de Ação; o do Menor não acelera os inimigos por perto (o jogo não tem Velocidade de Ação nos monstros)",
       "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
+      "_06_11c": "06/11 — lote 6 das inertes: os Emissários",
       "_nova": true
     },
     {
       "padrao": "^Concede a Habilidade Convocar Emissário das Tormentas$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "emissario_tormentas_menor",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a gema Convocar Emissário das Tormentas",
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e a cada 4 s Resfria ou Eletriza (ao acaso) um inimigo e até 4 por perto dele por 4 s, com efeito de 10% — o efeito não é publicado (o Grande: maior)",
       "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
+      "_06_11c": "06/11 — lote 6 das inertes: os Emissários",
       "_nova": true
     },
     {
       "padrao": "^Concede a Habilidade Convocar Emissário do Arcano$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "emissario_arcano_menor",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a gema Convocar Emissário do Arcano",
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e a cada 6 s lança em você a Fúria Arcana (4 s) — a frequência é a recarga da habilidade (nenhuma fonte publica a do buff)",
       "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
+      "_06_11c": "06/11 — lote 6 das inertes: os Emissários",
       "_nova": true
     },
     {
       "padrao": "^Concede a Habilidade Convocar Emissário do Foco$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "emissario_foco_menor",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a gema Convocar Emissário do Foco",
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e a cada 8 s, enquanto você canaliza, lança em você 4 s de 20% menos Dano sofrido, sem Atordoamento nem Afecções Elementais — os 20% são do poewiki (sem fonte do jogo)",
       "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
+      "_06_11c": "06/11 — lote 6 das inertes: os Emissários",
       "_nova": true
     },
     {
       "padrao": "^Concede a Habilidade Convocar Emissário da Brutalidade$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "emissario_brutalidade_menor",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a gema Convocar Emissário da Brutalidade",
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e a cada 20 s, com um Inimigo Raro ou Único por perto, lança em você 8 s de 50% de Dano aumentado, 30% de Velocidade de Ataque e de Movimento e 15% de Dano sofrido reduzido",
       "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
+      "_06_11c": "06/11 — lote 6 das inertes: os Emissários",
       "_nova": true
     },
     {

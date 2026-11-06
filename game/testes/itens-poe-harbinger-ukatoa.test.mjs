@@ -133,7 +133,8 @@ test('os únicos novos: o Emissário das Direções menor (+1) e as linhas da Di
   assert.deepEqual(t('Concede a Habilidade Convocar Emissário das Direções').efeitos, [{ stat: 'emissario_direcoes_menor', valor: 1 }]);
   assert.deepEqual(t('Raridade dos Itens encontrados aumentada em 40% durante o Efeito').efeitos, [{ stat: 'item_rarity', valor: 40 }]);
   assert.deepEqual(t('+10% de Resistências Elementais durante o Efeito').efeitos.map((e) => e.stat), ['fire_res', 'ice_res', 'energy_res']);
-  assert.equal(t('Concede a Habilidade Convocar Emissário do Tempo').estado, 'inerte');
+  // (lote 6 das inertes, 06/11: o Emissário do Tempo passou a valer — era 'inerte')
+  assert.equal(t('Concede a Habilidade Convocar Emissário do Tempo').estado, 'aproximado');
   assert.equal(BUFFS.emissarioMenorTodos.af.extra_projectiles, 1);
   assert.equal(BUFFS.emissarioTodos.af.extra_projectiles, 2);
 });

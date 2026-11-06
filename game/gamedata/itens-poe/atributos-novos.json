@@ -9278,6 +9278,66 @@
       "combate": true,
       "nome": "Emissário das Direções",
       "efeito": "acoes.tiqueDoEmissario (06/11)"
+    },
+    "emissario_tempo": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Grande Emissário do Tempo",
+      "efeito": "acoes.tiqueDoEmissario (06/11)"
+    },
+    "emissario_tempo_menor": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Emissário do Tempo",
+      "efeito": "acoes.tiqueDoEmissario (06/11)"
+    },
+    "emissario_brutalidade": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Grande Emissário da Brutalidade",
+      "efeito": "acoes.tiqueDoEmissario (06/11)"
+    },
+    "emissario_brutalidade_menor": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Emissário da Brutalidade",
+      "efeito": "acoes.tiqueDoEmissario (06/11)"
+    },
+    "emissario_foco": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Grande Emissário do Foco",
+      "efeito": "acoes.tiqueDoEmissario (06/11)"
+    },
+    "emissario_foco_menor": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Emissário do Foco",
+      "efeito": "acoes.tiqueDoEmissario (06/11)"
+    },
+    "emissario_arcano": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Grande Emissário do Arcano",
+      "efeito": "acoes.tiqueDoEmissario (06/11)"
+    },
+    "emissario_arcano_menor": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Emissário do Arcano",
+      "efeito": "acoes.tiqueDoEmissario (06/11)"
+    },
+    "emissario_tormentas": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Grande Emissário das Tormentas",
+      "efeito": "acoes.tiqueDoEmissario (06/11)"
+    },
+    "emissario_tormentas_menor": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Emissário das Tormentas",
+      "efeito": "acoes.tiqueDoEmissario (06/11)"
     }
   }
 }
