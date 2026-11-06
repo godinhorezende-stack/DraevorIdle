@@ -780,10 +780,15 @@ const ESTADOS_NO_ALVO = {
   semCritico: (e, ate) => (e.semCritico = { ate }),
   // Excomungado (PoE): o inimigo não causa dano de Caos (`condicoes-poe.semCaos`).
   excomungado: (e, ate) => (e.excomungado = { ate }),
+  // (06/11, o Coração Negro: "X% de chance de Fazer com que os Monstros Fujam") — a Fuga do PoE: quem foge é o `fugindo` (`skills/estados.fugindo`); o
+  // Raro, o Único e o chefe não fogem (a regra da Fuga — `acoes.fugir`), e quem confere a raridade é `porNoAlvo` (o estado só tem o `e`)
+  fugindo: (e, ate) => (e.fugindo = { ate: Math.max(e.fugindo?.ate ?? 0, ate) }),
 };
+/** (06/11) O monstro que NÃO foge (o Raro, o Único, o chefe — a regra da Fuga do PoE): o `fugindo` não pega nele. */
+const naoFoge = (alvo) => !!(alvo?.boss || alvo?.chefe || alvo?.isBoss || /raro|elite|unico|único|boss/i.test(String(alvo?.raridade ?? '')));
 const SEGUNDOS_PADRAO = 4;
 /** Põe um estado do PoE (`cego`, `cinzas`, `definhado`…) no alvo até `ate` — o mesmo das auras e dos eventos (o dos lacaios usa). */
-export const porNoAlvo = (alvo, nome, ate, agora) => ESTADOS_NO_ALVO[nome]?.((alvo.estados ??= {}), ate, agora);
+export const porNoAlvo = (alvo, nome, ate, agora) => (nome === 'fugindo' && naoFoge(alvo) ? undefined : ESTADOS_NO_ALVO[nome]?.((alvo.estados ??= {}), ate, agora));
 /**
  * (11/10) Põe o estado com os mods do personagem: o DEFINHAMENTO — "Definhamentos infligidos por você expiram X% mais lentamente" (a duração ÷
  * (1 − X%)) e "X% de chance de, quando você infligir Definhamento, infligir até um máximo de 15 Debuffs de Definhamento ao invés".
@@ -1146,7 +1151,7 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
       if (!alvo || alvo.hp <= 0) return;
       const [nomeDoEstado, seg] = String(ev.param).split(':');
       const fazer = ESTADOS_NO_ALVO[nomeDoEstado];
-      if (!fazer || !sorte(v)) return;
+      if (!fazer || !sorte(v) || (nomeDoEstado === 'fugindo' && naoFoge(alvo))) return;
       porComMods(fazer, nomeDoEstado, (alvo.estados ??= {}), agora + (Number(seg) || SEGUNDOS_PADRAO) * 1000, agora, ficha, rng);
       eventos?.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: nomeDoEstado });
       return;

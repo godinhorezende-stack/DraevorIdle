@@ -44605,7 +44605,8 @@
           "valor": "{1}"
         }
       ],
-      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra",
+      "_nova": true
     },
     {
       "padrao": "^\\{(\\d+)\\}% do Dano de Fogo e Raio dos Acertos é sofrido como Dano de Gelo$",
@@ -44619,7 +44620,8 @@
           "valor": "{1}"
         }
       ],
-      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra",
+      "_nova": true
     },
     {
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Raio às Magias$",
@@ -44633,7 +44635,8 @@
           "valor": "{2}"
         }
       ],
-      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra",
+      "_nova": true
     },
     {
       "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear Dano de Ataque$",
@@ -44643,7 +44646,8 @@
           "valor": "{1}"
         }
       ],
-      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra",
+      "_nova": true
     },
     {
       "padrao": "^Adiciona Empurrão aos Ataques Corpo a Corpo$",
@@ -44653,7 +44657,8 @@
           "valor": "100"
         }
       ],
-      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra",
+      "_nova": true
     },
     {
       "padrao": "^\\{(\\d+)\\}% mais Dano Físico Corpo a Corpo$",
@@ -44663,7 +44668,8 @@
           "valor": "{1}"
         }
       ],
-      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra",
+      "_nova": true
     },
     {
       "padrao": "^Recarga do escudo de energia não é adiado por dano$",
@@ -44675,7 +44681,8 @@
       ],
       "estado": "aproximado",
       "nota": "o jogo usa a mesma regra do \"não é interrompida se começou recentemente\"",
-      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra",
+      "_nova": true
     },
     {
       "padrao": "^Imunidade a Congelamento, Resfriamento, Maldições e Atordoamentos$",
@@ -44697,7 +44704,8 @@
           "valor": "1"
         }
       ],
-      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra",
+      "_nova": true
     },
     {
       "padrao": "^Recupera \\{(\\d+)\\}% de Vida quando você Matar um Inimigo$",
@@ -44707,7 +44715,8 @@
           "valor": "{1}"
         }
       ],
-      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra",
+      "_nova": true
     },
     {
       "padrao": "^Efeito de Afecções Não-Danificadoras infligidas por você aumentada em \\{(\\d+)\\}%$",
@@ -44725,7 +44734,8 @@
           "valor": "{1}"
         }
       ],
-      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra",
+      "_nova": true
     },
     {
       "padrao": "^Ganha \\{(\\d+)\\} Carga de Tolerância por Segundo$",
@@ -44735,7 +44745,8 @@
           "valor": "100"
         }
       ],
-      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra",
+      "_nova": true
     },
     {
       "padrao": "^Cargas recebidas por Outros Frascos aumentadas em \\{(\\d+)\\}%$",
@@ -44747,7 +44758,8 @@
       ],
       "estado": "aproximado",
       "nota": "o jogo aumenta as cargas recebidas de todos os frascos (o PoE: só os outros)",
-      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra",
+      "_nova": true
     },
     {
       "padrao": "^Recuperação de Vida de Frascos também se aplica ao Escudo de Energia$",
@@ -44759,6 +44771,508 @@
       ],
       "_nova": true,
       "_05_11": "05/11 — lote 1 dos Únicos (frascos): O Sofrimento do Divino"
+    },
+    {
+      "padrao": "^Dano Elemental com Acertos e Afecções aumentado em \\{(\\d+)\\}% por cada tipo de Afecção Elemental no Inimigo$",
+      "efeitos": [
+        {
+          "stat": "dano_por_afeccao_no_alvo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o jogo conta cada tipo de Afecção no inimigo e aumenta todo o dano (o PoE: só as Elementais, e só o Dano Elemental)",
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de, ao atingir corpo a corpo, o empalamento mais forte no alvo durar \\{(\\d+)\\} acerto adicional$",
+      "efeitos": [
+        {
+          "stat": "empalar_acerto_extra_chance@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "todos os Empalamentos no alvo duram o acerto a mais (o PoE: só o mais forte)",
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\S?-\\{(\\d+)\\}% de duração de empalamentos$",
+      "efeitos": [
+        {
+          "stat": "duracao_empalamento",
+          "valor": "-{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Ardente aumentado em \\{(\\d+)\\}% para cada vez que você tiver Eletrizado um Inimigo Não-Eletrizado Recentemente, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ignite_dmg_inc%usos:ev.eletrizar~{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "no Incêndio; conta cada Eletrização recente (o PoE: só a de quem não estava Eletrizado)",
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço Esquerdo de Anel: Cobre Inimigos em Cinzas por \\{(\\d+)\\} segundos quando você os Incendiar$",
+      "efeitos": [
+        {
+          "stat": "ev:incendiar:alvo:cinzas:{V1}@anelEsquerdo",
+          "valor": "100"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço de Anel Direito: Cobre Inimigos em Gelo por \\{(\\d+)\\} segundos quando você os Congelar$",
+      "efeitos": [
+        {
+          "stat": "ev:congelar:alvo:cobertoGelo:{V1}@anelDireito",
+          "valor": "100"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você sofre \\{(\\d+)\\} de dano de fogo ao usar uma habilidade$",
+      "efeitos": [
+        {
+          "stat": "ev:usarHabilidade:perdeVida",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Vida perdida inteira, sem a Resistência a Fogo (não mata: fica em 1)",
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Fazer com que os Monstros Fujam$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:fugindo:2",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Fuga do PoE (2 s): o Raro, o Único e o chefe não fogem; o Mágico não evita metade aqui",
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos Não-Resfriados Envenenados por você são Resfriados$",
+      "efeitos": [
+        {
+          "stat": "ev:envenenar:alvo:resfriado",
+          "valor": "100"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos Envenenados Mortos pelos seus Acertos são Estraçalhados$",
+      "efeitos": [
+        {
+          "stat": "mortos_destruidos@alvoEnvenenado",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos Sangrando Mortos pelos seus Acertos são Estraçalhados$",
+      "efeitos": [
+        {
+          "stat": "mortos_destruidos@alvoSangrando",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos Resfriados pelos seus Acertos podem ser Despedaçados como se fossem Congelados$",
+      "efeitos": [
+        {
+          "stat": "mortos_destruidos@alvoResfriado",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o morto Resfriado é destruído, como o Congelado estilhaçado",
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Armadura do escudo equipado é dobrada$",
+      "efeitos": [
+        {
+          "stat": "armour_pct_escudo",
+          "valor": "100"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Movimento quando Incendiado aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "move_speed@ardendo",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço de anel esquerdo: você e seus lacaios evitam \\+\\{(\\d+)\\}% do dano elemental refletido$",
+      "efeitos": [
+        {
+          "stat": "reflexo_elemental_evitado@anelEsquerdo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "só em você (os lacaios não sofrem reflexo no jogo)",
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço de anel direito: você e seus lacaios evitam \\+\\{(\\d+)\\}% do dano físico refletido$",
+      "efeitos": [
+        {
+          "stat": "reflexo_fisico_evitado@anelDireito",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "só em você (os lacaios não sofrem reflexo no jogo)",
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você pode aplicar uma Maldição a menos$",
+      "efeitos": [
+        {
+          "stat": "maldicoes_adicionais",
+          "valor": "-1"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Rouba Cargas de Poder, Frenesi e Tolerância ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:roubarCargas",
+          "valor": "100"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Magias de Nova tem \\{(\\d+)\\}% menos Efeito em Área$",
+      "efeitos": [
+        {
+          "stat": "area_mais@nova",
+          "valor": "-{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Projéteis Retornam a você$",
+      "efeitos": [
+        {
+          "stat": "proj_retornar_chance",
+          "valor": "100"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço para Anel Esquerdo: Projéteis de Magias se Difundem$",
+      "efeitos": [
+        {
+          "stat": "bifurcar@magia+anelEsquerdo",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço para Anel Direito: Projéteis de Magias Ricocheteiam \\+\\{(\\d+)\\} vezes$",
+      "efeitos": [
+        {
+          "stat": "ricochetes@magia+anelDireito",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Dano Incendiário$",
+      "efeitos": [
+        {
+          "stat": "incendio_mais",
+          "valor": "-{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você pode infligir \\{(\\d+)\\} Incêndios adicionais em um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "incendios_extra",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^O Dano dos Inimigos Acertando você é Azarado enquando estiver em Vida Baixa$",
+      "efeitos": [
+        {
+          "stat": "dano_recebido_azarado@vidaBaixa",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Elemental com Acertos e Afecções aumentado em \\{(\\d+)\\}% por cada$",
+      "efeitos": [
+        {
+          "stat": "dano_por_afeccao_no_alvo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o jogo conta cada tipo de Afecção no inimigo e aumenta todo o dano (o PoE: só as Elementais, e só o Dano Elemental)",
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^tipo de Afecção Elemental no Inimigo$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "continuação da linha de cima (o poedb quebrou a frase em duas)",
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço de anel esquerdo: Você não pode Recarregar nem Regenerar Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "sem_recarga_es@anelEsquerdo",
+          "valor": "1"
+        },
+        {
+          "stat": "sem_regen_es@anelEsquerdo",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ponto de Atordoamento é baseado no Escudo de Energia ao invés de na Vida$",
+      "efeitos": [
+        {
+          "stat": "es_no_ponto_atordoamento",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Escudo de Energia entra inteiro no Ponto de Atordoamento (a Vida continua contando)",
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistência de Fogo e Caos$",
+      "efeitos": [
+        {
+          "stat": "fire_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "chaos_res",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^use unique blackflame ignite effect \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "só o efeito visual do Incêndio (a Chama Negra)",
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Resistência a Caos dos Inimigos Próximos é \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "aura_res_menos:chaos",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito em Área de Habilidades Feitiço reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@feitico",
+          "valor": "-{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inflige Chama Santificada ao atingir por permanecer em chão consagrado$",
+      "efeitos": [
+        {
+          "stat": "chama_santificada_corpo@soloSagrado",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "nos golpes corpo a corpo, enquanto você está em Solo Sagrado",
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ataques infligem Inervar no Golpe Crítico por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "ev:critico:alvo:inervado:{V1}@ataque",
+          "valor": "100"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistência a Fogo quando Encaixado com uma Gema Vermelha$",
+      "efeitos": [
+        {
+          "stat": "fire_res%gemaLocal:R~{V1}",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistência a Gelo quando Encaixado com uma Gema Verde$",
+      "efeitos": [
+        {
+          "stat": "ice_res%gemaLocal:G~{V1}",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistência a Raio quando Encaixado com uma Gema Azul$",
+      "efeitos": [
+        {
+          "stat": "energy_res%gemaLocal:B~{V1}",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades de Golens Encaixadas têm \\{(\\d+)\\}% de chance de Provocar ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "lacaio_provocar:golem",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades de Golem Encaixadas fazem com que os Lacaios Regenerem \\{(\\d+)\\}% da Vida por segundo$",
+      "efeitos": [
+        {
+          "stat": "lacaio_regen_pct:golem",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "nos Golens (o PoE: em todos os seus lacaios, enquanto o Golem está convocado)",
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades de Golens Encaixadas têm \\{(\\d+)\\}% de Velocidade de Ataque e Conjuração aumentada$",
+      "efeitos": [
+        {
+          "stat": "lacaio_vel_ataque:golem",
+          "valor": "{1}"
+        },
+        {
+          "stat": "lacaio_vel_conj:golem",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Perde \\{(\\d+)\\} de Vida por Inimigo Morto$",
+      "efeitos": [
+        {
+          "stat": "life_on_kill",
+          "valor": "-{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 2 dos Únicos (anéis): a frase que não casava com nenhuma regra",
+      "_nova": true
     }
   ]
 }
