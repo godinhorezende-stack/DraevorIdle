@@ -1324,6 +1324,15 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     // (06/11, lote 11) `soloSeu:<tipo>:<segundos>` = a CHANCE de criar um solo seu onde você está (`solos-seus.mjs`: a Matua Tupuna espalha Piche ao Bloquear; a Trapaça
     // de Ylfeban, o Solo Eletrizado quando Acertado)
     case 'soloSeu': { const [tipo, seg] = String(ev.param).split(':'); if (sorte(v)) SolosSeus.criar(hunt, tipo, { segundos: Number(seg) || undefined, agora }); return; }
+    // (06/11, lote 12, o Comando de Kaom) `explodirCadaveres` = os cadáveres a até 4 casas de você explodem, X% da Vida máxima de cada um como Dano Físico nos de
+    // perto dele (a explosão do jogo — `explodirMorto`), e saem
+    case 'explodirCadaveres': {
+      const p = hunt.pos;
+      const perto = p ? (hunt.cadaveres ?? []).filter((c) => (c.z == null || c.z === (hunt.z ?? 0)) && Math.max(Math.abs(c.x - p.x), Math.abs(c.y - p.y)) <= 4) : [];
+      for (const c of perto) explodirMorto(hunt, c, v, eventos, { tipo: 'physical' });
+      if (perto.length) hunt.cadaveres = (hunt.cadaveres ?? []).filter((c) => !perto.includes(c));
+      return;
+    }
     case 'perderAlmas': if (hunt.poeAlmas && sorte(v)) { delete hunt.poeAlmas; hunt.poeFichaMudou = true; } return;
     case 'perdeCargas': if (sorte(v)) leitorDeCargas?.(estado, 'perder', ev.param); return;
     case 'cargaAleatoria': if (sorte(v)) leitorDeCargas?.(estado, 'ganhar', ['frenesi', 'poder', 'tolerancia'][Math.floor(rng() * 3)], 1); return;
@@ -1953,6 +1962,11 @@ export function aurasProximas(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
   hunt.poeFeiticosRefletidos = valor(ficha, 'feiticos_refletidos') > 0;
   // (06/11, O Inexperiente: "Projéteis não podem colidir com Inimigos em Curto Alcance" — `hunt/voos.lancar` lê)
   hunt.poeProjeteisSemCurto = valor(ficha, 'projeteis_sem_curto') > 0;
+  // (06/11, lote 12, o Desejo de Aukuna: "Seus Zumbis Erguidos contam como Cadáveres" — `GemasE1a.cadaveresDaOferenda` lê)
+  hunt.poeZumbisCadaveres = valor(ficha, 'zumbis_sao_cadaveres') > 0;
+  // (06/11, lote 12, o Preço Sanguíneo: "Monstros Inimigos Próximos têm ao menos X% de Vida Reservada" — a Vida deles, a até 3 casas, não passa de (100 − X)%)
+  const reservaNeles = valor(ficha, 'monstros_vida_reservada_pct');
+  if (reservaNeles > 0 && hunt.pos) for (const m of hunt.monstros ?? []) if (m.hp > 0 && !m.dummy && Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) <= 3) m.hp = Math.min(m.hp, Math.max(1, Math.floor((m.maxHp ?? m.hp) * (1 - Math.min(100, reservaNeles) / 100))));
   // (06/11, o Toque Gentil de Asenath: "Inimigos próximos de Cadáveres afetados por suas Maldições são Cegados" — a até 2 casas do cadáver amaldiçoado)
   if (valor(ficha, 'cadaver_amaldicoado_cega') > 0) {
     const malditos = (hunt.cadaveres ?? []).filter((c) => (c.amaldicoadoAte ?? 0) > agora);

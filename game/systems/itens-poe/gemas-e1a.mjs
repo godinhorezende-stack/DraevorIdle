@@ -95,7 +95,11 @@ export const CASAS_DA_OFERENDA = 4;
 export function cadaveresDaOferenda(hunt) {
   const p = hunt?.pos;
   if (!p) return [];
-  return (hunt.cadaveres ?? []).filter((c) => (c.z == null || c.z === (hunt.z ?? 0)) && Math.max(Math.abs(c.x - p.x), Math.abs(c.y - p.y)) <= CASAS_DA_OFERENDA);
+  const cadaveres = (hunt.cadaveres ?? []).filter((c) => (c.z == null || c.z === (hunt.z ?? 0)) && Math.max(Math.abs(c.x - p.x), Math.abs(c.y - p.y)) <= CASAS_DA_OFERENDA);
+  // (06/11, lote 12 das inertes, o Desejo de Aukuna: "Seus Zumbis Erguidos contam como Cadáveres" — os vivos perto entram como cadáver, e não saem: o PoE não os consome)
+  if (!hunt.poeZumbisCadaveres) return cadaveres;
+  const zumbis = (hunt.lacaios ?? []).filter((l) => l.hp > 0 && /^Raise_Zombie/.test(l.gema ?? '') && Math.max(Math.abs(l.x - p.x), Math.abs(l.y - p.y)) <= CASAS_DA_OFERENDA).map((l) => ({ x: l.x, y: l.y, maxHp: l.maxHp ?? 0, zumbi: l.uid }));
+  return [...cadaveres, ...zumbis];
 }
 /** A duração da Oferenda com `n` cadáveres consumidos: a base + N s por cadáver EXTRA (o primeiro é o da Oferenda). */
 export const duracaoDaOferenda = (q, n) => Math.max(0, q?.duracaoMs ?? 0) + Math.max(0, n - 1) * Math.max(0, q?.porCadaverMs ?? 0);

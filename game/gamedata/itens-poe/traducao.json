@@ -14,6 +14,300 @@
   ],
   "regras": [
     {
+      "padrao": "^Ganha \\{(\\d+)\\}% da Vida Não Reservada que Falta antes de ser Acertado por um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:serAcertado:vidaFaltaPct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_unico": true,
+      "_06_11h": "06/11 — lote 12 das inertes: a regra ficava atrás de uma genérica inerte (vai para o começo)"
+    },
+    {
+      "padrao": "^Amaldiçoa Inimigos com (.+?) ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:maldicao:{NOME}:10",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "a maldição no nível 10 da gema (o texto do poedb em português não traz o nível).",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 2)",
+      "_06_11h": "06/11 — lote 12 das inertes: a regra ficava atrás de uma genérica inerte (vai para o começo)"
+    },
+    {
+      "padrao": "^Inimigos próximos de Cadáveres afetados por suas Maldições são Cegados$",
+      "efeitos": [
+        {
+          "stat": "cadaver_amaldicoado_cega",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true,
+      "_06_11h": "06/11 — lote 12 das inertes: a regra ficava atrás de uma genérica inerte (vai para o começo)"
+    },
+    {
+      "padrao": "^Inimigos mortos próximos de Cadáveres afetados por suas Maldições explodem, causando$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "continuação da linha de baixo (o poedb quebrou a frase)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true,
+      "_06_11h": "06/11 — lote 12 das inertes: a regra ficava atrás de uma genérica inerte (vai para o começo)"
+    },
+    {
+      "padrao": "^Gemas Encaixadas não têm Reserva$",
+      "efeitos": [
+        {
+          "stat": "sem_reserva_local",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true,
+      "_06_11h": "06/11 — lote 12 das inertes: a regra ficava atrás de uma genérica inerte (vai para o começo)"
+    },
+    {
+      "padrao": "^Utiliza ambas mãos$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "a base já é de duas mãos: a regra vale pela própria peça",
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Suas Habilidades Bênção são Desabilitadas$",
+      "efeitos": [
+        {
+          "stat": "bencaos_desabilitadas",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Eficácia da Reserva de Mana das Habilidades reduzida em \\{(-?\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_reserva_mana",
+          "valor": "-{1}"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Gemas Encaixadas têm Eficácia da Reserva reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_reserva_local",
+          "valor": "-{1}"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Monstros Inimigos Próximos têm ao menos \\{(\\d+)\\}% de Vida Reservada$",
+      "efeitos": [
+        {
+          "stat": "monstros_vida_reservada_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os monstros a até 3 casas não passam de (100 − X)% da Vida máxima",
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ataques Impelidos Empurram Inimigos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "chance_empurrar@impelido",
+          "valor": "100"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades causam \\{(\\d+)\\}% mais Dano por cada Clamor as Impelindo$",
+      "efeitos": [
+        {
+          "stat": "mais_dano@impelidoPor:1",
+          "valor": "{1}"
+        },
+        {
+          "stat": "mais_dano@impelidoPor:2",
+          "valor": "{1}"
+        },
+        {
+          "stat": "mais_dano@impelidoPor:3",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Quando você Atacar, sofra \\{(\\d+)\\}% da Vida como Dano Físico por cada Clamor Impelindo o Ataque$",
+      "efeitos": [
+        {
+          "stat": "impelido_sofre_vida_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Vida sai sem passar pelas defesas e não mata (fica em 1), como as perdas de Vida dos custos",
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ataques Não Impelidos não causam Dano$",
+      "efeitos": [
+        {
+          "stat": "mais_dano@ataqueNaoImpelido",
+          "valor": "-100"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dreno de Vida dos Ataques Impelidos é instantâneo$",
+      "efeitos": [
+        {
+          "stat": "roubo_instantaneo_pct@impelido",
+          "valor": "100"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades que Impelem um Ataque têm \\{(\\d+)\\}% de chance de não contarem tal Ataque$",
+      "efeitos": [
+        {
+          "stat": "impelir_nao_conta_chance",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Cadáveres próximos Explodem quando você usar um Clamor, causando \\{(\\d+)\\}% de sua Vida como Dano Físico$",
+      "efeitos": [
+        {
+          "stat": "ev:usarClamor:explodirCadaveres",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os cadáveres a até 4 casas; a explosão acerta os monstros a 1 casa de cada um",
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Erguer Zumbi não requer um Cadáver$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o Erguer Zumbi do jogo já não pede cadáver",
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Seus Zumbis Erguidos contam como Cadáveres$",
+      "efeitos": [
+        {
+          "stat": "zumbis_sao_cadaveres",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os seus Zumbis perto contam como cadáveres para as Oferendas (e não são consumidos)",
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Caso tenha Consumido um Cadáver Recentemente, você e Aliados próximos regeneram \\{(\\d+)\\}% de Vida por segundo$",
+      "efeitos": [
+        {
+          "stat": "aliados:life_regen_max_pct@consumiuCadaverRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Evasão enquanto na Postura da Areia$",
+      "efeitos": [
+        {
+          "stat": "evasion@posturaAreia",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano de Projétil aumentado em \\{(\\d+)\\}% enquanto na Postura de Sangue$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@projetil+posturaSangue",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\} de Vida por Segundo enquanto na Postura de Sangue$",
+      "efeitos": [
+        {
+          "stat": "life_regen@posturaSangue",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% caso tenha mudado de Postura Recentemente$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@evRecente:mudarPostura",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
       "padrao": "^Inafetado por Solo Profanado$",
       "efeitos": [
         {
@@ -21301,19 +21595,6 @@
       "_unico": true
     },
     {
-      "padrao": "^Utiliza ambas mãos$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "a base já é de duas mãos (a regra vale pela própria peça)",
-      "_nova": true,
-      "_unico": true
-    },
-    {
       "padrao": "^Reflete o anel aposto|Não Pode usar outros Anéis|Não Pode utilizar Peitoral$",
       "efeitos": [
         {
@@ -28456,17 +28737,6 @@
       "efeitos": [
         {
           "stat": "duracao_cargas",
-          "valor": "{1}"
-        }
-      ],
-      "_nova": true,
-      "_unico": true
-    },
-    {
-      "padrao": "^Ganha \\{(\\d+)\\}% da Vida Não Reservada que Falta antes de ser Acertado por um Inimigo$",
-      "efeitos": [
-        {
-          "stat": "ev:serAcertado:vidaFaltaPct",
           "valor": "{1}"
         }
       ],
@@ -37630,19 +37900,6 @@
       "efeitos": [
         {
           "stat": "ev:bloquear:maldicao:{NOME}:10",
-          "valor": "100"
-        }
-      ],
-      "_nova": true,
-      "estado": "aproximado",
-      "nota": "a maldição no nível 10 da gema (o texto do poedb em português não traz o nível).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 2)"
-    },
-    {
-      "padrao": "^Amaldiçoa Inimigos com (.+?) ao Acertar$",
-      "efeitos": [
-        {
-          "stat": "ev:acertar:maldicao:{NOME}:10",
           "valor": "100"
         }
       ],
@@ -48067,30 +48324,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Inimigos próximos de Cadáveres afetados por suas Maldições são Cegados$",
-      "efeitos": [
-        {
-          "stat": "cadaver_amaldicoado_cega",
-          "valor": "1"
-        }
-      ],
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Inimigos mortos próximos de Cadáveres afetados por suas Maldições explodem, causando$",
-      "efeitos": [
-        {
-          "stat": "lembrete",
-          "valor": "1"
-        }
-      ],
-      "estado": "lembrete",
-      "nota": "continuação da linha de baixo (o poedb quebrou a frase)",
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^\\{(\\d+)\\}% de sua Vida como Dano Físico$",
       "efeitos": [
         {
@@ -49431,30 +49664,6 @@
       ],
       "estado": "aproximado",
       "nota": "com todas as suas Habilidades de Golem",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Gemas Encaixadas não têm Reserva$",
-      "efeitos": [
-        {
-          "stat": "sem_reserva_local",
-          "valor": "1"
-        }
-      ],
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Suas Habilidades Bênção são Desabilitadas$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem as Habilidades Bênção",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
       "_nova": true
     },

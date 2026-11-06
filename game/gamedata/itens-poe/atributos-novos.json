@@ -9656,6 +9656,36 @@
       "combate": true,
       "nome": "Dano sofrido no seu Solo Sagrado",
       "efeito": "itens-poe/solos-seus.mjs (06/11, lote 11)"
+    },
+    "bencaos_desabilitadas": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Habilidades Bênção desabilitadas",
+      "efeito": "itens-poe (06/11, lote 12)"
+    },
+    "monstros_vida_reservada_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Vida Reservada dos monstros próximos",
+      "efeito": "itens-poe (06/11, lote 12)"
+    },
+    "impelido_sofre_vida_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Vida sofrida por Clamor Impelindo",
+      "efeito": "itens-poe (06/11, lote 12)"
+    },
+    "impelir_nao_conta_chance": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Chance do Impelir não contar o ataque",
+      "efeito": "itens-poe (06/11, lote 12)"
+    },
+    "zumbis_sao_cadaveres": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Zumbis contam como Cadáveres",
+      "efeito": "itens-poe (06/11, lote 12)"
     }
   }
 }

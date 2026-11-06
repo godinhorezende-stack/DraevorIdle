@@ -6727,6 +6727,8 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
       : { ate: agora + duracao, tipo: buff.tipo, fator, ...(buff.mult ? { mult: Reforcos.velocidadeEscalada(buff.mult, fator) } : {}) };
     if (doPoe) Ficha.invalidar(estado);
     // (lote R3C, 27/10) a BÊNÇÃO na aura ligada: a duração da Divina, a marca, "só uma Aura de Bênção" e a Eterna desligando as não-Bênção que reservam Mana
+    // (06/11, lote 12 das inertes, o Verme da Essência: "Suas Habilidades Bênção são Desabilitadas" — a Bênção não fica ligada)
+    if (bencaoR3c && hunt.buffs?.[entry.id] && Number(Ficha.combate(estado).afPoe?.bencaos_desabilitadas) > 0) { delete hunt.buffs[entry.id]; Ficha.invalidar(estado); }
     if (bencaoR3c && hunt.buffs?.[entry.id]) GemasR3c.aplicarBencao(hunt, entry.id, hunt.buffs[entry.id], bencaoR3c, agora, fatorDeDuracao(estado, entry, efeitoDaGema), Reserva.LIGADA_ATE);
     // (lote D3, dono 27/10) o SOLO MALDITO e o SAPO ENFEITIÇADO: ligar o Feitiço cria o solo no alvo atual (sem alvo, no inimigo mais perto), com o raio da maldição, por
     // 34 s (14 s no Sapo) × a Duração; o Feitiço só pega no solo (`tiqueDosFeiticosS2B`)
@@ -8911,7 +8913,12 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
       // (lote E1b, 26/10) o ataque Impelido pelo Clamor do Mago de Batalha ativa as magias SUPORTADAS por ele (as ligadas à gema — Gemas.gruposComGatilho, 'magoDeBatalha'),
       // com o "X% menos Dano" do nível do Clamor no acerto e nas afecções
       magoDeBatalhaNoImpelido(estado, hunt, personagem, impelem, alvo?.hp > 0 ? alvo : atingidos.find((m) => m?.hp > 0) ?? alvo, eventos);
-      for (const x of impelem) x.n--;
+      // (06/11, lote 12 das inertes, o Sinete dos Mortos: "Habilidades que Impelem um Ataque têm X% de chance de não contarem tal Ataque" — a carga não sai)
+      const naoConta = ModsPoe.valor(fichaDoUso, 'impelir_nao_conta_chance');
+      for (const x of impelem) if (!(naoConta > 0 && Math.random() * 100 < naoConta)) x.n--;
+      // (os Ecos da Criação: "Quando você Atacar, sofra X% da Vida como Dano Físico por cada Clamor Impelindo o Ataque" — a perda não mata, como as outras de custo)
+      const sofre = ModsPoe.valor(fichaDoUso, 'impelido_sofre_vida_pct');
+      if (sofre > 0 && (estado.hp ?? 0) > 1) estado.hp = Math.max(1, estado.hp - Math.round(((estado.maxHp ?? 0) * sofre * impelem.length) / 100));
     }
     const ctxDoUso = { alvo, eventos, personagem, tags: tagsPoe };
     ModsPoe.evento(estado, hunt, 'usarHabilidade', fichaDoUso, ctxDoUso);
