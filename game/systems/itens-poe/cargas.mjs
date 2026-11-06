@@ -63,7 +63,7 @@ const CHAVES = [
   'tolerancia_por_segundo_acertado', 'frenesi_a_cada_s_movendo', 'poder_por_mana_gasta', 'carga_periodica_n', 'carga_periodica_s',
   'frenesi_vira_poder', 'salmoura_chance',
   // (lote 8) as cargas de único
-  'cargas_brutal', 'cargas_aflicao', 'cargas_absorcao', ...Object.keys(TROCADAS).flatMap((t) => [`max_${t}_igual`, `min_${t}_da_base`]), ...PROPRIAS.map((t) => `max_${t}`), 'espiritual_a_cada_s', 'divina_a_cada_s', 'vazio_a_cada_s', 'frenesi_a_cada_s', 'poder_a_cada_s', 'tolerancia_a_cada_s', 'frenesi_perde_a_cada_s', 'poder_perde_a_cada_s', 'tolerancia_perde_a_cada_s',
+  'cargas_brutal', 'cargas_aflicao', 'cargas_absorcao', 'compartilha_tolerancia', ...Object.keys(TROCADAS).flatMap((t) => [`max_${t}_igual`, `min_${t}_da_base`]), ...PROPRIAS.map((t) => `max_${t}`), 'espiritual_a_cada_s', 'divina_a_cada_s', 'vazio_a_cada_s', 'frenesi_a_cada_s', 'poder_a_cada_s', 'tolerancia_a_cada_s', 'frenesi_perde_a_cada_s', 'poder_perde_a_cada_s', 'tolerancia_perde_a_cada_s',
 ];
 export const regrasDaSoma = (af) => Object.fromEntries(CHAVES.filter((k) => n(af, k)).map((k) => [k, n(af, k)]));
 
@@ -131,6 +131,14 @@ export function ganhar(estado, tipo, af, quantas = 1, rng = Math.random) {
   if (!ligado() || !estado?.hunt || !(TIPOS.includes(tipo) || PROPRIAS.includes(tipo))) return false;
   const mudou = por(estado, tipo, af, quantas, rng);
   if (PROPRIAS.includes(tipo)) return mudou;
+  // (06/11, lote 9 das inertes, a Réplica: Investida de Ambu: "Compartilha Cargas de Tolerância com membros próximos do Grupo" — os companheiros na sala a até 3 casas)
+  const pos = estado.hunt.pos;
+  if (mudou && tipo === 'tolerancia' && n(af, 'compartilha_tolerancia') > 0 && pos) {
+    for (const outro of estado.hunt.partilha?.naSala ?? []) {
+      const p = outro?.hunt?.pos;
+      if (outro && outro !== estado && p && (outro.hunt.z ?? 0) === (estado.hunt.z ?? 0) && Math.max(Math.abs(p.x - pos.x), Math.abs(p.y - pos.y)) <= 3) por(outro, 'tolerancia', leitorDeRegras(outro) ?? {}, quantas, rng);
+    }
+  }
   if (mudou && temConduite(estado)) {
     const partilha = estado.hunt.partilha;
     for (const m of partilha?.ativa ? partilha.membros ?? [] : []) {

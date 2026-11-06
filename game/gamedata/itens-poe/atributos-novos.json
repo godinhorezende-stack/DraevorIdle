@@ -9554,6 +9554,48 @@
       "combate": true,
       "nome": "Máximo de Almas Devoradas",
       "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "frasco_vida_aliados_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Recuperação de Vida dos Frascos nos aliados",
+      "efeito": "itens-poe (06/11, lote 9)"
+    },
+    "auras_so_vinculados": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Auras só em você e nos Alvos Vinculados",
+      "efeito": "itens-poe (06/11, lote 9)"
+    },
+    "frasco_utilidade_vinculados": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Frascos de Utilidade nos Alvos Vinculados",
+      "efeito": "itens-poe (06/11, lote 9)"
+    },
+    "absorve_afeccoes_aliados": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Aliados próximos sem Afecções Elementais",
+      "efeito": "itens-poe (06/11, lote 9)"
+    },
+    "compartilha_tolerancia": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Compartilha Cargas de Tolerância",
+      "efeito": "itens-poe (06/11, lote 9)"
+    },
+    "aliados_acao_minima": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Velocidade de Ação dos aliados não cai abaixo da base",
+      "efeito": "itens-poe (06/11, lote 9)"
+    },
+    "frasco_mercurio_aliados": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Frascos de Mercúrio nos aliados",
+      "efeito": "itens-poe (06/11, lote 9)"
     }
   }
 }

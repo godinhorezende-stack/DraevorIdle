@@ -14,6 +14,7 @@
 // O que o Draevor ainda não tem (imunidades a sangramento/congelamento, lentidão em inimigos, solo consagrado...) fica REGISTRADO: aparece
 // no frasco, mas não faz nada ainda (`parametros(...).registrados`).
 import { ligado, REGRAS } from './catalogo.mjs';
+import * as Aliados from './aliados.mjs';
 import { traduzirParte } from './traduzir.mjs';
 import { ITEM_CATALOG } from '../dados.mjs';
 import { darPeca, cabeNaMochila, erroDeEspaco } from '../inventario.mjs';
@@ -391,6 +392,12 @@ export function usar(estado, v, eventos = null, quem = null) {
     const ao = adjacente > 0 && (hunt.poeRecente?.acertou ?? -Infinity) >= agora - 4000 && Tinturas.ativas(st).some(([w]) => Math.abs(Number(w) - v) === 1);
     const af = { ...(ao ? parametros(peca, { ...afp, frasco_efeito: (Number(afp.frasco_efeito) || 0) + adjacente }).af : par.af), ...doSabio(par, afp) };
     st.ativos[v] = { ate: agora + par.duracaoMs, af, nome: peca.poe.nome, ...(par.saiNoPvp ? { saiNoPvp: true } : {}), ...(par.saiNaQuebra ? { saiNaQuebra: true } : {}), ...extrasDoEfeito(par, false) };
+    // (06/11, lote 9 das inertes) o efeito também nos aliados: o Voo de Victario ("Frascos de Mercúrio que você Usar também se aplicam aos Aliados próximos" — os
+    // companheiros da party a até 3 casas) e a Central da Benevolência ("Frascos Utilitários Não Únicos que você Usar se aplicam aos Alvos Vinculados")
+    const mercurio = String(peca.poe.base ?? '').split('/')[1] === 'Quicksilver_Flask' && Number(afp.frasco_mercurio_aliados) > 0;
+    const vinculados = Number(afp.frasco_utilidade_vinculados) > 0 && peca.poe.raridade !== 'unico';
+    const outros = new Set([...(mercurio ? Aliados.companheirosPerto(estado) : []), ...(vinculados ? alvosVinculados(hunt) : [])]);
+    for (const o of outros) if (o?.hunt) (estadoDaCacada(o.hunt).extras ??= []).push({ ate: (o.hunt.clock ?? agora) + par.duracaoMs, af, nome: peca.poe.nome });
     return true;
   }
   if (par.tipo === 'hibrido') return usarHibrido(estado, v, peca, par, st, agora, eventos, quem, afp);
@@ -418,6 +425,13 @@ export function usar(estado, v, eventos = null, quem = null) {
   return true;
 }
 
+/** (lote 9) Os jogadores que os seus Vínculos ligam agora (os estados deles, pela party). */
+function alvosVinculados(hunt) {
+  const agora = hunt?.clock ?? 0;
+  const saida = [];
+  for (const lk of hunt?.vinculos ?? []) if (lk.ate > agora) for (const a of lk.alvos ?? []) if (a.tipo === 'jogador') { const o = hunt.partilha?.membros?.find((m) => m.nome === a.nome)?.estado; if (o) saida.push(o); }
+  return saida;
+}
 /** (06/11, o Umbilicus Immortalis) o frasco de Vida usado nos seus Zumbis e Espectros: gasta as cargas e cura cada um pela quantidade do frasco. */
 function usarNosZumbis(estado, peca, afp) {
   const par = parametros(peca, afp);
@@ -607,8 +621,13 @@ function noFimDoFrasco(estado, a, eventos, quem) {
   }
 }
 
-function recuperar(estado, recurso, valor, eventos, quem, extras = null) {
+function recuperar(estado, recurso, valor0, eventos, quem, extras = null) {
   const [campo, maximo, cor] = recurso === 'mana' ? ['mana', 'maxMana', '#4fc3ff'] : ['hp', 'maxHp', '#00ff66'];
+  // (06/11, lote 9 das inertes, A Drogaria: "100% da Recuperação de Vida dos Frascos é aplicada aos Aliados próximos ao invés de Você" — os companheiros da party a até 3 casas
+  // recebem a parte; você, o resto)
+  const aosAliados = recurso !== 'mana' ? Math.min(100, Number(doPersonagem(estado).frasco_vida_aliados_pct) || 0) : 0;
+  if (aosAliados > 0 && valor0 > 0) for (const o of Aliados.companheirosPerto(estado)) o.hp = Math.min(o.maxHp ?? 0, (o.hp ?? 0) + (valor0 * aosAliados) / 100);
+  const valor = valor0 * (1 - aosAliados / 100);
   const ganho = Math.min(Math.max(0, valor), Math.max(0, (estado[maximo] ?? 0) - (estado[campo] ?? 0)));
   // "Repassa X% da Recuperação de Vida para Lacaios" (o que o frasco recupera, mesmo com a vida cheia).
   if (extras?.lacaiosPct > 0 && recurso !== 'mana') for (const l of estado.hunt?.lacaios ?? []) if (l.hp > 0) l.hp = Math.min(l.maxHp, l.hp + (valor * extras.lacaiosPct) / 100);

@@ -14,6 +14,405 @@
   ],
   "regras": [
     {
+      "padrao": "^\\{(\\d+)\\}% da Recuperação de Vida dos Frascos é aplicada aos Aliados próximos ao invés de Você$",
+      "efeitos": [
+        {
+          "stat": "frasco_vida_aliados_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados próximos: os companheiros da party a até 3 casas",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Alvos Vinculados sempre contam como estando no alcance de Auras Não-Maldição das suas Habilidades$",
+      "efeitos": [
+        {
+          "stat": "auras_so_vinculados",
+          "valor": "1"
+        }
+      ],
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Auras Não-Maldição das suas Habilidades só se aplicam a você e aos Alvos Vinculados$",
+      "efeitos": [
+        {
+          "stat": "auras_so_vinculados",
+          "valor": "1"
+        }
+      ],
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito de Auras Não-Maldição das suas Habilidades aumentado em \\{(\\d+)\\}% enquanto você tiver um Alvo Vinculado$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:aura@vinculando",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Clamores concedem Fúria Arcana a você e Aliados, com efeito aumentado em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de poder, até \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ev:usarClamor:furiaArcanaClamor",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Fúria Arcana dura 4 s (a do PoE); os Aliados: os companheiros da party a até 3 casas",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de conceder uma Carga de Poder para Aliados ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:cargaAliados:poder",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de conceder uma Carga de Frenesi para Aliados ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:cargaAliados:frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de conceder uma Carga de Frenesi aos Aliados próximos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:cargaAliados:frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de conceder uma Carga de Tolerância aos Aliados próximos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:cargaAliados:tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Frascos Utilitários Não Únicos que você Usar se aplicam aos Alvos Vinculados$",
+      "efeitos": [
+        {
+          "stat": "frasco_utilidade_vinculados",
+          "valor": "1"
+        }
+      ],
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você e Aliados Próximos possuem \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Raio adicional por Encaixe Azul$",
+      "efeitos": [
+        {
+          "stat": "aliados:added_energy_dmg_min%encaixeLocal:B",
+          "valor": "{1}"
+        },
+        {
+          "stat": "aliados:added_energy_dmg_max%encaixeLocal:B",
+          "valor": "{2}"
+        }
+      ],
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você e Aliados Próximos possuem \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Caos adicional por Encaixe Branco$",
+      "efeitos": [
+        {
+          "stat": "aliados:added_chaos_dmg_min%encaixeLocal:W",
+          "valor": "{1}"
+        },
+        {
+          "stat": "aliados:added_chaos_dmg_max%encaixeLocal:W",
+          "valor": "{2}"
+        }
+      ],
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você e Aliados Próximos possuem \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo adicional por Encaixe Verde$",
+      "efeitos": [
+        {
+          "stat": "aliados:added_ice_dmg_min%encaixeLocal:G",
+          "valor": "{1}"
+        },
+        {
+          "stat": "aliados:added_ice_dmg_max%encaixeLocal:G",
+          "valor": "{2}"
+        }
+      ],
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você e Aliados Próximos possuem \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Fogo adicional por Encaixe Vermelho$",
+      "efeitos": [
+        {
+          "stat": "aliados:added_fire_dmg_min%encaixeLocal:R",
+          "valor": "{1}"
+        },
+        {
+          "stat": "aliados:added_fire_dmg_max%encaixeLocal:R",
+          "valor": "{2}"
+        }
+      ],
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você concede \\{(\\d+)\\} Cargas de Frenesi para Aliados ao Morrer$",
+      "efeitos": [
+        {
+          "stat": "ev:morrer:cargaAliados:frenesi:{V1}",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aliados próximos Recuperam \\{(\\d+)\\}% de sua Vida Máxima quando você Morre$",
+      "efeitos": [
+        {
+          "stat": "ev:morrer:vidaPctAliados",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos inflingem Afecções Elementais em você ao invés de Aliados próximos$",
+      "efeitos": [
+        {
+          "stat": "absorve_afeccoes_aliados",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os companheiros da party a até 3 casas ficam imunes às Afecções Elementais (Congelamento, Resfriamento, Incêndio, Eletrização); as deles não passam para você",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aliados Próximos possuem \\+\\{(\\d+)\\}% de Multiplicador de Acerto Crítico por cada \\{(\\d+)\\} de Destreza que você possuir$",
+      "efeitos": [
+        {
+          "stat": "so_aliados:crit_dmg%atr:dex:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas (e os seus lacaios, no que eles leem)",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aliados Próximos tem Velocidade de Conjuração aumentada em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Inteligência que você tenha$",
+      "efeitos": [
+        {
+          "stat": "so_aliados:cast_speed%atr:int:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas (e os seus lacaios, no que eles leem)",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aliados Próximos têm \\{(\\d+)\\}% de Chance de Bloquearem o Dano de Ataques por cada \\{(\\d+)\\} de Força que você tiver$",
+      "efeitos": [
+        {
+          "stat": "so_aliados:block%atr:str:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas (e os seus lacaios, no que eles leem)",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aliados Próximos possuem \\+\\{(\\d+)\\}% de Multiplicador de Acerto Crítico$",
+      "efeitos": [
+        {
+          "stat": "so_aliados:crit_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas (e os seus lacaios, no que eles leem)",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aliados próximos têm Golpe de Misericórdia$",
+      "efeitos": [
+        {
+          "stat": "so_aliados:culling",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas (e os seus lacaios, no que eles leem)",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Raridade dos Itens aumentada em \\{(\\d+)\\}% para Aliados Próximos$",
+      "efeitos": [
+        {
+          "stat": "so_aliados:item_rarity",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas (e os seus lacaios, no que eles leem)",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aliados próximos ganham um aumento de \\{(\\d+)\\}% de Dano$",
+      "efeitos": [
+        {
+          "stat": "so_aliados:dmg_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas (e os seus lacaios, no que eles leem)",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você e Aliados próximos têm Regeneração de Mana aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "aliados:mana_regen_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Compartilha Cargas de Tolerância com membros próximos do Grupo$",
+      "efeitos": [
+        {
+          "stat": "compartilha_tolerancia",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os membros da party na sala a até 3 casas ganham as Cargas de Tolerância que você ganha",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aliados Próximos recebem \\{(\\d+(?:\\.\\d+)?)\\}% de Vida Regenerada por segundo$",
+      "efeitos": [
+        {
+          "stat": "so_aliados:life_regen_max_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas (e os seus lacaios, no que eles leem)",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aliados Próximos recebem um aumento de \\{(\\d+)\\}% de Velocidade de Regeneração de Mana$",
+      "efeitos": [
+        {
+          "stat": "so_aliados:mana_regen_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas (e os seus lacaios, no que eles leem)",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^A Velocidade de Ação dos Aliados Próximos não pode ser modificada abaixo do valor base$",
+      "efeitos": [
+        {
+          "stat": "aliados_acao_minima",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "nos companheiros da party a até 3 casas, a Velocidade de Ação reduzida das peças e dos buffs para em 0 (o Resfriamento e o Congelamento dos monstros seguem)",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Frascos de Mercúrio que você Usar também se aplicam aos Aliados próximos$",
+      "efeitos": [
+        {
+          "stat": "frasco_mercurio_aliados",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados próximos: os companheiros da party a até 3 casas",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Alvos Vinculados Não Podem Morrer por \\{(\\d+)\\} segundos após a sua Morte$",
+      "efeitos": [
+        {
+          "stat": "ev:morrer:vinculadosImortais:{V1}",
+          "valor": "100"
+        }
+      ],
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
       "padrao": "^Ganha Cargas Brutais ao invés de Cargas de Tolerância$",
       "efeitos": [
         {

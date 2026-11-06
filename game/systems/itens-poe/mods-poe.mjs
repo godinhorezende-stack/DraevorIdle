@@ -17,6 +17,7 @@ import { notarCriticoDeAtaque } from './suportes-s2b.mjs';
 import * as Testador from '../personagem/testador.mjs';
 import * as Salvaguarda from '../personagem/salvaguarda.mjs';
 import * as Aspectos from './aspectos.mjs';
+import * as Aliados from './aliados.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -470,6 +471,8 @@ export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorp
   // (14/10, o Warden: a Pele de Árvore perde 1 Casca no Ataque inimigo que acerta; a Lição das Estações, N no Dano Mágico)
   if (corpoACorpo || ataque) perderCasca(hunt, 1, agora);
   if (magia) perderCasca(hunt, v('casca_perde_magia'), agora);
+  // (06/11, lote 9) a MORTE: o acerto que zerou a sua vida dispara o "ao Morrer" (uma vez por morte — os Grilhões, as Lentes de Maligaro, o Vínculo D'alma)
+  if ((estado.hp ?? 0) <= 0 && !(hunt.poeMorreuEm >= agora)) { hunt.poeMorreuEm = agora; evento(estado, hunt, 'morrer', ficha, { agora, rng, eventos, alvo: bicho }); }
   // (06/11, lote 8) o GOLPE BRUTAL: "Um Acerto que remove ao menos 15% da Vida Máxima" (o Negador Vigoroso perde as Cargas Espirituais)
   if (dano > 0 && dano >= 0.15 * (estado.maxHp ?? Infinity)) evento(estado, hunt, 'golpeBrutalSofrido', ficha, { agora, rng, eventos, alvo: bicho });
   // (06/11, lote 7) as Barreiras de Caranguejo saem no Dano Físico de um Acerto (`aspectos.perderBarreiras`)
@@ -1303,6 +1306,14 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     case 'perdeManaPct': return perder('mana', 0, ((estado.maxMana ?? 0) * v) / 100);
     case 'carga': if (sorte(v)) leitorDeCargas?.(estado, 'ganhar', ev.param, 1); return;
     case 'cargaMax': if (sorte(v)) leitorDeCargas?.(estado, 'max', ev.param); return;
+    // (06/11, lote 9 das inertes) os ALIADOS: `cargaAliados:<tipo>[:<n>]` = a CHANCE de dar N cargas aos companheiros da party a até 3 casas (a Bondade de Victario, os
+    // Grilhões dos Miseráveis); `vidaPctAliados` = eles recuperam X% da Vida (as Lentes de Maligaro); `vinculadosImortais:<s>` = os seus alvos de Vínculo não podem
+    // morrer por N s (o Vínculo D'alma); `furiaArcanaClamor` = a Fúria Arcana (4 s) em você e nos aliados, com efeito +X% a cada 5 de Poder do Clamor, até 50% (a Bandeira da
+    // Salmoura Podre)
+    case 'cargaAliados': { const [tipo, q] = String(ev.param).split(':'); if (sorte(v)) for (const o of Aliados.companheirosPerto(estado)) leitorDeCargas?.(o, 'ganhar', tipo, Number(q) || 1); return; }
+    case 'vidaPctAliados': for (const o of Aliados.companheirosPerto(estado)) o.hp = Math.min(o.maxHp ?? 0, (o.hp ?? 0) + ((o.maxHp ?? 0) * v) / 100); return;
+    case 'vinculadosImortais': for (const lk of hunt.vinculos ?? []) for (const a of lk.alvos ?? []) { const quem = a.tipo === 'jogador' ? hunt.partilha?.membros?.find((m) => m.nome === a.nome)?.estado : null; if (quem?.hunt) quem.hunt.poeNaoMorreAte = Math.max(quem.hunt.poeNaoMorreAte ?? 0, (quem.hunt.clock ?? 0) + (Number(ev.param) || 2) * 1000); } return;
+    case 'furiaArcanaClamor': { const extra = Math.min(50, (v * Math.floor(poderDoClamor(hunt, ficha) / 5))); ganharBuff(hunt, 'furiaArcana', 4, agora, { efeitoExtra: extra }); (hunt.poeEfeitoDeBuff ??= {}).furiaArcana = extra; for (const o of Aliados.companheirosPerto(estado)) { ganharBuff(o.hunt, 'furiaArcana', 4, o.hunt.clock ?? agora); (o.hunt.poeEfeitoDeBuff ??= {}).furiaArcana = extra; } return; }
     // (06/11, lote 8, a Alma Sedenta) "Perde todas as Almas Devoradas quando você usar um Frasco"
     case 'perderAlmas': if (hunt.poeAlmas && sorte(v)) { delete hunt.poeAlmas; hunt.poeFichaMudou = true; } return;
     case 'perdeCargas': if (sorte(v)) leitorDeCargas?.(estado, 'perder', ev.param); return;

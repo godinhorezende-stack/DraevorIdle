@@ -2438,10 +2438,15 @@ export function adds(estado) {
   for (const outro of semAurasAliadas ? [] : hunt.partilha?.naSala ?? []) {
     if (!outro || outro === estado || !outro.hunt?.pos || !hunt.pos || (outro.hunt.z ?? 0) !== (hunt.z ?? 0)) continue;
     if (doEquipamento(outro, 'auras_so_em_voce') > 0) continue;
+    // (06/11, lote 9 das inertes, a Mão de Phrecia: "Auras Não-Maldição das suas Habilidades só se aplicam a você e aos Alvos Vinculados" e "Alvos Vinculados sempre contam
+    // como estando no alcance" — as dele chegam em você só se ele vincula você, e de qualquer distância)
+    const soVinculados = doEquipamento(outro, 'auras_so_vinculados') > 0;
+    const vinculado = soVinculados && (outro.hunt.vinculos ?? []).some((lk) => lk.ate > (outro.hunt.clock ?? agora) && (lk.alvos ?? []).some((a) => a.tipo === 'jogador' && outro.hunt.partilha?.membros?.find((m) => m.nome === a.nome)?.estado === estado));
+    if (soVinculados && !vinculado) continue;
     for (const [id, b] of Object.entries(outro.hunt.buffs ?? {})) {
       // (o Estandarte plantado vale em volta DELE, não de quem o plantou)
       const centro = b.estandarte ?? outro.hunt.pos;
-      const longe = Math.max(Math.abs(centro.x - hunt.pos.x), Math.abs(centro.y - hunt.pos.y));
+      const longe = vinculado ? 0 : Math.max(Math.abs(centro.x - hunt.pos.x), Math.abs(centro.y - hunt.pos.y));
       if (b.tipo !== 'poe-aura' || !b.afPoe || !(b.ate > (outro.hunt.clock ?? agora)) || !(b.raio > 0) || longe > b.raio || hunt.buffs?.[id]?.ate > agora) continue;
       const f = efeitoDe(b.tipo, id, outro, b);
       for (const [k, v] of Object.entries(b.afPoe)) total[k] = (total[k] ?? 0) + v * f;

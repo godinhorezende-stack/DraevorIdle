@@ -384,6 +384,8 @@ export const CONDICOES_DE_ESTADO = new Set([
   'sofreuAcertoSelvagemRecente',
   // (lote E) canalizando agora (usou uma habilidade de Canalização há pouco).
   'canalizando',
+  // (06/11, lote 9) "enquanto você tiver um Alvo Vinculado" (um Vínculo seu ativo, com alvo)
+  'vinculando',
   // (14/10) a Égide Física esgotada (ou não) — `hunt.egides`
   'egideFisicaEsgotada', 'egideFisicaAtiva',
   // (lote E) com ao menos um cadáver perto (a até 4 casas — `hunt.cadaveres`).
@@ -683,6 +685,7 @@ export function condicoesDe(estado, total = null, principais = null) {
     if (fortificacao(estado, total) > 0) v.add('fortificado');
     // (lote 42, P074: o canalizar contínuo — `canalizandoAgora`; antes, 1 s depois de usar uma habilidade de Canalização)
     if (canalizandoAgora(h, agora)) v.add('canalizando');
+    if ((h.vinculos ?? []).some((lk) => lk.ate > agora && lk.alvos?.length)) v.add('vinculando');
     if (h.egides?.fisica) v.add(h.egides.fisica.valor > 0 ? 'egideFisicaAtiva' : 'egideFisicaEsgotada');
     if (cadaveresPerto(h) > 0) v.add('cadaverPerto');
     // (lote G) Elusivo (o buff — antes a condição nunca valia), o Solo Sagrado, a Postura e o Estandarte.
@@ -1446,6 +1449,8 @@ export function ganharBuff(hunt, nome, segundos, agora = hunt?.clock ?? 0, { efe
     hunt.poeFichaMudou = true;
     return;
   }
+  // (06/11, lote 9: a Fúria Arcana que começa de novo sem o efeito da Bandeira da Salmoura Podre não leva o dela — o efeito extra é o de quem a deu agora)
+  if (nome === 'furiaArcana' && !(b[nome] > agora) && hunt.poeEfeitoDeBuff?.furiaArcana) hunt.poeEfeitoDeBuff.furiaArcana = efeitoExtra;
   // (14/10: a ficha é refeita no tique — o buff ganho vale já, como o vencido sai: `tique`)
   if (!(b[nome] > agora)) hunt.poeFichaMudou = true;
   b[nome] = Math.max(b[nome] ?? 0, agora + segundos * 1000);
@@ -2376,7 +2381,7 @@ export const EVENTOS = new Set(['maxDivina', 'perderEspiritual', 'golpeBrutalSof
   'salvaguardaQuebra',
   // (02/11, as Atemporais) quando a Salvaguarda é Restaurada (`personagem/salvaguarda.restaurar` → `acoes.mjs`)
   'salvaguardaRestaurada']);
-export const ACOES = new Set(['perderAlmas', 'transferirMarca', 'frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
+export const ACOES = new Set(['cargaAliados', 'vidaPctAliados', 'vinculadosImortais', 'furiaArcanaClamor', 'perderAlmas', 'transferirMarca', 'frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
   'dano', 'danoPctVida', 'furia', 'frasco', 'recargaEs', 'explodir', 'gatilho', 'espalhar', 'roubarCargas', 'maldicao', 'soloSagrado', 'soloProfano', 'soloCongelado', 'fumaca', 'removerAfeccao', 'perdeVidaPct', 'perdeEsPct', 'perdeManaPct',
   // (11/10, os únicos)
   'perdeVida', 'esDaArmadura', 'vidaParaEs', 'degenEmVoce', 'statTemp', 'statTempPorMana', 'furiaPorMana', 'transferirMaldicoes', 'degenNoAlvo', 'danoPorMana', 'empurrarProximos',
@@ -2475,6 +2480,8 @@ export function definirValidadorDeAtributo(fn) { validadorDeAtributo = fn; }
 export function dinamicoValido(stat) {
   // (13/10) A aura "Você e Aliados" do nó/item (`aliados:<stat>` — `itens-poe/aliados.mjs`): vale pelo atributo que ela dá.
   if (String(stat).startsWith('aliados:')) return validadorDeAtributo ? validadorDeAtributo(String(stat).slice('aliados:'.length)) : false;
+  // (06/11, lote 9) "Aliados Próximos <efeito>" sem você (`so_aliados:<stat>` — `aliados.mjs`)
+  if (String(stat).startsWith('so_aliados:')) return validadorDeAtributo ? validadorDeAtributo(String(stat).slice('so_aliados:'.length)) : false;
   // (13/10, o Inspirador: "Você e Aliados próximos dos seus Estandartes" — `aliados_estandarte:<stat>`, os aliados na área do Estandarte plantado.)
   if (String(stat).startsWith('aliados_estandarte:')) return validadorDeAtributo ? validadorDeAtributo(String(stat).slice('aliados_estandarte:'.length)) : false;
   if (String(stat).startsWith('ev:')) {
