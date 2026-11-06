@@ -1830,11 +1830,11 @@ export const EMISSARIO_MENOR = Object.freeze({ ...EMISSARIO, nome: 'Emissário d
  * Eletrizam (ao acaso) um inimigo e até 4 por perto por 4 s.
  */
 export const EMISSARIOS = Object.freeze({
-  tempo: { menor: 'Emissário do Tempo', grande: 'Grande Emissário do Tempo', periodoMs: 20000, periodoGrandeMs: 10000, duracaoS: 8, buffs: ['emissarioTempo'] },
-  brutalidade: { menor: 'Emissário da Brutalidade', grande: 'Grande Emissário da Brutalidade', periodoMs: 20000, duracaoS: 8, buffs: ['emissarioBrutalidade'], buffsGrande: ['emissarioBrutalidade', 'emissarioBrutalidadeExplosao'], condicao: 'raroOuUnicoPerto' },
-  foco: { menor: 'Emissário do Foco', grande: 'Grande Emissário do Foco', periodoMs: 8000, duracaoS: 4, buffs: ['emissarioFoco'], buffsGrande: ['emissarioFoco', 'emissarioFocoMaldicao'], condicao: 'canalizando' },
-  arcano: { menor: 'Emissário do Arcano', grande: 'Grande Emissário do Arcano', periodoMs: 6000, duracaoS: 4, buffs: ['furiaArcana'], buffsGrande: ['furiaArcana', 'emissarioArcanoRaio'] },
-  tormentas: { menor: 'Emissário das Tormentas', grande: 'Grande Emissário das Tormentas', periodoMs: 4000, duracaoS: 4, alvos: 5, resfriaPct: 10, eletrizaPct: 10, resfriaGrandePct: 20, eletrizaGrandePct: 20 },
+  tempo: { stat: 'emissario_tempo', statMenor: 'emissario_tempo_menor', menor: 'Emissário do Tempo', grande: 'Grande Emissário do Tempo', periodoMs: 20000, periodoGrandeMs: 10000, duracaoS: 8, buffs: ['emissarioTempo'] },
+  brutalidade: { stat: 'emissario_brutalidade', statMenor: 'emissario_brutalidade_menor', menor: 'Emissário da Brutalidade', grande: 'Grande Emissário da Brutalidade', periodoMs: 20000, duracaoS: 8, buffs: ['emissarioBrutalidade'], buffsGrande: ['emissarioBrutalidade', 'emissarioBrutalidadeExplosao'], condicao: 'raroOuUnicoPerto' },
+  foco: { stat: 'emissario_foco', statMenor: 'emissario_foco_menor', menor: 'Emissário do Foco', grande: 'Grande Emissário do Foco', periodoMs: 8000, duracaoS: 4, buffs: ['emissarioFoco'], buffsGrande: ['emissarioFoco', 'emissarioFocoMaldicao'], condicao: 'canalizando' },
+  arcano: { stat: 'emissario_arcano', statMenor: 'emissario_arcano_menor', menor: 'Emissário do Arcano', grande: 'Grande Emissário do Arcano', periodoMs: 6000, duracaoS: 4, buffs: ['furiaArcana'], buffsGrande: ['furiaArcana', 'emissarioArcanoRaio'] },
+  tormentas: { stat: 'emissario_tormentas', statMenor: 'emissario_tormentas_menor', menor: 'Emissário das Tormentas', grande: 'Grande Emissário das Tormentas', periodoMs: 4000, duracaoS: 4, alvos: 5, resfriaPct: 10, eletrizaPct: 10, resfriaGrandePct: 20, eletrizaGrandePct: 20 },
 });
 function emissarioPresente(estado, hunt, af, nome, chave) {
   const vivo = hunt.lacaios.find((l) => l.emissario === chave && l.hp > 0);
@@ -1879,8 +1879,8 @@ export function tiqueDoEmissario(estado, hunt, agora = hunt?.clock ?? 0, rng = M
     }
   }
   for (const [chave, def] of Object.entries(EMISSARIOS)) {
-    const grande = Number(af[`emissario_${chave}`]) > 0;
-    const menor = !grande && Number(af[`emissario_${chave}_menor`]) > 0;
+    const grande = Number(af[def.stat]) > 0;
+    const menor = !grande && Number(af[def.statMenor]) > 0;
     emissarioPresente(estado, hunt, af, grande ? def.grande : menor ? def.menor : null, chave);
     if (!grande && !menor) continue;
     const em = (hunt.poeEmissarios ??= {});

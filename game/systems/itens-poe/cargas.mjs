@@ -63,7 +63,7 @@ const CHAVES = [
   'tolerancia_por_segundo_acertado', 'frenesi_a_cada_s_movendo', 'poder_por_mana_gasta', 'carga_periodica_n', 'carga_periodica_s',
   'frenesi_vira_poder', 'salmoura_chance',
   // (lote 8) as cargas de único
-  ...Object.keys(TROCADAS).flatMap((t) => [`cargas_${t}`, `max_${t}_igual`, `min_${t}_da_base`]), ...PROPRIAS.flatMap((t) => [`max_${t}`, `${t}_a_cada_s`]), 'divindade_ao_maximo', 'frenesi_a_cada_s', 'poder_a_cada_s', 'tolerancia_a_cada_s', 'frenesi_perde_a_cada_s', 'poder_perde_a_cada_s', 'tolerancia_perde_a_cada_s',
+  'cargas_brutal', 'cargas_aflicao', 'cargas_absorcao', ...Object.keys(TROCADAS).flatMap((t) => [`max_${t}_igual`, `min_${t}_da_base`]), ...PROPRIAS.map((t) => `max_${t}`), 'espiritual_a_cada_s', 'divina_a_cada_s', 'vazio_a_cada_s', 'frenesi_a_cada_s', 'poder_a_cada_s', 'tolerancia_a_cada_s', 'frenesi_perde_a_cada_s', 'poder_perde_a_cada_s', 'tolerancia_perde_a_cada_s',
 ];
 export const regrasDaSoma = (af) => Object.fromEntries(CHAVES.filter((k) => n(af, k)).map((k) => [k, n(af, k)]));
 
