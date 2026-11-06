@@ -9614,6 +9614,48 @@
       "combate": true,
       "nome": "Chance de perder Tolerância ao Fortificar",
       "efeito": "condicoes-poe.ganharFortificacao (06/11, lote 10)"
+    },
+    "area_fria_raio_sofrido": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano de Raio sofrido nas suas Áreas Resfriadas",
+      "efeito": "itens-poe/solos-seus.mjs (06/11, lote 11)"
+    },
+    "solo_eletrizado_movendo_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Solo Eletrizado ao se mover (s)",
+      "efeito": "itens-poe/solos-seus.mjs (06/11, lote 11)"
+    },
+    "solo_profano_no_lugar": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Solo Profano no lugar do Sagrado",
+      "efeito": "itens-poe/solos-seus.mjs (06/11, lote 11)"
+    },
+    "solo_fungico_parado": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Solo Fúngico enquanto parado",
+      "efeito": "itens-poe/solos-seus.mjs (06/11, lote 11)"
+    },
+    "lacaio_morte_solo_caustico_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Solo Cáustico na morte do lacaio (% da Vida)",
+      "efeito": "itens-poe/solos-seus.mjs (06/11, lote 11)"
+    },
+    "lacaio_morte_solo_ardente_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Solo Ardente na morte do lacaio (% da Vida)",
+      "efeito": "itens-poe/solos-seus.mjs (06/11, lote 11)"
+    },
+    "solo_sagrado_dano_sofrido": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano sofrido no seu Solo Sagrado",
+      "efeito": "itens-poe/solos-seus.mjs (06/11, lote 11)"
     }
   }
 }

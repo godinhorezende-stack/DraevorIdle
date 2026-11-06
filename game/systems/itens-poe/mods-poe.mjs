@@ -5,7 +5,7 @@ import * as QuemFeriu from '../hunt/quem-feriu.mjs';
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { definirTiqueDosAspectos, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, criarSoloCongelado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo, porExposicao, vinhasGanhas as vinhasGanhasDe, fatorDaResistenciaRecebida } from './condicoes-poe.mjs';
+import { definirTiqueDosAspectos, MOVENDO_MS, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, criarSoloCongelado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo, porExposicao, vinhasGanhas as vinhasGanhasDe, fatorDaResistenciaRecebida } from './condicoes-poe.mjs';
 import * as Plantadas from './armas-plantadas.mjs';
 import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { eletrizarComPct, cegar as cegarVoce } from './monstros-no-jogador.mjs';
@@ -18,6 +18,7 @@ import * as Testador from '../personagem/testador.mjs';
 import * as Salvaguarda from '../personagem/salvaguarda.mjs';
 import * as Aspectos from './aspectos.mjs';
 import * as Aliados from './aliados.mjs';
+import * as SolosSeus from './solos-seus.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -1013,6 +1014,9 @@ export const AFECCOES_NO_JOGADOR = [
 export function tiqueDosAspectos(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
   if (!ligado() || !hunt || !ficha?.afPoe) return;
   for (const nome of Aspectos.tique(estado, hunt, ficha.afPoe, agora)) evento(estado, hunt, nome, ficha, { agora, eventos: [] });
+  // (06/11, lote 11) os solos que você cria (`solos-seus.mjs`)
+  const moveu = hunt.poeRecente?.moveu;
+  SolosSeus.tique(hunt, ficha.afPoe, agora, { parado: !(moveu != null && agora - moveu <= MOVENDO_MS) });
 }
 definirTiqueDosAspectos(tiqueDosAspectos);
 export function evento(estado, hunt, nome, ficha, ctx = {}) {
@@ -1028,6 +1032,8 @@ export function evento(estado, hunt, nome, ficha, ctx = {}) {
   while (ultimos.length && (ultimos[0] < agora - 20000 || ultimos.length > 60)) ultimos.shift();
   if (nome === 'matar' && ctx.alvo?.estados?.congelado?.ate > agora) {
     marcar(hunt, 'estilhacou', agora);
+    // (06/11, lote 11) o evento "ao Estilhaçar" (a Harpa de Nuro: "Cria Solo Sagrado ao Estilhaçar um Inimigo")
+    evento(estado, hunt, 'estilhacar', ficha, { ...ctx, agora });
     aoEstilhacar?.(estado, hunt, ficha, ctx.rng ?? Math.random, { alvo: ctx.alvo, eventos: ctx.eventos, personagem: ctx.personagem });
   }
   // (14/10, a Cruzada Implacável: o abate — seu ou do seu lacaio — é ocasião da Relíquia Elemental, sua e dos companheiros perto; lote 31: o
@@ -1315,6 +1321,9 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     case 'vinculadosImortais': for (const lk of hunt.vinculos ?? []) for (const a of lk.alvos ?? []) { const quem = a.tipo === 'jogador' ? hunt.partilha?.membros?.find((m) => m.nome === a.nome)?.estado : null; if (quem?.hunt) quem.hunt.poeNaoMorreAte = Math.max(quem.hunt.poeNaoMorreAte ?? 0, (quem.hunt.clock ?? 0) + (Number(ev.param) || 2) * 1000); } return;
     case 'furiaArcanaClamor': { const extra = Math.min(50, (v * Math.floor(poderDoClamor(hunt, ficha) / 5))); ganharBuff(hunt, 'furiaArcana', 4, agora, { efeitoExtra: extra }); (hunt.poeEfeitoDeBuff ??= {}).furiaArcana = extra; for (const o of Aliados.companheirosPerto(estado)) { ganharBuff(o.hunt, 'furiaArcana', 4, o.hunt.clock ?? agora); (o.hunt.poeEfeitoDeBuff ??= {}).furiaArcana = extra; } return; }
     // (06/11, lote 8, a Alma Sedenta) "Perde todas as Almas Devoradas quando você usar um Frasco"
+    // (06/11, lote 11) `soloSeu:<tipo>:<segundos>` = a CHANCE de criar um solo seu onde você está (`solos-seus.mjs`: a Matua Tupuna espalha Piche ao Bloquear; a Trapaça
+    // de Ylfeban, o Solo Eletrizado quando Acertado)
+    case 'soloSeu': { const [tipo, seg] = String(ev.param).split(':'); if (sorte(v)) SolosSeus.criar(hunt, tipo, { segundos: Number(seg) || undefined, agora }); return; }
     case 'perderAlmas': if (hunt.poeAlmas && sorte(v)) { delete hunt.poeAlmas; hunt.poeFichaMudou = true; } return;
     case 'perdeCargas': if (sorte(v)) leitorDeCargas?.(estado, 'perder', ev.param); return;
     case 'cargaAleatoria': if (sorte(v)) leitorDeCargas?.(estado, 'ganhar', ['frenesi', 'poder', 'tolerancia'][Math.floor(rng() * 3)], 1); return;

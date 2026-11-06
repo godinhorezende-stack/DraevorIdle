@@ -59,6 +59,10 @@ const preencher = (modelo, valores) => String(modelo ?? '').replace(/\{(\d+)\}/g
 
 /** As regras das linhas que mexem no FRASCO (e não no personagem). `p` = os parâmetros sendo montados; `v` = o número da linha. */
 const REGRAS_DO_FRASCO = [
+  // (06/11, lote 11 das inertes, a Fé Engarrafada) "Solo Sagrado criado por este Frasco possui Raio Triplicado" e "Solo Sagrado criado durante o Efeito aplica Dano sofrido
+  // aumentado em X% aos Inimigos" (os monstros nele — `solos-seus.tique`)
+  [/^Solo Sagrado criado por este Frasco possui Raio Triplicado$/, (p) => (p.soloRaioMult = 3)],
+  [/^Solo Sagrado criado durante o Efeito aplica Dano sofrido aumentado em \{\d+\}% aos Inimigos$/, (p, v) => (p.duranteExtra.solo_sagrado_dano_sofrido = (p.duranteExtra.solo_sagrado_dano_sofrido ?? 0) + v)],
   // (02/11, dono: a Salvaguarda como o PoE) o Frasco de Ferro: "Restaura Proteção ao usar" — a Salvaguarda volta inteira no uso (`usar` → `Salvaguarda.restaurar`)
   [/^Restaura Proteção ao usar$/, (p) => (p.restauraSalvaguarda = true)],
   // (02/11, a Preparação de Vorana) "Efeito é removido quando a Proteção Quebrar": o efeito acaba na quebra (`personagem/salvaguarda.quebrar`)
@@ -591,6 +595,8 @@ function aoUsarOFrasco(estado, par, eventos, quem, afp = {}) {
   if (u.solo === 'congelado' && hunt.pos) criarSoloCongelado(hunt, { afPoe: afp }, { x: hunt.pos.x, y: hunt.pos.y, raioM: RAIO_DO_FRASCO * 2, segundos: SOLO_MS / 1000, agora });
   // Solo Sagrado: regenera 6% da vida por segundo enquanto o personagem está nele.
   if (u.solo === 'sagrado') (hunt.frascosPoe.extras ??= []).push({ ate: agora + SOLO_MS, af: { life_regen_max_pct: 6 }, nome: 'Solo Sagrado' });
+  // (06/11, lote 11) o lugar do Solo Sagrado do frasco, para os monstros nele (o raio: o do Solo Sagrado, × o "Raio Triplicado" da Fé Engarrafada)
+  if (u.solo === 'sagrado' && hunt.pos) hunt.poeSoloDoFrasco = { x: hunt.pos.x, y: hunt.pos.y, z: hunt.z ?? 0, raio: (par.soloRaioMult ?? 1) * 1, ate: agora + SOLO_MS };
 }
 
 /** A Fuga do frasco (a mesma regra da Chance de Fugir — `acoes.fugir`): o Raro, o Único e o chefe não fogem; o Mágico evita metade. */

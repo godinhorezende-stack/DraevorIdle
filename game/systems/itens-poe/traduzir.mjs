@@ -269,7 +269,10 @@ export function partesDoModelo(modelo) {
   const saida = [];
   for (const p of String(modelo ?? '').split(' / ')) {
     const antes = saida.length ? saida[saida.length - 1] : null;
-    const continua = antes != null && !INTERNA.test(p.trim()) && !INTERNA.test(antes.trim()) && (/^[a-zà-ú]/.test(p.trim()) || LIGA_NO_FIM.test(antes.trim()));
+    // (06/11, lote 11 das inertes: o LEMBRETE entre parênteses que o poedb quebrou em linhas — "(Vosso Abraço concede o seguinte: / Não pode ser Atordoado / … )", o
+    // Oni-Goroshi — fica inteiro até fechar o parêntese: cada linha dele virava um efeito de verdade, permanente)
+    const parenteseAberto = antes != null && (antes.match(/\(/g) ?? []).length > (antes.match(/\)/g) ?? []).length;
+    const continua = antes != null && (parenteseAberto || (!INTERNA.test(p.trim()) && !INTERNA.test(antes.trim()) && (/^[a-zà-ú]/.test(p.trim()) || LIGA_NO_FIM.test(antes.trim()))));
     if (continua) saida[saida.length - 1] = `${antes.trim()} ${p.trim()}`;
     else saida.push(p);
   }

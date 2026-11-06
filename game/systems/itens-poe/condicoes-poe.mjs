@@ -37,7 +37,7 @@ export const RECENTE_MS = 4000;
 /** "Vida Baixa" no PoE: 50% da vida máxima ou menos. */
 export const VIDA_BAIXA = 0.5;
 /** A janela em que o personagem conta como "movendo-se" depois do último passo. */
-const MOVENDO_MS = 600;
+export const MOVENDO_MS = 600;
 /**
  * (ciclo 7, lote G) O SOLO SAGRADO que o personagem cria (`hunt.solosSagrados = [{ x, y, raio, ate }]`): sobre ele, 6% da Vida regenerada por
  * segundo (o poedb: "consecrate … % life regen per minute [360]") e as Maldições com 50% menos efeito. "Efeitos do Solo Sagrado … Perduram
@@ -61,6 +61,8 @@ export function soloImuneAMaldicoes(h, agora = h?.clock ?? 0) {
 // Solo Sagrado "seu" (o deslocamento, o no acerto). O do TOTEM (`dono`) não entra em teto nenhum: dura enquanto o totem vive; o de totem morto sai da lista.)
 export function criarSoloSagrado(h, segundos, agora = h?.clock ?? 0, onde = null) {
   if (!h?.pos || !(segundos > 0)) return;
+  // (06/11, lote 11, a Fé Quebrada: "Cria Solo Profano ao invés de Solo Sagrado")
+  if (Number(fichaDa(h)?.afPoe?.solo_profano_no_lugar) > 0) return criarSoloProfano(h, segundos, agora);
   const fonte = onde?.fonte ?? null;
   const vivos = (h.solosSagrados ??= []).filter((s) => soloValendo(h, s, agora));
   const daFonte = vivos.filter((s) => !s.dono && (s.fonte ?? null) === fonte);
@@ -349,7 +351,7 @@ export const CONDICOES_DE_ESTADO = new Set([
   'doisMaioresIguais', 'cegoProprio',
   ...new Set(Object.values(COND_DA_CLASSE)), 'umaMao', 'duasMaos', 'armaCorpo', 'comEscudo', 'duasArmas',
   'matouRecente', 'naoMatouRecente', 'criticoRecente', 'naoCriticoRecente', 'acertadoRecente', 'semDanoRecente', 'movendo', 'vidaBaixa',
-  'lacaioMorreuRecente', 'usouLacaioRecente', 'elusivo', 'soloSagrado', 'soloCongelado', 'vidaCheia', 'furiaCheia', 'drenoRemovidoCheio',
+  'lacaioMorreuRecente', 'usouLacaioRecente', 'elusivo', 'soloSagrado', 'soloCongelado', 'soloArdente', 'soloEletrizado', 'vidaCheia', 'furiaCheia', 'drenoRemovidoCheio',
   // (07/10, os únicos:) mana, escudo, afecções em você, frasco, roubo, parado, mão secundária, e os "recentemente" dos acontecimentos.
   'manaBaixa', 'naoManaBaixa', 'escudoCheio', 'semEscudo', 'ardendo', 'naoArdendo', 'congeladoProprio', 'eletrizadoProprio', 'resfriadoProprio',
   'sangrandoProprio', 'envenenadoProprio', 'amaldicoadoProprio', 'semAfeccaoElemental', 'duranteFrasco', 'semFrasco', 'drenando', 'drenandoVida', 'parado',
@@ -432,7 +434,7 @@ export const TAGS_DE_GOLPE = new Set([
   // O ALVO do golpe (o estado dele naquele acerto): Resfriado, Congelado, Eletrizado, Cego, Sangrando, Envenenado, Incendiado, Amaldiçoado,
   // Lento, Mutilado, Provocado, a raridade, a vida cheia; e o golpe de perto ("em Curto Alcance"), na mão principal/secundária.
   'alvoResfriado', 'alvoCongelado', 'alvoEletrizado', 'alvoCego', 'alvoSangrando', 'alvoEnvenenado', 'alvoIncendiado', 'alvoAmaldicoado',
-  'alvoLento', 'alvoMutilado', 'alvoProvocado', 'alvoAtordoado', 'alvoComTeia', 'alvoTeias:3', 'alvoTeias:4', 'alvoEletrizadoOuCongelado', 'guarda', 'gemaCritica', 'alvoRaro', 'alvoUnico', 'alvoMagico', 'alvoVidaCheia', 'alvoPerto', 'canalizar', 'retaliacao', 'estandarte', 'custaVida',
+  'alvoLento', 'alvoMutilado', 'alvoProvocado', 'alvoAtordoado', 'alvoComTeia', 'alvoTeias:3', 'alvoTeias:4', 'alvoNoSoloFungico', 'alvoNaAreaFria', 'alvoEletrizadoOuCongelado', 'guarda', 'gemaCritica', 'alvoRaro', 'alvoUnico', 'alvoMagico', 'alvoVidaCheia', 'alvoPerto', 'canalizar', 'retaliacao', 'estandarte', 'custaVida',
   'golpe', 'pancada', 'nova', 'runa', 'marca', 'feitico', 'vinculo', 'ativada', 'desarmadoGolpe', 'naoCritico',
   // (06/11, os Únicos — lote 3) as Habilidades de Pacto ("Habilidades de pacto têm a velocidade de conjuração aumentada")
   'pacto',
@@ -698,6 +700,8 @@ export function condicoesDe(estado, total = null, principais = null) {
     if (noSoloSagrado(h, agora)) v.add('soloSagrado');
     // (03/11) sobre Solo Congelado (o do monstro ou o seu — `noSoloCongelado`)
     if (noSoloCongelado(h, agora)) v.add('soloCongelado');
+    // (06/11, lote 11) sobre o Solo Ardente / Eletrizado dos monstros (`hunt.solosDosMonstros`)
+    for (const sd of h.solosDosMonstros ?? []) if (sd.ate > agora && h.pos && (sd.z ?? 0) === (h.z ?? 0) && Math.max(Math.abs(sd.x - h.pos.x), Math.abs(sd.y - h.pos.y)) <= sd.raio) v.add(sd.tipo === 'ardente' ? 'soloArdente' : sd.tipo === 'eletrizado' ? 'soloEletrizado' : 'soloDoMonstro');
     v.add(posturaDe(h, agora) === 'areia' ? 'posturaAreia' : 'posturaSangue');
     if (emTempestadeSangrenta(h, agora)) v.add('emTempestadeSangrenta');
     if (estandarteAtivo(h, agora)) v.add('estandarteAtivo');
@@ -1510,6 +1514,8 @@ export function adds(estado, total = null) {
     const regen = of.regenPct && (!of.regenSeBloqueou || recente(estado.hunt.poeRecente?.bloqueou, agoraT)) ? of.regenPct : 0;
     for (const [k, v] of [['atk_speed', of.velAtaquePct], ['cast_speed', of.velConjPct], ['move_speed', of.velMovPct], ['crit_chance_inc', of.critInc], ['crit_dmg', of.critMult], ['block', of.bloqueioPct], ['spell_block', of.bloqueioMagicoPct], ['life_regen_max_pct', regen]]) if (v) saida[k] = (saida[k] ?? 0) + v * f;
   }
+  // (06/11, lote 11) no seu Solo Fúngico (o Guarda-esporo): 10% do Dano Não-Caótico como Caos extra
+  if ((estado?.hunt?.poeSoloFungico?.ate ?? 0) > agoraT) saida.naocaos_as_extra_chaos = (saida.naocaos_as_extra_chaos ?? 0) + 10;
   // (06/11, lote 7) as BARREIRAS DE CARANGUEJO (`aspectos.mjs`): 2% de Redução de Dano Físico adicional por Barreira
   const nBarreiras = estado?.hunt?.barreiras?.n ?? 0;
   if (nBarreiras > 0) saida.phys_res = (saida.phys_res ?? 0) + 2 * nBarreiras;
@@ -2094,6 +2100,9 @@ export function tagsDoAlvo(alvo, agora) {
   // (lote C4, dono 21/10) o Tolhido (o Hinder do PoE, `estados.tolhido` — o "Inimigos Desacelerados por você"): Lento, não Resfriado
   else if (at(e.tolhido)) t.push('alvoLento');
   if (at(e.congelado)) t.push('alvoCongelado');
+  // (06/11, lote 11) no seu Solo Fúngico e nas suas Áreas Resfriadas (`solos-seus.tique` marca)
+  if (at(e.soloFungico)) t.push('alvoNoSoloFungico');
+  if (at(e.naAreaFria)) t.push('alvoNaAreaFria');
   // (06/11, lote 7) as Teias de Aranha (`aspectos.mjs`): "afetado por uma Teia", "por N Teias" (ao menos N)
   if (at(e.teias)) { t.push('alvoComTeia'); for (let k = 1; k <= (e.teias.n ?? 0); k++) t.push(`alvoTeias:${k}`); }
   if (at(e.chocado)) t.push('alvoEletrizado');
@@ -2370,7 +2379,7 @@ export const slugDoNome = (nome) => String(nome ?? '').normalize('NFD').replace(
 // ---------------------------------------------------------------- os atributos DINÂMICOS (validação da tradução)
 
 /** Os eventos que `mods-poe.evento` dispara e as ações que ele sabe fazer. */
-export const EVENTOS = new Set(['maxDivina', 'perderEspiritual', 'golpeBrutalSofrido', 'ganharFurtividadeFelina', 'perderFurtividadeFelina', 'ganharAgilidadeFelina', 'ganharBuffDaAve', 'sangrar', 'ganharElusivo', 'incendiarNovo', 'ganharAdrenalina', 'amaldicoarSemMaldicao', 'amaldicoarSemMaldicaoNaoAura', 'usarFrascoVida', 'usarGuarda', 'matar', 'critico', 'bloquear', 'bloquearAtaque', 'bloquearMagia', 'serAcertado', 'serAcertadoCritico', 'atordoar', 'incendiar', 'congelar', 'eletrizar', 'envenenar',
+export const EVENTOS = new Set(['estilhacar', 'maxDivina', 'perderEspiritual', 'golpeBrutalSofrido', 'ganharFurtividadeFelina', 'perderFurtividadeFelina', 'ganharAgilidadeFelina', 'ganharBuffDaAve', 'sangrar', 'ganharElusivo', 'incendiarNovo', 'ganharAdrenalina', 'amaldicoarSemMaldicao', 'amaldicoarSemMaldicaoNaoAura', 'usarFrascoVida', 'usarGuarda', 'matar', 'critico', 'bloquear', 'bloquearAtaque', 'bloquearMagia', 'serAcertado', 'serAcertadoCritico', 'atordoar', 'incendiar', 'congelar', 'eletrizar', 'envenenar',
   'acertar', 'usarHabilidade', 'usarMagia', 'usarAtaque', 'usarMovimento', 'usarVaal', 'usarClamor', 'usarFrasco', 'usarFrascoMana', 'suprimir', 'perderTolerancia',
   'maxPoder', 'maxFrenesi', 'maxTolerancia', 'tempo', 'provocar', 'golpeDeMisericordia', 'vidaBaixa', 'equipado', 'perderPoder', 'conjurarMaldicao', 'gastarMana', 'armadilha', 'morrer', 'lancarArmadilha', 'detonarMina', 'drenoCheio', 'rampage', 'empurrar',
   // (ciclo 7, lote D) quando Atordoado; quando sofrer Dano Físico de um Acerto (`mods-poe.aoSerAcertado`).
@@ -2389,7 +2398,7 @@ export const EVENTOS = new Set(['maxDivina', 'perderEspiritual', 'golpeBrutalSof
   'salvaguardaQuebra',
   // (02/11, as Atemporais) quando a Salvaguarda é Restaurada (`personagem/salvaguarda.restaurar` → `acoes.mjs`)
   'salvaguardaRestaurada']);
-export const ACOES = new Set(['cargaAliados', 'vidaPctAliados', 'vinculadosImortais', 'furiaArcanaClamor', 'perderAlmas', 'transferirMarca', 'frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
+export const ACOES = new Set(['soloSeu', 'cargaAliados', 'vidaPctAliados', 'vinculadosImortais', 'furiaArcanaClamor', 'perderAlmas', 'transferirMarca', 'frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
   'dano', 'danoPctVida', 'furia', 'frasco', 'recargaEs', 'explodir', 'gatilho', 'espalhar', 'roubarCargas', 'maldicao', 'soloSagrado', 'soloProfano', 'soloCongelado', 'fumaca', 'removerAfeccao', 'perdeVidaPct', 'perdeEsPct', 'perdeManaPct',
   // (11/10, os únicos)
   'perdeVida', 'esDaArmadura', 'vidaParaEs', 'degenEmVoce', 'statTemp', 'statTempPorMana', 'furiaPorMana', 'transferirMaldicoes', 'degenNoAlvo', 'danoPorMana', 'empurrarProximos',
@@ -2686,6 +2695,8 @@ export function doBicho(bicho, agora, { contraOutro = false, ficha = null } = {}
   // (lote E) "Cada Mina aplica Dano causado reduzido em X% aos Inimigos próximos a ela, até Y%" (o poedb traduz "Dano sofrido reduzido"; no
   // PoE é o dano que o inimigo causa).
   if (ativo(e.minaFraco, agora)) danoFator *= Math.max(0, 1 - (e.minaFraco.pct ?? 0) / 100);
+  // (06/11, lote 11) no seu Solo Fúngico (o Guarda-esporo): 10% menos Dano
+  if (ativo(e.soloFungico, agora)) danoFator *= Math.max(0, 1 - (e.soloFungico.danoMenosPct ?? 0) / 100);
   // (06/11, lote 7) "Inimigos afetados por suas Teias de Aranha causam Dano reduzido em X%" (a Mortalha de Fenumus)
   if (ativo(e.teias, agora) && e.teias.danoMenos > 0) danoFator *= Math.max(0, 1 - e.teias.danoMenos / 100);
   // ("Com ao menos um cadáver próximo, Inimigos próximos causam Dano reduzido em X%" — a aura `aura_dano_menos`, `mods-poe.aurasProximas`.)
@@ -3631,6 +3642,10 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   if (tipo === 'chaos' && ativo(e.caosSofridoR3D, agora)) f *= 1 + (e.caosSofridoR3D.pct ?? 0) / 100;
   // (lote C4, dono 21/10) o Tolhido pela Praga Vaal: "Inimigos Desacelerados sofrem Dano de Caos aumentado em 30%" (também no pulso do dano contínuo — `fatorRecebidoNoDot`)
   if (tipo === 'chaos' && ativo(e.tolhidoCaos, agora)) f *= 1 + (e.tolhidoCaos.pct ?? 0) / 100;
+  // (06/11, lote 11, o Algor Mortis) "Inimigos nas suas Áreas Resfriadas sofrem Dano de Raio aumentado em X%"
+  if (tipo === 'energy' && ativo(e.naAreaFria, agora)) f *= 1 + (Number(ficha?.afPoe?.area_fria_raio_sofrido) || 0) / 100;
+  // (06/11, lote 11, a Fé Engarrafada) no seu Solo Sagrado criado durante o efeito: Dano sofrido aumentado
+  if (ativo(e.consagradoFragil, agora)) f *= 1 + (e.consagradoFragil.pct ?? 0) / 100;
   // (06/11, lote 7) as Teias de Aranha: 5% de Dano sofrido aumentado por Teia (`aspectos.mjs`)
   if (ativo(e.teias, agora)) f *= 1 + ((e.teias.danoSofridoPct ?? 0) * (e.teias.n ?? 0)) / 100;
   // Coberto de Gelo (PoE): +20% de dano de Gelo recebido.

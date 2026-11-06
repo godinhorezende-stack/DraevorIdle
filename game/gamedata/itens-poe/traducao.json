@@ -14,6 +14,234 @@
   ],
   "regras": [
     {
+      "padrao": "^Inafetado por Solo Profanado$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "nenhum monstro do jogo cria Solo Profanado (no PoE, o chão de Caos dos monstros) — não há do que se proteger",
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Exaurir Inimigos em Áreas Resfriadas$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:exaurido@alvoNaAreaFria",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos nas suas Áreas Resfriadas sofrem Dano de Raio aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_fria_raio_sofrido",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de criar Solo Sagrado ao Bloquear$",
+      "efeitos": [
+        {
+          "stat": "ev:bloquear:soloSagrado:4",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Solo Sagrado dura 4 s (o PoE não publica)",
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Deixa Solo Eletrizado enquanto se move, durando \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "solo_eletrizado_movendo_s",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Solo Eletrizado seu Eletriza em 15% os monstros nele (o PoE não publica o número)",
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Cria Solo Profano ao invés de Solo Sagrado$",
+      "efeitos": [
+        {
+          "stat": "solo_profano_no_lugar",
+          "valor": "1"
+        }
+      ],
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você tem Solo Fúngico ao seu redor enquanto parado$",
+      "efeitos": [
+        {
+          "stat": "solo_fungico_parado",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Solo Fúngico (o lembrete do PoE): os monstros nele causam 10% menos Dano; você nele ganha 10% do Dano Não-Caótico como Caos extra — 2 casas em volta de você, enquanto parado",
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos em Solo Fúngico Mortos por você Explodem, causando \\{(\\d+)\\}% de sua Vida como Dano de Fogo$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:explodirChance:{V1}:fire@alvoNoSoloFungico",
+          "valor": "100"
+        }
+      ],
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Cria Solo Sagrado ao Estilhaçar um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:estilhacar:soloSagrado:4",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Solo Sagrado dura 4 s (o PoE não publica)",
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Espalha Piche ao Bloquear$",
+      "efeitos": [
+        {
+          "stat": "ev:bloquear:soloSeu:piche:4",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Piche Tolhe 30% os monstros nele — o raio e a duração do solo, que o PoE não publica: 1 casa e 4 s",
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\(Vosso Abraço concede o seguinte:.*\\)$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano em Solo Ardente aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@soloArdente",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Movimento em Solo Eletrizado aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "move_speed@soloEletrizado",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques em Solo Sagrado$",
+      "efeitos": [
+        {
+          "stat": "block@soloSagrado",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% quando sobre Solo Sagrado$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@soloSagrado",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Seus Lacaios espalham Solo Cáustico ao Morrer, causando \\{(\\d+)\\}% de sua Vida máxima como Dano de Caos por segundo$",
+      "efeitos": [
+        {
+          "stat": "lacaio_morte_solo_caustico_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o raio e a duração do solo, que o PoE não publica: 1 casa e 4 s; o lacaio que acaba também deixa (no PoE, ele morre)",
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Seus Lacaios propagam Solo Ardente ao Morrer, causando \\{(\\d+)\\}% de sua Vida máxima como Dano de Fogo por segundo$",
+      "efeitos": [
+        {
+          "stat": "lacaio_morte_solo_ardente_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o raio e a duração do solo, que o PoE não publica: 1 casa e 4 s; o lacaio que acaba também deixa (no PoE, ele morre)",
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Solo Eletrizado Nível \\{(\\d+)\\} quando Acertado$",
+      "efeitos": [
+        {
+          "stat": "ev:serAcertado:soloSeu:eletrizado:4",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Solo Eletrizado seu Eletriza em 15% os monstros nele — o raio e a duração do solo, que o PoE não publica: 1 casa e 4 s",
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de criar Solo Profano ao Bloquear$",
+      "efeitos": [
+        {
+          "stat": "ev:bloquear:soloProfano:8",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
       "padrao": "^Acertos Corpo a Corpo das Habilidades de Golpe Fortificam$",
       "efeitos": [
         {
