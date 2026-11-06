@@ -9458,6 +9458,102 @@
       "combate": true,
       "nome": "Intervalo das Teias (s)",
       "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "cargas_brutal": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Ganha Cargas brutal no lugar da base",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "max_brutal_igual": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Máximo de Cargas brutal = o da base",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "min_brutal_da_base": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Mínimo de Cargas brutal pelo da base",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "cargas_aflicao": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Ganha Cargas aflicao no lugar da base",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "max_aflicao_igual": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Máximo de Cargas aflicao = o da base",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "min_aflicao_da_base": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Mínimo de Cargas aflicao pelo da base",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "cargas_absorcao": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Ganha Cargas absorcao no lugar da base",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "max_absorcao_igual": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Máximo de Cargas absorcao = o da base",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "min_absorcao_da_base": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Mínimo de Cargas absorcao pelo da base",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "max_vazio": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Máximo de Cargas do Vazio",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "vazio_a_cada_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Carga do Vazio a cada N s",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "max_espiritual": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Máximo de Cargas Espirituais",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "espiritual_a_cada_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Carga Espiritual a cada N s",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "max_divina": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Máximo de Cargas Divinas",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "recoup_es_elemental": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano Elemental sofrido Recuperado como Escudo de Energia",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "almas_max": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Máximo de Almas Devoradas",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
     }
   }
 }

@@ -14,6 +14,308 @@
   ],
   "regras": [
     {
+      "padrao": "^Ganha Cargas Brutais ao invés de Cargas de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "cargas_brutal",
+          "valor": "1"
+        },
+        {
+          "stat": "chance_dano_triplo%carga:brutal",
+          "valor": "3"
+        },
+        {
+          "stat": "ponto_atordoamento_proprio_red%carga:brutal",
+          "valor": "-10"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as Cargas Brutais tomam o lugar das de Tolerância (duram e vencem como elas); o lembrete do poedb: \"3% de chance de causar Dano Triplicado e Ponto de Atordoamento aumentado em 10% por Carga Brutal\"",
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Máximo de Cargas Brutais é igual ao Máximo de Cargas de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "max_brutal_igual",
+          "valor": "1"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Modificadores ao Mínimo de Cargas de Tolerância são aplicados ao Mínimo de Cargas Brutais ao invés$",
+      "efeitos": [
+        {
+          "stat": "min_brutal_da_base",
+          "valor": "1"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha Cargas de Aflição ao invés de Cargas de Frenesi$",
+      "efeitos": [
+        {
+          "stat": "cargas_aflicao",
+          "valor": "1"
+        },
+        {
+          "stat": "dano_dot_mais%carga:aflicao",
+          "valor": "8"
+        },
+        {
+          "stat": "efeito_nao_dano%carga:aflicao",
+          "valor": "8"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as Cargas de Aflição tomam o lugar das de Frenesi (duram e vencem como elas); o lembrete do poedb: \"8% mais Dano com Afecções e 8% mais Efeito de Afecções Não Nocivas por Carga de Aflição\" (o efeito das não nocivas soma ao aumentado)",
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Máximo de Cargas de Aflição é igual ao Máximo de Cargas de Frenesi$",
+      "efeitos": [
+        {
+          "stat": "max_aflicao_igual",
+          "valor": "1"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Modificadores ao Mínimo de Cargas de Frenesi são aplicados ao Mínimo de Cargas de Aflição ao invés$",
+      "efeitos": [
+        {
+          "stat": "min_aflicao_da_base",
+          "valor": "1"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha Cargas de Absorção ao invés de Cargas de Poder$",
+      "efeitos": [
+        {
+          "stat": "cargas_absorcao",
+          "valor": "1"
+        },
+        {
+          "stat": "recoup_es_elemental%carga:absorcao",
+          "valor": "12"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as Cargas de Absorção tomam o lugar das de Poder (duram e vencem como elas); o lembrete do poedb: \"Recuperam 12% do Dano Elemental sofrido como Escudo de Energia por Carga de Absorção\" (em 4 s, como as outras recuperações)",
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Máximo de Cargas de Absorção é igual ao Máximo de Cargas de Poder$",
+      "efeitos": [
+        {
+          "stat": "max_absorcao_igual",
+          "valor": "1"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Modificadores ao Mínimo de Cargas de Poder são aplicados ao Mínimo de Cargas de Absorção ao invés$",
+      "efeitos": [
+        {
+          "stat": "min_absorcao_da_base",
+          "valor": "1"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\} ao Máximo de Cargas do Vazio$",
+      "efeitos": [
+        {
+          "stat": "max_vazio",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recebe uma Carga do V[aá][zc][iu]o por segundo$",
+      "efeitos": [
+        {
+          "stat": "vazio_a_cada_s",
+          "valor": "1"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Máximo de Cargas Espirituais por Joia Abissal afetando você$",
+      "efeitos": [
+        {
+          "stat": "max_espiritual%joiasAbissais",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recebe uma Carga Espiritual ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:carga:espiritual",
+          "valor": "100"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\}% do Dano Físico como Dano Extra de Cada Elemento por Carga Espiritual$",
+      "efeitos": [
+        {
+          "stat": "phys_as_extra_fire%carga:espiritual",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_as_extra_ice%carga:espiritual",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_as_extra_energy%carga:espiritual",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recebe uma Carga Espiritual por segundo$",
+      "efeitos": [
+        {
+          "stat": "espiritual_a_cada_s",
+          "valor": "1"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Perde todas as Cargas Espirituais ao sofrer o Golpe Brutal$",
+      "efeitos": [
+        {
+          "stat": "ev:golpeBrutalSofrido:perdeCargas:espiritual",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Golpe Brutal: o acerto que tira ao menos 15% da Vida máxima (o lembrete do PoE)",
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% de Vida quando perder uma Carga Espiritual$",
+      "efeitos": [
+        {
+          "stat": "ev:perderEspiritual:vidaPct",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% do Escudo de Energia quando perder uma Carga Espiritual$",
+      "efeitos": [
+        {
+          "stat": "ev:perderEspiritual:esPct",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} às Cargas Divinas máximas$",
+      "efeitos": [
+        {
+          "stat": "max_divina",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha uma Carga Divina ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:carga:divina",
+          "valor": "100"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você ganha Divindade por \\{(\\d+)\\} segundos ao atingir o máximo de Cargas Divinas$",
+      "efeitos": [
+        {
+          "stat": "ev:maxDivina:buff:divindade",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Divindade (o lembrete do PoE): 50% mais Dano Elemental e 20% de Dano Elemental sofrido reduzido",
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Perca todas as Cargas Divinas quando ganhar Divindade$",
+      "efeitos": [
+        {
+          "stat": "ev:maxDivina:perdeCargas:divina",
+          "valor": "100"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(-?\\d+)\\} ao número Máximo de Almas Devoradas$",
+      "efeitos": [
+        {
+          "stat": "almas_max",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Perde todas as Almas Devoradas quando você usar um Frasco$",
+      "efeitos": [
+        {
+          "stat": "ev:usarFrasco:perderAlmas",
+          "valor": "100"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
       "padrao": "^Efeito do Buff do Aspecto da Ave aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {

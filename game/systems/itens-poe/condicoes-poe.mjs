@@ -1297,9 +1297,8 @@ export const BUFFS = {
   genioAlquimico: { nome: 'Gênio Alquímico', af: { frasco_cargas_recebidas: 20, frasco_efeito: 10 } },
   elusivo: { nome: 'Elusivo', af: { avoid_damage: 15, move_speed: 30 } },
   trespassar: { nome: 'Trespassar', af: {} },
-  divindade: { nome: 'Divindade', af: { fire_dmg: 50, ice_dmg: 50, energy_dmg: 50, dmg_reduction: 10 } },
-  furtividadeFelina: { nome: 'Furtividade Felina', af: { crit_chance_inc: 50 } },
-  agilidadeDoGato: { nome: 'Agilidade do Gato', af: { avoid_damage: 10, move_speed: 10 } },
+  // (06/11, lote 8: o lembrete do PoE — "50% mais Dano Elemental, 20% menos Dano Elemental sofrido"; era 50% aumentado e 10% de redução, sem quem o usasse)
+  divindade: { nome: 'Divindade', af: { mais_dano_elemental: 50, dano_elemental_recebido_inc: -20 } },
   vooDaAve: { nome: 'Vôo da Ave', af: { move_speed: 20 } },
   poderDaAve: { nome: 'Poder da Ave', af: { atk_speed: 10, cast_speed: 10 } },
   // (13/10: igual à keystone — "50% de Dano Físico, Gelo e Raio Convertidos para Dano de Fogo", "Não causa Dano que não seja de Fogo")
@@ -2358,7 +2357,7 @@ export const slugDoNome = (nome) => String(nome ?? '').normalize('NFD').replace(
 // ---------------------------------------------------------------- os atributos DINÂMICOS (validação da tradução)
 
 /** Os eventos que `mods-poe.evento` dispara e as ações que ele sabe fazer. */
-export const EVENTOS = new Set(['ganharFurtividadeFelina', 'perderFurtividadeFelina', 'ganharAgilidadeFelina', 'ganharBuffDaAve', 'sangrar', 'ganharElusivo', 'incendiarNovo', 'ganharAdrenalina', 'amaldicoarSemMaldicao', 'amaldicoarSemMaldicaoNaoAura', 'usarFrascoVida', 'usarGuarda', 'matar', 'critico', 'bloquear', 'bloquearAtaque', 'bloquearMagia', 'serAcertado', 'serAcertadoCritico', 'atordoar', 'incendiar', 'congelar', 'eletrizar', 'envenenar',
+export const EVENTOS = new Set(['maxDivina', 'perderEspiritual', 'golpeBrutalSofrido', 'ganharFurtividadeFelina', 'perderFurtividadeFelina', 'ganharAgilidadeFelina', 'ganharBuffDaAve', 'sangrar', 'ganharElusivo', 'incendiarNovo', 'ganharAdrenalina', 'amaldicoarSemMaldicao', 'amaldicoarSemMaldicaoNaoAura', 'usarFrascoVida', 'usarGuarda', 'matar', 'critico', 'bloquear', 'bloquearAtaque', 'bloquearMagia', 'serAcertado', 'serAcertadoCritico', 'atordoar', 'incendiar', 'congelar', 'eletrizar', 'envenenar',
   'acertar', 'usarHabilidade', 'usarMagia', 'usarAtaque', 'usarMovimento', 'usarVaal', 'usarClamor', 'usarFrasco', 'usarFrascoMana', 'suprimir', 'perderTolerancia',
   'maxPoder', 'maxFrenesi', 'maxTolerancia', 'tempo', 'provocar', 'golpeDeMisericordia', 'vidaBaixa', 'equipado', 'perderPoder', 'conjurarMaldicao', 'gastarMana', 'armadilha', 'morrer', 'lancarArmadilha', 'detonarMina', 'drenoCheio', 'rampage', 'empurrar',
   // (ciclo 7, lote D) quando Atordoado; quando sofrer Dano Físico de um Acerto (`mods-poe.aoSerAcertado`).
@@ -2377,7 +2376,7 @@ export const EVENTOS = new Set(['ganharFurtividadeFelina', 'perderFurtividadeFel
   'salvaguardaQuebra',
   // (02/11, as Atemporais) quando a Salvaguarda é Restaurada (`personagem/salvaguarda.restaurar` → `acoes.mjs`)
   'salvaguardaRestaurada']);
-export const ACOES = new Set(['transferirMarca', 'frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
+export const ACOES = new Set(['perderAlmas', 'transferirMarca', 'frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
   'dano', 'danoPctVida', 'furia', 'frasco', 'recargaEs', 'explodir', 'gatilho', 'espalhar', 'roubarCargas', 'maldicao', 'soloSagrado', 'soloProfano', 'soloCongelado', 'fumaca', 'removerAfeccao', 'perdeVidaPct', 'perdeEsPct', 'perdeManaPct',
   // (11/10, os únicos)
   'perdeVida', 'esDaArmadura', 'vidaParaEs', 'degenEmVoce', 'statTemp', 'statTempPorMana', 'furiaPorMana', 'transferirMaldicoes', 'degenNoAlvo', 'danoPorMana', 'empurrarProximos',
@@ -2802,7 +2801,9 @@ export function almasDoJogador(hunt, agora = hunt?.clock ?? 0) {
 /** Ganha uma alma (até o máximo); a ficha é refeita. Devolve as almas agora. */
 export function almaDoJogador(hunt, agora = hunt?.clock ?? 0) {
   if (!hunt) return 0;
-  const n = Math.min(DEVORADOR_DE_ALMAS.maximo, almasDoJogador(hunt, agora) + 1);
+  // (06/11, lote 8: + o "+N ao número Máximo de Almas Devoradas" — a Ascensão da Alma; pode ser negativo)
+  const max = Math.max(0, DEVORADOR_DE_ALMAS.maximo + (Number(fichaDa(hunt)?.afPoe?.almas_max) || 0));
+  const n = Math.min(max, almasDoJogador(hunt, agora) + 1);
   hunt.poeAlmas = { n, em: agora, vistas: n };
   hunt.poeFichaMudou = true;
   return n;

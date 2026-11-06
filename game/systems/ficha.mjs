@@ -1330,15 +1330,17 @@ ModsPoeEfeitos.definirCargas((e, oque, tipo, n = 1) => {
   const regras = combate(e).cargas ?? {};
   if (oque === 'ganhar') CargasPoe.ganhar(e, tipo, regras, n);
   else if (oque === 'max') CargasPoe.ganhar(e, tipo, regras, CargasPoe.maximo(regras, tipo));
-  else if (oque === 'perder' && e.hunt?.cargasPoe?.[tipo]) delete e.hunt.cargasPoe[tipo];
+  // (06/11, lote 8: perder pelas cargas — o "ao perder uma Carga" sai, uma vez por carga perdida nas Espirituais)
+  else if (oque === 'perder' && e.hunt?.cargasPoe?.[tipo]) CargasPoe.gastar(e, tipo, Infinity);
   invalidar(e);
 });
 
 // As cargas no máximo / perdidas: os eventos dos únicos ("ao atingir o Máximo de Cargas de Poder", "ao perder uma Carga de Tolerância").
-CargasPoe.definirAoMudar((e, tipo, oque) => {
-  const nome = oque === 'max' ? { poder: 'maxPoder', frenesi: 'maxFrenesi', tolerancia: 'maxTolerancia' }[tipo] : tipo === 'tolerancia' ? 'perderTolerancia' : tipo === 'poder' ? 'perderPoder' : null;
+CargasPoe.definirAoMudar((e, tipo, oque, quantas = 1) => {
+  // (06/11, lote 8: + as Divinas no máximo — a Divindade das Vestes do Efêmero — e as Espirituais perdidas — o Negador Vigoroso)
+  const nome = oque === 'max' ? { poder: 'maxPoder', frenesi: 'maxFrenesi', tolerancia: 'maxTolerancia', divina: 'maxDivina' }[tipo] : tipo === 'tolerancia' ? 'perderTolerancia' : tipo === 'poder' ? 'perderPoder' : tipo === 'espiritual' ? 'perderEspiritual' : null;
   if (oque === 'perdeu' && tipo === 'poder' && e.hunt) (e.hunt.poeRecente ??= {}).perdeuPoder = e.hunt.clock ?? 0;
-  if (nome && e.hunt) ModsPoeEfeitos.evento(e, e.hunt, nome, combate(e), {});
+  if (nome && e.hunt) for (let k = 0; k < (tipo === 'espiritual' && oque === 'perdeu' ? Math.min(20, quantas ?? 1) : 1); k++) ModsPoeEfeitos.evento(e, e.hunt, nome, combate(e), {});
 });
 
 // Os frascos do PoE leem os mods do personagem que mexem neles (cinto: recuperação, duração, efeito, cargas) pela ficha.

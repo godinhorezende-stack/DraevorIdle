@@ -470,6 +470,8 @@ export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorp
   // (14/10, o Warden: a Pele de Árvore perde 1 Casca no Ataque inimigo que acerta; a Lição das Estações, N no Dano Mágico)
   if (corpoACorpo || ataque) perderCasca(hunt, 1, agora);
   if (magia) perderCasca(hunt, v('casca_perde_magia'), agora);
+  // (06/11, lote 8) o GOLPE BRUTAL: "Um Acerto que remove ao menos 15% da Vida Máxima" (o Negador Vigoroso perde as Cargas Espirituais)
+  if (dano > 0 && dano >= 0.15 * (estado.maxHp ?? Infinity)) evento(estado, hunt, 'golpeBrutalSofrido', ficha, { agora, rng, eventos, alvo: bicho });
   // (06/11, lote 7) as Barreiras de Caranguejo saem no Dano Físico de um Acerto (`aspectos.perderBarreiras`)
   if (dano > 0 && tipo === 'physical') Aspectos.perderBarreiras(hunt, ficha.afPoe, agora);
   // O ATORDOAMENTO que este golpe pôs (`combate/controle.tentar` grava `desde`): as reações "quando Atordoado".
@@ -545,6 +547,9 @@ export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorp
     const ms = (recurso === 'hp' && v('recuperacao_vida_s') > 0 ? v('recuperacao_vida_s') * 1000 : RECUPERACAO_MS) / Math.max(0.1, 1 + v(rapidez) / 100);
     if (pct > 0 && dano > 0) (hunt.recuperacoes ??= []).push({ recurso, porMs: (dano * pct) / 100 / ms, desde: agora, ate: agora + ms });
   }
+  // (06/11, lote 8) as Cargas de Absorção: "Recuperam X% do Dano Elemental sofrido como Escudo de Energia" (`recoup_es_elemental`, × as cargas — a regra da peça)
+  const esElemental = ['fire', 'ice', 'energy'].includes(tipo) ? v('recoup_es_elemental') : 0;
+  if (esElemental > 0 && dano > 0) (hunt.recuperacoes ??= []).push({ recurso: 'es', porMs: (dano * esElemental) / 100 / RECUPERACAO_MS, desde: agora, ate: agora + RECUPERACAO_MS });
   if (bicho && bicho.hp > 0 && rng() * 100 < v('congelar_agressor')) {
     const dur = Math.round(1000 * (v('congelar_agressor_s') || 1));
     if (congelar(bicho, dur, agora, !!hunt.isBoss)) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: 'congelado' });
@@ -1298,6 +1303,8 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     case 'perdeManaPct': return perder('mana', 0, ((estado.maxMana ?? 0) * v) / 100);
     case 'carga': if (sorte(v)) leitorDeCargas?.(estado, 'ganhar', ev.param, 1); return;
     case 'cargaMax': if (sorte(v)) leitorDeCargas?.(estado, 'max', ev.param); return;
+    // (06/11, lote 8, a Alma Sedenta) "Perde todas as Almas Devoradas quando você usar um Frasco"
+    case 'perderAlmas': if (hunt.poeAlmas && sorte(v)) { delete hunt.poeAlmas; hunt.poeFichaMudou = true; } return;
     case 'perdeCargas': if (sorte(v)) leitorDeCargas?.(estado, 'perder', ev.param); return;
     case 'cargaAleatoria': if (sorte(v)) leitorDeCargas?.(estado, 'ganhar', ['frenesi', 'poder', 'tolerancia'][Math.floor(rng() * 3)], 1); return;
     // (lote 72, a Mentalidade da Multidão) `cargaAleatoriaPorPoder` = X: X% de chance POR PODER do Clamor (até 100%) de uma carga aleatória.

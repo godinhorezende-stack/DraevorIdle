@@ -15,6 +15,18 @@
 import { ligado } from './catalogo.mjs';
 
 export const TIPOS = ['tolerancia', 'frenesi', 'poder'];
+/**
+ * (06/11, lote 8 das inertes) as CARGAS DE ÚNICO: as que tomam o lugar de uma das três ("Ganha Cargas Brutais ao invés de Cargas de Tolerância" — a Angústia de Arn;
+ * as de Aflição do Deleite de Olesya; as de Absorção do Segredo de Graven: o máximo e o mínimo são os da carga trocada, com as linhas "é igual ao Máximo" e
+ * "Modificadores ao Mínimo … são aplicados"), e as que não têm base (as Espirituais, as Divinas e as do Vazio: o máximo é só o "+N ao Máximo"). O que cada uma dá
+ * fica nas regras das peças (`%carga:<tipo>` — o lembrete do poedb: "3% de chance de causar Dano Triplicado e Ponto de Atordoamento aumentado em 10% por Carga
+ * Brutal", "8% mais Dano com Afecções e 8% mais Efeito de Afecções Não Nocivas por Carga de Aflição", "Recuperam 12% do Dano Elemental sofrido como Escudo de
+ * Energia por Carga de Absorção"). Duram como as outras (10 s, renovadas ao ganhar).
+ */
+export const TROCADAS = Object.freeze({ brutal: 'tolerancia', aflicao: 'frenesi', absorcao: 'poder' });
+export const PROPRIAS = Object.freeze(['espiritual', 'divina', 'vazio']);
+export const EXTRAS = Object.freeze([...Object.keys(TROCADAS), ...PROPRIAS]);
+export const NOME_EXTRA = Object.freeze({ brutal: 'Brutais', aflicao: 'de Aflição', absorcao: 'de Absorção', espiritual: 'Espirituais', divina: 'Divinas', vazio: 'do Vazio' });
 export const NOME = { tolerancia: 'Tolerância', frenesi: 'Frenesi', poder: 'Poder' };
 export const BASE = { maximo: 3, duracaoMs: 10_000, recentementeMs: 4000 };
 
@@ -27,6 +39,9 @@ const n = (af, k) => Number(af?.[k]) || 0;
 export function maximo(af, tipo) {
   // (as Cargas de SALMOURA do Divisor de Águas: "O número máximo de cargas de salmoura é equivalente ao número máximo de cargas de tolerância")
   if (tipo === 'salmoura') return maximo(af, 'tolerancia');
+  // (lote 8) as trocadas: o máximo da carga de base com "Máximo de Cargas X é igual ao Máximo de Cargas de Y"; as próprias, só o "+N ao Máximo"
+  if (TROCADAS[tipo]) return n(af, `max_${tipo}_igual`) > 0 ? maximo(af, TROCADAS[tipo]) : 0;
+  if (PROPRIAS.includes(tipo)) return Math.max(0, n(af, `max_${tipo}`));
   if (n(af, 'cargas_max_fixo_tem')) return Math.max(0, n(af, 'cargas_max_fixo'));
   if (tipo === 'tolerancia' && n(af, 'max_tolerancia_igual_frenesi')) return maximo(af, 'frenesi');
   if (tipo === 'frenesi' && n(af, 'max_frenesi_igual_poder')) return maximo(af, 'poder');
@@ -35,9 +50,9 @@ export function maximo(af, tipo) {
   return Math.max(0, BASE.maximo + n(af, `max_${tipo}`));
 }
 /** O mínimo de cargas do tipo (0 + "+N ao Mínimo"), nunca acima do máximo. */
-export const minimo = (af, tipo) => Math.max(0, Math.min(maximo(af, tipo), n(af, `min_${tipo}`)));
+export const minimo = (af, tipo) => (TROCADAS[tipo] ? (n(af, `min_${tipo}_da_base`) > 0 ? Math.min(maximo(af, tipo), minimo(af, TROCADAS[tipo])) : 0) : Math.max(0, Math.min(maximo(af, tipo), n(af, `min_${tipo}`))));
 /** A duração (ms) das cargas do tipo (+ a duração das cargas em geral). */
-export const duracao = (af, tipo) => Math.round(BASE.duracaoMs * (1 + (n(af, `duracao_${tipo}`) + n(af, 'duracao_cargas')) / 100));
+export const duracao = (af, tipo) => Math.round(BASE.duracaoMs * (1 + (n(af, `duracao_${TROCADAS[tipo] ?? tipo}`) + n(af, 'duracao_cargas')) / 100));
 
 /** As chaves dos atributos de carga (o que a ficha guarda em `ficha.cargas`, para os ganchos não somarem tudo a cada acerto). */
 const CHAVES = [
@@ -46,7 +61,9 @@ const CHAVES = [
   'max_tolerancia_igual_frenesi', 'max_frenesi_igual_poder', 'cargas_max_fixo', 'cargas_max_fixo_tem', 'chance_tolerancia_maxima', 'carga_tolerancia_ao_ser_acertado', 'carga_tolerancia_ao_atordoar', 'carga_poder_ao_atordoar',
   'carga_poder_ao_critico', 'carga_poder_ao_critico_varinha', 'carga_tolerancia_ao_critico_corpo', 'carga_poder_ao_acerto_nao_critico',
   'tolerancia_por_segundo_acertado', 'frenesi_a_cada_s_movendo', 'poder_por_mana_gasta', 'carga_periodica_n', 'carga_periodica_s',
-  'frenesi_vira_poder', 'salmoura_chance', 'frenesi_a_cada_s', 'poder_a_cada_s', 'tolerancia_a_cada_s', 'frenesi_perde_a_cada_s', 'poder_perde_a_cada_s', 'tolerancia_perde_a_cada_s',
+  'frenesi_vira_poder', 'salmoura_chance',
+  // (lote 8) as cargas de único
+  ...Object.keys(TROCADAS).flatMap((t) => [`cargas_${t}`, `max_${t}_igual`, `min_${t}_da_base`]), ...PROPRIAS.flatMap((t) => [`max_${t}`, `${t}_a_cada_s`]), 'divindade_ao_maximo', 'frenesi_a_cada_s', 'poder_a_cada_s', 'tolerancia_a_cada_s', 'frenesi_perde_a_cada_s', 'poder_perde_a_cada_s', 'tolerancia_perde_a_cada_s',
 ];
 export const regrasDaSoma = (af) => Object.fromEntries(CHAVES.filter((k) => n(af, k)).map((k) => [k, n(af, k)]));
 
@@ -62,7 +79,8 @@ export function buffs(estado) {
   const c = estado?.hunt?.cargasPoe;
   const agora = estado?.hunt?.clock ?? 0;
   if (!c) return [];
-  return TIPOS.filter((t) => c[t] && c[t].ate > agora && c[t].n > 0).map((t) => ({ icone: null, nome: `Cargas de ${NOME[t]} ×${c[t].n}`, resta: c[t].ate - agora, tipo: 'cargaPoe', carga: t, n: c[t].n }));
+  // (lote 8: + as cargas de único)
+  return [...TIPOS, ...EXTRAS].filter((t) => c[t] && c[t].ate > agora && c[t].n > 0).map((t) => ({ icone: null, nome: `Cargas ${NOME[t] ? `de ${NOME[t]}` : NOME_EXTRA[t]} ×${c[t].n}`, resta: c[t].ate - agora, tipo: 'cargaPoe', carga: t, n: c[t].n }));
 }
 
 /*
@@ -80,7 +98,9 @@ export function definirLeitores({ regras, conduite }) {
 function por(estado, tipo0, af, quantas = 1, rng = Math.random) {
   // (a Convicção Interior: "Ganha Cargas de Poder ao invés de Cargas de Frenesi"; o Divisor de Águas: "X% de chance de ganhar 1 carga de
   // salmoura em vez de 1 carga de tolerância")
-  const tipo = tipo0 === 'frenesi' && n(af, 'frenesi_vira_poder') ? 'poder' : tipo0 === 'tolerancia' && n(af, 'salmoura_chance') > 0 && rng() * 100 < n(af, 'salmoura_chance') ? 'salmoura' : tipo0;
+  const tipo1 = tipo0 === 'frenesi' && n(af, 'frenesi_vira_poder') ? 'poder' : tipo0 === 'tolerancia' && n(af, 'salmoura_chance') > 0 && rng() * 100 < n(af, 'salmoura_chance') ? 'salmoura' : tipo0;
+  // (lote 8) "Ganha Cargas Brutais ao invés de Cargas de Tolerância" (e as de Aflição, de Absorção)
+  const tipo = Object.keys(TROCADAS).find((t) => TROCADAS[t] === tipo1 && n(af, `cargas_${t}`) > 0) ?? tipo1;
   const hunt = estado?.hunt;
   const max = maximo(af, tipo);
   if (!hunt || max <= 0) return false;
@@ -108,8 +128,9 @@ export function definirAoMudar(fn) { aoMudar = fn; }
  * um com o máximo e a duração dele). Devolve true se mudou.
  */
 export function ganhar(estado, tipo, af, quantas = 1, rng = Math.random) {
-  if (!ligado() || !estado?.hunt || !TIPOS.includes(tipo)) return false;
+  if (!ligado() || !estado?.hunt || !(TIPOS.includes(tipo) || PROPRIAS.includes(tipo))) return false;
   const mudou = por(estado, tipo, af, quantas, rng);
+  if (PROPRIAS.includes(tipo)) return mudou;
   if (mudou && temConduite(estado)) {
     const partilha = estado.hunt.partilha;
     for (const m of partilha?.ativa ? partilha.membros ?? [] : []) {
@@ -127,7 +148,7 @@ export function ganhar(estado, tipo, af, quantas = 1, rng = Math.random) {
  */
 export function gastar(estado, tipo, quantas = 1) {
   const hunt = estado?.hunt;
-  if (!ligado() || !hunt || !TIPOS.includes(tipo)) return 0;
+  if (!ligado() || !hunt || !(TIPOS.includes(tipo) || EXTRAS.includes(tipo))) return 0;
   const c = hunt.cargasPoe?.[tipo];
   const agora = hunt.clock ?? 0;
   if (!c || !(c.ate > agora) || !(c.n > 0)) return 0;
@@ -135,7 +156,7 @@ export function gastar(estado, tipo, quantas = 1) {
   if (!n) return 0;
   c.n -= n;
   if (!c.n) delete hunt.cargasPoe[tipo];
-  aoMudar?.(estado, tipo, 'perdeu');
+  aoMudar?.(estado, tipo, 'perdeu', n);
   return n;
 }
 
@@ -150,11 +171,13 @@ export function tique(estado, af = {}) {
   const c = hunt.cargasPoe;
   let mudou = false;
   // (+ as cargas de salmoura, que vencem como as outras)
-  for (const t of [...TIPOS, 'salmoura']) {
+  for (const t of [...TIPOS, 'salmoura', ...EXTRAS]) {
     const min = t === 'salmoura' ? 0 : minimo(af, t);
+    // (lote 8: a carga de único sem a peça sai)
+    if (EXTRAS.includes(t) && c?.[t] && maximo(af, t) <= 0) { delete c[t]; mudou = true; continue; }
     const atual = c?.[t];
     if (atual && atual.ate <= agora) {
-      aoMudar?.(estado, t, 'perdeu');
+      aoMudar?.(estado, t, 'perdeu', Math.max(0, atual.n - min));
       if (min > 0) {
         atual.n = min;
         atual.ate = agora + duracao(af, t);
@@ -185,7 +208,7 @@ export function tique(estado, af = {}) {
     }
   } else if (!moveu) delete tempo.movendoDesde;
   // (09/10) "Ganha uma Carga de Frenesi/Poder/Tolerância a cada N segundos" (os implícitos eldritch: com um Único na presença).
-  for (const t of TIPOS) {
+  for (const t of [...TIPOS, ...PROPRIAS]) {
     const cada = n(af, `${t}_a_cada_s`);
     const chave = `proxima_${t}`;
     if (!(cada > 0)) { delete tempo[chave]; continue; }
