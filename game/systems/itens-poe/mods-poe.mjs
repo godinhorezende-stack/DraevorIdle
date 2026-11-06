@@ -1290,7 +1290,8 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     }
     case 'explodir': {
       if (!alvo || !hunt.pos) return;
-      explodirMorto(hunt, alvo, v, eventos, { tipo: ev.param || 'fire' });
+      // (05/11, o Fim de Oriath) "como Dano de um Elemento Aleatório": Fogo, Gelo ou Raio, sorteado
+      explodirMorto(hunt, alvo, v, eventos, { tipo: ev.param === 'aleatorio' ? ['fire', 'ice', 'energy'][Math.floor(rng() * 3)] : ev.param || 'fire' });
       return;
     }
     case 'espalhar': {

@@ -80,7 +80,8 @@ const slugDaGema = (nome) => slugDoNome(APELIDOS_DE_GEMA[nome] ?? nome);
 /** Traduz UMA parte do modelo (sem " / "). */
 export function traduzirParte(parte, valores, opcoes = {}) {
   const { regras = PADRAO, tabela = TABELA } = opcoes;
-  if (LEMBRETE.test(String(parte).trim())) return { estado: 'lembrete', efeitos: [], nota: null, regra: null };
+  // (05/11) a linha VAZIA do catálogo (o Hiperbóreo, A Fome da Rainha…: um mod sem texto) não é mod: nota, sem marca
+  if (LEMBRETE.test(String(parte).trim()) || !String(parte ?? '').trim()) return { estado: 'lembrete', efeitos: [], nota: null, regra: null };
   for (const r of regras) {
     const m = r.re.exec(parte);
     if (!m) continue;

@@ -44596,6 +44596,169 @@
       "nota": "como o Talento Puro: o início da sua classe conta (a árvore sempre sai dele) e o de outra classe, quando uma passiva sua encosta nele (passivas/arvore.raiosDasJoias); o \"+0.2 de Alcance\" é em metros",
       "_nova": true,
       "_04_11": "04/11 — a auditoria dos itens: as Réplicas que faltavam (o Talento Puro)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Dano Degenerativo por Envenenamento de Golpes Críticos$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_poison_critico",
+          "valor": "{1}"
+        }
+      ],
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Fogo e Raio dos Acertos é sofrido como Dano de Gelo$",
+      "efeitos": [
+        {
+          "stat": "recebe_fire_como_ice",
+          "valor": "{1}"
+        },
+        {
+          "stat": "recebe_energy_como_ice",
+          "valor": "{1}"
+        }
+      ],
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Raio às Magias$",
+      "efeitos": [
+        {
+          "stat": "spell_added_energy_dmg_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_energy_dmg_max",
+          "valor": "{2}"
+        }
+      ],
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear Dano de Ataque$",
+      "efeitos": [
+        {
+          "stat": "block",
+          "valor": "{1}"
+        }
+      ],
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+    },
+    {
+      "padrao": "^Adiciona Empurrão aos Ataques Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "chance_empurrar@corpo",
+          "valor": "100"
+        }
+      ],
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Dano Físico Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "mais_dano_fisico@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+    },
+    {
+      "padrao": "^Recarga do escudo de energia não é adiado por dano$",
+      "efeitos": [
+        {
+          "stat": "recarga_nao_interrompida",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o jogo usa a mesma regra do \"não é interrompida se começou recentemente\"",
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+    },
+    {
+      "padrao": "^Imunidade a Congelamento, Resfriamento, Maldições e Atordoamentos$",
+      "efeitos": [
+        {
+          "stat": "imune_congelamento",
+          "valor": "1"
+        },
+        {
+          "stat": "imune_resfriamento",
+          "valor": "1"
+        },
+        {
+          "stat": "imune_maldicao",
+          "valor": "1"
+        },
+        {
+          "stat": "imune_atordoamento",
+          "valor": "1"
+        }
+      ],
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% de Vida quando você Matar um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "vida_ao_matar_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+    },
+    {
+      "padrao": "^Efeito de Afecções Não-Danificadoras infligidas por você aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_resfriamento",
+          "valor": "{1}"
+        },
+        {
+          "stat": "efeito_eletrizacao",
+          "valor": "{1}"
+        },
+        {
+          "stat": "efeito_nao_dano",
+          "valor": "{1}"
+        }
+      ],
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} Carga de Tolerância por Segundo$",
+      "efeitos": [
+        {
+          "stat": "periodico:1:carga:tolerancia",
+          "valor": "100"
+        }
+      ],
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+    },
+    {
+      "padrao": "^Cargas recebidas por Outros Frascos aumentadas em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "frasco_cargas_recebidas",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o jogo aumenta as cargas recebidas de todos os frascos (o PoE: só os outros)",
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): a frase dos frascos únicos que não casava com nenhuma regra"
+    },
+    {
+      "padrao": "^Recuperação de Vida de Frascos também se aplica ao Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "frasco_vida_tambem_es",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_05_11": "05/11 — lote 1 dos Únicos (frascos): O Sofrimento do Divino"
     }
   ]
 }

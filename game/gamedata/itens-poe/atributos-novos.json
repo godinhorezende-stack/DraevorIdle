@@ -8516,6 +8516,12 @@
       "unidade": "%",
       "combate": true,
       "efeito": "com a árvore ligada ao início da classe (`passivas/arvore.raiosDasJoias`; 04/11)"
+    },
+    "frasco_vida_tambem_es": {
+      "nome": "Recuperação de Vida de Frascos também se aplica ao Escudo de Energia",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/frascos (recuperar): a vida que os frascos recuperam também enche o Escudo de Energia (O Sofrimento do Divino; 05/11)"
     }
   }
 }

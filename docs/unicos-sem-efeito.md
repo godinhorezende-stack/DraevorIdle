@@ -1,14 +1,21 @@
-# Únicos: linhas sem efeito (05/11/2026)
+# Únicos: linhas sem efeito
 
 Levantamento pelo balão: cada um dos 1.154 Únicos gerado como cai no jogo, e cada base Normal (implícitos). Prefixos e sufixos das peças Mágicas e Raras: ver [afixos-poe-funcionamento.md](afixos-poe-funcionamento.md) (nenhum sem efeito).
 
+## Progresso
+
+| Data | Sem efeito ○ | O que mudou |
+|---|---|---|
+| 05/11 | 423 | o levantamento |
+| 06/11 | **356** | lote 1 (frascos e tinturas): lembretes e linha vazia viram nota; "durante o efeito" em qualquer forma; os atributos "durante o Efeito" dos frascos de Vida e de Mana passam a valer; as ações ao usar e no término; Vinktar, Sábio Carvalho, Colhedor de Almas, Sofrimento do Divino |
+
 | Estado | Linhas | Únicos |
 |---|---|---|
-| ○ registrado (texto do PoE ainda sem efeito no jogo) | 423 | 272 |
+| ○ registrado (texto do PoE ainda sem efeito no jogo) | 356 | 244 |
 | – inerte (mecânica que não existe no jogo, com o motivo no balão) | 325 | 215 |
 | – inerte nos implícitos das bases | 14 | — |
 
-## ○ Registrados: sem efeito ainda (272 Únicos)
+## ○ Registrados: sem efeito ainda (244 Únicos)
 
 - **A Ânsia**: 200% do Dreno de Vida é aplicado em Inimigos como Dano de Caos
 - **A Chama da Esperança**: Causa Exposição ao Fogo ao atingir inimigos com / 5 Escórias em Chamas, aplicando -25% à resistência a dano de fogo
@@ -16,7 +23,7 @@ Levantamento pelo balão: cada um dos 1.154 Únicos gerado como cai no jogo, e c
 - **A Deusa Desprezada**: Você só pode causar Dano com essa Arma e Incendiar
 - **A Domesticação**: Dano Elemental com Acertos e Afecções aumentado em 33% por cada / tipo de Afecção Elemental no Inimigo
 - **A Elegia Partida**: Ativa Carne Incessante nível 25 uma vez por segundo · Ao morrer, um lacaio próximo concede Paredão Podre equivalente a 8% da própria vida máxima
-- **A Fome da Rainha**: (linha vazia) · A cada 5 segundos, aciona Oferenda Óssea, Oferenda de Carne e Oferenda Espiritual em sequência / Habilidades de oferenda acionadas desta forma também afetam você
+- **A Fome da Rainha**: A cada 5 segundos, aciona Oferenda Óssea, Oferenda de Carne e Oferenda Espiritual em sequência / Habilidades de oferenda acionadas desta forma também afetam você
 - **A Lâmina Escondida**: Ativa Golpe Invisível Nível 20 a cada 0.5 segundos enquanto Trespassando
 - **A Liberação da Tempestade**: Concede a Habilidade Convocar Grande Emissário das Tormentas
 - **A Maré da Gula**: Perde todas as Cargas de Frenesi ao atingir o Máximo de Cargas de Frenesi para executar o próximo Ataque com Arco que você executar disparar a mesma quantidade de Flechas
@@ -47,28 +54,25 @@ Levantamento pelo balão: cada um dos 1.154 Únicos gerado como cai no jogo, e c
 - **Amparo de Yriel**: Projéteis de ataques mutilam ao atingir enquanto você tiver um lacaio bestial
 - **Amuleto da Retalhação**: Cegueira infligida por você é Refletida para você · 19% de chance de ganhar uma Carga de Frenesi ao Acertar enquanto Cego
 - **Anathema**: Seu Limite de Maldições é igual ao seu máximo de Cargas de Poder
-- **Apanhador de Almas**: Não pode receber Mana durante o efeito · Chance de Golpe Crítico com Habilidades Vaal aumentada em 63% durante o efeito · Dano com Habilidades Vaal aumentado em 72% durante o efeito · Habilidades Vaal utilizadas durante o efeito possuem 10% de redução de Duração da Prevenção do Ganho de Almas
+- **Apanhador de Almas**: Não pode receber Mana durante o efeito · Habilidades Vaal utilizadas durante o efeito possuem 10% de redução de Duração da Prevenção do Ganho de Almas
 - **Aperto Pirotécnico Chocante**: Inimigos Eletrizados por você têm 10% do Dano Físico causado por eles convertido Raio
 - **As Ferramentas de Arkhon**: Invocar Robôs Rastejantes também invoca um Robô Rastejante Calcinante · Auras dos Robôs Rastejantes invocados afetam você e os inimigos · Mais 62% de efeito de afecções não danosas causadas por Robôs Rastejantes invocados · Velocidade de Arremesso de Armadilhas e Minas aumentada em 24%
 - **Asa do Dobrador da Lua**: local use skill on hit % [100]
 - **Ascensão da Alma**: Devora uma Alma quando você Acertar um Inimigo Raro ou Único, não mais que uma vez a cada 0.5 segundos
 - **Assailum**: Habilidades de Arco Não Canalizadoras Encaixadas são Ativadas por Tiro de Elite / Habilidades de Arco Encaixadas ganham 0.05 segundos de Recarga · +2 ao máximo de Alvos do Tiro · +15% de chance de Suprimir o Dano Mágico enquanto Canalizando
-- **Assinatura de Coralito**: +30% de Multiplicador de Dano Degenerativo por Envenenamento de Golpes Críticos durante o Efeito · (Veneno causa Dano Degenerativo de Caos baseado no Dano base Físico e de Caos da Habilidade. Múltiplas instâncias de Veneno acumulam)
 - **Astrolábio de Venarius**: Você tem Confluxo Elemental se as estrelas estiverem alinhadas · +2 ao nível de todas as gemas de habilidade elemental se as estrelas estiverem alinhadas · +1 ao nível de todas as gemas de suporte elemental se as estrelas estiverem alinhadas
 - **Auxium**: Efeito de Resfriamento e Duração de Congelamento em você são baseados em 100% do seu Escudo de Energia · 0.2% do Dano de Ataque é Drenado como Mana por Carga de Poder
 - **Avanço Celeste**: Ponto de Atordoamento é baseado em 500% da sua Mana em vez de na Vida
 - **Banquete Sem Fim**: 25% de chance de infligir Corrosão ao Acertar com Ataques
 - **Barganha da Meia-Noite**: Não Pode ser utilizado com Inoculação do Caos
 - **Batina de Zahndetos**: consecrate on block % life regen per minute [360] · consecrate on block base radius [18] · consecrate on block duration ms [8000]
-- **Bengala de Kulemak**: (linha vazia)
 - **Berro Escarnecedor**: Clamores custam +15% de vida
 - **Bobina de Ryslatha**: 36% menos Dano de Ataque Físico Mínimo
 - **Brasa Desperta**: 35% menos Dano Incendiário · Você pode infligir 1 Incêndios adicionais em um Inimigo
 - **Caçador de Cabeças**: Quando você Matar um monstro Raro, você ganha seus Modificadores por 60 segundos
 - **Cadeias de Comando**: Ativa a Arma do Guardião Animado Nível 20 quando o Guardião Animado Matar um Inimigo · 10% de chance de Ativar a Arma do Guardião Animado Nível 18 quando a Arma Animada Matar um Inimigo · Guardião Animado causa 5% de aumento de Dano por Arma Animada · Golpes corpo a corpo dos lacaios animados e manifestados causam / dano propagado aos inimigos ao redor · Golpes corpo a corpo dos lacaios animados e manifestados causam 50% menos dano propagado · animate guardian and weapon track on kill [2]
-- **Cálice da Luz Estelar**: Inflige Exposição a Fogo, Gelo e Raio em Inimigos próximos quando usado · Efeito de Afecções Não-Danificadoras infligidas por você aumentada em 29% durante o Efeito · (Cada Exposição aplica -10% à Resistência correspondente por 4 segundos) · (Afecções que não causam Dano são: Resfriamento, Congelamento, Causticado, Fragilizado, Exaurido e Eletrização)
 - **Cálice de Horrores**: 100% de Chance de Fazer Monstros Fugirem ao Bloquear
-- **Cálice Transbordante**: Cargas recebidas por Outros Frascos aumentadas em 72% durante o Efeito · Não Recebe Cargas durante o Efeito de qualquer Frasco Cálice Transbordante
+- **Cálice Transbordante**: Não Recebe Cargas durante o Efeito de qualquer Frasco Cálice Transbordante
 - **Chama Indomável**: Ativa Comando do Inferno no Acerto Crítico
 - **Chama Negra**: Inimigos Incendiados por você sofrem Dano de Caos ao invés de Dano de Fogo do Incêndio · Definhar não expira em Inimigos Incendiados por você · +21% de Resistência de Fogo e Caos · use unique blackflame ignite effect [1]
 - **Chamado do Vazio**: Todo o Dano Sofrido de Acertos podem te Resfriar · Inimigos Resfriados pelos seus Acertos podem ser Despedaçados como se fossem Congelados
@@ -76,9 +80,7 @@ Levantamento pelo balão: cada um dos 1.154 Únicos gerado como cai no jogo, e c
 - **Cinto do Enganador**: is intimidated [1]
 - **Cinturão do Urso**: Inimigos Próximos são Esmagados enquanto você tiver ao menos 25 de Fúria
 - **Circuito de Malachai**: Eletriza você quando chegar no Máximo de Cargas de Poder
-- **Colhedor de Almas**: 70 ao Máximo de Cargas · Perde todas as Cargas ao entrar em uma nova área · Consome o Máximo de Cargas ao usar
 - **Comparsa Profano**: Habilidades de pacto têm a velocidade de conjuração aumentada em 30% · Habilidades de pacto têm a velocidade de recarga aumentada em 41% · Habilidades de pacto concedem Dádivas em vez de Aflições
-- **Composto de Rumi**: +8% de Chance de Bloquear Dano de Ataque durante o Efeito
 - **Coração Negro**: 10% de chance de Fazer com que os Monstros Fujam
 - **Coroa do Rei Pálido**: 100% do Dano que você Reflete aos Inimigos quando Acertado é drenado como Vida
 - **Correia da Oferenda**: Você pode ter uma Ofernda de cada tipo · Habilidades de Oferenda têm Duração reduzida em 50%
@@ -97,18 +99,12 @@ Levantamento pelo balão: cada um dos 1.154 Únicos gerado como cai no jogo, e c
 - **Destino Certo**: A cada 5 segundos, ganha um dos seguintes efeitos por 5 segundos: / Seus Acertos são sempre Golpes Críticos / Acertos contra você são sempre Golpes Críticos / Ataques não podem te Acertar / Ataques contra você sempre Acertam / Seu Dano com Acertos é Sortudo\Dano de Acertos contra você é Sortudo
 - **Destino Inextricável**: Você ganha 3 Vinhas Constringentes ao sofrer um Golpe Crítico · Inimigos Próximos parados ganham uma Vinha Constringente a cada 0.5 segundos · Todo o Dano inflige Envenenamento contra Inimigos afetados por ao menos 3 Vinhas Constringentes
 - **Destruidor de Sonhos**: 2% de chance de evitar dano de cada elemento de ataques por carga de frenesi
-- **Determinação de Kiara**: Imunidade a Congelamento, Resfriamento, Maldições e Atordoamentos durante o Efeito
 - **Devastação Polar**: Espaço Esquerdo de Anel: Cobre Inimigos em Cinzas por 5 segundos quando você os Incendiar · Espaço de Anel Direito: Cobre Inimigos em Gelo por 5 segundos quando você os Congelar
 - **Distintivo da Irmandade**: 23% de chance de perder uma Carga de Poder ao ganhar Elusivo
 - **Doação de Leper**: Sofrimento Compartilhado
 - **Duengume**: +3 segundos à Duração das Cargas de Frenesi e Poder no Golpe de Misericórdia
-- **Elixir Coruscante**: Dano de Caos sofrido não ultrapassa o Escudo de Energia durante o efeito · Remove toda Vida deixando sobrar 1 / Vida Removida é regenerada como Escudo de Energia durante 2 segundos
-- **Elixir de Doedre**: Remove 80% do seu Escudo de Energia máximo quando usado · Você recebe 50% da sua Vida máxima como Dano de Caos quando usado · Ganha 2 Cargas de Tolerância ao usar · Ganha 2 Cargas de Frenesi ao usar · Ganha 1 Cargas de Poder ao usar
-- **Elixir do Círculo Não Quebrado**: Recupera 4% da Vida por Carga de Tolerância ao usar / Perde todas as Cargas de Tolerância ao usar · Ganha 1 Carga de Tolerância por Segundo durante o Efeito
 - **Ensinamentos de Maata**: A Chance de Golpe Crítico Base dos Lacaios é igual a Chance de Golpe / Crítico da sua Arma da Mão Principal
-- **Entranha Pútrida**: Consome Cargas de Frenesi com o uso · Ganhe Agressividade por 3 segundos por Carga de Frenesi consumida ao usar · (Agressividade concede um aumento de 20% das Velocidades de Ataque, Conjuração e Movimento)
 - **Espírito de Kaom**: Regenera 1 de Fúria por segundo por cada 200 de Recuperação de Vida por segundo da Regeneração / Não retarta a Perda Inerente de Fúria
-- **Espírito de Lavianga**: Habilidades não Custam Mana durante o Efeito
 - **Esplendor de Solerai**: Inimigos cegados por você não podem infligir afecções danosas
 - **Essentia Sanguis**: Ceifador Fantasma
 - **Estratagema de Kongming**: Ativa Nevoeiro de Guerra nível 20 quando sua Armadilha é ativada
@@ -122,9 +118,7 @@ Levantamento pelo balão: cada um dos 1.154 Únicos gerado como cai no jogo, e c
 - **Fechamento das Cortinas**: Habilidades que arremessam Minas arremessam até 1 Minas adicionais se você possuir ao menos 800 de Destreza · Habilidades que arremessam Minas arremessam até 1 Minas adicionais se você possuir ao menos 800 de Inteligência
 - **Fenda Voltaxica**: use unique purple shock effect [1]
 - **Fiandeira Invernal**: Velocidade de Movimento quando Incendiado aumentada em 10% · O Efeito do Resfriamento em você é revertido
-- **Filactério de Água Empoçada**: Remove 10% de vida quando usado · Inicia recarga do escudo de energia quando usado · Recarga do escudo de energia não é adiado por dano durante o efeito
 - **Fim da Fome**: Causa 50 de Dano de Caos por segundo em inimigo Próximos
-- **Fim de Oriath**: Inimigos Mortos por você durante o Efeito têm 20% de chance de Explodirem, causando um décimo de sua Vida máxima como Dano de um Elemento Aleatório
 - **Fim do Banquete**: Velocidade de Regeneração de Mana aumentada em 50% durante qualquer Efeito de Frasco
 - **Fim Predestinado**: Feitiços não-Aura expiram ao atingirem % do Efeito base · Feitiços não-Auras ganham Efeito aumentado em 20% por segundo
 - **Flâmula do Vento Mudo**: Mobilização
@@ -137,7 +131,7 @@ Levantamento pelo balão: cada um dos 1.154 Únicos gerado como cai no jogo, e c
 - **Gêiser de Khatal**: Aumentos e reduções no efeito dos frascos aplicados a você / também se aplicam ao efeito de Fúria Arcana em você em 216% de seu valor · Efeitos do frasco de mana não são removidos quando o mana não reservado é preenchido / Efeitos do frasco de mana não se enfileiram
 - **Grilhões dos Miseráveis**: Feitiços aplicados por Habilidades Maldição Encaixadas são Refletidos à você
 - **Gula**: Receba 164 de Dano Físico ao utilizar uma Habilidade de Movimento
-- **Hiperbóreo**: Resfria Inimigos próximos quando você se Concentra, causando 30% de redução da Velocidade de Ação · Velocidade da Recuperação da Recarga da Concentração aumentada em 45% · grant focus skill [1] · (linha vazia)
+- **Hiperbóreo**: Resfria Inimigos próximos quando você se Concentra, causando 30% de redução da Velocidade de Ação · Velocidade da Recuperação da Recarga da Concentração aumentada em 45% · grant focus skill [1]
 - **Inclinação de Null**: Ativa Magias de Lacaios Encaixadas ao Matar com esta Arma / Magias de Lacaios Ativadas por este Item têm 0.25 segundo de Recarga com 5 Usos
 - **Investida de Ambu**: Máximo de Cargas de Tolerância dos membros do seu grupo é igual ao seu
 - **Laço do Coração**: 350 de Dano Físico sofrido por Morte de Lacaio
@@ -175,18 +169,16 @@ Levantamento pelo balão: cada um dos 1.154 Únicos gerado como cai no jogo, e c
 - **O Dervixe Dançante**: O Dervixe Dançarino Manifestado desativa ambos espaços de arma · O Dervixe Dançarino Manifestado morre quando a Fúria termina
 - **O Despertar da Tormenta**: Você e Inimigos em sua Presença contam como se movendo enquanto afetados por Afecções Elementais
 - **O Devorador de Mentes**: Lacaios têm a mesma quantidade do número Máximo de Cargas de Tolerância, Frenesi e Poder que você · Lacaios contam como tendo a mesma quantidade de / Cargas de Toler6ancia, Frenesi e Poder que você
-- **O Diadema Devorador**: (linha vazia) · Ativa Banquete de Carne Nível 15 a cada 5 segundos
+- **O Diadema Devorador**: Ativa Banquete de Carne Nível 15 a cada 5 segundos
 - **O Escudeiro**: Gemas de Suporte Encaixadas também podem Suportar Habilidades da sua Mão Principal
 - **O Inexperiente**: Projéteis não podem colidir com Inimigos em Curto Alcance
 - **O Magnata**: 5% de chance de causar Dano Triplicado enquanto tiver ao menos 400 de Força
 - **O Monarca Santificado**: Seus lacaios conectados sofrem -66% de dano · Ao abater um monstro raro, um lacaio conectado aleatório ganha seus modificadores por 60 segundos
 - **O Monarca Sombrio**: O limite de Armas Animadas é dobrado / Só é possível invocar Armas Animadas
 - **O Peso da Verdade**: 33% do Dano Não Caótico sofrido ignora o Escudo de Energia · Decadência Suprema
-- **O Sábio Carvalho**: Durante o Efeito, Dano sofrido é reduzido em 6% de cada Elemento para o qual sua Resistência Elemental Total for menor · Durante o Efeito, Dano Penetra 8% da Resistência de cada Elemento para o qual sua Resistência Elemental Total for maior · (Resistência Não Limitada é o valor que a Resistência teria se ignorasse o Máximo de Resistência)
 - **O Salteador**: Rouba Cargas de Poder, Frenesi e Tolerância ao Acertar
 - **O Salvador**: summon mirage warrior on crit [100]
 - **O Sino do Monastério**: Conta como dano de ataque bloqueado do primeiro alvo atingido por cada ataque com escudo
-- **O Sofrimento do Divino**: Recuperação de Vida de Frascos também se aplica ao Escudo de Energia durante o Efeito · (Regeneração de Vida é aplicada ao Escudo de Energia.) · (Efeitos de Frascos de Vida ainda são removidos quando a vida não reservada estiver cheia)
 - **O Tom Oculto**: Ataques com habilidades prismáticas sempre Abrasam
 - **O Toque Lancinante**: Chama Voraz
 - **O Vidente Sombrio**: Não Afetado por Cegueira
@@ -195,7 +187,6 @@ Levantamento pelo balão: cada um dos 1.154 Únicos gerado como cai no jogo, e c
 - **Origem de Xoph**: Projéteis Atravessam todos os Inimigos Queimando · Flechas causam 30 a 50 de Dano de Fogo Adicional para cada vez qaue Atravessaram
 - **Os Pensamentos Afluentes**: Concede a Habilidade Convocar Grande Emissário do Arcano
 - **Ossofusão**: Lacaios ganham resistências adicionadas equivalente a 50% de suas resistências
-- **Paradoxica**: (linha vazia)
 - **Parede de Névoa**: +10% de chance de evitar dano de cada elemento de ataques durante Forma Etérea
 - **Passo da Tentação**: Venenos Infligidos por você com Habilidades de Deslocamento são Refletidos para você se / você tiver menos do que 5 Venenos em você
 - **Passo Tocha-carvalho**: Totens Refletem 100% de suas Vidas máximas como Dano de Fogo em / Inimigos próximos quando Acertados
@@ -209,27 +200,22 @@ Levantamento pelo balão: cada um dos 1.154 Únicos gerado como cai no jogo, e c
 - **Ponto do Vínculo Amargurado**: Seus Espectros Evocados também ganha Fúria Arcana quando você ganhar
 - **Precisão de Tawhanuku**: Magias fazem você ganhar escudo de energia equivalente ao custo inicial delas a cada três vezes que você pagar por ele
 - **Preço da Liderança**: Você possui Confluência Causticante, Confluência Enfraquecedora e Confluência Exaustora enquanto seus dois maiores Atributos forem iguais
-- **Preparação de Vorana**: Debilita os Inimigos próximos por 2 Segundos no término do Efeito · (Inimigos que estejam Debilitados têm 20% menos Velocidade de Movimento e causam 10% menos dano) · (Golpe Abatedor significa que inimigos que estiverem com 10% ou menos de vida Morrem depois que você os Acertar)
 - **Presentes do Céu**: Raridade de Itens Derrubados por Inimigos mortos com um Acerto Crítico aumentada em 47%
 - **Progênese**: Quando Acertado durante o Efeito, 25% da Vida perdida do Dano sofrido ocorre durante 4 segundos ao invés
 - **Projetor Astral**: Magias de Nova tem 20% menos Efeito em Área · Magias de nova são conjuradas no local escolhido, não ao seu redor
-- **Promessa de Atziri**: (Vida Drenada é recuperada periodicamente. Múltiplas Drenagens podem ocorrer simultaneamente, até uma frequência máxima) · Ganha 5% de Dano Elemental como Dano Extra de Caos durante o efeito · Ganha 8% de Dano Físico como Dano de Caos Extra durante o efeito
 - **Promessa de Rotblood**: Auras de Maldições de Habilidades Encaixadas também afetam você
 - **Proteção de Prospero**: Armadura do escudo equipado é dobrada · Ganha 0 de armadura do peitoral equipado
 - **Proxy Profano**: Espaço de Anel Esquerdo: A Aura de Resfriante dos seus Robôs Rastejantes aplica a Maldição Feitiço Encaixada ao invés · Espaço de Anel Direito: A Aura de Eletrização dos seus Robôs Rastejantes aplica a Maldição Feitiço Encaixada ao invés
 - **Punho do Blasfemador**: +6 de Vida Máxima por Item Ancião Equipado · +4% de Multiplicador de Dano Degenerativo com Afecções por Item Ancião Equipado · 8% de aumento do Efeito de Afecções não-Danificadores por Item Ancião Equipado
 - **Recompensa de Wilma**: Vínculo Ancestral
 - **Reflecção de Atziri**: Reflete Feitiços
-- **Renascimento do Pecado**: (Poder Profano concede 100% do Dano Físico como Dano de Caos extra e 25% de chance de aplicar Definhar ao Golpear)
 - **Réplica: Alelopatia**: Marca da Maré Invernal tem Efeito de Resfriamento aumentado em 20%
 - **Réplica: Barganha da Meia-Noite**: Não Pode ser utilizado com Inoculação do Caos
 - **Réplica: Caçador de Cabeças**: Dano com Acertos contra monstros Mágicos aumentado em 20% · 20% de chance de, ao Matar um Monstro mágico, você ganhar seus Modificadores por 60 segundos
-- **Réplica: Composto de Rumi**: Ganha 1 Cargas de Tolerância ao usar · Petreficado durante o Efeito do Frasco · +35% de Chance de Bloquear Dano de Ataque durante o Efeito
+- **Réplica: Composto de Rumi**: Petreficado durante o Efeito do Frasco
 - **Réplica: Danação de Doedre**: Você pode aplicar uma Maldição a menos
 - **Réplica: Estratagema de Malachai**: Gemas Encaixadas têm Segredos do Sofrimento · +78% de Resistência a Fogo quando Encaixado com uma Gema Vermelha · +94% de Resistência a Gelo quando Encaixado com uma Gema Verde · +89% de Resistência a Raio quando Encaixado com uma Gema Azul
 - **Réplica: Nebulis**: Dano elemental aumentado em 12% por 1% de resistência a / dano de fogo, frio ou elétrico faltante, até 450%
-- **Réplica: O Sofrimento do Divino**: Recuperação de Vida de Frascos também se aplica ao Escudo de Energia durante o Efeito · (Efeitos de Frascos de Vida ainda são removidos quando a vida não reservada estiver cheia) · (Gasta Escudo de Energia antes da Mana para Custo de Mana de Habilidades. Escudo de Energia protégé a Mana ao invés da Vida. 50% menos Recarga do Escudo de Energia.)
-- **Réplica: Paradoxica**: (linha vazia)
 - **Réplica: Parede de Névoa**: +14% de chance de Evitar Dano Físico de Acertos enquanto Trespassando
 - **Réplica: Presentes do Céu**: Raridade de Itens Derrubados por Inimigos mortos com um Acerto Crítico aumentada em 46% · Inflige Chama Santificada ao atingir por permanecer em chão consagrado
 - **Réplica: Voo do Dente Dracônico**: +3 ao Nível de todas as Gemas de 178
@@ -237,13 +223,9 @@ Levantamento pelo balão: cada um dos 1.154 Únicos gerado como cai no jogo, e c
 - **Revelação de Shavronne**: Espaço de anel esquerdo: Você não pode Recarregar nem Regenerar Escudo de Energia
 - **Rompe-amanhecer**: -1% de Chance de Bloquear o Dano de Ataques por cada 200 de Dano de Fogo sofrido de Acertos Recentemente
 - **Rouba-ar**: Cria um Esporo Infestado quando suas Habilidades ou Lacaios Matarem um Monstro Raro
-- **Rugido do Leão**: Inimigos são Empurrados em uma Área ao usar o Frasco · 75% de chance de fazer Inimigos Fugirem quando usado · Adiciona Empurrão aos Ataques Corpo a Corpo durante o Efeito · 8% mais Dano Físico Corpo a Corpo durante o efeito · (Monstros mágicos têm 50% de chance de evitar a fuga. Monstros raros e únicos não podem fugir) · (Empurrar repeli os Inimigos para trás quando Acertados)
-- **Sabor do Ódio**: 30% do Dano de Fogo e Raio dos Acertos é sofrido como Dano de Gelo durante o Efeito · Ganhe 13% do Dano Físico como Dano de Gelo durante o efeito
-- **Sabor Proibido**: Recupera 76% de Vida ao usar · 25% da Vida máxima sofrida como Dano de Caos por segundo
-- **Salva Espinhal**: (linha vazia) · Ataques com arco sacrificam um lacaio aleatório que pode ser ferido para disparar 3 flechas adicionais
-- **Sangue dos Karui**: Recupera Toda a Vida ao término do Efeito
+- **Salva Espinhal**: Ataques com arco sacrificam um lacaio aleatório que pode ser ferido para disparar 3 flechas adicionais
 - **Sangue Mágico**: Frascos Utilitários Mágicos não podem ser Usados · Frascos Utilitários Mágicos 2 mais a Esquerda aplica seu Efeito de Frasco constantemente em você · Efeitos dos Frascos Utilitários Mágicos não podem ser removidos
-- **Sangue Tempestuoso**: Todo dano causado por golpes críticos pode aplicar afecções de frio durante o efeito · (As afecções relacionadas ao frio são: esfriamento, congelamento e fragilização. Ataques têm 100% de chance de infligir esfriamento, e golpes críticos têm 100% de chance de infligir congelamento)
+- **Sangue Tempestuoso**: Todo dano causado por golpes críticos pode aplicar afecções de frio durante o efeito
 - **Selo do Vento Mudo**: Habilidades de Golens Encaixadas têm 20% de Velocidade de Ataque e Conjuração aumentada · Ganha Agressividade por 10 segundos quando você Conjura uma Habilidade de Golem Encaixada
 - **Semblante da Tempestade de Areia**: Ignora Atordoamentos enquanto Conjurando
 - **Semeadora da Ruína**: Você possui Pacto Vaal enquanto todas as Gemas Encaixadas forem Vermelhas
@@ -257,7 +239,6 @@ Levantamento pelo balão: cada um dos 1.154 Únicos gerado como cai no jogo, e c
 - **Terror Irrequieto**: Um Verme Retorcido inimigo surge a cada 2 segundos · Chance de 20% de ativar magia encaixada ao matar, com tempo de recarga de 0,5 segundo · Perde 20 de Vida por Inimigo Morto
 - **The Draugur's Lantern**: As Chamas de Draugur queimam os inimigos ao seu redor por 8 segundos após você incendiar um alvo
 - **Toque Gentil de Asenath**: Maldições diferentes de Auras infligidas por você não são removidas dos Inimigos Mortos · Inimigos próximos de Cadáveres afetados por suas Maldições são Cegados / Inimigos mortos próximos de Cadáveres afetados por suas Maldições explodem, causando / 3% de sua Vida como Dano Físico
-- **Tormenta Carmesim**: (linha vazia)
 - **Tormenta de Mana**: Ao Conjurar uma Magia, Sacrifica toda a sua Mana para ganhar Dano Máximo de Raio Adicional / igual a 50% da Mana Sacrificada por 4 segundos
 - **Torno de Meginord**: Acertos Corpo a Corpo com Habilidades de Golpe sempre Empurram
 - **Trapaça de Ylfeban**: Amaldiçoa Inimigos que te Acertaram com um Feitiço aleatório, ignorando o Limite de Maldições
@@ -265,21 +246,19 @@ Levantamento pelo balão: cada um dos 1.154 Únicos gerado como cai no jogo, e c
 - **Tricorne de Fairgraves**: Você pode ser Tocado por Espíritos Atormentados
 - **Trilha Guerreira de Alberon**: Guerreiros Esqueletos Convocados são Permanentes e Seguem você / Convocar Esqueletos não podem Convocar mais do que 1 Guerreiro Esqueleto
 - **Tristespinho**: 28% de chance de, ao atingir corpo a corpo, o empalamento mais forte no alvo durar 1 acerto adicional · ㅤ-48% de duração de empalamentos
-- **Último Suspiro de Zerphi**: Concede Último Suspiro quando você Usa uma Habilidade durante o Efeito, por 478% do Custo de Mana · (Último Suspiro recupera vida com o tempo. Dura 4 segundos, mas é removido caso você seja atingido)
+- **Último Suspiro de Zerphi**: Concede Último Suspiro quando você Usa uma Habilidade durante o Efeito, por 478% do Custo de Mana
 - **Umbilicus Immortalis**: Frascos que você Usar se aplicam aos seus Zumbis e Espectros Convocados
 - **Unificação de Eber**: Ativa Olhar Vazio nível 10 quando você usar uma Habilidade
-- **Urna Come-Cinzas**: (linha vazia) · Recarrega 5 Cargas ao consumir um Corpo Incendiado · Inimigos Incendiados por você durante o Efeito sofrem Dano aumentado em 9% · Recupera 3% de Vida quando você Matar um Inimigo durante o Efeito
+- **Urna Come-Cinzas**: Recarrega 5 Cargas ao consumir um Corpo Incendiado
 - **Válvula da Fúria**: Modificadores do número de Projéteis são aplicados ao número de alvos nos quais os Projéteis Partidos se focam ao invés
 - **Valyrium**: Ponto de Atordoamento é baseado no Escudo de Energia ao invés de na Vida
-- **Vaso de Vinktar**: Eletriza Inimigos próximos durante o Efeito, causando 10% de Dano sofrido aumentado · Você fica Eletrizado durante o Efeito, recebendo um aumento de 50% do Dano sofrido · Adiciona 15 a 56 de Dano de Raio às Magias durante o Efeito · (Vida Drenada é recuperada periodicamente. Múltiplas Drenagens podem ocorrer simultaneamente, até uma frequência máxima)
 - **Venopunctura**: Você é Resfriado enquanto Sangrando · Inimigos Não-Resfriados que você inflija Sangramento são Resfriados · Inimigos Sangrando Mortos pelos seus Acertos são Estraçalhados
 - **Verme da Essência**: Gemas Encaixadas não têm Reserva / Suas Habilidades Bênção são Desabilitadas
 - **Vestes da Ruína da Luz**: desecrate on block base chaos damage to deal per minute [15000] · desecrate on block base radius [16] · desecrate on block duration ms [8000]
 - **Vigilância do Imperador**: Dano sofrido dos Acertos Bloqueados não podem ignorar o Escudo de Energia / Dano sofrido dos acertos Não Bloqueados sempre ignoram o Escudo de Energia
 - **Vínculo do Túmulo**: Inimigos Próximos Mortos por qualquer um, ao invés, contam como sendo Mortos por você
-- **Vinho do Profeta**: Ao usar, concede um bônus de Adivinhação aleatório por 20 segundos · (Bônus de Adivinhação não são efeitos de frascos, e você não pode ter mais de um por vez)
+- **Vinho do Profeta**: Ao usar, concede um bônus de Adivinhação aleatório por 20 segundos
 - **Violência de Kiloava**: 30% de chance das Resistências Elementais contarem como sendo 90% contra Acertos Inimigos
-- **Vivinsect**: (linha vazia)
 - **Voto de Uul-Netol**: Gemas de Suporte Encaixadas também podem Suportar Habilidades do seu Peitoral
 - **Zenith Negro**: Projéteis Mágicos Encaixados disparam Projéteis em um círculo · Projéteis Mágicos Encaixados têm 80% menos Duração do Efeito da Habilidade
 
