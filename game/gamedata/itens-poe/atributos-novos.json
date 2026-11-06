@@ -9338,6 +9338,126 @@
       "combate": true,
       "nome": "Emissário das Tormentas",
       "efeito": "acoes.tiqueDoEmissario (06/11)"
+    },
+    "aspecto_gato": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Aspecto do Gato (nível)",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "aspecto_ave": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Aspecto da Ave (nível)",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "aspecto_caranguejo": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Aspecto do Caranguejo (nível)",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "aspecto_aranha": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Aspecto da Aranha (nível)",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "aspecto_gato_sem_reserva": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Aspecto do Gato sem Reserva",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "furtividade_felina_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Duração da Furtividade Felina (s)",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "agilidade_felina_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Duração da Agilidade Felina (s)",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "poder_da_ave_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Duração do Poder da Ave (s)",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "voo_da_ave_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Duração do Voo da Ave (s)",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "aspecto_ave_aliados": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Aspecto da Ave nos Aliados",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "barreiras_max": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Máximo de Barreiras de Caranguejo",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "barreira_chance_max": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Chance de ganhar o máximo de Barreiras",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "barreiras_nao_perde_recente": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Não perde Barreiras se perdeu Recentemente",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "barreiras_perde_so": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Só perde N Barreiras",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "aranha_duracao_inc": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Duração das Teias aumentada",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "teias_extra": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Teias a mais por inimigo",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "aranha_area_inc": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Área do Aspecto da Aranha aumentada",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "teias_dano_menos": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Inimigos com Teia causam menos dano",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "teias_res_menos": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Inimigos com Teia: menos resistências",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "aranha_intervalo_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Intervalo das Teias (s)",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
     }
   }
 }

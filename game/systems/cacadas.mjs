@@ -1924,6 +1924,8 @@ function tiqueDaCacada(estado, personagem, agora) {
   // personagem (dano contínuo e controle dos bichos — `itens-poe/mods-poe.mjs`).
   ModsPoe.definirFichaDaCacada(hunt, () => Ficha.combate(estado));
   ModsPoe.tique(estado, hunt, Ficha.combate(estado), passou);
+  // (06/11, lote 7) os Aspectos (`itens-poe/aspectos.mjs`)
+  ModsPoe.tiqueDosAspectos(estado, hunt, Ficha.combate(estado), personagem);
   // (a Fúria — o Rampage — terminou: os bônus "a cada N Mortes" saem da ficha)
   if (hunt.poeFichaMudou) { delete hunt.poeFichaMudou; Ficha.invalidar(estado); }
   ModsPoe.aurasProximas(estado, hunt, Ficha.combate(estado));

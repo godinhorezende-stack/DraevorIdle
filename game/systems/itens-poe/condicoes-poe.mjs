@@ -416,7 +416,7 @@ export const CONDICOES_DE_ESTADO = new Set([
 export const RAIO_DA_PRESENCA = 6;
 /** As condições de estado com PARÂMETRO: `atrMin:str:200` (ao menos 200 de Força), `atrMaior:dex:int`, `buff:agressividade`,
  * `semCargas:frenesi`, `comCargas:poder`, `cargasMax:tolerancia`, `furiaMin:N`, `lacaio:bestial`. */
-const COND_COM_PARAMETRO = /^(canalizandoHa|matouRecenteMin|afetadoPorAbissal|afetadoPor|maiorAtributo|itensInfluencia|comAbissalLocal|atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|aliadosPerto|nosUltimos|paradoHa|devocaoMin|primordiaisMin):/;
+const COND_COM_PARAMETRO = /^(canalizandoHa|matouRecenteMin|afetadoPorAbissal|afetadoPor|maiorAtributo|itensInfluencia|comAbissalLocal|atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|aliadosPerto|nosUltimos|paradoHa|devocaoMin|primordiaisMin|barreirasMin):/;
 export const ehCondDeEstado = (c) => CONDICOES_DE_ESTADO.has(c) || COND_COM_PARAMETRO.test(c);
 /** As tags de GOLPE conhecidas (as do poedb em português viram estas — `tagsDoPoe`). */
 export const TAGS_DE_GOLPE = new Set([
@@ -425,7 +425,7 @@ export const TAGS_DE_GOLPE = new Set([
   // O ALVO do golpe (o estado dele naquele acerto): Resfriado, Congelado, Eletrizado, Cego, Sangrando, Envenenado, Incendiado, Amaldiçoado,
   // Lento, Mutilado, Provocado, a raridade, a vida cheia; e o golpe de perto ("em Curto Alcance"), na mão principal/secundária.
   'alvoResfriado', 'alvoCongelado', 'alvoEletrizado', 'alvoCego', 'alvoSangrando', 'alvoEnvenenado', 'alvoIncendiado', 'alvoAmaldicoado',
-  'alvoLento', 'alvoMutilado', 'alvoProvocado', 'alvoAtordoado', 'alvoEletrizadoOuCongelado', 'guarda', 'gemaCritica', 'alvoRaro', 'alvoUnico', 'alvoMagico', 'alvoVidaCheia', 'alvoPerto', 'canalizar', 'retaliacao', 'estandarte', 'custaVida',
+  'alvoLento', 'alvoMutilado', 'alvoProvocado', 'alvoAtordoado', 'alvoComTeia', 'alvoTeias:3', 'alvoTeias:4', 'alvoEletrizadoOuCongelado', 'guarda', 'gemaCritica', 'alvoRaro', 'alvoUnico', 'alvoMagico', 'alvoVidaCheia', 'alvoPerto', 'canalizar', 'retaliacao', 'estandarte', 'custaVida',
   'golpe', 'pancada', 'nova', 'runa', 'marca', 'feitico', 'vinculo', 'ativada', 'desarmadoGolpe', 'naoCritico',
   // (06/11, os Únicos — lote 3) as Habilidades de Pacto ("Habilidades de pacto têm a velocidade de conjuração aumentada")
   'pacto',
@@ -748,6 +748,8 @@ export function vale(conds, c) {
     case 'matouRecenteMin': return (h?.poeMortesRecentes ?? []).filter((t) => agora - t <= RECENTE_MS).length >= Number(resto[0]);
     // (lote 68) "caso você tenha Canalizado por ao menos N segundo" / "após Canalizar por N segundo": canalizando agora, há N s (`hunt.canalizacao.desde`)
     case 'canalizandoHa': return canalizandoAgora(h, agora) && agora - (h.canalizacao.desde ?? agora) >= (Number(resto[0]) || 0) * 1000;
+    // (06/11, lote 7) "enquanto possuir ao menos N Barreiras de Caranguejo": `barreirasMin:N` (`aspectos.mjs`)
+    case 'barreirasMin': return (h?.barreiras?.n ?? 0) >= (Number(resto[0]) || 0);
     // (lote 28) "enquanto afetado por uma Joia Abissal Rara/Mágica/Única": `afetadoPorAbissal:raro`.
     case 'afetadoPorAbissal': return joiasAbissaisAfetando(estado).some((j) => j.poe?.raridade === resto[0]);
     // (lote 55, o Olho do Vigia) "enquanto afetado por <Aura>": `afetadoPor:<o nome da gema>` — a aura da gema ligada (`hunt.buffs`) ou a do seu
@@ -1055,6 +1057,7 @@ export function buffsDoCliente(estado) {
     saida.push(cartao);
   }
   if (h.casca) saida.push({ icone: null, nome: 'Casca', resta: 0, tipo: 'casca', contador: h.casca.n, dica: `Casca: ${h.casca.n} de ${CASCA.maximo} (a Pele de Árvore — ganha 1 por segundo sem ser Acertado por um Ataque Recentemente)` });
+  if (h.barreiras?.n > 0) saida.push({ icone: null, nome: 'Barreiras de Caranguejo', resta: 0, tipo: 'barreiras', contador: h.barreiras.n, dica: `Barreiras de Caranguejo: ${h.barreiras.n} (o Aspecto do Caranguejo — uma a cada 0,5 s; 2% de Redução de Dano Físico adicional cada; o Dano Físico de um Acerto tira todas)` });
   // (14/10) as Égides (o valor que ainda toma) e a Infusão Espiritual
   const NOME_DA_EGIDE = { primitiva: 'Égide Primitiva', fogo: 'Égide de Fogo', gelo: 'Égide de Gelo', raio: 'Égide Relampejante', elemental: 'Égide Elemental', fisica: 'Égide Física' };
   for (const [nome, e] of Object.entries(h.egides ?? {})) saida.push({ icone: null, nome: NOME_DA_EGIDE[nome] ?? nome, resta: 0, tipo: 'egide', contador: Math.round(e.valor), dica: `${NOME_DA_EGIDE[nome] ?? nome}: ${Math.round(e.valor)} de ${Math.round(e.max)} (toma o dano ${({ fisica: 'Físico', fogo: 'de Fogo', gelo: 'de Gelo', raio: 'de Raio' })[nome] ?? 'de Fogo, Gelo e Raio'} dos acertos antes do Escudo e da Vida; volta cheia 10 s depois do último dano)` });
@@ -1172,6 +1175,8 @@ export function fatorDaEscala(estado, total, principais, escala) {
     // (lote D) "por Fortificação"; "para cada Fortificação acima de 20": `fortificacaoAcima:20`.
     case 'fortificacao': return a ? cada(fortificacao(estado, total), a) : fortificacao(estado, total);
     case 'fortificacaoAcima': return Math.max(0, fortificacao(estado, total) - (Number(a) || 0));
+    // (06/11, lote 7) "por Barreira de Caranguejo" (`aspectos.mjs`)
+    case 'barreiras': return h?.barreiras?.n ?? 0;
     // (lote E) "por cada Magia Não Instantânea que você tenha Conjurado Recentemente": `usos:magia[:<segundos>[:<máximo>]]` (`marcarUsoPorTag`).
     case 'usos': { const [, , s, max] = escala.split(':'); const desde = agora - (Number(s) || RECENTE_MS / 1000) * 1000; const n = (h?.poeUsosRecentes?.[a] ?? []).filter((t) => t > desde).length; return max ? Math.min(Number(max), n) : n; }
     // (lote F) "por ponto em Força ou Inteligência, o que for menor": `menorEntre:str:int`; "por segundo que você tenha ficado parado": `paradoS`.
@@ -1363,6 +1368,16 @@ export const BUFFS = {
   emissarioFoco: { nome: 'Emissário do Foco', af: { dano_recebido_mais: -20, imune_atordoamento: 1, imune_congelamento: 1, imune_resfriamento: 1, imune_incendio: 1, imune_eletrizacao: 1 } },
   emissarioFocoMaldicao: { nome: 'Foco: sem Maldições', af: { imune_maldicao: 1 } },
   emissarioArcanoRaio: { nome: 'Arcano: Raio', af: { chance_shock: 15, energy_pen: 10 } },
+  // (06/11, lote 7 das inertes: os ASPECTOS — `aspectos.mjs`; os números do nível 20, o PoB. As marcas "afetado pelo Aspecto" ficam enquanto ele está ligado.)
+  furtividadeFelina: { nome: 'Furtividade Felina', af: { crit_chance_inc: 100, evitar_dano_fisico_acerto: 15, evitar_dano_elemental_ataque: 15 } },
+  agilidadeFelina: { nome: 'Agilidade Felina', af: { atk_speed: 10, cast_speed: 10 } },
+  // (Ninho de Saqawal: "também concede Poder da Ave e Vôo da Ave para Aliados próximos" — vira a aura "Você e Aliados", `aliados:`)
+  poderDaAve: { nome: 'Poder da Ave', af: (estado) => (estado?.hunt?.poeAspectos?.ave?.aliados ? { 'aliados:chance_dano_dobrado': 10, minion_dano_dobrado: 10 } : { chance_dano_dobrado: 10, minion_dano_dobrado: 10 }) },
+  vooDaAve: { nome: 'Voo da Ave', af: (estado) => (estado?.hunt?.poeAspectos?.ave?.aliados ? { 'aliados:move_speed': 10, minion_move: 10 } : { move_speed: 10, minion_move: 10 }) },
+  aspectoDoGato: { nome: 'Aspecto do Gato', af: {} },
+  aspectoDaAve: { nome: 'Aspecto da Ave', af: {} },
+  aspectoDoCaranguejo: { nome: 'Aspecto do Caranguejo', af: {} },
+  aspectoDaAranha: { nome: 'Aspecto da Aranha', af: {} },
   // (lote F) Vento Favorável (o lembrete do PoE: Velocidade de Ação aumentada — aqui, as velocidades de ataque, conjuração e movimento).
   // (lote 30, P027: "Vento Favorável aumenta a Velocidade de Ação em 8%" — o lembrete do próprio nó; era +10% de ataque, conjuração e movimento)
   ventoFavoravel: { nome: 'Vento Favorável', af: { action_speed: 8 } },
@@ -1484,6 +1499,9 @@ export function adds(estado, total = null) {
     const regen = of.regenPct && (!of.regenSeBloqueou || recente(estado.hunt.poeRecente?.bloqueou, agoraT)) ? of.regenPct : 0;
     for (const [k, v] of [['atk_speed', of.velAtaquePct], ['cast_speed', of.velConjPct], ['move_speed', of.velMovPct], ['crit_chance_inc', of.critInc], ['crit_dmg', of.critMult], ['block', of.bloqueioPct], ['spell_block', of.bloqueioMagicoPct], ['life_regen_max_pct', regen]]) if (v) saida[k] = (saida[k] ?? 0) + v * f;
   }
+  // (06/11, lote 7) as BARREIRAS DE CARANGUEJO (`aspectos.mjs`): 2% de Redução de Dano Físico adicional por Barreira
+  const nBarreiras = estado?.hunt?.barreiras?.n ?? 0;
+  if (nBarreiras > 0) saida.phys_res = (saida.phys_res ?? 0) + 2 * nBarreiras;
   // (14/10, o Warden) A CASCA da Pele de Árvore (`hunt.casca` — `tiqueDoWarden`): -60 de Dano Físico dos Acertos de Ataque por Casca e 4% mais
   // chance de Evadir Ataques por Casca abaixo do máximo; a Lição das Estações: -25 de cada tipo de dano dos Acertos de Magia por Casca
   // (`casca_magia_fixo`) e +3% do Dano Mágico Suprimido Impedido por Casca abaixo do máximo (`casca_supressao`).
@@ -2064,6 +2082,8 @@ export function tagsDoAlvo(alvo, agora) {
   // (lote C4, dono 21/10) o Tolhido (o Hinder do PoE, `estados.tolhido` — o "Inimigos Desacelerados por você"): Lento, não Resfriado
   else if (at(e.tolhido)) t.push('alvoLento');
   if (at(e.congelado)) t.push('alvoCongelado');
+  // (06/11, lote 7) as Teias de Aranha (`aspectos.mjs`): "afetado por uma Teia", "por N Teias" (ao menos N)
+  if (at(e.teias)) { t.push('alvoComTeia'); for (let k = 1; k <= (e.teias.n ?? 0); k++) t.push(`alvoTeias:${k}`); }
   if (at(e.chocado)) t.push('alvoEletrizado');
   if (at(e.cego)) t.push('alvoCego');
   if (at(e.mutilado)) t.push('alvoMutilado');
@@ -2338,7 +2358,7 @@ export const slugDoNome = (nome) => String(nome ?? '').normalize('NFD').replace(
 // ---------------------------------------------------------------- os atributos DINÂMICOS (validação da tradução)
 
 /** Os eventos que `mods-poe.evento` dispara e as ações que ele sabe fazer. */
-export const EVENTOS = new Set(['sangrar', 'ganharElusivo', 'incendiarNovo', 'ganharAdrenalina', 'amaldicoarSemMaldicao', 'amaldicoarSemMaldicaoNaoAura', 'usarFrascoVida', 'usarGuarda', 'matar', 'critico', 'bloquear', 'bloquearAtaque', 'bloquearMagia', 'serAcertado', 'serAcertadoCritico', 'atordoar', 'incendiar', 'congelar', 'eletrizar', 'envenenar',
+export const EVENTOS = new Set(['ganharFurtividadeFelina', 'perderFurtividadeFelina', 'ganharAgilidadeFelina', 'ganharBuffDaAve', 'sangrar', 'ganharElusivo', 'incendiarNovo', 'ganharAdrenalina', 'amaldicoarSemMaldicao', 'amaldicoarSemMaldicaoNaoAura', 'usarFrascoVida', 'usarGuarda', 'matar', 'critico', 'bloquear', 'bloquearAtaque', 'bloquearMagia', 'serAcertado', 'serAcertadoCritico', 'atordoar', 'incendiar', 'congelar', 'eletrizar', 'envenenar',
   'acertar', 'usarHabilidade', 'usarMagia', 'usarAtaque', 'usarMovimento', 'usarVaal', 'usarClamor', 'usarFrasco', 'usarFrascoMana', 'suprimir', 'perderTolerancia',
   'maxPoder', 'maxFrenesi', 'maxTolerancia', 'tempo', 'provocar', 'golpeDeMisericordia', 'vidaBaixa', 'equipado', 'perderPoder', 'conjurarMaldicao', 'gastarMana', 'armadilha', 'morrer', 'lancarArmadilha', 'detonarMina', 'drenoCheio', 'rampage', 'empurrar',
   // (ciclo 7, lote D) quando Atordoado; quando sofrer Dano Físico de um Acerto (`mods-poe.aoSerAcertado`).
@@ -2472,7 +2492,7 @@ export function dinamicoValido(stat) {
 /** (06/11) A ficha tem uma escala pelo Fogo sofrido recentemente (o Rompe-amanhecer)? — o acerto com Fogo refaz a ficha. */
 export const usaFogoSofrido = (ficha) => Object.keys(ficha?.afPoe ?? {}).some((k) => k.includes('%fogoSofridoRecente'));
 /** A escala é conhecida? */
-export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|joiasAbissais|joiaUnica|devocao|itemMagico|maldicoesEmVoce|abissalLocal|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|vinhas|crescimentoFragil|desdeUsou|afetadoPorClamor|valor|valorDoEstandarte|forcaDosVentos|stat|armaduraElmo|evasaoLuvas|esBotas|vidaReservadaPct|itensInfluencia|fogoSofridoRecente|todasGemasVermelhasLocal|corrompidaLocal)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
+export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|joiasAbissais|joiaUnica|devocao|itemMagico|maldicoesEmVoce|abissalLocal|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|vinhas|crescimentoFragil|desdeUsou|afetadoPorClamor|valor|valorDoEstandarte|forcaDosVentos|stat|armaduraElmo|evasaoLuvas|esBotas|vidaReservadaPct|itensInfluencia|fogoSofridoRecente|todasGemasVermelhasLocal|corrompidaLocal|barreiras|teiasNoAlvo)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
 
 /** Os números base do PoE dos efeitos de acerto. */
 export const NO_ACERTO = {
@@ -2517,6 +2537,17 @@ export function valorDaReserva(h, r, maxima, agora = h?.clock ?? 0) {
   const uma = Math.ceil((r.pct ? (maxima * r.pct) / 100 : r.fixo ?? 0) * (r.fator ?? 1));
   return r.minasDe ? uma * (minasDaReserva(h, r.minasDe, agora) + (Number(r.minasAMais) || 0)) : uma;
 }
+/**
+ * (06/11, lote 7) a Mana que os ASPECTOS ligados reservam (`aspectos.mjs`: 25% cada; "Aspecto do Gato não possui Reserva" tira a dele), com a eficácia da reserva
+ * (a geral e a de Mana).
+ */
+const ASPECTOS_QUE_RESERVAM = [['aspecto_gato', 'aspecto_gato_sem_reserva'], ['aspecto_ave'], ['aspecto_caranguejo'], ['aspecto_aranha']];
+export function reservaDosAspectos(af, maxMana) {
+  const pct = ASPECTOS_QUE_RESERVAM.reduce((t, [k, sem]) => t + (Number(af?.[k]) > 0 && !(sem && Number(af?.[sem]) > 0) ? 25 : 0), 0);
+  if (!(pct > 0)) return 0;
+  const eficacia = (Number(af?.eficiencia_reserva) || 0) + (Number(af?.eficiencia_reserva_mana) || 0);
+  return Math.ceil(((maxMana ?? 0) * pct) / 100 / Math.max(0.01, 1 + eficacia / 100));
+}
 export function reservadoAgora(estado, recurso, total = null) {
   const h = estado?.hunt;
   const agora = h?.clock ?? 0;
@@ -2528,6 +2559,7 @@ export function reservadoAgora(estado, recurso, total = null) {
   }
   const pct = recurso === 'vida' ? Number((total ?? fichaDa(h)?.afPoe)?.reserva_vida_pct) || 0 : 0;
   if (pct > 0) n += Math.ceil((maxima * pct) / 100);
+  if (recurso !== 'vida') n += reservaDosAspectos(total ?? fichaDa(h)?.afPoe, maxima);
   return n;
 }
 /** O valor de um atributo do PoE na soma do personagem (`ficha.afPoe`: já com as condições de estado), + o condicional do golpe. */
@@ -2640,6 +2672,8 @@ export function doBicho(bicho, agora, { contraOutro = false, ficha = null } = {}
   // (lote E) "Cada Mina aplica Dano causado reduzido em X% aos Inimigos próximos a ela, até Y%" (o poedb traduz "Dano sofrido reduzido"; no
   // PoE é o dano que o inimigo causa).
   if (ativo(e.minaFraco, agora)) danoFator *= Math.max(0, 1 - (e.minaFraco.pct ?? 0) / 100);
+  // (06/11, lote 7) "Inimigos afetados por suas Teias de Aranha causam Dano reduzido em X%" (a Mortalha de Fenumus)
+  if (ativo(e.teias, agora) && e.teias.danoMenos > 0) danoFator *= Math.max(0, 1 - e.teias.danoMenos / 100);
   // ("Com ao menos um cadáver próximo, Inimigos próximos causam Dano reduzido em X%" — a aura `aura_dano_menos`, `mods-poe.aurasProximas`.)
   if (ativo(e.auraFraco, agora)) danoFator *= Math.max(0, 1 - (e.auraFraco.pct ?? 0) / 100);
   // (lote H) "X% menos Dano sofrido dos outros Inimigos próximos do Inimigo Marcado".
@@ -3575,6 +3609,8 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   if (tipo === 'chaos' && ativo(e.caosSofridoR3D, agora)) f *= 1 + (e.caosSofridoR3D.pct ?? 0) / 100;
   // (lote C4, dono 21/10) o Tolhido pela Praga Vaal: "Inimigos Desacelerados sofrem Dano de Caos aumentado em 30%" (também no pulso do dano contínuo — `fatorRecebidoNoDot`)
   if (tipo === 'chaos' && ativo(e.tolhidoCaos, agora)) f *= 1 + (e.tolhidoCaos.pct ?? 0) / 100;
+  // (06/11, lote 7) as Teias de Aranha: 5% de Dano sofrido aumentado por Teia (`aspectos.mjs`)
+  if (ativo(e.teias, agora)) f *= 1 + ((e.teias.danoSofridoPct ?? 0) * (e.teias.n ?? 0)) / 100;
   // Coberto de Gelo (PoE): +20% de dano de Gelo recebido.
   if (tipo === 'ice' && ativo(e.cobertoGelo, agora)) f *= 1.2;
   // "Inimigos sofrem permanentemente Dano aumentado em X% por cada segundo que passaram Congelados/Resfriados por você, máximo de Y%".
@@ -3655,7 +3691,7 @@ export function fatorRecebidoNoDot(alvo, tipo, agora, sofrido = null) {
   return fatorRecebidoPeloBicho(alvo, tipo, sofrido ? { afPoe: sofrido, tagsDoGolpe: FICHA_DO_DOT.tagsDoGolpe, dot: true } : FICHA_DO_DOT, agora) * eletrizacao * carne;
 }
 /** As chaves com escala do ALVO (`resfriamentoNoAlvo:N`, `eletrizacaoNoAlvo:N`), guardadas por soma (`afPoe`). */
-const ESCALAS_DO_ALVO = /^(resfriamentoNoAlvo|eletrizacaoNoAlvo)(:|$)/;
+const ESCALAS_DO_ALVO = /^(resfriamentoNoAlvo|eletrizacaoNoAlvo|teiasNoAlvo)(:|$)/;
 const CACHE_DO_ALVO = new WeakMap();
 function escaladosPeloAlvo(af) {
   if (!af) return [];
@@ -3670,6 +3706,8 @@ function escaladosPeloAlvo(af) {
 function fatorDoAlvo(alvo, agora, escala) {
   const [tipo, n] = String(escala).split(':');
   const e = alvo?.estados ?? {};
+  // (06/11, lote 7: "para cada Teia de Aranha no Inimigo" — o número de Teias)
+  if (tipo === 'teiasNoAlvo') return ativo(e.teias, agora) ? e.teias.n ?? 0 : 0;
   const pct = tipo === 'resfriamentoNoAlvo' ? (ativo(e.lento, agora) ? e.lento.pct ?? 0 : 0) : tipo === 'eletrizacaoNoAlvo' ? (ativo(e.chocado, agora) ? e.chocado.pct ?? 0 : 0) : 0;
   return Math.floor(Math.max(0, pct) / Math.max(1, Number(n) || 1));
 }
@@ -3689,7 +3727,8 @@ export function resMenosDasAfeccoes(alvo, agora, tipo) {
   if (!ligado() || !e) return 0;
   const dot = (...t) => (alvo.dots ?? []).some((d) => t.includes(d.tipo) && d.falta > 0);
   // (lote 28: + o Definhado — "têm −X% de todas as Resistências", nos quatro tipos, somado às das afecções)
-  const definhado = ['fire', 'ice', 'energy', 'chaos'].includes(tipo) && e.resMenosDefinhado > 0 && ativo(e.definhado, agora) ? e.resMenosDefinhado : 0;
+  // (06/11, lote 7: + as Teias da Mortalha de Fenumus — "possuem -X% de Todas as Resistências", somado como o do Definhado)
+  const definhado = (['fire', 'ice', 'energy', 'chaos'].includes(tipo) && e.resMenosDefinhado > 0 && ativo(e.definhado, agora) ? e.resMenosDefinhado : 0) + (['fire', 'ice', 'energy', 'chaos'].includes(tipo) && ativo(e.teias, agora) ? e.teias.resMenos ?? 0 : 0);
   // (lote 69: + o "−X% de Resistência a Fogo" do Incendiado, somado)
   const doFogo = tipo === 'fire' && e.resMenosFogo > 0 && dot('queimadura') ? e.resMenosFogo : 0;
   if (['fire', 'ice', 'energy'].includes(tipo) && e.resMenosElemental > 0 && (dot('queimadura') || ativo(e.lento, agora))) return e.resMenosElemental + definhado + doFogo;

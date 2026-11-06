@@ -247,7 +247,7 @@ function temEfeito(e) {
   // (+ `gema:<nome>` — a gema pelo nome, no nível das gemas: `skills/gemas.extrasDaGemaPoe`)
   // (+ `critico` — só no golpe crítico, para os atributos que o acerto lê assim: `SO_NO_CRITICO`; `golpeAtordoou`, o mesmo — `SO_AO_ATORDOAR`)
   const soNoAcerto = { critico: SO_NO_CRITICO, golpeAtordoou: SO_AO_ATORDOAR };
-  return conds.every((c) => (soNoAcerto[c] ? soNoAcerto[c].has(stat) : ehCondDeEstado(c) || TAGS_DE_GOLPE.has(c) || CONDICOES_DE_ANEL[c] || /^alvo(Menos)?Venenos:\d+$/.test(c) || /^alvoDefinhadosAte:\d+$/.test(c) || /^gema:[\w-]+$/.test(c)));
+  return conds.every((c) => (soNoAcerto[c] ? soNoAcerto[c].has(stat) : ehCondDeEstado(c) || TAGS_DE_GOLPE.has(c) || CONDICOES_DE_ANEL[c] || /^alvo(Menos)?Venenos:\d+$/.test(c) || /^alvoDefinhadosAte:\d+$/.test(c) || /^alvoTeias:\d+$/.test(c) || /^gema:[\w-]+$/.test(c)));
 }
 
 /** O atributo (do personagem) tem efeito no combate? — a mesma conta do balão (`temEfeito`), para quem valida de fora (os mapas). */

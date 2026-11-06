@@ -16,6 +16,7 @@ import { porLento } from './gemas-gbd.mjs';
 import { notarCriticoDeAtaque } from './suportes-s2b.mjs';
 import * as Testador from '../personagem/testador.mjs';
 import * as Salvaguarda from '../personagem/salvaguarda.mjs';
+import * as Aspectos from './aspectos.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -469,6 +470,8 @@ export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorp
   // (14/10, o Warden: a Pele de Árvore perde 1 Casca no Ataque inimigo que acerta; a Lição das Estações, N no Dano Mágico)
   if (corpoACorpo || ataque) perderCasca(hunt, 1, agora);
   if (magia) perderCasca(hunt, v('casca_perde_magia'), agora);
+  // (06/11, lote 7) as Barreiras de Caranguejo saem no Dano Físico de um Acerto (`aspectos.perderBarreiras`)
+  if (dano > 0 && tipo === 'physical') Aspectos.perderBarreiras(hunt, ficha.afPoe, agora);
   // O ATORDOAMENTO que este golpe pôs (`combate/controle.tentar` grava `desde`): as reações "quando Atordoado".
   const at = hunt.controle?.atordoado;
   if (at && at.desde === agora && !at.reagiu) {
@@ -995,6 +998,14 @@ export const AFECCOES_NO_JOGADOR = [
   { nome: 'resfriamento', elemental: true, tem: (h, agora) => (h?.controle?.lento?.ate ?? 0) > agora, tirar: (h) => { delete h.controle.lento; } },
   { nome: 'eletrizacao', elemental: true, tem: (h, agora) => (h?.debuffsDoJogador?.eletrizado?.ate ?? 0) > agora || dotAtivo(h, ['choque']), tirar: (h) => { if (h.debuffsDoJogador) delete h.debuffsDoJogador.eletrizado; tirarDot(h, ['choque']); } },
 ];
+/**
+ * (06/11, lote 7) o tique dos ASPECTOS (`aspectos.mjs` — `cacadas`, depois do `tique`): os buffs em sequência, as Barreiras e as Teias; os eventos que saíram ("ao
+ * ganhar Furtividade Felina", "quando perder", "ao ganhar Poder ou Voo da Ave") disparam aqui (os gatilhos das peças).
+ */
+export function tiqueDosAspectos(estado, hunt, ficha, personagem = null, agora = hunt?.clock ?? 0) {
+  if (!ligado() || !hunt || !ficha?.afPoe) return;
+  for (const nome of Aspectos.tique(estado, hunt, ficha.afPoe, agora)) evento(estado, hunt, nome, ficha, { personagem, agora, eventos: [] });
+}
 export function evento(estado, hunt, nome, ficha, ctx = {}) {
   if (!ligado() || !hunt) return;
   const lista = ficha?.eventosPoe ?? [];

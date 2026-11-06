@@ -83,6 +83,8 @@ export function reservadas(estado, exceto = null) {
     if (b.reserva.recurso === 'vida') vida += valor(estado, b.reserva);
     else mana += valor(estado, b.reserva);
   }
+  // (06/11, lote 7) + os Aspectos ligados (`ModsPoe.reservaDosAspectos`)
+  mana += ModsPoe.reservaDosAspectos(ModsPoe.fichaDa(hunt)?.afPoe, estado?.maxMana ?? 0);
   return { mana: Math.min(mana, estado?.maxMana ?? 0), vida: Math.min(vida, Math.max(0, (estado?.maxHp ?? 0) - 1)) };
 }
 

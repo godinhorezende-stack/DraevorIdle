@@ -14,6 +14,527 @@
   ],
   "regras": [
     {
+      "padrao": "^Efeito do Buff do Aspecto da Ave aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff:poderDaAve",
+          "valor": "{1}"
+        },
+        {
+          "stat": "efeito_buff:vooDaAve",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Aspecto do Gato Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "aspecto_gato",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho) e fica ligada, reservando 25% da Mana: Furtividade Felina por 4 s (100% de Chance de Crítico aumentada, 15% de chance de evitar o dano de cada tipo dos Ataques) e Agilidade Felina por 6 s (10% de Velocidade de Ataque e de Conjuração), em sequência; a Furtividade não esconde você (os monstros do jogo não perdem o alvo)",
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+(?:\\.\\d+)?)\\}% de Chance de Acerto Crítico enquanto afetado por Aspecto do Gato$",
+      "efeitos": [
+        {
+          "stat": "crit_chance@buff:aspectoDoGato",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Acertos Críticos possuem \\{(\\d+)\\}% de chance de Cegar Inimigos enquanto você possuir Furtividade Felina$",
+      "efeitos": [
+        {
+          "stat": "ev:critico:alvo:cego@buff:furtividadeFelina",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ataques sempre causam Sangramento enquanto possuir Furtividade Felina$",
+      "efeitos": [
+        {
+          "stat": "chance_bleed@ataque+buff:furtividadeFelina",
+          "valor": "100"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você possui Dança Carmesin? enquanto possuir Furtividade Felina$",
+      "efeitos": [
+        {
+          "stat": "sangramento_pilhas@buff:furtividadeFelina",
+          "valor": "8"
+        },
+        {
+          "stat": "sangramento_sem_movimento@buff:furtividadeFelina",
+          "valor": "1"
+        },
+        {
+          "stat": "sangramento_menos@buff:furtividadeFelina",
+          "valor": "50"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Velocidade de Movimento enquanto possuir Furtividade Felina$",
+      "efeitos": [
+        {
+          "stat": "move_speed@buff:furtividadeFelina",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Clamor Intimidador Nível \\{(\\d+)\\} quando você perder Furtividade Felina$",
+      "efeitos": [
+        {
+          "stat": "ev:perderFurtividadeFelina:gatilho:Clamor Intimidador",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+?\\{(-?\\d+(?:\\.\\d+)?)\\} segundos para a Duração da Furtividade Felina$",
+      "efeitos": [
+        {
+          "stat": "furtividade_felina_s",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aspecto do Gato não possui Reserva$",
+      "efeitos": [
+        {
+          "stat": "aspecto_gato_sem_reserva",
+          "valor": "1"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recebe até o número máximo de Cargas de Poder e Frenesi ao ganhar Furtividade Felina$",
+      "efeitos": [
+        {
+          "stat": "ev:ganharFurtividadeFelina:cargaMax:poder",
+          "valor": "100"
+        },
+        {
+          "stat": "ev:ganharFurtividadeFelina:cargaMax:frenesi",
+          "valor": "100"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você possui Trespassar enquanto possuir Furtividade Felina$",
+      "efeitos": [
+        {
+          "stat": "sempre:trespassar@buff:furtividadeFelina",
+          "valor": "1"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+?\\{(-?\\d+(?:\\.\\d+)?)\\} segundos à Duração da Agilidade do Gato$",
+      "efeitos": [
+        {
+          "stat": "agilidade_felina_s",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha até o número máximo de Cargas de Frenesi e Tolerância ao ganhar Agilidade do Gato$",
+      "efeitos": [
+        {
+          "stat": "ev:ganharAgilidadeFelina:cargaMax:frenesi",
+          "valor": "100"
+        },
+        {
+          "stat": "ev:ganharAgilidadeFelina:cargaMax:tolerancia",
+          "valor": "100"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você tem Agressividade enquanto tiver Agilidade do Gato$",
+      "efeitos": [
+        {
+          "stat": "sempre:agressividade@buff:agilidadeFelina",
+          "valor": "1"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Aspecto da Ave Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "aspecto_ave",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho) e fica ligada, reservando 25% da Mana: Poder da Ave por 4 s (10% de chance de Dano Dobrado, você e os lacaios) e Voo da Ave por 4 s (10% de Velocidade de Movimento, você e os lacaios), em sequência",
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+?\\{(-?\\d+(?:\\.\\d+)?)\\} segundos à Duração do V[ôo]o da Ave$",
+      "efeitos": [
+        {
+          "stat": "voo_da_ave_s",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+?\\{(-?\\d+(?:\\.\\d+)?)\\} segundos à Duração do Poder da Ave$",
+      "efeitos": [
+        {
+          "stat": "poder_da_ave_s",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Vida Regenerada por Segundo enquanto você possuir V[ôo]o da Ave$",
+      "efeitos": [
+        {
+          "stat": "life_regen@buff:vooDaAve",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Regeneração de [Mm]ana por Segundo enquanto possuir V[ôo]o da Ave$",
+      "efeitos": [
+        {
+          "stat": "mana_regen@buff:vooDaAve",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aspecto da Ave também concede Poder da Ave e V[ôo]o da Ave para Aliados próximos$",
+      "efeitos": [
+        {
+          "stat": "aspecto_ave_aliados",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Poder e o Voo da Ave viram a aura \"Você e Aliados\": valem em você e nos companheiros da party a até 3 casas (a mesma aura de duas pessoas não acumula)",
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Vendaval Nível \\{(\\d+)\\} quando você ganhar Poder da Ave ou V[ôo]o da Ave$",
+      "efeitos": [
+        {
+          "stat": "ev:ganharBuffDaAve:gatilho:Tornado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o \"Vendaval\" é a gema Tornado (Tornado no PoE em inglês)",
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo enquanto possuir Poder d[ae] Ave$",
+      "efeitos": [
+        {
+          "stat": "added_ice_dmg_min@buff:poderDaAve",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_ice_dmg_max@buff:poderDaAve",
+          "valor": "{2}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Raio enquanto possuir Poder d[ae] Ave$",
+      "efeitos": [
+        {
+          "stat": "added_energy_dmg_min@buff:poderDaAve",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_energy_dmg_max@buff:poderDaAve",
+          "valor": "{2}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Aspecto do Caranguejo Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "aspecto_caranguejo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho) e fica ligada, reservando 25% da Mana: uma Barreira de Caranguejo a cada 0,5 s (a wiki do poedb), até 10; 2% de Redução de Dano Físico adicional por Barreira; o Dano Físico de um Acerto tira todas",
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Número Máximo de Barreiras de Caranguejo$",
+      "efeitos": [
+        {
+          "stat": "barreiras_max",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de se você fosse receber uma Barreira de Caranguejo, ao invés receberá até(?: /)? seu número máximo de Barreiras de Caranguejo$",
+      "efeitos": [
+        {
+          "stat": "barreira_chance_max",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento de Dano por Barreira de Caranguejo$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%barreiras",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques enquanto possuir ao menos \\{(\\d+)\\} Barreiras de Caranguejo$",
+      "efeitos": [
+        {
+          "stat": "block@barreirasMin:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não pode perder Barreiras de Caranguejo caso tenha perdido Barreiras de Caranguejo Recentemente$",
+      "efeitos": [
+        {
+          "stat": "barreiras_nao_perde_recente",
+          "valor": "1"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não pode ser Atordoado caso tenha ao menos \\{(\\d+)\\} Barreiras de Caranguejo$",
+      "efeitos": [
+        {
+          "stat": "imune_atordoamento@barreirasMin:{V1}",
+          "valor": "1"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Só perde \\{(\\d+)\\} Barreiras de Caranguejos? ao sofrer Dano Físico de um Acerto$",
+      "efeitos": [
+        {
+          "stat": "barreiras_perde_so",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Aspecto da Aranha Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "aspecto_aranha",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho) e fica ligada, reservando 25% da Mana: a cada 1 s, uma Teia de Aranha nos inimigos a até 3 m (até 3 por inimigo, 6 s; 5% de Dano sofrido aumentado por Teia) e Tolhe 30% — o raio e o Tolhimento não têm número publicado",
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Duração do Debuff do Aspecto da Aranha$",
+      "efeitos": [
+        {
+          "stat": "aranha_duracao_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aspecto da Aranha pode infringir Teia da Aranha em Inimigos \\{(\\d+)\\} vezes adicionais$",
+      "efeitos": [
+        {
+          "stat": "teias_extra",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recebe \\{(\\d+)\\} de Escudo de Energia para cada Inimigo Acertado por você afetado por uma Teia de Aranha$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:es@alvoComTeia",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Área de Efeito do Aspecto da Aranha aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "aranha_area_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos afetados por suas Teias de Aranha causam Dano reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "teias_dano_menos",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos afetados por suas Teias de Aranha possuem \\{(-?\\d+)\\}% de Todas as Resistências$",
+      "efeitos": [
+        {
+          "stat": "teias_res_menos",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano com Acertos e Afecções contra Inimigos afetados por \\{(\\d+)\\} Teias de Aranha$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@alvoTeias:{V2}",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@alvoTeias:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Caos para cada Teia de Aranha no Inimigo$",
+      "efeitos": [
+        {
+          "stat": "added_chaos_dmg_min%teiasNoAlvo",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_chaos_dmg_max%teiasNoAlvo",
+          "valor": "{2}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de receber uma Carga de Poder ao acertar um Inimigo afetado por uma Teia de Aranha$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:carga:poder@alvoComTeia",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aspecto da Aranha causa Teia da Aranha e Lentidão a cada \\{(\\d+(?:\\.\\d+)?)\\} Segundos$",
+      "efeitos": [
+        {
+          "stat": "aranha_intervalo_s",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
       "padrao": "^Suas Habilidades de Oferenda também afetam você$",
       "efeitos": [
         {
@@ -14975,18 +15496,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Efeito do Buff do Aspecto da Ave aumentado em \\{(\\d+)\\}%$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "as habilidades de Aspecto (dadas por únicos) não existem no jogo",
-      "_nova": true
-    },
-    {
       "padrao": "^Efeito de bônus de Aspecto do Gato aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
@@ -18674,19 +19183,6 @@
       "_nova": true,
       "_unico": true,
       "_lote6": "12/10 — a Tintura (lote 6)"
-    },
-    {
-      "padrao": "^.*Barreiras? de Caranguejo.*|.*Aspecto d[oa] (?:Caranguejo|Gato|Ave|Aranha).*|.*(?:Furtividade Felina|Agilidade do Gato|Poder da Ave|Vôo da Ave|Voo da Ave|Teias? de Aranha).*$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "as habilidades de Aspecto (dadas por únicos) não existem no jogo",
-      "_nova": true,
-      "_unico": true
     },
     {
       "padrao": "^.*(?:Pode ser modificado enquanto Corrompido|Pode ter até .* Modificadores? Implícitos|Possui um Mod Implícito adicional|Magnitude de Modificadores Revelados|Omnichama|Qualidade Máxima é|Pode ser ungido).*$",
