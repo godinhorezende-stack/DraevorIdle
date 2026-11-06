@@ -117,6 +117,8 @@ function morrerOsMortos(estado, personagem, eventos, lista) {
       continue;
     }
     if (m.hp > 0) continue;
+    // (06/11, o Vínculo do Túmulo: "Inimigos Próximos Mortos por qualquer um, ao invés, contam como sendo Mortos por você" — a até 3 casas de você)
+    if (itensPoeLigado() && hunt.pos && !QuemFeriu.abateSeu(m) && ModsPoe.valor(Ficha.combate(estado), 'abates_proximos_seus') > 0 && Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) <= 3) QuemFeriu.carimbar(m, QuemFeriu.VOCE, m.poeUltimoDano?.tags ?? null);
     // Os CADÁVERES recentes (o Erguer Espectro do PoE ergue o último): o tipo do bicho, o desenho e onde caiu. ("Inimigos Amaldiçoados Mortos
     // por você são destruídos": a maldição do PoE com essa regra não deixa cadáver.)
     // (+ "Inimigos Mortos pelos seus Acertos são destruídos": nenhum morto deixa cadáver.)
@@ -129,7 +131,10 @@ function morrerOsMortos(estado, personagem, eventos, lista) {
       const doAco = empalado.length ? { empalado, ...(m.estados?.empalarBloqueadoAte ? { empalarBloqueadoAte: m.estados.empalarBloqueadoAte } : {}) } : {};
       // (14/10: os 10 mortos mais recentes; os cadáveres CRIADOS — Profanar, Desenterrar — têm o teto deles, `Acoes.criarCadaveres`)
       // (17/10, lote G12: + a Vida Máxima do morto — a explosão dos cadáveres do PoE é "X% da Vida Máxima do Cadáver")
-      const lista = [...(hunt.cadaveres ?? []), { key: m.key, nome: m.name, look: m.look, lookItem: m.lookItem ?? 0, colors: m.colors ?? null, x: m.x, y: m.y, maxHp: m.maxHp ?? 0, ...doAco }];
+      // (06/11, o Toque Gentil de Asenath: "Maldições diferentes de Auras infligidas por você não são removidas dos Inimigos Mortos" — o cadáver guarda até quando
+      // a maldição dele vale: `amaldicoadoAte`, que a cegueira e a explosão em volta leem — `mods-poe`)
+      const ficaAmaldicoado = ModsPoe.valor(Ficha.combate(estado), 'maldicoes_nos_mortos') > 0 ? Math.max(0, ...Object.values(m.maldicoes ?? {}).filter((x) => x && !x.aura && !x.marca && x.ate > (hunt.clock ?? 0)).map((x) => x.ate)) : 0;
+      const lista = [...(hunt.cadaveres ?? []), { key: m.key, nome: m.name, look: m.look, lookItem: m.lookItem ?? 0, colors: m.colors ?? null, x: m.x, y: m.y, maxHp: m.maxHp ?? 0, ...doAco, ...(ficaAmaldicoado > 0 ? { amaldicoadoAte: ficaAmaldicoado } : {}) }];
       const mortos = lista.filter((c) => !c.criadoPor);
       const sai = new Set(mortos.slice(0, Math.max(0, mortos.length - 10)));
       hunt.cadaveres = lista.filter((c) => !sai.has(c));
@@ -1309,8 +1314,13 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   const emFogoPct = ModsPoe.ativo(bicho.estados?.fisicoEmFogo, agoraDoGolpe) ? bicho.estados.fisicoEmFogo.pct : 0;
   // (06/11, o Aperto Pirotécnico Chocante: o Eletrizado por você converte parte do Físico em Raio — `mods-poe.aurasProximas` põe `fisicoEmRaio`)
   const emRaioPct = Math.min(100 - emFogoPct, ModsPoe.ativo(bicho.estados?.fisicoEmRaio, agoraDoGolpe) ? bicho.estados.fisicoEmRaio.pct : 0);
-  const elemFator = (el) => (['fire', 'ice', 'energy'].includes(el) && ModsPoe.ativo(bicho.estados?.elemMenos, agoraDoGolpe) ? Math.max(0, 1 - bicho.estados.elemMenos.pct / 100) : 1);
-  const brutoFisico = bruto * (1 - (emFogoPct + emRaioPct) / 100);
+  // (06/11, a Parede de Névoa: "+X% de chance de evitar dano de cada elemento de ataques durante Forma Etérea"; a Réplica: "+X% de chance de Evitar Dano Físico de
+  // Acertos enquanto Trespassando" — cada tipo sorteia uma vez no golpe; o evitado não entra)
+  const evitarEl = itensPoeLigado() ? ModsPoe.valor(ficha, 'evitar_dano_elemental_ataque') : 0;
+  const evitado = Object.fromEntries(['fire', 'ice', 'energy'].map((el) => [el, evitarEl > 0 && Math.random() * 100 < Math.min(75, evitarEl)]));
+  const evitouFisico = itensPoeLigado() && ModsPoe.valor(ficha, 'evitar_dano_fisico_acerto') > 0 && Math.random() * 100 < Math.min(75, ModsPoe.valor(ficha, 'evitar_dano_fisico_acerto'));
+  const elemFator = (el) => (evitado[el] ? 0 : 1) * (['fire', 'ice', 'energy'].includes(el) && ModsPoe.ativo(bicho.estados?.elemMenos, agoraDoGolpe) ? Math.max(0, 1 - bicho.estados.elemMenos.pct / 100) : 1);
+  const brutoFisico = evitouFisico ? 0 : bruto * (1 - (emFogoPct + emRaioPct) / 100);
   // O golpe ACERTOU (passou da esquiva e do bloqueio): boss e elite podem CONGELAR, ATORDOAR ou fazer LENTIDÃO no jogador
   // (`combate/controle.mjs`), mesmo que o Energy Shield engula o dano; a resistência a controle dele encurta o efeito.
   if (bruto > 0) {
@@ -1357,7 +1367,9 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   const brutas = { physical: brutoFisico };
   const partes = {};
   const somarParte = (el, antes, depois) => { brutas[el] = (brutas[el] ?? 0) + antes; partes[el] = (partes[el] ?? 0) + depois; return depois; };
-  const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(bicho).reduce((n, x) => { const parte = rolarParte(x) * forcaDoGolpe * critDoMob.fator * elemFator(x.elemento); return n + somarParte(x.elemento, parte, Math.round(parte * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento) * ModsPoe.armaduraNoElemento(ficha, x.elemento, parte))); }, 0) + somarParte('fire', bruto * (emFogoPct / 100) * elemFator('fire'), Math.round(bruto * (emFogoPct / 100) * elemFator('fire') * ModsPoe.fatorDaResistenciaRecebida(ficha, 'fire'))) + somarParte('energy', bruto * (emRaioPct / 100) * elemFator('energy'), Math.round(bruto * (emRaioPct / 100) * elemFator('energy') * ModsPoe.fatorDaResistenciaRecebida(ficha, 'energy'))) + Math.round(ModsPoe.extraDoFisicoRecebido(ficha, brutoFisico)) + AtributosDoMob.danoExtraPctDoBicho(bicho).reduce((n, x) => n + somarParte(x.elemento, bruto * (x.pct / 100), Math.round(bruto * (x.pct / 100) * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento))), 0);
+  const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(bicho).reduce((n, x) => { const parte = rolarParte(x) * forcaDoGolpe * critDoMob.fator * elemFator(x.elemento); return n + somarParte(x.elemento, parte, Math.round(parte * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento) * ModsPoe.armaduraNoElemento(ficha, x.elemento, parte))); }, 0) + somarParte('fire', bruto * (emFogoPct / 100) * elemFator('fire'), Math.round(bruto * (emFogoPct / 100) * elemFator('fire') * ModsPoe.fatorDaResistenciaRecebida(ficha, 'fire'))) + somarParte('energy', bruto * (emRaioPct / 100) * elemFator('energy'), Math.round(bruto * (emRaioPct / 100) * elemFator('energy') * ModsPoe.fatorDaResistenciaRecebida(ficha, 'energy'))) + Math.round(ModsPoe.extraDoFisicoRecebido(ficha, brutoFisico)) + AtributosDoMob.danoExtraPctDoBicho(bicho).reduce((n, x) => n + somarParte(x.elemento, bruto * (x.pct / 100) * elemFator(x.elemento), Math.round(bruto * (x.pct / 100) * elemFator(x.elemento) * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento))), 0);
+  // (06/11, o Rompe-amanhecer: "por cada 200 de Dano de Fogo sofrido de Acertos Recentemente" — o Fogo deste acerto, depois das resistências: a escala `fogoSofridoRecente`)
+  if (itensPoeLigado() && (partes.fire ?? 0) > 0) { (hunt.poeFogoSofrido ??= []).push({ em: agoraDoGolpe, v: partes.fire }); if (ModsPoe.usaFogoSofrido(ficha)) hunt.poeFichaMudou = true; }
   // Prey de defesa: corta o que SOBROU da armadura. Antes dela, a armadura
   // (redução fixa) ampliava o corte — "Defesa +30%" virava -69% num golpe de 13.
   const fisicoProtegido = somaFisica ? protegido : R.danoRecebido(protegido, armorDoPersonagem(estado));
@@ -1374,6 +1386,18 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   if (final > 0) ModsPoe.antesDeSerAcertado(estado, hunt, ficha);
   // "Conjurar ao Receber Dano" (suporte de gatilho do PoE): o dano recebido (antes do Escudo de Energia, como no PoE) soma no limiar.
   if (final > 0) Acoes.aoReceberDano(estado, hunt, personagem, final, eventos);
+  // (06/11, o Fado do Mercenário: "X% do dano dos ataques é absorvido pela vida do alvo marcado primeiro" — o inimigo com a sua Marca leva essa parte)
+  const pelaMarca = final > 0 && itensPoeLigado() ? ModsPoe.valor(ficha, 'marcado_absorve_pct') : 0;
+  if (pelaMarca > 0) {
+    const marcado = (hunt.monstros ?? []).find((m) => m.hp > 0 && !m.dummy && ModsPoe.marcaNoBicho(m, hunt.clock ?? 0));
+    const tomou = marcado ? Math.min(marcado.hp, Math.round((final * Math.min(100, pelaMarca)) / 100)) : 0;
+    if (tomou > 0) {
+      final -= tomou;
+      marcado.hp -= tomou;
+      QuemFeriu.carimbar(marcado, QuemFeriu.VOCE);
+      eventos.push({ t: 'dmg', uid: marcado.uid, x: marcado.x, y: marcado.y, v: tomou, foe: true, alvo: marcado.name, color: '#c0a0ff' });
+    }
+  }
   // (02/11, dono: a SALVAGUARDA como o PoE) o acerto sai primeiro da Salvaguarda — antes da Égide, do Escudo Gélido, da Guarda, do Vínculo e do Escudo de Energia —;
   // na quebra, o Conjurar ao Perder Salvaguarda e o evento `salvaguardaQuebra` (`personagem/salvaguarda.mjs`). As partes de cada tipo (a Égide, o Físico que ignora o
   // Escudo, o Caos que o atravessa) seguem na proporção do que sobrou dela.
@@ -1427,7 +1451,13 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // (06/11, o Peso da Verdade: "X% do Dano Não Caótico sofrido ignora o Escudo de Energia" — essa parte do resto vai direto à Vida)
   const naoCaosDireto = Math.round(Math.max(0, final - fisicoDireto - caosDoGolpe) * Math.min(100, ModsPoe.valor(ficha, 'nao_caos_ignora_escudo_pct')) / 100);
   if (naoCaosDireto > 0) Defesa.reiniciarEspera(estado, ficha);
-  final = fisicoDireto + naoCaosDireto + Defesa.absorverComOCaos(estado, ficha, final - fisicoDireto - naoCaosDireto, caosDoGolpe, eventos, { uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: bicho.name, golpe: 'corpo a corpo' });
+  // (06/11, a Vigilância do Imperador: "Dano sofrido dos Acertos Bloqueados não podem ignorar o Escudo de Energia" e "Dano sofrido dos acertos Não Bloqueados sempre
+  // ignoram o Escudo de Energia" — o bloqueado passa todo pelo Escudo; o não bloqueado vai todo à Vida)
+  const vigilancia = itensPoeLigado() && ModsPoe.valor(ficha, 'bloqueado_pelo_escudo') > 0;
+  const baseDoEscudo = { uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: bicho.name, golpe: 'corpo a corpo' };
+  if (vigilancia && fatorDoBloqueio < 1) final = Defesa.absorver(estado, ficha, final, eventos, baseDoEscudo);
+  else if (vigilancia) { if (final > 0) Defesa.reiniciarEspera(estado, ficha); }
+  else final = fisicoDireto + naoCaosDireto + Defesa.absorverComOCaos(estado, ficha, final - fisicoDireto - naoCaosDireto, caosDoGolpe, eventos, baseDoEscudo);
   // (o "X% do Dano de Acertos é sofrido na Vida do seu Totem mais próximo antes da sua" sai no `Arvore.danoRecebido`, logo abaixo.)
   // Magic shield ligado: o golpe sai da MANA primeiro (o que sobra, da vida).
   if (final > 0 && Acoes.temBuff(hunt, 'shield') && (estado.mana ?? 0) > 0) {

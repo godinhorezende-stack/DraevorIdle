@@ -45983,6 +45983,1578 @@
       ],
       "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
       "_nova": true
+    },
+    {
+      "padrao": "^Projéteis de ataques mutilam ao atingir enquanto você tiver um lacaio bestial$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem lacaios Bestiais (a Rhoa)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Acrobacia$",
+      "efeitos": [
+        {
+          "stat": "acrobacia_esquiva_pct",
+          "valor": "50"
+        },
+        {
+          "stat": "esquiva_magica_max",
+          "valor": "75"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você só pode Encaixar Gemas Corrompidas neste item$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "as gemas do jogo não são Corrompidas",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^consecrate on block % life regen per minute \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o número interno do Solo ao Bloquear (a linha \"100% de chance de criar Solo … ao Bloquear\"): o jogo usa o Solo dele",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^consecrate on block base radius \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o número interno do Solo ao Bloquear (a linha \"100% de chance de criar Solo … ao Bloquear\"): o jogo usa o Solo dele",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^consecrate on block duration ms \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o número interno do Solo ao Bloquear (a linha \"100% de chance de criar Solo … ao Bloquear\"): o jogo usa o Solo dele",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^desecrate on block base chaos damage to deal per minute \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o número interno do Solo ao Bloquear (a linha \"100% de chance de criar Solo … ao Bloquear\"): o jogo usa o Solo dele",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^desecrate on block base radius \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o número interno do Solo ao Bloquear (a linha \"100% de chance de criar Solo … ao Bloquear\"): o jogo usa o Solo dele",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^desecrate on block duration ms \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o número interno do Solo ao Bloquear (a linha \"100% de chance de criar Solo … ao Bloquear\"): o jogo usa o Solo dele",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Gemas encaixadas sempre têm o bônus de qualidade da cor do encaixe$",
+      "efeitos": [
+        {
+          "stat": "qualidade_cor_do_encaixe",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inflige um Feitiço aleatório em você quando seus Totens morrem$",
+      "efeitos": [
+        {
+          "stat": "totem_morre_maldicao",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "uma das Maldições dos monstros do jogo, sorteada",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios não podem ser Cegados$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "os monstros do jogo não Cegam os lacaios",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios Convertem \\{(\\d+)\\}% de sua Vida Máxima para Escudo de Energia Máximo para cada \\{(\\d+)\\}% de Resistência a Caos que tiverem$",
+      "efeitos": [
+        {
+          "stat": "minion_es_por_res_caos",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano de Caos sofrido não ultrapassa o Escudo de Energia dos Lacaios$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "no jogo o Escudo de Energia dos lacaios já absorve o Caos",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios têm início da Recarga do Escudo de Energia \\{(\\d+)\\}% mais rápida$",
+      "efeitos": [
+        {
+          "stat": "minion_es_recarga_inicio",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Enquanto Lacaios tiverem Escudo de Energia, seus Acertos Ignoram a Resistência Elemental dos Monstros$",
+      "efeitos": [
+        {
+          "stat": "minion_ignora_res_com_es",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Convocar Efígie de Doedre Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a Efígie de Doedre",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades de Feitiço Encaixadas são Ativadas por Efígie de Doedre quando Convocada$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a Efígie de Doedre",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Feitiços das Habilidades Encaixadas podem aplicar \\{(\\d+)\\} Maldições adicionais$",
+      "efeitos": [
+        {
+          "stat": "maldicoes_adicionais",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "em todas as suas Maldições (o jogo não separa as das gemas encaixadas na peça)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^A cada \\{(\\d+)\\} segundos, aciona Oferenda Óssea, Oferenda de Carne e Oferenda Espiritual em sequência$",
+      "efeitos": [
+        {
+          "stat": "fome_da_rainha",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades de oferenda acionadas desta forma também afetam você$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "a Fome da Rainha já põe a Oferenda em você (a linha de cima)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Máximo de Cargas de Tolerância dos membros do seu grupo é igual ao seu$",
+      "efeitos": [
+        {
+          "stat": "grupo_tolerancia_igual",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha um bônus de Altar Sangrento aleatório a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "altar_aleatorio:{V1}",
+          "valor": "20"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "um dos altares do sorteio do jogo, por 20 s",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito de bônus de altares em você aumentado em \\{(\\d+)\\}% para cada \\{(\\d+)\\}% de vida reservada$",
+      "efeitos": [
+        {
+          "stat": "efeito_altar%vidaReservadaPct:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa a Arma do Guardião Animado Nível \\{(\\d+)\\} quando o Guardião Animado Matar um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a Arma do Guardião Animado (a habilidade própria que o PoE ativa pelo abate)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Ativar a Arma do Guardião Animado Nível \\{(\\d+)\\} quando a Arma Animada Matar um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a Arma do Guardião Animado (a habilidade própria que o PoE ativa pelo abate)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^animate guardian and weapon track on kill \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o número interno da Arma do Guardião Animado (as linhas de cima)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Guardião Animado causa \\{(\\d+)\\}% de aumento de Dano por Arma Animada$",
+      "efeitos": [
+        {
+          "stat": "guardiao_dano_por_arma",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Golpes corpo a corpo dos lacaios animados e manifestados causam dano propagado aos inimigos ao redor$",
+      "efeitos": [
+        {
+          "stat": "animados_propagado",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Golpes corpo a corpo dos lacaios animados e manifestados causam \\{(\\d+)\\}% menos dano propagado$",
+      "efeitos": [
+        {
+          "stat": "animados_propagado_menos",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Ativar Forma Sombria Nível \\{(\\d+)\\} quando você Usar uma Habilidade Encaixada$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a Forma Sombria",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Invocar Rebento da Escuridão nível \\{(\\d+)\\} a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem o Rebento da Escuridão",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do dano dos acertos é absorvido da vida de cada Rebento da Escuridão antes de chegar até você$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem o Rebento da Escuridão",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\}% do dano não caótico como dano de caos adicional por Rebento da Escuridão invocado$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem o Rebento da Escuridão",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Acertos Corpo a Corpo com Habilidades de Golpe sempre Empurram$",
+      "efeitos": [
+        {
+          "stat": "chance_empurrar@corpo+golpe",
+          "valor": "100"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Custo de Fúria de Habilidades reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "nenhuma habilidade do jogo custa Fúria",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades de Ataque Vaal que você Usar manualmente Custam Fúria ao invés de exigirem Almas$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "as Habilidades Vaal do jogo usam a recarga no lugar das Almas",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você não pode ganhar Fúria durante a Anulação do Ganho de Almas$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a Anulação do Ganho de Almas",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Direção do Empurrão é invertida$",
+      "efeitos": [
+        {
+          "stat": "empurrao_invertido",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\} de Fúria por segundo por cada \\{(\\d+)\\} de Recuperação de Vida por segundo da Regeneração$",
+      "efeitos": [
+        {
+          "stat": "furia_por_regen_vida",
+          "valor": "{2}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não retarta a Perda Inerente de Fúria$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "a Fúria da regeneração não segura a perda (a linha de cima)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Empalamentos em Inimigos que Matar Reflitam o Dano para Inimigos ao redor$",
+      "efeitos": [
+        {
+          "stat": "empalar_reflete_ao_matar",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do dano dos ataques é absorvido pela vida do alvo marcado primeiro$",
+      "efeitos": [
+        {
+          "stat": "marcado_absorve_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Maldições diferentes de Auras infligidas por você não são removidas dos Inimigos Mortos$",
+      "efeitos": [
+        {
+          "stat": "maldicoes_nos_mortos",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos próximos de Cadáveres afetados por suas Maldições são Cegados$",
+      "efeitos": [
+        {
+          "stat": "cadaver_amaldicoado_cega",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos mortos próximos de Cadáveres afetados por suas Maldições explodem, causando$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "continuação da linha de baixo (o poedb quebrou a frase)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de sua Vida como Dano Físico$",
+      "efeitos": [
+        {
+          "stat": "cadaver_amaldicoado_explode",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Mangra tem \\{(\\d+)\\}% da Duração da Lentidão aumentada$",
+      "efeitos": [
+        {
+          "stat": "praga_tolhe_duracao",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Marca da Maré Invernal tem Efeito de Resfriamento aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_resfriamento@runa",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "nas suas Runas (a Runa da Maré Invernal é a que a peça concede)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Cria um Esporo Infestado quando suas Habilidades ou Lacaios Matarem um Monstro Raro$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem o Esporo Infestado",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos Próximos Mortos por qualquer um, ao invés, contam como sendo Mortos por você$",
+      "efeitos": [
+        {
+          "stat": "abates_proximos_seus",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Feitiços aplicados por Habilidades Maldição Encaixadas são Refletidos à você$",
+      "efeitos": [
+        {
+          "stat": "feiticos_refletidos",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "todos os seus Feitiços (o jogo não separa os das gemas encaixadas nas luvas)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha Fervor Sacrificial ao usar uma Habilidade, causando \\{(\\d+)\\}% do Custo de Mana da Habilidade como Dano Físico por Segundo$",
+      "efeitos": [
+        {
+          "stat": "ev:gastarMana:danoPorMana",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Fervor por 4 s ao gastar Mana; o dano em você sai de uma vez (o PoE: por segundo, por 4 s); sem o dano Físico adicionado do Fervor",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Acertos têm \\{(\\d+)\\}% de chance de ignorar a Redução de Dano Físico Inimiga enquanto você tiver um Fervor Sacrificial$",
+      "efeitos": [
+        {
+          "stat": "ev:gastarMana:statTemp:ignora_reducao_fisica:4",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "pelos 4 s do Fervor, depois de gastar Mana",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aumentos e Reduções à Velocidade de Conjuração também são Aplicadas à Velocidade de Arremesso de Armadilhas$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "no jogo a Velocidade de Conjuração já vale no arremesso das Armadilhas",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Devora uma Alma quando você Acertar um Inimigo Raro ou Único, não mais que uma vez a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:buff:devoradorDeAlmas@alvoRaro",
+          "valor": "4"
+        },
+        {
+          "stat": "ev:acertar:buff:devoradorDeAlmas@alvoUnico",
+          "valor": "4"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Devorador de Almas do jogo por 4 s (ele não conta as almas)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você não pode lançar habilidades de feitiço de maldição encaixadas$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "a maldição encaixada também sai pela barra (o jogo não a tira)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inflige maldições encaixadas em inimigos que ativam suas armadilhas$",
+      "efeitos": [
+        {
+          "stat": "gatilho_local:armadilha:maldicao",
+          "valor": "0.25"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Vida Máxima por Item Ancião Equipado$",
+      "efeitos": [
+        {
+          "stat": "life%itensInfluencia:elder",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Dano Degenerativo com Afecções por Item Ancião Equipado$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_bleed%itensInfluencia:elder",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dot_multi_poison%itensInfluencia:elder",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dot_multi_fire%itensInfluencia:elder",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "no Sangramento, no Veneno e no dano de Fogo degenerativo (o do Incêndio)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Efeito de Afecções não-Danificadores por Item Ancião Equipado$",
+      "efeitos": [
+        {
+          "stat": "efeito_resfriamento%itensInfluencia:elder",
+          "valor": "{1}"
+        },
+        {
+          "stat": "efeito_eletrizacao%itensInfluencia:elder",
+          "valor": "{1}"
+        },
+        {
+          "stat": "efeito_nao_dano%itensInfluencia:elder",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede Tolerância, Frenesi e Poder de Malachai por \\{(\\d+)\\} segundos cada, em sequência$",
+      "efeitos": [
+        {
+          "stat": "malachai_s",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de infligir Corrosão ao Acertar com Ataques$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:corroido:4@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Projéteis Mágicos Encaixados disparam Projéteis em um círculo$",
+      "efeitos": [
+        {
+          "stat": "proj_direcoes_aleatorias@magia+projetil",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "em direções aleatórias (o jogo não tem o círculo certinho)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Projéteis Mágicos Encaixados têm \\{(\\d+)\\}% menos Duração do Efeito da Habilidade$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@magia+projetil",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "como \"reduzida\" (soma com os outros aumentos de Duração)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Totens que seriam mortos pelos inimigos se tornam Totens Espectrais por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "totens_espectrais_s",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades usadas por Totens Espectrais causam -\\{(\\d+)\\}% de dano$",
+      "efeitos": [
+        {
+          "stat": "totens_espectrais_dano",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o acerto do Totem Espectral sai com o dano a menos; o dano contínuo que ele põe fica",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Máximo de \\{(\\d+)\\} Totens Espectrais$",
+      "efeitos": [
+        {
+          "stat": "totens_espectrais_max",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques por cada \\{(\\d+)\\} de Dano de Fogo sofrido de Acertos Recentemente$",
+      "efeitos": [
+        {
+          "stat": "block%fogoSofridoRecente:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Chance de Fazer Monstros Fugirem ao Bloquear$",
+      "efeitos": [
+        {
+          "stat": "ev:bloquear:alvo:fugindo:2",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Fuga do PoE (2 s): o Raro, o Único e o chefe não fogem; o Mágico não evita metade aqui",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Mobilização$",
+      "efeitos": [
+        {
+          "stat": "clamor_sem_buff_em_voce",
+          "valor": "1"
+        },
+        {
+          "stat": "clamor_duracao_mais",
+          "valor": "100"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Reflete Feitiços$",
+      "efeitos": [
+        {
+          "stat": "reflete_feiticos",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance das Resistências Elementais contarem como sendo \\{(\\d+)\\}% contra Acertos Inimigos$",
+      "efeitos": [
+        {
+          "stat": "res_elemental_90_chance",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sorteado em cada parte elemental do acerto",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de evitar dano de cada elemento de ataques durante Forma Etérea$",
+      "efeitos": [
+        {
+          "stat": "evitar_dano_elemental_ataque@buff:trespassar",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de Evitar Dano Físico de Acertos enquanto Trespassando$",
+      "efeitos": [
+        {
+          "stat": "evitar_dano_fisico_acerto@buff:trespassar",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito das Auras Não Maldição das suas Habilidades aumentado em \\{(\\d+)\\}% nos Lacaios$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "as auras das suas gemas não valem nos lacaios do jogo (só as \"Você e Aliados\")",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^ground tar on block duration ms \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o número interno do Piche ao Bloquear (a linha \"Espalha Piche ao Bloquear\")",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Nevoeiro de Guerra nível \\{(\\d+)\\} quando sua Armadilha é ativada$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem o Nevoeiro de Guerra",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^As Chamas de Draugur queimam os inimigos ao seu redor por \\{(\\d+)\\} segundos após você incendiar um alvo$",
+      "efeitos": [
+        {
+          "stat": "ev:incendiar:chamasDeDraugur:{V1}",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Incêndio que você pôs vai, igual, nos inimigos a até 3 casas que não estão queimando",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ao Conjurar uma Magia, Sacrifica toda a sua Mana para ganhar Dano Máximo de Raio Adicional igual a \\{(\\d+)\\}% da Mana Sacrificada por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "ev:usarMagia:sacrificarMana:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Eletriza você quando chegar no Máximo de Cargas de Poder$",
+      "efeitos": [
+        {
+          "stat": "ev:maxPoder:eletrizarVoce:15",
+          "valor": "100"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Seus Espectros Evocados também ganha Fúria Arcana quando você ganhar$",
+      "efeitos": [
+        {
+          "stat": "espectros_furia_arcana",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Gemas de Suporte Encaixadas também podem Suportar Habilidades da sua Mão Principal$",
+      "efeitos": [
+        {
+          "stat": "suportes_na_mao_principal",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano sofrido dos Acertos Bloqueados não podem ignorar o Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "bloqueado_pelo_escudo",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Comando do Inferno no Acerto Crítico$",
+      "efeitos": [
+        {
+          "stat": "ev:critico:gatilho:clamor-infernal",
+          "valor": "20"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Convocar Grande Emissário do Foco$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a gema Convocar Grande Emissário do Foco",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Sofrimento Compartilhado$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:sofrimentoCompartilhado",
+          "valor": "100"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Metade da sua Força é adicionada aos seus Lacaios$",
+      "efeitos": [
+        {
+          "stat": "lacaio_vida_fixa:qualquer%atr:str:4",
+          "valor": "1"
+        },
+        {
+          "stat": "lacaio_dano:qualquer%atr:str:10",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o que a metade da sua Força daria: +1 de Vida a cada 4 de Força e 1% de dano a cada 10",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Clamores custam \\+\\{(\\d+)\\}% de vida$",
+      "efeitos": [
+        {
+          "stat": "ev:usarClamor:perdeVidaPct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Vida sai ao usar o Clamor (não mata: fica em 1)",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você pode ser Tocado por Espíritos Atormentados$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem os Espíritos Atormentados",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades de Arco Não Canalizadoras Encaixadas são Ativadas por Tiro de Elite$",
+      "efeitos": [
+        {
+          "stat": "atirar_aciona_encaixadas",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao máximo de Alvos do Tiro$",
+      "efeitos": [
+        {
+          "stat": "atirar_estagios_extra",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de Suprimir o Dano Mágico enquanto Canalizando$",
+      "efeitos": [
+        {
+          "stat": "spell_suppression@canalizando",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Golpe Corpo a Corpo dos Espíritos Furiosos Convocados causam apenas Propagação de Dano de Fogo aos Inimigos ao Redor$",
+      "efeitos": [
+        {
+          "stat": "espiritos_propagam_fogo",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Banquete de Carne Nível \\{(\\d+)\\} a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem o Banquete de Carne",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ignora Atordoamentos enquanto Conjurando$",
+      "efeitos": [
+        {
+          "stat": "imune_atordoamento@conjurando",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Amaldiçoa Inimigos que te Acertaram com um Feitiço aleatório, ignorando o Limite de Maldições$",
+      "efeitos": [
+        {
+          "stat": "ev:serAcertado:maldicao:aleatoria:10:semLimite",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "um dos Feitiços do PoE, sorteado, no nível 10",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Olhar Vazio nível \\{(\\d+)\\} quando você usar uma Habilidade$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem o Olhar Vazio",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^O limite de Armas Animadas é dobrado$",
+      "efeitos": [
+        {
+          "stat": "max_lacaio_pct:arma",
+          "valor": "100"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Projéteis não podem colidir com Inimigos em Curto Alcance$",
+      "efeitos": [
+        {
+          "stat": "projeteis_sem_curto",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios têm a mesma quantidade do número Máximo de Cargas de Tolerância, Frenesi e Poder que você$",
+      "efeitos": [
+        {
+          "stat": "lacaios_cargas_do_dono",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as suas Cargas valem no lacaio: Frenesi (dano e velocidade) e Tolerância (Redução de Dano Físico)",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios contam como tendo a mesma quantidade de Cargas de Toler6ancia, Frenesi e Poder que você$",
+      "efeitos": [
+        {
+          "stat": "lacaios_cargas_do_dono",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as suas Cargas valem no lacaio: Frenesi (dano e velocidade) e Tolerância (Redução de Dano Físico)",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Seus lacaios conectados sofrem -\\{(\\d+)\\}% de dano$",
+      "efeitos": [
+        {
+          "stat": "lacaios_vinculados_menos_dano",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ao abater um monstro raro, um lacaio conectado aleatório ganha seus modificadores por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "os lacaios do jogo não recebem modificadores de monstro",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades que arremessam Minas arremessam até \\{(\\d+)\\} Minas adicionais se você possuir ao menos \\{(\\d+)\\} de Destreza$",
+      "efeitos": [
+        {
+          "stat": "minas_extras@atrMin:dex:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades que arremessam Minas arremessam até \\{(\\d+)\\} Minas adicionais se você possuir ao menos \\{(\\d+)\\} de Inteligência$",
+      "efeitos": [
+        {
+          "stat": "minas_extras@atrMin:int:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Convocar Grande Emissário das Tormentas$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem a gema Convocar Grande Emissário das Tormentas",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano que você Reflete aos Inimigos quando Acertado é drenado como Vida$",
+      "efeitos": [
+        {
+          "stat": "reflexo_drenado_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios são Agressivos$",
+      "efeitos": [
+        {
+          "stat": "lacaios_agressivos",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios podem ouvir os sussurros por \\{(\\d+)\\} segundos após causarem um Golpe Crítico$",
+      "efeitos": [
+        {
+          "stat": "lacaios_sussurros_s",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Sussurros: 50% de Velocidade de Ataque e 20% da Vida máxima perdida por segundo (o \"não mais ouvindo você\" não se aplica)",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Totens Refletem \\{(\\d+)\\}% de suas Vidas máximas como Dano de Fogo em Inimigos próximos quando Acertados$",
+      "efeitos": [
+        {
+          "stat": "totem_reflete_vida_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você e Inimigos em sua Presença contam como se movendo enquanto afetados por Afecções Elementais$",
+      "efeitos": [
+        {
+          "stat": "afeccao_conta_movendo",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Vínculo Ancestral$",
+      "efeitos": [
+        {
+          "stat": "sem_dano_proprio",
+          "valor": "1"
+        },
+        {
+          "stat": "max_lacaio:totem",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Venenos Infligidos por você com Habilidades de Deslocamento são Refletidos para você se você tiver menos do que \\{(\\d+)\\} Venenos em você$",
+      "efeitos": [
+        {
+          "stat": "ev:envenenar:refletirVeneno@movimento",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "com as Habilidades de Movimento (o jogo não separa as de Deslocamento)",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ponto de Atordoamento é baseado em \\{(\\d+)\\}% da sua Mana em vez de na Vida$",
+      "efeitos": [
+        {
+          "stat": "mana_no_ponto_atordoamento_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito da Causticação aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_causticacao",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de, ao Matar um Inimigo Caustificado, Queimar Cada um dos Inimigos ao redor por \\{(\\d+)\\} segundos, causando \\{(\\d+)\\}% da Vida do Inimigo Morto como Dano de Fogo por segundo$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:queimarProximos:{V3}:{V2}@alvoCausticado",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Quando Acertado, ganhe um modificador de Velocidade de Movimento aleatório de \\{(\\d+)\\}% de redução até \\{(\\d+)\\}% de aumento, até que seja Acertado novamente$",
+      "efeitos": [
+        {
+          "stat": "ev:serAcertado:movimentoAleatorio:-{V1}:{V2}",
+          "valor": "100"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Sofre \\{(\\d+)\\} de Dano de Fogo por Segundo enquanto Tocado pela Chama$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem as Chamas Próximas (o Tocado pela Chama)",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha Adrenalina ao ser Tocado pelas Chamas$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem as Chamas Próximas (o Tocado pela Chama)",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Perde Adrenalina ao deixar de ser Tocado pela Chama$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem as Chamas Próximas (o Tocado pela Chama)",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Guerreiros Esqueletos Convocados são Permanentes e Seguem você$",
+      "efeitos": [
+        {
+          "stat": "esqueleto_permanente",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você ganha \\{(\\d+)\\} Vinhas Constringentes ao sofrer um Golpe Crítico$",
+      "efeitos": [
+        {
+          "stat": "ev:serAcertadoCritico:vinhas",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos Próximos parados ganham uma Vinha Constringente a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "vinhas_nos_proximos_s",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Todo o Dano inflige Envenenamento contra Inimigos afetados por ao menos \\{(\\d+)\\} Vinhas Constringentes$",
+      "efeitos": [
+        {
+          "stat": "chance_poison@alvoVinhas3",
+          "valor": "100"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano sofrido dos acertos Não Bloqueados sempre ignoram o Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "a outra metade da linha de cima (o bloqueado pelo Escudo, o resto o ignora)",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Convocar Esqueletos não podem Convocar mais do que \\{(\\d+)\\} Guerreiro Esqueleto$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "a outra metade da linha de cima (um só Guerreiro Esqueleto, permanente)",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
+    },
+    {
+      "padrao": "^Só é possível invocar Armas Animadas$",
+      "efeitos": [
+        {
+          "stat": "so_lacaio:arma",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_nova": true
     }
   ]
 }

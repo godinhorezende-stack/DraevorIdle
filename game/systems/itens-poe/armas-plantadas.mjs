@@ -71,7 +71,8 @@ export function extrasDoArremesso(ficha, tipo, rng = Math.random, efeito = null)
   const chanceDasDuas = v(ficha, 'plantadas_extras_chance');
   const nDasDuas = Math.max(0, Math.round(v(ficha, 'plantadas_extras_n')));
   const dasDuas = chanceDasDuas > 0 && nDasDuas > 0 && rng() * 100 < chanceDasDuas ? nDasDuas : 0;
-  if (tipo !== 'armadilha') return doSuporte + faixa + (tipo === 'mina' ? dasDuas : 0);
+  // (06/11, o Fechamento das Cortinas: "Habilidades que arremessam Minas arremessam até 1 Minas adicionais se você possuir ao menos 800 de Destreza" — `minas_extras`)
+  if (tipo !== 'armadilha') return doSuporte + faixa + (tipo === 'mina' ? dasDuas + Math.max(0, Math.round(v(ficha, 'minas_extras'))) : 0);
   const sempre = Math.max(0, Math.round(v(ficha, 'armadilhas_extras')));
   const chance = v(ficha, 'armadilhas_extras_chance');
   const n = Math.max(0, Math.round(v(ficha, 'armadilhas_extras_n')));

@@ -409,6 +409,8 @@ export function extrasDaGemaPoe(estado, peca, def, indice = null, soquetes = nul
   }, 0);
   let nivel = somar(peca?.poe?.af, 'gem_level_local');
   let qualidade = somar(peca?.poe?.af, 'gem_quality_local');
+  // (06/11, o Crime de Dialla: "Gemas encaixadas sempre têm o bônus de qualidade da cor do encaixe" — +10% de qualidade na gema da cor do encaixe dela)
+  if (somar(peca?.poe?.af, 'qualidade_cor_do_encaixe') > 0 && s?.cores?.[indice] && SocketsPoe.corDaGema(def?.poe?.cor) === s.cores[indice]) qualidade += 10;
   // (+ o da árvore: "+N ao Nível de todas as Gemas de Habilidade Maldição" — `gem_level@maldicao` nas passivas alocadas)
   const daArvore = estado && leitorDaArvore ? leitorDaArvore(estado) ?? {} : {};
   // (lote 86, dono 19/10: a Égide Necromântica — "Todos os bônus do Escudo equipado se aplicam aos seus Lacaios e não a você": o "+N ao Nível de
@@ -615,6 +617,10 @@ const magiaDaAutomacao = (def) => def?.tipo === 'ativa' && !ehAutomacao(def) && 
 
 export function skillsAtivas(estado) {
   const saida = new Map();
+  // (06/11, O Escudeiro: "Gemas de Suporte Encaixadas também podem Suportar Habilidades da sua Mão Principal" — os suportes do escudo entram nos grupos da arma)
+  const doEscudo = estado?.equipment?.shield;
+  const sEscudo = Number(doEscudo?.poe?.af?.suportes_na_mao_principal) > 0 ? soquetesDe(doEscudo) : null;
+  const suportesDoEscudo = sEscudo ? sEscudo.gemas.map((g, i) => ({ i, g, def: g && DEFS.get(Number(g.id)), peca: doEscudo, s: sEscudo })).filter((x) => x.def?.tipo === 'support') : [];
   for (const slot of SLOTS_COM_SOCKET) {
     const peca = estado?.equipment?.[slot];
     const s = peca && soquetesDe(peca);
@@ -622,7 +628,7 @@ export function skillsAtivas(estado) {
     const bonus = bonusDeNivelDaPeca(peca);
     for (const grupo of gruposLigados(s)) {
       const noGrupo = grupo.map((i) => ({ i, g: s.gemas[i], def: s.gemas[i] && DEFS.get(Number(s.gemas[i].id)) })).filter((x) => x.def);
-      const supports = noGrupo.filter((x) => x.def.tipo === 'support');
+      const supports = [...noGrupo.filter((x) => x.def.tipo === 'support'), ...(slot === 'weapon' ? suportesDoEscudo : [])];
       const feiticeiro = noGrupo.find((y) => ehFeiticeiro(y.def));
       for (const x of noGrupo.filter((y) => y.def.tipo === 'ativa')) {
         const anterior = saida.get(x.def.acao);
@@ -643,7 +649,7 @@ export function skillsAtivas(estado) {
             supports
               // (17/10, lote G3: + o tipo que outro suporte do grupo acrescenta — `compativelNoGrupo`)
               .filter((sp) => compativelNoGrupo(sp.def.suporte, x.def.tags, supports.map((o) => o.def.suporte)))
-              .map((sp) => { const e = extrasDaGemaPoe(estado, peca, sp.def, sp.i, s); return { def: sp.def, nivel: sp.g.nivel + bonus + e.nivel, raridade: raridadeDaGema(sp.g.raridade), qualidade: qualidadeDaGema((sp.g.qualidade ?? 0) + e.qualidade) }; }),
+              .map((sp) => { const e = extrasDaGemaPoe(estado, sp.peca ?? peca, sp.def, sp.i, sp.s ?? s); const b = sp.peca ? bonusDeNivelDaPeca(sp.peca) : bonus; return { def: sp.def, nivel: sp.g.nivel + b + e.nivel, raridade: raridadeDaGema(sp.g.raridade), qualidade: qualidadeDaGema((sp.g.qualidade ?? 0) + e.qualidade) }; }),
           ),
           onde: { slot, indice: x.i },
           // (o Feiticeiro: a magia ligada a ele — o nível dele —, e ele com quantas magias suporta)
@@ -791,6 +797,13 @@ export function gruposComGatilho(estado) {
       const atirar = noGrupo.find((y) => ehAtirar(y.def));
       const doAtirar = atirar ? noGrupo.filter((y) => suportadaDoAtirar(y.def)).map((y) => y.def.acao) : [];
       if (doAtirar.length) saida.push({ chave: `${slot}:${atirar.i}`, nome: atirar.def.nome, nivel: atirar.g.nivel + bonus, gatilho: { quando: 'snipe' }, ataques: [atirar.def.acao], magias: doAtirar, atirar: atirar.def.acao });
+      // (06/11, o Assailum: "Habilidades de Arco Não Canalizadoras Encaixadas são Ativadas por Tiro de Elite" — o Atirar que a peça concede ativa as de arco
+      // encaixadas nela, de qualquer grupo)
+      if (!atirar && Number(peca?.poe?.af?.atirar_aciona_encaixadas) > 0) {
+        const snipe = [...DEFS.values()].find((d) => ehAtirar(d));
+        const deArco = noGrupo.filter((y) => suportadaDoAtirar(y.def)).map((y) => y.def.acao);
+        if (snipe && deArco.length) saida.push({ chave: `${slot}:atirar:${grupo[0]}`, nome: snipe.nome, nivel: 1 + bonus, gatilho: { quando: 'snipe' }, ataques: [snipe.acao], magias: deArco, atirar: snipe.acao });
+      }
       for (const x of noGrupo.filter((y) => y.def.tipo === 'support' && y.def.suporte?.gatilho)) {
         const gat = typeof x.def.suporte.gatilho === 'function' ? x.def.suporte.gatilho(x.g.nivel + bonus) : x.def.suporte.gatilho;
         const ativas = noGrupo.filter((y) => y.def.tipo === 'ativa');

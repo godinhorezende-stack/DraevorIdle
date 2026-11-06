@@ -3279,7 +3279,8 @@ export function comOsAlvosDaGema(entry, efeito, estado = null, ativas = null) {
     e.retornarChance = ModsPoe.valor(fichaDoAlvo, 'proj_retornar_chance');
     // (lote E1b, 26/10: + o "Projéteis Ricocheteiam ao colidirem com o terreno" da própria gema — a Relampejante das Fagulhas, 100%)
     e.ricocheteTerrenoChance = ModsPoe.valor(fichaDoAlvo, 'proj_ricochete_terreno_chance') + GemasPoe.ricocheteNoTerrenoDaGema(entry.poeGema.slug, efeito.nivel ?? 1);
-    if (ModsPoe.valor(fichaDoAlvo, 'proj_direcoes_aleatorias') > 0) e.direcoesAleatorias = true;
+    // (06/11: + o das tags da habilidade — o Zenith Negro: "Projéteis Mágicos Encaixados disparam Projéteis em um círculo", `proj_direcoes_aleatorias@magia+projetil`)
+    if (ModsPoe.valor(fichaDoAlvo, 'proj_direcoes_aleatorias') > 0 || (ModsPoe.somaPorTags(fichaDoAlvo, tagsPoeDaSkill(entry)).proj_direcoes_aleatorias ?? 0) > 0) e.direcoesAleatorias = true;
     if (ModsPoe.valor(fichaDoAlvo, 'barragem_nao_propaga') > 0) e.semPropagar = true;
     // (lote "projetil", dono 02/11) o ângulo da difusão ("Ângulo da Difusão de Projéteis aumentado/reduzido em X%" — o Ângulo Bifurcado da árvore): os filhos
     // saem a ± este ângulo da reta do projétil (`Secundarios.resolver` com o voo)
@@ -3661,6 +3662,15 @@ export function usarComoTotem(estado, hunt, personagem, l, alvo) {
     const eventos = r.eventos ?? [];
     // (o dano do totem vai marcado como o dos lacaios — `lacaio` no evento, como no golpe antigo dele)
     for (const ev of eventos) if (ev.t === 'dmg' && ev.foe) ev.lacaio = true;
+    // (06/11, o Lamento do Covarde: "Habilidades usadas por Totens Espectrais causam -X% de dano" — o acerto que o Totem Espectral acabou de dar volta essa parte
+    // à vida do monstro; o dano contínuo que ele pôs fica)
+    const menos = l.espectral ? Math.min(100, Math.abs(ModsPoe.valor(antes, 'totens_espectrais_dano'))) : 0;
+    if (menos > 0) for (const ev of eventos) {
+      if (ev.t !== 'dmg' || !ev.foe || !(ev.v > 0)) continue;
+      const m = (hunt.monstros ?? []).find((x) => x.uid === ev.uid);
+      const volta = Math.round((ev.v * menos) / 100);
+      if (m && volta > 0) { m.hp += volta; ev.v -= volta; }
+    }
     return eventos;
   } finally {
     hunt.pos = pos;
@@ -4358,7 +4368,10 @@ function passoDefinhante(estado, hunt, entry, efeitoDaGema, agora) {
  */
 function estagioDaCanalizacao(hunt, entry, efeito, inicio, { gatilho = null, plantada = null } = {}) {
   if (!itensPoeLigado() || !entry?.poeGema || gatilho || plantada) return null;
-  const est = GemasPoe.estagiosDaGema(entry.poeGema.slug, efeito?.nivel ?? 1, efeito?.qualidade ?? 0);
+  const est0 = GemasPoe.estagiosDaGema(entry.poeGema.slug, efeito?.nivel ?? 1, efeito?.qualidade ?? 0);
+  // (06/11, o Assailum: "+2 ao máximo de Estágios do Atirar" — `atirar_estagios_extra`, da ficha da caçada)
+  const extraDoAtirar = est0 && entry.poeGema.slug === 'Snipe' ? Math.round(Number(ModsPoe.fichaDa(hunt)?.afPoe?.atirar_estagios_extra) || 0) : 0;
+  const est = extraDoAtirar ? { ...est0, max: est0.max + extraDoAtirar } : est0;
   // (lote A4, dono 19/10: os estágios sem canalizar — o Devastar, o Golpe Duplo do Ímpeto — são de `estagioSemCanalizar`)
   if (!est || est.modo === 'acerto' || est.modo === 'usos') return null;
   const c = hunt?.canalizacao;
@@ -9030,6 +9043,8 @@ function fotoDoVinculo(estado, hunt, ficha, lk) {
     velocidadeIgual: v('velocidade_igual_vinculados') > 0, maldicoesEmVoce: v('maldicoes_em_voce_vinculo') > 0, feixe: v('feixe_sem_afeccao') > 0,
     // (lote "luz", a Glória Dourada do Luminary: o "aumentado" do Raio de Iluminação no Efeito dos Vínculos no mercenário — `Iluminacao.luzNoMercenarioPct`)
     ...(Iluminacao.luzNoMercenarioPct(ficha.afPoe) ? { luzNoMercenarioPct: Iluminacao.luzNoMercenarioPct(ficha.afPoe) } : {}),
+    // (06/11, o Monarca Santificado: "Seus lacaios conectados sofrem -X% de dano" — `vinculos.doLacaio`)
+    ...(ModsPoe.valor(ficha, 'lacaios_vinculados_menos_dano') ? { menosDanoLacaio: Math.abs(ModsPoe.valor(ficha, 'lacaios_vinculados_menos_dano')) } : {}),
     ...(v('vinculo_compartilha_cargas') > 0 && ficha.cargas ? { cargas: CargasDoPoe.adds(estado, ficha.cargas) ?? {} } : {}),
   };
   if (lk.foto.velocidadeIgual) lk.velocidadeDosAlvos = Math.max(0, ...lk.alvos.filter((a) => a.tipo === 'jogador').map((a) => { const quem = Vinculos.resolver(hunt, a); return quem ? Ficha.combate(quem).speed ?? 0 : 0; }));
@@ -9681,7 +9696,30 @@ function auraDasMinasDaGema(estado, hunt, agora) {
 }
 
 // (revisão C2, dono 21/10: `explosaoDeRunas: false` — a caçada do modo PoE faz a Explosão de Runas no laço da barra, em cada volta — `cacadas`)
+/**
+ * (06/11, A Fome da Rainha: "A cada 5 segundos, aciona Oferenda Óssea, Oferenda de Carne e Oferenda Espiritual em sequência" e "Habilidades de oferenda acionadas
+ * desta forma também afetam você" — `fome_da_rainha` = os segundos) a próxima da sequência, no nível 20, sem cadáver: o bônus dela nos lacaios em campo (de cada
+ * tipo, como a Correia da Oferenda — `l.oferendas`) e em você (`hunt.oferendaEmVoce`).
+ */
+export const FOME_DA_RAINHA = Object.freeze({ nivel: 20, ordem: ['Bone_Offering', 'Flesh_Offering', 'Spirit_Offering'] });
+function fomeDaRainha(estado, hunt, agora) {
+  const ficha = Ficha.combate(estado);
+  const cada = ModsPoe.valor(ficha, 'fome_da_rainha');
+  if (!(cada > 0)) return;
+  const f = (hunt.poeFomeDaRainha ??= { proxima: agora + cada * 1000, i: 0 });
+  if (agora < f.proxima) return;
+  f.proxima = agora + cada * 1000;
+  const slug = FOME_DA_RAINHA.ordem[f.i++ % FOME_DA_RAINHA.ordem.length];
+  const q = LacaiosPoe.oQueInvoca(slug, FOME_DA_RAINHA.nivel, null, ficha.afPoe ?? null);
+  if (q?.tipo !== 'oferenda') return;
+  const relogio = hunt.ultimoTique ?? Date.now();
+  for (const l of hunt.lacaios ?? []) if (l.hp > 0 && l.tipo === 'lacaio' && !l.p4Duplo) (l.oferendas ??= {})[slug] = { ...q.bonus, ate: relogio + q.duracaoMs };
+  hunt.oferendaEmVoce = { ...q.bonus, ate: agora + q.duracaoMs };
+  Ficha.invalidar(estado);
+}
+
 export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora = hunt?.clock ?? 0, { explosaoDeRunas = true, soPlantadas = false } = {}) {
+  if (!soPlantadas && itensPoeLigado() && hunt) fomeDaRainha(estado, hunt, agora);
   // (revisão F1) `soPlantadas`: só as Armadilhas e Minas plantadas — o uso da gema Detonar Minas (no meio do disparo) não roda de novo os tiques do chão
   // (torres, objetos, as runas do C2…), que a caçada já roda uma vez por tique, com a trava da uma ação por vez
   if (!soPlantadas) {
@@ -12144,7 +12182,8 @@ function debuffsDoC4(hunt, bicho, c4, { agora, msDoC4, definhados, ficha, acao, 
   };
   const p = c4.praga;
   if (p && (!p.soSemPraga || !GemasC4.temPraga(bicho, agora))) {
-    const ms = msDoC4(p.tolheMs);
+    // (06/11, a Alelopatia: "Mangra tem X% da Duração da Lentidão aumentada" — o Tolhimento da Infestação)
+    const ms = Math.round(msDoC4(p.tolheMs) * Math.max(0, 1 + ModsPoe.valor(ficha, 'praga_tolhe_duracao') / 100));
     if (tolher(p.tolhePct, ms)) {
       const e = (bicho.estados ??= {});
       if (p.regenMenosPct > 0) {

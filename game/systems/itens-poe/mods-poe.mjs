@@ -5,7 +5,7 @@ import * as QuemFeriu from '../hunt/quem-feriu.mjs';
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, criarSoloCongelado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo, porExposicao } from './condicoes-poe.mjs';
+import { RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, criarSoloCongelado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo, porExposicao, vinhasGanhas as vinhasGanhasDe } from './condicoes-poe.mjs';
 import * as Plantadas from './armas-plantadas.mjs';
 import { eletrizarComPct } from './monstros-no-jogador.mjs';
 // (lotes G-A e G-C, dono 25/10: as Marcas no acerto — as Cargas, as Cargas de Frasco — e a Punição em quem acerta você)
@@ -113,8 +113,10 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
   // Inimigos ao redor" — o PoB não faz a conta, act_dex.lua:5602): os Empalamentos ativos do morto — cada um × os acertos que ainda tinha — vão aos
   // inimigos a até 1 casa dele (o raio do Dano Propagado, a decisão do dono do lote 34), pela Redução de Dano Físico de cada um; é de quem golpeou
   // (revisão do A5: também quando quem mata é o Golpe de Misericórdia, abaixo — `refletirEmpalamentos` de novo, depois do culling)
+  // (06/11, os Tentáculos do Grande Antigo: "50% de chance de Empalamentos em Inimigos que Matar Reflitam o Dano" — a chance, sorteada uma vez por acerto)
+  const refleteNoAbate = v('empalar_reflete_ao_matar') > 0 && sorte(v('empalar_reflete_ao_matar'));
   const refletirEmpalamentos = () => {
-    if (alvo.hp <= 0 && v('empalar_reflete_ao_matar') > 0 && Array.isArray(e.empalado) && e.empalado.length) {
+    if (alvo.hp <= 0 && refleteNoAbate && Array.isArray(e.empalado) && e.empalado.length) {
       const guardado = e.empalado.filter((x) => x.ate > agora && x.acertos > 0).reduce((t, x) => t + x.valor * x.acertos, 0);
       e.empalado = [];
       if (guardado > 0) {
@@ -299,7 +301,7 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
     const ate = agora + AO_BLOQUEAR.duracaoMs;
     // (lote 33, P009: × o "Efeito de Afecções Não-Danificadoras")
     const f = fatorNaoDano(ficha.afPoe);
-    e.causticado = { ate, pct: AO_BLOQUEAR.causticar * f };
+    e.causticado = { ate, pct: AO_BLOQUEAR.causticar * fatorNaoDano(ficha.afPoe, 'causticado') };
     e.fragilizado = { ate, pct: AO_BLOQUEAR.enfraquecer * f };
     e.exaurido = { ate, pct: AO_BLOQUEAR.exaurir * f };
   }
@@ -524,6 +526,8 @@ export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorp
     const d = Math.max(1, Math.round(reflete));
     bicho.hp -= d;
     eventos.push({ t: 'dmg', uid: bicho.uid, x: bicho.x, y: bicho.y, v: d, foe: true, alvo: bicho.name, color: '#c0c0c0', reflexo: true });
+    // (06/11, a Coroa do Rei Pálido: "X% do Dano que você Reflete aos Inimigos quando Acertado é drenado como Vida")
+    if (v('reflexo_drenado_pct') > 0) drenoDaFicha?.(estado, { vida: (d * v('reflexo_drenado_pct')) / 100 }, ficha, eventos, null, hunt.pos);
   }
   // (09/10) + a do ELEMENTO do golpe ("X% do Dano de Fogo sofrido é Recuperado como Vida": `recoup_life_<elemento>`) e a VELOCIDADE DE
   // RECUPERAÇÃO de Vida/Mana ("Velocidade de Recuperação de Vida aumentada": o mesmo total, em menos tempo).
@@ -786,7 +790,14 @@ const ESTADOS_NO_ALVO = {
   // (06/11, o Coração Negro: "X% de chance de Fazer com que os Monstros Fujam") — a Fuga do PoE: quem foge é o `fugindo` (`skills/estados.fugindo`); o
   // Raro, o Único e o chefe não fogem (a regra da Fuga — `acoes.fugir`), e quem confere a raridade é `porNoAlvo` (o estado só tem o `e`)
   fugindo: (e, ate) => (e.fugindo = { ate: Math.max(e.fugindo?.ate ?? 0, ate) }),
+  // (06/11, o Banquete Sem Fim: a CORROSÃO — "-5000 de Armadura total e -1000 de Evasão por Corrosão. Corrosão dura 4 segundos e atualiza a duração da Corrosão
+  // existente": as pilhas somam e o fim é o da última; `aurasProximas` passa a conta ao monstro — `mobs/atributos.armaduraDe`/`evasaoDe`)
+  corroido: (e, ate, agora) => (e.corroido = { ate: Math.max(e.corroido?.ate ?? 0, ate), n: (e.corroido?.ate > (agora ?? 0) ? e.corroido.n ?? 1 : 0) + 1 }),
 };
+/** (06/11) Os Feitiços do sorteio ("um Feitiço aleatório" — a Trapaça de Ylfeban), pelo nome da gema (`slugDoNome`). */
+const FEITICOS_ALEATORIOS = Object.freeze(['castigo', 'vulnerabilidade', 'grilhoes-temporais', 'condutividade', 'desespero', 'fraqueza-elemental', 'debilitar', 'flamabilidade', 'congelabilidade']);
+/** (06/11) A Corrosão: o que cada pilha tira do monstro. */
+export const CORROSAO = Object.freeze({ armadura: 5000, evasao: 1000 });
 /** (06/11) O monstro que NÃO foge (o Raro, o Único, o chefe — a regra da Fuga do PoE): o `fugindo` não pega nele. */
 const naoFoge = (alvo) => !!(alvo?.boss || alvo?.chefe || alvo?.isBoss || /raro|elite|unico|único|boss/i.test(String(alvo?.raridade ?? '')));
 const SEGUNDOS_PADRAO = 4;
@@ -800,7 +811,7 @@ function porComMods(fazer, nome, e, ate, agora, ficha, rng) {
   // (lote 33, P009) Causticar, Fragilizar e Exaurir: × o "Efeito de Afecções Não-Danificadoras" (o número fixo do jogo é o de base)
   if (AFECCOES_NAO_DANO.has(nome)) {
     fazer(e, ate, agora);
-    if (e[nome]?.pct) e[nome].pct *= fatorNaoDano(ficha?.afPoe);
+    if (e[nome]?.pct) e[nome].pct *= fatorNaoDano(ficha?.afPoe, nome);
     return;
   }
   if (nome !== 'definhado') return fazer(e, ate, agora);
@@ -865,6 +876,18 @@ export function drenoEmCaos(alvo, vida, ficha, maxHp, agora) {
   if (!(pct > 0) || !(vida > 0) || !alvo || !(alvo.hp > 0)) return;
   const s = Math.min(5, Math.max(1, vida / Math.max(1, (maxHp * 2) / 100)));
   Dot.aplicar(alvo, { tipo: 'degenCaos', total: (vida * pct) / 100, duracaoMs: Math.round(s * 1000), chave: 'drenoEmCaos', origem: { fonte: 'poe' } }, agora);
+}
+
+/**
+ * (06/11, a Reflecção de Atziri: "Reflete Feitiços" — `reflete_feiticos`) a Maldição que o monstro pôs em você volta para ele: a gema do PoE de mesmo nome, no nível
+ * 20 (o monstro do jogo amaldiçoa com as do PoE — `MALDICOES_DOS_MONSTROS`).
+ */
+const GEMA_DA_MALDICAO = { 'Fraqueza Elemental': 'fraqueza-elemental', Vulnerabilidade: 'vulnerabilidade', Enfraquecer: 'debilitar', Flamabilidade: 'flamabilidade', Congelabilidade: 'congelabilidade', Condutividade: 'condutividade', Desespero: 'desespero', 'Grilhões Temporais': 'grilhoes-temporais' };
+export function refletirMaldicao(hunt, bicho, nome, ficha, agora = hunt?.clock ?? 0) {
+  const gema = GEMA_DA_MALDICAO[nome];
+  if (!gema || !maldicaoDeItem || !bicho || !(bicho.hp > 0) || !(valor(ficha, 'reflete_feiticos') > 0)) return false;
+  maldicaoDeItem(hunt, bicho, gema, 20, false, agora);
+  return true;
 }
 
 /** Os GATILHOS das peças ("Ativa uma Magia Encaixada quando você Atacar com esta Arma"): quem registra é `acoes.mjs` (o disparo das gemas). */
@@ -970,6 +993,9 @@ export function evento(estado, hunt, nome, ficha, ctx = {}) {
   }
   // (lote 54, a Fome Eterna: a morte de qualquer inimigo dá a alma aos lacaios com o Devorador de Almas perto)
   if (nome === 'inimigoMorrer' && alvo) almaParaOsLacaios(hunt.lacaios, alvo, agora);
+  // (06/11, o Toque Gentil de Asenath: "Inimigos mortos próximos de Cadáveres afetados por suas Maldições explodem, causando 3% de sua Vida como Dano Físico")
+  const explodePerto = nome === 'inimigoMorrer' && alvo ? valor(ficha, 'cadaver_amaldicoado_explode') : 0;
+  if (explodePerto > 0 && (hunt.cadaveres ?? []).some((c) => (c.amaldicoadoAte ?? 0) > agora && Math.max(Math.abs(c.x - alvo.x), Math.abs(c.y - alvo.y)) <= 2)) explodirMorto(hunt, alvo, explodePerto, ctx.eventos, { tipo: 'physical' });
   const tagsAlvo = new Set([...tagsDoAlvo(alvo, agora), ...(ctx.tags ?? [])]);
   let conds = null;
   for (const ev of lista) {
@@ -1081,7 +1107,70 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
       return;
     }
     // (06/11, a Repreensão de Maligaro: "Eletrizações que você causar são refletidas para você") a Eletrização que você acabou de pôr no alvo, em você também.
-    case 'eletrizarVoce': { if (sorte(v)) eletrizarComPct(hunt, ficha, alvo?.estados?.chocado?.pct ?? 0, { agora, rng }); return; }
+    // (+ `eletrizarVoce:<pct>` — a Eletrização fixa: o Circuito de Malachai, "Eletriza você quando chegar no Máximo de Cargas de Poder", 15%)
+    case 'eletrizarVoce': { if (sorte(v)) eletrizarComPct(hunt, ficha, Number(ev.param) > 0 ? Number(ev.param) : alvo?.estados?.chocado?.pct ?? 0, { agora, rng }); return; }
+    // (06/11, The Draugur's Lantern: `chamasDeDraugur:<segundos>` — guarda o Incêndio que você acabou de pôr no alvo, para a aura das Chamas)
+    case 'chamasDeDraugur': {
+      const d = [...(alvo?.dots ?? [])].reverse().find((x) => x.tipo === 'queimadura' && x.falta > 0);
+      if (d) hunt.poeDraugur = { ate: agora + (Number(ev.param) || 8) * 1000, total: d.falta, duracaoMs: Math.max(500, d.ate - agora) };
+      return;
+    }
+    // (06/11, a Tormenta de Mana: "Ao Conjurar uma Magia, Sacrifica toda a sua Mana para ganhar Dano Máximo de Raio Adicional igual a X% da Mana Sacrificada por
+    // 4 segundos" — `sacrificarMana:<segundos>`, o valor é o X)
+    case 'sacrificarMana': {
+      const m = Math.floor(estado.mana ?? 0);
+      if (!(m > 0)) return;
+      estado.mana = 0;
+      const t = (hunt.poeTemporarios ??= {});
+      t.sacrificioDeMana = { stat: 'added_energy_dmg_max', valor: Math.round((m * v) / 100), ate: agora + (Number(ev.param) || 4) * 1000 };
+      hunt.poeFichaMudou = true;
+      return;
+    }
+    // (06/11, a Doação de Leper — o Sofrimento Compartilhado: "Todo Dano de Acertos causará Afecções Elementais que você estiver sofrendo. Afecções Elementais que
+    // você infligir são removidas de você") a Eletrização, o Resfriamento, o Congelamento e o Incêndio em você vão para o acertado e saem de você
+    case 'sofrimentoCompartilhado': {
+      if (!alvo || !(alvo.hp > 0)) return;
+      const e = (alvo.estados ??= {});
+      const d = hunt.debuffsDoJogador ?? {};
+      const c = hunt.controle ?? {};
+      if (d.eletrizado?.ate > agora) { e.chocado = { ate: Math.max(e.chocado?.ate ?? 0, d.eletrizado.ate), pct: Math.max(e.chocado?.ate > agora ? e.chocado.pct ?? 0 : 0, d.eletrizado.pct ?? 15) }; delete d.eletrizado; }
+      if (c.lento?.ate > agora) { porLento(e, c.lento.ate, c.lento.pct ?? 10, agora); delete c.lento; }
+      if (c.congelado?.ate > agora) { e.congelado = { ate: Math.max(e.congelado?.ate ?? 0, c.congelado.ate) }; delete c.congelado; }
+      const fogo = (hunt.efeitosDoJogador?.dots ?? []).find((x) => x.tipo === 'queimadura' && x.falta > 0);
+      if (fogo) { Dot.aplicar(alvo, { tipo: 'queimadura', total: fogo.falta, duracaoMs: Math.max(500, fogo.ate - agora), origem: { fonte: 'poe' } }, agora); Dot.removerDoJogador(hunt, 'queimadura'); }
+      return;
+    }
+    // (06/11, o Passo da Tentação: "Venenos Infligidos por você com Habilidades de Deslocamento são Refletidos para você se você tiver menos do que 5 Venenos em você")
+    // o Veneno que você pôs no alvo, igual, em você — o valor é o limite
+    case 'refletirVeneno': {
+      const emVoce = (hunt.efeitosDoJogador?.dots ?? []).filter((x) => (x.tipo === 'veneno' || x.tipo === 'venenoPoe') && x.falta > 0).length;
+      const ultimo = [...(alvo?.dots ?? [])].reverse().find((x) => (x.tipo === 'veneno' || x.tipo === 'venenoPoe') && x.falta > 0);
+      if (ultimo && emVoce < v) dotNoJogador(hunt, { tipo: ultimo.tipo, total: ultimo.falta, duracaoMs: Math.max(500, ultimo.ate - agora), origem: { fonte: 'proprio' } }, agora, rng);
+      return;
+    }
+    // (06/11, a Corrida Apostada: "Quando Acertado, ganhe um modificador de Velocidade de Movimento aleatório de 40% de redução até 100% de aumento, até que seja
+    // Acertado novamente") — `movimentoAleatorio:<menor>:<maior>`
+    case 'movimentoAleatorio': {
+      const [a, b] = String(ev.param).split(':').map(Number);
+      const t = (hunt.poeTemporarios ??= {});
+      t.corridaApostada = { stat: 'move_speed', valor: Math.round(a + rng() * (b - a)), ate: Infinity };
+      hunt.poeFichaMudou = true;
+      return;
+    }
+    // (06/11, o Destino Inextricável: "Você ganha 3 Vinhas Constringentes ao sofrer um Golpe Crítico" — valem até você andar: `condicoes-poe.vinhasGanhas`)
+    case 'vinhas': { const atual = vinhasGanhasDe(hunt); hunt.poeVinhas = { n: Math.min(10, atual + v), desde: agora }; hunt.poeFichaMudou = true; return; }
+    // (06/11, o Legado da Fúria: "Queimar Cada um dos Inimigos ao redor por 4 segundos, causando 8% da Vida do Inimigo Morto como Dano de Fogo por segundo" —
+    // `queimarProximos:<pct>:<segundos>`, o valor é a chance) a até 1 casa do morto
+    case 'queimarProximos': {
+      if (!alvo || !sorte(v)) return;
+      const [pct, seg] = String(ev.param).split(':').map(Number);
+      const s = seg || 4;
+      for (const m of hunt.monstros ?? []) {
+        if (m === alvo || !(m.hp > 0) || m.dummy || Math.max(Math.abs(m.x - alvo.x), Math.abs(m.y - alvo.y)) > 1) continue;
+        Dot.aplicar(m, { tipo: 'degenFogo', total: (((alvo.maxHp ?? 0) * (pct || 8)) / 100) * s, duracaoMs: s * 1000, chave: 'legadoDaFuria', origem: { fonte: 'poe' } }, agora);
+      }
+      return;
+    }
     case 'degenEmVoce': {
       const [tipo, seg] = String(ev.param).split(':');
       const s = Number(seg) || 1;
@@ -1362,7 +1451,9 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     // `maldicao:<gema>:<nível>[:semLimite]` = a CHANCE (%) de amaldiçoar o alvo com a maldição da gema naquele nível ("ignorando o Limite de
     // Maldições" = `semLimite`).
     case 'maldicao': {
-      const [gema, nivel, semLimite] = String(ev.param).split(':');
+      const [gema0, nivel, semLimite] = String(ev.param).split(':');
+      // (06/11, a Trapaça de Ylfeban: "Amaldiçoa Inimigos que te Acertaram com um Feitiço aleatório" — `aleatoria`: um dos Feitiços do PoE, sorteado)
+      const gema = gema0 === 'aleatoria' ? FEITICOS_ALEATORIOS[Math.floor(rng() * FEITICOS_ALEATORIOS.length)] : gema0;
       if (maldicaoDeItem && alvo && alvo.hp > 0 && sorte(v)) maldicaoDeItem(hunt, alvo, gema, Number(nivel) || 10, semLimite === 'semLimite', agora);
       return;
     }
@@ -1620,6 +1711,60 @@ export function aurasProximas(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
       Dot.aplicar(m, { tipo, total: x, duracaoMs: 1000, chave: 'auraDaPeca', origem: { fonte: 'poe' } }, agora);
     }
   }
+  // (06/11, The Draugur's Lantern: "As Chamas de Draugur queimam os inimigos ao seu redor por 8 segundos após você incendiar um alvo" — o Incêndio que você pôs
+  // vai, igual, em quem está a até 3 casas de você e não está queimando; `hunt.poeDraugur`, da ação `chamasDeDraugur`)
+  const dr = hunt.poeDraugur;
+  if (dr && dr.ate > agora) for (const m of hunt.monstros ?? []) {
+    if (!(m.hp > 0) || m.dummy || Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) > 3 || (m.dots ?? []).some((d) => d.tipo === 'queimadura' && d.falta > 0)) continue;
+    Dot.aplicar(m, { tipo: 'queimadura', total: dr.total, duracaoMs: dr.duracaoMs, origem: { fonte: 'poe' } }, agora);
+  }
+  // (06/11, o Despertar da Tormenta: "Você e Inimigos em sua Presença contam como se movendo enquanto afetados por Afecções Elementais" — o inimigo, aqui: o
+  // Sangramento dele dói como em movimento)
+  if (valor(ficha, 'afeccao_conta_movendo') > 0) for (const m of hunt.monstros ?? []) {
+    if (!(m.hp > 0) || m.dummy || Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) > RAIO_DA_PRESENCA) continue;
+    const e = m.estados ?? {};
+    if ((m.dots ?? []).some((d) => d.tipo === 'queimadura' && d.falta > 0) || ativo(e.chocado, agora) || ativo(e.lento, agora) || ativo(e.congelado, agora)) m.andouEm = agora;
+  }
+  // (06/11, o Destino Inextricável: "Inimigos Próximos parados ganham uma Vinha Constringente a cada 0.5 segundos" — até 10; o que anda as perde)
+  const vinhasCada = valor(ficha, 'vinhas_nos_proximos_s');
+  if (vinhasCada > 0) for (const m of hunt.monstros ?? []) {
+    if (!(m.hp > 0) || m.dummy) continue;
+    const e = (m.estados ??= {});
+    const perto = Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) <= 3;
+    if (!perto || agora - (m.andouEm ?? -Infinity) <= 600) { delete e.vinhas; continue; }
+    const vi = (e.vinhas ??= { n: 0, em: agora });
+    while (agora - vi.em >= vinhasCada * 1000 && vi.n < 10) { vi.n++; vi.em += vinhasCada * 1000; }
+    if (vi.n >= 10) vi.em = agora;
+  }
+  // (06/11, a Corrosão no monstro: a Armadura e a Evasão a menos enquanto dura — `mobs/atributos`)
+  for (const m of hunt.monstros ?? []) {
+    const c = m.estados?.corroido;
+    if (c && c.ate > agora) { m.corrosaoArmadura = CORROSAO.armadura * (c.n ?? 1); m.corrosaoEvasao = CORROSAO.evasao * (c.n ?? 1); } else if (m.corrosaoArmadura) { delete m.corrosaoArmadura; delete m.corrosaoEvasao; }
+  }
+  // (06/11, a Marca do Malachai: "Concede Tolerância, Frenesi e Poder de Malachai por 6 segundos cada, em sequência" — `malachai_s` = os segundos; cada um dá
+  // "10% de chance de conceder uma Carga de … ao Golpear" — o acerto, nos atributos temporários)
+  const malachai = valor(ficha, 'malachai_s');
+  if (malachai > 0) {
+    const prox = (hunt.poePeriodicos ??= {});
+    if (agora >= (prox.malachai ?? 0)) {
+      const tipos = ['tolerancia', 'frenesi', 'poder'];
+      const tipo = tipos[(prox.malachaiI = ((prox.malachaiI ?? -1) + 1) % 3)];
+      const t = (hunt.poeTemporarios ??= {});
+      for (const k of Object.keys(t)) if (k.startsWith('malachai:')) delete t[k];
+      t[`malachai:${tipo}`] = { stat: `ev:acertar:carga:${tipo}`, valor: 10, ate: agora + malachai * 1000 };
+      prox.malachai = agora + malachai * 1000;
+      hunt.poeFichaMudou = true;
+    }
+  }
+  // (06/11, os Grilhões dos Miseráveis: "Feitiços aplicados por Habilidades Maldição Encaixadas são Refletidos à você" — `skills/reforcos` lê)
+  hunt.poeFeiticosRefletidos = valor(ficha, 'feiticos_refletidos') > 0;
+  // (06/11, O Inexperiente: "Projéteis não podem colidir com Inimigos em Curto Alcance" — `hunt/voos.lancar` lê)
+  hunt.poeProjeteisSemCurto = valor(ficha, 'projeteis_sem_curto') > 0;
+  // (06/11, o Toque Gentil de Asenath: "Inimigos próximos de Cadáveres afetados por suas Maldições são Cegados" — a até 2 casas do cadáver amaldiçoado)
+  if (valor(ficha, 'cadaver_amaldicoado_cega') > 0) {
+    const malditos = (hunt.cadaveres ?? []).filter((c) => (c.amaldicoadoAte ?? 0) > agora);
+    if (malditos.length) for (const m of hunt.monstros ?? []) if (m.hp > 0 && !m.dummy && malditos.some((c) => Math.max(Math.abs(c.x - m.x), Math.abs(c.y - m.y)) <= 2)) ESTADOS_NO_ALVO.cego((m.estados ??= {}), agora + 1000, agora);
+  }
   // (06/11, o Aperto Pirotécnico Chocante: "Inimigos Eletrizados por você têm X% do Dano Físico causado por eles convertido Raio" — o golpe deles lê `fisicoEmRaio`)
   const emRaio = valor(ficha, 'eletrizados_fisico_em_raio');
   if (emRaio > 0) for (const m of hunt.monstros ?? []) if (m.hp > 0 && !m.dummy && ativo(m.estados?.chocado, agora)) (m.estados ??= {}).fisicoEmRaio = { ate: agora + 1000, pct: Math.min(100, emRaio) };
@@ -1653,7 +1798,7 @@ export function aurasProximas(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
     for (const a of auras) {
       ESTADOS_NO_ALVO[a]?.(e, agora + 1000, agora);
       // (lote 33, P009: a aura "Inimigos Próximos são Causticados" — × o "Efeito de Afecções Não-Danificadoras")
-      if (AFECCOES_NAO_DANO.has(a) && e[a]?.pct) e[a].pct *= fatorNaoDano(ficha.afPoe);
+      if (AFECCOES_NAO_DANO.has(a) && e[a]?.pct) e[a].pct *= fatorNaoDano(ficha.afPoe, a);
     }
     if (lento) porLento(e, agora + 1000, lento, agora);
     if (Object.keys(res).length) e.resAura = { ...res, ate: agora + 1000 };

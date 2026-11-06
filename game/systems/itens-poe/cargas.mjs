@@ -30,6 +30,8 @@ export function maximo(af, tipo) {
   if (n(af, 'cargas_max_fixo_tem')) return Math.max(0, n(af, 'cargas_max_fixo'));
   if (tipo === 'tolerancia' && n(af, 'max_tolerancia_igual_frenesi')) return maximo(af, 'frenesi');
   if (tipo === 'frenesi' && n(af, 'max_frenesi_igual_poder')) return maximo(af, 'poder');
+  // (06/11, a Investida de Ambu: "Máximo de Cargas de Tolerância dos membros do seu grupo é igual ao seu" — `aliados.fotografar` dá o de quem tem a peça)
+  if (tipo === 'tolerancia' && n(af, 'tolerancia_max_do_grupo') > 0) return Math.max(BASE.maximo + n(af, 'max_tolerancia'), n(af, 'tolerancia_max_do_grupo'));
   return Math.max(0, BASE.maximo + n(af, `max_${tipo}`));
 }
 /** O mínimo de cargas do tipo (0 + "+N ao Mínimo"), nunca acima do máximo. */

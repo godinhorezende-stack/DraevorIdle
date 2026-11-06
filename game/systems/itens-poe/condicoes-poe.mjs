@@ -432,6 +432,8 @@ export const TAGS_DE_GOLPE = new Set([
   // (lote 68) o alvo com alguma Afecção ("contra Inimigos afetados por Afecções": Incendiado, Sangrando, Envenenado, Resfriado, Congelado,
   // Eletrizado, Causticado, Fragilizado, Exaurido)
   'alvoComAfeccao',
+  // (06/11, o Legado da Fúria: "ao Matar um Inimigo Caustificado"; o Destino Inextricável: "contra Inimigos afetados por ao menos 3 Vinhas Constringentes")
+  'alvoCausticado', 'alvoVinhas3',
   // (A cor da GEMA — o atributo dela —, para o nível das gemas encaixadas: `skills/gemas.extrasDaGemaPoe`; e a cor do ENCAIXE em que ela está.)
   'forca', 'destreza', 'inteligencia', 'encaixeVermelho', 'encaixeVerde', 'encaixeAzul', 'encaixeBranco',
   // (ciclo 7, lote D) o que o golpe FEZ — resolvido depois do sorteio, no `aoAcertar`: foi Crítico ("Acertos Críticos possuem Golpe de
@@ -568,6 +570,8 @@ export function condicoesDe(estado, total = null, principais = null) {
     if (recente(r.acertado, agora)) v.add('acertadoRecente');
     if (!recente(r.dano, agora)) v.add('semDanoRecente');
     if (r.moveu != null && agora - r.moveu <= MOVENDO_MS) v.add('movendo');
+    // (06/11, o Despertar da Tormenta: "Você e Inimigos em sua Presença contam como se movendo enquanto afetados por Afecções Elementais" — a sua, aqui)
+    else if (Number(total?.afeccao_conta_movendo) > 0 && ((h.efeitosDoJogador?.dots ?? []).some((d) => d.tipo === 'queimadura' && d.falta > 0) || (h.debuffsDoJogador?.eletrizado?.ate ?? 0) > agora || (h.controle?.lento?.ate ?? 0) > agora || (h.controle?.congelado?.ate ?? 0) > agora)) v.add('movendo');
     // (Vida Cheia: a vida no máximo.)
     if (recente(r.lacaioMorreu, agora)) v.add('lacaioMorreuRecente');
     if (recente(r.usouLacaio, agora)) v.add('usouLacaioRecente');
@@ -1099,6 +1103,8 @@ export const ESCALAS_DA_FICHA = /^(armEvaMenor|pctSalvaguarda|precisao|armadura|
 const segundosParado = (h, agora) => { const r = h?.poeRecente ?? {}; return r.moveu != null && agora - r.moveu <= MOVENDO_MS ? 0 : Math.floor((agora - (r.moveu ?? h?.poeEntrou ?? agora)) / 1000); };
 /** (lote 80) O teto das Vinhas Constringentes (o PoB). */
 const VINHAS_MAXIMO = 10;
+/** (06/11) As Vinhas Constringentes ganhas num evento (`mods-poe` — a ação `vinhas`): valem até você se mover. */
+export const vinhasGanhas = (h) => { const v = h?.poeVinhas; const moveu = h?.poeRecente?.moveu; return v && (moveu == null || moveu <= v.desde) ? v.n : 0; };
 /** (04/11) O Crescimento Frágil agora (a Réplica: Florescer Frágil): 0 sem o "Ganha até o máximo… quando Acertado" ou sem acerto sofrido. */
 export function crescimentoFragil(total, h, agora = h?.clock ?? 0) {
   const max = Number(total?.crescimento_fragil_max) || 0;
@@ -1180,7 +1186,8 @@ export function fatorDaEscala(estado, total, principais, escala) {
     case 'paradoS': return segundosParado(h, agora);
     // (lote 80, a Paciência da Natureza) "por Vinha Constringente": 2 por segundo parado ("Ganha 2 Vinhas Constringentes a cada segundo enquanto
     // parado" — `vinhas_constringentes_por_s`), até 10 — o PoB (`Multiplier:GraspingVinesCount`, limitTotal 10); ao andar, voltam a 0
-    case 'vinhas': return Math.min(VINHAS_MAXIMO, (Number(total?.vinhas_constringentes_por_s) || 0) * segundosParado(h, agora));
+    // (06/11, o Destino Inextricável: + as Vinhas ganhas "ao sofrer um Golpe Crítico" — `hunt.poeVinhas`, que somem quando você anda)
+    case 'vinhas': return Math.min(VINHAS_MAXIMO, (Number(total?.vinhas_constringentes_por_s) || 0) * segundosParado(h, agora) + vinhasGanhas(h));
     // (04/11, a Réplica: Florescer Frágil) "por Crescimento Frágil": "Ganha até o máximo de Crescimento Frágil quando Acertado" e "Perde N
     // Crescimento Frágil por segundo" — o máximo no último acerto que você sofreu (`poeRecente.acertado`), menos N por segundo inteiro desde ele
     case 'crescimentoFragil': return crescimentoFragil(total, h, agora);
@@ -1193,6 +1200,8 @@ export function fatorDaEscala(estado, total, principais, escala) {
     case 'vidaReservada': return cada(reservadoAgora(estado, 'vida', total), a);
     // (06/11, a Alma Cérea: "para cada 5% de vida reservada" — a % da Vida máxima reservada; o Punho do Blasfemador: "por Item Ancião Equipado" — as peças
     // vestidas com a influência)
+    // (06/11, o Rompe-amanhecer: "por cada 200 de Dano de Fogo sofrido de Acertos Recentemente" — `hunt.poeFogoSofrido`, os últimos 4 s)
+    case 'fogoSofridoRecente': { const lista = (h?.poeFogoSofrido ?? []).filter((x) => agora - x.em <= RECENTE_MS); if (h) h.poeFogoSofrido = lista; return cada(lista.reduce((t, x) => t + x.v, 0), a); }
     case 'vidaReservadaPct': return (estado?.maxHp ?? 0) > 0 ? cada((reservadoAgora(estado, 'vida', total) / estado.maxHp) * 100, a) : 0;
     case 'itensInfluencia': return Object.entries(estado?.equipment ?? {}).filter(([slot, p]) => slot !== 'backpack' && (p?.poe?.influencias ?? []).includes(a)).length;
     // ("por cada N de Vida Máxima ou Mana Máxima, o que for menor")
@@ -1382,6 +1391,8 @@ export function efeitoDoElusivo(hunt, agora = hunt?.clock ?? 0) {
 }
 export function ganharBuff(hunt, nome, segundos, agora = hunt?.clock ?? 0, { efeitoExtra = 0 } = {}) {
   if (!hunt || !BUFFS[nome] || !(segundos > 0)) return;
+  // (06/11, o Ponto do Vínculo Amargurado: "Seus Espectros Evocados também ganham Fúria Arcana quando você ganhar" — o buff no lacaio, no relógio dos lacaios)
+  if (nome === 'furiaArcana' && Number(fichaDa(hunt)?.afPoe?.espectros_furia_arcana) > 0) for (const l of hunt.lacaios ?? []) if (l.hp > 0 && (l.espectro || /espectro|spectre/i.test(l.nome ?? ''))) (l.buffs ??= {}).furiaArcana = (hunt.ultimoTique ?? Date.now()) + segundos * 1000;
   const b = (hunt.poeBuffs ??= {});
   if (nome === 'elusivo') {
     if (b.elusivo > agora) return;
@@ -2052,6 +2063,8 @@ export function tagsDoAlvo(alvo, agora) {
   if (rar === 'unico' || alvo.boss || alvo.chefe) t.push('alvoUnico');
   // (06/11: o monstro Mágico do jogo tem a raridade `modificado` — `modificadores-monstro.RARIDADE_DO_POE`; antes a tag nunca saía)
   if (rar === 'magico' || rar === 'modificado') t.push('alvoMagico');
+  if (at(e.causticado)) t.push('alvoCausticado');
+  if ((e.vinhas?.n ?? 0) >= 3) t.push('alvoVinhas3');
   if (alvo.maxHp > 0 && alvo.hp >= alvo.maxHp) t.push('alvoVidaCheia');
   // (11/10) o alvo com "Vida Não Pode ser Drenada" (o modificador do monstro — "contra Inimigos que não podem ter Vida Drenada deles").
   if (alvo.semDreno) t.push('alvoSemDreno');
@@ -2186,6 +2199,15 @@ export function furiaSemPerder(hunt, af, agora = hunt?.clock ?? 0) {
   return Math.min(maximoDeFuria(af), f.n | 0);
 }
 export function tiqueDaFuria(hunt, agora = hunt?.clock ?? 0) {
+  // (06/11, o Espírito de Kaom: "Regenera 1 de Fúria por segundo por cada 200 de Recuperação de Vida por segundo da Regeneração" — `furia_por_regen_vida` = a
+  // cada quanto; "Não retarda a Perda Inerente de Fúria": o ganho não mexe na espera da perda)
+  const porRegen = Number(fichaDa(hunt)?.afPoe?.furia_por_regen_vida) || 0;
+  if (hunt && porRegen > 0) {
+    const g = (hunt.furia ??= { n: 0, ganhou: agora, perdeu: agora });
+    g.regenEm ??= agora;
+    const n = Math.floor((Number(fichaDa(hunt)?.regenPoe?.vidaBruta) || 0) / porRegen);
+    while (agora - g.regenEm >= 1000) { g.regenEm += 1000; if (n > 0) g.n = Math.min(maximoDeFuria(fichaDa(hunt)?.afPoe), (g.n | 0) + n); }
+  }
   const f = hunt?.furia;
   if (!f || !(f.n > 0)) return;
   // (revisão do A2: o teto é o máximo de AGORA — "+N ao Máximo de Fúria" que acabou, "Fúria máxima pela metade" — o PoB: min(Fúria, máximo))
@@ -2319,7 +2341,10 @@ export const ACOES = new Set(['transferirMarca', 'frascoChance', 'explodirChance
   // (02/11) restaurar a Salvaguarda (`personagem/salvaguarda.restaurar`)
   'salvaguarda',
   // (06/11, os Únicos — lote 3) a Eletrização que você causou também em você (a Repreensão de Maligaro — `mods-poe.aplicarAcao`)
-  'eletrizarVoce']);
+  'eletrizarVoce',
+  // (06/11, lote 4) sacrificar a Mana (a Tormenta de Mana), o Sofrimento Compartilhado, o Veneno refletido (o Passo da Tentação), o movimento aleatório (a Corrida
+  // Apostada), as Vinhas em você (o Destino Inextricável), queimar os de perto do morto (o Legado da Fúria)
+  'sacrificarMana', 'sofrimentoCompartilhado', 'refletirVeneno', 'movimentoAleatorio', 'vinhas', 'queimarProximos', 'chamasDeDraugur']);
 /** Os prefixos de atributo montados pelo nome (`sempre:<buff>`, `efeito_buff:<buff>`, `concede:<gema>`, `suporte_local:<gema>`). */
 /**
  * Quem sabe se uma gema existe pelo NOME ("Concede a Habilidade X", "Suportadas por X"): as gemas do PoE carregam depois e `skills/gemas.mjs`
@@ -2358,7 +2383,7 @@ const PARAMETRICOS = [
   // (14/10) o altar aleatório a cada N segundos (a Harmonia do Propósito — `mods-poe.aurasProximas`; o valor é a duração base, em segundos)
   /^altar_aleatorio:\d+$/,
   /^aura_proximos_res:(fire|ice|energy|chaos|todas)$/, /^aura_proximos_res_igual:(fire|ice|energy|chaos)$/,
-  /^gatilho_local:(usarAtaque|usarMagia|bloquear|critico|acertar|congelar|perderTolerancia|matar|gastarMana):(magia|elemental|fogo|gelo|raio|maldicao|arco|clamor|lacaio)$/,
+  /^gatilho_local:(usarAtaque|usarMagia|bloquear|critico|acertar|congelar|perderTolerancia|matar|gastarMana|armadilha):(magia|elemental|fogo|gelo|raio|maldicao|arco|clamor|lacaio)$/,
   new RegExp(`^(lacaio_somado_min|lacaio_somado_max|lacaio_conv_fogo|lacaio_so_fogo|lacaio_cinzas|lacaio_incendiar|lacaio_renova|lacaio_dreno_dono|lacaio_explodir|so_lacaio):${TIPOS_DE_LACAIO}$`), // lacaios-poe.oQueInvoca
   /^res_fixa(_tem)?:(fire|ice|energy|chaos)$/, // ficha (resistência fixa)
   /^frasco_regen_[ns]:(vida|mana|utilidade|todos)$/, /^frasco_instantaneo_baixa:(vida|mana)$/, /^sem_frasco:(vida|mana|utilidade)$/, // itens-poe/frascos
@@ -2402,8 +2427,10 @@ export function dinamicoValido(stat) {
   if (/^(efeito_buff_gema|efeito_maldicao_gema):[\w-]+$/.test(stat)) return true;
   return DINAMICOS.test(stat) || PARAMETRICOS.some((re) => re.test(stat));
 }
+/** (06/11) A ficha tem uma escala pelo Fogo sofrido recentemente (o Rompe-amanhecer)? — o acerto com Fogo refaz a ficha. */
+export const usaFogoSofrido = (ficha) => Object.keys(ficha?.afPoe ?? {}).some((k) => k.includes('%fogoSofridoRecente'));
 /** A escala é conhecida? */
-export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|joiasAbissais|joiaUnica|devocao|itemMagico|maldicoesEmVoce|abissalLocal|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|vinhas|crescimentoFragil|desdeUsou|afetadoPorClamor|valor|valorDoEstandarte|forcaDosVentos|stat|armaduraElmo|evasaoLuvas|esBotas|vidaReservadaPct|itensInfluencia)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
+export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|joiasAbissais|joiaUnica|devocao|itemMagico|maldicoesEmVoce|abissalLocal|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|vinhas|crescimentoFragil|desdeUsou|afetadoPorClamor|valor|valorDoEstandarte|forcaDosVentos|stat|armaduraElmo|evasaoLuvas|esBotas|vidaReservadaPct|itensInfluencia|fogoSofridoRecente)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
 
 /** Os números base do PoE dos efeitos de acerto. */
 export const NO_ACERTO = {
@@ -2533,7 +2560,8 @@ export function extrasDoFisico(ficha, fisico, rng = Math.random, teto = 100) {
 /** O personagem BLOQUEOU o golpe de `bicho`: "Inflige Causticar/Enfraquecer/Exaurir em Inimigos ao Bloquear seu Dano". */
 export const AO_BLOQUEAR = { duracaoMs: 4000, causticar: 10, enfraquecer: 6, exaurir: 10 };
 /** (lote 33, P009) O fator do "Efeito de Afecções Não-Danificadoras aumentado" no Causticar, Fragilizar e Exaurir que VOCÊ inflige. */
-export const fatorNaoDano = (af) => Math.max(0, 1 + (Number(af?.efeito_nao_dano) || 0) / 100);
+// (06/11, o Legado da Fúria: + "Efeito da Causticação aumentado em X%" — `nome` = 'causticado')
+export const fatorNaoDano = (af, nome = null) => Math.max(0, 1 + ((Number(af?.efeito_nao_dano) || 0) + (nome === 'causticado' ? Number(af?.efeito_causticacao) || 0 : 0)) / 100);
 export const AFECCOES_NAO_DANO = new Set(['causticado', 'fragilizado', 'exaurido']);
 export function aoBloquear(hunt, bicho, ficha, { agora = hunt?.clock ?? 0, eventos = [] } = {}) {
   if (!ligado() || !bicho || !ficha?.afPoe) return eventos;
@@ -2541,7 +2569,7 @@ export function aoBloquear(hunt, bicho, ficha, { agora = hunt?.clock ?? 0, event
   const ate = agora + AO_BLOQUEAR.duracaoMs;
   // Causticar: −10% de resistências elementais; Enfraquecer (Fragilizar): +6% de chance de crítico contra; Exaurir (Exaurido): 10% menos dano.
   const f = fatorNaoDano(ficha.afPoe);
-  if (valor(ficha, 'bloqueio_causticar') > 0) { e.causticado = { ate, pct: AO_BLOQUEAR.causticar * f }; eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: 'causticado' }); }
+  if (valor(ficha, 'bloqueio_causticar') > 0) { e.causticado = { ate, pct: AO_BLOQUEAR.causticar * fatorNaoDano(ficha.afPoe, 'causticado') }; eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: 'causticado' }); }
   if (valor(ficha, 'bloqueio_enfraquecer') > 0) { e.fragilizado = { ate, pct: AO_BLOQUEAR.enfraquecer * f }; eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: 'fragilizado' }); }
   if (valor(ficha, 'bloqueio_exaurir') > 0) { e.exaurido = { ate, pct: AO_BLOQUEAR.exaurir * f }; eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: 'exaurido' }); }
   return eventos;
@@ -2911,10 +2939,13 @@ export function empurrar(hunt, bicho) {
   if (!hunt?.pos || !bicho || bicho.boss || bicho.dummy) return false;
   // ("Não pode Empurrar Inimigos")
   if (Number(fichaDa(hunt)?.afPoe?.sem_empurrao) > 0) return false;
-  const dx = Math.sign(bicho.x - hunt.pos.x);
-  const dy = Math.sign(bicho.y - hunt.pos.y);
+  // (06/11, a Agarrada do Império: "Direção do Empurrão é invertida" — o inimigo vem para você; na casa ao seu lado ele para)
+  const inv = Number(fichaDa(hunt)?.afPoe?.empurrao_invertido) > 0 ? -1 : 1;
+  const dx = Math.sign(bicho.x - hunt.pos.x) * inv;
+  const dy = Math.sign(bicho.y - hunt.pos.y) * inv;
   if (!dx && !dy) return false;
   const para = { x: bicho.x + dx, y: bicho.y + dy };
+  if (para.x === hunt.pos.x && para.y === hunt.pos.y) return false;
   const grade = GRADES.get(hunt)?.() ?? null;
   if (grade?.andavel && !grade.andavel.has(`${para.x},${para.y}`)) return false;
   if (hunt.monstros.some((m) => m !== bicho && m.hp > 0 && m.x === para.x && m.y === para.y)) return false;
@@ -3030,7 +3061,9 @@ export function controleNoJogador(ficha, efeito, rng = Math.random, hunt = null,
   // Atordoamento": o limiar é a vida máxima; com o escudo somado, a chance cai na mesma proporção.)
   const vidaMax = Math.max(1, estado?.maxHp ?? 0);
   const doEscudo = estado ? (Math.max(0, ficha.energyShield ?? 0) * v('es_no_ponto_atordoamento')) / 100 / vidaMax : 0;
-  const chanceFator = efeito === 'atordoado' ? 1 / Math.max(0.1, 1 - v('ponto_atordoamento_proprio_red') / 100) / Math.max(0.1, 1 + v('ponto_atordoamento_inc') / 100) / (1 + doEscudo) : 1;
+  // (06/11, o Avanço Celeste: "Ponto de Atordoamento é baseado em 500% da sua Mana em vez de na Vida" — o limiar troca de base)
+  const pelaMana = estado && v('mana_no_ponto_atordoamento_pct') > 0 ? Math.max(0.01, ((estado.maxMana ?? 0) * v('mana_no_ponto_atordoamento_pct')) / 100 / vidaMax) : 1;
+  const chanceFator = efeito === 'atordoado' ? 1 / Math.max(0.1, 1 - v('ponto_atordoamento_proprio_red') / 100) / Math.max(0.1, 1 + v('ponto_atordoamento_inc') / 100) / (pelaMana + doEscudo) : 1;
   return { evitou: false, duracaoFator, pctFator, chanceFator };
 }
 
@@ -3041,7 +3074,9 @@ export function controleNoJogador(ficha, efeito, rng = Math.random, hunt = null,
 export function fatorDaResistenciaRecebida(ficha, elemento, protecao = ficha?.protection ?? {}) {
   // (ciclo 7, lote H: a Inoculação do Caos — "Imune a Dano de Caos".)
   if (elemento === 'chaos' && ligado() && Number(ficha?.afPoe?.imune_caos) > 0) return 0;
-  const res = (el) => Math.min(100, protecao[el] ?? 0);
+  // (06/11, a Violência de Kiloava: "X% de chance das Resistências Elementais contarem como sendo 90% contra Acertos Inimigos" — sorteado em cada parte elemental)
+  const em90 = ligado() && ['fire', 'ice', 'energy'].includes(elemento) && Number(ficha?.afPoe?.res_elemental_90_chance) > 0 && Math.random() * 100 < Number(ficha.afPoe.res_elemental_90_chance);
+  const res = (el) => (em90 && ['fire', 'ice', 'energy'].includes(el) ? 90 : Math.min(100, protecao[el] ?? 0));
   if (!ligado() || !ficha?.afPoe || !['fire', 'ice', 'energy', 'physical', 'chaos'].includes(elemento)) return 1 - res(elemento) / 100;
   const { convertido, resto } = conversoesRecebidas(ficha, elemento, res);
   return (convertido + resto * (1 - res(elemento) / 100)) * fatorDoDanoRecebido(ficha, elemento);

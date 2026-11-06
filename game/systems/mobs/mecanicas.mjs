@@ -353,6 +353,8 @@ export function aoAtacar(estado, hunt, personagem, m, danoDoGolpe, eventos) {
       if (!lista.length) continue;
       m.maldicaoDoMonstro ??= lista[Math.floor(Math.random() * lista.length)];
       const def = ModsPoe.MALDICOES_DOS_MONSTROS[m.maldicaoDoMonstro];
+      // (06/11, a Reflecção de Atziri: "Reflete Feitiços" — a Maldição volta para quem a pôs)
+      ModsPoe.refletirMaldicao(hunt, m, def.nome, Ficha.combate(estado), agora);
       ModsPoe.amaldicoarJogador(hunt, `${m.maldicaoDoMonstro}:${m.uid}`, { nome: def.nome, af: def.af, ms: mec.duracaoMs ?? ModsPoe.DURACAO_DA_MALDICAO_DO_MONSTRO_MS }, agora);
       eventos?.push({ t: 'estado', uid: 'player', quem: personagem?.nome, x: hunt.pos?.x, y: hunt.pos?.y, estado: 'amaldicoado', nome: def.nome, de: m.name });
       Ficha.invalidar(estado);

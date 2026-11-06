@@ -3047,6 +3047,7 @@ export function impactoDaQueda(estado, hunt, l, ficha, personagem, agora, { alia
     const critico0 = SuportesS2B.comCriticoDoLote(l, LacaiosPoe.criticoDoLacaio(l, oferenda, relogio), doLote);
     const critico = vinculo ? { chance: vinculo.critPct > 0 ? vinculo.critPct : critico0.chance, mult: critico0.mult + vinculo.critMult / 100 } : critico0;
     const crit = Math.random() * 100 < critico.chance;
+    if (crit) LacaiosPoe.aoCriticarDoLacaio(l, agora);
     const doGolpe = LacaiosPoe.golpeDoLacaio(l, m, ficha, tipo, agora, Math.random, hunt.lacaios, relogio);
     const [carnMin, carnMax] = LacaiosPoe.danoDoGolemDaCarnica(l, hunt.lacaios, (g) => GemasPoe.fatorDoBuffDoGolem(estado, g) * fatorDoDano);
     const k = (l.queda.mult ?? 1) * (crit ? critico.mult : 1) * doGolpe.fator * doAliado;
@@ -3137,6 +3138,22 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
   if (hunt.poeAurasCaoticasR3D?.length) eventos.push(...tiqueDasAurasCaoticas(hunt, relogio));
   for (const l of hunt.lacaios) {
     const aliado = l.mercenario ? aliadoDoMercenario : aliadoBase;
+    if (itensPoeLigado()) {
+      // (06/11, o Lamento do Covarde: "Totens que seriam mortos pelos inimigos se tornam Totens Espectrais por 8 segundos" — intocáveis, com 1 de vida, até
+      // "Máximo de N Totens Espectrais"; o dano deles: `Acoes.usarComoTotem`)
+      const espectrais = ModsPoe.valor(ficha, 'totens_espectrais_s');
+      if (l.hp <= 0 && l.tipo === 'totem' && !l.espectral && espectrais > 0 && hunt.lacaios.filter((x) => x.espectral && x.hp > 0).length < Math.max(1, ModsPoe.valor(ficha, 'totens_espectrais_max'))) {
+        Object.assign(l, { hp: 1, espectral: true, intocavel: true, ate: agora + espectrais * 1000 });
+        eventos.push({ t: 'estado', uid: l.uid, x: l.x, y: l.y, estado: 'espectral' });
+      }
+      // (06/11, o Devorador de Mentes: as suas Cargas de agora no lacaio — `LacaiosPoe.golpeDoLacaio`/`danoNoLacaio`)
+      if (l.poe?.cargasDoDono) l.cargasDoDono = CargasPoe.ativas(estado);
+      // (06/11, o Crânio Antigo: "Lacaios que ouvirem os sussurros sofrem 20% de sua vida máxima como dano de caos por segundo")
+      if (l.hp > 0 && (l.buffs?.sussurros ?? 0) > agora) {
+        l.sussurrosEm ??= agora;
+        while (agora - l.sussurrosEm >= 1000 && l.hp > 0) { l.sussurrosEm += 1000; l.hp -= Math.max(1, Math.round((l.maxHp ?? 0) * 0.2)); }
+      } else delete l.sussurrosEm;
+    }
     if (l.hp <= 0 || (l.ate && agora >= l.ate)) {
       eventos.push({ t: 'fx', id: 3, x: l.x, y: l.y });
       // (14/10, a Relíquia Elemental explode ao morrer ou acabar — `Acoes.explosaoDaReliquia`)
@@ -3154,6 +3171,12 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       }
       // (PoE: "se um Lacaio foi Morto Recentemente".)
       if (l.hp <= 0) { ModsPoe.marcar(hunt, 'lacaioMorreu'); lacaioMorreu = true; }
+      // (06/11, o Manto d'Alma: "Inflige um Feitiço aleatório em você quando seus Totens morrem" — uma das Maldições dos monstros, sorteada)
+      if (l.hp <= 0 && l.tipo === 'totem' && itensPoeLigado() && ModsPoe.valor(ficha, 'totem_morre_maldicao') > 0) {
+        const ids = Object.keys(ModsPoe.MALDICOES_DOS_MONSTROS);
+        const id = ids[Math.floor(Math.random() * ids.length)];
+        ModsPoe.amaldicoarJogador(hunt, `totem:${id}`, ModsPoe.MALDICOES_DOS_MONSTROS[id], hunt.clock ?? 0);
+      }
       // (13/10, o Suserano do Primordial: "Golens Convocados são Reconvocados 4 segundos após serem Mortos" — `Acoes.reconvocarGolens`)
       const reconvoca = l.hp <= 0 && l.golem ? ModsPoe.valor(ficha, 'golem_reconvoca_s') : 0;
       if (reconvoca > 0) (hunt.golensAReconvocar ??= []).push({ acao: l.acao, ate: agora + reconvoca * 1000 });
@@ -3255,6 +3278,17 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       const d = Math.max(1, Math.round(sofrido));
       l.hp -= d;
       eventos.push({ t: 'dmg', uid: l.uid, x: l.x, y: l.y, v: d, foe: false, lacaio: true, de: b.name, color: '#ff8a8a', ...(critDoBicho?.critico ? { critico: true } : {}) });
+      // (06/11, o Passo Tocha-carvalho: "Totens Refletem 100% de suas Vidas máximas como Dano de Fogo em Inimigos próximos quando Acertados" — a até 3 casas do totem)
+      const refleteVida = l.tipo === 'totem' && itensPoeLigado() ? ModsPoe.valor(ficha, 'totem_reflete_vida_pct') : 0;
+      if (refleteVida > 0) {
+        for (const m of hunt.monstros) {
+          if (m.hp <= 0 || m.dummy || distancia(m, l) > 3) continue;
+          const r = Math.max(1, Math.round(resistido(hunt, m, 'fire', ((l.maxHp ?? 0) * refleteVida) / 100, ficha)));
+          m.hp -= r;
+          QuemFeriu.carimbar(m, QuemFeriu.TOTEM);
+          eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: r, foe: true, lacaio: true, alvo: m.name, color: Acoes.COR_DO_ELEMENTO.fire ?? '#ff9000', reflexo: true });
+        }
+      }
       // (100% — combate, 02/11) os LACAIOS SANGRAM: o golpe que acertou põe as afecções de dano do monstro (as da espécie e as dos modificadores), como em
       // você — do golpe antes das defesas do lacaio (`Combate100.afeccoesNoLacaio`)
       if (itensPoeLigado() && l.hp > 0) {
@@ -3558,6 +3592,17 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
         eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: d, foe: true, lacaio: true, alvo: m.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
       }
     }
+    // (06/11, as Cadeias de Comando: "Golpes corpo a corpo dos lacaios animados e manifestados causam dano propagado aos inimigos ao redor" e "50% menos dano
+    // propagado") o golpe corpo a corpo do animado também acerta quem está a 1 casa do alvo, com o "menos"
+    if (!errouOPrincipal && !deLonge && l.poe?.propagadoPct > 0) {
+      for (const m of hunt.monstros) {
+        if (m === alvo || m.hp <= 0 || m.dummy || distancia(m, alvo) > 1) continue;
+        const d = Math.max(1, Math.round(partes.filter((x) => !l.poe.propagadoSoFogo || x.tipo === 'fire').reduce((n, x) => n + resistido(hunt, m, x.tipo, (bruto * l.poe.propagadoPct * x.f) / 100, ficha), 0)));
+        m.hp -= d;
+        QuemFeriu.carimbar(m, QuemFeriu.LACAIO);
+        eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: d, foe: true, lacaio: true, alvo: m.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
+      }
+    }
     };
     // (03/11: a habilidade principal do PoB SEM projétil — a Absolvição do Juiz, a área no alvo — não voa: cai na hora, como as de recarga)
     if (deLonge && itensPoeLigado() && !(hp && !hp.projetil)) {
@@ -3658,6 +3703,7 @@ export function golpeDoLacaioNoBicho(c, b, pct, g) {
     const critico = vinculo ? { chance: vinculo.critPct > 0 ? vinculo.critPct : critico0.chance, mult: critico0.mult + vinculo.critMult / 100 } : critico0;
     // (rodada 4, lote L: a habilidade do PoB — o crítico de base da linha dela, `critBase`, sobre o do lacaio; o "não pode ser crítico" da Investida)
     const crit = !g.semCritico && Math.random() * 100 < critico.chance * (g.critBase != null ? g.critBase / Math.max(0.1, l.critChanceBase ?? l.critChance ?? 5) : 1);
+    if (crit) LacaiosPoe.aoCriticarDoLacaio(l, agora);
     // (ciclo 7) o dano dobrado, ignorar a Redução de Dano Físico, a penetração no amaldiçoado e o Caos extra do Poder Profano.
     const doGolpe = LacaiosPoe.golpeDoLacaio(l, b, ficha, tipo, agora, Math.random, hunt.lacaios, hunt.clock ?? agora);
     // (o dano "aumentado" das suas auras de aliado soma ao do lacaio — `danoIncPct`, o da invocação —; o "mais" multiplica)
@@ -3888,6 +3934,7 @@ function habilidadesComRecarga(estado, hunt, l, agora, ficha, oferenda = null, g
     // o ataque em área: o golpe do lacaio × o multiplicador, em todos em volta do alvo
     const tipo = l.elemento ?? 'physical';
     const crit = Math.random() * 100 < critico.chance;
+    if (crit) LacaiosPoe.aoCriticarDoLacaio(l, agora);
     const doGolpe = LacaiosPoe.golpeDoLacaio(l, alvo, ficha, tipo, agora, Math.random, hunt.lacaios, relogio);
     const bruto0 = (l.dano.min + Math.random() * Math.max(0, l.dano.max - l.dano.min)) * (h.mult ?? 1) * (crit ? critico.mult : 1) * doGolpe.fator;
     const raio = LacaiosPoe.raioDaAreaDoLacaio(l);

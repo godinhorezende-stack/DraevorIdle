@@ -250,7 +250,8 @@ export function marcarCom(hunt, bicho, lista, agora = hunt?.clock ?? Date.now(),
           ...(regras.s2b ? { s2b: regras.s2b } : {}), ...(opcoes.solo ? { solo: opcoes.solo } : {}),
           ...(contra ? { contra: { golpe: contra.golpe ?? {}, morte: contra.morte ?? {}, atordoar: contra.atordoar ?? {}, fator } } : {}) };
         // "100% de chance de Refletir Feitiços": o Feitiço posto nele volta para VOCÊ (os mesmos efeitos, pela duração dele — `afDaMaldicaoNoJogador`).
-        if (regras.feitico && bicho.refleteFeiticos > 0 && Math.random() * 100 < bicho.refleteFeiticos) {
+        // (06/11, os Grilhões dos Miseráveis: "Feitiços aplicados por Habilidades Maldição Encaixadas são Refletidos à você" — `hunt.poeFeiticosRefletidos`)
+        if (regras.feitico && ((bicho.refleteFeiticos > 0 && Math.random() * 100 < bicho.refleteFeiticos) || (hunt.poeFeiticosRefletidos && !emAura))) {
           const af = afDaMaldicaoNoJogador(efeitos);
           // (lote 30: "Debuffs em você expiram X% mais rápido" — o fator do personagem, carimbado no tique: `condicoes-poe.tique`)
           if (Object.keys(af).length) (hunt.maldicoesNoJogador ??= {})[`refletida:${id}`] = { ate: agora + Math.round(dur * (hunt.poeFatorDosDebuffs ?? 1)), nome: regras.nome ?? 'Maldição refletida', af };

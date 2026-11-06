@@ -199,12 +199,15 @@ export function doLacaio(hunt, l, agora = hunt?.clock ?? 0) {
     const daVida = ((f.vidaMax ?? 0) * (e.fogoVidaPct ?? 0)) / 100;
     if (e.fogoMin || e.fogoVidaPct) { r.fogo[0] += ((e.fogoMin ?? 0) + daVida) * x; r.fogo[1] += ((e.fogoMax ?? 0) + daVida) * x; }
     r.menosDano += (e.menosDano ?? 0) * x;
+    // (06/11, o Monarca Santificado: o "sofrem -X% de dano" de quem vincula — o maior, uma vez, somado no fim)
+    if ((f.menosDanoLacaio ?? 0) > (r.doDono ?? 0)) r.doDono = f.menosDanoLacaio;
     r.escudoPct = Math.max(r.escudoPct, e.escudoPct ?? 0);
     r.critMult += (e.critMult ?? 0) * x;
     if (e.critIgual) r.critPct = Math.max(r.critPct, f.critPct ?? 0);
     if (e.bloqueioIgual) r.bloqueioPct = Math.max(r.bloqueioPct, f.bloqueioPct ?? 0);
     r.vidaAoBloquear += (e.vidaAoBloquear ?? 0) * x;
   }
+  if (r?.doDono) { r.menosDano += r.doDono; delete r.doDono; }
   return r;
 }
 

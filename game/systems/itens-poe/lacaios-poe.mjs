@@ -553,6 +553,19 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
       // (lote 52, a Harmonia Primordial: "Dano do Golem aumentado em X% por cada Tipo de Golem Convocado por você" — `golpeDoLacaio`, nos Golens)
       danoPorTipoDeGolemPct: m0('golem_dano_por_tipo'),
       bloqueioInc: mn('minion_block_inc'), evitarAfeccoes: mn('minion_evitar_afeccoes'), reflexoFisico: mn('minion_reflexo_fisico'), esRecargaInicio: mn('minion_es_recarga_inicio'),
+      // (06/11, o Forjador da Carne: "Lacaios Convertem 2% de sua Vida Máxima para Escudo de Energia Máximo para cada 1% de Resistência a Caos que tiverem"
+      // — `aplicarNoLacaio`; "Enquanto Lacaios tiverem Escudo de Energia, seus Acertos Ignoram a Resistência Elemental" — `golpeDoLacaio`; as Cadeias de
+      // Comando: "Guardião Animado causa X% de aumento de Dano por Arma Animada", o dano propagado dos animados — `cacadas`)
+      esPorResCaosPct: mn('minion_es_por_res_caos'), ignoraResComEs: mn('minion_ignora_res_com_es'),
+      danoPorArmaAnimadaPct: LacaiosAnimados.ehGuardiao(slug) ? mn('guardiao_dano_por_arma') : 0,
+      propagadoPct: LacaiosAnimados.usaBase(slug) && mn('animados_propagado') > 0 ? Math.max(0, 100 - mn('animados_propagado_menos')) : /espírito furioso|raging spirit/i.test(`${nome} ${t.nome}`) && mn('espiritos_propagam_fogo') > 0 ? 100 : 0,
+      // (06/11, a Marca do Pacto Vermelho: "Golpe Corpo a Corpo dos Espíritos Furiosos Convocados causam apenas Propagação de Dano de Fogo aos Inimigos ao Redor")
+      propagadoSoFogo: /espírito furioso|raging spirit/i.test(`${nome} ${t.nome}`) && mn('espiritos_propagam_fogo') > 0,
+      // (06/11, o Crânio Antigo: "Lacaios podem ouvir os sussurros por 5 segundos após causarem um Golpe Crítico" — `cacadas`)
+      sussurrosS: mn('lacaios_sussurros_s'),
+      // (06/11, o Devorador de Mentes: "Lacaios têm a mesma quantidade do número Máximo de Cargas…" e "contam como tendo a mesma quantidade de Cargas… que você"
+      // — as suas Cargas de agora valem no lacaio: `golpeDoLacaio`, `danoNoLacaio`)
+      cargasDoDono: mn('lacaios_cargas_do_dono') > 0,
       recuperacaoPct: mn('minion_recuperacao'), vidaNaMorteDeLacaioPct: mn('minion_vida_na_morte_lacaio'),
       // (lote 69) "enquanto estiverem em Vida Cheia"; "contra Inimigos Incendiados"; os "criados Recentemente" (os primeiros 4 s — `l.desde`)
       danoDobradoVidaCheia: mn('minion_dano_dobrado_vida_cheia'), danoContraIncendiadosPct: mn('minion_dano_incendiados'),
@@ -579,7 +592,9 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
     // (lote E2A) o alcance a mais do golpe corpo a corpo (o Golpe Sagrado, em metros), a Queda do Zumbi e os dois Robôs Rastejantes (`acoes.invocarLacaios`, `cacadas`)
     ...(e2a.alcanceM ? { alcanceExtraM: e2a.alcanceM } : {}), ...(e2a.queda ? { queda: e2a.queda } : {}), ...(e2a.robos ? { robos: e2a.robos } : {}),
     // (lote E2A: os Robôs Rastejantes — "Máximo de 1 … de cada tipo": o Resfriante e o Eletrizante, os dois num uso)
-    tipo: totem ? 'totem' : 'lacaio', nome: totem ? (/totem/i.test(t.nome) ? t.nome : `Totem de ${t.nome}`) : e2a.robos ? 'Robô Rastejante' : nome, maximo: e2a.robos ? (e2a.robos.calcinante ? 3 : 2) : Math.max(1, maximo), porUso: e2a.robos ? (e2a.robos.calcinante ? 3 : 2) : Math.max(1, Math.min(porUso, maximo)), duracaoMs: duracao, nivel: n,
+    // (06/11, a Trilha Guerreira de Alberon: "Guerreiros Esqueletos Convocados são Permanentes e Seguem você" e "Convocar Esqueletos não podem Convocar mais do que 1
+    // Guerreiro Esqueleto" — o Convocar Esqueletos: um só, sem duração)
+    tipo: totem ? 'totem' : 'lacaio', nome: totem ? (/totem/i.test(t.nome) ? t.nome : `Totem de ${t.nome}`) : e2a.robos ? 'Robô Rastejante' : nome, maximo: /^Summon_Skeletons$/.test(slug) && m0('esqueleto_permanente') > 0 ? 1 : e2a.robos ? (e2a.robos.calcinante ? 3 : 2) : Math.max(1, maximo), porUso: /^Summon_Skeletons$/.test(slug) && m0('esqueleto_permanente') > 0 ? 1 : e2a.robos ? (e2a.robos.calcinante ? 3 : 2) : Math.max(1, Math.min(porUso, maximo)), duracaoMs: /^Summon_Skeletons$/.test(slug) && m0('esqueleto_permanente') > 0 ? 0 : duracao, nivel: n,
     vida, dano: { min: Math.max(1, Math.round(golpe * (1 - spread))), max: Math.max(1, Math.round(golpe * (1 + spread))) }, intervaloMs: Math.round(f.tempo * 1000), elemento,
     // (lote 44: o lacaio que no PoE não pode sofrer dano — os Robôs Rastejantes, o Armamento Sagrado; lote 75: + o tipo da gema
     // "MinionsAreUndamagable", o Rastejador Agonizante)
@@ -690,10 +705,18 @@ const AGRESSIVIDADE_PCT = 20;
 export function aplicarNoLacaio(l) {
   const p = l?.poe;
   // (+ lote 43, P040: o escudo de energia fixo — o do escudo da Égide Necromântica)
-  if (!p?.esDaVidaPct && !(p?.esFixo > 0)) return l;
-  l.maxEs = Math.round((l.maxHp * (p.esDaVidaPct ?? 0)) / 100 + (p.esFixo ?? 0));
+  // (06/11, o Forjador da Carne: a Vida convertida em Escudo de Energia pela Resistência a Caos do lacaio — sai da Vida, entra no Escudo)
+  const convertePct = p?.esPorResCaosPct > 0 ? Math.min(100, Math.max(0, p.esPorResCaosPct * Math.min(75, p.resCaos ?? 0))) : 0;
+  const daVida = convertePct > 0 ? Math.round((l.maxHp * convertePct) / 100) : 0;
+  if (daVida > 0) { l.maxHp = Math.max(1, l.maxHp - daVida); l.hp = Math.min(l.hp ?? l.maxHp, l.maxHp); }
+  if (!p?.esDaVidaPct && !(p?.esFixo > 0) && !(daVida > 0)) return l;
+  l.maxEs = Math.round(((l.maxHp + daVida) * (p.esDaVidaPct ?? 0)) / 100 + (p.esFixo ?? 0) + daVida);
   l.es = l.maxEs;
   return l;
+}
+/** (06/11, o Crânio Antigo: os Sussurros por N segundos depois do Golpe Crítico do lacaio — `cacadas`: a velocidade e o dano em si mesmo) */
+export function aoCriticarDoLacaio(l, agora) {
+  if (l?.poe?.sussurrosS > 0) (l.buffs ??= {}).sussurros = agora + l.poe.sussurrosS * 1000;
 }
 /** Um buff do lacaio (Poder Profano, Agressividade) ativo agora? */
 export const buffDoLacaio = (l, nome, agora) => (nome === 'poderProfano' && (l?.poe?.poderProfano ?? 0) > 0) || (l?.buffs?.[nome] ?? 0) > agora;
@@ -702,7 +725,8 @@ export const buffDoLacaio = (l, nome, agora) => (nome === 'poderProfano' && (l?.
 export const LACAIO_RECENTE_MS = 4000;
 export const criadoRecentemente = (l, agora) => agora - (l?.desde ?? -Infinity) <= LACAIO_RECENTE_MS;
 // (lote 69: + "Lacaios criados Recentemente têm Velocidades de Ataque e Conjuração aumentadas")
-export const velocidadeDoLacaio = (l, agora) => (buffDoLacaio(l, 'agressividade', agora) ? AGRESSIVIDADE_PCT : 0) + almasDoLacaio(l, agora) * DEVORADOR_DE_ALMAS.porAlmaPct + (l?.poe?.velRecentePct > 0 && criadoRecentemente(l, agora) ? l.poe.velRecentePct : 0);
+// (06/11: + a Fúria Arcana dos Espectros — o Ponto do Vínculo Amargurado: 20% de velocidade de conjuração; e os Sussurros do Crânio Antigo: 50% de velocidade de ataque)
+export const velocidadeDoLacaio = (l, agora) => (l?.poe?.cargasDoDono ? 4 * (l.cargasDoDono?.frenesi ?? 0) : 0) + (buffDoLacaio(l, 'furiaArcana', agora) ? 20 : 0) + (buffDoLacaio(l, 'sussurros', agora) ? 50 : 0) + (buffDoLacaio(l, 'agressividade', agora) ? AGRESSIVIDADE_PCT : 0) + almasDoLacaio(l, agora) * DEVORADOR_DE_ALMAS.porAlmaPct + (l?.poe?.velRecentePct > 0 && criadoRecentemente(l, agora) ? l.poe.velRecentePct : 0);
 /** (lote 69) O movimento do lacaio (a chance do passo a mais): o dele e o "criados Recentemente". */
 // (lote E2A, 26/10: + o "Aumenta a Velocidade de Movimento dos Lacaios" da Oferenda Carnal — `oferendaPct`, a do lacaio agora, que quem chama confere no relógio dela —
 // e o "X% mais Velocidade de Movimento dos Lacaios" da gema — `poe.movMaisPct`, que multiplica: (1 + aumentado) × (1 + mais) − 1)
@@ -819,6 +843,7 @@ export function golpeDoLacaio(l, alvo, fichaDoDono, tipo, agora, rng = Math.rand
   const p = l?.poe ?? {};
   let ficha = fichaDoDono;
   if (tipo === 'physical' && p.ignoraReducaoFisica > 0 && rng() * 100 < p.ignoraReducaoFisica) ficha = { ...ficha, ignoraReducaoFisica: true };
+  if (p.ignoraResComEs > 0 && (l.es ?? 0) > 0 && ['fire', 'ice', 'energy'].includes(tipo)) ficha = { ...ficha, ignoraResElemental: true };
   const amaldicoado = Object.values(alvo?.maldicoes ?? {}).some((m) => (m?.ate ?? 0) > agora) || (alvo?.estados?.amaldicoado?.ate ?? 0) > agora;
   if (amaldicoado && p.penAmaldicoados > 0 && ['fire', 'ice', 'energy'].includes(tipo)) {
     const pen = ficha?.penetracao ?? { fisica: 0, elemental: 0, porElemento: {} };
@@ -838,14 +863,17 @@ export function golpeDoLacaio(l, alvo, fichaDoDono, tipo, agora, rng = Math.rand
   // a Harmonia Primordial) o do Golem × os TIPOS de Golem vivos (as gemas diferentes — ele mesmo conta).
   const recentePct = p.danoRecentePct > 0 && agora - (l.desde ?? -Infinity) <= (p.danoRecenteMs || 0) ? p.danoRecentePct : 0;
   const tiposDeGolem = l?.golem && p.danoPorTipoDeGolemPct > 0 ? new Set([l, ...(lacaios ?? [])].filter((x) => x?.golem && x.hp > 0).map((x) => x.gema ?? x.nome)).size : 0;
-  const agoraPct = recentePct + (p.danoPorTipoDeGolemPct ?? 0) * tiposDeGolem;
+  const armasAnimadas = p.danoPorArmaAnimadaPct > 0 ? (lacaios ?? []).filter((x) => x !== l && x?.hp > 0 && LacaiosAnimados.ehArmaAnimada(x.gema)).length : 0;
+  const agoraPct = recentePct + (p.danoPorTipoDeGolemPct ?? 0) * tiposDeGolem + (p.danoPorArmaAnimadaPct ?? 0) * armasAnimadas;
   const aumentado = agoraPct ? (1 + ((p.danoIncPct ?? 0) + agoraPct) / 100) / (1 + (p.danoIncPct ?? 0) / 100) : 1;
   // (lote 69: + "Lacaios causam Dano com Acertos e Afecções aumentado contra Inimigos Incendiados" e o Dano Dobrado em Vida Cheia)
   const incendiado = p.danoContraIncendiadosPct > 0 && (alvo?.dots ?? []).some((d) => d.tipo === 'queimadura' && d.falta > 0);
   const contraIncendiado = incendiado ? (1 + ((p.danoIncPct ?? 0) + p.danoContraIncendiadosPct) / 100) / (1 + (p.danoIncPct ?? 0) / 100) : 1;
   const dobrado = (p.danoDobrado ?? 0) + (l.hp >= l.maxHp ? p.danoDobradoVidaCheia ?? 0 : 0);
   // (lote E1a: + o "menos Dano" do Ceifador vivo nos outros lacaios e o "mais Dano por Lacaio Não-Golem próximo" do Golem da Carniça — `GemasE1a`)
-  const fator = (dobrado > 0 && rng() * 100 < dobrado ? 2 : 1) * aumentado * contraIncendiado * GemasE1a.fatorDoCeifador(l, lacaios) * GemasE1a.fatorPorNaoGolemPerto(l, lacaios);
+  // (06/11, o Devorador de Mentes: as suas Cargas de Frenesi no lacaio — 4% mais Dano cada; `l.cargasDoDono`, posto no tique dos lacaios)
+  const frenesiDoDono = p.cargasDoDono ? l.cargasDoDono?.frenesi ?? 0 : 0;
+  const fator = (dobrado > 0 && rng() * 100 < dobrado ? 2 : 1) * aumentado * contraIncendiado * GemasE1a.fatorDoCeifador(l, lacaios) * GemasE1a.fatorPorNaoGolemPerto(l, lacaios) * (1 + 0.04 * frenesiDoDono);
   const caosExtra = tipo === 'physical' && buffDoLacaio(l, 'poderProfano', agora) ? 1 : 0;
   return { fator, ficha, caosExtra, fogoExtra };
 }
@@ -934,7 +962,8 @@ export function danoNoLacaio(l, { fisico = 0, outros = 0, magia = false, rng = M
   // (lote 86, dono 19/10: a Égide Necromântica — "+X de Armadura se você Bloqueou Recentemente" do escudo, no lacaio que bloqueou nos últimos 4 s)
   const armadura = armaduraDoLacaio(l, relogio);
   const daArmadura = armadura > 0 && fisico > 0 ? (100 * armadura) / (armadura + 5 * fisico) : 0;
-  const red = Math.min(90, Math.max(0, (p.reducaoFisica ?? 0) + daArmadura));
+  // (06/11, o Devorador de Mentes: + 4% de Redução de Dano Físico por Carga de Tolerância sua)
+  const red = Math.min(90, Math.max(0, (p.reducaoFisica ?? 0) + daArmadura + (p.cargasDoDono ? 4 * (l.cargasDoDono?.tolerancia ?? 0) : 0)));
   let dano = fisico * (1 - red / 100) + outros;
   if (magia && p.supressao > 0 && rng() * 100 < p.supressao) dano *= 0.5;
   // (lote E2A: "Sentinelas Ascendidos sofrem 70% menos Dano" — vaal_upgrade_minion_damage_taken_+%_final, no acerto todo)

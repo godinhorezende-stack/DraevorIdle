@@ -63,6 +63,8 @@ function avancar(v, ateMs, semTempo = false) {
     v.vistas.add(k);
     if (v.parede?.(casa)) { v.s = s; return { tipo: 'parede', casa: ultimaLivre ?? { x: Math.round(v.de.x), y: Math.round(v.de.y) } }; }
     ultimaLivre = casa;
+    // (06/11, O Inexperiente: "Projéteis não podem colidir com Inimigos em Curto Alcance" — até 1 casa de onde o seu projétil saiu, ele passa)
+    if (v.semCurto && Math.max(Math.abs(casa.x - v.de.x), Math.abs(casa.y - v.de.y)) <= 1) continue;
     const alvo = v.colide(casa);
     if (alvo) { v.s = s; v.t = tempoAte(s, v.v0, v.perfil, ops); return { tipo: 'contato', alvo, casa }; }
   }
@@ -89,14 +91,16 @@ export function lancar(hunt, opcoes) {
   const { de, para = null, angulo = null, z = 0, alcance = 7, v0, perfil = null, agora = hunt?.clock ?? 0, colide, parede = null, aoContato, aoFim = null, fator = 1 } = opcoes;
   const destino = para ?? { x: de.x + Math.cos(angulo ?? 0), y: de.y + Math.sin(angulo ?? 0) };
   const c = caminho(de, destino, { alcance, perfil, angulo: para ? null : angulo });
-  const v = { de, z, alcance, v0, perfil, fator, caminho: c, sai: agora, s: 0, t: 0, vistas: new Set(), origem: chave({ x: Math.round(de.x), y: Math.round(de.y) }), colide, parede, aoContato, aoFim, inst: hunt?.instancia ?? null, ultimaLivre: null };
+  // (06/11, O Inexperiente: o SEU projétil — o que sai da sua casa — não colide em Curto Alcance; `hunt.poeProjeteisSemCurto`, da sua ficha)
+  const semCurto = !!hunt?.poeProjeteisSemCurto && !!hunt.pos && Math.round(de.x) === hunt.pos.x && Math.round(de.y) === hunt.pos.y;
+  const v = { de, z, alcance, v0, perfil, fator, caminho: c, sai: agora, s: 0, t: 0, vistas: new Set(), origem: chave({ x: Math.round(de.x), y: Math.round(de.y) }), colide, parede, aoContato, aoFim, inst: hunt?.instancia ?? null, ultimaLivre: null, ...(semCurto ? { semCurto: true } : {}) };
   const ms = para ? Math.round(tempoAte(Math.hypot(para.x - de.x, para.y - de.y) * (c.avanco > 0 ? c.comprimento / c.avanco : 1), v0, perfil, { alcance, fator })) : 0;
   const r = hunt ? doHunt(hunt) : null;
   // (o teto de projéteis no ar: o que passa dele anda o caminho todo agora — o voo de antes)
   const cheio = !r || r.voos.length >= VOO.maxVivos;
   // (o que nasce DENTRO de alguém — a Runa do vinculado, a Armadilha com o bicho em cima — o acerta primeiro: a casa de onde sai também conta)
   const casaDaOrigem = { x: Math.round(de.x), y: Math.round(de.y) };
-  const naOrigem = v.colide(casaDaOrigem);
+  const naOrigem = semCurto ? null : v.colide(casaDaOrigem);
   if (r && instantaneo()) {
     const res = naOrigem ? { tipo: 'contato', alvo: naOrigem, casa: casaDaOrigem } : avancar(v, Infinity, true);
     r.imediatos.push(() => resolver(v, res, true));

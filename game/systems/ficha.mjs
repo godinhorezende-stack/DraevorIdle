@@ -797,7 +797,10 @@ export function regenDoPoe(estado, af) {
   const vidaAumentada = (af.life_regen_pct ?? 0) + (af.recuperacao_inc ?? 0) + (af.recuperacao_vida_inc ?? 0);
   const manaAumentada = (af.mana_regen_pct ?? 0) + (af.recuperacao_mana_inc ?? 0);
   // ("Você não possui Regeneração de Vida", "Espaço de anel direito: Não pode Regenerar Mana"; "X% de Mana Regenerada por segundo".)
-  const regenDaVida = af.sem_regen_vida > 0 ? 0 : Math.max(0, ((af.life_regen ?? 0) + ((estado.maxHp ?? 0) * vidaPctDoMax) / 100) * (1 + vidaAumentada / 100));
+  // (06/11, o Espírito de Kaom: "Regenera 1 de Fúria por segundo por cada 200 de Recuperação de Vida por segundo da Regeneração" — a regeneração de antes do
+  // "não é aplicada": `vidaBruta`, que `condicoes-poe.tiqueDaFuria` lê)
+  const vidaBruta = Math.max(0, ((af.life_regen ?? 0) + ((estado.maxHp ?? 0) * vidaPctDoMax) / 100) * (1 + vidaAumentada / 100));
+  const regenDaVida = af.sem_regen_vida > 0 ? 0 : vidaBruta;
   // (Juramento do Zelote: "Regeneração de Vida é aplicada ao Escudo de Energia" — a vida não regenera; o escudo ganha o mesmo por segundo.)
   // (a keystone da árvore, `regen_vida_no_escudo`, e a que as PEÇAS dão — `keystone:juramentoDoZelote`/`sempre:` — pelo mesmo caminho)
   const noEscudo = Number(af.regen_vida_no_escudo) > 0 || Number(af['keystone:juramentoDoZelote']) > 0 || Number(af['sempre:juramentoDoZelote']) > 0;
@@ -806,7 +809,7 @@ export function regenDoPoe(estado, af) {
   const vidaPorSegundo = noEscudo || ModsPoe.vidaSoPeloDreno(af) ? 0 : regenDaVida * Math.max(0, 1 - (Number(af.regen_vida_menos) || 0) / 100);
   const esDaVida = noEscudo ? regenDaVida : 0;
   const manaPorSegundo = af.sem_regen_mana > 0 ? 0 : Math.max(0, (((estado.maxMana ?? 0) * (MANA_REGEN_BASE_POE + (af.mana_regen_max_pct ?? 0))) / 100 + (af.mana_regen ?? 0)) * (1 + manaAumentada / 100));
-  return { vidaPorSegundo, manaPorSegundo, vidaPctDoMax, vidaAumentada, manaAumentada, vidaFixa: af.life_regen ?? 0, manaFixa: af.mana_regen ?? 0, ...(esDaVida ? { esDaVida } : {}) };
+  return { vidaPorSegundo, manaPorSegundo, vidaPctDoMax, vidaAumentada, manaAumentada, vidaFixa: af.life_regen ?? 0, manaFixa: af.mana_regen ?? 0, vidaBruta, ...(esDaVida ? { esDaVida } : {}) };
 }
 
 function origensDaFicha({ estado, af, arv, doAtributo, esp, principais, somaDosItens, gem, buff }) {
