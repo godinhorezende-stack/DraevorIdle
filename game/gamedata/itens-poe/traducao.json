@@ -22417,6 +22417,20 @@
       "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
     },
     {
+      "padrao": "^(?!.*Suportad[ao]s? por Fortificar).*(?:Fortificaç(?:ão|ões)|Fortificad[oa]s?|Fortifica[mr]?)\\b.*$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo tem a Fortificação (as linhas com regra própria valem), mas não esta mecânica dela",
+      "_nova": true,
+      "_unico": true,
+      "_07_11q": "07/11 — volta a genérica da Fortificação tirada no lote 10, só para as linhas sem regra própria (o teste zerar-arvore-lote71:51)"
+    },
+    {
       "padrao": "^.*(?:Experiência|Pergaminho da Sabedoria|Itens Mágicos encontrados são Identificados|Quantidade de Ouro|Quantidade de Itens).*$",
       "efeitos": [
         {
