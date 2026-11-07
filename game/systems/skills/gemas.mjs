@@ -245,6 +245,7 @@ export function registrarAtiva({ itemId, entry, gema, tabelaDeXp = gema, categor
     poe: { slug: gema.slug, cor: gema.cor, icone: gema.icone ?? null, en: gema.en },
     // (07/11, lote 13 das inertes) a habilidade que só um único concede: não cai, não é vendida, não sai da Lente (`sortearDrop`, `catalogoDaLoja`, `comprarNaLoja`, a Lente)
     ...(gema.soDoItem ? { soDoItem: true } : {}),
+    ...(gema.apelidos?.length ? { apelidos: gema.apelidos } : {}),
     // A XP por nível: a da gema ou, sem ela no arquivo, a da gema de base (`tabelaDeXp`, de `GemasPoe.gemaDaTabelaDeXp`).
     poeXp: tabelaDeXpDoPoe(tabelaDeXp),
   };
@@ -693,6 +694,7 @@ export function ativasDoMesmoGrupo(estado, acao) {
   return [];
 }
 
+const APELIDOS_DAS_GEMAS = Object.freeze({ 'teleporta-relampejante': 'Lightning_Warp', 'clamor-tolerante': 'Enduring_Cry', mangra: 'Blight', atirador: 'Snipe' });
 /** As gemas pelo NOME (`slugDoNome`): as ativas e os suportes — o que as peças do PoE nomeiam ("Concede a Habilidade X"). */
 let PELO_NOME = null;
 function pelosNomes() {
@@ -701,7 +703,13 @@ function pelosNomes() {
   for (const d of DEFS.values()) {
     if (!d.poe) continue;
     (d.tipo === 'support' ? PELO_NOME.suportes : PELO_NOME.ativas).set(ModsPoe.slugDoNome(d.nome), d);
+    // (07/11, lote 13c: os nomes com que os únicos chamam a habilidade — "Nova de Ossos" é a Nova Óssea — `apelidos` da habilidade de item)
+    for (const a of d.apelidos ?? []) if (!PELO_NOME.ativas.has(ModsPoe.slugDoNome(a))) PELO_NOME.ativas.set(ModsPoe.slugDoNome(a), d);
   }
+  // (os das gemas que o jogo já tem, com outro nome no texto do único: a Asa do Dobrador da Lua chama o Teleporte de "Teleporta"; o Sinete de Kaom, o Clamor Fortalecedor de
+  // "Clamor Tolerante"; a Alelopatia, a Infestação de "Mangra"; o Assailum, o Atirar de "Atirador")
+  const porSlug = new Map([...DEFS.values()].filter((d) => d.poe?.slug).map((d) => [d.poe.slug, d]));
+  for (const [apelido, slug] of Object.entries(APELIDOS_DAS_GEMAS)) if (porSlug.has(slug) && !PELO_NOME.ativas.has(apelido)) PELO_NOME.ativas.set(apelido, porSlug.get(slug));
   return PELO_NOME;
 }
 export const ativaPeloNome = (slug) => pelosNomes().ativas.get(slug) ?? null;

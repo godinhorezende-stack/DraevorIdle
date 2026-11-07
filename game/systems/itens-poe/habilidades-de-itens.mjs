@@ -86,6 +86,13 @@ export const FEITAS = Object.freeze({
   } },
   // Chamas Próximas (a Abordagem da Aniquilação): Tocado pelas Chamas por 4 s (o PoE não publica) — o que vale enquanto Tocado são as linhas do único
   Approaching_Flames: { nome: 'Chamas Próximas', recargaMs: 5000, nota: 'Tocado pelas Chamas por 4 s (o PoE não publica a duração)', usar: ({ hunt, agora }) => ganharBuff(hunt, 'tocadoPelaChama', 4, agora) },
+  // Concentrar (o Hiperbóreo concede): Concentrado por 4 s; a recarga (8 s) não corre durante o efeito — 12 s ao todo, ÷ a "Velocidade da Recuperação da Recarga da
+  // Concentração"; o Hiperbóreo: "Resfria Inimigos próximos quando você se Concentra" (os monstros a até 3 casas, 4 s — o PoE não publica o raio nem a duração)
+  Focus: { nome: 'Concentrar', recargaMs: (af) => 12000 / Math.max(0.1, 1 + (Number(af?.concentracao_recarga_inc) || 0) / 100), nota: 'o Resfriamento do Hiperbóreo pega os monstros a até 3 casas por 4 s (o PoE não publica)', usar: ({ hunt, agora, af }) => {
+    ganharBuff(hunt, 'concentrado', 4, agora);
+    const pct = Number(af?.concentrar_resfria_pct) || 0;
+    if (pct > 0) for (const m of perto(hunt, 3)) aplicarEstados(m, { lentidaoPct: pct, lentidaoDuracaoPct: (4000 / 3000 - 1) * 100 }, 1, agora, Math.random, !!hunt.isBoss);
+  } },
   // Pacificar (o Supressor de Mentes): a maldição sai pelo caminho de sempre das maldições; o amaldiçoado, com 60% da duração passados, não causa dano (`condicoes-poe.doBicho`)
   Pacify: { nome: 'Pacificar', nota: 'a maldição (10 s) pelo caminho de sempre; com 60% dela passados, o amaldiçoado não causa dano' },
   // Gula dos Elementos (o Sangue da Corrupção — Vaal: no jogo, a recarga no lugar das Almas): 5 s imune a Maldições e sem Dano Elemental sofrido
@@ -98,13 +105,14 @@ export const FEITAS = Object.freeze({
 export const feita = (slug) => FEITAS[slug] ?? null;
 
 /** O USO da habilidade feita à mão (o caminho do uso — `acoes`): a recarga dela e o efeito. Devolve `{ ok, eventos }`. */
-export function usar(estado, hunt, slug, { id, nivel = 20, alvo = null, eventos = [], agora = hunt?.clock ?? 0, resistir = null } = {}) {
+export function usar(estado, hunt, slug, { id, nivel = 20, alvo = null, eventos = [], agora = hunt?.clock ?? 0, resistir = null, af = {} } = {}) {
   const h = FEITAS[slug];
   if (!h?.usar || !hunt) return { ok: false, eventos };
   const cds = (hunt.cooldowns ??= {});
-  if (h.recargaMs && cds[id]?.ate > agora) return { ok: false, erro: 'Em recarga.', motivo: 'RECARGA', eventos };
-  if (h.recargaMs) cds[id] = { ate: agora + h.recargaMs, total: h.recargaMs };
-  h.usar({ estado, hunt, nivel, alvo, eventos, agora, resistir });
+  const recarga = typeof h.recargaMs === 'function' ? h.recargaMs(af) : h.recargaMs;
+  if (recarga && cds[id]?.ate > agora) return { ok: false, erro: 'Em recarga.', motivo: 'RECARGA', eventos };
+  if (recarga) cds[id] = { ate: agora + recarga, total: recarga };
+  h.usar({ estado, hunt, nivel, alvo, eventos, agora, resistir, af });
   return { ok: true, eventos };
 }
 
@@ -114,5 +122,7 @@ export function tique(hunt, af, slugDoNome, agora = hunt?.clock ?? 0) {
   for (const [slug, h] of Object.entries(FEITAS)) {
     if (!h.continua || !(Number(af?.[`concede:${slugDoNome(h.nome)}`]) > 0)) continue;
     degenEmVolta(hunt, { ...h.continua, chave: `habilidade:${slug}` }, agora);
+    // (a Chama da Esperança: "Causa Exposição ao Fogo ao atingir inimigos com 5 Escórias" — os monstros nas Escórias ficam com ela)
+    if (slug === 'Cinders' && Number(af?.escorias_exposicao_pct) > 0) for (const m of perto(hunt, h.continua.raio)) (m.estados ??= {}).escoriasExposicao = { ate: agora + 1000, pct: Number(af.escorias_exposicao_pct) };
   }
 }

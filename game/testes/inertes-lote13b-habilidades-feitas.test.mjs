@@ -49,6 +49,7 @@ const cargas = (e, tipo) => { const c = e.hunt.cargasPoe?.[tipo]; return c && c.
 
 const ARN = ['Ganha Cargas Brutais ao invés de Cargas de Tolerância', 'Máximo de Cargas Brutais é igual ao Máximo de Cargas de Tolerância', 'Modificadores ao Mínimo de Cargas de Tolerância são aplicados ao Mínimo de Cargas Brutais ao invés'];
 const HI = await import('../systems/itens-poe/habilidades-de-itens.mjs');
+const GS = await import('../systems/skills/gemas.mjs');
 const bicho = (e) => {
   const h = e.hunt;
   const [a, ...outros] = h.monstros;
@@ -103,4 +104,19 @@ test('as linhas dos únicos que disparam: o Nevoeiro de Guerra na Armadilha, o O
   assert.deepEqual(t('Ativa Nevoeiro de Guerra nível 20 quando sua Armadilha é ativada').efeitos, [{ stat: 'ev:armadilha:gatilho:nevoeiro-de-guerra', valor: 20 }]);
   assert.notEqual(t('Ativa Banquete de Carne Nível 15 a cada 5 segundos').estado, 'inerte');
   assert.notEqual(t('Ativa Banquete de Carne Nível 15 a cada 5 segundos').estado, 'registrado');
+});
+
+test('(13c) os apelidos: "Teleporta Relampejante" é o Teleporte Relampejante, "Nova de Ossos" é a Nova Óssea; o Rebento a cada 4 s; a Concentrar Resfria (o Hiperbóreo)', { skip: SEM }, () => {
+  const Gemas = GS;
+  assert.equal(Gemas.ativaPeloNome('teleporta-relampejante')?.poe?.slug, 'Lightning_Warp');
+  assert.equal(Gemas.ativaPeloNome('clamor-tolerante')?.poe?.slug, 'Enduring_Cry');
+  assert.equal(Gemas.ativaPeloNome('nova-de-ossos')?.poe?.slug, 'Bone_Nova');
+  assert.notEqual(t('Ativa Invocar Rebento da Escuridão nível 20 a cada 4 segundos').estado, 'inerte');
+  const e = personagem(['Resfria Inimigos próximos quando você se Concentra, causando 30% de redução da Velocidade de Ação']);
+  const h = e.hunt;
+  const a = bicho(e);
+  assert.ok(HI.usar(e, h, 'Focus', { id: 'f1', agora: h.clock, af: ficha(e).afPoe }).ok);
+  assert.ok(h.poeBuffs.concentrado > h.clock);
+  assert.ok(a.estados.lento?.pct > 0);
+  assert.equal(HI.usar(e, h, 'Focus', { id: 'f1', agora: h.clock + 11000, af: ficha(e).afPoe }).ok, false, 'recarga de 12 s');
 });

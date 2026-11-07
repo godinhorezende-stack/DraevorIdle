@@ -9692,6 +9692,24 @@
       "combate": true,
       "nome": "Dano de Fogo por segundo enquanto Tocado pelas Chamas",
       "efeito": "mods-poe.tiqueDosAspectos (07/11, lote 13b)"
+    },
+    "concentrar_resfria_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Resfria ao se Concentrar",
+      "efeito": "habilidades-de-itens (07/11)"
+    },
+    "concentracao_recarga_inc": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Recarga da Concentração",
+      "efeito": "habilidades-de-itens (07/11)"
+    },
+    "escorias_exposicao_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Exposição ao Fogo das Escórias",
+      "efeito": "habilidades-de-itens (07/11)"
     }
   }
 }

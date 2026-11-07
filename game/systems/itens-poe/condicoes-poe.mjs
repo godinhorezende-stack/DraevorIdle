@@ -1396,6 +1396,7 @@ export const BUFFS = {
   gulaDosElementos: { nome: 'Gula dos Elementos', af: { imune_maldicao: 1, dano_elemental_recebido_inc: -1000 } },
   formaSombria: { nome: 'Forma Sombria', af: { dano_physical_recebido_inc: -1000 } },
   insano: { nome: 'Insano', af: {} },
+  concentrado: { nome: 'Concentrado', af: {} },
   tocadoPelaChama: { nome: 'Tocado pelas Chamas', af: {} },
   // (lote F) Vento Favorável (o lembrete do PoE: Velocidade de Ação aumentada — aqui, as velocidades de ataque, conjuração e movimento).
   // (lote 30, P027: "Vento Favorável aumenta a Velocidade de Ação em 8%" — o lembrete do próprio nó; era +10% de ataque, conjuração e movimento)
@@ -3788,7 +3789,7 @@ export function resMenosDasAfeccoes(alvo, agora, tipo) {
   // (lote 28: + o Definhado — "têm −X% de todas as Resistências", nos quatro tipos, somado às das afecções)
   // (06/11, lote 7: + as Teias da Mortalha de Fenumus — "possuem -X% de Todas as Resistências", somado como o do Definhado)
   // (+ 07/11, lote 13b: o Olhar Vazio — "Inimigos ganham -20% de Resistência a Caos")
-  const definhado = (['fire', 'ice', 'energy', 'chaos'].includes(tipo) && e.resMenosDefinhado > 0 && ativo(e.definhado, agora) ? e.resMenosDefinhado : 0) + (['fire', 'ice', 'energy', 'chaos'].includes(tipo) && ativo(e.teias, agora) ? e.teias.resMenos ?? 0 : 0) + (tipo === 'chaos' && ativo(e.olharVazio, agora) ? e.olharVazio.pct ?? 0 : 0);
+  const definhado = (['fire', 'ice', 'energy', 'chaos'].includes(tipo) && e.resMenosDefinhado > 0 && ativo(e.definhado, agora) ? e.resMenosDefinhado : 0) + (['fire', 'ice', 'energy', 'chaos'].includes(tipo) && ativo(e.teias, agora) ? e.teias.resMenos ?? 0 : 0) + (tipo === 'chaos' && ativo(e.olharVazio, agora) ? e.olharVazio.pct ?? 0 : 0) + (tipo === 'fire' && ativo(e.escoriasExposicao, agora) ? e.escoriasExposicao.pct ?? 0 : 0);
   // (lote 69: + o "−X% de Resistência a Fogo" do Incendiado, somado)
   const doFogo = tipo === 'fire' && e.resMenosFogo > 0 && dot('queimadura') ? e.resMenosFogo : 0;
   if (['fire', 'ice', 'energy'].includes(tipo) && e.resMenosElemental > 0 && (dot('queimadura') || ativo(e.lento, agora))) return e.resMenosElemental + definhado + doFogo;

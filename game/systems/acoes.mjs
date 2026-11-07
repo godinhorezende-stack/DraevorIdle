@@ -4977,7 +4977,7 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
   if (itensPoeLigado() && HabilidadesDeItens.feita(entry.poeGema?.slug)?.usar) {
     const ficha = Ficha.combate(estado);
     const nivel = ativas().get(entry.id)?.nivel ?? 20;
-    const r = HabilidadesDeItens.usar(estado, hunt, entry.poeGema.slug, { id: entry.id, nivel, alvo, agora: hunt.clock ?? 0, resistir: (m, tipo, v) => resistido(hunt, m, tipo, v, ficha) });
+    const r = HabilidadesDeItens.usar(estado, hunt, entry.poeGema.slug, { id: entry.id, nivel, alvo, agora: hunt.clock ?? 0, af: ficha.afPoe ?? {}, resistir: (m, tipo, v) => resistido(hunt, m, tipo, v, ficha) });
     if (r.ok) Ficha.invalidar(estado);
     return r;
   }

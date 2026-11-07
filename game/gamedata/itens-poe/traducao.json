@@ -14,6 +14,192 @@
   ],
   "regras": [
     {
+      "padrao": "^Resfria Inimigos próximos quando você se Concentra, causando \\{(\\d+)\\}% de redução da Velocidade de Ação$",
+      "efeitos": [
+        {
+          "stat": "concentrar_resfria_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade da Recuperação da Recarga da Concentração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "concentracao_recarga_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^grant focus skill \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "concede:concentracao",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a parte do item que concede a Concentração (no PoE, sem texto no balão)",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa a Arma do Guardião Animado Nível \\{(\\d+)\\} quando o Guardião Animado Matar um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:matarLacaio:gatilho:arma-do-guardiao-animado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "quando um lacaio seu mata (o jogo não separa o abate do Guardião Animado)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Ativar a Arma do Guardião Animado Nível \\{(\\d+)\\} quando a Arma Animada Matar um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:matarLacaio:gatilho:arma-do-guardiao-animado:{V1}",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "quando um lacaio seu mata (o jogo não separa o abate da Arma Animada)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Invocar Rebento da Escuridão nível \\{(\\d+)\\} a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "periodico:{V2}:gatilho:invocar-rebento-da-escuridao",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a cada N segundos com um monstro perto (o disparo periódico do jogo)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do dano dos acertos é absorvido da vida de cada Rebento da Escuridão antes de chegar até você$",
+      "efeitos": [
+        {
+          "stat": "dano_recebido_mais%lacaio:Rebento",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "X% menos dano sofrido por Rebento vivo (o PoE tira da Vida dele: o jogo não divide o golpe)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\}% do dano não caótico como dano de caos adicional por Rebento da Escuridão invocado$",
+      "efeitos": [
+        {
+          "stat": "naocaos_as_extra_chaos%lacaio:Rebento",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Ativar Convocar Espírito de Akoya ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:gatilho:convocar-espirito-de-akoya:{V1}",
+          "valor": "20"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o nível do Espírito: 20 (a linha não diz)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Causa Exposição ao Fogo ao atingir inimigos com \\{(\\d+)\\} Escórias em Chamas, aplicando \\{(\\d+)\\}% à resistência a dano de fogo$",
+      "efeitos": [
+        {
+          "stat": "escorias_exposicao_pct",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os monstros nas suas Escórias (a até 2 casas) ficam com a Exposição ao Fogo enquanto queimam (o jogo não conta as Escórias)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Movimento aumentada em \\{(\\d+)\\}% enquanto você tiver um Lacaio Bestial$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@lacaio:Rhoa",
+          "valor": "{1}"
+        },
+        {
+          "stat": "move_speed@lacaio:Rhoa",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(-?\\d+)\\} de Dano Físico sofrido quando acertado por Animais$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "os monstros do jogo não têm a marca de Animal (o PoE: as Bestas)",
+      "_07_11c": "07/11 — lote 13c das inertes",
+      "_nova": true
+    },
+    {
+      "padrao": "^Projéteis de ataques mutilam ao atingir enquanto você tiver um lacaio bestial$",
+      "efeitos": [
+        {
+          "stat": "chance_mutilar@ataque+projetil+lacaio:Rhoa",
+          "valor": "100"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Golpe Invisível Nível \\{(\\d+)\\} a cada \\{(\\d+(?:\\.\\d+)?)\\} segundos enquanto Trespassando$",
+      "efeitos": [
+        {
+          "stat": "periodico:{V2}:gatilho:golpe-invisivel@buff:trespassar",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
       "padrao": "^\\{(\\d+)\\}% mais Chance de Golpe Crítico enquanto Insano$",
       "efeitos": [
         {
@@ -21390,19 +21576,6 @@
       ],
       "estado": "inerte",
       "nota": "o Massacre (Fúria das habilidades Vaal) não existe no jogo",
-      "_nova": true,
-      "_unico": true
-    },
-    {
-      "padrao": "^.*(?:Bestial|Animais).*$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "os lacaios Bestiais não existem no jogo",
       "_nova": true,
       "_unico": true
     },
@@ -47327,45 +47500,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Resfria Inimigos próximos quando você se Concentra, causando \\{(\\d+)\\}% de redução da Velocidade de Ação$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Concentração (a habilidade Foco do PoE)",
-      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Velocidade da Recuperação da Recarga da Concentração aumentada em \\{(\\d+)\\}%$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Concentração (a habilidade Foco do PoE)",
-      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^grant focus skill \\[\\{(\\d+)\\}\\]$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Concentração (a habilidade Foco do PoE)",
-      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^Você pode ter uma Ofe?re?nda de cada tipo$",
       "efeitos": [
         {
@@ -47868,19 +48002,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Projéteis de ataques mutilam ao atingir enquanto você tiver um lacaio bestial$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem lacaios Bestiais (a Rhoa)",
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^Acrobacia$",
       "efeitos": [
         {
@@ -48168,32 +48289,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Ativa a Arma do Guardião Animado Nível \\{(\\d+)\\} quando o Guardião Animado Matar um Inimigo$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Arma do Guardião Animado (a habilidade própria que o PoE ativa pelo abate)",
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^\\{(\\d+)\\}% de chance de Ativar a Arma do Guardião Animado Nível \\{(\\d+)\\} quando a Arma Animada Matar um Inimigo$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Arma do Guardião Animado (a habilidade própria que o PoE ativa pelo abate)",
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^animate guardian and weapon track on kill \\[\\{(\\d+)\\}\\]$",
       "efeitos": [
         {
@@ -48236,45 +48331,6 @@
           "valor": "{1}"
         }
       ],
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ativa Invocar Rebento da Escuridão nível \\{(\\d+)\\} a cada \\{(\\d+)\\} segundos$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Rebento da Escuridão",
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^\\{(\\d+)\\}% do dano dos acertos é absorvido da vida de cada Rebento da Escuridão antes de chegar até você$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Rebento da Escuridão",
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ganha \\{(\\d+)\\}% do dano não caótico como dano de caos adicional por Rebento da Escuridão invocado$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Rebento da Escuridão",
       "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
       "_nova": true
     },
@@ -49386,19 +49442,6 @@
       "_nova": true
     },
     {
-      "padrao": "^\\{(\\d+)\\}% de chance de Ativar Convocar Espírito de Akoya ao Matar$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Espírito de Akoya",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^Feitiços não-Aura expiram ao atingirem (?:\\{(\\d+)\\})?% do Efeito base$",
       "efeitos": [
         {
@@ -50303,19 +50346,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Causa Exposição ao Fogo ao atingir inimigos com \\{(\\d+)\\} Escórias em Chamas, aplicando \\{(\\d+)\\}% à resistência a dano de fogo$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem as Escórias da Chama da Esperança",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^Ganha Vosso Abraço por \\{(\\d+)\\} segundos quando você Incendeia um Inimigo$",
       "efeitos": [
         {
@@ -51048,19 +51078,6 @@
       ],
       "estado": "lembrete",
       "nota": "a restrição de uso da peça (o jogo não a cobra)",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ativa Golpe Invisível Nível \\{(\\d+)\\} a cada \\{(\\d+)\\} segundos enquanto Trespassando$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Golpe Invisível",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
       "_nova": true
     },

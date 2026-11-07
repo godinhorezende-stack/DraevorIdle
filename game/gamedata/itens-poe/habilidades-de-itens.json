@@ -122,6 +122,85 @@
    "soDoItem": true
   },
   {
+   "slug": "Animate_Guardians_Weapon",
+   "nome": "Animar Arma do Guardião",
+   "en": "Animate Guardian's Weapon",
+   "cor": "azul",
+   "nivelReq": 1,
+   "tags": [
+    "Duração",
+    "Lacaio",
+    "Magia",
+    "Ativação",
+    "Corpo a Corpo"
+   ],
+   "tipos": [
+    "Triggerable",
+    "Duration",
+    "Minion",
+    "MinionsCanExplode",
+    "Spell",
+    "Totemable",
+    "InbuiltTrigger",
+    "Triggered",
+    "CreatesMinion",
+    "Physical MinionType Attack",
+    "Melee",
+    "MeleeSingleTarget",
+    "Multistrikeable",
+    "ThresholdJewelProjectile",
+    "ProjectilesFromUser",
+    "ThresholdJewelRangedAttack"
+   ],
+   "props": [
+    "Nível: (18 — 20)",
+    "Recarga: 0.05 seg",
+    "Tempo de Conjuração: 0.80 seg"
+   ],
+   "mods": [
+    "Duração base é de 20 segundos",
+    "+(13 — 14) ao Máximo de Armas Animadas",
+    "(10 — 100)% de chance de Ativar essa Habilidade quando uma Arma Animada Matar um Inimigo",
+    "Ataques de Lacaios causam (108 — 126) a (159 — 184) de Dano Físico adicional"
+   ],
+   "qualidade": [],
+   "desc": "Anima uma cópia da arma principal do seu Guardião Animado para lutar ao seu lado.",
+   "icone": null,
+   "colunas": [
+    "Nível",
+    "RequerNível",
+    "Base Damage",
+    "10 % de chance de Ativar essa Habilidade quando uma Arma Animada Matar um Inimigo",
+    "Ataques de Lacaios causam 108 a 159 de Dano Físico adicional",
+    "+13 ao Máximo de Armas Animadas",
+    "Experiência"
+   ],
+   "linhas": [
+    [
+     "18",
+     "64",
+     "100%, 100%, 100%",
+     "10",
+     "108, 159",
+     "13",
+     ""
+    ],
+    [
+     "20",
+     "70",
+     "100%, 100%, 100%",
+     "100",
+     "126, 184",
+     "14",
+     ""
+    ]
+   ],
+   "soDoItem": true,
+   "apelidos": [
+    "Arma do Guardião Animado"
+   ]
+  },
+  {
    "slug": "Approaching_Flames",
    "nome": "Chamas Próximas",
    "en": "Approaching Flames",
@@ -334,6 +413,60 @@
    "soDoItem": true
   },
   {
+   "slug": "Bone_Nova",
+   "nome": "Nova Óssea",
+   "en": "Bone Nova",
+   "cor": "azul",
+   "nivelReq": 1,
+   "tags": [
+    "Ataque",
+    "Projétil",
+    "Ativação"
+   ],
+   "tipos": [
+    "Attack",
+    "RangedAttack",
+    "Projectile",
+    "ProjectilesFromUser",
+    "Damage",
+    "Triggerable",
+    "Triggered",
+    "InbuiltTrigger",
+    "Cooldown"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 0.50 seg",
+    "Dano de Ataque: 150% de base",
+    "Eficácia do Dano Adicionado: 150%"
+   ],
+   "mods": [
+    "Dispara 8 Projéteis adicionais",
+    "Dispara Projéteis em um círculo",
+    "Ativa esta Habilidade quando você Acertar um Inimigo Sangrando",
+    "Não Pode causar Sangramento"
+   ],
+   "qualidade": [],
+   "desc": "Ossos irrompem ao seu redor, causando dano físico.",
+   "icone": null,
+   "colunas": [
+    "Nível",
+    "RequerNível",
+    "Experiência"
+   ],
+   "linhas": [
+    [
+     "20",
+     "1",
+     ""
+    ]
+   ],
+   "soDoItem": true,
+   "apelidos": [
+    "Nova de Ossos"
+   ]
+  },
+  {
    "slug": "Brandsurge",
    "nome": "Explosão Rúnica",
    "en": "Brandsurge",
@@ -449,10 +582,7 @@
    "nivelReq": 1,
    "tags": [],
    "tipos": [],
-   "props": [
-    "Morto-vivo",
-    ""
-   ],
+   "props": [],
    "mods": [],
    "qualidade": [],
    "desc": "",
@@ -557,6 +687,48 @@
     [
      "10",
      "1",
+     ""
+    ]
+   ],
+   "soDoItem": true
+  },
+  {
+   "slug": "Corpse_Walk",
+   "nome": "Andarilho Cadavérico",
+   "en": "Corpse Walk",
+   "cor": "azul",
+   "nivelReq": 1,
+   "tags": [
+    "Área",
+    "Ativação"
+   ],
+   "tipos": [
+    "Area",
+    "Triggerable",
+    "Triggered",
+    "InbuiltTrigger",
+    "CreatesCorpse"
+   ],
+   "props": [
+    "Nível: 20"
+   ],
+   "mods": [
+    "Nível dos Corpos Criados é igual ao nível da área, máximo de Nível 100",
+    "Esta Magia é Ativada quando Ganha",
+    "Esta Habilidade não Custa Nada"
+   ],
+   "qualidade": [],
+   "desc": "Cria cadáveres ao seu redor enquanto você se move baseado nos monstros da área atual. Se você utilizar uma habilidade Evocar Espectro, há uma chance de criar cadáveres espectrais iguais aos seus Espectros evocados mais recentes. Somente habilidades de Lacaios podem interagir com cadáveres espectrais.",
+   "icone": null,
+   "colunas": [
+    "Nível",
+    "RequerNível",
+    "Experiência"
+   ],
+   "linhas": [
+    [
+     "20",
+     "60",
      ""
     ]
    ],
@@ -675,6 +847,56 @@
      "20",
      "62",
      "100%, 100%, 100%",
+     ""
+    ]
+   ],
+   "soDoItem": true
+  },
+  {
+   "slug": "Death_Walk",
+   "nome": "Passo da Morte",
+   "en": "Death Walk",
+   "cor": "azul",
+   "nivelReq": 1,
+   "tags": [
+    "Área",
+    "Ativação",
+    "Magia",
+    "Fogo"
+   ],
+   "tipos": [
+    "Area",
+    "Triggerable",
+    "Triggered",
+    "Spell",
+    "Damage",
+    "InbuiltTrigger",
+    "Fire",
+    "AreaSpell"
+   ],
+   "props": [
+    "Nível: 20",
+    "Tempo de Conjuração: 1.00 seg"
+   ],
+   "mods": [
+    "Explosão causa Dano de Fogo base igual a 5% da Vida máxima do cadáver",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade não pode Empurrar Inimigos",
+    "Esta Magia é Ativada quando Ganha",
+    "Esta Habilidade não Custa Nada"
+   ],
+   "qualidade": [],
+   "desc": "Enquanto você caminha, essa habilidade faz com que cadáveres perto de seus passos explodam, causando dano de fogo em uma área. As explosões dos cadáveres não são afetadas por modificadores de dano mágico, e não podem ser refletidas.",
+   "icone": null,
+   "colunas": [
+    "Nível",
+    "RequerNível",
+    "Experiência"
+   ],
+   "linhas": [
+    [
+     "20",
+     "60",
      ""
     ]
    ],
@@ -1112,8 +1334,7 @@
    "cor": "branca",
    "nivelReq": 1,
    "tags": [
-    "Spell",
-    "Triggerable"
+    "Magia"
    ],
    "tipos": [],
    "props": [
@@ -1173,6 +1394,52 @@
     ]
    ],
    "soDoItem": true
+  },
+  {
+   "slug": "Focus",
+   "nome": "Concentrar",
+   "en": "Focus",
+   "cor": "azul",
+   "nivelReq": 1,
+   "tags": [
+    "Magia"
+   ],
+   "tipos": [
+    "Buff",
+    "Spell",
+    "Instant",
+    "Cooldown"
+   ],
+   "props": [
+    "Recarga: 8.00 seg",
+    "Tempo de Conjuração: Instantâneo"
+   ],
+   "mods": [
+    "Utilizar Habilidades Suportadas é Instantâneo",
+    "Duração base é de 4 segundos",
+    "A expiração do Buff não pode ser modificada",
+    "A Recarga desta Habilidade não é recuperada durante seu efeito",
+    "A Duração desta Habilidade não pode ser modificada"
+   ],
+   "qualidade": [],
+   "desc": "Concentra seu poder, concedendo a si mesmo o buff Concentrado.",
+   "icone": null,
+   "colunas": [
+    "Nível",
+    "RequerNível",
+    "Experiência"
+   ],
+   "linhas": [
+    [
+     "1",
+     "1",
+     ""
+    ]
+   ],
+   "soDoItem": true,
+   "apelidos": [
+    "Concentração"
+   ]
   },
   {
    "slug": "Fog_of_War",
@@ -1303,7 +1570,6 @@
    "props": [
     "Recarga: 0.50 seg",
     "Almas por Utilização: 100",
-    "Pode Armazenar 1 Utilização",
     "Impedimento de Ganho de Almas: 14 seg",
     "Tempo de Conjuração: Instantâneo"
    ],
@@ -2228,6 +2494,74 @@
    "soDoItem": true
   },
   {
+   "slug": "Icicle_Burst",
+   "nome": "Explosão Estalactitea",
+   "en": "Icicle Burst",
+   "cor": "azul",
+   "nivelReq": 1,
+   "tags": [
+    "Ataque",
+    "Projétil",
+    "Ativação",
+    "Gelo"
+   ],
+   "tipos": [
+    "Attack",
+    "RangedAttack",
+    "Projectile",
+    "ProjectilesFromUser",
+    "Damage",
+    "Triggerable",
+    "Triggered",
+    "InbuiltTrigger",
+    "Cold",
+    "Cooldown"
+   ],
+   "props": [
+    "Nível: (10 — 20)",
+    "Recarga: (0.50 — 0.30) seg",
+    "Dano de Ataque: (125 — 200)% de base",
+    "Eficácia do Dano Adicionado: (125 — 200)%"
+   ],
+   "mods": [
+    "Dispara 8 Projéteis adicionais",
+    "100% do Dano Físico Convertido para Dano de Gelo",
+    "Dispara Projéteis em um círculo",
+    "Não Pode Congelar",
+    "Ativa esta Habilidade ao Acertar um Inimigo Congelado"
+   ],
+   "qualidade": [],
+   "desc": "Este ataque dispara projéteis gélidos em um círculo ao redor dos inimigos mortos por você, causando dano de ataque com todo o dano físico convertido para gelo.",
+   "icone": null,
+   "colunas": [
+    "Nível",
+    "RequerNível",
+    "CooldownTime",
+    "Base Damage",
+    "Experiência"
+   ],
+   "linhas": [
+    [
+     "10",
+     "1",
+     "500",
+     "125%, 125%, 125%",
+     ""
+    ],
+    [
+     "20",
+     "1",
+     "300",
+     "200%, 200%, 200%",
+     ""
+    ]
+   ],
+   "soDoItem": true,
+   "apelidos": [
+    "Explosão de Sincelo"
+   ]
+  },
+  {
    "slug": "Lightning_Bolt",
    "nome": "Disparo Elétrico",
    "en": "Lightning Bolt",
@@ -2485,6 +2819,65 @@
    "soDoItem": true
   },
   {
+   "slug": "Manifest_Dancing_Dervishes",
+   "nome": "Manifestar Dervixes Dançarinos",
+   "en": "Manifest Dancing Dervishes",
+   "cor": "azul",
+   "nivelReq": 1,
+   "tags": [
+    "Magia",
+    "Lacaio",
+    "Corpo a Corpo",
+    "Área",
+    "Movimento"
+   ],
+   "tipos": [
+    "Spell",
+    "Minion",
+    "MinionsCanExplode",
+    "Triggerable",
+    "InbuiltTrigger",
+    "MinionsPersistWhenSkillRemoved",
+    "CreatesMinion",
+    "Cooldown",
+    "Triggered MinionType Attack",
+    "Melee",
+    "Area",
+    "Movement"
+   ],
+   "props": [
+    "Nível: 15",
+    "Recarga: 0.50 seg",
+    "Tempo de Conjuração: 1.00 seg"
+   ],
+   "mods": [
+    "Velocidade de Movimento dos Lacaios aumentada em 30%",
+    "100% de chance de Ativar esta Magia quando Furioso",
+    "Lacaios têm 25% de Velocidade de Ataque aumentada",
+    "Lacaios tem o Dano do Ataque aumentado em 110%",
+    "25% de chance de ganhar uma Morte de Fúria quando Lacaios acertarem um Inimigo Raro ou Único"
+   ],
+   "qualidade": [],
+   "desc": "Manifesta dois Dervixes Dançarinos para lutar ao seu lado. Enquanto um Dervixe Dançarino estiver manifestado, você possui Agressividade e não pode usar Armas. Não pode ser suportada por suportes que criam outros lacaios.",
+   "icone": null,
+   "colunas": [
+    "Nível",
+    "RequerNível",
+    "Experiência"
+   ],
+   "linhas": [
+    [
+     "15",
+     "1",
+     ""
+    ]
+   ],
+   "soDoItem": true,
+   "apelidos": [
+    "Manifesto dos Dervixes Dançarinos"
+   ]
+  },
+  {
    "slug": "Pacify",
    "nome": "Pacificar",
    "en": "Pacify",
@@ -2592,6 +2985,65 @@
    "soDoItem": true
   },
   {
+   "slug": "Petrification_Statue",
+   "nome": "Estátua da Petrificação",
+   "en": "Petrification Statue",
+   "cor": "branca",
+   "nivelReq": 1,
+   "tags": [],
+   "tipos": [],
+   "props": [],
+   "mods": [],
+   "qualidade": [],
+   "desc": "",
+   "icone": null,
+   "colunas": [],
+   "linhas": [],
+   "soDoItem": true
+  },
+  {
+   "slug": "Queens_Demand",
+   "nome": "Exigência da Rainha",
+   "en": "Queen's Demand",
+   "cor": "azul",
+   "nivelReq": 1,
+   "tags": [
+    "Magia"
+   ],
+   "tipos": [
+    "Spell",
+    "Multicastable",
+    "CanRapidFire"
+   ],
+   "props": [
+    "Nível: 20",
+    "Custo: (64 — 0) Mana",
+    "Tempo de Conjuração: 1.00 seg"
+   ],
+   "mods": [
+    "Ativa ou Chamas do Julgamento ou Tormenta do Julgamento, / alternando entre as duas"
+   ],
+   "qualidade": [],
+   "desc": "Alterna a ativaçao das Chamas do Julgamento e Tormenta do Julgamento.",
+   "icone": null,
+   "colunas": [
+    "Nível",
+    "RequerNível",
+    "Experiência"
+   ],
+   "linhas": [
+    [
+     "20",
+     "70",
+     ""
+    ]
+   ],
+   "soDoItem": true,
+   "apelidos": [
+    "Ordem da Rainha"
+   ]
+  },
+  {
    "slug": "Ravenous",
    "nome": "Faminto",
    "en": "Ravenous",
@@ -2630,6 +3082,26 @@
     ]
    ],
    "soDoItem": true
+  },
+  {
+   "slug": "Reflection",
+   "nome": "Salvador Ilusório",
+   "en": "Reflection",
+   "cor": "branca",
+   "nivelReq": 1,
+   "tags": [],
+   "tipos": [],
+   "props": [],
+   "mods": [],
+   "qualidade": [],
+   "desc": "",
+   "icone": null,
+   "colunas": [],
+   "linhas": [],
+   "soDoItem": true,
+   "apelidos": [
+    "Reflexão"
+   ]
   },
   {
    "slug": "Savage_Barnacle",
@@ -2863,6 +3335,353 @@
    "soDoItem": true
   },
   {
+   "slug": "Storm_Cascade",
+   "nome": "Cascata Tempestuosa",
+   "en": "Storm Cascade",
+   "cor": "azul",
+   "nivelReq": 1,
+   "tags": [
+    "Magia",
+    "Área",
+    "Raio",
+    "Físico",
+    "Ativação"
+   ],
+   "tipos": [
+    "Spell",
+    "Damage",
+    "Area",
+    "Trappable",
+    "Totemable",
+    "Mineable",
+    "Multicastable",
+    "Triggerable",
+    "Lightning",
+    "Physical",
+    "InbuiltTrigger",
+    "AreaSpell",
+    "Cooldown",
+    "Triggered"
+   ],
+   "props": [
+    "Nível: (1 — 30)",
+    "Recarga: 0.25 seg",
+    "Tempo de Conjuração: 0.80 seg",
+    "Chance de Crítico: 6.00%",
+    "Eficácia do Dano Adicionado: 170%"
+   ],
+   "mods": [
+    "Causa (51 — 2394) a (77 — 3591) de Dano Físico",
+    "100% do Dano Físico Convertido em Dano de Raio",
+    "+0.3 metros de raio",
+    "Ativa esta Magia quando você Atacar",
+    "Causa 6 rajadas"
+   ],
+   "qualidade": [],
+   "desc": "Um raio crepita em uma série de pequenas explosões, cada uma danificando os inimigos pegos na área.",
+   "icone": null,
+   "colunas": [
+    "Nível",
+    "RequerNível",
+    "Base Damage",
+    "Causa 51 a 77 de Dano Físico",
+    "Experiência"
+   ],
+   "linhas": [
+    [
+     "1",
+     "28",
+     "100%, 100%, 100%",
+     "51, 77",
+     ""
+    ],
+    [
+     "2",
+     "31",
+     "100%, 100%, 100%",
+     "64, 95",
+     ""
+    ],
+    [
+     "3",
+     "34",
+     "100%, 100%, 100%",
+     "79, 118",
+     ""
+    ],
+    [
+     "4",
+     "37",
+     "100%, 100%, 100%",
+     "96, 145",
+     ""
+    ],
+    [
+     "5",
+     "40",
+     "100%, 100%, 100%",
+     "118, 177",
+     ""
+    ],
+    [
+     "6",
+     "42",
+     "100%, 100%, 100%",
+     "135, 202",
+     ""
+    ],
+    [
+     "7",
+     "44",
+     "100%, 100%, 100%",
+     "153, 230",
+     ""
+    ],
+    [
+     "8",
+     "46",
+     "100%, 100%, 100%",
+     "174, 262",
+     ""
+    ],
+    [
+     "9",
+     "48",
+     "100%, 100%, 100%",
+     "198, 297",
+     ""
+    ],
+    [
+     "10",
+     "50",
+     "100%, 100%, 100%",
+     "225, 337",
+     ""
+    ],
+    [
+     "11",
+     "52",
+     "100%, 100%, 100%",
+     "255, 383",
+     ""
+    ],
+    [
+     "12",
+     "54",
+     "100%, 100%, 100%",
+     "289, 433",
+     ""
+    ],
+    [
+     "13",
+     "56",
+     "100%, 100%, 100%",
+     "327, 490",
+     ""
+    ],
+    [
+     "14",
+     "58",
+     "100%, 100%, 100%",
+     "369, 554",
+     ""
+    ],
+    [
+     "15",
+     "60",
+     "100%, 100%, 100%",
+     "417, 626",
+     ""
+    ],
+    [
+     "16",
+     "62",
+     "100%, 100%, 100%",
+     "471, 706",
+     ""
+    ],
+    [
+     "17",
+     "64",
+     "100%, 100%, 100%",
+     "531, 796",
+     ""
+    ],
+    [
+     "18",
+     "66",
+     "100%, 100%, 100%",
+     "598, 897",
+     ""
+    ],
+    [
+     "19",
+     "68",
+     "100%, 100%, 100%",
+     "674, 1011",
+     ""
+    ],
+    [
+     "20",
+     "70",
+     "100%, 100%, 100%",
+     "758, 1137",
+     ""
+    ],
+    [
+     "21",
+     "72",
+     "100%, 100%, 100%",
+     "852, 1279",
+     ""
+    ],
+    [
+     "22",
+     "74",
+     "100%, 100%, 100%",
+     "958, 1437",
+     ""
+    ],
+    [
+     "23",
+     "76",
+     "100%, 100%, 100%",
+     "1076, 1614",
+     ""
+    ],
+    [
+     "24",
+     "78",
+     "100%, 100%, 100%",
+     "1208, 1812",
+     ""
+    ],
+    [
+     "25",
+     "80",
+     "100%, 100%, 100%",
+     "1356, 2033",
+     ""
+    ],
+    [
+     "26",
+     "82",
+     "100%, 100%, 100%",
+     "1520, 2280",
+     ""
+    ],
+    [
+     "27",
+     "84",
+     "100%, 100%, 100%",
+     "1704, 2556",
+     ""
+    ],
+    [
+     "28",
+     "86",
+     "100%, 100%, 100%",
+     "1909, 2864",
+     ""
+    ],
+    [
+     "29",
+     "88",
+     "100%, 100%, 100%",
+     "2138, 3208",
+     ""
+    ],
+    [
+     "30",
+     "90",
+     "100%, 100%, 100%",
+     "2394, 3591",
+     ""
+    ]
+   ],
+   "soDoItem": true,
+   "apelidos": [
+    "Cascata da Tempestade"
+   ]
+  },
+  {
+   "slug": "Summon_Arbalists",
+   "nome": "Acribata Convocado",
+   "en": "Summon Arbalists",
+   "cor": "branca",
+   "nivelReq": 1,
+   "tags": [],
+   "tipos": [],
+   "props": [],
+   "mods": [],
+   "qualidade": [],
+   "desc": "Imune a Dano",
+   "icone": null,
+   "colunas": [],
+   "linhas": [],
+   "soDoItem": true,
+   "apelidos": [
+    "Convocar Arbalistas"
+   ]
+  },
+  {
+   "slug": "Summon_Bestial_Rhoa",
+   "nome": "Convocar Rhoa Bestial",
+   "en": "Summon Bestial Rhoa",
+   "cor": "azul",
+   "nivelReq": 1,
+   "tags": [
+    "Lacaio",
+    "Magia",
+    "Corpo a Corpo",
+    "Área"
+   ],
+   "tipos": [
+    "Triggerable",
+    "Mineable",
+    "Minion",
+    "MinionsCanExplode",
+    "MinionsAreUndamagable",
+    "Multicastable",
+    "Spell",
+    "Totemable",
+    "Trappable",
+    "CreatesMinion",
+    "Cooldown MinionType Attack",
+    "Melee",
+    "MeleeSingleTarget",
+    "Damage",
+    "Area",
+    "Multistrikeable"
+   ],
+   "props": [
+    "Nível: 20",
+    "Custo: (30 — 0) Mana",
+    "Recarga: 5.00 seg",
+    "Tempo de Conjuração: 1.00 seg"
+   ],
+   "mods": [
+    "Vida Máxima dos Lacaios aumentada em 30%",
+    "Máximo de 1 Lacaios Bestiais Convocados"
+   ],
+   "qualidade": [],
+   "desc": "Invoca um Rhoa Bestial. Além do ataque corpo a corpo, ele usa uma investida e possui uma aura que intimida os inimigos. Os inimigos não entrarão em combate direto com esse lacaio, que é imune a dano.",
+   "icone": null,
+   "colunas": [
+    "Nível",
+    "RequerNível",
+    "Experiência"
+   ],
+   "linhas": [
+    [
+     "20",
+     "70",
+     ""
+    ]
+   ],
+   "soDoItem": true
+  },
+  {
    "slug": "Summon_Doedres_Effigy",
    "nome": "Convocar Efígie de Doedre",
    "en": "Summon Doedre's Effigy",
@@ -3052,7 +3871,10 @@
      ""
     ]
    ],
-   "soDoItem": true
+   "soDoItem": true,
+   "apelidos": [
+    "Espírito de Akoya"
+   ]
   },
   {
    "slug": "Summon_Void_Spawn",
@@ -3101,7 +3923,10 @@
      ""
     ]
    ],
-   "soDoItem": true
+   "soDoItem": true,
+   "apelidos": [
+    "Rebento da Escuridão"
+   ]
   },
   {
    "slug": "Tawhoas_Chosen",
@@ -3206,6 +4031,54 @@
    "soDoItem": true
   },
   {
+   "slug": "Tentacle_Whip",
+   "nome": "Esmagamento Tentacular",
+   "en": "Tentacle Whip",
+   "cor": "azul",
+   "nivelReq": 1,
+   "tags": [
+    "Ataque",
+    "Área",
+    "Ativação"
+   ],
+   "tipos": [
+    "Attack",
+    "Damage",
+    "Area",
+    "Triggerable",
+    "Triggered",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 2.00 seg",
+    "Dano de Ataque: 250% de base",
+    "Eficácia do Dano Adicionado: 250%"
+   ],
+   "mods": [
+    "20% de chance de Ativar esse Ataque ao Matar"
+   ],
+   "qualidade": [],
+   "desc": "Cria três grandes Tentáculos que esmagam o chão causando o dano da arma em área.",
+   "icone": null,
+   "colunas": [
+    "Nível",
+    "RequerNível",
+    "Experiência"
+   ],
+   "linhas": [
+    [
+     "20",
+     "70",
+     ""
+    ]
+   ],
+   "soDoItem": true,
+   "apelidos": [
+    "Chicode Tentacular"
+   ]
+  },
+  {
    "slug": "Unhinge",
    "nome": "Perturbar",
    "en": "Unhinge",
@@ -3247,6 +4120,55 @@
     ]
    ],
    "soDoItem": true
+  },
+  {
+   "slug": "Unseen_Strike",
+   "nome": "Lâmina Escondida",
+   "en": "Unseen Strike Arma Garras , Adagas , Espadas de Uma Mão , Espadas de Estocada de Uma Mão , Machados de Uma Mão , Maças de Uma Mão , Cetros , Adagas Rúnicas",
+   "cor": "azul",
+   "nivelReq": 1,
+   "tags": [
+    "Projétil",
+    "Ataque",
+    "Físico"
+   ],
+   "tipos": [
+    "Projectile",
+    "Attack",
+    "RangedAttack",
+    "Triggerable",
+    "ProjectilesFromUser",
+    "Physical",
+    "Cooldown"
+   ],
+   "props": [
+    "Nível: 20",
+    "Dano de Ataque: 250% de base",
+    "Eficácia do Dano Adicionado: 250%"
+   ],
+   "mods": [
+    "Dispara Projéteis em um círculo",
+    "Esta Magia é Ativada por um Item Único"
+   ],
+   "qualidade": [],
+   "desc": "Arremessa uma lâmina giratória que causa dano de arma aos inimigos. Se disparar vários projéteis, eles serão disparados em um círculo.",
+   "icone": null,
+   "colunas": [
+    "Nível",
+    "RequerNível",
+    "Experiência"
+   ],
+   "linhas": [
+    [
+     "20",
+     "70",
+     ""
+    ]
+   ],
+   "soDoItem": true,
+   "apelidos": [
+    "Golpe Invisível"
+   ]
   },
   {
    "slug": "Void_Gaze",
