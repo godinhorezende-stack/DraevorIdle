@@ -184,6 +184,16 @@ export function ocultosDe(lista) {
   };
 }
 
+/**
+ * (07/11, lote 20 das inertes — o dono: "Criar as mecânicas") os modificadores de monstro QUE O POEDB NÃO TEM, para as linhas dos únicos que se defendem deles terem
+ * contra o quê: "Inafetado por Solo Profanado" (o Passo Natal) e "Você não pode ser Amaldiçoado com Silêncio" (a Estrela de Wraeclast). Os números: os do Solo Ardente (o
+ * Profanado é de Caos) e 2 s de Silêncio (sem fonte).
+ */
+export const DO_JOGO = [
+  { id: 'Draevor_DesecratedGroundOnDeath', nome: 'Profanador', nomeEn: 'Desecrating', tipo: 'mod', familia: 'Draevor_DesecratedGroundOnDeath', linhas: ['Deixa Solo Profanado ao Morrer'], nivel: 19, pesoMagico: 0, pesoRaro: 1000, stats: {}, mecanicas: [{ gatilho: 'aoMorrer', efeito: 'solo', solo: 'profanado', duracaoMs: 6000, raioMetros: 1.6, dpsPctDoGolpe: 62.5 }], estado: 'aproximado', valem: 1, total: 1, statsPoe: [] },
+  { id: 'Draevor_SilencingCurse', nome: 'Silenciador', nomeEn: 'Silencing', tipo: 'mod', familia: 'Draevor_SilencingCurse', linhas: ['Amaldiçoa com Silêncio ao Acertar'], nivel: 19, pesoMagico: 0, pesoRaro: 500, stats: {}, mecanicas: [{ gatilho: 'aoAtacar', efeito: 'maldicao', chance: 100, maldicoes: ['silencio'], duracaoMs: 2000 }], estado: 'aproximado', valem: 1, total: 1, statsPoe: [] },
+];
+
 function principal() {
   if (!existsSync(ORIGEM)) throw new Error(`Sem a referência: rode antes node tools/extrair-poedb-modificadores-monstro.mjs (${ORIGEM}).`);
   const d = JSON.parse(readFileSync(ORIGEM, 'utf8'));
@@ -213,6 +223,8 @@ function principal() {
     expPorRaridade: anterior.expPorRaridade ?? { magico: 3, raro: 5, unico: 5 },
     ocultos,
     mods,
+    _doJogo: 'Os modificadores que o poedb não tem, do jogo (07/11, lote 20 das inertes): entram no sorteio junto dos do PoE (`itens-poe/modificadores-monstro.mjs`).',
+    doJogo: DO_JOGO,
   };
   writeFileSync(DESTINO, `${JSON.stringify(saida, null, 1)}\n`);
   const est = mods.reduce((o, m) => ({ ...o, [m.estado]: (o[m.estado] ?? 0) + 1 }), {});

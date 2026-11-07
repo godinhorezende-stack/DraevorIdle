@@ -9878,6 +9878,48 @@
       "combate": true,
       "nome": "Máximo de Lembrança",
       "efeito": "acoes.legadoDaRosa (07/11, lote 19)"
+    },
+    "physical_sofrido_animal": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano Físico sofrido quando acertado por Animais",
+      "efeito": "condicoes-poe.fixoRecebido (07/11, lote 20)"
+    },
+    "imune_solo_profanado": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Inafetado por Solo Profanado",
+      "efeito": "mobs/mecanicas.tiqueDosSolos (07/11, lote 20)"
+    },
+    "imune_silencio": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Não pode ser Amaldiçoado com Silêncio",
+      "efeito": "condicoes-poe.IMUNE_A_MALDICAO (07/11, lote 20)"
+    },
+    "projeteis_perfuram_voce": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Projéteis Inimigos Perfuram você",
+      "efeito": "poderes.dispararMagia (07/11, lote 20)"
+    },
+    "verme_retorcido_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Um Verme Retorcido surge a cada N segundos",
+      "efeito": "acoes.tiqueDoGuardian (07/11, lote 20)"
+    },
+    "vermes_contorcidos": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Vermes Contorcidos escapam do Frasco",
+      "efeito": "frascos.usar (07/11, lote 20)"
+    },
+    "silenciado": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Silenciado (não usa habilidades)",
+      "efeito": "acoes.dispararSemMarcarDentro (07/11, lote 20)"
     }
   }
 }

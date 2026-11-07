@@ -57,6 +57,10 @@ export function cinto(estado) {
 /** O texto de um mod com os valores no lugar de `{n}`. */
 const preencher = (modelo, valores) => String(modelo ?? '').replace(/\{(\d+)\}/g, (_, i) => String(valores?.[Number(i)] ?? '?'));
 
+/** (07/11, lote 20) os Vermes Contorcidos do Jarro Contorcido (`acoes.mjs` registra — `mobs/mecanicas.vermesDoItem`). */
+// eslint-disable-next-line no-var
+var vermesDoFrasco;
+export function definirVermesDoFrasco(fn) { vermesDoFrasco = fn; }
 const ADIVINHACOES = Object.freeze(['adivinhacaoDano', 'adivinhacaoVelocidade', 'adivinhacaoResistencia', 'adivinhacaoMovimento']);
 /** As regras das linhas que mexem no FRASCO (e não no personagem). `p` = os parâmetros sendo montados; `v` = o número da linha. */
 const REGRAS_DO_FRASCO = [
@@ -65,6 +69,10 @@ const REGRAS_DO_FRASCO = [
   // (07/11, lote 19 das inertes — sem fonte, o Vinho do Profeta) "Ao usar, concede um bônus de Adivinhação aleatório por N segundos": um de quatro (Dano, Velocidade,
   // Resistências, Movimento — `condicoes-poe.BUFFS.adivinhacao*`), sorteado no uso
   [/^Ao usar, concede um bônus de Adivinhação aleatório por \{\d+\} segundos$/, (p, v) => (p.adivinhacaoS = v)],
+  // (07/11, lote 20 das inertes, o Jarro Contorcido) "N Vermes Contorcidos Inimigos escapam do Frasco quando utilizado" (a outra metade, "destruídos quando Acertados", é a
+  // vida 1 deles — `mobs/mecanicas.vermesDoItem`)
+  [/^\{\d+\} Vermes Contorcidos Inimigos escapam do Frasco quando utilizado(?: Vermes Contorcidos são destruídos quando Acertados)?$/, (p, v) => (p.vermes = v)],
+  [/^Vermes Contorcidos são destruídos quando Acertados$/, () => {}],
   // (06/11, lote 11 das inertes, a Fé Engarrafada) "Solo Sagrado criado por este Frasco possui Raio Triplicado" e "Solo Sagrado criado durante o Efeito aplica Dano sofrido
   // aumentado em X% aos Inimigos" (os monstros nele — `solos-seus.tique`)
   [/^Solo Sagrado criado por este Frasco possui Raio Triplicado$/, (p) => (p.soloRaioMult = 3)],
@@ -282,6 +290,7 @@ export function parametros(peca, afDoPersonagem = null) {
     // (07/11, lotes 14 e 19 das inertes: o Colhedor de Almas e o Vinho do Profeta)
     ...(p.almasPorCarga ? { almasPorCarga: true } : {}),
     ...(p.adivinhacaoS > 0 ? { adivinhacaoS: p.adivinhacaoS } : {}),
+    ...(p.vermes > 0 ? { vermes: p.vermes } : {}),
     af,
     efeitoDaBase: daBase?.texto ?? null,
     linhas,
@@ -398,6 +407,8 @@ export function usar(estado, v, eventos = null, quem = null) {
   if (par.almasPorCarga) ganharAlmaVaal(estado, hunt, par.cargasPorUso);
   // (o Vinho do Profeta: a linha do frasco — `adivinhacaoS` — ou o atributo traduzido na peça, `adivinhacao_frasco_s`)
   const adivinhacaoS = par.adivinhacaoS || Number(peca.poe?.af?.adivinhacao_frasco_s) || 0;
+  const vermes = par.vermes || Number(peca.poe?.af?.vermes_contorcidos) || 0;
+  if (vermes > 0) vermesDoFrasco?.(hunt, vermes);
   if (adivinhacaoS > 0) ganharBuff(hunt, ADIVINHACOES[Math.floor(Math.random() * ADIVINHACOES.length)], adivinhacaoS, hunt.clock ?? 0);
   aoUsarOFrasco(estado, par, eventos, quem, afp);
   // (02/11) "Restaura Proteção ao usar" (o Frasco de Ferro): a Salvaguarda volta inteira

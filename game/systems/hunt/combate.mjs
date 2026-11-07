@@ -1347,7 +1347,7 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // PoE 1 (dono, 10/10): a armadura e a redução física adicional SOMAM, no teto de 90% (`ModsPoe.acertoFisicoRecebido`, que já traz a
   // armadura, calculada sobre o golpe físico bruto); fora do PoE, a proteção corta antes e a armadura depois (`R.danoRecebido`, abaixo).
   const somaFisica = ModsPoe.somaFisicaDoPoe();
-  const fixoFisico = ModsPoe.fixoRecebido(ficha, 'physical', { ataque: true });
+  const fixoFisico = ModsPoe.fixoRecebido(ficha, 'physical', { ataque: true, de: bicho });
   const protegido = somaFisica
     ? Math.max(0, Math.round(ModsPoe.acertoFisicoRecebido(ficha, brutoFisico, armorDoPersonagem(estado), { fixo: fixoFisico })))
     : Math.max(0, Math.round(brutoFisico * (itensPoeLigado() ? ModsPoe.fatorDaResistenciaRecebida(ficha, 'physical') : 1 - Math.min(100, ficha.protection.physical ?? 0) / 100) + fixoFisico));

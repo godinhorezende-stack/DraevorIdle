@@ -1069,7 +1069,31 @@ export function tiqueDoGuardian(estado, hunt, agora = hunt?.ultimoTique ?? Date.
   modsDoRaroNosLacaios(hunt, agora);
   efigiesDaDoedre(estado, hunt);
   legadoDaRosa(estado, hunt, af);
+  // (07/11, lote 20 das inertes, o Terror Irrequieto: "Um Verme Retorcido inimigo surge a cada N segundos")
+  const cadaVerme = Number(af.verme_retorcido_s) || 0;
+  const relogio = hunt.clock ?? 0;
+  if (cadaVerme > 0) {
+    hunt.poeVermeEm ??= relogio + cadaVerme * 1000;
+    if (relogio >= hunt.poeVermeEm) { hunt.poeVermeEm = relogio + cadaVerme * 1000; Mecanicas.vermesDoItem(hunt, 1, { eventos: hunt.poeEventosDoTempo ??= [] }); }
+  } else delete hunt.poeVermeEm;
 }
+// (07/11, lote 20 das inertes) os Vermes Contorcidos do Jarro Contorcido (`frascos.usar`) e o Esporo Infestado do Rouba-ar (`mods-poe`, ao matar um Raro)
+FrascosPoe.definirVermesDoFrasco((hunt, quantos) => Mecanicas.vermesDoItem(hunt, quantos, { frageis: true, eventos: hunt.poeEventosDoTempo ??= [] }));
+/**
+ * O ESPORO INFESTADO (o Rouba-ar: "Cria um Esporo Infestado quando suas Habilidades ou Lacaios Matarem um Monstro Raro" — "Esporos Infestados duram por 10 segundos e tem
+ * uma Aura aleatória"): um lacaio sem ataque onde o raro morreu, com uma das auras do PoE no nível 20 — vale em você a até 4 casas dele (`condicoes-poe.adds`).
+ */
+const AURAS_DO_ESPORO = Object.freeze(['Anger', 'Hatred', 'Wrath', 'Determination', 'Grace', 'Discipline', 'Haste', 'Vitality', 'Clarity', 'Precision', 'Zealotry', 'Malevolence']);
+ModsPoe.definirEsporoInfestado((estado, hunt, onde, rng = Math.random) => {
+  if (!hunt?.pos) return;
+  const af = Ficha.combate(estado).afPoe ?? {};
+  const aura = AURAS_DO_ESPORO[Math.floor(rng() * AURAS_DO_ESPORO.length)];
+  const auraAf = { ...(GemasPoe.buffNoNivel(aura, 20)?.af ?? {}) };
+  const agora = hunt.ultimoTique ?? Date.now();
+  const l = lacaioDoGuardian(estado, hunt, agora, af, 'Esporo Infestado', 'chaos', { esporo: aura, auraAf, semAtaque: true, intocavel: true, ate: agora + 10_000, duracaoMs: 10_000 });
+  (hunt.lacaios ??= []).push(Object.assign(l, { x: onde?.x ?? hunt.pos.x, y: onde?.y ?? hunt.pos.y }));
+  Ficha.invalidar(estado);
+});
 /**
  * (07/11, lote 19 das inertes — sem fonte, o dono: "Aproximar com números meus") o LEGADO DA ROSA: "Ganha 1 Lembrança ao gastar um total de N de escudo de energia e não
  * tiver invocado nenhuma Memória do Criador" (o Escudo de Energia perdido conta), "Máximo de N Lembrança"; no máximo, a Lembrança toda vira a MEMÓRIA DO CRIADOR por 8 s,
@@ -5184,6 +5208,8 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
   if (!doTotem && bloqueio(entry, estado, ativas)) return { ok: false, erro: 'Você não pode mais usar isso.', motivo: 'BLOQUEADA' };
   // Numa Safe Zone o jogador não ataca (`protecao.mjs`): a cura, o buff e a poção saem; a magia de ataque, não.
   if (entry.papeis?.[0] === 'attack' && Protecao.imune(hunt)) return { ok: false, erro: 'Numa zona segura não se ataca.', motivo: 'ZONA_SEGURA' };
+  // (07/11, lote 20 das inertes) SILENCIADO (o Silêncio do Silenciador — `condicoes-poe.MALDICOES_DOS_MONSTROS.silencio`): as habilidades do PoE não saem à mão
+  if (!gatilho && entry.poeGema && itensPoeLigado() && ModsPoe.valor(Ficha.combate(estado), 'silenciado') > 0) return { ok: false, erro: 'Você está Silenciado.', motivo: 'SILENCIADO' };
   // A magia ligada a um suporte de gatilho só sai pelo gatilho (como no PoE: não se conjura à mão).
   if (!gatilho && entry.poeGema && Gemas.ativadaPor(estado, entry.id)) return { ok: false, erro: `Ativada por ${Gemas.ativadaPor(estado, entry.id)}.`, motivo: 'ATIVADA_POR_GATILHO' };
   // A habilidade que um ÚNICO ativa ("Ativa X quando…"): só sai pelo evento, como no PoE.

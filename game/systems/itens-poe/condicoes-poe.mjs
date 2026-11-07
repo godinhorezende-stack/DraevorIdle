@@ -1330,6 +1330,11 @@ export const BUFFS = {
   adivinhacaoVelocidade: { nome: 'Adivinhação: Velocidade', af: { atk_speed: 15, cast_speed: 15 } },
   adivinhacaoResistencia: { nome: 'Adivinhação: Resistências', af: { fire_res: 20, ice_res: 20, energy_res: 20 } },
   adivinhacaoMovimento: { nome: 'Adivinhação: Movimento', af: { move_speed: 20 } },
+  // (07/11, lote 20 das inertes — sem fonte, o Tricorne de Fairgraves: "Você pode ser Tocado por Espíritos Atormentados") os toques: um dos quatro, ao matar um Raro
+  tocadoEspiritoFuria: { nome: 'Tocado: Fúria do Espírito', af: { dmg_inc: 30 } },
+  tocadoEspiritoPressa: { nome: 'Tocado: Pressa do Espírito', af: { atk_speed: 20, cast_speed: 20 } },
+  tocadoEspiritoVida: { nome: 'Tocado: Vigor do Espírito', af: { life_regen_pct: 2 } },
+  tocadoEspiritoVento: { nome: 'Tocado: Vento do Espírito', af: { move_speed: 25 } },
   // (a keystone do PoE: o multiplicador degenerativo das afecções é o de crítico, o crítico não dá dano extra, sem crítico não há afecção)
   agoniaPerfeita: { nome: 'Agonia Perfeita', af: { agonia_perfeita: 1, sem_afeccao_sem_critico: 1, critico_sem_dano_extra: 1 } },
   presencaEnlouquecedora: { nome: 'Presença Enlouquecedora', af: { dmg_inc: 10 } },
@@ -1586,7 +1591,9 @@ export function adds(estado, total = null) {
   // (14/10, a Cruzada Implacável) A AURA de cada Relíquia Elemental viva (Cólera, Ódio ou Ira, nível 20 — `l.auraAf`): em você e, pela foto dos
   // "Você e Aliados" (`aliados:`), nos companheiros perto. (O fim dela é o do lacaio — o tique dos lacaios tira a que acabou e refaz a ficha.)
   for (const l of estado?.hunt?.lacaios ?? []) {
-    if (!l?.reliquia || !(l.hp > 0)) continue;
+    if (!(l?.reliquia || l?.esporo) || !(l.hp > 0)) continue;
+    // (07/11, lote 20: o Esporo Infestado fica onde nasceu — a aura vale a até 4 casas dele)
+    if (l.esporo && (!estado.hunt.pos || Math.max(Math.abs(l.x - estado.hunt.pos.x), Math.abs(l.y - estado.hunt.pos.y)) > 4)) continue;
     for (const [k, v] of Object.entries(l.auraAf ?? {})) { saida[k] = (saida[k] ?? 0) + v; saida[`aliados:${k}`] = (saida[`aliados:${k}`] ?? 0) + v; }
   }
   // (lote F) "Fúria Arcana também concede +X% de dano mágico a você".
@@ -1619,11 +1626,14 @@ export const MALDICOES_DOS_MONSTROS = {
   congelabilidade: { nome: 'Congelabilidade', af: { ice_res: -17 } },
   condutividade: { nome: 'Condutividade', af: { energy_res: -17 } },
   desespero: { nome: 'Desespero', af: { chaos_res: -15 } },
+  // (07/11, lote 20 das inertes — o dono: "Criar as mecânicas") o SILÊNCIO (o Silenciador, modificador de monstro raro do jogo): você não usa habilidades enquanto dura
+  // (`acoes.dispararSemMarcarDentro`; o ataque básico segue) — a Estrela de Wraeclast: "Você não pode ser Amaldiçoado com Silêncio"
+  silencio: { nome: 'Silêncio', af: { silenciado: 1 } },
 };
 export const DURACAO_DA_MALDICAO_DO_MONSTRO_MS = 6000;
 /** (lote 55, o Olho do Vigia) "Imune a <Maldição>": a imunidade a cada maldição que os monstros põem em você (pelo nome dela). */
 // (lote A2: + os Grilhões Temporais — a Fenda Temporal: "Buff te torna Inafetável por Grilhões Temporais")
-const IMUNE_A_MALDICAO = { 'Fraqueza Elemental': 'imune_fraqueza_elemental', Vulnerabilidade: 'imune_vulnerabilidade', Enfraquecer: 'imune_enfraquecer', Flamabilidade: 'imune_flamabilidade', Congelabilidade: 'imune_congelabilidade', Condutividade: 'imune_condutividade', Desespero: 'imune_desespero', 'Grilhões Temporais': 'imune_grilhoes_temporais' };
+const IMUNE_A_MALDICAO = { 'Fraqueza Elemental': 'imune_fraqueza_elemental', Vulnerabilidade: 'imune_vulnerabilidade', Enfraquecer: 'imune_enfraquecer', Flamabilidade: 'imune_flamabilidade', Congelabilidade: 'imune_congelabilidade', Condutividade: 'imune_condutividade', Desespero: 'imune_desespero', 'Grilhões Temporais': 'imune_grilhoes_temporais', Silêncio: 'imune_silencio' };
 const imuneAMaldicao = (af, nome) => Number(af?.[IMUNE_A_MALDICAO[nome]]) > 0;
 /**
  * (06/11, os Únicos — lote 3) As maldições que as PEÇAS põem em você ("Você é Amaldiçoado com Vulnerabilidade" — `maldicao_propria:<id>`, as dos monstros pelo
@@ -2425,7 +2435,7 @@ export const EVENTOS = new Set(['estilhacar', 'maxDivina', 'perderEspiritual', '
   'salvaguardaQuebra',
   // (02/11, as Atemporais) quando a Salvaguarda é Restaurada (`personagem/salvaguarda.restaurar` → `acoes.mjs`)
   'salvaguardaRestaurada']);
-export const ACOES = new Set(['repetirTawhoa', 'modsDoRaro', 'contaComoBloqueio', 'maldicaoEncaixada', 'gatilhoGastando', 'almaVaal', 'explodirCadaveres', 'soloSeu', 'cargaAliados', 'vidaPctAliados', 'vinculadosImortais', 'furiaArcanaClamor', 'perderAlmas', 'transferirMarca', 'frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
+export const ACOES = new Set(['esporoInfestado', 'espiritoAtormentado', 'repetirTawhoa', 'modsDoRaro', 'contaComoBloqueio', 'maldicaoEncaixada', 'gatilhoGastando', 'almaVaal', 'explodirCadaveres', 'soloSeu', 'cargaAliados', 'vidaPctAliados', 'vinculadosImortais', 'furiaArcanaClamor', 'perderAlmas', 'transferirMarca', 'frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
   'dano', 'danoPctVida', 'furia', 'frasco', 'recargaEs', 'explodir', 'gatilho', 'espalhar', 'roubarCargas', 'maldicao', 'soloSagrado', 'soloProfano', 'soloCongelado', 'fumaca', 'removerAfeccao', 'perdeVidaPct', 'perdeEsPct', 'perdeManaPct',
   // (11/10, os únicos)
   'perdeVida', 'esDaArmadura', 'vidaParaEs', 'degenEmVoce', 'statTemp', 'statTempPorMana', 'furiaPorMana', 'transferirMaldicoes', 'degenNoAlvo', 'danoPorMana', 'empurrarProximos',
@@ -3514,12 +3524,22 @@ export function armaduraNoElemento(ficha, elemento, golpe) {
   return Math.max(0, 1 - Math.min(tetoDaReducao(ficha) / 100, Formulas.reducaoDeArmaduraPoe(((ficha.armor ?? 0) * pct) / 100, golpe)));
 }
 /** O dano FIXO a menos (ou a mais) por golpe: "-25 de Dano Físico sofrido dos Acertos de Ataques", "+N de Dano de Fogo sofrido quando acertado". */
-export function fixoRecebido(ficha, elemento, { ataque = false, magia = false } = {}) {
+export function fixoRecebido(ficha, elemento, { ataque = false, magia = false, de = null } = {}) {
   if (!ligado() || !ficha?.afPoe) return 0;
   const v = (k) => Number(ficha.afPoe[k]) || 0;
   // (14/10: + o dos Acertos de MAGIA — a Lição das Estações: "-25 de dano sofrido de cada tipo de dano por ataques de magia por casca")
-  return v(`${elemento}_sofrido_acerto`) + (ataque ? v(`${elemento}_sofrido_ataque`) : 0) + (magia ? v(`${elemento}_sofrido_magia`) : 0);
+  // (07/11, lote 20 das inertes, a Rainha da Floresta: "-N de Dano Físico sofrido quando acertado por Animais" — `de`: o monstro que acertou, Animal pela raça — `ehAnimal`)
+  return v(`${elemento}_sofrido_acerto`) + (ataque ? v(`${elemento}_sofrido_ataque`) : 0) + (magia ? v(`${elemento}_sofrido_magia`) : 0) + (elemento === 'physical' && ehAnimal(de) ? v('physical_sofrido_animal') : 0);
 }
+/**
+ * (07/11, lote 20 das inertes — o dono: "Criar as mecânicas") o monstro ANIMAL (a Besta do PoE): pela raça do bestiário — Mamífero, Verme, Réptil, Ave, Aquático e
+ * Licantropo (os lobos, as aranhas, os caranguejos, os macacos, as aves, os répteis…).
+ */
+const RACAS_ANIMAIS = new Set(['BESTY_RACE_MAMMAL', 'BESTY_RACE_VERMIN', 'BESTY_RACE_REPTILE', 'BESTY_RACE_BIRD', 'BESTY_RACE_AQUATIC', 'BESTY_RACE_LYCANTHROPE']);
+// eslint-disable-next-line no-var
+var racaDoBicho;
+export function definirRacaDoBicho(fn) { racaDoBicho = fn; }
+export const ehAnimal = (bicho) => !!bicho && RACAS_ANIMAIS.has(bicho.race ?? racaDoBicho?.(bicho.key) ?? '');
 /** O Caos atravessa o Escudo de Energia (regra do PoE), a menos que um único diga que não. */
 export const caosAtravessaOEscudo = (ficha) => ligado() && !((Number(ficha?.afPoe?.caos_nao_atravessa_escudo) || 0) > 0);
 

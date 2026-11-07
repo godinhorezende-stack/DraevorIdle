@@ -14,6 +14,116 @@
   ],
   "regras": [
     {
+      "padrao": "^Projéteis Inimigos Perfuram você$",
+      "efeitos": [
+        {
+          "stat": "projeteis_perfuram_voce",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o projétil do monstro que te acerta segue e acerta o seu lacaio mais perto atrás de você (a até 2 casas), com o mesmo dano",
+      "_07_11j": "07/11 — lote 20 das inertes: as mecânicas de monstro que o jogo não tinha (o dono: \"Criar as mecânicas\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você não pode ser Amaldiçoado com Silêncio$",
+      "efeitos": [
+        {
+          "stat": "imune_silencio",
+          "valor": "1"
+        }
+      ],
+      "_07_11j": "07/11 — lote 20 das inertes: as mecânicas de monstro que o jogo não tinha (o dono: \"Criar as mecânicas\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(-?\\d+)\\} de Dano Físico sofrido quando acertado por Animais$",
+      "efeitos": [
+        {
+          "stat": "physical_sofrido_animal",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Animal do jogo é o monstro de raça Mamífero, Verme, Réptil, Ave, Aquático ou Licantropo (a Besta do PoE)",
+      "_07_11c": "07/11 — lote 13c das inertes",
+      "_07_11j": "07/11 — lote 20 das inertes: as mecânicas de monstro que o jogo não tinha (o dono: \"Criar as mecânicas\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inafetado por Solo Profanado$",
+      "efeitos": [
+        {
+          "stat": "imune_solo_profanado",
+          "valor": "1"
+        }
+      ],
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_07_11j": "07/11 — lote 20 das inertes: as mecânicas de monstro que o jogo não tinha (o dono: \"Criar as mecânicas\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Cria um Esporo Infestado quando suas Habilidades ou Lacaios Matarem um Monstro Raro$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:esporoInfestado@alvoRaro",
+          "valor": "100"
+        },
+        {
+          "stat": "ev:matarLacaio:esporoInfestado@alvoRaro",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Esporo fica onde o raro morreu, 10 s, com uma aura do PoE no nível 20 ao acaso — vale em você a até 4 casas dele",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11j": "07/11 — lote 20 das inertes: as mecânicas de monstro que o jogo não tinha (o dono: \"Criar as mecânicas\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você pode ser Tocado por Espíritos Atormentados$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:espiritoAtormentado@alvoRaro",
+          "valor": "10"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem fonte: o jogo não tem os Espíritos Atormentados soltos — ao matar um Raro, 10% de chance de um tocar você por 20 s (30% de Dano, 20% de Velocidade de Ataque e Conjuração, 2% de Vida Regenerada por segundo ou 25% de Velocidade de Movimento)",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_07_11j": "07/11 — lote 20 das inertes: as mecânicas de monstro que o jogo não tinha (o dono: \"Criar as mecânicas\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Um Verme Retorcido inimigo surge a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "verme_retorcido_s",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Verme Retorcido é o Verme de Sangue do PoE, com a vida de um monstro normal da área, sem experiência nem loot",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11j": "07/11 — lote 20 das inertes: as mecânicas de monstro que o jogo não tinha (o dono: \"Criar as mecânicas\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} Vermes Contorcidos Inimigos escapam do Frasco quando utilizado Vermes Contorcidos são destruídos quando Acertados$",
+      "efeitos": [
+        {
+          "stat": "vermes_contorcidos",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Vermes Contorcidos são o Verme de Sangue do PoE com 1 de vida, sem experiência nem loot",
+      "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
+      "_07_11j": "07/11 — lote 20 das inertes: as mecânicas de monstro que o jogo não tinha (o dono: \"Criar as mecânicas\")",
+      "_nova": true
+    },
+    {
       "padrao": "^Ganha \\{(\\d+)\\} Lembrança ao gastar um total de \\{(\\d+)\\} de escudo de energia(?: \\/)? e não tiver invocado nenhuma Memória do Criador$",
       "efeitos": [
         {
@@ -756,19 +866,6 @@
       "_nova": true
     },
     {
-      "padrao": "^\\{(-?\\d+)\\} de Dano Físico sofrido quando acertado por Animais$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "os monstros do jogo não têm a marca de Animal (o PoE: as Bestas)",
-      "_07_11c": "07/11 — lote 13c das inertes",
-      "_nova": true
-    },
-    {
       "padrao": "^Projéteis de ataques mutilam ao atingir enquanto você tiver um lacaio bestial$",
       "efeitos": [
         {
@@ -1196,19 +1293,6 @@
         }
       ],
       "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
-      "_nova": true
-    },
-    {
-      "padrao": "^Inafetado por Solo Profanado$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "nenhum monstro do jogo cria Solo Profanado (no PoE, o chão de Caos dos monstros) — não há do que se proteger",
-      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
       "_nova": true
     },
     {
@@ -49016,19 +49100,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Cria um Esporo Infestado quando suas Habilidades ou Lacaios Matarem um Monstro Raro$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Esporo Infestado",
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^Inimigos Próximos Mortos por qualquer um, ao invés, contam como sendo Mortos por você$",
       "efeitos": [
         {
@@ -49508,19 +49579,6 @@
       ],
       "estado": "aproximado",
       "nota": "a Vida sai ao usar o Clamor (não mata: fica em 1)",
-      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Você pode ser Tocado por Espíritos Atormentados$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem os Espíritos Atormentados",
       "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
       "_nova": true
     },
@@ -50282,19 +50340,6 @@
       ],
       "estado": "aproximado",
       "nota": "todas as suas Maldições em aura (a Blasfêmia)",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Um Verme Retorcido inimigo surge a cada \\{(\\d+)\\} segundos$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Verme Retorcido",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
       "_nova": true
     },
@@ -52096,19 +52141,6 @@
           "valor": "{1}"
         }
       ],
-      "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
-      "_nova": true
-    },
-    {
-      "padrao": "^\\{(\\d+)\\} Vermes Contorcidos Inimigos escapam do Frasco quando utilizado Vermes Contorcidos são destruídos quando Acertados$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem os Vermes Contorcidos",
       "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
       "_nova": true
     }

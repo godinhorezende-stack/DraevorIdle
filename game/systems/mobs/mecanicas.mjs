@@ -25,6 +25,9 @@ import * as Buffs from './buffs.mjs';
 import * as Poderes from '../poderes.mjs';
 import * as Ficha from '../ficha.mjs';
 import { criarMonstro, BESTIARY } from '../hunt/monstros.mjs';
+import { definirRacaDoBicho } from '../itens-poe/condicoes-poe.mjs';
+// (07/11, lote 20 das inertes) a raça do monstro pela chave do bestiário (o Animal da Rainha da Floresta — `condicoes-poe.ehAnimal`)
+definirRacaDoBicho((key) => BESTIARY[key]?.race ?? null);
 import { gradeDaHunt, huntOuMapaCustom } from '../hunt/terreno.mjs';
 import { andarDaGrade } from '../hunt/andares.mjs';
 import { daSala } from '../hunt/instancia.mjs';
@@ -104,6 +107,29 @@ export function fantasmasDaPenitencia(hunt, alvo, eventos = []) {
   return novos;
 }
 
+/**
+ * (07/11, lote 20 das inertes — o dono: "Criar as mecânicas") os VERMES que os únicos soltam (o Verme de Sangue do PoE): o Verme Retorcido do Terror Irrequieto ("Um
+ * Verme Retorcido inimigo surge a cada N segundos" — a vida de um monstro normal da área) e os Vermes Contorcidos do Jarro Contorcido ("escapam do Frasco quando utilizado
+ * … são destruídos quando Acertados" — `frageis`: 1 de vida). Hostis, sem experiência e sem loot, fora da conta da limpeza. Devolve os criados.
+ */
+export const VERME = Object.freeze({ key: 'poe-blood-worm-40', retorcido: 'Verme Retorcido', contorcido: 'Verme Contorcido' });
+export function vermesDoItem(hunt, quantos, { frageis = false, eventos = [] } = {}) {
+  if (!hunt?.pos || !(quantos > 0) || !BESTIARY[VERME.key]) return [];
+  const normais = hunt.monstros.filter((b) => b.hp > 0 && !b.dummy && !b.gerado && (b.raridade ?? 'normal') === 'normal');
+  const vida = frageis ? 1 : Math.max(1, Math.round(normais.length ? normais.reduce((t, b) => t + (b.maxHp ?? 0), 0) / normais.length : BESTIARY[VERME.key].hp ?? 100));
+  const novos = [];
+  for (const casa of casasLivres(hunt, hunt.pos.x, hunt.pos.y, quantos)) {
+    const v = criarMonstro({ key: VERME.key, x: casa.x, y: casa.y }, null);
+    if (!v) continue;
+    Object.assign(v, { maxHp: vida, hp: vida, exp: 0, loot: [], gerado: true, name: frageis ? VERME.contorcido : VERME.retorcido, ...(frageis ? { vermeContorcido: true } : { vermeRetorcido: true }) });
+    delete v.spawn;
+    hunt.monstros.push(v);
+    novos.push(v);
+    eventos.push({ t: 'fx', id: 13, uid: v.uid, x: v.x, y: v.y });
+  }
+  return novos;
+}
+
 /** "Gerar": os mobs novos nascem em volta, NA MESMA instância, e entram na conta da limpeza. */
 function gerar(hunt, m, mec, eventos) {
   const key = mec.mesmaCriatura === false && mec.key ? mec.key : m.key;
@@ -166,7 +192,7 @@ export function aoMorrer(estado, hunt, personagem, m, eventos) {
 function criarSolo(hunt, m, mec, agora, eventos) {
   const raio = Math.max(1, Math.round((mec.raioMetros ?? 1.6) / 2));
   const golpe = (Poderes.golpeMaximoDoBicho(m) ?? 0) * (m.forca ?? 1);
-  (hunt.solosDosMonstros ??= []).push({ tipo: mec.solo, x: m.x, y: m.y, z: hunt.z ?? 0, raio, ate: agora + (mec.duracaoMs ?? 6000), proximo: agora, ...(mec.solo === 'ardente' ? { dps: (golpe * (mec.dpsPctDoGolpe ?? 62.5)) / 100 } : {}), ...(mec.solo === 'eletrizado' ? { pct: mec.danoRecebidoPct ?? 20 } : {}), ...(mec.solo === 'congelado' ? { pct: mec.resfriamentoPct ?? 10 } : {}), de: m });
+  (hunt.solosDosMonstros ??= []).push({ tipo: mec.solo, x: m.x, y: m.y, z: hunt.z ?? 0, raio, ate: agora + (mec.duracaoMs ?? 6000), proximo: agora, ...(mec.solo === 'ardente' || mec.solo === 'profanado' ? { dps: (golpe * (mec.dpsPctDoGolpe ?? 62.5)) / 100 } : {}), ...(mec.solo === 'eletrizado' ? { pct: mec.danoRecebidoPct ?? 20 } : {}), ...(mec.solo === 'congelado' ? { pct: mec.resfriamentoPct ?? 10 } : {}), de: m });
   eventos.push({ t: 'area', id: 6, x: m.x, y: m.y, casas: Areas.paraTela(Areas.quadrado(m, raio), m) });
 }
 /** (lote 70) Os solos dos monstros a cada tique: o que vale em você agora (e os que acabaram saem). */
@@ -179,7 +205,11 @@ function tiqueDosSolos(estado, hunt, personagem, eventos, agora, ficha) {
     if (s.tipo === 'eletrizado') NoJogador.eletrizarPeloSolo(hunt, ficha, s.pct, agora);
     // (100% — combate, 02/11) o SOLO CONGELADO ("Solo Resfriado ao Morrer"): Resfria você enquanto está nele (`Combate100.resfriarPeloSolo`)
     else if (s.tipo === 'congelado') Combate100.resfriarPeloSolo(hunt, ficha, agora, { pct: s.pct ?? Combate100.SOLO_CONGELADO.pct });
-    else if (s.tipo === 'ardente' && s.dps > 0 && agora >= s.proximo) {
+    // (07/11, lote 20 das inertes) o SOLO PROFANADO (o Profanador do jogo): Caos por segundo, como o Ardente (`imune_solo_profanado` — o Passo Natal)
+    else if (s.tipo === 'profanado' && s.dps > 0 && agora >= s.proximo) {
+      s.proximo = agora + 1000;
+      ferirJogador(estado, hunt, personagem, s.de, s.dps, 'chaos', eventos, 'Solo Profanado');
+    } else if (s.tipo === 'ardente' && s.dps > 0 && agora >= s.proximo) {
       s.proximo = agora + 1000;
       ferirJogador(estado, hunt, personagem, s.de, s.dps, 'fire', eventos, 'Solo Ardente');
     }

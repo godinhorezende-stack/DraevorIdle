@@ -1043,6 +1043,12 @@ export function tiqueDosAspectos(estado, hunt, ficha, agora = hunt?.clock ?? 0) 
   }
 }
 definirTiqueDosAspectos(tiqueDosAspectos);
+/** (07/11, lote 20) o Esporo Infestado do Rouba-ar (`acoes.mjs` registra — o lacaio com a aura). */
+// eslint-disable-next-line no-var
+var esporoInfestado;
+export function definirEsporoInfestado(fn) { esporoInfestado = fn; }
+/** (07/11, lote 20 das inertes — sem fonte, o Tricorne de Fairgraves) os toques dos ESPÍRITOS ATORMENTADOS: um ao acaso, 20 s (`condicoes-poe.BUFFS.tocadoEspirito*`). */
+export const TOQUES_DOS_ESPIRITOS = Object.freeze(['tocadoEspiritoFuria', 'tocadoEspiritoPressa', 'tocadoEspiritoVida', 'tocadoEspiritoVento']);
 /** (07/11, lote 17) os Fantasmas Acorrentados da Marca da Penitência (`acoes.mjs` registra — `mobs/mecanicas.fantasmasDaPenitencia`). */
 // eslint-disable-next-line no-var
 var fantasmasDaPenitencia;
@@ -1665,6 +1671,9 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
       l.poeDoRaro = { raridade: alvo.raridade ?? 'raro', mods: [...(alvo.mods ?? [])], ate: relogio + (Number(ev.param) || 60) * 1000 };
       return;
     }
+    // (07/11, lote 20 das inertes) o Esporo Infestado onde o Raro morreu; o toque de um Espírito Atormentado (a chance `v`, 20 s)
+    case 'esporoInfestado': if (alvo && sorte(v)) esporoInfestado?.(estado, hunt, alvo, rng); return;
+    case 'espiritoAtormentado': if (sorte(v)) ganharBuff(hunt, TOQUES_DOS_ESPIRITOS[Math.floor(rng() * TOQUES_DOS_ESPIRITOS.length)], 20, agora); return;
     case 'contaComoBloqueio': {
       if (!alvo || hunt.poeSinoEm === agora || !sorte(v)) return;
       hunt.poeSinoEm = agora;
