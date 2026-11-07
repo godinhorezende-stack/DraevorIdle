@@ -9920,6 +9920,12 @@
       "combate": true,
       "nome": "Silenciado (não usa habilidades)",
       "efeito": "acoes.dispararSemMarcarDentro (07/11, lote 20)"
+    },
+    "efigie_maldicoes_extra": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Maldições adicionais das Habilidades Encaixadas (a Efígie)",
+      "efeito": "acoes.efigiesDaDoedre (07/11, lote 20)"
     }
   }
 }

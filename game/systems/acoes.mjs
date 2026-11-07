@@ -1135,7 +1135,8 @@ function efigiesDaDoedre(estado, hunt) {
   if (!efigies.length) return;
   for (const m of hunt.monstros ?? []) {
     if (!(m.hp > 0) || m.dummy || !efigies.some((x) => x.z === (hunt.z ?? 0) && distanciaChebyshev(x, m) <= 3)) continue;
-    amaldicoarComAsEncaixadas(estado, hunt, m, 'efigie_maldicoes', relogio, 1000);
+    // ("Feitiços das Habilidades Encaixadas podem aplicar N Maldições adicionais" — o PoB: +5 maldições no alvo; o jogo deixa todas as da Efígie)
+    amaldicoarComAsEncaixadas(estado, hunt, m, 'efigie_maldicoes', relogio, 1000, ModsPoe.valor(Ficha.combate(estado), 'efigie_maldicoes_extra') > 0);
   }
 }
 /**
@@ -13779,13 +13780,13 @@ ModsPoe.definirMaldicao((hunt, alvo, nome, nivel, semLimite, agora) => {
 // de sempre: 15 s, 5)
 ModsPoe.definirFantasmaDoCorpo((estado, hunt, nivel) => convocarFantasmas(estado, hunt, { fantasmaAoMatarPct: 100, fantasmaNivel: nivel }, [{ hp: 0 }], () => 0));
 // (07/11, lote 16 das inertes, a Marca da Submissão) as MALDIÇÕES ENCAIXADAS nas peças vestidas com o atributo `chave` (o "ao Acertar" delas), no nível de cada uma
-function amaldicoarComAsEncaixadas(estado, hunt, alvo, chave, agora, dur = null) {
+function amaldicoarComAsEncaixadas(estado, hunt, alvo, chave, agora, dur = null, ignorarLimite = false) {
   for (const peca of Object.values(estado.equipment ?? {})) {
     if (!(Number(peca?.poe?.af?.[chave]) > 0)) continue;
     for (const acao of Gemas.encaixadasNaPeca(peca, 'maldicao')) {
       const slug = POR_ID.get(acao)?.poeGema?.slug;
       const b = slug ? GemasPoe.buffNoNivel(slug, Gemas.efeitoNaSkill(estado, acao)?.nivel ?? 1) : null;
-      if (b?.efeitos?.length) Reforcos.amaldicoar(alvo, acao, b.efeitos, { agora, dur: dur ?? (b.dur || 6000), hunt });
+      if (b?.efeitos?.length) Reforcos.amaldicoar(alvo, acao, b.efeitos, { agora, dur: dur ?? (b.dur || 6000), hunt, ...(ignorarLimite ? { ignorarLimite: true } : {}) });
     }
   }
 }
