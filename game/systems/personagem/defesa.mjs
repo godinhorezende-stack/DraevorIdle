@@ -178,7 +178,9 @@ export function recarregar(estado, ficha, ms) {
   if (!(resto > 0) || (naVida ? (estado.hp ?? 0) >= (estado.maxHp ?? 0) || !((estado.hp ?? 0) > 0) : atual >= max)) return;
   // ("X% menos Recarga do Escudo de Energia" — Bateria Anciã 50%, Proteção Perversa 40%: multiplica a recarga.)
   const menos = Math.max(0, 1 - v('es_recarga_menos') / 100);
-  estado.esResto = (estado.esResto ?? 0) + (max * recargaPorSegundo() * (1 + (ficha.esRecargaPct ?? 0) / 100) * menos * resto) / 1000;
+  // (08/11) + a "Velocidade de Recuperação de Escudo de Energia": no PoE ela acelera a recarga também
+  const daRecuperacao = Math.max(0.1, 1 + (v('recuperacao_inc') + v('recuperacao_es_inc')) / 100);
+  estado.esResto = (estado.esResto ?? 0) + (max * recargaPorSegundo() * (1 + (ficha.esRecargaPct ?? 0) / 100) * menos * daRecuperacao * resto) / 1000;
   if (naVida) {
     const ganhoNaVida = Math.floor(estado.esResto);
     estado.esResto -= ganhoNaVida;

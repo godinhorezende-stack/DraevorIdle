@@ -66,6 +66,8 @@ export function daSoma(af = {}) {
     // (17/10, lote G17) o "X% mais/menos Duração de Afecções" (multiplica: o Sadismo) e o só das de dano (a Aflição Ágil)
     duracaoMais: n('ailment_duration_mais'), duracaoDanoMais: n('duracao_afeccoes_dano_mais'),
     duracaoVeneno: n('poison_duration'),
+    // (08/11, aproximadas A4) o "X% mais/menos Duração" do Veneno e do Incêndio (multiplica, como no PoE)
+    duracaoVenenoMais: n('poison_duration_mais'), duracaoIncendioMais: n('duracao_incendio_mais'),
     // PoE (07/10): o "Dano Degenerativo aumentado" (todas) e o de cada uma; a duração de cada uma e a das Elementais; o efeito do
     // Resfriamento e da Eletrização; "causam dano X% mais rápido"; "todo o dano pode Envenenar"; o dano a mais em quem está Mutilado.
     danoAumentado: n('dot_dmg_inc'),
@@ -301,7 +303,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
   if (fogo > 0 && ((crit && !a.criticoNaoIncendeia) || sorte(chance('incendio'))) && a.incendioViraCausticacao) {
     causticar();
   } else if (fogo > 0 && ((crit && !a.criticoNaoIncendeia) || sorte(chance('incendio')))) {
-    const posto = dot('queimadura', BASE.incendio.porSegundo, duracaoDe(a.incendioDuracaoBaseMs > 0 ? a.incendioDuracaoBaseMs : BASE.incendio.duracaoMs, a.duracaoIncendio ?? 0), fogo, multiplicadorBase + a.multiplicadorFogo + (crit ? a.multiplicadorIncendioCritico ?? 0 : 0), (a.danoIncendio ?? 0) + aumDoSuporte('incendio'), { mais: comSuporte('incendio', a.incendioMais ?? 0), chave: chaveDoIncendio() });
+    const posto = dot('queimadura', BASE.incendio.porSegundo, Math.round(duracaoDe(a.incendioDuracaoBaseMs > 0 ? a.incendioDuracaoBaseMs : BASE.incendio.duracaoMs, a.duracaoIncendio ?? 0) * Math.max(0, 1 + (a.duracaoIncendioMais ?? 0) / 100)), fogo, multiplicadorBase + a.multiplicadorFogo + (crit ? a.multiplicadorIncendioCritico ?? 0 : 0), (a.danoIncendio ?? 0) + aumDoSuporte('incendio'), { mais: comSuporte('incendio', a.incendioMais ?? 0), chave: chaveDoIncendio() });
     // (o "ao Incendiar um Inimigo não Incendiado" — `mods-poe.aoPorAfeccoes` lê e apaga)
     if (posto && !jaIncendiado) (bicho.estados ??= {}).incendiadoNovo = true;
     // (06/11, a Chama Negra: o seu Incêndio dói como Caos — a resistência a Caos do monstro)
@@ -333,7 +335,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     // (lote C4, dono 21/10) "Não pode infligir múltiplos envenenamentos com o mesmo ataque" (a Mamba — cannot_inflict_additional_poisons: os adicionais não valem) e
     // o "X% mais Duração do Veneno" da gema (o Golpe Pestilento — active_skill_poison_duration_+%_final, o do nível + o da qualidade)
     const extras = a.venenoUnico ? 0 : Math.max(0, Math.floor(a.venenosExtras ?? 0));
-    const duracaoDoVeneno = Math.round(duracaoDe(BASE.veneno.duracaoMs, a.duracaoVeneno) * Math.max(0, 1 + (a.venenoDuracaoMais ?? 0) / 100));
+    const duracaoDoVeneno = Math.round(duracaoDe(BASE.veneno.duracaoMs, a.duracaoVeneno) * Math.max(0, 1 + (a.venenoDuracaoMais ?? 0) / 100) * Math.max(0, 1 + (a.duracaoVenenoMais ?? 0) / 100));
     for (let k = 0; k <= extras && jaTem + k < teto; k++) {
       if (dot('venenoPoe', BASE.veneno.porSegundo, duracaoDoVeneno, baseDoVeneno, multVeneno, aumVeneno, { mais: comSuporte('veneno', ((1 + maisDoVeneno() / 100) * (1 + (a.venenoMaisFinal ?? 0) / 100) * (1 - (praga?.menosPct ?? 0) / 100) - 1) * 100) })) praga?.somar(ultimoTotal);
     }

@@ -1261,7 +1261,8 @@ export function drenarPoe(estado, { vida = 0, mana = 0, es = 0 } = {}, ficha = c
       estado[campo] = (estado[campo] ?? 0) + ganho;
       eventos?.push({ t: 'heal', uid: 'player', quem, x: pos?.x, y: pos?.y, v: ganho, color: COR_DO_ROUBO[recurso], leech: recurso === 'vida' ? 'life' : recurso, instantaneo: true });
     }
-    if (quanto - naHora > 0) lista.push({ recurso, restante: quanto - naHora, porSegundo: (max * taxa) / 100, ...(recurso === 'es' ? { max } : {}) });
+    // (08/11) a "Velocidade de Recuperação" do recurso acelera o dreno, como no PoE
+    if (quanto - naHora > 0) lista.push({ recurso, restante: quanto - naHora, porSegundo: ((max * taxa) / 100) * FrascosPoe.fatorDeRecuperacao(ficha?.afPoe, recurso), ...(recurso === 'es' ? { max } : {}) });
   };
   const esMax = Math.max(0, Math.round(ficha.energyShield ?? 0));
   if (vida > 0 && !(ModsPoe.valor(ficha, 'sem_roubo_vida') > 0)) {

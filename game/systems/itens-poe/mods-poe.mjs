@@ -5,7 +5,7 @@ import * as QuemFeriu from '../hunt/quem-feriu.mjs';
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { definirTiqueDosAspectos, MOVENDO_MS, slugDoNome, ganharAlmaVaal, aoBloquear, almaDoJogador, poderDoMorto, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, criarSoloCongelado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo, porExposicao, vinhasGanhas as vinhasGanhasDe, fatorDaResistenciaRecebida, amaldicoarJogador, MALDICOES_DOS_MONSTROS } from './condicoes-poe.mjs';
+import { definirTiqueDosAspectos, MOVENDO_MS, slugDoNome, ganharAlmaVaal, aoBloquear, almaDoJogador, poderDoMorto, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, criarSoloCongelado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo, porExposicao, vinhasGanhas as vinhasGanhasDe, fatorDaResistenciaRecebida, amaldicoarJogador, MALDICOES_DOS_MONSTROS, recuperarAoLongo } from './condicoes-poe.mjs';
 import * as Plantadas from './armas-plantadas.mjs';
 import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { eletrizarComPct, cegar as cegarVoce } from './monstros-no-jogador.mjs';
@@ -1173,6 +1173,9 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
   switch (ev.acao) {
     case 'vida': return curar('hp', estado.maxHp ?? 0, v);
     case 'vidaPct': return curar('hp', estado.maxHp ?? 0, ((estado.maxHp ?? 0) * v) / 100);
+    // (08/11) `vidaAoLongo:<s>` / `vidaPctAoLongo:<s>` = a vida que vem AO LONGO de s segundos ("Regenera X de Vida por 1 segundo" — `recuperarAoLongo`)
+    case 'vidaAoLongo': return recuperarAoLongo(hunt, 'hp', v, (Number(ev.param) || 1) * 1000, agora);
+    case 'vidaPctAoLongo': return recuperarAoLongo(hunt, 'hp', ((estado.maxHp ?? 0) * v) / 100, (Number(ev.param) || 1) * 1000, agora);
     // `vidaPctChance:<pct>` / `manaPctChance:<pct>` = a CHANCE (%) de recuperar pct% ("10% de chance de Recuperar toda a Vida ao Matar").
     case 'vidaPctChance': if (sorte(v)) curar('hp', estado.maxHp ?? 0, ((estado.maxHp ?? 0) * (Number(ev.param) || 0)) / 100); return;
     case 'manaPctChance': if (sorte(v)) curar('mana', estado.maxMana ?? 0, ((estado.maxMana ?? 0) * (Number(ev.param) || 0)) / 100); return;

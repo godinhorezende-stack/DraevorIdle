@@ -450,8 +450,10 @@ export function usar(estado, v, eventos = null, quem = null) {
   if (naHora > 0) recuperar(estado, par.recurso, naHora, eventos, quem, extras);
   const resto = total - naHora;
   // "Recuperação de Mana ocorre instantaneamente no término do Efeito": nada ao longo do tempo, tudo no fim.
+  // (08/11) a "Velocidade de Recuperação de Vida/Mana" do personagem acelera o frasco, como no PoE: a mesma quantidade em menos tempo
+  const ms = par.ms / fatorDeRecuperacao(afp, par.recurso);
   if (par.instantaneoNoFim) st.ativos[v] = { ate: agora + par.ms, recurso: par.recurso, nome: peca.poe.nome, noFim: resto, extras, ...doEfeito };
-  else st.ativos[v] = { ate: agora + par.ms, de: agora, ultimo: agora, porMs: resto / par.ms, recurso: par.recurso, nome: peca.poe.nome, extras, ...(par.naoParaNoCheio ? { naoParaNoCheio: true } : {}), ...doEfeito };
+  else st.ativos[v] = { ate: agora + ms, de: agora, ultimo: agora, porMs: resto / ms, recurso: par.recurso, nome: peca.poe.nome, extras, ...(par.naoParaNoCheio ? { naoParaNoCheio: true } : {}), ...doEfeito };
   return true;
 }
 
@@ -493,6 +495,9 @@ function constantesDoSangueMagico(estado, st, afp) {
  * vale no frasco inteiro; "Recuperação de Mana ocorre instantaneamente no término do Efeito" só na Mana. O repasse aos lacaios, o "Retira…"
  * e o Pacto Vaal ficam na parte da Vida. O efeito acaba quando a Vida e a Mana (não reservadas) estão cheias — `tique`.
  */
+/** (08/11) O fator da "Velocidade de Recuperação" (`recuperacao_inc` + a do recurso) no ritmo da recuperação: 1 sem ela. */
+// (o escudo: × o "X% menos Recuperação do Escudo de Energia", `recuperacao_es_menos` — o dreno de escudo também)
+export const fatorDeRecuperacao = (af, recurso) => Math.max(0.1, 1 + ((Number(af?.recuperacao_inc) || 0) + (Number(af?.[{ vida: 'recuperacao_vida_inc', mana: 'recuperacao_mana_inc', es: 'recuperacao_es_inc' }[recurso]]) || 0)) / 100) * (recurso === 'es' ? Math.max(0, 1 - (Number(af?.recuperacao_es_menos) || 0) / 100) : 1);
 function usarHibrido(estado, v, peca, par, st, agora, eventos, quem, afp) {
   const vidaBaixa = (estado.hp ?? 0) < (estado.maxHp ?? 1) * 0.5;
   const manaBaixa = (estado.mana ?? 0) <= (estado.maxMana ?? 1) * 0.5;
@@ -509,9 +514,11 @@ function usarHibrido(estado, v, peca, par, st, agora, eventos, quem, afp) {
   if (naHora > 0) { recuperar(estado, 'vida', vida * naHora, eventos, quem, extras); recuperar(estado, 'mana', mana * naHora, eventos, quem); }
   const restoVida = vida * (1 - naHora);
   const restoMana = mana * (1 - naHora);
-  const msMana = par.msMana || par.ms;
+  // (08/11) a Velocidade de Recuperação de cada recurso acelera a parte dele
+  const msVida = par.ms / fatorDeRecuperacao(afp, 'vida');
+  const msMana = (par.msMana || par.ms) / (par.instantaneoNoFim ? 1 : fatorDeRecuperacao(afp, 'mana'));
   const daMana = par.instantaneoNoFim ? { ate: agora + msMana, noFim: restoMana } : { ate: agora + msMana, porMs: restoMana / msMana };
-  st.ativos[v] = { ate: agora + Math.max(par.ms, msMana), de: agora, ultimo: agora, porMs: restoVida / par.ms, vidaAte: agora + par.ms, recurso: 'vida', mana: daMana, nome: peca.poe.nome, extras, ...(par.naoParaNoCheio ? { naoParaNoCheio: true } : {}), ...extrasDoEfeito(par) };
+  st.ativos[v] = { ate: agora + Math.max(msVida, msMana), de: agora, ultimo: agora, porMs: restoVida / msVida, vidaAte: agora + msVida, recurso: 'vida', mana: daMana, nome: peca.poe.nome, extras, ...(par.naoParaNoCheio ? { naoParaNoCheio: true } : {}), ...extrasDoEfeito(par) };
   return true;
 }
 

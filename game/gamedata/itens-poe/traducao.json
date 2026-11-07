@@ -14,6 +14,66 @@
   ],
   "regras": [
     {
+      "padrao": "^(?:Você tem )?Golpe de Misericórdia contra Inimigos Amaldiçoados$",
+      "efeitos": [
+        {
+          "stat": "culling@alvoAmaldicoado",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11b": "08/11 — aproximadas, lote A2: correções e as janelas/recuperações do PoE",
+      "_nova": true
+    },
+    {
+      "padrao": "^(?:Você tem )?Golpe de Misericórdia contra Inimigos Incendiados$",
+      "efeitos": [
+        {
+          "stat": "culling@alvoIncendiado",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11b": "08/11 — aproximadas, lote A2: correções e as janelas/recuperações do PoE",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Dano Degenerativo se você tiver causado um Golpe Crítico nos últimos \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "dot_multi@nosUltimos:{V2}:critico",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11b": "08/11 — aproximadas, lote A2: correções e as janelas/recuperações do PoE",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Vida Regenerada por Segundo se você causou um Golpe Crítico nos últimos \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct@nosUltimos:{V2}:critico",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11b": "08/11 — aproximadas, lote A2: correções e as janelas/recuperações do PoE",
+      "_nova": true
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\} da Vida por \\{(\\d+)\\} segundos? quando você Conjurar uma Magia$",
+      "efeitos": [
+        {
+          "stat": "ev:usarMagia:vidaAoLongo:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11b": "08/11 — aproximadas, lote A2: correções e as janelas/recuperações do PoE",
+      "_nova": true
+    },
+    {
       "padrao": "^Acertos Inimigos infligem Grilhões Temporais em você$",
       "efeitos": [
         {
@@ -14097,7 +14157,8 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado"
+      "estado": "equivalente",
+      "_08_11b": "08/11 — aproximadas, lote A2: correções e as janelas/recuperações do PoE"
     },
     {
       "padrao": "^Ponto de Atordoamento Inimigo reduzido em \\{(\\d+)\\}% com esta Arma$",
@@ -14983,8 +15044,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "_nova": true
+      "estado": "equivalente",
+      "_nova": true,
+      "_08_11b": "08/11 — aproximadas, lote A2: correções e as janelas/recuperações do PoE"
     },
     {
       "padrao": "^Velocidade de Conjuração com Dupla Empunhadura aumentada em \\{(\\d+)\\}%$",
@@ -18834,8 +18896,8 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "local na peça no PoE; global no Draevor. Escala: o PoE vai a +500, a armadura de item do Draevor (T5) a +14."
+      "estado": "equivalente",
+      "_08_11a": "08/11 — as defesas planas: globais fora das peças de armadura (como no PoE); nas de armadura, locais (`jogo.separarDefesasLocais`)"
     },
     {
       "padrao": "^\\+\\{(\\d+)\\} de Evasão$",
@@ -18845,8 +18907,8 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "local na peça no PoE; global no Draevor."
+      "estado": "equivalente",
+      "_08_11a": "08/11 — as defesas planas: globais fora das peças de armadura (como no PoE); nas de armadura, locais (`jogo.separarDefesasLocais`)"
     },
     {
       "padrao": "^\\{(\\d+)\\} de Vida Regenerada por segundo$",
@@ -20673,31 +20735,31 @@
       "padrao": "^\\{(\\d+)\\}% menos Dano Físico e de Caos sofrido enquanto São$",
       "efeitos": [
         {
-          "stat": "dano_physical_recebido_mais",
+          "stat": "dano_physical_recebido_mais@semBuff:insano",
           "valor": "-{1}"
         },
         {
-          "stat": "dano_chaos_recebido_mais",
+          "stat": "dano_chaos_recebido_mais@semBuff:insano",
           "valor": "-{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "o Insano vem da habilidade Perturbar, que não está na coleção de gemas do jogo: você está sempre São.",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
+      "estado": "equivalente",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)",
+      "_08_11b": "08/11 — aproximadas A2: São = sem o Insano (o Perturbar existe desde o lote 13b)"
     },
     {
       "padrao": "^Regenera \\{(\\d+)\\}% de Vida por um segundo quando Acertado enquanto São$",
       "efeitos": [
         {
-          "stat": "ev:serAcertado:vidaPct",
+          "stat": "ev:serAcertado:vidaPctAoLongo:1@semBuff:insano",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "de uma vez (no PoE, ao longo de 1 segundo); o Insano vem da habilidade Perturbar, que não está na coleção de gemas do jogo: você está sempre São.",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
+      "estado": "equivalente",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)",
+      "_08_11b": "08/11 — aproximadas A2: ao longo de 1 s, e São = sem o Insano"
     },
     {
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo enquanto possuir Poder de Ave$",
@@ -20981,9 +21043,9 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "na recarga e na regeneração (o dreno de escudo, não).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9)"
+      "estado": "equivalente",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9)",
+      "_08_11c": "08/11 — aproximadas A3: o menos vale na recarga, na regeneração e no dreno de escudo"
     },
     {
       "padrao": "^Suas Habilidades causam \\{(\\d+)\\}% da Mana Gasta no Custo de Mana Direto da Habilidade como Dano Físico$",
@@ -29440,14 +29502,14 @@
       "padrao": "^\\{(\\d+)\\}% mais Duração do Incêndio$",
       "efeitos": [
         {
-          "stat": "duracao_incendio",
+          "stat": "duracao_incendio_mais",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "\"mais\" somado como \"aumentada\"",
+      "estado": "equivalente",
       "_nova": true,
-      "_unico": true
+      "_unico": true,
+      "_08_11d": "08/11 — aproximadas A4: o \"mais/menos\" multiplica, como no PoE"
     },
     {
       "padrao": "^Incêndios infligidos por você com Ataques causam Dano \\{(\\d+)\\}% mais rápido$",
@@ -31657,14 +31719,14 @@
       "padrao": "^\\{(\\d+)\\}% menos Duração de Veneno$",
       "efeitos": [
         {
-          "stat": "poison_duration",
+          "stat": "poison_duration_mais",
           "valor": "-{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "\"menos\" somado como \"reduzida\"",
+      "estado": "equivalente",
       "_nova": true,
-      "_unico": true
+      "_unico": true,
+      "_08_11d": "08/11 — aproximadas A4: o \"mais/menos\" multiplica, como no PoE"
     },
     {
       "padrao": "^Debuffs em você expiram \\{(\\d+)\\}% mais rápido$",
@@ -31853,9 +31915,9 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "vale na regeneração e na recuperação do dano sofrido; o roubo de vida e os frascos ainda não aceleram",
-      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+      "estado": "equivalente",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)",
+      "_08_11c": "08/11 — aproximadas A3: a velocidade de recuperação acelera a regeneração, o dreno, os frascos e (o escudo) a recarga"
     },
     {
       "padrao": "^Velocidade de Recuperação de Mana aumentada em \\{(\\d+)\\}%$",
@@ -31866,9 +31928,9 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "vale na regeneração e na recuperação do dano sofrido; o roubo de mana e os frascos ainda não aceleram",
-      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+      "estado": "equivalente",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)",
+      "_08_11c": "08/11 — aproximadas A3: a velocidade de recuperação acelera a regeneração, o dreno, os frascos e (o escudo) a recarga"
     },
     {
       "padrao": "^Velocidade de Recuperação de Escudo de Energia aumentada em \\{(\\d+)\\}%$",
@@ -31879,9 +31941,9 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "vale na regeneração do Escudo de Energia; a recarga e o roubo ainda não aceleram",
-      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+      "estado": "equivalente",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)",
+      "_08_11c": "08/11 — aproximadas A3: a velocidade de recuperação acelera a regeneração, o dreno, os frascos e (o escudo) a recarga"
     },
     {
       "padrao": "^\\{(\\d+)\\}% do Dano de {E} sofrido é Recuperado como Vida$",
@@ -38879,14 +38941,14 @@
       "padrao": "^Mais \\{(\\d+)\\}% de evasão por \\{(\\d+)\\} de mana máximo$",
       "efeitos": [
         {
-          "stat": "evasion_pct%manaMax:{V2}",
+          "stat": "evasion_mais%manaMax:{V2}",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "vira aumento da Evasão (o jogo não tem o \"mais\" separado na Evasão).",
-      "_de": "10/10 — únicos: armas e armaduras (rodada 1)"
+      "estado": "equivalente",
+      "_de": "10/10 — únicos: armas e armaduras (rodada 1)",
+      "_08_11d": "08/11 — aproximadas A4: o \"mais/menos\" multiplica, como no PoE"
     },
     {
       "padrao": "^\\+\\{(\\d+)\\} ao Nível das Gemas de Habilidade Encaixadas por cada \\{(\\d+)\\} Níveis do Jogador$",
@@ -39453,14 +39515,14 @@
       "padrao": "^\\{(\\d+)\\}% menos Duração de Cargas de Poder$",
       "efeitos": [
         {
-          "stat": "duracao_poder",
+          "stat": "duracao_poder_mais",
           "valor": "-{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "vira redução da duração (o jogo soma o \"menos\" com os aumentos).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 2)"
+      "estado": "equivalente",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 2)",
+      "_08_11d": "08/11 — aproximadas A4: o \"mais/menos\" multiplica, como no PoE"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de chance da Recarga do Escudo de Energia iniciar quando você Bloquear$",
@@ -42390,9 +42452,9 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "o escudo volta na hora (no PoE, ao longo de 4 s).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 7)"
+      "estado": "equivalente",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 7)",
+      "_08_11b": "08/11 — aproximadas, lote A2: correções e as janelas/recuperações do PoE"
     },
     {
       "padrao": "^Não pode ser Atordoado por Dano Mágico Suprimido$",
@@ -50150,14 +50212,15 @@
       "padrao": "^Projéteis Mágicos Encaixados têm \\{(\\d+)\\}% menos Duração do Efeito da Habilidade$",
       "efeitos": [
         {
-          "stat": "duracao_habilidades@magia+projetil",
+          "stat": "duracao_mais@magia+projetil",
           "valor": "-{1}"
         }
       ],
       "estado": "aproximado",
-      "nota": "como \"reduzida\" (soma com os outros aumentos de Duração)",
       "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
+      "_nova": true,
+      "_08_11d": "08/11 — aproximadas A4: o \"mais/menos\" multiplica, como no PoE",
+      "nota": "o \"menos\" multiplica, como no PoE, mas em todas as suas magias de projétil (o jogo não separa as gemas encaixadas na peça)"
     },
     {
       "padrao": "^Totens que seriam mortos pelos inimigos se tornam Totens Espectrais por \\{(\\d+)\\} segundos$",
