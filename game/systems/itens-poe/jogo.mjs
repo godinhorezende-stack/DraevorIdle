@@ -505,7 +505,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // Ataque/Movimento "enquanto Resfriado", o Crescimento Frágil (`condicoes-poe.crescimentoFragil`) e a Réplica: Talento Puro (`passivas/arvore` TALENTO_PURO))
 // (85 — 06/11, os Únicos sem efeito, lotes 1 a 5 — de 423 linhas para 0: as regras novas dos frascos, anéis, cintos, armaduras, amuletos, armas e
 // aljavas únicos, e as notas das linhas inertes nos frascos; `docs/unicos-sem-efeito.md`)
-export const VERSAO_DA_TRADUCAO = 85;
+// (86 — 06-07/11, as inertes dos Únicos (lotes 6 em diante): os Emissários, os Aspectos, as cargas de único, os aliados, a Fortificação, os solos, a reserva,
+// o Impelir, os cadáveres, as Posturas e as habilidades concedidas; o lembrete entre parênteses do Oni-Goroshi deixa de virar efeito)
+export const VERSAO_DA_TRADUCAO = 86;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
