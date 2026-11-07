@@ -2418,7 +2418,7 @@ export const EVENTOS = new Set(['estilhacar', 'maxDivina', 'perderEspiritual', '
   'salvaguardaQuebra',
   // (02/11, as Atemporais) quando a Salvaguarda é Restaurada (`personagem/salvaguarda.restaurar` → `acoes.mjs`)
   'salvaguardaRestaurada']);
-export const ACOES = new Set(['almaVaal', 'explodirCadaveres', 'soloSeu', 'cargaAliados', 'vidaPctAliados', 'vinculadosImortais', 'furiaArcanaClamor', 'perderAlmas', 'transferirMarca', 'frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
+export const ACOES = new Set(['gatilhoGastando', 'almaVaal', 'explodirCadaveres', 'soloSeu', 'cargaAliados', 'vidaPctAliados', 'vinculadosImortais', 'furiaArcanaClamor', 'perderAlmas', 'transferirMarca', 'frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
   'dano', 'danoPctVida', 'furia', 'frasco', 'recargaEs', 'explodir', 'gatilho', 'espalhar', 'roubarCargas', 'maldicao', 'soloSagrado', 'soloProfano', 'soloCongelado', 'fumaca', 'removerAfeccao', 'perdeVidaPct', 'perdeEsPct', 'perdeManaPct',
   // (11/10, os únicos)
   'perdeVida', 'esDaArmadura', 'vidaParaEs', 'degenEmVoce', 'statTemp', 'statTempPorMana', 'furiaPorMana', 'transferirMaldicoes', 'degenNoAlvo', 'danoPorMana', 'empurrarProximos',

@@ -97,6 +97,13 @@ export const FEITAS = Object.freeze({
   Pacify: { nome: 'Pacificar', nota: 'a maldição (10 s) pelo caminho de sempre; com 60% dela passados, o amaldiçoado não causa dano' },
   // Gula dos Elementos (o Sangue da Corrupção — Vaal: no jogo, a recarga no lugar das Almas): 5 s imune a Maldições e sem Dano Elemental sofrido
   Gluttony_of_Elements: { nome: 'Gula dos Elementos', recargaMs: 14000, nota: 'o Dano Elemental sofrido é anulado (o PoE: ele cura — o jogo não cura pelo dano); só você (sem os aliados); a recarga de 14 s é a Anulação do Ganho de Almas (as Vaal do jogo usam recarga)', usar: ({ hunt, agora }) => ganharBuff(hunt, 'gulaDosElementos', 5, agora) },
+  // Exigência da Rainha (o Mandado de Atziri concede — "Ordem da Rainha"): alterna as Chamas do Julgamento e a Tormenta do Julgamento, no nível das linhas "Ordem da
+  // Rainha pode Ativar … Nível N" da peça (sem a linha, o 20 do Mandado — a única fonte da habilidade)
+  Queens_Demand: { nome: 'Exigência da Rainha', usar: ({ estado, hunt, alvo, eventos, af }) => {
+    const chamas = (hunt.poeOrdemDaRainha = !hunt.poeOrdemDaRainha);
+    const nivel = Number(af?.[chamas ? 'ordem_rainha_chamas' : 'ordem_rainha_tormenta']) || 20;
+    dispararGatilho?.(estado, hunt, chamas ? 'chamas-do-julgamento' : 'tormenta-do-julgamento', nivel, alvo, eventos);
+  } },
   // Passo da Morte (a Trilha Bubônica, quando Equipada): andando, os cadáveres a 1 casa explodem — 5% da Vida máxima de cada um como Fogo nos de perto deles
   Death_Walk: { nome: 'Passo da Morte', continua: { andando: 'explodirCadaveres' } },
   // Andarilho Cadavérico (quando Equipado): andando, deixa um cadáver onde você estava (a Vida: a média dos monstros da área), até 10
@@ -107,6 +114,10 @@ export const FEITAS = Object.freeze({
   Tears_of_Rot: { nome: 'Lágrimas de Podridão', nota: 'as Lágrimas ferem os monstros a até 2 casas (627 de Físico por segundo — o PoE: as gotas caem em volta de você)', continua: { porS: 627, tipoDot: 'degenFisico', raio: 2 } },
 });
 export const feita = (slug) => FEITAS[slug] ?? null;
+/** O disparo de uma gema ativada (`mods-poe` registra — a Exigência da Rainha ativa as Chamas e a Tormenta do Julgamento). */
+// eslint-disable-next-line no-var
+var dispararGatilho;
+export function definirGatilho(fn) { dispararGatilho = fn; }
 /** A explosão do cadáver (`mods-poe.explodirMorto` registra — este módulo não o importa). */
 // eslint-disable-next-line no-var
 var explodirCadaver;

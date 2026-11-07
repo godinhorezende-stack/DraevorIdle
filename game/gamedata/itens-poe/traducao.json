@@ -14,6 +14,56 @@
   ],
   "regras": [
     {
+      "padrao": "^Ativa Explosão Espiritual Nível \\{(\\d+)\\} quando você Usar uma Habilidade enquanto possuir uma Carga Espiritual$",
+      "efeitos": [
+        {
+          "stat": "ev:usarHabilidade:gatilhoGastando:espiritual:explosao-espiritual",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11e": "07/11 — lote 15 das inertes: as habilidades de item das cargas (Explosão Espiritual, Tiro do Vazio) e a Exigência da Rainha",
+      "_nova": true
+    },
+    {
+      "padrao": "^Consome uma Carga do Vazio para Ativar Tiro do Vazio Nível \\{(\\d+)\\} ao disparar Flechas com uma Habilidade não Ativada$",
+      "efeitos": [
+        {
+          "stat": "ev:usarAtaque:gatilhoGastando:vazio:tiro-do-vazio@comArco",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Tiro do Vazio: o \"100% mais Dano em Área\" da explosão não é simulado",
+      "_07_11e": "07/11 — lote 15 das inertes: as habilidades de item das cargas (Explosão Espiritual, Tiro do Vazio) e a Exigência da Rainha",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ordem da Rainha pode Ativar Chamas do Julgamento Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "ordem_rainha_chamas",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11e": "07/11 — lote 15 das inertes: as habilidades de item das cargas (Explosão Espiritual, Tiro do Vazio) e a Exigência da Rainha",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ordem da Rainha pode Ativar Tormenta do Julgamento Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "ordem_rainha_tormenta",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as 12 insígnias da Tormenta do Julgamento caem como uma área só no alvo (o jogo não espalha as insígnias)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11e": "07/11 — lote 15 das inertes: as habilidades de item das cargas (Explosão Espiritual, Tiro do Vazio) e a Exigência da Rainha",
+      "_nova": true
+    },
+    {
       "padrao": "^Não Pode usar outros Anéis$",
       "efeitos": [
         {
@@ -50851,32 +50901,6 @@
           "valor": "1"
         }
       ],
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ordem da Rainha pode Ativar Chamas do Julgamento Nível \\{(\\d+)\\}$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Ordem da Rainha",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ordem da Rainha pode Ativar Tormenta do Julgamento Nível \\{(\\d+)\\}$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Ordem da Rainha",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
       "_nova": true
     },

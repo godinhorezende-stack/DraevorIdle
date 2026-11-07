@@ -4292,6 +4292,222 @@
     ]
    ],
    "soDoItem": true
+  },
+  {
+   "slug": "Spirit_Burst",
+   "nome": "Explosão Espiritual",
+   "en": "Spirit Burst",
+   "cor": "azul",
+   "nivelReq": 1,
+   "tags": [
+    "Magia",
+    "Ativação",
+    "Projétil",
+    "Físico"
+   ],
+   "tipos": [
+    "Spell",
+    "Damage",
+    "Triggerable",
+    "Triggered",
+    "InbuiltTrigger",
+    "Projectile",
+    "ProjectilesFromUser",
+    "Physical"
+   ],
+   "props": [
+    "Nível: 20",
+    "Tempo de Conjuração: 1.00 seg",
+    "Chance de Crítico: 6.00%",
+    "Eficácia do Dano Adicionado: 120%"
+   ],
+   "mods": [
+    "Causa 646 a 968 de Dano Físico",
+    "Dispara 6 Projéteis adicionais",
+    "Dispara Projéteis em um círculo",
+    "Ativa essa Magia quando você Usar uma Habilidade enquanto possuir uma Carga Espiritual"
+   ],
+   "qualidade": [],
+   "desc": "Consome uma carga espiritual para atirar projéteis que causam dano físico.",
+   "icone": null,
+   "colunas": [
+    "Nível",
+    "RequerNível",
+    "Experiência"
+   ],
+   "linhas": [
+    [
+     "20",
+     "70",
+     ""
+    ]
+   ],
+   "soDoItem": true
+  },
+  {
+   "slug": "Void_Shot",
+   "nome": "Tiro do Vazio",
+   "en": "Void Shot Arma Arcos",
+   "cor": "azul",
+   "nivelReq": 1,
+   "tags": [
+    "Ataque",
+    "Projétil",
+    "Área",
+    "Ativação",
+    "Gelo"
+   ],
+   "tipos": [
+    "Attack",
+    "Projectile",
+    "Damage",
+    "Area",
+    "Triggerable",
+    "Triggered",
+    "InbuiltTrigger",
+    "Cold",
+    "ProjectilesFromUser"
+   ],
+   "props": [
+    "Nível: 20",
+    "Dano de Ataque: 65% de base",
+    "Eficácia do Dano Adicionado: 65%"
+   ],
+   "mods": [
+    "50% do Dano Físico Convertido para Dano de Gelo",
+    "100% mais Dano em Área",
+    "Consume uma Carga do Vazio para Ativar esta Habilidade quando você disparar Flechas com uma Habilidade não Ativada"
+   ],
+   "qualidade": [],
+   "desc": "Atira uma Flecha que desacelera na localização do alvo, a flecha então se tornar instável e explodirá causando o dano da arma em uma área, convertendo metade do dano físico para dano de gelo.",
+   "icone": null,
+   "colunas": [
+    "Nível",
+    "RequerNível",
+    "Experiência"
+   ],
+   "linhas": [
+    [
+     "20",
+     "70",
+     ""
+    ]
+   ],
+   "soDoItem": true
+  },
+  {
+   "slug": "Flames_of_Judgement",
+   "nome": "Chamas do Julgamento",
+   "en": "Flames of Judgement",
+   "cor": "azul",
+   "nivelReq": 1,
+   "tags": [
+    "Magia",
+    "Duração",
+    "Área",
+    "Ativação",
+    "Fogo"
+   ],
+   "tipos": [
+    "Spell",
+    "Damage",
+    "Duration",
+    "Area",
+    "AreaSpell",
+    "Triggerable",
+    "Triggered",
+    "InbuiltTrigger",
+    "Fire",
+    "Cooldown"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 1.50 seg",
+    "Tempo de Conjuração: 0.80 seg",
+    "Chance de Crítico: 6.00%",
+    "Eficácia do Dano Adicionado: 850%"
+   ],
+   "mods": [
+    "Duração base é de 2 segundos",
+    "Causa 3870 a 5805 de Dano de Fogo",
+    "100% de chance de Incendiar inimigos",
+    "Penetra 50% da Resistência a Fogo",
+    "Esta Magia é Ativada por um Item Único"
+   ],
+   "qualidade": [],
+   "desc": "Cria marcadores no seu local e em um local alvo, que crescem com o tempo baseado na velocidade de conjuração, e então explode, causando dano de fogo. Não pode ser suportado por Cascata Mágica.",
+   "icone": null,
+   "colunas": [
+    "Nível",
+    "RequerNível",
+    "Experiência"
+   ],
+   "linhas": [
+    [
+     "20",
+     "70",
+     ""
+    ]
+   ],
+   "soDoItem": true
+  },
+  {
+   "slug": "Storm_of_Judgement",
+   "nome": "Tormenta do Julgamento",
+   "en": "Storm of Judgement",
+   "cor": "azul",
+   "nivelReq": 1,
+   "tags": [
+    "Magia",
+    "Duração",
+    "Área",
+    "Ativação",
+    "Raio"
+   ],
+   "tipos": [
+    "Spell",
+    "Damage",
+    "Duration",
+    "Area",
+    "AreaSpell",
+    "Triggerable",
+    "Triggered",
+    "InbuiltTrigger",
+    "Lightning",
+    "Cooldown"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 1.50 seg",
+    "Tempo de Conjuração: 0.80 seg",
+    "Chance de Crítico: 6.00%",
+    "Eficácia do Dano Adicionado: 320%"
+   ],
+   "mods": [
+    "Causa 1263 a 2345 de Dano de Raio",
+    "Duração base é de 2 segundos",
+    "100% de chance de Eletrizar inimigos",
+    "Penetra 50% da Resistência a Raio",
+    "Cria 12 insígnias",
+    "Efeito de Eletrização aumentado em 50%",
+    "Esta Magia é Ativada por um Item Único"
+   ],
+   "qualidade": [],
+   "desc": "Cria uma certa quantidade de marcadores ao redor do local alvo, que explodem após um período, causando dano de raio. Não pode ser suportado por Cascata Mágica.",
+   "icone": null,
+   "colunas": [
+    "Nível",
+    "RequerNível",
+    "Experiência"
+   ],
+   "linhas": [
+    [
+     "20",
+     "70",
+     ""
+    ]
+   ],
+   "soDoItem": true
   }
  ]
 }

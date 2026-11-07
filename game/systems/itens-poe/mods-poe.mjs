@@ -1025,6 +1025,7 @@ export function tiqueDosAspectos(estado, hunt, ficha, agora = hunt?.clock ?? 0) 
   if (tocado > 0 && (hunt.poeBuffs?.tocadoPelaChama ?? 0) > agora && agora >= (hunt.poeTocadoEm ?? 0)) { hunt.poeTocadoEm = agora + 1000; dotNoJogador(hunt, { tipo: 'degenFogo', total: tocado, duracaoMs: 1000, chave: 'tocadoPelaChama', origem: { fonte: 'poe' } }, agora); }
 }
 definirTiqueDosAspectos(tiqueDosAspectos);
+HabilidadesDeItens.definirGatilho((estado, hunt, gema, nivel, alvo, eventos) => disparoDeGatilho?.(estado, hunt, null, gema, nivel, alvo, eventos));
 HabilidadesDeItens.definirExplodirCadaver((hunt, c, pct) => explodirMorto(hunt, c, pct, hunt.poeEventosDoTempo ??= [], { tipo: 'fire' }));
 export function evento(estado, hunt, nome, ficha, ctx = {}) {
   if (!ligado() || !hunt) return;
@@ -1616,6 +1617,16 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     // `gatilho:<gema>[:chance]` = o NÍVEL da habilidade ativada.
     // (ciclo 7) "Sua Marca se transfere para outro Inimigo quando o Inimigo Marcado morrer" (o evento `matar`, no morto).
     case 'gatilho': { const [gema, chance] = String(ev.param).split(':'); if (disparoDeGatilho && sorte(Number(chance) || 100)) disparoDeGatilho(estado, hunt, ctx.personagem, gema, v, alvo, eventos); return; }
+    // (07/11, lote 15 das inertes) `gatilhoGastando:<carga>:<gema>` = com uma carga do tipo, GASTA uma e ativa a gema no nível `v` (o Larápio da Luz e a Explosão
+    // Espiritual; o Atirador do Vazio e o Tiro do Vazio — a carga sai pelas regras das cargas: o "ao perder uma Carga Espiritual" vale)
+    case 'gatilhoGastando': {
+      const [tipo, gema] = String(ev.param).split(':');
+      const c = hunt.cargasPoe?.[tipo];
+      if (!disparoDeGatilho || !(c?.n > 0) || !(c.ate > (hunt.clock ?? 0))) return;
+      leitorDeCargas?.(estado, 'gastar', tipo, 1);
+      disparoDeGatilho(estado, hunt, ctx.personagem, gema, v, alvo, eventos);
+      return;
+    }
     default: return;
   }
 }

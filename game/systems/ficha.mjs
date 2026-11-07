@@ -1332,6 +1332,8 @@ ModsPoeEfeitos.definirCargas((e, oque, tipo, n = 1) => {
   else if (oque === 'max') CargasPoe.ganhar(e, tipo, regras, CargasPoe.maximo(regras, tipo));
   // (06/11, lote 8: perder pelas cargas — o "ao perder uma Carga" sai, uma vez por carga perdida nas Espirituais)
   else if (oque === 'perder' && e.hunt?.cargasPoe?.[tipo]) CargasPoe.gastar(e, tipo, Infinity);
+  // (07/11, lote 15: gastar N — a Explosão Espiritual e o Tiro do Vazio consomem uma)
+  else if (oque === 'gastar' && e.hunt?.cargasPoe?.[tipo]) CargasPoe.gastar(e, tipo, n);
   invalidar(e);
 });
 

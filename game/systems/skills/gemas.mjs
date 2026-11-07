@@ -723,6 +723,7 @@ ModsPoe.definirAcaoPeloNome((slug) => ativaPeloNome(slug)?.acao ?? null);
  * (a gema existe, mas só sai pelo evento — `mods-poe.evento`) e "Gemas Encaixadas são Suportadas por X Nível N" (o suporte vale para as
  * ativas daquela peça). Entram em `skillsAtivas`.
  */
+const ORDEM_DA_RAINHA = { ordem_rainha_chamas: [null, 'chamas-do-julgamento'], ordem_rainha_tormenta: [null, 'tormenta-do-julgamento'] };
 function dasPecas(estado, saida) {
   for (const [slot, peca] of Object.entries(estado?.equipment ?? {})) {
     const af = peca?.poe?.af;
@@ -731,7 +732,8 @@ function dasPecas(estado, saida) {
       if (typeof v !== 'number' || !(v > 0)) continue;
       const concede = /^concede:(.+)$/.exec(k);
       // (07/11, lote 13b: + o periódico — "Ativa Banquete de Carne a cada 5 segundos": `periodico:<N>:gatilho:<nome>`)
-      const gatilho = /^ev:\w+:gatilho:([^:@]+)/.exec(k) ?? /^periodico:[\dd.]+:gatilho:([^:@]+)/.exec(k);
+      // (07/11, lote 15: + o que gasta uma carga — `ev:<evento>:gatilhoGastando:<carga>:<nome>` — e as do Mandado de Atziri, que a Exigência da Rainha ativa)
+      const gatilho = /^ev:\w+:gatilho(?:Gastando:\w+)?:([^:@]+)/.exec(k) ?? /^periodico:[\dd.]+:gatilho:([^:@]+)/.exec(k) ?? ORDEM_DA_RAINHA[k];
       const nome = concede?.[1] ?? gatilho?.[1];
       if (!nome) continue;
       const def = ativaPeloNome(nome);
@@ -766,6 +768,14 @@ function dasPecas(estado, saida) {
       const def = nome ? ativaPeloNome(nome) : null;
       if (!def || (saida.get(def.acao)?.nivel ?? 0) >= v) continue;
       saida.set(def.acao, { acao: def.acao, itemId: def.itemId, nivel: Math.round(v), nivelBase: Math.round(v), bonusDaPeca: 0, xp: 0, raridade: raridadeDaGema(null), qualidade: 0, def, supports: [], onde: { slot: 'altar', indice: -1 }, daPeca: true, ativadaPorItem: true });
+    }
+  }
+  // (07/11, lote 15) a EXIGÊNCIA DA RAINHA (a gema, de onde vier) ativa as Chamas e a Tormenta do Julgamento: as duas existem para o disparo, no 20 do Mandado de Atziri
+  // se a peça não disser o nível
+  if ([...saida.keys()].some((acao) => acao === 'poe-gema:Queens_Demand')) {
+    for (const nome of ['chamas-do-julgamento', 'tormenta-do-julgamento']) {
+      const def = ativaPeloNome(nome);
+      if (def && !saida.has(def.acao)) saida.set(def.acao, { acao: def.acao, itemId: def.itemId, nivel: 20, nivelBase: 20, bonusDaPeca: 0, xp: 0, raridade: raridadeDaGema(null), qualidade: 0, def, supports: [], onde: { slot: 'gatilho', indice: -1 }, daPeca: true, ativadaPorItem: true });
     }
   }
   return saida;
