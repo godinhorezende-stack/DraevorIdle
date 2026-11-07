@@ -19,6 +19,7 @@ import * as Frascos from './frascos.mjs';
 import * as Mapas from './mapas.mjs';
 import * as PinaculosAcesso from './pinaculos-acesso.mjs';
 import { estadosDaRamificadora } from './ramificadoras.mjs';
+import { readFileSync as lerArquivo } from 'node:fs';
 
 export const PRIMEIRO_ID = 7_000_000;
 
@@ -314,6 +315,23 @@ function separarLocaisDaArma(classe, t, af) {
  * A peça do JOGO a partir da peça gerada (`gerarPeca`). `{ id, count: 1, base, poe }` — sem `raridade`/`af` do Draevor (a peça do PoE
  * não passa pelas regras de raridade e de afixos do Draevor: forja, essência e o resto não a reconhecem).
  */
+/**
+ * (07/11, lote 25 das inertes) as KEYSTONES da árvore do PoE (a principal, sem as das ascendências) para o "[Random Keystone]" da Pele dos Lordes: os efeitos já
+ * traduzidos do nó; a que o jogo trata pelo módulo de keystones (Reflexos de Ferro, Golpes Reveladores… — sem efeitos no nó) entra como `keystone:<id>`.
+ */
+let KEYSTONES = null;
+const keystones = () => (KEYSTONES ??= JSON.parse(lerArquivo(new URL('../../gamedata/itens-poe/arvore-poe.json', import.meta.url), 'utf8')).nos.filter((n) => n.tipo === 'keystone' && !n.ascendencia));
+const keystoneDoNo = (id) => keystones().find((n) => n.id === String(id)) ?? null;
+const sortearKeystone = (rng) => { const l = keystones(); return l.length ? l[Math.floor(rng() * l.length)].id : null; };
+const camelo = (nome) => String(nome ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').split(/[^A-Za-z0-9]+/).filter(Boolean).map((w, i) => (i ? w[0].toUpperCase() + w.slice(1).toLowerCase() : w.toLowerCase())).join('');
+function efeitosDaKeystone(id) {
+  const n = keystoneDoNo(id);
+  if (!n) return {};
+  if (!(n.efeitos ?? []).length) return { [`keystone:${camelo(n.nome)}`]: 1 };
+  const out = {};
+  for (const e of n.efeitos) if (e.add && typeof e.valor === 'number') out[e.add] = (out[e.add] ?? 0) + e.valor;
+  return out;
+}
 export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) {
   if (!gerada || gerada.erro) return null;
   const id = idDaBase(gerada.base);
@@ -324,6 +342,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
   const a = gerada.atributos ?? {};
   const t = traduzirPeca(gerada);
   const af = { ...t.af };
+  // (07/11, lote 25 das inertes, a Pele dos Lordes: "[Random Keystone]") uma KEYSTONE da árvore sorteada uma vez (`keystoneSorteada`, o id do nó) — os efeitos dela entram na peça
+  const keystoneSorteada = gerada.keystoneSorteada ?? ([...(gerada.modificadores ?? []), ...(gerada.implicitos ?? [])].some((m) => /^\[Random Keystone\]$/.test(m?.modelo ?? m?.texto ?? '')) ? sortearKeystone(rng) : null);
+  if (keystoneSorteada) for (const [k, v] of Object.entries(efeitosDaKeystone(keystoneSorteada))) af[k] = (af[k] ?? 0) + v;
   // ("Sem Dano Físico": a arma única não tem o dano físico da base.)
   // (20/10: os locais da arma antes da base — o Físico local entra nela)
   separarLocaisDaArma(gerada.classe, t, af);
@@ -368,6 +389,7 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
     ...(soquetes ? { soquetes } : {}),
     poe: {
       ...(eldritchDegraus ? { eldritchDegraus } : {}),
+      ...(keystoneSorteada ? { keystoneSorteada, keystoneNome: keystoneDoNo(keystoneSorteada)?.nome ?? null } : {}),
       base: gerada.base, classe: gerada.classe, raridade: gerada.raridade, raridadeNome: R.nome ?? gerada.raridade, cor: R.cor ?? null,
       ilvl: gerada.ilvl, nome: gerada.nome, ...(gerada.unico ? { unico: gerada.unico } : {}),
       // (O único que já cai corrompido — a Corda da Servidão — não aceita moeda comum, como no PoE.)

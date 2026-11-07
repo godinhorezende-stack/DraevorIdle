@@ -514,16 +514,47 @@ const lapidario = ({ estado, alvo }) => {
   const g = (estado.inventory ?? [])[alvo?.indice];
   if (!g || !Gemas.ehGema(g.id)) return erro('O Prisma do Lapidário vale numa gema da mochila.');
   g.gema ??= { nivel: 1, xp: 0 };
+  if (g.gema.corrompida) return erro('Gema corrompida não aceita moeda.');
   const q = Number(g.gema.qualidade) || 0;
   if (q >= 20) return erro('A gema já está com 20% de qualidade.');
   g.gema.qualidade = q + 1;
   return { ok: true, notice: `Qualidade da gema: ${q}% → ${q + 1}%.`, gema: true };
+};
+/**
+ * (07/11, lote 25 das inertes — o dono: "Fazer todos") o ORBE VAAL numa GEMA da mochila, como no PoE: corrompe e, num de quatro (por igual), nada mais; +1 ou −1 nível
+ * (até 21, nunca abaixo de 1); a qualidade +/− 1 a 20 (de 0 a 23); ou a gema vira a versão Vaal dela (se houver). A corrompida não aceita mais moeda.
+ */
+const vaalNaGema = ({ estado, alvo, rng }) => {
+  const g = (estado.inventory ?? [])[alvo?.indice];
+  const def = g && Gemas.defDaGema(g.id);
+  if (!def?.poe) return erro('O Orbe Vaal vale numa gema do PoE da mochila.');
+  g.gema ??= { nivel: 1, xp: 0 };
+  if (g.gema.corrompida) return erro('A gema já está corrompida.');
+  g.gema.corrompida = true;
+  const caso = Math.floor(rng() * 4);
+  if (caso === 1) {
+    const sobe = rng() < 0.5;
+    g.gema.nivel = Math.max(1, Math.min(21, (Number(g.gema.nivel) || 1) + (sobe ? 1 : -1)));
+    return { ok: true, notice: `${def.nome}: corrompida — nível ${sobe ? '+1' : '−1'} (${g.gema.nivel}).`, gema: true };
+  }
+  if (caso === 2) {
+    const d = (1 + Math.floor(rng() * 20)) * (rng() < 0.5 ? 1 : -1);
+    g.gema.qualidade = Math.max(0, Math.min(23, (Number(g.gema.qualidade) || 0) + d));
+    return { ok: true, notice: `${def.nome}: corrompida — qualidade ${d > 0 ? '+' : ''}${d}% (${g.gema.qualidade}%).`, gema: true };
+  }
+  const vaal = caso === 3 && def.tipo !== 'support' ? [...Gemas.DEFS.values()].find((d) => d.poe?.slug === `Vaal_${def.poe.slug}`) : null;
+  if (vaal) {
+    g.id = vaal.itemId;
+    return { ok: true, notice: `${def.nome}: corrompida — virou ${vaal.nome}.`, gema: true };
+  }
+  return { ok: true, notice: `${def.nome}: corrompida — nada mais mudou.`, gema: true };
 };
 /** A Lente do Lapidário: a gema vira outra do mesmo tipo (suporte → suporte; ativa → ativa da mesma cor), mesmo nível e qualidade. */
 const lenteDoLapidario = ({ estado, alvo, rng }) => {
   const g = (estado.inventory ?? [])[alvo?.indice];
   const def = g && Gemas.defDaGema(g.id);
   if (!def?.poe) return erro('A Lente do Lapidário vale numa gema do PoE da mochila.');
+  if (g.gema?.corrompida) return erro('Gema corrompida não aceita moeda.');
   // (07/11, lote 13 das inertes: sem as habilidades que só um único concede — `soDoItem`)
   const outras = [...Gemas.DEFS.values()].filter((d) => d.poe && !d.soDoItem && d.tipo === def.tipo && d.itemId !== def.itemId && (d.tipo === 'support' || d.poe.cor === def.poe.cor));
   if (!outras.length) return erro('Não há outra gema deste tipo.');
@@ -693,7 +724,8 @@ const FAZ = {
   Orb_of_Chance: { f: chance }, Blacksmiths_Whetstone: { f: amolador }, Armourers_Scrap: { f: sucata },
   Glassblowers_Bauble: { f: bolha },
   Orb_of_Binding: { f: elo }, Fracturing_Orb: { f: talhar }, Mirror_of_Kalandra: { f: espelhar }, Ancient_Orb: { f: ancestral },
-  Vaal_Orb: { f: vaal },
+  // (07/11, lote 25: + numa gema da mochila — `gema`)
+  Vaal_Orb: { f: vaal, gema: vaalNaGema },
   Veiled_Chaos_Orb: { f: caosOculto, parcial: 'o Oculto já vem revelado (o jogo não tem a Jun para escolher entre três)' },
   Veiled_Exalted_Orb: { f: exaltadoOculto, parcial: 'o Oculto já vem revelado (o jogo não tem a Jun para escolher entre três)' },
   ...Object.fromEntries(Object.entries(INFLUENCIAS).map(([slug, inf]) => [slug, { f: exaltadoDeInfluencia(inf) }])),
@@ -910,6 +942,13 @@ export function usar(estado, { moeda: idDaMoeda, alvo } = {}, rng = Math.random)
   if (!faz) return erro(`${moeda.nome} não tem efeito no jogo: ${STATUS[moeda.slug].motivo}.`);
   let peca = null;
   let p = null;
+  // (a moeda que também vale numa GEMA da mochila — o Orbe Vaal: `gema`)
+  if (faz.gema && Gemas.ehGema((estado.inventory ?? [])[alvo?.indice]?.id)) {
+    const r = faz.gema({ estado, alvo, rng, moeda });
+    if (!r?.ok) return r ?? erro('Nada aconteceu.');
+    gastar(estado, moeda.itemId, 1);
+    return { ok: true, notice: r.notice };
+  }
   if ((faz.alvo ?? 'peca') === 'peca') {
     peca = pecaDoAlvo(estado, alvo);
     p = peca?.poe ?? null;

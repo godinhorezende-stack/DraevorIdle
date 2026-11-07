@@ -10022,6 +10022,42 @@
       "combate": true,
       "nome": "Duração do Efeito do Frasco nos Lacaios aumentada (%)",
       "efeito": "acoes.frascosNosLacaios (07/11, lote 25)"
+    },
+    "so_gemas_corrompidas": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Só aceita Gemas Corrompidas",
+      "efeito": "skills/gemas.encaixar (07/11, lote 25)"
+    },
+    "consome_suportes_max": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Pode consumir N Gemas de Suporte",
+      "efeito": "skills/gemas.ganharXp, dasPecas (07/11, lote 25)"
+    },
+    "encaixes_ligados": {
+      "unidade": "",
+      "nome": "Encaixes todos ligados (6)",
+      "combate": true,
+      "efeito": "itens-poe/jogo.pecaDoJogo (07/11, lote 25)"
+    },
+    "projeteis_viram_divisao": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Projéteis a mais viram a divisão do projétil",
+      "efeito": "acoes (alvosExtras → divisao) (07/11, lote 25)"
+    },
+    "almas_do_feitico_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Almas ao passar X% da duração do Feitiço",
+      "efeito": "mods-poe.tiqueDosAspectos (07/11, lote 25)"
+    },
+    "almas_do_feitico_por_poder": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Almas por Poder do inimigo amaldiçoado",
+      "efeito": "mods-poe.tiqueDosAspectos (07/11, lote 25)"
     }
   }
 }

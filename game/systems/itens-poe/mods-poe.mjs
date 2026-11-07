@@ -5,7 +5,7 @@ import * as QuemFeriu from '../hunt/quem-feriu.mjs';
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { definirTiqueDosAspectos, MOVENDO_MS, slugDoNome, ganharAlmaVaal, aoBloquear, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, criarSoloCongelado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo, porExposicao, vinhasGanhas as vinhasGanhasDe, fatorDaResistenciaRecebida } from './condicoes-poe.mjs';
+import { definirTiqueDosAspectos, MOVENDO_MS, slugDoNome, ganharAlmaVaal, aoBloquear, almaDoJogador, poderDoMorto, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, criarSoloCongelado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo, porExposicao, vinhasGanhas as vinhasGanhasDe, fatorDaResistenciaRecebida } from './condicoes-poe.mjs';
 import * as Plantadas from './armas-plantadas.mjs';
 import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { eletrizarComPct, cegar as cegarVoce } from './monstros-no-jogador.mjs';
@@ -1033,6 +1033,20 @@ export function tiqueDosAspectos(estado, hunt, ficha, agora = hunt?.clock ?? 0) 
   // (a Abordagem da Aniquilação: "Sofre X de Dano de Fogo por Segundo enquanto Tocado pela Chama" — o dano contínuo de Fogo em você, pela sua resistência)
   const tocado = valor(ficha, 'tocado_fogo_s');
   if (tocado > 0 && (hunt.poeBuffs?.tocadoPelaChama ?? 0) > agora && agora >= (hunt.poeTocadoEm ?? 0)) { hunt.poeTocadoEm = agora + 1000; dotNoJogador(hunt, { tipo: 'degenFogo', total: tocado, duracaoMs: 1000, chave: 'tocadoPelaChama', origem: { fonte: 'poe' } }, agora); }
+  // (07/11, lote 25 das inertes, o Sussurro Serpenteante: "Quando X% da duração do seu feitiço expira em um inimigo, consome N alma por cada poder dele") a sua maldição
+  // num inimigo com X% da duração passados dá N almas do Comedor de Almas × o Poder dele (Normal 1, Mágico 2, Raro 10, Único 20) — uma vez por maldição
+  const pctDoFeitico = valor(ficha, 'almas_do_feitico_pct');
+  const almasPorPoder = valor(ficha, 'almas_do_feitico_por_poder');
+  if (pctDoFeitico > 0 && almasPorPoder > 0) {
+    for (const m of hunt.monstros ?? []) {
+      if (!(m.hp > 0)) continue;
+      for (const c of Object.values(m.maldicoes ?? {})) {
+        if (!c || !(c.ate > agora) || !(c.dur > 0) || c.almasDadas || agora - (c.desde ?? agora) < (c.dur * pctDoFeitico) / 100) continue;
+        c.almasDadas = true;
+        for (let i = 0; i < Math.round(almasPorPoder * poderDoMorto(m)); i++) almaDoJogador(hunt, agora);
+      }
+    }
+  }
   // (07/11, lote 16 das inertes, o Mur'dith'hal: "Ativa a Habilidade Convocar Fantasma Nível N ao Consumir um Corpo") o cadáver consumido desde o último tique (a marca
   // `consumiuCadaver` — o Devorar, a Oferenda, o Banquete de Carne…) convoca um Fantasma do suporte, no nível da linha
   const consumiu = hunt.poeRecente?.consumiuCadaver;

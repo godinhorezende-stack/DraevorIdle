@@ -14,6 +14,58 @@
   ],
   "regras": [
     {
+      "padrao": "^Modificadores do número de Projéteis são aplicados ao número de alvos nos quais os Projéteis Partidos se focam ao invés$",
+      "efeitos": [
+        {
+          "stat": "projeteis_viram_divisao",
+          "valor": "1"
+        }
+      ],
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Quando \\{(\\d+)\\}% da duração do seu feitiço expira em um inimigo, consome \\{(\\d+)\\} alma por cada poder dele$",
+      "efeitos": [
+        {
+          "stat": "almas_do_feitico_pct",
+          "valor": "{1}"
+        },
+        {
+          "stat": "almas_do_feitico_por_poder",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "vale em toda maldição sua no inimigo (as Marcas também)",
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\[Random Keystone\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "uma keystone da árvore sorteada na peça (`keystoneNome`): os efeitos dela valem enquanto a peça está vestida",
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\[Six Linked\\]$",
+      "efeitos": [
+        {
+          "stat": "encaixes_ligados",
+          "valor": "1"
+        }
+      ],
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
       "padrao": "^Efeito das Auras Não Maldição das suas Habilidades aumentado em \\{(\\d+)\\}% nos Lacaios$",
       "efeitos": [
         {
@@ -58,6 +110,60 @@
           "valor": "{1}"
         }
       ],
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você só pode Encaixar Gemas Corrompidas neste item$",
+      "efeitos": [
+        {
+          "stat": "so_gemas_corrompidas",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a gema se corrompe com o Orbe Vaal na mochila (25% nada, 25% ±1 nível, 25% ±1 a 20 de qualidade, 25% a versão Vaal); o nível 21 vale como o 20 (os dados vão até ele)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Consome Gemas de Suporte Encaixadas Não Corrompidas ao atingir seu Nível Máximo$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o suporte não corrompido que chega ao máximo sai do encaixe e fica na peça, suportando as gemas encaixadas nela (até o número da linha de baixo)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pode Consumir \\{(\\d+)\\} Gemas de Suporte Não Corrompidas$",
+      "efeitos": [
+        {
+          "stat": "consome_suportes_max",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não Consumiu nenhuma Gema$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "os suportes consumidos ficam na peça (`suportesConsumidos`)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
       "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
       "_nova": true
     },
@@ -49339,19 +49445,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Você só pode Encaixar Gemas Corrompidas neste item$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "as gemas do jogo não são Corrompidas",
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^consecrate on block % life regen per minute \\[\\{(\\d+)\\}\\]$",
       "efeitos": [
         {
@@ -50933,45 +51026,6 @@
       ],
       "estado": "aproximado",
       "nota": "com todas as suas Habilidades de Golem",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Consome Gemas de Suporte Encaixadas Não Corrompidas ao atingir seu Nível Máximo$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não consome gemas de suporte",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Pode Consumir \\{(\\d+)\\} Gemas de Suporte Não Corrompidas$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não consome gemas de suporte",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Não Consumiu nenhuma Gema$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não consome gemas de suporte",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
       "_nova": true
     },

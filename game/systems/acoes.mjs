@@ -3585,6 +3585,13 @@ export function comOsAlvosDaGema(entry, efeito, estado = null, ativas = null) {
   if (impelidoAgora?.alvosExtra && tagsDoUso.includes('golpe')) e.alvosExtras = (e.alvosExtras ?? 0) + impelidoAgora.alvosExtra;
   // (lote A3, D5: o `divide` do feixe; a divisão do projétil — `partir` — é do alvo atingido, `comOsProjeteisDaGema`)
   e.alvosExtras = (e.alvosExtras ?? 0) + a.projeteis + a.divide - (a.partir ?? 0) + (dasPecas?.projeteis ?? 0);
+  // (07/11, lote 25 das inertes, a Válvula da Fúria: "Modificadores do número de Projéteis são aplicados ao número de alvos nos quais os Projéteis Partidos se focam ao
+  // invés") os projéteis a mais (os da gema e os das peças) viram a DIVISÃO do projétil: sai um, que se parte em N no alvo atingido
+  const projeteisAMais = a.projeteis + (dasPecas?.projeteis ?? 0);
+  if (projeteisAMais > 0 && tagsDoUso.includes('projetil') && estado && ModsPoe.valor(Ficha.combate(estado), 'projeteis_viram_divisao') > 0) {
+    e.alvosExtras -= projeteisAMais;
+    e.divisao = (e.divisao ?? 0) + projeteisAMais;
+  }
   // (12/10) A divisão da gema (o Aço Violento: "Projéteis se Partem na direção de N alvos") — o "Se você não tiver Fragmentos de Aço,
   // Projéteis contam como se já tivessem se Partido" a tira (`fragmentosNoUso`); e o "Habilidades Disparam N Projéteis adicionais por S
   // segundos após você consumir um total de T Fragmentos de Aço" (o Verme de Aço — `itens-poe/convocar-o-aco.mjs`).

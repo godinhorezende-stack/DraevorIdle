@@ -754,8 +754,8 @@ function dasPecas(estado, saida) {
       if (!def || (saida.get(def.acao)?.nivel ?? 0) >= v) continue;
       saida.set(def.acao, { acao: def.acao, itemId: def.itemId, nivel: Math.round(v), nivelBase: Math.round(v), bonusDaPeca: 0, xp: 0, raridade: raridadeDaGema(null), qualidade: 0, def, supports: [], onde: { slot, indice: -1 }, daPeca: true, ...(gatilho ? { ativadaPorItem: true } : {}) });
     }
-    // Os suportes da peça para as ativas encaixadas NELA.
-    const suportes = Object.entries(af).map(([k, v]) => [/^suporte_local:(.+)$/.exec(k)?.[1], v]).filter(([n, v]) => n && v > 0).map(([n, v]) => [suportePeloNome(n), v]).filter(([d]) => d);
+    // Os suportes da peça para as ativas encaixadas NELA. (07/11, lote 25: + os consumidos pelo Ciclo da Fome — `poe.suportesConsumidos`)
+    const suportes = [...Object.entries(af).map(([k, v]) => [/^suporte_local:(.+)$/.exec(k)?.[1], v]).filter(([n, v]) => n && v > 0).map(([n, v]) => [suportePeloNome(n), v]).filter(([d]) => d), ...(peca.poe.suportesConsumidos ?? []).map((c) => [DEFS.get(Number(c.id)), c.nivel]).filter(([d]) => d)];
     if (!suportes.length) continue;
     for (const a of saida.values()) {
       if (a.onde?.slot !== slot) continue;
@@ -1036,6 +1036,16 @@ export function ganharXp(estado, exp) {
         subiram.push({ nome: def.nome, nivel: g.nivel });
       }
       g.xp = g.nivel >= max ? 0 : Math.min(g.xp, xpDaGema(def, g.nivel, estado.level));
+      // (07/11, lote 25 das inertes, o Ciclo da Fome: "Consome Gemas de Suporte Encaixadas Não Corrompidas ao atingir seu Nível Máximo" — até "Pode Consumir N") o
+      // suporte que chegou ao máximo sai do encaixe e fica na peça (`poe.suportesConsumidos`): ele passa a suportar as gemas encaixadas nela (`dasPecas`)
+      const podeConsumir = Number(peca?.poe?.af?.consome_suportes_max) || 0;
+      if (podeConsumir > 0 && def.tipo === 'support' && g.nivel >= max && !g.corrompida && (peca.poe.suportesConsumidos ?? []).length < podeConsumir) {
+        (peca.poe.suportesConsumidos ??= []).push({ id: Number(g.id), nivel: g.nivel, qualidade: g.qualidade ?? 0 });
+        const s = soquetesDe(peca);
+        s.gemas[i] = null;
+        gravarSoquetes(peca, s);
+        subiram.push({ nome: `${def.nome} (consumida)`, nivel: g.nivel });
+      }
     }
   }
   return subiram;
@@ -1066,6 +1076,8 @@ export function encaixar(estado, { de, slot, indice }) {
   if (!item || !ehGema(item.id)) return erro('Isso não é uma gema.');
   // No PoE: a gema só entra no socket da COR dela (o branco aceita qualquer uma; a gema branca entra em qualquer socket).
   if (s.cores && !SocketsPoe.cabe(s.cores[i], corDaGema(item))) return erro(`A gema ${SocketsPoe.NOME_DA_COR[corDaGema(item)]} precisa de um socket ${SocketsPoe.NOME_DA_COR[corDaGema(item)]} ou branco (este é ${SocketsPoe.NOME_DA_COR[s.cores[i]]}).`);
+  // (07/11, lote 25 das inertes, a Pele dos Lordes: "Você só pode Encaixar Gemas Corrompidas neste item")
+  if (Number(peca?.poe?.af?.so_gemas_corrompidas) > 0 && !item.gema?.corrompida) return erro('Esta peça só aceita gemas Corrompidas.');
   const nova = novaGemaDoItem(item);
   inv.splice(k, 1);
   const antiga = s.gemas[i];
@@ -1091,14 +1103,16 @@ export function tirar(estado, { slot, indice }) {
 
 /** A gema solta (item) ↔ a gema no socket. */
 // A raridade mora na instância: `raridade` no item (é o que pinta o balão e a mochila) e na gema do socket.
+// (07/11, lote 25 das inertes: + a gema CORROMPIDA — o Orbe Vaal nela, `moedas.vaalNaGema` —, que passa pelo encaixe e volta para a mochila)
 export const novaGemaDoItem = (item) => ({
   id: Number(item.id),
   nivel: Math.max(1, Number(item.gema?.nivel) || 1),
   xp: Math.max(0, Number(item.gema?.xp) || 0),
   raridade: raridadeDaGema(item.raridade ?? item.gema?.raridade),
   qualidade: qualidadeDaGema(item.gema?.qualidade),
+  ...(item.gema?.corrompida ? { corrompida: true } : {}),
 });
-export const itemDaGema = (g) => ({ id: Number(g.id), count: 1, raridade: raridadeDaGema(g.raridade), gema: { nivel: g.nivel, xp: g.xp ?? 0, qualidade: qualidadeDaGema(g.qualidade) } });
+export const itemDaGema = (g) => ({ id: Number(g.id), count: 1, raridade: raridadeDaGema(g.raridade), gema: { nivel: g.nivel, xp: g.xp ?? 0, qualidade: qualidadeDaGema(g.qualidade), ...(g.corrompida ? { corrompida: true } : {}) } });
 
 /**
  * Usa uma LAPIDADORA da mochila numa gema: `{ de }` (índice da gema na mochila)
