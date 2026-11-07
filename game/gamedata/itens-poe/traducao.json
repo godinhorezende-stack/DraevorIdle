@@ -14,6 +14,60 @@
   ],
   "regras": [
     {
+      "padrao": "^Guerreiros e Soldados Esqueletos Convocados portam esta Arma enquanto ela estiver em sua Mão Principal$",
+      "efeitos": [
+        {
+          "stat": "esqueletos_com_arma",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o golpe dos Esqueletos vira o da arma (o dano físico com os locais e o tempo de ataque dela, × a Dano dos Lacaios); os outros mods da arma neles (a Precisão, o Poder Profano) não",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
+      "_nova": true
+    },
+    {
+      "padrao": "^Guerreiros e Soldados Esqueletos Convocados causam Dano Triplicado com esta$",
+      "efeitos": [
+        {
+          "stat": "esqueletos_triplo",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Carne Incessante nível \\{(\\d+)\\} uma vez por segundo$",
+      "efeitos": [
+        {
+          "stat": "carne_incessante",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o zumbi do PoB (ShamblingUndead, o nível do ator 70 no 20, +2 por nível) de um cadáver a até 3 casas, por 5 s; o \"+100% de Velocidade de Ataque com Vida Baixa\" dele não é simulado",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ao morrer, um lacaio próximo concede Paredão Podre equivalente a \\{(\\d+)\\}% da própria vida máxima$",
+      "efeitos": [
+        {
+          "stat": "paredao_podre_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem fonte para a duração e o acúmulo: vale o maior e dura até quebrar — o próximo ataque que te acerta sai dele primeiro; \"próximo\" = a até 3 casas",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
+      "_nova": true
+    },
+    {
       "padrao": "^Magias encaixadas recebem reforço de Totem de Caranguejo nível \\{(\\d+)\\}$",
       "efeitos": [
         {
@@ -50643,42 +50697,17 @@
       "_nova": true
     },
     {
-      "padrao": "^Guerreiros e Soldados Esqueletos Convocados portam esta Arma enquanto ela estiver em sua Mão Principal$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "os Esqueletos do jogo não empunham armas",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Guerreiros e Soldados Esqueletos Convocados causam Dano Triplicado com esta$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "os Esqueletos do jogo não empunham armas",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^Arma se você Acertou com esta Arma Recentemente$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "esqueletos_triplo",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "os Esqueletos do jogo não empunham armas",
+      "estado": "aproximado",
+      "nota": "a segunda metade do \"Dano Triplicado\": com um acerto de ataque seu nos últimos 4 s",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
       "_nova": true
     },
     {
@@ -50917,32 +50946,6 @@
       ],
       "estado": "aproximado",
       "nota": "em direções aleatórias (o jogo não tem o círculo certinho); em todos os seus projéteis",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ativa Carne Incessante nível \\{(\\d+)\\} uma vez por segundo$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Carne Incessante",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ao morrer, um lacaio próximo concede Paredão Podre equivalente a \\{(\\d+)\\}% da própria vida máxima$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Paredão Podre",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
       "_nova": true
     },

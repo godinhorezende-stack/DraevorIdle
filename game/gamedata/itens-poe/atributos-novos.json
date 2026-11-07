@@ -9794,6 +9794,30 @@
       "combate": true,
       "nome": "Comprimento do Raio Escaldante aumentado (%)",
       "efeito": "acoes.formaComComprimento (07/11, lote 18)"
+    },
+    "esqueletos_com_arma": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Esqueletos portam esta Arma",
+      "efeito": "acoes.confusaoDeFerro (07/11, lote 17)"
+    },
+    "esqueletos_triplo": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Esqueletos causam Dano Triplicado com esta Arma (acertou recentemente)",
+      "efeito": "acoes.confusaoDeFerro (07/11, lote 17)"
+    },
+    "carne_incessante": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Carne Incessante (nível)",
+      "efeito": "acoes.elegiaPartida (07/11, lote 17)"
+    },
+    "paredao_podre_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Paredão Podre (% da vida do lacaio que morre perto)",
+      "efeito": "acoes.elegiaPartida, mods-poe.absorverNoParedao (07/11, lote 17)"
     }
   }
 }

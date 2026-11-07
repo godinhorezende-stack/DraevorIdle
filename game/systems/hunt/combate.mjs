@@ -1404,6 +1404,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // (02/11, dono: a SALVAGUARDA como o PoE) o acerto sai primeiro da Salvaguarda — antes da Égide, do Escudo Gélido, da Guarda, do Vínculo e do Escudo de Energia —;
   // na quebra, o Conjurar ao Perder Salvaguarda e o evento `salvaguardaQuebra` (`personagem/salvaguarda.mjs`). As partes de cada tipo (a Égide, o Físico que ignora o
   // Escudo, o Caos que o atravessa) seguem na proporção do que sobrou dela.
+  // (07/11, lote 17 das inertes, a Elegia Partida) o Paredão Podre leva o ataque antes de tudo e se quebra (`ModsPoe.absorverNoParedao`)
+  if (final > 0 && hunt.poeParedao) final = ModsPoe.absorverNoParedao(hunt, final, eventos, { uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: bicho.name, golpe: 'corpo a corpo' });
   if (final > 0) final = Salvaguarda.absorver(estado, hunt, ficha, final, eventos, { uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: bicho.name, golpe: 'corpo a corpo' }, personagem);
   const fatorDaSalvaguarda = danoDoAcerto > 0 ? final / danoDoAcerto : 1;
   // (14/10, as Égides — a Primitiva do Elementalist e as dos únicos: a parte de cada tipo do acerto sai da Égide dele antes do Escudo e da

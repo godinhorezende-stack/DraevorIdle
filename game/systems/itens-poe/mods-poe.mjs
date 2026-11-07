@@ -1038,6 +1038,18 @@ export function tiqueDosAspectos(estado, hunt, ficha, agora = hunt?.clock ?? 0) 
   }
 }
 definirTiqueDosAspectos(tiqueDosAspectos);
+/**
+ * (07/11, lote 17, a Elegia Partida) o PAREDÃO PODRE: o ataque que te acerta sai dele primeiro (até o valor dele) e o quebra — "absorve o dano dos ataques antes do
+ * escudo de energia e da vida; qualquer dano o quebra". Devolve o que sobrou do dano.
+ */
+export function absorverNoParedao(hunt, dano, eventos, base) {
+  const p = hunt?.poeParedao;
+  if (!p || !(dano > 0)) return dano;
+  delete hunt.poeParedao;
+  const tomou = Math.min(p.valor, dano);
+  if (tomou > 0) eventos?.push({ t: 'dmg', ...base, v: tomou, color: '#8d6e63' });
+  return dano - tomou;
+}
 /** (07/11, lote 16) o Fantasma do suporte Convocar Fantasma no nível `nivel` (`acoes.convocarFantasmas` registra). */
 // eslint-disable-next-line no-var
 var fantasmaDoCorpo;

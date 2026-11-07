@@ -1062,6 +1062,68 @@ export function tiqueDoGuardian(estado, hunt, agora = hunt?.ultimoTique ?? Date.
     hunt.lacaios.push(lacaioDoGuardian(estado, hunt, agora, af, GUARDIAN.nomeDaReliquia[elemento], elemento, { reliquia: elemento, auraAf, semAtaque: true, ate: agora + ModsPoe.RELIQUIA.duracaoMs, duracaoMs: ModsPoe.RELIQUIA.duracaoMs, pob: GUARDIAN.reliquiaDoPob[elemento] }));
     Ficha.invalidar(estado);
   }
+  elegiaPartida(estado, hunt, af, agora);
+  confusaoDeFerro(estado, hunt, agora);
+}
+/**
+ * (07/11, lote 17 das inertes — o PoB, CalcSetup: theIronMass) A CONFUSÃO DE FERRO: "Guerreiros e Soldados Esqueletos Convocados portam esta Arma enquanto ela estiver em
+ * sua Mão Principal" — o golpe dos Esqueletos (os do Convocar Esqueletos e os do Vaal) vira o da arma (o dano físico com os locais e o tempo de ataque dela, × a "Dano
+ * dos Lacaios"); "causam Dano Triplicado com esta Arma se você Acertou com esta Arma Recentemente" — × 3 com um acerto de ataque seu nos últimos 4 s. Sem a arma, o
+ * golpe deles volta.
+ */
+function confusaoDeFerro(estado, hunt, agora) {
+  const af = estado.equipment?.weapon?.poe?.af ?? {};
+  const porta = Number(af.esqueletos_com_arma) > 0;
+  const arma = porta ? Ficha.armasEquipadas(estado).find((a) => a.slot === 'weapon') : null;
+  const fatorDoDono = 1 + (Number(Ficha.combate(estado).afPoe?.minion_dmg) || 0) / 100;
+  const r = hunt.poeRecente ?? {};
+  const relogio = hunt.clock ?? 0;
+  const recente = (t) => t != null && relogio - t <= 4000;
+  const triplo = porta && Number(af.esqueletos_triplo) > 0 && recente(r['ev:acertar']) && recente(r['usou:ataque']) ? 3 : 1;
+  for (const l of hunt.lacaios ?? []) {
+    if (!(l.hp > 0) || !/^(Vaal_)?Summon_Skeletons$/.test(l.gema ?? '')) continue;
+    if (arma) {
+      l.poeGolpeProprio ??= { dano: { ...l.dano }, intervaloMs: l.intervaloMs };
+      l.dano = { min: Math.max(1, Math.round(arma.min * fatorDoDono * triplo)), max: Math.max(1, Math.round(arma.max * fatorDoDono * triplo)) };
+      if (arma.intervaloMs > 0) l.intervaloMs = arma.intervaloMs;
+    } else if (l.poeGolpeProprio) {
+      Object.assign(l, l.poeGolpeProprio);
+      delete l.poeGolpeProprio;
+    }
+  }
+}
+/**
+ * (07/11, lote 17 das inertes — dono: "Fazer todas pelo PoB") A ELEGIA PARTIDA:
+ *   - "Ativa Carne Incessante nível N uma vez por segundo" (o PoB, CeaselessFleshUnique): a cada segundo, um cadáver a até 3 casas vira o zumbi do PoB
+ *     (ShamblingUndead — o nível do ator: 70 no 20, +2 por nível) por 5 s; o "+100% de Velocidade de Ataque com Vida Baixa" dele não é simulado;
+ *   - "Ao morrer, um lacaio próximo concede Paredão Podre equivalente a X% da própria vida máxima": o lacaio seu que morreu a até 3 casas dá o Paredão
+ *     (`hunt.poeParedao` — vale o maior; dura até quebrar: o próximo ataque que te acerta sai dele primeiro e o quebra — `ModsPoe.absorverNoParedao`). O PoE não
+ *     publica a duração nem o acúmulo.
+ */
+const ELEGIA = Object.freeze({ nome: 'Carne Incessante', duracaoMs: 5000, cadaMs: 1000, raio: 3, raioDoParedao: 3 });
+function elegiaPartida(estado, hunt, af, agora) {
+  const nivel = Number(af.carne_incessante) || 0;
+  if (nivel > 0 && agora >= (hunt.poeCarneEm ?? 0)) {
+    const z = hunt.z ?? 0;
+    const corpo = (hunt.cadaveres ?? []).find((c) => (c.z == null || c.z === z) && distanciaChebyshev(hunt.pos, c) <= ELEGIA.raio);
+    if (corpo) {
+      hunt.cadaveres = hunt.cadaveres.filter((c) => c !== corpo);
+      hunt.poeCarneEm = agora + ELEGIA.cadaMs;
+      const l = lacaioDoGuardian(estado, hunt, agora, af, ELEGIA.nome, 'physical', { carneIncessante: true, pob: 'ShamblingUndead', nivelPob: 70 + (nivel - 20) * 2, ate: agora + ELEGIA.duracaoMs, duracaoMs: ELEGIA.duracaoMs });
+      hunt.lacaios.push(Object.assign(l, { x: corpo.x, y: corpo.y }));
+    }
+  }
+  const pct = Number(af.paredao_podre_pct) || 0;
+  const vivos = {};
+  for (const l of hunt.lacaios ?? []) if (l.hp > 0 && !(l.ate && agora >= l.ate) && !l.mercenario) vivos[l.uid] = { x: l.x, y: l.y, maxHp: l.maxHp ?? 0 };
+  if (pct > 0) {
+    for (const [uid, l] of Object.entries(hunt.poeParedaoVistos ?? {})) {
+      if (vivos[uid] || distanciaChebyshev(hunt.pos, l) > ELEGIA.raioDoParedao) continue;
+      const valor = Math.round((l.maxHp * pct) / 100);
+      if (valor > (hunt.poeParedao?.valor ?? 0)) hunt.poeParedao = { valor };
+    }
+  }
+  hunt.poeParedaoVistos = vivos;
 }
 /** A queima do Sentinela (20% da vida dele por segundo, como Fogo, nos inimigos a até 2 casas) num tique de `ms`. */
 export function queimaDoSentinela(hunt, l, ficha, ms, eventos = []) {
