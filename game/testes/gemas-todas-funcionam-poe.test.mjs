@@ -80,6 +80,8 @@ function montar(slug, [arma, escudo], suportes = []) {
   if (slug === 'Energy_Blade') e.es = 1e7;
   // (lote A5, com o aval do dono: o Golpe Selvagem dos Extremos paga Mana, Vida e Escudo de Energia juntos, como no PoB)
   if (slug === 'Wild_Strike_of_Extremes') e.es = 1e7;
+  // (aval do dono 07/11, lote 14 das inertes: o Despedaçar Escudo fere 326–489 por 1% de Qualidade do ESCUDO — a montagem dá 20% ao escudo da espada)
+  if (slug === 'Shield_Shatter' && e.equipment.shield?.poe) e.equipment.shield.poe.qualidade = 20;
   const [b, ...resto] = e.hunt.monstros;
   for (const m of resto) Object.assign(m, { x: e.hunt.pos.x + 60, y: e.hunt.pos.y + 60 });
   Object.assign(b, { x: e.hunt.pos.x + 1, y: e.hunt.pos.y, hp: 1e12, maxHp: 1e12, estados: {} });
@@ -206,12 +208,18 @@ function usar({ e, b }, slug) {
   const afligiu = ['chocado', 'resfriado', 'congelado'].some((k) => !!b.estados?.[k]);
   // (aval do dono 02/11: o Portal não causa dano no PoE — é conferido pela viagem: o fim da conjuração marca a saída, `hunt.saidaPeloPortal`)
   const viajou = !!e.hunt.saidaPeloPortal;
-  return { ok: true, dano, debuff, afligiu, provocou, cegou, converteu, praga, viajou, buff: !!e.hunt.buffs?.[G.doSlug(slug).acao] || !!e.hunt.vinculos?.length, deslocou, febre: (b.dots ?? []).some((d) => d.chave === 'Corrupting_Fever' && d.falta > 0) };
+  // (aval do dono 07/11, lote 14 das inertes: as habilidades de item que não ferem no PoE — o Solo Sagrado do Consagrar, o altar Menor do Criar Altar Menor, o cadáver
+  // consumido do Banquete de Carne)
+  const sagrado = (e.hunt.solosSagrados ?? []).length > 0;
+  const altar = Object.keys(e.hunt.poeBuffs ?? {}).some((k) => /^altar\w*Menor$/.test(k));
+  const banquete = e.hunt.poeRecente?.consumiuCadaver != null;
+  return { ok: true, dano, debuff, afligiu, provocou, cegou, converteu, praga, viajou, sagrado, altar, banquete, buff: !!e.hunt.buffs?.[G.doSlug(slug).acao] || !!e.hunt.vinculos?.length, deslocou, febre: (b.dots ?? []).some((d) => d.chave === 'Corrupting_Fever' && d.falta > 0) };
 }
 
 // (aval do dono 27/10, R3) as gemas que não causam dano no PoE (base_deal_no_damage): o critério próprio de cada uma
 // (aval do dono 02/11: o Portal, pela viagem — hunt.saidaPeloPortal —, como o Chamariz)
-const SEM_DANO_NO_POE = { Portal: (u) => u.viajou, Decoy_Totem: (u) => u.provocou, Smoke_Mine: (u) => u.deslocou || u.cegou, Conversion_Trap: (u) => u.converteu, Summon_Skitterbots: (u) => u.afligiu };
+// (aval do dono 07/11, lote 14 das inertes: as habilidades que só os únicos concedem e não ferem — conferidas pelo efeito delas)
+const SEM_DANO_NO_POE = { Portal: (u) => u.viajou, Decoy_Totem: (u) => u.provocou, Smoke_Mine: (u) => u.deslocou || u.cegou, Conversion_Trap: (u) => u.converteu, Summon_Skitterbots: (u) => u.afligiu, Consecrate: (u) => u.sagrado, Create_Lesser_Shrine: (u) => u.altar, Feast_of_Flesh: (u) => u.banquete };
 test('G16: toda gema ativa "funciona" faz no jogo o que o status promete (o dano, ou o buff ligado)', { skip: SEM, timeout: 600_000 }, async () => {
   J = await import('../systems/itens-poe/jogo.mjs');
   ({ gerarPeca } = await import('../systems/itens-poe/gerar.mjs'));

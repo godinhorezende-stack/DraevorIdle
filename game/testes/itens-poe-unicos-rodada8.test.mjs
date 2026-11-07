@@ -180,7 +180,8 @@ test('lote B: as frases viram os atributos', { skip: SEM }, () => {
     assert.deepEqual(t.efeitos.map((x) => x.stat), stats, texto);
     assert.notEqual(t.estado, 'registrado', `${texto}: com efeito`);
   }
-  assert.equal(traduz('{0}% mais Chance de Golpe Crítico enquanto Insano').estado, 'inerte', 'sem o Perturbar, nunca Insano');
+  // (aval do dono 07/11, lote 14 das inertes: o Perturbar foi feito no lote 13b — Insano por 8 s —; a linha vale enquanto Insano)
+  assert.deepEqual(traduz('{0}% mais Chance de Golpe Crítico enquanto Insano').efeitos.map((x) => x.stat), ['crit_mais_pct@buff:insano'], 'com o Perturbar, o Insano existe');
 });
 
 test('a armadura contra Raio e Caos, as Resistências Elementais aumentadas e o "menos" de um tipo de dano', { skip: SEM }, () => {
