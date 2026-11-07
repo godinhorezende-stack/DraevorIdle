@@ -14,6 +14,60 @@
   ],
   "regras": [
     {
+      "padrao": "^Modificadores de Atributos, ao invés, se aplicam a Onisciência$",
+      "efeitos": [
+        {
+          "stat": "atributos_viram_oniciencia",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o jogo soma \"+X de todos os Atributos\" em cada um: a parte comum aos três conta uma vez como Onisciência",
+      "_07_11m": "07/11 — lote 23 das inertes: a Onisciência (o dono: \"Fazer como no PoE\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de todas as Resistências Elementais por cada \\{(\\d+)\\} de Onisciência$",
+      "efeitos": [
+        {
+          "stat": "fire_res%oniciencia:{V2}",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res%oniciencia:{V2}",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res%oniciencia:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11m": "07/11 — lote 23 das inertes: a Onisciência (o dono: \"Fazer como no PoE\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Penetra \\{(\\d+)\\}% das Resistências Elementais por cada \\{(\\d+)\\} de Onisciência$",
+      "efeitos": [
+        {
+          "stat": "elem_pen%oniciencia:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11m": "07/11 — lote 23 das inertes: a Onisciência (o dono: \"Fazer como no PoE\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Requerimentos de Atributos podem ser satisfeitos por \\{(\\d+)\\}% de Onisciência$",
+      "efeitos": [
+        {
+          "stat": "oniciencia_requisitos_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11m": "07/11 — lote 23 das inertes: a Onisciência (o dono: \"Fazer como no PoE\")",
+      "_nova": true
+    },
+    {
       "padrao": "^Ganho de Experiência das Gemas aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {

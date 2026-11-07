@@ -53,6 +53,14 @@ export function principais(estado, adds = {}) {
   // PoE: "Força aumentada em X%", "Atributos aumentados em X%" (`str_inc`/`dex_inc`/`int_inc`) multiplicam o total do atributo.
   // (lote 57, o Limitado pelo Destino: + "Mais X% de força / destreza / inteligência" — `str_mais`/`dex_mais`/`int_mais`, que multiplica à parte)
   const MAIS = { str: 'str_mais', dex: 'dex_mais', int: 'int_mais' };
+  // (07/11, lote 23 das inertes, a Onisciência Cristalizada: "Modificadores de Atributos, ao invés, se aplicam a Onisciência") os atributos das peças e da árvore viram
+  // ONISCIÊNCIA — a parte comum aos três ("+X de todos os Atributos") conta uma vez, o resto de cada um conta — e os seus ficam os da classe; os "aumentados" também
+  if (Number(adds.atributos_viram_oniciencia) > 0) {
+    const [s, d, i] = PRINCIPAIS.map((k) => Math.round(adds[k] ?? 0));
+    const comum = Math.max(0, Math.min(s, d, i));
+    const oniciencia = Math.max(0, comum + (s - comum) + (d - comum) + (i - comum));
+    return { ...Object.fromEntries(PRINCIPAIS.map((k) => [k, daVocacao[k]])), daVocacao, oniciencia };
+  }
   const total = Object.fromEntries(PRINCIPAIS.map((k) => [k, Math.round((daVocacao[k] + Math.round(adds[k] ?? 0)) * (1 + (adds[`${k}_inc`] ?? 0) / 100) * Math.max(0, 1 + (Number(adds[MAIS[k]]) || 0) / 100))]));
   return { ...total, daVocacao };
 }

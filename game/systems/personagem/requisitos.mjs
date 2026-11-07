@@ -49,7 +49,9 @@ export function falta(meta, atributos, peca = null, afGlobal = null) {
   // Peça do sistema de itens do PoE (só com ITENS_POE=1): os requisitos da base, TODOS valem (como no PoE).
   const doPoe = requisitosDaPeca(meta, peca, afGlobal);
   if (doPoe) {
-    const faltam = Object.entries(doPoe).filter(([a, v]) => (atributos?.[a] ?? 0) < v);
+    // (07/11, lote 23 das inertes, a Onisciência Cristalizada: "Requerimentos de Atributos podem ser satisfeitos por X% de Onisciência")
+    const daOniciencia = Math.floor(((atributos?.oniciencia ?? 0) * (Number(afGlobal?.oniciencia_requisitos_pct) || 0)) / 100);
+    const faltam = Object.entries(doPoe).filter(([a, v]) => Math.max(atributos?.[a] ?? 0, daOniciencia) < v);
     return faltam.length ? `Requer ${faltam.map(([a, v]) => `${v} ${NOME_DO_ATRIBUTO[a]}`).join(' e ')}.` : null;
   }
   const req = requisitoDe(meta);

@@ -1146,6 +1146,8 @@ export function fatorDaEscala(estado, total, principais, escala) {
     case 'atr': return cada(principais?.[a] ?? 0, b);
     case 'atributoMenor': return cada(Math.min(principais?.str ?? 0, principais?.dex ?? 0, principais?.int ?? 0), a);
     case 'atributos': return cada((principais?.str ?? 0) + (principais?.dex ?? 0) + (principais?.int ?? 0), a);
+    // (07/11, lote 23 das inertes) a Onisciência (`Atributos.principais` — a Onisciência Cristalizada): "por cada 15 de Onisciência"
+    case 'oniciencia': return cada(principais?.oniciencia ?? 0, a);
     case 'carga': { const x = h?.cargasPoe?.[a]; return x && x.ate > agora ? x.n | 0 : 0; }
     case 'cargaMax': return maximoDeCargas(total, a);
     case 'furia': return a ? cada(h?.furia?.n ?? 0, a) : h?.furia?.n ?? 0;
@@ -2568,7 +2570,7 @@ export function dinamicoValido(stat) {
 /** (06/11) A ficha tem uma escala pelo Fogo sofrido recentemente (o Rompe-amanhecer)? — o acerto com Fogo refaz a ficha. */
 export const usaFogoSofrido = (ficha) => Object.keys(ficha?.afPoe ?? {}).some((k) => k.includes('%fogoSofridoRecente'));
 /** A escala é conhecida? */
-export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|joiasAbissais|joiaUnica|devocao|itemMagico|maldicoesEmVoce|abissalLocal|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|vinhas|crescimentoFragil|desdeUsou|afetadoPorClamor|valor|valorDoEstandarte|forcaDosVentos|stat|armaduraElmo|evasaoLuvas|esBotas|vidaReservadaPct|itensInfluencia|fogoSofridoRecente|todasGemasVermelhasLocal|corrompidaLocal|barreiras|teiasNoAlvo)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
+export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|oniciencia|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|joiasAbissais|joiaUnica|devocao|itemMagico|maldicoesEmVoce|abissalLocal|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|vinhas|crescimentoFragil|desdeUsou|afetadoPorClamor|valor|valorDoEstandarte|forcaDosVentos|stat|armaduraElmo|evasaoLuvas|esBotas|vidaReservadaPct|itensInfluencia|fogoSofridoRecente|todasGemasVermelhasLocal|corrompidaLocal|barreiras|teiasNoAlvo)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
 
 /** Os números base do PoE dos efeitos de acerto. */
 export const NO_ACERTO = {

@@ -9956,6 +9956,18 @@
       "combate": true,
       "nome": "Chance de um Pergaminho da Sabedoria adicional ao matar (%)",
       "efeito": "hunt/combate.matarMonstro (07/11, lote 22)"
+    },
+    "atributos_viram_oniciencia": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Modificadores de Atributos se aplicam a Onisciência",
+      "efeito": "personagem/atributos.principais (07/11, lote 23)"
+    },
+    "oniciencia_requisitos_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Requisitos de Atributos satisfeitos por X% de Onisciência",
+      "efeito": "personagem/requisitos.falta (07/11, lote 23)"
     }
   }
 }
