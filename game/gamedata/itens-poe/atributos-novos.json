@@ -9782,6 +9782,12 @@
       "combate": true,
       "nome": "Convocar Fantasma ao Consumir um Corpo (nível)",
       "efeito": "mods-poe.tiqueDosAspectos (07/11, lote 16)"
+    },
+    "rajada_vulcanica_chance": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Chance de Ativar a Rajada Vulcânica (%)",
+      "efeito": "acoes.rajadaVulcanica (07/11, lote 16)"
     }
   }
 }

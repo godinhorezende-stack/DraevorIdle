@@ -17,6 +17,7 @@ const ModsPoe = await import('../systems/itens-poe/mods-poe.mjs');
 const Condicoes = await import('../systems/itens-poe/condicoes-poe.mjs');
 const NoJogador = await import('../systems/itens-poe/monstros-no-jogador.mjs');
 const Mecanicas = await import('../systems/mobs/mecanicas.mjs');
+const AcoesMod = await import('../systems/acoes.mjs');
 const GemasPoe = await import('../systems/itens-poe/gemas-poe.mjs');
 const GS = await import('../systems/skills/gemas.mjs');
 const T = await import('../systems/itens-poe/traduzir.mjs');
@@ -95,4 +96,13 @@ test("o MUR'DITH'HAL: o cadáver consumido convoca um Fantasma (um por tique); s
   assert.equal(fantasmas(), 1);
   ModsPoe.tiqueDosAspectos(e, h, ficha(e), h.clock + 100);
   assert.equal(fantasmas(), 1, 'o mesmo consumo não convoca de novo');
+});
+
+test('as CHAMAS DE NGAMAHU: a Explosão Vulcânica é a Rajada Vulcânica do jogo, no nível e na chance da linha', { skip: SEM }, () => {
+  const r = tr('{0}% de chance de Ativar Explosão Vulcânica Nível {1} ao Acertar Corpo a Corpo', [20, 16]);
+  assert.deepEqual(r.efeitos.map((x) => [x.stat, x.valor]), [['rajada_vulcanica', 16], ['rajada_vulcanica_chance', 20]]);
+  // (a chance da peça manda: 20% — com o sorteio em 0,25, não sai; em 0,15, sai)
+  const { e, h, b } = personagem([['{0}% de chance de Ativar Explosão Vulcânica Nível {1} ao Acertar Corpo a Corpo', [20, 16]]]);
+  assert.equal(AcoesMod.rajadaVulcanica(e, h, b, [], () => 0.25), 0);
+  assert.ok(AcoesMod.rajadaVulcanica(e, h, b, [], () => 0.15) > 0);
 });

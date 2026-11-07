@@ -1109,7 +1109,11 @@ export function rajadaVulcanica(estado, hunt, alvo, eventos = [], rng = Math.ran
   if (!(nivel > 0)) return 0;
   const agora = hunt.clock ?? 0;
   if (agora < (hunt.poeRajadaAte ?? 0)) return 0;
-  const { chance, danoPct } = doNivelDaRajada(nivel);
+  const doNivel = doNivelDaRajada(nivel);
+  const { danoPct } = doNivel;
+  // (07/11, lote 16 das inertes, as Chamas de Ngamahu: "X% de chance de Ativar Explosão Vulcânica Nível N ao Acertar Corpo a Corpo" — a chance da peça, no lugar
+  // da do nível)
+  const chance = Number(fichaBase.afPoe?.rajada_vulcanica_chance) || doNivel.chance;
   if (!(rng() * 100 < chance)) return 0;
   hunt.poeRajadaAte = agora + RAJADA.recargaMs;
   const ficha = ModsPoe.fichaDoGolpe(fichaBase, ['ataque', 'projetil', 'area', 'fogo', 'fisico'], { alvo, estado });

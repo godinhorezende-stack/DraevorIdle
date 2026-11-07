@@ -14,6 +14,23 @@
   ],
   "regras": [
     {
+      "padrao": "^\\{(\\d+)\\}% de chance de Ativar Explosão Vulcânica Nível \\{(\\d+)\\} ao Acertar Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "rajada_vulcanica",
+          "valor": "{2}"
+        },
+        {
+          "stat": "rajada_vulcanica_chance",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Explosão Vulcânica é a Rajada Vulcânica do jogo (a do Reliquarian): os 4 projéteis caem nos inimigos a até 3 casas (6 m) do alvo — o raio que o PoE não publica",
+      "_07_11f": "07/11 — lote 16 das inertes: a maldição encaixada ao acertar, o Resfriamento pelo dano todo e o Fantasma ao consumir um cadáver",
+      "_nova": true
+    },
+    {
       "padrao": "^Amaldiçoa Inimigos com Gema de Maldição Feitiço Encaixada ao Acertar$",
       "efeitos": [
         {
