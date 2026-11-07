@@ -25,6 +25,8 @@ export const NUMEROS = {
   exposicao: { duracaoMs: 4000, pct: 10 },
   eletrizacao: { duracaoMs: 2000, minimoPct: 5, maximoPct: 50 },
   congelamento: { msPorPct: 60, minimoMs: 300, maximoMs: 3000 },
+  // (07/11, lote 16 das inertes: o Resfriamento do PoE — 50% × (dano ÷ limiar)^0,4, de 5% a 30%, 2 s; o Chamado do Vazio: "Todo o Dano Sofrido de Acertos pode te Resfriar")
+  resfriamento: { duracaoMs: 2000, minimoPct: 5, maximoPct: 30 },
   incendio: { pctDoFogo: 90, duracaoMs: 4000 },
   cargas: { maximo: 3, duracaoMs: 10_000, recentementeMs: 4000, tolerancia: { resist: 4 }, frenesi: { danoPct: 4, velocidadeDeAtaquePct: 4 }, poder: { critAumentadoPct: 50 } },
   dreno: { taxaPct: 2 },
@@ -145,6 +147,13 @@ export function eletrizarComPct(hunt, ficha, pct0, { agora = hunt?.clock ?? 0, r
   d.eletrizado = { ate: Math.max(antes?.ate ?? 0, agora + Math.round(E.duracaoMs * fatorDaDuracao(ficha, 'eletrizacao'))), pct: final };
   imunidadeApos(hunt, ficha, 'eletrizacao', agora);
   return final;
+}
+/** O % do RESFRIAMENTO de um acerto em você (0 abaixo do mínimo do PoE): `dano` que pode Resfriar, `vidaMax` o limiar. */
+export function pctDoResfriamento(dano, vidaMax) {
+  const R = NUMEROS.resfriamento;
+  if (!(dano > 0) || !(vidaMax > 0)) return 0;
+  const pct = Math.min(R.maximoPct, 50 * (dano / vidaMax) ** 0.4);
+  return pct >= R.minimoPct ? Math.round(pct * 10) / 10 : 0;
 }
 /** A duração do CONGELAMENTO do crítico do monstro (ms; 0 abaixo do mínimo do PoE): `dano` de Gelo que o acerto causou. */
 export function msDoCongelamento(dano, vidaMax) {

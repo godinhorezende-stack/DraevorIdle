@@ -9770,6 +9770,18 @@
       "combate": true,
       "nome": "Exigência da Rainha: nível da Tormenta do Julgamento",
       "efeito": "habilidades-de-itens.Queens_Demand (07/11, lote 15)"
+    },
+    "todo_dano_resfria_voce": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Todo o Dano Sofrido de Acertos pode te Resfriar",
+      "efeito": "mobs/mecanicas.aoAcertarJogador (07/11, lote 16)"
+    },
+    "fantasma_ao_consumir_corpo": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Convocar Fantasma ao Consumir um Corpo (nível)",
+      "efeito": "mods-poe.tiqueDosAspectos (07/11, lote 16)"
     }
   }
 }

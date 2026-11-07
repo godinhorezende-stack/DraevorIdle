@@ -735,6 +735,11 @@ export function refletorDeAfeccoes(hunt, ficha) {
 // eslint-disable-next-line no-var
 var disparoDeGatilho;
 export function definirDisparo(fn) { disparoDeGatilho = fn; }
+/** (07/11, lote 16) a MALDIÇÃO ENCAIXADA posta por item (a Marca da Submissão: "Amaldiçoa Inimigos com Gema de Maldição Feitiço Encaixada ao Acertar"): quem
+ * registra é `acoes.mjs` — as maldições encaixadas nas peças vestidas que têm o atributo `chave`. */
+// eslint-disable-next-line no-var
+var maldicaoEncaixada;
+export function definirMaldicaoEncaixada(fn) { maldicaoEncaixada = fn; }
 /** A MALDIÇÃO posta por item ("Amaldiçoa Inimigos com Vulnerabilidade ao Bloquear"): quem registra é `acoes.mjs` (as gemas e os reforços). */
 // eslint-disable-next-line no-var
 var maldicaoDeItem;
@@ -1023,8 +1028,20 @@ export function tiqueDosAspectos(estado, hunt, ficha, agora = hunt?.clock ?? 0) 
   // (a Abordagem da Aniquilação: "Sofre X de Dano de Fogo por Segundo enquanto Tocado pela Chama" — o dano contínuo de Fogo em você, pela sua resistência)
   const tocado = valor(ficha, 'tocado_fogo_s');
   if (tocado > 0 && (hunt.poeBuffs?.tocadoPelaChama ?? 0) > agora && agora >= (hunt.poeTocadoEm ?? 0)) { hunt.poeTocadoEm = agora + 1000; dotNoJogador(hunt, { tipo: 'degenFogo', total: tocado, duracaoMs: 1000, chave: 'tocadoPelaChama', origem: { fonte: 'poe' } }, agora); }
+  // (07/11, lote 16 das inertes, o Mur'dith'hal: "Ativa a Habilidade Convocar Fantasma Nível N ao Consumir um Corpo") o cadáver consumido desde o último tique (a marca
+  // `consumiuCadaver` — o Devorar, a Oferenda, o Banquete de Carne…) convoca um Fantasma do suporte, no nível da linha
+  const consumiu = hunt.poeRecente?.consumiuCadaver;
+  const nivelDoFantasma = valor(ficha, 'fantasma_ao_consumir_corpo');
+  if (consumiu != null && consumiu > (hunt.poeCorpoVisto ?? -Infinity)) {
+    hunt.poeCorpoVisto = consumiu;
+    if (nivelDoFantasma > 0) fantasmaDoCorpo?.(estado, hunt, nivelDoFantasma);
+  }
 }
 definirTiqueDosAspectos(tiqueDosAspectos);
+/** (07/11, lote 16) o Fantasma do suporte Convocar Fantasma no nível `nivel` (`acoes.convocarFantasmas` registra). */
+// eslint-disable-next-line no-var
+var fantasmaDoCorpo;
+export function definirFantasmaDoCorpo(fn) { fantasmaDoCorpo = fn; }
 HabilidadesDeItens.definirGatilho((estado, hunt, gema, nivel, alvo, eventos) => disparoDeGatilho?.(estado, hunt, null, gema, nivel, alvo, eventos));
 HabilidadesDeItens.definirExplodirCadaver((hunt, c, pct) => explodirMorto(hunt, c, pct, hunt.poeEventosDoTempo ??= [], { tipo: 'fire' }));
 export function evento(estado, hunt, nome, ficha, ctx = {}) {
@@ -1607,6 +1624,7 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     }
     // `maldicao:<gema>:<nível>[:semLimite]` = a CHANCE (%) de amaldiçoar o alvo com a maldição da gema naquele nível ("ignorando o Limite de
     // Maldições" = `semLimite`).
+    case 'maldicaoEncaixada': if (maldicaoEncaixada && alvo && alvo.hp > 0 && sorte(v)) maldicaoEncaixada(estado, hunt, alvo, `ev:${ev.evento}:maldicaoEncaixada`, agora); return;
     case 'maldicao': {
       const [gema0, nivel, semLimite] = String(ev.param).split(':');
       // (06/11, a Trapaça de Ylfeban: "Amaldiçoa Inimigos que te Acertaram com um Feitiço aleatório" — `aleatoria`: um dos Feitiços do PoE, sorteado)

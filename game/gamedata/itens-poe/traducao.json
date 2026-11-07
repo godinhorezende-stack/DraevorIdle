@@ -14,6 +14,45 @@
   ],
   "regras": [
     {
+      "padrao": "^Amaldiçoa Inimigos com Gema de Maldição Feitiço Encaixada ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:maldicaoEncaixada",
+          "valor": "100"
+        }
+      ],
+      "_07_11f": "07/11 — lote 16 das inertes: a maldição encaixada ao acertar, o Resfriamento pelo dano todo e o Fantasma ao consumir um cadáver",
+      "_nova": true
+    },
+    {
+      "padrao": "^Todo o Dano Sofrido de Acertos podem te Resfriar$",
+      "efeitos": [
+        {
+          "stat": "todo_dano_resfria_voce",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "como o Incêndio do Abraço de Mokou: o Resfriamento do dano todo do acerto (50% × (dano ÷ Vida)^0,4, de 5% a 30%, 2 s) nos acertos que já podem afligir você — o Crítico do monstro ou a \"chance de ser afetado\"",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11f": "07/11 — lote 16 das inertes: a maldição encaixada ao acertar, o Resfriamento pelo dano todo e o Fantasma ao consumir um cadáver",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa a Habilidade Convocar Fantasma Nível \\{(\\d+)\\} ao Consumir um Corpo$",
+      "efeitos": [
+        {
+          "stat": "fantasma_ao_consumir_corpo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Fantasma do suporte Convocar Fantasma (15 s, até 5): um por tique em que você consumiu cadáveres",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11f": "07/11 — lote 16 das inertes: a maldição encaixada ao acertar, o Resfriamento pelo dano todo e o Fantasma ao consumir um cadáver",
+      "_nova": true
+    },
+    {
       "padrao": "^Ativa Explosão Espiritual Nível \\{(\\d+)\\} quando você Usar uma Habilidade enquanto possuir uma Carga Espiritual$",
       "efeitos": [
         {
@@ -49632,19 +49671,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Todo o Dano Sofrido de Acertos podem te Resfriar$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "os acertos dos monstros do jogo só Resfriam pelo controle dos Elites e Chefes",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^\\+\\{(\\d+)\\}% de chance de ser Incendiado$",
       "efeitos": [
         {
@@ -50873,19 +50899,6 @@
       ],
       "estado": "inerte",
       "nota": "o jogo não tem o Paredão Podre",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ativa a Habilidade Convocar Fantasma Nível \\{(\\d+)\\} ao Consumir um Corpo$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a gema ativa Convocar Fantasma",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
       "_nova": true
     },

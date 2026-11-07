@@ -13539,6 +13539,20 @@ ModsPoe.definirMaldicao((hunt, alvo, nome, nivel, semLimite, agora) => {
   const b = GemasPoe.buffNoNivel(def.poe.slug, nivel);
   if (b?.efeitos?.length) Reforcos.amaldicoar(alvo, def.acao, b.efeitos, { agora, dur: b.dur || 6000, ignorarLimite: semLimite, hunt });
 });
+// (07/11, lote 16 das inertes, o Mur'dith'hal) o Fantasma ao consumir um cadáver: um, pelo Convocar Fantasma do suporte no nível da linha (a duração e o máximo
+// de sempre: 15 s, 5)
+ModsPoe.definirFantasmaDoCorpo((estado, hunt, nivel) => convocarFantasmas(estado, hunt, { fantasmaAoMatarPct: 100, fantasmaNivel: nivel }, [{ hp: 0 }], () => 0));
+// (07/11, lote 16 das inertes, a Marca da Submissão) as MALDIÇÕES ENCAIXADAS nas peças vestidas com o atributo `chave` (o "ao Acertar" delas), no nível de cada uma
+ModsPoe.definirMaldicaoEncaixada((estado, hunt, alvo, chave, agora) => {
+  for (const peca of Object.values(estado.equipment ?? {})) {
+    if (!(Number(peca?.poe?.af?.[chave]) > 0)) continue;
+    for (const acao of Gemas.encaixadasNaPeca(peca, 'maldicao')) {
+      const slug = POR_ID.get(acao)?.poeGema?.slug;
+      const b = slug ? GemasPoe.buffNoNivel(slug, Gemas.efeitoNaSkill(estado, acao)?.nivel ?? 1) : null;
+      if (b?.efeitos?.length) Reforcos.amaldicoar(alvo, acao, b.efeitos, { agora, dur: b.dur || 6000, hunt });
+    }
+  }
+});
 // (lote 32, P038) A maldição sua que pegou: as Forças Profanadas renovam o Resfriamento e a Eletrização do inimigo (a ficha da caçada).
 Reforcos.definirAoAmaldicoar((hunt, bicho, agora) => ModsPoe.aoAmaldicoar(ModsPoe.fichaDa(hunt), bicho, agora));
 // (lote C4, dono 21/10) as maldições de dano sofrido no pulso do degenerativo das gemas (`Dot.recebidoNoPulso`)
