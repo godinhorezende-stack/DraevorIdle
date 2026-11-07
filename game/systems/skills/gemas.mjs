@@ -722,7 +722,8 @@ function dasPecas(estado, saida) {
     for (const [k, v] of Object.entries(af)) {
       if (typeof v !== 'number' || !(v > 0)) continue;
       const concede = /^concede:(.+)$/.exec(k);
-      const gatilho = /^ev:\w+:gatilho:([^:@]+)/.exec(k);
+      // (07/11, lote 13b: + o periódico — "Ativa Banquete de Carne a cada 5 segundos": `periodico:<N>:gatilho:<nome>`)
+      const gatilho = /^ev:\w+:gatilho:([^:@]+)/.exec(k) ?? /^periodico:[\dd.]+:gatilho:([^:@]+)/.exec(k);
       const nome = concede?.[1] ?? gatilho?.[1];
       if (!nome) continue;
       const def = ativaPeloNome(nome);

@@ -9686,6 +9686,12 @@
       "combate": true,
       "nome": "Zumbis contam como Cadáveres",
       "efeito": "itens-poe (06/11, lote 12)"
+    },
+    "tocado_fogo_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano de Fogo por segundo enquanto Tocado pelas Chamas",
+      "efeito": "mods-poe.tiqueDosAspectos (07/11, lote 13b)"
     }
   }
 }

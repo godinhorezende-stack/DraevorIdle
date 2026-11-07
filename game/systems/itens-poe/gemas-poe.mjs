@@ -19,6 +19,7 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { ligado } from './catalogo.mjs';
 import { slugDoNome, partir, condicoesDe, vale, somarOrigem, definirStatusDasHabilidadesDeItens } from './condicoes-poe.mjs';
 import { comNiveisDoPoedb } from './gemas-niveis.mjs';
+import * as HabilidadesDeItens from './habilidades-de-itens.mjs';
 import * as Vinculos from './vinculos.mjs';
 import { ehLinhaDoAco } from './convocar-o-aco.mjs';
 import { ehLinhaLocalDaGema, atributosDasLinhas, atributosDoBuff, ehLinhaDoBuff } from './linhas-das-gemas.mjs';
@@ -2322,7 +2323,9 @@ export async function iniciar({ registrarGema, registrarReforco } = {}) {
     const avaliada = NAO_SE_APLICA[g.slug] ? { status: 'nao', motivos: [NAO_SE_APLICA[g.slug]] } : avaliarNoJogo({ ...hq, slug: g.slug, nivel: nivelRef, qualidade: 20 }, formato);
     // (07/11, lote 13) a habilidade que só um único concede: o GATILHO e o custo dela são da peça ("Ativa esta Magia quando…", "Esta Magia é Ativada quando Ganha",
     // "Esta Habilidade não Custa Nada" — a linha do único dispara, sem custo: `Acoes.definirDisparo`), não pendências da gema
-    const { status, motivos } = g.soDoItem ? semOGatilhoDaPeca(avaliada) : avaliada;
+    // (lote 13b) a feita à mão (`habilidades-de-itens.mjs`): o comportamento é o de lá — funciona, ou em parte com a nota do que o PoE não publica
+    const feitaAMao = g.soDoItem ? HabilidadesDeItens.feita(g.slug) : null;
+    const { status, motivos } = feitaAMao ? { status: feitaAMao.nota ? 'parcial' : 'funciona', motivos: feitaAMao.nota ? [feitaAMao.nota] : [] } : g.soDoItem ? semOGatilhoDaPeca(avaliada) : avaliada;
     if (status === 'nao') entry.poeGema.bloqueio = motivos[0];
     ACTION_CATALOG.spells.push(entry);
     REGISTRO.set(g.slug, { itemId, acao: entry.id, arquetipo: h.arquetipo, formato, elemento, ataque: !!h.ataque, buff: entry.poeGema.buff, molde: entry.poeGema.molde, statusNoJogo: status, motivosNoJogo: motivos, nivelMax: prog.nivelMaximo(g), gema: g,

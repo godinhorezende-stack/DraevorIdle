@@ -1391,6 +1391,12 @@ export const BUFFS = {
   aspectoDaAve: { nome: 'Aspecto da Ave', af: {} },
   aspectoDoCaranguejo: { nome: 'Aspecto do Caranguejo', af: {} },
   aspectoDaAranha: { nome: 'Aspecto da Aranha', af: {} },
+  // (07/11, lote 13b: as habilidades de item feitas à mão — `habilidades-de-itens.mjs`)
+  faminto: { nome: 'Faminto', af: { dmg_inc: 15, dano_recebido_inc: -15 } },
+  gulaDosElementos: { nome: 'Gula dos Elementos', af: { imune_maldicao: 1, dano_elemental_recebido_inc: -1000 } },
+  formaSombria: { nome: 'Forma Sombria', af: { dano_physical_recebido_inc: -1000 } },
+  insano: { nome: 'Insano', af: {} },
+  tocadoPelaChama: { nome: 'Tocado pelas Chamas', af: {} },
   // (lote F) Vento Favorável (o lembrete do PoE: Velocidade de Ação aumentada — aqui, as velocidades de ataque, conjuração e movimento).
   // (lote 30, P027: "Vento Favorável aumenta a Velocidade de Ação em 8%" — o lembrete do próprio nó; era +10% de ataque, conjuração e movimento)
   ventoFavoravel: { nome: 'Vento Favorável', af: { action_speed: 8 } },
@@ -2517,6 +2523,8 @@ export function dinamicoValido(stat) {
     const [, evento, acao] = stat.split(':');
     return EVENTOS.has(evento) && ACOES.has(acao);
   }
+  // (07/11, lote 13b) o periódico de gatilho ("Ativa Banquete de Carne a cada 5 segundos": `periodico:<N>:gatilho:<gema>` — `mods-poe.tique`)
+  if (/^periodico:\d+(?:\.\d+)?:gatilho:[\w-]+$/.test(String(stat))) return true;
   const m = /^(sempre|efeito_buff):(\w+)$/.exec(stat);
   if (m) return !!BUFFS[m[2]];
   // O efeito de buff de UMA gema (`efeito_buff_gema:ira` — gemas-poe.adds) e o de UMA maldição (`efeito_maldicao_gema:flamabilidade` —
@@ -2707,6 +2715,8 @@ export function doBicho(bicho, agora, { contraOutro = false, ficha = null } = {}
   // (lote E) "Cada Mina aplica Dano causado reduzido em X% aos Inimigos próximos a ela, até Y%" (o poedb traduz "Dano sofrido reduzido"; no
   // PoE é o dano que o inimigo causa).
   if (ativo(e.minaFraco, agora)) danoFator *= Math.max(0, 1 - (e.minaFraco.pct ?? 0) / 100);
+  // (07/11, lote 13b, a Pacificar: o amaldiçoado por ela, com 60% da duração da maldição passados, não causa dano)
+  if (Object.entries(bicho?.maldicoes ?? {}).some(([id, m]) => /Pacify/.test(id) && m && m.ate > agora && m.dur > 0 && agora - (m.desde ?? agora) >= 0.6 * m.dur)) danoFator = 0;
   // (06/11, lote 11) no seu Solo Fúngico (o Guarda-esporo): 10% menos Dano
   if (ativo(e.soloFungico, agora)) danoFator *= Math.max(0, 1 - (e.soloFungico.danoMenosPct ?? 0) / 100);
   // (06/11, lote 7) "Inimigos afetados por suas Teias de Aranha causam Dano reduzido em X%" (a Mortalha de Fenumus)
@@ -3777,7 +3787,8 @@ export function resMenosDasAfeccoes(alvo, agora, tipo) {
   const dot = (...t) => (alvo.dots ?? []).some((d) => t.includes(d.tipo) && d.falta > 0);
   // (lote 28: + o Definhado — "têm −X% de todas as Resistências", nos quatro tipos, somado às das afecções)
   // (06/11, lote 7: + as Teias da Mortalha de Fenumus — "possuem -X% de Todas as Resistências", somado como o do Definhado)
-  const definhado = (['fire', 'ice', 'energy', 'chaos'].includes(tipo) && e.resMenosDefinhado > 0 && ativo(e.definhado, agora) ? e.resMenosDefinhado : 0) + (['fire', 'ice', 'energy', 'chaos'].includes(tipo) && ativo(e.teias, agora) ? e.teias.resMenos ?? 0 : 0);
+  // (+ 07/11, lote 13b: o Olhar Vazio — "Inimigos ganham -20% de Resistência a Caos")
+  const definhado = (['fire', 'ice', 'energy', 'chaos'].includes(tipo) && e.resMenosDefinhado > 0 && ativo(e.definhado, agora) ? e.resMenosDefinhado : 0) + (['fire', 'ice', 'energy', 'chaos'].includes(tipo) && ativo(e.teias, agora) ? e.teias.resMenos ?? 0 : 0) + (tipo === 'chaos' && ativo(e.olharVazio, agora) ? e.olharVazio.pct ?? 0 : 0);
   // (lote 69: + o "−X% de Resistência a Fogo" do Incendiado, somado)
   const doFogo = tipo === 'fire' && e.resMenosFogo > 0 && dot('queimadura') ? e.resMenosFogo : 0;
   if (['fire', 'ice', 'energy'].includes(tipo) && e.resMenosElemental > 0 && (dot('queimadura') || ativo(e.lento, agora))) return e.resMenosElemental + definhado + doFogo;

@@ -14,6 +14,118 @@
   ],
   "regras": [
     {
+      "padrao": "^\\{(\\d+)\\}% mais Chance de Golpe Crítico enquanto Insano$",
+      "efeitos": [
+        {
+          "stat": "crit_mais_pct@buff:insano",
+          "valor": "{1}"
+        }
+      ],
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)",
+      "_07_11b": "07/11 — lote 13b das inertes: as habilidades de item feitas à mão e as linhas que dependem delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos Mortos pelos seus Acertos são destruídos enquanto Insano$",
+      "efeitos": [
+        {
+          "stat": "mortos_destruidos@buff:insano",
+          "valor": "1"
+        }
+      ],
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)",
+      "_07_11b": "07/11 — lote 13b das inertes: as habilidades de item feitas à mão e as linhas que dependem delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Ativar Forma Sombria Nível \\{(\\d+)\\} quando você Usar uma Habilidade Encaixada$",
+      "efeitos": [
+        {
+          "stat": "ev:usarHabilidade:gatilho:forma-sombria:{V1}",
+          "valor": "{2}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11b": "07/11 — lote 13b das inertes: as habilidades de item feitas à mão e as linhas que dependem delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Nevoeiro de Guerra nível \\{(\\d+)\\} quando sua Armadilha é ativada$",
+      "efeitos": [
+        {
+          "stat": "ev:armadilha:gatilho:nevoeiro-de-guerra",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_07_11b": "07/11 — lote 13b das inertes: as habilidades de item feitas à mão e as linhas que dependem delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Banquete de Carne Nível \\{(\\d+)\\} a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "periodico:{V2}:gatilho:banquete-de-carne",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a cada N segundos com um monstro perto (o disparo periódico do jogo); consome os cadáveres a até 4 casas",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_07_11b": "07/11 — lote 13b das inertes: as habilidades de item feitas à mão e as linhas que dependem delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Olhar Vazio nível \\{(\\d+)\\} quando você usar uma Habilidade$",
+      "efeitos": [
+        {
+          "stat": "ev:usarHabilidade:gatilho:olhar-vazio",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_07_11b": "07/11 — lote 13b das inertes: as habilidades de item feitas à mão e as linhas que dependem delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Sofre \\{(\\d+)\\} de Dano de Fogo por Segundo enquanto Tocado pela Chama$",
+      "efeitos": [
+        {
+          "stat": "tocado_fogo_s",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_07_11b": "07/11 — lote 13b das inertes: as habilidades de item feitas à mão e as linhas que dependem delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha Adrenalina ao ser Tocado pelas Chamas$",
+      "efeitos": [
+        {
+          "stat": "sempre:adrenalina@buff:tocadoPelaChama",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_07_11b": "07/11 — lote 13b das inertes: as habilidades de item feitas à mão e as linhas que dependem delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Perde Adrenalina ao deixar de ser Tocado pela Chama$",
+      "efeitos": [
+        {
+          "stat": "sempre:adrenalina@buff:tocadoPelaChama",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Adrenalina vale enquanto Tocado pelas Chamas e sai junto",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_07_11b": "07/11 — lote 13b das inertes: as habilidades de item feitas à mão e as linhas que dependem delas",
+      "_nova": true
+    },
+    {
       "padrao": "^Ganha \\{(\\d+)\\}% da Vida Não Reservada que Falta antes de ser Acertado por um Inimigo$",
       "efeitos": [
         {
@@ -18866,32 +18978,6 @@
       "_nova": true,
       "estado": "aproximado",
       "nota": "de uma vez (no PoE, ao longo de 1 segundo); o Insano vem da habilidade Perturbar, que não está na coleção de gemas do jogo: você está sempre São.",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
-    },
-    {
-      "padrao": "^\\{(\\d+)\\}% mais Chance de Golpe Crítico enquanto Insano$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "_nova": true,
-      "estado": "inerte",
-      "nota": "o Insano vem da habilidade Perturbar, que não está na coleção de gemas do jogo: você está sempre São.",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
-    },
-    {
-      "padrao": "^Inimigos Mortos pelos seus Acertos são destruídos enquanto Insano$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "_nova": true,
-      "estado": "inerte",
-      "nota": "o Insano vem da habilidade Perturbar, que não está na coleção de gemas do jogo: você está sempre São.",
       "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
     },
     {
@@ -48154,19 +48240,6 @@
       "_nova": true
     },
     {
-      "padrao": "^\\{(\\d+)\\}% de chance de Ativar Forma Sombria Nível \\{(\\d+)\\} quando você Usar uma Habilidade Encaixada$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Forma Sombria",
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^Ativa Invocar Rebento da Escuridão nível \\{(\\d+)\\} a cada \\{(\\d+)\\} segundos$",
       "efeitos": [
         {
@@ -48721,19 +48794,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Ativa Nevoeiro de Guerra nível \\{(\\d+)\\} quando sua Armadilha é ativada$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Nevoeiro de Guerra",
-      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^As Chamas de Draugur queimam os inimigos ao seu redor por \\{(\\d+)\\} segundos após você incendiar um alvo$",
       "efeitos": [
         {
@@ -48925,19 +48985,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Ativa Banquete de Carne Nível \\{(\\d+)\\} a cada \\{(\\d+)\\} segundos$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Banquete de Carne",
-      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^Ignora Atordoamentos enquanto Conjurando$",
       "efeitos": [
         {
@@ -48958,19 +49005,6 @@
       ],
       "estado": "aproximado",
       "nota": "um dos Feitiços do PoE, sorteado, no nível 10",
-      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ativa Olhar Vazio nível \\{(\\d+)\\} quando você usar uma Habilidade$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Olhar Vazio",
       "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
       "_nova": true
     },
@@ -49208,45 +49242,6 @@
           "valor": "100"
         }
       ],
-      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Sofre \\{(\\d+)\\} de Dano de Fogo por Segundo enquanto Tocado pela Chama$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem as Chamas Próximas (o Tocado pela Chama)",
-      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ganha Adrenalina ao ser Tocado pelas Chamas$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem as Chamas Próximas (o Tocado pela Chama)",
-      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Perde Adrenalina ao deixar de ser Tocado pela Chama$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem as Chamas Próximas (o Tocado pela Chama)",
       "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
       "_nova": true
     },

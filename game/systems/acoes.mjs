@@ -53,6 +53,7 @@ import * as LinhasDasGemas from './itens-poe/linhas-das-gemas.mjs';
 import { defesaDaPecaVestida } from './itens-poe/condicoes-poe.mjs';
 import * as Reserva from './itens-poe/reserva.mjs';
 import * as Plantadas from './itens-poe/armas-plantadas.mjs';
+import * as HabilidadesDeItens from './itens-poe/habilidades-de-itens.mjs';
 import * as Runas from './itens-poe/runas-vinculadas.mjs';
 import * as Vinculos from './itens-poe/vinculos.mjs';
 import * as Iluminacao from './itens-poe/iluminacao.mjs';
@@ -4972,6 +4973,14 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
   if (!gatilho && entry.poeGema && Gemas.ativadaPor(estado, entry.id)) return { ok: false, erro: `Ativada por ${Gemas.ativadaPor(estado, entry.id)}.`, motivo: 'ATIVADA_POR_GATILHO' };
   // A habilidade que um ÚNICO ativa ("Ativa X quando…"): só sai pelo evento, como no PoE.
   if (!gatilho && entry.poeGema && ativas().get(entry.id)?.ativadaPorItem) return { ok: false, erro: 'Ativada pelo item.', motivo: 'ATIVADA_POR_GATILHO' };
+  // (07/11, lote 13b das inertes) as HABILIDADES DE ITEM feitas à mão (`itens-poe/habilidades-de-itens.mjs`): o efeito delas, a recarga da página, sem custo
+  if (itensPoeLigado() && HabilidadesDeItens.feita(entry.poeGema?.slug)?.usar) {
+    const ficha = Ficha.combate(estado);
+    const nivel = ativas().get(entry.id)?.nivel ?? 20;
+    const r = HabilidadesDeItens.usar(estado, hunt, entry.poeGema.slug, { id: entry.id, nivel, alvo, agora: hunt.clock ?? 0, resistir: (m, tipo, v) => resistido(hunt, m, tipo, v, ficha) });
+    if (r.ok) Ficha.invalidar(estado);
+    return r;
+  }
   // (14/10) O Infestador alterna sozinho, ligado na barra (`tiqueDaPraga`).
   // (lote P4, 27/10: como o PoE — o uso À MÃO alterna entre Incubando e Infestando, na recarga de 0,5 s — `alternarPragaP4`)
   if (entry.poeGema?.arquetipo === 'praga' && manual && !gatilho) return alternarPragaP4(estado, hunt, entry);
