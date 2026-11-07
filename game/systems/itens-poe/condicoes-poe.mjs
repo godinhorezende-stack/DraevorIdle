@@ -2439,6 +2439,14 @@ export const ACOES = new Set(['explodirCadaveres', 'soloSeu', 'cargaAliados', 'v
 var conhecePelaGema;
 export function definirGemasConhecidas(fn) { conhecePelaGema = fn; }
 export function gemaConhecida(slug) { return conhecePelaGema ? conhecePelaGema(slug) : undefined; }
+/**
+ * (07/11, lote 13 das inertes) o STATUS da habilidade que só um único concede (`soDoItem` — `gemas-poe.iniciar` registra): `{ status: 'funciona'|'parcial'|'nao', motivos }`
+ * pelo nome (o slug do nome), ou null se não é uma delas. A linha do único que a concede segue o status (`traduzir`).
+ */
+// eslint-disable-next-line no-var
+var statusPeloNome;
+export function definirStatusDasHabilidadesDeItens(fn) { statusPeloNome = fn; }
+export const statusDaHabilidadeDeItem = (slug) => (statusPeloNome ? statusPeloNome(slug) : null);
 /** (lote 55) O id da ação da gema ativa pelo nome (`afetadoPor:<nome>` — "enquanto afetado por <Aura>"): quem registra é `skills/gemas.mjs`. */
 // eslint-disable-next-line no-var
 var acaoPeloNome;

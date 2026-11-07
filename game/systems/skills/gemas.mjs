@@ -243,6 +243,8 @@ export function registrarAtiva({ itemId, entry, gema, tabelaDeXp = gema, categor
     itemId, tipo: 'ativa', categoria, id: entry.id, acao: entry.id, nome: gema.nome, tags: [...Tags.tagsDaAcao(entry), ...(gema.tags ?? []).map((t) => `poe:${t}`), ...(CompatSuportes.tagDaAtiva(gema.slug) ? [CompatSuportes.tagDaAtiva(gema.slug)] : [])], classeRecomendada: null,
     levelMinimo, levelDaMagia: levelMinimo, castTime, progressao: {}, fatorDeDano: 1, fatorDeCura: 1, fatorDeCusto: 1,
     poe: { slug: gema.slug, cor: gema.cor, icone: gema.icone ?? null, en: gema.en },
+    // (07/11, lote 13 das inertes) a habilidade que só um único concede: não cai, não é vendida, não sai da Lente (`sortearDrop`, `catalogoDaLoja`, `comprarNaLoja`, a Lente)
+    ...(gema.soDoItem ? { soDoItem: true } : {}),
     // A XP por nível: a da gema ou, sem ela no arquivo, a da gema de base (`tabelaDeXp`, de `GemasPoe.gemaDaTabelaDeXp`).
     poeXp: tabelaDeXpDoPoe(tabelaDeXp),
   };
@@ -252,7 +254,7 @@ export function registrarAtiva({ itemId, entry, gema, tabelaDeXp = gema, categor
     id: itemId, name: `gema: ${gema.nome.toLowerCase()}`, nomeExibicao: `Gema: ${gema.nome}`, weight: 0.1, stackable: false, type: 'gema', rarity: 'comum',
     hasSprite: true, spriteDe: CONFIG.sprites[elementoDaSprite(entry)] ?? CONFIG.sprites.outro,
     // O ícone da gema do PoE (a coleção do dono): o cliente desenha ele no lugar da pedra.
-    poeGema: { slug: gema.slug, cor: gema.cor, icone: gema.icone ?? null },
+    poeGema: { slug: gema.slug, cor: gema.cor, icone: gema.icone ?? null, ...(gema.soDoItem ? { soDoItem: true } : {}) },
     gemaDef: { tipo: 'ativa', categoria, acao: entry.id, nome: gema.nome, tags: def.tags, classeRecomendada: null, levelMinimo, castTime, progressao: {}, mult: CONFIG.raridades.multiplicador, nivelMaximo: def.poeXp.maximo, poe: def.poe },
     sell: 0,
   };
@@ -1365,9 +1367,10 @@ export function sortearDrop({ ato = 1, levelDaFase = 1, fatorDeChance = 1, dific
   const d = CONFIG.drop;
   const chance = (d.chancePorAto[String(ato)] ?? d.chancePorAto['1'] ?? 0) * fatorDeChance;
   if (!(rng() < chance)) return null;
-  const supports = [...DEFS.values()].filter((x) => x.tipo === 'support');
+  // (07/11, lote 13: as habilidades que só um único concede — `soDoItem` — não caem)
+  const supports = [...DEFS.values()].filter((x) => x.tipo === 'support' && !x.soDoItem);
   // No PoE: só as gemas do PoE, e só as que o nível da área já dá (o nível exigido da gema até o da fase).
-  const ativas = [...DEFS.values()].filter((x) => x.tipo === 'ativa' && valeNoModo(x) && x.levelMinimo <= Math.max(1, levelDaFase));
+  const ativas = [...DEFS.values()].filter((x) => x.tipo === 'ativa' && valeNoModo(x) && !x.soDoItem && x.levelMinimo <= Math.max(1, levelDaFase));
   const lista = rng() < d.parteSupport && supports.length ? supports : ativas.length ? ativas : supports;
   const def = lista[Math.floor(rng() * lista.length)];
   const [qlo, qhi] = Q.noDrop;
@@ -1393,7 +1396,8 @@ export function catalogoDaLoja(estado) {
   // Pela categoria (Ataque, Cura, Reforço, Suporte), e dentro dela pelo level da magia e o nome.
   const ordem = Object.keys(CATEGORIAS);
   // As do PoE: TODAS (dono, 06/10: "na loja do Zuma não aparecem todas as gemas"), sempre no nível 1.
-  const defs = [...DEFS.values()].filter((d) => valeNoModo(d)).sort((a, b) => ordem.indexOf(a.categoria) - ordem.indexOf(b.categoria) || (a.levelDaMagia ?? 0) - (b.levelDaMagia ?? 0) || a.nome.localeCompare(b.nome));
+  // (07/11, lote 13: sem as que só um único concede)
+  const defs = [...DEFS.values()].filter((d) => valeNoModo(d) && !d.soDoItem).sort((a, b) => ordem.indexOf(a.categoria) - ordem.indexOf(b.categoria) || (a.levelDaMagia ?? 0) - (b.levelDaMagia ?? 0) || a.nome.localeCompare(b.nome));
   const gemas = defs.flatMap((def) =>
     RARIDADES_DA_LOJA.map((r) => ({
       id: def.itemId,
@@ -1441,7 +1445,8 @@ export function comprarNaLoja(estado, { id, count = 1, raridade = 'comum' }) {
   const orbe = (SocketsPoe.poeLigado() ? (lojaDeMoedas ? lojaDeMoedas(estado) : Object.values(ORBES_DO_POE).filter((o) => o?.itemId)) : [O.encaixe, O.ligacao]).find((o) => o.itemId === Number(id));
   if (orbe) return comprarOrbe(estado, orbe, count);
   const def = DEFS.get(Number(id));
-  if (!def) return { ok: false, erro: 'Ela não vende isso.' };
+  // (07/11, lote 13: a habilidade que só um único concede não se compra)
+  if (!def || def.soDoItem) return { ok: false, erro: 'Ela não vende isso.' };
   if (!podeEntrar(def.itemId)) return { ok: false, erro: SO_ITENS_DO_POE };
   if (!RARIDADES_DA_LOJA.includes(raridade)) return { ok: false, erro: 'Ela só vende gemas comuns. As de outras raridades caem dos bichos.' };
   const n = Math.max(1, Math.min(CONFIG.loja.porVez ?? 20, Math.floor(Number(count) || 1)));

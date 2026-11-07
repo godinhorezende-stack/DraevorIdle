@@ -24,7 +24,8 @@ if (!SEM) {
 }
 
 test('as 562 gemas viram magias do jogo com o molde do Draevor, item com ícone, e um status no jogo', { skip: SEM }, () => {
-  assert.equal(G.REGISTRO.size, 562);
+  // (07/11, lote 13 das inertes — dono: "Importar e fazer à mão": + as habilidades que só os únicos concedem, ocultas — `soDoItem`; as 562 da coleção seguem todas)
+  assert.equal([...G.REGISTRO.values()].filter((r) => !r.gema?.soDoItem).length, 562);
   const bola = G.doSlug('Fireball');
   const e = ACTION_CATALOG.spells.find((x) => x.id === bola.acao);
   assert.equal(bola.molde, 'spell-flame-strike', 'Bola de Fogo = o projétil de fogo do Draevor');

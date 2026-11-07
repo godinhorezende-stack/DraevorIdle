@@ -17,7 +17,7 @@
 // (pelas tags). Sem o PoE nada disto roda.
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { ligado } from './catalogo.mjs';
-import { slugDoNome, partir, condicoesDe, vale, somarOrigem } from './condicoes-poe.mjs';
+import { slugDoNome, partir, condicoesDe, vale, somarOrigem, definirStatusDasHabilidadesDeItens } from './condicoes-poe.mjs';
 import { comNiveisDoPoedb } from './gemas-niveis.mjs';
 import * as Vinculos from './vinculos.mjs';
 import { ehLinhaDoAco } from './convocar-o-aco.mjs';
@@ -91,6 +91,8 @@ import * as Combate100 from './combate-100.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
 const ARQ_GEMAS = new URL('../../gamedata/itens-poe/gemas-poe.json', import.meta.url);
+// (07/11, lote 13 das inertes) as habilidades que só os únicos concedem — gemas OCULTAS (`soDoItem`: não caem, não são vendidas; `tools/importar-habilidades-de-itens.mjs`)
+const ARQ_HABILIDADES_DE_ITENS = new URL('../../gamedata/itens-poe/habilidades-de-itens.json', import.meta.url);
 // (09/10) O ÍCONE DA HABILIDADE de cada gema (o que vai na barra de slots, como no PoE — "SkillIcons/iconcleave"; o da gema é o do item):
 // `slug → arquivo` em `gamedata/itens-poe/icones-habilidades/` (tools/importar-poedb-gemas.mjs, das páginas do poedb).
 const ARQ_ICONES_DAS_HABILIDADES = new URL('../../gamedata/itens-poe/icones-habilidades.json', import.meta.url);
@@ -1945,6 +1947,11 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
 function ehLinhaFeita(h, l, q) {
   return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasPR3.ehLinhaPR3(h.slug, l) && !GemasPR4.ehLinhaPR4(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l) && !GemasB3.ehLinhaB3(h.slug, l) && !GemasC4.ehLinhaC4(h.slug, l) && !GemasC3.ehLinhaC3(h.slug, l) && !GemasB4.ehLinhaB4(h.slug, l) && !GemasGAC.ehLinhaGAC(h.slug, l, h.arquetipo) && !GemasGBD.ehLinhaGBD(h.slug, l) && !GemasE1a.ehLinhaE1a(h.slug, l, h.arquetipo) && !GemasE1b.ehLinhaE1b(h.slug, l) && !GemasE2a.ehLinhaE2a(h.slug, l, h.arquetipo) && !GemasE2b.ehLinhaE2b(h.slug, l) && !GemasD1.ehLinhaD1(h.slug, l) && !GemasR3B.ehLinhaR3B(h.slug, l) && !GemasR3D.ehLinhaR3D(h.slug, l) && !GemasT2.ehLinhaT2(h.slug, l) && !GemasT3.ehLinhaT3(h.slug, l) && !GemasVoo.ehLinhaDoVoo(h.slug, l) && !Combate100.ehLinhaCombate100(l));
 }
+const GATILHO_DA_PECA = /^efeito não simulado: (?:Ativa (?:esta|essa) (?:Magia|Habilidade)|Esta (?:Magia|Habilidade) (?:é Ativada|não Custa Nada|não pode ser usada)|Esta Habilidade é Ativada pelo item|Ativada pelo item)/i;
+function semOGatilhoDaPeca({ status, motivos }) {
+  const resto = motivos.filter((m) => !GATILHO_DA_PECA.test(m));
+  return { status: status === 'parcial' && !resto.length ? 'funciona' : status, motivos: resto };
+}
 function avaliarNoJogo(h, formato) {
   const st = h.stats;
   const motivos = [];
@@ -2293,7 +2300,8 @@ export async function iniciar({ registrarGema, registrarReforco } = {}) {
   // (09/10) A tabela por nível de cada gema pela do poedb (a Experiência, os requisitos e as colunas que faltavam — `gemas-niveis.mjs`).
   // (lotes G-B e G-D: as linhas fixas do PoB que o poedb não trouxe e as colunas herdadas da gema base fora — `GemasGBD.completarPeloPoB`)
   // (lote T2, 27/10: + a Chuva Cinética, que o poedb salvo trouxe sem as linhas — `GemasT2.completarPeloPoBT2`)
-  GEMAS = GemasT2.completarPeloPoBT2(GemasGBD.completarPeloPoB(comNiveisDoPoedb(JSON.parse(readFileSync(ARQ_GEMAS, 'utf8')))));
+  const habilidadesDeItens = existsSync(ARQ_HABILIDADES_DE_ITENS) ? JSON.parse(readFileSync(ARQ_HABILIDADES_DE_ITENS, 'utf8')).habilidades ?? [] : [];
+  GEMAS = GemasT2.completarPeloPoBT2(GemasGBD.completarPeloPoB(comNiveisDoPoedb([...JSON.parse(readFileSync(ARQ_GEMAS, 'utf8')), ...habilidadesDeItens])));
   for (const g of GEMAS) POR_SLUG.set(g.slug, g);
   const comp = await import('./compilador-de-gemas/compilador.mjs');
   const prog = await import('./compilador-de-gemas/progressao.mjs');
@@ -2311,7 +2319,10 @@ export async function iniciar({ registrarGema, registrarReforco } = {}) {
     // (17/10, lote G18b: o status com a QUALIDADE 20 — as linhas da qualidade que o jogo não faz entram nos motivos, como as do nível)
     const hq = compilada(g.slug, nivelRef, 20) ?? h;
     // (lote A2: a gema que não se aplica — `NAO_SE_APLICA` — fica sem efeito, com a nota)
-    const { status, motivos } = NAO_SE_APLICA[g.slug] ? { status: 'nao', motivos: [NAO_SE_APLICA[g.slug]] } : avaliarNoJogo({ ...hq, slug: g.slug, nivel: nivelRef, qualidade: 20 }, formato);
+    const avaliada = NAO_SE_APLICA[g.slug] ? { status: 'nao', motivos: [NAO_SE_APLICA[g.slug]] } : avaliarNoJogo({ ...hq, slug: g.slug, nivel: nivelRef, qualidade: 20 }, formato);
+    // (07/11, lote 13) a habilidade que só um único concede: o GATILHO e o custo dela são da peça ("Ativa esta Magia quando…", "Esta Magia é Ativada quando Ganha",
+    // "Esta Habilidade não Custa Nada" — a linha do único dispara, sem custo: `Acoes.definirDisparo`), não pendências da gema
+    const { status, motivos } = g.soDoItem ? semOGatilhoDaPeca(avaliada) : avaliada;
     if (status === 'nao') entry.poeGema.bloqueio = motivos[0];
     ACTION_CATALOG.spells.push(entry);
     REGISTRO.set(g.slug, { itemId, acao: entry.id, arquetipo: h.arquetipo, formato, elemento, ataque: !!h.ataque, buff: entry.poeGema.buff, molde: entry.poeGema.molde, statusNoJogo: status, motivosNoJogo: motivos, nivelMax: prog.nivelMaximo(g), gema: g,
@@ -2323,6 +2334,11 @@ export async function iniciar({ registrarGema, registrarReforco } = {}) {
     registrarGema?.({ itemId, entry, gema: g, tabelaDeXp: gemaDaTabelaDeXp(g), categoria: entry.poeGema.buff || entry.poeGema.vinculo ? 'reforco' : 'ataque', castTime: entry.poeGema.ataque ? 0 : Math.round((h.stats.tempoUso ?? 0) * 1000), levelMinimo: g.nivelReq ?? 1 });
     if (entry.poeGema.buff) registrarReforco?.(entry.id, { dur: buffNoNivel(g.slug, 1).dur, tipo: `poe-${h.arquetipo}`, efeitos: [] });
   }
+  // (07/11, lote 13) o status das habilidades que só um único concede, pelo nome (a linha do único segue — `traduzir`)
+  // (a parcial que NÃO FAZ NADA no combate — o buff sem nenhum efeito que o jogo tenha, a magia sem dano nem efeito — conta como sem comportamento para a linha do único)
+  const semNada = (m) => m.some((x) => /nenhum efeito do buff tem equivalente|sem dano direto: nenhum efeito no combate/.test(x));
+  const deItens = new Map([...REGISTRO.values()].filter((r) => r.gema?.soDoItem).map((r) => [slugDoNome(r.gema.nome), { status: r.statusNoJogo === 'parcial' && semNada(r.motivosNoJogo ?? []) ? 'nao' : r.statusNoJogo, motivos: r.motivosNoJogo ?? [] }]));
+  definirStatusDasHabilidadesDeItens((slug) => deItens.get(slug) ?? null);
   INICIADO = { gemas: REGISTRO.size, porStatus };
   return INICIADO;
 }

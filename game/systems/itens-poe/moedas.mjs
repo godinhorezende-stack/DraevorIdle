@@ -524,7 +524,8 @@ const lenteDoLapidario = ({ estado, alvo, rng }) => {
   const g = (estado.inventory ?? [])[alvo?.indice];
   const def = g && Gemas.defDaGema(g.id);
   if (!def?.poe) return erro('A Lente do Lapidário vale numa gema do PoE da mochila.');
-  const outras = [...Gemas.DEFS.values()].filter((d) => d.poe && d.tipo === def.tipo && d.itemId !== def.itemId && (d.tipo === 'support' || d.poe.cor === def.poe.cor));
+  // (07/11, lote 13 das inertes: sem as habilidades que só um único concede — `soDoItem`)
+  const outras = [...Gemas.DEFS.values()].filter((d) => d.poe && !d.soDoItem && d.tipo === def.tipo && d.itemId !== def.itemId && (d.tipo === 'support' || d.poe.cor === def.poe.cor));
   if (!outras.length) return erro('Não há outra gema deste tipo.');
   const nova = sortear(outras, rng);
   g.id = nova.itemId;

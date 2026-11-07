@@ -11,7 +11,7 @@
 // Atributo CONDICIONAL (`dmg_inc@corpo`, `atk_speed@comEscudo` — `mods-poe.mjs`): vale o estado do atributo-base, se as condições existem.
 import { readFileSync } from 'node:fs';
 import { FICHAS } from '../afixos.mjs';
-import { partir, ehCondDeEstado, TAGS_DE_GOLPE, CONDICOES_DE_ANEL, SO_NO_CRITICO, SO_AO_ATORDOAR, dinamicoValido, escalaValida, slugDoNome, gemaConhecida, definirValidadorDeAtributo } from './condicoes-poe.mjs';
+import { partir, ehCondDeEstado, TAGS_DE_GOLPE, CONDICOES_DE_ANEL, SO_NO_CRITICO, SO_AO_ATORDOAR, dinamicoValido, escalaValida, slugDoNome, gemaConhecida, statusDaHabilidadeDeItem, definirValidadorDeAtributo } from './condicoes-poe.mjs';
 
 export const TABELA = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/traducao.json', import.meta.url), 'utf8'));
 export const NOVOS = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/atributos-novos.json', import.meta.url), 'utf8')).atributos;
@@ -104,8 +104,13 @@ export function traduzirParte(parte, valores, opcoes = {}) {
     // A gema nomeada não está na coleção do jogo: o mod não tem como agir (o balão explica).
     // (lote 56: `nomeLivre` — o nome não é de gema: a pedra fundamental da Fuga Impossível, o notável da Chama/Carne Proibida)
     if (!r.nomeLivre && r.efeitos.some((e) => e.stat.includes('{NOME}')) && gemaConhecida(slugDaGema(nome)) === false) return { estado: 'inerte', efeitos: [], nota: `a habilidade "${nome}" não está na coleção de gemas do jogo`, regra: r.i };
-    const estado = !efeitos.every(temEfeito) ? 'registrado' : soDoDraevor ? r.estado ?? 'equivalente' : r._nova && r.estado && r.estado !== 'novo' ? r.estado : 'novo';
-    return { estado, efeitos, nota: r.nota ?? null, regra: r.i };
+    // (07/11, lote 13 das inertes) a habilidade que só um único concede (a gema oculta): sem comportamento no jogo, a linha fica inerte com o motivo; em parte, aproximada,
+    // com o que não vale
+    const daHabilidade = !r.nomeLivre && r.efeitos.some((e) => e.stat.includes('{NOME}')) ? statusDaHabilidadeDeItem(slugDaGema(nome)) : null;
+    if (daHabilidade?.status === 'nao') return { estado: 'inerte', efeitos: [], nota: `a habilidade "${nome}" (só os únicos a concedem) ainda não tem comportamento no jogo: ${daHabilidade.motivos[0] ?? ''}`.trim(), regra: r.i };
+    const estado = !efeitos.every(temEfeito) ? 'registrado' : daHabilidade?.status === 'parcial' ? 'aproximado' : soDoDraevor ? r.estado ?? 'equivalente' : r._nova && r.estado && r.estado !== 'novo' ? r.estado : 'novo';
+    const notaDaHabilidade = daHabilidade?.status === 'parcial' ? `a habilidade "${nome}" (só os únicos a concedem) vale em parte — ${daHabilidade.motivos.slice(0, 3).join('; ')}` : null;
+    return { estado, efeitos, nota: notaDaHabilidade ?? r.nota ?? null, regra: r.i };
   }
   // A CONDIÇÃO no texto ("<efeito> enquanto/se/caso <condição>", "Enquanto <condição>, <efeito>"): o efeito pelas regras de sempre e a
   // condição que o jogo avalia (`@cond`, `condicoes-poe.mjs`). Só quando o efeito sozinho já tem efeito no combate.
