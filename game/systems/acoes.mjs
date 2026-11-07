@@ -1069,6 +1069,7 @@ export function tiqueDoGuardian(estado, hunt, agora = hunt?.ultimoTique ?? Date.
   modsDoRaroNosLacaios(hunt, agora);
   efigiesDaDoedre(estado, hunt);
   legadoDaRosa(estado, hunt, af);
+  frascosNosLacaios(estado, hunt, af);
   // (07/11, lote 20 das inertes, o Terror Irrequieto: "Um Verme Retorcido inimigo surge a cada N segundos")
   const cadaVerme = Number(af.verme_retorcido_s) || 0;
   const relogio = hunt.clock ?? 0;
@@ -1094,6 +1095,49 @@ ModsPoe.definirEsporoInfestado((estado, hunt, onde, rng = Math.random) => {
   (hunt.lacaios ??= []).push(Object.assign(l, { x: onde?.x ?? hunt.pos.x, y: onde?.y ?? hunt.pos.y }));
   Ficha.invalidar(estado);
 });
+/**
+ * (07/11, lote 25 das inertes — o PoB: FlasksApplyToMinion) o ABRAÇO DA MÃE: "Seus Lacaios usam seus Frascos quando convocados" — o lacaio novo usa cada frasco do cinto
+ * com cargas (o custo × (1 − "Cargas de Frasco usadas reduzidas" dos lacaios)); o efeito é só nele, pela duração × (1 + "Duração do Efeito do Frasco aumentada" dos
+ * lacaios): o de Vida cura a quantidade dele; o de utilidade dá o dano, as resistências, a armadura, a evasão e a velocidade do efeito (os campos do lacaio — `l.poe`),
+ * tirados no fim. O que o lacaio do jogo não tem (o movimento, o crítico) fica de fora.
+ */
+const DO_FRASCO_NO_LACAIO = Object.freeze({ dmg_inc: 'danoIncPct', fire_res: 'resFogo', ice_res: 'resGelo', energy_res: 'resRaio', chaos_res: 'resCaos', armour: 'armadura', armor: 'armadura', evasion: 'evasao' });
+function frascosNosLacaios(estado, hunt, af) {
+  const relogio = hunt.clock ?? 0;
+  const vivos = (hunt.lacaios ?? []).filter((l) => l.hp > 0 && !l.mercenario);
+  // os efeitos que acabaram saem
+  for (const l of vivos) {
+    if (!l.poeDosFrascos?.length) continue;
+    for (const x of l.poeDosFrascos.filter((f) => f.ate <= relogio)) for (const [k, v] of Object.entries(x.delta)) { if (k === 'velAtaquePct') l.velAtaquePct = (l.velAtaquePct ?? 0) - v; else if (l.poe) l.poe[k] = (l.poe[k] ?? 0) - v; }
+    l.poeDosFrascos = l.poeDosFrascos.filter((f) => f.ate > relogio);
+  }
+  const vistos = (hunt.poeLacaiosDoAbraco ??= {});
+  const novos = vivos.filter((l) => !vistos[l.uid]);
+  for (const l of vivos) vistos[l.uid] = true;
+  for (const uid of Object.keys(vistos)) if (!vivos.some((l) => l.uid === uid)) delete vistos[uid];
+  if (!novos.length || !(Number(af.lacaios_usam_frascos) > 0)) return;
+  const afp = Ficha.combate(estado).afPoe ?? {};
+  const red = Number(af.lacaio_frasco_cargas_red) || 0;
+  const inc = Number(af.lacaio_frasco_duracao_inc) || 0;
+  for (const l of novos) {
+    for (const peca of FrascosPoe.cinto(estado)) {
+      if (!peca?.poe) continue;
+      const par = FrascosPoe.parametros(peca, afp);
+      const custo = Math.max(1, Math.round(par.cargasPorUso * Math.max(0, 1 - red / 100)));
+      if ((peca.poe.cargas ?? 0) < custo) continue;
+      peca.poe.cargas -= custo;
+      if (par.quantidade > 0 && (par.tipo === 'vida' || par.tipo === 'hibrido')) l.hp = Math.min(l.maxHp ?? l.hp, l.hp + par.quantidade);
+      const delta = {};
+      for (const [k, v] of Object.entries(par.af ?? {})) {
+        const campo = k === 'atk_speed' ? 'velAtaquePct' : DO_FRASCO_NO_LACAIO[k];
+        if (campo && typeof v === 'number') delta[campo] = (delta[campo] ?? 0) + v;
+      }
+      if (!Object.keys(delta).length || !(par.duracaoMs > 0)) continue;
+      for (const [k, v] of Object.entries(delta)) { if (k === 'velAtaquePct') l.velAtaquePct = (l.velAtaquePct ?? 0) + v; else if (l.poe) l.poe[k] = (l.poe[k] ?? 0) + v; }
+      (l.poeDosFrascos ??= []).push({ ate: relogio + Math.round(par.duracaoMs * Math.max(0, 1 + inc / 100)), delta });
+    }
+  }
+}
 /**
  * (07/11, lote 19 das inertes — sem fonte, o dono: "Aproximar com números meus") o LEGADO DA ROSA: "Ganha 1 Lembrança ao gastar um total de N de escudo de energia e não
  * tiver invocado nenhuma Memória do Criador" (o Escudo de Energia perdido conta), "Máximo de N Lembrança"; no máximo, a Lembrança toda vira a MEMÓRIA DO CRIADOR por 8 s,

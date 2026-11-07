@@ -2455,7 +2455,10 @@ export function adds(estado) {
   // (revisão G, 26/10) o buff do CLAMOR: o `@impelidoClamor` dele vira `@impelidoClamor_<slug>` — só no ataque Impelido por ESTE Clamor (o PoB: SeismicExertedAttacks,
   // RallyingCryExertDamageBonus…), não no Impelido por outro (`condicoes-poe.fichaDoGolpe`, `acoes.comOsAlvosDaGema`)
   const doClamor = (k, id) => { const i = k.indexOf('@'); if (i < 0) return k; const slug = id.startsWith(PREFIXO) ? id.slice(PREFIXO.length) : id; return `${k.slice(0, i + 1)}${k.slice(i + 1).split('+').map((c) => (c === 'impelidoClamor' ? `impelidoClamor_${slug}` : c)).join('+')}`; };
-  for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (b.afPoe && b.ate > agora && !b.soAliados) { const f = efeitoDe(b.tipo, id, estado, b); for (const [k0, v] of Object.entries(b.afPoe)) { const k = b.tipo === 'poe-clamor' ? doClamor(k0, id) : k0; total[k] = (total[k] ?? 0) + v * f; } }
+  // (07/11, lote 25 das inertes — o dono: "Fazer todos") as AURAS das suas gemas valem também nos seus LACAIOS, como no PoE: o mesmo efeito, × o "Efeito das Auras Não
+  // Maldição das suas Habilidades aumentado em X% nos Lacaios" (a Matua Tupuna) — `aliados_aura:<atributo>`, que o golpe e a defesa do lacaio leem (`aliados.doLacaio`)
+  const nosLacaios = 1 + doEquipamento(estado, 'aura_efeito_nos_lacaios') / 100;
+  for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (b.afPoe && b.ate > agora && !b.soAliados) { const f = efeitoDe(b.tipo, id, estado, b); for (const [k0, v] of Object.entries(b.afPoe)) { const k = b.tipo === 'poe-clamor' ? doClamor(k0, id) : k0; total[k] = (total[k] ?? 0) + v * f; if (b.tipo === 'poe-aura' && !k.includes('@') && !k.includes(':')) total[`aliados_aura:${k}`] = (total[`aliados_aura:${k}`] ?? 0) + v * f * nosLacaios; } }
   // (11/10) As AURAS dos COMPANHEIROS de grupo na mesma sala, a até o raio da aura deles (`raio` em casas, com o "Efeito em Área de Habilidades
   // de Aura aumentado" de quem lançou): valem em você como no PoE ("você e Aliados"). Cada aura uma vez: a sua, se você também tem a mesma.
   // (13/10, a Ichimonji: "Buffs de Auras Aliadas não afetam você" — o seu; "Os Buffs das Suas Auras não afetam aliados" — o do companheiro.)

@@ -14,6 +14,54 @@
   ],
   "regras": [
     {
+      "padrao": "^Efeito das Auras Não Maldição das suas Habilidades aumentado em \\{(\\d+)\\}% nos Lacaios$",
+      "efeitos": [
+        {
+          "stat": "aura_efeito_nos_lacaios",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as suas auras valem nos lacaios pelo dano aumentado, o \"como Dano Extra\" (como mais dano), as resistências, o bloqueio e a velocidade; o dano adicionado plano delas não entra no golpe do lacaio",
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Seus Lacaios usam seus Frascos quando convocados$",
+      "efeitos": [
+        {
+          "stat": "lacaios_usam_frascos",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o lacaio novo usa cada frasco com cargas: o de Vida cura; o de utilidade dá o dano, as resistências, a armadura, a evasão e a velocidade do efeito (o movimento e o crítico, que o lacaio do jogo não tem, ficam de fora)",
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios têm Cargas de Frasco usadas reduzidas em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_frasco_cargas_red",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios têm Duração do Efeito do Frasco aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_frasco_duracao_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
       "padrao": "^Concede a Habilidade Abraçar a Loucura Nível \\{(\\d+)\\}$",
       "efeitos": [
         {

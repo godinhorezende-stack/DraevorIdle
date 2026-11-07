@@ -141,10 +141,14 @@ export function fortificacaoDosAliados(estado) {
  * tendo Fortificação igual a sua"). `{ danoIncPct, maisDanoPct, bloqueio, bloqueioMagico, res, velPct, fortificacao }` ou null.
  */
 export function doLacaio(estado, afPoe, fortificacao = 0) {
-  const a = (k) => n(afPoe, `${PREFIXO}${k}`) + n(afPoe, `${PREFIXO_SO}${k}`);
+  // (07/11, lote 25 das inertes: + as suas AURAS nos lacaios — `aliados_aura:<k>`, de `gemas-poe`: o dano aumentado, as resistências, o bloqueio, a velocidade e o
+  // "como Dano Extra" (como mais dano, a soma dos tipos); o dano adicionado plano delas (a Ira, a Cólera) não entra no golpe do lacaio)
+  const daAura = (k) => n(afPoe, `aliados_aura:${k}`);
+  const a = (k) => n(afPoe, `${PREFIXO}${k}`) + n(afPoe, `${PREFIXO_SO}${k}`) + daAura(k);
   const res = Math.min(a('fire_res'), a('ice_res'), a('energy_res'));
-  const velPct = n(afPoe, 'aura_concede_vel') * aurasLigadas(estado?.hunt).length;
+  const velPct = n(afPoe, 'aura_concede_vel') * aurasLigadas(estado?.hunt).length + Math.max(daAura('atk_speed'), daAura('cast_speed'));
   const fort = n(afPoe, 'aliados_fortificacao') > 0 ? fortificacao : 0;
-  const x = { danoIncPct: a('dmg_inc'), maisDanoPct: a('mais_dano'), bloqueio: a('block'), bloqueioMagico: a('spell_block'), res, velPct, fortificacao: fort };
+  const extra = Object.entries(afPoe ?? {}).filter(([k]) => /^aliados_aura:\w+_as_extra_\w+$/.test(k)).reduce((t, [, v]) => t + (Number(v) || 0), 0);
+  const x = { danoIncPct: a('dmg_inc'), maisDanoPct: a('mais_dano') + extra, bloqueio: a('block'), bloqueioMagico: a('spell_block'), res, velPct, fortificacao: fort };
   return Object.values(x).some((v) => v) ? x : null;
 }

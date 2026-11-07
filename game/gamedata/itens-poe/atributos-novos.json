@@ -9998,6 +9998,30 @@
       "combate": true,
       "nome": "Máximo de Cargas de Sifão",
       "efeito": "cargas (07/11, lote 24)"
+    },
+    "aura_efeito_nos_lacaios": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Efeito das Auras nos Lacaios aumentado (%)",
+      "efeito": "gemas-poe (aliados_aura), aliados.doLacaio (07/11, lote 25)"
+    },
+    "lacaios_usam_frascos": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Seus Lacaios usam seus Frascos quando convocados",
+      "efeito": "acoes.frascosNosLacaios (07/11, lote 25)"
+    },
+    "lacaio_frasco_cargas_red": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Cargas de Frasco usadas pelos Lacaios reduzidas (%)",
+      "efeito": "acoes.frascosNosLacaios (07/11, lote 25)"
+    },
+    "lacaio_frasco_duracao_inc": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Duração do Efeito do Frasco nos Lacaios aumentada (%)",
+      "efeito": "acoes.frascosNosLacaios (07/11, lote 25)"
     }
   }
 }
