@@ -78,6 +78,8 @@ export function resistenciaEfetivaDe(hunt, alvo, tipo, ficha = null) {
   if (ficha?.resInvertida && elemental && !sempreInvertida) res = -res;
   // (lote G-C, D11) a Detonação de Feitiços: o Caos do acerto resistido pela menor resistência do alvo entre Fogo, Gelo, Raio e Caos (a da Contradição: a maior)
   if (tipo === 'chaos' && ficha?.caosResistidoPela) res = resistenciaDoCaos(ficha.caosResistidoPela, (t) => resistenciaDe(hunt, alvo, t));
+  // (07/11, lote 24 das inertes, a Mortalha da Eternidade: "Acertos ignoram a Resistência a Caos do Monstro Inimigo caso todos os Itens Equipados sejam…") a positiva vira 0
+  if (tipo === 'chaos' && Number(af?.ignora_res_caos) > 0 && res > 0) res = 0;
   // (lote E1b, 26/10) as Impurezas Vaal: "Resistência a <El> de Inimigos Próximos é Ignorada por Acertos" — o acerto (com a ficha de quem acerta; o dano degenerativo
   // vem sem ela) no bicho a até o raio da aura ignora a resistência POSITIVA (a negativa fica, como no "Golpes Críticos ignoram as Resistências" do jogo)
   if (ficha && res > 0 && resIgnoradaNoAlvo(hunt, alvo, tipo)) res = 0;

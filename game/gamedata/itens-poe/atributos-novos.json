@@ -9968,6 +9968,36 @@
       "combate": true,
       "nome": "Requisitos de Atributos satisfeitos por X% de Onisciência",
       "efeito": "personagem/requisitos.falta (07/11, lote 23)"
+    },
+    "todas_influencias": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Possui todas as influências (o Amuleto Astrolábio)",
+      "efeito": "condicoes-poe.influenciasDe (07/11, lote 24)"
+    },
+    "ignora_res_caos": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Acertos ignoram a Resistência a Caos do Monstro",
+      "efeito": "hunt/resistencia.resistenciaEfetivaDe (07/11, lote 24)"
+    },
+    "imune_atordoamento_ataque": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Não pode ser Atordoado por Ataques",
+      "efeito": "hunt/combate, poderes (07/11, lote 24)"
+    },
+    "imune_atordoamento_magia": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Não pode ser Atordoado por Magias",
+      "efeito": "poderes.dispararMagia (07/11, lote 24)"
+    },
+    "max_sifao": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Máximo de Cargas de Sifão",
+      "efeito": "cargas (07/11, lote 24)"
     }
   }
 }

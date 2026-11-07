@@ -422,10 +422,23 @@ export const CONDICOES_DE_ESTADO = new Set([
   'salvaguardaIntacta', 'salvaguardaRompida', 'salvaguardaRompivel',
 ]);
 /** O raio da PRESENÇA (PoE: a área em volta do personagem que os implícitos eldritch olham), em casas. */
+/** (07/11, lote 24 das inertes) as peças vestidas (sem a mochila) e a INFLUÊNCIA delas — `poe.influencias`, ou todas com o Amuleto Astrolábio ("Possui Influência do
+ * Ancião, Criador e de todos os Conquistadores" — `todas_influencias`). */
+const TODAS_AS_INFLUENCIAS = ['shaper', 'elder', 'crusader', 'redeemer', 'hunter', 'warlord'];
+const pecasVestidas = (estado) => Object.entries(estado?.equipment ?? {}).filter(([slot, p]) => slot !== 'backpack' && p).map(([, p]) => p);
+const influenciasDe = (p) => (Number(p?.poe?.af?.todas_influencias) > 0 ? TODAS_AS_INFLUENCIAS : p?.poe?.influencias ?? []);
+const temInfluencia = (p, inf) => influenciasDe(p).includes(inf);
+/** A influência Eldritch DOMINANTE da peça (como nas moedas: o degrau maior; só uma, ela; empate, nenhuma) — os implícitos dela ou os degraus da Eterna Batalha. */
+function dominanteDaPeca(p) {
+  const deg = (o) => Math.max(0, ...(p?.poe?.implicitos ?? []).filter((m) => m.origem === o).map((m) => Number(m.degrau) || 1), Number(p?.poe?.eldritchDegraus?.[o]) || 0);
+  const ex = deg('searing');
+  const ea = deg('eater');
+  return ex === ea ? null : ex > ea ? 'searing' : 'eater';
+}
 export const RAIO_DA_PRESENCA = 6;
 /** As condições de estado com PARÂMETRO: `atrMin:str:200` (ao menos 200 de Força), `atrMaior:dex:int`, `buff:agressividade`,
  * `semCargas:frenesi`, `comCargas:poder`, `cargasMax:tolerancia`, `furiaMin:N`, `lacaio:bestial`. */
-const COND_COM_PARAMETRO = /^(canalizandoHa|matouRecenteMin|afetadoPorAbissal|afetadoPor|maiorAtributo|itensInfluencia|comAbissalLocal|atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|aliadosPerto|nosUltimos|paradoHa|devocaoMin|primordiaisMin|barreirasMin|fortMax):/;
+const COND_COM_PARAMETRO = /^(canalizandoHa|matouRecenteMin|afetadoPorAbissal|afetadoPor|maiorAtributo|itensInfluencia|comAbissalLocal|atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|aliadosPerto|nosUltimos|paradoHa|devocaoMin|primordiaisMin|barreirasMin|fortMax|todosInfluencia|anelInfluencia|dominante|tiposDeInfluencia):/;
 export const ehCondDeEstado = (c) => CONDICOES_DE_ESTADO.has(c) || COND_COM_PARAMETRO.test(c);
 /** As tags de GOLPE conhecidas (as do poedb em português viram estas — `tagsDoPoe`). */
 export const TAGS_DE_GOLPE = new Set([
@@ -779,7 +792,15 @@ export function vale(conds, c) {
     // como o PoB: o atributo igual ao maior)
     // (lote 57, o Limitado pelo Destino) "se N Itens do <Influência> estiverem equipados": `itensInfluencia:<influência>:<N>` — as peças vestidas
     // com a influência (`poe.influencias`: shaper, elder, crusader, redeemer, hunter, warlord)
-    case 'itensInfluencia': return Object.entries(estado?.equipment ?? {}).filter(([slot, p]) => slot !== 'backpack' && (p?.poe?.influencias ?? []).includes(resto[0])).length >= Number(resto[1]);
+    case 'itensInfluencia': return pecasVestidas(estado).filter((p) => temInfluencia(p, resto[0])).length >= Number(resto[1]);
+    // (07/11, lote 24 das inertes) "se todos Itens Equipados forem Itens Anciões" (o Punho do Blasfemador; a Mortalha da Eternidade) — `todosInfluencia:<inf>`
+    case 'todosInfluencia': { const ps = pecasVestidas(estado); return ps.length > 0 && ps.every((p) => temInfluencia(p, resto[0])); }
+    // "se o seu anel oposto for um Item do Criador" (a Marca do Ancião/do Criador — elas mesmas sem influência: basta um anel com ela)
+    case 'anelInfluencia': return ['ring', 'ring2'].some((k) => temInfluencia(estado?.equipment?.[k], resto[0]));
+    // "se o Devorador de Mundos / o Exarca Cauterizado for dominante" (a Eterna Batalha): mais implícitos Eldritch dele que do outro nas peças vestidas
+    case 'dominante': { const n = (o) => pecasVestidas(estado).filter((p) => dominanteDaPeca(p) === o).length; const outro = resto[0] === 'eater' ? 'searing' : 'eater'; return n(resto[0]) > n(outro); }
+    // "se você tiver N tipos de influência entre os outros itens equipados" (o Astrolábio de Venarius)
+    case 'tiposDeInfluencia': return new Set(pecasVestidas(estado).filter((p) => !(Number(p?.poe?.af?.todas_influencias) > 0)).flatMap((p) => influenciasDe(p))).size >= Number(resto[0]);
     case 'maiorAtributo': { const a = principais?.[resto[0]] ?? 0; return ['str', 'dex', 'int'].every((k) => (principais?.[k] ?? 0) <= a); }
     case 'buff': return buffAtivo(estado, resto[0], total);
     case 'semBuff': return !buffAtivo(estado, resto[0], total);
@@ -1230,7 +1251,7 @@ export function fatorDaEscala(estado, total, principais, escala) {
     // (06/11, o Rompe-amanhecer: "por cada 200 de Dano de Fogo sofrido de Acertos Recentemente" — `hunt.poeFogoSofrido`, os últimos 4 s)
     case 'fogoSofridoRecente': { const lista = (h?.poeFogoSofrido ?? []).filter((x) => agora - x.em <= RECENTE_MS); if (h) h.poeFogoSofrido = lista; return cada(lista.reduce((t, x) => t + x.v, 0), a); }
     case 'vidaReservadaPct': return (estado?.maxHp ?? 0) > 0 ? cada((reservadoAgora(estado, 'vida', total) / estado.maxHp) * 100, a) : 0;
-    case 'itensInfluencia': return Object.entries(estado?.equipment ?? {}).filter(([slot, p]) => slot !== 'backpack' && (p?.poe?.influencias ?? []).includes(a)).length;
+    case 'itensInfluencia': return pecasVestidas(estado).filter((p) => temInfluencia(p, a)).length;
     // ("por cada N de Vida Máxima ou Mana Máxima, o que for menor")
     case 'vidaOuManaMenor': return cada(Math.min(estado?.maxHp ?? 0, estado?.maxMana ?? 0), a);
     // ("por Inimigo Envenenado": os bichos envenenados vivos na presença.)
@@ -1327,6 +1348,11 @@ export const BUFFS = {
   pactoVaal: { nome: 'Pacto Vaal', af: { roubo_vida_instantaneo_corpo: 1, sem_recuperar_vida_fora_dreno: 1 } },
   // (07/11, lote 19 das inertes — sem fonte, o dono: "Aproximar com números meus") a DÁDIVA DOS PACTOS (o Comparsa Profano: "Habilidades de pacto concedem Dádivas em vez
   // de Aflições" — o jogo não tem a Aflição: o uso do Pacto dá a Dádiva, 20% de Dano aumentado por 4 s) e os BÔNUS DE ADIVINHAÇÃO (o Vinho do Profeta: um ao acaso)
+  // (07/11, lote 24 das inertes, a Vigília do Solstício) a PRESENÇA DO CRIADOR: "faz com que efeitos em você e aliados próximos expirem 20% mais lento" — os debuffs em você
+  // (o jogo guarda o fim dos buffs: eles não estendem)
+  presencaDoCriador: { nome: 'Presença do Criador', af: { debuffs_expiram_rapido: -20 } },
+  // (07/11, lote 24, o Farol da Loucura) a LOUCURA GLORIOSA (Abraçar a Loucura): as linhas do Farol valem com ela; o "Tocado" a cada 2 s não é simulado
+  loucuraGloriosa: { nome: 'Loucura Gloriosa', af: {} },
   dadivaDoPacto: { nome: 'Dádiva do Pacto', af: { dmg_inc: 20 } },
   adivinhacaoDano: { nome: 'Adivinhação: Dano', af: { dmg_inc: 30 } },
   adivinhacaoVelocidade: { nome: 'Adivinhação: Velocidade', af: { atk_speed: 15, cast_speed: 15 } },
@@ -2438,7 +2464,7 @@ export const EVENTOS = new Set(['estilhacar', 'maxDivina', 'perderEspiritual', '
   'salvaguardaQuebra',
   // (02/11, as Atemporais) quando a Salvaguarda é Restaurada (`personagem/salvaguarda.restaurar` → `acoes.mjs`)
   'salvaguardaRestaurada']);
-export const ACOES = new Set(['esporoInfestado', 'espiritoAtormentado', 'repetirTawhoa', 'modsDoRaro', 'contaComoBloqueio', 'maldicaoEncaixada', 'gatilhoGastando', 'almaVaal', 'explodirCadaveres', 'soloSeu', 'cargaAliados', 'vidaPctAliados', 'vinculadosImortais', 'furiaArcanaClamor', 'perderAlmas', 'transferirMarca', 'frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
+export const ACOES = new Set(['loucuraMaligna', 'esporoInfestado', 'espiritoAtormentado', 'repetirTawhoa', 'modsDoRaro', 'contaComoBloqueio', 'maldicaoEncaixada', 'gatilhoGastando', 'almaVaal', 'explodirCadaveres', 'soloSeu', 'cargaAliados', 'vidaPctAliados', 'vinculadosImortais', 'furiaArcanaClamor', 'perderAlmas', 'transferirMarca', 'frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
   'dano', 'danoPctVida', 'furia', 'frasco', 'recargaEs', 'explodir', 'gatilho', 'espalhar', 'roubarCargas', 'maldicao', 'soloSagrado', 'soloProfano', 'soloCongelado', 'fumaca', 'removerAfeccao', 'perdeVidaPct', 'perdeEsPct', 'perdeManaPct',
   // (11/10, os únicos)
   'perdeVida', 'esDaArmadura', 'vidaParaEs', 'degenEmVoce', 'statTemp', 'statTempPorMana', 'furiaPorMana', 'transferirMaldicoes', 'degenNoAlvo', 'danoPorMana', 'empurrarProximos',

@@ -128,6 +128,12 @@ export const FEITAS = Object.freeze({
   Creators_Devastation: { nome: 'Devastação do Criador', recargaMs: 2000, nota: 'sem fonte: Físico em 3 casas em volta de você, 50 a 75 de dano por nível, a cada 2 s da Memória', usar: ({ hunt, nivel, eventos, resistir }) => {
     golpear(hunt, perto(hunt, 3), { min: 50 * nivel, max: 75 * nivel, tipo: 'physical' }, eventos, resistir, '#e0e0e0');
   } },
+  // Abraçar a Loucura (o Farol da Loucura concede — o PoB, EmbraceMadness): alterna a LOUCURA GLORIOSA; tirá-la põe a recarga de 8 s ("embrace_madness_amount_of_cooldown_to_gain_ms")
+  Embrace_Madness: { nome: 'Abraçar a Loucura', recargaMs: 1000, nota: 'o "Tocado" que a Loucura Gloriosa inflige a cada 2 s não é simulado', usar: ({ hunt, agora }) => {
+    const b = (hunt.poeBuffs ??= {});
+    if ((b.loucuraGloriosa ?? 0) > agora) { delete b.loucuraGloriosa; hunt.poeFichaMudou = true; (hunt.cooldowns ??= {})['poe-gema:Embrace_Madness'] = { ate: agora + 8000, total: 8000 }; return; }
+    ganharBuff(hunt, 'loucuraGloriosa', 24 * 3600, agora);
+  } },
   // Exigência da Rainha (o Mandado de Atziri concede — "Ordem da Rainha"): alterna as Chamas do Julgamento e a Tormenta do Julgamento, no nível das linhas "Ordem da
   // Rainha pode Ativar … Nível N" da peça (sem a linha, o 20 do Mandado — a única fonte da habilidade)
   Queens_Demand: { nome: 'Exigência da Rainha', usar: ({ estado, hunt, alvo, eventos, af }) => {

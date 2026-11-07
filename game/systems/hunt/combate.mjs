@@ -1331,7 +1331,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // (`combate/controle.mjs`), mesmo que o Energy Shield engula o dano; a resistência a controle dele encurta o efeito.
   if (bruto > 0) {
     // (PoE: o golpe corpo a corpo sem dano de outro tipo é "apenas Dano Físico" — `imune_atordoamento_so_fisico`.)
-    const controle = Controle.tentar(hunt, bicho, ficha, hunt.clock ?? 0, Math.random, { soFisico: !AtributosDoMob.danoExtraDoGolpe(bicho).length, estado, semAfeccaoElemental: Vinculos.noFeixe(hunt, bicho) });
+    // (07/11, lote 24 das inertes, a Marca do Ancião: "Não pode sofrer atordoamento por ataques…" — `imune_atordoamento_ataque`)
+    const controle = Controle.tentar(hunt, bicho, ficha, hunt.clock ?? 0, Math.random, { soFisico: !AtributosDoMob.danoExtraDoGolpe(bicho).length, estado, semAfeccaoElemental: Vinculos.noFeixe(hunt, bicho), semAtordoamento: ModsPoe.valor(ficha, 'imune_atordoamento_ataque') > 0 });
     // (lote G-B) a Armadura Ártica: quem acerta você fica Resfriado
     GemasGBD.resfriarQuemAcerta(hunt, bicho, hunt.clock ?? 0);
     if (controle) eventos.push({ t: 'estado', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, estado: controle, de: bicho.name });

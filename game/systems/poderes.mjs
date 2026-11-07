@@ -429,7 +429,7 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   }
   // A magia ACERTOU (passou da esquiva e do bloqueio): boss e elite podem CONGELAR, ATORDOAR ou fazer LENTIDÃO no jogador (`combate/controle.mjs`).
   if (a.min > 0 || a.max > 0) {
-    const controle = Controle.tentar(hunt, bicho, ficha, hunt.clock ?? 0, Math.random, { semAfeccaoElemental: semElementais, soFisico: a.elemento === 'physical' && !conversoes.length, estado, semAtordoamento: suprimiu && ModsPoe.valor(ficha, 'suprimido_sem_atordoamento') > 0 });
+    const controle = Controle.tentar(hunt, bicho, ficha, hunt.clock ?? 0, Math.random, { semAfeccaoElemental: semElementais, soFisico: a.elemento === 'physical' && !conversoes.length, estado, semAtordoamento: (suprimiu && ModsPoe.valor(ficha, 'suprimido_sem_atordoamento') > 0) || ModsPoe.valor(ficha, ataqueDoPoe || projetilDeAtaque ? 'imune_atordoamento_ataque' : 'imune_atordoamento_magia') > 0 });
     // (lote G-B) a Armadura Ártica: quem acerta você fica Resfriado
     GemasGBD.resfriarQuemAcerta(hunt, bicho, agora);
     if (controle) eventos.push({ t: 'estado', uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, estado: controle, de: bicho.name });

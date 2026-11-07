@@ -4710,6 +4710,38 @@
    "soDoItem": true
   },
   {
+   "slug": "Embrace_Madness",
+   "nome": "Abraçar a Loucura",
+   "en": "Embrace Madness",
+   "cor": "azul",
+   "nivelReq": 1,
+   "tags": [
+    "Magia"
+   ],
+   "tipos": [
+    "Spell",
+    "Cooldown"
+   ],
+   "props": [
+    "Nível: 1",
+    "Recarga: 1.00 seg"
+   ],
+   "mods": [],
+   "qualidade": [],
+   "desc": "Concede Loucura Gloriosa; usar de novo a remove.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "1"
+    ]
+   ],
+   "dePob": true,
+   "soDoItem": true
+  },
+  {
    "slug": "Summon_Volatile_Anomaly",
    "nome": "Convocar Anomalia Volátil",
    "en": "Summon Volatile Anomaly",

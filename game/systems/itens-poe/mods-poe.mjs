@@ -1447,6 +1447,12 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
       } else if (ev.param === 'danificadoras') {
         // (lote G) as Afecções Danificadoras: Incêndio, Sangramento e Veneno
         for (const t of ['queimadura', 'sangramento', 'veneno', 'venenoPoe']) Dot.removerDoJogador(hunt, t);
+      } else if (ev.param === 'uma') {
+        // (07/11, lote 24 das inertes, o Punho do Blasfemador: "Remove uma Afecção quando você usa um Frasco") uma das que você tem, ao acaso
+        const tem = [...['queimadura', 'sangramento', 'veneno', 'venenoPoe', 'choque', 'gelo'].filter((t) => (hunt.efeitosDoJogador?.dots ?? []).some((d) => d.tipo === t)), ...['congelado', 'lento'].filter((k) => hunt.controle?.[k]).map((k) => `controle:${k}`)];
+        const qual = tem.length ? tem[Math.floor(rng() * tem.length)] : null;
+        if (qual?.startsWith('controle:')) delete hunt.controle[qual.slice(9)];
+        else if (qual) Dot.removerDoJogador(hunt, qual);
       } else if (ev.param === 'lento') {
         if (hunt.controle) delete hunt.controle.lento;
       } else if (ev.param === 'danificadoraAleatoria') {
@@ -1672,6 +1678,9 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
       return;
     }
     // (07/11, lote 20 das inertes) o Esporo Infestado onde o Raro morreu; o toque de um Espírito Atormentado (a chance `v`, 20 s)
+    // (07/11, lote 24 das inertes, a Eterna Batalha) a LOUCURA MALÍGNA no alvo do Crítico: 10% menos Dano e Velocidade de Ação por 8 s (a Insanidade Perversa do jogo —
+    // `gemas-r3c.INSANIDADE`, `m.estados.insanidadeR3c`)
+    case 'loucuraMaligna': if (alvo && alvo.hp > 0 && sorte(v)) { const e = (alvo.estados ??= {}); e.insanidadeR3c = { ate: Math.max(e.insanidadeR3c?.ate ?? 0, agora + 8000) }; } return;
     case 'esporoInfestado': if (alvo && sorte(v)) esporoInfestado?.(estado, hunt, alvo, rng); return;
     case 'espiritoAtormentado': if (sorte(v)) ganharBuff(hunt, TOQUES_DOS_ESPIRITOS[Math.floor(rng() * TOQUES_DOS_ESPIRITOS.length)], 20, agora); return;
     case 'contaComoBloqueio': {

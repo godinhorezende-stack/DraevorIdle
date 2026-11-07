@@ -14,6 +14,486 @@
   ],
   "regras": [
     {
+      "padrao": "^Concede a Habilidade Abraçar a Loucura Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "concede:abracar-a-loucura",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Abraçar a Loucura alterna a Loucura Gloriosa (o PoB: recarga de 1 s, 8 s ao tirar); o \"Tocado\" a cada 2 s não é simulado",
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recebe Presença do Criador por \\{(\\d+)\\} segundos ao matar um Inimigo Raro ou Único$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:buff:presencaDoCriador@alvoRaro",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ev:matar:buff:presencaDoCriador@alvoUnico",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Presença do Criador: os debuffs em você expiram 20% mais devagar (o jogo guarda o fim dos buffs: eles não estendem; os aliados também não)",
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\[The Searing Exarch Implicit\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o implícito do Exarca: o jogo não tem a tabela Eldritch dos amuletos — o degrau dele (1 a 6) sai sorteado na peça e decide o dominante",
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\[The Eater of Worlds Implicit\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o implícito do Devorador: o jogo não tem a tabela Eldritch dos amuletos — o degrau dele (1 a 6) sai sorteado na peça e decide o dominante",
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Golpes Críticos infligem Loucura Malígna se o Devorador de Mundos for dominante$",
+      "efeitos": [
+        {
+          "stat": "ev:critico:loucuraMaligna@dominante:eater",
+          "valor": "100"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Mata Inimigos que possuem \\{(\\d+)\\}% ou menos de Vida ao Acertar se o Exarca Cauterizado for dominante$",
+      "efeitos": [
+        {
+          "stat": "culling_limiar@dominante:searing",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^As estrelas são alinhadas se você tiver \\{(\\d+)\\} tipos de influência entre os outros itens equipados$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "a condição das linhas \"se as estrelas estiverem alinhadas\" (os 6 tipos de influência nas outras peças vestidas)",
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Receba \\{(\\d+)\\}% do Dano Elemental como Dano de Caos Extra por Item Remodelado Equipado$",
+      "efeitos": [
+        {
+          "stat": "elem_as_extra_chaos%itensInfluencia:shaper",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Acertos ignoram a Resistência a Caos do Monstro Inimigo caso todos os Itens Equipados sejam Itens Remodelados$",
+      "efeitos": [
+        {
+          "stat": "ignora_res_caos@todosInfluencia:shaper",
+          "valor": "1"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\}% do Dano Físico como Dano de Caos extra por Item do Ancião Equipado$",
+      "efeitos": [
+        {
+          "stat": "phys_as_extra_chaos%itensInfluencia:elder",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Acertos ignoram a Resistência a Caos do Monstro inimigo se todos os Itens Equipados forem Itens do Ancião$",
+      "efeitos": [
+        {
+          "stat": "ignora_res_caos@todosInfluencia:elder",
+          "valor": "1"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Remove uma Afecção quando você usa um Frasco se todos Itens Equipados forem Itens Anciões$",
+      "efeitos": [
+        {
+          "stat": "ev:usarFrasco:removerAfeccao:uma@todosInfluencia:elder",
+          "valor": "100"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano de ataque aumentado em \\{(\\d+)\\}% se o seu anel oposto for um Item do Criador$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+anelInfluencia:shaper",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não pode sofrer atordoamento por ataques se o seu anel oposto for um Item do Ancião$",
+      "efeitos": [
+        {
+          "stat": "imune_atordoamento_ataque@anelInfluencia:elder",
+          "valor": "1"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano mágico aumentado em \\{(\\d+)\\}% se o seu anel oposto for um Item do Ancião$",
+      "efeitos": [
+        {
+          "stat": "spell_dmg@anelInfluencia:elder",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não pode sofrer atordoamento por magias se o seu anel oposto for um Item do Criador$",
+      "efeitos": [
+        {
+          "stat": "imune_atordoamento_magia@anelInfluencia:shaper",
+          "valor": "1"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você possui Confluxo de Incêndio, Resfriamento e Eletrização enquanto afetado por Loucura Gloriosa$",
+      "efeitos": [
+        {
+          "stat": "pode:incendio:physical@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:incendio:fire@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:incendio:ice@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:incendio:energy@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:incendio:chaos@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:physical@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:fire@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:ice@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:energy@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:chaos@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:physical@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:fire@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:ice@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:energy@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:chaos@buff:loucuraGloriosa",
+          "valor": "1"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Imune a Afecções Elementais enquanto afetado por Loucura Gloriosa$",
+      "efeitos": [
+        {
+          "stat": "imune_incendio@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "imune_congelamento@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "imune_resfriamento@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "imune_eletrizacao@buff:loucuraGloriosa",
+          "valor": "1"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Máximo de Cargas de Sifão por Item Ancião ou Remodelado Equipado$",
+      "efeitos": [
+        {
+          "stat": "max_sifao%itensInfluencia:elder",
+          "valor": "{1}"
+        },
+        {
+          "stat": "max_sifao%itensInfluencia:shaper",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de receber uma Carga de Sifão quando utilizar uma Habilidade$",
+      "efeitos": [
+        {
+          "stat": "ev:usarHabilidade:carga:sifao",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona de \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico aos Ataques e Magias por Carga de Sifão$",
+      "efeitos": [
+        {
+          "stat": "added_physical_dmg_min%carga:sifao",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_physical_dmg_max%carga:sifao",
+          "valor": "{2}"
+        },
+        {
+          "stat": "spell_added_physical_dmg_min%carga:sifao",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_physical_dmg_max%carga:sifao",
+          "valor": "{2}"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recebe \\{(\\d+)\\}% de Dano não-Caótico como Dano de Caos Extra por Carga de Sifão$",
+      "efeitos": [
+        {
+          "stat": "naocaos_as_extra_chaos%carga:sifao",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Redução de Dano Físico adicional dos Acertos por Carga de Sifão$",
+      "efeitos": [
+        {
+          "stat": "phys_res%carga:sifao",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{([\\d.]+)\\}% do Dano Drenado como Vida por Carga de Sifão$",
+      "efeitos": [
+        {
+          "stat": "life_leech%carga:sifao",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Sofre \\{(\\d+)\\} de Dano Físico por Segundo por cada Carga de Sifão caso tenha usado uma Habilidade Recentemente$",
+      "efeitos": [
+        {
+          "stat": "perde_vida_s%carga:sifao@usouHabilidadeRecente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Vida perdida por segundo, sem a redução física",
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Possui Influência do Ancião, Criador e de todos os Conquistadores$",
+      "efeitos": [
+        {
+          "stat": "todas_influencias",
+          "valor": "1"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você tem Confluxo Elemental se as estrelas estiverem alinhadas$",
+      "efeitos": [
+        {
+          "stat": "pode:incendio:physical@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:incendio:fire@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:incendio:ice@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:incendio:energy@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:incendio:chaos@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:physical@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:fire@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:ice@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:energy@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:chaos@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:physical@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:fire@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:ice@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:energy@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:chaos@tiposDeInfluencia:6",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Confluxo Elemental: todo o seu dano pode Incendiar, Resfriar e Eletrizar",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao nível de todas as gemas de habilidade elemental se as estrelas estiverem alinhadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level@habilidade+elemental+tiposDeInfluencia:6",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao nível de todas as gemas de suporte elemental se as estrelas estiverem alinhadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level@suporte+elemental+tiposDeInfluencia:6",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
       "padrao": "^Modificadores de Atributos, ao invés, se aplicam a Onisciência$",
       "efeitos": [
         {
@@ -17924,18 +18404,6 @@
       ],
       "estado": "inerte",
       "nota": "no PoE é o tempo da animação depois de bloquear: no jogo o bloqueio não trava o personagem",
-      "_nova": true
-    },
-    {
-      "padrao": "^Possui Influência do Ancião, Criador e de todos os Conquistadores$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "as influências (e os mods delas) não existem no catálogo do jogo",
       "_nova": true
     },
     {
@@ -50798,45 +51266,6 @@
           "valor": "1"
         }
       ],
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Você tem Confluxo Elemental se as estrelas estiverem alinhadas$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o \"estrelas alinhadas\" do Astrolábio",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^\\+\\{(\\d+)\\} ao nível de todas as gemas de habilidade elemental se as estrelas estiverem alinhadas$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o \"estrelas alinhadas\" do Astrolábio",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^\\+\\{(\\d+)\\} ao nível de todas as gemas de suporte elemental se as estrelas estiverem alinhadas$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o \"estrelas alinhadas\" do Astrolábio",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
       "_nova": true
     },

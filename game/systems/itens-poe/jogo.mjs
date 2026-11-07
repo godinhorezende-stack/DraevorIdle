@@ -358,11 +358,16 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
   const maxDaClasse = SocketsPoe.maximo(gerada.classe, gerada.ilvl) || 6;
   const ligados = af.encaixes_ligados > 0 ? { abertos: maxDaClasse, links: Array.from({ length: maxDaClasse - 1 }, () => true), gemas: Array(maxDaClasse).fill(null), cores: SocketsPoe.sortearCores(maxDaClasse, REG.catalogo?.[id]?.poe?.requisitos ?? null, rng) } : sorteados;
   const soquetes = ligados && af.encaixes_brancos ? { ...ligados, cores: ligados.cores.map(() => 'W') } : ligados;
+  // (07/11, lote 24 das inertes, a Eterna Batalha: "[The Searing Exarch Implicit]" / "[The Eater of Worlds Implicit]" — o amuleto tem um implícito de cada, sorteados; o
+  // jogo não tem a tabela Eldritch dos amuletos: o DEGRAU de cada um, 1 a 6, sorteado uma vez e guardado — o "dominante" das linhas é o de degrau maior)
+  const marcadorEldritch = [...(gerada.implicitos ?? []), ...(gerada.modificadores ?? [])].some((m) => /^\[The (?:Searing Exarch|Eater of Worlds) Implicit\]$/.test(m?.modelo ?? m?.texto ?? ''));
+  const eldritchDegraus = gerada.eldritchDegraus ?? (marcadorEldritch ? { searing: 1 + Math.floor(rng() * 6), eater: 1 + Math.floor(rng() * 6) } : null);
   return {
     id, count: 1,
     ...(Object.keys(base).length ? { base } : {}),
     ...(soquetes ? { soquetes } : {}),
     poe: {
+      ...(eldritchDegraus ? { eldritchDegraus } : {}),
       base: gerada.base, classe: gerada.classe, raridade: gerada.raridade, raridadeNome: R.nome ?? gerada.raridade, cor: R.cor ?? null,
       ilvl: gerada.ilvl, nome: gerada.nome, ...(gerada.unico ? { unico: gerada.unico } : {}),
       // (O único que já cai corrompido — a Corda da Servidão — não aceita moeda comum, como no PoE.)
@@ -601,7 +606,22 @@ export function recalcular(peca, regras = Catalogo.REGRAS) {
  * A QUALIDADE no drop (dono, 07/10; poedb › Quality): parte das armas, armaduras e frascos cai "Superior", com 1 a `maximo`% de qualidade
  * (`regras.drop.qualidade.chance` por peça); o resto cai com 0%. A peça é remontada com a qualidade (dano/defesa/recuperação e o nome).
  */
+/**
+ * (07/11, lote 24 das inertes — o dono: "Só a marca nos itens") a INFLUÊNCIA no drop: a peça Rara de arma, armadura, escudo, aljava, anel, amuleto ou cinto sai com
+ * uma das seis influências (o Criador, o Ancião e os quatro Conquistadores — `poe.influencias`), na chance `regras.drop.influenciaPct` (2% sem ela), sem os mods
+ * próprios dela; a peça com implícito Eldritch não (como no PoE). As linhas "Item do Criador/Ancião…" dos únicos leem a marca.
+ */
+const INFLUENCIAS_DO_DROP = Object.freeze(['shaper', 'elder', 'crusader', 'redeemer', 'hunter', 'warlord']);
+const CLASSES_SEM_INFLUENCIA = /^(Life_Flasks|Mana_Flasks|Hybrid_Flasks|Utility_Flasks|Tinctures|Jewels|Abyss_Jewels|Cluster_Jewels|Maps|Heist|Trinkets)/;
+export function influenciaDoDrop(peca, rng = Math.random, regras = Catalogo.REGRAS) {
+  const p = peca?.poe;
+  if (!p || p.raridade !== 'raro' || (p.influencias ?? []).length || CLASSES_SEM_INFLUENCIA.test(p.classe ?? '') || (p.implicitos ?? []).some((m) => m.origem === 'searing' || m.origem === 'eater')) return peca;
+  const chance = Number(regras.drop?.influenciaPct ?? 2) || 0;
+  if (rng() * 100 < chance) p.influencias = [INFLUENCIAS_DO_DROP[Math.floor(rng() * INFLUENCIAS_DO_DROP.length)]];
+  return peca;
+}
 export function qualidadeDoDrop(peca, rng = Math.random, regras = Catalogo.REGRAS) {
+  influenciaDoDrop(peca, rng, regras);
   const q = regras.drop?.qualidade;
   const p = peca?.poe;
   if (!p || !q?.chance) return peca;

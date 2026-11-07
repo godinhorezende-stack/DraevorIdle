@@ -24,9 +24,10 @@ export const TIPOS = ['tolerancia', 'frenesi', 'poder'];
  * Energia por Carga de Absorção"). Duram como as outras (10 s, renovadas ao ganhar).
  */
 export const TROCADAS = Object.freeze({ brutal: 'tolerancia', aflicao: 'frenesi', absorcao: 'poder' });
-export const PROPRIAS = Object.freeze(['espiritual', 'divina', 'vazio']);
+// (07/11, lote 24 das inertes: + as de SIFÃO do Desintegrador — o máximo é o "+1 por Item Ancião ou Remodelado")
+export const PROPRIAS = Object.freeze(['espiritual', 'divina', 'vazio', 'sifao']);
 export const EXTRAS = Object.freeze([...Object.keys(TROCADAS), ...PROPRIAS]);
-export const NOME_EXTRA = Object.freeze({ brutal: 'Brutais', aflicao: 'de Aflição', absorcao: 'de Absorção', espiritual: 'Espirituais', divina: 'Divinas', vazio: 'do Vazio' });
+export const NOME_EXTRA = Object.freeze({ brutal: 'Brutais', aflicao: 'de Aflição', absorcao: 'de Absorção', espiritual: 'Espirituais', divina: 'Divinas', vazio: 'do Vazio', sifao: 'de Sifão' });
 export const NOME = { tolerancia: 'Tolerância', frenesi: 'Frenesi', poder: 'Poder' };
 export const BASE = { maximo: 3, duracaoMs: 10_000, recentementeMs: 4000 };
 
