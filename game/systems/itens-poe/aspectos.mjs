@@ -123,7 +123,8 @@ export function teiasNosProximos(hunt, af, agora = hunt?.clock ?? 0) {
   for (const m of pegos) {
     const e = (m.estados ??= {});
     const antes = ativo(e.teias, agora) ? e.teias.n : 0;
-    e.teias = { n: Math.min(max, antes + 1), ate: agora + dur, danoSofridoPct: d.danoSofridoPorTeia, danoMenos: n(af, 'teias_dano_menos'), resMenos: Math.abs(n(af, 'teias_res_menos')) };
+    // (07/11, o Talismã Fenumal: "Efeito da penalidade de Aspecto da Aranha aumentado em X%" — o Dano sofrido por Teia × (1 + X%))
+    e.teias = { n: Math.min(max, antes + 1), ate: agora + dur, danoSofridoPct: d.danoSofridoPorTeia * Math.max(0, 1 + n(af, 'aranha_penalidade_efeito') / 100), danoMenos: n(af, 'teias_dano_menos'), resMenos: Math.abs(n(af, 'teias_res_menos')) };
     tolher(m, d.tolherPct, dur, agora);
   }
   return pegos;

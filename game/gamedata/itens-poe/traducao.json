@@ -14,6 +14,69 @@
   ],
   "regras": [
     {
+      "padrao": "^Efeito de bônus de Aspecto do Caranguejo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "caranguejo_efeito",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11k": "07/11 — lote 21 das inertes: os implícitos (os Talismãs de Aspecto, o Impacto Ardente, o Avanço Ardente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito da penalidade de Aspecto da Aranha aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "aranha_penalidade_efeito",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11k": "07/11 — lote 21 das inertes: os implícitos (os Talismãs de Aspecto, o Impacto Ardente, o Avanço Ardente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito de bônus de Aspecto do Gato aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff:furtividadeFelina",
+          "valor": "{1}"
+        },
+        {
+          "stat": "efeito_buff:agilidadeFelina",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11k": "07/11 — lote 21 das inertes: os implícitos (os Talismãs de Aspecto, o Impacto Ardente, o Avanço Ardente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Impacto Ardente Nível \\{(\\d+)\\} no Acerto Corpo a Corpo com esta Arma$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:gatilho:impacto-ardente@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Impacto Ardente pelo PoB (FieryImpactHeistMaceImplicit: 280/350/420% de dano de base nos níveis 10/15/20, 60% do Físico em Fogo, recarga 1,8/1,6/1,4 s); vale no acerto corpo a corpo de qualquer arma sua",
+      "_07_11k": "07/11 — lote 21 das inertes: os implícitos (os Talismãs de Aspecto, o Impacto Ardente, o Avanço Ardente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Avanço Ardente Nível \\{(\\d+)\\} ao usar uma Habilidade Encaixada$",
+      "efeitos": [
+        {
+          "stat": "ev:usarHabilidade:gatilho:avanco-ardente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Avanço Ardente do jogo, ao usar qualquer habilidade sua (o jogo não separa a encaixada nesta arma)",
+      "_07_11k": "07/11 — lote 21 das inertes: os implícitos (os Talismãs de Aspecto, o Impacto Ardente, o Avanço Ardente)",
+      "_nova": true
+    },
+    {
       "padrao": "^Feitiços das Habilidades Encaixadas podem aplicar \\{(\\d+)\\} Maldições adicionais$",
       "efeitos": [
         {
@@ -17810,42 +17873,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Efeito de bônus de Aspecto do Caranguejo aumentado em \\{(\\d+)\\}%$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "as habilidades de Aspecto (dadas por únicos) não existem no jogo",
-      "_nova": true
-    },
-    {
-      "padrao": "^Efeito da penalidade de Aspecto da Aranha aumentado em \\{(\\d+)\\}%$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "as habilidades de Aspecto (dadas por únicos) não existem no jogo",
-      "_nova": true
-    },
-    {
-      "padrao": "^Efeito de bônus de Aspecto do Gato aumentado em \\{(\\d+)\\}%$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "as habilidades de Aspecto (dadas por únicos) não existem no jogo",
-      "_nova": true
-    },
-    {
       "padrao": "^Dano aumentado em \\{(\\d+)\\}% por Rito da Lua concluído$",
       "efeitos": [
         {
@@ -17906,52 +17933,30 @@
       "_nova": true
     },
     {
-      "padrao": "^Ativa Impacto Ardente Nível \\{(\\d+)\\} no Acerto Corpo a Corpo com esta Arma$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "a habilidade Impacto Ardente não está na coleção de gemas do jogo",
-      "_nova": true
-    },
-    {
       "padrao": "^local use skill on melee hit % \\[\\{(\\d+)\\}\\]$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "lembrete",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "parte interna do \"Ativa Impacto Ardente\" (sem texto no PoE)",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ativa Avanço Ardente Nível \\{(\\d+)\\} ao usar uma Habilidade Encaixada$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o Avanço Ardente é deslocamento, que não existe no jogo",
-      "_nova": true
+      "estado": "lembrete",
+      "nota": "parte interna do \"Ativa Impacto Ardente\" — o gatilho, que a linha de cima já faz (sem texto no PoE)",
+      "_nova": true,
+      "_07_11k": "07/11 — lote 21 das inertes: os implícitos (os Talismãs de Aspecto, o Impacto Ardente, o Avanço Ardente)"
     },
     {
       "padrao": "^local skills granted by item are supported by level x unique trigger support \\[\\{(\\d+)\\}\\]$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "lembrete",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "parte interna do \"Ativa Avanço Ardente\" (sem texto no PoE)",
-      "_nova": true
+      "estado": "lembrete",
+      "nota": "parte interna do \"Ativa Avanço Ardente\" — o gatilho, que a linha de cima já faz (sem texto no PoE)",
+      "_nova": true,
+      "_07_11k": "07/11 — lote 21 das inertes: os implícitos (os Talismãs de Aspecto, o Impacto Ardente, o Avanço Ardente)"
     },
     {
       "padrao": "^\\+\\{(\\d+)\\} de Vida máxima$",

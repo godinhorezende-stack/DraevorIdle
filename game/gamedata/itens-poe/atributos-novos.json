@@ -9926,6 +9926,18 @@
       "combate": true,
       "nome": "Maldições adicionais das Habilidades Encaixadas (a Efígie)",
       "efeito": "acoes.efigiesDaDoedre (07/11, lote 20)"
+    },
+    "caranguejo_efeito": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Efeito de bônus do Aspecto do Caranguejo aumentado (%)",
+      "efeito": "condicoes-poe.adds (07/11, lote 21)"
+    },
+    "aranha_penalidade_efeito": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Efeito da penalidade do Aspecto da Aranha aumentado (%)",
+      "efeito": "aspectos.tique (07/11, lote 21)"
     }
   }
 }

@@ -360,6 +360,9 @@ const linhasDaQualidade = (g, q) => (g?.qualidade ?? []).flatMap(partirQualidade
  * baseMultiplier 0,713 → 0,983 por nível — os de cá.
  */
 const CORRECAO_DO_POB = {
+  // (07/11, lote 20 das inertes) o Tiro do Vazio (habilidade de item, lote 15): o poedb traz o "Dano de Ataque: 65% de base" só na propriedade, sem a coluna — o PoB
+  // (VoidShot): baseMultiplier 0,65
+  Void_Shot: { efetividade: [0.65] },
   Vaal_Lightning_Arrow: {
     efetividade: [0.713, 0.726, 0.737, 0.749, 0.76, 0.772, 0.782, 0.792, 0.803, 0.813, 0.822, 0.831, 0.841, 0.85, 0.858, 0.866, 0.874, 0.882, 0.89, 0.897, 0.904, 0.911, 0.918, 0.925, 0.931, 0.937, 0.943, 0.949, 0.954, 0.96, 0.963, 0.965, 0.967, 0.969, 0.972, 0.974, 0.976, 0.979, 0.981, 0.983],
     semProjeteisAdicionais: true,

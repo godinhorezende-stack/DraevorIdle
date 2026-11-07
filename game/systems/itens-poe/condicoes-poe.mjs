@@ -1544,7 +1544,8 @@ export function adds(estado, total = null) {
   }
   // (06/11, lote 7) as BARREIRAS DE CARANGUEJO (`aspectos.mjs`): 2% de Redução de Dano Físico adicional por Barreira
   const nBarreiras = estado?.hunt?.barreiras?.n ?? 0;
-  if (nBarreiras > 0) saida.phys_res = (saida.phys_res ?? 0) + 2 * nBarreiras;
+  // (07/11, o Talismã Craicic: "Efeito de bônus de Aspecto do Caranguejo aumentado em X%" — os 2% por Barreira × (1 + X%))
+  if (nBarreiras > 0) saida.phys_res = (saida.phys_res ?? 0) + 2 * nBarreiras * Math.max(0, 1 + (Number(total?.caranguejo_efeito) || 0) / 100);
   // (14/10, o Warden) A CASCA da Pele de Árvore (`hunt.casca` — `tiqueDoWarden`): -60 de Dano Físico dos Acertos de Ataque por Casca e 4% mais
   // chance de Evadir Ataques por Casca abaixo do máximo; a Lição das Estações: -25 de cada tipo de dano dos Acertos de Magia por Casca
   // (`casca_magia_fixo`) e +3% do Dano Mágico Suprimido Impedido por Casca abaixo do máximo (`casca_supressao`).

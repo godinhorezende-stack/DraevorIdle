@@ -13690,6 +13690,9 @@ export function ehAtaqueDeVarinha(estado, entry = null) {
 ModsPoe.definirCargasDeFrasco((estado, n) => FrascosPoe.ganharCargas(estado, n));
 ModsPoe.definirLamuria((estado) => FrascosPoe.cargasDaLamuria(estado));
 ModsPoe.definirFrascosAoConsumirCadaver((estado) => FrascosPoe.aoConsumirCadaver(estado));
+// (07/11, lote 21 das inertes) a TRAVA de reentrada: a habilidade ativada que, no próprio acerto, ativaria a si mesma (o Impacto Ardente "no Acerto Corpo a Corpo") não
+// sai de novo de dentro dela — fora do estado salvo da caçada
+const GATILHOS_EM_CURSO = new WeakMap();
 ModsPoe.definirDisparo((estado, hunt, personagem, nome, nivel, alvo, eventos = []) => {
   const def = Gemas.ativaPeloNome(nome);
   if (!def || !hunt) return;
@@ -13697,6 +13700,16 @@ ModsPoe.definirDisparo((estado, hunt, personagem, nome, nivel, alvo, eventos = [
   const cds = (hunt.cooldowns ??= {});
   const chave = `gatilho-item:${def.acao}`;
   if (cds[chave] && !R.liberou(agora, cds[chave].ate)) return;
+  const emCurso = GATILHOS_EM_CURSO.get(hunt) ?? new Set();
+  if (emCurso.has(chave)) return;
+  GATILHOS_EM_CURSO.set(hunt, emCurso.add(chave));
+  try {
+    disparoDoItem(estado, hunt, personagem, def, alvo, eventos, agora, cds, chave);
+  } finally {
+    emCurso.delete(chave);
+  }
+});
+function disparoDoItem(estado, hunt, personagem, def, alvo, eventos, agora, cds, chave) {
   const alvoDaMagia = alvo && alvo.hp > 0 ? alvo : hunt.monstros.filter((b) => b.hp > 0).sort((a, b) => distanciaChebyshev(hunt.pos, a) - distanciaChebyshev(hunt.pos, b))[0] ?? null;
   const robos = comRobos(estado);
   const disparo = () => dispararSemMarcar(estado, hunt, personagem, null, alvoDaMagia, { gatilho: { acao: { id: def.acao, enabled: true, minMana: 0, minTargets: 1, conditions: [] }, semCusto: true } });
@@ -13709,7 +13722,7 @@ ModsPoe.definirDisparo((estado, hunt, personagem, nome, nivel, alvo, eventos = [
     const r2 = doLugarDoRobo(hunt, 1, () => dispararSemMarcar(estado, hunt, personagem, null, alvoDaMagia?.hp > 0 ? alvoDaMagia : null, { gatilho: { acao: { id: def.acao, enabled: true, minMana: 0, minTargets: 1, conditions: [] }, semCusto: true, ignorarRecarga: true } }));
     if (r2.ok) eventos.push({ t: 'gatilho', quem: personagem?.nome, suporte: ROBOS.nome, skill: def.nome }, ...(r2.eventos ?? []));
   }
-});
+}
 
 /**
  * Os GATILHOS das PEÇAS (dono, 11/10: os únicos): "Ativa uma Magia Encaixada quando você Atacar com esta Arma, com Recarga de 0,25 segundo"

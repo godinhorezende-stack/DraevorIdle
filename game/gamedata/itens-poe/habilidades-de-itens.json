@@ -4546,6 +4546,170 @@
    "soDoItem": true
   },
   {
+   "slug": "Fiery_Impact",
+   "nome": "Impacto Ardente",
+   "en": "Fiery Impact",
+   "cor": "vermelha",
+   "nivelReq": 30,
+   "tags": [
+    "Ataque",
+    "Área",
+    "Corpo a Corpo",
+    "Ativação",
+    "Fogo"
+   ],
+   "tipos": [
+    "Attack",
+    "Area",
+    "Melee",
+    "Triggered",
+    "Cooldown"
+   ],
+   "props": [
+    "Nível: (10 — 20)",
+    "Recarga: (2.16 — 1.40) seg",
+    "Dano de Ataque: (280 — 420)% de base",
+    "Eficácia do Dano Adicionado: (280 — 420)%"
+   ],
+   "mods": [
+    "60% do Dano Físico Convertido para Dano de Fogo",
+    "Esta Habilidade é Ativada por um Item Único"
+   ],
+   "qualidade": [],
+   "desc": "Causa dano de ataque numa área.",
+   "icone": null,
+   "colunas": [
+    "Nível",
+    "RequerNível",
+    "Base Damage",
+    "Experiência"
+   ],
+   "linhas": [
+    [
+     "1",
+     "30",
+     "280%",
+     ""
+    ],
+    [
+     "2",
+     "30",
+     "280%",
+     ""
+    ],
+    [
+     "3",
+     "30",
+     "280%",
+     ""
+    ],
+    [
+     "4",
+     "30",
+     "280%",
+     ""
+    ],
+    [
+     "5",
+     "30",
+     "280%",
+     ""
+    ],
+    [
+     "6",
+     "30",
+     "280%",
+     ""
+    ],
+    [
+     "7",
+     "30",
+     "280%",
+     ""
+    ],
+    [
+     "8",
+     "30",
+     "280%",
+     ""
+    ],
+    [
+     "9",
+     "30",
+     "280%",
+     ""
+    ],
+    [
+     "10",
+     "30",
+     "280%",
+     ""
+    ],
+    [
+     "11",
+     "34",
+     "294%",
+     ""
+    ],
+    [
+     "12",
+     "38",
+     "308%",
+     ""
+    ],
+    [
+     "13",
+     "42",
+     "322%",
+     ""
+    ],
+    [
+     "14",
+     "46",
+     "336%",
+     ""
+    ],
+    [
+     "15",
+     "50",
+     "350%",
+     ""
+    ],
+    [
+     "16",
+     "54",
+     "364%",
+     ""
+    ],
+    [
+     "17",
+     "58",
+     "378%",
+     ""
+    ],
+    [
+     "18",
+     "62",
+     "392%",
+     ""
+    ],
+    [
+     "19",
+     "66",
+     "406%",
+     ""
+    ],
+    [
+     "20",
+     "70",
+     "420%",
+     ""
+    ]
+   ],
+   "dePob": true,
+   "soDoItem": true
+  },
+  {
    "slug": "Summon_Volatile_Anomaly",
    "nome": "Convocar Anomalia Volátil",
    "en": "Summon Volatile Anomaly",
