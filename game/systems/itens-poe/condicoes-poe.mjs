@@ -1658,6 +1658,10 @@ export const MALDICOES_DOS_MONSTROS = {
   // (07/11, lote 20 das inertes — o dono: "Criar as mecânicas") o SILÊNCIO (o Silenciador, modificador de monstro raro do jogo): você não usa habilidades enquanto dura
   // (`acoes.dispararSemMarcarDentro`; o ataque básico segue) — a Estrela de Wraeclast: "Você não pode ser Amaldiçoado com Silêncio"
   silencio: { nome: 'Silêncio', af: { silenciado: 1 } },
+  // (07/11, lote 26 das inertes) os GRILHÕES TEMPORAIS em você (os Grilhões da Emancipação: "Acertos Inimigos infligem Grilhões Temporais em você"):
+  // a gema no nível 20 do poedb — "Inimigos Raros e Únicos Amaldiçoados tem 18% menos Velocidade de Ação" (o jogador conta como o Raro/Único) e
+  // "Outros efeitos em inimigos Amaldiçoados expiram 25% mais devagar", com o "50% menos Efeito de Maldições contra Jogadores": −9% e 12,5%.
+  grilhoesTemporais: { nome: 'Grilhões Temporais', af: { action_speed: -9, debuffs_expiram_rapido: -12.5 } },
 };
 export const DURACAO_DA_MALDICAO_DO_MONSTRO_MS = 6000;
 /** (lote 55, o Olho do Vigia) "Imune a <Maldição>": a imunidade a cada maldição que os monstros põem em você (pelo nome dela). */
@@ -2445,7 +2449,7 @@ export const slugDoNome = (nome) => String(nome ?? '').normalize('NFD').replace(
 // ---------------------------------------------------------------- os atributos DINÂMICOS (validação da tradução)
 
 /** Os eventos que `mods-poe.evento` dispara e as ações que ele sabe fazer. */
-export const EVENTOS = new Set(['estilhacar', 'maxDivina', 'perderEspiritual', 'golpeBrutalSofrido', 'ganharFurtividadeFelina', 'perderFurtividadeFelina', 'ganharAgilidadeFelina', 'ganharBuffDaAve', 'sangrar', 'ganharElusivo', 'incendiarNovo', 'ganharAdrenalina', 'amaldicoarSemMaldicao', 'amaldicoarSemMaldicaoNaoAura', 'usarFrascoVida', 'usarGuarda', 'matar', 'critico', 'bloquear', 'bloquearAtaque', 'bloquearMagia', 'serAcertado', 'serAcertadoCritico', 'atordoar', 'incendiar', 'congelar', 'eletrizar', 'envenenar',
+export const EVENTOS = new Set(['estilhacar', 'maxDivina', 'perderEspiritual', 'golpeBrutalSofrido', 'ganharFurtividadeFelina', 'perderFurtividadeFelina', 'ganharAgilidadeFelina', 'ganharBuffDaAve', 'sangrar', 'ganharElusivo', 'incendiarNovo', 'ganharAdrenalina', 'amaldicoarSemMaldicao', 'amaldicoarSemMaldicaoNaoAura', 'usarFrascoVida', 'usarGuarda', 'matar', 'critico', 'bloquear', 'bloquearAtaque', 'bloquearMagia', 'bloquearProjetil', 'serAcertado', 'serAcertadoCritico', 'atordoar', 'incendiar', 'congelar', 'eletrizar', 'envenenar',
   'acertar', 'usarHabilidade', 'usarMagia', 'usarAtaque', 'usarMovimento', 'usarVaal', 'usarClamor', 'usarFrasco', 'usarFrascoMana', 'suprimir', 'perderTolerancia',
   'maxPoder', 'maxFrenesi', 'maxTolerancia', 'tempo', 'provocar', 'golpeDeMisericordia', 'vidaBaixa', 'equipado', 'perderPoder', 'conjurarMaldicao', 'gastarMana', 'armadilha', 'morrer', 'lancarArmadilha', 'detonarMina', 'drenoCheio', 'rampage', 'empurrar',
   // (ciclo 7, lote D) quando Atordoado; quando sofrer Dano Físico de um Acerto (`mods-poe.aoSerAcertado`).
@@ -2950,6 +2954,11 @@ export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
     if (!n) delete hunt.poeAlmas;
   }
   tiqueDaFuria(hunt, agora);
+  // (07/11, lote 26) os Grilhões da Emancipação: "Ao perder Grilhões Temporais você ganha Fúria máxima" — a maldição em você acabou (expirou ou saiu)
+  const comGrilhoes = Object.values(hunt.maldicoesNoJogador ?? {}).some((m) => m?.nome === 'Grilhões Temporais' && m.ate > agora);
+  if (hunt.poeComGrilhoes && !comGrilhoes && Number(ficha?.afPoe?.furia_max_ao_perder_grilhoes) > 0) ganharFuria(hunt, maximoDeFuria(ficha.afPoe), agora);
+  if (comGrilhoes) hunt.poeComGrilhoes = true;
+  else delete hunt.poeComGrilhoes;
   tiqueDasCargasFanaticas(hunt, ficha, agora);
   tiqueDaDissolucao(estado, hunt, ficha, agora);
   // (14/10) o Warden: a Casca da Pele de Árvore e o Avatar Liberto

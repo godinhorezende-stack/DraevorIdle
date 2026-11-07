@@ -5,7 +5,7 @@ import * as QuemFeriu from '../hunt/quem-feriu.mjs';
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { definirTiqueDosAspectos, MOVENDO_MS, slugDoNome, ganharAlmaVaal, aoBloquear, almaDoJogador, poderDoMorto, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, criarSoloCongelado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo, porExposicao, vinhasGanhas as vinhasGanhasDe, fatorDaResistenciaRecebida } from './condicoes-poe.mjs';
+import { definirTiqueDosAspectos, MOVENDO_MS, slugDoNome, ganharAlmaVaal, aoBloquear, almaDoJogador, poderDoMorto, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, criarSoloCongelado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo, porExposicao, vinhasGanhas as vinhasGanhasDe, fatorDaResistenciaRecebida, amaldicoarJogador, MALDICOES_DOS_MONSTROS } from './condicoes-poe.mjs';
 import * as Plantadas from './armas-plantadas.mjs';
 import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { eletrizarComPct, cegar as cegarVoce } from './monstros-no-jogador.mjs';
@@ -477,6 +477,9 @@ export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorp
   if (corpoACorpo || ataque) marcar(hunt, 'acertadoAtaque', agora);
   // (14/10, o Warden: a Pele de Árvore perde 1 Casca no Ataque inimigo que acerta; a Lição das Estações, N no Dano Mágico)
   if (corpoACorpo || ataque) perderCasca(hunt, 1, agora);
+  // (07/11, lote 26 das inertes) os Grilhões da Emancipação: "Acertos Inimigos infligem Grilhões Temporais em você" (todo acerto renova; imune a
+  // Maldições — "enquanto possuir ao menos 25 de Fúria" —, não pega)
+  if (v('grilhoes_ao_ser_acertado') > 0 && !(v('imune_maldicao') > 0)) amaldicoarJogador(hunt, 'grilhoesTemporais', MALDICOES_DOS_MONSTROS.grilhoesTemporais, agora);
   if (magia) perderCasca(hunt, v('casca_perde_magia'), agora);
   // (06/11, lote 9) a MORTE: o acerto que zerou a sua vida dispara o "ao Morrer" (uma vez por morte — os Grilhões, as Lentes de Maligaro, o Vínculo D'alma)
   if ((estado.hp ?? 0) <= 0 && !(hunt.poeMorreuEm >= agora)) { hunt.poeMorreuEm = agora; evento(estado, hunt, 'morrer', ficha, { agora, rng, eventos, alvo: bicho }); }

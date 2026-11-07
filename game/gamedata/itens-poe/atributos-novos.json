@@ -10058,6 +10058,24 @@
       "combate": true,
       "nome": "Almas por Poder do inimigo amaldiçoado",
       "efeito": "mods-poe.tiqueDosAspectos (07/11, lote 25)"
+    },
+    "grilhoes_ao_ser_acertado": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Acertos Inimigos infligem Grilhões Temporais em você",
+      "efeito": "mods-poe.aoSerAcertado (07/11, lote 26)"
+    },
+    "furia_max_ao_perder_grilhoes": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Fúria máxima ao perder os Grilhões Temporais",
+      "efeito": "condicoes-poe.tiqueDosEfeitos (07/11, lote 26)"
+    },
+    "imune_grilhoes_temporais": {
+      "nome": "Imune a Grilhões Temporais",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe (IMUNE_A_MALDICAO) (07/11, lote 26)"
     }
   }
 }

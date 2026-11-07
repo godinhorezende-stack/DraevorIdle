@@ -337,6 +337,8 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
     ModsPoe.evento(estado, hunt, 'bloquear', ficha, { alvo: bicho, eventos, personagem });
     // ("ao Bloquear o Dano de Ataques" / "ao Bloquear Dano Mágico": o evento de cada tipo de bloqueio.)
     ModsPoe.evento(estado, hunt, ataqueDoPoe ? 'bloquearAtaque' : 'bloquearMagia', ficha, { alvo: bicho, eventos, personagem });
+    // (07/11, lote 26) "quando você Bloquear seu Dano de Ataques com Projéteis" (a Resposta de Sentari): o projétil de ataque bloqueado
+    if (projetil && (ataqueDoPoe || projetilDeAtaque)) ModsPoe.evento(estado, hunt, 'bloquearProjetil', ficha, { alvo: bicho, eventos, personagem });
     // (o dono, 25/10) o Escudo Tempestuoso: o raio no atacante bloqueado (o gancho da caçada — `definirAoBloquearMagia`)
     if (!ataqueDoPoe) aoBloquearMagia?.({ estado, hunt, personagem, bicho, eventos, agora });
   }

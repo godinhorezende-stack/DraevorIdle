@@ -14,6 +14,85 @@
   ],
   "regras": [
     {
+      "padrao": "^Acertos Inimigos infligem Grilhões Temporais em você$",
+      "efeitos": [
+        {
+          "stat": "grilhoes_ao_ser_acertado",
+          "valor": "1"
+        }
+      ],
+      "_07_11p": "07/11 — lote 26 das inertes: os Grilhões Temporais em você e as imunidades do Olho do Vigia",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ao perder Grilhões Temporais você ganha Fúria máxima$",
+      "efeitos": [
+        {
+          "stat": "furia_max_ao_perder_grilhoes",
+          "valor": "1"
+        }
+      ],
+      "_07_11p": "07/11 — lote 26 das inertes: os Grilhões Temporais em você e as imunidades do Olho do Vigia",
+      "_nova": true
+    },
+    {
+      "padrao": "^Imune a Grilhões Temporais$",
+      "efeitos": [
+        {
+          "stat": "imune_grilhoes_temporais",
+          "valor": "1"
+        }
+      ],
+      "_07_11p": "07/11 — lote 26 das inertes: os Grilhões Temporais em você e as imunidades do Olho do Vigia",
+      "_nova": true
+    },
+    {
+      "padrao": "^Imune a Grilhões Temporais enquanto afetado por Ímpeto$",
+      "efeitos": [
+        {
+          "stat": "imune_grilhoes_temporais@afetadoPor:impeto",
+          "valor": "1"
+        }
+      ],
+      "_07_11p": "07/11 — lote 26 das inertes: os Grilhões Temporais em você e as imunidades do Olho do Vigia",
+      "_nova": true
+    },
+    {
+      "padrao": "^Imune a Solo Eletrizado enquanto afetado por Pureza Elétrica$",
+      "efeitos": [
+        {
+          "stat": "imune_solo_eletrizado@afetadoPor:pureza-eletrica",
+          "valor": "1"
+        }
+      ],
+      "_07_11p": "07/11 — lote 26 das inertes: os Grilhões Temporais em você e as imunidades do Olho do Vigia",
+      "_nova": true
+    },
+    {
+      "padrao": "^Imune a Solo Ardente enquanto afetado por Pureza Ardente$",
+      "efeitos": [
+        {
+          "stat": "imune_solo_ardente@afetadoPor:pureza-ardente",
+          "valor": "1"
+        }
+      ],
+      "_07_11p": "07/11 — lote 26 das inertes: os Grilhões Temporais em você e as imunidades do Olho do Vigia",
+      "_nova": true
+    },
+    {
+      "padrao": "^Amaldiçoa Inimigos com (.+?) quando você Bloquear seu Dano de Ataques com Projéteis, ignorando o Limite de Maldições$",
+      "efeitos": [
+        {
+          "stat": "ev:bloquearProjetil:maldicao:{NOME}:10:semLimite",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a maldição no nível 10 da gema (o texto do poedb em português não traz o nível).",
+      "_07_11p": "07/11 — lote 26 das inertes: os Grilhões Temporais em você e as imunidades do Olho do Vigia",
+      "_nova": true
+    },
+    {
       "padrao": "^Modificadores do número de Projéteis são aplicados ao número de alvos nos quais os Projéteis Partidos se focam ao invés$",
       "efeitos": [
         {
