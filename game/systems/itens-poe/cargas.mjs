@@ -53,7 +53,8 @@ export function maximo(af, tipo) {
 /** O mínimo de cargas do tipo (0 + "+N ao Mínimo"), nunca acima do máximo. */
 export const minimo = (af, tipo) => (TROCADAS[tipo] ? (n(af, `min_${tipo}_da_base`) > 0 ? Math.min(maximo(af, tipo), minimo(af, TROCADAS[tipo])) : 0) : Math.max(0, Math.min(maximo(af, tipo), n(af, `min_${tipo}`))));
 /** A duração (ms) das cargas do tipo (+ a duração das cargas em geral). */
-export const duracao = (af, tipo) => Math.round(BASE.duracaoMs * (1 + (n(af, `duracao_${TROCADAS[tipo] ?? tipo}`) + n(af, 'duracao_cargas')) / 100));
+// (08/11, aproximadas A4: + o "X% menos Duração de Cargas de Poder" — `duracao_<tipo>_mais`, que multiplica, como no PoE)
+export const duracao = (af, tipo) => Math.round(BASE.duracaoMs * (1 + (n(af, `duracao_${TROCADAS[tipo] ?? tipo}`) + n(af, 'duracao_cargas')) / 100) * Math.max(0, 1 + n(af, `duracao_${TROCADAS[tipo] ?? tipo}_mais`) / 100));
 
 /** As chaves dos atributos de carga (o que a ficha guarda em `ficha.cargas`, para os ganchos não somarem tudo a cada acerto). */
 const CHAVES = [

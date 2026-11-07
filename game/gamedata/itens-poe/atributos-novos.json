@@ -10112,6 +10112,24 @@
       "unidade": "%",
       "combate": true,
       "efeito": "itens-poe/jogo.baseDaPeca (08/11 — as defesas locais da armadura)"
+    },
+    "duracao_incendio_mais": {
+      "nome": "Duração do Incêndio (mais/menos)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afeccoes / cargas (08/11 — aproximadas A4)"
+    },
+    "poison_duration_mais": {
+      "nome": "Duração do Veneno (mais/menos)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afeccoes / cargas (08/11 — aproximadas A4)"
+    },
+    "duracao_poder_mais": {
+      "nome": "Duração das Cargas de Poder (mais/menos)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afeccoes / cargas (08/11 — aproximadas A4)"
     }
   }
 }

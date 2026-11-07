@@ -29502,14 +29502,14 @@
       "padrao": "^\\{(\\d+)\\}% mais Duração do Incêndio$",
       "efeitos": [
         {
-          "stat": "duracao_incendio",
+          "stat": "duracao_incendio_mais",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "\"mais\" somado como \"aumentada\"",
+      "estado": "equivalente",
       "_nova": true,
-      "_unico": true
+      "_unico": true,
+      "_08_11d": "08/11 — aproximadas A4: o \"mais/menos\" multiplica, como no PoE"
     },
     {
       "padrao": "^Incêndios infligidos por você com Ataques causam Dano \\{(\\d+)\\}% mais rápido$",
@@ -31719,14 +31719,14 @@
       "padrao": "^\\{(\\d+)\\}% menos Duração de Veneno$",
       "efeitos": [
         {
-          "stat": "poison_duration",
+          "stat": "poison_duration_mais",
           "valor": "-{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "\"menos\" somado como \"reduzida\"",
+      "estado": "equivalente",
       "_nova": true,
-      "_unico": true
+      "_unico": true,
+      "_08_11d": "08/11 — aproximadas A4: o \"mais/menos\" multiplica, como no PoE"
     },
     {
       "padrao": "^Debuffs em você expiram \\{(\\d+)\\}% mais rápido$",
@@ -38941,14 +38941,14 @@
       "padrao": "^Mais \\{(\\d+)\\}% de evasão por \\{(\\d+)\\} de mana máximo$",
       "efeitos": [
         {
-          "stat": "evasion_pct%manaMax:{V2}",
+          "stat": "evasion_mais%manaMax:{V2}",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "vira aumento da Evasão (o jogo não tem o \"mais\" separado na Evasão).",
-      "_de": "10/10 — únicos: armas e armaduras (rodada 1)"
+      "estado": "equivalente",
+      "_de": "10/10 — únicos: armas e armaduras (rodada 1)",
+      "_08_11d": "08/11 — aproximadas A4: o \"mais/menos\" multiplica, como no PoE"
     },
     {
       "padrao": "^\\+\\{(\\d+)\\} ao Nível das Gemas de Habilidade Encaixadas por cada \\{(\\d+)\\} Níveis do Jogador$",
@@ -39515,14 +39515,14 @@
       "padrao": "^\\{(\\d+)\\}% menos Duração de Cargas de Poder$",
       "efeitos": [
         {
-          "stat": "duracao_poder",
+          "stat": "duracao_poder_mais",
           "valor": "-{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "vira redução da duração (o jogo soma o \"menos\" com os aumentos).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 2)"
+      "estado": "equivalente",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 2)",
+      "_08_11d": "08/11 — aproximadas A4: o \"mais/menos\" multiplica, como no PoE"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de chance da Recarga do Escudo de Energia iniciar quando você Bloquear$",
@@ -50212,14 +50212,15 @@
       "padrao": "^Projéteis Mágicos Encaixados têm \\{(\\d+)\\}% menos Duração do Efeito da Habilidade$",
       "efeitos": [
         {
-          "stat": "duracao_habilidades@magia+projetil",
+          "stat": "duracao_mais@magia+projetil",
           "valor": "-{1}"
         }
       ],
       "estado": "aproximado",
-      "nota": "como \"reduzida\" (soma com os outros aumentos de Duração)",
       "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
+      "_nova": true,
+      "_08_11d": "08/11 — aproximadas A4: o \"mais/menos\" multiplica, como no PoE",
+      "nota": "o \"menos\" multiplica, como no PoE, mas em todas as suas magias de projétil (o jogo não separa as gemas encaixadas na peça)"
     },
     {
       "padrao": "^Totens que seriam mortos pelos inimigos se tornam Totens Espectrais por \\{(\\d+)\\} segundos$",
