@@ -9938,6 +9938,24 @@
       "combate": true,
       "nome": "Efeito da penalidade do Aspecto da Aranha aumentado (%)",
       "efeito": "aspectos.tique (07/11, lote 21)"
+    },
+    "gem_xp_inc": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Ganho de Experiência das Gemas aumentado (%)",
+      "efeito": "skills/gemas.ganharXp (07/11, lote 22)"
+    },
+    "gem_xp_azul_local": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Experiência das Gemas nos Encaixes Azuis da peça (%)",
+      "efeito": "skills/gemas.ganharXp (07/11, lote 22)"
+    },
+    "pergaminho_extra_chance": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Chance de um Pergaminho da Sabedoria adicional ao matar (%)",
+      "efeito": "hunt/combate.matarMonstro (07/11, lote 22)"
     }
   }
 }

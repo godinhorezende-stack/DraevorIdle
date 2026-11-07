@@ -363,6 +363,8 @@ export function subirDeLevel(estado) {
   refazerMaximos(estado, novo);
 }
 
+/** (07/11, lote 22) o Pergaminho da Sabedoria do PoE (o id de item da moeda — `gamedata/itens-poe/moedas-poe-ids.json`). */
+const PERGAMINHO_DA_SABEDORIA = 915154;
 export function quantasMoedas(bicho, id, estado = null) {
   if (id !== 3031) return 1;
   const media = Math.max(1, bicho.expDasMoedas ?? bicho.exp ?? 10);
@@ -1057,6 +1059,9 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // No PoE: o Joalheiro, a Fusão e o Cromático (`itens-poe/regras.json` → `sockets.orbes`).
   for (const orbe of GemasDeSkill.sortearOrbesDoPoe({ ato: Number(contextoDoDrop(hunt).ato) || 1, fatorDeChance: BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) })) darExtra(orbe);
   soltarDrops({ estado, hunt, personagem, alvo, drops: [...alvo.loot, ...Gemas.dropDoBicho(BESTIARY[alvo.key])], eventos, juntos, sala, caiu, conta, deOutros, podio });
+  // (07/11, lote 22 das inertes, o Sinete de Perandus: "X% de chance de monstros Mortos derrubarem um Pergaminho da Sabedoria adicional")
+  const chanceDoPergaminho = itensPoeLigado() ? ModsPoe.valor(Ficha.combate(estado), 'pergaminho_extra_chance') : 0;
+  if (chanceDoPergaminho > 0 && Math.random() * 100 < chanceDoPergaminho) darExtra({ id: PERGAMINHO_DA_SABEDORIA });
   // Sistema de itens do PoE (Fase 1, só com ITENS_POE=1): quantas peças pela raridade do bicho × os modificadores de quantidade do loot
   // do Draevor (Buff Power, afixo Loot, prey, pódio, Caça Online — sem o lootMult, que já é a raridade do bicho); números em `itens-poe/regras.json`.
   // (No MAPA do endgame: × a Quantidade de Itens dele, e a Raridade de Itens dele soma na sua — como no PoE.)

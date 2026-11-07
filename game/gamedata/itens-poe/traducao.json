@@ -14,6 +14,89 @@
   ],
   "regras": [
     {
+      "padrao": "^Ganho de Experiência das Gemas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "gem_xp_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11l": "07/11 — lote 22 das inertes: a economia e a experiência (o dono: \"Continue então resolvendo\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Gemas Encaixadas nos Encaixes Azuis ganham \\{(\\d+)\\}% de Experiência aumentada$",
+      "efeitos": [
+        {
+          "stat": "gem_xp_azul_local",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11l": "07/11 — lote 22 das inertes: a economia e a experiência (o dono: \"Continue então resolvendo\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Experiência adquirida reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "exp_bonus",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_07_11l": "07/11 — lote 22 das inertes: a economia e a experiência (o dono: \"Continue então resolvendo\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Quantidade de Ouro Derrubada por Inimigos Mortos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "gold_find",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_07_11l": "07/11 — lote 22 das inertes: a economia e a experiência (o dono: \"Continue então resolvendo\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de monstros Mortos derrubarem um Pergaminho da Sabedoria adicional$",
+      "efeitos": [
+        {
+          "stat": "pergaminho_extra_chance",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11l": "07/11 — lote 22 das inertes: a economia e a experiência (o dono: \"Continue então resolvendo\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Itens Mágicos encontrados são Identificados$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem item por identificar (toda peça cai identificada)",
+      "_07_11l": "07/11 — lote 22 das inertes: a economia e a experiência (o dono: \"Continue então resolvendo\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não Perde Experiência quando você morrer porque um alvo Vinculado morreu$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "no jogo você não morre quando o alvo Vinculado morre",
+      "_07_11l": "07/11 — lote 22 das inertes: a economia e a experiência (o dono: \"Continue então resolvendo\")",
+      "_nova": true
+    },
+    {
       "padrao": "^Efeito de bônus de Aspecto do Caranguejo aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {

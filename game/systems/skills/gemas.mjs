@@ -1008,15 +1008,22 @@ export function tempoDeConjuracao(estado, acao, castSpeedPct = 0, ativas = skill
  * Devolve `[{ nome, nivel }]` das que subiram (para avisar).
  */
 export function ganharXp(estado, exp) {
-  const ganho = Math.max(0, Math.round((Number(exp) || 0) * N.parteDaExp));
-  if (!ganho) return [];
+  const ganho0 = Math.max(0, Math.round((Number(exp) || 0) * N.parteDaExp));
+  if (!ganho0) return [];
+  // (07/11, lote 22 das inertes) as Cinzas das Estrelas: "Ganho de Experiência das Gemas aumentado em X%" (de todas as peças vestidas); o Crime de Dialla: "Gemas
+  // Encaixadas nos Encaixes Azuis ganham X% de Experiência aumentada" (as da própria peça, nos encaixes azuis)
+  const vestidas = Object.values(estado?.equipment ?? {});
+  const geral = vestidas.reduce((t, p) => t + (Number(p?.poe?.af?.gem_xp_inc) || 0), 0);
   const subiram = [];
   for (const slot of SLOTS_COM_SOCKET) {
     const peca = estado?.equipment?.[slot];
     const gemas = peca?.soquetes?.gemas;
     if (!gemas) continue;
-    for (const g of gemas) {
+    const s = soquetesDe(peca);
+    for (const [i, g] of gemas.entries()) {
       const def = g && DEFS.get(Number(g.id));
+      const azul = s?.cores?.[i] === 'B' ? Number(peca?.poe?.af?.gem_xp_azul_local) || 0 : 0;
+      const ganho = Math.max(0, Math.round(ganho0 * Math.max(0, 1 + (geral + azul) / 100)));
       // Por XP a gema para no máximo dela (30 no Draevor, 20 no PoE); acima, só o add de nível das peças.
       const max = maximoDaGema(def);
       if (!def || g.nivel >= max) continue;
