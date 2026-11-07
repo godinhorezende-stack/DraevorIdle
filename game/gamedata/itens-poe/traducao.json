@@ -14,6 +14,19 @@
   ],
   "regras": [
     {
+      "padrao": "^Habilidades de Feitiço Encaixadas são Ativadas por Efígie de Doedre quando convocadas$",
+      "efeitos": [
+        {
+          "stat": "efigie_maldicoes",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as Maldições Feitiço encaixadas valem como aura a até 3 casas das Efígies (o raio o PoE não publica); elas seguem conjuráveis à mão",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
+      "_nova": true
+    },
+    {
       "padrao": "^Ativa Manifesto dos Dervixes Dançarinos Nível \\{(\\d+)\\} na Fúria$",
       "efeitos": [
         {

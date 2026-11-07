@@ -97,6 +97,18 @@ export const FEITAS = Object.freeze({
   Pacify: { nome: 'Pacificar', nota: 'a maldição (10 s) pelo caminho de sempre; com 60% dela passados, o amaldiçoado não causa dano' },
   // Gula dos Elementos (o Sangue da Corrupção — Vaal: no jogo, a recarga no lugar das Almas): 5 s imune a Maldições e sem Dano Elemental sofrido
   Gluttony_of_Elements: { nome: 'Gula dos Elementos', recargaMs: 14000, nota: 'o Dano Elemental sofrido é anulado (o PoE: ele cura — o jogo não cura pelo dano); só você (sem os aliados); a recarga de 14 s é a Anulação do Ganho de Almas (as Vaal do jogo usam recarga)', usar: ({ hunt, agora }) => ganharBuff(hunt, 'gulaDosElementos', 5, agora) },
+  // Marca da Penitência (o Acusador Odioso concede): marca o alvo por 3 s; acertado, ele cria 2 Fantasmas Acorrentados HOSTIS a você (`mods-poe.aoAcertar` →
+  // `mobs/mecanicas.fantasmasDaPenitencia`); no PoE, a marca serve para as Almas Vaal e os abates — os Fantasmas não dão experiência nem loot
+  Penance_Mark: { nome: 'Marca da Penitência', nota: 'os Fantasmas Acorrentados são o Arqueiro Espectral do PoE (o ataque Físico à distância), com 130% da vida de um monstro normal da área e 90% do dano; a vida deles o PoB não publica', usar: ({ alvo, agora }) => {
+    if (!(alvo?.hp > 0)) return;
+    (alvo.estados ??= {}).marcaPenitencia = { ate: agora + 3000 };
+  } },
+  // Convocar Efígie de Doedre (a Pele da Doedre concede): uma Efígie por 10 s (até 3) onde está o alvo; enquanto dura, as Maldições Feitiço encaixadas na peça
+  // valem como aura nos monstros a até 3 casas dela (`acoes.efigiesDaDoedre`) — o raio o PoE não publica
+  Summon_Doedres_Effigy: { nome: 'Convocar Efígie de Doedre', nota: 'as Maldições encaixadas valem nos monstros a até 3 casas da Efígie (o raio o PoE não publica)', usar: ({ hunt, alvo, agora }) => {
+    const onde = alvo?.hp > 0 ? alvo : hunt.pos;
+    hunt.poeEfigies = [...(hunt.poeEfigies ?? []).filter((x) => x.ate > agora), { x: onde.x, y: onde.y, z: hunt.z ?? 0, ate: agora + 10_000 }].slice(-3);
+  } },
   // Exigência da Rainha (o Mandado de Atziri concede — "Ordem da Rainha"): alterna as Chamas do Julgamento e a Tormenta do Julgamento, no nível das linhas "Ordem da
   // Rainha pode Ativar … Nível N" da peça (sem a linha, o 20 do Mandado — a única fonte da habilidade)
   Queens_Demand: { nome: 'Exigência da Rainha', usar: ({ estado, hunt, alvo, eventos, af }) => {

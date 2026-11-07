@@ -1067,6 +1067,20 @@ export function tiqueDoGuardian(estado, hunt, agora = hunt?.ultimoTique ?? Date.
   confusaoDeFerro(estado, hunt, agora);
   dervixesDancantes(estado, hunt, af, agora);
   modsDoRaroNosLacaios(hunt, agora);
+  efigiesDaDoedre(estado, hunt);
+}
+/**
+ * (07/11, lote 17 das inertes — o PoB, SummonDoedresEffigy + SupportCursePillarTriggerCurses) as EFÍGIES DA DOEDRE: enquanto duram, as Maldições Feitiço encaixadas nas
+ * peças com "Habilidades de Feitiço Encaixadas são Ativadas por Efígie de Doedre" valem como aura nos monstros a até 3 casas delas (renovadas a cada tique, 1 s).
+ */
+function efigiesDaDoedre(estado, hunt) {
+  const relogio = hunt.clock ?? 0;
+  const efigies = (hunt.poeEfigies = (hunt.poeEfigies ?? []).filter((x) => x.ate > relogio));
+  if (!efigies.length) return;
+  for (const m of hunt.monstros ?? []) {
+    if (!(m.hp > 0) || m.dummy || !efigies.some((x) => x.z === (hunt.z ?? 0) && distanciaChebyshev(x, m) <= 3)) continue;
+    amaldicoarComAsEncaixadas(estado, hunt, m, 'efigie_maldicoes', relogio, 1000);
+  }
 }
 /**
  * (07/11, lote 17 das inertes — o PoB, ManifestDancingDervishes + UniqueAnimatedWeapon) O DERVIXE DANÇANTE: "Ativa Manifesto dos Dervixes Dançarinos Nível N na Fúria" —
@@ -13707,16 +13721,19 @@ ModsPoe.definirMaldicao((hunt, alvo, nome, nivel, semLimite, agora) => {
 // de sempre: 15 s, 5)
 ModsPoe.definirFantasmaDoCorpo((estado, hunt, nivel) => convocarFantasmas(estado, hunt, { fantasmaAoMatarPct: 100, fantasmaNivel: nivel }, [{ hp: 0 }], () => 0));
 // (07/11, lote 16 das inertes, a Marca da Submissão) as MALDIÇÕES ENCAIXADAS nas peças vestidas com o atributo `chave` (o "ao Acertar" delas), no nível de cada uma
-ModsPoe.definirMaldicaoEncaixada((estado, hunt, alvo, chave, agora) => {
+function amaldicoarComAsEncaixadas(estado, hunt, alvo, chave, agora, dur = null) {
   for (const peca of Object.values(estado.equipment ?? {})) {
     if (!(Number(peca?.poe?.af?.[chave]) > 0)) continue;
     for (const acao of Gemas.encaixadasNaPeca(peca, 'maldicao')) {
       const slug = POR_ID.get(acao)?.poeGema?.slug;
       const b = slug ? GemasPoe.buffNoNivel(slug, Gemas.efeitoNaSkill(estado, acao)?.nivel ?? 1) : null;
-      if (b?.efeitos?.length) Reforcos.amaldicoar(alvo, acao, b.efeitos, { agora, dur: b.dur || 6000, hunt });
+      if (b?.efeitos?.length) Reforcos.amaldicoar(alvo, acao, b.efeitos, { agora, dur: dur ?? (b.dur || 6000), hunt });
     }
   }
-});
+}
+ModsPoe.definirMaldicaoEncaixada((estado, hunt, alvo, chave, agora) => amaldicoarComAsEncaixadas(estado, hunt, alvo, chave, agora));
+// (07/11, lote 17 das inertes, a Marca da Penitência) os Fantasmas Acorrentados nascem pela mecânica dos monstros
+ModsPoe.definirFantasmasDaPenitencia((hunt, alvo, eventos) => Mecanicas.fantasmasDaPenitencia(hunt, alvo, eventos));
 // (lote 32, P038) A maldição sua que pegou: as Forças Profanadas renovam o Resfriamento e a Eletrização do inimigo (a ficha da caçada).
 Reforcos.definirAoAmaldicoar((hunt, bicho, agora) => ModsPoe.aoAmaldicoar(ModsPoe.fichaDa(hunt), bicho, agora));
 // (lote C4, dono 21/10) as maldições de dano sofrido no pulso do degenerativo das gemas (`Dot.recebidoNoPulso`)

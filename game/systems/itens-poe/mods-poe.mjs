@@ -30,6 +30,11 @@ export * from './condicoes-poe.mjs';
  * `dano`: o total do acerto; `fisico`: a parte Física. Devolve `{ atordoou, extra }` — `extra`: o dano dos empalamentos soltos (já tirado).
  */
 export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fogo = 0, crit = false, eventos = null, agora = hunt?.clock ?? 0, rng = Math.random, mover = null, elementos = [], personagem = null, habilidade = 'golpe', deTotem = false } = {}) {
+  // (07/11, lote 17 das inertes, a Marca da Penitência) o marcado, acertado (no máximo uma vez por segundo), cria os 2 Fantasmas Acorrentados
+  if (alvo?.estados?.marcaPenitencia?.ate > agora && agora >= (alvo.poePenitenciaEm ?? -Infinity)) {
+    alvo.poePenitenciaEm = agora + 1000;
+    fantasmasDaPenitencia?.(hunt, alvo, eventos ?? [], agora);
+  }
   const saida = { atordoou: false, extra: 0 };
   if (!ligado() || !alvo || alvo.dummy || !ficha?.afPoe) return saida;
   // (06/11, os Presentes do Céu: "Raridade de Itens Derrubados por Inimigos mortos com um Acerto Crítico" — o último acerto seu foi crítico? `hunt/combate.raridadeDoDrop`)
@@ -1038,6 +1043,10 @@ export function tiqueDosAspectos(estado, hunt, ficha, agora = hunt?.clock ?? 0) 
   }
 }
 definirTiqueDosAspectos(tiqueDosAspectos);
+/** (07/11, lote 17) os Fantasmas Acorrentados da Marca da Penitência (`acoes.mjs` registra — `mobs/mecanicas.fantasmasDaPenitencia`). */
+// eslint-disable-next-line no-var
+var fantasmasDaPenitencia;
+export function definirFantasmasDaPenitencia(fn) { fantasmasDaPenitencia = fn; }
 /** (07/11, lote 17) a repetição do ataque pelo Escolhido de Tawhoa (`acoes.mjs` registra — o disparo da habilidade usada, `ctx.acao`). */
 // eslint-disable-next-line no-var
 var repeticaoDoTawhoa;

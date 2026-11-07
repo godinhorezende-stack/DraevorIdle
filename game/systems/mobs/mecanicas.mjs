@@ -74,6 +74,36 @@ function casasLivres(hunt, x, y, quantas) {
   return casas;
 }
 
+/**
+ * (07/11, lote 17 das inertes — o PoB, PenanceMarkPhantasm) os 2 FANTASMAS ACORRENTADOS da Marca da Penitência: o inimigo marcado, acertado, cria dois monstros HOSTIS
+ * a você em volta dele (o PoB: o nível do monstro, 1,3 × a vida e 0,9 × o dano da tabela, uma magia de projétil Físico — no jogo, o Arqueiro Espectral do PoE, o
+ * monstro de ataque Físico à distância), sem experiência e sem loot, fora da conta da limpeza. A vida: 130% da média dos monstros normais vivos da área (sem eles, a do
+ * marcado ÷ 3). Devolve os criados.
+ */
+export const FANTASMA_ACORRENTADO = Object.freeze({ key: 'poe-spectral-bowman-12', nome: 'Fantasma Acorrentado', quantos: 2, vidaPct: 130, forca: 0.9 });
+export function fantasmasDaPenitencia(hunt, alvo, eventos = []) {
+  if (!hunt || !alvo || !BESTIARY[FANTASMA_ACORRENTADO.key]) return [];
+  const normais = hunt.monstros.filter((b) => b.hp > 0 && !b.dummy && !b.gerado && (b.raridade ?? 'normal') === 'normal');
+  const base = normais.length ? normais.reduce((t, b) => t + (b.maxHp ?? 0), 0) / normais.length : (alvo.maxHp ?? 0) / 3;
+  const novos = [];
+  for (const casa of casasLivres(hunt, alvo.x, alvo.y, FANTASMA_ACORRENTADO.quantos)) {
+    const f = criarMonstro({ key: FANTASMA_ACORRENTADO.key, x: casa.x, y: casa.y }, null);
+    if (!f) continue;
+    f.maxHp = f.hp = Math.max(1, Math.round((base * FANTASMA_ACORRENTADO.vidaPct) / 100));
+    f.forca = FANTASMA_ACORRENTADO.forca;
+    f.exp = 0;
+    f.loot = [];
+    f.gerado = true;
+    f.name = FANTASMA_ACORRENTADO.nome;
+    f.fantasmaAcorrentado = true;
+    delete f.spawn;
+    hunt.monstros.push(f);
+    novos.push(f);
+    eventos.push({ t: 'fx', id: 13, uid: f.uid, x: f.x, y: f.y });
+  }
+  return novos;
+}
+
 /** "Gerar": os mobs novos nascem em volta, NA MESMA instância, e entram na conta da limpeza. */
 function gerar(hunt, m, mec, eventos) {
   const key = mec.mesmaCriatura === false && mec.key ? mec.key : m.key;

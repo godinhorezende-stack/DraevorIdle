@@ -9836,6 +9836,12 @@
       "combate": true,
       "nome": "Os Dervixes morrem quando a Fúria termina",
       "efeito": "acoes.dervixesDancantes (07/11, lote 17)"
+    },
+    "efigie_maldicoes": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Maldições encaixadas ativadas pela Efígie de Doedre",
+      "efeito": "acoes.efigiesDaDoedre (07/11, lote 17)"
     }
   }
 }
