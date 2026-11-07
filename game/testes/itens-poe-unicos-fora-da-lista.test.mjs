@@ -79,7 +79,8 @@ test('a peça gerada: toda linha com efeito, lembrete ou inerte com a nota (nenh
   // (06/11, lote 6 das inertes — dono: "Continue resolvendo até dar zero nos itens": os Emissários passaram a valer; nos Pensamentos Agitados fica a
   // "Ativa Cascata da Tempestade", gema que o jogo não tem)
   // (aval do dono 07/11, lote 14 das inertes: a Cascata da Tempestade entrou no lote 13a como gema oculta — os Pensamentos Agitados saem da lista)
-  assert.deepEqual([...new Set(inertes)].sort(), ['Child_of_Violence', 'Replica_Forbidden_Shako']);
+  // (aval do dono 07/11, lote 19: os suportes pelo número do Réplica: Shako Proibido valem, aproximados — ele sai da lista)
+  assert.deepEqual([...new Set(inertes)].sort(), ['Child_of_Violence']);
 });
 
 test('as linhas novas da tradução: o Dano Físico que Congela, o "Não Pode Drenar ou Regenerar Mana" e a Velocidade enquanto Resfriado', { skip: SEM }, () => {
