@@ -1068,6 +1068,38 @@ export function tiqueDoGuardian(estado, hunt, agora = hunt?.ultimoTique ?? Date.
   dervixesDancantes(estado, hunt, af, agora);
   modsDoRaroNosLacaios(hunt, agora);
   efigiesDaDoedre(estado, hunt);
+  legadoDaRosa(estado, hunt, af);
+}
+/**
+ * (07/11, lote 19 das inertes — sem fonte, o dono: "Aproximar com números meus") o LEGADO DA ROSA: "Ganha 1 Lembrança ao gastar um total de N de escudo de energia e não
+ * tiver invocado nenhuma Memória do Criador" (o Escudo de Energia perdido conta), "Máximo de N Lembrança"; no máximo, a Lembrança toda vira a MEMÓRIA DO CRIADOR por 8 s,
+ * que usa a Devastação do Criador a cada 2 s (`HabilidadesDeItens` — Físico em 3 casas em volta de você, no nível da linha).
+ */
+const MEMORIA = Object.freeze({ duracaoMs: 8000 });
+function legadoDaRosa(estado, hunt, af) {
+  const nivel = Number(af.memoria_do_criador) || 0;
+  const porEs = Number(af.lembranca_por_es) || 0;
+  const relogio = hunt.clock ?? 0;
+  const es = estado.es ?? 0;
+  const antes = hunt.poeLembrancaEs ?? es;
+  hunt.poeLembrancaEs = es;
+  if (!(nivel > 0) || !(porEs > 0)) return;
+  const viva = (hunt.poeMemoria?.ate ?? 0) > relogio;
+  if (viva) {
+    const ficha = Ficha.combate(estado);
+    const nivelDaDevastacao = Number(af.memoria_devastacao) || nivel;
+    HabilidadesDeItens.usar(estado, hunt, 'Creators_Devastation', { id: 'memoria-do-criador', nivel: nivelDaDevastacao, agora: relogio, eventos: hunt.poeEventosDoTempo ??= [], resistir: (m, tipo, v) => resistido(hunt, m, tipo, v, ficha) });
+    // ("e não tiver invocado nenhuma Memória do Criador": com ela viva, a Lembrança não sobe)
+    if (Number(af.lembranca_sem_memoria) > 0) return;
+  }
+  const maximo = Math.max(1, Number(af.lembranca_max) || 10);
+  const l = (hunt.poeLembranca ??= { n: 0, gasto: 0 });
+  l.gasto += Math.max(0, antes - es);
+  while (l.gasto >= porEs && l.n < maximo) { l.gasto -= porEs; l.n++; }
+  if (l.n >= maximo && !viva) {
+    hunt.poeLembranca = { n: 0, gasto: 0 };
+    hunt.poeMemoria = { ate: relogio + MEMORIA.duracaoMs };
+  }
 }
 /**
  * (07/11, lote 17 das inertes — o PoB, SummonDoedresEffigy + SupportCursePillarTriggerCurses) as EFÍGIES DA DOEDRE: enquanto duram, as Maldições Feitiço encaixadas nas

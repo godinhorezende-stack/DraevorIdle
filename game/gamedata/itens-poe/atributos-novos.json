@@ -9842,6 +9842,42 @@
       "combate": true,
       "nome": "Maldições encaixadas ativadas pela Efígie de Doedre",
       "efeito": "acoes.efigiesDaDoedre (07/11, lote 17)"
+    },
+    "adivinhacao_frasco_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Bônus de Adivinhação aleatório ao usar o frasco (s)",
+      "efeito": "frascos.REGRAS_DO_FRASCO (07/11, lote 19)"
+    },
+    "memoria_do_criador": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Invocar Memória do Criador (nível)",
+      "efeito": "acoes.legadoDaRosa (07/11, lote 19)"
+    },
+    "memoria_devastacao": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Devastação do Criador (nível)",
+      "efeito": "acoes.legadoDaRosa (07/11, lote 19)"
+    },
+    "lembranca_por_es": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Escudo de Energia gasto por Lembrança",
+      "efeito": "acoes.legadoDaRosa (07/11, lote 19)"
+    },
+    "lembranca_sem_memoria": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Lembrança só sem Memória do Criador",
+      "efeito": "acoes.legadoDaRosa (07/11, lote 19)"
+    },
+    "lembranca_max": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Máximo de Lembrança",
+      "efeito": "acoes.legadoDaRosa (07/11, lote 19)"
     }
   }
 }

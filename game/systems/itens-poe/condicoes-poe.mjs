@@ -1323,6 +1323,13 @@ export const BUFFS = {
   juramentoDoZelote: { nome: 'Juramento do Zelote', af: {} },
   // (a keystone do PoE: o dreno de vida corpo a corpo é instantâneo e a vida só se recupera pelo dreno — `Ficha.aplicarLeech`, `vidaSoPeloDreno`)
   pactoVaal: { nome: 'Pacto Vaal', af: { roubo_vida_instantaneo_corpo: 1, sem_recuperar_vida_fora_dreno: 1 } },
+  // (07/11, lote 19 das inertes — sem fonte, o dono: "Aproximar com números meus") a DÁDIVA DOS PACTOS (o Comparsa Profano: "Habilidades de pacto concedem Dádivas em vez
+  // de Aflições" — o jogo não tem a Aflição: o uso do Pacto dá a Dádiva, 20% de Dano aumentado por 4 s) e os BÔNUS DE ADIVINHAÇÃO (o Vinho do Profeta: um ao acaso)
+  dadivaDoPacto: { nome: 'Dádiva do Pacto', af: { dmg_inc: 20 } },
+  adivinhacaoDano: { nome: 'Adivinhação: Dano', af: { dmg_inc: 30 } },
+  adivinhacaoVelocidade: { nome: 'Adivinhação: Velocidade', af: { atk_speed: 15, cast_speed: 15 } },
+  adivinhacaoResistencia: { nome: 'Adivinhação: Resistências', af: { fire_res: 20, ice_res: 20, energy_res: 20 } },
+  adivinhacaoMovimento: { nome: 'Adivinhação: Movimento', af: { move_speed: 20 } },
   // (a keystone do PoE: o multiplicador degenerativo das afecções é o de crítico, o crítico não dá dano extra, sem crítico não há afecção)
   agoniaPerfeita: { nome: 'Agonia Perfeita', af: { agonia_perfeita: 1, sem_afeccao_sem_critico: 1, critico_sem_dano_extra: 1 } },
   presencaEnlouquecedora: { nome: 'Presença Enlouquecedora', af: { dmg_inc: 10 } },
@@ -2474,7 +2481,7 @@ var acaoPeloNome;
 export function definirAcaoPeloNome(fn) { acaoPeloNome = fn; }
 // (lote 56: + `aura_unica:<gema>` — a Visão Sublime, "Habilidades de Aura diferentes de <Aura> são Desabilitadas" — `acoes.auraPermitida`)
 // (+ lote 56: `fuga_impossivel:<pedra>` e `proibida_chama:<notável>` / `proibida_carne:<notável>` — `passivas/arvore`)
-const DINAMICOS = /^(sempre|efeito_buff|concede|suporte_local|suporte_peitoral|keystone|aura_unica|fuga_impossivel|proibida_chama|proibida_carne):[\w-]+$/;
+const DINAMICOS = /^(sempre|efeito_buff|concede|suporte_local|suporte_peitoral|suporte_elmo|keystone|aura_unica|fuga_impossivel|proibida_chama|proibida_carne):[\w-]+$/;
 /** As FAMÍLIAS de atributo com parâmetro que o código monta pelo nome (o parâmetro tem de ser um dos que ele conhece). */
 const ELS_P = '(physical|fire|ice|energy|chaos)';
 const TIPOS_DE_LACAIO = '(sentinela|zumbi|espectro|golem|esqueleto|totem|espirito|fantasma|reliquia|sagrado|arma|aranha|arqueiro|balista|arauto|qualquer)';

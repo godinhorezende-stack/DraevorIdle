@@ -393,7 +393,7 @@ export function extrasDaGemaPoe(estado, peca, def, indice = null, soquetes = nul
   const s = indice != null && peca ? soquetes ?? soquetesDe(peca) : null;
   const doEncaixe = ENCAIXE_DA_COR[s?.cores?.[indice]];
   // (lote 57: + `naoExcepcional` — o suporte que não é Excepcional: "+1 ao nível de todas as gemas de suporte não excepcionais", o Limitado pelo Destino)
-  const tags = new Set([...ModsPoe.tagsDoPoe(def?.tags ?? []), def?.tipo === 'support' ? 'suporte' : 'habilidade', ...(def?.tipo === 'support' && !ehExcepcional(def) ? ['naoExcepcional'] : []), ...(cor ? [cor] : []), ...(doEncaixe ? [doEncaixe] : []), ...(def?.nome ? [`gema:${ModsPoe.slugDoNome(def.nome)}`] : [])]);
+  const tags = new Set([...ModsPoe.tagsDoPoe(def?.tags ?? []), def?.tipo === 'support' ? 'suporte' : 'habilidade', ...(def?.tipo === 'support' && !ehExcepcional(def) ? ['naoExcepcional'] : []), ...(cor ? [cor] : []), ...(doEncaixe ? [doEncaixe] : []), ...(def?.nome ? [`gema:${ModsPoe.slugDoNome(def.nome)}`] : []), ...numerosDaGema(def).map((k) => `gema:${k}`)]);
   // A ESCALA (antes ignorada — "+1 ao Nível das Gemas de Habilidade Encaixadas por cada 25 Níveis do Jogador" dava sempre +1): o nível do
   // personagem, as gemas encaixadas na peça ("-1 … por Gema Encaixada") e as outras escalas do PoE; com o teto.
   const fator = (escala) => {
@@ -697,6 +697,12 @@ export function ativasDoMesmoGrupo(estado, acao) {
 const APELIDOS_DAS_GEMAS = Object.freeze({ 'teleporta-relampejante': 'Lightning_Warp', 'clamor-tolerante': 'Enduring_Cry', mangra: 'Blight', atirador: 'Snipe' });
 /** As gemas pelo NOME (`slugDoNome`): as ativas e os suportes — o que as peças do PoE nomeiam ("Concede a Habilidade X"). */
 let PELO_NOME = null;
+const INDICES_DE_GEMA = 300;
+/** Os números com que o índice `n` chama a gema `def` (a posição dela na lista pelo slug, em volta — `pelosNomes`). */
+function numerosDaGema(def) {
+  const n = pelosNomes();
+  return [...(n.porNumero ??= new Map([...n.ativas, ...n.suportes].filter(([k]) => /^\d+$/.test(k)).reduce((m, [k, d]) => m.set(d, [...(m.get(d) ?? []), k]), new Map()))).get(def) ?? []];
+}
 function pelosNomes() {
   if (PELO_NOME && PELO_NOME.n === DEFS.size) return PELO_NOME;
   PELO_NOME = { n: DEFS.size, ativas: new Map(), suportes: new Map() };
@@ -710,6 +716,14 @@ function pelosNomes() {
   // "Clamor Tolerante"; a Alelopatia, a Infestação de "Mangra"; o Assailum, o Atirar de "Atirador")
   const porSlug = new Map([...DEFS.values()].filter((d) => d.poe?.slug).map((d) => [d.poe.slug, d]));
   for (const [apelido, slug] of Object.entries(APELIDOS_DAS_GEMAS)) if (porSlug.has(slug) && !PELO_NOME.ativas.has(apelido)) PELO_NOME.ativas.set(apelido, porSlug.get(slug));
+  // (07/11, lote 19 das inertes — o dono: "Aproximar com números meus") as gemas pelo NÚMERO: o poedb traz só o índice da gema sorteada (o Shako Proibido: "Suportadas
+  // por (1 — 172)"; a Pérola de Tsoatha; a Réplica do Voo do Dente Dracônico: "+3 ao Nível de todas as Gemas de N") — o N vira a N-ésima gema da lista pelo slug (as que
+  // caem, sem as ocultas), em volta. Sem fonte: a lista do PoE não está no poedb.
+  const ordem = (tipo) => [...DEFS.values()].filter((d) => d.poe?.slug && d.tipo === tipo && !d.soDoItem).sort((x, y) => x.poe.slug.localeCompare(y.poe.slug));
+  for (const [tipo, mapa] of [['support', PELO_NOME.suportes], ['ativa', PELO_NOME.ativas]]) {
+    const lista = ordem(tipo);
+    for (let i = 1; lista.length && i <= INDICES_DE_GEMA; i++) if (!mapa.has(String(i))) mapa.set(String(i), lista[(i - 1) % lista.length]);
+  }
   return PELO_NOME;
 }
 export const ativaPeloNome = (slug) => pelosNomes().ativas.get(slug) ?? null;
@@ -746,6 +760,15 @@ function dasPecas(estado, saida) {
     for (const a of saida.values()) {
       if (a.onde?.slot !== slot) continue;
       for (const [d, nivel] of suportes) if (compativel(d.suporte, a.def.tags) && !a.supports.some((sp) => sp.def.id === d.id)) a.supports.push({ def: d, nivel: Math.round(nivel), raridade: raridadeDaGema(null), qualidade: 0 });
+    }
+  }
+  // (07/11, lote 19 das inertes, a Pérola de Tsoatha: "Gemas encaixadas no seu elmo recebem reforço de X nível N" — `suporte_elmo:<nome>` nas peças vestidas: as ativas
+  // encaixadas no elmo)
+  const doElmo = Object.values(estado?.equipment ?? {}).flatMap((p) => Object.entries(p?.poe?.af ?? {})).map(([k, v]) => [/^suporte_elmo:(.+)$/.exec(k)?.[1], v]).filter(([n, v]) => n && v > 0).map(([n, v]) => [suportePeloNome(n), v]).filter(([d]) => d);
+  if (doElmo.length) {
+    for (const a of saida.values()) {
+      if (a.onde?.slot !== 'head') continue;
+      for (const [d, nivel] of doElmo) if (compativel(d.suporte, a.def.tags) && !a.supports.some((sp) => sp.def.id === d.id)) a.supports.push({ def: d, nivel: Math.round(nivel), raridade: raridadeDaGema(null), qualidade: 0 });
     }
   }
   // (PoE, o Chefe Tribal — Tukohama: "Habilidades do Peitoral Equipado são Suportadas por X Nível N" — `suporte_peitoral:<nome>` na árvore: as

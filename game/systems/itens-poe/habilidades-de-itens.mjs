@@ -109,6 +109,25 @@ export const FEITAS = Object.freeze({
     const onde = alvo?.hp > 0 ? alvo : hunt.pos;
     hunt.poeEfigies = [...(hunt.poeEfigies ?? []).filter((x) => x.ate > agora), { x: onde.x, y: onde.y, z: hunt.z ?? 0, ate: agora + 10_000 }].slice(-3);
   } },
+  // (07/11, lote 19 — o dono: "Aproximar com números meus"; sem página no poedb nem dado no PoB)
+  // Estátua da Petrificação (o Olhar da Medusa concede): os monstros a até 3 casas ficam Petrificados (o Congelamento do jogo) por 4 s; recarga de 8 s
+  Petrification_Statue: { nome: 'Estátua da Petrificação', recargaMs: 8000, nota: 'sem fonte: Petrifica (o Congelamento do jogo) os monstros a até 3 casas por 4 s, recarga de 8 s', usar: ({ hunt, agora }) => {
+    for (const m of perto(hunt, 3)) if (!m.imuneCongelamento) (m.estados ??= {}).congelado = { ate: Math.max(m.estados.congelado?.ate ?? 0, agora + 4000) };
+  } },
+  // Onda de Choque Sangrenta (o Desmembrador, no Acerto Corpo a Corpo com Força bastante): uma onda Física de 2 casas em volta do alvo, 30 a 45 por nível; recarga de 0,5 s
+  Bloody_Shockwave: { nome: 'Onda de Choque Sangrenta', recargaMs: 500, nota: 'sem fonte: onda Física de 2 casas em volta do alvo, 30 a 45 de dano por nível, recarga de 0,5 s', usar: ({ hunt, alvo, nivel, eventos, resistir }) => {
+    const c = alvo?.hp > 0 ? alvo : hunt.pos;
+    golpear(hunt, (hunt.monstros ?? []).filter((m) => m.hp > 0 && !m.dummy && (m.z == null || m.z === (hunt.z ?? 0)) && dist(m, c) <= 2), { min: 30 * nivel, max: 45 * nivel, tipo: 'physical' }, eventos, resistir, '#b71c1c');
+  } },
+  // Convocar Anomalia Volátil (a Marca do Criador, ao Matar): a anomalia explode — Fogo em 2 casas em volta de onde estava o morto, 40 a 60 por nível; recarga de 0,5 s
+  Summon_Volatile_Anomaly: { nome: 'Convocar Anomalia Volátil', recargaMs: 500, nota: 'sem fonte: a anomalia explode na hora — Fogo em 2 casas em volta do alvo, 40 a 60 de dano por nível', usar: ({ hunt, alvo, nivel, eventos, resistir }) => {
+    const c = alvo ?? hunt.pos;
+    golpear(hunt, (hunt.monstros ?? []).filter((m) => m.hp > 0 && !m.dummy && (m.z == null || m.z === (hunt.z ?? 0)) && dist(m, c) <= 2), { min: 40 * nivel, max: 60 * nivel, tipo: 'fire' }, eventos, resistir, '#ff6f00');
+  } },
+  // Devastação do Criador (o Legado da Rosa — a Memória do Criador a usa a cada 2 s enquanto dura): Físico em 3 casas em volta de você, 50 a 75 por nível
+  Creators_Devastation: { nome: 'Devastação do Criador', recargaMs: 2000, nota: 'sem fonte: Físico em 3 casas em volta de você, 50 a 75 de dano por nível, a cada 2 s da Memória', usar: ({ hunt, nivel, eventos, resistir }) => {
+    golpear(hunt, perto(hunt, 3), { min: 50 * nivel, max: 75 * nivel, tipo: 'physical' }, eventos, resistir, '#e0e0e0');
+  } },
   // Exigência da Rainha (o Mandado de Atziri concede — "Ordem da Rainha"): alterna as Chamas do Julgamento e a Tormenta do Julgamento, no nível das linhas "Ordem da
   // Rainha pode Ativar … Nível N" da peça (sem a linha, o 20 do Mandado — a única fonte da habilidade)
   Queens_Demand: { nome: 'Exigência da Rainha', usar: ({ estado, hunt, alvo, eventos, af }) => {

@@ -14,6 +14,179 @@
   ],
   "regras": [
     {
+      "padrao": "^Ganha \\{(\\d+)\\} Lembrança ao gastar um total de \\{(\\d+)\\} de escudo de energia(?: \\/)? e não tiver invocado nenhuma Memória do Criador$",
+      "efeitos": [
+        {
+          "stat": "lembranca_por_es",
+          "valor": "{2}"
+        },
+        {
+          "stat": "lembranca_sem_memoria",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Escudo de Energia perdido conta como gasto",
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede Invocar Memória do Criador nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "memoria_do_criador",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem fonte: no máximo de Lembrança, a Memória do Criador dura 8 s e usa a Devastação do Criador a cada 2 s (Físico em 3 casas em volta de você, 50 a 75 por nível)",
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede Devastação do Criador nível \\{(\\d+)\\}, usada pela Memória do Criador$",
+      "efeitos": [
+        {
+          "stat": "memoria_devastacao",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem fonte: no máximo de Lembrança, a Memória do Criador dura 8 s e usa a Devastação do Criador a cada 2 s (Físico em 3 casas em volta de você, 50 a 75 por nível)",
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} Lembrança ao gastar um total de \\{(\\d+)\\} de escudo de energia$",
+      "efeitos": [
+        {
+          "stat": "lembranca_por_es",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Escudo de Energia perdido conta como gasto",
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^e não tiver invocado nenhuma Memória do Criador$",
+      "efeitos": [
+        {
+          "stat": "lembranca_sem_memoria",
+          "valor": "1"
+        }
+      ],
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Máximo de \\{(\\d+)\\} Lembrança$",
+      "efeitos": [
+        {
+          "stat": "lembranca_max",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Ativar Convocar Anomalia Volátil Nível \\{(\\d+)\\} ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:gatilho:convocar-anomalia-volatil:{V1}",
+          "valor": "{2}"
+        }
+      ],
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "sem fonte: a anomalia explode na hora — Fogo em 2 casas em volta do alvo, 40 a 60 de dano por nível"
+    },
+    {
+      "padrao": "^Gemas Encaixadas são Suportadas por \\{(\\d+)\\} Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "suporte_local:{V1}",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem fonte: o poedb traz só o índice da gema sorteada — o N é a N-ésima gema da lista do jogo pelo slug (em volta)",
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Gemas encaixadas no seu elmo recebem reforço de \\{(\\d+)\\} nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "suporte_elmo:{V1}",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem fonte: o poedb traz só o índice da gema sorteada — o N é a N-ésima gema da lista do jogo pelo slug (em volta)",
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de todas as Gemas de \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "gem_level@gema:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem fonte: o poedb traz só o índice da gema sorteada — o N é a N-ésima gema da lista do jogo pelo slug (em volta)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Onda de Choque Sangrenta Nível \\{(\\d+)\\} no Acerto Corpo a Corpo caso tenha ao menos \\{(\\d+)\\} de Força$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:gatilho:onda-de-choque-sangrenta@corpo+atrMin:str:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "sem fonte: onda Física de 2 casas em volta do alvo, 30 a 45 de dano por nível, recarga de 0,5 s"
+    },
+    {
+      "padrao": "^Habilidades de pacto concedem Dádivas em vez de Aflições$",
+      "efeitos": [
+        {
+          "stat": "ev:usarHabilidade:buff:dadivaDoPacto@pacto",
+          "valor": "4"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem fonte: o jogo não tem a Aflição dos Pactos — o uso de um Pacto dá a Dádiva, 20% de Dano aumentado por 4 s",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ao usar, concede um bônus de Adivinhação aleatório por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "adivinhacao_frasco_s",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem fonte: um de quatro ao acaso — 30% de Dano, 15% de Velocidade de Ataque e de Conjuração, +20% às Resistências Elementais ou 20% de Velocidade de Movimento",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true
+    },
+    {
       "padrao": "^Habilidades de Feitiço Encaixadas são Ativadas por Efígie de Doedre quando convocadas$",
       "efeitos": [
         {
@@ -48300,19 +48473,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Habilidades de pacto concedem Dádivas em vez de Aflições$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "a Aflição dos Pactos não tem dado no PoB nem no poedb (o jogo não a tem), nem a Dádiva",
-      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^\\{(\\d+)\\}% de chance de causar Dano Triplicado enquanto tiver ao menos \\{(\\d+)\\} de Força$",
       "efeitos": [
         {
@@ -50346,19 +50506,6 @@
       "_nova": true
     },
     {
-      "padrao": "^\\+\\{(\\d+)\\} ao Nível de todas as Gemas de \\{(\\d+)\\}$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o texto do poedb veio sem o nome da gema (só o número)",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^\\{(\\d+)\\}% de chance de perder uma Carga de Poder ao ganhar Elusivo$",
       "efeitos": [
         {
@@ -50904,19 +51051,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Ao usar, concede um bônus de Adivinhação aleatório por \\{(\\d+)\\} segundos$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem os bônus de Adivinhação",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^\\{(\\d+)\\}% de chance de atualizar a Duração do Incêndio no Acerto com Armas Corpo a Corpo$",
       "efeitos": [
         {
@@ -51314,19 +51448,6 @@
       ],
       "estado": "lembrete",
       "nota": "o número interno da linha de cima",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ativa Onda de Choque Sangrenta Nível \\{(\\d+)\\} no Acerto Corpo a Corpo caso tenha ao menos \\{(\\d+)\\} de Força$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Onda de Choque Sangrenta",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
       "_nova": true
     },

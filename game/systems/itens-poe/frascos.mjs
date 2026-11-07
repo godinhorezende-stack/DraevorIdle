@@ -57,10 +57,14 @@ export function cinto(estado) {
 /** O texto de um mod com os valores no lugar de `{n}`. */
 const preencher = (modelo, valores) => String(modelo ?? '').replace(/\{(\d+)\}/g, (_, i) => String(valores?.[Number(i)] ?? '?'));
 
+const ADIVINHACOES = Object.freeze(['adivinhacaoDano', 'adivinhacaoVelocidade', 'adivinhacaoResistencia', 'adivinhacaoMovimento']);
 /** As regras das linhas que mexem no FRASCO (e não no personagem). `p` = os parâmetros sendo montados; `v` = o número da linha. */
 const REGRAS_DO_FRASCO = [
   // (07/11, lote 14, o Colhedor de Almas) "Ganha Almas Vaal igual às Cargas Consumidas ao usar" (as Almas viram a recarga das Vaal — `acoes.ganharAlmasVaal`)
   [/^Ganha Almas Vaal igual às Cargas Consumidas ao usar$/, (p) => (p.almasPorCarga = true)],
+  // (07/11, lote 19 das inertes — sem fonte, o Vinho do Profeta) "Ao usar, concede um bônus de Adivinhação aleatório por N segundos": um de quatro (Dano, Velocidade,
+  // Resistências, Movimento — `condicoes-poe.BUFFS.adivinhacao*`), sorteado no uso
+  [/^Ao usar, concede um bônus de Adivinhação aleatório por \{\d+\} segundos$/, (p, v) => (p.adivinhacaoS = v)],
   // (06/11, lote 11 das inertes, a Fé Engarrafada) "Solo Sagrado criado por este Frasco possui Raio Triplicado" e "Solo Sagrado criado durante o Efeito aplica Dano sofrido
   // aumentado em X% aos Inimigos" (os monstros nele — `solos-seus.tique`)
   [/^Solo Sagrado criado por este Frasco possui Raio Triplicado$/, (p) => (p.soloRaioMult = 3)],
@@ -275,6 +279,9 @@ export function parametros(peca, afDoPersonagem = null) {
     ...(p.restauraSalvaguarda ? { restauraSalvaguarda: true } : {}),
     ...(p.saiNaQuebra ? { saiNaQuebra: true } : {}),
     ...(p.cargasAoConsumirCadaver ? { cargasAoConsumirCadaver: p.cargasAoConsumirCadaver } : {}),
+    // (07/11, lotes 14 e 19 das inertes: o Colhedor de Almas e o Vinho do Profeta)
+    ...(p.almasPorCarga ? { almasPorCarga: true } : {}),
+    ...(p.adivinhacaoS > 0 ? { adivinhacaoS: p.adivinhacaoS } : {}),
     af,
     efeitoDaBase: daBase?.texto ?? null,
     linhas,
@@ -389,6 +396,9 @@ export function usar(estado, v, eventos = null, quem = null) {
   // (ciclo 7, lote F) "X% de chance de Frascos usados por você não consumirem Cargas".
   if (!(Math.random() * 100 < (Number(afp.frasco_sem_consumo) || 0))) peca.poe.cargas = cargas - par.cargasPorUso;
   if (par.almasPorCarga) ganharAlmaVaal(estado, hunt, par.cargasPorUso);
+  // (o Vinho do Profeta: a linha do frasco — `adivinhacaoS` — ou o atributo traduzido na peça, `adivinhacao_frasco_s`)
+  const adivinhacaoS = par.adivinhacaoS || Number(peca.poe?.af?.adivinhacao_frasco_s) || 0;
+  if (adivinhacaoS > 0) ganharBuff(hunt, ADIVINHACOES[Math.floor(Math.random() * ADIVINHACOES.length)], adivinhacaoS, hunt.clock ?? 0);
   aoUsarOFrasco(estado, par, eventos, quem, afp);
   // (02/11) "Restaura Proteção ao usar" (o Frasco de Ferro): a Salvaguarda volta inteira
   if (par.restauraSalvaguarda) Salvaguarda.restaurar(estado);

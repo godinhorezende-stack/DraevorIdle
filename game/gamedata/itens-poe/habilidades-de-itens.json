@@ -4508,6 +4508,78 @@
     ]
    ],
    "soDoItem": true
+  },
+  {
+   "slug": "Bloody_Shockwave",
+   "nome": "Onda de Choque Sangrenta",
+   "en": "Bloody Shockwave",
+   "cor": "vermelha",
+   "nivelReq": 1,
+   "tags": [
+    "Área",
+    "Físico",
+    "Ativação",
+    "Nova"
+   ],
+   "tipos": [
+    "Area",
+    "Physical",
+    "Triggered",
+    "Nova"
+   ],
+   "props": [
+    "Nível: 20"
+   ],
+   "mods": [],
+   "qualidade": [],
+   "desc": "O acerto corpo a corpo libera uma onda de choque sangrenta.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "semFonte": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Summon_Volatile_Anomaly",
+   "nome": "Convocar Anomalia Volátil",
+   "en": "Summon Volatile Anomaly",
+   "cor": "azul",
+   "nivelReq": 1,
+   "tags": [
+    "Magia",
+    "Área",
+    "Fogo",
+    "Ativação"
+   ],
+   "tipos": [
+    "Spell",
+    "Area",
+    "Fire",
+    "Triggered"
+   ],
+   "props": [
+    "Nível: 20"
+   ],
+   "mods": [],
+   "qualidade": [],
+   "desc": "Uma anomalia instável que explode.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "semFonte": true,
+   "soDoItem": true
   }
  ]
 }
