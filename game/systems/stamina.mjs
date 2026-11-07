@@ -1,59 +1,19 @@
-// Stamina — as regras que o client original descreve (`painelStamina`,
-// hud.mjs) e os números do personagem real capturado:
+// A STAMINA SAIU (o dono, 07/11/2026: "tire a stamina"). O que ficou dela:
 //
-// - em MINUTOS, teto 2520 (42h — `maxStamina`);
-// - caçando: -1 min por minuto de caçada (a caçada offline também gasta);
-// - parado na cidade (ou deslogado fora de caçada): +1 min a cada 30s
-//   (`staminaRegen.segundosPorMinuto: 30`, o do personagem real — "Carregando
-//   na cidade");
-// - na experiência ela MULTIPLICA (Player.getFinalBonusStamina, o comentário do
-//   client): acima de 39h (2340) com premium x1,5; 14h (840) ou menos x0,5;
-//   esgotada, x0,5 também;
-// - Stamina Extension (item 36725): +20h (1200 min), até o teto.
-export const TETO = 2520;
-const SEGUNDOS_POR_MINUTO = 30;
+// - a caça offline tem um limite de horas no lugar dela — 4 h free, 12 h VIP, contadas da saída; bateu, o personagem volta para a
+//   cidade, e o login zera o relógio (`database/caca-offline.limiteDoOffline`, `cacadas.avancarAusencia`);
+// - a exp do VIP (premium) fica com o x1,5 fixo que a stamina cheia dava (o dono: "VIP fica com o x1,5 fixo"); o free, x1;
+// - a Stamina Extension (item 36725) fica com quem tem, sem uso (o dono: "Fica, sem uso" — não se apagam itens dos jogadores).
 export const STAMINA_EXTENSION = 36725;
+/** O multiplicador de exp do VIP (o que a stamina acima de 39 h dava com premium). */
+export const FATOR_DO_VIP = 1.5;
 
-export function garantir(estado) {
-  if (typeof estado.stamina !== 'number') estado.stamina = TETO;
-  return estado.stamina;
-}
-
-/** Caçando: -1 min por minuto. */
-export function gastar(estado, ms) {
-  if (!(ms > 0)) return;
-  estado.stamina = Math.max(0, garantir(estado) - ms / 60_000);
-}
-
-/** Parado fora de caçada: +1 min a cada 30s. */
-export function recuperar(estado, ms) {
-  if (!(ms > 0)) return;
-  estado.stamina = Math.min(TETO, garantir(estado) + ms / 1000 / SEGUNDOS_POR_MINUTO);
-}
-
-/** O multiplicador de exp da stamina agora. */
+/** O multiplicador de exp: x1,5 com premium, x1 sem. */
 export function fatorDeExp(estado) {
-  const s = garantir(estado);
-  const premium = (estado.premiumAte ?? 0) > Date.now();
-  if (s > 2340 && premium) return 1.5;
-  if (s <= 840) return 0.5;
-  return 1;
+  return (estado?.premiumAte ?? 0) > Date.now() ? FATOR_DO_VIP : 1;
 }
 
-/** Stamina Extension: +20h até o teto. */
-export function usarExtension(estado) {
-  if (garantir(estado) >= TETO) return { ok: false, erro: 'Sua stamina já está cheia.' };
-  estado.stamina = Math.min(TETO, estado.stamina + 1200);
-  return { ok: true, notice: '+20 horas de stamina.' };
-}
-
-/** Os campos que o client lê: `stamina`, `maxStamina`, `staminaRegen`. */
-export function paraCliente(estado) {
-  const s = garantir(estado);
-  const naCidade = !estado.hunt;
-  return {
-    stamina: s,
-    maxStamina: TETO,
-    staminaRegen: { ativo: naCidade, cheia: s >= TETO, onde: 'na cidade', segundosPorMinuto: SEGUNDOS_POR_MINUTO },
-  };
+/** A Stamina Extension: sem uso (a stamina saiu do jogo). */
+export function usarExtension() {
+  return { ok: false, erro: 'A stamina não existe mais: a Stamina Extension ficou sem uso.' };
 }

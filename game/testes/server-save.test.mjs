@@ -254,11 +254,14 @@ test('F1. a rotina NÃO escreve no estado de quem caça offline: o JSON fica byt
   }
 });
 
-test('F2. o tempo e o limite de 12 h valem exatamente: a coluna "até" é saída + 12 h (ou o fim da stamina), antes e depois do save', async () => {
+// (07/11/2026, aval do dono: "Pode reescrever") a stamina saiu: o limite da caça offline é 4 h free, 12 h VIP (o premium na saída).
+test('F2. o tempo e o limite da caça offline valem exatamente: a coluna "até" é saída + 12 h (VIP) ou + 4 h (free), antes e depois do save', async () => {
   const saida = Date.now() - 5 * HORA;
-  const q = await ausente({ saida });
+  const q = await ausente({ saida, extra: { premiumAte: Date.now() + 48 * HORA } });
   const antes = await linha(q.id);
-  assert.equal(Number(antes.ate), Math.min(saida + 12 * HORA, saida + 1e9)); // stamina cheia: o teto de 12 h manda
+  assert.equal(Number(antes.ate), saida + 12 * HORA);
+  const free = await ausente({ saida: Date.now() - 2 * HORA });
+  assert.equal(Number((await linha(free.id)).ate) - Number((await linha(free.id)).desde), 4 * HORA);
   await SS.iniciar({ relogio: relogioFalso(T0), logger: quieto, anunciar: mensagens().anunciar });
   await SS.executarAgora();
   assert.equal(Number((await linha(q.id)).ate), saida + 12 * HORA);

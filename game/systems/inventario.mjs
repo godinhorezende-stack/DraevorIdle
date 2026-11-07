@@ -653,16 +653,8 @@ export function usar(estado, { id, onde }) {
     if (--itens[i].count <= 0) itens.splice(i, 1);
     return r;
   }
-  // Stamina Extension: +20h de stamina, até o teto de 42h.
-  if (id === Stamina.STAMINA_EXTENSION) {
-    const itens = lista(estado, onde);
-    const i = acharPilha(itens, id, null);
-    if (i < 0) return { ok: false, erro: 'Você não tem isso.' };
-    const r = Stamina.usarExtension(estado);
-    if (!r.ok) return r;
-    if (--itens[i].count <= 0) itens.splice(i, 1);
-    return r;
-  }
+  // Stamina Extension: sem uso (a stamina saiu do jogo, 07/11/2026) — o item fica com quem tem.
+  if (id === Stamina.STAMINA_EXTENSION) return Stamina.usarExtension();
   // Exp Potion: liga (ou estende) o boost dela por 1 hora de caçada.
   const boost = Boosts.POCOES_DE_EXP[id];
   if (boost) {

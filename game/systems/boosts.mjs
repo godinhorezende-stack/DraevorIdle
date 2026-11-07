@@ -43,9 +43,9 @@ export function consumir(estado, ms) {
 export function expDoBicho(estado, base) {
   const boosts = garantir(estado).reduce((a, b) => a + b.percent, 0) + (BuffPower.fonteDeExp(estado)?.percent ?? 0) + Afixos.de(estado, 'exp_bonus');
   const premium = (estado.premiumAte ?? 0) > Date.now() ? 10 : 0;
-  // A stamina não soma: MULTIPLICA o resultado (x1,5 / x1 / x0,5). O estágio também.
+  // O VIP não soma: MULTIPLICA o resultado (x1,5 — o que a stamina cheia dava; a stamina saiu em 07/11/2026). O estágio também.
   // Com o PoE ligado vale a curva do PoE (`regras.expForLevel`): o bônus de level baixo e os estágios — que existem para acertar a curva do
-  // Draevor — não entram; os boosts, o premium e a stamina, sim.
+  // Draevor — não entram; os boosts, o premium e o x1,5 do VIP, sim.
   const curvaDoPoe = R.levelMaximo() !== Infinity;
   const bonusDeLevel = curvaDoPoe ? 0 : R.levelBonus(estado.level ?? 1);
   return Math.round(base * (1 + (bonusDeLevel + boosts + premium) / 100) * Stamina.fatorDeExp(estado) * (curvaDoPoe ? 1 : estagioDeExp(estado.level)));
@@ -59,7 +59,7 @@ export function expDoBicho(estado, base) {
  * rendiam 20–40 mil exp/h. O dono: "a ideia é que 1–100 fique mais rápido".
  *
  * É o "stage" dos servidores de Tibia: um multiplicador por faixa de level,
- * sobre a exp JÁ calculada (bônus de level, boosts, premium, stamina). Vale em
+ * sobre a exp JÁ calculada (bônus de level, boosts, premium, VIP). Vale em
  * todo lugar que a exp passa por aqui — caçada online, offline (a simulação e
  * a projeção usam o mesmo combate) e a parte de cada um na party, cada um com o
  * estágio do PRÓPRIO level. A faixa é inclusiva: level 50 ainda é x3.
@@ -75,7 +75,7 @@ export function paraCliente(estado) {
   return {
     fontes: [...garantir(estado).map((b) => ({ ...b })), ...(buff ? [buff] : [])],
     // Os dois MULTIPLICADORES, calculados aqui: a ficha e a régua de XP só mostram, não refazem a conta.
-    fatorStamina: Stamina.fatorDeExp(estado),
+    fatorVip: Stamina.fatorDeExp(estado),
     // Na curva do PoE não há estágio (`expDoBicho`): ×1.
     estagio: R.levelMaximo() !== Infinity ? 1 : estagioDeExp(estado.level),
   };

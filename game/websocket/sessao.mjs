@@ -27,7 +27,7 @@ import * as Deposito from '../systems/deposito.mjs';
 import * as Bau from '../systems/bau.mjs';
 import * as Mercado from '../systems/mercado.mjs';
 import * as Boosts from '../systems/boosts.mjs';
-import * as Stamina from '../systems/stamina.mjs';
+import * as LvDivino from '../systems/lv-divino.mjs';
 import * as SemTreino from '../systems/sem-treino.mjs';
 import * as MissoesDeGemas from '../systems/itens-poe/missoes-de-gemas.mjs';
 import * as Missoes from '../systems/itens-poe/missoes.mjs';
@@ -267,8 +267,6 @@ function estadoInicialPersonagem(vocacao, sexo, classe = null) {
     gold: 500,
     bank: 0,
     coins: 0,
-    stamina: 2520,
-    maxStamina: 2520,
     equipment: armaPoe ? { backpack: equipamento.backpack ?? null, weapon: armaPoe } : equipamento,
     inventory: armaPoe ? [] : Inventario.inventarioInicial(vocacao),
     pos: { ...R.POSICAO_INICIAL },
@@ -426,8 +424,8 @@ function characterParaCliente(personagem, estado) {
     missoesPendentes: Missoes.pendentes(estado),
     // A árvore de passivas única: os pontos (o alerta do botão) e o que está alocado.
     passivas: Passivas.vista(estado, !!estado.hunt),
-    // Stamina de verdade: gasta caçando, volta na cidade (ver game/systems/stamina.mjs).
-    ...Stamina.paraCliente(estado),
+    // (07/11/2026) a stamina saiu: no lugar dela, o Lv Divino (a exp depois do level máximo — `systems/lv-divino.mjs`)
+    lvDivino: LvDivino.divino(estado),
     weight: Inventario.pesoDoInventario(estado),
     deposito: [...Deposito.garantir(estado), ...(estado.bauDaConta ? [estado.bauDaConta] : [])],
     ...Bau.paraCliente(estado),
@@ -2160,8 +2158,6 @@ export class Sessao {
       // (16/10, lote 37) O Mercenário completo: quem já tinha o nó do mercenário (o Sangue Nobre) na primeira entrada depois da mudança contrata o
       // primeiro de graça (dono: "1ª contratação grátis" — `Mercenarios.migrar`).
       if (ItensPoeCatalogo.ligado()) Mercenarios.migrar(estado, Ficha.combate(estado).afPoe ?? {});
-      // Deslogado fora de caçada: a stamina voltou nesse tempo (na caçada offline ela gasta — ver `simularAusencia`).
-      if (!estado.hunt && personagem.visto_em) Stamina.recuperar(estado, Date.now() - personagem.visto_em);
       // Um duelo da Arena x1 que o servidor não terminou (caiu no meio): o level de verdade volta.
       Arena.aoEntrar(estado);
 
@@ -3075,9 +3071,9 @@ export class Sessao {
       delete this.estado.avisoDaHunt;
     }
     /*
-     * ---- Regeneração e stamina: uma vez por segundo, não quatro ----
+     * ---- Regeneração: uma vez por segundo, não quatro ----
      *
-     * As duas são só matemática proporcional ao tempo (`ms/1000 * taxa`, com
+     * Ela é só matemática proporcional ao tempo (`ms/1000 * taxa`, com
      * o resto fracionário guardado — `regenResto`, em `Cacadas.regenerar` —
      * para não perder nada arredondando): chamar com 1000ms de uma vez dá
      * exatamente o mesmo resultado que chamar 4 vezes com 250ms. Na cidade
@@ -3098,7 +3094,6 @@ export class Sessao {
     this.regenadoEm ??= agora;
     if (desdeARegen >= 1000) {
       Cacadas.regenerar(this.estado, desdeARegen);
-      Stamina.recuperar(this.estado, desdeARegen);
       this.regenadoEm = agora;
     }
     this.ultimaRegen = agora;

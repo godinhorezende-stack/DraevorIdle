@@ -20,6 +20,7 @@ import * as R from './regras.mjs';
 import { FRACAO_DO_OURO_NA_MORTE, cobrarMorte } from './banqueiro.mjs';
 import * as Promocao from './promocao.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
+import * as LvDivino from './lv-divino.mjs';
 
 export const BLESSINGS = CATALOGO.blessings;
 export const DESCONTO_POR_BLESSING = 8;
@@ -45,7 +46,8 @@ export function conta(estado) {
   const descontoPercent = Math.min(100, blessings * DESCONTO_POR_BLESSING + (promocao ? DESCONTO_DA_PROMOCAO : 0));
   // Modo PoE (regra do PoE 1): a morte tira experiência, mas NUNCA um level — o piso é o começo do level atual. Sem isso, cair de level
   // deixava a árvore de passivas com mais pontos gastos do que o personagem tem (auditoria da árvore, 09/10).
-  const piso = itensPoeLigado() ? Math.max(0, (estado.xp ?? 0) - R.expForLevel(L)) : estado.xp ?? 0;
+  // (07/11/2026) No level máximo, o piso é o começo do Lv Divino atual: a morte também não tira um Lv Divino (os pontos de passiva dele).
+  const piso = itensPoeLigado() ? Math.max(0, (estado.xp ?? 0) - LvDivino.pisoDaExp(estado)) : estado.xp ?? 0;
   const expPerdida = Math.min(piso, Math.round(base * (1 - descontoPercent / 100)));
   return {
     expPerdida,

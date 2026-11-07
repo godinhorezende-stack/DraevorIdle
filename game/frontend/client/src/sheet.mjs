@@ -451,14 +451,17 @@ function fichaDoPoe(body, state) {
     ),
   ]);
 
-  // ---- experiência (só o que vale no PoE: boosts, premium e stamina; a raridade do monstro multiplica a exp dele) ----
+  // ---- experiência (só o que vale no PoE: boosts, premium e o x1,5 do VIP; a raridade do monstro multiplica a exp dele) ----
   const fontes = (c.efeitos?.exp?.fontes ?? []).map((f) => `+${num(f.percent)}% (${f.fonte === 'loja' ? 'XP Boost' : f.fonte === 'buff-power' ? 'Buff Power' : 'poção'})`);
   if ((c.premium ?? 0) > 0) fontes.push('+10% (premium)');
-  const fatorStamina = c.efeitos?.exp?.fatorStamina ?? 1;
+  const fatorVip = c.efeitos?.exp?.fatorVip ?? 1;
+  const lvDivino = c.lvDivino ?? { nivel: 0, percent: 0, liberado: false };
   secao(body, 'poe-exp', 'Experiência', 'ficha-exp', [
     grade(
       statCard('Para o próximo level', num(c.progress?.toNext), `${num((c.progress?.percent ?? 0) * 100, 1)}% do level ${c.level} · máximo 100`),
-      statCard('Bônus de experiência', fontes.length ? fontes.join(' · ') : 'nenhum', `stamina ×${num(fatorStamina, 1)}`),
+      statCard('Bônus de experiência', fontes.length ? fontes.join(' · ') : 'nenhum', `VIP ×${num(fatorVip, 1)}`),
+      // (07/11/2026) o Lv Divino: a exp depois do level 100 (`lv-divino.mjs`), +1 ponto de passiva por nível
+      statCard('Lv Divino', num(lvDivino.nivel), lvDivino.liberado ? `${num(lvDivino.percent * 100, 1)}% para o ${lvDivino.nivel + 1} · +1 ponto de passiva por nível` : 'libera no level 100'),
       ...(d.expPorRaridadePoe ? [statCard('Por raridade do monstro', `Mágico ×${num(d.expPorRaridadePoe.magico, 1)} · Raro ×${num(d.expPorRaridadePoe.raro, 1)} · Único ×${num(d.expPorRaridadePoe.unico, 1)}`, 'os únicos do PoE já trazem a exp própria')] : []),
     ),
   ]);
@@ -607,7 +610,8 @@ export function renderSheet(body, { state, send, closeModal }) {
     // Energy Shield: só quem tem (peças de mago, adds) — absorve antes da vida.
     ...(derived.energyShield > 0 ? [bar('Energy Shield', character.es ?? derived.energyShield, derived.energyShield, 'es', `${character.es ?? derived.energyShield} / ${derived.energyShield}`)] : []),
     bar('Experiência', character.progress.percent * 100, 100, 'exp', `${(character.progress.percent * 100).toFixed(1)}%`),
-    bar('Stamina', character.stamina, character.maxStamina, 'stamina', `${Math.floor(character.stamina / 60)}h${String(Math.floor(character.stamina % 60)).padStart(2, '0')}`)
+    // (07/11/2026) a stamina saiu: no lugar dela, o Lv Divino (a experiência depois do level 100)
+    bar('Lv Divino', character.lvDivino?.liberado ? character.lvDivino.percent * 100 : 0, 100, 'divino', character.lvDivino?.liberado ? `${character.lvDivino.nivel} · ${(character.lvDivino.percent * 100).toFixed(1)}%` : '0 · level 100')
   );
 
   header.append(portrait, bars);
@@ -746,34 +750,13 @@ export function renderSheet(body, { state, send, closeModal }) {
   }
   for (const boost of boosts) addRow(boost.nome, `+${boost.percent}% · ${tempoCurto(boost.resta)}`, false, 'ficha-exp');
   /*
-   * ---- A stamina MULTIPLICA, e a faixa verde é de quem tem premium ----
+   * ---- O VIP MULTIPLICA ----
    *
-   * A linha dizia só "normal" acima de 14 horas, e escondia o degrau de cima: o
-   * servidor paga 1,5x acima de 39 horas para conta premium
-   * (`Player.getFinalBonusStamina`). Quem estava com 41 horas e premium ganhava
-   * 50% a mais e via a ficha dizer "normal" — daí a impressão de que o premium
-   * dá mais do que os 10% que ele anuncia. Dá: os 10% são dele, e o 1,5x é da
-   * stamina, que só chega nessa faixa com premium.
-   *
-   * Ela fica FORA do "Bônus total" de propósito: é um multiplicador, e somá-la
-   * a uma lista de porcentagens que se somam daria um número que o servidor
-   * nunca usa.
+   * (07/11/2026) A stamina saiu; o VIP (premium) ficou com o x1,5 fixo que ela dava acima de 39 h. Fica FORA do "Bônus total" de
+   * propósito: é um multiplicador, e somá-lo a uma lista de porcentagens que se somam daria um número que o servidor nunca usa.
    */
-  const temPremium = (character.premium ?? 0) > 0;
-  // O fator é do SERVIDOR (`efeitos.exp.fatorStamina`); a conta local só vale para um servidor antigo.
-  const fatorStamina = character.efeitos?.exp?.fatorStamina ?? (character.stamina > 39 * 60 && temPremium ? 1.5 : character.stamina > 14 * 60 ? 1 : 0.5);
-  addRow(
-    'Stamina',
-    fatorStamina === 1.5
-      ? '×1,5 — acima de 39h com premium'
-      : fatorStamina === 1
-        ? '×1 — experiência integral'
-        : character.stamina > 0
-          ? '×0,5 — 14h ou menos'
-          : '×0,5 — esgotada',
-    fatorStamina < 1,
-    'ficha-stamina'
-  );
+  const fatorVip = character.efeitos?.exp?.fatorVip ?? 1;
+  addRow('VIP', fatorVip > 1 ? `×${String(fatorVip).replace('.', ',')} — premium ativo` : '×1 — sem premium', false, 'ficha-exp');
 
   /*
    * ---- O estágio de level também MULTIPLICA ----
@@ -800,7 +783,7 @@ export function renderSheet(body, { state, send, closeModal }) {
     el(
       'p',
       'sheet-nota',
-      `Vale em qualquer criatura. Multiplicador final sobre o XP-base: ×${(((1 + (derived.expBonus + percentComprado + percentDasSkins) / 100) * fatorStamina * estagio)).toFixed(2).replace('.', ',')} (bônus × stamina × estágio; na campanha a fase multiplica o bicho antes).`
+      `Vale em qualquer criatura. Multiplicador final sobre o XP-base: ×${(((1 + (derived.expBonus + percentComprado + percentDasSkins) / 100) * fatorVip * estagio)).toFixed(2).replace('.', ',')} (bônus × VIP × estágio; na campanha a fase multiplica o bicho antes).`
     )
   );
   /*

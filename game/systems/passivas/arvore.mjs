@@ -28,6 +28,7 @@ import { definirLeitorDeMaestrias, definirLeitorDeJoias, slugDoNome } from '../i
 // (100% — dados, 03/11) as Habilidades Prismáticas (o Foco de Combate no raio — `raiosDasJoias`)
 import * as Prismaticas from '../itens-poe/prismaticas.mjs';
 import * as Missoes from '../itens-poe/missoes.mjs';
+import * as LvDivino from '../lv-divino.mjs';
 
 const ler = (arq) => JSON.parse(readFileSync(new URL(`../../gamedata/passivas/${arq}`, import.meta.url), 'utf8'));
 export const CONFIG = ler('config.json');
@@ -263,7 +264,8 @@ export function pontos(estado) {
   const { passivas } = garantir(estado);
   // (+ os nós que concedem pontos de passiva — "Concede 1 Ponto de Habilidade Passiva", na Ascendente: `pontos_passiva`.)
   // (05/11) + os Pontos de Habilidade Passiva das missões concluídas (os Livros de Habilidade do PoE — itens-poe/missoes.mjs).
-  const total = pontosDoLevel(estado.level) + Math.max(0, Math.round(efeitos(estado).adds?.pontos_passiva ?? 0)) + Missoes.pontos(estado);
+  // (07/11/2026, o dono) + 1 por Lv Divino (a exp depois do level máximo — `lv-divino.mjs`).
+  const total = pontosDoLevel(estado.level) + Math.max(0, Math.round(efeitos(estado).adds?.pontos_passiva ?? 0)) + Missoes.pontos(estado) + LvDivino.nivel(estado);
   // Os nós de ascendência gastam os pontos de ASCENDÊNCIA (`pontosDeAscendencia`), não estes.
   const usados = passivas.alocados.reduce((s, id) => (noDe(estado, id)?.ascendencia ? s : s + custoDe(noDe(estado, id))), 0);
   // `deficit`: pontos gastos A MAIS do que o personagem tem (um personagem antigo que caiu de level na morte, antes da regra do PoE; um nó
@@ -281,7 +283,7 @@ function pontosSe(estado, ficam) {
     if (!no.ascendencia) usados += custoDe(no);
     for (const ef of efeitosDoNo(no, estado.passivas)) if (ef.add === 'pontos_passiva') concedidos += ef.valor;
   }
-  return { total: pontosDoLevel(estado.level) + Math.max(0, Math.round(concedidos)) + Missoes.pontos(estado), usados };
+  return { total: pontosDoLevel(estado.level) + Math.max(0, Math.round(concedidos)) + Missoes.pontos(estado) + LvDivino.nivel(estado), usados };
 }
 
 // ------------------------------------------------------------ as ascendências (árvore do PoE, incremento 4e)

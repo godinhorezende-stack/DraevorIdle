@@ -3,7 +3,8 @@
 //
 // - Premium ("Uma semana de premium: 10% de experiência e as hunts premium",
 //   o texto da loja): +10% de exp (`Boosts.expDoBicho`, a linha "Premium" da
-//   ficha) e a stamina acima de 39h vale x1,5 (`Stamina.fatorDeExp`). O client
+//   ficha), a exp x1,5 (`Stamina.fatorDeExp` — o que a stamina cheia dava; a stamina saiu em 07/11/2026) e
+//   12 h de caça offline em vez de 4 (`database/caca-offline.limiteDoOffline`). O client
 //   lê `character.premiumAte` e conta sozinho o que falta (`contarOsPrazos`).
 // - Hunts Vip (`catalog.vips`): "só pras pessoas com premium", mais o level da
 //   hunt.
