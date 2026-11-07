@@ -2341,17 +2341,24 @@ ModsPoe.definirAoEstilhacar((estado, hunt, ficha, rng, ctx = {}) => {
   if (ctx.alvo) explosaoDoArautoGlacial(estado, hunt, ctx.alvo, ctx.eventos ?? [], rng, ctx.personagem ?? null);
   const chance = ModsPoe.valor(ficha, 'alma_vaal_ao_estilhacar');
   if (!(chance > 0) || !(rng() * 100 < chance)) return;
-  const agora = hunt.clock ?? 0;
-  // (lote P4) no Impedimento de Ganho de Almas, a alma não entra
-  if (GemasP4.almasImpedidas(hunt, agora)) return;
+  ganharAlmasVaal(estado, hunt, 1);
+});
+/**
+ * (07/11, lote 14 das inertes — o dono: "as Almas Vaal viram recarga") ganhar N ALMAS VAAL: a recarga de cada habilidade Vaal da barra anda N almas — o total ÷ as "Almas
+ * por Utilização" da gema; no Impedimento de Ganho de Almas, nada. (O Calafrio da Corrupção ao Estilhaçar, o Corpo e Espírito ao Matar, o Colhedor de Almas.)
+ */
+export function ganharAlmasVaal(estado, hunt, n = 1) {
+  const agora = hunt?.clock ?? 0;
+  if (!hunt || !(n > 0) || GemasP4.almasImpedidas(hunt, agora)) return;
   for (const a of estado.actions ?? []) {
     const entry = a?.id ? POR_ID.get(a.id) : null;
     const cd = entry?.poeGema && hunt.cooldowns?.[a.id];
     if (!cd || cd.ate <= agora || !tagsPoeDaSkill(entry).includes('vaal')) continue;
     const almas = Number(GemasPoe.compilada(entry.poeGema.slug, Gemas.efeitoNaSkill(estado, a.id)?.nivel ?? 1)?.stats?.almas) || 0;
-    if (almas > 0) cd.ate = Math.max(agora, cd.ate - (cd.total ?? 0) / almas);
+    if (almas > 0) cd.ate = Math.max(agora, cd.ate - ((cd.total ?? 0) * n) / almas);
   }
-});
+}
+ModsPoe.definirAlmaVaal((estado, hunt, n) => ganharAlmasVaal(estado, hunt, n));
 /** (lote 44, P066) O disparo `fn` do lugar do `i`-ésimo Robô Ativador vivo: a sua posição (`hunt.pos`, a origem do disparo) trocada só nele. */
 export function doLugarDoRobo(hunt, i, fn) {
   const robo = (hunt?.lacaios ?? []).filter((l) => l.robo && l.hp > 0)[i];
@@ -8865,7 +8872,21 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
   // Vaal tem X% de chance de ganharem as Almas consumidas novamente quando usadas" = a Vaal usada não entra em recarga, na chance.
   const vaalDeGraca = !plantada && recarga > 0 && entry.poeGema && tagsPoeDaSkill(entry).includes('vaal') && Math.random() * 100 < ModsPoe.valor(fichaDaRecarga, 'vaal_almas_de_volta_chance');
   // (lote A1b, dono 19/10: D-a: a recarga pulada com a carga não recomeça)
-  if (!plantada && !vaalDeGraca && !continuaCanal && !pulaARecarga) cds[action.id] = { ate: inicio + recarga, total: recarga };
+  // (07/11, lote 14 das inertes) as ALMAS na recarga das Vaal: a Forja do Ódio — "Habilidades de Ataque Vaal que você Usar manualmente Custam Fúria ao invés de exigirem
+  // Almas": com Fúria igual às Almas por Utilização (− o "Custo de Fúria reduzido"), o ataque Vaal à mão gasta a Fúria e não entra em recarga; o Pastor das Almas —
+  // "Habilidades vaal sem aura custam 80% menos almas" e "+100% de custo de almas por habilidade vaal usada nos últimos 8 segundos": a recarga × 0,2 × (1 + as Vaal recentes)
+  const ehVaal = !plantada && entry.poeGema && tagsPoeDaSkill(entry).includes('vaal');
+  const almasDoUso = ehVaal ? Number(GemasPoe.compilada(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1)?.stats?.almas) || 0 : 0;
+  const furiaDoVaal = ehVaal && !gatilho && entry.poeGema.ataque && almasDoUso > 0 && ModsPoe.valor(fichaDaRecarga, 'vaal_ataque_custa_furia') > 0 ? Math.ceil(almasDoUso * Math.max(0, 1 - ModsPoe.valor(fichaDaRecarga, 'custo_furia_red') / 100)) : 0;
+  const pagouComFuria = furiaDoVaal > 0 && (hunt.furia?.n ?? 0) >= furiaDoVaal;
+  if (pagouComFuria) { hunt.furia.n -= furiaDoVaal; Ficha.invalidar(estado); }
+  let recargaVaal = recarga;
+  if (ehVaal && ModsPoe.valor(fichaDaRecarga, 'pastor_das_almas') > 0 && !entry.poeGema.buff) {
+    const recentes = (hunt.poeVaalUsadas = (hunt.poeVaalUsadas ?? []).filter((t) => t > inicio - 8000)).length;
+    recargaVaal = Math.round(recarga * 0.2 * (1 + recentes));
+  }
+  if (ehVaal) hunt.poeVaalUsadas = [...(hunt.poeVaalUsadas ?? []), inicio];
+  if (!plantada && !vaalDeGraca && !continuaCanal && !pulaARecarga && !pagouComFuria) cds[action.id] = { ate: inicio + recargaVaal, total: recargaVaal };
   // (lote P4, decisão do dono 27/10) o IMPEDIMENTO DE GANHO DE ALMAS: o seu uso de uma Vaal (não o ativado — o Duplo, a plantada) para a recarga de toda Vaal da barra pelo
   // "Impedimento de Ganho de Almas" da gema (× a Duração, se a gema tem a linha); com a Tentação Vaal, o dano dela vem em vez dele (`impedimentoP4`). Uma vez só, no
   // uso: os estágios seguintes de uma Vaal canalizada (`continuaCanal`) não o renovam (achado C3 da rodada 4)
@@ -9260,7 +9281,9 @@ const keystonesAlocadasP4 = (estado) => (efeitosDaArvore(estado)?.keystones ?? [
 /** (lote P4) Os ms do Impedimento de Ganho de Almas do uso da Vaal `entry`: o da gema no nível × a Duração da Habilidade, se a gema tem a linha (`GemasP4.msDoImpedimento`). */
 function msDoImpedimentoP4(estado, entry, ef) {
   const t = GemasPoe.textosDaGema(entry.poeGema.slug, ef?.nivel ?? 1);
-  return GemasP4.msDoImpedimento(SuportesS2A.impedimentoDasProps(t.props), t.linhas, fatorDeDuracao(estado, entry, ef));
+  // (07/11, lote 14: × a "Duração da Prevenção do Ganho de Almas reduzida" — o Acordo de Yaomac, o Apanhador de Almas durante o efeito)
+  const inc = ModsPoe.valor(Ficha.combate(estado), 'impedimento_almas_duracao_inc');
+  return GemasP4.msDoImpedimento(SuportesS2A.impedimentoDasProps(t.props), t.linhas, fatorDeDuracao(estado, entry, ef)) * Math.max(0, 1 + inc / 100);
 }
 /**
  * (lote P4, decisão do dono 27/10) O IMPEDIMENTO DE GANHO DE ALMAS do uso da Vaal `entry` (a partir de `inicio`): a recarga de toda habilidade Vaal da barra que ainda

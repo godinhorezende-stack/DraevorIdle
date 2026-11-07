@@ -97,12 +97,20 @@ export const FEITAS = Object.freeze({
   Pacify: { nome: 'Pacificar', nota: 'a maldição (10 s) pelo caminho de sempre; com 60% dela passados, o amaldiçoado não causa dano' },
   // Gula dos Elementos (o Sangue da Corrupção — Vaal: no jogo, a recarga no lugar das Almas): 5 s imune a Maldições e sem Dano Elemental sofrido
   Gluttony_of_Elements: { nome: 'Gula dos Elementos', recargaMs: 14000, nota: 'o Dano Elemental sofrido é anulado (o PoE: ele cura — o jogo não cura pelo dano); só você (sem os aliados); a recarga de 14 s é a Anulação do Ganho de Almas (as Vaal do jogo usam recarga)', usar: ({ hunt, agora }) => ganharBuff(hunt, 'gulaDosElementos', 5, agora) },
+  // Passo da Morte (a Trilha Bubônica, quando Equipada): andando, os cadáveres a 1 casa explodem — 5% da Vida máxima de cada um como Fogo nos de perto deles
+  Death_Walk: { nome: 'Passo da Morte', continua: { andando: 'explodirCadaveres' } },
+  // Andarilho Cadavérico (quando Equipado): andando, deixa um cadáver onde você estava (a Vida: a média dos monstros da área), até 10
+  Corpse_Walk: { nome: 'Andarilho Cadavérico', nota: 'um cadáver a cada casa andada, até 10 (o PoE não publica o ritmo)', continua: { andando: 'criarCadaver' } },
   // AS CONTÍNUAS ("quando Equipado"/"quando Ganha"): o dano por segundo nos monstros perto
   Death_Aura: { nome: 'Aura da Morte', continua: { porS: 1600, tipoDot: 'degenCaos', raio: casas(3) } },
   Cinders: { nome: 'Escórias', nota: 'as Escórias queimam os monstros a até 2 casas (333 de Fogo por segundo — o PoE: as brasas em volta de você atacam os de perto)', continua: { porS: 333.3, tipoDot: 'degenFogo', raio: 2 } },
   Tears_of_Rot: { nome: 'Lágrimas de Podridão', nota: 'as Lágrimas ferem os monstros a até 2 casas (627 de Físico por segundo — o PoE: as gotas caem em volta de você)', continua: { porS: 627, tipoDot: 'degenFisico', raio: 2 } },
 });
 export const feita = (slug) => FEITAS[slug] ?? null;
+/** A explosão do cadáver (`mods-poe.explodirMorto` registra — este módulo não o importa). */
+// eslint-disable-next-line no-var
+var explodirCadaver;
+export function definirExplodirCadaver(fn) { explodirCadaver = fn; }
 
 /** O USO da habilidade feita à mão (o caminho do uso — `acoes`): a recarga dela e o efeito. Devolve `{ ok, eventos }`. */
 export function usar(estado, hunt, slug, { id, nivel = 20, alvo = null, eventos = [], agora = hunt?.clock ?? 0, resistir = null, af = {} } = {}) {
@@ -119,8 +127,29 @@ export function usar(estado, hunt, slug, { id, nivel = 20, alvo = null, eventos 
 /** O tique das CONTÍNUAS: enquanto a peça concede a habilidade (`concede:<o nome>` no `afPoe`), o dano por segundo em volta. `slugDoNome`: o do jogo. */
 export function tique(hunt, af, slugDoNome, agora = hunt?.clock ?? 0) {
   if (!hunt?.pos) return;
+  const pos = `${hunt.pos.x},${hunt.pos.y},${hunt.z ?? 0}`;
+  const andou = hunt.poeHabUltimaPos != null && hunt.poeHabUltimaPos !== pos;
+  const deOnde = hunt.poeHabUltimoLugar;
+  hunt.poeHabUltimaPos = pos;
+  hunt.poeHabUltimoLugar = { x: hunt.pos.x, y: hunt.pos.y, z: hunt.z ?? 0 };
   for (const [slug, h] of Object.entries(FEITAS)) {
     if (!h.continua || !(Number(af?.[`concede:${slugDoNome(h.nome)}`]) > 0)) continue;
+    if (h.continua.andando === 'explodirCadaveres') {
+      if (!andou) continue;
+      const perto = (hunt.cadaveres ?? []).filter((c) => (c.z == null || c.z === (hunt.z ?? 0)) && dist(c, hunt.pos) <= 1);
+      for (const c of perto) explodirCadaver?.(hunt, c, 5);
+      if (perto.length) hunt.cadaveres = hunt.cadaveres.filter((c) => !perto.includes(c));
+      continue;
+    }
+    if (h.continua.andando === 'criarCadaver') {
+      if (!andou || !deOnde) continue;
+      const vivos = (hunt.monstros ?? []).filter((m) => m.maxHp > 0);
+      const vida = vivos.length ? vivos.reduce((t, m) => t + m.maxHp, 0) / vivos.length : 0;
+      const meus = (hunt.cadaveres ?? []).filter((c) => c.criadoPor === slug);
+      const sai = new Set(meus.slice(0, Math.max(0, meus.length - 9)));
+      hunt.cadaveres = [...(hunt.cadaveres ?? []).filter((c) => !sai.has(c)), { key: 'corpo', nome: 'Cadáver', x: deOnde.x, y: deOnde.y, z: deOnde.z, maxHp: Math.round(vida), criadoPor: slug, criadoEm: agora }];
+      continue;
+    }
     degenEmVolta(hunt, { ...h.continua, chave: `habilidade:${slug}` }, agora);
     // (a Chama da Esperança: "Causa Exposição ao Fogo ao atingir inimigos com 5 Escórias" — os monstros nas Escórias ficam com ela)
     if (slug === 'Cinders' && Number(af?.escorias_exposicao_pct) > 0) for (const m of perto(hunt, h.continua.raio)) (m.estados ??= {}).escoriasExposicao = { ate: agora + 1000, pct: Number(af.escorias_exposicao_pct) };

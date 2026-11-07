@@ -20,7 +20,7 @@ import { ITEM_CATALOG } from '../dados.mjs';
 import { darPeca, cabeNaMochila, erroDeEspaco } from '../inventario.mjs';
 import { camposDaPeca } from '../itens/item.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { vidaSoPeloDreno, marcar, reservadoAgora, criarSoloCongelado, ganharBuff, empurrar } from './condicoes-poe.mjs';
+import { vidaSoPeloDreno, marcar, reservadoAgora, criarSoloCongelado, ganharBuff, empurrar, ganharAlmaVaal } from './condicoes-poe.mjs';
 import * as CargasPoe from './cargas.mjs';
 import * as Tinturas from './tinturas.mjs';
 import * as Salvaguarda from '../personagem/salvaguarda.mjs';
@@ -59,6 +59,8 @@ const preencher = (modelo, valores) => String(modelo ?? '').replace(/\{(\d+)\}/g
 
 /** As regras das linhas que mexem no FRASCO (e não no personagem). `p` = os parâmetros sendo montados; `v` = o número da linha. */
 const REGRAS_DO_FRASCO = [
+  // (07/11, lote 14, o Colhedor de Almas) "Ganha Almas Vaal igual às Cargas Consumidas ao usar" (as Almas viram a recarga das Vaal — `acoes.ganharAlmasVaal`)
+  [/^Ganha Almas Vaal igual às Cargas Consumidas ao usar$/, (p) => (p.almasPorCarga = true)],
   // (06/11, lote 11 das inertes, a Fé Engarrafada) "Solo Sagrado criado por este Frasco possui Raio Triplicado" e "Solo Sagrado criado durante o Efeito aplica Dano sofrido
   // aumentado em X% aos Inimigos" (os monstros nele — `solos-seus.tique`)
   [/^Solo Sagrado criado por este Frasco possui Raio Triplicado$/, (p) => (p.soloRaioMult = 3)],
@@ -151,6 +153,8 @@ const REGRAS_DO_FRASCO = [
 // (O Sábio Carvalho): antes só a forma com E maiúsculo no fim casava, e essas linhas ficavam sem efeito
 const CARGA = { Tolerância: 'tolerancia', Frenesi: 'frenesi', Poder: 'poder' };
 const DURANTE = /(?: durante o (?:efeito(?: do frasco)?)$|^durante o efeito, )/i;
+// (07/11, lote 14, o Apanhador de Almas) o "durante o efeito" no MEIO da frase das Vaal: "Habilidades Vaal utilizadas durante o efeito possuem…" (a regra é da frase inteira)
+const DURANTE_NO_MEIO = /^Habilidades Vaal utilizadas durante o efeito /i;
 /** "Concede Imunidade a X … se usado enquanto X": a afecção do PoE → o efeito do jogo que ela tira (e de que fica imune). */
 const IMUNIDADE = { Desaceleração: 'lento', Mutilação: 'lento', Sangramento: 'sangramento', 'Sangue Corrompido': 'sangramento', Eletrização: 'eletrizacao', Resfriamento: 'resfriamento', Congelamento: 'congelamento', Incêndio: 'incendio', Envenenamento: 'veneno' };
 /** Os mods do PERSONAGEM que mexem nos frascos ("Recuperação de Vida do Frasco aumentada", "Duração do efeito do Frasco"…): quem lê é a ficha. */
@@ -214,7 +218,7 @@ export function parametros(peca, afDoPersonagem = null) {
         linhas.push({ texto, estado: 'efeito' });
         continue;
       }
-      if (DURANTE.test(parte)) {
+      if (DURANTE.test(parte) || DURANTE_NO_MEIO.test(parte)) {
         // (05/11) a frase sem o "durante o Efeito"; se ela não tiver regra, a frase inteira (há regras escritas com ele: "Habilidades não Custam
         // Mana durante o Efeito", as das Habilidades Vaal "… durante o efeito")
         const semDurante = traduzirParte(parte.replace(DURANTE, ''), mod.valores ?? []);
@@ -384,6 +388,7 @@ export function usar(estado, v, eventos = null, quem = null) {
   if (st.ativos[v]?.ate > agora && !(contaComo(peca, 'vida') && Number(afp.frasco_vida_sem_fila) > 0) && !(contaComo(peca, 'mana') && Number(afp.frasco_mana_sem_fila) > 0)) return false;
   // (ciclo 7, lote F) "X% de chance de Frascos usados por você não consumirem Cargas".
   if (!(Math.random() * 100 < (Number(afp.frasco_sem_consumo) || 0))) peca.poe.cargas = cargas - par.cargasPorUso;
+  if (par.almasPorCarga) ganharAlmaVaal(estado, hunt, par.cargasPorUso);
   aoUsarOFrasco(estado, par, eventos, quem, afp);
   // (02/11) "Restaura Proteção ao usar" (o Frasco de Ferro): a Salvaguarda volta inteira
   if (par.restauraSalvaguarda) Salvaguarda.restaurar(estado);

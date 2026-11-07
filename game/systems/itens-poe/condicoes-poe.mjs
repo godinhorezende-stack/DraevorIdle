@@ -1523,6 +1523,13 @@ export function adds(estado, total = null) {
   }
   // (06/11, lote 11) no seu Solo Fúngico (o Guarda-esporo): 10% do Dano Não-Caótico como Caos extra
   if ((estado?.hunt?.poeSoloFungico?.ate ?? 0) > agoraT) saida.naocaos_as_extra_chaos = (saida.naocaos_as_extra_chaos ?? 0) + 10;
+  // (07/11, lote 14, o Toque de Kalandra: "Reflete o anel aposto") os atributos do anel do OUTRO espaço entram de novo (o PoE: o espelho das linhas dele; não reflete outro
+  // Toque de Kalandra)
+  const anelA = estado?.equipment?.ring, anelB = estado?.equipment?.ring2;
+  for (const [esp, outro] of [[anelA, anelB], [anelB, anelA]]) {
+    if (!(Number(esp?.poe?.af?.reflete_anel) > 0) || !outro?.poe?.af || Number(outro.poe.af.reflete_anel) > 0) continue;
+    for (const [k, v] of Object.entries(outro.poe.af)) if (typeof v === 'number') saida[k] = (saida[k] ?? 0) + v;
+  }
   // (06/11, lote 7) as BARREIRAS DE CARANGUEJO (`aspectos.mjs`): 2% de Redução de Dano Físico adicional por Barreira
   const nBarreiras = estado?.hunt?.barreiras?.n ?? 0;
   if (nBarreiras > 0) saida.phys_res = (saida.phys_res ?? 0) + 2 * nBarreiras;
@@ -2214,6 +2221,8 @@ export const efeitoDaFuria = (estado, af) => Math.floor(furiaAtual(estado) * Mat
 export const maximoDeFuria = (af) => Math.floor((FURIA.maximo + (Number(af?.furia_max) || 0)) * (Number(af?.furia_max_metade) > 0 ? 0.5 : 1));
 export function ganharFuria(hunt, n, agora = hunt?.clock ?? 0) {
   if (!hunt || !(n > 0)) return;
+  // (07/11, lote 14, a Forja do Ódio: "Você não pode ganhar Fúria durante a Anulação do Ganho de Almas")
+  if ((hunt.poeAlmasImpedidasAte ?? -Infinity) > agora && Number(fichaDa(hunt)?.afPoe?.sem_furia_no_impedimento) > 0) return;
   const f = (hunt.furia ??= { n: 0, ganhou: agora, perdeu: agora });
   f.n = Math.min(maximoDeFuria(fichaDa(hunt)?.afPoe), (f.n | 0) + n);
   f.ganhou = agora;
@@ -2409,7 +2418,7 @@ export const EVENTOS = new Set(['estilhacar', 'maxDivina', 'perderEspiritual', '
   'salvaguardaQuebra',
   // (02/11, as Atemporais) quando a Salvaguarda é Restaurada (`personagem/salvaguarda.restaurar` → `acoes.mjs`)
   'salvaguardaRestaurada']);
-export const ACOES = new Set(['explodirCadaveres', 'soloSeu', 'cargaAliados', 'vidaPctAliados', 'vinculadosImortais', 'furiaArcanaClamor', 'perderAlmas', 'transferirMarca', 'frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
+export const ACOES = new Set(['almaVaal', 'explodirCadaveres', 'soloSeu', 'cargaAliados', 'vidaPctAliados', 'vinculadosImortais', 'furiaArcanaClamor', 'perderAlmas', 'transferirMarca', 'frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
   'dano', 'danoPctVida', 'furia', 'frasco', 'recargaEs', 'explodir', 'gatilho', 'espalhar', 'roubarCargas', 'maldicao', 'soloSagrado', 'soloProfano', 'soloCongelado', 'fumaca', 'removerAfeccao', 'perdeVidaPct', 'perdeEsPct', 'perdeManaPct',
   // (11/10, os únicos)
   'perdeVida', 'esDaArmadura', 'vidaParaEs', 'degenEmVoce', 'statTemp', 'statTempPorMana', 'furiaPorMana', 'transferirMaldicoes', 'degenNoAlvo', 'danoPorMana', 'empurrarProximos',
@@ -2453,6 +2462,11 @@ export function gemaConhecida(slug) { return conhecePelaGema ? conhecePelaGema(s
 // eslint-disable-next-line no-var
 var statusPeloNome;
 export function definirStatusDasHabilidadesDeItens(fn) { statusPeloNome = fn; }
+/** (07/11, lote 14) ganhar N Almas Vaal (a recarga das Vaal anda — `acoes.ganharAlmasVaal` registra). */
+// eslint-disable-next-line no-var
+var almaVaalFn;
+export function definirAlmaVaal(fn) { almaVaalFn = fn; }
+export const ganharAlmaVaal = (estado, hunt, n = 1) => almaVaalFn?.(estado, hunt, n);
 export const statusDaHabilidadeDeItem = (slug) => (statusPeloNome ? statusPeloNome(slug) : null);
 /** (lote 55) O id da ação da gema ativa pelo nome (`afetadoPor:<nome>` — "enquanto afetado por <Aura>"): quem registra é `skills/gemas.mjs`. */
 // eslint-disable-next-line no-var

@@ -14,6 +14,130 @@
   ],
   "regras": [
     {
+      "padrao": "^Não Pode usar outros Anéis$",
+      "efeitos": [
+        {
+          "stat": "so_este_anel",
+          "valor": "1"
+        }
+      ],
+      "_07_11d": "07/11 — lote 14 das inertes: as Almas Vaal na recarga (Forja do Ódio, Pastor das Almas, Corpo e Espírito) e as restrições de equipamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não Pode utilizar Peitoral$",
+      "efeitos": [
+        {
+          "stat": "sem_peitoral",
+          "valor": "1"
+        }
+      ],
+      "_07_11d": "07/11 — lote 14 das inertes: as Almas Vaal na recarga (Forja do Ódio, Pastor das Almas, Corpo e Espírito) e as restrições de equipamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Matar concede uma Alma Vaal adicional caso você tenha se Enfurecido Recentemente$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:almaVaal@nosUltimos:4:enfureceu",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as Vaal do jogo usam a recarga no lugar das Almas: a alma anda a recarga das Vaal da barra (1 ÷ as Almas por Utilização); Enfurecido = uma faixa da Fúria (o Rampage) nos últimos 4 s",
+      "_07_11d": "07/11 — lote 14 das inertes: as Almas Vaal na recarga (Forja do Ódio, Pastor das Almas, Corpo e Espírito) e as restrições de equipamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Reflete o anel aposto$",
+      "efeitos": [
+        {
+          "stat": "reflete_anel",
+          "valor": "1"
+        }
+      ],
+      "_07_11d": "07/11 — lote 14 das inertes: as Almas Vaal na recarga (Forja do Ódio, Pastor das Almas, Corpo e Espírito) e as restrições de equipamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Custo de Fúria de Habilidades reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "custo_furia_red",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o único custo de Fúria do jogo é o do ataque Vaal da Forja do Ódio (as Almas por Utilização em Fúria)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11d": "07/11 — lote 14 das inertes: as Almas Vaal na recarga (Forja do Ódio, Pastor das Almas, Corpo e Espírito) e as restrições de equipamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades de Ataque Vaal que você Usar manualmente Custam Fúria ao invés de exigirem Almas$",
+      "efeitos": [
+        {
+          "stat": "vaal_ataque_custa_furia",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as Vaal do jogo usam a recarga no lugar das Almas: com Fúria igual às Almas por Utilização, o ataque Vaal à mão gasta a Fúria e não entra em recarga",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11d": "07/11 — lote 14 das inertes: as Almas Vaal na recarga (Forja do Ódio, Pastor das Almas, Corpo e Espírito) e as restrições de equipamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você não pode ganhar Fúria durante a Anulação do Ganho de Almas$",
+      "efeitos": [
+        {
+          "stat": "sem_furia_no_impedimento",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11d": "07/11 — lote 14 das inertes: as Almas Vaal na recarga (Forja do Ódio, Pastor das Almas, Corpo e Espírito) e as restrições de equipamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pastor das Almas$",
+      "efeitos": [
+        {
+          "stat": "pastor_das_almas",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as Vaal do jogo usam a recarga no lugar das Almas: 80% menos Almas = a recarga × 0,2; +100% por Vaal usada nos últimos 8 s = × (1 + as recentes)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11d": "07/11 — lote 14 das inertes: as Almas Vaal na recarga (Forja do Ódio, Pastor das Almas, Corpo e Espírito) e as restrições de equipamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades Vaal utilizadas durante o efeito possuem \\{(\\d+)\\}% de redução de Duração da Prevenção do Ganho de Almas$",
+      "efeitos": [
+        {
+          "stat": "impedimento_almas_duracao_inc",
+          "valor": "-{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11d": "07/11 — lote 14 das inertes: as Almas Vaal na recarga (Forja do Ódio, Pastor das Almas, Corpo e Espírito) e as restrições de equipamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Duração da Prevenção do Ganho de Almas reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "impedimento_almas_duracao_inc",
+          "valor": "-{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11d": "07/11 — lote 14 das inertes: as Almas Vaal na recarga (Forja do Ódio, Pastor das Almas, Corpo e Espírito) e as restrições de equipamento",
+      "_nova": true
+    },
+    {
       "padrao": "^Resfria Inimigos próximos quando você se Concentra, causando \\{(\\d+)\\}% de redução da Velocidade de Ação$",
       "efeitos": [
         {
@@ -21850,19 +21974,6 @@
       ],
       "estado": "inerte",
       "nota": "as Égides (habilidades de único) não existem no jogo",
-      "_nova": true,
-      "_unico": true
-    },
-    {
-      "padrao": "^Reflete o anel aposto|Não Pode usar outros Anéis|Não Pode utilizar Peitoral$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "restrição de equipamento que o jogo não tem",
       "_nova": true,
       "_unico": true
     },
@@ -48346,45 +48457,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Custo de Fúria de Habilidades reduzido em \\{(\\d+)\\}%$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "nenhuma habilidade do jogo custa Fúria",
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Habilidades de Ataque Vaal que você Usar manualmente Custam Fúria ao invés de exigirem Almas$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "as Habilidades Vaal do jogo usam a recarga no lugar das Almas",
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Você não pode ganhar Fúria durante a Anulação do Ganho de Almas$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Anulação do Ganho de Almas",
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^Direção do Empurrão é invertida$",
       "efeitos": [
         {
@@ -50601,19 +50673,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Habilidades Vaal utilizadas durante o efeito possuem \\{(\\d+)\\}% de redução de Duração da Prevenção do Ganho de Almas$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Prevenção do Ganho de Almas",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^Ao usar, concede um bônus de Adivinhação aleatório por \\{(\\d+)\\} segundos$",
       "efeitos": [
         {
@@ -50706,32 +50765,6 @@
       ],
       "estado": "inerte",
       "nota": "o jogo não tem o comprimento do Raio Escaldante",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Duração da Prevenção do Ganho de Almas reduzida em \\{(\\d+)\\}%$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Prevenção do Ganho de Almas",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Pastor das Almas$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Prevenção do Ganho de Almas (o Pastor das Almas)",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
       "_nova": true
     },

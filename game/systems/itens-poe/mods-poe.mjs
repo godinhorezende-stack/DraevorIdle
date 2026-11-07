@@ -5,7 +5,7 @@ import * as QuemFeriu from '../hunt/quem-feriu.mjs';
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { definirTiqueDosAspectos, MOVENDO_MS, slugDoNome, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, criarSoloCongelado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo, porExposicao, vinhasGanhas as vinhasGanhasDe, fatorDaResistenciaRecebida } from './condicoes-poe.mjs';
+import { definirTiqueDosAspectos, MOVENDO_MS, slugDoNome, ganharAlmaVaal, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, criarSoloCongelado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo, porExposicao, vinhasGanhas as vinhasGanhasDe, fatorDaResistenciaRecebida } from './condicoes-poe.mjs';
 import * as Plantadas from './armas-plantadas.mjs';
 import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { eletrizarComPct, cegar as cegarVoce } from './monstros-no-jogador.mjs';
@@ -1025,6 +1025,7 @@ export function tiqueDosAspectos(estado, hunt, ficha, agora = hunt?.clock ?? 0) 
   if (tocado > 0 && (hunt.poeBuffs?.tocadoPelaChama ?? 0) > agora && agora >= (hunt.poeTocadoEm ?? 0)) { hunt.poeTocadoEm = agora + 1000; dotNoJogador(hunt, { tipo: 'degenFogo', total: tocado, duracaoMs: 1000, chave: 'tocadoPelaChama', origem: { fonte: 'poe' } }, agora); }
 }
 definirTiqueDosAspectos(tiqueDosAspectos);
+HabilidadesDeItens.definirExplodirCadaver((hunt, c, pct) => explodirMorto(hunt, c, pct, hunt.poeEventosDoTempo ??= [], { tipo: 'fire' }));
 export function evento(estado, hunt, nome, ficha, ctx = {}) {
   if (!ligado() || !hunt) return;
   const lista = ficha?.eventosPoe ?? [];
@@ -1339,6 +1340,8 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
       if (perto.length) hunt.cadaveres = (hunt.cadaveres ?? []).filter((c) => !perto.includes(c));
       return;
     }
+    // (07/11, lote 14) `almaVaal[:<n>]` = a CHANCE de ganhar N Almas Vaal (a recarga das Vaal anda — o Corpo e Espírito ao Matar)
+    case 'almaVaal': if (sorte(v)) ganharAlmaVaal(estado, hunt, Number(ev.param) || 1); return;
     case 'perderAlmas': if (hunt.poeAlmas && sorte(v)) { delete hunt.poeAlmas; hunt.poeFichaMudou = true; } return;
     case 'perdeCargas': if (sorte(v)) leitorDeCargas?.(estado, 'perder', ev.param); return;
     case 'cargaAleatoria': if (sorte(v)) leitorDeCargas?.(estado, 'ganhar', ['frenesi', 'poder', 'tolerancia'][Math.floor(rng() * 3)], 1); return;

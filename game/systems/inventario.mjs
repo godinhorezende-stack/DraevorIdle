@@ -567,7 +567,8 @@ export function equipar(estado, { id, pilha, slot }) {
     const faltaAtributo = Requisitos.falta(m, Atributos.principais(estado, somaAgora), naMochila, somaAgora);
     if (faltaAtributo) return faltaAtributo;
     const nivel = nivelExigido(m, naMochila);
-    return nivel > (estado.level ?? 0) ? `Precisa do level ${nivel}.` : null;
+    if (nivel > (estado.level ?? 0)) return `Precisa do level ${nivel}.`;
+    return restricaoDoPoe(estado, naMochila, destino);
   });
   if (!valida.ok) return valida;
   const itens = lista(estado, 'bag');
@@ -597,6 +598,22 @@ export function equipar(estado, { id, pilha, slot }) {
   }
   Afixos.sincronizarMaximos(estado);
   return { ok: true };
+}
+
+/**
+ * (07/11, lote 14 das inertes) as RESTRIÇÕES de equipamento dos únicos do PoE: "Não Pode utilizar Peitoral" (o Portador da Chuva — `sem_peitoral`) e "Não Pode usar
+ * outros Anéis" (o Tormento do Ladrão — `so_este_anel`), conferidas nos dois sentidos (a peça nova e as vestidas). A frase do erro, ou null.
+ */
+export function restricaoDoPoe(estado, nova, destino) {
+  if (!ItensPoeCatalogo.ligado()) return null;
+  const af = (p) => p?.poe?.af ?? {};
+  const eq = estado.equipment ?? {};
+  const vestidas = Object.entries(eq).filter(([k, p]) => p && k !== destino && k !== 'backpack');
+  const temPeitoral = destino === 'body' || vestidas.some(([k]) => k === 'body');
+  if (temPeitoral && (Number(af(nova).sem_peitoral) > 0 || vestidas.some(([k, p]) => k !== 'body' && Number(af(p).sem_peitoral) > 0))) return 'Uma peça vestida não deixa usar Peitoral.';
+  const outroAnel = destino === 'ring' ? 'ring2' : destino === 'ring2' ? 'ring' : null;
+  if (outroAnel && eq[outroAnel] && (Number(af(nova).so_este_anel) > 0 || Number(af(eq[outroAnel]).so_este_anel) > 0)) return 'Um anel vestido não deixa usar outro anel.';
+  return null;
 }
 
 /** `send({t:'unequip', slot})`. */

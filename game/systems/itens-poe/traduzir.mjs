@@ -74,6 +74,8 @@ export const APELIDOS_DE_GEMA = Object.freeze({
   // (lote 55, o Equilíbrio do Terror: a Punição do texto é o Castigo da gema)
   'Punição': 'Castigo',
   'Pureza Elemental': 'Pureza Elementar',
+  // (07/11, lote 14 das inertes: a Forja do Ódio diz Furor, a gema é a Fúria; o Modela-Barro, Golem de Pedra; a Trilha Bubônica, "o Passo da Morte")
+  Furor: 'Fúria', 'Convocar Golem de Pedra': 'Convocar Golem Pedregulho', 'o Passo da Morte': 'Passo da Morte',
 });
 const slugDaGema = (nome) => slugDoNome(APELIDOS_DE_GEMA[nome] ?? nome);
 

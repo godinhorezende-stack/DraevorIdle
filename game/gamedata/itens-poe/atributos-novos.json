@@ -9710,6 +9710,54 @@
       "combate": true,
       "nome": "Exposição ao Fogo das Escórias",
       "efeito": "habilidades-de-itens (07/11)"
+    },
+    "custo_furia_red": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Custo de Fúria de Habilidades reduzido (%)",
+      "efeito": "acoes.dispararSemMarcarDentro, o ataque Vaal pago com Fúria (07/11, lote 14)"
+    },
+    "vaal_ataque_custa_furia": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Ataques Vaal usados à mão custam Fúria em vez da recarga",
+      "efeito": "acoes.dispararSemMarcarDentro (07/11, lote 14)"
+    },
+    "sem_furia_no_impedimento": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Não ganha Fúria durante a Anulação do Ganho de Almas",
+      "efeito": "condicoes-poe.ganharFuria (07/11, lote 14)"
+    },
+    "pastor_das_almas": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Pastor das Almas",
+      "efeito": "acoes.dispararSemMarcarDentro, a recarga das Vaal (07/11, lote 14)"
+    },
+    "reflete_anel": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Reflete o anel aposto",
+      "efeito": "condicoes-poe.adds (07/11, lote 14)"
+    },
+    "so_este_anel": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Não pode usar outros Anéis",
+      "efeito": "inventario.restricaoDoPoe (07/11, lote 14)"
+    },
+    "sem_peitoral": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Não pode usar Peitoral",
+      "efeito": "inventario.restricaoDoPoe (07/11, lote 14)"
+    },
+    "impedimento_almas_duracao_inc": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Duração da Prevenção do Ganho de Almas aumentada (%)",
+      "efeito": "acoes.msDoImpedimentoP4 (07/11, lote 14)"
     }
   }
 }
