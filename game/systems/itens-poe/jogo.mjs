@@ -11,7 +11,7 @@
 import * as Catalogo from './catalogo.mjs';
 import { definirLeitorDeBase } from './condicoes-poe.mjs';
 import { traduzirPeca } from './traduzir.mjs';
-import { gerarPeca } from './gerar.mjs';
+import { gerarPeca, caiNoSorteio } from './gerar.mjs';
 import { darPeca } from '../inventario.mjs';
 import * as DropsPorMonstro from './drops-por-monstro.mjs';
 import * as SocketsPoe from './sockets.mjs';
@@ -19,6 +19,7 @@ import * as Frascos from './frascos.mjs';
 import * as Mapas from './mapas.mjs';
 import * as PinaculosAcesso from './pinaculos-acesso.mjs';
 import { estadosDaRamificadora } from './ramificadoras.mjs';
+import { readFileSync as lerArquivo } from 'node:fs';
 
 export const PRIMEIRO_ID = 7_000_000;
 
@@ -314,6 +315,23 @@ function separarLocaisDaArma(classe, t, af) {
  * A peça do JOGO a partir da peça gerada (`gerarPeca`). `{ id, count: 1, base, poe }` — sem `raridade`/`af` do Draevor (a peça do PoE
  * não passa pelas regras de raridade e de afixos do Draevor: forja, essência e o resto não a reconhecem).
  */
+/**
+ * (07/11, lote 25 das inertes) as KEYSTONES da árvore do PoE (a principal, sem as das ascendências) para o "[Random Keystone]" da Pele dos Lordes: os efeitos já
+ * traduzidos do nó; a que o jogo trata pelo módulo de keystones (Reflexos de Ferro, Golpes Reveladores… — sem efeitos no nó) entra como `keystone:<id>`.
+ */
+let KEYSTONES = null;
+const keystones = () => (KEYSTONES ??= JSON.parse(lerArquivo(new URL('../../gamedata/itens-poe/arvore-poe.json', import.meta.url), 'utf8')).nos.filter((n) => n.tipo === 'keystone' && !n.ascendencia));
+const keystoneDoNo = (id) => keystones().find((n) => n.id === String(id)) ?? null;
+const sortearKeystone = (rng) => { const l = keystones(); return l.length ? l[Math.floor(rng() * l.length)].id : null; };
+const camelo = (nome) => String(nome ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').split(/[^A-Za-z0-9]+/).filter(Boolean).map((w, i) => (i ? w[0].toUpperCase() + w.slice(1).toLowerCase() : w.toLowerCase())).join('');
+function efeitosDaKeystone(id) {
+  const n = keystoneDoNo(id);
+  if (!n) return {};
+  if (!(n.efeitos ?? []).length) return { [`keystone:${camelo(n.nome)}`]: 1 };
+  const out = {};
+  for (const e of n.efeitos) if (e.add && typeof e.valor === 'number') out[e.add] = (out[e.add] ?? 0) + e.valor;
+  return out;
+}
 export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) {
   if (!gerada || gerada.erro) return null;
   const id = idDaBase(gerada.base);
@@ -324,6 +342,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
   const a = gerada.atributos ?? {};
   const t = traduzirPeca(gerada);
   const af = { ...t.af };
+  // (07/11, lote 25 das inertes, a Pele dos Lordes: "[Random Keystone]") uma KEYSTONE da árvore sorteada uma vez (`keystoneSorteada`, o id do nó) — os efeitos dela entram na peça
+  const keystoneSorteada = gerada.keystoneSorteada ?? ([...(gerada.modificadores ?? []), ...(gerada.implicitos ?? [])].some((m) => /^\[Random Keystone\]$/.test(m?.modelo ?? m?.texto ?? '')) ? sortearKeystone(rng) : null);
+  if (keystoneSorteada) for (const [k, v] of Object.entries(efeitosDaKeystone(keystoneSorteada))) af[k] = (af[k] ?? 0) + v;
   // ("Sem Dano Físico": a arma única não tem o dano físico da base.)
   // (20/10: os locais da arma antes da base — o Físico local entra nela)
   separarLocaisDaArma(gerada.classe, t, af);
@@ -358,11 +379,17 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
   const maxDaClasse = SocketsPoe.maximo(gerada.classe, gerada.ilvl) || 6;
   const ligados = af.encaixes_ligados > 0 ? { abertos: maxDaClasse, links: Array.from({ length: maxDaClasse - 1 }, () => true), gemas: Array(maxDaClasse).fill(null), cores: SocketsPoe.sortearCores(maxDaClasse, REG.catalogo?.[id]?.poe?.requisitos ?? null, rng) } : sorteados;
   const soquetes = ligados && af.encaixes_brancos ? { ...ligados, cores: ligados.cores.map(() => 'W') } : ligados;
+  // (07/11, lote 24 das inertes, a Eterna Batalha: "[The Searing Exarch Implicit]" / "[The Eater of Worlds Implicit]" — o amuleto tem um implícito de cada, sorteados; o
+  // jogo não tem a tabela Eldritch dos amuletos: o DEGRAU de cada um, 1 a 6, sorteado uma vez e guardado — o "dominante" das linhas é o de degrau maior)
+  const marcadorEldritch = [...(gerada.implicitos ?? []), ...(gerada.modificadores ?? [])].some((m) => /^\[The (?:Searing Exarch|Eater of Worlds) Implicit\]$/.test(m?.modelo ?? m?.texto ?? ''));
+  const eldritchDegraus = gerada.eldritchDegraus ?? (marcadorEldritch ? { searing: 1 + Math.floor(rng() * 6), eater: 1 + Math.floor(rng() * 6) } : null);
   return {
     id, count: 1,
     ...(Object.keys(base).length ? { base } : {}),
     ...(soquetes ? { soquetes } : {}),
     poe: {
+      ...(eldritchDegraus ? { eldritchDegraus } : {}),
+      ...(keystoneSorteada ? { keystoneSorteada, keystoneNome: keystoneDoNo(keystoneSorteada)?.nome ?? null } : {}),
       base: gerada.base, classe: gerada.classe, raridade: gerada.raridade, raridadeNome: R.nome ?? gerada.raridade, cor: R.cor ?? null,
       ilvl: gerada.ilvl, nome: gerada.nome, ...(gerada.unico ? { unico: gerada.unico } : {}),
       // (O único que já cai corrompido — a Corda da Servidão — não aceita moeda comum, como no PoE.)
@@ -505,7 +532,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // Ataque/Movimento "enquanto Resfriado", o Crescimento Frágil (`condicoes-poe.crescimentoFragil`) e a Réplica: Talento Puro (`passivas/arvore` TALENTO_PURO))
 // (85 — 06/11, os Únicos sem efeito, lotes 1 a 5 — de 423 linhas para 0: as regras novas dos frascos, anéis, cintos, armaduras, amuletos, armas e
 // aljavas únicos, e as notas das linhas inertes nos frascos; `docs/unicos-sem-efeito.md`)
-export const VERSAO_DA_TRADUCAO = 85;
+// (86 — 06-07/11, as inertes dos Únicos (lotes 6 em diante): os Emissários, os Aspectos, as cargas de único, os aliados, a Fortificação, os solos, a reserva,
+// o Impelir, os cadáveres, as Posturas e as habilidades concedidas; o lembrete entre parênteses do Oni-Goroshi deixa de virar efeito)
+export const VERSAO_DA_TRADUCAO = 86;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
@@ -599,7 +628,22 @@ export function recalcular(peca, regras = Catalogo.REGRAS) {
  * A QUALIDADE no drop (dono, 07/10; poedb › Quality): parte das armas, armaduras e frascos cai "Superior", com 1 a `maximo`% de qualidade
  * (`regras.drop.qualidade.chance` por peça); o resto cai com 0%. A peça é remontada com a qualidade (dano/defesa/recuperação e o nome).
  */
+/**
+ * (07/11, lote 24 das inertes — o dono: "Só a marca nos itens") a INFLUÊNCIA no drop: a peça Rara de arma, armadura, escudo, aljava, anel, amuleto ou cinto sai com
+ * uma das seis influências (o Criador, o Ancião e os quatro Conquistadores — `poe.influencias`), na chance `regras.drop.influenciaPct` (2% sem ela), sem os mods
+ * próprios dela; a peça com implícito Eldritch não (como no PoE). As linhas "Item do Criador/Ancião…" dos únicos leem a marca.
+ */
+const INFLUENCIAS_DO_DROP = Object.freeze(['shaper', 'elder', 'crusader', 'redeemer', 'hunter', 'warlord']);
+const CLASSES_SEM_INFLUENCIA = /^(Life_Flasks|Mana_Flasks|Hybrid_Flasks|Utility_Flasks|Tinctures|Jewels|Abyss_Jewels|Cluster_Jewels|Maps|Heist|Trinkets)/;
+export function influenciaDoDrop(peca, rng = Math.random, regras = Catalogo.REGRAS) {
+  const p = peca?.poe;
+  if (!p || p.raridade !== 'raro' || (p.influencias ?? []).length || CLASSES_SEM_INFLUENCIA.test(p.classe ?? '') || (p.implicitos ?? []).some((m) => m.origem === 'searing' || m.origem === 'eater')) return peca;
+  const chance = Number(regras.drop?.influenciaPct ?? 2) || 0;
+  if (rng() * 100 < chance) p.influencias = [INFLUENCIAS_DO_DROP[Math.floor(rng() * INFLUENCIAS_DO_DROP.length)]];
+  return peca;
+}
 export function qualidadeDoDrop(peca, rng = Math.random, regras = Catalogo.REGRAS) {
+  influenciaDoDrop(peca, rng, regras);
   const q = regras.drop?.qualidade;
   const p = peca?.poe;
   if (!p || !q?.chance) return peca;
@@ -718,7 +762,7 @@ export function pecaDoBauInicial(rng = Math.random, regras = Catalogo.REGRAS) {
  * recompensa, ex.: as do Demigod) e as Rúnicas/Ward (da Expedição; a coleção não traz o pool delas). Antes caíam Raras sem nenhum mod.
  */
 // (lote 27) A Joia Prismática só cai Única (o PoE não tem Prismática Normal, Mágica nem Rara; a coleção traz o pool genérico das joias nela).
-export const podeCairComo = (classe, base, raridade) => (RAMIFICADORAS_NO_DROP || !ehRamificadora(base)) && (!SO_UNICAS.has(base?.id) || raridade === 'unico') && (!!base?.pool || ehRamificadora(base) || (raridade === 'unico' && !!classe?.unicos?.some((u) => u.base === base?.nome)));
+export const podeCairComo = (classe, base, raridade) => (RAMIFICADORAS_NO_DROP || !ehRamificadora(base)) && (!SO_UNICAS.has(base?.id) || raridade === 'unico') && (!!base?.pool || ehRamificadora(base) || (raridade === 'unico' && !!classe?.unicos?.some((u) => u.base === base?.nome && caiNoSorteio(u))));
 /** (lote 82) A vaga das Ramificadoras no sorteio das bases (`pecaSorteada`). */
 const RAMIFICADORA_NO_SORTEIO = Symbol('ramificadora');
 /** (lote 82) A Ramificadora só cai do Item Level mínimo dela para cima (dono: "Só nos mapas"). */
@@ -746,7 +790,7 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
     const b = c?.bases.find((x) => x.id === baseFixa);
     if (!b) return null;
     // (O MAPA ÚNICO está em todas as bases de mapa — `catalogo.mjs` —: o Único sorteado num drop de mapa sai no tier dele.)
-    if (raridade === 'unico' && !c.unicos.some((u) => u.base === b.nome)) raridade = 'raro';
+    if (raridade === 'unico' && !c.unicos.some((u) => u.base === b.nome && caiNoSorteio(u))) raridade = 'raro';
     if (!podeCairComo(c, b, raridade) || !caiNoNivel(b, ilvl)) return null;
     const r = raridade === 'raro' && FRASCOS.includes(classe) ? 'magico' : raridade;
     return qualidadeDoDrop(pecaDoJogo(gerarPeca({ catalogo: cat, regras, base: baseFixa, raridade: r, ilvl, rng }), regras, rng), rng, regras);
@@ -769,7 +813,7 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
     // As bases "Royale" são do modo Battle Royale do PoE: ficam no catálogo (os ids não mudam), mas não caem. A "Lâmina de Energia" também
     // não: no PoE ela é a arma que a habilidade Lâmina de Energia cria.
     if (b.slug?.startsWith('Royale_') || b.slug === 'Energy_Blade') continue;
-    if (raridade === 'unico' && !c.unicos.some((u) => u.base === b.nome)) continue;
+    if (raridade === 'unico' && !c.unicos.some((u) => u.base === b.nome && caiNoSorteio(u))) continue;
     if (!podeCairComo(c, b, raridade) || !caiNoNivel(b, ilvl)) continue;
     if (ehRamificadora(b)) { ramificadoras.push(baseId); continue; }
     if (!porClasse.has(classe)) porClasse.set(classe, []);

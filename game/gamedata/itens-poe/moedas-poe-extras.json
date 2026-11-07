@@ -1,0 +1,272 @@
+{
+ "_nota": "As moedas do poedb que a coleção do dono não traz (06/11, dono: \"Cadeia completa\" do Emissário e o Ducado de Ukatoa): as 18 Partes do Emissário (Harbinger — a classe Peças do poedb; cada Parte é o seu único \"Primeira Peça do Arcano\"…), os 6 Pergaminhos do Emissário e o Ducado de Ukatoa. Os textos são os das páginas do poedb pt (saida/html/<slug>.html); o \"Junte…\" das Partes é o resumo do jogo (o poedb só diz \"Este item se transformará…\"). tools/importar-moedas-poe.mjs junta estas às da coleção; o que fazem está em systems/itens-poe/moedas.mjs.",
+ "moedas": [
+  {
+   "slug": "First_Piece_of_the_Arcane",
+   "nome": "Primeira Peça do Arcano",
+   "efeitos": [
+    "Parte da Espada da Legião (1 de 3).",
+    "Junte a Primeira Peça do Arcano, a Segunda Peça do Arcano e a Terceira Peça do Arcano para formar Pensamentos Agitados.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandSwords/HarbingerLeagueShards/HarbingerSwordShard1.webp"
+  },
+  {
+   "slug": "Second_Piece_of_the_Arcane",
+   "nome": "Segunda Peça do Arcano",
+   "efeitos": [
+    "Parte da Espada da Legião (2 de 3).",
+    "Junte a Primeira Peça do Arcano, a Segunda Peça do Arcano e a Terceira Peça do Arcano para formar Pensamentos Agitados.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandSwords/HarbingerLeagueShards/HarbingerSwordShard2.webp"
+  },
+  {
+   "slug": "Third_Piece_of_the_Arcane",
+   "nome": "Terceira Peça do Arcano",
+   "efeitos": [
+    "Parte da Espada da Legião (3 de 3).",
+    "Junte a Primeira Peça do Arcano, a Segunda Peça do Arcano e a Terceira Peça do Arcano para formar Pensamentos Agitados.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandSwords/HarbingerLeagueShards/HarbingerSwordShard3.webp"
+  },
+  {
+   "slug": "First_Piece_of_Focus",
+   "nome": "Primeira Parte do Foco",
+   "efeitos": [
+    "Parte do Escudo Triangular do Arconte (1 de 4).",
+    "Junte a Primeira Parte do Foco, a Segunda Parte do Foco, a Terceira Parte do Foco e a Quarta Parte do Foco para formar Força Inabalada.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Armours/Shields/Shards/ChannelingShieldShard1.webp"
+  },
+  {
+   "slug": "Second_Piece_of_Focus",
+   "nome": "Segunda Parte do Foco",
+   "efeitos": [
+    "Parte do Escudo Triangular do Arconte (2 de 4).",
+    "Junte a Primeira Parte do Foco, a Segunda Parte do Foco, a Terceira Parte do Foco e a Quarta Parte do Foco para formar Força Inabalada.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Armours/Shields/Shards/ChannelingShieldShard2.webp"
+  },
+  {
+   "slug": "Third_Piece_of_Focus",
+   "nome": "Terceira Parte do Foco",
+   "efeitos": [
+    "Parte do Escudo Triangular do Arconte (3 de 4).",
+    "Junte a Primeira Parte do Foco, a Segunda Parte do Foco, a Terceira Parte do Foco e a Quarta Parte do Foco para formar Força Inabalada.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Armours/Shields/Shards/ChannelingShieldShard3.webp"
+  },
+  {
+   "slug": "Fourth_Piece_of_Focus",
+   "nome": "Quarta Parte do Foco",
+   "efeitos": [
+    "Parte do Escudo Triangular do Arconte (4 de 4).",
+    "Junte a Primeira Parte do Foco, a Segunda Parte do Foco, a Terceira Parte do Foco e a Quarta Parte do Foco para formar Força Inabalada.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Armours/Shields/Shards/ChannelingShieldShard4.webp"
+  },
+  {
+   "slug": "First_Piece_of_Brutality",
+   "nome": "Primeira Peça da Brutalidade",
+   "efeitos": [
+    "Parte do Cajado Imperial (1 de 3).",
+    "Junte a Primeira Peça da Brutalidade, a Segunda Peça da Brutalidade e a Terceira Peça da Brutalidade para formar Divina Inimizade.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/HarbingerShards/Shard1.webp"
+  },
+  {
+   "slug": "Second_Piece_of_Brutality",
+   "nome": "Segunda Peça da Brutalidade",
+   "efeitos": [
+    "Parte do Cajado Imperial (2 de 3).",
+    "Junte a Primeira Peça da Brutalidade, a Segunda Peça da Brutalidade e a Terceira Peça da Brutalidade para formar Divina Inimizade.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/HarbingerShards/Shard2.webp"
+  },
+  {
+   "slug": "Third_Piece_of_Brutality",
+   "nome": "Terceira Peça da Brutalidade",
+   "efeitos": [
+    "Parte do Cajado Imperial (3 de 3).",
+    "Junte a Primeira Peça da Brutalidade, a Segunda Peça da Brutalidade e a Terceira Peça da Brutalidade para formar Divina Inimizade.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/HarbingerShards/Shard3.webp"
+  },
+  {
+   "slug": "First_Piece_of_Time",
+   "nome": "Primeira Peça do Tempo",
+   "efeitos": [
+    "Parte do Cinto de Pano (1 de 2).",
+    "Junte a Primeira Peça do Tempo e a Segunda Peça do Tempo para formar Fluxo Livre.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Belts/Shards/HarbingerBeltShard1.webp"
+  },
+  {
+   "slug": "Second_Piece_of_Time",
+   "nome": "Segunda Peça do Tempo",
+   "efeitos": [
+    "Parte do Cinto de Pano (2 de 2).",
+    "Junte a Primeira Peça do Tempo e a Segunda Peça do Tempo para formar Fluxo Livre.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Belts/Shards/HarbingerBeltShard2.webp"
+  },
+  {
+   "slug": "First_Piece_of_Directions",
+   "nome": "Primeira Peça das Direções",
+   "efeitos": [
+    "Parte da Aljava de Flechas Cegas (1 de 3).",
+    "Junte a Primeira Peça das Direções, a Segunda Peça das Direções e a Terceira Peça das Direções para formar Rotação Fraturante.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Quivers/Shards/Shard1.webp"
+  },
+  {
+   "slug": "Second_Piece_of_Directions",
+   "nome": "Segunda Peça das Direções",
+   "efeitos": [
+    "Parte da Aljava de Flechas Cegas (2 de 3).",
+    "Junte a Primeira Peça das Direções, a Segunda Peça das Direções e a Terceira Peça das Direções para formar Rotação Fraturante.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Quivers/Shards/Shard2.webp"
+  },
+  {
+   "slug": "Third_Piece_of_Directions",
+   "nome": "Terceira Peça das Direções",
+   "efeitos": [
+    "Parte da Aljava de Flechas Cegas (3 de 3).",
+    "Junte a Primeira Peça das Direções, a Segunda Peça das Direções e a Terceira Peça das Direções para formar Rotação Fraturante.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Quivers/Shards/Shard3.webp"
+  },
+  {
+   "slug": "First_Piece_of_Storms",
+   "nome": "Primeira Peça das Tempestades",
+   "efeitos": [
+    "Parte da Máscara Insensível (1 de 3).",
+    "Junte a Primeira Peça das Tempestades, a Segunda Peça das Tempestades e a Terceira Peça das Tempestades para formar Conexão da Tempestade.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Armours/Helmets/HarbingerShards/Shard1.webp"
+  },
+  {
+   "slug": "Second_Piece_of_Storms",
+   "nome": "Segunda Peça das Tempestades",
+   "efeitos": [
+    "Parte da Máscara Insensível (2 de 3).",
+    "Junte a Primeira Peça das Tempestades, a Segunda Peça das Tempestades e a Terceira Peça das Tempestades para formar Conexão da Tempestade.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Armours/Helmets/HarbingerShards/Shard2.webp"
+  },
+  {
+   "slug": "Third_Piece_of_Storms",
+   "nome": "Terceira Peça das Tempestades",
+   "efeitos": [
+    "Parte da Máscara Insensível (3 de 3).",
+    "Junte a Primeira Peça das Tempestades, a Segunda Peça das Tempestades e a Terceira Peça das Tempestades para formar Conexão da Tempestade.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Armours/Helmets/HarbingerShards/Shard3.webp"
+  },
+  {
+   "slug": "Electroshock_Scroll",
+   "nome": "Pergaminho da Eletrocussão",
+   "efeitos": [
+    "Aprimora os Pensamentos Agitados para uma versão mais poderosa.",
+    "Clique com o botão direito neste item e então com o esquerdo em um item único Emissário para aprimorá-lo."
+   ],
+   "pilha": 10,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Currency/Harvest/HarbingerTokenSword.webp"
+  },
+  {
+   "slug": "Specularity_Scroll",
+   "nome": "Pergaminho da Especularidade",
+   "efeitos": [
+    "Aprimora a Força Inabalada para uma versão mais poderosa.",
+    "Clique com o botão direito neste item e então com o esquerdo em um item único Emissário para aprimorá-lo."
+   ],
+   "pilha": 10,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Currency/Harvest/HarbingerTokenShield.webp"
+  },
+  {
+   "slug": "Haemocombustion_Scroll",
+   "nome": "Pergaminho da Hemi Combustão",
+   "efeitos": [
+    "Aprimora a Divina Inimizade para uma versão mais poderosa.",
+    "Clique com o botão direito neste item e então com o esquerdo em um item único Emissário para aprimorá-lo."
+   ],
+   "pilha": 10,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Currency/Harvest/HarbingerTokenStaff.webp"
+  },
+  {
+   "slug": "Time-light_Scroll",
+   "nome": "Pergaminho da Luz Temporal",
+   "efeitos": [
+    "Aprimora o Fluxo Livre para uma versão mais poderosa.",
+    "Clique com o botão direito neste item e então com o esquerdo em um item único Emissário para aprimorá-lo."
+   ],
+   "pilha": 10,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Currency/Harvest/HarbingerTokenBelt.webp"
+  },
+  {
+   "slug": "Fragmentation_Scroll",
+   "nome": "Pergaminho da Fragmentação",
+   "efeitos": [
+    "Aprimora a Rotação Fraturante para uma versão mais poderosa.",
+    "Clique com o botão direito neste item e então com o esquerdo em um item único Emissário para aprimorá-lo."
+   ],
+   "pilha": 10,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Currency/Harvest/HarbingerTokenQuiver.webp"
+  },
+  {
+   "slug": "Deregulation_Scroll",
+   "nome": "Pergaminho da Desregulamentação",
+   "efeitos": [
+    "Aprimora a Conexão da Tempestade para uma versão mais poderosa.",
+    "Clique com o botão direito neste item e então com o esquerdo em um item único Emissário para aprimorá-lo."
+   ],
+   "pilha": 10,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Currency/Harvest/HarbingerTokenHelm.webp"
+  },
+  {
+   "slug": "Ukatoas_Ducat",
+   "nome": "Ducado de Ukatoa",
+   "efeitos": [
+    "Substitui o modificador implícito de um amuleto não único por um modificador sobrenatural, caso ele ainda não possua um."
+   ],
+   "pilha": 10,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Currency/Deepwater/DucatEldritch.webp"
+  }
+ ]
+}

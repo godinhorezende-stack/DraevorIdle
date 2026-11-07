@@ -14,6 +14,3778 @@
   ],
   "regras": [
     {
+      "padrao": "^Acertos Inimigos infligem Grilhões Temporais em você$",
+      "efeitos": [
+        {
+          "stat": "grilhoes_ao_ser_acertado",
+          "valor": "1"
+        }
+      ],
+      "_07_11p": "07/11 — lote 26 das inertes: os Grilhões Temporais em você e as imunidades do Olho do Vigia",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ao perder Grilhões Temporais você ganha Fúria máxima$",
+      "efeitos": [
+        {
+          "stat": "furia_max_ao_perder_grilhoes",
+          "valor": "1"
+        }
+      ],
+      "_07_11p": "07/11 — lote 26 das inertes: os Grilhões Temporais em você e as imunidades do Olho do Vigia",
+      "_nova": true
+    },
+    {
+      "padrao": "^Imune a Grilhões Temporais$",
+      "efeitos": [
+        {
+          "stat": "imune_grilhoes_temporais",
+          "valor": "1"
+        }
+      ],
+      "_07_11p": "07/11 — lote 26 das inertes: os Grilhões Temporais em você e as imunidades do Olho do Vigia",
+      "_nova": true
+    },
+    {
+      "padrao": "^Imune a Grilhões Temporais enquanto afetado por Ímpeto$",
+      "efeitos": [
+        {
+          "stat": "imune_grilhoes_temporais@afetadoPor:impeto",
+          "valor": "1"
+        }
+      ],
+      "_07_11p": "07/11 — lote 26 das inertes: os Grilhões Temporais em você e as imunidades do Olho do Vigia",
+      "_nova": true
+    },
+    {
+      "padrao": "^Imune a Solo Eletrizado enquanto afetado por Pureza Elétrica$",
+      "efeitos": [
+        {
+          "stat": "imune_solo_eletrizado@afetadoPor:pureza-eletrica",
+          "valor": "1"
+        }
+      ],
+      "_07_11p": "07/11 — lote 26 das inertes: os Grilhões Temporais em você e as imunidades do Olho do Vigia",
+      "_nova": true
+    },
+    {
+      "padrao": "^Imune a Solo Ardente enquanto afetado por Pureza Ardente$",
+      "efeitos": [
+        {
+          "stat": "imune_solo_ardente@afetadoPor:pureza-ardente",
+          "valor": "1"
+        }
+      ],
+      "_07_11p": "07/11 — lote 26 das inertes: os Grilhões Temporais em você e as imunidades do Olho do Vigia",
+      "_nova": true
+    },
+    {
+      "padrao": "^Amaldiçoa Inimigos com (.+?) quando você Bloquear seu Dano de Ataques com Projéteis, ignorando o Limite de Maldições$",
+      "efeitos": [
+        {
+          "stat": "ev:bloquearProjetil:maldicao:{NOME}:10:semLimite",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a maldição no nível 10 da gema (o texto do poedb em português não traz o nível).",
+      "_07_11p": "07/11 — lote 26 das inertes: os Grilhões Temporais em você e as imunidades do Olho do Vigia",
+      "_nova": true
+    },
+    {
+      "padrao": "^Modificadores do número de Projéteis são aplicados ao número de alvos nos quais os Projéteis Partidos se focam ao invés$",
+      "efeitos": [
+        {
+          "stat": "projeteis_viram_divisao",
+          "valor": "1"
+        }
+      ],
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Quando \\{(\\d+)\\}% da duração do seu feitiço expira em um inimigo, consome \\{(\\d+)\\} alma por cada poder dele$",
+      "efeitos": [
+        {
+          "stat": "almas_do_feitico_pct",
+          "valor": "{1}"
+        },
+        {
+          "stat": "almas_do_feitico_por_poder",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "vale em toda maldição sua no inimigo (as Marcas também)",
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\[Random Keystone\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "uma keystone da árvore sorteada na peça (`keystoneNome`): os efeitos dela valem enquanto a peça está vestida",
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\[Six Linked\\]$",
+      "efeitos": [
+        {
+          "stat": "encaixes_ligados",
+          "valor": "1"
+        }
+      ],
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito das Auras Não Maldição das suas Habilidades aumentado em \\{(\\d+)\\}% nos Lacaios$",
+      "efeitos": [
+        {
+          "stat": "aura_efeito_nos_lacaios",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as suas auras valem nos lacaios pelo dano aumentado, o \"como Dano Extra\" (como mais dano), as resistências, o bloqueio e a velocidade; o dano adicionado plano delas não entra no golpe do lacaio",
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Seus Lacaios usam seus Frascos quando convocados$",
+      "efeitos": [
+        {
+          "stat": "lacaios_usam_frascos",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o lacaio novo usa cada frasco com cargas: o de Vida cura; o de utilidade dá o dano, as resistências, a armadura, a evasão e a velocidade do efeito (o movimento e o crítico, que o lacaio do jogo não tem, ficam de fora)",
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios têm Cargas de Frasco usadas reduzidas em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_frasco_cargas_red",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios têm Duração do Efeito do Frasco aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_frasco_duracao_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você só pode Encaixar Gemas Corrompidas neste item$",
+      "efeitos": [
+        {
+          "stat": "so_gemas_corrompidas",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a gema se corrompe com o Orbe Vaal na mochila (25% nada, 25% ±1 nível, 25% ±1 a 20 de qualidade, 25% a versão Vaal); o nível 21 vale como o 20 (os dados vão até ele)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Consome Gemas de Suporte Encaixadas Não Corrompidas ao atingir seu Nível Máximo$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o suporte não corrompido que chega ao máximo sai do encaixe e fica na peça, suportando as gemas encaixadas nela (até o número da linha de baixo)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pode Consumir \\{(\\d+)\\} Gemas de Suporte Não Corrompidas$",
+      "efeitos": [
+        {
+          "stat": "consome_suportes_max",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não Consumiu nenhuma Gema$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "os suportes consumidos ficam na peça (`suportesConsumidos`)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11o": "07/11 — lote 25 das inertes: os sistemas novos (o dono: \"Fazer todos\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Abraçar a Loucura Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "concede:abracar-a-loucura",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Abraçar a Loucura alterna a Loucura Gloriosa (o PoB: recarga de 1 s, 8 s ao tirar); o \"Tocado\" a cada 2 s não é simulado",
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recebe Presença do Criador por \\{(\\d+)\\} segundos ao matar um Inimigo Raro ou Único$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:buff:presencaDoCriador@alvoRaro",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ev:matar:buff:presencaDoCriador@alvoUnico",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Presença do Criador: os debuffs em você expiram 20% mais devagar (o jogo guarda o fim dos buffs: eles não estendem; os aliados também não)",
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\[The Searing Exarch Implicit\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o implícito do Exarca: o jogo não tem a tabela Eldritch dos amuletos — o degrau dele (1 a 6) sai sorteado na peça e decide o dominante",
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\[The Eater of Worlds Implicit\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o implícito do Devorador: o jogo não tem a tabela Eldritch dos amuletos — o degrau dele (1 a 6) sai sorteado na peça e decide o dominante",
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Golpes Críticos infligem Loucura Malígna se o Devorador de Mundos for dominante$",
+      "efeitos": [
+        {
+          "stat": "ev:critico:loucuraMaligna@dominante:eater",
+          "valor": "100"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Mata Inimigos que possuem \\{(\\d+)\\}% ou menos de Vida ao Acertar se o Exarca Cauterizado for dominante$",
+      "efeitos": [
+        {
+          "stat": "culling_limiar@dominante:searing",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^As estrelas são alinhadas se você tiver \\{(\\d+)\\} tipos de influência entre os outros itens equipados$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "a condição das linhas \"se as estrelas estiverem alinhadas\" (os 6 tipos de influência nas outras peças vestidas)",
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Receba \\{(\\d+)\\}% do Dano Elemental como Dano de Caos Extra por Item Remodelado Equipado$",
+      "efeitos": [
+        {
+          "stat": "elem_as_extra_chaos%itensInfluencia:shaper",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Acertos ignoram a Resistência a Caos do Monstro Inimigo caso todos os Itens Equipados sejam Itens Remodelados$",
+      "efeitos": [
+        {
+          "stat": "ignora_res_caos@todosInfluencia:shaper",
+          "valor": "1"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\}% do Dano Físico como Dano de Caos extra por Item do Ancião Equipado$",
+      "efeitos": [
+        {
+          "stat": "phys_as_extra_chaos%itensInfluencia:elder",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Acertos ignoram a Resistência a Caos do Monstro inimigo se todos os Itens Equipados forem Itens do Ancião$",
+      "efeitos": [
+        {
+          "stat": "ignora_res_caos@todosInfluencia:elder",
+          "valor": "1"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Remove uma Afecção quando você usa um Frasco se todos Itens Equipados forem Itens Anciões$",
+      "efeitos": [
+        {
+          "stat": "ev:usarFrasco:removerAfeccao:uma@todosInfluencia:elder",
+          "valor": "100"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano de ataque aumentado em \\{(\\d+)\\}% se o seu anel oposto for um Item do Criador$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+anelInfluencia:shaper",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não pode sofrer atordoamento por ataques se o seu anel oposto for um Item do Ancião$",
+      "efeitos": [
+        {
+          "stat": "imune_atordoamento_ataque@anelInfluencia:elder",
+          "valor": "1"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano mágico aumentado em \\{(\\d+)\\}% se o seu anel oposto for um Item do Ancião$",
+      "efeitos": [
+        {
+          "stat": "spell_dmg@anelInfluencia:elder",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não pode sofrer atordoamento por magias se o seu anel oposto for um Item do Criador$",
+      "efeitos": [
+        {
+          "stat": "imune_atordoamento_magia@anelInfluencia:shaper",
+          "valor": "1"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você possui Confluxo de Incêndio, Resfriamento e Eletrização enquanto afetado por Loucura Gloriosa$",
+      "efeitos": [
+        {
+          "stat": "pode:incendio:physical@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:incendio:fire@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:incendio:ice@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:incendio:energy@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:incendio:chaos@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:physical@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:fire@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:ice@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:energy@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:chaos@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:physical@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:fire@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:ice@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:energy@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:chaos@buff:loucuraGloriosa",
+          "valor": "1"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Imune a Afecções Elementais enquanto afetado por Loucura Gloriosa$",
+      "efeitos": [
+        {
+          "stat": "imune_incendio@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "imune_congelamento@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "imune_resfriamento@buff:loucuraGloriosa",
+          "valor": "1"
+        },
+        {
+          "stat": "imune_eletrizacao@buff:loucuraGloriosa",
+          "valor": "1"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Máximo de Cargas de Sifão por Item Ancião ou Remodelado Equipado$",
+      "efeitos": [
+        {
+          "stat": "max_sifao%itensInfluencia:elder",
+          "valor": "{1}"
+        },
+        {
+          "stat": "max_sifao%itensInfluencia:shaper",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de receber uma Carga de Sifão quando utilizar uma Habilidade$",
+      "efeitos": [
+        {
+          "stat": "ev:usarHabilidade:carga:sifao",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona de \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico aos Ataques e Magias por Carga de Sifão$",
+      "efeitos": [
+        {
+          "stat": "added_physical_dmg_min%carga:sifao",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_physical_dmg_max%carga:sifao",
+          "valor": "{2}"
+        },
+        {
+          "stat": "spell_added_physical_dmg_min%carga:sifao",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_physical_dmg_max%carga:sifao",
+          "valor": "{2}"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recebe \\{(\\d+)\\}% de Dano não-Caótico como Dano de Caos Extra por Carga de Sifão$",
+      "efeitos": [
+        {
+          "stat": "naocaos_as_extra_chaos%carga:sifao",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Redução de Dano Físico adicional dos Acertos por Carga de Sifão$",
+      "efeitos": [
+        {
+          "stat": "phys_res%carga:sifao",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{([\\d.]+)\\}% do Dano Drenado como Vida por Carga de Sifão$",
+      "efeitos": [
+        {
+          "stat": "life_leech%carga:sifao",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Sofre \\{(\\d+)\\} de Dano Físico por Segundo por cada Carga de Sifão caso tenha usado uma Habilidade Recentemente$",
+      "efeitos": [
+        {
+          "stat": "perde_vida_s%carga:sifao@usouHabilidadeRecente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Vida perdida por segundo, sem a redução física",
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Possui Influência do Ancião, Criador e de todos os Conquistadores$",
+      "efeitos": [
+        {
+          "stat": "todas_influencias",
+          "valor": "1"
+        }
+      ],
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você tem Confluxo Elemental se as estrelas estiverem alinhadas$",
+      "efeitos": [
+        {
+          "stat": "pode:incendio:physical@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:incendio:fire@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:incendio:ice@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:incendio:energy@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:incendio:chaos@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:physical@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:fire@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:ice@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:energy@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:chaos@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:physical@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:fire@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:ice@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:energy@tiposDeInfluencia:6",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:chaos@tiposDeInfluencia:6",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Confluxo Elemental: todo o seu dano pode Incendiar, Resfriar e Eletrizar",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao nível de todas as gemas de habilidade elemental se as estrelas estiverem alinhadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level@habilidade+elemental+tiposDeInfluencia:6",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao nível de todas as gemas de suporte elemental se as estrelas estiverem alinhadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level@suporte+elemental+tiposDeInfluencia:6",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11n": "07/11 — lote 24 das inertes: as influências (o dono: \"Só a marca nos itens\") e a Loucura Gloriosa",
+      "_nova": true
+    },
+    {
+      "padrao": "^Modificadores de Atributos, ao invés, se aplicam a Onisciência$",
+      "efeitos": [
+        {
+          "stat": "atributos_viram_oniciencia",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o jogo soma \"+X de todos os Atributos\" em cada um: a parte comum aos três conta uma vez como Onisciência",
+      "_07_11m": "07/11 — lote 23 das inertes: a Onisciência (o dono: \"Fazer como no PoE\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de todas as Resistências Elementais por cada \\{(\\d+)\\} de Onisciência$",
+      "efeitos": [
+        {
+          "stat": "fire_res%oniciencia:{V2}",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res%oniciencia:{V2}",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res%oniciencia:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11m": "07/11 — lote 23 das inertes: a Onisciência (o dono: \"Fazer como no PoE\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Penetra \\{(\\d+)\\}% das Resistências Elementais por cada \\{(\\d+)\\} de Onisciência$",
+      "efeitos": [
+        {
+          "stat": "elem_pen%oniciencia:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11m": "07/11 — lote 23 das inertes: a Onisciência (o dono: \"Fazer como no PoE\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Requerimentos de Atributos podem ser satisfeitos por \\{(\\d+)\\}% de Onisciência$",
+      "efeitos": [
+        {
+          "stat": "oniciencia_requisitos_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11m": "07/11 — lote 23 das inertes: a Onisciência (o dono: \"Fazer como no PoE\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganho de Experiência das Gemas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "gem_xp_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11l": "07/11 — lote 22 das inertes: a economia e a experiência (o dono: \"Continue então resolvendo\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Gemas Encaixadas nos Encaixes Azuis ganham \\{(\\d+)\\}% de Experiência aumentada$",
+      "efeitos": [
+        {
+          "stat": "gem_xp_azul_local",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11l": "07/11 — lote 22 das inertes: a economia e a experiência (o dono: \"Continue então resolvendo\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Experiência adquirida reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "exp_bonus",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_07_11l": "07/11 — lote 22 das inertes: a economia e a experiência (o dono: \"Continue então resolvendo\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Quantidade de Ouro Derrubada por Inimigos Mortos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "gold_find",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_07_11l": "07/11 — lote 22 das inertes: a economia e a experiência (o dono: \"Continue então resolvendo\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de monstros Mortos derrubarem um Pergaminho da Sabedoria adicional$",
+      "efeitos": [
+        {
+          "stat": "pergaminho_extra_chance",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11l": "07/11 — lote 22 das inertes: a economia e a experiência (o dono: \"Continue então resolvendo\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Itens Mágicos encontrados são Identificados$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo não tem item por identificar (toda peça cai identificada)",
+      "_07_11l": "07/11 — lote 22 das inertes: a economia e a experiência (o dono: \"Continue então resolvendo\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não Perde Experiência quando você morrer porque um alvo Vinculado morreu$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "no jogo você não morre quando o alvo Vinculado morre",
+      "_07_11l": "07/11 — lote 22 das inertes: a economia e a experiência (o dono: \"Continue então resolvendo\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito de bônus de Aspecto do Caranguejo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "caranguejo_efeito",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11k": "07/11 — lote 21 das inertes: os implícitos (os Talismãs de Aspecto, o Impacto Ardente, o Avanço Ardente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito da penalidade de Aspecto da Aranha aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "aranha_penalidade_efeito",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11k": "07/11 — lote 21 das inertes: os implícitos (os Talismãs de Aspecto, o Impacto Ardente, o Avanço Ardente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito de bônus de Aspecto do Gato aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff:furtividadeFelina",
+          "valor": "{1}"
+        },
+        {
+          "stat": "efeito_buff:agilidadeFelina",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11k": "07/11 — lote 21 das inertes: os implícitos (os Talismãs de Aspecto, o Impacto Ardente, o Avanço Ardente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Impacto Ardente Nível \\{(\\d+)\\} no Acerto Corpo a Corpo com esta Arma$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:gatilho:impacto-ardente@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Impacto Ardente pelo PoB (FieryImpactHeistMaceImplicit: 280/350/420% de dano de base nos níveis 10/15/20, 60% do Físico em Fogo, recarga 1,8/1,6/1,4 s); vale no acerto corpo a corpo de qualquer arma sua",
+      "_07_11k": "07/11 — lote 21 das inertes: os implícitos (os Talismãs de Aspecto, o Impacto Ardente, o Avanço Ardente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Avanço Ardente Nível \\{(\\d+)\\} ao usar uma Habilidade Encaixada$",
+      "efeitos": [
+        {
+          "stat": "ev:usarHabilidade:gatilho:avanco-ardente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Avanço Ardente do jogo, ao usar qualquer habilidade sua (o jogo não separa a encaixada nesta arma)",
+      "_07_11k": "07/11 — lote 21 das inertes: os implícitos (os Talismãs de Aspecto, o Impacto Ardente, o Avanço Ardente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Feitiços das Habilidades Encaixadas podem aplicar \\{(\\d+)\\} Maldições adicionais$",
+      "efeitos": [
+        {
+          "stat": "efigie_maldicoes_extra",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as Maldições encaixadas que a Efígie aplica ignoram o limite de maldições no alvo",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
+      "_nova": true
+    },
+    {
+      "padrao": "^Projéteis Inimigos Perfuram você$",
+      "efeitos": [
+        {
+          "stat": "projeteis_perfuram_voce",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o projétil do monstro que te acerta segue e acerta o seu lacaio mais perto atrás de você (a até 2 casas), com o mesmo dano",
+      "_07_11j": "07/11 — lote 20 das inertes: as mecânicas de monstro que o jogo não tinha (o dono: \"Criar as mecânicas\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você não pode ser Amaldiçoado com Silêncio$",
+      "efeitos": [
+        {
+          "stat": "imune_silencio",
+          "valor": "1"
+        }
+      ],
+      "_07_11j": "07/11 — lote 20 das inertes: as mecânicas de monstro que o jogo não tinha (o dono: \"Criar as mecânicas\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(-?\\d+)\\} de Dano Físico sofrido quando acertado por Animais$",
+      "efeitos": [
+        {
+          "stat": "physical_sofrido_animal",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Animal do jogo é o monstro de raça Mamífero, Verme, Réptil, Ave, Aquático ou Licantropo (a Besta do PoE)",
+      "_07_11c": "07/11 — lote 13c das inertes",
+      "_07_11j": "07/11 — lote 20 das inertes: as mecânicas de monstro que o jogo não tinha (o dono: \"Criar as mecânicas\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inafetado por Solo Profanado$",
+      "efeitos": [
+        {
+          "stat": "imune_solo_profanado",
+          "valor": "1"
+        }
+      ],
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_07_11j": "07/11 — lote 20 das inertes: as mecânicas de monstro que o jogo não tinha (o dono: \"Criar as mecânicas\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Cria um Esporo Infestado quando suas Habilidades ou Lacaios Matarem um Monstro Raro$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:esporoInfestado@alvoRaro",
+          "valor": "100"
+        },
+        {
+          "stat": "ev:matarLacaio:esporoInfestado@alvoRaro",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Esporo fica onde o raro morreu, 10 s, com uma aura do PoE no nível 20 ao acaso — vale em você a até 4 casas dele",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11j": "07/11 — lote 20 das inertes: as mecânicas de monstro que o jogo não tinha (o dono: \"Criar as mecânicas\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você pode ser Tocado por Espíritos Atormentados$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:espiritoAtormentado@alvoRaro",
+          "valor": "10"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem fonte: o jogo não tem os Espíritos Atormentados soltos — ao matar um Raro, 10% de chance de um tocar você por 20 s (30% de Dano, 20% de Velocidade de Ataque e Conjuração, 2% de Vida Regenerada por segundo ou 25% de Velocidade de Movimento)",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_07_11j": "07/11 — lote 20 das inertes: as mecânicas de monstro que o jogo não tinha (o dono: \"Criar as mecânicas\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Um Verme Retorcido inimigo surge a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "verme_retorcido_s",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Verme Retorcido é o Verme de Sangue do PoE, com a vida de um monstro normal da área, sem experiência nem loot",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11j": "07/11 — lote 20 das inertes: as mecânicas de monstro que o jogo não tinha (o dono: \"Criar as mecânicas\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} Vermes Contorcidos Inimigos escapam do Frasco quando utilizado Vermes Contorcidos são destruídos quando Acertados$",
+      "efeitos": [
+        {
+          "stat": "vermes_contorcidos",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Vermes Contorcidos são o Verme de Sangue do PoE com 1 de vida, sem experiência nem loot",
+      "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
+      "_07_11j": "07/11 — lote 20 das inertes: as mecânicas de monstro que o jogo não tinha (o dono: \"Criar as mecânicas\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} Lembrança ao gastar um total de \\{(\\d+)\\} de escudo de energia(?: \\/)? e não tiver invocado nenhuma Memória do Criador$",
+      "efeitos": [
+        {
+          "stat": "lembranca_por_es",
+          "valor": "{2}"
+        },
+        {
+          "stat": "lembranca_sem_memoria",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Escudo de Energia perdido conta como gasto",
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede Invocar Memória do Criador nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "memoria_do_criador",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem fonte: no máximo de Lembrança, a Memória do Criador dura 8 s e usa a Devastação do Criador a cada 2 s (Físico em 3 casas em volta de você, 50 a 75 por nível)",
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede Devastação do Criador nível \\{(\\d+)\\}, usada pela Memória do Criador$",
+      "efeitos": [
+        {
+          "stat": "memoria_devastacao",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem fonte: no máximo de Lembrança, a Memória do Criador dura 8 s e usa a Devastação do Criador a cada 2 s (Físico em 3 casas em volta de você, 50 a 75 por nível)",
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} Lembrança ao gastar um total de \\{(\\d+)\\} de escudo de energia$",
+      "efeitos": [
+        {
+          "stat": "lembranca_por_es",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Escudo de Energia perdido conta como gasto",
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^e não tiver invocado nenhuma Memória do Criador$",
+      "efeitos": [
+        {
+          "stat": "lembranca_sem_memoria",
+          "valor": "1"
+        }
+      ],
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Máximo de \\{(\\d+)\\} Lembrança$",
+      "efeitos": [
+        {
+          "stat": "lembranca_max",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Ativar Convocar Anomalia Volátil Nível \\{(\\d+)\\} ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:gatilho:convocar-anomalia-volatil:{V1}",
+          "valor": "{2}"
+        }
+      ],
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "sem fonte: a anomalia explode na hora — Fogo em 2 casas em volta do alvo, 40 a 60 de dano por nível"
+    },
+    {
+      "padrao": "^Gemas Encaixadas são Suportadas por \\{(\\d+)\\} Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "suporte_local:{V1}",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem fonte: o poedb traz só o índice da gema sorteada — o N é a N-ésima gema da lista do jogo pelo slug (em volta)",
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Gemas encaixadas no seu elmo recebem reforço de \\{(\\d+)\\} nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "suporte_elmo:{V1}",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem fonte: o poedb traz só o índice da gema sorteada — o N é a N-ésima gema da lista do jogo pelo slug (em volta)",
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de todas as Gemas de \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "gem_level@gema:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem fonte: o poedb traz só o índice da gema sorteada — o N é a N-ésima gema da lista do jogo pelo slug (em volta)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Onda de Choque Sangrenta Nível \\{(\\d+)\\} no Acerto Corpo a Corpo caso tenha ao menos \\{(\\d+)\\} de Força$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:gatilho:onda-de-choque-sangrenta@corpo+atrMin:str:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "sem fonte: onda Física de 2 casas em volta do alvo, 30 a 45 de dano por nível, recarga de 0,5 s"
+    },
+    {
+      "padrao": "^Habilidades de pacto concedem Dádivas em vez de Aflições$",
+      "efeitos": [
+        {
+          "stat": "ev:usarHabilidade:buff:dadivaDoPacto@pacto",
+          "valor": "4"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem fonte: o jogo não tem a Aflição dos Pactos — o uso de um Pacto dá a Dádiva, 20% de Dano aumentado por 4 s",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ao usar, concede um bônus de Adivinhação aleatório por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "adivinhacao_frasco_s",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem fonte: um de quatro ao acaso — 30% de Dano, 15% de Velocidade de Ataque e de Conjuração, +20% às Resistências Elementais ou 20% de Velocidade de Movimento",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11i": "07/11 — lote 19 das inertes: os números sem fonte (aproximados, dono: \"Aproximar com números meus\")",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades de Feitiço Encaixadas são Ativadas por Efígie de Doedre quando [Cc]onvocadas?$",
+      "efeitos": [
+        {
+          "stat": "efigie_maldicoes",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as Maldições Feitiço encaixadas valem como aura a até 3 casas das Efígies (o raio o PoE não publica); elas seguem conjuráveis à mão",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Manifesto dos Dervixes Dançarinos Nível \\{(\\d+)\\} na Fúria$",
+      "efeitos": [
+        {
+          "stat": "dervixes_dancarinos",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "na Fúria saem 2 Dervixes (o PoB: nível 65, o golpe da sua arma com +110% de Dano de Ataque, 70% mais Dano e +25% de Velocidade de Ataque); você ganha Agressividade enquanto vivem; o Ciclone deles não é simulado",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
+      "_nova": true
+    },
+    {
+      "padrao": "^Guerreiros e Soldados Esqueletos Convocados portam esta Arma enquanto ela estiver em sua Mão Principal$",
+      "efeitos": [
+        {
+          "stat": "esqueletos_com_arma",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o golpe dos Esqueletos vira o da arma (o dano físico com os locais e o tempo de ataque dela, × a Dano dos Lacaios); os outros mods da arma neles (a Precisão, o Poder Profano) não",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
+      "_nova": true
+    },
+    {
+      "padrao": "^Guerreiros e Soldados Esqueletos Convocados causam Dano Triplicado com esta$",
+      "efeitos": [
+        {
+          "stat": "esqueletos_triplo",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Carne Incessante nível \\{(\\d+)\\} uma vez por segundo$",
+      "efeitos": [
+        {
+          "stat": "carne_incessante",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o zumbi do PoB (ShamblingUndead, o nível do ator 70 no 20, +2 por nível) de um cadáver a até 3 casas, por 5 s; o \"+100% de Velocidade de Ataque com Vida Baixa\" dele não é simulado",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ao morrer, um lacaio próximo concede Paredão Podre equivalente a \\{(\\d+)\\}% da própria vida máxima$",
+      "efeitos": [
+        {
+          "stat": "paredao_podre_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem fonte para a duração e o acúmulo: vale o maior e dura até quebrar — o próximo ataque que te acerta sai dele primeiro; \"próximo\" = a até 3 casas",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ao abater um monstro raro, um lacaio conectado aleatório ganha seus modificadores por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:modsDoRaro:{V1}@alvoRaro",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem dado no PoB: o lacaio Vinculado sorteado ganha o Dano, a Velocidade de Ataque e a Vida que os modificadores do raro davam; as mecânicas próprias deles não",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
+      "_nova": true
+    },
+    {
+      "padrao": "^Arma se você Acertou com esta Arma Recentemente$",
+      "efeitos": [
+        {
+          "stat": "esqueletos_triplo",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a segunda metade do \"Dano Triplicado\": com um acerto de ataque seu nos últimos 4 s",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
+      "_nova": true
+    },
+    {
+      "padrao": "^O Dervixe Dançarino Manifestado desativa ambos espaços de arma$",
+      "efeitos": [
+        {
+          "stat": "dervixes_desarma",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
+      "_nova": true
+    },
+    {
+      "padrao": "^O Dervixe Dançarino Manifestado morre quando a Fúria termina$",
+      "efeitos": [
+        {
+          "stat": "dervixes_morrem_na_furia",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Escolhido de Tawhoa Nível \\{(\\d+)\\} quando você Atacar com uma Habilidade de Pancada ou Golpe Não Vaal$",
+      "efeitos": [
+        {
+          "stat": "ev:usarAtaque:repetirTawhoa@pancada",
+          "valor": "100"
+        },
+        {
+          "stat": "ev:usarAtaque:repetirTawhoa@golpe",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Chefe Ilusório usa o mesmo ataque uma vez, de graça, no mesmo alvo (recarga de 1 s); o \"mais Dano\" dele o PoB não tem (100%)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
+      "_nova": true
+    },
+    {
+      "padrao": "^Magias encaixadas recebem reforço de Totem de Caranguejo nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "suporte_local:totem-de-magia",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Totem de Caranguejo do PoB (SupportCrabTotem) é o Totem de Magia com 50% menos Dano, 40% menos Velocidade de Conjuração e 8 s — os números do Totem de Magia no nível 1",
+      "_07_11g": "07/11 — lote 18 das inertes: as regras aproximadas (o comprimento do Raio Escaldante, o Totem de Caranguejo, o Sino do Monastério)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Conta como dano de ataque bloqueado do primeiro alvo atingido por cada ataque com escudo$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:contaComoBloqueio@ataqueDeEscudo",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o primeiro acertado de cada uso do ataque com escudo dispara as reações \"ao Bloquear\" do PoE (as linhas dos itens, o Bloqueou Recentemente, a Retaliação); as do jogo fora do PoE (a Onda Arcana, o Escudo Tempestuoso) não",
+      "_07_11g": "07/11 — lote 18 das inertes: as regras aproximadas (o comprimento do Raio Escaldante, o Totem de Caranguejo, o Sino do Monastério)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Comprimento do Raio Escaldante aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "raio_escaldante_comprimento_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o feixe do jogo é uma forma de 3 fileiras à frente: ganha fileiras na ponta, a profundidade × (1 + X%)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11g": "07/11 — lote 18 das inertes: as regras aproximadas (o comprimento do Raio Escaldante, o Totem de Caranguejo, o Sino do Monastério)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Ativar Explosão Vulcânica Nível \\{(\\d+)\\} ao Acertar Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "rajada_vulcanica",
+          "valor": "{2}"
+        },
+        {
+          "stat": "rajada_vulcanica_chance",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Explosão Vulcânica é a Rajada Vulcânica do jogo (a do Reliquarian): os 4 projéteis caem nos inimigos a até 3 casas (6 m) do alvo — o raio que o PoE não publica",
+      "_07_11f": "07/11 — lote 16 das inertes: a maldição encaixada ao acertar, o Resfriamento pelo dano todo e o Fantasma ao consumir um cadáver",
+      "_nova": true
+    },
+    {
+      "padrao": "^Amaldiçoa Inimigos com Gema de Maldição Feitiço Encaixada ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:maldicaoEncaixada",
+          "valor": "100"
+        }
+      ],
+      "_07_11f": "07/11 — lote 16 das inertes: a maldição encaixada ao acertar, o Resfriamento pelo dano todo e o Fantasma ao consumir um cadáver",
+      "_nova": true
+    },
+    {
+      "padrao": "^Todo o Dano Sofrido de Acertos podem te Resfriar$",
+      "efeitos": [
+        {
+          "stat": "todo_dano_resfria_voce",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "como o Incêndio do Abraço de Mokou: o Resfriamento do dano todo do acerto (50% × (dano ÷ Vida)^0,4, de 5% a 30%, 2 s) nos acertos que já podem afligir você — o Crítico do monstro ou a \"chance de ser afetado\"",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11f": "07/11 — lote 16 das inertes: a maldição encaixada ao acertar, o Resfriamento pelo dano todo e o Fantasma ao consumir um cadáver",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa a Habilidade Convocar Fantasma Nível \\{(\\d+)\\} ao Consumir um Corpo$",
+      "efeitos": [
+        {
+          "stat": "fantasma_ao_consumir_corpo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Fantasma do suporte Convocar Fantasma (15 s, até 5): um por tique em que você consumiu cadáveres",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11f": "07/11 — lote 16 das inertes: a maldição encaixada ao acertar, o Resfriamento pelo dano todo e o Fantasma ao consumir um cadáver",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Explosão Espiritual Nível \\{(\\d+)\\} quando você Usar uma Habilidade enquanto possuir uma Carga Espiritual$",
+      "efeitos": [
+        {
+          "stat": "ev:usarHabilidade:gatilhoGastando:espiritual:explosao-espiritual",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11e": "07/11 — lote 15 das inertes: as habilidades de item das cargas (Explosão Espiritual, Tiro do Vazio) e a Exigência da Rainha",
+      "_nova": true
+    },
+    {
+      "padrao": "^Consome uma Carga do Vazio para Ativar Tiro do Vazio Nível \\{(\\d+)\\} ao disparar Flechas com uma Habilidade não Ativada$",
+      "efeitos": [
+        {
+          "stat": "ev:usarAtaque:gatilhoGastando:vazio:tiro-do-vazio@comArco",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Tiro do Vazio: o \"100% mais Dano em Área\" da explosão não é simulado",
+      "_07_11e": "07/11 — lote 15 das inertes: as habilidades de item das cargas (Explosão Espiritual, Tiro do Vazio) e a Exigência da Rainha",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ordem da Rainha pode Ativar Chamas do Julgamento Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "ordem_rainha_chamas",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11e": "07/11 — lote 15 das inertes: as habilidades de item das cargas (Explosão Espiritual, Tiro do Vazio) e a Exigência da Rainha",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ordem da Rainha pode Ativar Tormenta do Julgamento Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "ordem_rainha_tormenta",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as 12 insígnias da Tormenta do Julgamento caem como uma área só no alvo (o jogo não espalha as insígnias)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11e": "07/11 — lote 15 das inertes: as habilidades de item das cargas (Explosão Espiritual, Tiro do Vazio) e a Exigência da Rainha",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não Pode usar outros Anéis$",
+      "efeitos": [
+        {
+          "stat": "so_este_anel",
+          "valor": "1"
+        }
+      ],
+      "_07_11d": "07/11 — lote 14 das inertes: as Almas Vaal na recarga (Forja do Ódio, Pastor das Almas, Corpo e Espírito) e as restrições de equipamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não Pode utilizar Peitoral$",
+      "efeitos": [
+        {
+          "stat": "sem_peitoral",
+          "valor": "1"
+        }
+      ],
+      "_07_11d": "07/11 — lote 14 das inertes: as Almas Vaal na recarga (Forja do Ódio, Pastor das Almas, Corpo e Espírito) e as restrições de equipamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Matar concede uma Alma Vaal adicional caso você tenha se Enfurecido Recentemente$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:almaVaal@nosUltimos:4:enfureceu",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as Vaal do jogo usam a recarga no lugar das Almas: a alma anda a recarga das Vaal da barra (1 ÷ as Almas por Utilização); Enfurecido = uma faixa da Fúria (o Rampage) nos últimos 4 s",
+      "_07_11d": "07/11 — lote 14 das inertes: as Almas Vaal na recarga (Forja do Ódio, Pastor das Almas, Corpo e Espírito) e as restrições de equipamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Reflete o anel aposto$",
+      "efeitos": [
+        {
+          "stat": "reflete_anel",
+          "valor": "1"
+        }
+      ],
+      "_07_11d": "07/11 — lote 14 das inertes: as Almas Vaal na recarga (Forja do Ódio, Pastor das Almas, Corpo e Espírito) e as restrições de equipamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Custo de Fúria de Habilidades reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "custo_furia_red",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o único custo de Fúria do jogo é o do ataque Vaal da Forja do Ódio (as Almas por Utilização em Fúria)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11d": "07/11 — lote 14 das inertes: as Almas Vaal na recarga (Forja do Ódio, Pastor das Almas, Corpo e Espírito) e as restrições de equipamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades de Ataque Vaal que você Usar manualmente Custam Fúria ao invés de exigirem Almas$",
+      "efeitos": [
+        {
+          "stat": "vaal_ataque_custa_furia",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as Vaal do jogo usam a recarga no lugar das Almas: com Fúria igual às Almas por Utilização, o ataque Vaal à mão gasta a Fúria e não entra em recarga",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11d": "07/11 — lote 14 das inertes: as Almas Vaal na recarga (Forja do Ódio, Pastor das Almas, Corpo e Espírito) e as restrições de equipamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você não pode ganhar Fúria durante a Anulação do Ganho de Almas$",
+      "efeitos": [
+        {
+          "stat": "sem_furia_no_impedimento",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11d": "07/11 — lote 14 das inertes: as Almas Vaal na recarga (Forja do Ódio, Pastor das Almas, Corpo e Espírito) e as restrições de equipamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pastor das Almas$",
+      "efeitos": [
+        {
+          "stat": "pastor_das_almas",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as Vaal do jogo usam a recarga no lugar das Almas: 80% menos Almas = a recarga × 0,2; +100% por Vaal usada nos últimos 8 s = × (1 + as recentes)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11d": "07/11 — lote 14 das inertes: as Almas Vaal na recarga (Forja do Ódio, Pastor das Almas, Corpo e Espírito) e as restrições de equipamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades Vaal utilizadas durante o efeito possuem \\{(\\d+)\\}% de redução de Duração da Prevenção do Ganho de Almas$",
+      "efeitos": [
+        {
+          "stat": "impedimento_almas_duracao_inc",
+          "valor": "-{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11d": "07/11 — lote 14 das inertes: as Almas Vaal na recarga (Forja do Ódio, Pastor das Almas, Corpo e Espírito) e as restrições de equipamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Duração da Prevenção do Ganho de Almas reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "impedimento_almas_duracao_inc",
+          "valor": "-{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11d": "07/11 — lote 14 das inertes: as Almas Vaal na recarga (Forja do Ódio, Pastor das Almas, Corpo e Espírito) e as restrições de equipamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Resfria Inimigos próximos quando você se Concentra, causando \\{(\\d+)\\}% de redução da Velocidade de Ação$",
+      "efeitos": [
+        {
+          "stat": "concentrar_resfria_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade da Recuperação da Recarga da Concentração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "concentracao_recarga_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^grant focus skill \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "concede:concentracao",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a parte do item que concede a Concentração (no PoE, sem texto no balão)",
+      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa a Arma do Guardião Animado Nível \\{(\\d+)\\} quando o Guardião Animado Matar um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:matarLacaio:gatilho:arma-do-guardiao-animado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "quando um lacaio seu mata (o jogo não separa o abate do Guardião Animado)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Ativar a Arma do Guardião Animado Nível \\{(\\d+)\\} quando a Arma Animada Matar um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:matarLacaio:gatilho:arma-do-guardiao-animado:{V1}",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "quando um lacaio seu mata (o jogo não separa o abate da Arma Animada)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Invocar Rebento da Escuridão nível \\{(\\d+)\\} a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "periodico:{V2}:gatilho:invocar-rebento-da-escuridao",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a cada N segundos com um monstro perto (o disparo periódico do jogo)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do dano dos acertos é absorvido da vida de cada Rebento da Escuridão antes de chegar até você$",
+      "efeitos": [
+        {
+          "stat": "dano_recebido_mais%lacaio:Rebento",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "X% menos dano sofrido por Rebento vivo (o PoE tira da Vida dele: o jogo não divide o golpe)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\}% do dano não caótico como dano de caos adicional por Rebento da Escuridão invocado$",
+      "efeitos": [
+        {
+          "stat": "naocaos_as_extra_chaos%lacaio:Rebento",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Ativar Convocar Espírito de Akoya ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:gatilho:convocar-espirito-de-akoya:{V1}",
+          "valor": "20"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o nível do Espírito: 20 (a linha não diz)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Causa Exposição ao Fogo ao atingir inimigos com \\{(\\d+)\\} Escórias em Chamas, aplicando \\{(\\d+)\\}% à resistência a dano de fogo$",
+      "efeitos": [
+        {
+          "stat": "escorias_exposicao_pct",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os monstros nas suas Escórias (a até 2 casas) ficam com a Exposição ao Fogo enquanto queimam (o jogo não conta as Escórias)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Movimento aumentada em \\{(\\d+)\\}% enquanto você tiver um Lacaio Bestial$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@lacaio:Rhoa",
+          "valor": "{1}"
+        },
+        {
+          "stat": "move_speed@lacaio:Rhoa",
+          "valor": "{1}"
+        }
+      ],
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Projéteis de ataques mutilam ao atingir enquanto você tiver um lacaio bestial$",
+      "efeitos": [
+        {
+          "stat": "chance_mutilar@ataque+projetil+lacaio:Rhoa",
+          "valor": "100"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Golpe Invisível Nível \\{(\\d+)\\} a cada \\{(\\d+(?:\\.\\d+)?)\\} segundos enquanto Trespassando$",
+      "efeitos": [
+        {
+          "stat": "periodico:{V2}:gatilho:golpe-invisivel@buff:trespassar",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11c": "07/11 — lote 13c das inertes: as habilidades de item sem página própria nos únicos (apelidos) e as linhas delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Chance de Golpe Crítico enquanto Insano$",
+      "efeitos": [
+        {
+          "stat": "crit_mais_pct@buff:insano",
+          "valor": "{1}"
+        }
+      ],
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)",
+      "_07_11b": "07/11 — lote 13b das inertes: as habilidades de item feitas à mão e as linhas que dependem delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos Mortos pelos seus Acertos são destruídos enquanto Insano$",
+      "efeitos": [
+        {
+          "stat": "mortos_destruidos@buff:insano",
+          "valor": "1"
+        }
+      ],
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)",
+      "_07_11b": "07/11 — lote 13b das inertes: as habilidades de item feitas à mão e as linhas que dependem delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Ativar Forma Sombria Nível \\{(\\d+)\\} quando você Usar uma Habilidade Encaixada$",
+      "efeitos": [
+        {
+          "stat": "ev:usarHabilidade:gatilho:forma-sombria:{V1}",
+          "valor": "{2}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_07_11b": "07/11 — lote 13b das inertes: as habilidades de item feitas à mão e as linhas que dependem delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Nevoeiro de Guerra nível \\{(\\d+)\\} quando sua Armadilha é ativada$",
+      "efeitos": [
+        {
+          "stat": "ev:armadilha:gatilho:nevoeiro-de-guerra",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_07_11b": "07/11 — lote 13b das inertes: as habilidades de item feitas à mão e as linhas que dependem delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Banquete de Carne Nível \\{(\\d+)\\} a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "periodico:{V2}:gatilho:banquete-de-carne",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a cada N segundos com um monstro perto (o disparo periódico do jogo); consome os cadáveres a até 4 casas",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_07_11b": "07/11 — lote 13b das inertes: as habilidades de item feitas à mão e as linhas que dependem delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Olhar Vazio nível \\{(\\d+)\\} quando você usar uma Habilidade$",
+      "efeitos": [
+        {
+          "stat": "ev:usarHabilidade:gatilho:olhar-vazio",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_07_11b": "07/11 — lote 13b das inertes: as habilidades de item feitas à mão e as linhas que dependem delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Sofre \\{(\\d+)\\} de Dano de Fogo por Segundo enquanto Tocado pela Chama$",
+      "efeitos": [
+        {
+          "stat": "tocado_fogo_s",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_07_11b": "07/11 — lote 13b das inertes: as habilidades de item feitas à mão e as linhas que dependem delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha Adrenalina ao ser Tocado pelas Chamas$",
+      "efeitos": [
+        {
+          "stat": "sempre:adrenalina@buff:tocadoPelaChama",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_07_11b": "07/11 — lote 13b das inertes: as habilidades de item feitas à mão e as linhas que dependem delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Perde Adrenalina ao deixar de ser Tocado pela Chama$",
+      "efeitos": [
+        {
+          "stat": "sempre:adrenalina@buff:tocadoPelaChama",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Adrenalina vale enquanto Tocado pelas Chamas e sai junto",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_07_11b": "07/11 — lote 13b das inertes: as habilidades de item feitas à mão e as linhas que dependem delas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\}% da Vida Não Reservada que Falta antes de ser Acertado por um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:serAcertado:vidaFaltaPct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_unico": true,
+      "_06_11h": "06/11 — lote 12 das inertes: a regra ficava atrás de uma genérica inerte (vai para o começo)"
+    },
+    {
+      "padrao": "^Amaldiçoa Inimigos com (.+?) ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:maldicao:{NOME}:10",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "a maldição no nível 10 da gema (o texto do poedb em português não traz o nível).",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 2)",
+      "_06_11h": "06/11 — lote 12 das inertes: a regra ficava atrás de uma genérica inerte (vai para o começo)"
+    },
+    {
+      "padrao": "^Inimigos próximos de Cadáveres afetados por suas Maldições são Cegados$",
+      "efeitos": [
+        {
+          "stat": "cadaver_amaldicoado_cega",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true,
+      "_06_11h": "06/11 — lote 12 das inertes: a regra ficava atrás de uma genérica inerte (vai para o começo)"
+    },
+    {
+      "padrao": "^Inimigos mortos próximos de Cadáveres afetados por suas Maldições explodem, causando$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "continuação da linha de baixo (o poedb quebrou a frase)",
+      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
+      "_nova": true,
+      "_06_11h": "06/11 — lote 12 das inertes: a regra ficava atrás de uma genérica inerte (vai para o começo)"
+    },
+    {
+      "padrao": "^Gemas Encaixadas não têm Reserva$",
+      "efeitos": [
+        {
+          "stat": "sem_reserva_local",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_nova": true,
+      "_06_11h": "06/11 — lote 12 das inertes: a regra ficava atrás de uma genérica inerte (vai para o começo)"
+    },
+    {
+      "padrao": "^Utiliza ambas mãos$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "a base já é de duas mãos: a regra vale pela própria peça",
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Suas Habilidades Bênção são Desabilitadas$",
+      "efeitos": [
+        {
+          "stat": "bencaos_desabilitadas",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Eficácia da Reserva de Mana das Habilidades reduzida em \\{(-?\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_reserva_mana",
+          "valor": "-{1}"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Gemas Encaixadas têm Eficácia da Reserva reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_reserva_local",
+          "valor": "-{1}"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Monstros Inimigos Próximos têm ao menos \\{(\\d+)\\}% de Vida Reservada$",
+      "efeitos": [
+        {
+          "stat": "monstros_vida_reservada_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os monstros a até 3 casas não passam de (100 − X)% da Vida máxima",
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ataques Impelidos Empurram Inimigos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "chance_empurrar@impelido",
+          "valor": "100"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades causam \\{(\\d+)\\}% mais Dano por cada Clamor as Impelindo$",
+      "efeitos": [
+        {
+          "stat": "mais_dano@impelidoPor:1",
+          "valor": "{1}"
+        },
+        {
+          "stat": "mais_dano@impelidoPor:2",
+          "valor": "{1}"
+        },
+        {
+          "stat": "mais_dano@impelidoPor:3",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Quando você Atacar, sofra \\{(\\d+)\\}% da Vida como Dano Físico por cada Clamor Impelindo o Ataque$",
+      "efeitos": [
+        {
+          "stat": "impelido_sofre_vida_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Vida sai sem passar pelas defesas e não mata (fica em 1), como as perdas de Vida dos custos",
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ataques Não Impelidos não causam Dano$",
+      "efeitos": [
+        {
+          "stat": "mais_dano@ataqueNaoImpelido",
+          "valor": "-100"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dreno de Vida dos Ataques Impelidos é instantâneo$",
+      "efeitos": [
+        {
+          "stat": "roubo_instantaneo_pct@impelido",
+          "valor": "100"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades que Impelem um Ataque têm \\{(\\d+)\\}% de chance de não contarem tal Ataque$",
+      "efeitos": [
+        {
+          "stat": "impelir_nao_conta_chance",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Cadáveres próximos Explodem quando você usar um Clamor, causando \\{(\\d+)\\}% de sua Vida como Dano Físico$",
+      "efeitos": [
+        {
+          "stat": "ev:usarClamor:explodirCadaveres",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os cadáveres a até 4 casas; a explosão acerta os monstros a 1 casa de cada um",
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Erguer Zumbi não requer um Cadáver$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o Erguer Zumbi do jogo já não pede cadáver",
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Seus Zumbis Erguidos contam como Cadáveres$",
+      "efeitos": [
+        {
+          "stat": "zumbis_sao_cadaveres",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os seus Zumbis perto contam como cadáveres para as Oferendas (e não são consumidos)",
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Caso tenha Consumido um Cadáver Recentemente, você e Aliados próximos regeneram \\{(\\d+)\\}% de Vida por segundo$",
+      "efeitos": [
+        {
+          "stat": "aliados:life_regen_max_pct@consumiuCadaverRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Evasão enquanto na Postura da Areia$",
+      "efeitos": [
+        {
+          "stat": "evasion@posturaAreia",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano de Projétil aumentado em \\{(\\d+)\\}% enquanto na Postura de Sangue$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@projetil+posturaSangue",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\} de Vida por Segundo enquanto na Postura de Sangue$",
+      "efeitos": [
+        {
+          "stat": "life_regen@posturaSangue",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% caso tenha mudado de Postura Recentemente$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@evRecente:mudarPostura",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11h": "06/11 — lote 12 das inertes: reserva, Impelir, cadáveres, Posturas",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Exaurir Inimigos em Áreas Resfriadas$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:exaurido@alvoNaAreaFria",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos nas suas Áreas Resfriadas sofrem Dano de Raio aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_fria_raio_sofrido",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de criar Solo Sagrado ao Bloquear$",
+      "efeitos": [
+        {
+          "stat": "ev:bloquear:soloSagrado:4",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Solo Sagrado dura 4 s (o PoE não publica)",
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Deixa Solo Eletrizado enquanto se move, durando \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "solo_eletrizado_movendo_s",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Solo Eletrizado seu Eletriza em 15% os monstros nele (o PoE não publica o número)",
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Cria Solo Profano ao invés de Solo Sagrado$",
+      "efeitos": [
+        {
+          "stat": "solo_profano_no_lugar",
+          "valor": "1"
+        }
+      ],
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você tem Solo Fúngico ao seu redor enquanto parado$",
+      "efeitos": [
+        {
+          "stat": "solo_fungico_parado",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Solo Fúngico (o lembrete do PoE): os monstros nele causam 10% menos Dano; você nele ganha 10% do Dano Não-Caótico como Caos extra — 2 casas em volta de você, enquanto parado",
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos em Solo Fúngico Mortos por você Explodem, causando \\{(\\d+)\\}% de sua Vida como Dano de Fogo$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:explodirChance:{V1}:fire@alvoNoSoloFungico",
+          "valor": "100"
+        }
+      ],
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Cria Solo Sagrado ao Estilhaçar um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:estilhacar:soloSagrado:4",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Solo Sagrado dura 4 s (o PoE não publica)",
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Espalha Piche ao Bloquear$",
+      "efeitos": [
+        {
+          "stat": "ev:bloquear:soloSeu:piche:4",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Piche Tolhe 30% os monstros nele — o raio e a duração do solo, que o PoE não publica: 1 casa e 4 s",
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\(Vosso Abraço concede o seguinte:.*\\)$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano em Solo Ardente aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@soloArdente",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Movimento em Solo Eletrizado aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "move_speed@soloEletrizado",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques em Solo Sagrado$",
+      "efeitos": [
+        {
+          "stat": "block@soloSagrado",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% quando sobre Solo Sagrado$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@soloSagrado",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Seus Lacaios espalham Solo Cáustico ao Morrer, causando \\{(\\d+)\\}% de sua Vida máxima como Dano de Caos por segundo$",
+      "efeitos": [
+        {
+          "stat": "lacaio_morte_solo_caustico_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o raio e a duração do solo, que o PoE não publica: 1 casa e 4 s; o lacaio que acaba também deixa (no PoE, ele morre)",
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Seus Lacaios propagam Solo Ardente ao Morrer, causando \\{(\\d+)\\}% de sua Vida máxima como Dano de Fogo por segundo$",
+      "efeitos": [
+        {
+          "stat": "lacaio_morte_solo_ardente_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o raio e a duração do solo, que o PoE não publica: 1 casa e 4 s; o lacaio que acaba também deixa (no PoE, ele morre)",
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Solo Eletrizado Nível \\{(\\d+)\\} quando Acertado$",
+      "efeitos": [
+        {
+          "stat": "ev:serAcertado:soloSeu:eletrizado:4",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Solo Eletrizado seu Eletriza em 15% os monstros nele — o raio e a duração do solo, que o PoE não publica: 1 casa e 4 s",
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de criar Solo Profano ao Bloquear$",
+      "efeitos": [
+        {
+          "stat": "ev:bloquear:soloProfano:8",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11g": "06/11 — lote 11 das inertes: os solos (os seus e os dos monstros)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Acertos Corpo a Corpo das Habilidades de Golpe Fortificam$",
+      "efeitos": [
+        {
+          "stat": "chance_fortificar@corpo+golpe",
+          "valor": "100"
+        }
+      ],
+      "_06_11f": "06/11 — lote 10 das inertes: a Fortificação (o jogo a tem desde o lote D)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% por Fortificação$",
+      "efeitos": [
+        {
+          "stat": "atk_speed%fortificacao",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11f": "06/11 — lote 10 das inertes: a Fortificação (o jogo a tem desde o lote D)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios têm \\{(\\d+)\\}% de chance de causar dano dobrado por Fortificação em você$",
+      "efeitos": [
+        {
+          "stat": "minion_dano_dobrado%fortificacao",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11f": "06/11 — lote 10 das inertes: a Fortificação (o jogo a tem desde o lote D)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de Suprimir Dano Mágico por Fortificação$",
+      "efeitos": [
+        {
+          "stat": "spell_suppression%fortificacao",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11f": "06/11 — lote 10 das inertes: a Fortificação (o jogo a tem desde o lote D)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração aumentada em \\{(\\d+)\\}% enquanto no máximo de Fortificações$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@fortMax:1",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed@fortMax:1",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11f": "06/11 — lote 10 das inertes: a Fortificação (o jogo a tem desde o lote D)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você não sofre menos dano de forma inerente por ter Fortificação$",
+      "efeitos": [
+        {
+          "stat": "fortificacao_sem_menos_dano",
+          "valor": "1"
+        }
+      ],
+      "_06_11f": "06/11 — lote 10 das inertes: a Fortificação (o jogo a tem desde o lote D)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Acertos Corpo a Corpo que Atordoam, Fortificam$",
+      "efeitos": [
+        {
+          "stat": "chance_fortificar@corpo+golpeAtordoou",
+          "valor": "100"
+        }
+      ],
+      "_06_11f": "06/11 — lote 10 das inertes: a Fortificação (o jogo a tem desde o lote D)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você tem Agressividade enquanto Fortificado$",
+      "efeitos": [
+        {
+          "stat": "sempre:agressividade@fortificado",
+          "valor": "1"
+        }
+      ],
+      "_06_11f": "06/11 — lote 10 das inertes: a Fortificação (o jogo a tem desde o lote D)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aliados Próximos têm \\+\\{(\\d+)\\} Fortificações$",
+      "efeitos": [
+        {
+          "stat": "so_aliados:fortificacao_extra",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas",
+      "_06_11f": "06/11 — lote 10 das inertes: a Fortificação (o jogo a tem desde o lote D)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao máximo de Fortificações por Carga de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "max_fortificacao%carga:tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11f": "06/11 — lote 10 das inertes: a Fortificação (o jogo a tem desde o lote D)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de perder uma Carga de Tolerância ao ganhar Fortificação$",
+      "efeitos": [
+        {
+          "stat": "perde_tolerancia_ao_fortificar",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11f": "06/11 — lote 10 das inertes: a Fortificação (o jogo a tem desde o lote D)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% da Recuperação de Vida dos Frascos é aplicada aos Aliados próximos ao invés de Você$",
+      "efeitos": [
+        {
+          "stat": "frasco_vida_aliados_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados próximos: os companheiros da party a até 3 casas",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Alvos Vinculados sempre contam como estando no alcance de Auras Não-Maldição das suas Habilidades$",
+      "efeitos": [
+        {
+          "stat": "auras_so_vinculados",
+          "valor": "1"
+        }
+      ],
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Auras Não-Maldição das suas Habilidades só se aplicam a você e aos Alvos Vinculados$",
+      "efeitos": [
+        {
+          "stat": "auras_so_vinculados",
+          "valor": "1"
+        }
+      ],
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito de Auras Não-Maldição das suas Habilidades aumentado em \\{(\\d+)\\}% enquanto você tiver um Alvo Vinculado$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:aura@vinculando",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Clamores concedem Fúria Arcana a você e Aliados, com efeito aumentado em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de poder, até \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ev:usarClamor:furiaArcanaClamor",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Fúria Arcana dura 4 s (a do PoE); os Aliados: os companheiros da party a até 3 casas",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de conceder uma Carga de Poder para Aliados ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:cargaAliados:poder",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de conceder uma Carga de Frenesi para Aliados ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:cargaAliados:frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de conceder uma Carga de Frenesi aos Aliados próximos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:cargaAliados:frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de conceder uma Carga de Tolerância aos Aliados próximos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:cargaAliados:tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Frascos Utilitários Não Únicos que você Usar se aplicam aos Alvos Vinculados$",
+      "efeitos": [
+        {
+          "stat": "frasco_utilidade_vinculados",
+          "valor": "1"
+        }
+      ],
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você e Aliados Próximos possuem \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Raio adicional por Encaixe Azul$",
+      "efeitos": [
+        {
+          "stat": "aliados:added_energy_dmg_min%encaixeLocal:B",
+          "valor": "{1}"
+        },
+        {
+          "stat": "aliados:added_energy_dmg_max%encaixeLocal:B",
+          "valor": "{2}"
+        }
+      ],
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você e Aliados Próximos possuem \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Caos adicional por Encaixe Branco$",
+      "efeitos": [
+        {
+          "stat": "aliados:added_chaos_dmg_min%encaixeLocal:W",
+          "valor": "{1}"
+        },
+        {
+          "stat": "aliados:added_chaos_dmg_max%encaixeLocal:W",
+          "valor": "{2}"
+        }
+      ],
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você e Aliados Próximos possuem \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo adicional por Encaixe Verde$",
+      "efeitos": [
+        {
+          "stat": "aliados:added_ice_dmg_min%encaixeLocal:G",
+          "valor": "{1}"
+        },
+        {
+          "stat": "aliados:added_ice_dmg_max%encaixeLocal:G",
+          "valor": "{2}"
+        }
+      ],
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você e Aliados Próximos possuem \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Fogo adicional por Encaixe Vermelho$",
+      "efeitos": [
+        {
+          "stat": "aliados:added_fire_dmg_min%encaixeLocal:R",
+          "valor": "{1}"
+        },
+        {
+          "stat": "aliados:added_fire_dmg_max%encaixeLocal:R",
+          "valor": "{2}"
+        }
+      ],
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você concede \\{(\\d+)\\} Cargas de Frenesi para Aliados ao Morrer$",
+      "efeitos": [
+        {
+          "stat": "ev:morrer:cargaAliados:frenesi:{V1}",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aliados próximos Recuperam \\{(\\d+)\\}% de sua Vida Máxima quando você Morre$",
+      "efeitos": [
+        {
+          "stat": "ev:morrer:vidaPctAliados",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos inflingem Afecções Elementais em você ao invés de Aliados próximos$",
+      "efeitos": [
+        {
+          "stat": "absorve_afeccoes_aliados",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os companheiros da party a até 3 casas ficam imunes às Afecções Elementais (Congelamento, Resfriamento, Incêndio, Eletrização); as deles não passam para você",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aliados Próximos possuem \\+\\{(\\d+)\\}% de Multiplicador de Acerto Crítico por cada \\{(\\d+)\\} de Destreza que você possuir$",
+      "efeitos": [
+        {
+          "stat": "so_aliados:crit_dmg%atr:dex:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas (e os seus lacaios, no que eles leem)",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aliados Próximos tem Velocidade de Conjuração aumentada em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Inteligência que você tenha$",
+      "efeitos": [
+        {
+          "stat": "so_aliados:cast_speed%atr:int:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas (e os seus lacaios, no que eles leem)",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aliados Próximos têm \\{(\\d+)\\}% de Chance de Bloquearem o Dano de Ataques por cada \\{(\\d+)\\} de Força que você tiver$",
+      "efeitos": [
+        {
+          "stat": "so_aliados:block%atr:str:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas (e os seus lacaios, no que eles leem)",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aliados Próximos possuem \\+\\{(\\d+)\\}% de Multiplicador de Acerto Crítico$",
+      "efeitos": [
+        {
+          "stat": "so_aliados:crit_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas (e os seus lacaios, no que eles leem)",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aliados próximos têm Golpe de Misericórdia$",
+      "efeitos": [
+        {
+          "stat": "so_aliados:culling",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas (e os seus lacaios, no que eles leem)",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Raridade dos Itens aumentada em \\{(\\d+)\\}% para Aliados Próximos$",
+      "efeitos": [
+        {
+          "stat": "so_aliados:item_rarity",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas (e os seus lacaios, no que eles leem)",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aliados próximos ganham um aumento de \\{(\\d+)\\}% de Dano$",
+      "efeitos": [
+        {
+          "stat": "so_aliados:dmg_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas (e os seus lacaios, no que eles leem)",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você e Aliados próximos têm Regeneração de Mana aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "aliados:mana_regen_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Compartilha Cargas de Tolerância com membros próximos do Grupo$",
+      "efeitos": [
+        {
+          "stat": "compartilha_tolerancia",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os membros da party na sala a até 3 casas ganham as Cargas de Tolerância que você ganha",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aliados Próximos recebem \\{(\\d+(?:\\.\\d+)?)\\}% de Vida Regenerada por segundo$",
+      "efeitos": [
+        {
+          "stat": "so_aliados:life_regen_max_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas (e os seus lacaios, no que eles leem)",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aliados Próximos recebem um aumento de \\{(\\d+)\\}% de Velocidade de Regeneração de Mana$",
+      "efeitos": [
+        {
+          "stat": "so_aliados:mana_regen_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados Próximos: os companheiros da party a até 3 casas (e os seus lacaios, no que eles leem)",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^A Velocidade de Ação dos Aliados Próximos não pode ser modificada abaixo do valor base$",
+      "efeitos": [
+        {
+          "stat": "aliados_acao_minima",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "nos companheiros da party a até 3 casas, a Velocidade de Ação reduzida das peças e dos buffs para em 0 (o Resfriamento e o Congelamento dos monstros seguem)",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Frascos de Mercúrio que você Usar também se aplicam aos Aliados próximos$",
+      "efeitos": [
+        {
+          "stat": "frasco_mercurio_aliados",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os Aliados próximos: os companheiros da party a até 3 casas",
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Alvos Vinculados Não Podem Morrer por \\{(\\d+)\\} segundos após a sua Morte$",
+      "efeitos": [
+        {
+          "stat": "ev:morrer:vinculadosImortais:{V1}",
+          "valor": "100"
+        }
+      ],
+      "_06_11e": "06/11 — lote 9 das inertes: os aliados",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha Cargas Brutais ao invés de Cargas de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "cargas_brutal",
+          "valor": "1"
+        },
+        {
+          "stat": "chance_dano_triplo%carga:brutal",
+          "valor": "3"
+        },
+        {
+          "stat": "ponto_atordoamento_proprio_red%carga:brutal",
+          "valor": "-10"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as Cargas Brutais tomam o lugar das de Tolerância (duram e vencem como elas); o lembrete do poedb: \"3% de chance de causar Dano Triplicado e Ponto de Atordoamento aumentado em 10% por Carga Brutal\"",
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Máximo de Cargas Brutais é igual ao Máximo de Cargas de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "max_brutal_igual",
+          "valor": "1"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Modificadores ao Mínimo de Cargas de Tolerância são aplicados ao Mínimo de Cargas Brutais ao invés$",
+      "efeitos": [
+        {
+          "stat": "min_brutal_da_base",
+          "valor": "1"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha Cargas de Aflição ao invés de Cargas de Frenesi$",
+      "efeitos": [
+        {
+          "stat": "cargas_aflicao",
+          "valor": "1"
+        },
+        {
+          "stat": "dano_dot_mais%carga:aflicao",
+          "valor": "8"
+        },
+        {
+          "stat": "efeito_nao_dano%carga:aflicao",
+          "valor": "8"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as Cargas de Aflição tomam o lugar das de Frenesi (duram e vencem como elas); o lembrete do poedb: \"8% mais Dano com Afecções e 8% mais Efeito de Afecções Não Nocivas por Carga de Aflição\" (o efeito das não nocivas soma ao aumentado)",
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Máximo de Cargas de Aflição é igual ao Máximo de Cargas de Frenesi$",
+      "efeitos": [
+        {
+          "stat": "max_aflicao_igual",
+          "valor": "1"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Modificadores ao Mínimo de Cargas de Frenesi são aplicados ao Mínimo de Cargas de Aflição ao invés$",
+      "efeitos": [
+        {
+          "stat": "min_aflicao_da_base",
+          "valor": "1"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha Cargas de Absorção ao invés de Cargas de Poder$",
+      "efeitos": [
+        {
+          "stat": "cargas_absorcao",
+          "valor": "1"
+        },
+        {
+          "stat": "recoup_es_elemental%carga:absorcao",
+          "valor": "12"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as Cargas de Absorção tomam o lugar das de Poder (duram e vencem como elas); o lembrete do poedb: \"Recuperam 12% do Dano Elemental sofrido como Escudo de Energia por Carga de Absorção\" (em 4 s, como as outras recuperações)",
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Máximo de Cargas de Absorção é igual ao Máximo de Cargas de Poder$",
+      "efeitos": [
+        {
+          "stat": "max_absorcao_igual",
+          "valor": "1"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Modificadores ao Mínimo de Cargas de Poder são aplicados ao Mínimo de Cargas de Absorção ao invés$",
+      "efeitos": [
+        {
+          "stat": "min_absorcao_da_base",
+          "valor": "1"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\} ao Máximo de Cargas do Vazio$",
+      "efeitos": [
+        {
+          "stat": "max_vazio",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recebe uma Carga do V[aá][zc][iu]o por segundo$",
+      "efeitos": [
+        {
+          "stat": "vazio_a_cada_s",
+          "valor": "1"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Máximo de Cargas Espirituais por Joia Abissal afetando você$",
+      "efeitos": [
+        {
+          "stat": "max_espiritual%joiasAbissais",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recebe uma Carga Espiritual ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:carga:espiritual",
+          "valor": "100"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\}% do Dano Físico como Dano Extra de Cada Elemento por Carga Espiritual$",
+      "efeitos": [
+        {
+          "stat": "phys_as_extra_fire%carga:espiritual",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_as_extra_ice%carga:espiritual",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_as_extra_energy%carga:espiritual",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recebe uma Carga Espiritual por segundo$",
+      "efeitos": [
+        {
+          "stat": "espiritual_a_cada_s",
+          "valor": "1"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Perde todas as Cargas Espirituais ao sofrer o Golpe Brutal$",
+      "efeitos": [
+        {
+          "stat": "ev:golpeBrutalSofrido:perdeCargas:espiritual",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Golpe Brutal: o acerto que tira ao menos 15% da Vida máxima (o lembrete do PoE)",
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% de Vida quando perder uma Carga Espiritual$",
+      "efeitos": [
+        {
+          "stat": "ev:perderEspiritual:vidaPct",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% do Escudo de Energia quando perder uma Carga Espiritual$",
+      "efeitos": [
+        {
+          "stat": "ev:perderEspiritual:esPct",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} às Cargas Divinas máximas$",
+      "efeitos": [
+        {
+          "stat": "max_divina",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha uma Carga Divina ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:carga:divina",
+          "valor": "100"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você ganha Divindade por \\{(\\d+)\\} segundos ao atingir o máximo de Cargas Divinas$",
+      "efeitos": [
+        {
+          "stat": "ev:maxDivina:buff:divindade",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Divindade (o lembrete do PoE): 50% mais Dano Elemental e 20% de Dano Elemental sofrido reduzido",
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Perca todas as Cargas Divinas quando ganhar Divindade$",
+      "efeitos": [
+        {
+          "stat": "ev:maxDivina:perdeCargas:divina",
+          "valor": "100"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(-?\\d+)\\} ao número Máximo de Almas Devoradas$",
+      "efeitos": [
+        {
+          "stat": "almas_max",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Perde todas as Almas Devoradas quando você usar um Frasco$",
+      "efeitos": [
+        {
+          "stat": "ev:usarFrasco:perderAlmas",
+          "valor": "100"
+        }
+      ],
+      "_06_11d": "06/11 — lote 8 das inertes: as cargas de único",
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito do Buff do Aspecto da Ave aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff:poderDaAve",
+          "valor": "{1}"
+        },
+        {
+          "stat": "efeito_buff:vooDaAve",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Aspecto do Gato Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "aspecto_gato",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho) e fica ligada, reservando 25% da Mana: Furtividade Felina por 4 s (100% de Chance de Crítico aumentada, 15% de chance de evitar o dano de cada tipo dos Ataques) e Agilidade Felina por 6 s (10% de Velocidade de Ataque e de Conjuração), em sequência; a Furtividade não esconde você (os monstros do jogo não perdem o alvo)",
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+(?:\\.\\d+)?)\\}% de Chance de Acerto Crítico enquanto afetado por Aspecto do Gato$",
+      "efeitos": [
+        {
+          "stat": "crit_chance@buff:aspectoDoGato",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Acertos Críticos possuem \\{(\\d+)\\}% de chance de Cegar Inimigos enquanto você possuir Furtividade Felina$",
+      "efeitos": [
+        {
+          "stat": "ev:critico:alvo:cego@buff:furtividadeFelina",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ataques sempre causam Sangramento enquanto possuir Furtividade Felina$",
+      "efeitos": [
+        {
+          "stat": "chance_bleed@ataque+buff:furtividadeFelina",
+          "valor": "100"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você possui Dança Carmesin? enquanto possuir Furtividade Felina$",
+      "efeitos": [
+        {
+          "stat": "sangramento_pilhas@buff:furtividadeFelina",
+          "valor": "8"
+        },
+        {
+          "stat": "sangramento_sem_movimento@buff:furtividadeFelina",
+          "valor": "1"
+        },
+        {
+          "stat": "sangramento_menos@buff:furtividadeFelina",
+          "valor": "50"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Velocidade de Movimento enquanto possuir Furtividade Felina$",
+      "efeitos": [
+        {
+          "stat": "move_speed@buff:furtividadeFelina",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Clamor Intimidador Nível \\{(\\d+)\\} quando você perder Furtividade Felina$",
+      "efeitos": [
+        {
+          "stat": "ev:perderFurtividadeFelina:gatilho:Clamor Intimidador",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+?\\{(-?\\d+(?:\\.\\d+)?)\\} segundos para a Duração da Furtividade Felina$",
+      "efeitos": [
+        {
+          "stat": "furtividade_felina_s",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aspecto do Gato não possui Reserva$",
+      "efeitos": [
+        {
+          "stat": "aspecto_gato_sem_reserva",
+          "valor": "1"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recebe até o número máximo de Cargas de Poder e Frenesi ao ganhar Furtividade Felina$",
+      "efeitos": [
+        {
+          "stat": "ev:ganharFurtividadeFelina:cargaMax:poder",
+          "valor": "100"
+        },
+        {
+          "stat": "ev:ganharFurtividadeFelina:cargaMax:frenesi",
+          "valor": "100"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você possui Trespassar enquanto possuir Furtividade Felina$",
+      "efeitos": [
+        {
+          "stat": "sempre:trespassar@buff:furtividadeFelina",
+          "valor": "1"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+?\\{(-?\\d+(?:\\.\\d+)?)\\} segundos à Duração da Agilidade do Gato$",
+      "efeitos": [
+        {
+          "stat": "agilidade_felina_s",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha até o número máximo de Cargas de Frenesi e Tolerância ao ganhar Agilidade do Gato$",
+      "efeitos": [
+        {
+          "stat": "ev:ganharAgilidadeFelina:cargaMax:frenesi",
+          "valor": "100"
+        },
+        {
+          "stat": "ev:ganharAgilidadeFelina:cargaMax:tolerancia",
+          "valor": "100"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você tem Agressividade enquanto tiver Agilidade do Gato$",
+      "efeitos": [
+        {
+          "stat": "sempre:agressividade@buff:agilidadeFelina",
+          "valor": "1"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Aspecto da Ave Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "aspecto_ave",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho) e fica ligada, reservando 25% da Mana: Poder da Ave por 4 s (10% de chance de Dano Dobrado, você e os lacaios) e Voo da Ave por 4 s (10% de Velocidade de Movimento, você e os lacaios), em sequência",
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+?\\{(-?\\d+(?:\\.\\d+)?)\\} segundos à Duração do V[ôo]o da Ave$",
+      "efeitos": [
+        {
+          "stat": "voo_da_ave_s",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+?\\{(-?\\d+(?:\\.\\d+)?)\\} segundos à Duração do Poder da Ave$",
+      "efeitos": [
+        {
+          "stat": "poder_da_ave_s",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Vida Regenerada por Segundo enquanto você possuir V[ôo]o da Ave$",
+      "efeitos": [
+        {
+          "stat": "life_regen@buff:vooDaAve",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Regeneração de [Mm]ana por Segundo enquanto possuir V[ôo]o da Ave$",
+      "efeitos": [
+        {
+          "stat": "mana_regen@buff:vooDaAve",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aspecto da Ave também concede Poder da Ave e V[ôo]o da Ave para Aliados próximos$",
+      "efeitos": [
+        {
+          "stat": "aspecto_ave_aliados",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Poder e o Voo da Ave viram a aura \"Você e Aliados\": valem em você e nos companheiros da party a até 3 casas (a mesma aura de duas pessoas não acumula)",
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Vendaval Nível \\{(\\d+)\\} quando você ganhar Poder da Ave ou V[ôo]o da Ave$",
+      "efeitos": [
+        {
+          "stat": "ev:ganharBuffDaAve:gatilho:Tornado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o \"Vendaval\" é a gema Tornado (Tornado no PoE em inglês)",
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo enquanto possuir Poder d[ae] Ave$",
+      "efeitos": [
+        {
+          "stat": "added_ice_dmg_min@buff:poderDaAve",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_ice_dmg_max@buff:poderDaAve",
+          "valor": "{2}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Raio enquanto possuir Poder d[ae] Ave$",
+      "efeitos": [
+        {
+          "stat": "added_energy_dmg_min@buff:poderDaAve",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_energy_dmg_max@buff:poderDaAve",
+          "valor": "{2}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Aspecto do Caranguejo Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "aspecto_caranguejo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho) e fica ligada, reservando 25% da Mana: uma Barreira de Caranguejo a cada 0,5 s (a wiki do poedb), até 10; 2% de Redução de Dano Físico adicional por Barreira; o Dano Físico de um Acerto tira todas",
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Número Máximo de Barreiras de Caranguejo$",
+      "efeitos": [
+        {
+          "stat": "barreiras_max",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de se você fosse receber uma Barreira de Caranguejo, ao invés receberá até(?: /)? seu número máximo de Barreiras de Caranguejo$",
+      "efeitos": [
+        {
+          "stat": "barreira_chance_max",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento de Dano por Barreira de Caranguejo$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%barreiras",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques enquanto possuir ao menos \\{(\\d+)\\} Barreiras de Caranguejo$",
+      "efeitos": [
+        {
+          "stat": "block@barreirasMin:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não pode perder Barreiras de Caranguejo caso tenha perdido Barreiras de Caranguejo Recentemente$",
+      "efeitos": [
+        {
+          "stat": "barreiras_nao_perde_recente",
+          "valor": "1"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não pode ser Atordoado caso tenha ao menos \\{(\\d+)\\} Barreiras de Caranguejo$",
+      "efeitos": [
+        {
+          "stat": "imune_atordoamento@barreirasMin:{V1}",
+          "valor": "1"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Só perde \\{(\\d+)\\} Barreiras de Caranguejos? ao sofrer Dano Físico de um Acerto$",
+      "efeitos": [
+        {
+          "stat": "barreiras_perde_so",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Aspecto da Aranha Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "aspecto_aranha",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho) e fica ligada, reservando 25% da Mana: a cada 1 s, uma Teia de Aranha nos inimigos a até 3 m (até 3 por inimigo, 6 s; 5% de Dano sofrido aumentado por Teia) e Tolhe 30% — o raio e o Tolhimento não têm número publicado",
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Duração do Debuff do Aspecto da Aranha$",
+      "efeitos": [
+        {
+          "stat": "aranha_duracao_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aspecto da Aranha pode infringir Teia da Aranha em Inimigos \\{(\\d+)\\} vezes adicionais$",
+      "efeitos": [
+        {
+          "stat": "teias_extra",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recebe \\{(\\d+)\\} de Escudo de Energia para cada Inimigo Acertado por você afetado por uma Teia de Aranha$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:es@alvoComTeia",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Área de Efeito do Aspecto da Aranha aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "aranha_area_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos afetados por suas Teias de Aranha causam Dano reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "teias_dano_menos",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos afetados por suas Teias de Aranha possuem \\{(-?\\d+)\\}% de Todas as Resistências$",
+      "efeitos": [
+        {
+          "stat": "teias_res_menos",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano com Acertos e Afecções contra Inimigos afetados por \\{(\\d+)\\} Teias de Aranha$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@alvoTeias:{V2}",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@alvoTeias:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Caos para cada Teia de Aranha no Inimigo$",
+      "efeitos": [
+        {
+          "stat": "added_chaos_dmg_min%teiasNoAlvo",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_chaos_dmg_max%teiasNoAlvo",
+          "valor": "{2}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de receber uma Carga de Poder ao acertar um Inimigo afetado por uma Teia de Aranha$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:carga:poder@alvoComTeia",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aspecto da Aranha causa Teia da Aranha e Lentidão a cada \\{(\\d+(?:\\.\\d+)?)\\} Segundos$",
+      "efeitos": [
+        {
+          "stat": "aranha_intervalo_s",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11c": "06/11 — lote 7 das inertes: os Aspectos (Gato, Ave, Caranguejo, Aranha)",
+      "_nova": true
+    },
+    {
       "padrao": "^Suas Habilidades de Oferenda também afetam você$",
       "efeitos": [
         {
@@ -14868,18 +18640,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Possui Influência do Ancião, Criador e de todos os Conquistadores$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "as influências (e os mods delas) não existem no catálogo do jogo",
-      "_nova": true
-    },
-    {
       "padrao": "^Tem \\{(\\d+)\\} Encaixes Abissal$",
       "efeitos": [
         {
@@ -14951,54 +18711,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Efeito de bônus de Aspecto do Caranguejo aumentado em \\{(\\d+)\\}%$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "as habilidades de Aspecto (dadas por únicos) não existem no jogo",
-      "_nova": true
-    },
-    {
-      "padrao": "^Efeito da penalidade de Aspecto da Aranha aumentado em \\{(\\d+)\\}%$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "as habilidades de Aspecto (dadas por únicos) não existem no jogo",
-      "_nova": true
-    },
-    {
-      "padrao": "^Efeito do Buff do Aspecto da Ave aumentado em \\{(\\d+)\\}%$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "as habilidades de Aspecto (dadas por únicos) não existem no jogo",
-      "_nova": true
-    },
-    {
-      "padrao": "^Efeito de bônus de Aspecto do Gato aumentado em \\{(\\d+)\\}%$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "as habilidades de Aspecto (dadas por únicos) não existem no jogo",
-      "_nova": true
-    },
-    {
       "padrao": "^Dano aumentado em \\{(\\d+)\\}% por Rito da Lua concluído$",
       "efeitos": [
         {
@@ -15059,52 +18771,30 @@
       "_nova": true
     },
     {
-      "padrao": "^Ativa Impacto Ardente Nível \\{(\\d+)\\} no Acerto Corpo a Corpo com esta Arma$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "a habilidade Impacto Ardente não está na coleção de gemas do jogo",
-      "_nova": true
-    },
-    {
       "padrao": "^local use skill on melee hit % \\[\\{(\\d+)\\}\\]$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "lembrete",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "parte interna do \"Ativa Impacto Ardente\" (sem texto no PoE)",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ativa Avanço Ardente Nível \\{(\\d+)\\} ao usar uma Habilidade Encaixada$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o Avanço Ardente é deslocamento, que não existe no jogo",
-      "_nova": true
+      "estado": "lembrete",
+      "nota": "parte interna do \"Ativa Impacto Ardente\" — o gatilho, que a linha de cima já faz (sem texto no PoE)",
+      "_nova": true,
+      "_07_11k": "07/11 — lote 21 das inertes: os implícitos (os Talismãs de Aspecto, o Impacto Ardente, o Avanço Ardente)"
     },
     {
       "padrao": "^local skills granted by item are supported by level x unique trigger support \\[\\{(\\d+)\\}\\]$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "lembrete",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "parte interna do \"Ativa Avanço Ardente\" (sem texto no PoE)",
-      "_nova": true
+      "estado": "lembrete",
+      "nota": "parte interna do \"Ativa Avanço Ardente\" — o gatilho, que a linha de cima já faz (sem texto no PoE)",
+      "_nova": true,
+      "_07_11k": "07/11 — lote 21 das inertes: os implícitos (os Talismãs de Aspecto, o Impacto Ardente, o Avanço Ardente)"
     },
     {
       "padrao": "^\\+\\{(\\d+)\\} de Vida máxima$",
@@ -17010,32 +20700,6 @@
       "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
     },
     {
-      "padrao": "^\\{(\\d+)\\}% mais Chance de Golpe Crítico enquanto Insano$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "_nova": true,
-      "estado": "inerte",
-      "nota": "o Insano vem da habilidade Perturbar, que não está na coleção de gemas do jogo: você está sempre São.",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
-    },
-    {
-      "padrao": "^Inimigos Mortos pelos seus Acertos são destruídos enquanto Insano$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "_nova": true,
-      "estado": "inerte",
-      "nota": "o Insano vem da habilidade Perturbar, que não está na coleção de gemas do jogo: você está sempre São.",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
-    },
-    {
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo enquanto possuir Poder de Ave$",
       "efeitos": [
         {
@@ -18676,19 +22340,6 @@
       "_lote6": "12/10 — a Tintura (lote 6)"
     },
     {
-      "padrao": "^.*Barreiras? de Caranguejo.*|.*Aspecto d[oa] (?:Caranguejo|Gato|Ave|Aranha).*|.*(?:Furtividade Felina|Agilidade do Gato|Poder da Ave|Vôo da Ave|Voo da Ave|Teias? de Aranha).*$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "as habilidades de Aspecto (dadas por únicos) não existem no jogo",
-      "_nova": true,
-      "_unico": true
-    },
-    {
       "padrao": "^.*(?:Pode ser modificado enquanto Corrompido|Pode ter até .* Modificadores? Implícitos|Possui um Mod Implícito adicional|Magnitude de Modificadores Revelados|Omnichama|Qualidade Máxima é|Pode ser ungido).*$",
       "efeitos": [
         {
@@ -18766,7 +22417,7 @@
       "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
     },
     {
-      "padrao": "^.*(?:Fortificaç(?:ão|ões)|Fortificad[oa]s?|Fortifica[mr]?)\\b.*$",
+      "padrao": "^(?!.*Suportad[ao]s? por Fortificar).*(?:Fortificaç(?:ão|ões)|Fortificad[oa]s?|Fortifica[mr]?)\\b.*$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -18774,9 +22425,10 @@
         }
       ],
       "estado": "inerte",
-      "nota": "a Fortificação não existe no jogo",
+      "nota": "o jogo tem a Fortificação (as linhas com regra própria valem), mas não esta mecânica dela",
       "_nova": true,
-      "_unico": true
+      "_unico": true,
+      "_07_11q": "07/11 — volta a genérica da Fortificação tirada no lote 10, só para as linhas sem regra própria (o teste zerar-arvore-lote71:51)"
     },
     {
       "padrao": "^.*(?:Experiência|Pergaminho da Sabedoria|Itens Mágicos encontrados são Identificados|Quantidade de Ouro|Quantidade de Itens).*$",
@@ -19475,19 +23127,6 @@
       "_unico": true
     },
     {
-      "padrao": "^.*(?:Bestial|Animais).*$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "os lacaios Bestiais não existem no jogo",
-      "_nova": true,
-      "_unico": true
-    },
-    {
       "padrao": "^Inimigos mostram sua Categoria de Monstros$",
       "efeitos": [
         {
@@ -19758,32 +23397,6 @@
       ],
       "estado": "inerte",
       "nota": "as Égides (habilidades de único) não existem no jogo",
-      "_nova": true,
-      "_unico": true
-    },
-    {
-      "padrao": "^Utiliza ambas mãos$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "a base já é de duas mãos (a regra vale pela própria peça)",
-      "_nova": true,
-      "_unico": true
-    },
-    {
-      "padrao": "^Reflete o anel aposto|Não Pode usar outros Anéis|Não Pode utilizar Peitoral$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "restrição de equipamento que o jogo não tem",
       "_nova": true,
       "_unico": true
     },
@@ -26917,17 +30530,6 @@
       "efeitos": [
         {
           "stat": "duracao_cargas",
-          "valor": "{1}"
-        }
-      ],
-      "_nova": true,
-      "_unico": true
-    },
-    {
-      "padrao": "^Ganha \\{(\\d+)\\}% da Vida Não Reservada que Falta antes de ser Acertado por um Inimigo$",
-      "efeitos": [
-        {
-          "stat": "ev:serAcertado:vidaFaltaPct",
           "valor": "{1}"
         }
       ],
@@ -36091,19 +39693,6 @@
       "efeitos": [
         {
           "stat": "ev:bloquear:maldicao:{NOME}:10",
-          "valor": "100"
-        }
-      ],
-      "_nova": true,
-      "estado": "aproximado",
-      "nota": "a maldição no nível 10 da gema (o texto do poedb em português não traz o nível).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 2)"
-    },
-    {
-      "padrao": "^Amaldiçoa Inimigos com (.+?) ao Acertar$",
-      "efeitos": [
-        {
-          "stat": "ev:acertar:maldicao:{NOME}:10",
           "valor": "100"
         }
       ],
@@ -45445,45 +49034,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Resfria Inimigos próximos quando você se Concentra, causando \\{(\\d+)\\}% de redução da Velocidade de Ação$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Concentração (a habilidade Foco do PoE)",
-      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Velocidade da Recuperação da Recarga da Concentração aumentada em \\{(\\d+)\\}%$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Concentração (a habilidade Foco do PoE)",
-      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^grant focus skill \\[\\{(\\d+)\\}\\]$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Concentração (a habilidade Foco do PoE)",
-      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^Você pode ter uma Ofe?re?nda de cada tipo$",
       "efeitos": [
         {
@@ -45718,13 +49268,14 @@
       "padrao": "^Concede a Habilidade Convocar Grande Emissário do Tempo$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "emissario_tempo",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a gema Convocar Grande Emissário do Tempo",
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e a cada 20 s (o Grande, a cada 10 s) lança em você 8 s de +10% de Velocidade de Ação; o do Menor não acelera os inimigos por perto (o jogo não tem Velocidade de Ação nos monstros)",
       "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
+      "_06_11c": "06/11 — lote 6 das inertes: os Emissários",
       "_nova": true
     },
     {
@@ -45876,19 +49427,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Habilidades de pacto concedem Dádivas em vez de Aflições$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "a Aflição dos Pactos não tem dado no PoB nem no poedb (o jogo não a tem), nem a Dádiva",
-      "_06_11": "06/11 — lote 3 dos Únicos (cintos): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^\\{(\\d+)\\}% de chance de causar Dano Triplicado enquanto tiver ao menos \\{(\\d+)\\} de Força$",
       "efeitos": [
         {
@@ -45985,19 +49523,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Projéteis de ataques mutilam ao atingir enquanto você tiver um lacaio bestial$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem lacaios Bestiais (a Rhoa)",
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^Acrobacia$",
       "efeitos": [
         {
@@ -46009,19 +49534,6 @@
           "valor": "75"
         }
       ],
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Você só pode Encaixar Gemas Corrompidas neste item$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "as gemas do jogo não são Corrompidas",
       "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
       "_nova": true
     },
@@ -46285,32 +49797,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Ativa a Arma do Guardião Animado Nível \\{(\\d+)\\} quando o Guardião Animado Matar um Inimigo$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Arma do Guardião Animado (a habilidade própria que o PoE ativa pelo abate)",
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^\\{(\\d+)\\}% de chance de Ativar a Arma do Guardião Animado Nível \\{(\\d+)\\} quando a Arma Animada Matar um Inimigo$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Arma do Guardião Animado (a habilidade própria que o PoE ativa pelo abate)",
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^animate guardian and weapon track on kill \\[\\{(\\d+)\\}\\]$",
       "efeitos": [
         {
@@ -46357,58 +49843,6 @@
       "_nova": true
     },
     {
-      "padrao": "^\\{(\\d+)\\}% de chance de Ativar Forma Sombria Nível \\{(\\d+)\\} quando você Usar uma Habilidade Encaixada$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Forma Sombria",
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ativa Invocar Rebento da Escuridão nível \\{(\\d+)\\} a cada \\{(\\d+)\\} segundos$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Rebento da Escuridão",
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^\\{(\\d+)\\}% do dano dos acertos é absorvido da vida de cada Rebento da Escuridão antes de chegar até você$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Rebento da Escuridão",
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ganha \\{(\\d+)\\}% do dano não caótico como dano de caos adicional por Rebento da Escuridão invocado$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Rebento da Escuridão",
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^Acertos Corpo a Corpo com Habilidades de Golpe sempre Empurram$",
       "efeitos": [
         {
@@ -46416,45 +49850,6 @@
           "valor": "100"
         }
       ],
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Custo de Fúria de Habilidades reduzido em \\{(\\d+)\\}%$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "nenhuma habilidade do jogo custa Fúria",
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Habilidades de Ataque Vaal que você Usar manualmente Custam Fúria ao invés de exigirem Almas$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "as Habilidades Vaal do jogo usam a recarga no lugar das Almas",
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Você não pode ganhar Fúria durante a Anulação do Ganho de Almas$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Anulação do Ganho de Almas",
       "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
       "_nova": true
     },
@@ -46527,30 +49922,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Inimigos próximos de Cadáveres afetados por suas Maldições são Cegados$",
-      "efeitos": [
-        {
-          "stat": "cadaver_amaldicoado_cega",
-          "valor": "1"
-        }
-      ],
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Inimigos mortos próximos de Cadáveres afetados por suas Maldições explodem, causando$",
-      "efeitos": [
-        {
-          "stat": "lembrete",
-          "valor": "1"
-        }
-      ],
-      "estado": "lembrete",
-      "nota": "continuação da linha de baixo (o poedb quebrou a frase)",
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^\\{(\\d+)\\}% de sua Vida como Dano Físico$",
       "efeitos": [
         {
@@ -46582,19 +49953,6 @@
       ],
       "estado": "aproximado",
       "nota": "nas suas Runas (a Runa da Maré Invernal é a que a peça concede)",
-      "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Cria um Esporo Infestado quando suas Habilidades ou Lacaios Matarem um Monstro Raro$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Esporo Infestado",
       "_06_11": "06/11 — lote 4 dos Únicos (armaduras de corpo e luvas): a frase que não casava com nenhuma regra",
       "_nova": true
     },
@@ -46948,19 +50306,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Ativa Nevoeiro de Guerra nível \\{(\\d+)\\} quando sua Armadilha é ativada$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Nevoeiro de Guerra",
-      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^As Chamas de Draugur queimam os inimigos ao seu redor por \\{(\\d+)\\} segundos após você incendiar um alvo$",
       "efeitos": [
         {
@@ -47043,13 +50388,14 @@
       "padrao": "^Concede a Habilidade Convocar Grande Emissário do Foco$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "emissario_foco",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a gema Convocar Grande Emissário do Foco",
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e a cada 8 s, enquanto você canaliza, lança em você 4 s de 20% menos Dano sofrido, sem Atordoamento nem Afecções Elementais; o Grande, junto: Maldições não afetam você — os 20% são do poewiki (sem fonte do jogo)",
       "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_06_11c": "06/11 — lote 6 das inertes: os Emissários",
       "_nova": true
     },
     {
@@ -47090,19 +50436,6 @@
       ],
       "estado": "aproximado",
       "nota": "a Vida sai ao usar o Clamor (não mata: fica em 1)",
-      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Você pode ser Tocado por Espíritos Atormentados$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem os Espíritos Atormentados",
       "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
       "_nova": true
     },
@@ -47151,19 +50484,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Ativa Banquete de Carne Nível \\{(\\d+)\\} a cada \\{(\\d+)\\} segundos$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Banquete de Carne",
-      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^Ignora Atordoamentos enquanto Conjurando$",
       "efeitos": [
         {
@@ -47184,19 +50504,6 @@
       ],
       "estado": "aproximado",
       "nota": "um dos Feitiços do PoE, sorteado, no nível 10",
-      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ativa Olhar Vazio nível \\{(\\d+)\\} quando você usar uma Habilidade$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Olhar Vazio",
       "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
       "_nova": true
     },
@@ -47260,19 +50567,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Ao abater um monstro raro, um lacaio conectado aleatório ganha seus modificadores por \\{(\\d+)\\} segundos$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "os lacaios do jogo não recebem modificadores de monstro",
-      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^Habilidades que arremessam Minas arremessam até \\{(\\d+)\\} Minas adicionais se você possuir ao menos \\{(\\d+)\\} de Destreza$",
       "efeitos": [
         {
@@ -47298,13 +50592,14 @@
       "padrao": "^Concede a Habilidade Convocar Grande Emissário das Tormentas$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "emissario_tormentas",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a gema Convocar Grande Emissário das Tormentas",
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e a cada 4 s Resfria ou Eletriza (ao acaso) um inimigo e até 4 por perto dele por 4 s, com efeito de 20% — o efeito não é publicado (o Grande: maior)",
       "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_06_11c": "06/11 — lote 6 das inertes: os Emissários",
       "_nova": true
     },
     {
@@ -47433,45 +50728,6 @@
           "valor": "100"
         }
       ],
-      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Sofre \\{(\\d+)\\} de Dano de Fogo por Segundo enquanto Tocado pela Chama$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem as Chamas Próximas (o Tocado pela Chama)",
-      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ganha Adrenalina ao ser Tocado pelas Chamas$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem as Chamas Próximas (o Tocado pela Chama)",
-      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Perde Adrenalina ao deixar de ser Tocado pela Chama$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem as Chamas Próximas (o Tocado pela Chama)",
       "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
       "_nova": true
     },
@@ -47616,19 +50872,6 @@
       "_nova": true
     },
     {
-      "padrao": "^\\{(\\d+)\\}% de chance de Ativar Convocar Espírito de Akoya ao Matar$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Espírito de Akoya",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^Feitiços não-Aura expiram ao atingirem (?:\\{(\\d+)\\})?% do Efeito base$",
       "efeitos": [
         {
@@ -47693,19 +50936,6 @@
           "valor": "1"
         }
       ],
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Todo o Dano Sofrido de Acertos podem te Resfriar$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "os acertos dos monstros do jogo só Resfriam pelo controle dos Elites e Chefes",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
       "_nova": true
     },
@@ -47893,69 +51123,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Gemas Encaixadas não têm Reserva$",
-      "efeitos": [
-        {
-          "stat": "sem_reserva_local",
-          "valor": "1"
-        }
-      ],
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Suas Habilidades Bênção são Desabilitadas$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem as Habilidades Bênção",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Consome Gemas de Suporte Encaixadas Não Corrompidas ao atingir seu Nível Máximo$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não consome gemas de suporte",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Pode Consumir \\{(\\d+)\\} Gemas de Suporte Não Corrompidas$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não consome gemas de suporte",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Não Consumiu nenhuma Gema$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não consome gemas de suporte",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^Espaço de Anel Esquerdo: A Aura de Resfriante dos seus Robôs Rastejantes aplica a Maldição Feitiço Encaixada ao invés$",
       "efeitos": [
         {
@@ -47991,19 +51158,6 @@
       ],
       "estado": "aproximado",
       "nota": "todas as suas Maldições em aura (a Blasfêmia)",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Um Verme Retorcido inimigo surge a cada \\{(\\d+)\\} segundos$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Verme Retorcido",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
       "_nova": true
     },
@@ -48215,19 +51369,6 @@
       "_nova": true
     },
     {
-      "padrao": "^\\+\\{(\\d+)\\} ao Nível de todas as Gemas de \\{(\\d+)\\}$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o texto do poedb veio sem o nome da gema (só o número)",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^\\{(\\d+)\\}% de chance de perder uma Carga de Poder ao ganhar Elusivo$",
       "efeitos": [
         {
@@ -48320,45 +51461,6 @@
           "valor": "1"
         }
       ],
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Você tem Confluxo Elemental se as estrelas estiverem alinhadas$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o \"estrelas alinhadas\" do Astrolábio",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^\\+\\{(\\d+)\\} ao nível de todas as gemas de habilidade elemental se as estrelas estiverem alinhadas$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o \"estrelas alinhadas\" do Astrolábio",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^\\+\\{(\\d+)\\} ao nível de todas as gemas de suporte elemental se as estrelas estiverem alinhadas$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o \"estrelas alinhadas\" do Astrolábio",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
       "_nova": true
     },
@@ -48557,19 +51659,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Causa Exposição ao Fogo ao atingir inimigos com \\{(\\d+)\\} Escórias em Chamas, aplicando \\{(\\d+)\\}% à resistência a dano de fogo$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem as Escórias da Chama da Esperança",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^Ganha Vosso Abraço por \\{(\\d+)\\} segundos quando você Incendeia um Inimigo$",
       "efeitos": [
         {
@@ -48662,45 +51751,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Guerreiros e Soldados Esqueletos Convocados portam esta Arma enquanto ela estiver em sua Mão Principal$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "os Esqueletos do jogo não empunham armas",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Guerreiros e Soldados Esqueletos Convocados causam Dano Triplicado com esta$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "os Esqueletos do jogo não empunham armas",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Arma se você Acertou com esta Arma Recentemente$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "os Esqueletos do jogo não empunham armas",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^summon mirage warrior on crit \\[\\{(\\d+)\\}\\]$",
       "efeitos": [
         {
@@ -48717,13 +51767,14 @@
       "padrao": "^Concede a Habilidade Convocar Grande Emissário do Arcano$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "emissario_arcano",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a gema Convocar Grande Emissário do Arcano",
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e a cada 6 s lança em você a Fúria Arcana (4 s); o Grande, junto: 4 s de +15% de chance de Eletrizar e Penetração de 10% de Resistência a Raio — a frequência é a recarga da habilidade (nenhuma fonte publica a do buff)",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_06_11c": "06/11 — lote 6 das inertes: os Emissários",
       "_nova": true
     },
     {
@@ -48824,32 +51875,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Habilidades Vaal utilizadas durante o efeito possuem \\{(\\d+)\\}% de redução de Duração da Prevenção do Ganho de Almas$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Prevenção do Ganho de Almas",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ao usar, concede um bônus de Adivinhação aleatório por \\{(\\d+)\\} segundos$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem os bônus de Adivinhação",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^\\{(\\d+)\\}% de chance de atualizar a Duração do Incêndio no Acerto com Armas Corpo a Corpo$",
       "efeitos": [
         {
@@ -48920,45 +51945,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Comprimento do Raio Escaldante aumentado em \\{(\\d+)\\}%$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o comprimento do Raio Escaldante",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Duração da Prevenção do Ganho de Almas reduzida em \\{(\\d+)\\}%$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Prevenção do Ganho de Almas",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Pastor das Almas$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Prevenção do Ganho de Almas (o Pastor das Almas)",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^Dano elemental aumentado em \\{(\\d+)\\}% por \\{(\\d+)\\}% de resistência a dano de fogo, frio ou elétrico faltante, até \\{(\\d+)\\}%$",
       "efeitos": [
         {
@@ -48991,45 +51977,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Ativa Carne Incessante nível \\{(\\d+)\\} uma vez por segundo$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Carne Incessante",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ao morrer, um lacaio próximo concede Paredão Podre equivalente a \\{(\\d+)\\}% da própria vida máxima$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Paredão Podre",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ativa a Habilidade Convocar Fantasma Nível \\{(\\d+)\\} ao Consumir um Corpo$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a gema ativa Convocar Fantasma",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^Geada Cortante$",
       "efeitos": [
         {
@@ -49041,58 +51988,6 @@
           "valor": "1"
         }
       ],
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ordem da Rainha pode Ativar Chamas do Julgamento Nível \\{(\\d+)\\}$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Ordem da Rainha",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ordem da Rainha pode Ativar Tormenta do Julgamento Nível \\{(\\d+)\\}$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Ordem da Rainha",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^O Dervixe Dançarino Manifestado desativa ambos espaços de arma$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Manifesto dos Dervixes Dançarinos",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^O Dervixe Dançarino Manifestado morre quando a Fúria termina$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Manifesto dos Dervixes Dançarinos",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
       "_nova": true
     },
@@ -49218,13 +52113,14 @@
       "padrao": "^Concede a Habilidade Convocar Grande Emissário da Brutalidade$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "emissario_brutalidade",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a gema Convocar Grande Emissário da Brutalidade",
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e a cada 20 s, com um Inimigo Raro ou Único por perto, lança em você 8 s de 50% de Dano aumentado, 30% de Velocidade de Ataque e de Movimento e 15% de Dano sofrido reduzido; o Grande, junto: os Inimigos Sangrando que você mata explodem, 10% da Vida máxima deles como Dano Físico",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_06_11c": "06/11 — lote 6 das inertes: os Emissários",
       "_nova": true
     },
     {
@@ -49248,19 +52144,6 @@
           "valor": "{1}"
         }
       ],
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ativa Escolhido de Tawhoa Nível \\{(\\d+)\\} quando você Atacar com uma Habilidade de Pancada ou Golpe Não Vaal$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Escolhido de Tawhoa",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
       "_nova": true
     },
@@ -49300,19 +52183,6 @@
       ],
       "estado": "lembrete",
       "nota": "a restrição de uso da peça (o jogo não a cobra)",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ativa Golpe Invisível Nível \\{(\\d+)\\} a cada \\{(\\d+)\\} segundos enquanto Trespassando$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Golpe Invisível",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
       "_nova": true
     },
@@ -49402,19 +52272,6 @@
       ],
       "estado": "lembrete",
       "nota": "o número interno da linha de cima",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ativa Onda de Choque Sangrenta Nível \\{(\\d+)\\} no Acerto Corpo a Corpo caso tenha ao menos \\{(\\d+)\\} de Força$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem a Onda de Choque Sangrenta",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
       "_nova": true
     },
@@ -49951,6 +52808,119 @@
         }
       ],
       "_06_11": "06/11 — lote 5 dos Únicos: as últimas linhas do pool de Síntese da Nebulis",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Convocar Emissário do Tempo$",
+      "efeitos": [
+        {
+          "stat": "emissario_tempo_menor",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e a cada 20 s (o Grande, a cada 10 s) lança em você 8 s de +10% de Velocidade de Ação; o do Menor não acelera os inimigos por perto (o jogo não tem Velocidade de Ação nos monstros)",
+      "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
+      "_06_11c": "06/11 — lote 6 das inertes: os Emissários",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Convocar Emissário das Tormentas$",
+      "efeitos": [
+        {
+          "stat": "emissario_tormentas_menor",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e a cada 4 s Resfria ou Eletriza (ao acaso) um inimigo e até 4 por perto dele por 4 s, com efeito de 10% — o efeito não é publicado (o Grande: maior)",
+      "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
+      "_06_11c": "06/11 — lote 6 das inertes: os Emissários",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Convocar Emissário do Arcano$",
+      "efeitos": [
+        {
+          "stat": "emissario_arcano_menor",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e a cada 6 s lança em você a Fúria Arcana (4 s) — a frequência é a recarga da habilidade (nenhuma fonte publica a do buff)",
+      "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
+      "_06_11c": "06/11 — lote 6 das inertes: os Emissários",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Convocar Emissário do Foco$",
+      "efeitos": [
+        {
+          "stat": "emissario_foco_menor",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e a cada 8 s, enquanto você canaliza, lança em você 4 s de 20% menos Dano sofrido, sem Atordoamento nem Afecções Elementais — os 20% são do poewiki (sem fonte do jogo)",
+      "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
+      "_06_11c": "06/11 — lote 6 das inertes: os Emissários",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Convocar Emissário da Brutalidade$",
+      "efeitos": [
+        {
+          "stat": "emissario_brutalidade_menor",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e a cada 20 s, com um Inimigo Raro ou Único por perto, lança em você 8 s de 50% de Dano aumentado, 30% de Velocidade de Ataque e de Movimento e 15% de Dano sofrido reduzido",
+      "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
+      "_06_11c": "06/11 — lote 6 das inertes: os Emissários",
+      "_nova": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Convocar Emissário das Direções$",
+      "efeitos": [
+        {
+          "stat": "emissario_direcoes_menor",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e, a cada 6 s, lança em você um buff de 6 s com um ao acaso — +1 Projétil, +1 Ricochete, Perfuram +1 alvo, ou Difundem — ou todos (1 em 5); os tempos são os do Grande Emissário (nenhuma fonte publica a frequência, a duração do buff nem a chance de \"todos\")",
+      "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Raridade dos Itens encontrados aumentada em \\{(\\d+)\\}%(?: durante o Efeito)?$",
+      "efeitos": [
+        {
+          "stat": "item_rarity",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistências Elementais(?: durante o Efeito)?$",
+      "efeitos": [
+        {
+          "stat": "fire_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res",
+          "valor": "{1}"
+        }
+      ],
+      "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
       "_nova": true
     }
   ]

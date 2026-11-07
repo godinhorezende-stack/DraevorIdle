@@ -9272,6 +9272,810 @@
       "combate": true,
       "nome": "Ataques com Arco sacrificam um lacaio por Flechas",
       "efeito": "acoes (o disparo) (06/11, Únicos lote 5)"
+    },
+    "emissario_direcoes_menor": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Emissário das Direções",
+      "efeito": "acoes.tiqueDoEmissario (06/11)"
+    },
+    "emissario_tempo": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Grande Emissário do Tempo",
+      "efeito": "acoes.tiqueDoEmissario (06/11)"
+    },
+    "emissario_tempo_menor": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Emissário do Tempo",
+      "efeito": "acoes.tiqueDoEmissario (06/11)"
+    },
+    "emissario_brutalidade": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Grande Emissário da Brutalidade",
+      "efeito": "acoes.tiqueDoEmissario (06/11)"
+    },
+    "emissario_brutalidade_menor": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Emissário da Brutalidade",
+      "efeito": "acoes.tiqueDoEmissario (06/11)"
+    },
+    "emissario_foco": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Grande Emissário do Foco",
+      "efeito": "acoes.tiqueDoEmissario (06/11)"
+    },
+    "emissario_foco_menor": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Emissário do Foco",
+      "efeito": "acoes.tiqueDoEmissario (06/11)"
+    },
+    "emissario_arcano": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Grande Emissário do Arcano",
+      "efeito": "acoes.tiqueDoEmissario (06/11)"
+    },
+    "emissario_arcano_menor": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Emissário do Arcano",
+      "efeito": "acoes.tiqueDoEmissario (06/11)"
+    },
+    "emissario_tormentas": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Grande Emissário das Tormentas",
+      "efeito": "acoes.tiqueDoEmissario (06/11)"
+    },
+    "emissario_tormentas_menor": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Emissário das Tormentas",
+      "efeito": "acoes.tiqueDoEmissario (06/11)"
+    },
+    "aspecto_gato": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Aspecto do Gato (nível)",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "aspecto_ave": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Aspecto da Ave (nível)",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "aspecto_caranguejo": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Aspecto do Caranguejo (nível)",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "aspecto_aranha": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Aspecto da Aranha (nível)",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "aspecto_gato_sem_reserva": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Aspecto do Gato sem Reserva",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "furtividade_felina_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Duração da Furtividade Felina (s)",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "agilidade_felina_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Duração da Agilidade Felina (s)",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "poder_da_ave_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Duração do Poder da Ave (s)",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "voo_da_ave_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Duração do Voo da Ave (s)",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "aspecto_ave_aliados": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Aspecto da Ave nos Aliados",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "barreiras_max": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Máximo de Barreiras de Caranguejo",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "barreira_chance_max": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Chance de ganhar o máximo de Barreiras",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "barreiras_nao_perde_recente": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Não perde Barreiras se perdeu Recentemente",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "barreiras_perde_so": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Só perde N Barreiras",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "aranha_duracao_inc": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Duração das Teias aumentada",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "teias_extra": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Teias a mais por inimigo",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "aranha_area_inc": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Área do Aspecto da Aranha aumentada",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "teias_dano_menos": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Inimigos com Teia causam menos dano",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "teias_res_menos": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Inimigos com Teia: menos resistências",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "aranha_intervalo_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Intervalo das Teias (s)",
+      "efeito": "itens-poe/aspectos.mjs (06/11)"
+    },
+    "cargas_brutal": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Ganha Cargas brutal no lugar da base",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "max_brutal_igual": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Máximo de Cargas brutal = o da base",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "min_brutal_da_base": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Mínimo de Cargas brutal pelo da base",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "cargas_aflicao": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Ganha Cargas aflicao no lugar da base",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "max_aflicao_igual": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Máximo de Cargas aflicao = o da base",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "min_aflicao_da_base": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Mínimo de Cargas aflicao pelo da base",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "cargas_absorcao": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Ganha Cargas absorcao no lugar da base",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "max_absorcao_igual": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Máximo de Cargas absorcao = o da base",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "min_absorcao_da_base": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Mínimo de Cargas absorcao pelo da base",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "max_vazio": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Máximo de Cargas do Vazio",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "vazio_a_cada_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Carga do Vazio a cada N s",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "max_espiritual": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Máximo de Cargas Espirituais",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "espiritual_a_cada_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Carga Espiritual a cada N s",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "max_divina": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Máximo de Cargas Divinas",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "recoup_es_elemental": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano Elemental sofrido Recuperado como Escudo de Energia",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "almas_max": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Máximo de Almas Devoradas",
+      "efeito": "itens-poe/cargas.mjs (06/11, lote 8)"
+    },
+    "frasco_vida_aliados_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Recuperação de Vida dos Frascos nos aliados",
+      "efeito": "itens-poe (06/11, lote 9)"
+    },
+    "auras_so_vinculados": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Auras só em você e nos Alvos Vinculados",
+      "efeito": "itens-poe (06/11, lote 9)"
+    },
+    "frasco_utilidade_vinculados": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Frascos de Utilidade nos Alvos Vinculados",
+      "efeito": "itens-poe (06/11, lote 9)"
+    },
+    "absorve_afeccoes_aliados": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Aliados próximos sem Afecções Elementais",
+      "efeito": "itens-poe (06/11, lote 9)"
+    },
+    "compartilha_tolerancia": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Compartilha Cargas de Tolerância",
+      "efeito": "itens-poe (06/11, lote 9)"
+    },
+    "aliados_acao_minima": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Velocidade de Ação dos aliados não cai abaixo da base",
+      "efeito": "itens-poe (06/11, lote 9)"
+    },
+    "frasco_mercurio_aliados": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Frascos de Mercúrio nos aliados",
+      "efeito": "itens-poe (06/11, lote 9)"
+    },
+    "fortificacao_sem_menos_dano": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Sem o menos dano inerente da Fortificação",
+      "efeito": "condicoes-poe (06/11, lote 10)"
+    },
+    "fortificacao_extra": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Fortificações a mais",
+      "efeito": "condicoes-poe.fortificacao (06/11, lote 10)"
+    },
+    "perde_tolerancia_ao_fortificar": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Chance de perder Tolerância ao Fortificar",
+      "efeito": "condicoes-poe.ganharFortificacao (06/11, lote 10)"
+    },
+    "area_fria_raio_sofrido": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano de Raio sofrido nas suas Áreas Resfriadas",
+      "efeito": "itens-poe/solos-seus.mjs (06/11, lote 11)"
+    },
+    "solo_eletrizado_movendo_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Solo Eletrizado ao se mover (s)",
+      "efeito": "itens-poe/solos-seus.mjs (06/11, lote 11)"
+    },
+    "solo_profano_no_lugar": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Solo Profano no lugar do Sagrado",
+      "efeito": "itens-poe/solos-seus.mjs (06/11, lote 11)"
+    },
+    "solo_fungico_parado": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Solo Fúngico enquanto parado",
+      "efeito": "itens-poe/solos-seus.mjs (06/11, lote 11)"
+    },
+    "lacaio_morte_solo_caustico_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Solo Cáustico na morte do lacaio (% da Vida)",
+      "efeito": "itens-poe/solos-seus.mjs (06/11, lote 11)"
+    },
+    "lacaio_morte_solo_ardente_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Solo Ardente na morte do lacaio (% da Vida)",
+      "efeito": "itens-poe/solos-seus.mjs (06/11, lote 11)"
+    },
+    "solo_sagrado_dano_sofrido": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano sofrido no seu Solo Sagrado",
+      "efeito": "itens-poe/solos-seus.mjs (06/11, lote 11)"
+    },
+    "bencaos_desabilitadas": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Habilidades Bênção desabilitadas",
+      "efeito": "itens-poe (06/11, lote 12)"
+    },
+    "monstros_vida_reservada_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Vida Reservada dos monstros próximos",
+      "efeito": "itens-poe (06/11, lote 12)"
+    },
+    "impelido_sofre_vida_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Vida sofrida por Clamor Impelindo",
+      "efeito": "itens-poe (06/11, lote 12)"
+    },
+    "impelir_nao_conta_chance": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Chance do Impelir não contar o ataque",
+      "efeito": "itens-poe (06/11, lote 12)"
+    },
+    "zumbis_sao_cadaveres": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Zumbis contam como Cadáveres",
+      "efeito": "itens-poe (06/11, lote 12)"
+    },
+    "tocado_fogo_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano de Fogo por segundo enquanto Tocado pelas Chamas",
+      "efeito": "mods-poe.tiqueDosAspectos (07/11, lote 13b)"
+    },
+    "concentrar_resfria_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Resfria ao se Concentrar",
+      "efeito": "habilidades-de-itens (07/11)"
+    },
+    "concentracao_recarga_inc": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Recarga da Concentração",
+      "efeito": "habilidades-de-itens (07/11)"
+    },
+    "escorias_exposicao_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Exposição ao Fogo das Escórias",
+      "efeito": "habilidades-de-itens (07/11)"
+    },
+    "custo_furia_red": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Custo de Fúria de Habilidades reduzido (%)",
+      "efeito": "acoes.dispararSemMarcarDentro, o ataque Vaal pago com Fúria (07/11, lote 14)"
+    },
+    "vaal_ataque_custa_furia": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Ataques Vaal usados à mão custam Fúria em vez da recarga",
+      "efeito": "acoes.dispararSemMarcarDentro (07/11, lote 14)"
+    },
+    "sem_furia_no_impedimento": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Não ganha Fúria durante a Anulação do Ganho de Almas",
+      "efeito": "condicoes-poe.ganharFuria (07/11, lote 14)"
+    },
+    "pastor_das_almas": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Pastor das Almas",
+      "efeito": "acoes.dispararSemMarcarDentro, a recarga das Vaal (07/11, lote 14)"
+    },
+    "reflete_anel": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Reflete o anel aposto",
+      "efeito": "condicoes-poe.adds (07/11, lote 14)"
+    },
+    "so_este_anel": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Não pode usar outros Anéis",
+      "efeito": "inventario.restricaoDoPoe (07/11, lote 14)"
+    },
+    "sem_peitoral": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Não pode usar Peitoral",
+      "efeito": "inventario.restricaoDoPoe (07/11, lote 14)"
+    },
+    "impedimento_almas_duracao_inc": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Duração da Prevenção do Ganho de Almas aumentada (%)",
+      "efeito": "acoes.msDoImpedimentoP4 (07/11, lote 14)"
+    },
+    "ordem_rainha_chamas": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Exigência da Rainha: nível das Chamas do Julgamento",
+      "efeito": "habilidades-de-itens.Queens_Demand (07/11, lote 15)"
+    },
+    "ordem_rainha_tormenta": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Exigência da Rainha: nível da Tormenta do Julgamento",
+      "efeito": "habilidades-de-itens.Queens_Demand (07/11, lote 15)"
+    },
+    "todo_dano_resfria_voce": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Todo o Dano Sofrido de Acertos pode te Resfriar",
+      "efeito": "mobs/mecanicas.aoAcertarJogador (07/11, lote 16)"
+    },
+    "fantasma_ao_consumir_corpo": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Convocar Fantasma ao Consumir um Corpo (nível)",
+      "efeito": "mods-poe.tiqueDosAspectos (07/11, lote 16)"
+    },
+    "rajada_vulcanica_chance": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Chance de Ativar a Rajada Vulcânica (%)",
+      "efeito": "acoes.rajadaVulcanica (07/11, lote 16)"
+    },
+    "raio_escaldante_comprimento_inc": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Comprimento do Raio Escaldante aumentado (%)",
+      "efeito": "acoes.formaComComprimento (07/11, lote 18)"
+    },
+    "esqueletos_com_arma": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Esqueletos portam esta Arma",
+      "efeito": "acoes.confusaoDeFerro (07/11, lote 17)"
+    },
+    "esqueletos_triplo": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Esqueletos causam Dano Triplicado com esta Arma (acertou recentemente)",
+      "efeito": "acoes.confusaoDeFerro (07/11, lote 17)"
+    },
+    "carne_incessante": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Carne Incessante (nível)",
+      "efeito": "acoes.elegiaPartida (07/11, lote 17)"
+    },
+    "paredao_podre_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Paredão Podre (% da vida do lacaio que morre perto)",
+      "efeito": "acoes.elegiaPartida, mods-poe.absorverNoParedao (07/11, lote 17)"
+    },
+    "dervixes_dancarinos": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Manifesto dos Dervixes Dançarinos na Fúria (nível)",
+      "efeito": "acoes.dervixesDancantes (07/11, lote 17)"
+    },
+    "dervixes_desarma": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Os Dervixes desativam os espaços de arma",
+      "efeito": "acoes → Ficha.definirDesarmadoNaFicha (07/11, lote 17)"
+    },
+    "dervixes_morrem_na_furia": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Os Dervixes morrem quando a Fúria termina",
+      "efeito": "acoes.dervixesDancantes (07/11, lote 17)"
+    },
+    "efigie_maldicoes": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Maldições encaixadas ativadas pela Efígie de Doedre",
+      "efeito": "acoes.efigiesDaDoedre (07/11, lote 17)"
+    },
+    "adivinhacao_frasco_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Bônus de Adivinhação aleatório ao usar o frasco (s)",
+      "efeito": "frascos.REGRAS_DO_FRASCO (07/11, lote 19)"
+    },
+    "memoria_do_criador": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Invocar Memória do Criador (nível)",
+      "efeito": "acoes.legadoDaRosa (07/11, lote 19)"
+    },
+    "memoria_devastacao": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Devastação do Criador (nível)",
+      "efeito": "acoes.legadoDaRosa (07/11, lote 19)"
+    },
+    "lembranca_por_es": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Escudo de Energia gasto por Lembrança",
+      "efeito": "acoes.legadoDaRosa (07/11, lote 19)"
+    },
+    "lembranca_sem_memoria": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Lembrança só sem Memória do Criador",
+      "efeito": "acoes.legadoDaRosa (07/11, lote 19)"
+    },
+    "lembranca_max": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Máximo de Lembrança",
+      "efeito": "acoes.legadoDaRosa (07/11, lote 19)"
+    },
+    "physical_sofrido_animal": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Dano Físico sofrido quando acertado por Animais",
+      "efeito": "condicoes-poe.fixoRecebido (07/11, lote 20)"
+    },
+    "imune_solo_profanado": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Inafetado por Solo Profanado",
+      "efeito": "mobs/mecanicas.tiqueDosSolos (07/11, lote 20)"
+    },
+    "imune_silencio": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Não pode ser Amaldiçoado com Silêncio",
+      "efeito": "condicoes-poe.IMUNE_A_MALDICAO (07/11, lote 20)"
+    },
+    "projeteis_perfuram_voce": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Projéteis Inimigos Perfuram você",
+      "efeito": "poderes.dispararMagia (07/11, lote 20)"
+    },
+    "verme_retorcido_s": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Um Verme Retorcido surge a cada N segundos",
+      "efeito": "acoes.tiqueDoGuardian (07/11, lote 20)"
+    },
+    "vermes_contorcidos": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Vermes Contorcidos escapam do Frasco",
+      "efeito": "frascos.usar (07/11, lote 20)"
+    },
+    "silenciado": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Silenciado (não usa habilidades)",
+      "efeito": "acoes.dispararSemMarcarDentro (07/11, lote 20)"
+    },
+    "efigie_maldicoes_extra": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Maldições adicionais das Habilidades Encaixadas (a Efígie)",
+      "efeito": "acoes.efigiesDaDoedre (07/11, lote 20)"
+    },
+    "caranguejo_efeito": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Efeito de bônus do Aspecto do Caranguejo aumentado (%)",
+      "efeito": "condicoes-poe.adds (07/11, lote 21)"
+    },
+    "aranha_penalidade_efeito": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Efeito da penalidade do Aspecto da Aranha aumentado (%)",
+      "efeito": "aspectos.tique (07/11, lote 21)"
+    },
+    "gem_xp_inc": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Ganho de Experiência das Gemas aumentado (%)",
+      "efeito": "skills/gemas.ganharXp (07/11, lote 22)"
+    },
+    "gem_xp_azul_local": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Experiência das Gemas nos Encaixes Azuis da peça (%)",
+      "efeito": "skills/gemas.ganharXp (07/11, lote 22)"
+    },
+    "pergaminho_extra_chance": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Chance de um Pergaminho da Sabedoria adicional ao matar (%)",
+      "efeito": "hunt/combate.matarMonstro (07/11, lote 22)"
+    },
+    "atributos_viram_oniciencia": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Modificadores de Atributos se aplicam a Onisciência",
+      "efeito": "personagem/atributos.principais (07/11, lote 23)"
+    },
+    "oniciencia_requisitos_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Requisitos de Atributos satisfeitos por X% de Onisciência",
+      "efeito": "personagem/requisitos.falta (07/11, lote 23)"
+    },
+    "todas_influencias": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Possui todas as influências (o Amuleto Astrolábio)",
+      "efeito": "condicoes-poe.influenciasDe (07/11, lote 24)"
+    },
+    "ignora_res_caos": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Acertos ignoram a Resistência a Caos do Monstro",
+      "efeito": "hunt/resistencia.resistenciaEfetivaDe (07/11, lote 24)"
+    },
+    "imune_atordoamento_ataque": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Não pode ser Atordoado por Ataques",
+      "efeito": "hunt/combate, poderes (07/11, lote 24)"
+    },
+    "imune_atordoamento_magia": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Não pode ser Atordoado por Magias",
+      "efeito": "poderes.dispararMagia (07/11, lote 24)"
+    },
+    "max_sifao": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Máximo de Cargas de Sifão",
+      "efeito": "cargas (07/11, lote 24)"
+    },
+    "aura_efeito_nos_lacaios": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Efeito das Auras nos Lacaios aumentado (%)",
+      "efeito": "gemas-poe (aliados_aura), aliados.doLacaio (07/11, lote 25)"
+    },
+    "lacaios_usam_frascos": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Seus Lacaios usam seus Frascos quando convocados",
+      "efeito": "acoes.frascosNosLacaios (07/11, lote 25)"
+    },
+    "lacaio_frasco_cargas_red": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Cargas de Frasco usadas pelos Lacaios reduzidas (%)",
+      "efeito": "acoes.frascosNosLacaios (07/11, lote 25)"
+    },
+    "lacaio_frasco_duracao_inc": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Duração do Efeito do Frasco nos Lacaios aumentada (%)",
+      "efeito": "acoes.frascosNosLacaios (07/11, lote 25)"
+    },
+    "so_gemas_corrompidas": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Só aceita Gemas Corrompidas",
+      "efeito": "skills/gemas.encaixar (07/11, lote 25)"
+    },
+    "consome_suportes_max": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Pode consumir N Gemas de Suporte",
+      "efeito": "skills/gemas.ganharXp, dasPecas (07/11, lote 25)"
+    },
+    "encaixes_ligados": {
+      "unidade": "",
+      "nome": "Encaixes todos ligados (6)",
+      "combate": true,
+      "efeito": "itens-poe/jogo.pecaDoJogo (07/11, lote 25)"
+    },
+    "projeteis_viram_divisao": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Projéteis a mais viram a divisão do projétil",
+      "efeito": "acoes (alvosExtras → divisao) (07/11, lote 25)"
+    },
+    "almas_do_feitico_pct": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Almas ao passar X% da duração do Feitiço",
+      "efeito": "mods-poe.tiqueDosAspectos (07/11, lote 25)"
+    },
+    "almas_do_feitico_por_poder": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Almas por Poder do inimigo amaldiçoado",
+      "efeito": "mods-poe.tiqueDosAspectos (07/11, lote 25)"
+    },
+    "grilhoes_ao_ser_acertado": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Acertos Inimigos infligem Grilhões Temporais em você",
+      "efeito": "mods-poe.aoSerAcertado (07/11, lote 26)"
+    },
+    "furia_max_ao_perder_grilhoes": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Fúria máxima ao perder os Grilhões Temporais",
+      "efeito": "condicoes-poe.tiqueDosEfeitos (07/11, lote 26)"
+    },
+    "imune_grilhoes_temporais": {
+      "nome": "Imune a Grilhões Temporais",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe (IMUNE_A_MALDICAO) (07/11, lote 26)"
     }
   }
 }

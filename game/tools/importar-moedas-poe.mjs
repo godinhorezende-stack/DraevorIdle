@@ -1,7 +1,8 @@
 // As MOEDAS EMPILHÁVEIS do PoE (dono, 07/10: "cadastre todas as moedas empilháveis — poedb.tw/pt/Stackable_Currency — com suas
 // funcionalidades") → `gamedata/itens-poe/moedas-poe.json` (o que o jogo lê: `systems/itens-poe/moedas.mjs`) e os ícones em
 // `gamedata/itens-poe/icones-moedas/<Slug>.png` (o PNG do CDN oficial do PoE — o mesmo desenho do webp do poedb; já baixado é pulado).
-// A fonte é a coleção do dono (`original/poe-itens/Itens_Monetarios/Stackable_Currency/itens.json`, do poedb em português).
+// A fonte é a coleção do dono (`original/poe-itens/Itens_Monetarios/Stackable_Currency/itens.json`, do poedb em português), mais as do
+// poedb que ela não traz (`gamedata/itens-poe/moedas-poe-extras.json`).
 // Os ids de item ficam em `moedas-poe-ids.json` (ESTÁVEIS: só cresce). O Joalheiro, a Fusão e o Cromático mantêm os ids de antes
 // (915001–915003, os orbes de socket).
 // Uso: node tools/importar-moedas-poe.mjs
@@ -28,6 +29,14 @@ for (const x of fonte.itens) {
     slug: x.slug, nome: x.nome, efeitos: (x.efeitos ?? []).map((l) => l.replace(/\s*\/\s*/g, ' ').trim()).filter(Boolean),
     pilha: x.tamanho_pilha?.maximo ?? 20, icone: `${x.slug}.png`, fonteDaImagem: x.fonte_imagem ?? null,
   });
+}
+
+// (06/11) As do poedb que a coleção não traz (`moedas-poe-extras.json`: as Partes e os Pergaminhos do Emissário, o Ducado de Ukatoa), no fim.
+const EXTRAS = new URL('../gamedata/itens-poe/moedas-poe-extras.json', import.meta.url);
+if (existsSync(EXTRAS)) for (const x of JSON.parse(readFileSync(EXTRAS, 'utf8')).moedas) {
+  if (vistos.has(x.slug)) continue;
+  vistos.add(x.slug);
+  moedas.push({ slug: x.slug, nome: x.nome, efeitos: x.efeitos, pilha: x.pilha ?? 20, icone: `${x.slug}.png`, fonteDaImagem: x.fonteDaImagem ?? null });
 }
 
 // Os ids estáveis.

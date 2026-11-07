@@ -18,7 +18,9 @@ export const PREFIXO = 'poe:';
 
 /** A raridade do Draevor → a do PoE (o PoE tem 4: o Elite conta como Raro; o Chefe e o Chefe único como Único). */
 export const RARIDADE_DO_POE = { normal: 'normal', modificado: 'magico', raro: 'raro', elite: 'raro', unico: 'unico', boss: 'unico' };
-const POR_ID = new Map(DADOS.mods.map((m) => [m.id, m]));
+// (07/11, lote 20 das inertes) + os modificadores DO JOGO, que o poedb não tem (`doJogo` — o Profanador e o Silenciador): entram no sorteio junto dos do PoE
+const TODOS = [...DADOS.mods, ...(DADOS.doJogo ?? [])];
+const POR_ID = new Map(TODOS.map((m) => [m.id, m]));
 
 /**
  * O monstro recebe os modificadores do PoE? Com o PoE ligado, TODO bicho (decisão do dono, 05/10: "não é pra ficar o do Draevor") — menos
@@ -41,7 +43,7 @@ export function elegivel(mod, raridadePoe, nivel, { soComEfeito = DADOS.soComEfe
 export function sortearMods(raridadePoe, nivel, rng = Math.random, opcoes = {}) {
   const [min, max] = DADOS.quantos?.[raridadePoe] ?? [0, 0];
   const n = min + Math.floor(rng() * (max - min + 1));
-  let pool = DADOS.mods.map((m) => [m, elegivel(m, raridadePoe, nivel, opcoes)]).filter(([, p]) => p > 0);
+  let pool = TODOS.map((m) => [m, elegivel(m, raridadePoe, nivel, opcoes)]).filter(([, p]) => p > 0);
   const saida = [];
   while (saida.length < n && pool.length) {
     const total = pool.reduce((t, [, p]) => t + p, 0);
@@ -101,7 +103,7 @@ export function iniciar() {
   }
   // Quantos modificadores cada raridade aceita no spawn, como no PoE: Mágico 1, Raro/Elite até 4; o Único e o Chefe, nenhum sorteado.
   for (const [r, n] of Object.entries({ modificado: DADOS.quantos?.magico?.[1] ?? 1, raro: DADOS.quantos?.raro?.[1] ?? 4, elite: DADOS.quantos?.raro?.[1] ?? 4 })) if (Raridade.CONFIG.raridades[r]) Raridade.CONFIG.raridades[r].maxModificadores = n;
-  for (const m of DADOS.mods) {
+  for (const m of TODOS) {
     Raridade.MODIFICADORES[PREFIXO + m.id] = {
       nome: m.nome,
       descricao: (m.linhas ?? []).join('. '),
@@ -127,6 +129,6 @@ export const paraEngine = () => ({
   sorteioDaRaridade: DADOS.sorteioDaRaridade ?? {},
   expPorRaridade: DADOS.expPorRaridade ?? {},
   ocultos: DADOS.ocultos,
-  mods: DADOS.mods.map(({ statsPoe, ...m }) => ({ ...m, statsPoe: statsPoe ?? [] })),
+  mods: TODOS.map(({ statsPoe, ...m }) => ({ ...m, statsPoe: statsPoe ?? [] })),
 });
 export const mod = (id) => POR_ID.get(String(id).replace(PREFIXO, '')) ?? null;

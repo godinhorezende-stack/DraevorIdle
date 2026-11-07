@@ -118,6 +118,25 @@ export function tentar(hunt, bicho, ficha, agora = hunt?.clock ?? 0, rng = Math.
  * aoAcertarJogador`): `ms` já vem da conta do PoE (o dano de Gelo × a vida máxima — `monstros-no-jogador.msDoCongelamento`). Os mesmos
  * evitar/imunidade/duração do PoE de `tentar`, a resistência a controle e a imunidade depois de congelado. Devolve se congelou.
  */
+/**
+ * (07/11, lote 16 das inertes) o RESFRIAMENTO de `pct`% de um acerto do monstro (o Chamado do Vazio: "Todo o Dano Sofrido de Acertos pode te Resfriar" —
+ * `monstros-no-jogador.pctDoResfriamento`): os mesmos evitar/efeito/duração do PoE de `tentar`, a resistência a controle; vale a maior lentidão. Devolve se resfriou.
+ */
+export function resfriar(hunt, ficha, pct0, agora = hunt?.clock ?? 0, rng = Math.random, duracaoMs = 2000) {
+  if (!hunt || !(pct0 > 0)) return false;
+  const poe = ModsPoe.controleNoJogador(ficha, 'lento', rng, hunt, {});
+  if (poe.evitou) return false;
+  const c = (hunt.controle ??= {});
+  const resistencia = limitar(ficha?.resistenciaAControle ?? 0, CONFIG.jogador.resistenciaMaxima);
+  const duracao = Math.round(duracaoMs * (1 - resistencia / 100) * poe.duracaoFator);
+  const minima = Number(ficha?.afPoe?.velocidade_acao_minima) || 0;
+  const pct = Math.min(CONFIG.jogador.lentidaoMaxima, minima > 0 ? 100 - minima : 100, pct0 * poe.pctFator);
+  if (!(duracao > 0) || !(pct > 0)) return false;
+  const atual = c.lento;
+  c.lento = ativo(atual, agora) ? { ate: Math.max(atual.ate, agora + duracao), pct: Math.max(atual.pct, pct) } : { ate: agora + duracao, pct };
+  ModsPoe.imunidadeApos(hunt, ficha, 'resfriamento', agora);
+  return true;
+}
 export function congelar(hunt, ficha, ms, agora = hunt?.clock ?? 0, rng = Math.random) {
   if (!hunt || !(ms > 0)) return false;
   const poe = ModsPoe.controleNoJogador(ficha, 'congelado', rng, hunt, {});

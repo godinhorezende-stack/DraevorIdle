@@ -1,4 +1,4 @@
-// Regeneração e stamina na cidade: uma vez por segundo, não a cada tique
+// Regeneração na cidade: uma vez por segundo, não a cada tique (07/11/2026, aval do dono: a stamina saiu do jogo — as linhas dela saíram daqui)
 // (250 ms) — são só matemática proporcional ao tempo, então o total ao longo
 // de vários segundos tem de ser EXATAMENTE o mesmo de antes, só que calculado
 // em menos chamadas.
@@ -6,12 +6,11 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Sessao } from '../websocket/sessao.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
-import * as Stamina from '../systems/stamina.mjs';
 import * as R from '../systems/regras.mjs';
 import { personagemDeTeste } from './apoio.mjs';
 import { doClassico } from './apoio-migracao.mjs';
 
-/** Uma sessão na cidade (sem hunt), com hp/mana/stamina longe do teto para o regen ter o que fazer. */
+/** Uma sessão na cidade (sem hunt), com hp/mana longe do teto para o regen ter o que fazer. */
 function sessaoNaCidade() {
   const s = new Sessao({ readyState: 1, send() {} });
   s.conta = { id: 'teste-do-regen' };
@@ -20,7 +19,6 @@ function sessaoNaCidade() {
   s.estado.pos = { ...R.POSICAO_INICIAL };
   s.estado.hp = Math.floor(s.estado.maxHp / 2);
   s.estado.mana = Math.floor(s.estado.maxMana / 2);
-  s.estado.stamina = 0;
   return s;
 }
 
@@ -64,14 +62,13 @@ test('não regenera antes de 1s (desde o 1º tique, que só estabelece a janela)
   assert.ok(vistos[4] > hpNoPrimeiro, 'não regenerou em +1250ms (1000ms desde a janela)');
 });
 
-test('o total ao longo de 4s é o MESMO de chamar Cacadas.regenerar/Stamina.recuperar direto', { skip: doClassico("Regeneração do Draevor na cidade; no PoE a cidade enche vida/mana/ES/frascos e a vida não tem regeneração de base (ficha-poe cobre)") }, () => {
+test('o total ao longo de 4s é o MESMO de chamar Cacadas.regenerar direto', { skip: doClassico("Regeneração do Draevor na cidade; no PoE a cidade enche vida/mana/ES/frascos e a vida não tem regeneração de base (ficha-poe cobre)") }, () => {
   const s = sessaoNaCidade();
   const comparar = personagemDeTeste({ vocacao: 'knight', level: 200 });
   comparar.hp = s.estado.hp;
   comparar.mana = s.estado.mana;
   comparar.maxHp = s.estado.maxHp;
   comparar.maxMana = s.estado.maxMana;
-  comparar.stamina = s.estado.stamina;
   comparar.equipment = s.estado.equipment;
   comparar.outfit = s.estado.outfit;
 
@@ -82,11 +79,9 @@ test('o total ao longo de 4s é o MESMO de chamar Cacadas.regenerar/Stamina.recu
   const intervalos = [250, ...Array.from({ length: 16 }, (_, i) => (i % 2 ? 251 : 249))];
   rodar(s, intervalos);
   Cacadas.regenerar(comparar, intervalos.slice(1).reduce((a, b) => a + b, 0));
-  Stamina.recuperar(comparar, intervalos.slice(1).reduce((a, b) => a + b, 0));
 
   assert.equal(s.estado.hp, comparar.hp, 'hp final diferente do cálculo direto');
   assert.equal(s.estado.mana, comparar.mana, 'mana final diferente do cálculo direto');
-  assert.ok(Math.abs(s.estado.stamina - comparar.stamina) < 1e-9, 'stamina final diferente do cálculo direto');
 });
 
 test('regen ao longo de 3s (depois da janela) não perde nem dobra o resto fracionário', { skip: doClassico("Regeneração do Draevor na cidade; no PoE a cidade enche vida/mana/ES/frascos e a vida não tem regeneração de base (ficha-poe cobre)") }, () => {

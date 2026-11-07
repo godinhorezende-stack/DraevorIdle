@@ -1,20 +1,20 @@
 # Auditoria dos únicos — jogo × poedb
 
-Gerado por `game/tools/auditar-unicos-poedb.mjs` em 2026-11-04, a partir de https://poedb.tw/pt/Unique_item (abas Weapon, Armour, Other, Item Recipe e Foulborn) e da página de cada único.
+Gerado por `game/tools/auditar-unicos-poedb.mjs` em 2026-11-06, a partir de https://poedb.tw/pt/Unique_item (abas Weapon, Armour, Other, Item Recipe e Foulborn) e da página de cada único.
 
 ## Resumo
 
-- Únicos no poedb (Weapon + Armour + Other): **1242**; no jogo: **1186**; faltando no jogo: **49**; sem página baixada: 7.
-- Iguais linha a linha (implícitos e explícitos, com as faixas): **1167**; com alguma diferença: **19** (7245 linhas conferidas).
+- Únicos no poedb (Weapon + Armour + Other): **1248**; no jogo: **1194**; faltando no jogo: **47**; sem página baixada: 7.
+- Iguais linha a linha (implícitos e explícitos, com as faixas): **1175**; com alguma diferença: **19** (7295 linhas conferidas).
 - Diferenças: base 9; linha que falta no jogo 19; valor/faixa diferente 0; linha a mais no jogo 18; tipo (implícito × explícito) 0.
-- Sorteio (1181 únicos do jogo × 40): não geram 0; valores fora da faixa 0; únicos com linha perdida 5; implícito da base somado ao do único 0; mínimo e máximo alcançáveis: sim.
+- Sorteio (1189 únicos do jogo × 40): não geram 0; valores fora da faixa 0; únicos com linha perdida 5; implícito da base somado ao do único 0; mínimo e máximo alcançáveis: sim.
 - Foulborn: 372 variantes no poedb (8 marcadas "Not in game" lá); o jogo ainda não tem a variante Foulborn.
 - Receitas de único (Item Recipe): 23 no poedb; o jogo ainda não tem.
 
 ## Corrigido (unicos-correcoes.json, aplicado por cima do catálogo)
 
 - **35 únicos** com as linhas da versão atual do poedb: Chifre de Abberath, Shimmeron, Scaeva, Singularidade, Acordo de Yaomac, O Chamado do Crustáceo, O Toque Lancinante, Bastão da Revelação, Tremor de Taryn, Potencial de Jiquani, A Espiral Cinza, Mandado de Atziri, Divisor de Águas, Remorso de Lioneye, The Draugur's Lantern, Honralar, O Olho Aberto (base Máscara do Arlequim), Mandíbula da Enganação, Prisão de Estase, Desilusão de Doryani (base Grevas do Leviatã), Farol da Loucura, Sinal da Wyrm, Punho da Tríade, Lamento de Sibila, Praxis, Emplema do Precursor, Sinete de Ngamahu, Precisão de Tawhanuku, Poço Infestado (base Talismã de Caranguejo-escudo), Maldição de Rigwald (base Talismã de Lobo Alfa), Hierarquia Natural (base Talismã de Rhex), Comparsa Profano (base Cinto de Pano), Sangue Tempestuoso, Atirador do Vazio (base Aljava Ornamentada), Olhos do Lobo Grandioso (base Talismã do Lobo Grandioso).
-- **11 novo(s)**: Réplica: Ensinamentos de Maata (Cetro Karui), Réplica: Ladrão de Almas (Machado de Cerco), Réplica: Shako Proibido (Coroa Grande), Réplica: Sacrifício de Sangue (Joia Carmesim), Réplica: Construção Barata (Joia Viridiana), Réplica: Eficiência do Conquistador (Joia Carmesim), Réplica: Florescer Frágil (Joia Carmesim), Réplica: Cabeça Quente (Joia Viridiana), Réplica: Talento Puro (Joia Viridiana), Réplica: Carga Instável (Joia Cobalto), Filho da Violência (Joia Ramificadora Pequeno).
+- **19 novo(s)**: Réplica: Ensinamentos de Maata (Cetro Karui), Réplica: Ladrão de Almas (Machado de Cerco), Pensamentos Agitados (Espada da Legião), Divina Inimizade (Cajado Imperial), Réplica: Shako Proibido (Coroa Grande), Força Inabalada (Escudo Triangular do Arconte), Conexão da Tempestade (Máscara Insensível), Divinação Destilada (Frasco Híbrido Grande), O Jarro Contorcido (Frasco Híbrido Consagrado), Réplica: Sacrifício de Sangue (Joia Carmesim), Réplica: Construção Barata (Joia Viridiana), Réplica: Eficiência do Conquistador (Joia Carmesim), Réplica: Florescer Frágil (Joia Carmesim), Réplica: Cabeça Quente (Joia Viridiana), Réplica: Talento Puro (Joia Viridiana), Réplica: Carga Instável (Joia Cobalto), Filho da Violência (Joia Ramificadora Pequeno), Fluxo Livre (Cinto de Pano), Rotação Fraturante (Aljava de Flechas Cegas).
 - O implícito do único não soma mais com o da base (655 únicos tinham o implícito em dobro; as peças antigas são refeitas na entrada).
 - Ficaram de fora de propósito: os mapas únicos e as joias (`foraDaComparacao` em poedb-unicos.json) e os de mecânica própria — Pérola de Tsoatha, Engenhosidade de Zana, Gancho de Poço, O Escudeiro.
 
@@ -22,8 +22,6 @@ Gerado por `game/tools/auditar-unicos-poedb.mjs` em 2026-11-04, a partir de http
 
 | Único | Slug | Base | Aba |
 | --- | --- | --- | --- |
-| Divinação Destilada | Divination_Distillate | Frasco Híbrido Grande | Outros |
-| O Jarro Contorcido | The_Writhing_Jar | Frasco Híbrido Consagrado | Outros |
 | Beleza | Beauty | Aspecto Vaal | Outros |
 | Curiosidade | Curiosity | Aspecto Vaal | Outros |
 | Ambição | Ambition | Aspecto Vaal | Outros |

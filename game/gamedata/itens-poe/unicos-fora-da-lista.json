@@ -1,5 +1,5 @@
 {
- "_nota": "Os ÚNICOS do poedb que a lista de Unique_item (o que o Scrapling extraiu em saida/unicos) não traz: 9 Réplicas (a página Replica_unique_item) e a Joia Ramificadora única Filho da Violência (a página Cluster_Jewel). Cada página (saida/html/<slug>.html) lida pelo mesmo extrator dos outros (extrair/unicos.py, ler); o Filho da Violência não tem página baixada, vem do card de saida/itens/lista.json (1 linha sem número). No formato de saida/unicos/unicos.json, com a aba do poedb (Armas/Armaduras/Outros). Quem lê: tools/auditar-unicos-poedb.mjs (poedb-unicos.json e os novos de unicos-correcoes.json) e tools/importar-joias-unicas.mjs (o Limitado a).",
+ "_nota": "Os ÚNICOS do poedb que a lista de Unique_item (o que o Scrapling extraiu em saida/unicos) não traz: 9 Réplicas (a página Replica_unique_item) a Joia Ramificadora única Filho da Violência (a página Cluster_Jewel) e os 6 únicos base do Emissário (Harbinger: Pensamentos Agitados, Força Inabalada, Divina Inimizade, Fluxo Livre, Rotação Fraturante, Conexão da Tempestade — 06/11, as Partes os formam; não estão na lista de Unique_item). Cada página (saida/html/<slug>.html) lida pelo mesmo extrator dos outros (extrair/unicos.py, ler); o Filho da Violência não tem página baixada, vem do card de saida/itens/lista.json (1 linha sem número). No formato de saida/unicos/unicos.json, com a aba do poedb (Armas/Armaduras/Outros). Quem lê: tools/auditar-unicos-poedb.mjs (poedb-unicos.json e os novos de unicos-correcoes.json) e tools/importar-joias-unicas.mjs (o Limitado a).",
  "unicos": {
   "Replica_Blood_Sacrifice": {
    "aba": "Outros",
@@ -789,6 +789,961 @@
         "texto": "Adiciona Combatente",
         "modelo": "Adiciona Combatente",
         "faixas": []
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "The_Rippling_Thoughts": {
+   "aba": "Armas",
+   "fonte": "saida/html/The_Rippling_Thoughts.html",
+   "versoes": [
+    {
+     "nome": "Pensamentos Agitados",
+     "base": "Espada da Legião",
+     "propriedades": [
+      "Espadas de Uma Mão",
+      "Qualidade: +20%",
+      "Dano Físico: (138-148) to (255-274)",
+      "Chance de Crítico: 5%",
+      "Ataques por Segundo: 1.2",
+      "Alcance da Arma: 1.1 metros",
+      "Lightning Damage: 1 to (60-70)"
+     ],
+     "requisitos": "Requer Nível 62 , 122 For, 104 Des",
+     "linhas": [
+      {
+       "tipo": "implicit",
+       "texto": "40 % de aumento da Precisão Global",
+       "faixas": [
+        [
+         40.0,
+         40.0
+        ]
+       ],
+       "jogo": {
+        "texto": "40% de aumento da Precisão Global",
+        "modelo": "{0}% de aumento da Precisão Global",
+        "faixas": [
+         [
+          40.0,
+          40.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Concede a Habilidade Convocar Emissário do Arcano",
+       "faixas": [],
+       "jogo": {
+        "texto": "Concede a Habilidade Convocar Emissário do Arcano",
+        "modelo": "Concede a Habilidade Convocar Emissário do Arcano",
+        "faixas": []
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Ativa Cascata da Tempestade nível 20 quando você Atacar",
+       "faixas": [
+        [
+         20.0,
+         20.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Ativa Cascata da Tempestade nível 20 quando você Atacar",
+        "modelo": "Ativa Cascata da Tempestade nível {0} quando você Atacar",
+        "faixas": [
+         [
+          20.0,
+          20.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Dano Mágico aumentado em (75 — 90) %",
+       "faixas": [
+        [
+         75.0,
+         90.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Dano Mágico aumentado em (75—90)%",
+        "modelo": "Dano Mágico aumentado em {0}%",
+        "faixas": [
+         [
+          75.0,
+          90.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Dano Físico aumentado em (140 — 160) %",
+       "faixas": [
+        [
+         140.0,
+         160.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Dano Físico aumentado em (140—160)%",
+        "modelo": "Dano Físico aumentado em {0}%",
+        "faixas": [
+         [
+          140.0,
+          160.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Adiciona 1 a (60 — 70) de Dano de Raio",
+       "faixas": [
+        [
+         1.0,
+         1.0
+        ],
+        [
+         60.0,
+         70.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Adiciona 1 a (60—70) de Dano de Raio",
+        "modelo": "Adiciona {0} a {1} de Dano de Raio",
+        "faixas": [
+         [
+          1.0,
+          1.0
+         ],
+         [
+          60.0,
+          70.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Adiciona 1 a (60 — 70) de Dano de Raio a Magias",
+       "faixas": [
+        [
+         1.0,
+         1.0
+        ],
+        [
+         60.0,
+         70.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Adiciona 1 a (60—70) de Dano de Raio a Magias",
+        "modelo": "Adiciona {0} a {1} de Dano de Raio a Magias",
+        "faixas": [
+         [
+          1.0,
+          1.0
+         ],
+         [
+          60.0,
+          70.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Área de Efeito aumentada em 10 %",
+       "faixas": [
+        [
+         10.0,
+         10.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Área de Efeito aumentada em 10%",
+        "modelo": "Área de Efeito aumentada em {0}%",
+        "faixas": [
+         [
+          10.0,
+          10.0
+         ]
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "The_Enmity_Divine": {
+   "aba": "Armas",
+   "fonte": "saida/html/The_Enmity_Divine.html",
+   "versoes": [
+    {
+     "nome": "Divina Inimizade",
+     "base": "Cajado Imperial",
+     "propriedades": [
+      "Cajados",
+      "Qualidade: +20%",
+      "Dano Físico: (338-386) to (583-667)",
+      "Chance de Crítico: (11.05-11.9)%",
+      "Ataques por Segundo: 1.15",
+      "Alcance da Arma: 1.3 metros"
+     ],
+     "requisitos": "Requer Nível 66 , 113 For, 113 Int",
+     "linhas": [
+      {
+       "tipo": "implicit",
+       "texto": "+25 % de Chance de Bloquear Dano Mágico",
+       "faixas": [
+        [
+         25.0,
+         25.0
+        ]
+       ],
+       "jogo": {
+        "texto": "+25% de Chance de Bloquear Dano Mágico",
+        "modelo": "+{0}% de Chance de Bloquear Dano Mágico",
+        "faixas": [
+         [
+          25.0,
+          25.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Gemas Encaixadas são suportadas por Chance de Sangramento Nível 1",
+       "faixas": [
+        [
+         1.0,
+         1.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Gemas Encaixadas são suportadas por Chance de Sangramento Nível 1",
+        "modelo": "Gemas Encaixadas são suportadas por Chance de Sangramento Nível {0}",
+        "faixas": [
+         [
+          1.0,
+          1.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Concede a Habilidade Convocar Emissário da Brutalidade",
+       "faixas": [],
+       "jogo": {
+        "texto": "Concede a Habilidade Convocar Emissário da Brutalidade",
+        "modelo": "Concede a Habilidade Convocar Emissário da Brutalidade",
+        "faixas": []
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "+5 % de Chance de Bloquear o Dano de Ataques enquanto portando um Cajado",
+       "faixas": [
+        [
+         5.0,
+         5.0
+        ]
+       ],
+       "jogo": {
+        "texto": "+5% de Chance de Bloquear o Dano de Ataques enquanto portando um Cajado",
+        "modelo": "+{0}% de Chance de Bloquear o Dano de Ataques enquanto portando um Cajado",
+        "faixas": [
+         [
+          5.0,
+          5.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "+(60 — 80) % de Multiplicador do Dano Degenerativo para Sangramento de Golpes Críticos",
+       "faixas": [
+        [
+         60.0,
+         80.0
+        ]
+       ],
+       "jogo": {
+        "texto": "+(60—80)% de Multiplicador do Dano Degenerativo para Sangramento de Golpes Críticos",
+        "modelo": "+{0}% de Multiplicador do Dano Degenerativo para Sangramento de Golpes Críticos",
+        "faixas": [
+         [
+          60.0,
+          80.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Adiciona (225 — 265) a (315 — 385) de Dano Físico",
+       "faixas": [
+        [
+         225.0,
+         265.0
+        ],
+        [
+         315.0,
+         385.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Adiciona (225—265) a (315—385) de Dano Físico",
+        "modelo": "Adiciona {0} a {1} de Dano Físico",
+        "faixas": [
+         [
+          225.0,
+          265.0
+         ],
+         [
+          315.0,
+          385.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Chance de Crítico aumentada em (30 — 40) %",
+       "faixas": [
+        [
+         30.0,
+         40.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Chance de Crítico aumentada em (30—40)%",
+        "modelo": "Chance de Crítico aumentada em {0}%",
+        "faixas": [
+         [
+          30.0,
+          40.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "(Cajados de Guerra são considerados Cajados)",
+       "faixas": [],
+       "jogo": {
+        "texto": "(Cajados de Guerra são considerados Cajados)",
+        "modelo": "(Cajados de Guerra são considerados Cajados)",
+        "faixas": []
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "The_Unshattered_Will": {
+   "aba": "Armaduras",
+   "fonte": "saida/html/The_Unshattered_Will.html",
+   "versoes": [
+    {
+     "nome": "Força Inabalada",
+     "base": "Escudo Triangular do Arconte",
+     "propriedades": [
+      "Escudos",
+      "Qualidade: +20%",
+      "Chance de Bloquear: 27%",
+      "Armadura: (187.2-214.8)",
+      "Escudo de Energia: (38.4-44.4)",
+      "Velocidade de Movimento: -3%"
+     ],
+     "requisitos": "Requer Nível 68 , 85 For, 85 Int",
+     "linhas": [
+      {
+       "tipo": "implicit",
+       "texto": "+12 % de todas Resistências Elementais",
+       "faixas": [
+        [
+         12.0,
+         12.0
+        ]
+       ],
+       "jogo": {
+        "texto": "+12% de todas Resistências Elementais",
+        "modelo": "+{0}% de todas Resistências Elementais",
+        "faixas": [
+         [
+          12.0,
+          12.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Concede a Habilidade Convocar Emissário do Foco",
+       "faixas": [],
+       "jogo": {
+        "texto": "Concede a Habilidade Convocar Emissário do Foco",
+        "modelo": "Concede a Habilidade Convocar Emissário do Foco",
+        "faixas": []
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "+(60 — 80) de Vida máxima",
+       "faixas": [
+        [
+         60.0,
+         80.0
+        ]
+       ],
+       "jogo": {
+        "texto": "+(60—80) de Vida máxima",
+        "modelo": "+{0} de Vida máxima",
+        "faixas": [
+         [
+          60.0,
+          80.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "+(10 — 15) % de todas Resistências Elementais",
+       "faixas": [
+        [
+         10.0,
+         15.0
+        ]
+       ],
+       "jogo": {
+        "texto": "+(10—15)% de todas Resistências Elementais",
+        "modelo": "+{0}% de todas Resistências Elementais",
+        "faixas": [
+         [
+          10.0,
+          15.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "(30 — 50) de Mana recebida ao Bloquear",
+       "faixas": [
+        [
+         30.0,
+         50.0
+        ]
+       ],
+       "jogo": {
+        "texto": "(30—50) de Mana recebida ao Bloquear",
+        "modelo": "{0} de Mana recebida ao Bloquear",
+        "faixas": [
+         [
+          30.0,
+          50.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "+5 % de Chance de Bloqueio",
+       "faixas": [
+        [
+         5.0,
+         5.0
+        ]
+       ],
+       "jogo": {
+        "texto": "+5% de Chance de Bloqueio",
+        "modelo": "+{0}% de Chance de Bloqueio",
+        "faixas": [
+         [
+          5.0,
+          5.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Habilidades Canalizadoras causam Dano aumentado em (50 — 70) %",
+       "faixas": [
+        [
+         50.0,
+         70.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Habilidades Canalizadoras causam Dano aumentado em (50—70)%",
+        "modelo": "Habilidades Canalizadoras causam Dano aumentado em {0}%",
+        "faixas": [
+         [
+          50.0,
+          70.0
+         ]
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "The_Tempests_Binding": {
+   "aba": "Armaduras",
+   "fonte": "saida/html/The_Tempests_Binding.html",
+   "versoes": [
+    {
+     "nome": "Conexão da Tempestade",
+     "base": "Máscara Insensível",
+     "propriedades": [
+      "Elmos",
+      "Qualidade: +20%",
+      "Evasão: (266-344)",
+      "Escudo de Energia: (78-105)"
+     ],
+     "requisitos": "Requer Nível 60 , 51 Des, 51 Int",
+     "linhas": [
+      {
+       "tipo": "explicit",
+       "texto": "Gemas Encaixadas são Suportadas por Mordida Congelante nível 18",
+       "faixas": [
+        [
+         18.0,
+         18.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Gemas Encaixadas são Suportadas por Mordida Congelante nível 18",
+        "modelo": "Gemas Encaixadas são Suportadas por Mordida Congelante nível {0}",
+        "faixas": [
+         [
+          18.0,
+          18.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Gemas Encaixadas são Suportadas por Inervação Nível 18",
+       "faixas": [
+        [
+         18.0,
+         18.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Gemas Encaixadas são Suportadas por Inervação Nível 18",
+        "modelo": "Gemas Encaixadas são Suportadas por Inervação Nível {0}",
+        "faixas": [
+         [
+          18.0,
+          18.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Concede a Habilidade Convocar Emissário das Tormentas",
+       "faixas": [],
+       "jogo": {
+        "texto": "Concede a Habilidade Convocar Emissário das Tormentas",
+        "modelo": "Concede a Habilidade Convocar Emissário das Tormentas",
+        "faixas": []
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "+(100 — 150) de Evasão",
+       "faixas": [
+        [
+         100.0,
+         150.0
+        ]
+       ],
+       "jogo": {
+        "texto": "+(100—150) de Evasão",
+        "modelo": "+{0} de Evasão",
+        "faixas": [
+         [
+          100.0,
+          150.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "+(40 — 60) de Escudo de Energia máximo",
+       "faixas": [
+        [
+         40.0,
+         60.0
+        ]
+       ],
+       "jogo": {
+        "texto": "+(40—60) de Escudo de Energia máximo",
+        "modelo": "+{0} de Escudo de Energia máximo",
+        "faixas": [
+         [
+          40.0,
+          60.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "+(60 — 80) de Vida máxima",
+       "faixas": [
+        [
+         60.0,
+         80.0
+        ]
+       ],
+       "jogo": {
+        "texto": "+(60—80) de Vida máxima",
+        "modelo": "+{0} de Vida máxima",
+        "faixas": [
+         [
+          60.0,
+          80.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "+(10 — 15) % de todas Resistências Elementais",
+       "faixas": [
+        [
+         10.0,
+         15.0
+        ]
+       ],
+       "jogo": {
+        "texto": "+(10—15)% de todas Resistências Elementais",
+        "modelo": "+{0}% de todas Resistências Elementais",
+        "faixas": [
+         [
+          10.0,
+          15.0
+         ]
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "The_Flow_Untethered": {
+   "aba": "Outros",
+   "fonte": "saida/html/The_Flow_Untethered.html",
+   "versoes": [
+    {
+     "nome": "Fluxo Livre",
+     "base": "Cinto de Pano",
+     "propriedades": [
+      "Cintos",
+      "Qualidade: +20%"
+     ],
+     "requisitos": "Requer Nível 60",
+     "linhas": [
+      {
+       "tipo": "implicit",
+       "texto": "Recuperação de Atordoamentos e Bloqueios aumentada em (15 — 25) %",
+       "faixas": [
+        [
+         15.0,
+         25.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Recuperação de Atordoamentos e Bloqueios aumentada em (15—25)%",
+        "modelo": "Recuperação de Atordoamentos e Bloqueios aumentada em {0}%",
+        "faixas": [
+         [
+          15.0,
+          25.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Concede a Habilidade Convocar Emissário do Tempo",
+       "faixas": [],
+       "jogo": {
+        "texto": "Concede a Habilidade Convocar Emissário do Tempo",
+        "modelo": "Concede a Habilidade Convocar Emissário do Tempo",
+        "faixas": []
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Velocidade de Recuperação de Escudo de Energia aumentada em (10 — 15) %",
+       "faixas": [
+        [
+         10.0,
+         15.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Velocidade de Recuperação de Escudo de Energia aumentada em (10—15)%",
+        "modelo": "Velocidade de Recuperação de Escudo de Energia aumentada em {0}%",
+        "faixas": [
+         [
+          10.0,
+          15.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Velocidade de Recuperação de Vida aumentada em (10 — 15) %",
+       "faixas": [
+        [
+         10.0,
+         15.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Velocidade de Recuperação de Vida aumentada em (10—15)%",
+        "modelo": "Velocidade de Recuperação de Vida aumentada em {0}%",
+        "faixas": [
+         [
+          10.0,
+          15.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Velocidade de Ataque e Conjuração aumentada em (10 — 15) %",
+       "faixas": [
+        [
+         10.0,
+         15.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Velocidade de Ataque e Conjuração aumentada em (10—15)%",
+        "modelo": "Velocidade de Ataque e Conjuração aumentada em {0}%",
+        "faixas": [
+         [
+          10.0,
+          15.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Velocidade de Recarga aumentada em (15 — 20) %",
+       "faixas": [
+        [
+         15.0,
+         20.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Velocidade de Recarga aumentada em (15—20)%",
+        "modelo": "Velocidade de Recarga aumentada em {0}%",
+        "faixas": [
+         [
+          15.0,
+          20.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Debuffs em você expiram (15 — 20) % mais rápido",
+       "faixas": [
+        [
+         15.0,
+         20.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Debuffs em você expiram (15—20)% mais rápido",
+        "modelo": "Debuffs em você expiram {0}% mais rápido",
+        "faixas": [
+         [
+          15.0,
+          20.0
+         ]
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "The_Fracturing_Spinner": {
+   "aba": "Outros",
+   "fonte": "saida/html/The_Fracturing_Spinner.html",
+   "versoes": [
+    {
+     "nome": "Rotação Fraturante",
+     "base": "Aljava de Flechas Cegas",
+     "propriedades": [
+      "Aljavas",
+      "Qualidade: +20%"
+     ],
+     "requisitos": "Requer Nível 60",
+     "linhas": [
+      {
+       "tipo": "implicit",
+       "texto": "Adiciona (7 — 9) a (13 — 16) de Dano Físico em Ataques",
+       "faixas": [
+        [
+         7.0,
+         9.0
+        ],
+        [
+         13.0,
+         16.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Adiciona (7—9) a (13—16) de Dano Físico em Ataques",
+        "modelo": "Adiciona {0} a {1} de Dano Físico em Ataques",
+        "faixas": [
+         [
+          7.0,
+          9.0
+         ],
+         [
+          13.0,
+          16.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Concede a Habilidade Convocar Emissário das Direções",
+       "faixas": [],
+       "jogo": {
+        "texto": "Concede a Habilidade Convocar Emissário das Direções",
+        "modelo": "Concede a Habilidade Convocar Emissário das Direções",
+        "faixas": []
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "+(30 — 50) de Força e Destreza",
+       "faixas": [
+        [
+         30.0,
+         50.0
+        ]
+       ],
+       "jogo": {
+        "texto": "+(30—50) de Força e Destreza",
+        "modelo": "+{0} de Força e Destreza",
+        "faixas": [
+         [
+          30.0,
+          50.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Adiciona (19 — 22) a (30 — 35) de Dano de Fogo a Magias e Ataques",
+       "faixas": [
+        [
+         19.0,
+         22.0
+        ],
+        [
+         30.0,
+         35.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Adiciona (19—22) a (30—35) de Dano de Fogo a Magias e Ataques",
+        "modelo": "Adiciona {0} a {1} de Dano de Fogo a Magias e Ataques",
+        "faixas": [
+         [
+          19.0,
+          22.0
+         ],
+         [
+          30.0,
+          35.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "Adiciona (19 — 22) a (30 — 35) de Dano de Gelo em Magias e Ataques",
+       "faixas": [
+        [
+         19.0,
+         22.0
+        ],
+        [
+         30.0,
+         35.0
+        ]
+       ],
+       "jogo": {
+        "texto": "Adiciona (19—22) a (30—35) de Dano de Gelo em Magias e Ataques",
+        "modelo": "Adiciona {0} a {1} de Dano de Gelo em Magias e Ataques",
+        "faixas": [
+         [
+          19.0,
+          22.0
+         ],
+         [
+          30.0,
+          35.0
+         ]
+        ]
+       }
+      },
+      {
+       "tipo": "explicit",
+       "texto": "+(15 — 25) % de Resistências a Fogo e Gelo",
+       "faixas": [
+        [
+         15.0,
+         25.0
+        ]
+       ],
+       "jogo": {
+        "texto": "+(15—25)% de Resistências a Fogo e Gelo",
+        "modelo": "+{0}% de Resistências a Fogo e Gelo",
+        "faixas": [
+         [
+          15.0,
+          25.0
+         ]
+        ]
        }
       }
      ]

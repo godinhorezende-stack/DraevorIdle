@@ -1,5 +1,5 @@
 // HUD do canto superior esquerdo: retrato com o nível, nome, vocação, barras de
-// vida, mana e experiência, e a linha de indicadores (stamina, prey, premium,
+// vida, mana, experiência e Lv Divino, e a linha de indicadores (prey, premium,
 // blessings). É o mesmo arranjo do painel do jogo que serviu de referência.
 import { outfitCanvas, itemCanvas } from './sprites.mjs';
 import { tipPanel, tipTexto, tipFor } from './tooltip.mjs';
@@ -125,7 +125,6 @@ export function artOrUiIcon(name, alt = '') {
   return img;
 }
 
-const formatHours = (minutes) => `${Math.floor(minutes / 60)}h ${String(Math.floor(minutes % 60)).padStart(2, '0')}m`;
 
 
 let portraitKey = '';
@@ -550,7 +549,7 @@ export function initHud(ctx) {
     tipTexto(
       botaoDaFicha,
       encaixada
-        ? 'Mandar a ficha do personagem para o canto de cima\n(vida, mana, experiência e stamina vão junto)'
+        ? 'Mandar a ficha do personagem para o canto de cima\n(vida, mana, experiência e Lv Divino vão junto)'
         : 'Trazer a ficha do personagem para a barra de baixo'
     );
     botaoDaFicha.classList.toggle('ficha-no-canto', !encaixada);
@@ -859,12 +858,12 @@ function painelExperiencia(character, catalog, party = null) {
    * A régua dizia quanto falta para o próximo level e nada mais. O que o
    * jogador quer saber ao passar o mouse nela é por que a barra anda rápido ou
    * devagar — e isso é a soma dos bônus ativos, que estava espalhada entre a
-   * ficha, o relógio do boost e o quadradinho da stamina.
+   * ficha e o relógio do boost.
    *
    * Os números são os mesmos que o servidor usa para pagar cada morte
    * (`experienciaPessoal`, em hunt.mjs): bônus de level, os boosts de
    * experiência (que agora SOMAM entre si), premium, a prey de cada criatura e
-   * o fator da stamina.
+   * o fator do VIP.
    */
   const bonusDaExp = el('div', 'tip-exp-bonus');
   bonusDaExp.append(el('div', 'tip-bless-head', 'O que está multiplicando'));
@@ -887,7 +886,7 @@ function painelExperiencia(character, catalog, party = null) {
    *
    * Uma linha só, com as duas origens ditas no rodapé dela: o que vem de TER as
    * skins e o que vem da que está VESTIDA. Duas linhas separadas encheriam a
-   * régua — que já tem level, três boosts, premium, party, prey e stamina — para
+   * régua — que já tem level, três boosts, premium, party, prey e VIP — para
    * dizer duas metades de um número que soma igual.
    *
    * O número é o mesmo que o servidor usa para pagar cada morte: ele vem pronto
@@ -978,16 +977,12 @@ function painelExperiencia(character, catalog, party = null) {
     linhaDeBonus('Shared Experience', `+${percentDaParty}%`, `${quantas} vocaç${quantas === 1 ? 'ão' : 'ões'}`);
   }
 
-  // Stamina não soma: ela MULTIPLICA o resultado, e é por isso que aparece à
-  // parte. Os degraus são os do servidor (Player.getFinalBonusStamina).
-  const stamina = character.stamina ?? 0;
-  const temPremium = (character.premium ?? 0) > 0;
-  const fator = character.efeitos?.exp?.fatorStamina ?? (stamina > 2340 && temPremium ? 1.5 : stamina <= 840 ? 0.5 : 1);
+  // O VIP não soma: ele MULTIPLICA o resultado (x1,5 — o que a stamina cheia dava; a stamina saiu em 07/11/2026), e é por isso que aparece
+  // à parte. O fator vem do servidor.
+  const fator = character.efeitos?.exp?.fatorVip ?? 1;
   // O estágio de level (x3 até o 50, x2 até o 100) também multiplica — vem do servidor.
   const estagio = character.efeitos?.exp?.estagio ?? 1;
-  if (fator !== 1) {
-    linhaDeBonus('Stamina', `×${fator}`, fator > 1 ? 'acima de 39h' : '14h ou menos');
-  }
+  if (fator !== 1) linhaDeBonus('VIP', `×${fator}`, 'premium ativo');
 
   if (estagio !== 1) linhaDeBonus('Estágio de level', `×${estagio}`, `até o level ${character.level <= 50 ? 50 : 100}`);
 
@@ -2197,75 +2192,36 @@ function painelDeRecuperacao(character, qual) {
 }
 
 /*
- * ---- O balão da stamina ----
+ * ---- O balão do Lv Divino ----
  *
- * Ele era uma frase de três palavras no `title` do quadradinho: "Stamina cheia
- * — experiência integral". Não dizia o que mais importa quando ela está
- * enchendo, que é QUANTO ela rende ali — e o ritmo muda de faixa (um minuto a
- * cada três abaixo de 39h, um a cada seis acima) e some inteiro quando o
- * personagem entra numa caçada.
- *
- * Os números são os do servidor, que os manda em `staminaRegen`. Deduzi-los
- * aqui seria escrever a regra dele uma segunda vez.
+ * (07/11/2026, o dono: "Onde tem Stamina ali coloca Experiência e Lv Divino depois no LV 100") A experiência depois do level máximo sobe
+ * o Lv Divino; cada um dá +1 ponto de passiva, e o seguinte pede 10% a mais de exp. Os números são os do servidor (`character.lvDivino`).
  */
-function painelStamina(character, grau, enchendo) {
+function painelLvDivino(character) {
   const caixa = el('div', 'tip-stamina');
-  const stamina = character.stamina ?? 0;
-  const teto = character.maxStamina ?? 2520;
-  const regen = character.staminaRegen ?? {};
-
-  caixa.append(el('div', 'tip-bless-head', 'Stamina'));
-
+  const d = character.lvDivino ?? { nivel: 0, atual: 0, necessario: 0, percent: 0, liberado: false };
+  caixa.append(el('div', 'tip-bless-head', 'Lv Divino'));
   const topo = el('div', 'tip-stamina-topo');
-  topo.append(el('b', null, formatHours(stamina)));
-  topo.append(el('span', null, `de ${formatHours(teto)}`));
+  topo.append(el('b', null, `Lv Divino ${d.nivel}`));
+  topo.append(el('span', null, d.liberado ? `${(d.percent * 100).toFixed(1)}% para o ${d.nivel + 1}` : 'libera no level 100'));
   caixa.append(topo);
-
   const linha = (rotulo, valor, className) => {
     const item = el('div', 'tip-exp-linha');
     item.append(el('span', null, rotulo));
     item.append(el('b', className, valor));
     caixa.append(item);
   };
-
-  if (enchendo) {
-    /*
-     * Quanto ela sobe POR HORA de relógio, que é a unidade em que a pessoa
-     * pensa ("deixo aqui uma hora e ganho quanto?"). Os minutos por minuto
-     * seriam 0,33 — um número que não diz nada.
-     */
-    const porHora = Math.round(3600 / (regen.segundosPorMinuto || 180));
-    caixa.append(el('div', 'tip-stamina-carregando', `Carregando ${regen.onde ?? ''}`.trim()));
-    linha('Ritmo', `+1 min a cada ${Math.round((regen.segundosPorMinuto || 180) / 60)} min`, 'heal');
-    linha('Por hora parado', `+${porHora} min de stamina`, 'heal');
-    const faltam = Math.max(0, teto - stamina);
-    if (faltam > 0) {
-      linha('Para encher', formatHours(Math.round((faltam * (regen.segundosPorMinuto || 180)) / 60)), null);
-    }
-  } else if (regen.ativo) {
-    caixa.append(el('div', 'tip-stamina-carregando', 'Cheia — no teto de 42 horas'));
-  } else {
-    linha('Gasto', '−1 min por minuto de caçada', 'dano');
+  if (d.liberado) {
+    linha('Experiência', `${Math.floor(d.atual).toLocaleString('pt-BR')} / ${Math.round(d.necessario).toLocaleString('pt-BR')}`, null);
+    linha('Pontos de passiva', `+${d.nivel}`, 'heal');
   }
-
-  // O que a faixa vale na experiência. É o motivo de a barra ter cor.
-  const fator = grau === 'verde' ? '×1,5' : grau === 'media' || grau === 'zerada' ? '×0,5' : '×1';
-  linha(
-    'Experiência',
-    fator,
-    grau === 'verde' ? 'heal' : grau === 'alta' ? null : 'dano'
-  );
   caixa.append(
     el(
       'p',
       'shop-note',
-      grau === 'verde'
-        ? 'Acima de 39h com premium — 50% a mais em qualquer criatura.'
-        : grau === 'alta'
-          ? 'Acima de 14h — experiência integral.'
-          : stamina > 0
-            ? '14h ou menos — metade da experiência. Descanse na cidade.'
-            : 'Esgotada — metade da experiência. Descanse na cidade.'
+      d.liberado
+        ? 'Cada Lv Divino dá +1 ponto de passiva; o próximo pede 10% a mais de experiência.'
+        : 'Depois do level 100 a experiência continua: ela sobe o Lv Divino, e cada um dá +1 ponto de passiva.'
     )
   );
   return caixa;
@@ -2434,84 +2390,16 @@ export function renderHud(character, catalog, party = null, escudoDeMana = false
     tipPanel(reguaExp, () => painelExperiencia(character, catalog, party));
   }
   /*
-   * Stamina fecha a fileira, e ela muda de cor porque é a única régua cujo
-   * número não conta a história toda: acima de 14h a experiência é cheia,
-   * abaixo cai pela metade, e no zero não vem nada (`hunt.mjs`). Verde, amarelo
-   * e vermelho são exatamente esses três degraus — o quadradinho ao lado avisa
-   * antes de o jogador reparar no relógio.
+   * (07/11/2026) A STAMINA SAIU: a quarta régua é o LV DIVINO — a experiência depois do level 100 (`character.lvDivino`, do servidor).
+   * Antes do 100 ela fica apagada, em "Lv Divino 0".
    */
-  /*
-   * Quatro degraus, e não três: falta o de cima.
-   *
-   * O servidor dá 1,5x de experiência acima de 39 horas para conta premium
-   * (`Player.getFinalBonusStamina`), e essa faixa — a "verde" do Tibia — não
-   * aparecia em lugar nenhum: quem tinha 41 horas via a mesma coisa que quem
-   * tinha 20 e não sabia que estava ganhando 50% a mais.
-   */
-  const stamina = character.stamina ?? 0;
-  const temPremium = (character.premium ?? 0) > 0;
-  const grau =
-    stamina > 2340 ? (temPremium ? 'verde' : 'alta') : stamina > 840 ? 'alta' : stamina > 0 ? 'media' : 'zerada';
-  setBar('stamina', stamina, character.maxStamina ?? 2520, formatHours(stamina));
-  /*
-   * ---- Piscando quando ENCHE ----
-   *
-   * Quem manda é o servidor (`staminaRegen`), e não uma dedução da tela: a
-   * regra de onde a stamina sobe — cidade e pátio de treino, sim; caçada, não —
-   * é dele, e escrevê-la aqui de novo daria duas versões dela para divergirem
-   * no dia em que um terceiro lugar passasse a encher.
-   *
-   * O teto desliga o pisca: cheia, não há o que encher, e um brilho pulsando
-   * ali prometeria um ganho que não existe.
-   */
-  const enchendo = !!character.staminaRegen?.ativo && stamina < (character.maxStamina ?? 2520);
-  const reguaStamina = $('bar-stamina')?.parentElement;
-  if (reguaStamina) {
-    reguaStamina.dataset.grau = grau;
-    reguaStamina.classList.toggle('enchendo', enchendo);
-  }
-  const quadrado = $('dot-stamina');
-  if (quadrado) {
-    quadrado.dataset.grau = grau;
-    quadrado.classList.toggle('enchendo', enchendo);
-  }
-  /*
-   * ---- O "+" que aparece enquanto ela enche ----
-   *
-   * Ele já existiu DENTRO da régua, encostado na borda direita — e ali ninguém
-   * o via: a régua tem quinze pixels de altura, `overflow: hidden`, e o número
-   * das horas passa por cima. O dono pediu duas vezes.
-   *
-   * Agora ele mora na CAIXA da régua e não na régua: solto acima dela, no canto
-   * direito, mordendo a borda de cima. Fora do recorte, com espaço para ser
-   * grande e para brilhar.
-   *
-   * (Na fita do rodapé as quatro réguas ficam num estojo recortado, e ali este
-   * nó não caberia; lá quem avisa é o "＋" que a folha de estilo põe na frente
-   * do próprio número. Ver `.bars-dock` em style.css.)
-   *
-   * Criado uma vez e escondido depois: refazer o nó a cada quadro tiraria a
-   * animação do começo quatro vezes por segundo.
-   */
-  const caixaStamina = reguaStamina?.parentElement;
-  if (caixaStamina) {
-    let mais = caixaStamina.querySelector('.bar-mais');
-    if (!mais) {
-      mais = el('i', 'bar-mais', '＋');
-      caixaStamina.append(mais);
-    }
-    mais.hidden = !enchendo;
-  }
-  /*
-   * O balão da stamina: um painel, e não uma frase.
-   *
-   * `setBar` já pôs um texto simples ali ("39h 12m"); trocá-lo por `null` é o
-   * que impede os dois balões no mesmo elemento — o mesmo cuidado que a régua
-   * da experiência toma logo acima.
-   */
-  if (reguaStamina) {
-    tipTexto(reguaStamina, null);
-    tipPanel(reguaStamina, () => painelStamina(character, grau, enchendo));
+  const divino = character.lvDivino ?? { nivel: 0, percent: 0, liberado: false };
+  setBar('divino', divino.liberado ? divino.percent * 100 : 0, 100, divino.liberado ? `${(divino.percent * 100).toFixed(0)}% Lv Divino ${divino.nivel}` : 'Lv Divino 0');
+  const reguaDivino = $('bar-divino')?.parentElement;
+  if (reguaDivino) {
+    reguaDivino.classList.toggle('bloqueada', !divino.liberado);
+    tipTexto(reguaDivino, null);
+    tipPanel(reguaDivino, () => painelLvDivino(character));
   }
   // A pílula mora DENTRO da faixa, então ela vem depois — e o empilhamento
   // depois das duas, porque ele mede a faixa já com a pílula dentro.

@@ -25,6 +25,9 @@ import * as Buffs from './buffs.mjs';
 import * as Poderes from '../poderes.mjs';
 import * as Ficha from '../ficha.mjs';
 import { criarMonstro, BESTIARY } from '../hunt/monstros.mjs';
+import { definirRacaDoBicho } from '../itens-poe/condicoes-poe.mjs';
+// (07/11, lote 20 das inertes) a raça do monstro pela chave do bestiário (o Animal da Rainha da Floresta — `condicoes-poe.ehAnimal`)
+definirRacaDoBicho((key) => BESTIARY[key]?.race ?? null);
 import { gradeDaHunt, huntOuMapaCustom } from '../hunt/terreno.mjs';
 import { andarDaGrade } from '../hunt/andares.mjs';
 import { daSala } from '../hunt/instancia.mjs';
@@ -72,6 +75,59 @@ function casasLivres(hunt, x, y, quantas) {
     }
   }
   return casas;
+}
+
+/**
+ * (07/11, lote 17 das inertes — o PoB, PenanceMarkPhantasm) os 2 FANTASMAS ACORRENTADOS da Marca da Penitência: o inimigo marcado, acertado, cria dois monstros HOSTIS
+ * a você em volta dele (o PoB: o nível do monstro, 1,3 × a vida e 0,9 × o dano da tabela, uma magia de projétil Físico — no jogo, o Arqueiro Espectral do PoE, o
+ * monstro de ataque Físico à distância), sem experiência e sem loot, fora da conta da limpeza. A vida: 130% da média dos monstros normais vivos da área (sem eles, a do
+ * marcado ÷ 3). Devolve os criados.
+ */
+export const FANTASMA_ACORRENTADO = Object.freeze({ key: 'poe-spectral-bowman-12', nome: 'Fantasma Acorrentado', quantos: 2, vidaPct: 130, forca: 0.9 });
+export function fantasmasDaPenitencia(hunt, alvo, eventos = []) {
+  if (!hunt || !alvo || !BESTIARY[FANTASMA_ACORRENTADO.key]) return [];
+  const normais = hunt.monstros.filter((b) => b.hp > 0 && !b.dummy && !b.gerado && (b.raridade ?? 'normal') === 'normal');
+  const base = normais.length ? normais.reduce((t, b) => t + (b.maxHp ?? 0), 0) / normais.length : (alvo.maxHp ?? 0) / 3;
+  const novos = [];
+  for (const casa of casasLivres(hunt, alvo.x, alvo.y, FANTASMA_ACORRENTADO.quantos)) {
+    const f = criarMonstro({ key: FANTASMA_ACORRENTADO.key, x: casa.x, y: casa.y }, null);
+    if (!f) continue;
+    f.maxHp = f.hp = Math.max(1, Math.round((base * FANTASMA_ACORRENTADO.vidaPct) / 100));
+    f.forca = FANTASMA_ACORRENTADO.forca;
+    f.exp = 0;
+    f.loot = [];
+    f.gerado = true;
+    f.name = FANTASMA_ACORRENTADO.nome;
+    f.fantasmaAcorrentado = true;
+    delete f.spawn;
+    hunt.monstros.push(f);
+    novos.push(f);
+    eventos.push({ t: 'fx', id: 13, uid: f.uid, x: f.x, y: f.y });
+  }
+  return novos;
+}
+
+/**
+ * (07/11, lote 20 das inertes — o dono: "Criar as mecânicas") os VERMES que os únicos soltam (o Verme de Sangue do PoE): o Verme Retorcido do Terror Irrequieto ("Um
+ * Verme Retorcido inimigo surge a cada N segundos" — a vida de um monstro normal da área) e os Vermes Contorcidos do Jarro Contorcido ("escapam do Frasco quando utilizado
+ * … são destruídos quando Acertados" — `frageis`: 1 de vida). Hostis, sem experiência e sem loot, fora da conta da limpeza. Devolve os criados.
+ */
+export const VERME = Object.freeze({ key: 'poe-blood-worm-40', retorcido: 'Verme Retorcido', contorcido: 'Verme Contorcido' });
+export function vermesDoItem(hunt, quantos, { frageis = false, eventos = [] } = {}) {
+  if (!hunt?.pos || !(quantos > 0) || !BESTIARY[VERME.key]) return [];
+  const normais = hunt.monstros.filter((b) => b.hp > 0 && !b.dummy && !b.gerado && (b.raridade ?? 'normal') === 'normal');
+  const vida = frageis ? 1 : Math.max(1, Math.round(normais.length ? normais.reduce((t, b) => t + (b.maxHp ?? 0), 0) / normais.length : BESTIARY[VERME.key].hp ?? 100));
+  const novos = [];
+  for (const casa of casasLivres(hunt, hunt.pos.x, hunt.pos.y, quantos)) {
+    const v = criarMonstro({ key: VERME.key, x: casa.x, y: casa.y }, null);
+    if (!v) continue;
+    Object.assign(v, { maxHp: vida, hp: vida, exp: 0, loot: [], gerado: true, name: frageis ? VERME.contorcido : VERME.retorcido, ...(frageis ? { vermeContorcido: true } : { vermeRetorcido: true }) });
+    delete v.spawn;
+    hunt.monstros.push(v);
+    novos.push(v);
+    eventos.push({ t: 'fx', id: 13, uid: v.uid, x: v.x, y: v.y });
+  }
+  return novos;
 }
 
 /** "Gerar": os mobs novos nascem em volta, NA MESMA instância, e entram na conta da limpeza. */
@@ -136,7 +192,7 @@ export function aoMorrer(estado, hunt, personagem, m, eventos) {
 function criarSolo(hunt, m, mec, agora, eventos) {
   const raio = Math.max(1, Math.round((mec.raioMetros ?? 1.6) / 2));
   const golpe = (Poderes.golpeMaximoDoBicho(m) ?? 0) * (m.forca ?? 1);
-  (hunt.solosDosMonstros ??= []).push({ tipo: mec.solo, x: m.x, y: m.y, z: hunt.z ?? 0, raio, ate: agora + (mec.duracaoMs ?? 6000), proximo: agora, ...(mec.solo === 'ardente' ? { dps: (golpe * (mec.dpsPctDoGolpe ?? 62.5)) / 100 } : {}), ...(mec.solo === 'eletrizado' ? { pct: mec.danoRecebidoPct ?? 20 } : {}), ...(mec.solo === 'congelado' ? { pct: mec.resfriamentoPct ?? 10 } : {}), de: m });
+  (hunt.solosDosMonstros ??= []).push({ tipo: mec.solo, x: m.x, y: m.y, z: hunt.z ?? 0, raio, ate: agora + (mec.duracaoMs ?? 6000), proximo: agora, ...(mec.solo === 'ardente' || mec.solo === 'profanado' ? { dps: (golpe * (mec.dpsPctDoGolpe ?? 62.5)) / 100 } : {}), ...(mec.solo === 'eletrizado' ? { pct: mec.danoRecebidoPct ?? 20 } : {}), ...(mec.solo === 'congelado' ? { pct: mec.resfriamentoPct ?? 10 } : {}), de: m });
   eventos.push({ t: 'area', id: 6, x: m.x, y: m.y, casas: Areas.paraTela(Areas.quadrado(m, raio), m) });
 }
 /** (lote 70) Os solos dos monstros a cada tique: o que vale em você agora (e os que acabaram saem). */
@@ -149,7 +205,11 @@ function tiqueDosSolos(estado, hunt, personagem, eventos, agora, ficha) {
     if (s.tipo === 'eletrizado') NoJogador.eletrizarPeloSolo(hunt, ficha, s.pct, agora);
     // (100% — combate, 02/11) o SOLO CONGELADO ("Solo Resfriado ao Morrer"): Resfria você enquanto está nele (`Combate100.resfriarPeloSolo`)
     else if (s.tipo === 'congelado') Combate100.resfriarPeloSolo(hunt, ficha, agora, { pct: s.pct ?? Combate100.SOLO_CONGELADO.pct });
-    else if (s.tipo === 'ardente' && s.dps > 0 && agora >= s.proximo) {
+    // (07/11, lote 20 das inertes) o SOLO PROFANADO (o Profanador do jogo): Caos por segundo, como o Ardente (`imune_solo_profanado` — o Passo Natal)
+    else if (s.tipo === 'profanado' && s.dps > 0 && agora >= s.proximo) {
+      s.proximo = agora + 1000;
+      ferirJogador(estado, hunt, personagem, s.de, s.dps, 'chaos', eventos, 'Solo Profanado');
+    } else if (s.tipo === 'ardente' && s.dps > 0 && agora >= s.proximo) {
       s.proximo = agora + 1000;
       ferirJogador(estado, hunt, personagem, s.de, s.dps, 'fire', eventos, 'Solo Ardente');
     }
@@ -335,6 +395,11 @@ export function aoAcertarJogador(estado, hunt, personagem, m, { dano = 0, bruto 
     const peloEscudo = Number(ficha.afPoe?.congelamento_pelo_escudo_pct) || 0;
     const msGelo = NoJogador.msDoCongelamento(partes.ice ?? 0, peloEscudo > 0 ? Math.max(1, ((Number(ficha.energyShield) || 0) * peloEscudo) / 100) : vidaMax);
     if (msGelo > 0 && pega() && Controle.congelar(hunt, ficha, msGelo, agora, rng)) naTela('congelado');
+    // (07/11, lote 16 das inertes, o Chamado do Vazio: "Todo o Dano Sofrido de Acertos pode te Resfriar" — o Resfriamento do dano todo do acerto, como o Incêndio do Mokou)
+    if (Number(ficha.afPoe?.todo_dano_resfria_voce) > 0) {
+      const pctFrio = NoJogador.pctDoResfriamento(Object.values(brutas).reduce((t, x) => t + (Number(x) || 0), 0), peloEscudo > 0 ? Math.max(1, ((Number(ficha.energyShield) || 0) * peloEscudo) / 100) : vidaMax);
+      if (pctFrio > 0 && pega() && Controle.resfriar(hunt, ficha, pctFrio, agora, rng, N.resfriamento.duracaoMs)) naTela('enregelado', { pct: pctFrio });
+    }
     if ((partes.energy ?? 0) > 0 && pega()) {
       const eletrizou = NoJogador.eletrizar(hunt, ficha, partes.energy ?? 0, vidaMax, { agora, rng });
       if (eletrizou > 0) { naTela('eletrizado', { pct: eletrizou }); mudou = true; }

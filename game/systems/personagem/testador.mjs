@@ -25,11 +25,16 @@ export const ehTestador = (estado) => estado?.testador === true;
 export const VIDA_MINIMA = 1;
 
 /** O piso da vida para o dano: `VIDA_MINIMA` no personagem de teste, 0 nos outros (a conta de sempre). */
-export const pisoDaVida = (estado) => (ehTestador(estado) ? VIDA_MINIMA : 0);
+/**
+ * (06/11, lote 9 das inertes) o "Não Podem Morrer por N segundos" (o Vínculo D'alma: "Alvos Vinculados Não Podem Morrer por 2 segundos após a sua Morte") — o mesmo
+ * piso, por um tempo (`hunt.poeNaoMorreAte`, no relógio da caçada). Não mexe no ranking (só a marca do testador tira).
+ */
+export const naoMorre = (estado) => ehTestador(estado) || (estado?.hunt?.poeNaoMorreAte ?? -Infinity) > (estado?.hunt?.clock ?? 0);
+export const pisoDaVida = (estado) => (naoMorre(estado) ? VIDA_MINIMA : 0);
 
 /** Personagem de teste com a vida abaixo do piso: volta ao piso. Devolve `true` se segurou (ele teria morrido). */
 export function segurarVida(estado) {
-  if (!ehTestador(estado) || !((estado.hp ?? 0) < VIDA_MINIMA)) return false;
+  if (!naoMorre(estado) || !((estado.hp ?? 0) < VIDA_MINIMA)) return false;
   estado.hp = VIDA_MINIMA;
   return true;
 }

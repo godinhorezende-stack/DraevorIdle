@@ -17,6 +17,7 @@ import * as Jogo from './jogo.mjs';
 import * as SocketsPoe from './sockets.mjs';
 import * as Gemas from '../skills/gemas.mjs';
 import { pilhaMaxima, PILHA_MAX_POE } from '../itens/pilha.mjs';
+import { camposDaPeca } from '../itens/item.mjs';
 
 export const MOEDAS = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/moedas-poe.json', import.meta.url), 'utf8')).moedas;
 const POR_SLUG = new Map(MOEDAS.map((m) => [m.slug, m]));
@@ -167,7 +168,8 @@ function subirQualidade(p) {
 }
 /** Uma peça qualquer de uma base que tem único: vira um único sorteado da mesma base. */
 function virarUnico(p, rng, mesmaClasse = false) {
-  const unicos = (CAT()?.classes?.[p.classe]?.unicos ?? []).filter((u) => (mesmaClasse ? u.slug !== p.unico : u.base === nomeDaBase(p)));
+  // (06/11: os do Emissário não saem daqui — só pela cadeia deles)
+  const unicos = (CAT()?.classes?.[p.classe]?.unicos ?? []).filter((u) => Gerar.caiNoSorteio(u) && (mesmaClasse ? u.slug !== p.unico : u.base === nomeDaBase(p)));
   if (!unicos.length) return null;
   const u = sortear(unicos, rng);
   const base = mesmaClasse ? CAT().classes[p.classe].bases.find((b) => b.nome === u.base) : null;
@@ -512,17 +514,49 @@ const lapidario = ({ estado, alvo }) => {
   const g = (estado.inventory ?? [])[alvo?.indice];
   if (!g || !Gemas.ehGema(g.id)) return erro('O Prisma do Lapidário vale numa gema da mochila.');
   g.gema ??= { nivel: 1, xp: 0 };
+  if (g.gema.corrompida) return erro('Gema corrompida não aceita moeda.');
   const q = Number(g.gema.qualidade) || 0;
   if (q >= 20) return erro('A gema já está com 20% de qualidade.');
   g.gema.qualidade = q + 1;
   return { ok: true, notice: `Qualidade da gema: ${q}% → ${q + 1}%.`, gema: true };
+};
+/**
+ * (07/11, lote 25 das inertes — o dono: "Fazer todos") o ORBE VAAL numa GEMA da mochila, como no PoE: corrompe e, num de quatro (por igual), nada mais; +1 ou −1 nível
+ * (até 21, nunca abaixo de 1); a qualidade +/− 1 a 20 (de 0 a 23); ou a gema vira a versão Vaal dela (se houver). A corrompida não aceita mais moeda.
+ */
+const vaalNaGema = ({ estado, alvo, rng }) => {
+  const g = (estado.inventory ?? [])[alvo?.indice];
+  const def = g && Gemas.defDaGema(g.id);
+  if (!def?.poe) return erro('O Orbe Vaal vale numa gema do PoE da mochila.');
+  g.gema ??= { nivel: 1, xp: 0 };
+  if (g.gema.corrompida) return erro('A gema já está corrompida.');
+  g.gema.corrompida = true;
+  const caso = Math.floor(rng() * 4);
+  if (caso === 1) {
+    const sobe = rng() < 0.5;
+    g.gema.nivel = Math.max(1, Math.min(21, (Number(g.gema.nivel) || 1) + (sobe ? 1 : -1)));
+    return { ok: true, notice: `${def.nome}: corrompida — nível ${sobe ? '+1' : '−1'} (${g.gema.nivel}).`, gema: true };
+  }
+  if (caso === 2) {
+    const d = (1 + Math.floor(rng() * 20)) * (rng() < 0.5 ? 1 : -1);
+    g.gema.qualidade = Math.max(0, Math.min(23, (Number(g.gema.qualidade) || 0) + d));
+    return { ok: true, notice: `${def.nome}: corrompida — qualidade ${d > 0 ? '+' : ''}${d}% (${g.gema.qualidade}%).`, gema: true };
+  }
+  const vaal = caso === 3 && def.tipo !== 'support' ? [...Gemas.DEFS.values()].find((d) => d.poe?.slug === `Vaal_${def.poe.slug}`) : null;
+  if (vaal) {
+    g.id = vaal.itemId;
+    return { ok: true, notice: `${def.nome}: corrompida — virou ${vaal.nome}.`, gema: true };
+  }
+  return { ok: true, notice: `${def.nome}: corrompida — nada mais mudou.`, gema: true };
 };
 /** A Lente do Lapidário: a gema vira outra do mesmo tipo (suporte → suporte; ativa → ativa da mesma cor), mesmo nível e qualidade. */
 const lenteDoLapidario = ({ estado, alvo, rng }) => {
   const g = (estado.inventory ?? [])[alvo?.indice];
   const def = g && Gemas.defDaGema(g.id);
   if (!def?.poe) return erro('A Lente do Lapidário vale numa gema do PoE da mochila.');
-  const outras = [...Gemas.DEFS.values()].filter((d) => d.poe && d.tipo === def.tipo && d.itemId !== def.itemId && (d.tipo === 'support' || d.poe.cor === def.poe.cor));
+  if (g.gema?.corrompida) return erro('Gema corrompida não aceita moeda.');
+  // (07/11, lote 13 das inertes: sem as habilidades que só um único concede — `soDoItem`)
+  const outras = [...Gemas.DEFS.values()].filter((d) => d.poe && !d.soDoItem && d.tipo === def.tipo && d.itemId !== def.itemId && (d.tipo === 'support' || d.poe.cor === def.poe.cor));
   if (!outras.length) return erro('Não há outra gema deste tipo.');
   const nova = sortear(outras, rng);
   g.id = nova.itemId;
@@ -610,6 +644,78 @@ const orbeDeSocket = (tipo) => ({ estado, peca, alvo, rng }) =>
   // (`gastoFora`: quem confere e gasta o orbe é o `usar` daqui — da mochila ou do baú)
   Gemas.usarOrbeDoPoe(estado, alvo?.onde === 'equipment' ? { slot: alvo.slot, tipo, gastoFora: true } : { peca, tipo, gastoFora: true }, rng);
 
+// ---------------------------------------------------------------- o EMISSÁRIO (Harbinger) e o DUCADO DE UKATOA (06/11)
+/*
+ * Dono (06/11: "Cadeia completa", como no PoE): as PARTES de um conjunto, juntas, formam o único BASE do Emissário (as três Peças do Arcano →
+ * Pensamentos Agitados); o PERGAMINHO do conjunto aprimora o base no ÚNICO APRIMORADO (o Pergaminho da Eletrocussão → Os Pensamentos
+ * Afluentes — a receita "Harbinger Recipe" da página do aprimorado no poedb). Os 12 únicos não caem (`Gerar.UNICOS_SO_DA_CADEIA`); as
+ * Partes e os Pergaminhos caem dos chefes de mapa (`dropDoChefeDeMapa`).
+ */
+const ORDEM_DAS_PARTES = ['First', 'Second', 'Third', 'Fourth'];
+const conjunto = (tema, n, base, pergaminho, aprimorado) => ({ partes: ORDEM_DAS_PARTES.slice(0, n).map((o) => `${o}_Piece_of_${tema}`), base, pergaminho, aprimorado });
+export const EMISSARIO = Object.freeze([
+  conjunto('the_Arcane', 3, 'The_Rippling_Thoughts', 'Electroshock_Scroll', 'The_Surging_Thoughts'),
+  conjunto('Focus', 4, 'The_Unshattered_Will', 'Specularity_Scroll', 'The_Immortal_Will'),
+  conjunto('Brutality', 3, 'The_Enmity_Divine', 'Haemocombustion_Scroll', 'The_Yielding_Mortality'),
+  conjunto('Time', 2, 'The_Flow_Untethered', 'Time-light_Scroll', 'The_Torrents_Reclamation'),
+  conjunto('Directions', 3, 'The_Fracturing_Spinner', 'Fragmentation_Scroll', 'The_Shattered_Divinity'),
+  conjunto('Storms', 3, 'The_Tempests_Binding', 'Deregulation_Scroll', 'The_Tempests_Liberation'),
+]);
+/** O único do catálogo pelo slug: `{ u, classe, base }` (a base é a do único), ou null. */
+function unicoDoCatalogo(slug) {
+  for (const c of Object.values(CAT()?.classes ?? {})) {
+    const u = c.unicos?.find((x) => x.slug === slug);
+    const base = u && c.bases.find((b) => b.nome === u.base);
+    if (base) return { u, classe: c, base };
+  }
+  return null;
+}
+/** As Partes juntas: gasta uma de cada e põe o único base na mochila (o nível do item é o seu, até o teto do drop). */
+const juntarPartes = (c) => ({ estado, moeda, rng }) => {
+  const faltam = c.partes.filter((s) => quantasTem(estado, idDa(s)) < 1);
+  const achado = unicoDoCatalogo(c.base);
+  if (!achado) return erro('Esse único não está no jogo.');
+  if (faltam.length) return erro(`Junte as ${c.partes.length} partes para formar ${achado.u.nome} (faltam: ${faltam.map((s) => POR_SLUG.get(s)?.nome).join(', ')}).`);
+  const ilvl = Math.max(1, Math.min(R().drop?.ilvlMaximo ?? 100, Math.round(Number(estado.level) || 1)));
+  const peca = Jogo.pecaDoJogo(Gerar.gerarPeca({ catalogo: CAT(), regras: R(), base: achado.base.id, raridade: 'unico', ilvl, rng, unico: c.base }), R(), rng);
+  if (!peca) return erro('Esse único não está no jogo.');
+  for (const s of c.partes) if (s !== moeda.slug) gastar(estado, idDa(s), 1); // (a usada sai pelo gasto normal)
+  (estado.inventory ??= []).push({ id: peca.id, count: 1, ...structuredClone(camposDaPeca(peca)) });
+  return { ok: true, notice: `As ${c.partes.length} partes formaram ${achado.u.nome}.`, semAlvo: true };
+};
+/** O Pergaminho: o único base vira o aprimorado (os modificadores saem de novo, os do aprimorado; os encaixes, as gemas e a qualidade ficam). */
+const aprimorarEmissario = (c) => ({ p, rng, moeda }) => {
+  const base = unicoDoCatalogo(c.base);
+  if (p.unico !== c.base) return erro(`${moeda.nome} aprimora ${base?.u.nome ?? 'o único do Emissário'}.`);
+  const gerada = Gerar.gerarPeca({ catalogo: CAT(), regras: R(), base: p.base, raridade: 'unico', ilvl: p.ilvl, rng, unico: c.aprimorado });
+  if (!gerada || gerada.erro) return erro('Esse único não está no jogo.');
+  const antes = p.nome;
+  Object.assign(p, { nome: gerada.nome, unico: gerada.unico, atributos: gerada.atributos, implicitos: gerada.implicitos, prefixos: [], sufixos: [], modificadores: gerada.modificadores });
+  return { ok: true, notice: `${antes} virou ${p.nome}.` };
+};
+/**
+ * O DUCADO DE UKATOA (poedb: "Substitui o modificador implícito de um amuleto não único por um modificador sobrenatural, caso ele ainda não
+ * possua um"): o Exarca ou o Devorador, meio a meio (dono, 06/11), e o tier pelos pesos do poedb (Menor a Excepcional — os do Orbe do Conflito
+ * ficam com ele), como as Brasas e os Fluidos (`implicitoEldritch`).
+ */
+const ducadoDeUkatoa = ({ p, rng }) => {
+  if (p.classe !== 'Amulets') return erro('O Ducado de Ukatoa vale em amuleto.');
+  if (ehUnico(p)) return erro('O Ducado de Ukatoa não vale em amuleto Único.');
+  if (temEldritch(p)) return erro('O amuleto já tem um implícito sobrenatural.');
+  if (influenciada(p)) return erro('Peça influenciada não recebe implícito Eldritch (como no PoE).');
+  if (Gerar.regrasDaBase(p.implicitos).implicitosFixos) return erro('Os implícitos desta base não podem ser mudados.');
+  const pools = rng() < 0.5 ? ['searing', 'eater'] : ['eater', 'searing'];
+  for (const pool of pools) {
+    const n = doPool(p, pool, rng, { lados: ['implicito'], filtro: (t) => degrauPeloNome(t.nome) != null });
+    if (!n) continue;
+    const mod = { ...n.mod, degrau: degrauPeloNome(n.mod.nome) ?? 1 };
+    p.implicitos = [mod];
+    return { ok: true, notice: `${p.nome}: implícito do ${ELDRITCH[pool]} — ${mod.texto}.` };
+  }
+  const ilvls = ['searing', 'eater'].flatMap((pool) => (paginaDo(p, pool)?.implicitos ?? []).flatMap((g) => g.tiers).map((t) => t.ilvl ?? 1));
+  return erro(ilvls.length ? `O Ducado de Ukatoa pede item level ${Math.min(...ilvls)} (esta peça: ${p.ilvl}).` : 'Não há implícito sobrenatural para este amuleto.');
+};
+
 /** O efeito e o status de cada moeda que faz algo. `alvo`: 'peca' (equipamento do PoE), 'gema', 'nenhum'. `corrompida`: aceita corrompida. */
 const FAZ = {
   Orb_of_Transmutation: { f: transmutar }, Orb_of_Augmentation: { f: ampliar }, Orb_of_Alteration: { f: alterar }, Regal_Orb: { f: regio },
@@ -618,7 +724,8 @@ const FAZ = {
   Orb_of_Chance: { f: chance }, Blacksmiths_Whetstone: { f: amolador }, Armourers_Scrap: { f: sucata },
   Glassblowers_Bauble: { f: bolha },
   Orb_of_Binding: { f: elo }, Fracturing_Orb: { f: talhar }, Mirror_of_Kalandra: { f: espelhar }, Ancient_Orb: { f: ancestral },
-  Vaal_Orb: { f: vaal },
+  // (07/11, lote 25: + numa gema da mochila — `gema`)
+  Vaal_Orb: { f: vaal, gema: vaalNaGema },
   Veiled_Chaos_Orb: { f: caosOculto, parcial: 'o Oculto já vem revelado (o jogo não tem a Jun para escolher entre três)' },
   Veiled_Exalted_Orb: { f: exaltadoOculto, parcial: 'o Oculto já vem revelado (o jogo não tem a Jun para escolher entre três)' },
   ...Object.fromEntries(Object.entries(INFLUENCIAS).map(([slug, inf]) => [slug, { f: exaltadoDeInfluencia(inf) }])),
@@ -647,6 +754,8 @@ const FAZ = {
   Regal_Shard: { f: juntarLascas('Regal_Orb'), alvo: 'nenhum' }, Exalted_Shard: { f: juntarLascas('Exalted_Orb'), alvo: 'nenhum' },
   Annulment_Shard: { f: juntarLascas('Orb_of_Annulment'), alvo: 'nenhum' }, Fracturing_Shard: { f: juntarLascas('Fracturing_Orb'), alvo: 'nenhum' },
   Mirror_Shard: { f: juntarLascas('Mirror_of_Kalandra'), alvo: 'nenhum' },
+  ...Object.fromEntries(EMISSARIO.flatMap((c) => [...c.partes.map((s) => [s, { f: juntarPartes(c), alvo: 'nenhum' }]), [c.pergaminho, { f: aprimorarEmissario(c) }]])),
+  Ukatoas_Ducat: { f: ducadoDeUkatoa },
 };
 for (const [slug, f] of Object.entries(FAZ)) if (!POR_SLUG.has(slug)) delete FAZ[slug];
 
@@ -696,16 +805,17 @@ export const MOEDAS_DA_CATEGORIA = Object.freeze({
   ancestral: [
     'Lesser_Eldritch_Ember', 'Greater_Eldritch_Ember', 'Grand_Eldritch_Ember', 'Exceptional_Eldritch_Ember',
     'Lesser_Eldritch_Ichor', 'Greater_Eldritch_Ichor', 'Grand_Eldritch_Ichor', 'Exceptional_Eldritch_Ichor',
-    'Eldritch_Chaos_Orb', 'Eldritch_Exalted_Orb', 'Eldritch_Orb_of_Annulment', 'Orb_of_Conflict',
+    'Eldritch_Chaos_Orb', 'Eldritch_Exalted_Orb', 'Eldritch_Orb_of_Annulment', 'Orb_of_Conflict', 'Ukatoas_Ducat',
   ],
   qualidade: ['Blacksmiths_Whetstone', 'Armourers_Scrap', 'Glassblowers_Bauble'],
   corrupcao: [
     'Vaal_Orb', 'Volatile_Vaal_Orb', 'Djinn-Touched_Vaal_Orb', 'Tainted_Chaos_Orb', 'Tainted_Exalted_Orb', 'Tainted_Divine_Teardrop',
     'Tainted_Armourers_Scrap', 'Tainted_Blacksmiths_Whetstone', 'Tainted_Mythic_Orb',
   ],
-  especiais: ['Mirror_of_Kalandra', 'Ancient_Orb', 'Orb_of_Regret'],
   gemas: ['Gemcutters_Prism', 'Gemcutters_Lens'],
-  lascas: LASCAS,
+  // (06/11) as Partes do Emissário juntam como as lascas (sem peça); os Pergaminhos vão em Especiais (o Ancestral também troca o único)
+  lascas: [...LASCAS, ...EMISSARIO.flatMap((c) => c.partes)],
+  especiais: ['Mirror_of_Kalandra', 'Ancient_Orb', 'Orb_of_Regret', ...EMISSARIO.map((c) => c.pergaminho)],
 });
 const CATEGORIA_FIXA = new Map(Object.entries(MOEDAS_DA_CATEGORIA).flatMap(([cat, lista]) => lista.map((slug) => [slug, cat])));
 /** A categoria da Forja de uma moeda (a lista acima); a sem efeito no jogo, "semEfeito". */
@@ -832,6 +942,13 @@ export function usar(estado, { moeda: idDaMoeda, alvo } = {}, rng = Math.random)
   if (!faz) return erro(`${moeda.nome} não tem efeito no jogo: ${STATUS[moeda.slug].motivo}.`);
   let peca = null;
   let p = null;
+  // (a moeda que também vale numa GEMA da mochila — o Orbe Vaal: `gema`)
+  if (faz.gema && Gemas.ehGema((estado.inventory ?? [])[alvo?.indice]?.id)) {
+    const r = faz.gema({ estado, alvo, rng, moeda });
+    if (!r?.ok) return r ?? erro('Nada aconteceu.');
+    gastar(estado, moeda.itemId, 1);
+    return { ok: true, notice: r.notice };
+  }
   if ((faz.alvo ?? 'peca') === 'peca') {
     peca = pecaDoAlvo(estado, alvo);
     p = peca?.poe ?? null;
@@ -865,6 +982,18 @@ export function dropDoMonstro(tipo, rng = Math.random, fator = 1) {
     }
     n -= 1;
   }
+  return saida;
+}
+/** (06/11) O que o CHEFE DE UM MAPA solta da cadeia do Emissário e o Ducado de Ukatoa (`regras.moedas.chefeDeMapa`): os ids. */
+export function dropDoChefeDeMapa(rng = Math.random) {
+  const cfg = R().moedas?.chefeDeMapa;
+  if (!Catalogo.ligado() || !cfg) return [];
+  const saida = [];
+  const partes = EMISSARIO.flatMap((c) => c.partes).filter((s) => POR_SLUG.has(s));
+  const pergaminhos = EMISSARIO.map((c) => c.pergaminho).filter((s) => POR_SLUG.has(s));
+  if (partes.length && rng() < (Number(cfg.chanceDaParte) || 0)) saida.push(idDa(sortear(partes, rng)));
+  if (pergaminhos.length && rng() < (Number(cfg.chanceDoPergaminho) || 0)) saida.push(idDa(sortear(pergaminhos, rng)));
+  if (POR_SLUG.has('Ukatoas_Ducat') && rng() < (Number(cfg.chanceDoUkatoa) || 0)) saida.push(idDa('Ukatoas_Ducat'));
   return saida;
 }
 /** `n` moedas avulsas, pelos mesmos pesos do drop (o chefe do mapa único "derruba N Itens Monetários adicionais"). */

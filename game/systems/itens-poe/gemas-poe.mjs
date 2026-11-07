@@ -17,8 +17,9 @@
 // (pelas tags). Sem o PoE nada disto roda.
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { ligado } from './catalogo.mjs';
-import { slugDoNome, partir, condicoesDe, vale, somarOrigem } from './condicoes-poe.mjs';
+import { slugDoNome, partir, condicoesDe, vale, somarOrigem, definirStatusDasHabilidadesDeItens } from './condicoes-poe.mjs';
 import { comNiveisDoPoedb } from './gemas-niveis.mjs';
+import * as HabilidadesDeItens from './habilidades-de-itens.mjs';
 import * as Vinculos from './vinculos.mjs';
 import { ehLinhaDoAco } from './convocar-o-aco.mjs';
 import { ehLinhaLocalDaGema, atributosDasLinhas, atributosDoBuff, ehLinhaDoBuff } from './linhas-das-gemas.mjs';
@@ -91,6 +92,8 @@ import * as Combate100 from './combate-100.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
 const ARQ_GEMAS = new URL('../../gamedata/itens-poe/gemas-poe.json', import.meta.url);
+// (07/11, lote 13 das inertes) as habilidades que só os únicos concedem — gemas OCULTAS (`soDoItem`: não caem, não são vendidas; `tools/importar-habilidades-de-itens.mjs`)
+const ARQ_HABILIDADES_DE_ITENS = new URL('../../gamedata/itens-poe/habilidades-de-itens.json', import.meta.url);
 // (09/10) O ÍCONE DA HABILIDADE de cada gema (o que vai na barra de slots, como no PoE — "SkillIcons/iconcleave"; o da gema é o do item):
 // `slug → arquivo` em `gamedata/itens-poe/icones-habilidades/` (tools/importar-poedb-gemas.mjs, das páginas do poedb).
 const ARQ_ICONES_DAS_HABILIDADES = new URL('../../gamedata/itens-poe/icones-habilidades.json', import.meta.url);
@@ -357,6 +360,9 @@ const linhasDaQualidade = (g, q) => (g?.qualidade ?? []).flatMap(partirQualidade
  * baseMultiplier 0,713 → 0,983 por nível — os de cá.
  */
 const CORRECAO_DO_POB = {
+  // (07/11, lote 20 das inertes) o Tiro do Vazio (habilidade de item, lote 15): o poedb traz o "Dano de Ataque: 65% de base" só na propriedade, sem a coluna — o PoB
+  // (VoidShot): baseMultiplier 0,65
+  Void_Shot: { efetividade: [0.65] },
   Vaal_Lightning_Arrow: {
     efetividade: [0.713, 0.726, 0.737, 0.749, 0.76, 0.772, 0.782, 0.792, 0.803, 0.813, 0.822, 0.831, 0.841, 0.85, 0.858, 0.866, 0.874, 0.882, 0.89, 0.897, 0.904, 0.911, 0.918, 0.925, 0.931, 0.937, 0.943, 0.949, 0.954, 0.96, 0.963, 0.965, 0.967, 0.969, 0.972, 0.974, 0.976, 0.979, 0.981, 0.983],
     semProjeteisAdicionais: true,
@@ -1945,6 +1951,11 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
 function ehLinhaFeita(h, l, q) {
   return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasPR3.ehLinhaPR3(h.slug, l) && !GemasPR4.ehLinhaPR4(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l) && !GemasB3.ehLinhaB3(h.slug, l) && !GemasC4.ehLinhaC4(h.slug, l) && !GemasC3.ehLinhaC3(h.slug, l) && !GemasB4.ehLinhaB4(h.slug, l) && !GemasGAC.ehLinhaGAC(h.slug, l, h.arquetipo) && !GemasGBD.ehLinhaGBD(h.slug, l) && !GemasE1a.ehLinhaE1a(h.slug, l, h.arquetipo) && !GemasE1b.ehLinhaE1b(h.slug, l) && !GemasE2a.ehLinhaE2a(h.slug, l, h.arquetipo) && !GemasE2b.ehLinhaE2b(h.slug, l) && !GemasD1.ehLinhaD1(h.slug, l) && !GemasR3B.ehLinhaR3B(h.slug, l) && !GemasR3D.ehLinhaR3D(h.slug, l) && !GemasT2.ehLinhaT2(h.slug, l) && !GemasT3.ehLinhaT3(h.slug, l) && !GemasVoo.ehLinhaDoVoo(h.slug, l) && !Combate100.ehLinhaCombate100(l));
 }
+const GATILHO_DA_PECA = /^efeito não simulado: (?:(?:[\d.]+ ?% de chance de )?Ativa(?:r)? (?:esta|essa|esse|este) (?:Magia|Habilidade|Ataque)|Esta (?:Magia|Habilidade) (?:é Ativada|não Custa Nada|não pode ser usada)|Esta Habilidade é Ativada pelo item|Ativada pelo item|CooldownTime|Consume uma Carga do Vazio para Ativar esta Habilidade)/i;
+function semOGatilhoDaPeca({ status, motivos }) {
+  const resto = motivos.filter((m) => !GATILHO_DA_PECA.test(m));
+  return { status: status === 'parcial' && !resto.length ? 'funciona' : status, motivos: resto };
+}
 function avaliarNoJogo(h, formato) {
   const st = h.stats;
   const motivos = [];
@@ -2247,7 +2258,10 @@ function montarFicha(slug, nivel = 1, qualidade = 0) {
   // praga…), neste nível e nesta qualidade — antes o balão usava só a regra das gemas de uso e riscava as linhas dos Vínculos, do Portador da Praga e da
   // Convocar Runas, que o jogo faz; e as da QUALIDADE nunca eram vistas. `naoFeitas` traz o texto do balão (das linhas do nível e das da qualidade).
   const hq = compilada(slug, n, q) ?? h;
-  const aval = NAO_SE_APLICA[slug] ? { motivos: [] } : avaliarNoJogo({ ...hq, slug, nivel: n, qualidade: q }, r?.formato ?? null);
+  const avalBruta = NAO_SE_APLICA[slug] ? { motivos: [] } : avaliarNoJogo({ ...hq, slug, nivel: n, qualidade: q }, r?.formato ?? null);
+  // (07/11, lote 13: a habilidade de item com a MESMA regra do status — o gatilho da peça não é pendência; a feita à mão, só a nota)
+  const feitaAMao = g.soDoItem ? HabilidadesDeItens.feita(slug) : null;
+  const aval = feitaAMao ? { motivos: feitaAMao.nota ? [feitaAMao.nota] : [] } : g.soDoItem ? semOGatilhoDaPeca(avalBruta) : avalBruta;
   const norm = (t) => String(t).replace(/(\d)\s*%/g, '$1 %').replace(/\\b/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
   const fora = new Set(aval.motivos.filter((m) => m.startsWith('efeito não simulado: ')).map((m) => norm(m.slice('efeito não simulado: '.length))));
   // (sem as colunas mal rotuladas — `ehColunaMalRotulada` —, sem as linhas vazias ou que valem 0 neste nível — `linhaEscondida`; e as que vieram em inglês, em
@@ -2293,7 +2307,8 @@ export async function iniciar({ registrarGema, registrarReforco } = {}) {
   // (09/10) A tabela por nível de cada gema pela do poedb (a Experiência, os requisitos e as colunas que faltavam — `gemas-niveis.mjs`).
   // (lotes G-B e G-D: as linhas fixas do PoB que o poedb não trouxe e as colunas herdadas da gema base fora — `GemasGBD.completarPeloPoB`)
   // (lote T2, 27/10: + a Chuva Cinética, que o poedb salvo trouxe sem as linhas — `GemasT2.completarPeloPoBT2`)
-  GEMAS = GemasT2.completarPeloPoBT2(GemasGBD.completarPeloPoB(comNiveisDoPoedb(JSON.parse(readFileSync(ARQ_GEMAS, 'utf8')))));
+  const habilidadesDeItens = existsSync(ARQ_HABILIDADES_DE_ITENS) ? JSON.parse(readFileSync(ARQ_HABILIDADES_DE_ITENS, 'utf8')).habilidades ?? [] : [];
+  GEMAS = GemasT2.completarPeloPoBT2(GemasGBD.completarPeloPoB(comNiveisDoPoedb([...JSON.parse(readFileSync(ARQ_GEMAS, 'utf8')), ...habilidadesDeItens])));
   for (const g of GEMAS) POR_SLUG.set(g.slug, g);
   const comp = await import('./compilador-de-gemas/compilador.mjs');
   const prog = await import('./compilador-de-gemas/progressao.mjs');
@@ -2311,7 +2326,12 @@ export async function iniciar({ registrarGema, registrarReforco } = {}) {
     // (17/10, lote G18b: o status com a QUALIDADE 20 — as linhas da qualidade que o jogo não faz entram nos motivos, como as do nível)
     const hq = compilada(g.slug, nivelRef, 20) ?? h;
     // (lote A2: a gema que não se aplica — `NAO_SE_APLICA` — fica sem efeito, com a nota)
-    const { status, motivos } = NAO_SE_APLICA[g.slug] ? { status: 'nao', motivos: [NAO_SE_APLICA[g.slug]] } : avaliarNoJogo({ ...hq, slug: g.slug, nivel: nivelRef, qualidade: 20 }, formato);
+    const avaliada = NAO_SE_APLICA[g.slug] ? { status: 'nao', motivos: [NAO_SE_APLICA[g.slug]] } : avaliarNoJogo({ ...hq, slug: g.slug, nivel: nivelRef, qualidade: 20 }, formato);
+    // (07/11, lote 13) a habilidade que só um único concede: o GATILHO e o custo dela são da peça ("Ativa esta Magia quando…", "Esta Magia é Ativada quando Ganha",
+    // "Esta Habilidade não Custa Nada" — a linha do único dispara, sem custo: `Acoes.definirDisparo`), não pendências da gema
+    // (lote 13b) a feita à mão (`habilidades-de-itens.mjs`): o comportamento é o de lá — funciona, ou em parte com a nota do que o PoE não publica
+    const feitaAMao = g.soDoItem ? HabilidadesDeItens.feita(g.slug) : null;
+    const { status, motivos } = feitaAMao ? { status: feitaAMao.nota ? 'parcial' : 'funciona', motivos: feitaAMao.nota ? [feitaAMao.nota] : [] } : g.soDoItem ? semOGatilhoDaPeca(avaliada) : avaliada;
     if (status === 'nao') entry.poeGema.bloqueio = motivos[0];
     ACTION_CATALOG.spells.push(entry);
     REGISTRO.set(g.slug, { itemId, acao: entry.id, arquetipo: h.arquetipo, formato, elemento, ataque: !!h.ataque, buff: entry.poeGema.buff, molde: entry.poeGema.molde, statusNoJogo: status, motivosNoJogo: motivos, nivelMax: prog.nivelMaximo(g), gema: g,
@@ -2323,6 +2343,11 @@ export async function iniciar({ registrarGema, registrarReforco } = {}) {
     registrarGema?.({ itemId, entry, gema: g, tabelaDeXp: gemaDaTabelaDeXp(g), categoria: entry.poeGema.buff || entry.poeGema.vinculo ? 'reforco' : 'ataque', castTime: entry.poeGema.ataque ? 0 : Math.round((h.stats.tempoUso ?? 0) * 1000), levelMinimo: g.nivelReq ?? 1 });
     if (entry.poeGema.buff) registrarReforco?.(entry.id, { dur: buffNoNivel(g.slug, 1).dur, tipo: `poe-${h.arquetipo}`, efeitos: [] });
   }
+  // (07/11, lote 13) o status das habilidades que só um único concede, pelo nome (a linha do único segue — `traduzir`)
+  // (a parcial que NÃO FAZ NADA no combate — o buff sem nenhum efeito que o jogo tenha, a magia sem dano nem efeito — conta como sem comportamento para a linha do único)
+  const semNada = (m) => m.some((x) => /nenhum efeito do buff tem equivalente|sem dano direto: nenhum efeito no combate/.test(x));
+  const deItens = new Map([...REGISTRO.values()].filter((r) => r.gema?.soDoItem).map((r) => [slugDoNome(r.gema.nome), { status: r.statusNoJogo === 'parcial' && semNada(r.motivosNoJogo ?? []) ? 'nao' : r.statusNoJogo, motivos: r.motivosNoJogo ?? [] }]));
+  definirStatusDasHabilidadesDeItens((slug) => deItens.get(slug) ?? null);
   INICIADO = { gemas: REGISTRO.size, porStatus };
   return INICIADO;
 }
@@ -2430,7 +2455,10 @@ export function adds(estado) {
   // (revisão G, 26/10) o buff do CLAMOR: o `@impelidoClamor` dele vira `@impelidoClamor_<slug>` — só no ataque Impelido por ESTE Clamor (o PoB: SeismicExertedAttacks,
   // RallyingCryExertDamageBonus…), não no Impelido por outro (`condicoes-poe.fichaDoGolpe`, `acoes.comOsAlvosDaGema`)
   const doClamor = (k, id) => { const i = k.indexOf('@'); if (i < 0) return k; const slug = id.startsWith(PREFIXO) ? id.slice(PREFIXO.length) : id; return `${k.slice(0, i + 1)}${k.slice(i + 1).split('+').map((c) => (c === 'impelidoClamor' ? `impelidoClamor_${slug}` : c)).join('+')}`; };
-  for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (b.afPoe && b.ate > agora && !b.soAliados) { const f = efeitoDe(b.tipo, id, estado, b); for (const [k0, v] of Object.entries(b.afPoe)) { const k = b.tipo === 'poe-clamor' ? doClamor(k0, id) : k0; total[k] = (total[k] ?? 0) + v * f; } }
+  // (07/11, lote 25 das inertes — o dono: "Fazer todos") as AURAS das suas gemas valem também nos seus LACAIOS, como no PoE: o mesmo efeito, × o "Efeito das Auras Não
+  // Maldição das suas Habilidades aumentado em X% nos Lacaios" (a Matua Tupuna) — `aliados_aura:<atributo>`, que o golpe e a defesa do lacaio leem (`aliados.doLacaio`)
+  const nosLacaios = 1 + doEquipamento(estado, 'aura_efeito_nos_lacaios') / 100;
+  for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (b.afPoe && b.ate > agora && !b.soAliados) { const f = efeitoDe(b.tipo, id, estado, b); for (const [k0, v] of Object.entries(b.afPoe)) { const k = b.tipo === 'poe-clamor' ? doClamor(k0, id) : k0; total[k] = (total[k] ?? 0) + v * f; if (b.tipo === 'poe-aura' && !k.includes('@') && !k.includes(':')) total[`aliados_aura:${k}`] = (total[`aliados_aura:${k}`] ?? 0) + v * f * nosLacaios; } }
   // (11/10) As AURAS dos COMPANHEIROS de grupo na mesma sala, a até o raio da aura deles (`raio` em casas, com o "Efeito em Área de Habilidades
   // de Aura aumentado" de quem lançou): valem em você como no PoE ("você e Aliados"). Cada aura uma vez: a sua, se você também tem a mesma.
   // (13/10, a Ichimonji: "Buffs de Auras Aliadas não afetam você" — o seu; "Os Buffs das Suas Auras não afetam aliados" — o do companheiro.)
@@ -2438,10 +2466,15 @@ export function adds(estado) {
   for (const outro of semAurasAliadas ? [] : hunt.partilha?.naSala ?? []) {
     if (!outro || outro === estado || !outro.hunt?.pos || !hunt.pos || (outro.hunt.z ?? 0) !== (hunt.z ?? 0)) continue;
     if (doEquipamento(outro, 'auras_so_em_voce') > 0) continue;
+    // (06/11, lote 9 das inertes, a Mão de Phrecia: "Auras Não-Maldição das suas Habilidades só se aplicam a você e aos Alvos Vinculados" e "Alvos Vinculados sempre contam
+    // como estando no alcance" — as dele chegam em você só se ele vincula você, e de qualquer distância)
+    const soVinculados = doEquipamento(outro, 'auras_so_vinculados') > 0;
+    const vinculado = soVinculados && (outro.hunt.vinculos ?? []).some((lk) => lk.ate > (outro.hunt.clock ?? agora) && (lk.alvos ?? []).some((a) => a.tipo === 'jogador' && outro.hunt.partilha?.membros?.find((m) => m.nome === a.nome)?.estado === estado));
+    if (soVinculados && !vinculado) continue;
     for (const [id, b] of Object.entries(outro.hunt.buffs ?? {})) {
       // (o Estandarte plantado vale em volta DELE, não de quem o plantou)
       const centro = b.estandarte ?? outro.hunt.pos;
-      const longe = Math.max(Math.abs(centro.x - hunt.pos.x), Math.abs(centro.y - hunt.pos.y));
+      const longe = vinculado ? 0 : Math.max(Math.abs(centro.x - hunt.pos.x), Math.abs(centro.y - hunt.pos.y));
       if (b.tipo !== 'poe-aura' || !b.afPoe || !(b.ate > (outro.hunt.clock ?? agora)) || !(b.raio > 0) || longe > b.raio || hunt.buffs?.[id]?.ate > agora) continue;
       const f = efeitoDe(b.tipo, id, outro, b);
       for (const [k, v] of Object.entries(b.afPoe)) total[k] = (total[k] ?? 0) + v * f;

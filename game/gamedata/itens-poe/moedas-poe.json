@@ -1894,6 +1894,298 @@
    "pilha": 10,
    "icone": "Pearls_Before_Swine.png",
    "itemId": 915132
+  },
+  {
+   "slug": "First_Piece_of_the_Arcane",
+   "nome": "Primeira Peça do Arcano",
+   "efeitos": [
+    "Parte da Espada da Legião (1 de 3).",
+    "Junte a Primeira Peça do Arcano, a Segunda Peça do Arcano e a Terceira Peça do Arcano para formar Pensamentos Agitados.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "icone": "First_Piece_of_the_Arcane.png",
+   "itemId": 915202
+  },
+  {
+   "slug": "Second_Piece_of_the_Arcane",
+   "nome": "Segunda Peça do Arcano",
+   "efeitos": [
+    "Parte da Espada da Legião (2 de 3).",
+    "Junte a Primeira Peça do Arcano, a Segunda Peça do Arcano e a Terceira Peça do Arcano para formar Pensamentos Agitados.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "icone": "Second_Piece_of_the_Arcane.png",
+   "itemId": 915211
+  },
+  {
+   "slug": "Third_Piece_of_the_Arcane",
+   "nome": "Terceira Peça do Arcano",
+   "efeitos": [
+    "Parte da Espada da Legião (3 de 3).",
+    "Junte a Primeira Peça do Arcano, a Segunda Peça do Arcano e a Terceira Peça do Arcano para formar Pensamentos Agitados.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "icone": "Third_Piece_of_the_Arcane.png",
+   "itemId": 915218
+  },
+  {
+   "slug": "First_Piece_of_Focus",
+   "nome": "Primeira Parte do Foco",
+   "efeitos": [
+    "Parte do Escudo Triangular do Arconte (1 de 4).",
+    "Junte a Primeira Parte do Foco, a Segunda Parte do Foco, a Terceira Parte do Foco e a Quarta Parte do Foco para formar Força Inabalada.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "icone": "First_Piece_of_Focus.png",
+   "itemId": 915200
+  },
+  {
+   "slug": "Second_Piece_of_Focus",
+   "nome": "Segunda Parte do Foco",
+   "efeitos": [
+    "Parte do Escudo Triangular do Arconte (2 de 4).",
+    "Junte a Primeira Parte do Foco, a Segunda Parte do Foco, a Terceira Parte do Foco e a Quarta Parte do Foco para formar Força Inabalada.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "icone": "Second_Piece_of_Focus.png",
+   "itemId": 915209
+  },
+  {
+   "slug": "Third_Piece_of_Focus",
+   "nome": "Terceira Parte do Foco",
+   "efeitos": [
+    "Parte do Escudo Triangular do Arconte (3 de 4).",
+    "Junte a Primeira Parte do Foco, a Segunda Parte do Foco, a Terceira Parte do Foco e a Quarta Parte do Foco para formar Força Inabalada.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "icone": "Third_Piece_of_Focus.png",
+   "itemId": 915216
+  },
+  {
+   "slug": "Fourth_Piece_of_Focus",
+   "nome": "Quarta Parte do Foco",
+   "efeitos": [
+    "Parte do Escudo Triangular do Arconte (4 de 4).",
+    "Junte a Primeira Parte do Foco, a Segunda Parte do Foco, a Terceira Parte do Foco e a Quarta Parte do Foco para formar Força Inabalada.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "icone": "Fourth_Piece_of_Focus.png",
+   "itemId": 915204
+  },
+  {
+   "slug": "First_Piece_of_Brutality",
+   "nome": "Primeira Peça da Brutalidade",
+   "efeitos": [
+    "Parte do Cajado Imperial (1 de 3).",
+    "Junte a Primeira Peça da Brutalidade, a Segunda Peça da Brutalidade e a Terceira Peça da Brutalidade para formar Divina Inimizade.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "icone": "First_Piece_of_Brutality.png",
+   "itemId": 915198
+  },
+  {
+   "slug": "Second_Piece_of_Brutality",
+   "nome": "Segunda Peça da Brutalidade",
+   "efeitos": [
+    "Parte do Cajado Imperial (2 de 3).",
+    "Junte a Primeira Peça da Brutalidade, a Segunda Peça da Brutalidade e a Terceira Peça da Brutalidade para formar Divina Inimizade.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "icone": "Second_Piece_of_Brutality.png",
+   "itemId": 915207
+  },
+  {
+   "slug": "Third_Piece_of_Brutality",
+   "nome": "Terceira Peça da Brutalidade",
+   "efeitos": [
+    "Parte do Cajado Imperial (3 de 3).",
+    "Junte a Primeira Peça da Brutalidade, a Segunda Peça da Brutalidade e a Terceira Peça da Brutalidade para formar Divina Inimizade.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "icone": "Third_Piece_of_Brutality.png",
+   "itemId": 915214
+  },
+  {
+   "slug": "First_Piece_of_Time",
+   "nome": "Primeira Peça do Tempo",
+   "efeitos": [
+    "Parte do Cinto de Pano (1 de 2).",
+    "Junte a Primeira Peça do Tempo e a Segunda Peça do Tempo para formar Fluxo Livre.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "icone": "First_Piece_of_Time.png",
+   "itemId": 915203
+  },
+  {
+   "slug": "Second_Piece_of_Time",
+   "nome": "Segunda Peça do Tempo",
+   "efeitos": [
+    "Parte do Cinto de Pano (2 de 2).",
+    "Junte a Primeira Peça do Tempo e a Segunda Peça do Tempo para formar Fluxo Livre.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "icone": "Second_Piece_of_Time.png",
+   "itemId": 915212
+  },
+  {
+   "slug": "First_Piece_of_Directions",
+   "nome": "Primeira Peça das Direções",
+   "efeitos": [
+    "Parte da Aljava de Flechas Cegas (1 de 3).",
+    "Junte a Primeira Peça das Direções, a Segunda Peça das Direções e a Terceira Peça das Direções para formar Rotação Fraturante.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "icone": "First_Piece_of_Directions.png",
+   "itemId": 915199
+  },
+  {
+   "slug": "Second_Piece_of_Directions",
+   "nome": "Segunda Peça das Direções",
+   "efeitos": [
+    "Parte da Aljava de Flechas Cegas (2 de 3).",
+    "Junte a Primeira Peça das Direções, a Segunda Peça das Direções e a Terceira Peça das Direções para formar Rotação Fraturante.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "icone": "Second_Piece_of_Directions.png",
+   "itemId": 915208
+  },
+  {
+   "slug": "Third_Piece_of_Directions",
+   "nome": "Terceira Peça das Direções",
+   "efeitos": [
+    "Parte da Aljava de Flechas Cegas (3 de 3).",
+    "Junte a Primeira Peça das Direções, a Segunda Peça das Direções e a Terceira Peça das Direções para formar Rotação Fraturante.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "icone": "Third_Piece_of_Directions.png",
+   "itemId": 915215
+  },
+  {
+   "slug": "First_Piece_of_Storms",
+   "nome": "Primeira Peça das Tempestades",
+   "efeitos": [
+    "Parte da Máscara Insensível (1 de 3).",
+    "Junte a Primeira Peça das Tempestades, a Segunda Peça das Tempestades e a Terceira Peça das Tempestades para formar Conexão da Tempestade.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "icone": "First_Piece_of_Storms.png",
+   "itemId": 915201
+  },
+  {
+   "slug": "Second_Piece_of_Storms",
+   "nome": "Segunda Peça das Tempestades",
+   "efeitos": [
+    "Parte da Máscara Insensível (2 de 3).",
+    "Junte a Primeira Peça das Tempestades, a Segunda Peça das Tempestades e a Terceira Peça das Tempestades para formar Conexão da Tempestade.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "icone": "Second_Piece_of_Storms.png",
+   "itemId": 915210
+  },
+  {
+   "slug": "Third_Piece_of_Storms",
+   "nome": "Terceira Peça das Tempestades",
+   "efeitos": [
+    "Parte da Máscara Insensível (3 de 3).",
+    "Junte a Primeira Peça das Tempestades, a Segunda Peça das Tempestades e a Terceira Peça das Tempestades para formar Conexão da Tempestade.",
+    "Este item se transformará quando for organizado corretamente com outros itens."
+   ],
+   "pilha": 1,
+   "icone": "Third_Piece_of_Storms.png",
+   "itemId": 915217
+  },
+  {
+   "slug": "Electroshock_Scroll",
+   "nome": "Pergaminho da Eletrocussão",
+   "efeitos": [
+    "Aprimora os Pensamentos Agitados para uma versão mais poderosa.",
+    "Clique com o botão direito neste item e então com o esquerdo em um item único Emissário para aprimorá-lo."
+   ],
+   "pilha": 10,
+   "icone": "Electroshock_Scroll.png",
+   "itemId": 915197
+  },
+  {
+   "slug": "Specularity_Scroll",
+   "nome": "Pergaminho da Especularidade",
+   "efeitos": [
+    "Aprimora a Força Inabalada para uma versão mais poderosa.",
+    "Clique com o botão direito neste item e então com o esquerdo em um item único Emissário para aprimorá-lo."
+   ],
+   "pilha": 10,
+   "icone": "Specularity_Scroll.png",
+   "itemId": 915213
+  },
+  {
+   "slug": "Haemocombustion_Scroll",
+   "nome": "Pergaminho da Hemi Combustão",
+   "efeitos": [
+    "Aprimora a Divina Inimizade para uma versão mais poderosa.",
+    "Clique com o botão direito neste item e então com o esquerdo em um item único Emissário para aprimorá-lo."
+   ],
+   "pilha": 10,
+   "icone": "Haemocombustion_Scroll.png",
+   "itemId": 915206
+  },
+  {
+   "slug": "Time-light_Scroll",
+   "nome": "Pergaminho da Luz Temporal",
+   "efeitos": [
+    "Aprimora o Fluxo Livre para uma versão mais poderosa.",
+    "Clique com o botão direito neste item e então com o esquerdo em um item único Emissário para aprimorá-lo."
+   ],
+   "pilha": 10,
+   "icone": "Time-light_Scroll.png",
+   "itemId": 915219
+  },
+  {
+   "slug": "Fragmentation_Scroll",
+   "nome": "Pergaminho da Fragmentação",
+   "efeitos": [
+    "Aprimora a Rotação Fraturante para uma versão mais poderosa.",
+    "Clique com o botão direito neste item e então com o esquerdo em um item único Emissário para aprimorá-lo."
+   ],
+   "pilha": 10,
+   "icone": "Fragmentation_Scroll.png",
+   "itemId": 915205
+  },
+  {
+   "slug": "Deregulation_Scroll",
+   "nome": "Pergaminho da Desregulamentação",
+   "efeitos": [
+    "Aprimora a Conexão da Tempestade para uma versão mais poderosa.",
+    "Clique com o botão direito neste item e então com o esquerdo em um item único Emissário para aprimorá-lo."
+   ],
+   "pilha": 10,
+   "icone": "Deregulation_Scroll.png",
+   "itemId": 915196
+  },
+  {
+   "slug": "Ukatoas_Ducat",
+   "nome": "Ducado de Ukatoa",
+   "efeitos": [
+    "Substitui o modificador implícito de um amuleto não único por um modificador sobrenatural, caso ele ainda não possua um."
+   ],
+   "pilha": 10,
+   "icone": "Ukatoas_Ducat.png",
+   "itemId": 915220
   }
  ]
 }

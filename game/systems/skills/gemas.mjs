@@ -243,6 +243,9 @@ export function registrarAtiva({ itemId, entry, gema, tabelaDeXp = gema, categor
     itemId, tipo: 'ativa', categoria, id: entry.id, acao: entry.id, nome: gema.nome, tags: [...Tags.tagsDaAcao(entry), ...(gema.tags ?? []).map((t) => `poe:${t}`), ...(CompatSuportes.tagDaAtiva(gema.slug) ? [CompatSuportes.tagDaAtiva(gema.slug)] : [])], classeRecomendada: null,
     levelMinimo, levelDaMagia: levelMinimo, castTime, progressao: {}, fatorDeDano: 1, fatorDeCura: 1, fatorDeCusto: 1,
     poe: { slug: gema.slug, cor: gema.cor, icone: gema.icone ?? null, en: gema.en },
+    // (07/11, lote 13 das inertes) a habilidade que só um único concede: não cai, não é vendida, não sai da Lente (`sortearDrop`, `catalogoDaLoja`, `comprarNaLoja`, a Lente)
+    ...(gema.soDoItem ? { soDoItem: true } : {}),
+    ...(gema.apelidos?.length ? { apelidos: gema.apelidos } : {}),
     // A XP por nível: a da gema ou, sem ela no arquivo, a da gema de base (`tabelaDeXp`, de `GemasPoe.gemaDaTabelaDeXp`).
     poeXp: tabelaDeXpDoPoe(tabelaDeXp),
   };
@@ -252,7 +255,7 @@ export function registrarAtiva({ itemId, entry, gema, tabelaDeXp = gema, categor
     id: itemId, name: `gema: ${gema.nome.toLowerCase()}`, nomeExibicao: `Gema: ${gema.nome}`, weight: 0.1, stackable: false, type: 'gema', rarity: 'comum',
     hasSprite: true, spriteDe: CONFIG.sprites[elementoDaSprite(entry)] ?? CONFIG.sprites.outro,
     // O ícone da gema do PoE (a coleção do dono): o cliente desenha ele no lugar da pedra.
-    poeGema: { slug: gema.slug, cor: gema.cor, icone: gema.icone ?? null },
+    poeGema: { slug: gema.slug, cor: gema.cor, icone: gema.icone ?? null, ...(gema.soDoItem ? { soDoItem: true } : {}) },
     gemaDef: { tipo: 'ativa', categoria, acao: entry.id, nome: gema.nome, tags: def.tags, classeRecomendada: null, levelMinimo, castTime, progressao: {}, mult: CONFIG.raridades.multiplicador, nivelMaximo: def.poeXp.maximo, poe: def.poe },
     sell: 0,
   };
@@ -390,7 +393,7 @@ export function extrasDaGemaPoe(estado, peca, def, indice = null, soquetes = nul
   const s = indice != null && peca ? soquetes ?? soquetesDe(peca) : null;
   const doEncaixe = ENCAIXE_DA_COR[s?.cores?.[indice]];
   // (lote 57: + `naoExcepcional` — o suporte que não é Excepcional: "+1 ao nível de todas as gemas de suporte não excepcionais", o Limitado pelo Destino)
-  const tags = new Set([...ModsPoe.tagsDoPoe(def?.tags ?? []), def?.tipo === 'support' ? 'suporte' : 'habilidade', ...(def?.tipo === 'support' && !ehExcepcional(def) ? ['naoExcepcional'] : []), ...(cor ? [cor] : []), ...(doEncaixe ? [doEncaixe] : []), ...(def?.nome ? [`gema:${ModsPoe.slugDoNome(def.nome)}`] : [])]);
+  const tags = new Set([...ModsPoe.tagsDoPoe(def?.tags ?? []), def?.tipo === 'support' ? 'suporte' : 'habilidade', ...(def?.tipo === 'support' && !ehExcepcional(def) ? ['naoExcepcional'] : []), ...(cor ? [cor] : []), ...(doEncaixe ? [doEncaixe] : []), ...(def?.nome ? [`gema:${ModsPoe.slugDoNome(def.nome)}`] : []), ...numerosDaGema(def).map((k) => `gema:${k}`)]);
   // A ESCALA (antes ignorada — "+1 ao Nível das Gemas de Habilidade Encaixadas por cada 25 Níveis do Jogador" dava sempre +1): o nível do
   // personagem, as gemas encaixadas na peça ("-1 … por Gema Encaixada") e as outras escalas do PoE; com o teto.
   const fator = (escala) => {
@@ -691,14 +694,35 @@ export function ativasDoMesmoGrupo(estado, acao) {
   return [];
 }
 
+const APELIDOS_DAS_GEMAS = Object.freeze({ 'teleporta-relampejante': 'Lightning_Warp', 'clamor-tolerante': 'Enduring_Cry', mangra: 'Blight', atirador: 'Snipe' });
 /** As gemas pelo NOME (`slugDoNome`): as ativas e os suportes — o que as peças do PoE nomeiam ("Concede a Habilidade X"). */
 let PELO_NOME = null;
+const INDICES_DE_GEMA = 300;
+/** Os números com que o índice `n` chama a gema `def` (a posição dela na lista pelo slug, em volta — `pelosNomes`). */
+function numerosDaGema(def) {
+  const n = pelosNomes();
+  return [...(n.porNumero ??= new Map([...n.ativas, ...n.suportes].filter(([k]) => /^\d+$/.test(k)).reduce((m, [k, d]) => m.set(d, [...(m.get(d) ?? []), k]), new Map()))).get(def) ?? []];
+}
 function pelosNomes() {
   if (PELO_NOME && PELO_NOME.n === DEFS.size) return PELO_NOME;
   PELO_NOME = { n: DEFS.size, ativas: new Map(), suportes: new Map() };
   for (const d of DEFS.values()) {
     if (!d.poe) continue;
     (d.tipo === 'support' ? PELO_NOME.suportes : PELO_NOME.ativas).set(ModsPoe.slugDoNome(d.nome), d);
+    // (07/11, lote 13c: os nomes com que os únicos chamam a habilidade — "Nova de Ossos" é a Nova Óssea — `apelidos` da habilidade de item)
+    for (const a of d.apelidos ?? []) if (!PELO_NOME.ativas.has(ModsPoe.slugDoNome(a))) PELO_NOME.ativas.set(ModsPoe.slugDoNome(a), d);
+  }
+  // (os das gemas que o jogo já tem, com outro nome no texto do único: a Asa do Dobrador da Lua chama o Teleporte de "Teleporta"; o Sinete de Kaom, o Clamor Fortalecedor de
+  // "Clamor Tolerante"; a Alelopatia, a Infestação de "Mangra"; o Assailum, o Atirar de "Atirador")
+  const porSlug = new Map([...DEFS.values()].filter((d) => d.poe?.slug).map((d) => [d.poe.slug, d]));
+  for (const [apelido, slug] of Object.entries(APELIDOS_DAS_GEMAS)) if (porSlug.has(slug) && !PELO_NOME.ativas.has(apelido)) PELO_NOME.ativas.set(apelido, porSlug.get(slug));
+  // (07/11, lote 19 das inertes — o dono: "Aproximar com números meus") as gemas pelo NÚMERO: o poedb traz só o índice da gema sorteada (o Shako Proibido: "Suportadas
+  // por (1 — 172)"; a Pérola de Tsoatha; a Réplica do Voo do Dente Dracônico: "+3 ao Nível de todas as Gemas de N") — o N vira a N-ésima gema da lista pelo slug (as que
+  // caem, sem as ocultas), em volta. Sem fonte: a lista do PoE não está no poedb.
+  const ordem = (tipo) => [...DEFS.values()].filter((d) => d.poe?.slug && d.tipo === tipo && !d.soDoItem).sort((x, y) => x.poe.slug.localeCompare(y.poe.slug));
+  for (const [tipo, mapa] of [['support', PELO_NOME.suportes], ['ativa', PELO_NOME.ativas]]) {
+    const lista = ordem(tipo);
+    for (let i = 1; lista.length && i <= INDICES_DE_GEMA; i++) if (!mapa.has(String(i))) mapa.set(String(i), lista[(i - 1) % lista.length]);
   }
   return PELO_NOME;
 }
@@ -713,6 +737,7 @@ ModsPoe.definirAcaoPeloNome((slug) => ativaPeloNome(slug)?.acao ?? null);
  * (a gema existe, mas só sai pelo evento — `mods-poe.evento`) e "Gemas Encaixadas são Suportadas por X Nível N" (o suporte vale para as
  * ativas daquela peça). Entram em `skillsAtivas`.
  */
+const ORDEM_DA_RAINHA = { ordem_rainha_chamas: [null, 'chamas-do-julgamento'], ordem_rainha_tormenta: [null, 'tormenta-do-julgamento'] };
 function dasPecas(estado, saida) {
   for (const [slot, peca] of Object.entries(estado?.equipment ?? {})) {
     const af = peca?.poe?.af;
@@ -720,19 +745,30 @@ function dasPecas(estado, saida) {
     for (const [k, v] of Object.entries(af)) {
       if (typeof v !== 'number' || !(v > 0)) continue;
       const concede = /^concede:(.+)$/.exec(k);
-      const gatilho = /^ev:\w+:gatilho:([^:@]+)/.exec(k);
+      // (07/11, lote 13b: + o periódico — "Ativa Banquete de Carne a cada 5 segundos": `periodico:<N>:gatilho:<nome>`)
+      // (07/11, lote 15: + o que gasta uma carga — `ev:<evento>:gatilhoGastando:<carga>:<nome>` — e as do Mandado de Atziri, que a Exigência da Rainha ativa)
+      const gatilho = /^ev:\w+:gatilho(?:Gastando:\w+)?:([^:@]+)/.exec(k) ?? /^periodico:[\dd.]+:gatilho:([^:@]+)/.exec(k) ?? ORDEM_DA_RAINHA[k];
       const nome = concede?.[1] ?? gatilho?.[1];
       if (!nome) continue;
       const def = ativaPeloNome(nome);
       if (!def || (saida.get(def.acao)?.nivel ?? 0) >= v) continue;
       saida.set(def.acao, { acao: def.acao, itemId: def.itemId, nivel: Math.round(v), nivelBase: Math.round(v), bonusDaPeca: 0, xp: 0, raridade: raridadeDaGema(null), qualidade: 0, def, supports: [], onde: { slot, indice: -1 }, daPeca: true, ...(gatilho ? { ativadaPorItem: true } : {}) });
     }
-    // Os suportes da peça para as ativas encaixadas NELA.
-    const suportes = Object.entries(af).map(([k, v]) => [/^suporte_local:(.+)$/.exec(k)?.[1], v]).filter(([n, v]) => n && v > 0).map(([n, v]) => [suportePeloNome(n), v]).filter(([d]) => d);
+    // Os suportes da peça para as ativas encaixadas NELA. (07/11, lote 25: + os consumidos pelo Ciclo da Fome — `poe.suportesConsumidos`)
+    const suportes = [...Object.entries(af).map(([k, v]) => [/^suporte_local:(.+)$/.exec(k)?.[1], v]).filter(([n, v]) => n && v > 0).map(([n, v]) => [suportePeloNome(n), v]).filter(([d]) => d), ...(peca.poe.suportesConsumidos ?? []).map((c) => [DEFS.get(Number(c.id)), c.nivel]).filter(([d]) => d)];
     if (!suportes.length) continue;
     for (const a of saida.values()) {
       if (a.onde?.slot !== slot) continue;
       for (const [d, nivel] of suportes) if (compativel(d.suporte, a.def.tags) && !a.supports.some((sp) => sp.def.id === d.id)) a.supports.push({ def: d, nivel: Math.round(nivel), raridade: raridadeDaGema(null), qualidade: 0 });
+    }
+  }
+  // (07/11, lote 19 das inertes, a Pérola de Tsoatha: "Gemas encaixadas no seu elmo recebem reforço de X nível N" — `suporte_elmo:<nome>` nas peças vestidas: as ativas
+  // encaixadas no elmo)
+  const doElmo = Object.values(estado?.equipment ?? {}).flatMap((p) => Object.entries(p?.poe?.af ?? {})).map(([k, v]) => [/^suporte_elmo:(.+)$/.exec(k)?.[1], v]).filter(([n, v]) => n && v > 0).map(([n, v]) => [suportePeloNome(n), v]).filter(([d]) => d);
+  if (doElmo.length) {
+    for (const a of saida.values()) {
+      if (a.onde?.slot !== 'head') continue;
+      for (const [d, nivel] of doElmo) if (compativel(d.suporte, a.def.tags) && !a.supports.some((sp) => sp.def.id === d.id)) a.supports.push({ def: d, nivel: Math.round(nivel), raridade: raridadeDaGema(null), qualidade: 0 });
     }
   }
   // (PoE, o Chefe Tribal — Tukohama: "Habilidades do Peitoral Equipado são Suportadas por X Nível N" — `suporte_peitoral:<nome>` na árvore: as
@@ -755,6 +791,14 @@ function dasPecas(estado, saida) {
       const def = nome ? ativaPeloNome(nome) : null;
       if (!def || (saida.get(def.acao)?.nivel ?? 0) >= v) continue;
       saida.set(def.acao, { acao: def.acao, itemId: def.itemId, nivel: Math.round(v), nivelBase: Math.round(v), bonusDaPeca: 0, xp: 0, raridade: raridadeDaGema(null), qualidade: 0, def, supports: [], onde: { slot: 'altar', indice: -1 }, daPeca: true, ativadaPorItem: true });
+    }
+  }
+  // (07/11, lote 15) a EXIGÊNCIA DA RAINHA (a gema, de onde vier) ativa as Chamas e a Tormenta do Julgamento: as duas existem para o disparo, no 20 do Mandado de Atziri
+  // se a peça não disser o nível
+  if ([...saida.keys()].some((acao) => acao === 'poe-gema:Queens_Demand')) {
+    for (const nome of ['chamas-do-julgamento', 'tormenta-do-julgamento']) {
+      const def = ativaPeloNome(nome);
+      if (def && !saida.has(def.acao)) saida.set(def.acao, { acao: def.acao, itemId: def.itemId, nivel: 20, nivelBase: 20, bonusDaPeca: 0, xp: 0, raridade: raridadeDaGema(null), qualidade: 0, def, supports: [], onde: { slot: 'gatilho', indice: -1 }, daPeca: true, ativadaPorItem: true });
     }
   }
   return saida;
@@ -964,15 +1008,22 @@ export function tempoDeConjuracao(estado, acao, castSpeedPct = 0, ativas = skill
  * Devolve `[{ nome, nivel }]` das que subiram (para avisar).
  */
 export function ganharXp(estado, exp) {
-  const ganho = Math.max(0, Math.round((Number(exp) || 0) * N.parteDaExp));
-  if (!ganho) return [];
+  const ganho0 = Math.max(0, Math.round((Number(exp) || 0) * N.parteDaExp));
+  if (!ganho0) return [];
+  // (07/11, lote 22 das inertes) as Cinzas das Estrelas: "Ganho de Experiência das Gemas aumentado em X%" (de todas as peças vestidas); o Crime de Dialla: "Gemas
+  // Encaixadas nos Encaixes Azuis ganham X% de Experiência aumentada" (as da própria peça, nos encaixes azuis)
+  const vestidas = Object.values(estado?.equipment ?? {});
+  const geral = vestidas.reduce((t, p) => t + (Number(p?.poe?.af?.gem_xp_inc) || 0), 0);
   const subiram = [];
   for (const slot of SLOTS_COM_SOCKET) {
     const peca = estado?.equipment?.[slot];
     const gemas = peca?.soquetes?.gemas;
     if (!gemas) continue;
-    for (const g of gemas) {
+    const s = soquetesDe(peca);
+    for (const [i, g] of gemas.entries()) {
       const def = g && DEFS.get(Number(g.id));
+      const azul = s?.cores?.[i] === 'B' ? Number(peca?.poe?.af?.gem_xp_azul_local) || 0 : 0;
+      const ganho = Math.max(0, Math.round(ganho0 * Math.max(0, 1 + (geral + azul) / 100)));
       // Por XP a gema para no máximo dela (30 no Draevor, 20 no PoE); acima, só o add de nível das peças.
       const max = maximoDaGema(def);
       if (!def || g.nivel >= max) continue;
@@ -985,6 +1036,16 @@ export function ganharXp(estado, exp) {
         subiram.push({ nome: def.nome, nivel: g.nivel });
       }
       g.xp = g.nivel >= max ? 0 : Math.min(g.xp, xpDaGema(def, g.nivel, estado.level));
+      // (07/11, lote 25 das inertes, o Ciclo da Fome: "Consome Gemas de Suporte Encaixadas Não Corrompidas ao atingir seu Nível Máximo" — até "Pode Consumir N") o
+      // suporte que chegou ao máximo sai do encaixe e fica na peça (`poe.suportesConsumidos`): ele passa a suportar as gemas encaixadas nela (`dasPecas`)
+      const podeConsumir = Number(peca?.poe?.af?.consome_suportes_max) || 0;
+      if (podeConsumir > 0 && def.tipo === 'support' && g.nivel >= max && !g.corrompida && (peca.poe.suportesConsumidos ?? []).length < podeConsumir) {
+        (peca.poe.suportesConsumidos ??= []).push({ id: Number(g.id), nivel: g.nivel, qualidade: g.qualidade ?? 0 });
+        const s = soquetesDe(peca);
+        s.gemas[i] = null;
+        gravarSoquetes(peca, s);
+        subiram.push({ nome: `${def.nome} (consumida)`, nivel: g.nivel });
+      }
     }
   }
   return subiram;
@@ -1015,6 +1076,8 @@ export function encaixar(estado, { de, slot, indice }) {
   if (!item || !ehGema(item.id)) return erro('Isso não é uma gema.');
   // No PoE: a gema só entra no socket da COR dela (o branco aceita qualquer uma; a gema branca entra em qualquer socket).
   if (s.cores && !SocketsPoe.cabe(s.cores[i], corDaGema(item))) return erro(`A gema ${SocketsPoe.NOME_DA_COR[corDaGema(item)]} precisa de um socket ${SocketsPoe.NOME_DA_COR[corDaGema(item)]} ou branco (este é ${SocketsPoe.NOME_DA_COR[s.cores[i]]}).`);
+  // (07/11, lote 25 das inertes, a Pele dos Lordes: "Você só pode Encaixar Gemas Corrompidas neste item")
+  if (Number(peca?.poe?.af?.so_gemas_corrompidas) > 0 && !item.gema?.corrompida) return erro('Esta peça só aceita gemas Corrompidas.');
   const nova = novaGemaDoItem(item);
   inv.splice(k, 1);
   const antiga = s.gemas[i];
@@ -1040,14 +1103,16 @@ export function tirar(estado, { slot, indice }) {
 
 /** A gema solta (item) ↔ a gema no socket. */
 // A raridade mora na instância: `raridade` no item (é o que pinta o balão e a mochila) e na gema do socket.
+// (07/11, lote 25 das inertes: + a gema CORROMPIDA — o Orbe Vaal nela, `moedas.vaalNaGema` —, que passa pelo encaixe e volta para a mochila)
 export const novaGemaDoItem = (item) => ({
   id: Number(item.id),
   nivel: Math.max(1, Number(item.gema?.nivel) || 1),
   xp: Math.max(0, Number(item.gema?.xp) || 0),
   raridade: raridadeDaGema(item.raridade ?? item.gema?.raridade),
   qualidade: qualidadeDaGema(item.gema?.qualidade),
+  ...(item.gema?.corrompida ? { corrompida: true } : {}),
 });
-export const itemDaGema = (g) => ({ id: Number(g.id), count: 1, raridade: raridadeDaGema(g.raridade), gema: { nivel: g.nivel, xp: g.xp ?? 0, qualidade: qualidadeDaGema(g.qualidade) } });
+export const itemDaGema = (g) => ({ id: Number(g.id), count: 1, raridade: raridadeDaGema(g.raridade), gema: { nivel: g.nivel, xp: g.xp ?? 0, qualidade: qualidadeDaGema(g.qualidade), ...(g.corrompida ? { corrompida: true } : {}) } });
 
 /**
  * Usa uma LAPIDADORA da mochila numa gema: `{ de }` (índice da gema na mochila)
@@ -1365,9 +1430,10 @@ export function sortearDrop({ ato = 1, levelDaFase = 1, fatorDeChance = 1, dific
   const d = CONFIG.drop;
   const chance = (d.chancePorAto[String(ato)] ?? d.chancePorAto['1'] ?? 0) * fatorDeChance;
   if (!(rng() < chance)) return null;
-  const supports = [...DEFS.values()].filter((x) => x.tipo === 'support');
+  // (07/11, lote 13: as habilidades que só um único concede — `soDoItem` — não caem)
+  const supports = [...DEFS.values()].filter((x) => x.tipo === 'support' && !x.soDoItem);
   // No PoE: só as gemas do PoE, e só as que o nível da área já dá (o nível exigido da gema até o da fase).
-  const ativas = [...DEFS.values()].filter((x) => x.tipo === 'ativa' && valeNoModo(x) && x.levelMinimo <= Math.max(1, levelDaFase));
+  const ativas = [...DEFS.values()].filter((x) => x.tipo === 'ativa' && valeNoModo(x) && !x.soDoItem && x.levelMinimo <= Math.max(1, levelDaFase));
   const lista = rng() < d.parteSupport && supports.length ? supports : ativas.length ? ativas : supports;
   const def = lista[Math.floor(rng() * lista.length)];
   const [qlo, qhi] = Q.noDrop;
@@ -1393,7 +1459,8 @@ export function catalogoDaLoja(estado) {
   // Pela categoria (Ataque, Cura, Reforço, Suporte), e dentro dela pelo level da magia e o nome.
   const ordem = Object.keys(CATEGORIAS);
   // As do PoE: TODAS (dono, 06/10: "na loja do Zuma não aparecem todas as gemas"), sempre no nível 1.
-  const defs = [...DEFS.values()].filter((d) => valeNoModo(d)).sort((a, b) => ordem.indexOf(a.categoria) - ordem.indexOf(b.categoria) || (a.levelDaMagia ?? 0) - (b.levelDaMagia ?? 0) || a.nome.localeCompare(b.nome));
+  // (07/11, lote 13: sem as que só um único concede)
+  const defs = [...DEFS.values()].filter((d) => valeNoModo(d) && !d.soDoItem).sort((a, b) => ordem.indexOf(a.categoria) - ordem.indexOf(b.categoria) || (a.levelDaMagia ?? 0) - (b.levelDaMagia ?? 0) || a.nome.localeCompare(b.nome));
   const gemas = defs.flatMap((def) =>
     RARIDADES_DA_LOJA.map((r) => ({
       id: def.itemId,
@@ -1441,7 +1508,8 @@ export function comprarNaLoja(estado, { id, count = 1, raridade = 'comum' }) {
   const orbe = (SocketsPoe.poeLigado() ? (lojaDeMoedas ? lojaDeMoedas(estado) : Object.values(ORBES_DO_POE).filter((o) => o?.itemId)) : [O.encaixe, O.ligacao]).find((o) => o.itemId === Number(id));
   if (orbe) return comprarOrbe(estado, orbe, count);
   const def = DEFS.get(Number(id));
-  if (!def) return { ok: false, erro: 'Ela não vende isso.' };
+  // (07/11, lote 13: a habilidade que só um único concede não se compra)
+  if (!def || def.soDoItem) return { ok: false, erro: 'Ela não vende isso.' };
   if (!podeEntrar(def.itemId)) return { ok: false, erro: SO_ITENS_DO_POE };
   if (!RARIDADES_DA_LOJA.includes(raridade)) return { ok: false, erro: 'Ela só vende gemas comuns. As de outras raridades caem dos bichos.' };
   const n = Math.max(1, Math.min(CONFIG.loja.porVez ?? 20, Math.floor(Number(count) || 1)));

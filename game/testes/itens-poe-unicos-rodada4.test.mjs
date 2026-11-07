@@ -47,7 +47,8 @@ test('as regras de reserva casam antes da genérica: cada frase vira o atributo 
     assert.ok(COM_EFEITO.includes(r.estado), `${texto}: ${r.estado}`);
     assert.deepEqual(r.efeitos.map((x) => [x.stat, x.valor]), esperado, texto);
   }
-  assert.equal(traduz('Inveja não tem Reserva').estado, 'inerte', 'a gema que o jogo não tem continua "não existe", com o nome');
+  // (aval do dono 07/11, lote 14 das inertes: a Inveja entrou no lote 13a como gema oculta — o Ódio de Aul a concede —; a linha vale)
+  assert.deepEqual(traduz('Inveja não tem Reserva').efeitos.map((x) => [x.stat, x.valor]), [['sem_reserva:inveja', 1]], 'a Inveja, gema oculta do único, sem reserva');
 });
 
 test('a reserva: "não tem Reserva" zera, a Eficácia de UMA gema e a do Arauto fixo', { skip: SEM }, () => {

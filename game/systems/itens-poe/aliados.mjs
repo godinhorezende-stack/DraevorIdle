@@ -14,6 +14,11 @@
 
 import { maximo as maximoDeCargas } from './cargas.mjs';
 export const PREFIXO = 'aliados:';
+/**
+ * (06/11, lote 9 das inertes) "Aliados Próximos <efeito>" SEM você (a Respiração Moribunda, o Regicriador, a Máscara do Tribunal, a Semente do Criador): `so_aliados:<stat>` —
+ * vai na foto como a "Você e Aliados", mas não soma em você. Os seus lacaios também recebem o que eles leem (`doLacaio`).
+ */
+export const PREFIXO_SO = 'so_aliados:';
 /** (13/10, o Inspirador) "Você e Aliados próximos dos seus Estandartes": `aliados_estandarte:<stat>` — os aliados na área do Estandarte plantado. */
 export const PREFIXO_DO_ESTANDARTE = 'aliados_estandarte:';
 export const PADRAO = Object.freeze({
@@ -44,6 +49,7 @@ export function fotografar(estado, afPoe, { fortificacao = 0 } = {}) {
   if (!hunt) return null;
   const af = {};
   for (const [k, v] of Object.entries(afPoe ?? {})) if (k.startsWith(PREFIXO) && typeof v === 'number' && v) af[k.slice(PREFIXO.length)] = v;
+  for (const [k, v] of Object.entries(afPoe ?? {})) if (k.startsWith(PREFIXO_SO) && typeof v === 'number' && v) af[k.slice(PREFIXO_SO.length)] = (af[k.slice(PREFIXO_SO.length)] ?? 0) + v;
   // (06/11, a Investida de Ambu: o máximo de Tolerância de quem tem a peça vai para os companheiros perto — `cargas.maximo`)
   if (n(afPoe, 'grupo_tolerancia_igual') > 0) af.tolerancia_max_do_grupo = maximoDeCargas(afPoe, 'tolerancia');
   hunt.aliados = {
@@ -53,6 +59,10 @@ export function fotografar(estado, afPoe, { fortificacao = 0 } = {}) {
     // (a Fortificação de quem empresta, com a ficha dele — "Você atingiu sua fortificação máxima" conta: `condicoes-poe.fortificacao`)
     fortificacao: n(afPoe, 'aliados_fortificacao') > 0 ? Math.max(0, fortificacao) : 0,
     aurasSoSuas: n(afPoe, 'auras_so_em_voce') > 0,
+    // (lote 9) as Vestes do Efêmero ("A Velocidade de Ação dos Aliados Próximos não pode ser modificada abaixo do valor base") e a Marca do Devorador de Pecados
+    // ("Inimigos inflingem Afecções Elementais em você ao invés de Aliados próximos": os aliados perto ficam sem elas)
+    acaoMinima: n(afPoe, 'aliados_acao_minima') > 0,
+    absorveAfeccoes: n(afPoe, 'absorve_afeccoes_aliados') > 0,
     estandarte: doEstandarte(hunt, afPoe),
   };
   return hunt.aliados;
@@ -81,6 +91,7 @@ export function aplicar(estado, resolvido) {
   for (const [k, v] of Object.entries(resolvido)) if (k.startsWith(PREFIXO) && typeof v === 'number' && v) maior[k.slice(PREFIXO.length)] = v;
   // A Velocidade das auras: a sua, por aura ligada.
   let velocidade = n(resolvido, 'aura_concede_vel') * aurasLigadas(hunt, agora).length;
+  let acaoMinima = false;
   if (!naoRecebe) {
     const minhas = new Set(aurasLigadas(hunt, agora).map(([id]) => id));
     for (const { o, longe } of companheiros(estado)) {
@@ -90,6 +101,8 @@ export function aplicar(estado, resolvido) {
       const foto = o.hunt.aliados;
       if (!foto || foto.aurasSoSuas) continue;
       if (longe <= (foto.raio ?? PADRAO.raio)) for (const [k, v] of Object.entries(foto.af ?? {})) if (Math.abs(v) > Math.abs(maior[k] ?? 0)) maior[k] = v;
+      if (longe <= (foto.raio ?? PADRAO.raio) && foto.acaoMinima) acaoMinima = true;
+      if (longe <= (foto.raio ?? PADRAO.raio) && foto.absorveAfeccoes) for (const k of ['imune_congelamento', 'imune_resfriamento', 'imune_incendio', 'imune_eletrizacao']) maior[k] = Math.max(maior[k] ?? 0, 1);
       // (13/10, o Inspirador: você na área do Estandarte plantado do companheiro)
       const e = foto.estandarte;
       if (e && hunt?.pos && (hunt.z ?? 0) === e.z && distancia(hunt.pos, e) <= e.raio) for (const [k, v] of Object.entries(e.af)) if (Math.abs(v) > Math.abs(maior[k] ?? 0)) maior[k] = v;
@@ -98,12 +111,16 @@ export function aplicar(estado, resolvido) {
     }
   }
   for (const [k, v] of Object.entries(maior)) resolvido[k] = (resolvido[k] ?? 0) + v;
+  if (acaoMinima && n(resolvido, 'action_speed') < 0) resolvido.action_speed = 0;
   if (velocidade) {
     resolvido.atk_speed = (resolvido.atk_speed ?? 0) + velocidade;
     resolvido.cast_speed = (resolvido.cast_speed ?? 0) + velocidade;
   }
   return resolvido;
 }
+
+/** (lote 9) Os companheiros da party na sala a até `raio` casas (os estados deles). */
+export const companheirosPerto = (estado, raio = PADRAO.raio) => companheiros(estado).filter((c) => c.longe <= raio && (c.o.hp ?? 0) > 0).map((c) => c.o);
 
 /**
  * A Fortificação que os companheiros perto emprestam ("Aliados Próximos contam como tendo Fortificação igual a sua"): a maior das deles, de
@@ -124,10 +141,14 @@ export function fortificacaoDosAliados(estado) {
  * tendo Fortificação igual a sua"). `{ danoIncPct, maisDanoPct, bloqueio, bloqueioMagico, res, velPct, fortificacao }` ou null.
  */
 export function doLacaio(estado, afPoe, fortificacao = 0) {
-  const a = (k) => n(afPoe, `${PREFIXO}${k}`);
+  // (07/11, lote 25 das inertes: + as suas AURAS nos lacaios — `aliados_aura:<k>`, de `gemas-poe`: o dano aumentado, as resistências, o bloqueio, a velocidade e o
+  // "como Dano Extra" (como mais dano, a soma dos tipos); o dano adicionado plano delas (a Ira, a Cólera) não entra no golpe do lacaio)
+  const daAura = (k) => n(afPoe, `aliados_aura:${k}`);
+  const a = (k) => n(afPoe, `${PREFIXO}${k}`) + n(afPoe, `${PREFIXO_SO}${k}`) + daAura(k);
   const res = Math.min(a('fire_res'), a('ice_res'), a('energy_res'));
-  const velPct = n(afPoe, 'aura_concede_vel') * aurasLigadas(estado?.hunt).length;
+  const velPct = n(afPoe, 'aura_concede_vel') * aurasLigadas(estado?.hunt).length + Math.max(daAura('atk_speed'), daAura('cast_speed'));
   const fort = n(afPoe, 'aliados_fortificacao') > 0 ? fortificacao : 0;
-  const x = { danoIncPct: a('dmg_inc'), maisDanoPct: a('mais_dano'), bloqueio: a('block'), bloqueioMagico: a('spell_block'), res, velPct, fortificacao: fort };
+  const extra = Object.entries(afPoe ?? {}).filter(([k]) => /^aliados_aura:\w+_as_extra_\w+$/.test(k)).reduce((t, [, v]) => t + (Number(v) || 0), 0);
+  const x = { danoIncPct: a('dmg_inc'), maisDanoPct: a('mais_dano') + extra, bloqueio: a('block'), bloqueioMagico: a('spell_block'), res, velPct, fortificacao: fort };
   return Object.values(x).some((v) => v) ? x : null;
 }

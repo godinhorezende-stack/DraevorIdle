@@ -2775,6 +2775,10 @@ body {
 .hud-bar.mana i { --liq-a: #5fadee; --liq-b: #1d4d99; }
 .hud-bar.exp i { --liq-a: #f0cf7a; --liq-b: #a8781f; }
 .hud-bar.exp { height: 14px; }
+/* (07/11/2026) O Lv Divino no lugar da stamina: o branco-dourado do divino; antes do level 100, apagado. */
+.hud-bar.divino { height: 14px; }
+.hud-bar.divino i { --liq-a: #fff3c4; --liq-b: #c9a227; }
+.hud-bar.divino.bloqueada { opacity: 0.55; filter: grayscale(0.8); }
 /*
  * Stamina fecha a fileira, e a cor é o aviso: verde acima de 14h (experiência
  * cheia), amarelo abaixo disso (metade) e vermelho no zero (nenhuma). A régua e
@@ -7330,6 +7334,8 @@ input[type='checkbox']:disabled { opacity: .35; cursor: not-allowed; }
 }
 .track.exp i { background: linear-gradient(180deg, #dfb44f, var(--exp)); }
 .track.stamina i { background: linear-gradient(180deg, #9184d6, var(--stamina)); }
+/* (07/11/2026) o Lv Divino da ficha, no lugar da stamina */
+.track.divino i { background: linear-gradient(180deg, #fff3c4, #c9a227); }
 .track.accent i { background: linear-gradient(180deg, #57d6bd, var(--accent-dim)); }
 /* Cobre: o aviso de "esta acabando", usado pelo tanque do treino offline. */
 .track.copper i { background: linear-gradient(180deg, #e0b464, var(--copper)); }

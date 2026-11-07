@@ -14,12 +14,13 @@
 // O que o Draevor ainda não tem (imunidades a sangramento/congelamento, lentidão em inimigos, solo consagrado...) fica REGISTRADO: aparece
 // no frasco, mas não faz nada ainda (`parametros(...).registrados`).
 import { ligado, REGRAS } from './catalogo.mjs';
+import * as Aliados from './aliados.mjs';
 import { traduzirParte } from './traduzir.mjs';
 import { ITEM_CATALOG } from '../dados.mjs';
 import { darPeca, cabeNaMochila, erroDeEspaco } from '../inventario.mjs';
 import { camposDaPeca } from '../itens/item.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { vidaSoPeloDreno, marcar, reservadoAgora, criarSoloCongelado, ganharBuff, empurrar } from './condicoes-poe.mjs';
+import { vidaSoPeloDreno, marcar, reservadoAgora, criarSoloCongelado, ganharBuff, empurrar, ganharAlmaVaal } from './condicoes-poe.mjs';
 import * as CargasPoe from './cargas.mjs';
 import * as Tinturas from './tinturas.mjs';
 import * as Salvaguarda from '../personagem/salvaguarda.mjs';
@@ -56,8 +57,26 @@ export function cinto(estado) {
 /** O texto de um mod com os valores no lugar de `{n}`. */
 const preencher = (modelo, valores) => String(modelo ?? '').replace(/\{(\d+)\}/g, (_, i) => String(valores?.[Number(i)] ?? '?'));
 
+/** (07/11, lote 20) os Vermes Contorcidos do Jarro Contorcido (`acoes.mjs` registra — `mobs/mecanicas.vermesDoItem`). */
+// eslint-disable-next-line no-var
+var vermesDoFrasco;
+export function definirVermesDoFrasco(fn) { vermesDoFrasco = fn; }
+const ADIVINHACOES = Object.freeze(['adivinhacaoDano', 'adivinhacaoVelocidade', 'adivinhacaoResistencia', 'adivinhacaoMovimento']);
 /** As regras das linhas que mexem no FRASCO (e não no personagem). `p` = os parâmetros sendo montados; `v` = o número da linha. */
 const REGRAS_DO_FRASCO = [
+  // (07/11, lote 14, o Colhedor de Almas) "Ganha Almas Vaal igual às Cargas Consumidas ao usar" (as Almas viram a recarga das Vaal — `acoes.ganharAlmasVaal`)
+  [/^Ganha Almas Vaal igual às Cargas Consumidas ao usar$/, (p) => (p.almasPorCarga = true)],
+  // (07/11, lote 19 das inertes — sem fonte, o Vinho do Profeta) "Ao usar, concede um bônus de Adivinhação aleatório por N segundos": um de quatro (Dano, Velocidade,
+  // Resistências, Movimento — `condicoes-poe.BUFFS.adivinhacao*`), sorteado no uso
+  [/^Ao usar, concede um bônus de Adivinhação aleatório por \{\d+\} segundos$/, (p, v) => (p.adivinhacaoS = v)],
+  // (07/11, lote 20 das inertes, o Jarro Contorcido) "N Vermes Contorcidos Inimigos escapam do Frasco quando utilizado" (a outra metade, "destruídos quando Acertados", é a
+  // vida 1 deles — `mobs/mecanicas.vermesDoItem`)
+  [/^\{\d+\} Vermes Contorcidos Inimigos escapam do Frasco quando utilizado(?: Vermes Contorcidos são destruídos quando Acertados)?$/, (p, v) => (p.vermes = v)],
+  [/^Vermes Contorcidos são destruídos quando Acertados$/, () => {}],
+  // (06/11, lote 11 das inertes, a Fé Engarrafada) "Solo Sagrado criado por este Frasco possui Raio Triplicado" e "Solo Sagrado criado durante o Efeito aplica Dano sofrido
+  // aumentado em X% aos Inimigos" (os monstros nele — `solos-seus.tique`)
+  [/^Solo Sagrado criado por este Frasco possui Raio Triplicado$/, (p) => (p.soloRaioMult = 3)],
+  [/^Solo Sagrado criado durante o Efeito aplica Dano sofrido aumentado em \{\d+\}% aos Inimigos$/, (p, v) => (p.duranteExtra.solo_sagrado_dano_sofrido = (p.duranteExtra.solo_sagrado_dano_sofrido ?? 0) + v)],
   // (02/11, dono: a Salvaguarda como o PoE) o Frasco de Ferro: "Restaura Proteção ao usar" — a Salvaguarda volta inteira no uso (`usar` → `Salvaguarda.restaurar`)
   [/^Restaura Proteção ao usar$/, (p) => (p.restauraSalvaguarda = true)],
   // (02/11, a Preparação de Vorana) "Efeito é removido quando a Proteção Quebrar": o efeito acaba na quebra (`personagem/salvaguarda.quebrar`)
@@ -146,6 +165,8 @@ const REGRAS_DO_FRASCO = [
 // (O Sábio Carvalho): antes só a forma com E maiúsculo no fim casava, e essas linhas ficavam sem efeito
 const CARGA = { Tolerância: 'tolerancia', Frenesi: 'frenesi', Poder: 'poder' };
 const DURANTE = /(?: durante o (?:efeito(?: do frasco)?)$|^durante o efeito, )/i;
+// (07/11, lote 14, o Apanhador de Almas) o "durante o efeito" no MEIO da frase das Vaal: "Habilidades Vaal utilizadas durante o efeito possuem…" (a regra é da frase inteira)
+const DURANTE_NO_MEIO = /^Habilidades Vaal utilizadas durante o efeito /i;
 /** "Concede Imunidade a X … se usado enquanto X": a afecção do PoE → o efeito do jogo que ela tira (e de que fica imune). */
 const IMUNIDADE = { Desaceleração: 'lento', Mutilação: 'lento', Sangramento: 'sangramento', 'Sangue Corrompido': 'sangramento', Eletrização: 'eletrizacao', Resfriamento: 'resfriamento', Congelamento: 'congelamento', Incêndio: 'incendio', Envenenamento: 'veneno' };
 /** Os mods do PERSONAGEM que mexem nos frascos ("Recuperação de Vida do Frasco aumentada", "Duração do efeito do Frasco"…): quem lê é a ficha. */
@@ -209,7 +230,7 @@ export function parametros(peca, afDoPersonagem = null) {
         linhas.push({ texto, estado: 'efeito' });
         continue;
       }
-      if (DURANTE.test(parte)) {
+      if (DURANTE.test(parte) || DURANTE_NO_MEIO.test(parte)) {
         // (05/11) a frase sem o "durante o Efeito"; se ela não tiver regra, a frase inteira (há regras escritas com ele: "Habilidades não Custam
         // Mana durante o Efeito", as das Habilidades Vaal "… durante o efeito")
         const semDurante = traduzirParte(parte.replace(DURANTE, ''), mod.valores ?? []);
@@ -266,6 +287,10 @@ export function parametros(peca, afDoPersonagem = null) {
     ...(p.restauraSalvaguarda ? { restauraSalvaguarda: true } : {}),
     ...(p.saiNaQuebra ? { saiNaQuebra: true } : {}),
     ...(p.cargasAoConsumirCadaver ? { cargasAoConsumirCadaver: p.cargasAoConsumirCadaver } : {}),
+    // (07/11, lotes 14 e 19 das inertes: o Colhedor de Almas e o Vinho do Profeta)
+    ...(p.almasPorCarga ? { almasPorCarga: true } : {}),
+    ...(p.adivinhacaoS > 0 ? { adivinhacaoS: p.adivinhacaoS } : {}),
+    ...(p.vermes > 0 ? { vermes: p.vermes } : {}),
     af,
     efeitoDaBase: daBase?.texto ?? null,
     linhas,
@@ -379,6 +404,12 @@ export function usar(estado, v, eventos = null, quem = null) {
   if (st.ativos[v]?.ate > agora && !(contaComo(peca, 'vida') && Number(afp.frasco_vida_sem_fila) > 0) && !(contaComo(peca, 'mana') && Number(afp.frasco_mana_sem_fila) > 0)) return false;
   // (ciclo 7, lote F) "X% de chance de Frascos usados por você não consumirem Cargas".
   if (!(Math.random() * 100 < (Number(afp.frasco_sem_consumo) || 0))) peca.poe.cargas = cargas - par.cargasPorUso;
+  if (par.almasPorCarga) ganharAlmaVaal(estado, hunt, par.cargasPorUso);
+  // (o Vinho do Profeta: a linha do frasco — `adivinhacaoS` — ou o atributo traduzido na peça, `adivinhacao_frasco_s`)
+  const adivinhacaoS = par.adivinhacaoS || Number(peca.poe?.af?.adivinhacao_frasco_s) || 0;
+  const vermes = par.vermes || Number(peca.poe?.af?.vermes_contorcidos) || 0;
+  if (vermes > 0) vermesDoFrasco?.(hunt, vermes);
+  if (adivinhacaoS > 0) ganharBuff(hunt, ADIVINHACOES[Math.floor(Math.random() * ADIVINHACOES.length)], adivinhacaoS, hunt.clock ?? 0);
   aoUsarOFrasco(estado, par, eventos, quem, afp);
   // (02/11) "Restaura Proteção ao usar" (o Frasco de Ferro): a Salvaguarda volta inteira
   if (par.restauraSalvaguarda) Salvaguarda.restaurar(estado);
@@ -391,6 +422,12 @@ export function usar(estado, v, eventos = null, quem = null) {
     const ao = adjacente > 0 && (hunt.poeRecente?.acertou ?? -Infinity) >= agora - 4000 && Tinturas.ativas(st).some(([w]) => Math.abs(Number(w) - v) === 1);
     const af = { ...(ao ? parametros(peca, { ...afp, frasco_efeito: (Number(afp.frasco_efeito) || 0) + adjacente }).af : par.af), ...doSabio(par, afp) };
     st.ativos[v] = { ate: agora + par.duracaoMs, af, nome: peca.poe.nome, ...(par.saiNoPvp ? { saiNoPvp: true } : {}), ...(par.saiNaQuebra ? { saiNaQuebra: true } : {}), ...extrasDoEfeito(par, false) };
+    // (06/11, lote 9 das inertes) o efeito também nos aliados: o Voo de Victario ("Frascos de Mercúrio que você Usar também se aplicam aos Aliados próximos" — os
+    // companheiros da party a até 3 casas) e a Central da Benevolência ("Frascos Utilitários Não Únicos que você Usar se aplicam aos Alvos Vinculados")
+    const mercurio = String(peca.poe.base ?? '').split('/')[1] === 'Quicksilver_Flask' && Number(afp.frasco_mercurio_aliados) > 0;
+    const vinculados = Number(afp.frasco_utilidade_vinculados) > 0 && peca.poe.raridade !== 'unico';
+    const outros = new Set([...(mercurio ? Aliados.companheirosPerto(estado) : []), ...(vinculados ? alvosVinculados(hunt) : [])]);
+    for (const o of outros) if (o?.hunt) (estadoDaCacada(o.hunt).extras ??= []).push({ ate: (o.hunt.clock ?? agora) + par.duracaoMs, af, nome: peca.poe.nome });
     return true;
   }
   if (par.tipo === 'hibrido') return usarHibrido(estado, v, peca, par, st, agora, eventos, quem, afp);
@@ -418,6 +455,13 @@ export function usar(estado, v, eventos = null, quem = null) {
   return true;
 }
 
+/** (lote 9) Os jogadores que os seus Vínculos ligam agora (os estados deles, pela party). */
+function alvosVinculados(hunt) {
+  const agora = hunt?.clock ?? 0;
+  const saida = [];
+  for (const lk of hunt?.vinculos ?? []) if (lk.ate > agora) for (const a of lk.alvos ?? []) if (a.tipo === 'jogador') { const o = hunt.partilha?.membros?.find((m) => m.nome === a.nome)?.estado; if (o) saida.push(o); }
+  return saida;
+}
 /** (06/11, o Umbilicus Immortalis) o frasco de Vida usado nos seus Zumbis e Espectros: gasta as cargas e cura cada um pela quantidade do frasco. */
 function usarNosZumbis(estado, peca, afp) {
   const par = parametros(peca, afp);
@@ -577,6 +621,8 @@ function aoUsarOFrasco(estado, par, eventos, quem, afp = {}) {
   if (u.solo === 'congelado' && hunt.pos) criarSoloCongelado(hunt, { afPoe: afp }, { x: hunt.pos.x, y: hunt.pos.y, raioM: RAIO_DO_FRASCO * 2, segundos: SOLO_MS / 1000, agora });
   // Solo Sagrado: regenera 6% da vida por segundo enquanto o personagem está nele.
   if (u.solo === 'sagrado') (hunt.frascosPoe.extras ??= []).push({ ate: agora + SOLO_MS, af: { life_regen_max_pct: 6 }, nome: 'Solo Sagrado' });
+  // (06/11, lote 11) o lugar do Solo Sagrado do frasco, para os monstros nele (o raio: o do Solo Sagrado, × o "Raio Triplicado" da Fé Engarrafada)
+  if (u.solo === 'sagrado' && hunt.pos) hunt.poeSoloDoFrasco = { x: hunt.pos.x, y: hunt.pos.y, z: hunt.z ?? 0, raio: (par.soloRaioMult ?? 1) * 1, ate: agora + SOLO_MS };
 }
 
 /** A Fuga do frasco (a mesma regra da Chance de Fugir — `acoes.fugir`): o Raro, o Único e o chefe não fogem; o Mágico evita metade. */
@@ -607,8 +653,13 @@ function noFimDoFrasco(estado, a, eventos, quem) {
   }
 }
 
-function recuperar(estado, recurso, valor, eventos, quem, extras = null) {
+function recuperar(estado, recurso, valor0, eventos, quem, extras = null) {
   const [campo, maximo, cor] = recurso === 'mana' ? ['mana', 'maxMana', '#4fc3ff'] : ['hp', 'maxHp', '#00ff66'];
+  // (06/11, lote 9 das inertes, A Drogaria: "100% da Recuperação de Vida dos Frascos é aplicada aos Aliados próximos ao invés de Você" — os companheiros da party a até 3 casas
+  // recebem a parte; você, o resto)
+  const aosAliados = recurso !== 'mana' ? Math.min(100, Number(doPersonagem(estado).frasco_vida_aliados_pct) || 0) : 0;
+  if (aosAliados > 0 && valor0 > 0) for (const o of Aliados.companheirosPerto(estado)) o.hp = Math.min(o.maxHp ?? 0, (o.hp ?? 0) + (valor0 * aosAliados) / 100);
+  const valor = valor0 * (1 - aosAliados / 100);
   const ganho = Math.min(Math.max(0, valor), Math.max(0, (estado[maximo] ?? 0) - (estado[campo] ?? 0)));
   // "Repassa X% da Recuperação de Vida para Lacaios" (o que o frasco recupera, mesmo com a vida cheia).
   if (extras?.lacaiosPct > 0 && recurso !== 'mana') for (const l of estado.hunt?.lacaios ?? []) if (l.hp > 0) l.hp = Math.min(l.maxHp, l.hp + (valor * extras.lacaiosPct) / 100);

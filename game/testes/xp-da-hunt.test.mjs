@@ -1,4 +1,4 @@
-// A conta do XP de ponta a ponta (XP-base → fase → level → estágio → stamina → prey/pódio/online) e a
+// A conta do XP de ponta a ponta (XP-base → fase → level → estágio → VIP → prey/pódio/online) e a
 // estimativa que a ficha do monstro mostra (`estimarExpDoBicho`): a MESMA cadeia da morte, só uma vez.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -16,55 +16,41 @@ import { gerarPeca } from '../systems/itens-poe/gerar.mjs';
 import * as JogoDoPoe from '../systems/itens-poe/jogo.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 
-const H = (h, m = 0) => h * 60 + m;
 const FASE = { huntId: huntDoPoe('mistrock-cyclops'), dificuldade: 'facil' };
 
-/** Um personagem na fase, com `stamina`/`level`/`premium`, e um Cyclops NORMAL (sem raridade) recém-nascido. */
-function cenario({ level = 60, stamina = Stamina.TETO, premium = false, huntId = FASE.huntId, dificuldade = FASE.dificuldade } = {}) {
+/** Um personagem na fase, com `level`/`premium`, e um Cyclops NORMAL (sem raridade) recém-nascido. */
+function cenario({ level = 60, premium = false, huntId = FASE.huntId, dificuldade = FASE.dificuldade } = {}) {
   const e = personagemDeTeste({ vocacao: 'knight', level });
   e.premiumAte = premium ? Date.now() + 1e9 : 0;
-  e.stamina = stamina;
   e.maxHp = e.hp = 1e9;
   assert.equal(Cacadas.entrar(e, { huntId, mode: 'auto', strategy: 'nearest', dificuldade }).ok, true);
-  e.stamina = stamina; // `entrar` não mexe, mas o contrato do teste é este
   const m = aplicarEscala(criarMonstro({ key: 'cyclops', x: e.hunt.pos.x + 1, y: e.hunt.pos.y }, null), e.hunt.escala);
   e.hunt.monstros.push(m);
   return { e, m };
 }
 
 /** A conta escrita à mão, a partir dos dados — sem passar pelo código de produção da exp. */
-function contaIndependente({ level, fatorStamina, escalaExp, premium = false }) {
+function contaIndependente({ level, fatorVip, escalaExp, premium = false }) {
   const base = BESTIARY.cyclops.exp;
   const noMapa = Math.round(base * escalaExp);
   const estagio = level <= 50 ? 3 : level <= 100 ? 2 : 1;
-  return Math.round(noMapa * (1 + (R.levelBonus(level) + (premium ? 10 : 0)) / 100) * fatorStamina * estagio);
+  return Math.round(noMapa * (1 + (R.levelBonus(level) + (premium ? 10 : 0)) / 100) * fatorVip * estagio);
 }
 
-const FAIXAS = [
-  { nome: 'cheia (42h)', stamina: H(42), sem: 1, com: 1.5 },
-  { nome: 'quase cheia (41h)', stamina: H(41), sem: 1, com: 1.5 },
-  { nome: 'logo acima de 39h', stamina: H(39, 1), sem: 1, com: 1.5 },
-  { nome: 'exatamente 39h', stamina: H(39), sem: 1, com: 1 },
-  { nome: 'intermediária (25h)', stamina: H(25), sem: 1, com: 1 },
-  { nome: 'logo acima de 14h', stamina: H(14, 1), sem: 1, com: 1 },
-  { nome: 'exatamente 14h', stamina: H(14), sem: 0.5, com: 0.5 },
-  { nome: 'baixa (5h)', stamina: H(5), sem: 0.5, com: 0.5 },
-  { nome: 'mínima para caçar (1 min)', stamina: 1, sem: 0.5, com: 0.5 },
-];
-
-test('as faixas de stamina: x1,5 só ACIMA de 39h e COM premium; x1 no meio; x0,5 em 14h ou menos — nunca metade com stamina quase cheia', () => {
-  for (const f of FAIXAS) {
-    assert.equal(Stamina.fatorDeExp({ stamina: f.stamina, premiumAte: 0 }), f.sem, `${f.nome} sem premium`);
-    assert.equal(Stamina.fatorDeExp({ stamina: f.stamina, premiumAte: Date.now() + 1e9 }), f.com, `${f.nome} com premium`);
-  }
+// (07/11/2026, aval do dono: "Pode reescrever") a stamina saiu: o VIP (premium) fica com o x1,5 fixo que a stamina cheia dava; o free, x1.
+test('o VIP: x1,5 com premium, x1 sem — a stamina saiu, não há mais faixa de metade', () => {
+  assert.equal(Stamina.fatorDeExp({ premiumAte: 0 }), 1);
+  assert.equal(Stamina.fatorDeExp({ premiumAte: Date.now() + 1e9 }), 1.5);
+  assert.equal(Stamina.fatorDeExp({ premiumAte: Date.now() - 1 }), 1, 'o premium vencido não vale');
 });
 
-test('XP concedido = conta independente = estimativa da ficha, em cada faixa de stamina (Cyclops, level 60 e 30)', { skip: aAdaptar("XP concedido = conta independente vale no PoE; usa o Cyclops de uma fase do Draevor") }, () => {
+test('XP concedido = conta independente = estimativa da ficha, com e sem VIP (Cyclops, level 60 e 30)', { skip: aAdaptar("XP concedido = conta independente vale no PoE; usa o Cyclops de uma fase do Draevor") }, () => {
   for (const level of [30, 60]) {
-    for (const f of FAIXAS) {
+    {
       for (const premium of [false, true]) {
-        const { e, m } = cenario({ level, stamina: f.stamina, premium });
-        const esperado = contaIndependente({ level, fatorStamina: premium ? f.com : f.sem, escalaExp: e.hunt.escala.exp, premium });
+        const f = { nome: premium ? 'VIP' : 'free' };
+        const { e, m } = cenario({ level, premium });
+        const esperado = contaIndependente({ level, fatorVip: premium ? 1.5 : 1, escalaExp: e.hunt.escala.exp, premium });
         const estimativa = estimarExpDoBicho(e, e.hunt, 'cyclops').final;
         const eventos = [];
         matarMonstro(e, e.hunt, PERSONAGEM, m, eventos);
@@ -107,23 +93,21 @@ test('a escala da FASE: o Cyclops da Mistrock vale 150 no bestiário e outro nú
   assert.equal(fora.naFase, 150);
 });
 
-test('o servidor manda o fator de stamina e o estágio para a ficha e a régua (elas não recalculam)', { skip: doClassico("Estágio de XP do Draevor (x3 até 50, x2 até 100) e escala de fase do Draevor; no PoE vale a tabela de XP do PoE (nível máx. 100)") }, () => {
+test('o servidor manda o fator do VIP e o estágio para a ficha e a régua (elas não recalculam)', { skip: doClassico("Estágio de XP do Draevor (x3 até 50, x2 até 100) e escala de fase do Draevor; no PoE vale a tabela de XP do PoE (nível máx. 100)") }, () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 80 });
-  e.stamina = H(10);
-  assert.deepEqual([Boosts.paraCliente(e).fatorStamina, Boosts.paraCliente(e).estagio], [0.5, 2]);
-  e.stamina = H(41);
+  assert.deepEqual([Boosts.paraCliente(e).fatorVip, Boosts.paraCliente(e).estagio], [1, 2]);
   e.premiumAte = Date.now() + 1e9;
-  assert.equal(Boosts.paraCliente(e).fatorStamina, 1.5);
+  assert.equal(Boosts.paraCliente(e).fatorVip, 1.5);
 });
 
-test('caçada OFFLINE: a projeção segue a faixa da stamina (14h ou menos paga metade) — mesma conta da online', () => {
-  const exp = (stamina) => {
+test('caçada OFFLINE: a projeção paga o x1,5 do VIP (e os +10% do premium) — mesma conta da online', () => {
+  const exp = (premium) => {
     const sorteio = (() => { let s = 12345; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); })();
     const original = Math.random;
     Math.random = sorteio;
     try {
       const e = personagemDeTeste({ vocacao: 'knight', level: 200 });
-      e.stamina = stamina;
+      e.premiumAte = premium ? Date.now() + 1e9 : 0;
       // (C — o personagem precisa SOBREVIVER aos 30 min simulados, senão a projeção, que é o que este teste mede, nem roda. Desarmado no PoE
       // ele dava ~5 a cada 2 s; desde que a raridade passou a MULTIPLICAR a velocidade de ataque do bicho do PoE (#181), os Mágicos/Raros
       // que esta semente sorteia o matavam em 51 s sem nenhum abate — antes, em 82 s com 1 abate, e o teste só comparava a exp desse abate.
@@ -134,18 +118,20 @@ test('caçada OFFLINE: a projeção segue a faixa da stamina (14h ou menos paga 
         e.equipment = { ...(e.equipment ?? {}), weapon: JogoDoPoe.pecaDoJogo(gerarPeca({ catalogo: catalogoDoPoe(), regras: REGRAS_DO_POE, base: 'Two_Hand_Axes/Vaal_Axe', raridade: 'normal', ilvl: 64, rng: () => 0.5 })) };
       }
       assert.equal(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto', strategy: 'nearest' }).ok, true);
-      e.stamina = stamina;
       e.hunt.offlineDesde = Date.now() - 2 * 3_600_000;
       const r = Cacadas.simularAusencia(e, PERSONAGEM, Date.now());
       assert.equal(r.morreu, false, 'sobreviveu aos 30 min simulados');
       assert.ok(r.report.kills > 0, `caçou: ${r.report.kills} abates`);
-      return r.report.exp;
+      // (a conta da morte com os bônus deste personagem: os +10% do premium somam com os outros bônus dele, e o x1,5 multiplica)
+      return { exp: r.report.exp, porMorte: Boosts.expDoBicho(e, 1_000_000) };
     } finally {
       Math.random = original;
     }
   };
-  const cheia = exp(H(30));
-  const baixa = exp(H(8));
-  assert.ok(cheia > 0 && baixa > 0);
-  assert.ok(Math.abs(baixa / cheia - 0.5) < 0.03, `${baixa} / ${cheia} = ${(baixa / cheia).toFixed(3)} (esperado 0,5)`);
+  const free = exp(false);
+  const vip = exp(true);
+  assert.ok(free.exp > 0 && vip.exp > 0);
+  const esperado = vip.porMorte / free.porMorte;
+  assert.ok(esperado > 1.5, `o VIP paga ao menos x1,5 por morte: ${esperado.toFixed(3)}`);
+  assert.ok(Math.abs(vip.exp / free.exp - esperado) < 0.03, `${vip.exp} / ${free.exp} = ${(vip.exp / free.exp).toFixed(3)} (esperado ${esperado.toFixed(3)})`);
 });

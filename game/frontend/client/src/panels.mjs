@@ -2466,9 +2466,7 @@ function blocoDeAmigos(aoMudar) {
 const paradas = {
   cap: { ligada: false, valor: 100, rotulo: 'Cap', campo: 'Cap mínimo', sufixo: 'oz' },
   gold: { ligada: false, valor: 5000, rotulo: 'Gold', campo: 'Gold mínimo', sufixo: 'gold' },
-  // A stamina viaja em minutos, que é como o servidor conta; a tela pergunta
-  // em horas, que é como o jogador lê o relógio dela.
-  stamina: { ligada: false, valor: 38, rotulo: 'Stamina', campo: 'Stamina mínima', sufixo: 'h', emHoras: true },
+  // (07/11/2026) a parada da stamina saiu com ela
   mortes: { ligada: false, valor: 3, rotulo: 'Mortes', campo: 'Mortes', sufixo: '' },
 };
 
@@ -2497,8 +2495,7 @@ export function sincronizarParadas(character) {
   for (const [chave, parada] of Object.entries(paradas)) {
     const valor = guardado?.[chave];
     parada.ligada = valor != null && valor > 0;
-    // A stamina viaja em minutos e a tela pergunta em horas. Ver `paradas`.
-    if (parada.ligada) parada.valor = parada.emHoras ? Math.max(1, Math.round(valor / 60)) : valor;
+    if (parada.ligada) parada.valor = valor;
   }
 }
 
@@ -2517,7 +2514,7 @@ function limitesEscolhidos() {
   const saida = {};
   for (const [chave, parada] of Object.entries(paradas)) {
     if (!parada.ligada || parada.valor <= 0) continue;
-    saida[chave] = parada.emHoras ? Math.round(parada.valor * 60) : parada.valor;
+    saida[chave] = parada.valor;
   }
   return saida;
 }
@@ -2572,7 +2569,7 @@ function botaoDeParadas(aoMudar) {
   botao.append(el('i', 'paradas-seta', paradasAbertas ? '⌃' : '⌄'));
   tipTexto(
     botao,
-    'Condições para a caçada encerrar sozinha: capacidade, ouro, stamina ou mortes.'
+    'Condições para a caçada encerrar sozinha: capacidade, ouro ou mortes.'
   );
   botao.onclick = () => {
     paradasAbertas = !paradasAbertas;

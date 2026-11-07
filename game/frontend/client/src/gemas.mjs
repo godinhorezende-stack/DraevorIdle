@@ -414,7 +414,8 @@ function renderCatalogo(body) {
   }
   const minha = ctx.state.character?.classePoe?.slug ?? null;
   const noJogo = new Set(origem.noJogo ?? []);
-  const itens = Object.values(ctx.state.items ?? {}).filter((i) => i?.gemaDef && i?.poeGema);
+  // (07/11: sem as habilidades que só um único concede — `poeGema.soDoItem`)
+  const itens = Object.values(ctx.state.items ?? {}).filter((i) => i?.gemaDef && i?.poeGema && !i.poeGema.soDoItem);
   const linhas = itens.map((meta) => {
     const o = origem.gemas?.[meta.id] ?? null;
     return { meta, nome: meta.gemaDef.nomePt ?? meta.gemaDef.nome ?? meta.name, en: meta.gemaDef.poe?.en ?? meta.poeGema.slug?.replace(/_/g, ' '), suporte: meta.gemaDef.tipo === 'support', cor: meta.poeGema.cor ?? o?.cor ?? null, origens: o?.origens ?? [] };

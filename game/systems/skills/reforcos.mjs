@@ -123,6 +123,10 @@ export function amaldicoar(bicho, id, efeitosPoe, { agora = Date.now(), dur = 60
   for (const e of efeitosPoe ?? []) {
     if (e.efeito === 'marcaVulneravel') efeitos.push({ tipo: 'vulneravel', pct: e.pct, tipos: e.tipos, ...(e.res ? { res: true } : {}) });
     if (e.efeito === 'marcaEnfraquece') efeitos.push({ tipo: 'enfraquecido', pct: e.pct, ...(e.pctRaro != null ? { pctRaro: e.pctRaro } : {}) });
+    // (07/11, lote 26 das inertes) + os do lote G-A/G-C (`gac:<tipo>` — os Grilhões Temporais, o Castigo…), como no `marcarCom`: sem eles, a maldição
+    // da peça (a Resposta de Sentari) não pegava
+    const gac = GemasGAC.efeitoNoBicho(e);
+    if (gac) efeitos.push(gac);
   }
   if (!efeitos.length) return false;
   const maldicoes = (bicho.maldicoes ??= {});

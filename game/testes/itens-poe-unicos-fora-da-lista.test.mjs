@@ -44,8 +44,12 @@ const peca = (slug) => {
 const tr = (modelo, valores = []) => T.traduzirMod({ modelo, valores });
 
 test('os 10 estão no jogo, na classe da base, com as linhas do poedb (e o "Limitado a: 1" das joias)', { skip: SEM }, () => {
-  const CLASSE = { Replica_Soul_Taker: 'One_Hand_Axes', Replica_Forbidden_Shako: 'Helmets' };
-  assert.equal(Object.keys(FORA).length, 10);
+  // (aval do dono 06/11: +6, os únicos base do Emissário — as Partes os formam)
+  const CLASSE = {
+    Replica_Soul_Taker: 'One_Hand_Axes', Replica_Forbidden_Shako: 'Helmets', The_Rippling_Thoughts: 'One_Hand_Swords', The_Unshattered_Will: 'Shields',
+    The_Enmity_Divine: 'Staves', The_Flow_Untethered: 'Belts', The_Fracturing_Spinner: 'Quivers', The_Tempests_Binding: 'Helmets',
+  };
+  assert.equal(Object.keys(FORA).length, 16);
   for (const [slug, p] of Object.entries(FORA)) {
     const j = doJogo(slug);
     assert.ok(j?.base, `${slug}: no jogo, com a base`);
@@ -71,7 +75,12 @@ test('a peça gerada: toda linha com efeito, lembrete ou inerte com a nota (nenh
     });
   }
   // (o que fica inerte: as 2 de "Suportadas por" do Shako Proibido — como as do Shako Proibido de sempre — e a linha de pesca do Combatente)
-  assert.deepEqual([...new Set(inertes)].sort(), ['Child_of_Violence', 'Replica_Forbidden_Shako']);
+  // (aval do dono 06/11: e os 5 base do Emissário com "Convocar Emissário …", gema que o jogo não tem — o das Direções vale)
+  // (06/11, lote 6 das inertes — dono: "Continue resolvendo até dar zero nos itens": os Emissários passaram a valer; nos Pensamentos Agitados fica a
+  // "Ativa Cascata da Tempestade", gema que o jogo não tem)
+  // (aval do dono 07/11, lote 14 das inertes: a Cascata da Tempestade entrou no lote 13a como gema oculta — os Pensamentos Agitados saem da lista)
+  // (aval do dono 07/11, lote 19: os suportes pelo número do Réplica: Shako Proibido valem, aproximados — ele sai da lista)
+  assert.deepEqual([...new Set(inertes)].sort(), ['Child_of_Violence']);
 });
 
 test('as linhas novas da tradução: o Dano Físico que Congela, o "Não Pode Drenar ou Regenerar Mana" e a Velocidade enquanto Resfriado', { skip: SEM }, () => {

@@ -363,6 +363,8 @@ export function subirDeLevel(estado) {
   refazerMaximos(estado, novo);
 }
 
+/** (07/11, lote 22) o Pergaminho da Sabedoria do PoE (o id de item da moeda — `gamedata/itens-poe/moedas-poe-ids.json`). */
+const PERGAMINHO_DA_SABEDORIA = 915154;
 export function quantasMoedas(bicho, id, estado = null) {
   if (id !== 3031) return 1;
   const media = Math.max(1, bicho.expDasMoedas ?? bicho.exp ?? 10);
@@ -1057,6 +1059,9 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // No PoE: o Joalheiro, a Fusão e o Cromático (`itens-poe/regras.json` → `sockets.orbes`).
   for (const orbe of GemasDeSkill.sortearOrbesDoPoe({ ato: Number(contextoDoDrop(hunt).ato) || 1, fatorDeChance: BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) })) darExtra(orbe);
   soltarDrops({ estado, hunt, personagem, alvo, drops: [...alvo.loot, ...Gemas.dropDoBicho(BESTIARY[alvo.key])], eventos, juntos, sala, caiu, conta, deOutros, podio });
+  // (07/11, lote 22 das inertes, o Sinete de Perandus: "X% de chance de monstros Mortos derrubarem um Pergaminho da Sabedoria adicional")
+  const chanceDoPergaminho = itensPoeLigado() ? ModsPoe.valor(Ficha.combate(estado), 'pergaminho_extra_chance') : 0;
+  if (chanceDoPergaminho > 0 && Math.random() * 100 < chanceDoPergaminho) darExtra({ id: PERGAMINHO_DA_SABEDORIA });
   // Sistema de itens do PoE (Fase 1, só com ITENS_POE=1): quantas peças pela raridade do bicho × os modificadores de quantidade do loot
   // do Draevor (Buff Power, afixo Loot, prey, pódio, Caça Online — sem o lootMult, que já é a raridade do bicho); números em `itens-poe/regras.json`.
   // (No MAPA do endgame: × a Quantidade de Itens dele, e a Raridade de Itens dele soma na sua — como no PoE.)
@@ -1115,8 +1120,9 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   }
   // (05/11, etapa 4) O CÓRTEX (abre o Venarius) e as MEMÓRIAS (o mapa final da linha → o Eco → a Encarnação): do chefe de mapa T14+, para quem
   // matou (`pinaculos-acesso.mjs → sortearDoAtlas`). Vão como a moeda (só a lista "Não coletar" os deixa no chão).
+  // (06/11) e as PARTES e os PERGAMINHOS do Emissário e o DUCADO DE UKATOA, do chefe de qualquer mapa (`moedas.mjs → dropDoChefeDeMapa`)
   if (noMapa && alvo.chefeDoMapa) {
-    for (const id of PinaculosAcesso.sortearDoAtlas(noMapa.tier)) {
+    for (const id of [...PinaculosAcesso.sortearDoAtlas(noMapa.tier), ...MoedasPoe.dropDoChefeDeMapa()]) {
       if (Bolsa.ignora(estado, id)) conta('ignorado', id, 1);
       else if (Bolsa.porNaBolsa(estado, id, 1)) {
         caiu.push({ id, count: 1 });
@@ -1325,7 +1331,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // (`combate/controle.mjs`), mesmo que o Energy Shield engula o dano; a resistência a controle dele encurta o efeito.
   if (bruto > 0) {
     // (PoE: o golpe corpo a corpo sem dano de outro tipo é "apenas Dano Físico" — `imune_atordoamento_so_fisico`.)
-    const controle = Controle.tentar(hunt, bicho, ficha, hunt.clock ?? 0, Math.random, { soFisico: !AtributosDoMob.danoExtraDoGolpe(bicho).length, estado, semAfeccaoElemental: Vinculos.noFeixe(hunt, bicho) });
+    // (07/11, lote 24 das inertes, a Marca do Ancião: "Não pode sofrer atordoamento por ataques…" — `imune_atordoamento_ataque`)
+    const controle = Controle.tentar(hunt, bicho, ficha, hunt.clock ?? 0, Math.random, { soFisico: !AtributosDoMob.danoExtraDoGolpe(bicho).length, estado, semAfeccaoElemental: Vinculos.noFeixe(hunt, bicho), semAtordoamento: ModsPoe.valor(ficha, 'imune_atordoamento_ataque') > 0 });
     // (lote G-B) a Armadura Ártica: quem acerta você fica Resfriado
     GemasGBD.resfriarQuemAcerta(hunt, bicho, hunt.clock ?? 0);
     if (controle) eventos.push({ t: 'estado', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, estado: controle, de: bicho.name });
@@ -1346,7 +1353,7 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // PoE 1 (dono, 10/10): a armadura e a redução física adicional SOMAM, no teto de 90% (`ModsPoe.acertoFisicoRecebido`, que já traz a
   // armadura, calculada sobre o golpe físico bruto); fora do PoE, a proteção corta antes e a armadura depois (`R.danoRecebido`, abaixo).
   const somaFisica = ModsPoe.somaFisicaDoPoe();
-  const fixoFisico = ModsPoe.fixoRecebido(ficha, 'physical', { ataque: true });
+  const fixoFisico = ModsPoe.fixoRecebido(ficha, 'physical', { ataque: true, de: bicho });
   const protegido = somaFisica
     ? Math.max(0, Math.round(ModsPoe.acertoFisicoRecebido(ficha, brutoFisico, armorDoPersonagem(estado), { fixo: fixoFisico })))
     : Math.max(0, Math.round(brutoFisico * (itensPoeLigado() ? ModsPoe.fatorDaResistenciaRecebida(ficha, 'physical') : 1 - Math.min(100, ficha.protection.physical ?? 0) / 100) + fixoFisico));
@@ -1403,6 +1410,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // (02/11, dono: a SALVAGUARDA como o PoE) o acerto sai primeiro da Salvaguarda — antes da Égide, do Escudo Gélido, da Guarda, do Vínculo e do Escudo de Energia —;
   // na quebra, o Conjurar ao Perder Salvaguarda e o evento `salvaguardaQuebra` (`personagem/salvaguarda.mjs`). As partes de cada tipo (a Égide, o Físico que ignora o
   // Escudo, o Caos que o atravessa) seguem na proporção do que sobrou dela.
+  // (07/11, lote 17 das inertes, a Elegia Partida) o Paredão Podre leva o ataque antes de tudo e se quebra (`ModsPoe.absorverNoParedao`)
+  if (final > 0 && hunt.poeParedao) final = ModsPoe.absorverNoParedao(hunt, final, eventos, { uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: bicho.name, golpe: 'corpo a corpo' });
   if (final > 0) final = Salvaguarda.absorver(estado, hunt, ficha, final, eventos, { uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: bicho.name, golpe: 'corpo a corpo' }, personagem);
   const fatorDaSalvaguarda = danoDoAcerto > 0 ? final / danoDoAcerto : 1;
   // (14/10, as Égides — a Primitiva do Elementalist e as dos únicos: a parte de cada tipo do acerto sai da Égide dele antes do Escudo e da

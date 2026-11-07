@@ -299,6 +299,15 @@ function rolarAtributos(atributos, rng) {
  * Devolve `{ base, classe, raridade, ilvl, nome, atributos, implicitos, prefixos, sufixos, unico? }` (cada mod:
  * `{ familia, tier, nome, ilvl, texto, valores }`) ou `{ erro }`.
  */
+/**
+ * (06/11) Os únicos do EMISSÁRIO (Harbinger) não caem: o base sai das Partes juntas e o aprimorado, do base com o Pergaminho (`moedas.mjs`),
+ * como no PoE. Ficam fora do sorteio do Único (o drop, a Chance, o Ancestral); pelo slug, saem.
+ */
+export const UNICOS_SO_DA_CADEIA = new Set([
+  'The_Rippling_Thoughts', 'The_Surging_Thoughts', 'The_Unshattered_Will', 'The_Immortal_Will', 'The_Enmity_Divine', 'The_Yielding_Mortality',
+  'The_Flow_Untethered', 'The_Torrents_Reclamation', 'The_Fracturing_Spinner', 'The_Shattered_Divinity', 'The_Tempests_Binding', 'The_Tempests_Liberation',
+]);
+export const caiNoSorteio = (u) => !UNICOS_SO_DA_CADEIA.has(u?.slug);
 export function gerarPeca({ catalogo, regras, base: idDaBase, raridade, ilvl, rng = Math.random, unico = null }) {
   const achado = acharBase(catalogo, idDaBase);
   if (!achado) return { erro: `base desconhecida: ${idDaBase}` };
@@ -317,7 +326,9 @@ export function gerarPeca({ catalogo, regras, base: idDaBase, raridade, ilvl, rn
   if (R.fixos) {
     const lista = classe.unicos.filter((u) => u.base === base.nome);
     // (lote 79: o cadastro do único também — a variante certa entre as de mesmo slug, como as 4 da Vozes)
-    const u = unico && typeof unico === 'object' ? unico : unico ? lista.find((x) => x.slug === unico) : lista[Math.floor(rng() * lista.length)];
+    // (06/11: o sorteio deixa de fora os que não caem — os do Emissário; pelo slug, saem)
+    const caem = lista.filter(caiNoSorteio);
+    const u = unico && typeof unico === 'object' ? unico : unico ? lista.find((x) => x.slug === unico) : caem[Math.floor(rng() * caem.length)];
     if (!u) return { erro: `nenhum único com a base ${base.nome}` };
     // O implícito do ÚNICO é o da página dele (poedb: a linha `implicitMod`), e não o da base SOMADO a ele: com os dois, a Vergôntea dava
     // Dano Mágico 8–12% duas vezes (achado da auditoria dos únicos, 11/10). Único sem implícito próprio fica com o da base.

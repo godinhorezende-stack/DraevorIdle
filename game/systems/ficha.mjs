@@ -130,13 +130,17 @@ export const fichaGuardada = (estado) => (estado ? CACHE.get(estado) ?? null : n
 // eslint-disable-next-line no-var
 var laminaNaFicha;
 export function definirLaminaNaFicha(fn) { laminaNaFicha = fn; }
+/** (07/11, lote 17 das inertes, o Dervixe Dançante: "desativa ambos espaços de arma") o estado SEM as armas enquanto os Dervixes vivem (`acoes.mjs` registra), ou null. */
+// eslint-disable-next-line no-var
+var desarmadoNaFicha;
+export function definirDesarmadoNaFicha(fn) { desarmadoNaFicha = fn; }
 export function combate(estado) {
   const guardada = CACHE.get(estado);
   if (guardada) return guardada;
   // (lote A2: com a Lâmina de Energia, a ficha é a da arma virtual — a velocidade e o crítico da base, sem os mods da espada —, e o Raio do golpe
   // entra como o dano adicionado aos ataques, pelo ES da própria ficha: uma passada para o ES, outra com o Raio)
   const lamina = itensPoeLigado() ? laminaNaFicha?.(estado) ?? null : null;
-  const daFicha = lamina?.estado ?? estado;
+  const daFicha = lamina?.estado ?? (itensPoeLigado() ? desarmadoNaFicha?.(estado) : null) ?? estado;
   let doRaio = null;
   if (lamina) {
     const [min, max] = lamina.raio(calcularCombate(daFicha).energyShield ?? 0);
@@ -1330,15 +1334,19 @@ ModsPoeEfeitos.definirCargas((e, oque, tipo, n = 1) => {
   const regras = combate(e).cargas ?? {};
   if (oque === 'ganhar') CargasPoe.ganhar(e, tipo, regras, n);
   else if (oque === 'max') CargasPoe.ganhar(e, tipo, regras, CargasPoe.maximo(regras, tipo));
-  else if (oque === 'perder' && e.hunt?.cargasPoe?.[tipo]) delete e.hunt.cargasPoe[tipo];
+  // (06/11, lote 8: perder pelas cargas — o "ao perder uma Carga" sai, uma vez por carga perdida nas Espirituais)
+  else if (oque === 'perder' && e.hunt?.cargasPoe?.[tipo]) CargasPoe.gastar(e, tipo, Infinity);
+  // (07/11, lote 15: gastar N — a Explosão Espiritual e o Tiro do Vazio consomem uma)
+  else if (oque === 'gastar' && e.hunt?.cargasPoe?.[tipo]) CargasPoe.gastar(e, tipo, n);
   invalidar(e);
 });
 
 // As cargas no máximo / perdidas: os eventos dos únicos ("ao atingir o Máximo de Cargas de Poder", "ao perder uma Carga de Tolerância").
-CargasPoe.definirAoMudar((e, tipo, oque) => {
-  const nome = oque === 'max' ? { poder: 'maxPoder', frenesi: 'maxFrenesi', tolerancia: 'maxTolerancia' }[tipo] : tipo === 'tolerancia' ? 'perderTolerancia' : tipo === 'poder' ? 'perderPoder' : null;
+CargasPoe.definirAoMudar((e, tipo, oque, quantas = 1) => {
+  // (06/11, lote 8: + as Divinas no máximo — a Divindade das Vestes do Efêmero — e as Espirituais perdidas — o Negador Vigoroso)
+  const nome = oque === 'max' ? { poder: 'maxPoder', frenesi: 'maxFrenesi', tolerancia: 'maxTolerancia', divina: 'maxDivina' }[tipo] : tipo === 'tolerancia' ? 'perderTolerancia' : tipo === 'poder' ? 'perderPoder' : tipo === 'espiritual' ? 'perderEspiritual' : null;
   if (oque === 'perdeu' && tipo === 'poder' && e.hunt) (e.hunt.poeRecente ??= {}).perdeuPoder = e.hunt.clock ?? 0;
-  if (nome && e.hunt) ModsPoeEfeitos.evento(e, e.hunt, nome, combate(e), {});
+  if (nome && e.hunt) for (let k = 0; k < (tipo === 'espiritual' && oque === 'perdeu' ? Math.min(20, quantas ?? 1) : 1); k++) ModsPoeEfeitos.evento(e, e.hunt, nome, combate(e), {});
 });
 
 // Os frascos do PoE leem os mods do personagem que mexem neles (cinto: recuperação, duração, efeito, cargas) pela ficha.

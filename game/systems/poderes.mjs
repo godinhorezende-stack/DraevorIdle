@@ -337,6 +337,8 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
     ModsPoe.evento(estado, hunt, 'bloquear', ficha, { alvo: bicho, eventos, personagem });
     // ("ao Bloquear o Dano de Ataques" / "ao Bloquear Dano Mágico": o evento de cada tipo de bloqueio.)
     ModsPoe.evento(estado, hunt, ataqueDoPoe ? 'bloquearAtaque' : 'bloquearMagia', ficha, { alvo: bicho, eventos, personagem });
+    // (07/11, lote 26) "quando você Bloquear seu Dano de Ataques com Projéteis" (a Resposta de Sentari): o projétil de ataque bloqueado
+    if (projetil && (ataqueDoPoe || projetilDeAtaque)) ModsPoe.evento(estado, hunt, 'bloquearProjetil', ficha, { alvo: bicho, eventos, personagem });
     // (o dono, 25/10) o Escudo Tempestuoso: o raio no atacante bloqueado (o gancho da caçada — `definirAoBloquearMagia`)
     if (!ataqueDoPoe) aoBloquearMagia?.({ estado, hunt, personagem, bicho, eventos, agora });
   }
@@ -429,7 +431,7 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   }
   // A magia ACERTOU (passou da esquiva e do bloqueio): boss e elite podem CONGELAR, ATORDOAR ou fazer LENTIDÃO no jogador (`combate/controle.mjs`).
   if (a.min > 0 || a.max > 0) {
-    const controle = Controle.tentar(hunt, bicho, ficha, hunt.clock ?? 0, Math.random, { semAfeccaoElemental: semElementais, soFisico: a.elemento === 'physical' && !conversoes.length, estado, semAtordoamento: suprimiu && ModsPoe.valor(ficha, 'suprimido_sem_atordoamento') > 0 });
+    const controle = Controle.tentar(hunt, bicho, ficha, hunt.clock ?? 0, Math.random, { semAfeccaoElemental: semElementais, soFisico: a.elemento === 'physical' && !conversoes.length, estado, semAtordoamento: (suprimiu && ModsPoe.valor(ficha, 'suprimido_sem_atordoamento') > 0) || ModsPoe.valor(ficha, ataqueDoPoe || projetilDeAtaque ? 'imune_atordoamento_ataque' : 'imune_atordoamento_magia') > 0 });
     // (lote G-B) a Armadura Ártica: quem acerta você fica Resfriado
     GemasGBD.resfriarQuemAcerta(hunt, bicho, agora);
     if (controle) eventos.push({ t: 'estado', uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, estado: controle, de: bicho.name });
@@ -445,7 +447,7 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   const deAtaque = { ataque: projetil || ataqueDoPoe, magia: !projetil && !ataqueDoPoe };
   // (lote E1b, 26/10: + o Estandarte Desafiador — "−X de Dano sofrido de cada Tipo de Dano dos Acertos Suprimidos": na magia suprimida, por tipo, somado aos outros fixos)
   const fixoSuprimido = suprimiu ? ModsPoe.valor(ficha, 'suprimido_fixo') : 0;
-  const fixosDoGolpe = Object.entries(partes).reduce((n, [el, v]) => n + Math.max(-Math.max(0, v), ModsPoe.fixoRecebido(ficha, el, deAtaque) + fixoSuprimido), 0);
+  const fixosDoGolpe = Object.entries(partes).reduce((n, [el, v]) => n + Math.max(-Math.max(0, v), ModsPoe.fixoRecebido(ficha, el, { ...deAtaque, de: bicho }) + fixoSuprimido), 0);
   // (lote 30, P029: + "Sofre X% menos Dano de Acertos" — a magia do monstro é um acerto)
   // (lote 32, P031: o projétil do bicho é um ATAQUE — "X% menos/mais Dano de Ataque sofrido" (o Dançarino do Vento), como no golpe corpo a corpo)
   const doAtaque = projetil || ataqueDoPoe ? Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100) : 1;
@@ -513,6 +515,17 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // (lote G-B — D7) a magia com dano no gelo da Armadura Ártica Vaal conta; no terceiro acerto, o gelo quebra
   // (revisão G: todo acerto com dano conta — o de antes das absorções; o que o Chamado Imortal impediu, não)
   if (danoDoAcerto > 0 && GemasGBD.contarAcertoNoGelo(hunt, agora)) GemasGBD.quebrarGelo(hunt, agora);
+  // (07/11, lote 20 das inertes, a Visão de Lioneye: "Projéteis Inimigos Perfuram você") o projétil do monstro segue e acerta o seu lacaio mais perto atrás de você (a até 2 casas
+  // de você, mais longe do monstro), com o dano do acerto
+  if (projetil && danoDoAcerto > 0 && ModsPoe.valor(ficha, 'projeteis_perfuram_voce') > 0) {
+    const d = (p, q) => Math.max(Math.abs(p.x - q.x), Math.abs(p.y - q.y));
+    const atras = (hunt.lacaios ?? []).filter((l) => l.hp > 0 && !l.intocavel && d(l, alvo) <= 2 && d(l, bicho) > d(alvo, bicho)).sort((x, y) => d(x, alvo) - d(y, alvo))[0];
+    if (atras) {
+      const v = Math.max(1, Math.round(danoDoAcerto));
+      atras.hp -= v;
+      eventos.push({ t: 'dmg', uid: atras.uid, x: atras.x, y: atras.y, v, foe: false, de: bicho.name, golpe: 'Projétil' });
+    }
+  }
   if (aoAcertarJogador && bruto > 0) aoAcertarJogador(estado, hunt, personagem, bicho, { dano: danoDoAcerto, bruto: Object.values(brutas).reduce((t, x) => t + x, 0), partes, brutas, critico: critDoMob.critico, ataque: projetilDeAtaque || ataqueDoPoe, eventos });
   // (100% — combate, 02/11) a habilidade do monstro que EMPURRA (`a.empurra` — o Salto Impactante): o acerto leva você uma casa para longe dele; "Não Pode ser
   // Empurrado" impede (`Combate100.empurrarJogador`)

@@ -2780,6 +2780,195 @@
    ]
   },
   {
+   "classe": "One_Hand_Swords",
+   "slug": "The_Rippling_Thoughts",
+   "nome": "Pensamentos Agitados",
+   "base": "Espada da Legião",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "40% de aumento da Precisão Global",
+     "modelo": "{0}% de aumento da Precisão Global",
+     "faixas": [
+      [
+       40,
+       40
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Concede a Habilidade Convocar Emissário do Arcano",
+     "modelo": "Concede a Habilidade Convocar Emissário do Arcano",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Ativa Cascata da Tempestade nível 20 quando você Atacar",
+     "modelo": "Ativa Cascata da Tempestade nível {0} quando você Atacar",
+     "faixas": [
+      [
+       20,
+       20
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Dano Mágico aumentado em (75—90)%",
+     "modelo": "Dano Mágico aumentado em {0}%",
+     "faixas": [
+      [
+       75,
+       90
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Dano Físico aumentado em (140—160)%",
+     "modelo": "Dano Físico aumentado em {0}%",
+     "faixas": [
+      [
+       140,
+       160
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Adiciona 1 a (60—70) de Dano de Raio",
+     "modelo": "Adiciona {0} a {1} de Dano de Raio",
+     "faixas": [
+      [
+       1,
+       1
+      ],
+      [
+       60,
+       70
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Adiciona 1 a (60—70) de Dano de Raio a Magias",
+     "modelo": "Adiciona {0} a {1} de Dano de Raio a Magias",
+     "faixas": [
+      [
+       1,
+       1
+      ],
+      [
+       60,
+       70
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Área de Efeito aumentada em 10%",
+     "modelo": "Área de Efeito aumentada em {0}%",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "classe": "Staves",
+   "slug": "The_Enmity_Divine",
+   "nome": "Divina Inimizade",
+   "base": "Cajado Imperial",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "+25% de Chance de Bloquear Dano Mágico",
+     "modelo": "+{0}% de Chance de Bloquear Dano Mágico",
+     "faixas": [
+      [
+       25,
+       25
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Gemas Encaixadas são suportadas por Chance de Sangramento Nível 1",
+     "modelo": "Gemas Encaixadas são suportadas por Chance de Sangramento Nível {0}",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Concede a Habilidade Convocar Emissário da Brutalidade",
+     "modelo": "Concede a Habilidade Convocar Emissário da Brutalidade",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+5% de Chance de Bloquear o Dano de Ataques enquanto portando um Cajado",
+     "modelo": "+{0}% de Chance de Bloquear o Dano de Ataques enquanto portando um Cajado",
+     "faixas": [
+      [
+       5,
+       5
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(60—80)% de Multiplicador do Dano Degenerativo para Sangramento de Golpes Críticos",
+     "modelo": "+{0}% de Multiplicador do Dano Degenerativo para Sangramento de Golpes Críticos",
+     "faixas": [
+      [
+       60,
+       80
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Adiciona (225—265) a (315—385) de Dano Físico",
+     "modelo": "Adiciona {0} a {1} de Dano Físico",
+     "faixas": [
+      [
+       225,
+       265
+      ],
+      [
+       315,
+       385
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Chance de Crítico aumentada em (30—40)%",
+     "modelo": "Chance de Crítico aumentada em {0}%",
+     "faixas": [
+      [
+       30,
+       40
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Cajados de Guerra são considerados Cajados)",
+     "modelo": "(Cajados de Guerra são considerados Cajados)",
+     "faixas": []
+    }
+   ]
+  },
+  {
    "classe": "Helmets",
    "slug": "Replica_Forbidden_Shako",
    "nome": "Réplica: Shako Proibido",
@@ -2831,6 +3020,254 @@
      "texto": "(Atributos são Força, Destreza e Inteligência)",
      "modelo": "(Atributos são Força, Destreza e Inteligência)",
      "faixas": []
+    }
+   ]
+  },
+  {
+   "classe": "Shields",
+   "slug": "The_Unshattered_Will",
+   "nome": "Força Inabalada",
+   "base": "Escudo Triangular do Arconte",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "+12% de todas Resistências Elementais",
+     "modelo": "+{0}% de todas Resistências Elementais",
+     "faixas": [
+      [
+       12,
+       12
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Concede a Habilidade Convocar Emissário do Foco",
+     "modelo": "Concede a Habilidade Convocar Emissário do Foco",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(60—80) de Vida máxima",
+     "modelo": "+{0} de Vida máxima",
+     "faixas": [
+      [
+       60,
+       80
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(10—15)% de todas Resistências Elementais",
+     "modelo": "+{0}% de todas Resistências Elementais",
+     "faixas": [
+      [
+       10,
+       15
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(30—50) de Mana recebida ao Bloquear",
+     "modelo": "{0} de Mana recebida ao Bloquear",
+     "faixas": [
+      [
+       30,
+       50
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+5% de Chance de Bloqueio",
+     "modelo": "+{0}% de Chance de Bloqueio",
+     "faixas": [
+      [
+       5,
+       5
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Habilidades Canalizadoras causam Dano aumentado em (50—70)%",
+     "modelo": "Habilidades Canalizadoras causam Dano aumentado em {0}%",
+     "faixas": [
+      [
+       50,
+       70
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "classe": "Helmets",
+   "slug": "The_Tempests_Binding",
+   "nome": "Conexão da Tempestade",
+   "base": "Máscara Insensível",
+   "modificadores": [
+    {
+     "tipo": "explicit",
+     "texto": "Gemas Encaixadas são Suportadas por Mordida Congelante nível 18",
+     "modelo": "Gemas Encaixadas são Suportadas por Mordida Congelante nível {0}",
+     "faixas": [
+      [
+       18,
+       18
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Gemas Encaixadas são Suportadas por Inervação Nível 18",
+     "modelo": "Gemas Encaixadas são Suportadas por Inervação Nível {0}",
+     "faixas": [
+      [
+       18,
+       18
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Concede a Habilidade Convocar Emissário das Tormentas",
+     "modelo": "Concede a Habilidade Convocar Emissário das Tormentas",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(100—150) de Evasão",
+     "modelo": "+{0} de Evasão",
+     "faixas": [
+      [
+       100,
+       150
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(40—60) de Escudo de Energia máximo",
+     "modelo": "+{0} de Escudo de Energia máximo",
+     "faixas": [
+      [
+       40,
+       60
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(60—80) de Vida máxima",
+     "modelo": "+{0} de Vida máxima",
+     "faixas": [
+      [
+       60,
+       80
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(10—15)% de todas Resistências Elementais",
+     "modelo": "+{0}% de todas Resistências Elementais",
+     "faixas": [
+      [
+       10,
+       15
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "classe": "Hybrid_Flasks",
+   "slug": "Divination_Distillate",
+   "nome": "Divinação Destilada",
+   "base": "Frasco Híbrido Grande",
+   "modificadores": [
+    {
+     "tipo": "explicit",
+     "texto": "Raridade dos Itens encontrados aumentada em (30—50)% durante o Efeito",
+     "modelo": "Raridade dos Itens encontrados aumentada em {0}% durante o Efeito",
+     "faixas": [
+      [
+       30,
+       50
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Raio aumentado em 25% durante o Efeito",
+     "modelo": "Raio aumentado em {0}% durante o Efeito",
+     "faixas": [
+      [
+       25,
+       25
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+10% de Resistências Elementais durante o Efeito",
+     "modelo": "+{0}% de Resistências Elementais durante o Efeito",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "classe": "Hybrid_Flasks",
+   "slug": "The_Writhing_Jar",
+   "nome": "O Jarro Contorcido",
+   "base": "Frasco Híbrido Consagrado",
+   "modificadores": [
+    {
+     "tipo": "explicit",
+     "texto": "Cargas reduzidas em (10—20)% por uso",
+     "modelo": "Cargas reduzidas em {0}% por uso",
+     "faixas": [
+      [
+       10,
+       20
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Quantidade Recuperada reduzida em (65—75)%",
+     "modelo": "Quantidade Recuperada reduzida em {0}%",
+     "faixas": [
+      [
+       65,
+       75
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Recuperação Instantânea",
+     "modelo": "Recuperação Instantânea",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "2 Vermes Contorcidos Inimigos escapam do Frasco quando utilizado Vermes Contorcidos são destruídos quando Acertados",
+     "modelo": "{0} Vermes Contorcidos Inimigos escapam do Frasco quando utilizado Vermes Contorcidos são destruídos quando Acertados",
+     "faixas": [
+      [
+       2,
+       2
+      ]
+     ]
     }
    ]
   },
@@ -3125,6 +3562,167 @@
      "texto": "Adiciona Combatente",
      "modelo": "Adiciona Combatente",
      "faixas": []
+    }
+   ]
+  },
+  {
+   "classe": "Belts",
+   "slug": "The_Flow_Untethered",
+   "nome": "Fluxo Livre",
+   "base": "Cinto de Pano",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "Recuperação de Atordoamentos e Bloqueios aumentada em (15—25)%",
+     "modelo": "Recuperação de Atordoamentos e Bloqueios aumentada em {0}%",
+     "faixas": [
+      [
+       15,
+       25
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Concede a Habilidade Convocar Emissário do Tempo",
+     "modelo": "Concede a Habilidade Convocar Emissário do Tempo",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Velocidade de Recuperação de Escudo de Energia aumentada em (10—15)%",
+     "modelo": "Velocidade de Recuperação de Escudo de Energia aumentada em {0}%",
+     "faixas": [
+      [
+       10,
+       15
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Velocidade de Recuperação de Vida aumentada em (10—15)%",
+     "modelo": "Velocidade de Recuperação de Vida aumentada em {0}%",
+     "faixas": [
+      [
+       10,
+       15
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Velocidade de Ataque e Conjuração aumentada em (10—15)%",
+     "modelo": "Velocidade de Ataque e Conjuração aumentada em {0}%",
+     "faixas": [
+      [
+       10,
+       15
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Velocidade de Recarga aumentada em (15—20)%",
+     "modelo": "Velocidade de Recarga aumentada em {0}%",
+     "faixas": [
+      [
+       15,
+       20
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Debuffs em você expiram (15—20)% mais rápido",
+     "modelo": "Debuffs em você expiram {0}% mais rápido",
+     "faixas": [
+      [
+       15,
+       20
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "classe": "Quivers",
+   "slug": "The_Fracturing_Spinner",
+   "nome": "Rotação Fraturante",
+   "base": "Aljava de Flechas Cegas",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "Adiciona (7—9) a (13—16) de Dano Físico em Ataques",
+     "modelo": "Adiciona {0} a {1} de Dano Físico em Ataques",
+     "faixas": [
+      [
+       7,
+       9
+      ],
+      [
+       13,
+       16
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Concede a Habilidade Convocar Emissário das Direções",
+     "modelo": "Concede a Habilidade Convocar Emissário das Direções",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(30—50) de Força e Destreza",
+     "modelo": "+{0} de Força e Destreza",
+     "faixas": [
+      [
+       30,
+       50
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Adiciona (19—22) a (30—35) de Dano de Fogo a Magias e Ataques",
+     "modelo": "Adiciona {0} a {1} de Dano de Fogo a Magias e Ataques",
+     "faixas": [
+      [
+       19,
+       22
+      ],
+      [
+       30,
+       35
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Adiciona (19—22) a (30—35) de Dano de Gelo em Magias e Ataques",
+     "modelo": "Adiciona {0} a {1} de Dano de Gelo em Magias e Ataques",
+     "faixas": [
+      [
+       19,
+       22
+      ],
+      [
+       30,
+       35
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(15—25)% de Resistências a Fogo e Gelo",
+     "modelo": "+{0}% de Resistências a Fogo e Gelo",
+     "faixas": [
+      [
+       15,
+       25
+      ]
+     ]
     }
    ]
   }

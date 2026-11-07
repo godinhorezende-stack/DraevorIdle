@@ -40,8 +40,8 @@ export const POR_RODADA = 40;
 
 /*
  * Pelas colunas-índice (`caca-offline.mjs`), não pelo JSON: só quem ainda TEM o
- * que avançar (`ate > desde`). Quem acabou — morreu, a stamina zerou, bateu o
- * teto de 12 h — sai da fila sozinho; antes ficava no topo dela para sempre
+ * que avançar (`ate > desde`). Quem acabou — morreu, bateu o limite da caça offline (4 h free, 12 h VIP) —
+ * sai da fila sozinho; antes ficava no topo dela para sempre
  * (os "mais antigos"), e 40 desses travavam a rodada de todo mundo.
  */
 const consultaDosAusentes = banco.prepare(
@@ -98,7 +98,7 @@ export async function rodada(agora = Date.now()) {
       console.error('consolidação offline', linha.nome, '->', e.message);
     }
   }
-  // Quem acabou (stamina, teto) sai do número de online já nesta rodada.
+  // Quem acabou (o limite da caça offline) sai do número de online já nesta rodada.
   await Ausentes.atualizar(agora);
   return contagem;
 }
