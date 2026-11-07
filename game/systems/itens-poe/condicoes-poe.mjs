@@ -2468,7 +2468,7 @@ export const EVENTOS = new Set(['estilhacar', 'maxDivina', 'perderEspiritual', '
   'salvaguardaQuebra',
   // (02/11, as Atemporais) quando a Salvaguarda é Restaurada (`personagem/salvaguarda.restaurar` → `acoes.mjs`)
   'salvaguardaRestaurada']);
-export const ACOES = new Set(['loucuraMaligna', 'esporoInfestado', 'espiritoAtormentado', 'repetirTawhoa', 'modsDoRaro', 'contaComoBloqueio', 'maldicaoEncaixada', 'gatilhoGastando', 'almaVaal', 'explodirCadaveres', 'soloSeu', 'cargaAliados', 'vidaPctAliados', 'vinculadosImortais', 'furiaArcanaClamor', 'perderAlmas', 'transferirMarca', 'frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
+export const ACOES = new Set(['vidaAoLongo', 'vidaPctAoLongo', 'loucuraMaligna', 'esporoInfestado', 'espiritoAtormentado', 'repetirTawhoa', 'modsDoRaro', 'contaComoBloqueio', 'maldicaoEncaixada', 'gatilhoGastando', 'almaVaal', 'explodirCadaveres', 'soloSeu', 'cargaAliados', 'vidaPctAliados', 'vinculadosImortais', 'furiaArcanaClamor', 'perderAlmas', 'transferirMarca', 'frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
   'dano', 'danoPctVida', 'furia', 'frasco', 'recargaEs', 'explodir', 'gatilho', 'espalhar', 'roubarCargas', 'maldicao', 'soloSagrado', 'soloProfano', 'soloCongelado', 'fumaca', 'removerAfeccao', 'perdeVidaPct', 'perdeEsPct', 'perdeManaPct',
   // (11/10, os únicos)
   'perdeVida', 'esDaArmadura', 'vidaParaEs', 'degenEmVoce', 'statTemp', 'statTempPorMana', 'furiaPorMana', 'transferirMaldicoes', 'degenNoAlvo', 'danoPorMana', 'empurrarProximos',
@@ -2937,8 +2937,33 @@ export function tiqueDaDissolucao(estado, hunt, ficha, agora = hunt?.clock ?? 0)
 // eslint-disable-next-line no-var
 var tiqueDosAspectos;
 export function definirTiqueDosAspectos(fn) { tiqueDosAspectos = fn; }
+/**
+ * (08/11, as aproximadas dos únicos) A RECUPERAÇÃO AO LONGO DO TEMPO do PoE ("Regenera X de Vida por 1 segundo", "recuperado como escudo de energia" ao longo de 4 s):
+ * `total` de `campo` ('hp' | 'es') distribuído em `ms` a partir de `agora` — o tique (`recuperarAoLongoNoTique`) paga a parte de cada intervalo. Antes vinha tudo na hora.
+ */
+export function recuperarAoLongo(hunt, campo, total, ms, agora = hunt?.clock ?? 0) {
+  if (!hunt || !(total > 0) || !(ms > 0)) return;
+  (hunt.poeAoLongo ??= []).push({ campo, total, ms, desde: agora, pago: 0 });
+}
+function recuperarAoLongoNoTique(estado, hunt, ficha, agora) {
+  const lista = hunt.poeAoLongo;
+  if (!lista?.length) return;
+  const max = { hp: estado.maxHp ?? 0, es: Math.max(0, Math.round(ficha?.energyShield ?? 0)) };
+  for (const r of lista) {
+    const devido = r.total * Math.min(1, Math.max(0, agora - r.desde) / r.ms);
+    const parte = Math.floor(devido - r.pago);
+    if (parte <= 0) continue;
+    r.pago += parte;
+    // (o Pacto Vaal — "Não pode Recuperar Vida fora o Dreno": a vida não enche; e quem morreu não se cura)
+    if ((estado.hp ?? 0) <= 0 || (r.campo === 'hp' && vidaSoPeloDreno(ficha?.afPoe))) continue;
+    estado[r.campo] = Math.min(max[r.campo], (estado[r.campo] ?? 0) + parte);
+  }
+  hunt.poeAoLongo = lista.filter((r) => agora - r.desde < r.ms);
+  if (!hunt.poeAoLongo.length) delete hunt.poeAoLongo;
+}
 export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   if (!ligado() || !hunt) return;
+  recuperarAoLongoNoTique(estado, hunt, ficha, agora);
   hunt.poeEntrou ??= agora; // (lote F: "por segundo que você tenha ficado parado" conta desde a entrada, se ainda não andou)
   hunt.poeFatorDosDebuffs = fatorDosDebuffs(ficha?.afPoe); // (lote 30: para quem põe debuff sem a ficha — a maldição refletida)
   // (11/10) Um buff com tempo acabou neste tique (os nomeados — Crueldade, Elusivo, Fanatismo… — e a Oferenda em você): a ficha é refeita, e o

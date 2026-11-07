@@ -172,8 +172,9 @@ test('lote B: as frases viram os atributos', { skip: SEM }, () => {
     '{0}% de ativar Magias Encaixadas quando você Gastar ao menos {1} de Mana em um Custo Direto para Usar ou Ativar uma Habilidade, com {2} segundo de Recarga': ['gatilho_local:gastarMana:magia', 'gatilho_chance_local', 'gatilho_mana_min_local', 'gatilho_recarga_local'],
     'Ativa Chuva de Flexas Nível {0} quando Atacar com um Arco': ['ev:usarAtaque:gatilho:chuva-de-flechas@comArco'],
     'Ativa Marca do Assassino Nível {0} quando você Acertar um Inimigo Raro ou Único e não tiver Marca': ['ev:acertar:gatilho:marca-do-assassino@alvoRaro+semMarca', 'ev:acertar:gatilho:marca-do-assassino@alvoUnico+semMarca'],
-    '{0}% menos Dano Físico e de Caos sofrido enquanto São': ['dano_physical_recebido_mais', 'dano_chaos_recebido_mais'],
-    'Regenera {0}% de Vida por um segundo quando Acertado enquanto São': ['ev:serAcertado:vidaPct'],
+    // (aval do dono 08/11, aproximadas A2: "enquanto São" = sem o Insano do Perturbar; a vida vem ao longo de 1 s, como no PoE)
+    '{0}% menos Dano Físico e de Caos sofrido enquanto São': ['dano_physical_recebido_mais@semBuff:insano', 'dano_chaos_recebido_mais@semBuff:insano'],
+    'Regenera {0}% de Vida por um segundo quando Acertado enquanto São': ['ev:serAcertado:vidaPctAoLongo:1@semBuff:insano'],
   };
   for (const [texto, stats] of Object.entries(casos)) {
     const t = traduz(texto);

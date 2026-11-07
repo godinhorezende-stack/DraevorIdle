@@ -14,6 +14,66 @@
   ],
   "regras": [
     {
+      "padrao": "^(?:Você tem )?Golpe de Misericórdia contra Inimigos Amaldiçoados$",
+      "efeitos": [
+        {
+          "stat": "culling@alvoAmaldicoado",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11b": "08/11 — aproximadas, lote A2: correções e as janelas/recuperações do PoE",
+      "_nova": true
+    },
+    {
+      "padrao": "^(?:Você tem )?Golpe de Misericórdia contra Inimigos Incendiados$",
+      "efeitos": [
+        {
+          "stat": "culling@alvoIncendiado",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11b": "08/11 — aproximadas, lote A2: correções e as janelas/recuperações do PoE",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Dano Degenerativo se você tiver causado um Golpe Crítico nos últimos \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "dot_multi@nosUltimos:{V2}:critico",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11b": "08/11 — aproximadas, lote A2: correções e as janelas/recuperações do PoE",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Vida Regenerada por Segundo se você causou um Golpe Crítico nos últimos \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct@nosUltimos:{V2}:critico",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11b": "08/11 — aproximadas, lote A2: correções e as janelas/recuperações do PoE",
+      "_nova": true
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\} da Vida por \\{(\\d+)\\} segundos? quando você Conjurar uma Magia$",
+      "efeitos": [
+        {
+          "stat": "ev:usarMagia:vidaAoLongo:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11b": "08/11 — aproximadas, lote A2: correções e as janelas/recuperações do PoE",
+      "_nova": true
+    },
+    {
       "padrao": "^Acertos Inimigos infligem Grilhões Temporais em você$",
       "efeitos": [
         {
@@ -14097,7 +14157,8 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado"
+      "estado": "equivalente",
+      "_08_11b": "08/11 — aproximadas, lote A2: correções e as janelas/recuperações do PoE"
     },
     {
       "padrao": "^Ponto de Atordoamento Inimigo reduzido em \\{(\\d+)\\}% com esta Arma$",
@@ -14983,8 +15044,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "_nova": true
+      "estado": "equivalente",
+      "_nova": true,
+      "_08_11b": "08/11 — aproximadas, lote A2: correções e as janelas/recuperações do PoE"
     },
     {
       "padrao": "^Velocidade de Conjuração com Dupla Empunhadura aumentada em \\{(\\d+)\\}%$",
@@ -20673,31 +20735,31 @@
       "padrao": "^\\{(\\d+)\\}% menos Dano Físico e de Caos sofrido enquanto São$",
       "efeitos": [
         {
-          "stat": "dano_physical_recebido_mais",
+          "stat": "dano_physical_recebido_mais@semBuff:insano",
           "valor": "-{1}"
         },
         {
-          "stat": "dano_chaos_recebido_mais",
+          "stat": "dano_chaos_recebido_mais@semBuff:insano",
           "valor": "-{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "o Insano vem da habilidade Perturbar, que não está na coleção de gemas do jogo: você está sempre São.",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
+      "estado": "equivalente",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)",
+      "_08_11b": "08/11 — aproximadas A2: São = sem o Insano (o Perturbar existe desde o lote 13b)"
     },
     {
       "padrao": "^Regenera \\{(\\d+)\\}% de Vida por um segundo quando Acertado enquanto São$",
       "efeitos": [
         {
-          "stat": "ev:serAcertado:vidaPct",
+          "stat": "ev:serAcertado:vidaPctAoLongo:1@semBuff:insano",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "de uma vez (no PoE, ao longo de 1 segundo); o Insano vem da habilidade Perturbar, que não está na coleção de gemas do jogo: você está sempre São.",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
+      "estado": "equivalente",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)",
+      "_08_11b": "08/11 — aproximadas A2: ao longo de 1 s, e São = sem o Insano"
     },
     {
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo enquanto possuir Poder de Ave$",
@@ -42390,9 +42452,9 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "o escudo volta na hora (no PoE, ao longo de 4 s).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 7)"
+      "estado": "equivalente",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 7)",
+      "_08_11b": "08/11 — aproximadas, lote A2: correções e as janelas/recuperações do PoE"
     },
     {
       "padrao": "^Não pode ser Atordoado por Dano Mágico Suprimido$",
