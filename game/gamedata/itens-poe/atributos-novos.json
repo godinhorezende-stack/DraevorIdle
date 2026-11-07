@@ -9788,6 +9788,12 @@
       "combate": true,
       "nome": "Chance de Ativar a Rajada Vulcânica (%)",
       "efeito": "acoes.rajadaVulcanica (07/11, lote 16)"
+    },
+    "raio_escaldante_comprimento_inc": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Comprimento do Raio Escaldante aumentado (%)",
+      "efeito": "acoes.formaComComprimento (07/11, lote 18)"
     }
   }
 }

@@ -5,7 +5,7 @@ import * as QuemFeriu from '../hunt/quem-feriu.mjs';
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { definirTiqueDosAspectos, MOVENDO_MS, slugDoNome, ganharAlmaVaal, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, criarSoloCongelado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo, porExposicao, vinhasGanhas as vinhasGanhasDe, fatorDaResistenciaRecebida } from './condicoes-poe.mjs';
+import { definirTiqueDosAspectos, MOVENDO_MS, slugDoNome, ganharAlmaVaal, aoBloquear, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, criarSoloCongelado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo, porExposicao, vinhasGanhas as vinhasGanhasDe, fatorDaResistenciaRecebida } from './condicoes-poe.mjs';
 import * as Plantadas from './armas-plantadas.mjs';
 import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { eletrizarComPct, cegar as cegarVoce } from './monstros-no-jogador.mjs';
@@ -1624,6 +1624,18 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     }
     // `maldicao:<gema>:<nível>[:semLimite]` = a CHANCE (%) de amaldiçoar o alvo com a maldição da gema naquele nível ("ignorando o Limite de
     // Maldições" = `semLimite`).
+    // (07/11, lote 18 das inertes, o Sino do Monastério: "Conta como dano de ataque bloqueado do primeiro alvo atingido por cada ataque com escudo") uma vez por uso
+    // (o primeiro acertado), as reações ao Bloquear um Ataque: as do PoE "ao Bloquear", a marca do "Bloqueou Recentemente", a janela da Retaliação e os eventos
+    case 'contaComoBloqueio': {
+      if (!alvo || hunt.poeSinoEm === agora || !sorte(v)) return;
+      hunt.poeSinoEm = agora;
+      aoBloquear(hunt, alvo, ficha, { eventos });
+      marcar(hunt, 'bloqueou', agora);
+      abrirRetaliacao(hunt, 'bloquear', ficha.afPoe);
+      evento(estado, hunt, 'bloquear', ficha, { ...ctx, alvo, eventos });
+      evento(estado, hunt, 'bloquearAtaque', ficha, { ...ctx, alvo, eventos });
+      return;
+    }
     case 'maldicaoEncaixada': if (maldicaoEncaixada && alvo && alvo.hp > 0 && sorte(v)) maldicaoEncaixada(estado, hunt, alvo, `ev:${ev.evento}:maldicaoEncaixada`, agora); return;
     case 'maldicao': {
       const [gema0, nivel, semLimite] = String(ev.param).split(':');

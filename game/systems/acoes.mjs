@@ -4070,6 +4070,20 @@ export function aoConvocarTotem(estado, hunt, l, ficha, agora) {
 const direcional = (entry) => Areas.direcional(entry.forma);
 const casasDaForma = (entry, cx, cy, dir = null) => Areas.daForma(entry.forma, { x: cx, y: cy }, dir);
 /**
+ * (07/11, lote 18 das inertes) o COMPRIMENTO do Raio Escaldante (a Pira Funesta: "Comprimento do Raio Escaldante aumentado em X%"): a forma do feixe (3 fileiras à
+ * frente) ganha fileiras na ponta, da largura da última — a profundidade × (1 + X%), arredondada. As outras gemas, como estão.
+ */
+export function formaComComprimento(estado, entry) {
+  if (entry?.poeGema?.slug !== 'Scorching_Ray' || !entry.forma?.length || !itensPoeLigado()) return entry;
+  const inc = ModsPoe.valor(Ficha.combate(estado), 'raio_escaldante_comprimento_inc');
+  if (!(inc > 0)) return entry;
+  const prof = Math.max(...entry.forma.map(([, y]) => -y));
+  const ponta = entry.forma.filter(([, y]) => -y === prof).map(([x]) => x);
+  const extra = [];
+  for (let d = prof + 1; d <= Math.round(prof * (1 + inc / 100)); d++) for (const x of ponta) extra.push([x, -d]);
+  return extra.length ? { ...entry, forma: [...entry.forma, ...extra] } : entry;
+}
+/**
  * (17/10, lote G2 — a decisão do dono "Toda área em metros": 1 casa = 2 m) A FORMA da gema do PoE no RAIO DELA (`GemasPoe.areaNoNivel`: o raio-base
  * do PoE, os "+X metros de raio" e o "X% mais Área de Efeito" da gema, no nível e na qualidade): a forma da magia-molde (a onda, o losango, a
  * varredura) esticada ou encolhida até o raio em casas (os metros ÷ 2; a fração é a chance de uma casa a mais, como `ModsPoe.casasPelaArea`).
@@ -5753,8 +5767,10 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
       // alvo (a de mirar no chão), virada para ele (a direcional: o lado com mais bichos, começando pelo do alvo, como no seu uso) ou em volta do
       // totem; a de alvo único, no alvo (com a cadeia da gema).
       if (!(alvo?.hp > 0)) return { ok: true, eventos: [] };
+      // (07/11, lote 18 das inertes, a Pira Funesta: "Comprimento do Raio Escaldante aumentado em X%" — a forma do feixe ganha fileiras na ponta)
+      const entryF = formaComComprimento(estado, entry);
       if (entry.forma && centradoNoAlvo) {
-        casas = casasDaForma(entry, alvo.x, alvo.y);
+        casas = casasDaForma(entryF, alvo.x, alvo.y);
         formaNoUso = { x: alvo.x, y: alvo.y, dir: null };
       } else if (entry.forma) {
         // (o Totem Sísmico da Autoridade: "sacode a terra em volta de VOCÊ" — nova_spells_cast_at_target_location, act_str.lua:10211 —; os outros, em
@@ -5762,7 +5778,7 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
         const c = /_of_Authority$/.test(entry.poeGema.slug) && plantada.dono ? plantada.dono : { x, y };
         let melhor = null;
         for (const dir of direcional(entry) ? ordemDosLados(c, alvo) : [null]) {
-          const cs = casasDaForma(entry, c.x, c.y, dir);
+          const cs = casasDaForma(entryF, c.x, c.y, dir);
           const n = Areas.dentro(cs, vivos).length;
           if (!melhor || n > melhor.n) melhor = { dir, cs, n };
         }

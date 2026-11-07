@@ -14,6 +14,46 @@
   ],
   "regras": [
     {
+      "padrao": "^Magias encaixadas recebem reforço de Totem de Caranguejo nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "suporte_local:totem-de-magia",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Totem de Caranguejo do PoB (SupportCrabTotem) é o Totem de Magia com 50% menos Dano, 40% menos Velocidade de Conjuração e 8 s — os números do Totem de Magia no nível 1",
+      "_07_11g": "07/11 — lote 18 das inertes: as regras aproximadas (o comprimento do Raio Escaldante, o Totem de Caranguejo, o Sino do Monastério)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Conta como dano de ataque bloqueado do primeiro alvo atingido por cada ataque com escudo$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:contaComoBloqueio@ataqueDeEscudo",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o primeiro acertado de cada uso do ataque com escudo dispara as reações \"ao Bloquear\" do PoE (as linhas dos itens, o Bloqueou Recentemente, a Retaliação); as do jogo fora do PoE (a Onda Arcana, o Escudo Tempestuoso) não",
+      "_07_11g": "07/11 — lote 18 das inertes: as regras aproximadas (o comprimento do Raio Escaldante, o Totem de Caranguejo, o Sino do Monastério)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Comprimento do Raio Escaldante aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "raio_escaldante_comprimento_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o feixe do jogo é uma forma de 3 fileiras à frente: ganha fileiras na ponta, a profundidade × (1 + X%)",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11g": "07/11 — lote 18 das inertes: as regras aproximadas (o comprimento do Raio Escaldante, o Totem de Caranguejo, o Sino do Monastério)",
+      "_nova": true
+    },
+    {
       "padrao": "^\\{(\\d+)\\}% de chance de Ativar Explosão Vulcânica Nível \\{(\\d+)\\} ao Acertar Corpo a Corpo$",
       "efeitos": [
         {
@@ -50845,19 +50885,6 @@
       ],
       "estado": "lembrete",
       "nota": "continuação da linha de cima (o poedb quebrou a frase em duas)",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Comprimento do Raio Escaldante aumentado em \\{(\\d+)\\}%$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o comprimento do Raio Escaldante",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
       "_nova": true
     },
