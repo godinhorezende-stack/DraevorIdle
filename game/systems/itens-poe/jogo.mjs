@@ -231,14 +231,15 @@ function afDaBase(atributos, dosMods = {}) {
 // (revisão do lote da eficácia, 20/10 — dono: o Físico LOCAL da arma, como no PoE) o dano da arma = (a base + "Adiciona X a Y de Dano Físico" local) × (1 + o "Dano Físico
 // aumentado" local + a qualidade) — `phys_add_local_min/max` e `phys_dmg_local_arma`, separados por `separarFisicoLocal`; sem eles, a base × a qualidade, como antes
 function baseDaPeca(a, af, fq = 1) {
-  const mult = ([x, y]) => [Math.round(x * fq), Math.round(y * fq)];
   const local = Number(af.phys_dmg_local_arma) || 0;
   const daArma = ([x, y]) => { const m = Math.max(0, fq + local / 100); return [Math.round((x + (Number(af.phys_add_local_min) || 0)) * m), Math.round((y + (Number(af.phys_add_local_max) || 0)) * m)]; };
+  const defesa = (b, plano, pct) => { const v = Math.max(0, Math.round(((Number(b) || 0) + (Number(plano) || 0)) * Math.max(0, fq + (Number(pct) || 0) / 100))); return [v, v]; };
   return {
     ...(a.dano_fisico && typeof a.dano_fisico === 'object' ? { attack: af.arma_sem_fisico > 0 ? [0, 0] : daArma([a.dano_fisico.min, a.dano_fisico.max]) } : {}),
-    ...(a.armadura ? { armor: mult([a.armadura, a.armadura]) } : {}),
-    ...(a.evasao ? { evasion: mult([a.evasao, a.evasao]) } : {}),
-    ...(a.escudo_energia && !(Number(af.sem_es_da_base) > 0) ? { es: mult([a.escudo_energia, a.escudo_energia]) } : {}),
+    // (08/11) + as defesas LOCAIS da peça de armadura (`separarDefesasLocais`): (a base + o "+X") × (a qualidade + o "% aumentado")
+    ...(a.armadura || af.armor_local ? { armor: defesa(a.armadura, af.armor_local, af.armour_pct_local) } : {}),
+    ...(a.evasao || af.evasion_local ? { evasion: defesa(a.evasao, af.evasion_local, af.evasion_pct_local) } : {}),
+    ...((a.escudo_energia && !(Number(af.sem_es_da_base) > 0)) || af.es_local ? { es: defesa(Number(af.sem_es_da_base) > 0 ? 0 : a.escudo_energia, af.es_local, af.es_pct_local) } : {}),
     // (02/11, dono: a Salvaguarda como o PoE) a SALVAGUARDA da peça (as bases Rúnicas: `protecao`): (a base + o "+N de Proteção" LOCAL — Svalinn) × (1 + a qualidade +
     // o "Proteção aumentada em X%" LOCAL — os únicos Rúnicos; o poedb: "local ward +%") — a ficha soma (`ficha.defesasDaFicha`, `personagem/salvaguarda.mjs`)
     ...(Number(a.protecao) || Number(af.salvaguarda_local) ? { ward: ((v) => [v, v])(Math.round(((Number(a.protecao) || 0) + (Number(af.salvaguarda_local) || 0)) * Math.max(0, fq + (Number(af.salvaguarda_pct_local) || 0) / 100))) } : {}),
@@ -309,6 +310,38 @@ function separarLocaisDaArma(classe, t, af) {
   separarLocal(classe, t, af, PRECISAO_LOCAL, 'accuracy', 'accuracy_local');
   separarLocal(classe, t, af, VELOCIDADE_LOCAL, 'atk_speed', 'atk_speed_local');
   separarLocal(classe, t, af, CRITICO_LOCAL, 'crit_chance_inc', 'crit_chance_local');
+  separarDefesasLocais(classe, t, af);
+}
+/*
+ * (08/11, as aproximadas dos únicos — modo PoE segue o PoE) As DEFESAS LOCAIS da peça de armadura (o Peitoral, o Elmo, as Luvas, as Botas e o Escudo): no PoE, "+X de
+ * Armadura/Evasão/Escudo de Energia máximo" e "Armadura/Evasão/Escudo de Energia aumentado em X%" (e os híbridos) são LOCAIS — a defesa da peça = (a base + o "+X") × (1
+ * + o "% aumentado" + a qualidade), e só depois os aumentos globais (a árvore, os anéis…). Saem de `armor_flat`/`evasion`/`energy_shield` e `armour_pct`/`evasion_pct`/
+ * `es_pct` (globais) para os `_local`, que `baseDaPeca` põe na defesa da própria peça. O "Escudo de Energia MÁXIMO aumentado em X%" é global no PoE e fica; nas joias,
+ * anéis, amuletos, cintos e aljavas tudo segue global, como no PoE. Antes: tudo global (o "% aumentado" de uma peça valia na Armadura de todas).
+ */
+const DEFESA_PLANA_LOCAL = /^\+\{\d+\} de (?:Armadura|Evasão|Escudo de Energia máximo|Armadura e Evasão|Armadura e Escudo de Energia|Evasão e Escudo de Energia)$/;
+const DEFESA_PCT_LOCAL = /^(?:Armadura|Evasão|Escudo de Energia|Armadura e Evasão|Armadura e Escudo de Energia|Evasão e Escudo de Energia|Armadura, Evasão e Escudo de Energia) (?:aumentad|reduzid)[ao]s? em \{\d+\}%$/;
+const DEFESA_LOCAL = { armor_flat: 'armor_local', evasion: 'evasion_local', energy_shield: 'es_local', armour_pct: 'armour_pct_local', evasion_pct: 'evasion_pct_local', es_pct: 'es_pct_local' };
+const SLOTS_DE_ARMADURA = new Set(['body', 'head', 'gloves', 'feet']);
+const PIOR_ESTADO = ['lembrete', 'equivalente', 'aproximado', 'novo', 'inerte', 'registrado'];
+const pecaDeArmadura = (classe) => SLOTS_DE_ARMADURA.has(CLASSES_DO_JOGO[classe]?.slot) || classe === 'Shields';
+function separarDefesasLocais(classe, t, af) {
+  if (!pecaDeArmadura(classe)) return;
+  for (const l of t.linhas) {
+    const locais = l.partes.filter((p) => (DEFESA_PLANA_LOCAL.test(p.parte) || DEFESA_PCT_LOCAL.test(p.parte)) && p.efeitos.length && p.efeitos.every((e) => DEFESA_LOCAL[e.stat]));
+    for (const p of locais) {
+      for (const e of p.efeitos) {
+        const resto = Math.round(((af[e.stat] ?? 0) - e.valor) * 100) / 100;
+        if (resto) af[e.stat] = resto;
+        else delete af[e.stat];
+        af[DEFESA_LOCAL[e.stat]] = Math.round(((af[DEFESA_LOCAL[e.stat]] ?? 0) + e.valor) * 100) / 100;
+      }
+      p.estado = 'equivalente';
+      p.nota = null;
+    }
+    // (o estado da linha é o PIOR das partes, como em `traduzir.traduzirMod`)
+    if (locais.length) l.estado = l.partes.reduce((pior, x) => (PIOR_ESTADO.indexOf(x.estado) > PIOR_ESTADO.indexOf(pior) ? x.estado : pior), 'lembrete');
+  }
 }
 
 /**
@@ -534,7 +567,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // aljavas únicos, e as notas das linhas inertes nos frascos; `docs/unicos-sem-efeito.md`)
 // (86 — 06-07/11, as inertes dos Únicos (lotes 6 em diante): os Emissários, os Aspectos, as cargas de único, os aliados, a Fortificação, os solos, a reserva,
 // o Impelir, os cadáveres, as Posturas e as habilidades concedidas; o lembrete entre parênteses do Oni-Goroshi deixa de virar efeito)
-export const VERSAO_DA_TRADUCAO = 86;
+// (87 — 08/11, as aproximadas dos únicos: as DEFESAS LOCAIS da peça de armadura — "+X de Armadura/Evasão/Escudo de Energia máximo" e "Armadura/Evasão/Escudo de
+// Energia aumentado" do Peitoral, Elmo, Luvas, Botas e Escudo valem só na peça, como no PoE (`separarDefesasLocais`))
+export const VERSAO_DA_TRADUCAO = 87;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

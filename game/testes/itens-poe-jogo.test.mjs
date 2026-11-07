@@ -46,7 +46,13 @@ test('a peça do jogo: base (defesa sorteada / faixa de dano) + poe (raridade, m
   Jogo.iniciar(ITEM_CATALOG);
   const p = Jogo.pecaDoJogo(gerar('Body_Armours/Plate_Vest'));
   assert.equal(p.id, Jogo.idDaBase('Body_Armours/Plate_Vest'));
-  assert.ok(p.base.armor[0] >= 19 && p.base.armor[0] <= 27);
+  // (08/11, aval do dono: "Pode trocar") a defesa da peça de armadura é a do PoE: (a base + o "+X de Armadura" local) × (1 + o "% aumentada" local) — o "+X" e o "%"
+  // saem do global (`jogo.separarDefesasLocais`)
+  const af = p.poe.af;
+  assert.ok(p.poe.atributos.armadura >= 19 && p.poe.atributos.armadura <= 27, 'a base');
+  assert.equal(p.base.armor[0], Math.round((p.poe.atributos.armadura + (af.armor_local ?? 0)) * (1 + (af.armour_pct_local ?? 0) / 100)));
+  assert.equal(af.armor_flat ?? 0, 0, 'o "+X de Armadura" do peitoral não fica global');
+  assert.equal(af.armour_pct ?? 0, 0, 'nem o "% aumentada"');
   assert.equal(p.poe.raridade, 'raro');
   assert.ok(p.poe.prefixos.length + p.poe.sufixos.length >= 4);
   assert.equal(p.poe.estados.length, p.poe.implicitos.length + p.poe.prefixos.length + p.poe.sufixos.length);

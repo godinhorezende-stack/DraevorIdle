@@ -18834,8 +18834,8 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "local na peça no PoE; global no Draevor. Escala: o PoE vai a +500, a armadura de item do Draevor (T5) a +14."
+      "estado": "equivalente",
+      "_08_11a": "08/11 — as defesas planas: globais fora das peças de armadura (como no PoE); nas de armadura, locais (`jogo.separarDefesasLocais`)"
     },
     {
       "padrao": "^\\+\\{(\\d+)\\} de Evasão$",
@@ -18845,8 +18845,8 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "local na peça no PoE; global no Draevor."
+      "estado": "equivalente",
+      "_08_11a": "08/11 — as defesas planas: globais fora das peças de armadura (como no PoE); nas de armadura, locais (`jogo.separarDefesasLocais`)"
     },
     {
       "padrao": "^\\{(\\d+)\\} de Vida Regenerada por segundo$",
