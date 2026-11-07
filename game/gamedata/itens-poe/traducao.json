@@ -14,6 +14,19 @@
   ],
   "regras": [
     {
+      "padrao": "^Ativa Manifesto dos Dervixes Dançarinos Nível \\{(\\d+)\\} na Fúria$",
+      "efeitos": [
+        {
+          "stat": "dervixes_dancarinos",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "na Fúria saem 2 Dervixes (o PoB: nível 65, o golpe da sua arma com +110% de Dano de Ataque, 70% mais Dano e +25% de Velocidade de Ataque); você ganha Agressividade enquanto vivem; o Ciclone deles não é simulado",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
+      "_nova": true
+    },
+    {
       "padrao": "^Guerreiros e Soldados Esqueletos Convocados portam esta Arma enquanto ela estiver em sua Mão Principal$",
       "efeitos": [
         {
@@ -63,6 +76,76 @@
       ],
       "estado": "aproximado",
       "nota": "sem fonte para a duração e o acúmulo: vale o maior e dura até quebrar — o próximo ataque que te acerta sai dele primeiro; \"próximo\" = a até 3 casas",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ao abater um monstro raro, um lacaio conectado aleatório ganha seus modificadores por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:modsDoRaro:{V1}@alvoRaro",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem dado no PoB: o lacaio Vinculado sorteado ganha o Dano, a Velocidade de Ataque e a Vida que os modificadores do raro davam; as mecânicas próprias deles não",
+      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
+      "_nova": true
+    },
+    {
+      "padrao": "^Arma se você Acertou com esta Arma Recentemente$",
+      "efeitos": [
+        {
+          "stat": "esqueletos_triplo",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a segunda metade do \"Dano Triplicado\": com um acerto de ataque seu nos últimos 4 s",
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
+      "_nova": true
+    },
+    {
+      "padrao": "^O Dervixe Dançarino Manifestado desativa ambos espaços de arma$",
+      "efeitos": [
+        {
+          "stat": "dervixes_desarma",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
+      "_nova": true
+    },
+    {
+      "padrao": "^O Dervixe Dançarino Manifestado morre quando a Fúria termina$",
+      "efeitos": [
+        {
+          "stat": "dervixes_morrem_na_furia",
+          "valor": "1"
+        }
+      ],
+      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
+      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Escolhido de Tawhoa Nível \\{(\\d+)\\} quando você Atacar com uma Habilidade de Pancada ou Golpe Não Vaal$",
+      "efeitos": [
+        {
+          "stat": "ev:usarAtaque:repetirTawhoa@pancada",
+          "valor": "100"
+        },
+        {
+          "stat": "ev:usarAtaque:repetirTawhoa@golpe",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Chefe Ilusório usa o mesmo ataque uma vez, de graça, no mesmo alvo (recarga de 1 s); o \"mais Dano\" dele o PoB não tem (100%)",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
       "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
       "_nova": true
@@ -49396,19 +49479,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Ao abater um monstro raro, um lacaio conectado aleatório ganha seus modificadores por \\{(\\d+)\\} segundos$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "os lacaios do jogo não recebem modificadores de monstro",
-      "_06_11": "06/11 — lote 4 dos Únicos (elmos, escudos e botas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^Habilidades que arremessam Minas arremessam até \\{(\\d+)\\} Minas adicionais se você possuir ao menos \\{(\\d+)\\} de Destreza$",
       "efeitos": [
         {
@@ -50697,20 +50767,6 @@
       "_nova": true
     },
     {
-      "padrao": "^Arma se você Acertou com esta Arma Recentemente$",
-      "efeitos": [
-        {
-          "stat": "esqueletos_triplo",
-          "valor": "1"
-        }
-      ],
-      "estado": "aproximado",
-      "nota": "a segunda metade do \"Dano Triplicado\": com um acerto de ataque seu nos últimos 4 s",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_07_11h": "07/11 — lote 17 das inertes: os lacaios dos únicos pelo PoB",
-      "_nova": true
-    },
-    {
       "padrao": "^summon mirage warrior on crit \\[\\{(\\d+)\\}\\]$",
       "efeitos": [
         {
@@ -50965,32 +51021,6 @@
       "_nova": true
     },
     {
-      "padrao": "^O Dervixe Dançarino Manifestado desativa ambos espaços de arma$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Manifesto dos Dervixes Dançarinos",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^O Dervixe Dançarino Manifestado morre quando a Fúria termina$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Manifesto dos Dervixes Dançarinos",
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
       "padrao": "^Você possui Pacto Vaal enquanto todas as Gemas Encaixadas forem Vermelhas$",
       "efeitos": [
         {
@@ -51143,19 +51173,6 @@
           "valor": "{1}"
         }
       ],
-      "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
-      "_nova": true
-    },
-    {
-      "padrao": "^Ativa Escolhido de Tawhoa Nível \\{(\\d+)\\} quando você Atacar com uma Habilidade de Pancada ou Golpe Não Vaal$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo não tem o Escolhido de Tawhoa",
       "_06_11": "06/11 — lote 5 dos Únicos (anéis, amuletos, armas, aljavas, frascos e tinturas): a frase que não casava com nenhuma regra",
       "_nova": true
     },

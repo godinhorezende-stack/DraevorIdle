@@ -130,13 +130,17 @@ export const fichaGuardada = (estado) => (estado ? CACHE.get(estado) ?? null : n
 // eslint-disable-next-line no-var
 var laminaNaFicha;
 export function definirLaminaNaFicha(fn) { laminaNaFicha = fn; }
+/** (07/11, lote 17 das inertes, o Dervixe Dançante: "desativa ambos espaços de arma") o estado SEM as armas enquanto os Dervixes vivem (`acoes.mjs` registra), ou null. */
+// eslint-disable-next-line no-var
+var desarmadoNaFicha;
+export function definirDesarmadoNaFicha(fn) { desarmadoNaFicha = fn; }
 export function combate(estado) {
   const guardada = CACHE.get(estado);
   if (guardada) return guardada;
   // (lote A2: com a Lâmina de Energia, a ficha é a da arma virtual — a velocidade e o crítico da base, sem os mods da espada —, e o Raio do golpe
   // entra como o dano adicionado aos ataques, pelo ES da própria ficha: uma passada para o ES, outra com o Raio)
   const lamina = itensPoeLigado() ? laminaNaFicha?.(estado) ?? null : null;
-  const daFicha = lamina?.estado ?? estado;
+  const daFicha = lamina?.estado ?? (itensPoeLigado() ? desarmadoNaFicha?.(estado) : null) ?? estado;
   let doRaio = null;
   if (lamina) {
     const [min, max] = lamina.raio(calcularCombate(daFicha).energyShield ?? 0);

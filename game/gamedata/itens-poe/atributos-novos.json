@@ -9818,6 +9818,24 @@
       "combate": true,
       "nome": "Paredão Podre (% da vida do lacaio que morre perto)",
       "efeito": "acoes.elegiaPartida, mods-poe.absorverNoParedao (07/11, lote 17)"
+    },
+    "dervixes_dancarinos": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Manifesto dos Dervixes Dançarinos na Fúria (nível)",
+      "efeito": "acoes.dervixesDancantes (07/11, lote 17)"
+    },
+    "dervixes_desarma": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Os Dervixes desativam os espaços de arma",
+      "efeito": "acoes → Ficha.definirDesarmadoNaFicha (07/11, lote 17)"
+    },
+    "dervixes_morrem_na_furia": {
+      "unidade": "",
+      "combate": true,
+      "nome": "Os Dervixes morrem quando a Fúria termina",
+      "efeito": "acoes.dervixesDancantes (07/11, lote 17)"
     }
   }
 }

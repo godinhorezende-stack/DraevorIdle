@@ -23,6 +23,7 @@
 import * as QuemFeriu from './hunt/quem-feriu.mjs';
 import * as Mecanicas from './mobs/mecanicas.mjs';
 import * as Gemas from './skills/gemas.mjs';
+import { forcaDaCombinacao } from './mobs/raridade.mjs';
 import * as Tags from './skills/tags.mjs';
 import * as ModsPoe from './itens-poe/mods-poe.mjs';
 import { valor as valorPoe, slugDoNome, NO_ACERTO, RAIO_DA_PRESENCA } from './itens-poe/condicoes-poe.mjs';
@@ -1064,7 +1065,88 @@ export function tiqueDoGuardian(estado, hunt, agora = hunt?.ultimoTique ?? Date.
   }
   elegiaPartida(estado, hunt, af, agora);
   confusaoDeFerro(estado, hunt, agora);
+  dervixesDancantes(estado, hunt, af, agora);
+  modsDoRaroNosLacaios(hunt, agora);
 }
+/**
+ * (07/11, lote 17 das inertes — o PoB, ManifestDancingDervishes + UniqueAnimatedWeapon) O DERVIXE DANÇANTE: "Ativa Manifesto dos Dervixes Dançarinos Nível N na Fúria" —
+ * na Fúria (o Rampage: a partir da primeira faixa, 15 abates), sem Dervixe vivo, saem DOIS (o nível 65 do PoB; a vida da tabela × o multiplicador dele; o golpe é o da sua
+ * arma — "monster_gets_item_stats" —, com +110% de Dano de Ataque e 70% mais Dano, e 25% de Velocidade de Ataque); enquanto vivem, você tem Agressividade (o Onslaught
+ * do PoB) e, com "desativa ambos espaços de arma", fica desarmado (`Ficha.definirDesarmadoNaFicha`); com "morre quando a Fúria termina", somem no fim dela. O Ciclone
+ * deles e a chance de dar abates de Fúria não são simulados.
+ */
+const DERVIXE = Object.freeze({ nome: 'Dervixe Dançarino', quantos: 2, nivelPob: 65, danoAtaquePct: 110, danoMaisPct: 70, velAtaquePct: 25 });
+function dervixesDancantes(estado, hunt, afDaFicha, agora) {
+  // (as linhas são da arma — lidas da peça: com os Dervixes vivos, a ficha é a sua desarmada, sem elas)
+  const af = { ...afDaFicha, ...(estado.equipment?.weapon?.poe?.af ?? {}) };
+  const relogio = hunt.clock ?? 0;
+  const naFuria = !!hunt.rampage && hunt.rampage.ate > relogio && (hunt.rampage.n ?? 0) >= ModsPoe.RAMPAGE.faixas[0];
+  const vivos = (hunt.lacaios ?? []).filter((l) => l.dervixe && l.hp > 0);
+  if (vivos.length && !naFuria && Number(af.dervixes_morrem_na_furia) > 0) {
+    for (const l of vivos) l.hp = 0;
+    Ficha.invalidar(estado);
+    return;
+  }
+  if (vivos.length) { ModsPoe.ganharBuff(hunt, 'agressividade', 1, relogio); return; }
+  if (!(Number(af.dervixes_dancarinos) > 0) || !naFuria) return;
+  const arma = Ficha.armasEquipadas(estado).find((a) => a.slot === 'weapon');
+  for (let i = 0; i < DERVIXE.quantos; i++) {
+    const l = lacaioDoGuardian(estado, hunt, agora, af, DERVIXE.nome, 'physical', { dervixe: true, pob: 'UniqueAnimatedWeapon', nivelPob: DERVIXE.nivelPob });
+    if (arma) {
+      const f = (1 + (DERVIXE.danoAtaquePct + (Number(af.minion_dmg) || 0)) / 100) * (1 + DERVIXE.danoMaisPct / 100);
+      l.dano = { min: Math.max(1, Math.round(arma.min * f)), max: Math.max(1, Math.round(arma.max * f)) };
+      if (arma.intervaloMs > 0) l.intervaloMs = Math.round(arma.intervaloMs / (1 + DERVIXE.velAtaquePct / 100));
+    }
+    hunt.lacaios.push(l);
+  }
+  ModsPoe.ganharBuff(hunt, 'agressividade', 1, relogio);
+  Ficha.invalidar(estado);
+}
+// (o Dervixe: "desativa ambos espaços de arma" — enquanto um vive, a ficha é a sua sem as duas mãos)
+Ficha.definirDesarmadoNaFicha((estado) => {
+  const eq = estado?.equipment;
+  if (!(Number(eq?.weapon?.poe?.af?.dervixes_desarma) > 0) || !(estado.hunt?.lacaios ?? []).some((l) => l.dervixe && l.hp > 0)) return null;
+  return { ...estado, equipment: { ...eq, weapon: null, shield: null } };
+});
+/**
+ * (07/11, lote 17 das inertes — sem dado no PoB) O MONARCA SANTIFICADO: "Ao abater um monstro raro, um lacaio conectado aleatório ganha seus modificadores por N segundos" —
+ * o lacaio Vinculado sorteado (`ModsPoe` põe `poeDoRaro`) ganha o que os modificadores do raro davam a ele: o Dano, a Velocidade de Ataque e a Vida
+ * (`Raridade.forcaDaCombinacao`); as mecânicas próprias dos modificadores não. No fim, volta.
+ */
+function modsDoRaroNosLacaios(hunt, agora) {
+  const relogio = hunt.clock ?? 0;
+  for (const l of hunt.lacaios ?? []) {
+    const r = l.poeDoRaro;
+    if (!r) continue;
+    if (!(l.hp > 0) || r.ate <= relogio) {
+      if (r.aplicado) Object.assign(l, r.antes, { hp: l.hp > 0 ? Math.min(l.hp, r.antes.maxHp) : l.hp });
+      delete l.poeDoRaro;
+      continue;
+    }
+    if (r.aplicado) continue;
+    const f = forcaDaCombinacao(r.raridade, r.mods ?? []);
+    r.antes = { dano: { ...l.dano }, intervaloMs: l.intervaloMs, maxHp: l.maxHp };
+    const d = 1 + (f.danoPct ?? 0) / 100;
+    l.dano = { min: Math.round(l.dano.min * d), max: Math.round(l.dano.max * d) };
+    l.intervaloMs = Math.round(l.intervaloMs / (1 + (f.velocidadeDeAtaquePct ?? 0) / 100));
+    const vida = Math.round(l.maxHp * (1 + (f.vidaPct ?? 0) / 100));
+    l.hp += vida - l.maxHp;
+    l.maxHp = vida;
+    r.aplicado = true;
+  }
+}
+/**
+ * (07/11, lote 17 das inertes — o PoB, SummonMirageChieftain) o ESCOLHIDO DE TAWHOA: "Ativa Escolhido de Tawhoa Nível N quando você Atacar com uma Habilidade de Pancada ou
+ * Golpe Não Vaal" — o Chefe Ilusório usa aquele ataque uma vez (recarga de 1 s): o mesmo ataque sai de novo, de graça, no mesmo alvo. O "mais Dano" dele o PoB não tem.
+ */
+ModsPoe.definirRepeticaoDoTawhoa((estado, hunt, ctx) => {
+  const relogio = hunt.clock ?? 0;
+  if (!ctx?.acao || relogio < (hunt.poeTawhoaAte ?? 0)) return;
+  if (!(ctx.alvo?.hp > 0)) return;
+  hunt.poeTawhoaAte = relogio + 1000;
+  const r = dispararSemMarcar(estado, hunt, ctx.personagem, null, ctx.alvo, { gatilho: { acao: { id: ctx.acao, enabled: true, minMana: 0, minTargets: 1, conditions: [] }, semCusto: true, ignorarRecarga: true } });
+  if (r.ok) ctx.eventos?.push({ t: 'gatilho', quem: ctx.personagem?.nome, suporte: 'Escolhido de Tawhoa', skill: POR_ID.get(ctx.acao)?.name ?? '' }, ...(r.eventos ?? []));
+});
 /**
  * (07/11, lote 17 das inertes — o PoB, CalcSetup: theIronMass) A CONFUSÃO DE FERRO: "Guerreiros e Soldados Esqueletos Convocados portam esta Arma enquanto ela estiver em
  * sua Mão Principal" — o golpe dos Esqueletos (os do Convocar Esqueletos e os do Vaal) vira o da arma (o dano físico com os locais e o tempo de ataque dela, × a "Dano
@@ -9032,7 +9114,7 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
       const sofre = ModsPoe.valor(fichaDoUso, 'impelido_sofre_vida_pct');
       if (sofre > 0 && (estado.hp ?? 0) > 1) estado.hp = Math.max(1, estado.hp - Math.round(((estado.maxHp ?? 0) * sofre * impelem.length) / 100));
     }
-    const ctxDoUso = { alvo, eventos, personagem, tags: tagsPoe };
+    const ctxDoUso = { alvo, eventos, personagem, tags: tagsPoe, acao: entry.id };
     ModsPoe.evento(estado, hunt, 'usarHabilidade', fichaDoUso, ctxDoUso);
     ModsPoe.evento(estado, hunt, tagsPoe.includes('ataque') ? 'usarAtaque' : 'usarMagia', fichaDoUso, ctxDoUso);
     // (02/11, a Joia Atemporal: "Enquanto você tiver Salvaguarda Intacta, seu próximo Ataque sem canalização usado por você rompe sua Salvaguarda para ganhar Dano de

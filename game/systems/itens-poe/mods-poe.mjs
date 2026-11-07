@@ -1038,6 +1038,10 @@ export function tiqueDosAspectos(estado, hunt, ficha, agora = hunt?.clock ?? 0) 
   }
 }
 definirTiqueDosAspectos(tiqueDosAspectos);
+/** (07/11, lote 17) a repetição do ataque pelo Escolhido de Tawhoa (`acoes.mjs` registra — o disparo da habilidade usada, `ctx.acao`). */
+// eslint-disable-next-line no-var
+var repeticaoDoTawhoa;
+export function definirRepeticaoDoTawhoa(fn) { repeticaoDoTawhoa = fn; }
 /**
  * (07/11, lote 17, a Elegia Partida) o PAREDÃO PODRE: o ataque que te acerta sai dele primeiro (até o valor dele) e o quebra — "absorve o dano dos ataques antes do
  * escudo de energia e da vida; qualquer dano o quebra". Devolve o que sobrou do dano.
@@ -1638,6 +1642,20 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     // Maldições" = `semLimite`).
     // (07/11, lote 18 das inertes, o Sino do Monastério: "Conta como dano de ataque bloqueado do primeiro alvo atingido por cada ataque com escudo") uma vez por uso
     // (o primeiro acertado), as reações ao Bloquear um Ataque: as do PoE "ao Bloquear", a marca do "Bloqueou Recentemente", a janela da Retaliação e os eventos
+    // (07/11, lote 17 das inertes, o Desmatando Tawhoa) o Escolhido de Tawhoa repete o ataque de Pancada ou Golpe não Vaal (`acoes.mjs` registra)
+    case 'repetirTawhoa': if (!(ctx.tags ?? []).includes('vaal') && sorte(v)) repeticaoDoTawhoa?.(estado, hunt, ctx); return;
+    // (07/11, lote 17 das inertes, o Monarca Santificado) o lacaio Vinculado sorteado ganha os modificadores do raro morto por `param` segundos (`acoes.modsDoRaroNosLacaios`)
+    case 'modsDoRaro': {
+      if (!alvo || !sorte(v)) return;
+      const relogio = hunt.clock ?? 0;
+      const uids = new Set((hunt.vinculos ?? []).filter((lk) => lk.ate > relogio).flatMap((lk) => lk.alvos.filter((a) => a.tipo === 'lacaio').map((a) => a.uid)));
+      const ligados = (hunt.lacaios ?? []).filter((l) => l.hp > 0 && uids.has(l.uid));
+      if (!ligados.length) return;
+      const l = ligados[Math.floor(rng() * ligados.length)];
+      if (l.poeDoRaro?.aplicado) Object.assign(l, l.poeDoRaro.antes);
+      l.poeDoRaro = { raridade: alvo.raridade ?? 'raro', mods: [...(alvo.mods ?? [])], ate: relogio + (Number(ev.param) || 60) * 1000 };
+      return;
+    }
     case 'contaComoBloqueio': {
       if (!alvo || hunt.poeSinoEm === agora || !sorte(v)) return;
       hunt.poeSinoEm = agora;
