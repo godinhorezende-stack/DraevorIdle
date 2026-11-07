@@ -21043,9 +21043,9 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "na recarga e na regeneração (o dreno de escudo, não).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9)"
+      "estado": "equivalente",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9)",
+      "_08_11c": "08/11 — aproximadas A3: o menos vale na recarga, na regeneração e no dreno de escudo"
     },
     {
       "padrao": "^Suas Habilidades causam \\{(\\d+)\\}% da Mana Gasta no Custo de Mana Direto da Habilidade como Dano Físico$",
@@ -31915,9 +31915,9 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "vale na regeneração e na recuperação do dano sofrido; o roubo de vida e os frascos ainda não aceleram",
-      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+      "estado": "equivalente",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)",
+      "_08_11c": "08/11 — aproximadas A3: a velocidade de recuperação acelera a regeneração, o dreno, os frascos e (o escudo) a recarga"
     },
     {
       "padrao": "^Velocidade de Recuperação de Mana aumentada em \\{(\\d+)\\}%$",
@@ -31928,9 +31928,9 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "vale na regeneração e na recuperação do dano sofrido; o roubo de mana e os frascos ainda não aceleram",
-      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+      "estado": "equivalente",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)",
+      "_08_11c": "08/11 — aproximadas A3: a velocidade de recuperação acelera a regeneração, o dreno, os frascos e (o escudo) a recarga"
     },
     {
       "padrao": "^Velocidade de Recuperação de Escudo de Energia aumentada em \\{(\\d+)\\}%$",
@@ -31941,9 +31941,9 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "vale na regeneração do Escudo de Energia; a recarga e o roubo ainda não aceleram",
-      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+      "estado": "equivalente",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)",
+      "_08_11c": "08/11 — aproximadas A3: a velocidade de recuperação acelera a regeneração, o dreno, os frascos e (o escudo) a recarga"
     },
     {
       "padrao": "^\\{(\\d+)\\}% do Dano de {E} sofrido é Recuperado como Vida$",
