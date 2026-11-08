@@ -311,6 +311,34 @@ function separarLocaisDaArma(classe, t, af) {
   separarLocal(classe, t, af, VELOCIDADE_LOCAL, 'atk_speed', 'atk_speed_local');
   separarLocal(classe, t, af, CRITICO_LOCAL, 'crit_chance_inc', 'crit_chance_local');
   separarDefesasLocais(classe, t, af);
+  separarDestaArma(classe, t, af);
+}
+/*
+ * (08/11, aproximadas — "com esta Arma") Na ARMA, as linhas "…com esta Arma / desta arma / por esta Arma" valem só nos ataques DELA: os efeitos ganham a condição
+ * `estaArma`, que a soma da peça troca pela mão do slot onde ela está (`condicoes-poe.doAnel`: na Mão Principal, `maoPrincipal`; na Secundária, `maoSecundaria` —
+ * as tags do golpe, `fichaDoGolpe`). Só os efeitos que o golpe lê pela ficha dele (a lista); os eventos ("ao matar com esta arma") seguem globais.
+ */
+const DESTA_ARMA = /\b(?:com|desta|por|n?esta) [Aa]rma\b/;
+const LIDOS_NO_GOLPE = /^(?:phys_as_extra_gelo_ou_raio|chama_santificada_corpo|veneno_mais_chance|veneno_mais_pct|incendio_mais|dot_multi_bleed)(?:@|$)/;
+function separarDestaArma(classe, t, af) {
+  if (CLASSES_DO_JOGO[classe]?.slot !== 'weapon') return;
+  for (const l of t.linhas) {
+    let mexeu = false;
+    for (const p of l.partes) {
+      if (!DESTA_ARMA.test(p.parte) || !p.efeitos.length || !p.efeitos.every((e) => LIDOS_NO_GOLPE.test(e.stat) && typeof e.valor === 'number')) continue;
+      for (const e of p.efeitos) {
+        const resto = Math.round(((af[e.stat] ?? 0) - e.valor) * 100) / 100;
+        if (resto) af[e.stat] = resto;
+        else delete af[e.stat];
+        const k = e.stat.includes('@') ? `${e.stat}+estaArma` : `${e.stat}@estaArma`;
+        af[k] = Math.round(((af[k] ?? 0) + e.valor) * 100) / 100;
+      }
+      p.estado = 'equivalente';
+      p.nota = null;
+      mexeu = true;
+    }
+    if (mexeu) l.estado = l.partes.reduce((pior, x) => (PIOR_ESTADO.indexOf(x.estado) > PIOR_ESTADO.indexOf(pior) ? x.estado : pior), 'lembrete');
+  }
 }
 /*
  * (08/11, as aproximadas dos únicos — modo PoE segue o PoE) As DEFESAS LOCAIS da peça de armadura (o Peitoral, o Elmo, as Luvas, as Botas e o Escudo): no PoE, "+X de
@@ -569,7 +597,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // o Impelir, os cadáveres, as Posturas e as habilidades concedidas; o lembrete entre parênteses do Oni-Goroshi deixa de virar efeito)
 // (87 — 08/11, as aproximadas dos únicos: as DEFESAS LOCAIS da peça de armadura — "+X de Armadura/Evasão/Escudo de Energia máximo" e "Armadura/Evasão/Escudo de
 // Energia aumentado" do Peitoral, Elmo, Luvas, Botas e Escudo valem só na peça, como no PoE (`separarDefesasLocais`))
-export const VERSAO_DA_TRADUCAO = 87;
+// (88 — 08/11, aproximadas A5/A6: "com esta Arma" só na mão da arma (`separarDestaArma`); a maldição dos itens no nível 1 do PoB; a Carícia Vaal só nas
+// não-Vaal; a Luz de Lunaris pelo acerto Não Crítico)
+export const VERSAO_DA_TRADUCAO = 88;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

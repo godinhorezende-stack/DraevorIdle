@@ -143,14 +143,14 @@
       "padrao": "^Amaldiçoa Inimigos com (.+?) quando você Bloquear seu Dano de Ataques com Projéteis, ignorando o Limite de Maldições$",
       "efeitos": [
         {
-          "stat": "ev:bloquearProjetil:maldicao:{NOME}:10:semLimite",
+          "stat": "ev:bloquearProjetil:maldicao:{NOME}:1:semLimite",
           "valor": "100"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a maldição no nível 10 da gema (o texto do poedb em português não traz o nível).",
+      "estado": "equivalente",
       "_07_11p": "07/11 — lote 26 das inertes: os Grilhões Temporais em você e as imunidades do Olho do Vigia",
-      "_nova": true
+      "_nova": true,
+      "_08_11e": "08/11 — aproximadas A6: a maldição no nível 1, como o PoB (ModParser: \"curse enemies with X on hit/block\" → triggerExtraSkill(skill, 1))"
     },
     {
       "padrao": "^Modificadores do número de Projéteis são aplicados ao número de alvos nos quais os Projéteis Partidos se focam ao invés$",
@@ -2003,15 +2003,15 @@
       "padrao": "^Amaldiçoa Inimigos com (.+?) ao Acertar$",
       "efeitos": [
         {
-          "stat": "ev:acertar:maldicao:{NOME}:10",
+          "stat": "ev:acertar:maldicao:{NOME}:1",
           "valor": "100"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "a maldição no nível 10 da gema (o texto do poedb em português não traz o nível).",
+      "estado": "equivalente",
       "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 2)",
-      "_06_11h": "06/11 — lote 12 das inertes: a regra ficava atrás de uma genérica inerte (vai para o começo)"
+      "_06_11h": "06/11 — lote 12 das inertes: a regra ficava atrás de uma genérica inerte (vai para o começo)",
+      "_08_11e": "08/11 — aproximadas A6: a maldição no nível 1, como o PoB (ModParser: \"curse enemies with X on hit/block\" → triggerExtraSkill(skill, 1))"
     },
     {
       "padrao": "^Inimigos próximos de Cadáveres afetados por suas Maldições são Cegados$",
@@ -38157,14 +38157,14 @@
       "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Crítico se você causou um Golpe Não Crítico Recentemente$",
       "efeitos": [
         {
-          "stat": "crit_dmg@acertouRecente",
+          "stat": "crit_dmg@nosUltimos:4:naoCritico",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "vale se você acertou recentemente (o jogo não separa o acerto não crítico).",
-      "_de": "10/10 — únicos: armas e armaduras (rodada 1)"
+      "estado": "equivalente",
+      "_de": "10/10 — únicos: armas e armaduras (rodada 1)",
+      "_08_11e": "08/11 — aproximadas A6: o acerto Não Crítico recente (poeRecente.naoCritico, 4 s)"
     },
     {
       "padrao": "^\\+\\{(\\d+)\\}% de Chance de (?:Golpe )?Crítico$",
@@ -38965,14 +38965,14 @@
       "padrao": "^\\{(\\d+)\\} ao Nível de Gemas Não-Vaal Encaixadas$",
       "efeitos": [
         {
-          "stat": "gem_level_local",
+          "stat": "gem_level_local@naoVaal",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "vale também para as gemas Vaal encaixadas.",
-      "_de": "10/10 — únicos: armas e armaduras (rodada 1)"
+      "estado": "equivalente",
+      "_de": "10/10 — únicos: armas e armaduras (rodada 1)",
+      "_08_11e": "08/11 — aproximadas A6: só as gemas não-Vaal (a tag naoVaal do nível das gemas)"
     },
     {
       "padrao": "^Habilidades de Ataque ganham \\{(\\d+)\\}% do Dano Físico como Dano de Fogo Extra por Gema Vermelha Encaixada$",
@@ -39754,40 +39754,40 @@
       "padrao": "^Amaldiçoa Inimigos com (.+?) ao Bloquear$",
       "efeitos": [
         {
-          "stat": "ev:bloquear:maldicao:{NOME}:10",
+          "stat": "ev:bloquear:maldicao:{NOME}:1",
           "valor": "100"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "a maldição no nível 10 da gema (o texto do poedb em português não traz o nível).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 2)"
+      "estado": "equivalente",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 2)",
+      "_08_11e": "08/11 — aproximadas A6: a maldição no nível 1, como o PoB (ModParser: \"curse enemies with X on hit/block\" → triggerExtraSkill(skill, 1))"
     },
     {
       "padrao": "^Amaldiçoa Inimigos com (.+?) quando você Bloquear seu Dano Corpo a Corpo, ignorando o Limite de Maldições$",
       "efeitos": [
         {
-          "stat": "ev:bloquearAtaque:maldicao:{NOME}:10:semLimite",
+          "stat": "ev:bloquearAtaque:maldicao:{NOME}:1:semLimite",
           "valor": "100"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "a maldição no nível 10 da gema (o texto do poedb em português não traz o nível).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 2)"
+      "estado": "equivalente",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 2)",
+      "_08_11e": "08/11 — aproximadas A6: a maldição no nível 1, como o PoB (ModParser: \"curse enemies with X on hit/block\" → triggerExtraSkill(skill, 1))"
     },
     {
       "padrao": "^Amaldiçoa Inimigos com (.+?) quando você Bloquear seu Dano Mágico, ignorando o Limite de Maldições$",
       "efeitos": [
         {
-          "stat": "ev:bloquearMagia:maldicao:{NOME}:10:semLimite",
+          "stat": "ev:bloquearMagia:maldicao:{NOME}:1:semLimite",
           "valor": "100"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "a maldição no nível 10 da gema (o texto do poedb em português não traz o nível).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 2)"
+      "estado": "equivalente",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 2)",
+      "_08_11e": "08/11 — aproximadas A6: a maldição no nível 1, como o PoB (ModParser: \"curse enemies with X on hit/block\" → triggerExtraSkill(skill, 1))"
     },
     {
       "padrao": "^Lacaios possuem \\+\\{(\\d+)\\}% de Resistência a Gelo$",

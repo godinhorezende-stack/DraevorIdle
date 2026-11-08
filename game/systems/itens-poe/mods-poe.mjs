@@ -69,7 +69,8 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
   }
   // (14/10, o Guardian: a Chama Santificada no acerto corpo a corpo — o Marechal da Divindade; o Raro ou Único acertado é ocasião da Relíquia
   // Elemental — a Cruzada Implacável)
-  if (seu && tags.has('corpo')) porChamaSantificada(hunt, alvo, ficha.afPoe, agora);
+  // (08/11: com o "com esta Arma" da peça — a condição da mão, `v`)
+  if (seu && tags.has('corpo')) porChamaSantificada(hunt, alvo, { ...ficha.afPoe, chama_santificada_corpo: v('chama_santificada_corpo') }, agora);
   if (['raro', 'unico'].includes(alvo.raridade ?? alvo.raridadePoe) || alvo.boss) notarParaReliquia(estado, hunt, agora);
   // (12/10, as Tinturas: os acertos de ATAQUE desde o último tique — "quando você Acertar um Inimigo com uma Arma Corpo a Corpo";
   // `frascos.tique` → `tinturas.tique`, que confere a arma)
@@ -83,6 +84,8 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
   // (lote 81) o excesso do golpe fatal fica no morto (a queima do Arauto das Cinzas — `combate.matarMonstro`)
   if (excedente > 0) alvo.poeExcedente = excedente;
   if (seu && excedente > 0 && v('roubo_excedente') > 0) drenoDaFicha?.(estado, { vida: (excedente * v('roubo_excedente')) / 100 }, ficha, eventos, personagem?.nome ?? null, hunt?.pos ?? null);
+  // (08/11, aproximadas A6, a Luz de Lunaris: "se você causou um Golpe Não Crítico Recentemente" — o acerto seu que não foi Crítico)
+  if (!crit && seu) marcar(hunt, 'naoCritico', agora);
   if (crit && seu) {
     marcar(hunt, 'critico', agora);
     // (a Sobrecarga Elemental: o crítico DESTA habilidade — `habilidade`, o id da ação; o golpe básico é `golpe`)
