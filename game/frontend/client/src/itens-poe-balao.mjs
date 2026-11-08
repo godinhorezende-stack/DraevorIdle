@@ -189,6 +189,8 @@ export function balaoPoe(p0, { cor = p0.cor ?? '#ddd', raridadeNome = p0.raridad
     // (Frente D) "Corrompido" no fim das linhas, em vermelho, como no PoE (a peça do Orbe Vaal e a que já cai corrompida — `sabores.json`)
     // (08/11) a peça do Sintetizador (`itens-poe/sintese.mjs`)
     p.sintetizado ? no('div', 'poe-sintetizado', 'Item Sintetizado') : null,
+    // (08/11) a Intangibilidade da criação com a Omnichama (`itens-poe/ducados.mjs`)
+    Number(p.intangibilidade) > 0 ? no('div', 'poe-sintetizado', `Intangibilidade: ${Math.round(p.intangibilidade)}%`) : null,
     p.corrompido ? no('div', 'poe-corrompido', 'Corrompido') : null,
     // (Frente D) o texto de sabor, depois de tudo o que é da peça (como no card do poedb: abaixo do "Corrompido", com o separador)
     vagaDoSabor(p),

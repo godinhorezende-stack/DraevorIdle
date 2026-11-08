@@ -23,6 +23,7 @@ export const GRUPOS = Object.freeze([
     { id: 'qualidade', nome: 'Qualidade', resumo: 'Qualidade da peça' },
     { id: 'encantar', nome: 'Encantamentos', resumo: 'Ungir e Encantamento' },
     { id: 'sintese', nome: 'Síntese', resumo: 'O Sintetizador: 3 peças' },
+    { id: 'omnichama', nome: 'Omnichama', resumo: 'Os Ducados do Soberano' },
   ] },
   { nome: 'Outros', categorias: [
     { id: 'corrupcao', nome: 'Corrupção', resumo: 'Vaal e Corroídas' },

@@ -10274,6 +10274,18 @@
       "unidade": "",
       "combate": true,
       "efeito": "sintese.sintetizar (08/11 — os Círculos)"
+    },
+    "omnichama_como_raro": {
+      "nome": "Pode ser criado com Omnichama como se fosse raro",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ducados.aceita (08/11 — o Cutelo do Capitão Temido)"
+    },
+    "sem_intangibilidade": {
+      "nome": "Não pode ganhar Intangibilidade",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ducados.comOmnichama (08/11 — o Cutelo do Capitão Temido)"
     }
   }
 }

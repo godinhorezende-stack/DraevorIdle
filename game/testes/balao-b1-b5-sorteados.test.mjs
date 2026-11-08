@@ -396,3 +396,40 @@ test('B18, a Síntese: os Círculos saem com 1 a 3 implícitos de Síntese; o Si
   assert.ok(p.estados.every((x) => !['inerte', 'registrado'].includes(x)), JSON.stringify(p.implicitos.map((m) => m.texto)));
   assert.equal(tr('Quando usado no Sintetizador, o novo item terá um Modificador de Arauto adicional').estado, 'equivalente');
 });
+
+test('B19, a Omnichama: os Ducados valem em peça Rara (e no Cutelo, "como se fosse raro"), dão 10% de Intangibilidade, a Intangibilidade falha a criação; Tzamoto e Metamorfo', { skip: SEM }, async () => {
+  const M = await import('../systems/itens-poe/moedas.mjs');
+  const D = await import('../systems/itens-poe/ducados.mjs');
+  const { personagemDeTeste } = await import('./apoio.mjs');
+  const raro = (base) => J.pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras: Catalogo.REGRAS, base, raridade: 'raro', ilvl: 80, rng: () => 0.3 }));
+  const [cutelo] = sorteios('Dread_Captains_Cutlass', 1);
+  assert.equal(cutelo.poe.af.omnichama_como_raro, 1);
+  assert.equal(cutelo.poe.af.sem_intangibilidade, 1);
+  const [cyax, tzam, meta, cav] = ['Cyaxans_Ducat', 'Tzamotos_Ducat', 'The_Changelings_Ducat', 'The_Genteels_Ducat'].map((s) => M.idDa(s));
+  const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 80 }), { inventory: [raro('Rings/Iron_Ring'), cutelo, { id: cyax, count: 5 }, { id: tzam, count: 2 }, { id: meta, count: 1 }, { id: cav, count: 1 }] });
+  const anel = { onde: 'inventory', indice: 0 };
+  assert.ok(M.usar(e, { moeda: cyax, alvo: anel }, () => 0.5).ok);
+  assert.equal(e.inventory[0].poe.intangibilidade, 10, '10% por criação');
+  // com 10%: rng 0.05 → cópia fantasmagórica (a peça não muda, o Ducado é gasto)
+  const antes = JSON.stringify(e.inventory[0].poe.prefixos);
+  const r = M.usar(e, { moeda: cyax, alvo: anel }, () => 0.05);
+  assert.match(r.notice, /cópia fantasmagórica/);
+  assert.equal(JSON.stringify(e.inventory[0].poe.prefixos), antes);
+  assert.equal(M.quantasTem(e, cyax), 3);
+  // o Cutelo: vale como Raro e não ganha Intangibilidade
+  assert.ok(M.usar(e, { moeda: cyax, alvo: { onde: 'inventory', indice: 1 } }, () => 0.5).ok);
+  assert.ok(!(e.inventory[1].poe.intangibilidade > 0));
+  // numa peça Mágica, não
+  const magica = raro('Rings/Iron_Ring');
+  magica.poe.raridade = 'magico';
+  e.inventory.push(magica);
+  assert.match(M.usar(e, { moeda: cyax, alvo: { onde: 'inventory', indice: e.inventory.length - 1 } }, () => 0.5).erro, /Rara/);
+  // Tzamoto: zera (rng < 0.5)
+  assert.ok(M.usar(e, { moeda: tzam, alvo: anel }, () => 0.2).ok);
+  assert.equal(e.inventory[0].poe.intangibilidade, 0);
+  // o Metamorfo vira outro Ducado
+  assert.match(M.usar(e, { moeda: meta }, () => 0.1).notice, /virou/);
+  assert.equal(M.quantasTem(e, meta), 0);
+  assert.ok(D.DUCADOS.some((s) => M.quantasTem(e, M.idDa(s)) > (s === 'Cyaxans_Ducat' ? 2 : s === 'Tzamotos_Ducat' ? 1 : 0)));
+  for (const s of ['Merricks_Ducat', 'Cyaxans_Ducat', 'The_Genteels_Ducat', 'Rotmothers_Ducat', 'Kisharas_Ducat', 'Tzamotos_Ducat', 'The_Changelings_Ducat']) assert.notEqual(M.STATUS[s].status, 'nao', s);
+});

@@ -15,6 +15,7 @@ import * as Catalogo from './catalogo.mjs';
 import * as Gerar from './gerar.mjs';
 import * as Catalisadores from './catalisadores.mjs';
 import * as Ungir from './ungir.mjs';
+import * as Ducados from './ducados.mjs';
 import * as Jogo from './jogo.mjs';
 import * as SocketsPoe from './sockets.mjs';
 import * as Gemas from '../skills/gemas.mjs';
@@ -769,6 +770,47 @@ function ungirComOleos({ estado, p, oleos }) {
 }
 const encantamento = ({ p, rng }) => Ungir.encantar(p, rng);
 
+// (08/11, o dono: "Ducados + Intangibilidade") a CRIAÇÃO COM A OMNICHAMA (`ducados.mjs`): os Ducados do Soberano, com a Intangibilidade.
+/** Um mod do pool da base, mesmo sem vaga (o Ducado de Merrick). */
+function porModSemVaga(p, rng) {
+  const achado = Gerar.acharBase(CAT(), p.base);
+  const novo = achado && Gerar.sortearDoPool({ pagina: Gerar.poolDa(achado.classe, achado.base), poe: p, regras: R(), rng, ignorarVagas: true });
+  if (!novo) return false;
+  (p[`${novo.lado}s`] ??= []).push(novo.mod);
+  return true;
+}
+/** O Ducado de Kishara: a peça vira a primeira forma; as outras entram na mochila. */
+function kisharaNaMochila(ctx) {
+  const r = Ducados.kishara(ctx);
+  if (!r.ok) return r;
+  const [primeira, ...outras] = r.copias;
+  Object.assign(ctx.p, primeira);
+  for (const c of outras) {
+    const nova = { ...structuredClone(ctx.peca), poe: c };
+    Jogo.recalcular(nova);
+    (ctx.estado.inventory ??= []).push(nova);
+  }
+  return { ok: true, notice: r.notice };
+}
+/** O Ducado de Tzamoto: metade das vezes zera a Intangibilidade, metade destrói a peça. */
+function tzamoto({ estado, p, rng, alvo }) {
+  if (!Ducados.aceita(p)) return erro('A criação com a Omnichama vale em peça Rara.');
+  if (rng() < 0.5) {
+    p.intangibilidade = 0;
+    return { ok: true, notice: `${p.nome}: a Intangibilidade sumiu.` };
+  }
+  destruir(estado, alvo);
+  return { ok: true, notice: `${p.nome} foi destruída.`, destruiu: true };
+}
+/** O Ducado do Metamorfo: vira outro Ducado (sem peça). */
+function metamorfo({ estado, rng }) {
+  const outros = Ducados.DUCADOS.filter((s) => POR_SLUG.has(s));
+  const slug = outros[Math.floor(rng() * outros.length)];
+  gastar(estado, idDa('The_Changelings_Ducat'), 1);
+  porNaMochila(estado, idDa(slug), 1);
+  return { ok: true, notice: `O Ducado do Metamorfo virou ${POR_SLUG.get(slug).nome}.`, jaGastou: true };
+}
+
 /** O efeito e o status de cada moeda que faz algo. `alvo`: 'peca' (equipamento do PoE), 'gema', 'nenhum'. `corrompida`: aceita corrompida. */
 const FAZ = {
   Orb_of_Transmutation: { f: transmutar }, Orb_of_Augmentation: { f: ampliar }, Orb_of_Alteration: { f: alterar }, Regal_Orb: { f: regio },
@@ -810,7 +852,14 @@ const FAZ = {
   Annulment_Shard: { f: juntarLascas('Orb_of_Annulment'), alvo: 'nenhum' }, Fracturing_Shard: { f: juntarLascas('Fracturing_Orb'), alvo: 'nenhum' },
   Mirror_Shard: { f: juntarLascas('Mirror_of_Kalandra'), alvo: 'nenhum' },
   ...Object.fromEntries(EMISSARIO.flatMap((c) => [...c.partes.map((s) => [s, { f: juntarPartes(c), alvo: 'nenhum' }]), [c.pergaminho, { f: aprimorarEmissario(c) }]])),
-  Ukatoas_Ducat: { f: ducadoDeUkatoa },
+  Ukatoas_Ducat: { f: Ducados.comOmnichama(ducadoDeUkatoa, { soRara: false }) },
+  Merricks_Ducat: { f: Ducados.comOmnichama(Ducados.merrick(porModSemVaga)) },
+  Cyaxans_Ducat: { f: Ducados.comOmnichama(Ducados.cyaxan(refazerMods)), parcial: 'sem o modificador Infame (não está na coleção do PoE do jogo)' },
+  The_Genteels_Ducat: { f: Ducados.comOmnichama(Ducados.cavalheiro) },
+  Rotmothers_Ducat: { f: Ducados.comOmnichama(Ducados.maeDaPodridao(doPool)), parcial: 'o modificador de armadilhas/minas é o da Essência (o pool próprio da liga não está no poedb)' },
+  Kisharas_Ducat: { f: Ducados.comOmnichama(kisharaNaMochila) },
+  Tzamotos_Ducat: { f: tzamoto },
+  The_Changelings_Ducat: { f: metamorfo, alvo: 'nenhum' },
   ...Object.fromEntries(Ungir.OLEOS.map((slug) => [slug, { f: ungirComOleos, encanta: true }])), Enchant: { f: encantamento, encanta: true },
   Scroll_of_Wisdom: { f: sabedoria, identifica: true }, Scroll_Fragment: { f: juntarLascas('Scroll_of_Wisdom', 5), alvo: 'nenhum' },
 };
@@ -869,6 +918,8 @@ export const MOEDAS_DA_CATEGORIA = Object.freeze({
     'Tainted_Armourers_Scrap', 'Tainted_Blacksmiths_Whetstone', 'Tainted_Mythic_Orb', 'Tainted_Catalyst',
   ],
   encantar: [...Ungir.OLEOS, 'Enchant'],
+  // (08/11) a criação com a Omnichama: os Ducados do Soberano (o de Ukatoa segue em Ancestral)
+  omnichama: ['Merricks_Ducat', 'Cyaxans_Ducat', 'The_Genteels_Ducat', 'Rotmothers_Ducat', 'Kisharas_Ducat', 'Tzamotos_Ducat', 'The_Changelings_Ducat'],
   // (08/11) o Sintetizador não gasta moeda (`sintese.mjs`)
   sintese: [],
   gemas: ['Gemcutters_Prism', 'Gemcutters_Lens'],
@@ -1059,6 +1110,12 @@ export function dropDoChefeDeMapa(rng = Math.random) {
   if (pergaminhos.length && rng() < (Number(cfg.chanceDoPergaminho) || 0)) saida.push(idDa(sortear(pergaminhos, rng)));
   if (POR_SLUG.has('Ukatoas_Ducat') && rng() < (Number(cfg.chanceDoUkatoa) || 0)) saida.push(idDa('Ukatoas_Ducat'));
   return saida;
+}
+/** (08/11) Os outros Ducados do Soberano do chefe de um mapa (a criação com a Omnichama — `ducados.mjs`): com `chanceDoDucado`, um por igual. Os ids. */
+export function ducadosDoChefeDeMapa(rng = Math.random) {
+  const cfg = R().moedas?.chefeDeMapa;
+  const ducados = MOEDAS_DA_CATEGORIA.omnichama.filter((s) => POR_SLUG.has(s));
+  return Catalogo.ligado() && ducados.length && rng() < (Number(cfg?.chanceDoDucado) || 0) ? [idDa(sortear(ducados, rng))] : [];
 }
 /** `n` moedas avulsas, pelos mesmos pesos do drop (o chefe do mapa único "derruba N Itens Monetários adicionais"). */
 export function moedasAvulsas(n, rng = Math.random) {

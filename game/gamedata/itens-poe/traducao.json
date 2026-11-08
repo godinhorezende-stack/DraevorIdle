@@ -14,6 +14,32 @@
   ],
   "regras": [
     {
+      "padrao": "^Pode ser criado com Omnichama como se fosse raro$",
+      "efeitos": [
+        {
+          "stat": "omnichama_como_raro",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "os Ducados do Soberano (Forja → Omnichama) valem nele como numa peça Rara (`ducados.aceita`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B19: a Omnichama (os Ducados)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não pode ganhar Intangibilidade$",
+      "efeitos": [
+        {
+          "stat": "sem_intangibilidade",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a criação com a Omnichama não lhe dá Intangibilidade (`ducados.comOmnichama`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B19: a Omnichama (os Ducados)",
+      "_nova": true
+    },
+    {
       "padrao": "^Quando usado no Sintetizador, o novo item terá um Modificador de Arauto adicional$",
       "efeitos": [
         {
