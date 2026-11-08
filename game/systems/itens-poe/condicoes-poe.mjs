@@ -449,7 +449,7 @@ export const TAGS_DE_GOLPE = new Set([
   // O ALVO do golpe (o estado dele naquele acerto): Resfriado, Congelado, Eletrizado, Cego, Sangrando, Envenenado, Incendiado, Amaldiçoado,
   // Lento, Mutilado, Provocado, a raridade, a vida cheia; e o golpe de perto ("em Curto Alcance"), na mão principal/secundária.
   'alvoResfriado', 'alvoCongelado', 'alvoEletrizado', 'alvoCego', 'alvoSangrando', 'alvoEnvenenado', 'alvoIncendiado', 'alvoAmaldicoado',
-  'alvoLento', 'alvoMutilado', 'alvoProvocado', 'alvoAtordoado', 'alvoComTeia', 'alvoTeias:3', 'alvoTeias:4', 'alvoNoSoloFungico', 'alvoNaAreaFria', 'ataqueNaoImpelido', 'impelidoPor:1', 'impelidoPor:2', 'impelidoPor:3', 'alvoEletrizadoOuCongelado', 'guarda', 'gemaCritica', 'alvoRaro', 'alvoUnico', 'alvoMagico', 'alvoVidaCheia', 'alvoPerto', 'canalizar', 'retaliacao', 'estandarte', 'custaVida',
+  'alvoLento', 'alvoMutilado', 'alvoProvocado', 'alvoAtordoado', 'alvoComTeia', 'alvoTeias:3', 'alvoTeias:4', 'alvoNoSoloFungico', 'alvoNaAreaFria', 'ataqueNaoImpelido', 'impelidoPor:1', 'impelidoPor:2', 'impelidoPor:3', 'alvoEletrizadoOuCongelado', 'guarda', 'gemaCritica', 'alvoRaro', 'alvoUnico', 'alvoMagico', 'alvoAbissal', 'alvoVidaCheia', 'alvoPerto', 'canalizar', 'retaliacao', 'estandarte', 'custaVida',
   'golpe', 'pancada', 'nova', 'runa', 'marca', 'feitico', 'vinculo', 'ativada', 'desarmadoGolpe', 'naoCritico',
   // (06/11, os Únicos — lote 3) as Habilidades de Pacto ("Habilidades de pacto têm a velocidade de conjuração aumentada")
   'pacto',
@@ -2208,6 +2208,8 @@ export function tagsDoAlvo(alvo, agora) {
   if (rar === 'unico' || alvo.boss || alvo.chefe) t.push('alvoUnico');
   // (06/11: o monstro Mágico do jogo tem a raridade `modificado` — `modificadores-monstro.RARIDADE_DO_POE`; antes a tag nunca saía)
   if (rar === 'magico' || rar === 'modificado') t.push('alvoMagico');
+  // (08/11) o monstro das ondas do Abismo (`abismo.mjs`) — "contra Monstros Abissais"
+  if (alvo.abissal) t.push('alvoAbissal');
   if (at(e.causticado)) t.push('alvoCausticado');
   if ((e.vinhas?.n ?? 0) >= 3) t.push('alvoVinhas3');
   if (alvo.maxHp > 0 && alvo.hp >= alvo.maxHp) t.push('alvoVidaCheia');

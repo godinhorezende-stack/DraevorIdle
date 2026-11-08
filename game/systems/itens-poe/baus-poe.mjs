@@ -170,6 +170,14 @@ export function lootDoBau(raridade, { nivel = 1, quantidade = 1, raridadeAumenta
   };
 }
 
+/** (08/11) As bases das Joias Abissais e a chance de uma no Repositório Abissal (`regras.abismo.chanceDaJoiaPct`). */
+const JOIAS_ABISSAIS = ['Abyss_Jewels/Murderous_Eye_Jewel', 'Abyss_Jewels/Searching_Eye_Jewel', 'Abyss_Jewels/Hypnotic_Eye_Jewel', 'Abyss_Jewels/Ghastly_Eye_Jewel'];
+export function joiaDoRepositorio(nivel, raridadeAumentada = 0, rng = Math.random) {
+  if (!(rng() * 100 < (Number(REGRAS_POE.abismo?.chanceDaJoiaPct) || 0))) return null;
+  const p = ItensPoeJogo.pecaSorteada(nivel, rng, REGRAS_POE, raridadeAumentada, JOIAS_ABISSAIS[Math.floor(rng() * JOIAS_ABISSAIS.length)]);
+  return p ? ItensPoeJogo.semIdentificar(p) : null;
+}
+
 /** O nível do loot do baú: o da instância (gravado no baú), o do mapa ou o da escala da fase; sem nenhum, o do personagem. */
 const nivelDoBau = (e, hunt, estado) => e.nivel ?? salaDe(hunt)?.mapa?.nivel ?? hunt?.escala?.nivel ?? estado?.level ?? 1;
 
@@ -188,6 +196,11 @@ export function pagar(estado, hunt, e, rng = Math.random, personagem = null) {
   const raridadeAumentada = ModsPoe.valor(ficha, 'item_rarity') + (Number(mapa?.raridade) || 0) + (mapa ? Mapas.fatoresDaInstancia(mapa).baus.raridadePct : 0);
   const achado = 1 + (ficha.goldFind ?? 0) / 100;
   const { pecas, moedas, ouro } = lootDoBau(e.raridade, { nivel: nivelDoBau(e, hunt, estado), quantidade, raridadeAumentada, achado, rng });
+  // (08/11) o REPOSITÓRIO ABISSAL (`abismo.mjs`): ainda a chance de uma Joia Abissal
+  if (e.abissal) {
+    const joia = joiaDoRepositorio(nivelDoBau(e, hunt, estado), raridadeAumentada, rng);
+    if (joia) pecas.push(joia);
+  }
   const sessao = hunt.sessao;
   const conta = (grupo, id, n, ses = sessao) => { if (ses?.itens?.[grupo]) ses.itens[grupo][id] = (ses.itens[grupo][id] ?? 0) + n; };
   const caiu = [];

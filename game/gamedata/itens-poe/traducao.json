@@ -14,6 +14,36 @@
   ],
   "regras": [
     {
+      "padrao": "^Dano com Acertos e Afecções contra Monstros Abissais aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@alvoAbissal",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@alvoAbissal",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "os monstros das ondas do Abismo (`abismo.mjs`: nos mapas e nos atos 6 a 10)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B15: o Abismo",
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona a de Dano de Raio$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "a arma que a habilidade Lâmina de Energia cria (a base não cai — `jogo.mjs`): o Raio dela vem da gema, pelo Escudo de Energia (`gemas-a2`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B14",
+      "_nova": true
+    },
+    {
       "padrao": "^Aloca (?!.* se você possuir )(.+?)$",
       "nomeLivre": true,
       "efeitos": [

@@ -68,7 +68,41 @@ function rotuloDoPoe(ctx, texto, cx, base, cor) {
   ctx.restore();
 }
 
-const COR = { ...COR_DO_BAU_POE, portal: '#8a6bff', 'bau-comum': '#e0b84a', 'bau-raro': '#4ab3ff', 'bau-amaldicoado': '#b04aff', altar: '#ffd24c', sobrevivencia: '#ff6a4a', fenda: '#7a5cff', aprisionado: '#4fd0b0', 'area-secreta': '#5cc8ff', escolta: '#8fd06a' };
+/**
+ * (08/11) O ABISMO do PoE (`itens-poe/abismo.mjs`): o fosso escuro no chão com as fendas brilhando em volta (o verde-azulado do Abismo do PoE),
+ * pulsando; aberto (as ondas), as fendas crescem.
+ */
+function desenharAbismo(ctx, x, y, tile, ativo) {
+  const t = (typeof performance !== 'undefined' ? performance.now() : 0) / 600;
+  const cx = x + tile / 2;
+  const cy = y + tile * 0.62;
+  const brilho = 0.55 + 0.3 * Math.sin(t);
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = `rgba(63, 211, 143, ${brilho})`;
+  ctx.shadowColor = '#3fd38f';
+  ctx.shadowBlur = 8;
+  ctx.lineWidth = 2;
+  const alcance = tile * (ativo ? 1.25 : 0.85);
+  for (let i = 0; i < 6; i++) {
+    const a = (Math.PI * 2 * i) / 6 + 0.35;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(a) * tile * 0.3, cy + Math.sin(a) * tile * 0.14);
+    ctx.lineTo(cx + Math.cos(a + 0.18) * alcance * 0.65, cy + Math.sin(a + 0.18) * alcance * 0.3);
+    ctx.lineTo(cx + Math.cos(a - 0.08) * alcance, cy + Math.sin(a - 0.08) * alcance * 0.42);
+    ctx.stroke();
+  }
+  ctx.shadowBlur = 14;
+  ctx.fillStyle = '#05080a';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, tile * 0.42, tile * 0.2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.restore();
+}
+
+const COR = { ...COR_DO_BAU_POE, 'abismo-poe': '#3fd38f', portal: '#8a6bff', 'bau-comum': '#e0b84a', 'bau-raro': '#4ab3ff', 'bau-amaldicoado': '#b04aff', altar: '#ffd24c', sobrevivencia: '#ff6a4a', fenda: '#7a5cff', aprisionado: '#4fd0b0', 'area-secreta': '#5cc8ff', escolta: '#8fd06a' };
 
 /**
  * Desenha os marcadores: o SPRITE do jogo (`desenharItem`, que devolve `false` enquanto a folha não chegou) ou, até lá,
@@ -92,6 +126,11 @@ export function desenharMarcadores(ctx, lista, { camX, camY, tile, z, jogador, d
       ctx.drawImage(imagemBau, Math.round(x + tile / 2 - lado / 2), topo, lado, lado);
       ctx.restore();
       if (mouse && mouse.x === e.x && mouse.y === e.y && e.estado === 'disponivel') rotuloDoPoe(ctx, e.nome || 'Baú', x + tile / 2, topo + lado * 0.22, cor);
+      continue;
+    }
+    if (e.tipo === 'abismo-poe') {
+      desenharAbismo(ctx, x, y, tile, e.estado === 'ativo');
+      if (mouse && mouse.x === e.x && mouse.y === e.y) rotuloDoPoe(ctx, e.nome || 'Abismo', x + tile / 2, y - 2, cor);
       continue;
     }
     ctx.save();
