@@ -28039,14 +28039,15 @@ html[data-perfil="retrato"] .inv-selo-texto b, html[data-perfil="retrato"] .inv-
 }
 .fp-ajuda-botao:hover, .fp-ajuda-botao.ativo { border-color: var(--fp-ouro); box-shadow: 0 0 8px #e07a2e66; }
 
-.fp { display: grid; grid-template-columns: 196px minmax(0, 1fr) 300px; gap: 10px; color: var(--fp-texto); align-items: start; }
+/* (08/11) só a Forja: a ficha do personagem também usa a raiz `.fp` (sheet.mjs) e herdava as três colunas daqui — a coluna da esquerda espremida e o texto quebrando letra por letra */
+.modal-box.forja-poe .fp { display: grid; grid-template-columns: 196px minmax(0, 1fr) 300px; gap: 10px; color: var(--fp-texto); align-items: start; }
 .fp-trilho, .fp-op, .fp-materiais, .fp-repeticao, .fp-peca, .fp-inv {
   background: radial-gradient(ellipse at top, #e07a2e10, transparent 60%), linear-gradient(180deg, var(--fp-ferro-2), var(--fp-ferro));
   border: 1px solid var(--fp-linha); border-top-color: var(--fp-linha-forte); border-radius: 6px;
   box-shadow: inset 0 0 0 1px #00000088, inset 0 1px 0 #ffffff0a;
 }
-.fp-titulo, .fp h5 { margin: 0; font: 700 12px/1.2 var(--font-heading); letter-spacing: .12em; text-transform: uppercase; color: var(--fp-ouro); }
-.fp h5 { font-size: 11px; color: var(--fp-apagado); margin-bottom: 6px; }
+.fp-titulo, .modal-box.forja-poe .fp h5 { margin: 0; font: 700 12px/1.2 var(--font-heading); letter-spacing: .12em; text-transform: uppercase; color: var(--fp-ouro); }
+.modal-box.forja-poe .fp h5 { font-size: 11px; color: var(--fp-apagado); margin-bottom: 6px; }
 .fp-vazio, .fp-legenda { margin: 0; font-size: 13px; color: var(--fp-apagado); }
 .fp-nota { margin: 4px 0 0; font-size: 12px; color: var(--fp-apagado); font-style: italic; }
 .fp-aviso { margin: 0; padding: 6px 8px; font-size: 13px; color: var(--fp-aviso); background: #2a1f0e; border: 1px solid #5a4320; border-radius: 4px; }
@@ -28250,7 +28251,7 @@ button.fp-chip { cursor: pointer; font: 600 12px/1.4 inherit; }
 .fp-capacidade { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--fp-apagado); font-variant-numeric: tabular-nums; }
 
 @media (max-width: 1080px) {
-  .fp { grid-template-columns: minmax(0, 1fr) 270px; }
+  .modal-box.forja-poe .fp { grid-template-columns: minmax(0, 1fr) 270px; }
   /* (tela estreita: as categorias numa faixa só, que rola de lado; o nome do grupo na frente dos dele) */
   .fp-trilho { grid-column: 1 / -1; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 10px; overflow-x: auto; padding: 6px 8px; }
   .fp-grupo { flex: 0 0 auto; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 4px; }
@@ -28259,7 +28260,7 @@ button.fp-chip { cursor: pointer; font: 600 12px/1.4 inherit; }
   .fp-cat-texto i { display: none; }
 }
 @media (max-width: 720px) {
-  .fp { grid-template-columns: minmax(0, 1fr); }
+  .modal-box.forja-poe .fp { grid-template-columns: minmax(0, 1fr); }
   .fp-comparar { grid-template-columns: minmax(0, 1fr); }
   .fp-seta { justify-self: center; transform: rotate(90deg); }
   .fp-botao { flex: 1 1 30%; min-width: 0; padding: 8px 6px; font-size: 12px; letter-spacing: .02em; }
