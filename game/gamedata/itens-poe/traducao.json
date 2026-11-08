@@ -14,6 +14,175 @@
   ],
   "regras": [
     {
+      "padrao": "^Sanguinolência Extra$",
+      "efeitos": [
+        {
+          "stat": "visual:sangue",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o abate solta mais sangue (só na tela)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pegadas Sanguinárias$",
+      "efeitos": [
+        {
+          "stat": "visual:pegadas:sangue",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "pegadas de sangue por onde você anda (só na tela)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pegadas Necróticas$",
+      "efeitos": [
+        {
+          "stat": "visual:pegadas:necro",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "pegadas necróticas por onde você anda (só na tela)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pegadas Cascos Ardentes$",
+      "efeitos": [
+        {
+          "stat": "visual:pegadas:cascos",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "pegadas de cascos em brasa por onde você anda (só na tela)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pegadas Enevoadas$",
+      "efeitos": [
+        {
+          "stat": "visual:pegadas:nevoa",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "pegadas de névoa por onde você anda (só na tela)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pegadas Celestiais$",
+      "efeitos": [
+        {
+          "stat": "visual:pegadas:celeste",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "pegadas celestiais por onde você anda (só na tela)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pegadas de Mercúrio$",
+      "efeitos": [
+        {
+          "stat": "visual:pegadas:mercurio",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "pegadas de mercúrio por onde você anda (só na tela)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^frenzy charge blood dance art variation \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "visual:frenesi_sangue",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "as Cargas de Frenesi com a arte da Dança Sangrenta (só na tela)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^use goddess player audio \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "visual:som_deusa",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a voz da Deusa nos seus abates de Únicos e chefes (o som)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^unique insanity do weird things \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "visual:insanidade",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a Insanidade: a tela tremula e as cores se desviam de vez em quando (só na tela)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^local off hand visual identity override hash \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "visual:asas",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "as asas da Entropia nas suas costas (só na tela)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^sound on rare kill ice whisper \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "visual:som_gelo",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o sussurro de gelo ao matar um Raro ou Único (o som)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos mostram sua Categoria de Monstros$",
+      "efeitos": [
+        {
+          "stat": "visual:categoria",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a categoria do monstro (Besta, Demônio, Humanoide, Construto, Morto-vivo) aparece sobre o nome",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
       "padrao": "^Pode ser modificado enquanto Corrompido$",
       "efeitos": [
         {

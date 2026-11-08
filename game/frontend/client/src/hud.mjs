@@ -1721,7 +1721,8 @@ function renderBuffsDaMagia(hunt) {
     // Carga do PoE: a bolinha da cor dela (Tolerância vermelha, Frenesi verde, Poder azul) com o número.
     else if (buff.carga) {
       const bola = document.createElement('span');
-      bola.className = `hud-carga carga-${buff.carga}`;
+      // (08/11, a Dança Sangrenta: "frenzy charge blood dance art variation" — a arte de sangue nas Cargas de Frenesi)
+      bola.className = `hud-carga carga-${buff.carga}${buff.carga === 'frenesi' && buff.arte ? ` arte-${buff.arte}` : ''}`;
       bola.textContent = String(buff.n ?? '');
       card.append(bola);
     } else {

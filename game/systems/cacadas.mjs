@@ -141,6 +141,19 @@ BausPoe.definirLootDoMonstro({ fatorDaCacaOnline, entregarMoedas });
  */
 const compactarLista = (lista) => (Array.isArray(lista) ? lista.map(compactarMonstro) : lista);
 
+/** (08/11) Os visuais das peças (`visual:<nome>` no af do PoE): `{ visuais: ['sangue', 'pegadas:mercurio', …] }`, ou nada. */
+export function visuaisDoJogador(af) {
+  const v = Object.keys(af ?? {}).filter((k) => k.startsWith('visual:') && Number(af[k]) > 0).map((k) => k.slice(7));
+  return v.length ? { visuais: v } : {};
+}
+/** A CATEGORIA do monstro do PoE (Besta, Construto, Demônio, Humanoide, Morto-vivo) pela classe/raça do bestiário; sem classe, nenhuma. */
+const CATEGORIA_DA_CLASSE = {
+  Undead: 'Morto-vivo', Human: 'Humanoide', Humanoid: 'Humanoide', Giant: 'Humanoide', Demon: 'Demônio', 'Extra Dimensional': 'Demônio', Fey: 'Demônio',
+  Mammal: 'Besta', Vermin: 'Besta', Reptile: 'Besta', Bird: 'Besta', Aquatic: 'Besta', Lycanthrope: 'Besta', Amphibic: 'Besta', Dragon: 'Besta', Plant: 'Besta',
+  Construct: 'Construto', Elemental: 'Construto', Magical: 'Construto', Slime: 'Construto', Inkborn: 'Construto',
+};
+export const categoriaDoMonstro = (m) => CATEGORIA_DA_CLASSE[m?.class ?? BESTIARY[m?.key]?.class] ?? null;
+
 export function huntParaGravar(hunt) {
   if (!hunt) return hunt;
   const copia = { ...hunt, monstros: compactarLista(hunt.monstros) };
@@ -4228,7 +4241,8 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     ...(mandarMapa ? { map: gradeDaHunt(hd).mapa } : {}),
     // A duração do passo na tela acompanha a velocidade (ver `passosDoTique`).
     // (lote A1: + o contador `teleporte` — o salto e o teleporte das gemas de movimento, `Acoes.moverNoDeslocamento`: a tela põe o boneco na casa nova)
-    player: { x: hunt.pos.x, y: hunt.pos.y, dir: hunt.pos.dir, moveMs: Math.round(R.PASSO_MS / razaoDeVelocidade(estado)), ...(hunt.teleportes ? { teleporte: hunt.teleportes } : {}), ...(Controle.ativosNoJogador(hunt).length ? { controle: Controle.ativosNoJogador(hunt) } : {}), ...(estadosDoJogador(hunt).length ? { estados: estadosDoJogador(hunt) } : {}) },
+    // (08/11, balão 0 sem efeito) os VISUAIS e SONS das peças (`visual:*` no af — as pegadas, o sangue, os sons): o cliente desenha (`visuais-unicos.mjs`)
+    player: { x: hunt.pos.x, y: hunt.pos.y, dir: hunt.pos.dir, moveMs: Math.round(R.PASSO_MS / razaoDeVelocidade(estado)), ...visuaisDoJogador(afDaLuz), ...(hunt.teleportes ? { teleporte: hunt.teleportes } : {}), ...(Controle.ativosNoJogador(hunt).length ? { controle: Controle.ativosNoJogador(hunt) } : {}), ...(estadosDoJogador(hunt).length ? { estados: estadosDoJogador(hunt) } : {}) },
     monsters: hunt.monstros.map((m) => ({
       uid: m.uid,
       x: m.x,
@@ -4250,6 +4264,8 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
       ...(m.estados ? ((a) => (a.length ? { estados: a } : {}))(Estados.ativosDe(m, hunt.clock ?? 0)) : {}),
       // (lote "luz") o "Tamanho do Personagem aumentado" dos modificadores do PoE: o desenho maior
       ...(afDaLuz ? tamanho(Iluminacao.tamanhoDoMonstro(m, MODS_DE_MONSTRO)) : {}),
+      // (08/11, a Ambição de Veruso: "Inimigos mostram sua Categoria de Monstros")
+      ...(Number(afDaLuz?.['visual:categoria']) > 0 && categoriaDoMonstro(m) ? { categoria: categoriaDoMonstro(m) } : {}),
     })),
     players: [],
     npcs: [],
@@ -4309,7 +4325,7 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     // As magias de suporte ligadas, com o tempo que RESTA (os cards acima da barra).
     // + as cargas do PoE ativas (Tolerância, Frenesi, Poder), como cartões de buff.
     // (+ 14/10: os buffs do PoE por nome — os altares, a Adrenalina, o Liberto —, a Casca e a Fúria Liberta: `ModsPoe.buffsDoCliente`)
-    buffs: [...Acoes.buffsAtivos(hunt, estado), ...CargasPoe.buffs(estado), ...FrascosPoe.buffs(estado), ...ModsPoe.buffsDoCliente(estado)],
+    buffs: [...Acoes.buffsAtivos(hunt, estado), ...CargasPoe.buffs(estado, afDaLuz), ...FrascosPoe.buffs(estado), ...ModsPoe.buffsDoCliente(estado)],
     // Por que cada slot não saiu, e o ✔/✖ de cada condição agora (o balão do slot e o editor).
     parados: Acoes.paradosParaCliente(hunt),
     condicoesAgora: Acoes.condicoesParaCliente(estado, hunt, alvoAtual(hunt)),

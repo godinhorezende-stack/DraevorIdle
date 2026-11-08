@@ -77,12 +77,14 @@ export function ativas(estado) {
 }
 
 /** As cargas ativas como cartões de buff da caçada (o cliente desenha junto dos buffs de magia). */
-export function buffs(estado) {
+// (08/11: `af` — a arte das Cargas de Frenesi da Dança Sangrenta, `visual:frenesi_sangue`: o cartão leva `arte: 'sangue'`)
+export function buffs(estado, af = null) {
   const c = estado?.hunt?.cargasPoe;
+  const arte = Number(af?.['visual:frenesi_sangue']) > 0 ? 'sangue' : null;
   const agora = estado?.hunt?.clock ?? 0;
   if (!c) return [];
   // (lote 8: + as cargas de único)
-  return [...TIPOS, ...EXTRAS].filter((t) => c[t] && c[t].ate > agora && c[t].n > 0).map((t) => ({ icone: null, nome: `Cargas ${NOME[t] ? `de ${NOME[t]}` : NOME_EXTRA[t]} ×${c[t].n}`, resta: c[t].ate - agora, tipo: 'cargaPoe', carga: t, n: c[t].n }));
+  return [...TIPOS, ...EXTRAS].filter((t) => c[t] && c[t].ate > agora && c[t].n > 0).map((t) => ({ icone: null, nome: `Cargas ${NOME[t] ? `de ${NOME[t]}` : NOME_EXTRA[t]} ×${c[t].n}`, resta: c[t].ate - agora, tipo: 'cargaPoe', carga: t, n: c[t].n, ...(t === 'frenesi' && arte ? { arte } : {}) }));
 }
 
 /*

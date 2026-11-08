@@ -890,7 +890,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // bônus online, que é de CHANCE no loot e não de quantidade de ouro.
   alvo.expDasMoedas = Math.round(semOnline);
   alvo.exp = exp;
-  eventos.push({ t: 'kill', name: alvo.name, exp, quem: personagem.nome, x: alvo.x, y: alvo.y, color: '#ffffff' });
+  // (08/11: + a raridade — os visuais e sons das peças no abate, `visuais-unicos.mjs`)
+  eventos.push({ t: 'kill', name: alvo.name, exp, quem: personagem.nome, x: alvo.x, y: alvo.y, color: '#ffffff', raridade: alvo.raridade ?? 'normal', ...(alvo.boss || alvo.isBoss ? { chefe: true } : {}) });
   estado.xp = (estado.xp ?? 0) + exp;
   const sessao = hunt.sessao;
   if (sessao) {

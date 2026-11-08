@@ -182,3 +182,23 @@ test('as peças ANTIGAS: a marcação "[...]" que ficou na peça vira as linhas 
   assert.ok(!p.poe.estados.some((x) => ['inerte', 'registrado'].includes(x)));
   assert.equal(J.refazerPecasAntigas(e), 0, 'na segunda entrada, nada');
 });
+
+test('B10, os visuais e sons: as linhas saem com efeito, viajam no retrato da caçada e a carga leva a arte', { skip: SEM }, async () => {
+  for (const [m, stat] of [['Pegadas de Mercúrio', 'visual:pegadas:mercurio'], ['Sanguinolência Extra', 'visual:sangue'], ['sound on rare kill ice whisper [{0}]', 'visual:som_gelo'], ['Inimigos mostram sua Categoria de Monstros', 'visual:categoria'], ['frenzy charge blood dance art variation [{0}]', 'visual:frenesi_sangue']]) {
+    const r = tr(m, [1]);
+    assert.equal(r.estado, 'equivalente', m);
+    assert.deepEqual(r.efeitos.map((e) => e.stat), [stat]);
+  }
+  const Cacadas = await import('../systems/cacadas.mjs');
+  assert.deepEqual(Cacadas.visuaisDoJogador({ 'visual:sangue': 1, 'visual:pegadas:mercurio': 1, life_inc: 10 }), { visuais: ['sangue', 'pegadas:mercurio'] });
+  assert.deepEqual(Cacadas.visuaisDoJogador({ life_inc: 10 }), {});
+  assert.equal(Cacadas.categoriaDoMonstro({ class: 'Undead' }), 'Morto-vivo');
+  assert.equal(Cacadas.categoriaDoMonstro({ class: 'Mammal' }), 'Besta');
+  assert.equal(Cacadas.categoriaDoMonstro({ class: 'Sem classe' }), null);
+  const CargasPoe = await import('../systems/itens-poe/cargas.mjs');
+  const e = { hunt: { clock: 0, cargasPoe: { frenesi: { n: 2, ate: 5000 }, poder: { n: 1, ate: 5000 } } } };
+  const cartoes = CargasPoe.buffs(e, { 'visual:frenesi_sangue': 1 });
+  assert.equal(cartoes.find((b) => b.carga === 'frenesi').arte, 'sangue');
+  assert.equal(cartoes.find((b) => b.carga === 'poder').arte, undefined);
+  assert.equal(CargasPoe.buffs(e).find((b) => b.carga === 'frenesi').arte, undefined);
+});

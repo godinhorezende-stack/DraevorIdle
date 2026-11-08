@@ -99,6 +99,12 @@ export const GRAFICOS = [
       'é por eles que se lê a caçada.',
   },
   {
+    id: 'sons',
+    nome: 'Sons',
+    leve: false,
+    dica: 'Os sons das peças únicas: o sussurro de gelo ao matar um Raro, a voz da Deusa. Só tocam depois do primeiro clique na página.',
+  },
+  {
     id: 'ritmo',
     nome: 'Atualizações completas',
     leve: false,
