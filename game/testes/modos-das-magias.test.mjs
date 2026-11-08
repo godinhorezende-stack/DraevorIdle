@@ -7,19 +7,8 @@ import * as Cacadas from '../systems/cacadas.mjs';
 import * as Acoes from '../systems/acoes.mjs';
 import * as Combo from '../systems/combo.mjs';
 import { personagemDeTeste, PERSONAGEM, comSkills, HUNT_DE_TESTE } from './apoio.mjs';
-import { aAdaptar, soNoOficial } from './apoio-migracao.mjs';
+import { soNoOficial } from './apoio-migracao.mjs';
 import * as GemasPoe from '../systems/itens-poe/gemas-poe.mjs';
-
-function montar(magias, settings = null) {
-  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 600 });
-  comSkills(e, magias.filter(Boolean));
-  magias.forEach((id, i) => id && assert.ok(Acoes.definir(e, { slot: Combo.SLOTS_DO_COMBO[i], value: { id } }).ok, id));
-  if (settings) assert.ok(Combo.definirModo(e, settings).ok);
-  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
-  e.hunt.assistencia = true;
-  e.hunt.autoBarra = true;
-  return e;
-}
 
 /*
  * (08/11, adaptado ao PoE — o dono: "Adaptar antes") Os modos na barra do PoE, com as GEMAS do PoE: os 8 slots são de 'skill' e a fileira de
@@ -169,13 +158,15 @@ test('em todos os modos: nunca duas magias no mesmo instante, nunca antes do glo
   }
 });
 
-test('Regras de Uso + Limite: a preferida vai na frente, mas o limite vale também para ela', { skip: aAdaptar("Os modos Prioridade/Limite/Rotação valem na barra do PoE (pedido do dono); o teste usa magias do Draevor") }, () => {
-  const e = montar(['spell-buzz', 'spell-great-fire-wave', 'spell-energy-strike'], { modo: 'limite', limite: 1 });
-  // "Sempre: preferir área" — a Great Fire Wave (slot 2) passa à frente do slot 1.
+// (08/11, adaptado ao PoE — com a correção das Regras de Uso para as gemas do PoE) A Nova Elétrica (área) no slot 2, entre o Pulso
+// Congelante e a Faísca (alvo único / projétil).
+test('Regras de Uso + Limite: a preferida vai na frente, mas o limite vale também para ela', { skip: soNoOficial('as gemas do PoE na barra do PoE') }, () => {
+  const e = montarPoe(['Freezing_Pulse', 'Shock_Nova', 'Spark'], { modo: 'limite', limite: 1 });
+  // "Sempre: preferir área" — a Nova Elétrica (slot 2) passa à frente do slot 1.
   e.regrasDeUso = [{ nome: 'área', ativa: true, quando: [], acao: 'preferir', tags: ['area', 'wave'] }];
   const ex = rodar(e, 40);
   assert.equal(ex[0].slot, 2, 'a preferida primeiro');
-  conferirLimite(ex, 3, 1, 'spell-great-fire-wave');
+  conferirLimite(ex, 3, 1, POE('Shock_Nova'));
 });
 
 test('o modo fica no personagem: sai e entra de novo na caçada com o mesmo modo', { skip: soNoOficial('as gemas do PoE na barra do PoE') }, () => {

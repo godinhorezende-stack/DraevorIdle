@@ -22,9 +22,16 @@ const TIPOS_DE_CONDICAO = new Set(['stat', 'perto', 'boss', 'nome']);
 
 const POR_ID = new Map([...ACTION_CATALOG.spells, ...ACTION_CATALOG.runes, ...ACTION_CATALOG.items].map((e) => [e.id, e]));
 const tagsCache = new Map();
+// (08/11) A entrada pela barra (`Acoes.POR_ID_PUBLICO`): as gemas do PoE entram no catálogo DEPOIS que este módulo carrega
+// (`iniciarJogoDoPoe` → `Acoes.registrarAcao`) — pelo mapa montado na carga, toda gema do PoE ficava sem tag nenhuma, e as regras não valiam
+// para ela ("preferir" não pesava, "somente" barrava todas, "bloquear" nunca barrava). Sem entrada, não guarda: a gema pode chegar depois.
 const tagsDe = (id) => {
-  if (!tagsCache.has(id)) tagsCache.set(id, Tags.tagsDaAcao(POR_ID.get(id)));
-  return tagsCache.get(id);
+  if (tagsCache.has(id)) return tagsCache.get(id);
+  const entrada = Acoes.POR_ID_PUBLICO(id) ?? POR_ID.get(id);
+  if (!entrada) return Tags.tagsDaAcao(undefined);
+  const tags = Tags.tagsDaAcao(entrada);
+  tagsCache.set(id, tags);
+  return tags;
 };
 
 /** Uma condição válida (o mesmo formato das do slot) ou null. */

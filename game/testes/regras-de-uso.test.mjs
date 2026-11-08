@@ -89,24 +89,27 @@ test('sem regra, a rotação é a de sempre (o 1º slot sai primeiro)', { skip: 
   assert.equal(qualSaiuPoe(e, alvo), PULSO);
 });
 
-test('"Se bichos por perto ≥ 3 → preferir ÁREA": com 4 bichos, a área sai antes; com 1, a rotação normal', { skip: aAdaptar("Regras de uso (área com ≥3 bichos, só alvo único no boss, sem buff com pouca mana) valem na barra do PoE") }, () => {
-  const e = montar();
+// (08/11, adaptado ao PoE) Este arquivo importa as regras ANTES do jogo do PoE carregar (a mesma ordem do servidor): era o bug — as tags
+// das gemas do PoE eram lidas de um mapa montado na carga, sem elas.
+test('"Se bichos por perto ≥ 3 → preferir ÁREA": com 4 bichos, a área sai antes; com 1, a rotação normal', { skip: soNoOficial('as gemas do PoE na barra do PoE') }, () => {
+  const e = montarPoe();
   e.regrasDeUso = Regras.sanear([{ quando: [{ kind: 'perto', op: 'gte', value: 3 }], acao: 'preferir', tags: ['area', 'wave'] }]);
   const alvo = bichos(e, 4);
-  assert.equal(qualSaiu(e, alvo), 'Great Fire Wave');
+  assert.equal(qualSaiuPoe(e, alvo), NOVA);
   e.hunt.monstros.splice(1);
-  assert.equal(qualSaiu(e, alvo), 'Flame Strike');
+  assert.equal(qualSaiuPoe(e, alvo), PULSO);
 });
 
-test('"Se boss → só ALVO ÚNICO": na sala de boss a área não sai', { skip: aAdaptar("Regras de uso (área com ≥3 bichos, só alvo único no boss, sem buff com pouca mana) valem na barra do PoE") }, () => {
-  const e = montar();
+test('"Se boss → só ALVO ÚNICO": na sala de boss a área não sai', { skip: soNoOficial('as gemas do PoE na barra do PoE') }, () => {
+  const e = montarPoe();
   e.regrasDeUso = Regras.sanear([{ quando: [{ kind: 'boss', op: 'sim' }], acao: 'somente', tags: ['single'] }]);
   const alvo = bichos(e, 4);
   e.hunt.isBoss = true;
   // Mesmo com o cursor apontando para a área, só a de alvo único é tentada.
   e.hunt.cursorDoCombo = 1;
-  assert.equal(Regras.permitida('spell-great-fire-wave', Regras.ativas(e, e.hunt, alvo)), false);
-  assert.equal(qualSaiu(e, alvo), 'Flame Strike');
+  assert.equal(Regras.permitida(NOVA, Regras.ativas(e, e.hunt, alvo)), false);
+  assert.equal(Regras.permitida(PULSO, Regras.ativas(e, e.hunt, alvo)), true);
+  assert.equal(qualSaiuPoe(e, alvo), PULSO);
 });
 
 test('"Se mana ≤ 20% → não usar BUFF": bloquear vale fora do ataque; cura nunca é barrada', { skip: aAdaptar("Regras de uso (área com ≥3 bichos, só alvo único no boss, sem buff com pouca mana) valem na barra do PoE") }, () => {
