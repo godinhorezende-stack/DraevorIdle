@@ -8,7 +8,6 @@ import { dirname, join } from 'node:path';
 import * as O from '../systems/overrides.mjs';
 import { criarArquivoVersionado, revisaoDe, conferirRevisao } from './arquivo-versionado.mjs';
 import { usosDe, desenhoDoItem } from './biblioteca.mjs';
-import * as Conjuntos from '../systems/conjuntos.mjs';
 import * as ItemPower from '../systems/item-power.mjs';
 import * as Diario from './item-power-historico.mjs';
 
@@ -65,7 +64,7 @@ export function obter(id) {
   if (!original) return null;
   const ov = d.itens[id] ?? null;
   const efetivo = efetivoDe(id, ov);
-  return { id: String(id), novo: ehItemNovo(id), original, override: ov, efetivo, desenho: desenhoDoItem(efetivo), usos: usosDe('itens', id), conjuntos: Conjuntos.usadoPor(id), globalAtivo: d.ativo, revisao: revisaoDe(CAMINHOS.arquivo), rarezas: O.RARIDADES_DE_ITEM, campos: O.CAMPOS_DE_ITEM, equipamento: !!original.slot };
+  return { id: String(id), novo: ehItemNovo(id), original, override: ov, efetivo, desenho: desenhoDoItem(efetivo), usos: usosDe('itens', id), globalAtivo: d.ativo, revisao: revisaoDe(CAMINHOS.arquivo), rarezas: O.RARIDADES_DE_ITEM, campos: O.CAMPOS_DE_ITEM, equipamento: !!original.slot };
 }
 
 export function propor(id, ov) {

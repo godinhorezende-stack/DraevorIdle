@@ -76,7 +76,6 @@ import * as InstanciaDaHunt from '../systems/hunt/instancia.mjs';
 import * as EstadoDosEncontros from '../systems/encontros/estado.mjs';
 import * as TiposDosEncontros from '../systems/encontros/tipos.mjs';
 import { registrarGrandes, jsonComGrandes } from './json.mjs';
-import * as Forja from '../systems/forja.mjs';
 import * as Afixos from '../systems/afixos.mjs';
 import * as Prey from '../systems/prey.mjs';
 import * as Arvore from '../systems/arvore.mjs';
@@ -87,8 +86,6 @@ import * as Troca from '../systems/troca.mjs';
 import * as Combo from '../systems/combo.mjs';
 import * as Raridade from '../systems/mobs/raridade.mjs';
 import * as Banqueiro from '../systems/banqueiro.mjs';
-import * as Craft from '../systems/craft.mjs';
-import * as Desmanche from '../systems/desmanche.mjs';
 import * as SimulacaoOffline from '../systems/simulacao-offline.mjs';
 import { VERSAO_DO_CLIENTE } from '../systems/versao-do-cliente.mjs';
 import * as ItensDoJogo from '../systems/itens/item.mjs';
@@ -1187,7 +1184,8 @@ export class Sessao {
     // properties of null (reading 'equipment')". Como na entrada, ele é ignorado em silêncio; só passa o que não precisa de personagem.
     if (!this.personagem && !PASSAM_SEM_PERSONAGEM.has(m.t)) return;
     // (08/11, o dono: "quero tirar essas coisas do clássico" — lote 0) No jogo do PoE os sistemas do Draevor clássico (a Forja de tier e
-    // afixos, o Craft, o Desmanche, o Gem Atelier) não existem: o comando é recusado antes de mexer no personagem.
+    // afixos, o Craft, o Desmanche, o Gem Atelier) não existem: o comando é recusado antes de mexer no personagem. (Lote 1: a Forja, o
+    // Craft e o Desmanche saíram do jogo — o pedido de um cliente velho recebe a mesma resposta.)
     if (COMANDOS_DO_CLASSICO.has(m.t) && ItensPoeCatalogo.ligado()) return this.erro('Isso não existe no jogo do Path of Exile.');
     switch (m.t) {
       case 'register':
@@ -1364,66 +1362,6 @@ export class Sessao {
           m.action === 'orbePoe' ? GemasDeSkill.usarOrbeDoPoe(this.estado, m) :
           { ok: false, erro: 'Ação de gema desconhecida.' }
         );
-      // A Forja: tier (subir com chance, passar) e afixos (rerroll, transferir,
-      // retirar, inserir, fundir) — cada resposta é o retrato inteiro de novo.
-      case 'forja':
-        return this.enviar(Forja.viewDoTier(this.estado));
-      case 'forjaSubir':
-      case 'forjaTransferir': {
-        const r = m.t === 'forjaSubir' ? Forja.subirTier(this.estado, m) : Forja.transferirTier(this.estado, m);
-        if (r.erro) this.erro(r.erro);
-        else if (r.notice) this.avisoPendente = r.notice;
-        Afixos.sincronizarMaximos(this.estado);
-        this.mandarEstado();
-        return this.enviar(Forja.viewDoTier(this.estado, r.forjou));
-      }
-      // As outras duas abas da Forja: o Craft (sets Craftado e V2) e a Máquina
-      // de Desmanche — mesma regra: a resposta é a ficha inteira de novo.
-      case 'craft':
-        return this.enviar(Craft.view(this.estado, m));
-      case 'craftFazer': {
-        const r = Craft.craftar(this.estado, m);
-        if (!r.ok) this.erro(r.erro);
-        else this.avisoPendente = r.notice;
-        Afixos.sincronizarMaximos(this.estado);
-        this.mandarEstado();
-        // A aba Tier só pede a ficha dela ao abrir a Forja: sem esta, ela
-        // mostraria o ouro e as peças de ANTES do craft até alguém reabrir.
-        this.enviar(Forja.viewDoTier(this.estado));
-        return this.enviar(Craft.view(this.estado, m, r.craftou));
-      }
-      case 'desmanche':
-        return this.enviar(Desmanche.view(this.estado));
-      case 'desmancharPeca': {
-        const r = Desmanche.desmanchar(this.estado, m);
-        if (!r.ok) this.erro(r.erro);
-        else this.avisoPendente = r.notice;
-        this.mandarEstado();
-        this.enviar(Forja.viewDoTier(this.estado)); // mesma razão do craft: as peças mudaram
-        return this.enviar(Desmanche.view(this.estado));
-      }
-      case 'forjaAfixos':
-        return this.enviar(Forja.viewDosAfixos(this.estado));
-      case 'forjaAfixoPrevia':
-        return this.enviar(Forja.previaTransferir(this.estado, m));
-      case 'forjaAfixoPreviaRetirar':
-        return this.enviar(Forja.previaRetirar(this.estado, m));
-      case 'forjaAfixoPreviaInserir':
-        return this.enviar(Forja.previaInserir(this.estado, m));
-      case 'forjaAfixoPreviaFundir':
-        return this.enviar(Forja.previaFundir(this.estado, m));
-      case 'forjaAfixoReroll':
-      case 'forjaAfixoTransferir':
-      case 'forjaAfixoRetirar':
-      case 'forjaAfixoInserir':
-      case 'forjaAfixoFundir': {
-        const faz = { forjaAfixoReroll: Forja.rerrolar, forjaAfixoTransferir: Forja.transferir, forjaAfixoRetirar: Forja.retirar, forjaAfixoInserir: Forja.inserir, forjaAfixoFundir: Forja.fundir }[m.t];
-        const r = faz(this.estado, m);
-        if (r.erro) this.erro(r.erro);
-        Afixos.sincronizarMaximos(this.estado);
-        this.mandarEstado();
-        return this.enviar(Forja.viewDosAfixos(this.estado, r.fez));
-      }
       case 'grupo':
         return this.aplicar(Party.comandoDoGrupo(this, m));
       case 'party':

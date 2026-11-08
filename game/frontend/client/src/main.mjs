@@ -1158,24 +1158,6 @@ function handle(message) {
       if (message.view?.aviso) notice(message.view.aviso);
       panelCtx.redraw?.();
       break;
-    /*
-     * A forja manda o retrato inteiro (peças, preços, ouro) a cada resposta —
-     * inclusive DEPOIS de forjar. É o que faz a tela mostrar o tier novo e o
-     * ouro novo sem ninguém fechar e reabrir a janela.
-     */
-    case 'forja':
-      state.forja = message;
-      panelCtx.redraw?.();
-      break;
-    /*
-     * A aba de AFIXOS da forja: mesmo desenho do `forja` acima — o retrato
-     * inteiro a cada resposta, inclusive depois de forjar, para a tela mostrar
-     * as estrelas novas e o saldo novo sem ninguém fechar a janela.
-     */
-    case 'forjaAfixos':
-      state.forjaAfixos = message;
-      panelCtx.redraw?.();
-      break;
     // A Forja do PoE reformulada (`forja-poe.mjs`): as opções da tela e o resultado de cada lote da forja.
     case 'forjaOpcoes':
       chegouForjaOpcoes(message);
@@ -1186,54 +1168,6 @@ function handle(message) {
     // (16/10, lote 38) A tela dos Mercenários do PoE: a resposta de cada pedido é a tela inteira (`mercenarios.mjs`).
     case 'mercenarios':
       chegouMercenarios(message);
-      break;
-    /*
-     * E a prévia da transferência, que chega à parte porque ela é uma PERGUNTA
-     * (só lê) e o retrato é uma resposta. Guardá-la no mesmo campo faria toda
-     * prévia apagar a lista de peças enquanto a pessoa ainda escolhe.
-     */
-    case 'forjaAfixoPrevia':
-      panelCtx.tabs.afixoPrevia = message;
-      panelCtx.redraw?.();
-      break;
-    /*
-     * As outras três prévias, cada uma no campo dela.
-     *
-     * Um campo só para as quatro pareceria economia e seria defeito: a bancada
-     * de essências mostra a de RETIRAR e a de INSERIR na mesma tela (as duas
-     * abas viraram uma, a pedido do dono), e um campo compartilhado faria a
-     * segunda resposta apagar a primeira — a prévia certa piscando e sumindo
-     * conforme a ordem em que o servidor respondesse.
-     */
-    case 'forjaAfixoPreviaRetirar':
-      panelCtx.tabs.afixoPreviaRetirar = message;
-      panelCtx.redraw?.();
-      break;
-    case 'forjaAfixoPreviaInserir':
-      panelCtx.tabs.afixoPreviaInserir = message;
-      panelCtx.redraw?.();
-      break;
-    case 'forjaAfixoPreviaFundir':
-      panelCtx.tabs.afixoPreviaFundir = message;
-      panelCtx.redraw?.();
-      break;
-    /*
-     * O catálogo do craft chega separado do retrato da forja, e uma vocação por
-     * vez: são 118 receitas com quinze materiais cada, e mandá-las junto faria
-     * toda subida de tier arrastar o catálogo inteiro pelo socket.
-     */
-    case 'craft':
-      state.craft = message;
-      panelCtx.redraw?.();
-      break;
-    /*
-     * A Máquina de Desmanche, pela mesma porta e pelo mesmo motivo: ela lista
-     * 134 peças e só as que a pessoa TEM, então o retrato dela é pedido quando
-     * a aba abre — e não junto do retrato da forja.
-     */
-    case 'desmanche':
-      state.desmanche = message;
-      panelCtx.redraw?.();
       break;
     /*
      * ---- A resposta de um NPC ----
@@ -1554,12 +1488,6 @@ function resetCharacterState() {
   // E a mobília das criaturas, que é do mapa do personagem anterior. As duas
   // memórias — esta e a do servidor — esvaziam juntas. Ver `juntarAsCriaturas`.
   mobiliaDasCriaturas.clear();
-  // A forja é do personagem: a lista de peças do anterior não vale para este.
-  state.forja = null;
-  // E o craft mostra o que ESTE personagem tem na mochila. Ver `craftView`.
-  state.craft = null;
-  // O desmanche também: ele lista as peças deste personagem. Ver `desmancheView`.
-  state.desmanche = null;
   state.shop = null;
   state.store = null;
   state.market = null;

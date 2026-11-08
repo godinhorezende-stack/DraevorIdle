@@ -36,7 +36,6 @@ export function moduloDe(caminho) {
   const c = caminho.replace(/^game\//, '');
   if (c === 'gamedata/overrides/monstros.json') return 'monstros';
   if (c === 'gamedata/overrides/itens.json') return 'itens';
-  if (c === 'gamedata/overrides/conjuntos.json' || c === 'gamedata/conjuntos.json') return 'conjuntos';
   if (c === 'gamedata/overrides/itens-sprites.json' || /^gamedata\/overrides\/sprites\/itens\//.test(c)) return 'sprites';
   if (c === 'gamedata/overrides/classes.json' || c === 'gamedata/classes-meta.json') return 'classes';
   if (c === 'gamedata/overrides/item-power.json' || c === 'gamedata/item-power.json') return 'item-power';

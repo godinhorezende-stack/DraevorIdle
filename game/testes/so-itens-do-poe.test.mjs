@@ -12,8 +12,6 @@ import * as Cacadas from '../systems/cacadas.mjs';
 import * as Inventario from '../systems/inventario.mjs';
 import * as Mercado from '../systems/mercado.mjs';
 import * as Loja from '../systems/loja.mjs';
-import * as Desmanche from '../systems/desmanche.mjs';
-import * as Forja from '../systems/forja.mjs';
 import * as Recompensas from '../systems/recompensas.mjs';
 import * as GemasDeSkill from '../systems/skills/gemas.mjs';
 import * as SimulacaoOffline from '../systems/simulacao-offline.mjs';
@@ -153,13 +151,10 @@ test('Store: o produto que entrega item do Draevor e o Buff Power não se compra
   assert.equal(e.storeInbox.length, 1, 'fica na Inbox');
 });
 
-test('máquinas e lojas do Draevor recusam ANTES de tirar ou cobrar: desmanche, Forja do Draevor, loja de gemas (suporte do Draevor)', { skip: SEM }, () => {
+test('as lojas do Draevor recusam ANTES de tirar ou cobrar: loja de gemas (suporte do Draevor) — (08/11, lote 1 do clássico: o desmanche e a Forja do Draevor saíram do jogo)', { skip: SEM }, () => {
   const e = doPoe();
   e.inventory = [{ id: ESPADA_DO_DRAEVOR, count: 1 }];
   const antes = JSON.stringify(e);
-  assert.match(Desmanche.desmanchar(e, { pedidos: [{ id: ESPADA_DO_DRAEVOR, quantidade: 1 }] }).erro, /Draevor clássico/);
-  assert.match(Forja.retirar(e, { slot: 'weapon', indice: 0, moeda: 'gold' }).erro, /Forja do Draevor/);
-  assert.match(Forja.fundir(e, { moeda: 'gold' }).erro, /Forja do Draevor/);
   const suporteDoDraevor = [...GemasDeSkill.DEFS.values()].find((d) => !So.ehDoPoe(d.itemId));
   if (suporteDoDraevor) assert.equal(GemasDeSkill.comprarNaLoja(e, { id: suporteDoDraevor.itemId }).ok, false);
   assert.equal(JSON.stringify(e), antes, 'nada mudou no personagem');

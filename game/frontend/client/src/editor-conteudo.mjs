@@ -14,7 +14,6 @@ import { criarEditorDeSprites } from './editor-sprites-editor.mjs';
 import { criarIndicadorDeHotReload } from './editor-hot-reload.mjs';
 import { criarTelaDeValidacao } from './editor-validacao.mjs';
 import { criarTelaDeProgressao } from './editor-progressao.mjs';
-import { criarTelaDeConjuntos } from './editor-conjuntos.mjs';
 import { criarTelaDeItemPower } from './editor-item-power.mjs';
 import { criarTelaDeClasses } from './editor-classes.mjs';
 import { garantirAcesso } from './editor-acesso.mjs';
@@ -384,7 +383,6 @@ const TELAS_FIXAS = {
   itens: ITENS,
   sprites: SPRITES,
   progressao: criarTelaDeProgressao({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura') }),
-  conjuntos: criarTelaDeConjuntos({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura'), irPara: (aba, id = null, resto = []) => irPara(aba, id, resto) }),
   classes: criarTelaDeClasses({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura') }),
   itempower: criarTelaDeItemPower({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura') }),
   validacao: criarTelaDeValidacao({ api, raiz: () => $('#raiz'), podeGravar: () => !document.body.classList.contains('eng-somente-leitura') }),
@@ -400,7 +398,7 @@ const BOSSES = criarEditorDeBosses({ api, raiz: () => $('#raiz'), opcoes: () => 
 // ------------------------------------------------------------------ abas
 
 // A navegação: SÓ o que tem ferramenta de verdade por trás (nada de aba vazia). `href` = outra página.
-const ABAS = [['geral', 'Visão geral'], ['mapa', 'Mapa do mundo'], ['mapas', 'Editor de mapas'], ['hunts', 'Hunts e áreas'], ['atos', 'Acts e campanhas'], ['fase', 'Fases e encontros'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['sprites', 'Editor de sprites'], ['validacao', 'Validação e versão'], ['progressao', 'Progressão e loot'], ['conjuntos', 'Conjuntos'], ['itempower', 'Item Power'], ['classes', 'Classes'], ['biblioteca', 'Biblioteca de conteúdos'], ['beta', 'Testes e beta'], ['config', 'Configurações'], ['servidor', 'Servidor'], ['itens-poe', 'Itens (PoE)'], ['poe-campanha', 'Campanha do PoE'], ['poe-arvore', 'Árvore do PoE'], ['poe-chefes', 'Chefes do PoE'], ['poe-mobs', 'Mobs (PoE)'], ['poe-efeitos', 'Efeitos e projéteis'], ['sprites-biblioteca', 'Biblioteca de sprites'], ['poe-fases', 'Fases'], ['poe-mapas', 'Mapas da campanha'], ['poe-missoes', 'Missões'], ['poe-modificadores', 'Modificadores de monstro'], ['poe-gemas', 'Gemas'], ['poe-arena-gemas', 'Arena de gemas'], ['poe-pendencias', 'Pendências de modificadores'], ['poe-mapas-endgame', 'Mapas do endgame'], ['poe-abas', 'Abas do PoEDB'], ['poe-arvore-poedb', 'Árvore × PoEDB'], ['poe-gemas-poedb', 'Gemas × PoEDB']];
+const ABAS = [['geral', 'Visão geral'], ['mapa', 'Mapa do mundo'], ['mapas', 'Editor de mapas'], ['hunts', 'Hunts e áreas'], ['atos', 'Acts e campanhas'], ['fase', 'Fases e encontros'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['sprites', 'Editor de sprites'], ['validacao', 'Validação e versão'], ['progressao', 'Progressão e loot'], ['itempower', 'Item Power'], ['classes', 'Classes'], ['biblioteca', 'Biblioteca de conteúdos'], ['beta', 'Testes e beta'], ['config', 'Configurações'], ['servidor', 'Servidor'], ['itens-poe', 'Itens (PoE)'], ['poe-campanha', 'Campanha do PoE'], ['poe-arvore', 'Árvore do PoE'], ['poe-chefes', 'Chefes do PoE'], ['poe-mobs', 'Mobs (PoE)'], ['poe-efeitos', 'Efeitos e projéteis'], ['sprites-biblioteca', 'Biblioteca de sprites'], ['poe-fases', 'Fases'], ['poe-mapas', 'Mapas da campanha'], ['poe-missoes', 'Missões'], ['poe-modificadores', 'Modificadores de monstro'], ['poe-gemas', 'Gemas'], ['poe-arena-gemas', 'Arena de gemas'], ['poe-pendencias', 'Pendências de modificadores'], ['poe-mapas-endgame', 'Mapas do endgame'], ['poe-abas', 'Abas do PoEDB'], ['poe-arvore-poedb', 'Árvore × PoEDB'], ['poe-gemas-poedb', 'Gemas × PoEDB']];
 const NOME_DA_ABA = Object.fromEntries(ABAS);
 // O menu: só entra item que tem tela de verdade (grupo sem item não aparece). `modo`: o que a ferramenta faz — sem marca = edição completa;
 // 'consulta' = só mostra o cadastro; 'parcial' = edita parte. Atualizado junto com `docs/engine-reorganizacao-plano.md`.
@@ -423,7 +421,6 @@ const GRUPOS = [
     { id: 'progressao', nome: 'Progressão e loot', icone: 'engrenagem', modo: 'parcial', dica: 'Atos, tiers das bases e loot por dificuldade (override); simulador' },
     { id: 'classes', nome: 'Classes', icone: 'classes', modo: 'parcial', dica: 'classes, atributos iniciais e bônus por ponto de atributo (override)' },
     { id: 'itempower', nome: 'Item Power', icone: 'espada', modo: 'parcial', dica: 'poder base dos equipamentos, curva por level e alertas de distribuição (override)' },
-    { id: 'conjuntos', nome: 'Conjuntos', icone: 'espada', modo: 'parcial', dica: 'sets de equipamento por classe, Ato e tier (override); referências a itens' },
     { id: 'sprites', nome: 'Editor de sprites', icone: 'outfit', modo: 'parcial', dica: 'monstros, outfits e montarias: quadros, direções e animação por override' }] },
   { id: 'recursos', titulo: 'Recursos', itens: [
     { id: 'biblioteca', nome: 'Biblioteca de conteúdos', icone: 'livros', modo: 'consulta' },
@@ -454,7 +451,7 @@ function desenharAbas() {
 }
 // ---- O MENU com o sistema de itens do PoE ligado (só local): a Engine do jogo PoE, uma aba por objetivo (decisão do dono, 05/10: "cada aba para construir e editar
 // o jogo"). Campanha (Acts: ato → áreas/mapa → mobs → drops; o terreno dos mapas), Conteúdo (mobs, chefes, itens, classes e árvore do PoE) e Recursos. As telas
-// do Draevor que não valem no PoE (Fases e encontros, Bosses do Draevor, Progressão e loot, Item Power, Conjuntos...) saem do menu; os endereços antigos levam à
+// do Draevor que não valem no PoE (Fases e encontros, Bosses do Draevor, Progressão e loot, Item Power...) saem do menu; os endereços antigos levam à
 // tela do PoE equivalente.
 let MODO_POE = false;
 const GRUPOS_POE = [
@@ -489,7 +486,7 @@ const GRUPOS_POE = [
     { id: 'servidor', nome: 'Servidor', icone: 'servidor', dica: 'quem está online (contas, personagens, IPs) e o reinício' }] },
 ];
 /** Com o PoE ligado, a tela do Draevor que não vale no PoE leva à equivalente. */
-const NO_POE = { outfits: 'sprites-biblioteca', montarias: 'sprites-biblioteca', 'poe-efeitos': 'sprites-biblioteca', geral: 'atos', mapa: 'atos', hunts: 'atos', fase: 'atos', 'poe-campanha': 'atos', mobs: 'poe-mobs', bosses: 'poe-chefes', 'itens-poe': 'itens', progressao: 'itens', itempower: 'itens', conjuntos: 'itens' };
+const NO_POE = { outfits: 'sprites-biblioteca', montarias: 'sprites-biblioteca', 'poe-efeitos': 'sprites-biblioteca', geral: 'atos', mapa: 'atos', hunts: 'atos', fase: 'atos', 'poe-campanha': 'atos', mobs: 'poe-mobs', bosses: 'poe-chefes', 'itens-poe': 'itens', progressao: 'itens', itempower: 'itens' };
 
 /** O endereço guarda a tela (`#fase/troll-cave`, `#bosses`...): recarregar ou mandar o link abre no mesmo lugar. */
 const lerEndereco = () => {

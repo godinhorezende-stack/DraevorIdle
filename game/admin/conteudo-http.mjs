@@ -18,7 +18,6 @@ import * as Versoes from './versoes.mjs';
 import * as GitEnvio from './git-envio.mjs';
 import * as GitIntegracao from './git-integracao.mjs';
 import * as OverridesProgressao from './overrides-progressao.mjs';
-import * as OverridesConjuntos from './overrides-conjuntos.mjs';
 import * as OverridesItemPower from './overrides-item-power.mjs';
 import * as AnaliseItemPower from './item-power-analise.mjs';
 import * as EditorItemPower from './item-power-editor.mjs';
@@ -28,7 +27,6 @@ import * as OverridesClasses from './overrides-classes.mjs';
 const arenaEfeitos = () => import('./arena-efeitos.mjs');
 import * as Classes from '../systems/classes.mjs';
 import * as ItemPower from '../systems/item-power.mjs';
-import * as Conjuntos from '../systems/conjuntos.mjs';
 import * as Progressao from '../systems/progressao.mjs';
 import * as Simulador from '../systems/itens/simulador-de-loot.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
@@ -90,14 +88,6 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
       const ato = Number(rota.slice('progressao/ato/'.length));
       const b = Progressao.basesDoAto(ato, { slot: url.searchParams.get('slot') || null, vocacao: url.searchParams.get('vocacao') || null, limite: 300 });
       return b ? json(res, 200, { ...b, marcos: OverridesProgressao.marcosDoAto(ato), nivelMaximo: Progressao.nivelMaximo() }) : json(res, 404, { ok: false, erros: ['Ato não encontrado na progressão.'] }), true;
-    }
-    // Conjuntos (sets de equipamento por classe): a configuração, a busca de itens para os slots e os atributos totais pela ficha real — só leitura.
-    if (rota === 'conjuntos') return json(res, 200, OverridesConjuntos.obter()), true;
-    if (rota === 'conjuntos/itens') return json(res, 200, OverridesConjuntos.buscarItens(Object.fromEntries(url.searchParams))), true;
-    if (rota === 'conjuntos-versoes') return json(res, 200, { versoes: OverridesConjuntos.versoes() }), true;
-    if (rota.startsWith('conjuntos/totais/')) {
-      const c = Conjuntos.obter(decodeURIComponent(rota.slice('conjuntos/totais/'.length)));
-      return c ? json(res, 200, OverridesConjuntos.totais(c, { level: url.searchParams.get('level') })) : json(res, 404, { ok: false, erros: ['Conjunto não encontrado.'] }), true;
     }
     // Item Power Base (indicador de comparação dos atributos base): configuração, lista de itens, detalhe, curva, alertas de distribuição e presentes de marco — só leitura.
     if (rota === 'item-power') return json(res, 200, OverridesItemPower.obter()), true;
@@ -261,20 +251,6 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
       if (a === 'reverter') return responder(OverridesItemPower.reverter(dados.revisao));
       if (a === 'restaurar') return responder(OverridesItemPower.restaurar(dados.versao, dados.revisao));
       return json(res, 400, { ok: false, erros: ['acao deve ser salvar, reverter ou restaurar.'] }), true;
-    }
-    // Conjuntos: validar/prévia, totais de um conjunto em edição e modelos iniciais (só leem); salvar/reverter/ativo/restaurar gravam.
-    if (rota === 'conjuntos/validar') return json(res, 200, OverridesConjuntos.propor(dados?.override ?? null)), true;
-    if (rota === 'conjuntos/totais') return json(res, 200, OverridesConjuntos.totais(dados?.conjunto ?? {}, { level: dados?.level })), true;
-    if (rota === 'conjuntos/modelos') return json(res, 200, { conjuntos: Conjuntos.modelosIniciais({ por: dados?.por, de: dados?.de, ate: dados?.ate, ...(Array.isArray(dados?.classes) ? { classes: dados.classes.filter((c) => Conjuntos.CLASSES.includes(c)) } : {}) }) }), true;
-    if (rota === 'conjuntos') {
-      const a = dados?.acao;
-      const responder = (r) => (json(res, status(r), r), true);
-      if (a === 'salvar') return responder(OverridesConjuntos.salvar(dados.override, dados.revisao));
-      if (a === 'reverter') return responder(OverridesConjuntos.reverter(dados.revisao));
-      if (a === 'reverter-conjunto') return responder(OverridesConjuntos.reverterConjunto(String(dados.id ?? ''), dados.revisao));
-      if (a === 'ativo') return responder(OverridesConjuntos.definirAtivo(dados.ativo, dados.revisao));
-      if (a === 'restaurar') return responder(OverridesConjuntos.restaurar(dados.versao, dados.revisao));
-      return json(res, 400, { ok: false, erros: ['acao deve ser salvar, reverter, reverter-conjunto, ativo ou restaurar.'] }), true;
     }
     // Progressão e loot: validar/prévia (só lê), salvar/reverter/ativo/restaurar (gravam), e o simulador (só lê; o gerador REAL com semente, teto de 50 mil sorteios por pedido).
     if (rota === 'progressao/validar') return json(res, 200, OverridesProgressao.propor(dados?.override ?? null)), true;

@@ -22,7 +22,6 @@ export const TESTES_POR_MODULO = {
   monstros: ['overrides', 'hot-reload', 'hot-reload-conteudo'],
   itens: ['overrides-itens', 'hot-reload-conteudo'],
   progressao: ['progressao', 'hot-reload-conteudo'],
-  conjuntos: ['conjuntos', 'hot-reload-conteudo'],
   classes: ['classes', 'hot-reload-conteudo'],
   'item-power': ['item-power', 'item-power-editor', 'hot-reload-conteudo'],
   sprites: ['sprites-overrides', 'sprites-edicao', 'editor-sprites', 'hot-reload-cliente'],

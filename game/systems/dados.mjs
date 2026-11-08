@@ -37,10 +37,6 @@ for (const [id, name] of [
 ]) {
   ITEM_CATALOG[id] ??= { id, name, weight: 0.01, stackable: true, type: 'valuables', hasSprite: true, rarity: 'comum' };
 }
-/** As receitas REAIS do craft (Craftado e V2, por vocação) — tiradas da ficha capturada no original. */
-export const RECEITAS_DO_CRAFT = carregar('craft-receitas.json');
-/** Os sete grupos REAIS da Máquina de Desmanche (peças e tokens por peça), da ficha capturada. */
-export const MAQUINA_DE_DESMANCHE = carregar('desmanche.json');
 /** Catálogo REAL da barra de ação (magias/runas/poções + papéis dos 22 slots), capturado ao vivo. */
 export const ACTION_CATALOG = carregar('action-catalog.json').catalog;
 /*
