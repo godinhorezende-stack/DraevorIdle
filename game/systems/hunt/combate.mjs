@@ -1500,7 +1500,7 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // As cargas do PoE: "acertado recentemente" e a chance de Tolerância quando acertado.
   if (ficha.cargas && CargasPoe.aoSerAcertado(estado, ficha.cargas).length) Ficha.invalidar(estado);
   // PoE: o "acertado/dano recentemente", o Reflexo aos agressores corpo a corpo, a recuperação do dano sofrido e o congelar quem acerta.
-  ModsPoe.aoSerAcertado(estado, hunt, bicho, ficha, { dano: Math.max(0, final), corpoACorpo: true, tipo: 'physical', eventos });
+  ModsPoe.aoSerAcertado(estado, hunt, bicho, ficha, { dano: Math.max(0, final), corpoACorpo: true, critico: !!critDoMob.critico, tipo: 'physical', eventos });
   // (17/10, lote G15) "Conjurar ao ser Atordoado" e "Conjurar ao Morrer"
   Acoes.depoisDeSerAcertado(estado, hunt, personagem, eventos);
   // ("ao sofrer um Golpe Crítico": "Ganha até o máximo de Cargas de Tolerância ao sofrer um Golpe Crítico".)

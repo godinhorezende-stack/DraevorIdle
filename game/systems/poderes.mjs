@@ -505,7 +505,7 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   const caosDaMagia = somaDasPartes > 0 ? Math.min(dano, Math.round(((danoDoAcerto * fatorDaSalvaguarda * ModsPoe.caosNasPartes(ficha, brutas, partes)) / somaDasPartes) * (depoisDaEgide > 0 ? dano / depoisDaEgide : 0))) : 0;
   dano = aplicarNoJogador({ estado, hunt, bicho, dano, elemento: a.elemento, eventos, base, ficha, temEscudo, suprimiu, caos: caosDaMagia });
   // PoE: o "acertado/dano recentemente", a recuperação do dano sofrido e o congelar quem acerta (a magia não é corpo a corpo: sem Reflexo).
-  ModsPoe.aoSerAcertado(estado, hunt, bicho, ficha, { dano: Math.max(0, dano), corpoACorpo: ataqueDoPoe && !!a.corpoACorpo, ataque: projetil || ataqueDoPoe, magia: !projetil && !ataqueDoPoe, tipo: a.elemento, eventos });
+  ModsPoe.aoSerAcertado(estado, hunt, bicho, ficha, { dano: Math.max(0, dano), corpoACorpo: ataqueDoPoe && !!a.corpoACorpo, ataque: projetil || ataqueDoPoe, magia: !projetil && !ataqueDoPoe, critico: !!critDoMob.critico, tipo: a.elemento, eventos });
   if (critDoMob.critico) ModsPoe.evento(estado, hunt, 'serAcertadoCritico', ficha, { alvo: bicho, eventos, personagem });
   // ("Quando um Acerto Inimigo causar Dano Elemental em você, as Resistências deles para tais Elementos são zeradas por N segundos".)
   const zerar = ModsPoe.valor(ficha, 'zera_res_de_quem_acerta_s');

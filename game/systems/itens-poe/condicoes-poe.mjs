@@ -350,7 +350,7 @@ export const CONDICOES_DE_ESTADO = new Set([
   // (06/11, lote 5 dos únicos)
   'doisMaioresIguais', 'cegoProprio',
   ...new Set(Object.values(COND_DA_CLASSE)), 'umaMao', 'duasMaos', 'armaCorpo', 'comEscudo', 'duasArmas',
-  'matouRecente', 'naoMatouRecente', 'criticoRecente', 'naoCriticoRecente', 'acertadoRecente', 'semDanoRecente', 'movendo', 'vidaBaixa',
+  'matouRecente', 'naoMatouRecente', 'criticoRecente', 'naoCriticoRecente', 'sofreuCriticoRecente', 'sofreuMagiaRecente', 'acertadoRecente', 'semDanoRecente', 'movendo', 'vidaBaixa',
   'lacaioMorreuRecente', 'usouLacaioRecente', 'elusivo', 'soloSagrado', 'soloCongelado', 'soloArdente', 'soloEletrizado', 'vidaCheia', 'furiaCheia', 'drenoRemovidoCheio',
   // (07/10, os únicos:) mana, escudo, afecções em você, frasco, roubo, parado, mão secundária, e os "recentemente" dos acontecimentos.
   'manaBaixa', 'naoManaBaixa', 'escudoCheio', 'semEscudo', 'ardendo', 'naoArdendo', 'congeladoProprio', 'eletrizadoProprio', 'resfriadoProprio',
@@ -594,6 +594,9 @@ export function condicoesDe(estado, total = null, principais = null) {
     // ("enquanto no máximo de Fúria": a Fúria no máximo — 30 + "+N à Fúria máxima".)
     if ((h.furia?.n ?? 0) > 0 && (h.furia.n | 0) >= maximoDeFuria(total)) v.add('furiaCheia');
     if (recente(r.acertado, agora)) v.add('acertadoRecente');
+    // (08/11) o Golpe Crítico e o Dano Mágico sofridos recentemente (`mods-poe.aoSerAcertado`)
+    if (recente(r.criticoSofrido, agora)) v.add('sofreuCriticoRecente');
+    if (recente(r.danoMagico, agora)) v.add('sofreuMagiaRecente');
     if (!recente(r.dano, agora)) v.add('semDanoRecente');
     if (r.moveu != null && agora - r.moveu <= MOVENDO_MS) v.add('movendo');
     // (06/11, o Despertar da Tormenta: "Você e Inimigos em sua Presença contam como se movendo enquanto afetados por Afecções Elementais" — a sua, aqui)

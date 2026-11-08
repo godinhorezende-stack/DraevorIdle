@@ -14,6 +14,66 @@
   ],
   "regras": [
     {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de Suprimir o Dano Mágico se você / sofreu Dano Mágico Recentemente$",
+      "efeitos": [
+        {
+          "stat": "spell_suppression@sofreuMagiaRecente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de Suprimir o Dano Mágico se você sofreu Dano Mágico Recentemente$",
+      "efeitos": [
+        {
+          "stat": "spell_suppression@sofreuMagiaRecente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você sofre Dano Extra dos Golpes Críticos reduzido em \\{(\\d+)\\}% se você sofreu um Golpe Crítico Recentemente$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg_taken_red@sofreuCriticoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Caos se você sofreu um Golpe Crítico Recentemente$",
+      "efeitos": [
+        {
+          "stat": "added_chaos_dmg_min@sofreuCriticoRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_chaos_dmg_max@sofreuCriticoRecente",
+          "valor": "{2}"
+        },
+        {
+          "stat": "spell_added_chaos_dmg_min@sofreuCriticoRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_chaos_dmg_max@sofreuCriticoRecente",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas)",
+      "_nova": true
+    },
+    {
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Fogo se você Matou Recentemente$",
       "efeitos": [
         {

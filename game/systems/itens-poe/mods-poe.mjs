@@ -465,10 +465,13 @@ export function aoAmaldicoar(ficha, bicho, agora) {
 
 /** O "X% do Dano de <elemento> sofrido é Recuperado como Vida" de cada elemento de golpe. */
 const RECOUP_DO_ELEMENTO = { physical: 'recoup_life_phys', fire: 'recoup_life_fire', ice: 'recoup_life_ice', energy: 'recoup_life_energy', chaos: 'recoup_life_chaos' };
-export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorpo = false, ataque = false, magia = false, tipo = null, agora = hunt?.clock ?? 0, rng = Math.random, eventos = [] } = {}) {
+export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorpo = false, ataque = false, magia = false, critico = false, tipo = null, agora = hunt?.clock ?? 0, rng = Math.random, eventos = [] } = {}) {
   if (!ligado() || !hunt || !ficha?.afPoe) return eventos;
   const v = (k) => valor(ficha, k);
   marcar(hunt, 'acertado', agora);
+  // (08/11, os encantamentos do Labirinto: "se você sofreu um Golpe Crítico Recentemente", "se você sofreu Dano Mágico Recentemente")
+  if (critico) marcar(hunt, 'criticoSofrido', agora);
+  if (magia && dano > 0) marcar(hunt, 'danoMagico', agora);
   // (lote G-C, dono 25/10) a Punição: "Inimigos Amaldiçoados são Debilitados por N Segundos quando Acertarem" (o Debilitado do jogo — `ESTADOS_NO_ALVO.debilitado`)
   const debilitarMs = bicho ? GemasGAC.debilitarAoAcertar(bicho, agora) : 0;
   if (debilitarMs > 0) {
