@@ -1334,7 +1334,11 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // (06/11, a Parede de Névoa: "+X% de chance de evitar dano de cada elemento de ataques durante Forma Etérea"; a Réplica: "+X% de chance de Evitar Dano Físico de
   // Acertos enquanto Trespassando" — cada tipo sorteia uma vez no golpe; o evitado não entra)
   const evitarEl = itensPoeLigado() ? ModsPoe.valor(ficha, 'evitar_dano_elemental_ataque') : 0;
-  const evitado = Object.fromEntries(['fire', 'ice', 'energy'].map((el) => [el, evitarEl > 0 && Math.random() * 100 < Math.min(75, evitarEl)]));
+  // (08/11, a Síntese: "X% de chance de Evitar o Dano de Fogo/Gelo/Raio de Acertos" — `evitar_dano_<elemento>_acerto`, somado)
+  const evitado = Object.fromEntries(['fire', 'ice', 'energy'].map((el) => {
+    const chance = evitarEl + (itensPoeLigado() ? ModsPoe.valor(ficha, `evitar_dano_${el}_acerto`) : 0);
+    return [el, chance > 0 && Math.random() * 100 < Math.min(75, chance)];
+  }));
   const evitouFisico = itensPoeLigado() && ModsPoe.valor(ficha, 'evitar_dano_fisico_acerto') > 0 && Math.random() * 100 < Math.min(75, ModsPoe.valor(ficha, 'evitar_dano_fisico_acerto'));
   const elemFator = (el) => (evitado[el] ? 0 : 1) * (['fire', 'ice', 'energy'].includes(el) && ModsPoe.ativo(bicho.estados?.elemMenos, agoraDoGolpe) ? Math.max(0, 1 - bicho.estados.elemMenos.pct / 100) : 1);
   const brutoFisico = evitouFisico ? 0 : bruto * (1 - (emFogoPct + emRaioPct) / 100);
@@ -1366,7 +1370,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   const somaFisica = ModsPoe.somaFisicaDoPoe();
   const fixoFisico = ModsPoe.fixoRecebido(ficha, 'physical', { ataque: true, de: bicho });
   const protegido = somaFisica
-    ? Math.max(0, Math.round(ModsPoe.acertoFisicoRecebido(ficha, brutoFisico, armorDoPersonagem(estado), { fixo: fixoFisico })))
+    // (08/11, a Síntese: "X% de Redução adicional de Dano Físico contra Monstros Abissais" — o golpe do monstro das ondas do Abismo)
+    ? Math.max(0, Math.round(ModsPoe.acertoFisicoRecebido(ficha, brutoFisico, armorDoPersonagem(estado), { fixo: fixoFisico, ...(bicho.abissal && ModsPoe.valor(ficha, 'phys_res_vs_abissal') ? { protecao: { ...(ficha.protection ?? {}), physical: (Number(ficha.protection?.physical) || 0) + ModsPoe.valor(ficha, 'phys_res_vs_abissal') } } : {}) })))
     : Math.max(0, Math.round(brutoFisico * (itensPoeLigado() ? ModsPoe.fatorDaResistenciaRecebida(ficha, 'physical') : 1 - Math.min(100, ficha.protection.physical ?? 0) / 100) + fixoFisico));
   // (PoE: o Físico NEGADO pela defesa — o "Regenerado como Escudo de Energia/Vida por segundo" do Escudo Divino.)
   ModsPoe.registrarFisicoNegado(hunt, Math.max(0, brutoFisico - protegido));

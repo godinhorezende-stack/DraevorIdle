@@ -358,7 +358,8 @@ export function danoRecebido(estado, final, eventos, pos, quem, { ficha = null, 
   // Dano é descontado da Mana antes da Vida por Carga de Poder" — `dano_na_mana_pct`; "Dano de Caos é sofrido na Mana antes da Vida", "X% do
   // Dano de Raio é sofrido na Mana antes da Vida" — `dano_na_mana_pct_<elemento>`, com o elemento do golpe.)
   const af = ficha?.afPoe ?? {};
-  const doElemento = { chaos: 'dano_na_mana_pct_chaos', energy: 'dano_na_mana_pct_energy' }[elemento];
+  // (08/11, a Síntese: + "X% do Dano Físico é sofrido na Mana antes da Vida")
+  const doElemento = { chaos: 'dano_na_mana_pct_chaos', energy: 'dano_na_mana_pct_energy', physical: 'dano_na_mana_pct_physical' }[elemento];
   const pctNaMana = Math.min(100, (tem(estado, 'menteSobreMateria') ? 40 : 0) + (Number(af.dano_na_mana_pct) || 0) + (doElemento ? Number(af[doElemento]) || 0 : 0));
   if (v > 0 && pctNaMana > 0) {
     const daMana = Math.min(Math.floor(estado.mana ?? 0), Math.round((v * pctNaMana) / 100));

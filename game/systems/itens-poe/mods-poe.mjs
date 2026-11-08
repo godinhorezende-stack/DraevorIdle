@@ -1483,6 +1483,10 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
         // Sangramento ou o Veneno —, sorteada
         const tem = AFECCOES_NO_JOGADOR.filter((a) => ['incendio', 'sangramento', 'veneno'].includes(a.nome) && a.tem(hunt, agora));
         if (tem.length) tem[Math.floor(rng() * tem.length)].tirar(hunt);
+      } else if (['incendio', 'frio', 'eletrizacao'].includes(ev.param)) {
+        // (08/11, a Síntese: "Remove Incêndio e Queimação / Resfriamento e Congelamento / Eletrização quando você usar um Frasco")
+        const nomes = { incendio: ['incendio'], frio: ['resfriamento', 'congelamento'], eletrizacao: ['eletrizacao'] }[ev.param];
+        for (const a of AFECCOES_NO_JOGADOR) if (nomes.includes(a.nome) && a.tem(hunt, agora)) a.tirar(hunt);
       } else if (ev.param === 'naoElemental' || ev.param === 'aleatoria') {
         // (13/10) UMA afecção aleatória (a de todas as pilhas do tipo, como no PoE): `naoElemental` — o Sangramento ou o Veneno (a Maestria de
         // Frascos); `aleatoria` — qualquer uma, as elementais também: o Incêndio, o Congelamento, o Resfriamento e a Eletrização (a Maestria de
