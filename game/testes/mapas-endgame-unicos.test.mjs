@@ -102,35 +102,41 @@ test('os 26 mapas únicos, em português, em TODOS os tiers: a peça sai no tier
       assert.equal(p.poe.unico, u.slug);
       assert.equal(Mapas.tierDaPeca(p), t, `${u.slug} T${t}`);
       assert.equal(p.poe.mapa.tier, t);
-      assert.equal(p.poe.mapa.nivel, 67 + t, 'a área do tier em que caiu');
+      // (aval do dono 08/11: o nível da área é o do tier, menos no único que o muda — "Nível dos Monstros: 83" (o Córtex, as Memórias) e "±N ao
+      // Nível dos Monstros da Área" (as Terras Sagradas), a regra do PoE)
+      const fixo = p.poe.modificadores.find((m) => /^Nível dos Monstros: \{0\}$/.test(m.modelo))?.valores[0];
+      const delta = p.poe.modificadores.find((m) => /^\{0\} ao Nível dos Monstros da Área$/.test(m.modelo))?.valores[0] ?? 0;
+      assert.equal(p.poe.mapa.nivel, fixo ?? Math.max(1, 67 + t + delta), 'a área do tier em que caiu');
       // Cada linha: com efeito (age), ou sem efeito com o motivo (o balão mostra).
+      // (aval do dono 08/11: o Córtex e as Memórias nascem com os mods de mapa a mais — antes das linhas do único — e os Synthesis Globais — depois
+      // delas —, quantos a linha do próprio único diz; todos com efeito)
+      const extras = Mapas.extrasDoUnico(p.poe);
       const linhas = p.poe.mapa.linhas;
-      assert.equal(linhas.length, u.modificadores.length);
+      assert.equal(linhas.length, extras.aleatorios + u.modificadores.length + extras.globais);
+      const doUnico = linhas.slice(extras.aleatorios, extras.aleatorios + u.modificadores.length);
       u.modificadores.forEach((m, i) => {
-        assert.equal(linhas[i].estado, m.efeitos.length ? 'equivalente' : 'inerte', m.texto);
-        if (!m.efeitos.length) assert.equal(linhas[i].nota, m.nota, m.texto);
+        assert.equal(doUnico[i].estado, m.efeitos.length ? 'equivalente' : 'inerte', m.texto);
+        if (!m.efeitos.length) assert.equal(doUnico[i].nota, m.nota, m.texto);
       });
-      const notas = p.poe.notas.slice(-u.modificadores.length);
+      assert.ok([...linhas.slice(0, extras.aleatorios), ...linhas.slice(extras.aleatorios + u.modificadores.length)].every((l) => l.estado === 'equivalente' || l.estado === 'parcial'), `${u.slug}: as a mais agem`);
+      const inicio = (p.poe.implicitos?.length ?? 0) + extras.aleatorios;
+      const notas = p.poe.notas.slice(inicio, inicio + u.modificadores.length);
       assert.deepEqual(notas, u.modificadores.map((m) => (m.efeitos.length ? null : m.nota)));
     }
   }
   // As linhas sem mecânica no jogo (e só elas) ficam sem efeito — cada uma com o SEU motivo (nenhuma com o genérico).
   for (const u of Mapas.unicos()) for (const m of u.modificadores) if (!m.efeitos.length) assert.notEqual(m.nota, 'ainda não tem a mecânica no jogo', `${u.slug}: ${m.texto}`);
   const semEfeito = Object.fromEntries(Mapas.unicos().filter((u) => SETE.includes(u.slug)).map((u) => [u.slug, u.modificadores.filter((m) => !m.efeitos.length).map((m) => m.texto)]));
-  assert.deepEqual(semEfeito, {
-    Olmecs_Sanctum: ['Chefe Final derruba Itens de Níveis maiores'],
-    The_Vinktar_Square: [],
-    'Caer_Blaidd,_Wolfpacks_Den': [],
-    Death_and_Taxes: [],
-    Hallowed_Ground: ['(-2—2) ao Nível dos Monstros da Área'],
-    The_Putrid_Cloister: ['Chefe Único derruba cartas de adivinhação'],
-    Mao_Kun: ['% do Dano dos Monstros é convertido em Raio', 'Monstros ganham uma Carga de Tolerância ao Acertar', 'Monstros ganham uma Carga de Poder ao Acertar'],
-  });
-  // Os que o PoE define por mecânicas que o jogo ainda não tem ficam sem nenhuma linha com efeito (a aba Mapas da engine mostra).
-  assert.deepEqual(Mapas.unicos().filter((u) => !u.modificadores.some((m) => m.efeitos.length)).map((u) => u.slug), ['The_Cowards_Trial', 'Hall_of_Grandmasters']); // aval do dono 03/11: 100% — mundo, os baús do PoE (as Câmaras de Atziri agem: "Baús têm a Raridade de Itens aumentada")
+  // (aval do dono 08/11 — "sim" a zerar as linhas sem efeito dos mapas únicos: todas agem, `testes/mapas-unicos-zerados.test.mjs`)
+  assert.deepEqual(semEfeito, { Olmecs_Sanctum: [], The_Vinktar_Square: [], 'Caer_Blaidd,_Wolfpacks_Den': [], Death_and_Taxes: [], Hallowed_Ground: [], The_Putrid_Cloister: [], Mao_Kun: [] });
+  // Nenhum único sem linha com efeito (o Julgamento do Covarde — as ondas — e o Salão dos Grão-Mestres — o ranking — agora agem).
+  assert.deepEqual(Mapas.unicos().filter((u) => !u.modificadores.some((m) => m.efeitos.length)).map((u) => u.slug), []);
   // As linhas cruas do poedb (Quantidade/Raridade/Grupo, "map item drop quantity +% [100]") viram a linha em português e agem.
+  // (aval do dono 08/11: os mods de mapa a mais do Córtex também dão Quantidade e Grupo — aqui, só as linhas do único)
   const cortex = unicoNoTier('Cortex', 12);
-  assert.deepEqual([cortex.poe.mapa.quantidade, cortex.poe.mapa.grupo], [100, 25]);
+  const soDoUnico = Mapas.resumo({ poe: { ...cortex.poe, prefixos: [], sufixos: [] } });
+  assert.deepEqual([soDoUnico.quantidade, soDoUnico.grupo], [100, 25]);
+  assert.ok(cortex.poe.mapa.quantidade >= 100 && cortex.poe.mapa.grupo >= 25);
   // A velocidade e o crítico dos monstros: as mesmas mecânicas dos mapas comuns.
   const replica = unicoNoTier('Replica_Poorjoys_Asylum', 4);
   const ef = replica.poe.mapa.efeitos.monstros;
