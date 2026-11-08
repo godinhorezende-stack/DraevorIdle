@@ -12,7 +12,11 @@ import * as Ficha from '../systems/ficha.mjs';
 import * as Gemas from '../systems/skills/gemas.mjs';
 import * as Treino from '../systems/treino.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE, pousarVoos } from './apoio.mjs';
+
+// (08/11, os testes C adaptados ao PoE) A caçada de teste do modo (a do PoE no jogo oficial, a Troll Cave no clássico) e o slot do papel da gema — no PoE a
+// barra tem um papel só ('skill'). O golpe do projétil cai quando ele chega (`pousarVoos`; sem nada no ar, não faz nada).
+const slotDoPapel = (papel) => (Acoes.PAPEL_DO_SLOT.includes(papel) ? Acoes.PAPEL_DO_SLOT.indexOf(papel) : Acoes.PAPEL_DO_SLOT.indexOf('skill'));
 
 const VOCACOES = ['knight', 'paladin', 'sorcerer', 'druid', 'monk'];
 
@@ -83,7 +87,7 @@ export function medirGema(acao, opcoes = {}) {
     const max = Math.max(1, Gemas.maximoDeSockets({ slot: 'weapon' }));
     arma.soquetes = { abertos: max, links: Array(max - 1).fill(false), gemas: [{ ...Gemas.novaGema(def.itemId, raridade, qualidade), nivel }, ...Array(max - 1).fill(null)] };
     Ficha.invalidar(e);
-    if (!Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok) throw new Error('não entrou na caçada de teste');
+    if (!Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok) throw new Error('não entrou na caçada de teste');
     const h = e.hunt;
     delete h.instancia;
     h.respawns = [];
@@ -100,7 +104,7 @@ export function medirGema(acao, opcoes = {}) {
       }
     }
     e.actions = Array(Acoes.SLOTS).fill(null);
-    const slot = Acoes.PAPEL_DO_SLOT.indexOf('attack');
+    const slot = slotDoPapel('attack');
     const r = Acoes.definir(e, { slot, value: { id: acao } });
     if (!r.ok) return { erro: r.erro };
     const porUso = [];
@@ -123,6 +127,7 @@ export function medirGema(acao, opcoes = {}) {
         erro = d.motivo ?? d.erro;
         continue;
       }
+      pousarVoos(h);
       const perdas = h.monstros.map((b, k) => antes[k] - b.hp).filter((v) => v > 0);
       if (!perdas.length) continue;
       porUso.push(perdas.reduce((a, b) => a + b, 0) / perdas.length);
@@ -158,13 +163,13 @@ export function medirCura(acao, opcoes = {}) {
     const max = Math.max(1, Gemas.maximoDeSockets({ slot: 'weapon' }));
     arma.soquetes = { abertos: max, links: Array(max - 1).fill(false), gemas: [{ ...Gemas.novaGema(def.itemId, raridade, qualidade), nivel }, ...Array(max - 1).fill(null)] };
     Ficha.invalidar(e);
-    if (!Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok) throw new Error('não entrou na caçada de teste');
+    if (!Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok) throw new Error('não entrou na caçada de teste');
     const h = e.hunt;
     delete h.instancia;
     h.respawns = [];
     h.monstros = [];
     e.actions = Array(Acoes.SLOTS).fill(null);
-    const slot = Acoes.PAPEL_DO_SLOT.indexOf('hp');
+    const slot = slotDoPapel('hp');
     const r = Acoes.definir(e, { slot, value: { id: acao } });
     if (!r.ok) return { erro: r.erro };
     e.maxHp = 1e12;

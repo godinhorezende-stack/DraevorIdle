@@ -13,7 +13,7 @@ import * as Combo from '../systems/combo.mjs';
 import * as Ficha from '../systems/ficha.mjs';
 import * as R from '../systems/regras.mjs';
 import { personagemDeTeste, PERSONAGEM, comSkills, HUNT_DE_TESTE } from './apoio.mjs';
-import { aAdaptar, doClassico } from './apoio-migracao.mjs';
+import { doClassico, soNoOficial } from './apoio-migracao.mjs';
 
 // Seis magias de ataque de recarga curta (1 s efetivo): quem limita é o global, não a recarga delas.
 const CURTAS = ['spell-buzz', 'spell-energy-strike', 'spell-flame-strike', 'spell-ice-strike', 'spell-death-strike', 'spell-terra-strike'];
@@ -156,54 +156,76 @@ test('a conclusão da conjuração não é barrada pelo global que ela mesma com
   assert.equal(h.cooldowns['spell-lightning'].ate, 1_000 + h.cooldowns['spell-lightning'].total);
 });
 
-test('morto não lança nada: nem pelo clique manual, nem pelo automático', { skip: aAdaptar("Regra da engine (morto não lança, clique repetido sai uma vez, mira no chão) vale para gemas do PoE") }, () => {
-  const e = montar(['spell-buzz'], { conjuracao: false });
+// (08/11, adaptado ao PoE — o dono: "Adaptar antes") As gemas do PoE na barra do PoE (8 slots de habilidade, sem os slots do combo do Draevor): a magia de
+// ataque Spell Buzz → a Bola de Fogo, a Energy Strike → o Pulso Congelante, a cura Light Healing → a Pele de Aço (a Guarda instantânea, com recarga — o PoE não
+// tem gema de cura), a Divine Barrage → o Estalo Gélido (a área na casa mirada, alcance 7). A conjuração é a do PoE (a da gema).
+const poe = (slug) => `poe-gema:${slug}`;
+function montarPoe(slugs) {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 90 });
+  const ids = slugs.map(poe);
+  comSkills(e, ids);
+  ids.forEach((id, i) => assert.ok(Acoes.definir(e, { slot: i, value: { id } }).ok, id));
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
+  e.hunt.assistencia = true;
+  e.hunt.autoBarra = true;
+  return e;
+}
+
+test('morto não lança nada: nem pelo clique manual, nem pelo automático', { skip: soNoOficial('as gemas do PoE na barra do PoE') }, () => {
+  const e = montarPoe(['Fireball']);
   const h = e.hunt;
   h.monstros = h.monstros.slice(0, 1);
   Object.assign(h.monstros[0], { hp: 1e12, maxHp: 1e12, x: h.pos.x + 1, y: h.pos.y });
   h.alvo = h.monstros[0].uid;
   e.hp = 0;
-  const r = Cacadas.disparoManual(e, PERSONAGEM, Combo.SLOTS_DO_COMBO[0]);
+  const r = Cacadas.disparoManual(e, PERSONAGEM, 0);
   assert.equal(r.ok, false);
   assert.equal(r.motivo, 'MORTO');
 });
 
-test('cliques repetidos no mesmo instante: sai UMA magia (ataque pelo global, cura pela recarga)', { skip: aAdaptar("Regra da engine (morto não lança, clique repetido sai uma vez, mira no chão) vale para gemas do PoE") }, () => {
-  const e = montar(['spell-buzz', 'spell-energy-strike'], { conjuracao: false });
+test('cliques repetidos no mesmo instante: sai UMA magia (ataque pelo global, cura pela recarga)', { skip: soNoOficial('as gemas do PoE na barra do PoE') }, () => {
+  const e = montarPoe(['Fireball', 'Freezing_Pulse']);
   const h = e.hunt;
   h.monstros = h.monstros.slice(0, 1);
   Object.assign(h.monstros[0], { hp: 1e12, maxHp: 1e12, x: h.pos.x + 1, y: h.pos.y });
   h.alvo = h.monstros[0].uid;
   h.clock = 10_000;
-  const motivos = [0, 1, 0, 1].map((k) => Cacadas.disparoManual(e, PERSONAGEM, Combo.SLOTS_DO_COMBO[k]).motivo ?? 'OK');
-  assert.deepEqual(motivos, ['OK', 'COOLDOWN_GLOBAL', 'COOLDOWN_GLOBAL', 'COOLDOWN_GLOBAL']);
-  // A cura (fora do global de ataque): repetida no mesmo instante, a recarga dela segura.
-  comSkills(e, ['spell-buzz', 'spell-energy-strike', 'spell-light-healing'], { conjuracao: false });
-  const slotDeCura = Acoes.PAPEL_DO_SLOT.findIndex((p) => p !== 'attack');
-  assert.ok(Acoes.definir(e, { slot: slotDeCura, value: { id: 'spell-light-healing' } }).ok);
+  const motivos = [0, 1, 0, 1].map((k) => Cacadas.disparoManual(e, PERSONAGEM, k).motivo ?? 'OK');
+  // (no PoE não há o intervalo global: quem segura os outros cliques é o uso em andamento — a conjuração da Bola de Fogo, 0,75 s)
+  assert.deepEqual(motivos, ['OK', 'CONJURANDO', 'CONJURANDO', 'CONJURANDO']);
+  // A "cura" (a Pele de Aço, instantânea): repetida no mesmo instante, a recarga dela segura. (No PoE ela espera o uso em andamento acabar, como todo uso:
+  // a Bola de Fogo conjurada até o fim antes.)
+  h.clock = h.conjurando.fim;
+  Acoes.concluirConjuracao(e, h, PERSONAGEM);
+  comSkills(e, [poe('Fireball'), poe('Freezing_Pulse'), poe('Steelskin')]);
+  const slotDeCura = 2;
+  assert.ok(Acoes.definir(e, { slot: slotDeCura, value: { id: poe('Steelskin') } }).ok);
   e.hp = Math.round(e.maxHp * 0.3);
   const curas = [0, 1, 2].map(() => Cacadas.disparoManual(e, PERSONAGEM, slotDeCura).motivo ?? 'OK');
   assert.deepEqual(curas, ['OK', 'COOLDOWN', 'COOLDOWN']);
 });
 
-test('mira no chão: a área cai na casa escolhida, e fora do alcance não sai', { skip: aAdaptar("Regra da engine (morto não lança, clique repetido sai uma vez, mira no chão) vale para gemas do PoE") }, () => {
-  const e = montar(['spell-divine-barrage'], { conjuracao: false, vocacao: 'paladin' });
+test('mira no chão: a área cai na casa escolhida, e fora do alcance não sai', { skip: soNoOficial('as gemas do PoE na barra do PoE') }, () => {
+  const e = montarPoe(['Cold_Snap']);
   const h = e.hunt;
-  assert.ok(Acoes.catalogo(e).spells.find((s) => s.id === 'spell-divine-barrage').miraNoChao);
+  assert.ok(Acoes.catalogo(e).spells.find((s) => s.id === poe('Cold_Snap')).miraNoChao);
   // Dois bichos: o alvo colado nele, e outro a 4 casas — a mira vai no de longe.
   h.monstros = h.monstros.slice(0, 2);
   Object.assign(h.monstros[0], { hp: 1e12, maxHp: 1e12, x: h.pos.x + 1, y: h.pos.y });
   Object.assign(h.monstros[1], { hp: 1e12, maxHp: 1e12, x: h.pos.x + 4, y: h.pos.y });
   h.alvo = h.monstros[0].uid;
   h.clock = 10_000;
-  const r = Cacadas.disparoManual(e, PERSONAGEM, Combo.SLOTS_DO_COMBO[0], { x: h.pos.x + 4, y: h.pos.y });
+  const r = Cacadas.disparoManual(e, PERSONAGEM, 0, { x: h.pos.x + 4, y: h.pos.y });
   assert.ok(r.ok, r.erro);
+  // (a área cai no fim da conjuração do PoE)
+  h.clock = h.conjurando.fim;
+  Acoes.concluirConjuracao(e, h, PERSONAGEM);
   assert.ok(h.monstros[1].hp < 1e12, 'o bicho da casa mirada apanhou');
   assert.equal(h.monstros[0].hp, 1e12, 'o alvo de antes, fora da área, não');
   // Fora do alcance (7): recusa.
   h.clock = 20_000;
-  delete h.cooldowns['spell-divine-barrage'];
-  const longe = Cacadas.disparoManual(e, PERSONAGEM, Combo.SLOTS_DO_COMBO[0], { x: h.pos.x + 9, y: h.pos.y });
+  delete h.cooldowns[poe('Cold_Snap')];
+  const longe = Cacadas.disparoManual(e, PERSONAGEM, 0, { x: h.pos.x + 9, y: h.pos.y });
   assert.equal(longe.motivo, 'FORA_DE_ALCANCE');
 });
 

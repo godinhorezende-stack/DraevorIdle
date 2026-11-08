@@ -12,8 +12,8 @@ import * as G from '../systems/skills/gemas.mjs';
 import { ACTION_CATALOG, ITEM_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { resistenciaEfetivaDe } from '../systems/hunt/resistencia.mjs';
-import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
-import { aAdaptar, doClassico } from './apoio-migracao.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE, pousarVoos } from './apoio.mjs';
+import { doClassico, soNoOficial } from './apoio-migracao.mjs';
 
 const mob = (extra = {}) => Object.assign(criarMonstro({ key: 'troll', x: 1, y: 1 }, null), { hp: 1e9, maxHp: 1e9, resist: {} }, extra);
 const T = Dot.CONFIG.tipos;
@@ -231,20 +231,81 @@ test('gema de dano contínuo: o total sai nos pulsos e a resistência do bicho v
   assert.ok(Math.abs(pago - total * passa) < total * 0.02 + 5, `pagou ${pago} de ${total} (esperado ${Math.round(total * passa)})`);
 });
 
-test('os suportes Chance de Envenenar e Chance de Sangrar põem veneno e sangramento no acerto (do dano antes da resistência)', { skip: aAdaptar("Chance to Poison/Bleed existem no PoE; o teste usa gemas do Draevor") }, () => {
-  const venenoNaGema = montar('spell-terra-strike', ['poison']);
-  lancar(venenoNaGema.e, 'spell-terra-strike', venenoNaGema.m);
-  assert.ok(Dot.restante(venenoNaGema.m, 'veneno') > 0, 'veneno');
-  const sangra = montar('spell-brutal-strike', ['bleed']);
-  lancar(sangra.e, 'spell-brutal-strike', sangra.m);
-  assert.ok(Dot.restante(sangra.m, 'sangramento') > 0, 'sangramento');
-  // Sem o suporte nada entra; fora da compatibilidade (fogo não pega veneno nem sangramento) também não.
-  const sem = montar('spell-terra-strike');
-  lancar(sem.e, 'spell-terra-strike', sem.m);
-  assert.equal(sem.m.dots, undefined);
-  const fogo = montar('spell-flame-strike', ['poison', 'bleed']);
-  lancar(fogo.e, 'spell-flame-strike', fogo.m);
-  assert.equal(fogo.m.dots, undefined, 'poison é de físico/terra; bleed, de físico');
+// (08/11, adaptado ao PoE — o dono: "Adaptar antes") As gemas do PoE numa arma do PoE (cada grupo ligado), na caçada de teste, com o sorteio travado em
+// `v` (as chances de afecção sorteiam no acerto: 0,01 faz toda chance sair). O veneno do PoE é o `venenoPoe`.
+let PoeJogo;
+let gerarPecaPoe;
+async function montarPoe(arma, ativa, suportes = [], { nivel = 1, level = 90 } = {}) {
+  const GP = await import('../systems/itens-poe/gemas-poe.mjs');
+  const SP = await import('../systems/itens-poe/suportes-poe.mjs');
+  const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
+  PoeJogo ??= await import('../systems/itens-poe/jogo.mjs');
+  gerarPecaPoe ??= (await import('../systems/itens-poe/gerar.mjs')).gerarPeca;
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level });
+  const a = PoeJogo.pecaDoJogo(gerarPecaPoe({ catalogo: Catalogo.catalogo(), regras: Catalogo.REGRAS, base: arma, raridade: 'normal', ilvl: 60, rng: () => 0.5 }));
+  const n = 1 + suportes.length;
+  a.soquetes = { abertos: n, links: Array.from({ length: n - 1 }, () => true), gemas: Array(n).fill(null), cores: Array(n).fill('W') };
+  e.equipment = { ...e.equipment, weapon: a };
+  delete e.equipment.shield;
+  e.inventory = [ativa, ...suportes].map((s) => G.itemDaGema({ id: (GP.doSlug(s) ?? SP.doSlug(s)).itemId, nivel: typeof nivel === 'object' ? nivel[s] ?? 1 : nivel, xp: 0, raridade: 'comum' }));
+  for (let i = 0; i < n; i++) G.encaixar(e, { de: 0, slot: 'weapon', indice: i });
+  Ficha.invalidar(e);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
+  const h = e.hunt;
+  delete h.instancia;
+  h.respawns = [];
+  h.monstros = [];
+  e.maxHp = e.hp = 1e9;
+  e.maxMana = e.mana = 1e9;
+  const m = Object.assign(criarMonstro({ key: 'troll', x: h.pos.x + 1, y: h.pos.y }, null), { hp: 1e12, maxHp: 1e12, resist: {} });
+  h.monstros.push(m);
+  return { e, m, acao: GP.doSlug(ativa).acao };
+}
+function lancarPoe({ e, m, acao }, v = 0.01) {
+  const h = e.hunt;
+  e.actions = Array(Acoes.SLOTS).fill(null);
+  assert.equal(Acoes.definir(e, { slot: 0, value: { id: acao } }).ok, true);
+  h.cooldowns = {};
+  delete h.ultimoAtaqueEm;
+  delete h.conjurando;
+  const antes = Math.random;
+  Math.random = () => v;
+  try {
+    const r = Acoes.disparar(e, h, PERSONAGEM, 0, m);
+    if (r.conjurando) {
+      h.conjurando.fim = 0;
+      Acoes.concluirConjuracao(e, h, PERSONAGEM);
+    } else assert.notEqual(r.ok, false, r.erro);
+    pousarVoos(h, { sorte: v });
+  } finally {
+    Math.random = antes;
+  }
+  return m;
+}
+
+test('os suportes Chance de Envenenar e Chance de Sangrar põem veneno e sangramento no acerto (do dano antes da resistência)', { skip: soNoOficial('as gemas do PoE (Chance de Envenenar/Sangrar)') }, async () => {
+  // (adaptado ao PoE: a Terra Strike → as Facas Etéreas (magia Física), a Brutal Strike → o Golpe Pesado com uma maça (o Sangramento do PoE é só de Ataques))
+  const venenoNaGema = lancarPoe(await montarPoe('Wands/Driftwood_Wand', 'Ethereal_Knives', ['Chance_to_Poison_Support']));
+  assert.ok(Dot.restante(venenoNaGema, 'venenoPoe') > 0, 'veneno');
+  const sangra = lancarPoe(await montarPoe('Two_Hand_Maces/Driftwood_Maul', 'Heavy_Strike', ['Chance_to_Bleed_Support']));
+  assert.ok(Dot.restante(sangra, 'sangramento') > 0, 'sangramento');
+  // Sem o suporte nada entra; fora da compatibilidade também não.
+  const sem = lancarPoe(await montarPoe('Wands/Driftwood_Wand', 'Ethereal_Knives'));
+  assert.equal(sem.dots, undefined);
+  // (no PoE: o Sangramento é do dano Físico e a Chance de Sangrar só suporta Ataques — uma magia de Gelo com ela não sangra; a de Gelo e não a Bola de Fogo, que
+  // incendeia sozinha, com 25% de chance)
+  const elemental = lancarPoe(await montarPoe('Wands/Driftwood_Wand', 'Frostbolt', ['Chance_to_Bleed_Support']));
+  assert.equal(elemental.dots, undefined, 'bleed, de físico');
+  // (no PoE o veneno é do dano Físico e de Caos — e a Chance de Envenenar ADICIONA Caos (1 a 2 no nível 1): a magia elemental com ela envenena, mas só pelo
+  // Caos. O Gelo ~150 vezes maior (a Seta Congelante no nível 20) não entra no veneno: ele só cresce o que cresce o Caos adicionado — a eficácia do dano
+  // adicionado da magia (a do PoB: 2,5 no nível 1, 3,6 no 20)
+  const GP = await import('../systems/itens-poe/gemas-poe.mjs');
+  const gelo1 = lancarPoe(await montarPoe('Wands/Driftwood_Wand', 'Frostbolt', ['Chance_to_Poison_Support'], { nivel: { Frostbolt: 1 } }));
+  const gelo20 = lancarPoe(await montarPoe('Wands/Driftwood_Wand', 'Frostbolt', ['Chance_to_Poison_Support'], { nivel: { Frostbolt: 20 } }));
+  assert.ok(1e12 - gelo20.hp > 50 * (1e12 - gelo1.hp), `o golpe de Gelo: ${1e12 - gelo1.hp} → ${1e12 - gelo20.hp}`);
+  assert.ok(Dot.restante(gelo1, 'venenoPoe') > 0);
+  const eficacia = GP.eficaciaDoAdicionado('Frostbolt', 20) / GP.eficaciaDoAdicionado('Frostbolt', 1);
+  assert.ok(Math.abs(Dot.restante(gelo20, 'venenoPoe') / Dot.restante(gelo1, 'venenoPoe') - eficacia) < 1e-6, `poison é de físico/caos: ${Dot.restante(gelo1, 'venenoPoe')} → ${Dot.restante(gelo20, 'venenoPoe')} (a eficácia ×${eficacia})`);
 });
 
 test('o tique da caçada paga os pulsos (Estados.tique → Dot.tique) e eles aparecem nos estados ativos do mob', () => {

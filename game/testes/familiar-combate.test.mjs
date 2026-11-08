@@ -11,7 +11,6 @@ import { gradesCacheadas } from '../systems/hunt/terreno.mjs';
 import * as Caminho from '../systems/hunt/caminho.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
 
 let proximaGrade = 0;
 
@@ -112,9 +111,9 @@ function retornos(casas) {
 const cheb = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 
 /** O dono (`P`) caçando no desenho com o familiar invocado; `M`/`m` são trolls parados (vida enorme, sem ataque, sem resistência). `hp` pode ser dado. */
-function cena(linhas, { voc = 'knight', hp = 1e12, perto = 3 } = {}) {
+function cena(linhas, { voc = 'knight', hp = 1e12, perto = 3, level = 300 } = {}) {
   const g = desenho(linhas);
-  const e = personagemDeTeste({ vocacao: voc, level: 300 });
+  const e = personagemDeTeste({ vocacao: voc, level });
   e.maxHp = e.hp = 1e12;
   assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto', strategy: 'nearest' }).ok);
   const h = e.hunt;
@@ -247,8 +246,9 @@ test('C10. cooldown: um golpe a cada 2 s no máximo, e nenhum golpe em lure', ()
   assert.equal(lure.golpes.length, 0, 'lurando, ninguém bate');
 });
 
-test('C11. dano, XP e abate contados UMA vez no dono (o familiar mata, o dono recebe); nada duplica', { skip: aAdaptar("Verificado: C11 PASSA com level 30; com level 300 (acima do teto 100 do PoE) a XP não sobe") }, () => {
-  const c = cena(['..........', '.P..M.....', '..........'], { hp: 1 });
+test('C11. dano, XP e abate contados UMA vez no dono (o familiar mata, o dono recebe); nada duplica', () => {
+  // (08/11, adaptado ao PoE — o dono: "Adaptar antes") O dono no level 30: o level 300 do Draevor passa do teto 100 do PoE, e lá a XP não sobe mais.
+  const c = cena(['..........', '.P..M.....', '..........'], { hp: 1, level: 30 });
   c.h.alvo = null;
   const xp0 = c.e.xp;
   const kills0 = Ficha.totais(c.e).kills;

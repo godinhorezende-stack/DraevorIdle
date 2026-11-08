@@ -17,8 +17,8 @@ import * as S from '../systems/skills/golpes-secundarios.mjs';
 import { eventosDoQuadro } from '../websocket/quadro.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
-import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
-import { aAdaptar, doClassico } from './apoio-migracao.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE, pousarVoos } from './apoio.mjs';
+import { doClassico, soNoOficial } from './apoio-migracao.mjs';
 
 const FLAME = 'spell-flame-strike';
 const ENERGY = 'spell-energy-strike';
@@ -181,12 +181,55 @@ test('explosão: dano ~40% de um golpe direto (rolagem própria) e passa pela re
 
 // ---------------------------------------------------------------- combinações
 
-test('Pierce sem explosão: atravessa na reta, até o limite de perfurações', { skip: aAdaptar("Pierce existe no PoE e a mecânica de projétil é da engine; o teste usa gema do Draevor") }, () => {
-  const e = montar([FLAME, 'pierce']);
+// (08/11, adaptado ao PoE — o dono: "Adaptar antes") As gemas do PoE numa varinha do PoE (todas ligadas): a Flame Strike → o Dreno de Essência (um projétil
+// só, sem área no impacto e que não atravessa sozinho — a Seta Congelante do PoE atravessa todos), a Pierce → a Perfuração do PoE (atravessa 2 alvos adicionais
+// no nível 1). O golpe do projétil cai quando ele chega (`pousarVoos`).
+async function montarPoe(slugs) {
+  const GP = await import('../systems/itens-poe/gemas-poe.mjs');
+  const SP = await import('../systems/itens-poe/suportes-poe.mjs');
+  const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
+  const J = await import('../systems/itens-poe/jogo.mjs');
+  const { gerarPeca } = await import('../systems/itens-poe/gerar.mjs');
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 90 });
+  const a = J.pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras: Catalogo.REGRAS, base: 'Wands/Driftwood_Wand', raridade: 'normal', ilvl: 60, rng: () => 0.5 }));
+  a.soquetes = { abertos: slugs.length, links: Array(slugs.length - 1).fill(true), gemas: Array(slugs.length).fill(null), cores: Array(slugs.length).fill('W') };
+  e.equipment = { ...e.equipment, weapon: a };
+  delete e.equipment.shield;
+  e.inventory = slugs.map((s) => G.itemDaGema({ id: (GP.doSlug(s) ?? SP.doSlug(s)).itemId, nivel: 1, xp: 0, raridade: 'comum' }));
+  for (let i = 0; i < slugs.length; i++) G.encaixar(e, { de: 0, slot: 'weapon', indice: i });
+  Ficha.invalidar(e);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
+  const h = e.hunt;
+  delete h.instancia;
+  h.respawns = [];
+  h.monstros = [];
+  e.maxHp = e.hp = 1e12;
+  e.maxMana = e.mana = 1e12;
+  return { e, acao: GP.doSlug(slugs[0]).acao };
+}
+function lancarPoe(e, acao, alvo) {
+  const h = e.hunt;
+  e.actions = Array(Acoes.SLOTS).fill(null);
+  assert.equal(Acoes.definir(e, { slot: 0, value: { id: acao } }).ok, true);
+  h.cooldowns = {};
+  delete h.ultimoAtaqueEm;
+  delete h.conjurando;
+  const r = Acoes.disparar(e, h, PERSONAGEM, 0, alvo);
+  const ev = [...(r.eventos ?? [])];
+  if (r.conjurando) {
+    h.conjurando.fim = 0;
+    ev.push(...(Acoes.concluirConjuracao(e, h, PERSONAGEM) ?? []));
+  } else assert.notEqual(r.ok, false, r.erro);
+  ev.push(...pousarVoos(h));
+  return ev;
+}
+
+test('Pierce sem explosão: atravessa na reta, até o limite de perfurações', { skip: soNoOficial('as gemas do PoE (Dreno de Essência + Perfuração)') }, async () => {
+  const { e, acao } = await montarPoe(['Essence_Drain', 'Pierce_Support']);
   const alvo = bicho(e, 1, 0);
   const reta = [bicho(e, 2, 0), bicho(e, 3, 0), bicho(e, 4, 0)];
   const lado = bicho(e, 2, 1);
-  const ev = lancar(e, FLAME, alvo);
+  const ev = lancarPoe(e, acao, alvo);
   assert.equal(golpesEm(ev, reta[0], 'perfuracao'), 1);
   assert.equal(golpesEm(ev, reta[1], 'perfuracao'), 1);
   assert.equal(golpesEm(ev, reta[2]), 0, 'Pierce 2: o terceiro da reta não leva');
