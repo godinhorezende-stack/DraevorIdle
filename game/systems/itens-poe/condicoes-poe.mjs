@@ -2533,7 +2533,8 @@ var acaoPeloNome;
 export function definirAcaoPeloNome(fn) { acaoPeloNome = fn; }
 // (lote 56: + `aura_unica:<gema>` — a Visão Sublime, "Habilidades de Aura diferentes de <Aura> são Desabilitadas" — `acoes.auraPermitida`)
 // (+ lote 56: `fuga_impossivel:<pedra>` e `proibida_chama:<notável>` / `proibida_carne:<notável>` — `passivas/arvore`)
-const DINAMICOS = /^(sempre|efeito_buff|concede|suporte_local|suporte_peitoral|suporte_elmo|keystone|aura_unica|fuga_impossivel|proibida_chama|proibida_carne):[\w-]+$/;
+// (+ 08/11: `ungido:<notável>` — o Ungir, `passivas/arvore.alocadosPeloUngir`)
+const DINAMICOS = /^(sempre|efeito_buff|concede|suporte_local|suporte_peitoral|suporte_elmo|keystone|aura_unica|fuga_impossivel|proibida_chama|proibida_carne|ungido):[\w-]+$/;
 /** As FAMÍLIAS de atributo com parâmetro que o código monta pelo nome (o parâmetro tem de ser um dos que ele conhece). */
 const ELS_P = '(physical|fire|ice|energy|chaos)';
 const TIPOS_DE_LACAIO = '(sentinela|zumbi|espectro|golem|esqueleto|totem|espirito|fantasma|reliquia|sagrado|arma|aranha|arqueiro|balista|arauto|rastejador|arbalista|qualquer)';

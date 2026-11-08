@@ -35,7 +35,11 @@ const SORTEIAM_MODS = new Set([...Object.keys(PEDE_RARIDADE), 'Divine_Orb']);
 const PREVIA_EXATA = new Set([
   'Blacksmiths_Whetstone', 'Armourers_Scrap', 'Glassblowers_Bauble', 'Orb_of_Scouring', 'Orb_of_Regret', 'Gemcutters_Prism',
   ...MoedasPoe.MOEDAS_DA_CATEGORIA.lascas,
+  // (08/11) o Ungir: a receita dos 3 Óleos é fixa
+  ...MoedasPoe.MOEDAS_DA_CATEGORIA.encantar.filter((s) => s !== 'Enchant'),
 ]);
+/** (08/11) Os 3 Óleos do Ungir que a tela mandou (ids de moeda), ou undefined. */
+const oleosDe = (m) => (Array.isArray(m?.oleos) && m.oleos.length === 3 ? m.oleos.map((x) => Math.floor(Number(x))) : undefined);
 /**
  * A barra de materiais mostra o que o jogador TEM e, zeradas, só as moedas principais de cada categoria (para ele saber o que precisa):
  * sem isso a de Atributos listava umas quarenta moedas apagadas.
@@ -243,22 +247,22 @@ function motivoDaMoeda(estado, peca, slug, categoria) {
  * O ENSAIO: a moeda aplicada numa CÓPIA da mochila e do equipamento (o mesmo `MoedasPoe.usar` da forja de verdade). Diz se ela vale aqui
  * — com a mensagem do próprio motor quando não vale — e, nas moedas sem sorteio, o resultado exato. Nada do personagem muda.
  */
-function ensaio(estado, slug, alvo) {
+function ensaio(estado, slug, alvo, oleos) {
   const copia = {
     inventory: structuredClone(estado.inventory ?? []), equipment: structuredClone(estado.equipment ?? {}), passivas: structuredClone(estado.passivas ?? {}),
     deposito: structuredClone(estado.deposito ?? []), // (a moeda pode estar no baú)
   };
-  const r = MoedasPoe.usar(copia, { moeda: MoedasPoe.idDa(slug), ...(alvo ? { alvo } : {}) }, () => 0.5);
+  const r = MoedasPoe.usar(copia, { moeda: MoedasPoe.idDa(slug), ...(alvo ? { alvo } : {}), oleos }, () => 0.5);
   return r.ok ? { ok: true, notice: r.notice ?? null } : { ok: false, erro: r.erro };
 }
 /** Por que o material não vale agora (ou null) e, sem sorteio, o resultado exato. */
-function situacao(estado, alvo, peca, slug, categoria) {
+function situacao(estado, alvo, peca, slug, categoria, oleos) {
   const st = MoedasPoe.STATUS[slug];
   if (st?.status === 'nao') return { motivo: `Sem efeito no jogo: ${st.motivo}.` };
   if (quantas(estado, MoedasPoe.idDa(slug)) < 1) return { motivo: 'Você não tem esta moeda.' };
   const antes = peca ? motivoDaMoeda(estado, peca, slug, categoria) : null;
   if (antes) return { motivo: antes };
-  const e = ensaio(estado, slug, (st?.alvo ?? 'peca') === 'nenhum' ? null : alvo);
+  const e = ensaio(estado, slug, (st?.alvo ?? 'peca') === 'nenhum' ? null : alvo, oleos);
   if (!e.ok) return { motivo: e.erro };
   return { motivo: null, ...(PREVIA_EXATA.has(slug) && e.notice ? { previa: e.notice } : {}) };
 }
@@ -300,7 +304,7 @@ export function opcoes(estado, m = {}) {
     .map(({ x, tem }) => ({
       id: x.itemId, slug: x.slug, nome: ITEM_CATALOG[x.itemId]?.name ?? x.nome, tem, noBau: MoedasPoe.ondeTem(estado, x.itemId).bau,
       repete: REPETE.has(x.slug) && Regras.COM_DESEJO.has(categoria),
-      status: MoedasPoe.STATUS[x.slug]?.status ?? 'nao', ...situacao(estado, alvo, peca, x.slug, categoria),
+      status: MoedasPoe.STATUS[x.slug]?.status ?? 'nao', ...situacao(estado, alvo, peca, x.slug, categoria, oleosDe(m)),
     }));
   if (!peca) return { pedido, categoria, alvo: m.alvo ?? null, peca: null, materiais };
   const p = peca.poe;
@@ -373,15 +377,17 @@ export function repetir(estado, guardado, m = {}, rng = Math.random) {
       fim(g, 'semMaterial', `Acabou: você não tem mais ${g.nomeDaMoeda}.`);
       break;
     }
-    const antes = quantas(estado, g.moedaId);
-    const r = MoedasPoe.usar(estado, { moeda: g.moedaId, ...(alvo ? { alvo } : {}) }, rng);
+    // (os Óleos do Ungir saem juntos: conta o gasto de cada um)
+    const gastaveis = [...new Set([g.moedaId, ...(g.oleos ?? [])])];
+    const antes = new Map(gastaveis.map((x) => [x, quantas(estado, x)]));
+    const r = MoedasPoe.usar(estado, { moeda: g.moedaId, ...(alvo ? { alvo } : {}), oleos: g.oleos }, rng);
     if (!r.ok) {
       fim(g, 'naoPode', r.erro);
       break;
     }
     mudou = true;
     g.feitas++;
-    g.gastos[g.moedaId] = (g.gastos[g.moedaId] ?? 0) + (antes - quantas(estado, g.moedaId));
+    for (const [x, n] of antes) if (n - quantas(estado, x) > 0) g.gastos[x] = (g.gastos[x] ?? 0) + (n - quantas(estado, x));
     g.historico.push(r.notice ?? 'A peça mudou.');
     if (g.historico.length > HISTORICO) g.historico.shift();
     const agora = g.semAlvo ? null : localizar(estado, g.ref, alvo);
@@ -457,7 +463,7 @@ function comecar(estado, id, m) {
     desejo = v.desejo;
   }
   const reiniciar = !!m.reiniciar && slug === 'Orb_of_Chance' && modo !== 'uma';
-  const g = repeticao(id, { ...base, alvo: m.alvo, ref: peca, desejo, total, reiniciar });
+  const g = repeticao(id, { ...base, alvo: m.alvo, ref: peca, desejo, total, reiniciar, oleos: oleosDe(m) });
   if (desejo && chegou(g)) fim(g, 'jaEsta', 'A peça já está como você quer: nada foi gasto.');
   return { g };
 }

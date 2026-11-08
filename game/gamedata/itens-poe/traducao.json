@@ -14,6 +14,46 @@
   ],
   "regras": [
     {
+      "padrao": "^Aloca (?!.* se você possuir )(.+?)$",
+      "nomeLivre": true,
+      "efeitos": [
+        {
+          "stat": "ungido:{NOME}",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o encantamento do Ungir: vestida, o notável vale como alocado na árvore (`passivas/arvore.alocadosPeloUngir`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B14: o Ungir e o Encantamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pode ser ungido$",
+      "efeitos": [
+        {
+          "stat": "pode_ser_ungido",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "aceita os 3 Óleos do Ungir como um amuleto (`ungir.ungivel`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B14: o Ungir e o Encantamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pode ter \\{(\\d+)\\} Modificadores Encantados extras$",
+      "efeitos": [
+        {
+          "stat": "encantamentos_extras",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "cabem mais N encantamentos (Ungir e Encantamento — `ungir.maximoDeEncantamentos`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B14: o Ungir e o Encantamento",
+      "_nova": true
+    },
+    {
       "padrao": "^Itens Mágicos encontrados são Identificados$",
       "efeitos": [
         {

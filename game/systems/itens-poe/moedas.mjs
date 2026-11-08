@@ -14,6 +14,7 @@ import { ITEM_CATALOG } from '../dados.mjs';
 import * as Catalogo from './catalogo.mjs';
 import * as Gerar from './gerar.mjs';
 import * as Catalisadores from './catalisadores.mjs';
+import * as Ungir from './ungir.mjs';
 import * as Jogo from './jogo.mjs';
 import * as SocketsPoe from './sockets.mjs';
 import * as Gemas from '../skills/gemas.mjs';
@@ -753,6 +754,21 @@ const ducadoDeUkatoa = ({ p, rng }) => {
   return erro(ilvls.length ? `O Ducado de Ukatoa pede item level ${Math.min(...ilvls)} (esta peça: ${p.ilvl}).` : 'Não há implícito sobrenatural para este amuleto.');
 };
 
+// (08/11, o dono: "Ungir + Orbe de Encantar" — `ungir.mjs`) os ÓLEOS: os 3 escolhidos na Forja (`oleos`, ids) ungem a peça e são gastos juntos;
+// o ENCANTAMENTO sorteia um encantamento do Labirinto em elmo, luvas ou botas.
+function ungirComOleos({ estado, p, oleos }) {
+  const slugs = (Array.isArray(oleos) ? oleos : []).map((id) => moedaDoItem(id)?.slug);
+  if (slugs.length !== 3 || !slugs.every(Ungir.ehOleo)) return erro('Escolha os 3 Óleos do Ungir (Forja → Encantamentos).');
+  const precisa = new Map();
+  for (const s of slugs) precisa.set(s, (precisa.get(s) ?? 0) + 1);
+  for (const [s, n] of precisa) if (quantasTem(estado, idDa(s)) < n) return erro(`Você não tem ${n} ${POR_SLUG.get(s).nome}.`);
+  const r = Ungir.ungir(p, slugs);
+  if (!r.ok) return r;
+  for (const [s, n] of precisa) gastar(estado, idDa(s), n);
+  return { ok: true, notice: r.notice, jaGastou: true };
+}
+const encantamento = ({ p, rng }) => Ungir.encantar(p, rng);
+
 /** O efeito e o status de cada moeda que faz algo. `alvo`: 'peca' (equipamento do PoE), 'gema', 'nenhum'. `corrompida`: aceita corrompida. */
 const FAZ = {
   Orb_of_Transmutation: { f: transmutar }, Orb_of_Augmentation: { f: ampliar }, Orb_of_Alteration: { f: alterar }, Regal_Orb: { f: regio },
@@ -795,6 +811,7 @@ const FAZ = {
   Mirror_Shard: { f: juntarLascas('Mirror_of_Kalandra'), alvo: 'nenhum' },
   ...Object.fromEntries(EMISSARIO.flatMap((c) => [...c.partes.map((s) => [s, { f: juntarPartes(c), alvo: 'nenhum' }]), [c.pergaminho, { f: aprimorarEmissario(c) }]])),
   Ukatoas_Ducat: { f: ducadoDeUkatoa },
+  ...Object.fromEntries(Ungir.OLEOS.map((slug) => [slug, { f: ungirComOleos, encanta: true }])), Enchant: { f: encantamento, encanta: true },
   Scroll_of_Wisdom: { f: sabedoria, identifica: true }, Scroll_Fragment: { f: juntarLascas('Scroll_of_Wisdom', 5), alvo: 'nenhum' },
 };
 for (const [slug, f] of Object.entries(FAZ)) if (!POR_SLUG.has(slug)) delete FAZ[slug];
@@ -851,6 +868,7 @@ export const MOEDAS_DA_CATEGORIA = Object.freeze({
     'Vaal_Orb', 'Volatile_Vaal_Orb', 'Djinn-Touched_Vaal_Orb', 'Tainted_Chaos_Orb', 'Tainted_Exalted_Orb', 'Tainted_Divine_Teardrop',
     'Tainted_Armourers_Scrap', 'Tainted_Blacksmiths_Whetstone', 'Tainted_Mythic_Orb', 'Tainted_Catalyst',
   ],
+  encantar: [...Ungir.OLEOS, 'Enchant'],
   gemas: ['Gemcutters_Prism', 'Gemcutters_Lens'],
   // (06/11) as Partes do Emissário juntam como as lascas (sem peça); os Pergaminhos vão em Especiais (o Ancestral também troca o único)
   lascas: [...LASCAS, ...EMISSARIO.flatMap((c) => c.partes)],
@@ -971,7 +989,7 @@ function pecaDoAlvo(estado, alvo) {
 }
 
 /** `send({t:'moeda', moeda: itemId, alvo})` — usa UMA moeda (a peça muda, e só então a moeda é gasta). */
-export function usar(estado, { moeda: idDaMoeda, alvo } = {}, rng = Math.random) {
+export function usar(estado, { moeda: idDaMoeda, alvo, oleos } = {}, rng = Math.random) {
   if (!Catalogo.ligado()) return erro('As moedas do PoE não estão ligadas.');
   const moeda = moedaDoItem(idDaMoeda);
   if (!moeda) return erro('Isso não é uma moeda do PoE.');
@@ -998,11 +1016,14 @@ export function usar(estado, { moeda: idDaMoeda, alvo } = {}, rng = Math.random)
     if (p.identificado === false && !faz.identifica && moeda.slug !== 'Vaal_Orb') return erro('Identifique a peça antes (Pergaminho da Sabedoria).');
   }
   const antes = peca ? structuredClone(peca) : null;
-  const r = faz.f({ estado, peca, p, alvo, rng, moeda });
+  // (08/11) os encantamentos ficam fora do alcance das outras moedas (`Ungir.separar`) e voltam depois
+  const encantos = p && !faz.encanta ? Ungir.separar(p) : [];
+  const r = faz.f({ estado, peca, p, alvo, rng, moeda, oleos });
   if (!r?.ok) {
     if (peca && antes) Object.assign(peca, antes); // nada muda se a moeda não valeu
     return r ?? erro('Nada aconteceu.');
   }
+  if (p && !r.destruiu) Ungir.devolver(peca.poe ?? p, encantos);
   if (peca && !r.destruiu) Jogo.recalcular(peca);
   if (!r.jaGastou) gastar(estado, moeda.itemId, 1);
   return { ok: true, notice: r.notice };

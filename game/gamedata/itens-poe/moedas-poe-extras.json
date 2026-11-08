@@ -1,5 +1,5 @@
 {
- "_nota": "As moedas do poedb que a coleção do dono não traz (06/11, dono: \"Cadeia completa\" do Emissário e o Ducado de Ukatoa): as 18 Partes do Emissário (Harbinger — a classe Peças do poedb; cada Parte é o seu único \"Primeira Peça do Arcano\"…), os 6 Pergaminhos do Emissário e o Ducado de Ukatoa. Os textos são os das páginas do poedb pt (saida/html/<slug>.html); o \"Junte…\" das Partes é o resumo do jogo (o poedb só diz \"Este item se transformará…\"). tools/importar-moedas-poe.mjs junta estas às da coleção; o que fazem está em systems/itens-poe/moedas.mjs. (08/11, balão 0 sem efeito — o dono: \"Criar os Catalisadores\") os 11 Catalisadores (poedb pt, saida/html/<slug>.html).",
+ "_nota": "As moedas do poedb que a coleção do dono não traz (06/11, dono: \"Cadeia completa\" do Emissário e o Ducado de Ukatoa): as 18 Partes do Emissário (Harbinger — a classe Peças do poedb; cada Parte é o seu único \"Primeira Peça do Arcano\"…), os 6 Pergaminhos do Emissário e o Ducado de Ukatoa. Os textos são os das páginas do poedb pt (saida/html/<slug>.html); o \"Junte…\" das Partes é o resumo do jogo (o poedb só diz \"Este item se transformará…\"). tools/importar-moedas-poe.mjs junta estas às da coleção; o que fazem está em systems/itens-poe/moedas.mjs. (08/11, balão 0 sem efeito — o dono: \"Criar os Catalisadores\") os 11 Catalisadores (poedb pt, saida/html/<slug>.html). (08/11, o dono: \"Ungir + Orbe de Encantar\") os 13 Óleos (poedb pt, saida/html/<slug>.html; o texto do PoE fala da Cassia e dos Mapas Infestados — aqui, o Ungir da Forja).",
  "moedas": [
   {
    "slug": "First_Piece_of_the_Arcane",
@@ -388,6 +388,149 @@
    ],
    "pilha": 20,
    "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Currency/Catalysts/TaintedCatalyst.webp"
+  },
+  {
+   "slug": "Clear_Oil",
+   "nome": "Óleo Claro",
+   "efeitos": [
+    "Pode ser combinado com outros Óleos para Ungir: 3 Óleos num amuleto (ou numa peça que pode ser ungida) Alocam um notável da árvore de passivas.",
+    "Tier 1 de 13 (do Óleo Claro ao Óleo Dourado). Cai só dos chefes pináculo.",
+    "Use na Forja, categoria Encantamentos."
+   ],
+   "pilha": 10,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Currency/Oils/ClearOil.webp"
+  },
+  {
+   "slug": "Sepia_Oil",
+   "nome": "Óleo Sépia",
+   "efeitos": [
+    "Pode ser combinado com outros Óleos para Ungir: 3 Óleos num amuleto (ou numa peça que pode ser ungida) Alocam um notável da árvore de passivas.",
+    "Tier 2 de 13 (do Óleo Claro ao Óleo Dourado). Cai só dos chefes pináculo.",
+    "Use na Forja, categoria Encantamentos."
+   ],
+   "pilha": 10,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Currency/Oils/SepiaOil.webp"
+  },
+  {
+   "slug": "Amber_Oil",
+   "nome": "Óleo Âmbar",
+   "efeitos": [
+    "Pode ser combinado com outros Óleos para Ungir: 3 Óleos num amuleto (ou numa peça que pode ser ungida) Alocam um notável da árvore de passivas.",
+    "Tier 3 de 13 (do Óleo Claro ao Óleo Dourado). Cai só dos chefes pináculo.",
+    "Use na Forja, categoria Encantamentos."
+   ],
+   "pilha": 10,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Currency/Oils/AmberOil.webp"
+  },
+  {
+   "slug": "Verdant_Oil",
+   "nome": "Óleo Verdejante",
+   "efeitos": [
+    "Pode ser combinado com outros Óleos para Ungir: 3 Óleos num amuleto (ou numa peça que pode ser ungida) Alocam um notável da árvore de passivas.",
+    "Tier 4 de 13 (do Óleo Claro ao Óleo Dourado). Cai só dos chefes pináculo.",
+    "Use na Forja, categoria Encantamentos."
+   ],
+   "pilha": 10,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Currency/Oils/VerdantOil.webp"
+  },
+  {
+   "slug": "Teal_Oil",
+   "nome": "Óleo Cerceta",
+   "efeitos": [
+    "Pode ser combinado com outros Óleos para Ungir: 3 Óleos num amuleto (ou numa peça que pode ser ungida) Alocam um notável da árvore de passivas.",
+    "Tier 5 de 13 (do Óleo Claro ao Óleo Dourado). Cai só dos chefes pináculo.",
+    "Use na Forja, categoria Encantamentos."
+   ],
+   "pilha": 10,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Currency/Oils/TealOil.webp"
+  },
+  {
+   "slug": "Azure_Oil",
+   "nome": "Óleo Azul-Celeste",
+   "efeitos": [
+    "Pode ser combinado com outros Óleos para Ungir: 3 Óleos num amuleto (ou numa peça que pode ser ungida) Alocam um notável da árvore de passivas.",
+    "Tier 6 de 13 (do Óleo Claro ao Óleo Dourado). Cai só dos chefes pináculo.",
+    "Use na Forja, categoria Encantamentos."
+   ],
+   "pilha": 10,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Currency/Oils/AzureOil.webp"
+  },
+  {
+   "slug": "Indigo_Oil",
+   "nome": "Óleo Índigo",
+   "efeitos": [
+    "Pode ser combinado com outros Óleos para Ungir: 3 Óleos num amuleto (ou numa peça que pode ser ungida) Alocam um notável da árvore de passivas.",
+    "Tier 7 de 13 (do Óleo Claro ao Óleo Dourado). Cai só dos chefes pináculo.",
+    "Use na Forja, categoria Encantamentos."
+   ],
+   "pilha": 10,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Currency/Oils/IndigoOil.webp"
+  },
+  {
+   "slug": "Violet_Oil",
+   "nome": "Óleo Violeta",
+   "efeitos": [
+    "Pode ser combinado com outros Óleos para Ungir: 3 Óleos num amuleto (ou numa peça que pode ser ungida) Alocam um notável da árvore de passivas.",
+    "Tier 8 de 13 (do Óleo Claro ao Óleo Dourado). Cai só dos chefes pináculo.",
+    "Use na Forja, categoria Encantamentos."
+   ],
+   "pilha": 10,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Currency/Oils/VioletOil.webp"
+  },
+  {
+   "slug": "Crimson_Oil",
+   "nome": "Óleo Rubro",
+   "efeitos": [
+    "Pode ser combinado com outros Óleos para Ungir: 3 Óleos num amuleto (ou numa peça que pode ser ungida) Alocam um notável da árvore de passivas.",
+    "Tier 9 de 13 (do Óleo Claro ao Óleo Dourado). Cai só dos chefes pináculo.",
+    "Use na Forja, categoria Encantamentos."
+   ],
+   "pilha": 10,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Currency/Oils/CrimsonOil.webp"
+  },
+  {
+   "slug": "Black_Oil",
+   "nome": "Óleo Negro",
+   "efeitos": [
+    "Pode ser combinado com outros Óleos para Ungir: 3 Óleos num amuleto (ou numa peça que pode ser ungida) Alocam um notável da árvore de passivas.",
+    "Tier 10 de 13 (do Óleo Claro ao Óleo Dourado). Cai só dos chefes pináculo.",
+    "Use na Forja, categoria Encantamentos."
+   ],
+   "pilha": 10,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Currency/Oils/BlackOil.webp"
+  },
+  {
+   "slug": "Opalescent_Oil",
+   "nome": "Óleo Opalescente",
+   "efeitos": [
+    "Pode ser combinado com outros Óleos para Ungir: 3 Óleos num amuleto (ou numa peça que pode ser ungida) Alocam um notável da árvore de passivas.",
+    "Tier 11 de 13 (do Óleo Claro ao Óleo Dourado). Cai só dos chefes pináculo.",
+    "Use na Forja, categoria Encantamentos."
+   ],
+   "pilha": 10,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Currency/Oils/OpalescentOil.webp"
+  },
+  {
+   "slug": "Silver_Oil",
+   "nome": "Óleo Prateado",
+   "efeitos": [
+    "Pode ser combinado com outros Óleos para Ungir: 3 Óleos num amuleto (ou numa peça que pode ser ungida) Alocam um notável da árvore de passivas.",
+    "Tier 12 de 13 (do Óleo Claro ao Óleo Dourado). Cai só dos chefes pináculo.",
+    "Use na Forja, categoria Encantamentos."
+   ],
+   "pilha": 10,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Currency/Oils/SilverOil.webp"
+  },
+  {
+   "slug": "Golden_Oil",
+   "nome": "Óleo Dourado",
+   "efeitos": [
+    "Pode ser combinado com outros Óleos para Ungir: 3 Óleos num amuleto (ou numa peça que pode ser ungida) Alocam um notável da árvore de passivas.",
+    "Tier 13 de 13 (do Óleo Claro ao Óleo Dourado). Cai só dos chefes pináculo.",
+    "Use na Forja, categoria Encantamentos."
+   ],
+   "pilha": 10,
+   "fonteDaImagem": "https://cdn.poedb.tw/image/Art/2DItems/Currency/Oils/GoldenOil.webp"
   }
  ]
 }

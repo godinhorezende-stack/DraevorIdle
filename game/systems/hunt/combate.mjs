@@ -53,6 +53,7 @@ import * as MoedasPoe from '../itens-poe/moedas.mjs';
 // (100% — dados, 03/11) as Tatuagens do PoE (a fonte simples, sem a liga Ancestral — `passivas/tatuagens.dropDoMonstro`)
 import * as Tatuagens from '../passivas/tatuagens.mjs';
 import * as Pinaculos from '../itens-poe/pinaculos.mjs';
+import * as Ungir from '../itens-poe/ungir.mjs';
 import * as Missoes from '../itens-poe/missoes.mjs';
 import * as PinaculosAcesso from '../itens-poe/pinaculos-acesso.mjs';
 import { tipoDoBicho } from './escalonamento.mjs';
@@ -469,6 +470,8 @@ function sacolaDoChefe(estado, hunt, alvo, quem, atoDoChefe) {
       Anuncios.dropRaro({ quem, peca: exclusivo, bicho: alvo.name, boss: true, onde: alvo.name });
       DropsDoSite.anotarDropPoe({ quem, onde: alvo.name, bicho: alvo.name, boss: true, peca: exclusivo, estado }).catch((e) => console.error('drops-do-site', e.message));
     }
+    // (08/11) os ÓLEOS do Ungir caem só do chefe pináculo (`itens-poe/ungir.mjs`, `regras.json → moedas.oleos`)
+    if (hunt.bossId && Pinaculos.doDispositivo(hunt.bossId)) for (const slug of Ungir.oleosDoPinaculo()) itens.push({ id: MoedasPoe.idDa(slug), count: 1 });
   }
   return itens;
 }

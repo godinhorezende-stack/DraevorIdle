@@ -21,6 +21,7 @@ export const GRUPOS = Object.freeze([
     { id: 'influencia', nome: 'Influência', resumo: 'Mods de influência' },
     { id: 'ancestral', nome: 'Ancestral', resumo: 'Brasas e Fluidos' },
     { id: 'qualidade', nome: 'Qualidade', resumo: 'Qualidade da peça' },
+    { id: 'encantar', nome: 'Encantamentos', resumo: 'Ungir e Encantamento' },
   ] },
   { nome: 'Outros', categorias: [
     { id: 'corrupcao', nome: 'Corrupção', resumo: 'Vaal e Corroídas' },

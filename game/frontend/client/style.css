@@ -28137,6 +28137,9 @@ html[data-perfil="retrato"] .inv-selo-texto b, html[data-perfil="retrato"] .inv-
   background: #0c0d0f; color: var(--fp-texto); border: 1px solid var(--fp-linha); border-radius: 4px; padding: 3px 6px; font: inherit; font-size: 12px;
 }
 .fp-min { width: 70px; }
+/* (08/11) as 3 casas do Ungir */
+.fp-oleos { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.fp-oleos .fp-select { flex: 1 1 120px; min-width: 0; }
 .fp-tirar { width: 22px; height: 22px; padding: 0; border-radius: 4px; border: 1px solid #5a2a22; background: #1f0f0c; color: var(--fp-erro); cursor: pointer; }
 .fp-escolha-mods { display: flex; flex-direction: column; gap: 6px; }
 .fp-filtros-mod { display: flex; flex-wrap: wrap; gap: 6px; }

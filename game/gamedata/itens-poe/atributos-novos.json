@@ -10190,6 +10190,18 @@
       "unidade": "",
       "combate": true,
       "efeito": "hunt/combate.identificarAoAchar (08/11 — o Manto de Tawm'r Isley)"
+    },
+    "pode_ser_ungido": {
+      "nome": "Pode ser ungido",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ungir.ungivel (08/11 — o Cinto de Cordão)"
+    },
+    "encantamentos_extras": {
+      "nome": "Modificadores Encantados extras",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ungir.maximoDeEncantamentos (08/11 — o Suspiro Estrangulador e os Capotes)"
     }
   }
 }

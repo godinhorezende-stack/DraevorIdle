@@ -1,0 +1,4430 @@
+{
+ "_nota": "As receitas do UNGIR do PoE (poedb.tw/pt/Oil, aba \"Ungir Únicos, Amuletos\" — extraídas com o Scrapling, 08/11): 3 Óleos (na ordem do tier, do Claro ao Dourado) → o notável da árvore que o amuleto Aloca. Só as dos 13 Óleos (as do Prismático/Contaminado/Reflexivo ficam de fora: o dono, \"13 Óleos só dos pináculos\"). `id`: o nó da árvore do PoE; `nome`: o da árvore (o texto \"Aloca <nome>\"); `no`: o nome em inglês (o link do poedb). Lido por systems/itens-poe/ungir.mjs.",
+ "oleos": [
+  "Clear_Oil",
+  "Sepia_Oil",
+  "Amber_Oil",
+  "Verdant_Oil",
+  "Teal_Oil",
+  "Azure_Oil",
+  "Indigo_Oil",
+  "Violet_Oil",
+  "Crimson_Oil",
+  "Black_Oil",
+  "Opalescent_Oil",
+  "Silver_Oil",
+  "Golden_Oil"
+ ],
+ "receitas": [
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Clear_Oil",
+    "Clear_Oil"
+   ],
+   "id": "4918",
+   "nome": "Vingança Indiscriminada",
+   "no": "Indiscriminate_Revenge"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Clear_Oil",
+    "Sepia_Oil"
+   ],
+   "id": "15226",
+   "nome": "Retaliação Cruel",
+   "no": "Cruel_Retort"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Sepia_Oil",
+    "Sepia_Oil"
+   ],
+   "id": "2599",
+   "nome": "Resposta Pronta",
+   "no": "Prepared_Response"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Clear_Oil",
+    "Amber_Oil"
+   ],
+   "id": "59976",
+   "nome": "Contra-ataque Cuidadoso",
+   "no": "Careful_Counterattack"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Sepia_Oil",
+    "Sepia_Oil"
+   ],
+   "id": "37425",
+   "nome": "Reaplicação Praticada",
+   "no": "Practised_Reapplication"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Sepia_Oil",
+    "Amber_Oil"
+   ],
+   "id": "41305",
+   "nome": "Resposta Esmagadora",
+   "no": "Crushing_Reply"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Clear_Oil",
+    "Verdant_Oil"
+   ],
+   "id": "34978",
+   "nome": "Mistura Coloidal",
+   "no": "Colloidal_Mixture"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Sepia_Oil",
+    "Amber_Oil"
+   ],
+   "id": "56330",
+   "nome": "Fluxo da Batalha",
+   "no": "Flow_of_Battle"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Sepia_Oil",
+    "Verdant_Oil"
+   ],
+   "id": "64226",
+   "nome": "Rugido Desafiador",
+   "no": "Roaring_Challenge"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Amber_Oil",
+    "Amber_Oil"
+   ],
+   "id": "52030",
+   "nome": "Explosão Enérgica",
+   "no": "Burst_of_Energy"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Sepia_Oil",
+    "Verdant_Oil"
+   ],
+   "id": "30160",
+   "nome": "Defender-se",
+   "no": "Fending"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Amber_Oil",
+    "Amber_Oil"
+   ],
+   "id": "24716",
+   "nome": "Transe de Batalha",
+   "no": "Battle_Trance"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Clear_Oil",
+    "Teal_Oil"
+   ],
+   "id": "18357",
+   "nome": "Agilidade Felina",
+   "no": "Feline_Swiftness"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Amber_Oil",
+    "Verdant_Oil"
+   ],
+   "id": "23690",
+   "nome": "Infusão de Essência",
+   "no": "Essence_Infusion"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Sepia_Oil",
+    "Teal_Oil"
+   ],
+   "id": "10542",
+   "nome": "Baluarte de Espinhos",
+   "no": "Spiked_Bulwark"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Amber_Oil",
+    "Verdant_Oil"
+   ],
+   "id": "37078",
+   "nome": "Caminho do Sábio",
+   "no": "Path_of_the_Savant"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Amber_Oil",
+    "Amber_Oil"
+   ],
+   "id": "12702",
+   "nome": "Caminho do Guerreiro",
+   "no": "Path_of_the_Warrior"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Verdant_Oil",
+    "Verdant_Oil"
+   ],
+   "id": "19506",
+   "nome": "Caminho do Caçador",
+   "no": "Path_of_the_Hunter"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Sepia_Oil",
+    "Teal_Oil"
+   ],
+   "id": "38516",
+   "nome": "Decreto Justo",
+   "no": "Righteous_Decree"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Amber_Oil",
+    "Teal_Oil"
+   ],
+   "id": "63150",
+   "nome": "Pau-Ferro",
+   "no": "Ironwood"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Verdant_Oil",
+    "Verdant_Oil"
+   ],
+   "id": "16243",
+   "nome": "Fuzilaria",
+   "no": "Fusillade"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Amber_Oil",
+    "Verdant_Oil"
+   ],
+   "id": "2715",
+   "nome": "Passo Rápido",
+   "no": "Quickstep"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Amber_Oil",
+    "Teal_Oil"
+   ],
+   "id": "52230",
+   "nome": "Caçador Veterano",
+   "no": "Weathered_Hunter"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Clear_Oil",
+    "Azure_Oil"
+   ],
+   "id": "21435",
+   "nome": "Pano e Malha",
+   "no": "Cloth_and_Chain"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Verdant_Oil",
+    "Teal_Oil"
+   ],
+   "id": "31033",
+   "nome": "Robustez",
+   "no": "Robust"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Verdant_Oil",
+    "Verdant_Oil"
+   ],
+   "id": "65224",
+   "nome": "Aspecto da Águia",
+   "no": "Aspect_of_the_Eagle"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Sepia_Oil",
+    "Azure_Oil"
+   ],
+   "id": "24256",
+   "nome": "Dínamo",
+   "no": "Dynamo"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Verdant_Oil",
+    "Teal_Oil"
+   ],
+   "id": "21973",
+   "nome": "Proteção da Podridão",
+   "no": "Decay_Ward"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Amber_Oil",
+    "Teal_Oil"
+   ],
+   "id": "45067",
+   "nome": "Assassino de Emoções",
+   "no": "Thrill_Killer"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Sepia_Oil",
+    "Azure_Oil"
+   ],
+   "id": "24067",
+   "nome": "Instinto",
+   "no": "Instinct"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Verdant_Oil",
+    "Verdant_Oil"
+   ],
+   "id": "1382",
+   "nome": "Vácuo de Espírito",
+   "no": "Spirit_Void"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Amber_Oil",
+    "Azure_Oil"
+   ],
+   "id": "529",
+   "nome": "Presas Venenosas",
+   "no": "Poisonous_Fangs"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Teal_Oil",
+    "Teal_Oil"
+   ],
+   "id": "46965",
+   "nome": "Sabotador",
+   "no": "Saboteur"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Verdant_Oil",
+    "Teal_Oil"
+   ],
+   "id": "47484",
+   "nome": "Percepção Profunda",
+   "no": "Depth_Perception"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Amber_Oil",
+    "Azure_Oil"
+   ],
+   "id": "42686",
+   "nome": "Foco Elemental",
+   "no": "Elemental_Focus"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Teal_Oil",
+    "Teal_Oil"
+   ],
+   "id": "27929",
+   "nome": "Sabedoria Profunda",
+   "no": "Deep_Wisdom"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Clear_Oil",
+    "Indigo_Oil"
+   ],
+   "id": "27806",
+   "nome": "Como o Trovão",
+   "no": "As_The_Thunder"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Verdant_Oil",
+    "Azure_Oil"
+   ],
+   "id": "27301",
+   "nome": "Experiência Marcial",
+   "no": "Martial_Experience"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Verdant_Oil",
+    "Teal_Oil"
+   ],
+   "id": "60002",
+   "nome": "Disparos da Fúria",
+   "no": "Fury_Bolts"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Sepia_Oil",
+    "Indigo_Oil"
+   ],
+   "id": "6783",
+   "nome": "Espetos Selvagens",
+   "no": "Savage_Skewering"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Verdant_Oil",
+    "Azure_Oil"
+   ],
+   "id": "5289",
+   "nome": "Despertar de Batalha",
+   "no": "Battle_Rouse"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Amber_Oil",
+    "Azure_Oil"
+   ],
+   "id": "27190",
+   "nome": "Super Preparado",
+   "no": "Overprepared"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Teal_Oil",
+    "Teal_Oil"
+   ],
+   "id": "20832",
+   "nome": "Santuário",
+   "no": "Sanctuary"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Sepia_Oil",
+    "Indigo_Oil"
+   ],
+   "id": "49645",
+   "nome": "Cauterização",
+   "no": "Cauterisation"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Amber_Oil",
+    "Indigo_Oil"
+   ],
+   "id": "7440",
+   "nome": "Ceifador de Inimigos",
+   "no": "Harvester_of_Foes"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Clear_Oil",
+    "Violet_Oil"
+   ],
+   "id": "8135",
+   "nome": "Aplicação Prática",
+   "no": "Practical_Application"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Teal_Oil",
+    "Azure_Oil"
+   ],
+   "id": "46408",
+   "nome": "Presas da Víbora",
+   "no": "Fangs_of_the_Viper"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Verdant_Oil",
+    "Azure_Oil"
+   ],
+   "id": "10016",
+   "nome": "Executor",
+   "no": "Executioner"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Teal_Oil",
+    "Teal_Oil"
+   ],
+   "id": "42804",
+   "nome": "Bebedor de Mentes",
+   "no": "Mind_Drinker"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Amber_Oil",
+    "Indigo_Oil"
+   ],
+   "id": "50690",
+   "nome": "Remédios Nutritivos",
+   "no": "Replenishing_Remedies"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Sepia_Oil",
+    "Violet_Oil"
+   ],
+   "id": "15344",
+   "nome": "Liberdade de Movimento",
+   "no": "Freedom_of_Movement"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Teal_Oil",
+    "Azure_Oil"
+   ],
+   "id": "10835",
+   "nome": "Sonhador",
+   "no": "Dreamer"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Verdant_Oil",
+    "Indigo_Oil"
+   ],
+   "id": "8001",
+   "nome": "Ladrão Inteligênte",
+   "no": "Clever_Thief"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Sepia_Oil",
+    "Violet_Oil"
+   ],
+   "id": "44788",
+   "nome": "Conexões Potentes",
+   "no": "Potent_Connections"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Verdant_Oil",
+    "Azure_Oil"
+   ],
+   "id": "2550",
+   "nome": "Incendiário",
+   "no": "Arsonist"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Verdant_Oil",
+    "Indigo_Oil"
+   ],
+   "id": "28878",
+   "nome": "Implacável",
+   "no": "Relentless"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Amber_Oil",
+    "Indigo_Oil"
+   ],
+   "id": "45283",
+   "nome": "Presa Encurralada",
+   "no": "Cornered_Prey"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Amber_Oil",
+    "Violet_Oil"
+   ],
+   "id": "7085",
+   "nome": "Arte da Arma",
+   "no": "Weapon_Artistry"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Teal_Oil",
+    "Azure_Oil"
+   ],
+   "id": "35233",
+   "nome": "Artesão da Discórdia",
+   "no": "Discord_Artisan"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Teal_Oil",
+    "Teal_Oil"
+   ],
+   "id": "18174",
+   "nome": "Bastião Místico",
+   "no": "Mystic_Bulwark"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Amber_Oil",
+    "Violet_Oil"
+   ],
+   "id": "53757",
+   "nome": "Fúria Xamânica",
+   "no": "Shamanistic_Fury"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Teal_Oil",
+    "Indigo_Oil"
+   ],
+   "id": "22133",
+   "nome": "Chama Revigorante",
+   "no": "Invigorating_Blaze"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Verdant_Oil",
+    "Indigo_Oil"
+   ],
+   "id": "12033",
+   "nome": "Lâmina Perversa",
+   "no": "Wicked_Blade"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Verdant_Oil",
+    "Violet_Oil"
+   ],
+   "id": "24362",
+   "nome": "Pensamentos Profundos",
+   "no": "Deep_Thoughts"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Azure_Oil",
+    "Azure_Oil"
+   ],
+   "id": "10115",
+   "nome": "Perfeição Pródiga",
+   "no": "Prodigal_Perfection"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Teal_Oil",
+    "Azure_Oil"
+   ],
+   "id": "19144",
+   "nome": "Sentinela",
+   "no": "Sentinel"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Teal_Oil",
+    "Indigo_Oil"
+   ],
+   "id": "65107",
+   "nome": "Quebra-bastião",
+   "no": "Bastion_Breaker"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Verdant_Oil",
+    "Violet_Oil"
+   ],
+   "id": "42720",
+   "nome": "Puxada Pesada",
+   "no": "Heavy_Draw"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Azure_Oil",
+    "Azure_Oil"
+   ],
+   "id": "54791",
+   "nome": "Garras da Gralha",
+   "no": "Claws_of_the_Magpie"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Amber_Oil",
+    "Violet_Oil"
+   ],
+   "id": "52157",
+   "nome": "Sifão d'Alma",
+   "no": "Soul_Siphon"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Verdant_Oil",
+    "Indigo_Oil"
+   ],
+   "id": "59423",
+   "nome": "Escalonamento",
+   "no": "Escalation"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Teal_Oil",
+    "Indigo_Oil"
+   ],
+   "id": "60781",
+   "nome": "Vínculo Inspirador",
+   "no": "Inspiring_Bond"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Teal_Oil",
+    "Violet_Oil"
+   ],
+   "id": "31473",
+   "nome": "Mestre das Feridas",
+   "no": "Master_of_Wounds"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Verdant_Oil",
+    "Violet_Oil"
+   ],
+   "id": "17608",
+   "nome": "Passos Silenciosos",
+   "no": "Silent_Steps"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Azure_Oil",
+    "Azure_Oil"
+   ],
+   "id": "29861",
+   "nome": "Runas Explosivas",
+   "no": "Explosive_Runes"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Teal_Oil",
+    "Azure_Oil"
+   ],
+   "id": "36859",
+   "nome": "Postura da Madeira-aço",
+   "no": "Steelwood_Stance"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Teal_Oil",
+    "Violet_Oil"
+   ],
+   "id": "44102",
+   "nome": "Explosivos Eficientes",
+   "no": "Efficient_Explosives"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Teal_Oil",
+    "Indigo_Oil"
+   ],
+   "id": "30693",
+   "nome": "Catalisar",
+   "no": "Divine_Fervour"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Verdant_Oil",
+    "Violet_Oil"
+   ],
+   "id": "63933",
+   "nome": "Zelo Totêmico",
+   "no": "Totemic_Zeal"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Azure_Oil",
+    "Azure_Oil"
+   ],
+   "id": "40645",
+   "nome": "Quebra-Osso",
+   "no": "Bone_Breaker"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Teal_Oil",
+    "Violet_Oil"
+   ],
+   "id": "11784",
+   "nome": "Vampirismo",
+   "no": "Vampirism"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Teal_Oil",
+    "Indigo_Oil"
+   ],
+   "id": "2275",
+   "nome": "Composto da Natureza",
+   "no": "Natures_Concoction"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Azure_Oil",
+    "Violet_Oil"
+   ],
+   "id": "59556",
+   "nome": "Munições Rápidas",
+   "no": "Expeditious_Munitions"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Teal_Oil",
+    "Violet_Oil"
+   ],
+   "id": "33082",
+   "nome": "Fio da Navalha",
+   "no": "Razors_Edge"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Azure_Oil",
+    "Azure_Oil"
+   ],
+   "id": "56359",
+   "nome": "Ritual Canibalístico",
+   "no": "Cannibalistic_Rite"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Indigo_Oil",
+    "Indigo_Oil"
+   ],
+   "id": "28034",
+   "nome": "Vínculo Maximizador",
+   "no": "Empowered_Bond"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Azure_Oil",
+    "Violet_Oil"
+   ],
+   "id": "59866",
+   "nome": "Entrincheirar",
+   "no": "Entrench"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Indigo_Oil",
+    "Indigo_Oil"
+   ],
+   "id": "45657",
+   "nome": "Provação da Fé",
+   "no": "Trial_of_the_Faith"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Azure_Oil",
+    "Violet_Oil"
+   ],
+   "id": "35436",
+   "nome": "Impactos Cinéticos",
+   "no": "Kinetic_Impacts"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Teal_Oil",
+    "Violet_Oil"
+   ],
+   "id": "41476",
+   "nome": "Poder Ancião",
+   "no": "Elder_Power"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Indigo_Oil",
+    "Indigo_Oil"
+   ],
+   "id": "58168",
+   "nome": "Alta Voltagem",
+   "no": "High_Voltage"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Clear_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "45608",
+   "nome": "Detonações Sucessivas",
+   "no": "Successive_Detonations"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Azure_Oil",
+    "Violet_Oil"
+   ],
+   "id": "33582",
+   "nome": "Espetada Forçada",
+   "no": "Forceful_Skewering"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Azure_Oil",
+    "Azure_Oil"
+   ],
+   "id": "23038",
+   "nome": "Matança",
+   "no": "Slaughter"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Indigo_Oil",
+    "Indigo_Oil"
+   ],
+   "id": "55002",
+   "nome": "Fúria Justificada",
+   "no": "Righteous_Fury"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Indigo_Oil",
+    "Violet_Oil"
+   ],
+   "id": "52789",
+   "nome": "Círculo da Vida",
+   "no": "Circle_of_Life"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Sepia_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "60619",
+   "nome": "Martelo Galvânico",
+   "no": "Galvanic_Hammer"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Indigo_Oil",
+    "Indigo_Oil"
+   ],
+   "id": "63453",
+   "nome": "Sustento Excessivo",
+   "no": "Excess_Sustenance"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Indigo_Oil",
+    "Violet_Oil"
+   ],
+   "id": "28449",
+   "nome": "Explosão de Vigor",
+   "no": "Surge_of_Vigour"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Indigo_Oil",
+    "Violet_Oil"
+   ],
+   "id": "62802",
+   "nome": "Beira da Morte",
+   "no": "Brink_of_Death"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Sepia_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "6237",
+   "nome": "Precisão",
+   "no": "Precision"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Amber_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "16236",
+   "nome": "Golpes Tóxicos",
+   "no": "Toxic_Strikes"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Violet_Oil",
+    "Violet_Oil"
+   ],
+   "id": "39657",
+   "nome": "Forjador da Dor",
+   "no": "Pain_Forger"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Azure_Oil",
+    "Violet_Oil"
+   ],
+   "id": "36915",
+   "nome": "Pastorear o Rebanho",
+   "no": "Sacrifice"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Amber_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "51212",
+   "nome": "Entropia",
+   "no": "Entropy"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Violet_Oil",
+    "Violet_Oil"
+   ],
+   "id": "61982",
+   "nome": "Graves Intenções",
+   "no": "Grave_Intentions"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Verdant_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "6233",
+   "nome": "Ondas Explosivas",
+   "no": "Blast_Waves"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Verdant_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "48823",
+   "nome": "Puxada Mortal",
+   "no": "Deadly_Draw"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Amber_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "65093",
+   "nome": "Dançarino da Lâmina",
+   "no": "Bladedancer"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Violet_Oil",
+    "Violet_Oil"
+   ],
+   "id": "37504",
+   "nome": "Intuição",
+   "no": "Intuition"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Indigo_Oil",
+    "Violet_Oil"
+   ],
+   "id": "36736",
+   "nome": "Brutalidade Ardente",
+   "no": "Burning_Brutality"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Teal_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "64077",
+   "nome": "Treinamento de Guerreiro",
+   "no": "Warrior_Training"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Verdant_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "63635",
+   "nome": "Manifestação Primitiva",
+   "no": "Primal_Manifestation"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Violet_Oil",
+    "Violet_Oil"
+   ],
+   "id": "5126",
+   "nome": "Triturador de Espinhas",
+   "no": "Spinecruncher"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Azure_Oil",
+    "Violet_Oil"
+   ],
+   "id": "51559",
+   "nome": "Golpes Esmagadores",
+   "no": "Smashing_Strikes"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Teal_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "63921",
+   "nome": "Rapidez Extrema",
+   "no": "Utmost_Swiftness"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Verdant_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "47743",
+   "nome": "Perspicácia",
+   "no": "Farsight"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Teal_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "42917",
+   "nome": "Barreira Giratória",
+   "no": "Whirling_Barrier"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Violet_Oil",
+    "Violet_Oil"
+   ],
+   "id": "59605",
+   "nome": "Munições Instáveis",
+   "no": "Unstable_Munitions"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Indigo_Oil",
+    "Indigo_Oil"
+   ],
+   "id": "46471",
+   "nome": "Vínculo Poderoso",
+   "no": "Powerful_Bond"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Azure_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "1405",
+   "nome": "Vindo das Sombras",
+   "no": "From_the_Shadows"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Teal_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "26096",
+   "nome": "Mestre da Machadinha",
+   "no": "Hatchet_Master"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Azure_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "55380",
+   "nome": "Construção Inteligente",
+   "no": "Clever_Construction"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Azure_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "49772",
+   "nome": "Poder Extremo",
+   "no": "Utmost_Might"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Teal_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "22972",
+   "nome": "Defensor com Varinha",
+   "no": "Wandslinger"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Violet_Oil",
+    "Violet_Oil"
+   ],
+   "id": "49969",
+   "nome": "Coragem",
+   "no": "Courage"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Indigo_Oil",
+    "Violet_Oil"
+   ],
+   "id": "26763",
+   "nome": "Fórmula Aperfeiçoada",
+   "no": "Perfected_Formula"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Indigo_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "41870",
+   "nome": "Abraço Invernal",
+   "no": "Winters_Embrace"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Indigo_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "25738",
+   "nome": "Perseguição Implacável",
+   "no": "Relentless_Pursuit"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Azure_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "17171",
+   "nome": "Congelamento Imediato",
+   "no": "Flash_Freeze"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Violet_Oil",
+    "Violet_Oil"
+   ],
+   "id": "60085",
+   "nome": "Preservação Arcana",
+   "no": "Arcane_Conservation"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Violet_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "36490",
+   "nome": "Esfola",
+   "no": "Flaying"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Azure_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "35685",
+   "nome": "Força Destemida",
+   "no": "Fearsome_Force"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Indigo_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "62849",
+   "nome": "Jaula Glacial",
+   "no": "Glacial_Cage"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Indigo_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "24858",
+   "nome": "Lançador de Arpão",
+   "no": "Harpooner"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Violet_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "15046",
+   "nome": "Redenção",
+   "no": "Redemption"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Violet_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "55114",
+   "nome": "Intelecto Extremo",
+   "no": "Utmost_Intellect"
+  },
+  {
+   "oleos": [
+    "Violet_Oil",
+    "Violet_Oil",
+    "Violet_Oil"
+   ],
+   "id": "7918",
+   "nome": "Defesa Enigmática",
+   "no": "Enigmatic_Defence"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Violet_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "14606",
+   "nome": "Carnificina",
+   "no": "Butchery"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Azure_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "33435",
+   "nome": "Domínio Sagrado",
+   "no": "Holy_Dominion"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Violet_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "26557",
+   "nome": "Golpes Estáticos",
+   "no": "Static_Blows"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Indigo_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "14001",
+   "nome": "Invencível",
+   "no": "Unfaltering"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Violet_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "9567",
+   "nome": "Devorador da Luz",
+   "no": "Light_Eater"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Violet_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "63033",
+   "nome": "Porta Estandarte",
+   "no": "Bannerman"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Crimson_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "63976",
+   "nome": "Modelador",
+   "no": "Shaper"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Clear_Oil",
+    "Black_Oil"
+   ],
+   "id": "53493",
+   "nome": "Aniquilação",
+   "no": "Annihilation"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Crimson_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "45317",
+   "nome": "Cinza, Gelo e Tempestade",
+   "no": "Ash%2C_Frost_and_Storm"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Sepia_Oil",
+    "Black_Oil"
+   ],
+   "id": "44207",
+   "nome": "Tartaruga",
+   "no": "Testudo"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Sepia_Oil",
+    "Black_Oil"
+   ],
+   "id": "30225",
+   "nome": "Andarilho do Raio",
+   "no": "Lightning_Walker"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Crimson_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "9788",
+   "nome": "Vivacidade",
+   "no": "Nimbleness"
+  },
+  {
+   "oleos": [
+    "Violet_Oil",
+    "Violet_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "31508",
+   "nome": "Aspecto de Lince",
+   "no": "Aspect_of_the_Lynx"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Amber_Oil",
+    "Black_Oil"
+   ],
+   "id": "53042",
+   "nome": "Performance Excepcional",
+   "no": "Exceptional_Performance"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Amber_Oil",
+    "Black_Oil"
+   ],
+   "id": "4940",
+   "nome": "Fendedor",
+   "no": "Cleaving"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Crimson_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "42795",
+   "nome": "Foco Arcano",
+   "no": "Arcane_Focus"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Verdant_Oil",
+    "Black_Oil"
+   ],
+   "id": "21413",
+   "nome": "Vigor de Combate",
+   "no": "Combat_Stamina"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Verdant_Oil",
+    "Black_Oil"
+   ],
+   "id": "33903",
+   "nome": "Vontade de Lâminas",
+   "no": "Will_of_Blades"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Amber_Oil",
+    "Black_Oil"
+   ],
+   "id": "44347",
+   "nome": "Fúria Divina",
+   "no": "Divine_Fury"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Crimson_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "65502",
+   "nome": "Perfurador",
+   "no": "Heartseeker"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Teal_Oil",
+    "Black_Oil"
+   ],
+   "id": "6770",
+   "nome": "Guarda Arcana",
+   "no": "Arcane_Guarding"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Verdant_Oil",
+    "Black_Oil"
+   ],
+   "id": "1340",
+   "nome": "Baluarte",
+   "no": "Rampart"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Teal_Oil",
+    "Black_Oil"
+   ],
+   "id": "13164",
+   "nome": "Julgamento Divino",
+   "no": "Divine_Judgement"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Verdant_Oil",
+    "Black_Oil"
+   ],
+   "id": "35894",
+   "nome": "Trapaça",
+   "no": "Trickery"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Teal_Oil",
+    "Black_Oil"
+   ],
+   "id": "49538",
+   "nome": "Desafio",
+   "no": "Defiance"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Crimson_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "33545",
+   "nome": "Devastador",
+   "no": "Harrier"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Azure_Oil",
+    "Black_Oil"
+   ],
+   "id": "6",
+   "nome": "Terrores Gêmeos",
+   "no": "Twin_Terrors"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Teal_Oil",
+    "Black_Oil"
+   ],
+   "id": "65273",
+   "nome": "Alcance Enigmático",
+   "no": "Enigmatic_Reach"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Azure_Oil",
+    "Black_Oil"
+   ],
+   "id": "25178",
+   "nome": "Espírito Primitivo",
+   "no": "Primal_Spirit"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Crimson_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "29522",
+   "nome": "Dança das Lâminas",
+   "no": "Dance_of_Blades"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Indigo_Oil",
+    "Black_Oil"
+   ],
+   "id": "19730",
+   "nome": "Golpe Certeiro",
+   "no": "Assured_Strike"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Azure_Oil",
+    "Black_Oil"
+   ],
+   "id": "15085",
+   "nome": "Ambidestria",
+   "no": "Ambidexterity"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Teal_Oil",
+    "Black_Oil"
+   ],
+   "id": "24383",
+   "nome": "Sangue do Guerreiro",
+   "no": "Warriors_Blood"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Indigo_Oil",
+    "Black_Oil"
+   ],
+   "id": "32681",
+   "nome": "Presa Marcada",
+   "no": "Mark_the_Prey"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Azure_Oil",
+    "Black_Oil"
+   ],
+   "id": "6967",
+   "nome": "Garantia",
+   "no": "Safeguard"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Indigo_Oil",
+    "Black_Oil"
+   ],
+   "id": "37403",
+   "nome": "Carne Infundida",
+   "no": "Infused_Flesh"
+  },
+  {
+   "oleos": [
+    "Violet_Oil",
+    "Crimson_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "54694",
+   "nome": "Luz da Divindade",
+   "no": "Light_of_Divinity"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Indigo_Oil",
+    "Black_Oil"
+   ],
+   "id": "45945",
+   "nome": "Barreira Conjurada",
+   "no": "Conjured_Barrier"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Violet_Oil",
+    "Black_Oil"
+   ],
+   "id": "49621",
+   "nome": "Acuidade",
+   "no": "Acuity"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Azure_Oil",
+    "Black_Oil"
+   ],
+   "id": "54142",
+   "nome": "Sutileza",
+   "no": "Finesse"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Violet_Oil",
+    "Black_Oil"
+   ],
+   "id": "9432",
+   "nome": "Rapidez Mental",
+   "no": "Mental_Rapidity"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Indigo_Oil",
+    "Black_Oil"
+   ],
+   "id": "26960",
+   "nome": "Premeditação",
+   "no": "Forethought"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Violet_Oil",
+    "Black_Oil"
+   ],
+   "id": "14813",
+   "nome": "Pândega",
+   "no": "Revelry"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Violet_Oil",
+    "Black_Oil"
+   ],
+   "id": "861",
+   "nome": "Bastião Agressivo",
+   "no": "Aggressive_Bastion"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Azure_Oil",
+    "Black_Oil"
+   ],
+   "id": "26866",
+   "nome": "Santidade",
+   "no": "Sanctity"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Violet_Oil",
+    "Black_Oil"
+   ],
+   "id": "65053",
+   "nome": "Seiva da Essência",
+   "no": "Essence_Sap"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Indigo_Oil",
+    "Black_Oil"
+   ],
+   "id": "25439",
+   "nome": "Coveiro",
+   "no": "Undertaker"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Violet_Oil",
+    "Black_Oil"
+   ],
+   "id": "49416",
+   "nome": "Inflexível",
+   "no": "Adamant"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Violet_Oil",
+    "Black_Oil"
+   ],
+   "id": "64355",
+   "nome": "Equidade de Runas",
+   "no": "Brand_Equity"
+  },
+  {
+   "oleos": [
+    "Crimson_Oil",
+    "Crimson_Oil",
+    "Crimson_Oil"
+   ],
+   "id": "24050",
+   "nome": "Friamente Calculado",
+   "no": "Coldhearted_Calculation"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Crimson_Oil",
+    "Black_Oil"
+   ],
+   "id": "11420",
+   "nome": "Domínio do Ocultista",
+   "no": "Arcanists_Dominion"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Clear_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "2225",
+   "nome": "Olho de Águia",
+   "no": "Eagle_Eye"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Crimson_Oil",
+    "Black_Oil"
+   ],
+   "id": "32455",
+   "nome": "Tecelagem da Tempestade",
+   "no": "Storm_Weaver"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Sepia_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "12809",
+   "nome": "Freneticismo",
+   "no": "Berserking"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Sepia_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "1006",
+   "nome": "Potência da Vontade",
+   "no": "Potency_of_Will"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Crimson_Oil",
+    "Black_Oil"
+   ],
+   "id": "5823",
+   "nome": "Coordenação",
+   "no": "Coordination"
+  },
+  {
+   "oleos": [
+    "Violet_Oil",
+    "Violet_Oil",
+    "Black_Oil"
+   ],
+   "id": "18703",
+   "nome": "Ataque Gracioso",
+   "no": "Graceful_Assault"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Amber_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "20835",
+   "nome": "Diplomacia Arriscada",
+   "no": "Brinkmanship"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Amber_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "3309",
+   "nome": "Pés Leves",
+   "no": "Fleetfoot"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Crimson_Oil",
+    "Black_Oil"
+   ],
+   "id": "15842",
+   "nome": "Um Com a Natureza",
+   "no": "One_With_Nature"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Verdant_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "15711",
+   "nome": "Raio da Explosão",
+   "no": "Blast_Radius"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Verdant_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "34666",
+   "nome": "Destruidor",
+   "no": "Destroyer"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Amber_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "14665",
+   "nome": "Ira Divina",
+   "no": "Divine_Wrath"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Crimson_Oil",
+    "Black_Oil"
+   ],
+   "id": "30471",
+   "nome": "Golpe Certeiro",
+   "no": "True_Strike"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Teal_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "49318",
+   "nome": "Bola de Demolição",
+   "no": "Wrecking_Ball"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Verdant_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "32059",
+   "nome": "Impactos Titânicos",
+   "no": "Titanic_Impacts"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Teal_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "65308",
+   "nome": "Pele de Diamante",
+   "no": "Diamond_Skin"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Verdant_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "12795",
+   "nome": "Versatilidade",
+   "no": "Versatility"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Teal_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "33287",
+   "nome": "Destruidor",
+   "no": "Juggernaut"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Crimson_Oil",
+    "Black_Oil"
+   ],
+   "id": "25456",
+   "nome": "Dervixe",
+   "no": "Dervish"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Azure_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "35663",
+   "nome": "Braço Forte",
+   "no": "Strong_Arm"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Teal_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "60737",
+   "nome": "Mãos Hábeis",
+   "no": "Sleight_of_Hand"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Crimson_Oil",
+    "Black_Oil"
+   ],
+   "id": "41137",
+   "nome": "Medicina de Campo",
+   "no": "Field_Medicine"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Azure_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "50858",
+   "nome": "Admoestador",
+   "no": "Admonisher"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Indigo_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "7069",
+   "nome": "Tiro Partido",
+   "no": "Split_Shot"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Indigo_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "544",
+   "nome": "Vigilância",
+   "no": "Surveillance"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Azure_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "61308",
+   "nome": "Amplificar",
+   "no": "Amplify"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Teal_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "570",
+   "nome": "Golpes Ofuscantes",
+   "no": "Dazzling_Strikes"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Indigo_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "34284",
+   "nome": "Esgrima Experiente",
+   "no": "Seasoned_Swordplay"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Azure_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "24324",
+   "nome": "Impacto Explosivo",
+   "no": "Explosive_Impact"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Indigo_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "32738",
+   "nome": "Parede de Aço",
+   "no": "Wall_of_Steel"
+  },
+  {
+   "oleos": [
+    "Violet_Oil",
+    "Crimson_Oil",
+    "Black_Oil"
+   ],
+   "id": "34661",
+   "nome": "Andarilho do Fogo",
+   "no": "Fire_Walker"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Violet_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "54268",
+   "nome": "Barreira de Lâmina",
+   "no": "Blade_Barrier"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Azure_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "44824",
+   "nome": "Misticismo",
+   "no": "Mysticism"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Violet_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "18865",
+   "nome": "Fusão",
+   "no": "Melding"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Indigo_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "49445",
+   "nome": "Respirações Profundas",
+   "no": "Deep_Breaths"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Violet_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "47306",
+   "nome": "Engasgador",
+   "no": "Throatseeker"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Violet_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "44955",
+   "nome": "Andarilho do Gelo",
+   "no": "Frost_Walker"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Azure_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "22706",
+   "nome": "Intensidade Selvagem",
+   "no": "Savage_Intensity"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Violet_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "39743",
+   "nome": "Artes Sombrias",
+   "no": "Dark_Arts"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Indigo_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "40619",
+   "nome": "Admiração e Terror",
+   "no": "Awe_and_Terror"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Violet_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "50338",
+   "nome": "Balística",
+   "no": "Ballistics"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Violet_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "58032",
+   "nome": "Feiticeiro Sinuoso",
+   "no": "Serpentine_Spellslinger"
+  },
+  {
+   "oleos": [
+    "Crimson_Oil",
+    "Crimson_Oil",
+    "Black_Oil"
+   ],
+   "id": "53802",
+   "nome": "Extração de Essência",
+   "no": "Essence_Extraction"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Crimson_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "49254",
+   "nome": "Retribuição",
+   "no": "Retribution"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Black_Oil",
+    "Black_Oil"
+   ],
+   "id": "25970",
+   "nome": "Amargor",
+   "no": "Acrimony"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Crimson_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "32176",
+   "nome": "Ladrão de Almas",
+   "no": "Soul_Thief"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Black_Oil",
+    "Black_Oil"
+   ],
+   "id": "51748",
+   "nome": "Últimos Ritos",
+   "no": "Last_Rites"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Crimson_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "57900",
+   "nome": "Comando do Aço",
+   "no": "Command_of_Steel"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Black_Oil",
+    "Black_Oil"
+   ],
+   "id": "5430",
+   "nome": "Golpes Magmáticos",
+   "no": "Magmatic_Strikes"
+  },
+  {
+   "oleos": [
+    "Violet_Oil",
+    "Violet_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "49379",
+   "nome": "Assassino de Aluguel",
+   "no": "Hired_Killer"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Crimson_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "12878",
+   "nome": "Retaliação",
+   "no": "Retaliation"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Black_Oil",
+    "Black_Oil"
+   ],
+   "id": "19103",
+   "nome": "Exército da Justiça",
+   "no": "Righteous_Army"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Crimson_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "8458",
+   "nome": "Tiro Longo",
+   "no": "Longshot"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Black_Oil",
+    "Black_Oil"
+   ],
+   "id": "24721",
+   "nome": "Esmagador de Tórax",
+   "no": "Ribcage_Crusher"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Crimson_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "9015",
+   "nome": "Tormento Horrível",
+   "no": "Dire_Torment"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Black_Oil",
+    "Black_Oil"
+   ],
+   "id": "27308",
+   "nome": "Pacto da Sepultura",
+   "no": "Gravepact"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Crimson_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "31513",
+   "nome": "Animosidade Adjacente",
+   "no": "Adjacent_Animosity"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Black_Oil",
+    "Black_Oil"
+   ],
+   "id": "30974",
+   "nome": "Caçador Perito",
+   "no": "Expert_Hunter"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Clear_Oil",
+    "Silver_Oil"
+   ],
+   "id": "6615",
+   "nome": "Golpes Arqueados",
+   "no": "Arcing_Blows"
+  },
+  {
+   "oleos": [
+    "Violet_Oil",
+    "Crimson_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "64882",
+   "nome": "Discipulo do Inflexível",
+   "no": "Disciple_of_the_Unyielding"
+  },
+  {
+   "oleos": [
+    "Violet_Oil",
+    "Black_Oil",
+    "Black_Oil"
+   ],
+   "id": "52031",
+   "nome": "Desintegração",
+   "no": "Disintegration"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Sepia_Oil",
+    "Silver_Oil"
+   ],
+   "id": "25367",
+   "nome": "Mestre da Lâmina",
+   "no": "Blade_Master"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Sepia_Oil",
+    "Silver_Oil"
+   ],
+   "id": "57199",
+   "nome": "Presas de Gelo",
+   "no": "Fangs_of_Frost"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Amber_Oil",
+    "Silver_Oil"
+   ],
+   "id": "39761",
+   "nome": "Contrapeso",
+   "no": "Counterweight"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Amber_Oil",
+    "Silver_Oil"
+   ],
+   "id": "21602",
+   "nome": "Aparato Destrutivo",
+   "no": "Destructive_Apparatus"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Verdant_Oil",
+    "Silver_Oil"
+   ],
+   "id": "9535",
+   "nome": "Estratégia do Caçador",
+   "no": "Hunters_Gambit"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Verdant_Oil",
+    "Silver_Oil"
+   ],
+   "id": "28503",
+   "nome": "Sangria",
+   "no": "Life_Raker"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Amber_Oil",
+    "Silver_Oil"
+   ],
+   "id": "27163",
+   "nome": "Vontade Arcana",
+   "no": "Arcane_Will"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Teal_Oil",
+    "Silver_Oil"
+   ],
+   "id": "8920",
+   "nome": "Apunhalada",
+   "no": "Backstabbing"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Verdant_Oil",
+    "Silver_Oil"
+   ],
+   "id": "63207",
+   "nome": "Explosão Tempestuosa",
+   "no": "Tempest_Blast"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Teal_Oil",
+    "Silver_Oil"
+   ],
+   "id": "43385",
+   "nome": "Espírito Invernal",
+   "no": "Winter_Spirit"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Verdant_Oil",
+    "Silver_Oil"
+   ],
+   "id": "21297",
+   "nome": "Altamente Explosivos",
+   "no": "High_Explosives"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Teal_Oil",
+    "Silver_Oil"
+   ],
+   "id": "29049",
+   "nome": "Fogo Sagrado",
+   "no": "Holy_Fire"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Indigo_Oil",
+    "Silver_Oil"
+   ],
+   "id": "54713",
+   "nome": "Modelador de Força",
+   "no": "Force_Shaper"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Azure_Oil",
+    "Silver_Oil"
+   ],
+   "id": "44562",
+   "nome": "Domínio do Xamã",
+   "no": "Shamans_Dominion"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Teal_Oil",
+    "Silver_Oil"
+   ],
+   "id": "18707",
+   "nome": "Perfeccionista",
+   "no": "Perfectionist"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Indigo_Oil",
+    "Silver_Oil"
+   ],
+   "id": "41595",
+   "nome": "Marcado para Morrer",
+   "no": "Marked_for_Death"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Azure_Oil",
+    "Silver_Oil"
+   ],
+   "id": "57839",
+   "nome": "Lâmina da Astúcia",
+   "no": "Blade_of_Cunning"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Indigo_Oil",
+    "Silver_Oil"
+   ],
+   "id": "15437",
+   "nome": "Deflexão",
+   "no": "Deflection"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Azure_Oil",
+    "Silver_Oil"
+   ],
+   "id": "38849",
+   "nome": "Calor Cauterizante",
+   "no": "Searing_Heat"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Teal_Oil",
+    "Silver_Oil"
+   ],
+   "id": "33777",
+   "nome": "Dispositivos Devastadores",
+   "no": "Devastating_Devices"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Indigo_Oil",
+    "Silver_Oil"
+   ],
+   "id": "26564",
+   "nome": "Vencedor",
+   "no": "Vanquisher"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Azure_Oil",
+    "Silver_Oil"
+   ],
+   "id": "4481",
+   "nome": "Forças da Natureza",
+   "no": "Forces_of_Nature"
+  },
+  {
+   "oleos": [
+    "Crimson_Oil",
+    "Crimson_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "10511",
+   "nome": "Tolerância",
+   "no": "Tolerance"
+  },
+  {
+   "oleos": [
+    "Crimson_Oil",
+    "Black_Oil",
+    "Black_Oil"
+   ],
+   "id": "26620",
+   "nome": "Corrupção",
+   "no": "Corruption"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Black_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "16703",
+   "nome": "Quebra-Crânio",
+   "no": "Skull_Cracking"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Black_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "32227",
+   "nome": "Toque da Víbora",
+   "no": "Adders_Touch"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Indigo_Oil",
+    "Silver_Oil"
+   ],
+   "id": "19794",
+   "nome": "Força Concussiva",
+   "no": "Concussive_Force"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Violet_Oil",
+    "Silver_Oil"
+   ],
+   "id": "31359",
+   "nome": "Toxinas Fatais",
+   "no": "Fatal_Toxins"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Azure_Oil",
+    "Silver_Oil"
+   ],
+   "id": "63727",
+   "nome": "Perseverança do Gladiador",
+   "no": "Gladiators_Perseverance"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Violet_Oil",
+    "Silver_Oil"
+   ],
+   "id": "41119",
+   "nome": "Letalidade",
+   "no": "Lethality"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Black_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "52090",
+   "nome": "Ladrão de Inimigos",
+   "no": "Feller_of_Foes"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Violet_Oil",
+    "Silver_Oil"
+   ],
+   "id": "62094",
+   "nome": "Fome de Sangue",
+   "no": "Taste_for_Blood"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Black_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "55772",
+   "nome": "Influência do Ferreiro",
+   "no": "Blacksmiths_Clout"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Indigo_Oil",
+    "Silver_Oil"
+   ],
+   "id": "20261",
+   "nome": "Meditação Contemplativa",
+   "no": "Contemplative_Meditation"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Violet_Oil",
+    "Silver_Oil"
+   ],
+   "id": "49459",
+   "nome": "Rei da Colina",
+   "no": "King_of_the_Hill"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Azure_Oil",
+    "Silver_Oil"
+   ],
+   "id": "26294",
+   "nome": "Sangria",
+   "no": "Bloodletting"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Black_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "7136",
+   "nome": "Mestre Sabotador",
+   "no": "Master_Sapper"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Violet_Oil",
+    "Silver_Oil"
+   ],
+   "id": "33725",
+   "nome": "Presunção",
+   "no": "Swagger"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Indigo_Oil",
+    "Silver_Oil"
+   ],
+   "id": "34591",
+   "nome": "Intenção Maliciosa",
+   "no": "Malicious_Intent"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Black_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "31585",
+   "nome": "Conservador Cuidadoso",
+   "no": "Careful_Conservationist"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Black_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "22702",
+   "nome": "Postura da Serpente",
+   "no": "Serpent_Stance"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Violet_Oil",
+    "Silver_Oil"
+   ],
+   "id": "4854",
+   "nome": "Hospício",
+   "no": "Asylum"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Violet_Oil",
+    "Silver_Oil"
+   ],
+   "id": "36281",
+   "nome": "Força Primitiva",
+   "no": "Primeval_Force"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Crimson_Oil",
+    "Silver_Oil"
+   ],
+   "id": "19897",
+   "nome": "Sintonia Mortal",
+   "no": "Death_Attunement"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Crimson_Oil",
+    "Silver_Oil"
+   ],
+   "id": "51881",
+   "nome": "Mestre Flecheiro",
+   "no": "Master_Fletcher"
+  },
+  {
+   "oleos": [
+    "Violet_Oil",
+    "Black_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "15614",
+   "nome": "Garras do Gavião",
+   "no": "Claws_of_the_Hawk"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Crimson_Oil",
+    "Silver_Oil"
+   ],
+   "id": "61689",
+   "nome": "Elementos Explosivos",
+   "no": "Explosive_Elements"
+  },
+  {
+   "oleos": [
+    "Violet_Oil",
+    "Violet_Oil",
+    "Silver_Oil"
+   ],
+   "id": "9194",
+   "nome": "Espetada Impiedosa",
+   "no": "Merciless_Skewering"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Crimson_Oil",
+    "Silver_Oil"
+   ],
+   "id": "27611",
+   "nome": "Senhor dos Mortos",
+   "no": "Lord_of_the_Dead"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Crimson_Oil",
+    "Silver_Oil"
+   ],
+   "id": "64395",
+   "nome": "Contusão",
+   "no": "Blunt_Trauma"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Crimson_Oil",
+    "Silver_Oil"
+   ],
+   "id": "55381",
+   "nome": "Retaliação Arcana",
+   "no": "Arcane_Retaliation"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Crimson_Oil",
+    "Silver_Oil"
+   ],
+   "id": "21389",
+   "nome": "Forjador de Runas",
+   "no": "Runesmith"
+  },
+  {
+   "oleos": [
+    "Crimson_Oil",
+    "Black_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "39986",
+   "nome": "Forças Profanadas",
+   "no": "Defiled_Forces"
+  },
+  {
+   "oleos": [
+    "Black_Oil",
+    "Black_Oil",
+    "Black_Oil"
+   ],
+   "id": "9261",
+   "nome": "Discípulo do Proibido",
+   "no": "Disciple_of_the_Forbidden"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Opalescent_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "36687",
+   "nome": "Avatar da Caçada",
+   "no": "Avatar_of_the_Hunt"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Opalescent_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "63944",
+   "nome": "Tecelão Prismático",
+   "no": "Prism_Weave"
+  },
+  {
+   "oleos": [
+    "Violet_Oil",
+    "Crimson_Oil",
+    "Silver_Oil"
+   ],
+   "id": "25409",
+   "nome": "Exército Indomável",
+   "no": "Indomitable_Army"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Opalescent_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "1568",
+   "nome": "Lâmina Fatal",
+   "no": "Fatal_Blade"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Clear_Oil",
+    "Golden_Oil"
+   ],
+   "id": "30439",
+   "nome": "Açoite de Lava",
+   "no": "Lava_Lash"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Sepia_Oil",
+    "Golden_Oil"
+   ],
+   "id": "53013",
+   "nome": "Atrofia",
+   "no": "Atrophy"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Opalescent_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "41989",
+   "nome": "Desenvoltura",
+   "no": "Resourcefulness"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Sepia_Oil",
+    "Golden_Oil"
+   ],
+   "id": "43689",
+   "nome": "Comando Espiritual",
+   "no": "Spiritual_Command"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Amber_Oil",
+    "Golden_Oil"
+   ],
+   "id": "7263",
+   "nome": "Venenos Velozes",
+   "no": "Swift_Venoms"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Amber_Oil",
+    "Golden_Oil"
+   ],
+   "id": "38922",
+   "nome": "Golias",
+   "no": "Goliath"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Opalescent_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "56094",
+   "nome": "Um com o Rio",
+   "no": "One_with_the_River"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Verdant_Oil",
+    "Golden_Oil"
+   ],
+   "id": "7688",
+   "nome": "Vínculo Duradouro",
+   "no": "Enduring_Bond"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Verdant_Oil",
+    "Golden_Oil"
+   ],
+   "id": "59151",
+   "nome": "Lâmina Brutal",
+   "no": "Brutal_Blade"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Amber_Oil",
+    "Golden_Oil"
+   ],
+   "id": "56648",
+   "nome": "Garras do Falcão",
+   "no": "Claws_of_the_Falcon"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Opalescent_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "4207",
+   "nome": "Janela de Oportunidade",
+   "no": "Window_of_Opportunity"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Teal_Oil",
+    "Golden_Oil"
+   ],
+   "id": "9864",
+   "nome": "Crescer e Apodrecer",
+   "no": "Growth_and_Decay"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Verdant_Oil",
+    "Golden_Oil"
+   ],
+   "id": "58921",
+   "nome": "Discipulo da Matança",
+   "no": "Disciple_of_the_Slaughter"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Teal_Oil",
+    "Golden_Oil"
+   ],
+   "id": "56276",
+   "nome": "Caçador Noturno",
+   "no": "Nightstalker"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Opalescent_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "9055",
+   "nome": "Minas Voláteis",
+   "no": "Volatile_Mines"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Verdant_Oil",
+    "Golden_Oil"
+   ],
+   "id": "48298",
+   "nome": "Inspirador",
+   "no": "Insightfulness"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Indigo_Oil",
+    "Golden_Oil"
+   ],
+   "id": "55194",
+   "nome": "Cinzas Assentadas",
+   "no": "Settling_Ash"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Teal_Oil",
+    "Golden_Oil"
+   ],
+   "id": "42649",
+   "nome": "Forjado em Neve",
+   "no": "Snowforged"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Indigo_Oil",
+    "Golden_Oil"
+   ],
+   "id": "53652",
+   "nome": "Mergulhado na Profanidade",
+   "no": "Steeped_in_the_Profane"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Azure_Oil",
+    "Golden_Oil"
+   ],
+   "id": "61190",
+   "nome": "Ícone da União",
+   "no": "Rallying_Icon"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Teal_Oil",
+    "Golden_Oil"
+   ],
+   "id": "12143",
+   "nome": "Influência",
+   "no": "Influence"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Indigo_Oil",
+    "Golden_Oil"
+   ],
+   "id": "38246",
+   "nome": "Presságio",
+   "no": "Presage"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Azure_Oil",
+    "Golden_Oil"
+   ],
+   "id": "56716",
+   "nome": "Coração Trovejante",
+   "no": "Heart_of_Thunder"
+  },
+  {
+   "oleos": [
+    "Crimson_Oil",
+    "Crimson_Oil",
+    "Silver_Oil"
+   ],
+   "id": "36949",
+   "nome": "Devoção",
+   "no": "Devotion"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Indigo_Oil",
+    "Golden_Oil"
+   ],
+   "id": "45350",
+   "nome": "Glória do Comando",
+   "no": "Glory_of_Command"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Black_Oil",
+    "Silver_Oil"
+   ],
+   "id": "58218",
+   "nome": "Pureza da Carne",
+   "no": "Purity_of_Flesh"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Azure_Oil",
+    "Golden_Oil"
+   ],
+   "id": "61981",
+   "nome": "Conjuro da Ruína",
+   "no": "Doom_Cast"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Teal_Oil",
+    "Golden_Oil"
+   ],
+   "id": "21330",
+   "nome": "Recuperação Rápida",
+   "no": "Quick_Recovery"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Black_Oil",
+    "Silver_Oil"
+   ],
+   "id": "40743",
+   "nome": "Pele de Cristal",
+   "no": "Crystal_Skin"
+  },
+  {
+   "oleos": [
+    "Violet_Oil",
+    "Opalescent_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "48438",
+   "nome": "Coragem",
+   "no": "Bravery"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Azure_Oil",
+    "Golden_Oil"
+   ],
+   "id": "11924",
+   "nome": "Sopro Flamejante",
+   "no": "Breath_of_Flames"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Indigo_Oil",
+    "Golden_Oil"
+   ],
+   "id": "45803",
+   "nome": "Soldado Veterano",
+   "no": "Veteran_Soldier"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Black_Oil",
+    "Silver_Oil"
+   ],
+   "id": "48614",
+   "nome": "Fervor",
+   "no": "Fervour"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Violet_Oil",
+    "Golden_Oil"
+   ],
+   "id": "27422",
+   "nome": "Espírito da Guerra",
+   "no": "Spirit_of_War"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Black_Oil",
+    "Silver_Oil"
+   ],
+   "id": "42041",
+   "nome": "Química Profana",
+   "no": "Profane_Chemistry"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Azure_Oil",
+    "Golden_Oil"
+   ],
+   "id": "60501",
+   "nome": "Coração Flamejante",
+   "no": "Heart_of_Flame"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Violet_Oil",
+    "Golden_Oil"
+   ],
+   "id": "18769",
+   "nome": "Escrito em Sangue",
+   "no": "Written_in_Blood"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Violet_Oil",
+    "Golden_Oil"
+   ],
+   "id": "45329",
+   "nome": "Tiro Ardil",
+   "no": "Trick_Shot"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Black_Oil",
+    "Silver_Oil"
+   ],
+   "id": "21958",
+   "nome": "Preparação Cruel",
+   "no": "Cruel_Preparation"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Violet_Oil",
+    "Golden_Oil"
+   ],
+   "id": "58831",
+   "nome": "Estripar",
+   "no": "Disemboweling"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Azure_Oil",
+    "Golden_Oil"
+   ],
+   "id": "27137",
+   "nome": "Santuário do Pensamento",
+   "no": "Sanctum_of_Thought"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Black_Oil",
+    "Silver_Oil"
+   ],
+   "id": "13375",
+   "nome": "Multi-tiro",
+   "no": "Multishot"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Indigo_Oil",
+    "Golden_Oil"
+   ],
+   "id": "55027",
+   "nome": "Justiça Brilhante",
+   "no": "Shining_Justice"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Violet_Oil",
+    "Golden_Oil"
+   ],
+   "id": "55485",
+   "nome": "Constituição",
+   "no": "Constitution"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Black_Oil",
+    "Silver_Oil"
+   ],
+   "id": "46842",
+   "nome": "Potência Arcana",
+   "no": "Arcane_Potency"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Violet_Oil",
+    "Golden_Oil"
+   ],
+   "id": "52742",
+   "nome": "Morte Apressada",
+   "no": "Hasty_Demise"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Violet_Oil",
+    "Golden_Oil"
+   ],
+   "id": "11645",
+   "nome": "Sopro Trovejante",
+   "no": "Breath_of_Lightning"
+  },
+  {
+   "oleos": [
+    "Crimson_Oil",
+    "Opalescent_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "4833",
+   "nome": "Vigor",
+   "no": "Vigour"
+  },
+  {
+   "oleos": [
+    "Black_Oil",
+    "Black_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "44191",
+   "nome": "Como a Montanha",
+   "no": "As_The_Mountain"
+  },
+  {
+   "oleos": [
+    "Violet_Oil",
+    "Black_Oil",
+    "Silver_Oil"
+   ],
+   "id": "22356",
+   "nome": "Hematofagia",
+   "no": "Hematophagy"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Crimson_Oil",
+    "Golden_Oil"
+   ],
+   "id": "51440",
+   "nome": "Ritual Druídico",
+   "no": "Druidic_Rite"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Crimson_Oil",
+    "Golden_Oil"
+   ],
+   "id": "27203",
+   "nome": "Coração e Alma",
+   "no": "Heart_and_Soul"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Crimson_Oil",
+    "Golden_Oil"
+   ],
+   "id": "6289",
+   "nome": "Sem Sangue",
+   "no": "Bloodless"
+  },
+  {
+   "oleos": [
+    "Violet_Oil",
+    "Violet_Oil",
+    "Golden_Oil"
+   ],
+   "id": "58449",
+   "nome": "Nascido para Lutar",
+   "no": "Born_to_Fight"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Crimson_Oil",
+    "Golden_Oil"
+   ],
+   "id": "65210",
+   "nome": "Coração de Carvalho",
+   "no": "Heart_of_Oak"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Crimson_Oil",
+    "Golden_Oil"
+   ],
+   "id": "33718",
+   "nome": "Campeão da Causa",
+   "no": "Champion_of_the_Cause"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Crimson_Oil",
+    "Golden_Oil"
+   ],
+   "id": "27623",
+   "nome": "Lições Duras",
+   "no": "Harsh_Lessons"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Crimson_Oil",
+    "Golden_Oil"
+   ],
+   "id": "24133",
+   "nome": "Sobrevivencialista",
+   "no": "Survivalist"
+  },
+  {
+   "oleos": [
+    "Crimson_Oil",
+    "Black_Oil",
+    "Silver_Oil"
+   ],
+   "id": "34173",
+   "nome": "Sobrecarga",
+   "no": "Overcharge"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Opalescent_Oil",
+    "Silver_Oil"
+   ],
+   "id": "47471",
+   "nome": "Sobrecarregado",
+   "no": "Overcharged"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Opalescent_Oil",
+    "Silver_Oil"
+   ],
+   "id": "34009",
+   "nome": "Mestre da Arena",
+   "no": "Master_of_the_Arena"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Opalescent_Oil",
+    "Silver_Oil"
+   ],
+   "id": "53840",
+   "nome": "Vingança",
+   "no": "Vengeance"
+  },
+  {
+   "oleos": [
+    "Violet_Oil",
+    "Crimson_Oil",
+    "Golden_Oil"
+   ],
+   "id": "58198",
+   "nome": "Dedos de Gelo",
+   "no": "Fingers_of_Frost"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Opalescent_Oil",
+    "Silver_Oil"
+   ],
+   "id": "30302",
+   "nome": "Caloroso",
+   "no": "Hearty"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Opalescent_Oil",
+    "Silver_Oil"
+   ],
+   "id": "19858",
+   "nome": "Herborismo",
+   "no": "Herbalism"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Opalescent_Oil",
+    "Silver_Oil"
+   ],
+   "id": "41420",
+   "nome": "Remédios Naturais",
+   "no": "Natural_Remedies"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Opalescent_Oil",
+    "Silver_Oil"
+   ],
+   "id": "25058",
+   "nome": "Sifão de Sangue",
+   "no": "Blood_Siphon"
+  },
+  {
+   "oleos": [
+    "Black_Oil",
+    "Opalescent_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "7555",
+   "nome": "Velocidade Crepitante",
+   "no": "Crackling_Speed"
+  },
+  {
+   "oleos": [
+    "Violet_Oil",
+    "Opalescent_Oil",
+    "Silver_Oil"
+   ],
+   "id": "65097",
+   "nome": "Liderança",
+   "no": "Leadership"
+  },
+  {
+   "oleos": [
+    "Crimson_Oil",
+    "Crimson_Oil",
+    "Golden_Oil"
+   ],
+   "id": "53573",
+   "nome": "Extensão Arcana",
+   "no": "Arcane_Expanse"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Black_Oil",
+    "Golden_Oil"
+   ],
+   "id": "11730",
+   "nome": "Tolerância",
+   "no": "Endurance"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Black_Oil",
+    "Golden_Oil"
+   ],
+   "id": "35958",
+   "nome": "Fé e Aço",
+   "no": "Faith_and_Steel"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Black_Oil",
+    "Golden_Oil"
+   ],
+   "id": "34973",
+   "nome": "Fúria Medida",
+   "no": "Measured_Fury"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Black_Oil",
+    "Golden_Oil"
+   ],
+   "id": "13703",
+   "nome": "Postura Desafiadora",
+   "no": "Defiant_Stand"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Black_Oil",
+    "Golden_Oil"
+   ],
+   "id": "26023",
+   "nome": "Ferimentos Selvagens",
+   "no": "Savage_Wounds"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Black_Oil",
+    "Golden_Oil"
+   ],
+   "id": "2959",
+   "nome": "Temporada Gélida",
+   "no": "Season_of_Ice"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Black_Oil",
+    "Golden_Oil"
+   ],
+   "id": "44103",
+   "nome": "Reflexos",
+   "no": "Reflexes"
+  },
+  {
+   "oleos": [
+    "Crimson_Oil",
+    "Opalescent_Oil",
+    "Silver_Oil"
+   ],
+   "id": "54629",
+   "nome": "Inexorável",
+   "no": "Inexorable"
+  },
+  {
+   "oleos": [
+    "Black_Oil",
+    "Black_Oil",
+    "Silver_Oil"
+   ],
+   "id": "37326",
+   "nome": "Saúde",
+   "no": "Stamina"
+  },
+  {
+   "oleos": [
+    "Violet_Oil",
+    "Black_Oil",
+    "Golden_Oil"
+   ],
+   "id": "51108",
+   "nome": "Capacitor Arcano",
+   "no": "Arcane_Capacitor"
+  },
+  {
+   "oleos": [
+    "Opalescent_Oil",
+    "Opalescent_Oil",
+    "Opalescent_Oil"
+   ],
+   "id": "65108",
+   "nome": "Incansável",
+   "no": "Tireless"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Silver_Oil",
+    "Silver_Oil"
+   ],
+   "id": "46904",
+   "nome": "Santuário Arcano",
+   "no": "Arcane_Sanctuary"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Silver_Oil",
+    "Silver_Oil"
+   ],
+   "id": "44988",
+   "nome": "Assolador",
+   "no": "Wasting"
+  },
+  {
+   "oleos": [
+    "Crimson_Oil",
+    "Black_Oil",
+    "Golden_Oil"
+   ],
+   "id": "23066",
+   "nome": "Selvageria",
+   "no": "Savagery"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Opalescent_Oil",
+    "Golden_Oil"
+   ],
+   "id": "54776",
+   "nome": "Fluxo de Mana",
+   "no": "Mana_Flows"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Silver_Oil",
+    "Silver_Oil"
+   ],
+   "id": "21634",
+   "nome": "Química Arcana",
+   "no": "Arcane_Chemistry"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Opalescent_Oil",
+    "Golden_Oil"
+   ],
+   "id": "48807",
+   "nome": "Arte do Gladiador",
+   "no": "Art_of_the_Gladiator"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Silver_Oil",
+    "Silver_Oil"
+   ],
+   "id": "20528",
+   "nome": "Instabilidade",
+   "no": "Instability"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Opalescent_Oil",
+    "Golden_Oil"
+   ],
+   "id": "59766",
+   "nome": "Técnicas Sujas",
+   "no": "Dirty_Techniques"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Silver_Oil",
+    "Silver_Oil"
+   ],
+   "id": "15290",
+   "nome": "Torres de Vigílha",
+   "no": "Watchtowers"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Opalescent_Oil",
+    "Golden_Oil"
+   ],
+   "id": "3452",
+   "nome": "Previsão",
+   "no": "Foresight"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Silver_Oil",
+    "Silver_Oil"
+   ],
+   "id": "21460",
+   "nome": "Sopro Glacial",
+   "no": "Breath_of_Rime"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Opalescent_Oil",
+    "Golden_Oil"
+   ],
+   "id": "58382",
+   "nome": "Feitos Renomados",
+   "no": "Renowned_Deeds"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Opalescent_Oil",
+    "Golden_Oil"
+   ],
+   "id": "63422",
+   "nome": "Lascívia por Carnificina",
+   "no": "Lust_for_Carnage"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Silver_Oil",
+    "Silver_Oil"
+   ],
+   "id": "42443",
+   "nome": "Frenético",
+   "no": "Frenetic"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Opalescent_Oil",
+    "Golden_Oil"
+   ],
+   "id": "47065",
+   "nome": "Mestre das Lâminas",
+   "no": "Master_of_Blades"
+  },
+  {
+   "oleos": [
+    "Black_Oil",
+    "Opalescent_Oil",
+    "Silver_Oil"
+   ],
+   "id": "21228",
+   "nome": "Tiros Perfurantes",
+   "no": "Piercing_Shots"
+  },
+  {
+   "oleos": [
+    "Violet_Oil",
+    "Silver_Oil",
+    "Silver_Oil"
+   ],
+   "id": "19069",
+   "nome": "Pele Grossa",
+   "no": "Thick_Skin"
+  },
+  {
+   "oleos": [
+    "Violet_Oil",
+    "Opalescent_Oil",
+    "Golden_Oil"
+   ],
+   "id": "37647",
+   "nome": "Desmembramento",
+   "no": "Dismembering"
+  },
+  {
+   "oleos": [
+    "Crimson_Oil",
+    "Silver_Oil",
+    "Silver_Oil"
+   ],
+   "id": "25411",
+   "nome": "Infundido",
+   "no": "Infused"
+  },
+  {
+   "oleos": [
+    "Crimson_Oil",
+    "Opalescent_Oil",
+    "Golden_Oil"
+   ],
+   "id": "8833",
+   "nome": "Coração de Gelo",
+   "no": "Heart_of_Ice"
+  },
+  {
+   "oleos": [
+    "Black_Oil",
+    "Black_Oil",
+    "Golden_Oil"
+   ],
+   "id": "63251",
+   "nome": "Inveterado",
+   "no": "Inveterate"
+  },
+  {
+   "oleos": [
+    "Opalescent_Oil",
+    "Opalescent_Oil",
+    "Silver_Oil"
+   ],
+   "id": "27788",
+   "nome": "Bebedor de Sangue",
+   "no": "Blood_Drinker"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Silver_Oil",
+    "Golden_Oil"
+   ],
+   "id": "39530",
+   "nome": "Vácuo da Vitalidade",
+   "no": "Vitality_Void"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Silver_Oil",
+    "Golden_Oil"
+   ],
+   "id": "31257",
+   "nome": "Autoridade Natural",
+   "no": "Natural_Authority"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Silver_Oil",
+    "Golden_Oil"
+   ],
+   "id": "15852",
+   "nome": "Banquete Etéreo",
+   "no": "Ethereal_Feast"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Silver_Oil",
+    "Golden_Oil"
+   ],
+   "id": "29381",
+   "nome": "Horda Faminta",
+   "no": "Ravenous_Horde"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Silver_Oil",
+    "Golden_Oil"
+   ],
+   "id": "13935",
+   "nome": "Calor da Batalha",
+   "no": "Thrill_of_Battle"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Silver_Oil",
+    "Golden_Oil"
+   ],
+   "id": "62577",
+   "nome": "Pulso de Essência",
+   "no": "Essence_Surge"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Silver_Oil",
+    "Golden_Oil"
+   ],
+   "id": "34506",
+   "nome": "Comandante dos Golens",
+   "no": "Golem_Commander"
+  },
+  {
+   "oleos": [
+    "Black_Oil",
+    "Silver_Oil",
+    "Silver_Oil"
+   ],
+   "id": "41472",
+   "nome": "Disciplina e Treinamento",
+   "no": "Discipline_and_Training"
+  },
+  {
+   "oleos": [
+    "Black_Oil",
+    "Opalescent_Oil",
+    "Golden_Oil"
+   ],
+   "id": "28754",
+   "nome": "Assassinato",
+   "no": "Assassination"
+  },
+  {
+   "oleos": [
+    "Violet_Oil",
+    "Silver_Oil",
+    "Golden_Oil"
+   ],
+   "id": "61198",
+   "nome": "Coração do Guerreiro",
+   "no": "Heart_of_the_Warrior"
+  },
+  {
+   "oleos": [
+    "Crimson_Oil",
+    "Silver_Oil",
+    "Golden_Oil"
+   ],
+   "id": "48698",
+   "nome": "Barreira de Vácuo",
+   "no": "Void_Barrier"
+  },
+  {
+   "oleos": [
+    "Opalescent_Oil",
+    "Silver_Oil",
+    "Silver_Oil"
+   ],
+   "id": "15400",
+   "nome": "Runas Escorregadias",
+   "no": "Skittering_Runes"
+  },
+  {
+   "oleos": [
+    "Opalescent_Oil",
+    "Opalescent_Oil",
+    "Golden_Oil"
+   ],
+   "id": "53118",
+   "nome": "Barbarismo",
+   "no": "Barbarism"
+  },
+  {
+   "oleos": [
+    "Clear_Oil",
+    "Golden_Oil",
+    "Golden_Oil"
+   ],
+   "id": "42009",
+   "nome": "Alma de Aço",
+   "no": "Soul_of_Steel"
+  },
+  {
+   "oleos": [
+    "Sepia_Oil",
+    "Golden_Oil",
+    "Golden_Oil"
+   ],
+   "id": "13922",
+   "nome": "Firme",
+   "no": "Steadfast"
+  },
+  {
+   "oleos": [
+    "Amber_Oil",
+    "Golden_Oil",
+    "Golden_Oil"
+   ],
+   "id": "61039",
+   "nome": "Voracidade Selvagem",
+   "no": "Wild_Hunger"
+  },
+  {
+   "oleos": [
+    "Indigo_Oil",
+    "Golden_Oil",
+    "Golden_Oil"
+   ],
+   "id": "11820",
+   "nome": "Carne Ungida",
+   "no": "Anointed_Flesh"
+  },
+  {
+   "oleos": [
+    "Verdant_Oil",
+    "Golden_Oil",
+    "Golden_Oil"
+   ],
+   "id": "50029",
+   "nome": "Calma Inatural",
+   "no": "Unnatural_Calm"
+  },
+  {
+   "oleos": [
+    "Teal_Oil",
+    "Golden_Oil",
+    "Golden_Oil"
+   ],
+   "id": "1325",
+   "nome": "Sangue do Golem",
+   "no": "Golems_Blood"
+  },
+  {
+   "oleos": [
+    "Azure_Oil",
+    "Golden_Oil",
+    "Golden_Oil"
+   ],
+   "id": "39904",
+   "nome": "Espetos Brutais",
+   "no": "Brutal_Skewering"
+  },
+  {
+   "oleos": [
+    "Black_Oil",
+    "Silver_Oil",
+    "Golden_Oil"
+   ],
+   "id": "53114",
+   "nome": "Vingança dos Caçados",
+   "no": "Revenge_of_the_Hunted"
+  },
+  {
+   "oleos": [
+    "Violet_Oil",
+    "Golden_Oil",
+    "Golden_Oil"
+   ],
+   "id": "50842",
+   "nome": "Ira do Veterano",
+   "no": "Veterans_Wrath"
+  },
+  {
+   "oleos": [
+    "Crimson_Oil",
+    "Golden_Oil",
+    "Golden_Oil"
+   ],
+   "id": "58851",
+   "nome": "Líder da Matilha",
+   "no": "Leader_of_the_Pack"
+  },
+  {
+   "oleos": [
+    "Silver_Oil",
+    "Silver_Oil",
+    "Silver_Oil"
+   ],
+   "id": "32932",
+   "nome": "Soberania",
+   "no": "Sovereignty"
+  },
+  {
+   "oleos": [
+    "Opalescent_Oil",
+    "Silver_Oil",
+    "Golden_Oil"
+   ],
+   "id": "27119",
+   "nome": "Fúria Tribal",
+   "no": "Tribal_Fury"
+  },
+  {
+   "oleos": [
+    "Black_Oil",
+    "Golden_Oil",
+    "Golden_Oil"
+   ],
+   "id": "25989",
+   "nome": "Ensinamentos Nômades",
+   "no": "Nomadic_Teachings"
+  },
+  {
+   "oleos": [
+    "Silver_Oil",
+    "Silver_Oil",
+    "Golden_Oil"
+   ],
+   "id": "4177",
+   "nome": "Ajuda Espiritual",
+   "no": "Spiritual_Aid"
+  },
+  {
+   "oleos": [
+    "Opalescent_Oil",
+    "Golden_Oil",
+    "Golden_Oil"
+   ],
+   "id": "6799",
+   "nome": "Carisma",
+   "no": "Charisma"
+  },
+  {
+   "oleos": [
+    "Silver_Oil",
+    "Golden_Oil",
+    "Golden_Oil"
+   ],
+   "id": "60031",
+   "nome": "Pele Prismática",
+   "no": "Prismatic_Skin"
+  },
+  {
+   "oleos": [
+    "Golden_Oil",
+    "Golden_Oil",
+    "Golden_Oil"
+   ],
+   "id": "22535",
+   "nome": "Sussurros da Ruína",
+   "no": "Whispers_of_Doom"
+  }
+ ]
+}

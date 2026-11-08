@@ -287,3 +287,67 @@ test('B13, a Identificação: o drop Mágico/Raro/Único vem sem identificar; o 
     assert.equal(semManto.poe.identificado, false);
   }
 });
+
+test('B14, o Ungir e o Encantamento: 3 Óleos ungem o amuleto (o notável vale vestido), as outras moedas não tiram, "N extras" cabe mais; o Encantamento põe um do Labirinto', { skip: SEM }, async () => {
+  const M = await import('../systems/itens-poe/moedas.mjs');
+  const U = await import('../systems/itens-poe/ungir.mjs');
+  const A = await import('../systems/passivas/arvore.mjs');
+  const { personagemDeTeste } = await import('./apoio.mjs');
+  assert.deepEqual(tr('Aloca Vingança Indiscriminada').efeitos.map((x) => x.stat), ['ungido:vinganca-indiscriminada']);
+  assert.deepEqual(tr('Aloca Passive Skill se você possuir o modificador correspondente na Chama Proibida').efeitos.map((x) => x.stat), ['proibida_carne:passive-skill'], 'a Chama Proibida fica com a regra dela');
+  assert.deepEqual(tr('Pode ter {0} Modificadores Encantados extras', [3]).efeitos.map((x) => [x.stat, x.valor]), [['encantamentos_extras', 3]]);
+  assert.deepEqual(tr('Pode ser ungido').efeitos.map((x) => x.stat), ['pode_ser_ungido']);
+  assert.equal(U.receitas().length, 441, 'as receitas dos 13 Óleos do poedb');
+  const [claro, sepia, alquimia] = ['Clear_Oil', 'Sepia_Oil', 'Orb_of_Alchemy'].map((s) => M.idDa(s));
+  const amuleto = J.pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras: Catalogo.REGRAS, base: 'Amulets/Paua_Amulet', raridade: 'normal', ilvl: 84, rng: () => 0.5 }));
+  const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 80 }), { inventory: [amuleto, { id: claro, count: 6 }, { id: sepia, count: 3 }, { id: alquimia, count: 1 }] });
+  const alvo = { onde: 'inventory', indice: 0 };
+  assert.equal(M.usar(e, { moeda: claro, alvo }).ok, false, 'sem os 3 Óleos escolhidos');
+  const r = M.usar(e, { moeda: claro, alvo, oleos: [claro, claro, claro] });
+  assert.ok(r.ok, r.erro);
+  assert.equal(M.quantasTem(e, claro), 3, 'os 3 Óleos saem juntos');
+  const vinganca = U.receita(['Clear_Oil', 'Clear_Oil', 'Clear_Oil']);
+  let p = e.inventory[0].poe;
+  assert.deepEqual(U.encantamentos(p).map((m) => [m.texto, m.ungido]), [[`Aloca ${vinganca.nome}`, vinganca.id]]);
+  assert.equal(p.estados[p.implicitos.length - 1], 'equivalente');
+  // a Alquimia refaz a peça e o encantamento fica
+  assert.ok(M.usar(e, { moeda: alquimia, alvo }).ok);
+  assert.equal(U.encantamentos(e.inventory[0].poe).length, 1, 'o encantamento fica');
+  // cheia (1): a unção nova troca a antiga
+  assert.ok(M.usar(e, { moeda: sepia, alvo, oleos: [claro, claro, sepia] }).ok);
+  p = e.inventory[0].poe;
+  assert.deepEqual(U.encantamentos(p).map((m) => m.ungido), [U.receita(['Clear_Oil', 'Clear_Oil', 'Sepia_Oil']).id]);
+  // vestido, o notável vale como alocado
+  const doNo = (x) => JSON.stringify({ ...x, habilidades: [...x.habilidades], fontes: null });
+  const semNada = doNo(A.efeitos(e));
+  e.equipment = { ...(e.equipment ?? {}), neck: e.inventory.shift() };
+  const id = U.receita(['Clear_Oil', 'Clear_Oil', 'Sepia_Oil']).id;
+  assert.deepEqual(A.alocadosPeloUngir(e), [id]);
+  assert.notEqual(doNo(A.efeitos(e)), semNada, 'os efeitos do notável entram');
+  // o Suspiro Estrangulador: "Pode ter 3 Modificadores Encantados extras" — 4 unções
+  const [suspiro] = sorteios('Stranglegasp', 1);
+  assert.equal(U.maximoDeEncantamentos(suspiro.poe), 4);
+  const oleos = ['Clear_Oil', 'Sepia_Oil', 'Amber_Oil', 'Verdant_Oil', 'Teal_Oil'];
+  for (let i = 0; i < 5; i++) assert.ok(U.ungir(suspiro.poe, [oleos[i], oleos[i], oleos[i]]).ok);
+  assert.equal(U.encantamentos(suspiro.poe).length, 4, 'a quinta troca a mais antiga');
+  assert.ok(!U.encantamentos(suspiro.poe).some((m) => m.ungido === U.receita(['Clear_Oil', 'Clear_Oil', 'Clear_Oil']).id));
+  // só amuleto e as peças ungíveis
+  const elmo = J.pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras: Catalogo.REGRAS, base: 'Helmets/Iron_Hat', raridade: 'normal', ilvl: 84, rng: () => 0.5 }));
+  assert.equal(U.ungir(elmo.poe, ['Clear_Oil', 'Clear_Oil', 'Clear_Oil']).ok, false);
+  assert.ok(U.ungivel(sorteios('Cowl_of_the_Thermophile', 1)[0].poe), 'o Capote');
+  // o Encantamento: um do Labirinto, com efeito no jogo; cheia, troca
+  const enc = M.idDa('Enchant');
+  const e2 = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 80 }), { inventory: [elmo, { id: enc, count: 2 }] });
+  for (let i = 0; i < 2; i++) assert.ok(M.usar(e2, { moeda: enc, alvo }).ok);
+  const pe = e2.inventory[0].poe;
+  assert.equal(U.encantamentos(pe).length, 1);
+  assert.ok(!['inerte', 'registrado'].includes(pe.estados[pe.implicitos.length - 1]), pe.implicitos.at(-1).texto);
+  // os Óleos caem só do pináculo: de 2 a 4
+  let s = 7;
+  const rng = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < 20; i++) {
+    const caiu = U.oleosDoPinaculo(rng);
+    assert.ok(caiu.length >= 2 && caiu.length <= 4 && caiu.every(U.ehOleo), JSON.stringify(caiu));
+  }
+  assert.ok(!Object.keys(Catalogo.REGRAS.moedas.drop.pesos).some(U.ehOleo), 'fora do drop comum');
+});
