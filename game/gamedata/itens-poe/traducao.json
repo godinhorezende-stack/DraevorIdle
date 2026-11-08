@@ -14,6 +14,19 @@
   ],
   "regras": [
     {
+      "padrao": "^Itens Mágicos encontrados são Identificados$",
+      "efeitos": [
+        {
+          "stat": "identifica_magicos",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "as peças Mágicas que você acha já vêm identificadas (`combate.identificarAoAchar`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B13: a Identificação",
+      "_nova": true
+    },
+    {
       "padrao": "^Qualidade Máxima é \\{(\\d+)\\}%$",
       "efeitos": [
         {

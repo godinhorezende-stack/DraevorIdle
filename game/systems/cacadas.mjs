@@ -60,7 +60,7 @@ import * as Salvaguarda from './personagem/salvaguarda.mjs';
 import * as Voos from './hunt/voos.mjs';
 import * as Ambiente from './ambiente-fixo.mjs';
 import * as GemasVoo from './itens-poe/projeteis-voo.mjs';
-import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, ATAQUE_DO_MONSTRO_MS, round, golpesDosMonstros, contextoDoDrop, pagarRecompensaDeAto, nivelDoDropPoe, raridadeDoDrop, naSalaDaPartilha, fatorDaCacaOnline, entregarMoedas } from './hunt/combate.mjs';
+import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, ATAQUE_DO_MONSTRO_MS, round, golpesDosMonstros, contextoDoDrop, pagarRecompensaDeAto, nivelDoDropPoe, raridadeDoDrop, naSalaDaPartilha, fatorDaCacaOnline, entregarMoedas, identificarAoAchar } from './hunt/combate.mjs';
 import { gerarItem, aceitaAtributos } from './itens/gerar.mjs';
 import * as Campanha from './campanha.mjs';
 import { bossUnico } from './bosses-unicos/catalogo.mjs';
@@ -251,6 +251,8 @@ function projetar(estado, base, fator) {
       for (let k = 0; k < cabe; k++) {
         const peca = ItensPoeJogo.pecaSorteada(nivel, Math.random, undefined, raridade, baseDoPoe);
         if (!peca) continue;
+        // (08/11) sem identificar, como o drop da caçada online (o Manto de Tawm'r identifica as Mágicas)
+        identificarAoAchar(estado, ItensPoeJogo.semIdentificar(peca));
         // O filtro de loot vale offline também: a peça sorteada que ele não pega fica no chão ("Ignorado"), como na caçada online.
         if (Bolsa.ignora(estado, peca.id, peca)) {
           ignoradas++;

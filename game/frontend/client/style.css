@@ -17223,6 +17223,7 @@ body.com-novidades #recados { top: calc(var(--altura-da-topbar) + var(--altura-d
 .hud-carga.carga-tolerancia { background: radial-gradient(circle at 35% 35%, #f07a62, #8c2a1c); }
 .hud-carga.carga-frenesi { background: radial-gradient(circle at 35% 35%, #6fe08f, #1d6b37); }
 /* (08/11, a Dança Sangrenta: a arte de sangue nas Cargas de Frenesi) */
+.poe-nao-identificado { color: #d20000; font-weight: 600; text-align: center; }
 .hud-carga.carga-frenesi.arte-sangue { background: radial-gradient(circle at 35% 35%, #ff6b6b, #5c0306); box-shadow: 0 0 4px #b3121a; }
 .hud-carga.carga-poder { background: radial-gradient(circle at 35% 35%, #7fb0ff, #1f4a9c); }
 /* (14/10) O buff do PoE sem ícone (a Casca, as Direções, a Égide…): a sigla do nome no alto do card, o número embaixo. */

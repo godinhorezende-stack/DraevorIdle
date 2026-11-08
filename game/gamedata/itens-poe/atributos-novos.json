@@ -10184,6 +10184,12 @@
       "unidade": "%",
       "combate": true,
       "efeito": "moedas.subirQualidade (08/11 — a Tentação de Ixchel)"
+    },
+    "identifica_magicos": {
+      "nome": "Itens Mágicos encontrados são Identificados",
+      "unidade": "",
+      "combate": true,
+      "efeito": "hunt/combate.identificarAoAchar (08/11 — o Manto de Tawm'r Isley)"
     }
   }
 }

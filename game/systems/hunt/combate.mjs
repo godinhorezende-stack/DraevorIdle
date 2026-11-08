@@ -363,6 +363,11 @@ export function subirDeLevel(estado) {
   refazerMaximos(estado, novo);
 }
 
+/** (08/11, o Manto de Tawm'r Isley: "Itens Mágicos encontrados são Identificados") a peça Mágica achada por quem tem a linha já vem identificada. */
+export function identificarAoAchar(estado, peca) {
+  if (peca?.poe?.raridade === 'magico' && ItensPoeJogo.naoIdentificada(peca) && itensPoeLigado() && ModsPoe.valor(Ficha.combate(estado), 'identifica_magicos') > 0) ItensPoeJogo.identificar(peca);
+  return peca;
+}
 /** (07/11, lote 22) o Pergaminho da Sabedoria do PoE (o id de item da moeda — `gamedata/itens-poe/moedas-poe-ids.json`). */
 const PERGAMINHO_DA_SABEDORIA = 915154;
 export function quantasMoedas(bicho, id, estado = null) {
@@ -445,6 +450,7 @@ function sacolaDoChefe(estado, hunt, alvo, quem, atoDoChefe) {
     // A SACOLA DO CHEFE NÃO PASSA PELO FILTRO DE LOOT (dono, 10/10: "sacola do boss do ato não tem filtro, vai direto para o baú do
     // boss"): tudo o que ele solta — peças, moedas, o mapa, o Único do pináculo — vai inteiro para o baú. O filtro vale no loot da caçada.
     for (const daPoe of ItensPoeJogo.dropsDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidade, raridadeDoDrop(estado, alvo))) {
+      identificarAoAchar(estado, daPoe);
       itens.push(daPoe);
       // O Único do PoE: o servidor inteiro fica sabendo (chat e faixa do alto — `anuncios.mjs`).
       Anuncios.dropRaro({ quem, peca: daPoe, bicho: alvo.name, boss: true, onde: alvo.name });
@@ -1070,6 +1076,7 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   const quantidadeDoJogador = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + (podio?.loot ?? 0) / 100) * fatorDaCacaOnline(hunt) * (1 + Math.max(0, Number(noMapa?.quantidade) || 0) / 100);
   const raridadeDoMorto = raridadeDoDrop(estado, alvo) + (Number(noMapa?.raridade) || 0);
   for (const daPoe of ItensPoeJogo.dropsDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidadeDoJogador, raridadeDoMorto)) {
+    identificarAoAchar(estado, daPoe);
     // O FILTRO DE LOOT (dono, 08/10: "está pegando itens mesmo setando as coisas"): a peça que o filtro não pega fica no chão ("Ignorado").
     if (Bolsa.ignora(estado, daPoe.id, daPoe)) {
       conta('ignorado', daPoe.id, 1);

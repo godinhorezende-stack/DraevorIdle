@@ -218,6 +218,7 @@ function motivoDaMoeda(estado, peca, slug, categoria) {
   if (p.espelhado) return 'Peça espelhada não aceita moeda.';
   const corroida = /^Tainted_/.test(slug);
   if (p.corrompido && !corroida && !MoedasPoe.modificavelCorrompida(p)) return 'Peça corrompida não aceita esta moeda (só as Corroídas).';
+  if (p.identificado === false && slug !== 'Scroll_of_Wisdom' && slug !== 'Vaal_Orb') return 'Identifique a peça antes (Pergaminho da Sabedoria).';
   if (!p.corrompido && corroida) return 'As moedas Corroídas valem só em peça corrompida.';
   if (['sockets', 'cores', 'links'].includes(categoria)) {
     const s = socketsDa(peca);

@@ -254,3 +254,36 @@ test('B12, os Catalisadores: a qualidade da joia aumenta só os mods do tipo; ou
   // a Tentação de Ixchel: "Qualidade Máxima é 200%"
   assert.deepEqual(tr('Qualidade Máxima é {0}%', [200]).efeitos.map((x) => [x.stat, x.valor]), [['qualidade_max', 200]]);
 });
+
+test('B13, a Identificação: o drop Mágico/Raro/Único vem sem identificar; o Pergaminho identifica; a moeda pede a peça identificada; o Manto identifica as Mágicas', { skip: SEM }, async () => {
+  const M = await import('../systems/itens-poe/moedas.mjs');
+  const Combate = await import('../systems/hunt/combate.mjs');
+  const { personagemDeTeste } = await import('./apoio.mjs');
+  let s = 5;
+  const rng = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  const pecas = Array.from({ length: 30 }, () => J.dropsDoMonstro(70, 'unico', rng)).flat();
+  assert.ok(pecas.length > 5);
+  for (const p of pecas) assert.equal(p.poe.identificado === false, ['magico', 'raro', 'unico'].includes(p.poe.raridade) && p.poe.classe !== 'Maps', `${p.poe.raridade} ${p.poe.classe}`);
+  const rara = pecas.find((p) => p.poe.raridade === 'raro');
+  assert.ok(rara, 'uma rara no drop');
+  assert.ok(Object.keys(rara.poe.af).length, 'os mods valem mesmo sem identificar');
+  const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 80 }), { inventory: [rara, { id: M.idDa('Chaos_Orb'), count: 1 }, { id: M.idDa('Scroll_of_Wisdom'), count: 2 }] });
+  assert.match(M.usar(e, { moeda: M.idDa('Chaos_Orb'), alvo: { onde: 'inventory', indice: 0 } }).erro, /Identifique/);
+  assert.ok(M.usar(e, { moeda: M.idDa('Scroll_of_Wisdom'), alvo: { onde: 'inventory', indice: 0 } }).ok);
+  assert.equal(e.inventory[0].poe.identificado, undefined);
+  assert.equal(M.usar(e, { moeda: M.idDa('Scroll_of_Wisdom'), alvo: { onde: 'inventory', indice: 0 } }).ok, false, 'já identificada');
+  assert.ok(M.usar(e, { moeda: M.idDa('Chaos_Orb'), alvo: { onde: 'inventory', indice: 0 } }).ok, 'agora o Caos vale');
+  // o Manto de Tawm'r Isley
+  assert.deepEqual(tr('Itens Mágicos encontrados são Identificados').efeitos.map((x) => x.stat), ['identifica_magicos']);
+  const magica = pecas.find((p) => p.poe.raridade === 'magico');
+  if (magica) {
+    const comManto = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 80 }), { sistema: 'poe' });
+    comManto.equipment = { ...comManto.equipment, ring: { id: 1, poe: { af: { identifica_magicos: 1 } } } };
+    const copia = structuredClone(magica);
+    Combate.identificarAoAchar(comManto, copia);
+    assert.equal(copia.poe.identificado, undefined, 'a Mágica do Manto vem identificada');
+    const semManto = structuredClone(magica);
+    Combate.identificarAoAchar(personagemDeTeste({ vocacao: 'knight', level: 80 }), semManto);
+    assert.equal(semManto.poe.identificado, false);
+  }
+});

@@ -955,9 +955,26 @@ export function dropsDoMonstro(nivelDoBicho, tipo = 'normal', rng = Math.random,
   const pecas = [];
   for (let i = 0; i < n; i++) {
     const p = pecaSorteada(nivelDoBicho, rng, regras, raridadeAumentada);
-    if (p) pecas.push(p);
+    if (p) pecas.push(semIdentificar(p));
   }
   return pecas;
+}
+
+/**
+ * (08/11, o dono: "Como no PoE") a IDENTIFICAÇÃO: a peça Mágica, Rara ou Única que cai do monstro (e do baú) vem SEM IDENTIFICAR (`poe.identificado: false`) — os
+ * mods explícitos ficam escondidos no balão até o Pergaminho da Sabedoria (`moedas.mjs`), mas valem vestida, como no PoE. O mapa cai identificado (o jogo não
+ * tem mapa por identificar). `identificar` tira a marca.
+ */
+export function semIdentificar(peca) {
+  const p = peca?.poe;
+  if (p && ['magico', 'raro', 'unico'].includes(p.raridade) && p.classe !== Mapas.CLASSE) p.identificado = false;
+  return peca;
+}
+export const naoIdentificada = (peca) => peca?.poe?.identificado === false;
+export function identificar(peca) {
+  if (!naoIdentificada(peca)) return false;
+  delete peca.poe.identificado;
+  return true;
 }
 
 // ---------------------------------------------------------------- o começo do personagem (como no PoE)

@@ -540,6 +540,8 @@ const juntarLascas = (alvoSlug, quantos = 20) => ({ estado, moeda }) => {
   porNaMochila(estado, idDa(alvoSlug), 1);
   return { ok: true, notice: `${quantos} ${moeda.nome} viraram 1 ${POR_SLUG.get(alvoSlug)?.nome}.`, semAlvo: true };
 };
+// (08/11, o dono: "Como no PoE") o Pergaminho da Sabedoria identifica a peça (`Jogo.identificar`)
+const sabedoria = ({ peca, p }) => (Jogo.identificar(peca) ? { ok: true, notice: `${p.nome} identificada.` } : erro('A peça já está identificada.'));
 const remorso = ({ estado }) => {
   const pa = (estado.passivas ??= {});
   pa.restituicoes = (pa.restituicoes ?? 0) + 1;
@@ -793,6 +795,7 @@ const FAZ = {
   Mirror_Shard: { f: juntarLascas('Mirror_of_Kalandra'), alvo: 'nenhum' },
   ...Object.fromEntries(EMISSARIO.flatMap((c) => [...c.partes.map((s) => [s, { f: juntarPartes(c), alvo: 'nenhum' }]), [c.pergaminho, { f: aprimorarEmissario(c) }]])),
   Ukatoas_Ducat: { f: ducadoDeUkatoa },
+  Scroll_of_Wisdom: { f: sabedoria, identifica: true }, Scroll_Fragment: { f: juntarLascas('Scroll_of_Wisdom', 5), alvo: 'nenhum' },
 };
 for (const [slug, f] of Object.entries(FAZ)) if (!POR_SLUG.has(slug)) delete FAZ[slug];
 
@@ -800,7 +803,6 @@ for (const [slug, f] of Object.entries(FAZ)) if (!POR_SLUG.has(slug)) delete FAZ
 function motivoDoNao(m) {
   const s = m.slug;
   const t = `${s} ${m.efeitos.join(' ')}`;
-  if (/Scroll_of_Wisdom|Scroll_Fragment/.test(s)) return 'não há itens sem identificar no jogo';
   if (/Portal_Scroll|Rogues_Marker|Silver_Coin/.test(s)) return 'não há portal para a vila/refúgio no jogo';
   if (/Chisel|Scrying|Horizons|Astrolabe|Memory_of|Unmaking|Intention|Telesias|Surveyors|Valdos/.test(s) || /Mapa|Atlas/i.test(t)) return 'mapas e o Atlas não existem no jogo';
   if (/Awakener/.test(s)) return 'ela junta DUAS peças, e a Forja do jogo trabalha com uma por vez';
@@ -827,7 +829,7 @@ export const STATUS = Object.fromEntries(MOEDAS.map((m) => {
  * influência, o Ancestral (Eldritch), a qualidade, a corrupção (Vaal e as outras Corroídas), as especiais, as de gema e as lascas. A que
  * não tem efeito no jogo fica em "Sem efeito no jogo" (com o motivo).
  */
-const LASCAS = ['Transmutation_Shard', 'Alteration_Shard', 'Alchemy_Shard', 'Chaos_Shard', 'Regal_Shard', 'Exalted_Shard', 'Annulment_Shard', 'Fracturing_Shard', 'Mirror_Shard'];
+const LASCAS = ['Scroll_Fragment', 'Transmutation_Shard', 'Alteration_Shard', 'Alchemy_Shard', 'Chaos_Shard', 'Regal_Shard', 'Exalted_Shard', 'Annulment_Shard', 'Fracturing_Shard', 'Mirror_Shard'];
 export const MOEDAS_DA_CATEGORIA = Object.freeze({
   sockets: ['Jewellers_Orb', 'Tainted_Jewellers_Orb'],
   cores: ['Chromatic_Orb', 'Tainted_Chromatic_Orb'],
@@ -852,7 +854,7 @@ export const MOEDAS_DA_CATEGORIA = Object.freeze({
   gemas: ['Gemcutters_Prism', 'Gemcutters_Lens'],
   // (06/11) as Partes do Emissário juntam como as lascas (sem peça); os Pergaminhos vão em Especiais (o Ancestral também troca o único)
   lascas: [...LASCAS, ...EMISSARIO.flatMap((c) => c.partes)],
-  especiais: ['Mirror_of_Kalandra', 'Ancient_Orb', 'Orb_of_Regret', ...EMISSARIO.map((c) => c.pergaminho)],
+  especiais: ['Scroll_of_Wisdom', 'Mirror_of_Kalandra', 'Ancient_Orb', 'Orb_of_Regret', ...EMISSARIO.map((c) => c.pergaminho)],
 });
 const CATEGORIA_FIXA = new Map(Object.entries(MOEDAS_DA_CATEGORIA).flatMap(([cat, lista]) => lista.map((slug) => [slug, cat])));
 /** A categoria da Forja de uma moeda (a lista acima); a sem efeito no jogo, "semEfeito". */
@@ -992,6 +994,8 @@ export function usar(estado, { moeda: idDaMoeda, alvo } = {}, rng = Math.random)
     if (!p) return erro('Escolha uma peça do PoE (vestida ou na mochila).');
     if (p.espelhado) return erro('Peça espelhada não aceita moeda.');
     if (p.corrompido && !faz.corrompida && !modificavelCorrompida(p)) return erro('Peça corrompida não aceita esta moeda (só as Corroídas).');
+    // (08/11) a peça sem identificar só aceita o Pergaminho da Sabedoria (e o Orbe Vaal, como no PoE)
+    if (p.identificado === false && !faz.identifica && moeda.slug !== 'Vaal_Orb') return erro('Identifique a peça antes (Pergaminho da Sabedoria).');
   }
   const antes = peca ? structuredClone(peca) : null;
   const r = faz.f({ estado, peca, p, alvo, rng, moeda });

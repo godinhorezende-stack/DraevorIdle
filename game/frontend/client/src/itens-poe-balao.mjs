@@ -133,6 +133,7 @@ function comCatalisados(p) {
 
 export function balaoPoe(p0, { cor = p0.cor ?? '#ddd', raridadeNome = p0.raridadeNome ?? p0.raridade, nomeDaBase = null, estados = p0.estados ?? null, af = p0.af ?? null, requisitos = null, tem = null } = {}) {
   const p = comCatalisados(p0);
+  const semId = p.identificado === false;
   const fila = [...(estados ?? [])];
   // `notas` (o servidor manda, na ordem dos mods): por que a mecânica não existe no jogo — o balão mostra ao passar o mouse.
   const notas = [...(p.notas ?? [])];
@@ -166,7 +167,8 @@ export function balaoPoe(p0, { cor = p0.cor ?? '#ddd', raridadeNome = p0.raridad
     ...Object.entries(p.atributos ?? {}).filter(([k]) => ROTULO[k]).map(([k, v]) => no('div', null, `${ROTULO[k]}: `, no('b', aumentado(k) ? 'poe-aumentado' : null, valorDoAtributo(k, comLocal(k, comQ(k, v)))))),
   ];
   const caixa = no('div', `poe-balao r-${p.raridade}`,
-    no('div', 'poe-topo', no('b', null, p.nome), nomeDaBase && nomeDaBase !== p.nome ? no('span', null, nomeDaBase) : null),
+    // (08/11) a peça SEM IDENTIFICAR mostra só a base (na cor da raridade), como no PoE
+    semId ? no('div', 'poe-topo', no('b', null, nomeDaBase ?? p.base ?? p.nome)) : no('div', 'poe-topo', no('b', null, p.nome), nomeDaBase && nomeDaBase !== p.nome ? no('span', null, nomeDaBase) : null),
     no('div', 'poe-props', categoriaDe(p) ? no('div', 'poe-categoria', categoriaDe(p)) : null, no('div', 'poe-raridade', `${raridadeNome} · Item Level ${p.ilvl}`), props),
     requisitos && (requisitos.nivel > 1 || requisitos.str || requisitos.dex || requisitos.int)
       ? no('div', 'poe-requisitos', 'Requer ', [requisitos.nivel > 1 ? ['nivel', `Nível ${requisitos.nivel}`] : null, ...['str', 'dex', 'int'].filter((k) => requisitos[k]).map((k) => [k, `${requisitos[k]} ${NOME_DO_REQUISITO[k]}`])]
@@ -178,9 +180,10 @@ export function balaoPoe(p0, { cor = p0.cor ?? '#ddd', raridadeNome = p0.raridad
     p.mapa ? [sep(), resumoDoMapa(p.mapa)] : null,
     encantamentos.length ? [sep(), linhas(encantamentos.map(([m]) => m), 'enc', '', encantamentos.map(([, x]) => x))] : null,
     outrosImplicitos.length ? [sep(), linhas(outrosImplicitos.map(([m]) => m), 'imp', '', outrosImplicitos.map(([, x]) => x))] : null,
-    p.prefixos?.length ? [sep(), titulo('Prefixos'), linhas(p.prefixos, 'pre', 'P')] : null,
-    p.sufixos?.length ? [p.prefixos?.length ? null : sep(), titulo('Sufixos'), linhas(p.sufixos, 'suf', 'S')] : null,
-    p.modificadores?.length ? [sep(), p.modificadores.map((m) => no('div', 'poe-mod uni', estados ? marca() : null, no('span', m.aumentado ? 'poe-aumentado' : null, m.texto), m.consumido ? Object.assign(no('i', null, 'consumido'), { title: `da ${m.consumido}` }) : null))] : null,
+    !semId && p.prefixos?.length ? [sep(), titulo('Prefixos'), linhas(p.prefixos, 'pre', 'P')] : null,
+    !semId && p.sufixos?.length ? [p.prefixos?.length ? null : sep(), titulo('Sufixos'), linhas(p.sufixos, 'suf', 'S')] : null,
+    semId ? [sep(), no('div', 'poe-nao-identificado', 'Não Identificado')] : null,
+    !semId && p.modificadores?.length ? [sep(), p.modificadores.map((m) => no('div', 'poe-mod uni', estados ? marca() : null, no('span', m.aumentado ? 'poe-aumentado' : null, m.texto), m.consumido ? Object.assign(no('i', null, 'consumido'), { title: `da ${m.consumido}` }) : null))] : null,
     // (lote 28) as Joias Abissais encaixadas nos Encaixes Abissais da peça (o nome, na cor da raridade).
     p.abissais?.some(Boolean) ? [sep(), titulo('Encaixes Abissais'), p.abissais.map((j, i) => no('div', `poe-abissal${j ? ` r-${j.poe?.raridade ?? 'normal'}` : ' vazio'}`, j ? `${i + 1}. ${j.poe?.nome ?? 'Joia Abissal'}` : `${i + 1}. vazio`))] : null,
     // (Frente D) "Corrompido" no fim das linhas, em vermelho, como no PoE (a peça do Orbe Vaal e a que já cai corrompida — `sabores.json`)
