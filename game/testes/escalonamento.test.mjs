@@ -142,13 +142,13 @@ async function jogador(i) {
 }
 
 // (08/11, adaptado ao PoE — o dono: "Adaptar antes") Na área do PoE (`HUNT_DE_TESTE`), na dificuldade do PoE: a campanha é uma passada
-// só, no Normal (o "medio" do Draevor não abre).
+// só, no Normal — a chave da primeira dificuldade, `facil` (o "medio" do Draevor não abre).
 test('D7. na instância real: dois ativos deixam os bichos mais fortes; sair o segundo devolve ao base', async () => {
   const a = await jogador(1);
   const b = await jogador(2);
   Party.comandoDoGrupo(a.s, { action: 'convidar', name: b.nome });
   Party.comandoDoGrupo(b.s, { action: 'aceitar' });
-  assert.equal(Cacadas.entrar(a.s.estado, { huntId: HUNT_DE_TESTE, mode: 'auto', dificuldade: 'normal' }).ok, true);
+  assert.equal(Cacadas.entrar(a.s.estado, { huntId: HUNT_DE_TESTE, mode: 'auto', dificuldade: 'facil' }).ok, true);
   const hunt = a.s.estado.hunt;
   // Os primeiros tiques ajustam o que a entrada deixou (escala da fase); o "base" é o de depois disso.
   for (let t = 0; t < 6; t++) await a.s.tique();

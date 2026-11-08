@@ -70,7 +70,7 @@ test('E4. o resumo: total por setor, vivos, concluído quando zera, e quem está
 
 // ------------------------------------------------------------------ instância e party reais
 // (08/11, adaptado ao PoE — o dono: "Adaptar antes") Na área do PoE (`HUNT_DE_TESTE`), na dificuldade do PoE: a campanha é uma passada
-// só, no Normal (o "medio" do Draevor não abre).
+// só, no Normal — a chave da primeira dificuldade, `facil` (o "medio" do Draevor não abre).
 
 const criadas = [];
 after(async () => {
@@ -97,7 +97,7 @@ async function jogador(i) {
 
 test('E5. a instância real nasce com o total por setor (soma = o total de objetivos) e cada bicho tem o seu setor', async () => {
   const j = await jogador(0);
-  assert.equal(Cacadas.entrar(j.s.estado, { huntId: HUNT_DE_TESTE, mode: 'auto', dificuldade: 'normal' }).ok, true);
+  assert.equal(Cacadas.entrar(j.s.estado, { huntId: HUNT_DE_TESTE, mode: 'auto', dificuldade: 'facil' }).ok, true);
   const hunt = j.s.estado.hunt;
   const inst = hunt.instancia;
   assert.ok(inst?.setores && Object.keys(inst.setores).length >= 1, 'a instância tem setores');
@@ -120,7 +120,7 @@ test('E6. a party enxerga o mesmo progresso (um convidado lê da sala do dono) e
   const b = await jogador(2);
   Party.comandoDoGrupo(a.s, { action: 'convidar', name: b.nome });
   Party.comandoDoGrupo(b.s, { action: 'aceitar' });
-  Cacadas.entrar(a.s.estado, { huntId: HUNT_DE_TESTE, mode: 'auto', dificuldade: 'normal' });
+  Cacadas.entrar(a.s.estado, { huntId: HUNT_DE_TESTE, mode: 'auto', dificuldade: 'facil' });
   Party.comandoDaCaca(a.s, { action: 'invite', name: b.nome });
   assert.equal(Party.comandoDaCaca(b.s, { action: 'accept' }).ok, true);
   const ea = Party.extrasDoRetrato(a.s);
@@ -138,7 +138,7 @@ test('R1. reagrupamento: opcional por padrão; obrigatório só na fase/tipo con
   const b = await jogador(5);
   Party.comandoDoGrupo(a.s, { action: 'convidar', name: b.nome });
   Party.comandoDoGrupo(b.s, { action: 'aceitar' });
-  Cacadas.entrar(a.s.estado, { huntId: HUNT_DE_TESTE, mode: 'auto', dificuldade: 'normal' });
+  Cacadas.entrar(a.s.estado, { huntId: HUNT_DE_TESTE, mode: 'auto', dificuldade: 'facil' });
   Party.comandoDaCaca(a.s, { action: 'invite', name: b.nome });
   Party.comandoDaCaca(b.s, { action: 'accept' });
   const chefe = { tipo: 'miniboss', x: a.s.estado.hunt.pos.x, y: a.s.estado.hunt.pos.y };
@@ -151,7 +151,7 @@ test('R1. reagrupamento: opcional por padrão; obrigatório só na fase/tipo con
   b.s.estado.hunt.pos = { ...b.s.estado.hunt.pos, x: a.s.estado.hunt.pos.x + 3 };
   assert.deepEqual(Party.faltamParaReagrupar(a.s, chefe, regra), [], 'reunidos: pode começar');
   const solo = await jogador(6);
-  Cacadas.entrar(solo.s.estado, { huntId: HUNT_DE_TESTE, mode: 'auto', dificuldade: 'normal' });
+  Cacadas.entrar(solo.s.estado, { huntId: HUNT_DE_TESTE, mode: 'auto', dificuldade: 'facil' });
   assert.deepEqual(Party.faltamParaReagrupar(solo.s, chefe, regra), [], 'sem party nunca exige');
 });
 
@@ -160,7 +160,7 @@ test('U1. servidor: o cartão do membro offline guarda "volta em" e o setor; lim
   const b = await jogador(8);
   Party.comandoDoGrupo(a.s, { action: 'convidar', name: b.nome });
   Party.comandoDoGrupo(b.s, { action: 'aceitar' });
-  Cacadas.entrar(a.s.estado, { huntId: HUNT_DE_TESTE, mode: 'auto', dificuldade: 'normal' });
+  Cacadas.entrar(a.s.estado, { huntId: HUNT_DE_TESTE, mode: 'auto', dificuldade: 'facil' });
   Party.comandoDaCaca(a.s, { action: 'invite', name: b.nome });
   Party.comandoDaCaca(b.s, { action: 'accept' });
   const hunt = a.s.estado.hunt;

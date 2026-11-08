@@ -198,15 +198,30 @@ test(`todas as ${COM_FORMA.length} skills de ataque com forma: o dano cai exatam
 test('gemas de área: Area of Effect aumenta e Concentrated Effect reduz — e a tela acompanha', { skip: soNoOficial('a gema, as supports e a varinha do PoE') }, () => {
   const MAGIA = 'poe-gema:Shock_Nova';
   const varinha = { arma: Object.values(ITEM_CATALOG).find((i) => i.poe?.base === 'Wands/Driftwood_Wand'), sockets: 3 };
-  const base = montar([MAGIA]);
-  encher(base);
-  const normal = lancar(base, MAGIA, base.hunt.monstros[0]).desenhadas.size;
+  // (08/11) No PoE a parte quebrada do raio vira CHANCE sorteada: a área é medida num leque fixo de 20 sorteios (0,025 … 0,975), o mesmo
+  // nos três — sem a sorte decidir (como em projeteis.test.mjs), e a soma das casas é a área média que cresce ou encolhe.
+  const medir = (supports, rotulo, cheio = 9) => {
+    let casas = 0;
+    for (let i = 0; i < 20; i++) {
+      const e = supports.length ? montar([MAGIA], supports, varinha) : montar([MAGIA]);
+      encher(e, cheio);
+      const antes = Math.random;
+      let r;
+      try {
+        Math.random = () => (i + 0.5) / 20;
+        r = lancar(e, MAGIA, e.hunt.monstros[0]);
+      } finally {
+        Math.random = antes;
+      }
+      iguais(r.atingidas, new Set([...r.desenhadas].filter((c) => ocupadas(e).has(c))), `${rotulo} (sorteio ${i})`);
+      casas += r.desenhadas.size;
+    }
+    return casas;
+  };
+  const normal = medir([], 'normal', undefined);
   for (const [sup, cresce] of [['poe-suporte:Increased_Area_of_Effect_Support', true], ['poe-suporte:Concentrated_Effect_Support', false]]) {
-    const e = montar([MAGIA], [sup], varinha);
-    encher(e, 9);
-    const { atingidas, desenhadas } = lancar(e, MAGIA, e.hunt.monstros[0]);
-    assert.ok(cresce ? desenhadas.size > normal : desenhadas.size < normal, `${sup}: ${desenhadas.size} casas (normal ${normal})`);
-    iguais(atingidas, new Set([...desenhadas].filter((c) => ocupadas(e).has(c))), sup);
+    const casas = medir([sup], sup);
+    assert.ok(cresce ? casas > normal : casas < normal, `${sup}: ${casas} casas em 20 sorteios (normal ${normal})`);
   }
 });
 

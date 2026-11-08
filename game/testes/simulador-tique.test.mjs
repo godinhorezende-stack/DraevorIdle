@@ -12,6 +12,8 @@
 // mesmo padrão de `redis.test.mjs`.
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
+import cripto from 'node:crypto';
+import { syncBuiltinESMExports } from 'node:module';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Prey from '../systems/prey.mjs';
 import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
@@ -25,12 +27,40 @@ const NIVEL_QUE_ABATE = 90;
 const AREA_QUE_ABATE = 'poe-a1-the-coast';
 
 /** Prey sorteado com Math.random de verdade — chamar ANTES de qualquer `Math.random = () => x` no teste, senão o sorteio de candidatas do prey trava num `while` que nunca acha uma nova (ver podio-combate.test.mjs). */
-function personagemPronto(opcoes, huntId = HUNT_DE_TESTE) {
+function personagemPronto(opcoes, huntId = HUNT_DE_TESTE, { semente = null } = {}) {
   const e = personagemDeTeste(opcoes);
   Prey.garantir(e);
-  assert.ok(Cacadas.entrar(e, { huntId, mode: 'auto' }).ok);
+  if (semente == null) assert.ok(Cacadas.entrar(e, { huntId, mode: 'auto' }).ok);
+  else comSemente(semente, () => assert.ok(Cacadas.entrar(e, { huntId, mode: 'auto' }).ok));
   e.hunt.ultimoTique = Date.now();
   return e;
+}
+
+/**
+ * (08/11) A caçada do PoE sorteada SEMPRE igual: o Math.random com semente e a semente da instância (`crypto.randomInt`, os encontros —
+ * `encontros/sorteio.mjs`) também, como em consolidacao-offline.test.mjs. Sem isso cada entrada nasce com outros monstros, e o abate que o
+ * teste espera em 200 tiques às vezes não vem.
+ */
+function comSemente(semente, fn) {
+  const original = Math.random;
+  const randomIntOriginal = cripto.randomInt;
+  let s = semente >>> 0;
+  Math.random = () => {
+    s = (s + 0x6d2b79f5) >>> 0;
+    let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  cripto.randomInt = (min, max, ...resto) => (typeof max !== 'number' ? randomIntOriginal(min, max, ...resto) : min + Math.floor(Math.random() * (max - min)));
+  syncBuiltinESMExports();
+  try {
+    return fn();
+  } finally {
+    Math.random = original;
+    cripto.randomInt = randomIntOriginal;
+    syncBuiltinESMExports();
+  }
 }
 
 /** Deep clone só de dados simples (JSON) — a mesma garantia que `estado` já precisa ter para atravessar `postMessage`. */
@@ -82,7 +112,7 @@ test('ticar no worker dá o MESMO resultado que ticar direto (mesmo estado, mesm
 });
 
 test('os eventos do tique no worker são os mesmos que `Cacadas.tique` devolveria (ex.: kill)', async () => {
-  let estado = personagemPronto({ level: NIVEL_QUE_ABATE }, AREA_QUE_ABATE); // Prey.garantir precisa de Math.random de verdade — ver a nota em personagemPronto
+  let estado = personagemPronto({ level: NIVEL_QUE_ABATE }, AREA_QUE_ABATE, { semente: 7 }); // Prey.garantir precisa de Math.random de verdade — ver a nota em personagemPronto
   const original = Math.random;
   Math.random = () => 0.5;
   try {
@@ -107,8 +137,10 @@ test('o bônus de pódio (não-enumerável em hunt.podio) atravessa o worker —
   // As duas fichas nascem ANTES de travar o dado — a segunda não pode nascer
   // no meio do bloco travado (é exatamente o bug que já apareceu duas vezes
   // neste arquivo: `Prey.garantir` com Math.random travado trava para sempre).
-  let semBonus = personagemPronto({ level: NIVEL_QUE_ABATE }, AREA_QUE_ABATE);
-  let comBonus = personagemPronto({ level: NIVEL_QUE_ABATE }, AREA_QUE_ABATE);
+  // (08/11) Na área do PoE cada entrada sorteia a sua caçada (os monstros, as raridades, os encontros): a do bônus é uma CÓPIA da outra (a
+  // mesma que o `postMessage` faz), para o primeiro abate dos dois ser o mesmo monstro — é ele que a conta compara.
+  let semBonus = personagemPronto({ level: NIVEL_QUE_ABATE }, AREA_QUE_ABATE, { semente: 7 });
+  let comBonus = clonar(semBonus);
   const original = Math.random;
   Math.random = () => 0.5;
   let semExp;

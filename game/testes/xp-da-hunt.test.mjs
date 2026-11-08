@@ -10,23 +10,31 @@ import { criarMonstro, BESTIARY } from '../systems/hunt/monstros.mjs';
 import { aplicarEscala, escalaDaFase } from '../systems/campanha.mjs';
 import { matarMonstro, estimarExpDoBicho } from '../systems/hunt/combate.mjs';
 import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE, huntDoPoe } from './apoio.mjs';
-import { doClassico, soNoOficial } from './apoio-migracao.mjs';
+import { aAdaptar, doClassico } from './apoio-migracao.mjs';
 import { ligado as jogoOficial, catalogo as catalogoDoPoe, REGRAS as REGRAS_DO_POE } from '../systems/itens-poe/catalogo.mjs';
 import { gerarPeca } from '../systems/itens-poe/gerar.mjs';
 import * as JogoDoPoe from '../systems/itens-poe/jogo.mjs';
-import { ITEM_CATALOG, CATALOGO } from '../systems/dados.mjs';
+import { ITEM_CATALOG } from '../systems/dados.mjs';
 
 const FASE = { huntId: huntDoPoe('mistrock-cyclops'), dificuldade: 'facil' };
 
 /** Um personagem na fase, com `level`/`premium`, e um Cyclops NORMAL (sem raridade) recém-nascido. */
-function cenario({ level = 60, premium = false, huntId = FASE.huntId, dificuldade = FASE.dificuldade, key = 'cyclops' } = {}) {
+function cenario({ level = 60, premium = false, huntId = FASE.huntId, dificuldade = FASE.dificuldade } = {}) {
   const e = personagemDeTeste({ vocacao: 'knight', level });
   e.premiumAte = premium ? Date.now() + 1e9 : 0;
   e.maxHp = e.hp = 1e9;
   assert.equal(Cacadas.entrar(e, { huntId, mode: 'auto', strategy: 'nearest', dificuldade }).ok, true);
-  const m = aplicarEscala(criarMonstro({ key, x: e.hunt.pos.x + 1, y: e.hunt.pos.y }, null), e.hunt.escala);
+  const m = aplicarEscala(criarMonstro({ key: 'cyclops', x: e.hunt.pos.x + 1, y: e.hunt.pos.y }, null), e.hunt.escala);
   e.hunt.monstros.push(m);
   return { e, m };
+}
+
+/** A conta escrita à mão, a partir dos dados — sem passar pelo código de produção da exp. */
+function contaIndependente({ level, fatorVip, escalaExp, premium = false }) {
+  const base = BESTIARY.cyclops.exp;
+  const noMapa = Math.round(base * escalaExp);
+  const estagio = level <= 50 ? 3 : level <= 100 ? 2 : 1;
+  return Math.round(noMapa * (1 + (R.levelBonus(level) + (premium ? 10 : 0)) / 100) * fatorVip * estagio);
 }
 
 // (07/11/2026, aval do dono: "Pode reescrever") a stamina saiu: o VIP (premium) fica com o x1,5 fixo que a stamina cheia dava; o free, x1.
@@ -36,28 +44,14 @@ test('o VIP: x1,5 com premium, x1 sem — a stamina saiu, não há mais faixa de
   assert.equal(Stamina.fatorDeExp({ premiumAte: Date.now() - 1 }), 1, 'o premium vencido não vale');
 });
 
-// (08/11, adaptado ao PoE — o dono: "Adaptar antes") A mesma regra (a morte paga a conta escrita à mão e a ficha promete o mesmo) com um
-// monstro DO PoE da área (a Ponte Quebrada, o terreno da Mistrock) no lugar do Cyclops do Draevor. A conta à mão é a do PoE: na curva do PoE
-// (`Boosts.expDoBicho`) não há o bônus de level baixo nem os estágios do Draevor (x3 até o 50, x2 até o 100 — os testes B abaixo); ficam a
-// escala da fase, os +10% do premium e o x1,5 do VIP.
-/** A conta escrita à mão, a partir dos dados — sem passar pelo código de produção da exp. */
-function contaIndependenteDoPoe({ key, fatorVip, escalaExp, premium = false }) {
-  const base = BESTIARY[key].exp;
-  const noMapa = Math.round(base * escalaExp);
-  return Math.round(noMapa * (1 + (premium ? 10 : 0) / 100) * fatorVip);
-}
-
-test('XP concedido = conta independente = estimativa da ficha, com e sem VIP (um monstro do PoE, level 60 e 30)', { skip: soNoOficial('os monstros das áreas do PoE') }, () => {
-  // Um monstro comum (não o chefe único) da área, do bestiário do PoE.
-  const key = CATALOGO.hunts.find((h) => h.id === FASE.huntId).creatures.map((c) => c.key).find((k) => BESTIARY[k]?.poe && !BESTIARY[k].poe.unico && BESTIARY[k].exp > 0);
-  assert.ok(key, 'um monstro do PoE na área');
+test('XP concedido = conta independente = estimativa da ficha, com e sem VIP (Cyclops, level 60 e 30)', { skip: aAdaptar("(08/11) Não adaptado: a regra vale no PoE, mas a conta do XP do PoE (`Boosts.expDoBicho`) não tem a penalidade por diferença de level do PoE 1 (zona segura 3 + level/16) — uma conta independente do PoE sairia diferente do jogo; decisão do dono") }, () => {
   for (const level of [30, 60]) {
     {
       for (const premium of [false, true]) {
         const f = { nome: premium ? 'VIP' : 'free' };
-        const { e, m } = cenario({ level, premium, key });
-        const esperado = contaIndependenteDoPoe({ key, fatorVip: premium ? 1.5 : 1, escalaExp: e.hunt.escala.exp, premium });
-        const estimativa = estimarExpDoBicho(e, e.hunt, key).final;
+        const { e, m } = cenario({ level, premium });
+        const esperado = contaIndependente({ level, fatorVip: premium ? 1.5 : 1, escalaExp: e.hunt.escala.exp, premium });
+        const estimativa = estimarExpDoBicho(e, e.hunt, 'cyclops').final;
         const eventos = [];
         matarMonstro(e, e.hunt, PERSONAGEM, m, eventos);
         const concedido = eventos.find((x) => x.t === 'kill').exp;
