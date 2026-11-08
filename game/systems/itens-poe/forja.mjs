@@ -217,7 +217,7 @@ function motivoDaMoeda(estado, peca, slug, categoria) {
   if (MoedasPoe.STATUS[slug]?.status === 'nao') return `Sem efeito no jogo: ${MoedasPoe.STATUS[slug].motivo}.`;
   if (p.espelhado) return 'Peça espelhada não aceita moeda.';
   const corroida = /^Tainted_/.test(slug);
-  if (p.corrompido && !corroida) return 'Peça corrompida não aceita esta moeda (só as Corroídas).';
+  if (p.corrompido && !corroida && !MoedasPoe.modificavelCorrompida(p)) return 'Peça corrompida não aceita esta moeda (só as Corroídas).';
   if (!p.corrompido && corroida) return 'As moedas Corroídas valem só em peça corrompida.';
   if (['sockets', 'cores', 'links'].includes(categoria)) {
     const s = socketsDa(peca);

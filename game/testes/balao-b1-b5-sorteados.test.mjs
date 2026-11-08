@@ -135,3 +135,29 @@ test('B8: a Evasão regenerada como Vida entra na regeneração; o crítico fixo
   if (esp) assert.equal(esp.poe.critFlat, 3);
   assert.equal(zumbi.poe.critFlat, 0, 'o Zumbi não é Espectro');
 });
+
+test('B9, as regras de criação: as Mãos do Alto Templário aceitam o Orbe Vaal corrompidas e somam os implícitos corrompidos até 5', { skip: SEM }, async () => {
+  const M = await import('../systems/itens-poe/moedas.mjs');
+  const { personagemDeTeste } = await import('./apoio.mjs');
+  const [maos] = sorteios('Hands_of_the_High_Templar', 1);
+  assert.equal(maos.poe.af.modificavel_corrompido, 1);
+  assert.equal(maos.poe.af.implicitos_max > 0, true);
+  const vaal = M.idDa('Vaal_Orb');
+  const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 80 }), { inventory: [maos, { id: vaal, count: 20 }] });
+  // (o Orbe Vaal com o sorteio do implícito: o primeiro número cai no último quarto)
+  let s = 7;
+  const rng = () => (s++ === 7 ? 0.9 : ((s * 7919) % 1000) / 1000);
+  for (let i = 0; i < maos.poe.af.implicitos_max; i++) { s = 7; assert.ok(M.usar(e, { moeda: vaal, alvo: { onde: 'inventory', indice: 0 } }, rng).ok, `o ${i + 1}º Orbe Vaal vale na peça corrompida`); }
+  const implicitos = e.inventory[0].poe.implicitos;
+  assert.equal(implicitos.length, maos.poe.af.implicitos_max, 'até o máximo, e não mais');
+  assert.ok(implicitos.every((m) => m.corrompido));
+  // (cheia, o próximo implícito troca todos — o Orbe Vaal de sempre)
+  s = 7;
+  assert.ok(M.usar(e, { moeda: vaal, alvo: { onde: 'inventory', indice: 0 } }, rng).ok);
+  assert.equal(e.inventory[0].poe.implicitos.length, 1);
+  // (uma peça comum corrompida segue sem aceitar)
+  const [outra] = sorteios('Tabula_Rasa', 1);
+  outra.poe.corrompido = true;
+  e.inventory.unshift(outra);
+  assert.equal(M.usar(e, { moeda: vaal, alvo: { onde: 'inventory', indice: 0 } }, () => 0.9).ok, false);
+});

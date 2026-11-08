@@ -158,12 +158,18 @@ function cadastroDoUnico(p) {
   const casa = (u) => (p.modificadores ?? []).filter((m) => u.modificadores.some((x) => x.modelo === m.modelo && (x.faixas ?? []).every((f, i) => !(Number(m.valores?.[i]) < f[0] || Number(m.valores?.[i]) > f[1])))).length;
   return lista.reduce((melhor, u) => (casa(u) > casa(melhor) ? u : melhor), lista[0]);
 }
+/** (08/11, as Mãos do Alto Templário e a Prévia do Caos) "Pode ser modificado enquanto Corrompido": a peça corrompida aceita as moedas (o Orbe Vaal também). */
+export const modificavelCorrompida = (p) => Number(p?.af?.modificavel_corrompido) > 0;
+/** Quantos implícitos a BASE da peça tem (o cadastro da base no catálogo). */
+const implicitosDaBase = (p) => (CAT()?.classes?.[p.classe]?.bases ?? []).find((b) => b.nome === nomeDaBase(p))?.implicitos?.length ?? 0;
 /** A qualidade a mais (Amolador, Sucata, Bolha): +5 na normal, +2 na mágica, +1 na rara/única, até 20%. */
+// (08/11, a Tentação de Ixchel: "Qualidade Máxima é X%" — `qualidade_max` da própria peça troca o teto de 20%)
 function subirQualidade(p) {
   const q = Number(p.qualidade) || 0;
-  if (q >= 20) return null;
+  const teto = Number(p.af?.qualidade_max) > 0 ? Number(p.af.qualidade_max) : 20;
+  if (q >= teto) return null;
   const ganho = p.raridade === 'normal' ? 5 : p.raridade === 'magico' ? 2 : 1;
-  p.qualidade = Math.min(20, q + ganho);
+  p.qualidade = Math.min(teto, q + ganho);
   return `Qualidade: ${q}% → ${p.qualidade}%.`;
 }
 /** Uma peça qualquer de uma base que tem único: vira um único sorteado da mesma base. */
@@ -376,10 +382,15 @@ const vaal = (ctx) => {
   }
   const corrompido = Gerar.regrasDaBase(p.implicitos).implicitosFixos ? null : doPool(p, 'corrupted', rng, { lados: ['implicito'] });
   if (!corrompido) return { ok: true, notice: `${p.nome}: corrompida — nada mais mudou.` };
-  p.implicitos = [{ ...corrompido.mod, corrompido: true }];
+  // (08/11, as regras de criação dos únicos) "Pode ter até N Modificadores Implícitos enquanto o Item possuir este Modificador" (as Mãos do Alto
+  // Templário, `implicitos_max`) e "Possui um Mod Implícito adicional" (a Malha Sombria, `implicitos_extra`): o implícito corrompido ENTRA ao lado
+  // dos que a peça tem, até o máximo; cheio (ou sem esses mods), ele troca os implícitos, como sempre.
+  const maximo = Number(p.af?.implicitos_max) > 0 ? Number(p.af.implicitos_max) : Number(p.af?.implicitos_extra) > 0 ? implicitosDaBase(p) + Number(p.af.implicitos_extra) : 0;
+  const atuais = p.implicitos ?? [];
+  p.implicitos = atuais.length < maximo ? [...atuais, { ...corrompido.mod, corrompido: true }] : [{ ...corrompido.mod, corrompido: true }];
   // (Nos únicos com magnitude dos implícitos — Olhos, Nebulis — o implícito corrompido também sai multiplicado, como no PoE.)
   if (ehUnico(p)) Object.assign(p, Gerar.comMagnitudeNosImplicitos(p));
-  return { ok: true, notice: `${p.nome}: corrompida — implícito corrompido: ${p.implicitos[0].texto}.` };
+  return { ok: true, notice: `${p.nome}: corrompida — implícito corrompido: ${p.implicitos.at(-1).texto}.` };
 };
 
 // ---------------------------------------------------------------- as moedas dos POOLS ESPECIAIS
@@ -629,7 +640,7 @@ const tLagrima = soCorrompida(({ p, rng }) => {
   return { ok: true, notice: 'O tier de cada modificador subiu ou desceu.' };
 });
 const vaalVolatil = (ctx) => {
-  if (ctx.p.corrompido) return erro('A peça já está corrompida.');
+  if (ctx.p.corrompido && !modificavelCorrompida(ctx.p)) return erro('A peça já está corrompida.');
   ctx.p.corrompido = true;
   divino(ctx);
   return { ok: true, notice: `${ctx.p.nome}: corrompida — os valores foram sorteados de novo.` };
@@ -954,7 +965,7 @@ export function usar(estado, { moeda: idDaMoeda, alvo } = {}, rng = Math.random)
     p = peca?.poe ?? null;
     if (!p) return erro('Escolha uma peça do PoE (vestida ou na mochila).');
     if (p.espelhado) return erro('Peça espelhada não aceita moeda.');
-    if (p.corrompido && !faz.corrompida) return erro('Peça corrompida não aceita esta moeda (só as Corroídas).');
+    if (p.corrompido && !faz.corrompida && !modificavelCorrompida(p)) return erro('Peça corrompida não aceita esta moeda (só as Corroídas).');
   }
   const antes = peca ? structuredClone(peca) : null;
   const r = faz.f({ estado, peca, p, alvo, rng, moeda });

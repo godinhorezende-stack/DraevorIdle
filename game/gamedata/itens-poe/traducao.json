@@ -14,6 +14,45 @@
   ],
   "regras": [
     {
+      "padrao": "^Pode ser modificado enquanto Corrompido$",
+      "efeitos": [
+        {
+          "stat": "modificavel_corrompido",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a peça corrompida aceita as moedas (e o Orbe Vaal de novo) — `moedas.modificavelCorrompida`",
+      "_08_11n": "08/11 — balão 0 sem efeito, lote B9: as regras de criação",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pode ter até \\{(\\d+)\\} Modificadores Implícitos enquanto o Item possuir este Modificador$",
+      "efeitos": [
+        {
+          "stat": "implicitos_max",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o implícito do Orbe Vaal entra ao lado dos que a peça tem, até o máximo",
+      "_08_11n": "08/11 — balão 0 sem efeito, lote B9: as regras de criação",
+      "_nova": true
+    },
+    {
+      "padrao": "^Possui um Mod Implícito adicional$",
+      "efeitos": [
+        {
+          "stat": "implicitos_extra",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o implícito do Orbe Vaal entra ao lado dos da base (um a mais)",
+      "_08_11n": "08/11 — balão 0 sem efeito, lote B9: as regras de criação",
+      "_nova": true
+    },
+    {
       "padrao": "^Sua Chance de Acerto Crítico é Sortuda enquanto Concentrado$",
       "efeitos": [
         {

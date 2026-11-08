@@ -10154,6 +10154,24 @@
       "unidade": "%",
       "combate": true,
       "efeito": "lacaios-poe: soma na base do crítico (08/11 — Espectros velados)"
+    },
+    "modificavel_corrompido": {
+      "nome": "Pode ser modificado enquanto Corrompido",
+      "unidade": "",
+      "combate": true,
+      "efeito": "moedas.mjs (08/11 — as regras de criação dos únicos)"
+    },
+    "implicitos_max": {
+      "nome": "Máximo de Modificadores Implícitos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "moedas.mjs (08/11 — as regras de criação dos únicos)"
+    },
+    "implicitos_extra": {
+      "nome": "Modificador Implícito adicional",
+      "unidade": "",
+      "combate": true,
+      "efeito": "moedas.mjs (08/11 — as regras de criação dos únicos)"
     }
   }
 }
