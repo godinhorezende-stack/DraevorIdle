@@ -162,7 +162,8 @@ export function initTooltip(itemsAccessor, personagemAccessor = () => null, cata
     if (event.pointerType === 'touch') return;
     // O ponteiro em cima do PRÓPRIO balão (o alto, que rola e aceita o ponteiro) não o fecha:
     // ele abria debaixo do dedo/mouse, recebia o "entrou" e se fechava na hora.
-    if (event.target.closest?.('.tooltip')) return;
+    // (08/11: e o balão com o botão Identificar — o mouse chegou nele: não fecha)
+    if (event.target.closest?.('.tooltip')) return void clearTimeout(fecharComAcao);
 
     const holder = event.target.closest(SELETOR);
     if (!holder) return hide();
@@ -171,8 +172,16 @@ export function initTooltip(itemsAccessor, personagemAccessor = () => null, cata
   });
   document.addEventListener('pointerout', (event) => {
     if (event.pointerType === 'touch') return;
-    if (event.relatedTarget?.closest?.('.tooltip.rolavel')) return; // foi para o balão alto, para rolar
-    if (!event.relatedTarget || !event.relatedTarget.closest?.(SELETOR)) hide();
+    if (event.relatedTarget?.closest?.('.tooltip.rolavel, .tooltip.tem-acao')) return; // foi para o balão alto (rolar) ou para o botão dele
+    if (!event.relatedTarget || !event.relatedTarget.closest?.(SELETOR)) {
+      // (08/11) o balão com o botão Identificar: um instante para o mouse atravessar a folga até ele
+      if (node && !node.hidden && node.classList.contains('tem-acao')) {
+        clearTimeout(fecharComAcao);
+        fecharComAcao = setTimeout(hide, 350);
+        return;
+      }
+      hide();
+    }
   });
   /*
    * Rolar fecha o balão só quando a rolagem MOVE a peça de onde ele saiu (a
@@ -246,8 +255,8 @@ function ligarBalaoNoToque() {
         alternarTodos();
         return;
       }
-      // Dedo DENTRO do balão (o que rola, e o compacto do celular): ele fica aberto — o X fecha.
-      if (evento.target.closest?.('.tooltip.rolavel, .tooltip.tip-movel')) return;
+      // Dedo DENTRO do balão (o que rola, e o compacto do celular, e o do botão Identificar): ele fica aberto — o X fecha.
+      if (evento.target.closest?.('.tooltip.rolavel, .tooltip.tip-movel, .tooltip.tem-acao')) return;
       hide();
       desistir();
       if (!evento.isPrimary) return;
@@ -283,7 +292,10 @@ function ligarBalaoNoToque() {
 
 const SELETOR = '[data-tip], [data-tip-action], [data-tip-panel], [data-tip-texto]';
 
+/** (08/11) O fechar adiado do balão com o botão Identificar. */
+let fecharComAcao = null;
 const hide = () => {
+  clearTimeout(fecharComAcao);
   if (node) node.hidden = true;
   if (nodeVs) nodeVs.hidden = true;
 };
@@ -1012,6 +1024,12 @@ function showAction(holder) {
   node.innerHTML = '';
   node.className = `tooltip ${ficha.classe}`;
   node.append(...ficha.partes);
+  // (08/11) a peça do PoE não identificada: o botão Identificar
+  const identificar = botaoDeIdentificar(holder, slot);
+  if (identificar) {
+    (node.querySelector('.poe-balao') ?? node).append(identificar);
+    node.classList.add('tem-acao');
+  }
   node.hidden = false;
   place(holder);
 }
@@ -1293,6 +1311,33 @@ export function fichaDeAcao(entry, icone = null, extra = null) {
   if (extra) node.append(el('div', 'tip-extra', extra));
 
   return { classe, partes };
+}
+
+/**
+ * (08/11, o dono: "o botão Identificar no balão da peça") quem identifica a peça (`inventory.mjs` registra: gasta um Pergaminho da Sabedoria nela).
+ * `fn(peca, slot)` devolve se mandou.
+ */
+let identificarPeca = null;
+export function definirIdentificar(fn) {
+  identificarPeca = typeof fn === 'function' ? fn : null;
+}
+/** O botão "Identificar" e a dica, no fim do balão da peça do PoE não identificada. */
+function botaoDeIdentificar(holder, slot) {
+  const peca = holder.__peca;
+  if (!identificarPeca || peca?.poe?.identificado !== false) return null;
+  const caixa = document.createElement('div');
+  caixa.className = 'poe-identificar';
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.textContent = 'Identificar';
+  b.onclick = (event) => {
+    event.stopPropagation();
+    if (identificarPeca(peca, slot)) hide();
+  };
+  const dica = document.createElement('i');
+  dica.textContent = 'ou botão direito na peça · 1 Pergaminho da Sabedoria';
+  caixa.append(b, dica);
+  return caixa;
 }
 
 function show(holder) {

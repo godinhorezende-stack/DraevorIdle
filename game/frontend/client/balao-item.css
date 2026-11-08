@@ -270,6 +270,10 @@
 /* (Frente D, 04/11) "Corrompido" no fim das linhas, no vermelho do PoE; e o texto de sabor do card, em itálico, no laranja-escuro do PoE (o
    mesmo do `.poe-flavor` da árvore — style.css). A vaga do sabor fica vazia até o sabores.json chegar (itens-poe-balao.mjs). */
 .poe-balao .poe-corrompido { padding: 1px 10px; text-align: center; color: #d20000; }
+.tooltip.tem-acao { pointer-events: auto; }
+.poe-balao .poe-identificar { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 10px 4px; pointer-events: auto; }
+.poe-balao .poe-identificar button { pointer-events: auto; cursor: pointer; padding: 4px 16px; font: 600 12px var(--font-heading, Oswald, system-ui, sans-serif); color: #1a1204; background: linear-gradient(180deg, #f5d27a, #c89a2e); border: 1px solid #7a5a12; border-radius: 6px; }
+.poe-balao .poe-identificar i { font-size: 10.5px; color: #8a8a8a; }
 .poe-balao .poe-sintetizado { padding: 1px 10px; text-align: center; color: #b4a0ff; }
 .poe-balao .poe-sabor { padding: 4px 14px 0; text-align: center; color: #af6025; font-style: italic; line-height: 1.35; }
 .poe-mod i { font: 10.5px var(--eng-mono); color: #5d6475; align-self: center; white-space: nowrap; }
