@@ -12,7 +12,11 @@ import assert from 'node:assert/strict';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Prey from '../systems/prey.mjs';
 import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
+import { CATALOGO, ITEM_CATALOG } from '../systems/dados.mjs';
+import { BESTIARY } from '../systems/hunt/monstros.mjs';
+import { catalogo as catalogoDoPoe, REGRAS as REGRAS_DO_POE } from '../systems/itens-poe/catalogo.mjs';
+import { gerarPeca } from '../systems/itens-poe/gerar.mjs';
+import * as JogoDoPoe from '../systems/itens-poe/jogo.mjs';
 
 /** `Prey.garantir` sorteia as listas de prey na primeira vez — precisa rodar
  * com Math.random de verdade, ANTES de qualquer teste travar o dado (senão o
@@ -22,6 +26,10 @@ import { aAdaptar } from './apoio-migracao.mjs';
 function personagem(opcoes) {
   const estado = personagemDeTeste(opcoes);
   Prey.garantir(estado);
+  // (08/11, adaptado ao PoE — o dono: "Adaptar antes") Desarmado no PoE o personagem de teste não mata nada na área em 15 minutos: uma arma
+  // de verdade do PoE na mão — o Machado Vaal, como a caçada offline de xp-da-hunt.test.mjs. O level 400 do Draevor fazia esse papel.
+  JogoDoPoe.iniciar(ITEM_CATALOG);
+  estado.equipment = { ...(estado.equipment ?? {}), weapon: JogoDoPoe.pecaDoJogo(gerarPeca({ catalogo: catalogoDoPoe(), regras: REGRAS_DO_POE, base: 'Two_Hand_Axes/Vaal_Axe', raridade: 'normal', ilvl: 64, rng: () => 0.5 })) };
   return estado;
 }
 
@@ -43,17 +51,20 @@ function cacarAte(estado, acaso, achou) {
   assert.fail('o evento esperado nunca aconteceu em 15 minutos de caçada');
 }
 
-const morteDoTroll = (ev) => ev.t === 'kill' && ev.name === 'Troll';
+// O bicho comum da área no lugar do Troll da Troll Cave: o primeiro monstro do PoE da área que não é o chefe único (no Navio Encalhado, o
+// Marinheiro Amaldiçoado).
+const COMUM_DA_AREA = CATALOGO.hunts.find((h) => h.id === HUNT_DE_TESTE).creatures.find((c) => BESTIARY[c.key]?.poe && !BESTIARY[c.key].poe.unico).name;
+const morteDoComum = (ev) => ev.t === 'kill' && ev.name === COMUM_DA_AREA;
 
-test('sem hunt.podio: mata sem bônus (o padrão de hoje, igual antes da mudança)', { skip: aAdaptar("O bônus de pódio é da engine; o personagem de teste não mata nada na área do PoE em 15 minutos") }, () => {
+test('sem hunt.podio: mata sem bônus (o padrão de hoje, igual antes da mudança)', () => {
   const estado = personagem({ level: 400 });
-  const ev = cacarAte(estado, 0.5, morteDoTroll);
+  const ev = cacarAte(estado, 0.5, morteDoComum);
   assert.ok(ev.exp > 0);
 });
 
-test('com hunt.podio (setado como sessao.mjs faz, 1x por tique): +8% de exp aplicado no kill', { skip: aAdaptar("O bônus de pódio é da engine; o personagem de teste não mata nada na área do PoE em 15 minutos") }, () => {
+test('com hunt.podio (setado como sessao.mjs faz, 1x por tique): +8% de exp aplicado no kill', () => {
   const semBonus = personagem({ level: 400 });
-  const semExp = cacarAte(semBonus, 0.5, morteDoTroll).exp;
+  const semExp = cacarAte(semBonus, 0.5, morteDoComum).exp;
 
   const comBonus = personagem({ level: 400 });
   const original = Math.random;
@@ -67,7 +78,7 @@ test('com hunt.podio (setado como sessao.mjs faz, 1x por tique): +8% de exp apli
     for (let i = 0; i < 4 * 900 && exp === undefined; i++) {
       t += 250;
       comBonus.hp = comBonus.maxHp;
-      for (const ev of Cacadas.tique(comBonus, PERSONAGEM, t) ?? []) if (morteDoTroll(ev)) exp = ev.exp;
+      for (const ev of Cacadas.tique(comBonus, PERSONAGEM, t) ?? []) if (morteDoComum(ev)) exp = ev.exp;
     }
   } finally {
     Math.random = original;

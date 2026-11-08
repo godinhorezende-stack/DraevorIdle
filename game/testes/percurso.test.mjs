@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as R from '../systems/regras.mjs';
 import { personagemDeTeste, PERSONAGEM, huntDoPoe } from './apoio.mjs';
-import { aAdaptar, doClassico } from './apoio-migracao.mjs';
+import { doClassico, soNoOficial } from './apoio-migracao.mjs';
 
 const HUNT = huntDoPoe('werelions-1');
 
@@ -125,7 +125,9 @@ test('hunt Vip (sala sem mapa capturado): também tem laço, pelos pontos de nas
   assert.ok((e.huntLaps?.['vip-hellspawn'] ?? 0) >= 1, `voltas: ${JSON.stringify(e.huntLaps)}`);
 });
 
-test('sem vai-e-volta: lurando ou não, ele nunca fica desfazendo o próprio passo (Winter Dream Court)', { skip: aAdaptar("Percurso sem vai-e-volta é da engine; o teste usa a Winter Dream Court (hunt do Draevor)") }, () => {
+// (08/11, adaptado ao PoE — o dono: "Adaptar antes") A Winter Dream Court (onde o vai-e-volta apareceu) não é área do PoE: as Catacumbas
+// (Ato 3), também de 3 andares e cheias de bicho.
+test('sem vai-e-volta: lurando ou não, ele nunca fica desfazendo o próprio passo (as Catacumbas)', { skip: soNoOficial('as áreas do PoE') }, () => {
   // "meu char kina ficou bugado indo e voltando": lurando, o "bicho de fora mais
   // perto" trocava a cada passo (33,34 ↔ 34,34 por minutos); brigando, um bicho
   // do outro lado da parede era espelhado. Seis passos seguidos desfazendo o
@@ -133,7 +135,7 @@ test('sem vai-e-volta: lurando ou não, ele nunca fica desfazendo o próprio pas
   for (const lure of [0, 4]) {
     const e = personagemDeTeste({ vocacao: 'knight', level: 3000 });
     e.settings.lure = lure;
-    assert.equal(Cacadas.entrar(e, { huntId: 'winter-dream-court', mode: 'auto' }).ok, true);
+    assert.equal(Cacadas.entrar(e, { huntId: 'poe-a3-the-catacombs', mode: 'auto' }).ok, true);
     let agora = Date.now();
     e.hunt.ultimoTique = agora;
     const casas = [];

@@ -12,7 +12,7 @@ import * as PR from '../systems/party-recompensas.mjs';
 import * as Boosts from '../systems/boosts.mjs';
 import { VALOR_DA_MOEDA } from '../systems/inventario.mjs';
 import { personagemDeTeste, HUNT_DE_TESTE } from './apoio.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
+import { ehDoPoe } from '../systems/itens-poe/so-itens-do-poe.mjs';
 // (C, docs/migracao-poe-matriz.md: a divisão da party não depende da dificuldade; no jogo oficial só o Normal existe — o Cruel não abre.)
 const DIF_DE_TESTE = HUNT_DE_TESTE === 'troll-cave' ? 'medio' : 'facil';
 
@@ -212,10 +212,13 @@ test('P4. uma morte é processada UMA vez: repetir o evento de morte não paga e
   assert.equal(PR.auditoria().length, 0, 'e nenhum sorteio novo');
 });
 
-test('P5. cada item sorteado vira um registro de auditoria com id, concorrentes e o único dono', { skip: aAdaptar("A auditoria do sorteio é da engine; o teste sorteia um item do Draevor, que não entra no jogo oficial") }, async () => {
+test('P5. cada item sorteado vira um registro de auditoria com id, concorrentes e o único dono', async () => {
   const { js, lider } = await partyCacando(60, 60, 60);
   PR.limparAuditoria();
-  const item = Object.entries((await import('../systems/dados.mjs')).ITEM_CATALOG).find(([id, it]) => (it.weight ?? 0) > 0 && (it.weight ?? 0) <= 10 && it.pickupable !== false && ![3031, 3035, 3043].includes(Number(id)))[0];
+  // (08/11, adaptado ao PoE — o dono: "Adaptar antes") Um item leve do PoE (um MAPA do endgame, ids 7.700.001+) no lugar do item do
+  // Draevor, que não entra no jogo oficial (`so-itens-do-poe.mjs`). Mapa porque só cai dentro de um mapa: na área da campanha nenhum cai
+  // por acaso e soma registro no meio da conta (as moedas do PoE caem sozinhas).
+  const item = Object.entries((await import('../systems/dados.mjs')).ITEM_CATALOG).find(([id, it]) => ehDoPoe(id) && Number(id) >= 7_700_001 && Number(id) <= 7_726_999 && (it.weight ?? 0) > 0 && (it.weight ?? 0) <= 10 && it.pickupable !== false)[0];
   for (let i = 0; i < 6; i++) matar(lider, { loot: [{ id: Number(item), chance: 1 }] });
   const reg = PR.auditoria().filter((r) => r.item === Number(item));
   assert.equal(reg.length, 6);
