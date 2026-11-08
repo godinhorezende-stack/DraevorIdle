@@ -123,7 +123,7 @@ test('caçada OFFLINE: a projeção paga o x1,5 do VIP (e os +10% do premium) �
       assert.equal(r.morreu, false, 'sobreviveu aos 30 min simulados');
       assert.ok(r.report.kills > 0, `caçou: ${r.report.kills} abates`);
       // (a conta da morte com os bônus deste personagem: os +10% do premium somam com os outros bônus dele, e o x1,5 multiplica)
-      return { exp: r.report.exp, porMorte: Boosts.expDoBicho(e, 1_000_000) };
+      return { exp: r.report.exp, kills: r.report.kills, porMorte: Boosts.expDoBicho(e, 1_000_000) };
     } finally {
       Math.random = original;
     }
@@ -133,5 +133,8 @@ test('caçada OFFLINE: a projeção paga o x1,5 do VIP (e os +10% do premium) �
   assert.ok(free.exp > 0 && vip.exp > 0);
   const esperado = vip.porMorte / free.porMorte;
   assert.ok(esperado > 1.5, `o VIP paga ao menos x1,5 por morte: ${esperado.toFixed(3)}`);
-  assert.ok(Math.abs(vip.exp / free.exp - esperado) < 0.03, `${vip.exp} / ${free.exp} = ${(vip.exp / free.exp).toFixed(3)} (esperado ${esperado.toFixed(3)})`);
+  // (por MORTE: as duas caçadas simuladas divergem — matam monstros diferentes, em número diferente —, e o total oscilava; a exp média por morte, com a
+  // mesma mistura de monstros da área, segue o fator)
+  const razao = vip.exp / vip.kills / (free.exp / free.kills);
+  assert.ok(Math.abs(razao - esperado) / esperado < 0.15, `${vip.exp}/${vip.kills} ÷ ${free.exp}/${free.kills} = ${razao.toFixed(3)} (esperado ${esperado.toFixed(3)})`);
 });
