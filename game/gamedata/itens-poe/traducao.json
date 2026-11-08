@@ -56373,6 +56373,80 @@
       "_08_11r": "08/11 — encantamentos do Labirinto",
       "_nova": true,
       "_generica": true
+    },
+    {
+      "padrao": "^Ativa (.+?) ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:gatilho:{NOME}",
+          "valor": "20"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a habilidade do encantamento (as 60 do poedb — `habilidades-de-itens.json`), no nível dela, com a recarga dela",
+      "_08_11r": "08/11 — os encantamentos de luvas do Labirinto (Palavra/Édito/Decreto/Mandamento)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Ativa (.+?) ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:gatilho:{NOME}",
+          "valor": "20"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a habilidade do encantamento (as 60 do poedb — `habilidades-de-itens.json`), no nível dela, com a recarga dela",
+      "_08_11r": "08/11 — os encantamentos de luvas do Labirinto (Palavra/Édito/Decreto/Mandamento)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Ativa (.+?) quando Acertado$",
+      "efeitos": [
+        {
+          "stat": "ev:serAcertado:gatilho:{NOME}",
+          "valor": "20"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a habilidade do encantamento (as 60 do poedb — `habilidades-de-itens.json`), no nível dela, com a recarga dela",
+      "_08_11r": "08/11 — os encantamentos de luvas do Labirinto (Palavra/Édito/Decreto/Mandamento)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Ativa (.+?) quando você sofrer um Golpe Crítico$",
+      "efeitos": [
+        {
+          "stat": "ev:serAcertadoCritico:gatilho:{NOME}",
+          "valor": "20"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a habilidade do encantamento (as 60 do poedb — `habilidades-de-itens.json`), no nível dela, com a recarga dela",
+      "_08_11r": "08/11 — os encantamentos de luvas do Labirinto (Palavra/Édito/Decreto/Mandamento)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Ativa (.+?) quando suas Habilidades ou Lacaios Matarem$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:gatilho:{NOME}",
+          "valor": "20"
+        },
+        {
+          "stat": "ev:matarLacaio:gatilho:{NOME}",
+          "valor": "20"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a habilidade do encantamento (as 60 do poedb — `habilidades-de-itens.json`), no nível dela, com a recarga dela",
+      "_08_11r": "08/11 — os encantamentos de luvas do Labirinto (Palavra/Édito/Decreto/Mandamento)",
+      "_nova": true,
+      "_generica": true
     }
   ]
 }

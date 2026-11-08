@@ -4510,6 +4510,2914 @@
    "soDoItem": true
   },
   {
+   "slug": "Word_of_Blades",
+   "nome": "Palavra das Lâminas",
+   "en": "Word of Blades",
+   "cor": "azul",
+   "nivelReq": 32,
+   "tags": [
+    "Magia",
+    "Projétil",
+    "Ativação"
+   ],
+   "tipos": [
+    "Spell",
+    "Projectile",
+    "Triggerable",
+    "Triggered",
+    "ProjectilesFromUser",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Tempo de Conjuração: 1.00 seg",
+    "Chance de Crítico: 7.00%"
+   ],
+   "mods": [
+    "Causa 79 a 126 de Dano Físico",
+    "Dispara 2 Projéteis adicionais",
+    "Ricocheteia +3 Vezes",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Dispara um estouro contínuo de adagas etéreas.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Word_of_Flames",
+   "nome": "Palavra das Chamas",
+   "en": "Word of Flames",
+   "cor": "azul",
+   "nivelReq": 32,
+   "tags": [
+    "Magia",
+    "Área",
+    "Fogo",
+    "Nova"
+   ],
+   "tipos": [
+    "Spell",
+    "Area",
+    "Damage",
+    "Fire",
+    "Triggerable",
+    "AreaSpell",
+    "Nova",
+    "Cooldown",
+    "Cooldown"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Tempo de Conjuração: 1.00 seg",
+    "Chance de Crítico: 5.00%"
+   ],
+   "mods": [
+    "Causa 93 a 140 de Dano de Fogo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Libera uma explosão de fogo ao seu redor, danificando inimigos próximos.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Word_of_Frost",
+   "nome": "Palavra do Gelo",
+   "en": "Word of Frost",
+   "cor": "azul",
+   "nivelReq": 32,
+   "tags": [
+    "Magia",
+    "Projétil",
+    "Ativação"
+   ],
+   "tipos": [
+    "Spell",
+    "Projectile",
+    "Triggerable",
+    "Triggered",
+    "ProjectilesFromUser",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Tempo de Conjuração: 1.00 seg",
+    "Chance de Crítico: 5.00%"
+   ],
+   "mods": [
+    "Causa 72 a 114 de Dano de Gelo",
+    "Dispara 8 Projéteis adicionais",
+    "Dispara Projéteis em um círculo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Dispara projéteis gélidos ao seu redor em todas as direções.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Word_of_Inferno",
+   "nome": "Palavra do Inferno",
+   "en": "Word of Inferno",
+   "cor": "azul",
+   "nivelReq": 32,
+   "tags": [
+    "Magia",
+    "Área",
+    "Fogo",
+    "Ativação"
+   ],
+   "tipos": [
+    "Spell",
+    "Area",
+    "Fire",
+    "Triggerable",
+    "Triggered",
+    "AreaSpell",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 10.00 seg",
+    "Tempo de Conjuração: 1.00 seg",
+    "Chance de Crítico: 5.00%"
+   ],
+   "mods": [
+    "Causa 155 a 249 de Dano de Fogo",
+    "Duração base é de 2 segundos",
+    "Um impacto a cada 0.1 segundos",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Lança um meteoro dos céus em um inimigo próximo, causando dano fogo em uma área ao redor dele.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Word_of_Thunder",
+   "nome": "Palavra do Trovão",
+   "en": "Word of Thunder",
+   "cor": "azul",
+   "nivelReq": 32,
+   "tags": [
+    "Magia",
+    "Área",
+    "Raio",
+    "Ativação",
+    "Nova"
+   ],
+   "tipos": [
+    "Spell",
+    "Area",
+    "TotemCastsWhenNotDetached",
+    "Lightning",
+    "Triggered",
+    "Triggerable",
+    "AreaSpell",
+    "Nova",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Tempo de Conjuração: 1.00 seg",
+    "Chance de Crítico: 7.00%"
+   ],
+   "mods": [
+    "Causa 71 a 114 de Dano de Raio",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Cones de dano de raio cercam você.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Word_of_the_Tempest",
+   "nome": "Palavra da Tempestade",
+   "en": "Word of the Tempest",
+   "cor": "azul",
+   "nivelReq": 32,
+   "tags": [
+    "Magia",
+    "Área",
+    "Nova"
+   ],
+   "tipos": [
+    "Spell",
+    "Damage",
+    "Area",
+    "Trappable",
+    "Totemable",
+    "Mineable",
+    "Triggerable",
+    "AreaSpell",
+    "Nova",
+    "Cooldown"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 10.00 seg",
+    "Tempo de Conjuração: 4.00 seg",
+    "Chance de Crítico: 7.00%"
+   ],
+   "mods": [
+    "Causa 175 a 280 de Dano de Raio",
+    "Duração base é de 2 segundos",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Carrega-lhe com eletricidade que persiste por uma duração antes de disparar, danificando inimigos próximos.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Word_of_Winter",
+   "nome": "Palavra do Inverno",
+   "en": "Word of Winter",
+   "cor": "azul",
+   "nivelReq": 32,
+   "tags": [
+    "Projétil",
+    "Magia",
+    "Área",
+    "Ativação"
+   ],
+   "tipos": [
+    "Projectile",
+    "ProjectilesFromUser",
+    "Spell",
+    "Damage",
+    "Area",
+    "Trappable",
+    "Totemable",
+    "Mineable",
+    "Multicastable",
+    "Triggerable",
+    "Triggered",
+    "AreaSpell",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 10.00 seg",
+    "Tempo de Conjuração: 1.40 seg",
+    "Chance de Crítico: 5.00%"
+   ],
+   "mods": [
+    "Causa 48 a 76 de Dano de Gelo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Dispara um projétil de gelo que pulsa com gelo conforme viaja.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Word_of_Ire",
+   "nome": "Palavra da Ira",
+   "en": "Word of Ire",
+   "cor": "vermelha",
+   "nivelReq": 32,
+   "tags": [
+    "Ataque",
+    "Área",
+    "Duração",
+    "Ativação",
+    "Raio"
+   ],
+   "tipos": [
+    "Attack",
+    "Damage",
+    "Area",
+    "Duration",
+    "Totemable",
+    "Triggered",
+    "Triggerable",
+    "Lightning",
+    "Cooldown"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 10.00 seg",
+    "Dano de Ataque: 60% de base",
+    "Eficácia do Dano Adicionado: 60%"
+   ],
+   "mods": [
+    "50% do Dano Físico Convertido para Dano de Raio",
+    "Duração base é de 5 segundos",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Libera uma cópia giratória eletrizada da sua arma ou seus projéteis que circulam ao redor de um ponto, danificando inimigos em uma área.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Word_of_Light",
+   "nome": "Palavra da Luz",
+   "en": "Word of Light",
+   "cor": "vermelha",
+   "nivelReq": 32,
+   "tags": [
+    "Ataque",
+    "Área",
+    "Duração",
+    "Ativação"
+   ],
+   "tipos": [
+    "Attack",
+    "Area",
+    "Duration",
+    "Triggered",
+    "Triggerable",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Dano de Ataque: 135% de base",
+    "Eficácia do Dano Adicionado: 135%"
+   ],
+   "mods": [
+    "Duração base é de 5 segundos",
+    "Regenera 6% da Vida por segundo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Causa uma parte do dano da sua mão principal em uma área ao seu redor e cria Solo Sagrado, fazendo com que você e aliados regenerem vida.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Word_of_War",
+   "nome": "Palavra da Guerra",
+   "en": "Word of War",
+   "cor": "vermelha",
+   "nivelReq": 32,
+   "tags": [
+    "Ataque",
+    "Corpo a Corpo",
+    "Duração",
+    "Ativação"
+   ],
+   "tipos": [
+    "Attack",
+    "MeleeSingleTarget",
+    "Multistrikeable",
+    "Melee",
+    "Duration",
+    "Triggered",
+    "Triggerable",
+    "Cooldown"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg"
+   ],
+   "mods": [
+    "Duração base é de 10 segundos",
+    "Lacaios causam 150% de Dano",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Esse ataque é realizado repetidamente por uma imitação fantasmagórica da sua arma.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Word_of_the_Grave",
+   "nome": "Palavra do Túmulo",
+   "en": "Word of the Grave",
+   "cor": "azul",
+   "nivelReq": 32,
+   "tags": [
+    "Magia",
+    "Lacaio",
+    "Gelo",
+    "Ativação",
+    "Duração"
+   ],
+   "tipos": [
+    "Spell",
+    "Minion",
+    "MinionsCanExplode",
+    "Cold",
+    "Triggerable",
+    "Triggered",
+    "Duration",
+    "CreatesMinion",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Tempo de Conjuração: 1.00 seg"
+   ],
+   "mods": [
+    "Duração base é de 5 segundos",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Convoca três lacaios de crânios congelados que explodem no fim de suas durações.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Word_of_Force",
+   "nome": "Palavra da Força",
+   "en": "Word of Force",
+   "cor": "vermelha",
+   "nivelReq": 32,
+   "tags": [
+    "Ataque",
+    "Área",
+    "Ativação"
+   ],
+   "tipos": [
+    "Attack",
+    "Area",
+    "Damage",
+    "Triggered",
+    "Triggerable",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Dano de Ataque: 135% de base",
+    "Eficácia do Dano Adicionado: 135%"
+   ],
+   "mods": [
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Libera um arco de energia a partir da sua arma ou punhos, danificando inimigos à sua frente.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Word_of_Fury",
+   "nome": "Palavra da Fúria",
+   "en": "Word of Fury",
+   "cor": "vermelha",
+   "nivelReq": 32,
+   "tags": [
+    "Ataque",
+    "Projétil",
+    "Ativação",
+    "Fogo"
+   ],
+   "tipos": [
+    "Attack",
+    "RangedAttack",
+    "Projectile",
+    "Triggered",
+    "Triggerable",
+    "Fire",
+    "ProjectilesNotFromUser",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Dano de Ataque: 150% de base",
+    "Eficácia do Dano Adicionado: 150%"
+   ],
+   "mods": [
+    "Dispara 10 Projéteis em uma espiral",
+    "Projéteis Perfuram 2 Alvos adicionais",
+    "50% do Dano Físico Convertido para Dano de Fogo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Dispara repetidamente um projétil perfurante baseado na sua arma convertendo parte do dano físico em fogo.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Word_of_Spite",
+   "nome": "Palavra do Rancor",
+   "en": "Word of Spite",
+   "cor": "vermelha",
+   "nivelReq": 32,
+   "tags": [
+    "Ataque",
+    "Projétil",
+    "Ativação",
+    "Gelo"
+   ],
+   "tipos": [
+    "Attack",
+    "RangedAttack",
+    "Projectile",
+    "Triggered",
+    "Triggerable",
+    "ChillingArea",
+    "Cold",
+    "ProjectilesNotFromUser",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Dano de Ataque: 150% de base",
+    "Eficácia do Dano Adicionado: 150%"
+   ],
+   "mods": [
+    "Dispara 9 Projéteis adicionais",
+    "50% do Dano Físico Convertido para Dano de Gelo",
+    "Dispara Projéteis em um círculo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Libera um círculo de projéteis baseados na sua arma, congelando o chão pelo caminho.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Word_of_Reflection",
+   "nome": "Palavra do Reflexo",
+   "en": "Word of Reflection",
+   "cor": "azul",
+   "nivelReq": 32,
+   "tags": [
+    "Magia",
+    "Lacaio",
+    "Ativação",
+    "Duração"
+   ],
+   "tipos": [
+    "Spell",
+    "Minion",
+    "MinionsCanExplode",
+    "Triggered",
+    "Duration",
+    "Triggerable",
+    "CreatesMinion",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 10.00 seg",
+    "Tempo de Conjuração: 1.00 seg"
+   ],
+   "mods": [
+    "Duração base é de 5 segundos",
+    "Lacaios causam Dano aumentado em 80%",
+    "Vida Máxima dos Lacaios aumentada em 150%",
+    "Lacaios causam 100% mais Dano",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Cria um clone seu que ataca com sua arma.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Edict_of_Blades",
+   "nome": "Édito das Lâminas",
+   "en": "Edict of Blades",
+   "cor": "azul",
+   "nivelReq": 45,
+   "tags": [
+    "Magia",
+    "Projétil",
+    "Ativação"
+   ],
+   "tipos": [
+    "Spell",
+    "Projectile",
+    "Triggerable",
+    "Triggered",
+    "ProjectilesFromUser",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Tempo de Conjuração: 1.00 seg",
+    "Chance de Crítico: 7.00%"
+   ],
+   "mods": [
+    "Causa 381 a 585 de Dano Físico",
+    "Dispara 2 Projéteis adicionais",
+    "Ricocheteia +3 Vezes",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Dispara um estouro contínuo de adagas etéreas.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Edict_of_Flames",
+   "nome": "Édito das Chamas",
+   "en": "Edict of Flames",
+   "cor": "azul",
+   "nivelReq": 45,
+   "tags": [
+    "Magia",
+    "Área",
+    "Fogo",
+    "Nova"
+   ],
+   "tipos": [
+    "Spell",
+    "Area",
+    "Damage",
+    "Fire",
+    "Triggerable",
+    "AreaSpell",
+    "Nova",
+    "Cooldown",
+    "Cooldown"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Tempo de Conjuração: 1.00 seg",
+    "Chance de Crítico: 5.00%"
+   ],
+   "mods": [
+    "Causa 409 a 601 de Dano de Fogo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Libera uma explosão de fogo ao seu redor, danificando inimigos próximos.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Edict_of_Frost",
+   "nome": "Édito do Gelo",
+   "en": "Edict of Frost",
+   "cor": "azul",
+   "nivelReq": 45,
+   "tags": [
+    "Magia",
+    "Projétil",
+    "Ativação"
+   ],
+   "tipos": [
+    "Spell",
+    "Projectile",
+    "Triggerable",
+    "Triggered",
+    "ProjectilesFromUser",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Tempo de Conjuração: 1.00 seg",
+    "Chance de Crítico: 5.00%"
+   ],
+   "mods": [
+    "Causa 332 a 509 de Dano de Gelo",
+    "Dispara 8 Projéteis adicionais",
+    "Dispara Projéteis em um círculo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Dispara projéteis gélidos ao seu redor em todas as direções.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Edict_of_Inferno",
+   "nome": "Édito do Inferno",
+   "en": "Edict of Inferno",
+   "cor": "azul",
+   "nivelReq": 45,
+   "tags": [
+    "Magia",
+    "Área",
+    "Fogo",
+    "Ativação"
+   ],
+   "tipos": [
+    "Spell",
+    "Area",
+    "Fire",
+    "Triggerable",
+    "Triggered",
+    "AreaSpell",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 10.00 seg",
+    "Tempo de Conjuração: 1.00 seg",
+    "Chance de Crítico: 5.00%"
+   ],
+   "mods": [
+    "Causa 722 a 1107 de Dano de Fogo",
+    "Duração base é de 2 segundos",
+    "Um impacto a cada 0.1 segundos",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Lança um meteoro dos céus em um inimigo próximo, causando dano fogo em uma área ao redor dele.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Edict_of_Thunder",
+   "nome": "Édito do Trovão",
+   "en": "Edict of Thunder",
+   "cor": "azul",
+   "nivelReq": 45,
+   "tags": [
+    "Magia",
+    "Área",
+    "Raio",
+    "Ativação",
+    "Nova"
+   ],
+   "tipos": [
+    "Spell",
+    "Area",
+    "TotemCastsWhenNotDetached",
+    "Lightning",
+    "Triggered",
+    "Triggerable",
+    "AreaSpell",
+    "Nova",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Tempo de Conjuração: 1.00 seg",
+    "Chance de Crítico: 7.00%"
+   ],
+   "mods": [
+    "Causa 330 a 506 de Dano de Raio",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Cones de dano de raio cercam você.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Edict_of_the_Tempest",
+   "nome": "Édito da Tempestade",
+   "en": "Edict of the Tempest",
+   "cor": "azul",
+   "nivelReq": 45,
+   "tags": [
+    "Magia",
+    "Área",
+    "Nova"
+   ],
+   "tipos": [
+    "Spell",
+    "Damage",
+    "Area",
+    "Trappable",
+    "Totemable",
+    "Mineable",
+    "Triggerable",
+    "AreaSpell",
+    "Nova",
+    "Cooldown"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 10.00 seg",
+    "Tempo de Conjuração: 4.00 seg",
+    "Chance de Crítico: 7.00%"
+   ],
+   "mods": [
+    "Causa 812 a 1245 de Dano de Raio",
+    "Duração base é de 2 segundos",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Carrega-lhe com eletricidade que persiste por uma duração antes de disparar, danificando inimigos próximos.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Edict_of_Winter",
+   "nome": "Édito do Inverno",
+   "en": "Edict of Winter",
+   "cor": "azul",
+   "nivelReq": 45,
+   "tags": [
+    "Projétil",
+    "Magia",
+    "Área",
+    "Ativação"
+   ],
+   "tipos": [
+    "Projectile",
+    "ProjectilesFromUser",
+    "Spell",
+    "Damage",
+    "Area",
+    "Trappable",
+    "Totemable",
+    "Mineable",
+    "Multicastable",
+    "Triggerable",
+    "Triggered",
+    "AreaSpell",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 10.00 seg",
+    "Tempo de Conjuração: 1.40 seg",
+    "Chance de Crítico: 5.00%"
+   ],
+   "mods": [
+    "Causa 221 a 340 de Dano de Gelo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Dispara um projétil de gelo que pulsa com gelo conforme viaja.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Edict_of_Ire",
+   "nome": "Édito da Ira",
+   "en": "Edict of Ire",
+   "cor": "vermelha",
+   "nivelReq": 45,
+   "tags": [
+    "Ataque",
+    "Área",
+    "Duração",
+    "Ativação",
+    "Raio"
+   ],
+   "tipos": [
+    "Attack",
+    "Damage",
+    "Area",
+    "Duration",
+    "Totemable",
+    "Triggered",
+    "Triggerable",
+    "Lightning",
+    "Cooldown"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 10.00 seg",
+    "Dano de Ataque: 90% de base",
+    "Eficácia do Dano Adicionado: 90%"
+   ],
+   "mods": [
+    "50% do Dano Físico Convertido para Dano de Raio",
+    "Duração base é de 5 segundos",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Libera uma cópia giratória eletrizada da sua arma ou seus projéteis que circulam ao redor de um ponto, danificando inimigos em uma área.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Edict_of_Light",
+   "nome": "Édito da Luz",
+   "en": "Edict of Light",
+   "cor": "vermelha",
+   "nivelReq": 45,
+   "tags": [
+    "Ataque",
+    "Área",
+    "Duração",
+    "Ativação"
+   ],
+   "tipos": [
+    "Attack",
+    "Area",
+    "Duration",
+    "Triggered",
+    "Triggerable",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Dano de Ataque: 189% de base",
+    "Eficácia do Dano Adicionado: 189%"
+   ],
+   "mods": [
+    "Duração base é de 5 segundos",
+    "Regenera 6% da Vida por segundo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Causa uma parte do dano da sua mão principal em uma área ao seu redor e cria Solo Sagrado, fazendo com que você e aliados regenerem vida.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Edict_of_War",
+   "nome": "Édito da Guerra",
+   "en": "Edict of War",
+   "cor": "vermelha",
+   "nivelReq": 45,
+   "tags": [
+    "Ataque",
+    "Corpo a Corpo",
+    "Duração",
+    "Ativação"
+   ],
+   "tipos": [
+    "Attack",
+    "MeleeSingleTarget",
+    "Multistrikeable",
+    "Melee",
+    "Duration",
+    "Triggered",
+    "Triggerable",
+    "Cooldown"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg"
+   ],
+   "mods": [
+    "Duração base é de 10 segundos",
+    "Lacaios causam 200% de Dano",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Esse ataque é realizado repetidamente por uma imitação fantasmagórica da sua arma.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Edict_of_the_Grave",
+   "nome": "Édito do Túmulo",
+   "en": "Edict of the Grave",
+   "cor": "azul",
+   "nivelReq": 45,
+   "tags": [
+    "Magia",
+    "Lacaio",
+    "Gelo",
+    "Ativação",
+    "Duração"
+   ],
+   "tipos": [
+    "Spell",
+    "Minion",
+    "MinionsCanExplode",
+    "Cold",
+    "Triggerable",
+    "Triggered",
+    "Duration",
+    "CreatesMinion",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Tempo de Conjuração: 1.00 seg"
+   ],
+   "mods": [
+    "Duração base é de 5 segundos",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Convoca três lacaios de crânios congelados que explodem no fim de suas durações.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Edict_of_Force",
+   "nome": "Édito da Força",
+   "en": "Edict of Force",
+   "cor": "vermelha",
+   "nivelReq": 45,
+   "tags": [
+    "Ataque",
+    "Área",
+    "Ativação"
+   ],
+   "tipos": [
+    "Attack",
+    "Area",
+    "Damage",
+    "Triggered",
+    "Triggerable",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Dano de Ataque: 189% de base",
+    "Eficácia do Dano Adicionado: 189%"
+   ],
+   "mods": [
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Libera um arco de energia a partir da sua arma ou punhos, danificando inimigos à sua frente.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Edict_of_Fury",
+   "nome": "Édito da Fúria",
+   "en": "Edict of Fury",
+   "cor": "vermelha",
+   "nivelReq": 45,
+   "tags": [
+    "Ataque",
+    "Projétil",
+    "Ativação",
+    "Fogo"
+   ],
+   "tipos": [
+    "Attack",
+    "RangedAttack",
+    "Projectile",
+    "Triggered",
+    "Triggerable",
+    "Fire",
+    "ProjectilesNotFromUser",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Dano de Ataque: 210% de base",
+    "Eficácia do Dano Adicionado: 210%"
+   ],
+   "mods": [
+    "Dispara 10 Projéteis em uma espiral",
+    "Projéteis Perfuram 3 Alvos adicionais",
+    "50% do Dano Físico Convertido para Dano de Fogo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Dispara repetidamente um projétil perfurante baseado na sua arma convertendo parte do dano físico em fogo.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Edict_of_Spite",
+   "nome": "Édito do Rancor",
+   "en": "Edict of Spite",
+   "cor": "vermelha",
+   "nivelReq": 45,
+   "tags": [
+    "Ataque",
+    "Projétil",
+    "Ativação",
+    "Gelo"
+   ],
+   "tipos": [
+    "Attack",
+    "RangedAttack",
+    "Projectile",
+    "Triggered",
+    "Triggerable",
+    "ChillingArea",
+    "Cold",
+    "ProjectilesNotFromUser",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Dano de Ataque: 210% de base",
+    "Eficácia do Dano Adicionado: 210%"
+   ],
+   "mods": [
+    "Dispara 9 Projéteis adicionais",
+    "50% do Dano Físico Convertido para Dano de Gelo",
+    "Dispara Projéteis em um círculo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Libera um círculo de projéteis baseados na sua arma, congelando o chão pelo caminho.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Edict_of_Reflection",
+   "nome": "Édito do Reflexo",
+   "en": "Edict of Reflection",
+   "cor": "azul",
+   "nivelReq": 45,
+   "tags": [
+    "Magia",
+    "Lacaio",
+    "Ativação",
+    "Duração"
+   ],
+   "tipos": [
+    "Spell",
+    "Minion",
+    "MinionsCanExplode",
+    "Triggered",
+    "Duration",
+    "Triggerable",
+    "CreatesMinion",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 10.00 seg",
+    "Tempo de Conjuração: 1.00 seg"
+   ],
+   "mods": [
+    "Duração base é de 5 segundos",
+    "Lacaios causam Dano aumentado em 100%",
+    "Vida Máxima dos Lacaios aumentada em 150%",
+    "Lacaios causam 200% mais Dano",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Cria um clone seu que ataca com sua arma.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Decree_of_Blades",
+   "nome": "Decreto das Lâminas",
+   "en": "Decree of Blades",
+   "cor": "azul",
+   "nivelReq": 60,
+   "tags": [
+    "Magia",
+    "Projétil",
+    "Ativação"
+   ],
+   "tipos": [
+    "Spell",
+    "Projectile",
+    "Triggerable",
+    "Triggered",
+    "ProjectilesFromUser",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Tempo de Conjuração: 1.00 seg",
+    "Chance de Crítico: 7.00%"
+   ],
+   "mods": [
+    "Causa 985 a 1477 de Dano Físico",
+    "Dispara 2 Projéteis adicionais",
+    "Ricocheteia +3 Vezes",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Dispara um estouro contínuo de adagas etéreas.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Decree_of_Flames",
+   "nome": "Decreto das Chamas",
+   "en": "Decree of Flames",
+   "cor": "azul",
+   "nivelReq": 60,
+   "tags": [
+    "Magia",
+    "Área",
+    "Fogo",
+    "Nova"
+   ],
+   "tipos": [
+    "Spell",
+    "Area",
+    "Damage",
+    "Fire",
+    "Triggerable",
+    "AreaSpell",
+    "Nova",
+    "Cooldown",
+    "Cooldown"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Tempo de Conjuração: 1.00 seg",
+    "Chance de Crítico: 5.00%"
+   ],
+   "mods": [
+    "Causa 999 a 1453 de Dano de Fogo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Libera uma explosão de fogo ao seu redor, danificando inimigos próximos.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Decree_of_Frost",
+   "nome": "Decreto do Gelo",
+   "en": "Decree of Frost",
+   "cor": "azul",
+   "nivelReq": 60,
+   "tags": [
+    "Magia",
+    "Projétil",
+    "Ativação"
+   ],
+   "tipos": [
+    "Spell",
+    "Projectile",
+    "Triggerable",
+    "Triggered",
+    "ProjectilesFromUser",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Tempo de Conjuração: 1.00 seg",
+    "Chance de Crítico: 5.00%"
+   ],
+   "mods": [
+    "Causa 836 a 1254 de Dano de Gelo",
+    "Dispara 8 Projéteis adicionais",
+    "Dispara Projéteis em um círculo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Dispara projéteis gélidos ao seu redor em todas as direções.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Decree_of_Inferno",
+   "nome": "Decreto do Inferno",
+   "en": "Decree of Inferno",
+   "cor": "azul",
+   "nivelReq": 60,
+   "tags": [
+    "Magia",
+    "Área",
+    "Fogo",
+    "Ativação"
+   ],
+   "tipos": [
+    "Spell",
+    "Area",
+    "Fire",
+    "Triggerable",
+    "Triggered",
+    "AreaSpell",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 10.00 seg",
+    "Tempo de Conjuração: 1.00 seg",
+    "Chance de Crítico: 5.00%"
+   ],
+   "mods": [
+    "Causa 1817 a 2725 de Dano de Fogo",
+    "Duração base é de 2 segundos",
+    "Um impacto a cada 0.1 segundos",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Lança um meteoro dos céus em um inimigo próximo, causando dano fogo em uma área ao redor dele.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Decree_of_Thunder",
+   "nome": "Decreto do Trovão",
+   "en": "Decree of Thunder",
+   "cor": "azul",
+   "nivelReq": 60,
+   "tags": [
+    "Magia",
+    "Área",
+    "Raio",
+    "Ativação",
+    "Nova"
+   ],
+   "tipos": [
+    "Spell",
+    "Area",
+    "TotemCastsWhenNotDetached",
+    "Lightning",
+    "Triggered",
+    "Triggerable",
+    "AreaSpell",
+    "Nova",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Tempo de Conjuração: 1.00 seg",
+    "Chance de Crítico: 7.00%"
+   ],
+   "mods": [
+    "Causa 830 a 1245 de Dano de Raio",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Cones de dano de raio cercam você.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Decree_of_the_Tempest",
+   "nome": "Decreto da Tempestade",
+   "en": "Decree of the Tempest",
+   "cor": "azul",
+   "nivelReq": 60,
+   "tags": [
+    "Magia",
+    "Área",
+    "Nova"
+   ],
+   "tipos": [
+    "Spell",
+    "Damage",
+    "Area",
+    "Trappable",
+    "Totemable",
+    "Mineable",
+    "Triggerable",
+    "AreaSpell",
+    "Nova",
+    "Cooldown"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 10.00 seg",
+    "Tempo de Conjuração: 4.00 seg",
+    "Chance de Crítico: 7.00%"
+   ],
+   "mods": [
+    "Causa 2044 a 3065 de Dano de Raio",
+    "Duração base é de 2 segundos",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Carrega-lhe com eletricidade que persiste por uma duração antes de disparar, danificando inimigos próximos.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Decree_of_Winter",
+   "nome": "Decreto do Inverno",
+   "en": "Decree of Winter",
+   "cor": "azul",
+   "nivelReq": 60,
+   "tags": [
+    "Projétil",
+    "Magia",
+    "Área",
+    "Ativação"
+   ],
+   "tipos": [
+    "Projectile",
+    "ProjectilesFromUser",
+    "Spell",
+    "Damage",
+    "Area",
+    "Trappable",
+    "Totemable",
+    "Mineable",
+    "Multicastable",
+    "Triggerable",
+    "Triggered",
+    "AreaSpell",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 10.00 seg",
+    "Tempo de Conjuração: 1.40 seg",
+    "Chance de Crítico: 5.00%"
+   ],
+   "mods": [
+    "Causa 557 a 836 de Dano de Gelo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Dispara um projétil de gelo que pulsa com gelo conforme viaja.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Decree_of_Ire",
+   "nome": "Decreto da Ira",
+   "en": "Decree of Ire",
+   "cor": "vermelha",
+   "nivelReq": 60,
+   "tags": [
+    "Ataque",
+    "Área",
+    "Duração",
+    "Ativação",
+    "Raio"
+   ],
+   "tipos": [
+    "Attack",
+    "Damage",
+    "Area",
+    "Duration",
+    "Totemable",
+    "Triggered",
+    "Triggerable",
+    "Lightning",
+    "Cooldown"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 10.00 seg",
+    "Dano de Ataque: 120% de base",
+    "Eficácia do Dano Adicionado: 120%"
+   ],
+   "mods": [
+    "50% do Dano Físico Convertido para Dano de Raio",
+    "Duração base é de 5 segundos",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Libera uma cópia giratória eletrizada da sua arma ou seus projéteis que circulam ao redor de um ponto, danificando inimigos em uma área.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Decree_of_Light",
+   "nome": "Decreto da Luz",
+   "en": "Decree of Light",
+   "cor": "vermelha",
+   "nivelReq": 60,
+   "tags": [
+    "Ataque",
+    "Área",
+    "Duração",
+    "Ativação"
+   ],
+   "tipos": [
+    "Attack",
+    "Area",
+    "Duration",
+    "Triggered",
+    "Triggerable",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Dano de Ataque: 243% de base",
+    "Eficácia do Dano Adicionado: 243%"
+   ],
+   "mods": [
+    "Duração base é de 5 segundos",
+    "Regenera 6% da Vida por segundo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Causa uma parte do dano da sua mão principal em uma área ao seu redor e cria Solo Sagrado, fazendo com que você e aliados regenerem vida.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Decree_of_War",
+   "nome": "Decreto da Guerra",
+   "en": "Decree of War",
+   "cor": "vermelha",
+   "nivelReq": 60,
+   "tags": [
+    "Ataque",
+    "Corpo a Corpo",
+    "Duração",
+    "Ativação"
+   ],
+   "tipos": [
+    "Attack",
+    "MeleeSingleTarget",
+    "Multistrikeable",
+    "Melee",
+    "Duration",
+    "Triggered",
+    "Triggerable",
+    "Cooldown"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg"
+   ],
+   "mods": [
+    "Duração base é de 10 segundos",
+    "Lacaios causam 250% de Dano",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Esse ataque é realizado repetidamente por uma imitação fantasmagórica da sua arma.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Decree_of_the_Grave",
+   "nome": "Decreto do Túmulo",
+   "en": "Decree of the Grave",
+   "cor": "azul",
+   "nivelReq": 60,
+   "tags": [
+    "Magia",
+    "Lacaio",
+    "Gelo",
+    "Ativação",
+    "Duração"
+   ],
+   "tipos": [
+    "Spell",
+    "Minion",
+    "MinionsCanExplode",
+    "Cold",
+    "Triggerable",
+    "Triggered",
+    "Duration",
+    "CreatesMinion",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Tempo de Conjuração: 1.00 seg"
+   ],
+   "mods": [
+    "Duração base é de 5 segundos",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Convoca três lacaios de crânios congelados que explodem no fim de suas durações.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Decree_of_Force",
+   "nome": "Decreto da Força",
+   "en": "Decree of Force",
+   "cor": "vermelha",
+   "nivelReq": 60,
+   "tags": [
+    "Ataque",
+    "Área",
+    "Ativação"
+   ],
+   "tipos": [
+    "Attack",
+    "Area",
+    "Damage",
+    "Triggered",
+    "Triggerable",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Dano de Ataque: 243% de base",
+    "Eficácia do Dano Adicionado: 243%"
+   ],
+   "mods": [
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Libera um arco de energia a partir da sua arma ou punhos, danificando inimigos à sua frente.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Decree_of_Fury",
+   "nome": "Decreto da Fúria",
+   "en": "Decree of Fury",
+   "cor": "vermelha",
+   "nivelReq": 60,
+   "tags": [
+    "Ataque",
+    "Projétil",
+    "Ativação",
+    "Fogo"
+   ],
+   "tipos": [
+    "Attack",
+    "RangedAttack",
+    "Projectile",
+    "Triggered",
+    "Triggerable",
+    "Fire",
+    "ProjectilesNotFromUser",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Dano de Ataque: 270% de base",
+    "Eficácia do Dano Adicionado: 270%"
+   ],
+   "mods": [
+    "Dispara 10 Projéteis em uma espiral",
+    "Projéteis Perfuram 4 Alvos adicionais",
+    "50% do Dano Físico Convertido para Dano de Fogo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Dispara repetidamente um projétil perfurante baseado na sua arma convertendo parte do dano físico em fogo.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Decree_of_Spite",
+   "nome": "Decreto do Rancor",
+   "en": "Decree of Spite",
+   "cor": "vermelha",
+   "nivelReq": 60,
+   "tags": [
+    "Ataque",
+    "Projétil",
+    "Ativação",
+    "Gelo"
+   ],
+   "tipos": [
+    "Attack",
+    "RangedAttack",
+    "Projectile",
+    "Triggered",
+    "Triggerable",
+    "ChillingArea",
+    "Cold",
+    "ProjectilesNotFromUser",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Dano de Ataque: 270% de base",
+    "Eficácia do Dano Adicionado: 270%"
+   ],
+   "mods": [
+    "Dispara 9 Projéteis adicionais",
+    "50% do Dano Físico Convertido para Dano de Gelo",
+    "Dispara Projéteis em um círculo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Libera um círculo de projéteis baseados na sua arma, congelando o chão pelo caminho.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Decree_of_Reflection",
+   "nome": "Decreto do Reflexo",
+   "en": "Decree of Reflection",
+   "cor": "azul",
+   "nivelReq": 60,
+   "tags": [
+    "Magia",
+    "Lacaio",
+    "Ativação",
+    "Duração"
+   ],
+   "tipos": [
+    "Spell",
+    "Minion",
+    "MinionsCanExplode",
+    "Triggered",
+    "Duration",
+    "Triggerable",
+    "CreatesMinion",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 10.00 seg",
+    "Tempo de Conjuração: 1.00 seg"
+   ],
+   "mods": [
+    "Duração base é de 5 segundos",
+    "Lacaios causam Dano aumentado em 120%",
+    "Vida Máxima dos Lacaios aumentada em 150%",
+    "Lacaios causam 300% mais Dano",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Cria um clone seu que ataca com sua arma.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Commandment_of_Blades",
+   "nome": "Mandamento das Lâminas",
+   "en": "Commandment of Blades",
+   "cor": "azul",
+   "nivelReq": 75,
+   "tags": [
+    "Magia",
+    "Projétil",
+    "Ativação"
+   ],
+   "tipos": [
+    "Spell",
+    "Projectile",
+    "Triggerable",
+    "Triggered",
+    "ProjectilesFromUser",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Tempo de Conjuração: 1.00 seg",
+    "Chance de Crítico: 7.00%"
+   ],
+   "mods": [
+    "Causa 1833 a 2903 de Dano Físico",
+    "Dispara 2 Projéteis adicionais",
+    "Ricocheteia +4 Vezes",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Dispara um estouro contínuo de adagas etéreas.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Commandment_of_Flames",
+   "nome": "Mandamento das Chamas",
+   "en": "Commandment of Flames",
+   "cor": "azul",
+   "nivelReq": 75,
+   "tags": [
+    "Magia",
+    "Área",
+    "Fogo",
+    "Nova"
+   ],
+   "tipos": [
+    "Spell",
+    "Area",
+    "Damage",
+    "Fire",
+    "Triggerable",
+    "AreaSpell",
+    "Nova",
+    "Cooldown",
+    "Cooldown"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Tempo de Conjuração: 1.00 seg",
+    "Chance de Crítico: 5.00%"
+   ],
+   "mods": [
+    "Causa 1800 a 2770 de Dano de Fogo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Libera uma explosão de fogo ao seu redor, danificando inimigos próximos.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Commandment_of_Frost",
+   "nome": "Mandamento do Gelo",
+   "en": "Commandment of Frost",
+   "cor": "azul",
+   "nivelReq": 75,
+   "tags": [
+    "Magia",
+    "Projétil",
+    "Ativação"
+   ],
+   "tipos": [
+    "Spell",
+    "Projectile",
+    "Triggerable",
+    "Triggered",
+    "ProjectilesFromUser",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Tempo de Conjuração: 1.00 seg",
+    "Chance de Crítico: 5.00%"
+   ],
+   "mods": [
+    "Causa 1530 a 2422 de Dano de Gelo",
+    "Dispara 8 Projéteis adicionais",
+    "Dispara Projéteis em um círculo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Dispara projéteis gélidos ao seu redor em todas as direções.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Commandment_of_Inferno",
+   "nome": "Mandamento do Inferno",
+   "en": "Commandment of Inferno",
+   "cor": "azul",
+   "nivelReq": 75,
+   "tags": [
+    "Magia",
+    "Área",
+    "Fogo",
+    "Ativação"
+   ],
+   "tipos": [
+    "Spell",
+    "Area",
+    "Fire",
+    "Triggerable",
+    "Triggered",
+    "AreaSpell",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 10.00 seg",
+    "Tempo de Conjuração: 1.00 seg",
+    "Chance de Crítico: 5.00%"
+   ],
+   "mods": [
+    "Causa 3324 a 5263 de Dano de Fogo",
+    "Duração base é de 2 segundos",
+    "Um impacto a cada 0.1 segundos",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Lança um meteoro dos céus em um inimigo próximo, causando dano fogo em uma área ao redor dele.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Commandment_of_Thunder",
+   "nome": "Mandamento do Trovão",
+   "en": "Commandment of Thunder",
+   "cor": "azul",
+   "nivelReq": 75,
+   "tags": [
+    "Magia",
+    "Área",
+    "Raio",
+    "Ativação",
+    "Nova"
+   ],
+   "tipos": [
+    "Spell",
+    "Area",
+    "TotemCastsWhenNotDetached",
+    "Lightning",
+    "Triggered",
+    "Triggerable",
+    "AreaSpell",
+    "Nova",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Tempo de Conjuração: 1.00 seg",
+    "Chance de Crítico: 7.00%"
+   ],
+   "mods": [
+    "Causa 1519 a 2405 de Dano de Raio",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Cones de dano de raio cercam você.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Commandment_of_the_Tempest",
+   "nome": "Mandamento da Tempestade",
+   "en": "Commandment of the Tempest",
+   "cor": "azul",
+   "nivelReq": 75,
+   "tags": [
+    "Magia",
+    "Área",
+    "Nova"
+   ],
+   "tipos": [
+    "Spell",
+    "Damage",
+    "Area",
+    "Trappable",
+    "Totemable",
+    "Mineable",
+    "Triggerable",
+    "AreaSpell",
+    "Nova",
+    "Cooldown"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 10.00 seg",
+    "Tempo de Conjuração: 4.00 seg",
+    "Chance de Crítico: 7.00%"
+   ],
+   "mods": [
+    "Causa 3739 a 5920 de Dano de Raio",
+    "Duração base é de 2 segundos",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Carrega-lhe com eletricidade que persiste por uma duração antes de disparar, danificando inimigos próximos.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Commandment_of_Winter",
+   "nome": "Mandamento do Inverno",
+   "en": "Commandment of Winter",
+   "cor": "azul",
+   "nivelReq": 75,
+   "tags": [
+    "Projétil",
+    "Magia",
+    "Área",
+    "Ativação"
+   ],
+   "tipos": [
+    "Projectile",
+    "ProjectilesFromUser",
+    "Spell",
+    "Damage",
+    "Area",
+    "Trappable",
+    "Totemable",
+    "Mineable",
+    "Multicastable",
+    "Triggerable",
+    "Triggered",
+    "AreaSpell",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 10.00 seg",
+    "Tempo de Conjuração: 1.40 seg",
+    "Chance de Crítico: 5.00%"
+   ],
+   "mods": [
+    "Causa 1020 a 1615 de Dano de Gelo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Dispara um projétil de gelo que pulsa com gelo conforme viaja.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Commandment_of_Ire",
+   "nome": "Mandamento da Ira",
+   "en": "Commandment of Ire",
+   "cor": "vermelha",
+   "nivelReq": 75,
+   "tags": [
+    "Ataque",
+    "Área",
+    "Duração",
+    "Ativação",
+    "Raio"
+   ],
+   "tipos": [
+    "Attack",
+    "Damage",
+    "Area",
+    "Duration",
+    "Totemable",
+    "Triggered",
+    "Triggerable",
+    "Lightning",
+    "Cooldown"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 10.00 seg",
+    "Dano de Ataque: 150% de base",
+    "Eficácia do Dano Adicionado: 150%"
+   ],
+   "mods": [
+    "50% do Dano Físico Convertido para Dano de Raio",
+    "Duração base é de 5 segundos",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Libera uma cópia giratória eletrizada da sua arma ou seus projéteis que circulam ao redor de um ponto, danificando inimigos em uma área.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Commandment_of_Light",
+   "nome": "Mandamento da Luz",
+   "en": "Commandment of Light",
+   "cor": "vermelha",
+   "nivelReq": 75,
+   "tags": [
+    "Ataque",
+    "Área",
+    "Duração",
+    "Ativação"
+   ],
+   "tipos": [
+    "Attack",
+    "Area",
+    "Duration",
+    "Triggered",
+    "Triggerable",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Dano de Ataque: 297% de base",
+    "Eficácia do Dano Adicionado: 297%"
+   ],
+   "mods": [
+    "Duração base é de 5 segundos",
+    "Regenera 6% da Vida por segundo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Causa uma parte do dano da sua mão principal em uma área ao seu redor e cria Solo Sagrado, fazendo com que você e aliados regenerem vida.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Commandment_of_War",
+   "nome": "Mandamento da Guerra",
+   "en": "Commandment of War",
+   "cor": "vermelha",
+   "nivelReq": 75,
+   "tags": [
+    "Ataque",
+    "Corpo a Corpo",
+    "Duração",
+    "Ativação"
+   ],
+   "tipos": [
+    "Attack",
+    "MeleeSingleTarget",
+    "Multistrikeable",
+    "Melee",
+    "Duration",
+    "Triggered",
+    "Triggerable",
+    "Cooldown"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg"
+   ],
+   "mods": [
+    "Duração base é de 10 segundos",
+    "Lacaios causam 300% de Dano",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Esse ataque é realizado repetidamente por uma imitação fantasmagórica da sua arma.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Commandment_of_the_Grave",
+   "nome": "Mandamento do Túmulo",
+   "en": "Commandment of the Grave",
+   "cor": "azul",
+   "nivelReq": 75,
+   "tags": [
+    "Magia",
+    "Lacaio",
+    "Gelo",
+    "Ativação",
+    "Duração"
+   ],
+   "tipos": [
+    "Spell",
+    "Minion",
+    "MinionsCanExplode",
+    "Cold",
+    "Triggerable",
+    "Triggered",
+    "Duration",
+    "CreatesMinion",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Tempo de Conjuração: 1.00 seg"
+   ],
+   "mods": [
+    "Duração base é de 5 segundos",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Convoca três lacaios de crânios congelados que explodem no fim de suas durações.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Commandment_of_Force",
+   "nome": "Mandamento da Força",
+   "en": "Commandment of Force",
+   "cor": "vermelha",
+   "nivelReq": 75,
+   "tags": [
+    "Ataque",
+    "Área",
+    "Ativação"
+   ],
+   "tipos": [
+    "Attack",
+    "Area",
+    "Damage",
+    "Triggered",
+    "Triggerable",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Dano de Ataque: 297% de base",
+    "Eficácia do Dano Adicionado: 297%"
+   ],
+   "mods": [
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Libera um arco de energia a partir da sua arma ou punhos, danificando inimigos à sua frente.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Commandment_of_Fury",
+   "nome": "Mandamento da Fúria",
+   "en": "Commandment of Fury",
+   "cor": "vermelha",
+   "nivelReq": 75,
+   "tags": [
+    "Ataque",
+    "Projétil",
+    "Ativação",
+    "Fogo"
+   ],
+   "tipos": [
+    "Attack",
+    "RangedAttack",
+    "Projectile",
+    "Triggered",
+    "Triggerable",
+    "Fire",
+    "ProjectilesNotFromUser",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Dano de Ataque: 330% de base",
+    "Eficácia do Dano Adicionado: 330%"
+   ],
+   "mods": [
+    "Dispara 10 Projéteis em uma espiral",
+    "Projéteis Perfuram 5 Alvos adicionais",
+    "50% do Dano Físico Convertido para Dano de Fogo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Dispara repetidamente um projétil perfurante baseado na sua arma convertendo parte do dano físico em fogo.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Commandment_of_Spite",
+   "nome": "Mandamento do Rancor",
+   "en": "Commandment of Spite",
+   "cor": "vermelha",
+   "nivelReq": 75,
+   "tags": [
+    "Ataque",
+    "Projétil",
+    "Ativação",
+    "Gelo"
+   ],
+   "tipos": [
+    "Attack",
+    "RangedAttack",
+    "Projectile",
+    "Triggered",
+    "Triggerable",
+    "ChillingArea",
+    "Cold",
+    "ProjectilesNotFromUser",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 5.00 seg",
+    "Dano de Ataque: 330% de base",
+    "Eficácia do Dano Adicionado: 330%"
+   ],
+   "mods": [
+    "Dispara 9 Projéteis adicionais",
+    "50% do Dano Físico Convertido para Dano de Gelo",
+    "Dispara Projéteis em um círculo",
+    "Dano não pode ser Refletido",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Libera um círculo de projéteis baseados na sua arma, congelando o chão pelo caminho.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
+   "slug": "Commandment_of_Reflection",
+   "nome": "Mandamento do Reflexo",
+   "en": "Commandment of Reflection",
+   "cor": "azul",
+   "nivelReq": 75,
+   "tags": [
+    "Magia",
+    "Lacaio",
+    "Ativação",
+    "Duração"
+   ],
+   "tipos": [
+    "Spell",
+    "Minion",
+    "MinionsCanExplode",
+    "Triggered",
+    "Duration",
+    "Triggerable",
+    "CreatesMinion",
+    "Cooldown",
+    "InbuiltTrigger"
+   ],
+   "props": [
+    "Nível: 20",
+    "Recarga: 10.00 seg",
+    "Tempo de Conjuração: 1.00 seg"
+   ],
+   "mods": [
+    "Duração base é de 5 segundos",
+    "Lacaios causam Dano aumentado em 140%",
+    "Vida Máxima dos Lacaios aumentada em 150%",
+    "Lacaios causam 400% mais Dano",
+    "Esta Habilidade é Ativada por um Encantamento"
+   ],
+   "qualidade": [],
+   "desc": "Cria um clone seu que ataca com sua arma.",
+   "icone": null,
+   "colunas": [
+    "Nível"
+   ],
+   "linhas": [
+    [
+     "20"
+    ]
+   ],
+   "mandamento": true,
+   "soDoItem": true
+  },
+  {
    "slug": "Bloody_Shockwave",
    "nome": "Onda de Choque Sangrenta",
    "en": "Bloody Shockwave",

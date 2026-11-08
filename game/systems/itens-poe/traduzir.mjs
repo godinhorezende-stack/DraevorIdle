@@ -89,7 +89,7 @@ export const APELIDOS_DE_GEMA = Object.freeze({
   'Marca Tempestuosa': 'Runa Tempestuosa', 'Armadilha de Lâmians': 'Armadilha de Lâminas', 'Estalo Gelado': 'Estalo Gélido', 'Facas Etéreos': 'Facas Etéreas',
   'Pancada de Gelo': 'Pancada Glacial', 'Armadilha Sifão': 'Armadilha Sifão de Gelo', 'Golpe Relampejante': 'Golpe Trovejante', 'Armadilha Sísmica': 'Armadilha Císmica',
   'Fogo da Justiça': 'Círculo Ardente', 'Flecha do Flagelo': 'Flecha Virulenta', 'Ligação Cauterizadora': 'Vínculo Cauterizador', 'Vínculo Protedor': 'Vínculo Protetor',
-  Punir: 'Castigo', 'Disparo da Tempestade': 'Tormenta Explosiva', 'Escudo da Tempestade': 'Escudo Tempestuoso', Hidrosfera: 'Hidroesfera', 'Oferenda de Ossos': 'Oferenda Óssea',
+  'Comando do Túmulo': 'Mandamento do Túmulo', Punir: 'Castigo', 'Disparo da Tempestade': 'Tormenta Explosiva', 'Escudo da Tempestade': 'Escudo Tempestuoso', Hidrosfera: 'Hidroesfera', 'Oferenda de Ossos': 'Oferenda Óssea',
 });
 const slugDaGema = (nome) => slugDoNome(APELIDOS_DE_GEMA[nome] ?? nome);
 

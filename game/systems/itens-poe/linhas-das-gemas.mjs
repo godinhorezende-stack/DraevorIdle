@@ -101,6 +101,8 @@ const REGRAS = [
   [new RegExp(`^Mata Inimigos com ${N} ?% de Vida ou menos quando Acertados?$`, 'i'), () => ({ culling: 1 })],
   [new RegExp(`^Mata inimigos de raridade normal e mágica com ${N} ?% de vida ou menos quando atingidos(?: por habilidades reforçadas)?$`, 'i'), (m) => ({ culling_normal_magico: num(m[1]) })],
   [/^Dano Elemental não pode ser Refletido$/i, () => ({ imune_reflexo_elemental: 1 })],
+  // (08/11, as habilidades das luvas do Labirinto — Palavra/Édito/Decreto/Mandamento: "Dano não pode ser Refletido" — o reflexo dos monstros, `monstros-no-jogador.fatorDoReflexo`)
+  [/^Dano não pode ser Refletido$/i, () => ({ imune_reflexo: 1 })],
   [new RegExp(`^${N} ?% de Duração de Atordoamentos em Inimigos aumentada$`, 'i'), (m) => ({ stun_duration: num(m[1]) })],
   [/^Golpes Finais fazem com que os Empalamentos em Inimigos Reflitam o Dano aos Inimigos ao redor$/i, () => ({ empalar_reflete_ao_matar: 1 })],
   // (família 2) o Golpe da Víbora com duas armas (o PoB: Speed MORE −30 e Damage MORE −20 com ModFlag.Hit, ambos com DualWielding — act_dex.lua:16470,
