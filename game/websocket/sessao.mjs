@@ -99,6 +99,7 @@ import * as MapaAberto from '../systems/itens-poe/mapa-aberto.mjs';
 import * as PortalDaGema from '../systems/itens-poe/portal-da-gema.mjs';
 import * as Protecao from '../systems/protecao.mjs';
 import * as Cidades from '../systems/cidades.mjs';
+import * as CidadesMapas from '../systems/cidades-mapas.mjs';
 import * as Comparar from '../systems/itens/comparar.mjs';
 import * as Atributos from '../systems/personagem/atributos.mjs';
 import * as AtributosDoMob from '../systems/mobs/atributos.mjs';
@@ -191,6 +192,8 @@ const enviar = (ws, msg) => {
   if (ws.readyState !== 1) return;
   // O mapa de uma hunt também é fixo (o objeto guardado por `Cacadas`).
   if (msg.hunt?.map) registrarGrandes(msg.hunt.map);
+  // (08/11) e o de cada cidade de ato (o objeto guardado por `cidades-mapas.mjs`)
+  if (msg.city?.map) registrarGrandes(msg.city.map);
   const grande = msg.t === 'hello' || msg.t === 'welcome' || msg.city?.map || msg.hunt?.map;
   ws.send(grande ? jsonComGrandes(msg) : JSON.stringify(msg));
 };
@@ -296,11 +299,15 @@ function estadoInicialPersonagem(vocacao, sexo, classe = null) {
 function snapshotDaPraca(estado, comMapa, sessao = null) {
   // A cidade em que ele está (cada ato tem a sua instância — `cidades.mjs`): o nome vai para a tela, e o chão é só o dela.
   const cidade = Cidades.cidadeDe(estado);
+  // (08/11) Cada cidade de ato com o seu mapa (`cidades-mapas.mjs`): o `mapId` muda com ela, e o cliente pede o mapa novo (`pedirMapa`). A
+  // posição que não é desta cidade (a viagem, a morte, o personagem novo) vira a chegada dela.
+  CidadesMapas.garantirPosicao(estado);
+  const meta = CidadesMapas.metaDa(cidade.id);
   return {
-    mapId: 'city',
+    mapId: CidadesMapas.mapaIdDa(cidade.id),
     cidade,
     z: estado.pos.z ?? R.POSICAO_INICIAL.z,
-    ...(comMapa ? { map: CITY_MAP } : {}),
+    ...(comMapa ? { map: CidadesMapas.mapaDa(cidade.id) } : {}),
     // (`teleporte`: o contador das viagens da sessão — mudou, o cliente põe o boneco na casa nova sem desenhar o caminho.)
     player: { x: estado.pos.x, y: estado.pos.y, dir: estado.pos.dir ?? 2, moveMs: R.PASSO_MS, ...(sessao?.teleporte ? { teleporte: sessao.teleporte } : {}) },
     monsters: [],
@@ -309,8 +316,8 @@ function snapshotDaPraca(estado, comMapa, sessao = null) {
       const players = sessao ? Chat.jogadoresNaPraca(sessao) : [];
       return { players, brasoes: Chat.brasoesDaPraca(players) };
     })(),
-    npcs: CITY_META.npcs,
-    objetos: CITY_META.objetos,
+    npcs: meta.npcs,
+    objetos: meta.objetos,
     chao: Inventario.chaoParaCliente(cidade.id),
   };
 }
@@ -739,16 +746,23 @@ export class Sessao {
    * `api-mapeada/servidor/npc-naji.json`), e o client abre o banco.
    */
   falarComNpc({ id }) {
-    const npc = CITY_META.npcs.find((n) => n.id === id);
+    // (08/11) Os NPCs da cidade em que ele está (na Vigília, os do PoE: Nessa vende as gemas, Tarkleigh guarda o banco, Bestel conversa). O
+    // pedido da loja de sempre (`zuma`, a sonda do cliente) vai para quem vende as gemas nesta cidade.
+    const npcs = CidadesMapas.metaDa(CidadesMapas.idDe(this.estado)).npcs;
+    const npc = npcs.find((n) => n.id === id) ?? (id === GemasDeSkill.CONFIG.loja.npc ? npcs.find((n) => n.tipo === 'loja') : null);
     if (!npc) return this.erro('Ninguém para conversar aqui.');
     // A Zuma Magehide vende as GEMAS DE SKILL (decisão do dono) — o balcão de NPC do cliente.
-    if (npc.id === GemasDeSkill.CONFIG.loja.npc) return this.mandarLojaDeGemas(npc);
+    if (npc.id === GemasDeSkill.CONFIG.loja.npc || npc.tipo === 'loja') return this.mandarLojaDeGemas(npc);
+    if (npc.tipo === 'fala' && npc.fala) {
+      this.avisoPendente = `${npc.name}: ${npc.fala}`;
+      return;
+    }
     if (npc.tipo !== 'banco') return this.erro(`${npc.name} ainda não atende neste servidor.`);
     this.enviar({ t: 'npcFala', id: npc.id, nome: npc.name, tipo: 'banco', fala: Banqueiro.FALA_DO_BANQUEIRO, catalogo: null, gold: this.estado.gold ?? 0 });
   }
 
   /** A loja de gemas (`npcFala`, `tipo: 'loja'`), no formato do balcão de NPC do cliente. */
-  mandarLojaDeGemas(npc = CITY_META.npcs.find((n) => n.id === GemasDeSkill.CONFIG.loja.npc)) {
+  mandarLojaDeGemas(npc = CidadesMapas.metaDa(CidadesMapas.idDe(this.estado)).npcs.find((n) => n.id === GemasDeSkill.CONFIG.loja.npc || n.tipo === 'loja')) {
     this.enviar({
       t: 'npcFala',
       id: npc.id,
@@ -2102,9 +2116,12 @@ export class Sessao {
       const estado = JSON.parse(personagem.estado);
       // Os bichos da caçada voltam completos (ver `Cacadas.huntParaGravar`).
       Cacadas.huntAoCarregar(estado.hunt);
-      estado.pos = corrigirPosicaoAntiga(estado.pos);
+      // (08/11) a posição antiga, de antes das cidades com mapa próprio (sem `pos.cidade`), confere-se no mapa de sempre; a de uma cidade
+      // de ato, no dela (`garantirPosicao`, logo abaixo, com a cidade dele já definida)
+      if ((estado.pos?.cidade ?? CidadesMapas.SEMPRE) === CidadesMapas.SEMPRE) estado.pos = corrigirPosicaoAntiga(estado.pos ?? {});
       // A CIDADE dele (uma instância por ato — `cidades.mjs`): quem ainda não tem fica na do ato da próxima fase da campanha.
       if (Cidades.porAto() && !estado.atoDaCidade) estado.atoDaCidade = Campanha.atoDaFronteira(estado);
+      CidadesMapas.garantirPosicao(estado);
       // Migração: personagens salvos antes do sistema de recompensas existir
       // não têm `wildcards`/`presentes`/`diario` no `estado` gravado — sem
       // isto, COLETAR (não só exibir) quebraria em silêncio para eles.
@@ -2644,7 +2661,8 @@ export class Sessao {
       this.estado.destino = null;
       return;
     }
-    if (bloqueado(destino.x, destino.y) || !temCaminho(gradeDaCidade(), pos, destino)) {
+    const cidade = CidadesMapas.idDe(this.estado);
+    if (CidadesMapas.bloqueadoNa(cidade, destino.x, destino.y) || !temCaminho(CidadesMapas.gradeDa(cidade), pos, destino)) {
       this.estado.destino = null;
       return this.erro('Não dá para chegar lá.');
     }
@@ -2680,7 +2698,7 @@ export class Sessao {
     if (estado.rumo) ({ dx, dy } = estado.rumo);
     else {
       // O destino do clique/toque: o próximo passo pela busca de sempre, recalculado a cada passo.
-      const passo = proximoPassoAte(gradeDaCidade(), pos, estado.destino);
+      const passo = proximoPassoAte(CidadesMapas.gradeDa(CidadesMapas.idDe(estado)), pos, estado.destino);
       if (!passo) {
         estado.destino = null;
         return;
@@ -2692,12 +2710,12 @@ export class Sessao {
     else if (dy > 0) pos.dir = 2;
     else if (dx > 0) pos.dir = 1;
     else if (dx < 0) pos.dir = 3;
-    // Colisão real: `CITY_MAP.blocked` é o mesmo mapa de bloqueio que o
-    // servidor original manda (ver `bloqueado`, em `dados.mjs`). Sem o `if`,
+    // Colisão real: o `blocked` do mapa da cidade dele (`cidades-mapas.mjs`; o de sempre é o
+    // mesmo mapa de bloqueio que o servidor original manda — `dados.mjs`). Sem o `if`,
     // o personagem atravessava parede — o placeholder antigo só clampava
     // numa caixa, e uma cidade de verdade não é uma caixa.
     const destino = { x: pos.x + dx, y: pos.y + dy };
-    if (!bloqueado(destino.x, destino.y)) {
+    if (!CidadesMapas.bloqueadoNa(CidadesMapas.idDe(estado), destino.x, destino.y)) {
       pos.x = destino.x;
       pos.y = destino.y;
     }

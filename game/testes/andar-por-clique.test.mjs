@@ -8,11 +8,17 @@ import assert from 'node:assert/strict';
 import { Sessao } from '../websocket/sessao.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as R from '../systems/regras.mjs';
-import { bloqueado, gradeDaCidade } from '../systems/dados.mjs';
+import * as CidadesMapas from '../systems/cidades-mapas.mjs';
 import { bfsDistancias, VIZINHANCA_4 } from '../systems/hunt/caminho.mjs';
 import { gradeDaHunt, gradesCacheadas } from '../systems/hunt/terreno.mjs';
 import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
 import { doClassico } from './apoio-migracao.mjs';
+
+// (08/11) Cada cidade de ato tem o seu mapa (`cidades-mapas.mjs`): o boneco de teste está na cidade dele, e anda no mapa dela — a chegada,
+// a colisão e o caminho são os dela.
+const CIDADE = CidadesMapas.idDe(personagemDeTeste({ level: 50 }));
+const bloqueado = (x, y) => CidadesMapas.bloqueadoNa(CIDADE, x, y);
+const gradeDaCidade = () => CidadesMapas.gradeDa(CIDADE);
 
 const cheb = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 /*
@@ -28,7 +34,7 @@ function naCidade() {
   s.conta = { id: 'teste-clique' };
   s.personagem = { id: 0, nome: 'Clique' };
   s.estado = personagemDeTeste({ level: 50 });
-  s.estado.pos = { ...R.POSICAO_INICIAL };
+  s.estado.pos = { ...CidadesMapas.chegadaDa(CIDADE), cidade: CidadesMapas.mapaIdDa(CIDADE) };
   return { s, enviados };
 }
 
