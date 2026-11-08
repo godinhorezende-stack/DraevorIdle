@@ -10,7 +10,8 @@ import * as Acoes from '../systems/acoes.mjs';
 import * as Combo from '../systems/combo.mjs';
 import * as R from '../systems/regras.mjs';
 import { personagemDeTeste, PERSONAGEM, comSkills, HUNT_DE_TESTE } from './apoio.mjs';
-import { aAdaptar, doClassico } from './apoio-migracao.mjs';
+import { doClassico, soNoOficial } from './apoio-migracao.mjs';
+import * as GemasPoe from '../systems/itens-poe/gemas-poe.mjs';
 
 // Onze magias de ataque DIFERENTES do sorcerer, todas de alvo único.
 // Recarga do catálogo: 7 de 2 s, 3 de 8 s e 1 de 30 s (o efetivo é a metade).
@@ -55,6 +56,8 @@ function rodar(cenario, segundos, { passoMs = 250, aCadaTique = null } = {}) {
       m.hp = m.maxHp = 1e12;
       m.x = h.pos.x + cenario.distancia;
       m.y = h.pos.y;
+      // (no PoE o bloqueio do golpe do bicho segura a próxima ação — a recuperação do bloqueio, sorteada: o bicho não bate)
+      if (GemasPoe.ligadas()) m.proximoGolpe = Infinity;
       h.alvo = m.uid;
       e.hp = e.maxHp;
       if (cenario.mana != null) {
@@ -68,6 +71,42 @@ function rodar(cenario, segundos, { passoMs = 250, aCadaTique = null } = {}) {
     Combo.ouvirCombo(null);
   }
   return { linhas, execucoes: linhas.filter((l) => l.resultado === 'EXECUTADA') };
+}
+
+/*
+ * (08/11, adaptado ao PoE — o dono: "Adaptar antes") A fileira com as GEMAS do PoE na barra do PoE: os 8 slots são de 'skill' e a fileira de
+ * ataque é a dos slots com gema de ataque, na ordem da barra (`Combo.slotsDoCombo`) — o `slot` da linha do combo é a posição na fileira e o
+ * `indice` é o slot da barra. Sem o cooldown global do Draevor: quem segura a próxima é o TEMPO DE USO da gema que saiu (o grupo único do PoE,
+ * `GRUPO_DO_POE`), e a recarga própria de cada gema. No clássico (o irmão `.classico`) as gemas do PoE não existem: só rodam no oficial.
+ */
+const POE = (slug) => GemasPoe.doSlug(slug)?.acao;
+function montarPoe(slugs, { distancia = 1, mana = 1e9 } = {}) {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 600 });
+  const ids = slugs.map((s) => (s ? POE(s) : null));
+  comSkills(e, ids.filter(Boolean));
+  e.actions = Array(Acoes.SLOTS).fill(null);
+  ids.forEach((id, i) => {
+    if (!id) return;
+    const r = Acoes.definir(e, { slot: i, value: { id } });
+    assert.ok(r.ok, `${id}: ${r.erro}`);
+  });
+  const r = Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' });
+  assert.ok(r.ok !== false, r.erro);
+  e.hunt.assistencia = true;
+  e.hunt.autoBarra = true;
+  return { e, h: e.hunt, distancia, mana };
+}
+/** O tempo de uso de cada gema (o que segura a fileira depois dela) — o mesmo do servidor (`temposDaGemaPoe`). */
+const usoDe = (cenario, id) => Acoes.temposDaGemaPoe(cenario.e, Acoes.POR_ID_PUBLICO(id)).uso;
+/** No PoE o lugar do global: entre uma execução e a seguinte, no mínimo o tempo de uso da que saiu (lógico; o real, até um tique abaixo). */
+function conferirUso(cenario, execucoes, { passo = 250 } = {}) {
+  for (let i = 1; i < execucoes.length; i++) {
+    const u = usoDe(cenario, execucoes[i - 1].skill);
+    const dl = execucoes[i].logico - execucoes[i - 1].logico;
+    const dr = execucoes[i].relogio - execucoes[i - 1].relogio;
+    assert.ok(dl >= u, `intervalo lógico de ${dl} ms (uso ${u})`);
+    assert.ok(dr > u - passo, `intervalo real de ${dr} ms (uso ${u})`);
+  }
 }
 
 const intervalos = (execucoes) => execucoes.slice(1).map((x, i) => x.relogio - execucoes[i].relogio);
@@ -122,19 +161,18 @@ test('a primeira magia disponível SEMPRE sai: com o slot 1 pronto a cada global
   assert.ok(!linhas.some((l) => l.evento?.startsWith('FIM DO CICLO')), 'não há mais ciclo/rodízio');
 });
 
-test('slot 1 em recarga: sai o próximo disponível; quando o 1 volta, ele recupera a prioridade', { skip: aAdaptar("Prioridade/recarga/pular sem mana ou fora do alcance valem na barra do PoE (pedido do dono: rotação, limite e prioridade com várias skills)") }, () => {
-  // Slot 1: Lightning (4 s efetivos). Slot 2: Buzz (1 s). Slot 3: Energy Strike (1 s).
-  const cenario = montar(['spell-lightning', 'spell-buzz', 'spell-energy-strike']);
+test('slot 1 em recarga: sai o próximo disponível; quando o 1 volta, ele recupera a prioridade', { skip: soNoOficial('as gemas do PoE na barra do PoE') }, () => {
+  // Slot 1: Bomba Congelante (recarga de 2,5 s, uso de 0,5 s). Slot 2: Pancada (uso de 2,35 s, sem recarga). Slot 3: Golpe Duplo.
+  const cenario = montarPoe(['Frost_Bomb', 'Heavy_Strike', 'Double_Strike']);
   const { execucoes, linhas } = rodar(cenario, 40);
-  const g = globalDe(cenario);
   assert.equal(execucoes[0].slot, 1, 'começa pelo slot 1');
   assert.equal(execucoes[1].slot, 2, 'slot 1 em recarga: o próximo disponível (2), não o 3');
   assert.equal(execucoes[2].slot, 1, 'o slot 1 voltou: recupera a vez');
-  // 4 s de recarga / 2 s de global: 1, 2, 1, 2, ... — o 3 nunca sai (o 2 está sempre pronto antes dele).
+  // 2,5 s de recarga, e 0,5 + 2,35 s de uso até o 1 poder de novo: 1, 2, 1, 2, ... — o 3 nunca sai (o 2 está sempre pronto antes dele).
   assert.deepEqual(execucoes.slice(0, 10).map((x) => x.slot), [1, 2, 1, 2, 1, 2, 1, 2, 1, 2]);
   assert.ok(!execucoes.some((x) => x.slot === 3));
-  // Aqui quem segura o slot 1 às vezes é a recarga DELE (4 s), não o global: o intervalo é >= o global.
-  conferirGlobal(execucoes, g);
+  // (no PoE, sem global) quem segura a fileira é o uso da que saiu (ou a recarga DELA): o intervalo é >= o uso.
+  conferirUso(cenario, execucoes);
   conferirPrioridade(linhas, execucoes);
 });
 
@@ -189,28 +227,34 @@ test('uma execução recusada não conta: o global mede da última que saiu de v
   assert.equal(h.ultimoAtaqueEm, 10_300);
 });
 
-test('sem mana: as caras são puladas com o motivo, e a prioridade segue entre as baratas', { skip: aAdaptar("Prioridade/recarga/pular sem mana ou fora do alcance valem na barra do PoE (pedido do dono: rotação, limite e prioridade com várias skills)") }, () => {
-  // 30 de mana por tique: cabem Energy/Terra/Flame (20), não Lightning (60) nem Ultimate (100).
-  const { execucoes, linhas } = rodar(montar(['spell-lightning', 'spell-ultimate-flame-strike', 'spell-energy-strike', 'spell-terra-strike'], { mana: 30 }), 20);
+test('sem mana: as caras são puladas com o motivo, e a prioridade segue entre as baratas', { skip: soNoOficial('as gemas do PoE na barra do PoE') }, () => {
+  // 10 de mana por tique: cabem o Pulso Congelante e a Bola de Fogo (5), não a Esfera Trovejante nem a Nova Elétrica (15). (A mana máxima também
+  // em 10: a regeneração do PoE é 1,75% da máxima por segundo — com os 3650 do level 600, +16 por tique, e a cara caberia.)
+  const caras = [POE('Ball_Lightning'), POE('Shock_Nova')];
+  const cenario = montarPoe(['Ball_Lightning', 'Shock_Nova', 'Freezing_Pulse', 'Fireball'], { mana: 10 });
+  cenario.e.maxMana = 10;
+  const { execucoes, linhas } = rodar(cenario, 20);
   assert.ok(execucoes.length > 0);
-  assert.ok(!execucoes.some((x) => ['spell-lightning', 'spell-ultimate-flame-strike'].includes(x.skill)));
-  assert.ok(linhas.some((l) => l.skill === 'spell-lightning' && l.motivo === 'MANA'));
+  assert.ok(!execucoes.some((x) => caras.includes(x.skill)));
+  assert.ok(linhas.some((l) => l.skill === POE('Ball_Lightning') && l.motivo === 'MANA'));
   conferirPrioridade(linhas, execucoes);
 });
 
-test('fora de alcance: as de alcance 3 são puladas, as de alcance 7 executam', { skip: aAdaptar("Prioridade/recarga/pular sem mana ou fora do alcance valem na barra do PoE (pedido do dono: rotação, limite e prioridade com várias skills)") }, () => {
-  const { execucoes, linhas } = rodar(montar(ONZE, { distancia: 5 }), 20);
-  const alcance3 = ['spell-buzz', 'spell-apprentice-s-strike', 'spell-energy-strike', 'spell-terra-strike', 'spell-flame-strike', 'spell-ice-strike', 'spell-death-strike'];
-  assert.ok(!execucoes.some((x) => alcance3.includes(x.skill)));
-  assert.ok(execucoes.some((x) => x.skill === 'spell-lightning'));
-  assert.ok(linhas.some((l) => l.skill === 'spell-buzz' && l.motivo === 'FORA_DE_ALCANCE'));
+test('fora de alcance: as de alcance 3 são puladas, as de alcance 7 executam', { skip: soNoOficial('as gemas do PoE na barra do PoE') }, () => {
+  // As 8 da barra do PoE: 7 de alcance 3 (os projéteis curtos) e o Arco Elétrico (alcance 7), o bicho a 5 casas.
+  const alcance3 = ['Freezing_Pulse', 'Fireball', 'Spark', 'Frostbolt', 'Ice_Spear', 'Rolling_Magma', 'Ball_Lightning'];
+  const { execucoes, linhas } = rodar(montarPoe([...alcance3, 'Arc'], { distancia: 5 }), 20);
+  assert.ok(!execucoes.some((x) => alcance3.map(POE).includes(x.skill)));
+  assert.ok(execucoes.some((x) => x.skill === POE('Arc')));
+  assert.ok(linhas.some((l) => l.skill === POE('Freezing_Pulse') && l.motivo === 'FORA_DE_ALCANCE'));
 });
 
-test('slots vazios no meio da fileira não quebram a prioridade', { skip: aAdaptar("Prioridade/recarga/pular sem mana ou fora do alcance valem na barra do PoE (pedido do dono: rotação, limite e prioridade com várias skills)") }, () => {
-  const { execucoes, linhas } = rodar(montar([null, 'spell-lightning', null, 'spell-buzz']), 20);
-  assert.equal(execucoes[0].slot, 2);
-  assert.equal(execucoes[1].slot, 4);
-  assert.ok(!execucoes.some((x) => x.slot === 1 || x.slot === 3));
+test('slots vazios no meio da fileira não quebram a prioridade', { skip: soNoOficial('as gemas do PoE na barra do PoE') }, () => {
+  // (no PoE a fileira é a dos slots com gema de ataque: o slot vazio nem entra nela — o \`indice\` é o slot da barra, de 0)
+  const { execucoes, linhas } = rodar(montarPoe([null, 'Frost_Bomb', null, 'Heavy_Strike']), 20);
+  assert.equal(execucoes[0].indice, 1);
+  assert.equal(execucoes[1].indice, 3);
+  assert.ok(!execucoes.some((x) => x.indice === 0 || x.indice === 2));
   conferirPrioridade(linhas, execucoes);
 });
 

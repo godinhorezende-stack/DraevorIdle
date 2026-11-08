@@ -9,7 +9,8 @@ import * as Regras from '../systems/skills/regras-de-uso.mjs';
 import { tiqueDoCombo, SLOTS_DO_COMBO } from '../systems/combo.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { personagemDeTeste, PERSONAGEM, comSkills, HUNT_DE_TESTE } from './apoio.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
+import { aAdaptar, soNoOficial } from './apoio-migracao.mjs';
+import * as GemasPoe from '../systems/itens-poe/gemas-poe.mjs';
 
 function montar() {
   const e = comSkills(personagemDeTeste({ vocacao: 'sorcerer', level: 300 }), ['spell-flame-strike', 'spell-great-fire-wave']);
@@ -27,6 +28,28 @@ function montar() {
   assert.equal(Acoes.definir(e, { slot: SLOTS_DO_COMBO[1], value: { id: 'spell-great-fire-wave' } }).ok, true);
   return e;
 }
+// (08/11, adaptado ao PoE — o dono: "Adaptar antes") A mesma barra com as gemas do PoE: o Pulso Congelante (alvo único: tags single,
+// projectile) no 1º slot e a Nova Elétrica (área: tag area) no 2º. Na barra do PoE os 8 slots são de 'skill' e a fileira de ataque é a dos
+// slots com gema de ataque, na ordem (`Combo.slotsDoCombo`): os slots 0 e 1. No clássico (o irmão `.classico`) as gemas do PoE não existem.
+const PULSO = GemasPoe.doSlug('Freezing_Pulse')?.acao;
+const NOVA = GemasPoe.doSlug('Shock_Nova')?.acao;
+const NOME = (acao) => Acoes.POR_ID_PUBLICO(acao)?.name;
+function montarPoe() {
+  const e = comSkills(personagemDeTeste({ vocacao: 'sorcerer', level: 300 }), [PULSO, NOVA]);
+  Treino.garantir(e);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
+  const h = e.hunt;
+  delete h.instancia;
+  h.respawns = [];
+  h.monstros = [];
+  e.maxHp = e.hp = 1e9;
+  e.maxMana = e.mana = 1e9;
+  e.actions = Array(Acoes.SLOTS).fill(null);
+  // A barra: alvo único no 1º slot da fileira, área no 2º.
+  assert.equal(Acoes.definir(e, { slot: 0, value: { id: PULSO } }).ok, true);
+  assert.equal(Acoes.definir(e, { slot: 1, value: { id: NOVA } }).ok, true);
+  return e;
+}
 const bichos = (e, n) => {
   const h = e.hunt;
   for (let i = 0; i < n; i++) h.monstros.push(Object.assign(criarMonstro({ key: 'troll', x: h.pos.x + (i % 3) - 1, y: h.pos.y - 1 - Math.floor(i / 3) }, null), { hp: 1e12, maxHp: 1e12 }));
@@ -42,6 +65,11 @@ const qualSaiu = (e, alvo) => {
   if (h.conjurando) return h.conjurando.id;
   return ev.find((x) => x.spell)?.spell ?? null;
 };
+// (no PoE a gema conjura — `h.conjurando.id` é o id da ação; o evento traz o nome): a ação que saiu, pelo id
+const qualSaiuPoe = (e, alvo) => {
+  const x = qualSaiu(e, alvo);
+  return [PULSO, NOVA].find((id) => id === x || NOME(id) === x) ?? x;
+};
 
 test('sanear: só regras bem formadas (tag conhecida, ação válida, condições do formato do slot)', () => {
   const r = Regras.sanear([
@@ -55,10 +83,10 @@ test('sanear: só regras bem formadas (tag conhecida, ação válida, condiçõe
   assert.equal(Regras.sanear('lixo').length, 0);
 });
 
-test('sem regra, a rotação é a de sempre (o 1º slot sai primeiro)', { skip: aAdaptar("Regras de uso (área com ≥3 bichos, só alvo único no boss, sem buff com pouca mana) valem na barra do PoE") }, () => {
-  const e = montar();
+test('sem regra, a rotação é a de sempre (o 1º slot sai primeiro)', { skip: soNoOficial('as gemas do PoE na barra do PoE') }, () => {
+  const e = montarPoe();
   const alvo = bichos(e, 4);
-  assert.equal(qualSaiu(e, alvo), 'Flame Strike');
+  assert.equal(qualSaiuPoe(e, alvo), PULSO);
 });
 
 test('"Se bichos por perto ≥ 3 → preferir ÁREA": com 4 bichos, a área sai antes; com 1, a rotação normal', { skip: aAdaptar("Regras de uso (área com ≥3 bichos, só alvo único no boss, sem buff com pouca mana) valem na barra do PoE") }, () => {
@@ -93,8 +121,8 @@ test('"Se mana ≤ 20% → não usar BUFF": bloquear vale fora do ataque; cura n
   assert.equal(Regras.ativas(e, e.hunt, null).length, 0, 'com mana, a regra não vale');
 });
 
-test('regra desligada não vale', { skip: aAdaptar("Regras de uso (área com ≥3 bichos, só alvo único no boss, sem buff com pouca mana) valem na barra do PoE") }, () => {
-  const e = montar();
+test('regra desligada não vale', { skip: soNoOficial('as gemas do PoE na barra do PoE') }, () => {
+  const e = montarPoe();
   e.regrasDeUso = Regras.sanear([{ ativa: false, quando: [], acao: 'bloquear', tags: ['fire'] }]);
   assert.equal(Regras.ativas(e, e.hunt, null).length, 0);
 });
