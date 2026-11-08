@@ -753,10 +753,18 @@ export class MapView {
        */
       canvas.style.cursor = peca ? 'grab' : '';
       // A casa sob o ponteiro, para quem quiser um balão dela (o do mob raro — ver main.mjs).
-      this.onTileHover?.(this.casaDoEvento(event), event);
+      const casa = this.casaDoEvento(event);
+      // (08/11) e para o rótulo do baú do PoE (`encontros-na-tela.mjs`): mudou de casa, repinta
+      if (casa?.x !== this.casaSobOMouse?.x || casa?.y !== this.casaSobOMouse?.y) {
+        this.casaSobOMouse = casa ?? null;
+        this.precisaDesenhar = true;
+      }
+      this.onTileHover?.(casa, event);
     });
     canvas.addEventListener('mouseleave', () => {
       this.onTileHover?.(null, null);
+      this.casaSobOMouse = null;
+      this.precisaDesenhar = true;
       this.pecaSobOCursor = null;
       canvas.draggable = false;
       canvas.style.cursor = '';
@@ -4205,7 +4213,7 @@ export class MapView {
      */
     // Baús e altares (se a caçada tem): por cima do chão e das criaturas, antes dos efeitos.
     if (this.snapshot?.instancia?.encontros?.length) {
-      desenharMarcadores(this.ctx, this.snapshot.instancia.encontros, { camX: this.camera.x, camY: this.camera.y, tile: TILE, z: this.snapshot.z, jogador: this.snapshot.player, desenharItem: drawItem });
+      desenharMarcadores(this.ctx, this.snapshot.instancia.encontros, { camX: this.camera.x, camY: this.camera.y, tile: TILE, z: this.snapshot.z, jogador: this.snapshot.player, desenharItem: drawItem, mouse: this.casaSobOMouse });
     }
     // As SAFE ZONES do andar (`map.seguras`, o editor de mapas): um véu e a borda, por baixo dos efeitos.
     this.drawZonasSeguras();
