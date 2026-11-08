@@ -10,8 +10,8 @@
 // pelo cinto de frascos — `FRASCOS` —, os mapas pelo Dispositivo e as joias pelos encaixes da árvore — `JOIAS`, lote 27.)
 import * as Catalogo from './catalogo.mjs';
 import { definirLeitorDeBase } from './condicoes-poe.mjs';
-import { traduzirPeca } from './traduzir.mjs';
-import { gerarPeca, caiNoSorteio } from './gerar.mjs';
+import { traduzirPeca, traduzirMod } from './traduzir.mjs';
+import { gerarPeca, caiNoSorteio, modificadoresDoUnico, definirFiltroDoSorteado } from './gerar.mjs';
 import { darPeca } from '../inventario.mjs';
 import * as DropsPorMonstro from './drops-por-monstro.mjs';
 import * as SocketsPoe from './sockets.mjs';
@@ -19,6 +19,7 @@ import * as Frascos from './frascos.mjs';
 import * as Mapas from './mapas.mjs';
 import * as PinaculosAcesso from './pinaculos-acesso.mjs';
 import { estadosDaRamificadora } from './ramificadoras.mjs';
+import { comCatalisador, NOME_DO_TIPO } from './catalisadores.mjs';
 import { readFileSync as lerArquivo } from 'node:fs';
 
 export const PRIMEIRO_ID = 7_000_000;
@@ -211,6 +212,21 @@ export function iniciar(itemCatalog) {
     REG.porBase.set(b.id, id);
     REG.porId.set(id, b.id);
   }
+  // (08/11, a Pesca — `pesca.mjs`) a VARA DE PESCAR: com o id FIXO 7.900.001 (fora da sequência acima, para não empurrar o id de outra peça). Veste
+  // na mão (duas mãos) e não ataca (no PoE a vara não usa habilidades de ataque); cai como as outras bases.
+  {
+    const b = cat.classes.Fishing_Rods?.bases.find((x) => x.id === 'Fishing_Rods/Fishing_Rod');
+    if (b) {
+      const id = 7_900_001;
+      itemCatalog[id] = {
+        id, name: b.nome, type: 'tools', slot: 'weapon', twoHanded: true, weight: 20, hasSprite: false, rarity: 'comum', stackable: false,
+        poe: { base: b.id, classe: 'Fishing_Rods', icone: b.icone ?? null, ...requisitosDaBase(b), ...previaDaBase(b) },
+      };
+      REG.porBase.set(b.id, id);
+      REG.porId.set(id, b.id);
+      REG.naoEquipaveis = REG.naoEquipaveis.filter((c) => c !== 'Fishing_Rods');
+    }
+  }
   // Os itens de missão (Acts do PoE: o item que o monstro alvo solta) entram junto.
   DropsPorMonstro.registrarItens(itemCatalog);
   return REG;
@@ -318,8 +334,8 @@ function separarLocaisDaArma(classe, t, af) {
  * `estaArma`, que a soma da peça troca pela mão do slot onde ela está (`condicoes-poe.doAnel`: na Mão Principal, `maoPrincipal`; na Secundária, `maoSecundaria` —
  * as tags do golpe, `fichaDoGolpe`). Só os efeitos que o golpe lê pela ficha dele (a lista); os eventos ("ao matar com esta arma") seguem globais.
  */
-const DESTA_ARMA = /\b(?:com|desta|por|n?esta) [Aa]rma\b/;
-const LIDOS_NO_GOLPE = /^(?:phys_as_extra_gelo_ou_raio|chama_santificada_corpo|veneno_mais_chance|veneno_mais_pct|incendio_mais|dot_multi_bleed)(?:@|$)/;
+const DESTA_ARMA = /\b(?:com|desta|dessa|por|n?esta|n?essa) [Aa]rma\b/;
+const LIDOS_NO_GOLPE = /^(?:phys_as_extra_gelo_ou_raio|chama_santificada_corpo|veneno_mais_chance|veneno_mais_pct|incendio_mais|dot_multi_bleed|chaos_pen)(?:@|$)/;
 function separarDestaArma(classe, t, af) {
   if (CLASSES_DO_JOGO[classe]?.slot !== 'weapon') return;
   for (const l of t.linhas) {
@@ -599,7 +615,20 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // Energia aumentado" do Peitoral, Elmo, Luvas, Botas e Escudo valem só na peça, como no PoE (`separarDefesasLocais`))
 // (88 — 08/11, aproximadas A5/A6: "com esta Arma" só na mão da arma (`separarDestaArma`); a maldição dos itens no nível 1 do PoB; a Carícia Vaal só nas
 // não-Vaal; a Luz de Lunaris pelo acerto Não Crítico)
-export const VERSAO_DA_TRADUCAO = 88;
+// (89 — 08/11, o balão dos únicos com 0 sem efeito, lotes B8–B16 e o que vier no mesmo PR: os velados, a criação, os visuais, os Catalisadores, a
+// Identificação, o Ungir e o Encantamento, o Abismo, a Pesca…)
+export const VERSAO_DA_TRADUCAO = 89;
+
+/**
+ * (08/11, a Síntese) O implícito de pool (um tier: `{ modelo, faixas }`) tem efeito no jogo? (nem inerte nem só registrado — guardado por modelo.) Os
+ * implícitos de Síntese sorteados (os Círculos, o Nebulis, o Sintetizador — `sintese.mjs`) só saem dos que têm.
+ */
+const COM_EFEITO = new Map();
+export function implicitoComEfeito(t) {
+  if (!COM_EFEITO.has(t.modelo)) COM_EFEITO.set(t.modelo, !['inerte', 'registrado'].includes(traduzirMod({ modelo: t.modelo, valores: (t.faixas ?? []).map((f) => f[0]) }).estado));
+  return COM_EFEITO.get(t.modelo);
+}
+definirFiltroDoSorteado((t, s) => s.origem !== 'synthesis' || implicitoComEfeito(t));
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
@@ -614,6 +643,9 @@ export function refazerPecasAntigas(estado) {
   const andar = (x, fundo = 0) => {
     if (!x || typeof x !== 'object' || visto.has(x) || fundo > 8) return;
     visto.add(x);
+    // (08/11, dono: "Re-sortear só a marcação") a peça única de antes dos sorteados com a marcação "[...]" ainda no lugar: só ela vira as linhas do pool
+    const remarcou = x.poe?.base && sortearMarcacoesAntigas(x.poe);
+    if (remarcou && (x.poe.tv ?? 1) >= VERSAO_DA_TRADUCAO) { recalcular(x); n++; }
     if (x.poe?.base && (x.poe.tv ?? 1) < VERSAO_DA_TRADUCAO) {
       recalcular(x);
       x.poe.tv = VERSAO_DA_TRADUCAO;
@@ -624,6 +656,25 @@ export function refazerPecasAntigas(estado) {
   };
   for (const [k, v] of Object.entries(estado)) if (!['hunt', 'derived', 'bestiary', 'quests', 'totals', 'progress'].includes(k)) andar(v);
   return n;
+}
+
+/**
+ * (08/11) As MARCAÇÕES das peças únicas antigas ("[veiled mod]", "[1-2 Random Shrine Buff]"…, de antes das linhas sorteadas): cada linha da peça cujo modelo
+ * é uma marcação do único (`linhasSorteadas.substitui`) sai, e no lugar dela entram as linhas sorteadas do pool — como na peça nova (`gerar.modificadoresDoUnico`,
+ * com a magnitude dos revelados, se a peça tem). As outras linhas e os valores ficam. Devolve se mudou.
+ */
+export function sortearMarcacoesAntigas(p, rng = Math.random) {
+  if (p?.raridade !== 'unico' || !p.unico || !(p.modificadores ?? []).length) return false;
+  const u = (Catalogo.catalogo()?.classes?.[p.classe]?.unicos ?? []).find((x) => x.slug === p.unico && x.linhasSorteadas?.substitui);
+  const marcas = u?.linhasSorteadas.substitui;
+  if (!marcas || !p.modificadores.some((m) => marcas[m.modelo])) return false;
+  const magnitude = (p.modificadores ?? []).filter((m) => /^Magnitude de Modificadores Revelados aumentada em \{0\}%$/.test(m.modelo ?? '')).map((m) => ({ ...m, faixas: (m.valores ?? []).map((v) => [v, v]) }));
+  p.modificadores = p.modificadores.flatMap((m) => {
+    const cadastro = marcas[m.modelo] ? u.modificadores.find((x) => x.modelo === m.modelo) : null;
+    if (!cadastro) return [m];
+    return modificadoresDoUnico({ ...u, implicitosSorteados: null, nomeSorteado: null, modificadores: [cadastro, ...magnitude] }, rng).filter((x) => x.sorteada);
+  });
+  return true;
 }
 
 /**
@@ -669,7 +720,16 @@ export function recalcular(peca, regras = Catalogo.REGRAS) {
     p.tv = VERSAO_DA_TRADUCAO;
     return peca;
   }
-  const t = traduzirPeca(p);
+  // (08/11) os CATALISADORES: na joia, as linhas do tipo da qualidade entram aumentadas (`catalisadores.comCatalisador`); o balão mostra os textos novos
+  const catalisada = comCatalisador(p);
+  const t = traduzirPeca(catalisada);
+  if (catalisada !== p) {
+    p.catalisados = Object.fromEntries(['implicitos', 'prefixos', 'sufixos', 'modificadores'].map((k) => [k, (catalisada[k] ?? []).map((m, i) => (m !== p[k][i] ? m.texto : null))]));
+    p.qualidadeNome = NOME_DO_TIPO[p.qualidadeTipo];
+  } else {
+    delete p.catalisados;
+    delete p.qualidadeNome;
+  }
   const af = { ...t.af };
   // (13/10: o "Sem Dano Físico" do único também aqui — antes, refazer a peça devolvia o dano físico da base — e o "sem Escudo de Energia"
   // d'O Apóstata: `baseDaPeca`, a mesma da peça nova.)
@@ -923,9 +983,26 @@ export function dropsDoMonstro(nivelDoBicho, tipo = 'normal', rng = Math.random,
   const pecas = [];
   for (let i = 0; i < n; i++) {
     const p = pecaSorteada(nivelDoBicho, rng, regras, raridadeAumentada);
-    if (p) pecas.push(p);
+    if (p) pecas.push(semIdentificar(p));
   }
   return pecas;
+}
+
+/**
+ * (08/11, o dono: "Como no PoE") a IDENTIFICAÇÃO: a peça Mágica, Rara ou Única que cai do monstro (e do baú) vem SEM IDENTIFICAR (`poe.identificado: false`) — os
+ * mods explícitos ficam escondidos no balão até o Pergaminho da Sabedoria (`moedas.mjs`), mas valem vestida, como no PoE. O mapa cai identificado (o jogo não
+ * tem mapa por identificar). `identificar` tira a marca.
+ */
+export function semIdentificar(peca) {
+  const p = peca?.poe;
+  if (p && ['magico', 'raro', 'unico'].includes(p.raridade) && p.classe !== Mapas.CLASSE) p.identificado = false;
+  return peca;
+}
+export const naoIdentificada = (peca) => peca?.poe?.identificado === false;
+export function identificar(peca) {
+  if (!naoIdentificada(peca)) return false;
+  delete peca.poe.identificado;
+  return true;
 }
 
 // ---------------------------------------------------------------- o começo do personagem (como no PoE)

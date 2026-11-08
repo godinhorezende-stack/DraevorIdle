@@ -36,19 +36,151 @@ export const ITEM_DO_TIPO = { 'bau-comum': 2472, 'bau-raro': 26164, 'bau-amaldic
 // branco, Mágico azul, Raro amarelo e o Grande Baú (o do mapa único) laranja.
 const COR_DO_BAU_POE = { 'bau-poe-normal': '#d8d0c0', 'bau-poe-magico': '#8888ff', 'bau-poe-raro': '#ffff77', 'bau-poe-grande': '#af6025' };
 
-const COR = { ...COR_DO_BAU_POE, portal: '#8a6bff', 'bau-comum': '#e0b84a', 'bau-raro': '#4ab3ff', 'bau-amaldicoado': '#b04aff', altar: '#ffd24c', sobrevivencia: '#ff6a4a', fenda: '#7a5cff', aprisionado: '#4fd0b0', 'area-secreta': '#5cc8ff', escolta: '#8fd06a' };
+// (dono, 08/11: "a sprite que quero que fique no lugar do baú na fase") o desenho dos baús do PoE: o Baú Ornamentado Misterioso (64×64), carregado uma vez.
+const SPRITE_DO_BAU_POE = '/client/assets/ui/baus/Mysterious_Ornate_Chest.gif';
+let imagemDoBau = null;
+function bauPoe() {
+  if (typeof Image === 'undefined') return null;
+  if (!imagemDoBau) {
+    imagemDoBau = new Image();
+    imagemDoBau.src = SPRITE_DO_BAU_POE;
+  }
+  return imagemDoBau.complete && imagemDoBau.naturalWidth ? imagemDoBau : null;
+}
+/** O rótulo do baú ao passar o mouse, como o do chão do PoE: a caixa escura com a borda e o nome na cor da raridade, na fonte do balão do PoE. */
+function rotuloDoPoe(ctx, texto, cx, base, cor) {
+  ctx.save();
+  ctx.globalAlpha = 1;
+  ctx.font = '500 13px "Alegreya SC", "Cinzel", Georgia, serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const w = Math.ceil(ctx.measureText(texto).width) + 14;
+  const h = 19;
+  const x = Math.round(cx - w / 2);
+  const y = Math.round(base - h);
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.82)';
+  ctx.fillRect(x, y, w, h);
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = cor;
+  ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+  ctx.fillStyle = cor;
+  ctx.fillText(texto, cx, y + h / 2 + 1);
+  ctx.restore();
+}
+
+/**
+ * (08/11) O ABISMO do PoE (`itens-poe/abismo.mjs`): o fosso escuro no chão com as fendas brilhando em volta (o verde-azulado do Abismo do PoE),
+ * pulsando; aberto (as ondas), as fendas crescem.
+ */
+function desenharAbismo(ctx, x, y, tile, ativo) {
+  const t = (typeof performance !== 'undefined' ? performance.now() : 0) / 600;
+  const cx = x + tile / 2;
+  const cy = y + tile * 0.62;
+  const brilho = 0.55 + 0.3 * Math.sin(t);
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = `rgba(63, 211, 143, ${brilho})`;
+  ctx.shadowColor = '#3fd38f';
+  ctx.shadowBlur = 8;
+  ctx.lineWidth = 2;
+  const alcance = tile * (ativo ? 1.25 : 0.85);
+  for (let i = 0; i < 6; i++) {
+    const a = (Math.PI * 2 * i) / 6 + 0.35;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(a) * tile * 0.3, cy + Math.sin(a) * tile * 0.14);
+    ctx.lineTo(cx + Math.cos(a + 0.18) * alcance * 0.65, cy + Math.sin(a + 0.18) * alcance * 0.3);
+    ctx.lineTo(cx + Math.cos(a - 0.08) * alcance, cy + Math.sin(a - 0.08) * alcance * 0.42);
+    ctx.stroke();
+  }
+  ctx.shadowBlur = 14;
+  ctx.fillStyle = '#05080a';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, tile * 0.42, tile * 0.2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.restore();
+}
+
+/**
+ * (08/11) A FENDA do PoE (`itens-poe/fenda.mjs`, a Breach): fechada, a mão roxa no chão pulsando; aberta, o círculo (o `raio` dela) onde você está
+ * "em uma Fenda".
+ */
+function desenharFenda(ctx, x, y, tile, ativa, raio) {
+  const t = (typeof performance !== 'undefined' ? performance.now() : 0) / 500;
+  const cx = x + tile / 2;
+  const cy = y + tile / 2;
+  ctx.save();
+  if (ativa) {
+    const r = tile * (raio + 0.5);
+    const g = ctx.createRadialGradient(cx, cy, r * 0.2, cx, cy, r);
+    g.addColorStop(0, 'rgba(150, 60, 220, 0.05)');
+    g.addColorStop(0.85, 'rgba(150, 60, 220, 0.16)');
+    g.addColorStop(1, 'rgba(150, 60, 220, 0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = `rgba(200, 120, 255, ${0.5 + 0.25 * Math.sin(t)})`;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+  ctx.shadowColor = '#b05cff';
+  ctx.shadowBlur = 10;
+  ctx.fillStyle = `rgba(176, 92, 255, ${0.7 + 0.2 * Math.sin(t)})`;
+  // a mão: a palma e cinco dedos abertos
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + tile * 0.12, tile * 0.18, tile * 0.14, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = ctx.fillStyle;
+  ctx.lineWidth = tile * 0.08;
+  for (let i = 0; i < 5; i++) {
+    const a = -Math.PI / 2 + (i - 2) * 0.42;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(a) * tile * 0.12, cy + tile * 0.1 + Math.sin(a) * tile * 0.1);
+    ctx.lineTo(cx + Math.cos(a) * tile * 0.38, cy + tile * 0.1 + Math.sin(a) * tile * 0.34);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+const COR = { ...COR_DO_BAU_POE, 'abismo-poe': '#3fd38f', 'fenda-poe': '#c78bff', portal: '#8a6bff', 'bau-comum': '#e0b84a', 'bau-raro': '#4ab3ff', 'bau-amaldicoado': '#b04aff', altar: '#ffd24c', sobrevivencia: '#ff6a4a', fenda: '#7a5cff', aprisionado: '#4fd0b0', 'area-secreta': '#5cc8ff', escolta: '#8fd06a' };
 
 /**
  * Desenha os marcadores: o SPRITE do jogo (`desenharItem`, que devolve `false` enquanto a folha não chegou) ou, até lá,
  * um baú/altar desenhado em código. Por cima do chão e abaixo das criaturas em volta.
  */
-export function desenharMarcadores(ctx, lista, { camX, camY, tile, z, jogador, desenharItem = null }) {
+export function desenharMarcadores(ctx, lista, { camX, camY, tile, z, jogador, desenharItem = null, mouse = null }) {
   for (const e of lista ?? []) {
     if (e.z != null && z != null && e.z !== z) continue;
     const x = e.x * tile - camX;
     const y = e.y * tile - camY;
     const cor = COR[e.tipo] ?? '#e0b84a';
     const perto = jogador && e.estado === 'disponivel' && distancia(e, jogador) <= ALCANCE_DE_INTERACAO;
+    // (08/11) o BAÚ DO PoE: o sprite do baú (maior que a casa, de pé nela) e o nome só com o mouse em cima, no estilo do PoE
+    const imagemBau = /^bau-poe-/.test(e.tipo) ? bauPoe() : null;
+    if (imagemBau) {
+      // (o gif tem margem transparente: no tamanho nativo, 64 px = 2 casas, o baú fica do tamanho de uma criatura e nítido; os pés na casa)
+      const lado = tile * 2;
+      const topo = Math.round(y + tile - lado * 0.82);
+      ctx.save();
+      ctx.globalAlpha = e.estado === 'disponivel' ? 1 : 0.45;
+      ctx.drawImage(imagemBau, Math.round(x + tile / 2 - lado / 2), topo, lado, lado);
+      ctx.restore();
+      if (mouse && mouse.x === e.x && mouse.y === e.y && e.estado === 'disponivel') rotuloDoPoe(ctx, e.nome || 'Baú', x + tile / 2, topo + lado * 0.22, cor);
+      continue;
+    }
+    if (e.tipo === 'fenda-poe') {
+      desenharFenda(ctx, x, y, tile, e.estado === 'ativo', e.raio ?? 6);
+      if (mouse && mouse.x === e.x && mouse.y === e.y) rotuloDoPoe(ctx, e.nome || 'Fenda', x + tile / 2, y - 2, cor);
+      continue;
+    }
+    if (e.tipo === 'abismo-poe') {
+      desenharAbismo(ctx, x, y, tile, e.estado === 'ativo');
+      if (mouse && mouse.x === e.x && mouse.y === e.y) rotuloDoPoe(ctx, e.nome || 'Abismo', x + tile / 2, y - 2, cor);
+      continue;
+    }
     ctx.save();
     ctx.globalAlpha = e.estado === 'ativo' ? 0.55 : 1;
     // O brilho no chão.

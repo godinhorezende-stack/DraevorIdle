@@ -137,6 +137,14 @@ export function traduzirParte(parte, valores, opcoes = {}) {
       const efeitos = base.efeitos.map((e) => ({ ...e, stat: comEscala(e.stat, `devocao:${n}`) }));
       if (['equivalente', 'aproximado', 'novo'].includes(base.estado) && efeitos.every(temEfeito)) return { estado: 'novo', efeitos, nota: base.nota ?? null, regra: base.regra };
     }
+    // (08/11, balão 0 sem efeito — o Emblema do Precursor) a ESCALA das Cargas: "<efeito> por (cada) Carga de Tolerância/Frenesi/Poder" — o efeito pelas regras de
+    // sempre, com `%carga:<tipo>` (as cargas que você tem agora — `condicoes-poe.fatorDaEscala`)
+    const c = /^(.+?),? por (?:cada )?[Cc]arga de (Tolerância|Frenesi|Poder)$/.exec(String(parte).trim());
+    if (c) {
+      const base = traduzirParte(c[1], valores, { ...opcoes, semEscala: true });
+      const efeitos = base.efeitos.map((e) => ({ ...e, stat: comEscala(e.stat, `carga:${CARGA[c[2]]}`) }));
+      if (['equivalente', 'aproximado', 'novo'].includes(base.estado) && efeitos.every(temEfeito)) return { estado: 'novo', efeitos, nota: base.nota ?? null, regra: base.regra };
+    }
   }
   // "{n}% de aumento do X" / "{n}% de redução da X" (o poedb em português escreve das duas formas): a forma das regras ("X aumentado em
   // {n}%"), só quando nenhuma regra casou o texto como está.
@@ -214,7 +222,7 @@ const SUFIXOS_DE_CONDICAO = [
 const INFLUENCIA_DO_TEXTO = { 'ancião': 'elder', criador: 'shaper', 'senhor da guerra': 'warlord', 'caçador': 'hunter', redentora: 'redeemer', cruzado: 'crusader' };
 const SUFIXOS_COM_PARAMETRO = [
   [/^(.+?),? enquanto (?:carregando|empunhando|empunhar|segurando) (?:um|uma) (Cajado|Arco|Varinha|Adaga|Garra|Espada|Machado|Maça|Cetro)$/, (m) => ARMA[m[2]]],
-  [/^(.+?),? (?:enquanto|quando) (?:você )?(?:estiver )?(?:no máximo de|com o Máximo de) Cargas de (Tolerância|Frenesi|Poder)$/, (m) => `cargasMax:${CARGA[m[2]]}`],
+  [/^(.+?),? (?:enquanto|quando) (?:você )?(?:estiver )?(?:no [Mm]áximo de|com o [Mm]áximo de) Cargas de (Tolerância|Frenesi|Poder)$/, (m) => `cargasMax:${CARGA[m[2]]}`],
   [/^(.+?),? (?:quando|enquanto) você não (?:tiver|tem|possuir) Cargas de (Tolerância|Frenesi|Poder)$/, (m) => `semCargas:${CARGA[m[2]]}`],
   [/^(.+?),? contra Inimigos (Resfriados|Congelados|Eletrizados|Cegos|Amaldiçoados|Sangrando|Envenenados|Incendiados|Mutilados|Lentos|Provocados)$/, (m) => ALVO[m[2]]],
   [/^(.+?),? caso você tenha ao menos \{(\d+)\} de Escudo de Energia Máximo$/, (m, valores) => `escudoMin:${Number(valores[Number(m[2])]) || 0}`],

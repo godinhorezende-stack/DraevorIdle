@@ -14,6 +14,2002 @@
   ],
   "regras": [
     {
+      "padrao": "^Pode ser criado com Omnichama como se fosse raro$",
+      "efeitos": [
+        {
+          "stat": "omnichama_como_raro",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "os Ducados do Soberano (Forja → Omnichama) valem nele como numa peça Rara (`ducados.aceita`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B19: a Omnichama (os Ducados)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não pode ganhar Intangibilidade$",
+      "efeitos": [
+        {
+          "stat": "sem_intangibilidade",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a criação com a Omnichama não lhe dá Intangibilidade (`ducados.comOmnichama`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B19: a Omnichama (os Ducados)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Quando usado no Sintetizador, o novo item terá um Modificador de Arauto adicional$",
+      "efeitos": [
+        {
+          "stat": "sintese_arauto_extra",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "no Sintetizador (Forja → Síntese), o Modificador de Arauto deste Círculo vai como implícito a mais na peça nova (`sintese.mjs`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B18: a Síntese",
+      "_nova": true
+    },
+    {
+      "padrao": "^Propriedades são dobradas enquanto em uma Fenda$",
+      "efeitos": [
+        {
+          "stat": "dobrado_em_fenda",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "dentro de uma Fenda aberta (`fenda.mjs`, nos mapas), os números da peça contam em dobro (`afixos.somarPeca`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B17: a Fenda",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% por Rito da Lua concluído$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%ritosDaLua",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o Rito da Lua (o dono, 08/11: \"Chefes de ato mortos\" — o PoE não diz): cada chefe de ato vencido na dificuldade, até 10",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B17: o Rito da Lua",
+      "_nova": true
+    },
+    {
+      "padrao": "^Sensibilidade da Fisgada aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "pesca_sensibilidade_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a janela para puxar depois da mordida (`pesca.mjs`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Consumo da Reserva de Pesca aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "pesca_consumo_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "cada peixe gasta mais da reserva da área (`pesca.mjs`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Consumo da Reserva de Pesca reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "pesca_consumo_pct",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "cada peixe gasta menos da reserva da área (`pesca.mjs`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Alcance da Pesca aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "pesca_alcance_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a água ao alcance da linha (`pesca.mjs`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Raridade de Peixes Pescados aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "pesca_raridade_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a chance do peixe raro, exótico e único (`pesca.mjs`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Quantidade de Peixes Pescados aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "pesca_quantidade_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a chance de mais um peixe por puxada (`pesca.mjs`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Quantidade de Peixes Pescados reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "pesca_quantidade_pct",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a chance de a puxada vir sem peixe (`pesca.mjs`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Força da Linha de Pesca aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "pesca_linha_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a chance de a linha arrebentar cai (`pesca.mjs`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você pode pescar Peixes Corrompidos$",
+      "efeitos": [
+        {
+          "stat": "pesca_corrompidos",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o Peixe Corrompido (e a chance de um Orbe Vaal) — `pesca.mjs`",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você pode pescar Peixes Exóticos$",
+      "efeitos": [
+        {
+          "stat": "pesca_exoticos",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o Peixe Exótico das Sereias (`pesca.mjs`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Isca (?:de Pena de Rhoa|de Verme da Sereia|Taumatúrgica)$",
+      "efeitos": [
+        {
+          "stat": "pesca_isca",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a isca: a mordida vem mais cedo (o PoE não dá número — `regras.pesca.iscaPct`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Anzol de Pedra Karui$",
+      "efeitos": [
+        {
+          "stat": "pesca_anzol",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o anzol: a janela para puxar é maior (o PoE não dá número — `regras.pesca.anzolPct`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Brilha enquanto estiver em uma área contendo um Peixe Único$",
+      "efeitos": [
+        {
+          "stat": "visual:brilho_peixe",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o brilho em volta de você na área com o Peixe Único (`pesca.brilha`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano com Acertos e Afecções contra Monstros Abissais aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@alvoAbissal",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@alvoAbissal",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "os monstros das ondas do Abismo (`abismo.mjs`: nos mapas e nos atos 6 a 10)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B15: o Abismo",
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona a de Dano de Raio$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "a arma que a habilidade Lâmina de Energia cria (a base não cai — `jogo.mjs`): o Raio dela vem da gema, pelo Escudo de Energia (`gemas-a2`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B14",
+      "_nova": true
+    },
+    {
+      "padrao": "^Aloca (?!.* se você possuir )(.+?)$",
+      "nomeLivre": true,
+      "efeitos": [
+        {
+          "stat": "ungido:{NOME}",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o encantamento do Ungir: vestida, o notável vale como alocado na árvore (`passivas/arvore.alocadosPeloUngir`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B14: o Ungir e o Encantamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pode ser ungido$",
+      "efeitos": [
+        {
+          "stat": "pode_ser_ungido",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "aceita os 3 Óleos do Ungir como um amuleto (`ungir.ungivel`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B14: o Ungir e o Encantamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pode ter \\{(\\d+)\\} Modificadores Encantados extras$",
+      "efeitos": [
+        {
+          "stat": "encantamentos_extras",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "cabem mais N encantamentos (Ungir e Encantamento — `ungir.maximoDeEncantamentos`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B14: o Ungir e o Encantamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Itens Mágicos encontrados são Identificados$",
+      "efeitos": [
+        {
+          "stat": "identifica_magicos",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "as peças Mágicas que você acha já vêm identificadas (`combate.identificarAoAchar`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B13: a Identificação",
+      "_nova": true
+    },
+    {
+      "padrao": "^Qualidade Máxima é \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "qualidade_max",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o teto da qualidade da peça (os Catalisadores, `moedas.subirQualidade`)",
+      "_08_11q": "08/11 — balão 0 sem efeito, lote B12: os Catalisadores",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não Perde Experiência quando você morrer porque um alvo Vinculado morreu$",
+      "efeitos": [
+        {
+          "stat": "sem_perda_exp_vinculo",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a morte porque o alvo vinculado morreu não tira experiência (`Morte.conta`)",
+      "_08_11p": "08/11 — balão 0 sem efeito, lote B11: os sistemas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Sanguinolência Extra$",
+      "efeitos": [
+        {
+          "stat": "visual:sangue",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o abate solta mais sangue (só na tela)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pegadas Sanguinárias$",
+      "efeitos": [
+        {
+          "stat": "visual:pegadas:sangue",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "pegadas de sangue por onde você anda (só na tela)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pegadas Necróticas$",
+      "efeitos": [
+        {
+          "stat": "visual:pegadas:necro",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "pegadas necróticas por onde você anda (só na tela)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pegadas Cascos Ardentes$",
+      "efeitos": [
+        {
+          "stat": "visual:pegadas:cascos",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "pegadas de cascos em brasa por onde você anda (só na tela)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pegadas Enevoadas$",
+      "efeitos": [
+        {
+          "stat": "visual:pegadas:nevoa",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "pegadas de névoa por onde você anda (só na tela)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pegadas Celestiais$",
+      "efeitos": [
+        {
+          "stat": "visual:pegadas:celeste",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "pegadas celestiais por onde você anda (só na tela)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pegadas de Mercúrio$",
+      "efeitos": [
+        {
+          "stat": "visual:pegadas:mercurio",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "pegadas de mercúrio por onde você anda (só na tela)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^frenzy charge blood dance art variation \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "visual:frenesi_sangue",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "as Cargas de Frenesi com a arte da Dança Sangrenta (só na tela)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^use goddess player audio \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "visual:som_deusa",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a voz da Deusa nos seus abates de Únicos e chefes (o som)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^unique insanity do weird things \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "visual:insanidade",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a Insanidade: a tela tremula e as cores se desviam de vez em quando (só na tela)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^local off hand visual identity override hash \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "visual:asas",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "as asas da Entropia nas suas costas (só na tela)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^sound on rare kill ice whisper \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "visual:som_gelo",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o sussurro de gelo ao matar um Raro ou Único (o som)",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos mostram sua Categoria de Monstros$",
+      "efeitos": [
+        {
+          "stat": "visual:categoria",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a categoria do monstro (Besta, Demônio, Humanoide, Construto, Morto-vivo) aparece sobre o nome",
+      "_08_11o": "08/11 — balão 0 sem efeito, lote B10: os visuais e os sons",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pode ser modificado enquanto Corrompido$",
+      "efeitos": [
+        {
+          "stat": "modificavel_corrompido",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a peça corrompida aceita as moedas (e o Orbe Vaal de novo) — `moedas.modificavelCorrompida`",
+      "_08_11n": "08/11 — balão 0 sem efeito, lote B9: as regras de criação",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pode ter até \\{(\\d+)\\} Modificadores Implícitos enquanto o Item possuir este Modificador$",
+      "efeitos": [
+        {
+          "stat": "implicitos_max",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o implícito do Orbe Vaal entra ao lado dos que a peça tem, até o máximo",
+      "_08_11n": "08/11 — balão 0 sem efeito, lote B9: as regras de criação",
+      "_nova": true
+    },
+    {
+      "padrao": "^Possui um Mod Implícito adicional$",
+      "efeitos": [
+        {
+          "stat": "implicitos_extra",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o implícito do Orbe Vaal entra ao lado dos da base (um a mais)",
+      "_08_11n": "08/11 — balão 0 sem efeito, lote B9: as regras de criação",
+      "_nova": true
+    },
+    {
+      "padrao": "^Sua Chance de Acerto Crítico é Sortuda enquanto Concentrado$",
+      "efeitos": [
+        {
+          "stat": "critico_sortudo@buff:concentrado",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Eletriza Inimigos próximos por \\{(\\d+)\\} Segundos ao se Concentrar$",
+      "efeitos": [
+        {
+          "stat": "ev:concentrar:proximos:eletrizado:{V1}",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os monstros a até 3 casas (o PoE não publica o raio)",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao Nível das Gemas de AoE Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local@area",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Evasão aumentada em \\{(\\d+)\\}% enquanto Concentrado$",
+      "efeitos": [
+        {
+          "stat": "evasion_pct@buff:concentrado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Redução adicional de Dano Físico enquanto Concentrado$",
+      "efeitos": [
+        {
+          "stat": "phys_res@buff:concentrado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Magias Encaixadas quando você Focar, com Recarga de \\{(\\d+)\\} segundos?$",
+      "efeitos": [
+        {
+          "stat": "gatilho_local:concentrar:magia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\}% de Dano Não Caos como Dano de Caos extra$",
+      "efeitos": [
+        {
+          "stat": "naocaos_as_extra_chaos",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Duração das Afecções causadas por você aumentada em \\{(\\d+)\\}% enquanto Concentrado$",
+      "efeitos": [
+        {
+          "stat": "ailment_duration@buff:concentrado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Duração das Afecções causadas por você aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_duration",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de causar Dano Dobrado enquanto Concentrado$",
+      "efeitos": [
+        {
+          "stat": "chance_dano_dobrado@buff:concentrado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano é retirado da Mana antes da Vida enquanto Concentrado$",
+      "efeitos": [
+        {
+          "stat": "dano_pela_mana_pct@buff:concentrado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano é retirado da Mana antes da Vida$",
+      "efeitos": [
+        {
+          "stat": "dano_pela_mana_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao máximo de Fortificações enquanto Concentrado$",
+      "efeitos": [
+        {
+          "stat": "max_fortificacao@buff:concentrado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Acerto Crítico enquanto houver um Inimigo Raro ou Único Próximo$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@raroOuUnicoPerto",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Velocidade de Ataque enquanto houver um Inimigo Raro ou Único Próximo$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@raroOuUnicoPerto",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ataques com essa Arma Penetram \\{(\\d+)\\}% da Resistência a Caos$",
+      "efeitos": [
+        {
+          "stat": "chaos_pen@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Espectros levantados têm \\+\\{(\\d+)\\}% para todas as resistências máximas$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:espectro:minion_res_max",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Espectros levantados disparam \\{(\\d+)\\} projéteis adicionais$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:espectro:minion_extra_projectiles",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Espectros levantados têm \\+\\{(\\d+)\\}% para a chance de golpe crítico$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:espectro:minion_crit_flat",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Armadura durante a Anulação do Ganho de Almas$",
+      "efeitos": [
+        {
+          "stat": "armor_flat@almasImpedidas",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de evitar dano de cada elemento de ataques durante o impedimento de ganho de almas$",
+      "efeitos": [
+        {
+          "stat": "evitar_dano_elemental_ataque@almasImpedidas",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Evasão é Regenerada como Vida por segundo enquanto Concentrado$",
+      "efeitos": [
+        {
+          "stat": "evasao_regen_vida_pct@buff:concentrado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% de Mana e Escudo de Energia ao se Concentrar$",
+      "efeitos": [
+        {
+          "stat": "ev:concentrar:manaPct",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ev:concentrar:esPct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Magnitude de Modificadores Revelados aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "magnitude_revelados",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "os mods revelados da peça já saem com a magnitude (o texto e o valor)",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^\\+\\{(\\d+)\\} ao número de Arbalistas Convocadas$",
+      "efeitos": [
+        {
+          "stat": "max_lacaio:arbalista",
+          "valor": "{1}"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^Arbalistas Convocadas Convertem \\{(\\d+)\\}% do Dano Físico para Dano de Fogo$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_conv_fire",
+          "valor": "{1}"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^Arbalistas Convocadas Convertem \\{(\\d+)\\}% do Dano Físico para Dano de Gelo$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_conv_ice",
+          "valor": "{1}"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^Arbalistas Convocadas Convertem \\{(\\d+)\\}% do Dano Físico para Dano de Raio$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_conv_energy",
+          "valor": "{1}"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^Arbalistas Convocadas têm \\{(\\d+)\\}% de chance de Incendiar$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_chance_incendiar",
+          "valor": "{1}"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^Arbalistas Convocadas têm \\{(\\d+)\\}% de chance de Congelar$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_chance_congelar",
+          "valor": "{1}"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^Arbalistas Convocadas têm \\{(\\d+)\\}% de chance de Eletrizar$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_chance_eletrizar",
+          "valor": "{1}"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^Arbalistas Convocadas têm \\{(\\d+)\\}% de chance de Congelar, Eletrizar e Incendiar$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_chance_congelar",
+          "valor": "{1}"
+        },
+        {
+          "stat": "lacaio_tipo:arbalista:minion_chance_eletrizar",
+          "valor": "{1}"
+        },
+        {
+          "stat": "lacaio_tipo:arbalista:minion_chance_incendiar",
+          "valor": "{1}"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^Arbalistas Convocadas disparam \\{(\\d+)\\} Projéteis adicionais$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_extra_projectiles",
+          "valor": "{1}"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "aproximado",
+      "padrao": "^Arbalistas Convocadas ganham \\{(\\d+)\\}% do Dano Físico como Dano de Fogo Extra$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_phys_as_extra",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o dano extra entra no golpe do lacaio, sem a resistência do outro elemento.",
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "aproximado",
+      "padrao": "^Arbalistas Convocadas ganham \\{(\\d+)\\}% do Dano Físico como Dano de Gelo Extra$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_phys_as_extra",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o dano extra entra no golpe do lacaio, sem a resistência do outro elemento.",
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "aproximado",
+      "padrao": "^Arbalistas Convocadas ganham \\{(\\d+)\\}% do Dano Físico como Dano de Raio Extra$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_phys_as_extra",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o dano extra entra no golpe do lacaio, sem a resistência do outro elemento.",
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^Arbalistas Convocadas têm \\{(\\d+)\\}% de chance de infligir Exposição a Fogo ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_chance_exposicao_fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^Arbalistas Convocadas têm \\{(\\d+)\\}% de chance de infligir Exposição a Gelo ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_chance_exposicao_gelo",
+          "valor": "{1}"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^Arbalistas Convocadas têm \\{(\\d+)\\}% de chance de infligir Exposição a Raio ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_chance_exposicao_raio",
+          "valor": "{1}"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^Arbalistas Convocadas têm \\{(\\d+)\\}% de chance de Dilacerar por \\{(\\d+)\\} segundos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_chance_mutilar",
+          "valor": "{1}"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^Arbalistas Convocadas têm \\{(\\d+)\\}% de chance de Intimidar por \\{(\\d+)\\} segundos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_chance_intimidar",
+          "valor": "{1}"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^Arbalistas Convocadas têm \\{(\\d+)\\}% de chance de Inervar por \\{(\\d+)\\} segundos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_chance_inervar",
+          "valor": "{1}"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^Arbalistas Convocadas têm \\{(\\d+)\\}% de chance de Esmagar ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_chance_esmagar",
+          "valor": "{1}"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^Arbalistas Convocadas têm \\{(\\d+)\\}% de chance de Envenenar$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_chance_envenenar",
+          "valor": "{1}"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^Arbalistas Convocadas têm \\{(\\d+)\\}% de chance de causar Dano Dobrado$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_dano_dobrado",
+          "valor": "{1}"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^Arbalistas Convocadas têm Velocidade de Ataque aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_atk_speed",
+          "valor": "{1}"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^Ataques da Arbalista Convocada têm \\{(\\d+)\\}% de chance de infligir Sangramento$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_chance_sangrar",
+          "valor": "{1}"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^Projéteis da Arbalista Convocada Atravessam \\{(\\d+)\\} Alvos adicionais$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_perfurar",
+          "valor": "{1}"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^Projéteis da Arbalista Convocada Ricocheteiam \\{(\\d+)\\} vezes$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_ricochetes",
+          "valor": "{1}"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^Projéteis da Arbalista Convocada se Difundem$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_bifurcar",
+          "valor": "1"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "estado": "equivalente",
+      "padrao": "^Projéteis da Arbalista Convocada se Dividem em \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:arbalista:minion_divisao",
+          "valor": "{1}"
+        }
+      ],
+      "_08_11l": "08/11 — balão 0 sem efeito, lote B7: as Arbalistas da Marcha de Vorana (os efeitos só no lacaio do tipo — lacaio_tipo:arbalista)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades Vaal Encaixadas causam \\{(\\d+)\\}% mais Dano$",
+      "efeitos": [
+        {
+          "stat": "mais_dano_local@vaal",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11k": "08/11 — balão 0 sem efeito, lote B6: a Autoridade do Triunvirato",
+      "_nova": true
+    },
+    {
+      "padrao": "^Acertos de Habilidades Vaal Encaixadas ignoram as Resistências dos Monstros Inimigos$",
+      "efeitos": [
+        {
+          "stat": "gema_local:acertos_ignoram_res@vaal",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11k": "08/11 — balão 0 sem efeito, lote B6: a Autoridade do Triunvirato (os efeitos só nas Vaal encaixadas no anel — gema_local)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Acertos com Habilidades Vaal Encaixadas ignoram a Redução de Dano Físico dos Monstros$",
+      "efeitos": [
+        {
+          "stat": "gema_local:ignora_reducao_fisica@vaal",
+          "valor": "100"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11k": "08/11 — balão 0 sem efeito, lote B6: a Autoridade do Triunvirato (os efeitos só nas Vaal encaixadas no anel — gema_local)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades Vaal Encaixadas têm Velocidade de Projétil aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "gema_local:projectile_speed@vaal",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11k": "08/11 — balão 0 sem efeito, lote B6: a Autoridade do Triunvirato (os efeitos só nas Vaal encaixadas no anel — gema_local)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades Vaal Encaixadas requerem \\{(\\d+)\\}% menos Almas por Uso$",
+      "efeitos": [
+        {
+          "stat": "gema_local:vaal_almas_menos@vaal",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "as Almas são a recarga das Vaal no jogo: a recarga × (1 − X%)",
+      "estado": "equivalente",
+      "_08_11k": "08/11 — balão 0 sem efeito, lote B6: a Autoridade do Triunvirato (os efeitos só nas Vaal encaixadas no anel — gema_local)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades Vaal Encaixadas têm \\{(\\d+)\\}% de chance de ganharem novamente as Almas consumidas quando utilizadas$",
+      "efeitos": [
+        {
+          "stat": "gema_local:vaal_almas_de_volta_chance@vaal",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "as Almas são a recarga das Vaal no jogo: na chance, a Vaal usada não entra em recarga",
+      "estado": "equivalente",
+      "_08_11k": "08/11 — balão 0 sem efeito, lote B6: a Autoridade do Triunvirato (os efeitos só nas Vaal encaixadas no anel — gema_local)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades Vaal Encaixadas concedem Elusivo quando Usadas$",
+      "efeitos": [
+        {
+          "stat": "gema_local:vaal_elusivo_ao_usar@vaal",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11k": "08/11 — balão 0 sem efeito, lote B6: a Autoridade do Triunvirato (os efeitos só nas Vaal encaixadas no anel — gema_local)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você tem Vento Favorável se usou uma Habilidade Vaal Encaixada Recentemente$",
+      "efeitos": [
+        {
+          "stat": "gema_local:vaal_vento_ao_usar@vaal",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11k": "08/11 — balão 0 sem efeito, lote B6: a Autoridade do Triunvirato (os efeitos só nas Vaal encaixadas no anel — gema_local)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades Vaal Encaixadas têm Efeito em Área aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc_local@vaal",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11k": "08/11 — balão 0 sem efeito, lote B6: a Autoridade do Triunvirato (os efeitos só nas Vaal encaixadas no anel — gema_local)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades Vaal Encaixadas têm Duração do Efeito da Habilidade aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "gema_local:duracaoPct@vaal",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11k": "08/11 — balão 0 sem efeito, lote B6: a Autoridade do Triunvirato (os efeitos só nas Vaal encaixadas no anel — gema_local)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades Vaal Encaixadas têm Duração da Prevenção do Ganho de Almas reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "gema_local:impedimento_almas_duracao_inc@vaal",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11k": "08/11 — balão 0 sem efeito, lote B6: a Autoridade do Triunvirato (os efeitos só nas Vaal encaixadas no anel — gema_local)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano com Acertos das Habilidades Vaal Encaixadas é Sortudo$",
+      "efeitos": [
+        {
+          "stat": "gema_local:dano_acertos_sortudo@vaal",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11k": "08/11 — balão 0 sem efeito, lote B6: a Autoridade do Triunvirato (os efeitos só nas Vaal encaixadas no anel — gema_local)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades Vaal Encaixadas têm Efeito de Aura aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "gema_local:efeitoAuraPct@vaal",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11k": "08/11 — balão 0 sem efeito, lote B6: a Autoridade do Triunvirato (os efeitos só nas Vaal encaixadas no anel — gema_local)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Com uma Joia do Olho Assassinh?o Encaixada, Acertos Corpo a Corpo têm \\{(\\d+)\\}% de chance de Fortificar$",
+      "efeitos": [
+        {
+          "stat": "chance_fortificar@corpo+comAbissalLocal:Murderous_Eye_Jewel",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11j": "08/11 — balão 0 sem efeito, lote B5: o Punho da Sepultura (os mods que dependem da joia abissal encaixada)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Com uma Joia do Olho Assassinh?o Encaixada, Intimida Inimigos por \\{(\\d+)\\} segundos ao Acertar com Ataques$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:intimidado:{V1}@ataque+comAbissalLocal:Murderous_Eye_Jewel",
+          "valor": "100"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11j": "08/11 — balão 0 sem efeito, lote B5: o Punho da Sepultura (os mods que dependem da joia abissal encaixada)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Com uma Joia do Olho Assassinh?o Encaixada, Ataques Corpo a Corpo concedem \\{(\\d+)\\} de Fúria ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "furia_por_acerto@corpo+comAbissalLocal:Murderous_Eye_Jewel",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11j": "08/11 — balão 0 sem efeito, lote B5: o Punho da Sepultura (os mods que dependem da joia abissal encaixada)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Com uma Joia do Olho Examinador Encaixada, Cega Inimigos por \\{(\\d+)\\} segundos ao Acertar com Ataques$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:cego:{V1}@ataque+comAbissalLocal:Searching_Eye_Jewel",
+          "valor": "100"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11j": "08/11 — balão 0 sem efeito, lote B5: o Punho da Sepultura (os mods que dependem da joia abissal encaixada)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Com uma Joia do Olho Examinador Encaixada, Mutila Inimigos por \\{(\\d+)\\} segundos ao Acertar com Ataques$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:mutilado:{V1}@ataque+comAbissalLocal:Searching_Eye_Jewel",
+          "valor": "100"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11j": "08/11 — balão 0 sem efeito, lote B5: o Punho da Sepultura (os mods que dependem da joia abissal encaixada)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Com uma Joia do Olho Examinador Encaixada, Ataques têm \\{(\\d+)\\}% de chance de concederem Agressividade ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:buffChance:agressividade:4@ataque+comAbissalLocal:Searching_Eye_Jewel",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11j": "08/11 — balão 0 sem efeito, lote B5: o Punho da Sepultura (os mods que dependem da joia abissal encaixada)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Com um Olho Fantasmagórico Encaixado, Lacaios possuem \\+\\{(\\d+)\\} de Precisão$",
+      "efeitos": [
+        {
+          "stat": "minion_precisao@comAbissalLocal:Ghastly_Eye_Jewel",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11j": "08/11 — balão 0 sem efeito, lote B5: o Punho da Sepultura (os mods que dependem da joia abissal encaixada)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você tem o bônus do Altar da Aceleração, se não estiver sob o efeito de frascos$",
+      "efeitos": [
+        {
+          "stat": "sempre:altarAceleracao@semFrasco",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11i": "08/11 — balão 0 sem efeito, lote B4: os Gritos dos Dessecados (o bônus do Altar sem frasco ativo)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você tem o bônus do Altar Brutal, se não estiver sob o efeito de frascos$",
+      "efeitos": [
+        {
+          "stat": "sempre:altarBrutal@semFrasco",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11i": "08/11 — balão 0 sem efeito, lote B4: os Gritos dos Dessecados (o bônus do Altar sem frasco ativo)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você tem o bônus do Altar Congelante Maior, se não estiver sob o efeito de frascos$",
+      "efeitos": [
+        {
+          "stat": "sempre:altarCongelanteMaior@semFrasco",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11i": "08/11 — balão 0 sem efeito, lote B4: os Gritos dos Dessecados (o bônus do Altar sem frasco ativo)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você tem o bônus do Altar Diamante, se não estiver sob o efeito de frascos$",
+      "efeitos": [
+        {
+          "stat": "sempre:altarDiamante@semFrasco",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11i": "08/11 — balão 0 sem efeito, lote B4: os Gritos dos Dessecados (o bônus do Altar sem frasco ativo)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você tem o bônus do Altar Ecoante, se não estiver sob o efeito de frascos$",
+      "efeitos": [
+        {
+          "stat": "sempre:altarEcoante@semFrasco",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11i": "08/11 — balão 0 sem efeito, lote B4: os Gritos dos Dessecados (o bônus do Altar sem frasco ativo)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você tem o bônus do Altar Sombrio, se não estiver sob o efeito de frascos$",
+      "efeitos": [
+        {
+          "stat": "sempre:altarSombrio@semFrasco",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11i": "08/11 — balão 0 sem efeito, lote B4: os Gritos dos Dessecados (o bônus do Altar sem frasco ativo)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você tem o bônus do Altar Impenetrável, se não estiver sob o efeito de frascos$",
+      "efeitos": [
+        {
+          "stat": "sempre:altarImpenetravel@semFrasco",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11i": "08/11 — balão 0 sem efeito, lote B4: os Gritos dos Dessecados (o bônus do Altar sem frasco ativo)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você tem o bônus do Altar Maciço, se não estiver sob o efeito de frascos$",
+      "efeitos": [
+        {
+          "stat": "sempre:altarMassivo@semFrasco",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11i": "08/11 — balão 0 sem efeito, lote B4: os Gritos dos Dessecados (o bônus do Altar sem frasco ativo)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você tem o bônus do Altar Revigorante, se não estiver sob o efeito de frascos$",
+      "efeitos": [
+        {
+          "stat": "sempre:altarReabastecimento@semFrasco",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11i": "08/11 — balão 0 sem efeito, lote B4: os Gritos dos Dessecados (o bônus do Altar sem frasco ativo)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você tem o bônus do Altar da Resistência, se não estiver sob o efeito de frascos$",
+      "efeitos": [
+        {
+          "stat": "sempre:altarResistencia@semFrasco",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11i": "08/11 — balão 0 sem efeito, lote B4: os Gritos dos Dessecados (o bônus do Altar sem frasco ativo)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você tem o bônus do Altar Ressonante, se não estiver sob o efeito de frascos$",
+      "efeitos": [
+        {
+          "stat": "sempre:altarCarregado@semFrasco",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11i": "08/11 — balão 0 sem efeito, lote B4: os Gritos dos Dessecados (o bônus do Altar sem frasco ativo)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você tem o bônus do Altar Eletrificante Maior, se não estiver sob o efeito de frascos$",
+      "efeitos": [
+        {
+          "stat": "sempre:altarEletrizanteMaior@semFrasco",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11i": "08/11 — balão 0 sem efeito, lote B4: os Gritos dos Dessecados (o bônus do Altar sem frasco ativo)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você tem o bônus do Altar Descarnado Maior, se não estiver sob o efeito de frascos$",
+      "efeitos": [
+        {
+          "stat": "sempre:altarEsqueleticoMaior@semFrasco",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11i": "08/11 — balão 0 sem efeito, lote B4: os Gritos dos Dessecados (o bônus do Altar sem frasco ativo)",
+      "_nova": true
+    },
+    {
+      "padrao": "^(.+?) tem Eficácia da Reserva de Mana reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_reserva_gema:{NOME}",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11h": "08/11 — balão 0 sem efeito, lote B3: os Círculos dos Arautos e a Urna Come-Cinzas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Redução de Dano Físico enquanto afetado por Arauto da Pureza aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_res@afetadoPor:arauto-da-pureza",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11h": "08/11 — balão 0 sem efeito, lote B3: os Círculos dos Arautos e a Urna Come-Cinzas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano de Caos enquanto afetado por Arauto da Agonia aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "chaos_dmg@afetadoPor:arauto-da-agonia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11h": "08/11 — balão 0 sem efeito, lote B3: os Círculos dos Arautos e a Urna Come-Cinzas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Sentinelas da Pureza causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_dano:sentinela",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11h": "08/11 — balão 0 sem efeito, lote B3: os Círculos dos Arautos e a Urna Come-Cinzas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Rastejador Agonizante causa Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_dano:rastejador",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11h": "08/11 — balão 0 sem efeito, lote B3: os Círculos dos Arautos e a Urna Come-Cinzas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% de Vida quando você Matar um [Ii]nimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:vidaPct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11h": "08/11 — balão 0 sem efeito, lote B3: os Círculos dos Arautos e a Urna Come-Cinzas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% de Mana quando você Matar um [Ii]nimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:manaPct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11h": "08/11 — balão 0 sem efeito, lote B3: os Círculos dos Arautos e a Urna Come-Cinzas",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% do Escudo de Energia quando você Matar um [Ii]nimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:esPct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11h": "08/11 — balão 0 sem efeito, lote B3: os Círculos dos Arautos e a Urna Come-Cinzas",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} a \\{(\\d+)\\} de Dano de {E}$",
+      "efeitos": [
+        {
+          "stat": "added_{E}_dmg_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_{E}_dmg_max",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11g": "08/11 — balão 0 sem efeito, lote B2: as linhas dos pools sorteados (o Emblema do Precursor e as formas que o poedb escreve diferente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Redução adicional do Dano Físico$",
+      "efeitos": [
+        {
+          "stat": "phys_res",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11g": "08/11 — balão 0 sem efeito, lote B2: as linhas dos pools sorteados (o Emblema do Precursor e as formas que o poedb escreve diferente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento das Velocidades de Ataque e Conjuração$",
+      "efeitos": [
+        {
+          "stat": "atk_speed",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11g": "08/11 — balão 0 sem efeito, lote B2: as linhas dos pools sorteados (o Emblema do Precursor e as formas que o poedb escreve diferente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de receber uma Carga de Frenesi ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:carga:frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11g": "08/11 — balão 0 sem efeito, lote B2: as linhas dos pools sorteados (o Emblema do Precursor e as formas que o poedb escreve diferente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de receber uma Carga de Tolerância ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:carga:tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11g": "08/11 — balão 0 sem efeito, lote B2: as linhas dos pools sorteados (o Emblema do Precursor e as formas que o poedb escreve diferente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de receber uma Carga de Poder ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:carga:poder",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11g": "08/11 — balão 0 sem efeito, lote B2: as linhas dos pools sorteados (o Emblema do Precursor e as formas que o poedb escreve diferente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de se você fosse receber uma Carga de Frenesi, você recebe até o número máximo de Cargas de Frenesi ao invés$",
+      "efeitos": [
+        {
+          "stat": "chance_frenesi_maxima",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11g": "08/11 — balão 0 sem efeito, lote B2: as linhas dos pools sorteados (o Emblema do Precursor e as formas que o poedb escreve diferente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de Suprimir o Dano Mágico$",
+      "efeitos": [
+        {
+          "stat": "spell_suppression",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11g": "08/11 — balão 0 sem efeito, lote B2: as linhas dos pools sorteados (o Emblema do Precursor e as formas que o poedb escreve diferente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Intimida Inimigos por \\{(\\d+)\\} segundos ao Acertar com Ataques$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:intimidado:{V1}@ataque",
+          "valor": "100"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11g": "08/11 — balão 0 sem efeito, lote B2: as linhas dos pools sorteados (o Emblema do Precursor e as formas que o poedb escreve diferente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recebe \\{(\\d+)\\}% (?:de|do) Dano de Fogo como Dano (?:de Caos Extra|Extra de Caos)$",
+      "efeitos": [
+        {
+          "stat": "fire_as_extra_chaos",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11g": "08/11 — balão 0 sem efeito, lote B2: as linhas dos pools sorteados (o Emblema do Precursor e as formas que o poedb escreve diferente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recebe \\{(\\d+)\\}% (?:de|do) Dano de Gelo como Dano (?:de Caos Extra|Extra de Caos)$",
+      "efeitos": [
+        {
+          "stat": "ice_as_extra_chaos",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11g": "08/11 — balão 0 sem efeito, lote B2: as linhas dos pools sorteados (o Emblema do Precursor e as formas que o poedb escreve diferente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recebe \\{(\\d+)\\}% (?:de|do) Dano de Raio como Dano (?:de Caos Extra|Extra de Caos)$",
+      "efeitos": [
+        {
+          "stat": "energy_as_extra_chaos",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11g": "08/11 — balão 0 sem efeito, lote B2: as linhas dos pools sorteados (o Emblema do Precursor e as formas que o poedb escreve diferente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recebe Agressividade por \\{(\\d+)\\} segundos? ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:buff:agressividade",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11g": "08/11 — balão 0 sem efeito, lote B2: as linhas dos pools sorteados (o Emblema do Precursor e as formas que o poedb escreve diferente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recebe Fúria Arcana ao Acertar com Magias$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:buff:furiaArcana@magia",
+          "valor": "4"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11g": "08/11 — balão 0 sem efeito, lote B2: as linhas dos pools sorteados (o Emblema do Precursor e as formas que o poedb escreve diferente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recebe uma Carga de Frasco ao causar um Acerto Crítico$",
+      "efeitos": [
+        {
+          "stat": "ev:critico:frasco",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11g": "08/11 — balão 0 sem efeito, lote B2: as linhas dos pools sorteados (o Emblema do Precursor e as formas que o poedb escreve diferente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você não pode ser Atordoado$",
+      "efeitos": [
+        {
+          "stat": "imune_atordoamento",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11g": "08/11 — balão 0 sem efeito, lote B2: as linhas dos pools sorteados (o Emblema do Precursor e as formas que o poedb escreve diferente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você pode aplicar \\{(\\d+)\\} Maldições adicionais à Inimigos$",
+      "efeitos": [
+        {
+          "stat": "maldicoes_adicionais",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11g": "08/11 — balão 0 sem efeito, lote B2: as linhas dos pools sorteados (o Emblema do Precursor e as formas que o poedb escreve diferente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você possui Mente sobre Matéria$",
+      "efeitos": [
+        {
+          "stat": "dano_na_mana_pct",
+          "valor": "40"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a Mente sobre Matéria: 40% do dano sai da Mana antes da Vida",
+      "_08_11g": "08/11 — balão 0 sem efeito, lote B2: as linhas dos pools sorteados (o Emblema do Precursor e as formas que o poedb escreve diferente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você possui Pacto Vaal$",
+      "efeitos": [
+        {
+          "stat": "sempre:pactoVaal",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11g": "08/11 — balão 0 sem efeito, lote B2: as linhas dos pools sorteados (o Emblema do Precursor e as formas que o poedb escreve diferente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você possui Reflexos de Ferro$",
+      "efeitos": [
+        {
+          "stat": "keystone:reflexosDeFerro",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11g": "08/11 — balão 0 sem efeito, lote B2: as linhas dos pools sorteados (o Emblema do Precursor e as formas que o poedb escreve diferente)",
+      "_nova": true
+    },
+    {
+      "padrao": "^local unique tabula rasa no requirement or energy shield \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "sem_requisitos",
+          "valor": "1"
+        },
+        {
+          "stat": "sem_es_da_base",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a parte interna da Tabula Rasa: sem requisitos e sem o Escudo de Energia da base",
+      "_08_11f": "08/11 — balão 0 sem efeito, lote B1: as partes internas do item (o efeito que elas dão)",
+      "_nova": true
+    },
+    {
+      "padrao": "^local six linked white sockets \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "encaixes_ligados",
+          "valor": "1"
+        },
+        {
+          "stat": "encaixes_brancos",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a parte interna: seis encaixes ligados e brancos",
+      "_08_11f": "08/11 — balão 0 sem efeito, lote B1: as partes internas do item (o efeito que elas dão)",
+      "_nova": true
+    },
+    {
+      "padrao": "^local six linked sockets \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "encaixes_ligados",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a parte interna: seis encaixes ligados",
+      "_08_11f": "08/11 — balão 0 sem efeito, lote B1: as partes internas do item (o efeito que elas dão)",
+      "_nova": true
+    },
+    {
+      "padrao": "^base should have unholy might \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "sempre:poderProfano",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a parte interna: o Poder Profano",
+      "_08_11f": "08/11 — balão 0 sem efeito, lote B1: as partes internas do item (o efeito que elas dão)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\[Sockets are White\\]$",
+      "efeitos": [
+        {
+          "stat": "encaixes_brancos",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "os encaixes são brancos",
+      "_08_11f": "08/11 — balão 0 sem efeito, lote B1: as partes internas do item (o efeito que elas dão)",
+      "_nova": true
+    },
+    {
       "padrao": "^(?:Você tem )?Golpe de Misericórdia contra Inimigos Amaldiçoados$",
       "efeitos": [
         {

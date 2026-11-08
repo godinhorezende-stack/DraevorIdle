@@ -80,7 +80,8 @@ test('a peça gerada: toda linha com efeito, lembrete ou inerte com a nota (nenh
   // "Ativa Cascata da Tempestade", gema que o jogo não tem)
   // (aval do dono 07/11, lote 14 das inertes: a Cascata da Tempestade entrou no lote 13a como gema oculta — os Pensamentos Agitados saem da lista)
   // (aval do dono 07/11, lote 19: os suportes pelo número do Réplica: Shako Proibido valem, aproximados — ele sai da lista)
-  assert.deepEqual([...new Set(inertes)].sort(), ['Child_of_Violence']);
+  // (aval do dono 08/11, o balão dos únicos B16: a Pesca existe — a linha do Combatente vale, e o Filho da Violência sai da lista)
+  assert.deepEqual([...new Set(inertes)].sort(), []);
 });
 
 test('as linhas novas da tradução: o Dano Físico que Congela, o "Não Pode Drenar ou Regenerar Mana" e a Velocidade enquanto Resfriado', { skip: SEM }, () => {
@@ -142,7 +143,7 @@ test('a RÉPLICA: TALENTO PURO: o bônus da classe cujo início a árvore alcan�
   assert.equal((af(e).frasco_cargas_recebidas ?? 0) - (antes.frasco_cargas_recebidas ?? 0), 20, 'agora a da Caçadora');
 });
 
-test('o FILHO DA VIOLÊNCIA: a Pequena da pedra Combatente (1 nó, a do PoB "Pitfighter"); a linha dela, de pesca, fica inerte com a nota', { skip: SEM }, () => {
+test('o FILHO DA VIOLÊNCIA: a Pequena da pedra Combatente (1 nó, a do PoB "Pitfighter"); a linha dela, de pesca, vale (a Pesca — aval do dono 08/11)', { skip: SEM }, () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
   e.sistema = 'poe';
   e.classePoe = 'Marauder';
@@ -158,7 +159,7 @@ test('o FILHO DA VIOLÊNCIA: a Pequena da pedra Combatente (1 nó, a do PoB "Pit
   assert.equal(nos[0].nomeEn, 'Pitfighter');
   assert.equal(nos[0].nome, 'Combatente');
   assert.deepEqual(nos[0].textos, ['Força da Linha de Pesca aumentada em 1%']);
-  assert.deepEqual(nos[0].estados, ['inerte']);
-  assert.match(nos[0].notas?.[0] ?? '', /pesca/);
-  assert.deepEqual(p.poe.estados, ['inerte']);
+  // (aval do dono 08/11: com a Pesca, a Força da Linha de Pesca tem efeito — `itens-poe/pesca.mjs`)
+  assert.deepEqual(nos[0].estados, ['equivalente']);
+  assert.deepEqual(p.poe.estados, ['equivalente']);
 });

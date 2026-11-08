@@ -15,6 +15,7 @@ import * as ModificadoresMonstroPoe from './modificadores-monstro.mjs';
 import * as GemasPoe from './gemas-poe.mjs';
 import * as SuportesPoe from './suportes-poe.mjs';
 import * as MoedasPoe from './moedas.mjs';
+import * as Pesca from './pesca.mjs';
 import * as MapasAreas from './mapas-areas.mjs';
 // (lote 48) as Joias Atemporais: o módulo se registra na árvore (`passivas/arvore.definirConquista`)
 import './atemporais.mjs';
@@ -76,6 +77,8 @@ async function carregar({ log = () => {}, mapasSobDemanda = false, ...dados }) {
   // As moedas empilháveis do PoE (os itens, a loja da Zuma; o efeito na Forja do PoE — `itens-poe/moedas.mjs`).
   const moedasPoe = MoedasPoe.iniciar();
   if (moedasPoe) log(`moedas do PoE: ${moedasPoe} novas no catálogo (${MoedasPoe.MOEDAS.length} ao todo)`);
+  // (08/11) os peixes da Pesca (`pesca.mjs`)
+  Pesca.iniciar();
   const tatuagens = Tatuagens.iniciar(catalogoDeItens);
   if (tatuagens) log(`tatuagens do PoE: ${tatuagens} no catálogo`);
   if (suportesPoe.suportes) log(`suportes do PoE: ${suportesPoe.suportes} (${Object.entries(suportesPoe.porStatus).map(([k, v]) => `${k} ${v}`).join(', ')})`);

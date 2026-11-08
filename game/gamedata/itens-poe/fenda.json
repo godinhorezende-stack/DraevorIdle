@@ -1,0 +1,177 @@
+{
+ "_nota": "A FENDA do PoE (Breach — 08/11, o dono: \"Criar os sistemas\", pelo Anel da Fenda: \"Propriedades são dobradas enquanto em uma Fenda\"): os monstros dos cinco Senhores da Fenda do poedb (poedb.tw/pt/<slug> — a tag breach_monster_<elemento>; o comandante, breach_commander) com a Vida, o Dano e a Experiência em % do monstro padrão do nível (a tabela `porNivel` de abismo.json), o tempo de ataque e as resistências (Fogo, Gelo, Raio, Caos). Extraído com o Scrapling. Lido por systems/itens-poe/fenda.mjs.",
+ "senhores": {
+  "xoph": {
+   "nome": "Xoph",
+   "elemento": "fogo",
+   "monstros": [
+    "Xophs_Favoured",
+    "Xophs_Loyal"
+   ]
+  },
+  "tul": {
+   "nome": "Tul",
+   "elemento": "gelo",
+   "monstros": [
+    "They_of_Tul",
+    "It_of_Tul"
+   ]
+  },
+  "esh": {
+   "nome": "Esh",
+   "elemento": "raio",
+   "monstros": [
+    "Scale_of_Esh"
+   ]
+  },
+  "uulNetol": {
+   "nome": "Uul-Netol",
+   "elemento": "físico",
+   "monstros": [
+    "Uul-Netols_Pet",
+    "Uul-Netols_Trophy"
+   ]
+  },
+  "chayula": {
+   "nome": "Chayula",
+   "elemento": "caos",
+   "monstros": [
+    "Chayulas_Ideal",
+    "Chayulas_Perfected"
+   ]
+  }
+ },
+ "monstros": {
+  "Xophs_Favoured": {
+   "nome": "Favorecido de Xoph",
+   "vidaPct": 170.0,
+   "danoPct": 100.0,
+   "expPct": 100.0,
+   "tempoAtaque": 1.5,
+   "resistencias": {
+    "fire": 40.0,
+    "ice": 0.0,
+    "energy": 0.0,
+    "chaos": 0.0
+   },
+   "esDaVidaPct": 0
+  },
+  "Xophs_Loyal": {
+   "nome": "Fiel de Xoph",
+   "vidaPct": 90.0,
+   "danoPct": 120.0,
+   "expPct": 150.0,
+   "tempoAtaque": 1.5,
+   "resistencias": {
+    "fire": 30.0,
+    "ice": 30.0,
+    "energy": 30.0,
+    "chaos": 20.0
+   },
+   "esDaVidaPct": 0,
+   "comandante": true
+  },
+  "They_of_Tul": {
+   "nome": "Aqueles de Tul",
+   "vidaPct": 90.0,
+   "danoPct": 211.0,
+   "expPct": 150.0,
+   "tempoAtaque": 1.755,
+   "resistencias": {
+    "fire": 30.0,
+    "ice": 30.0,
+    "energy": 30.0,
+    "chaos": 20.0
+   },
+   "esDaVidaPct": 0,
+   "comandante": true
+  },
+  "It_of_Tul": {
+   "nome": "Aquele de Tul",
+   "vidaPct": 118.0,
+   "danoPct": 105.0,
+   "expPct": 100.0,
+   "tempoAtaque": 1.395,
+   "resistencias": {
+    "fire": 0.0,
+    "ice": 40.0,
+    "energy": 0.0,
+    "chaos": 0.0
+   },
+   "esDaVidaPct": 0
+  },
+  "Scale_of_Esh": {
+   "nome": "Escama de Esh",
+   "vidaPct": 90.0,
+   "danoPct": 180.0,
+   "expPct": 150.0,
+   "tempoAtaque": 0.99,
+   "resistencias": {
+    "fire": 30.0,
+    "ice": 30.0,
+    "energy": 30.0,
+    "chaos": 20.0
+   },
+   "esDaVidaPct": 0,
+   "comandante": true
+  },
+  "Uul-Netols_Pet": {
+   "nome": "Mascote de Uul-Netol",
+   "vidaPct": 200.0,
+   "danoPct": 115.0,
+   "expPct": 100.0,
+   "tempoAtaque": 1.11,
+   "resistencias": {
+    "fire": 0.0,
+    "ice": 40.0,
+    "energy": 0.0,
+    "chaos": 0.0
+   },
+   "esDaVidaPct": 50.0
+  },
+  "Uul-Netols_Trophy": {
+   "nome": "Troféu de Uul-Netol",
+   "vidaPct": 375.0,
+   "danoPct": 120.0,
+   "expPct": 150.0,
+   "tempoAtaque": 1.11,
+   "resistencias": {
+    "fire": 30.0,
+    "ice": 30.0,
+    "energy": 30.0,
+    "chaos": 20.0
+   },
+   "esDaVidaPct": 50.0,
+   "comandante": true
+  },
+  "Chayulas_Ideal": {
+   "nome": "Ideal de Chayula",
+   "vidaPct": 170.0,
+   "danoPct": 100.0,
+   "expPct": 100.0,
+   "tempoAtaque": 1.5,
+   "resistencias": {
+    "fire": 20.0,
+    "ice": 20.0,
+    "energy": 20.0,
+    "chaos": 0.0
+   },
+   "esDaVidaPct": 0
+  },
+  "Chayulas_Perfected": {
+   "nome": "Perfeição de Chayula",
+   "vidaPct": 300.0,
+   "danoPct": 180.0,
+   "expPct": 150.0,
+   "tempoAtaque": 1.5,
+   "resistencias": {
+    "fire": 30.0,
+    "ice": 30.0,
+    "energy": 30.0,
+    "chaos": 20.0
+   },
+   "esDaVidaPct": 0,
+   "comandante": true
+  }
+ }
+}

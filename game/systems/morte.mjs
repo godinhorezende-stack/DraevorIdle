@@ -48,7 +48,9 @@ export function conta(estado) {
   // deixava a árvore de passivas com mais pontos gastos do que o personagem tem (auditoria da árvore, 09/10).
   // (07/11/2026) No level máximo, o piso é o começo do Lv Divino atual: a morte também não tira um Lv Divino (os pontos de passiva dele).
   const piso = itensPoeLigado() ? Math.max(0, (estado.xp ?? 0) - LvDivino.pisoDaExp(estado)) : estado.xp ?? 0;
-  const expPerdida = Math.min(piso, Math.round(base * (1 - descontoPercent / 100)));
+  // (08/11, o Vínculo D'alma) a morte porque um alvo Vinculado morreu (`acoes.tiqueDosVinculos` marca) não tira experiência
+  const peloVinculo = !!estado.hunt?.morreuPeloVinculo && (estado.hp ?? 1) <= 0;
+  const expPerdida = peloVinculo ? 0 : Math.min(piso, Math.round(base * (1 - descontoPercent / 100)));
   return {
     expPerdida,
     ...(itensPoeLigado() ? { semPerderLevel: true } : {}),

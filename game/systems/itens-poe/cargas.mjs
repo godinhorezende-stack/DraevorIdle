@@ -60,7 +60,7 @@ export const duracao = (af, tipo) => Math.round(BASE.duracaoMs * (1 + (n(af, `du
 const CHAVES = [
   ...TIPOS.flatMap((t) => [`max_${t}`, `min_${t}`, `duracao_${t}`, `carga_${t}_ao_matar`, `carga_${t}_ao_bloquear`]),
   'duracao_cargas', 'carga_qualquer_ao_matar', 'carga_frenesi_ao_acertar_unico', 'dano_por_poder', 'dano_por_tolerancia', 'dano_por_frenesi', 'dano_por_carga',
-  'max_tolerancia_igual_frenesi', 'max_frenesi_igual_poder', 'cargas_max_fixo', 'cargas_max_fixo_tem', 'chance_tolerancia_maxima', 'carga_tolerancia_ao_ser_acertado', 'carga_tolerancia_ao_atordoar', 'carga_poder_ao_atordoar',
+  'max_tolerancia_igual_frenesi', 'max_frenesi_igual_poder', 'cargas_max_fixo', 'cargas_max_fixo_tem', 'chance_tolerancia_maxima', 'chance_frenesi_maxima', 'carga_tolerancia_ao_ser_acertado', 'carga_tolerancia_ao_atordoar', 'carga_poder_ao_atordoar',
   'carga_poder_ao_critico', 'carga_poder_ao_critico_varinha', 'carga_tolerancia_ao_critico_corpo', 'carga_poder_ao_acerto_nao_critico',
   'tolerancia_por_segundo_acertado', 'frenesi_a_cada_s_movendo', 'poder_por_mana_gasta', 'carga_periodica_n', 'carga_periodica_s',
   'frenesi_vira_poder', 'salmoura_chance',
@@ -77,12 +77,14 @@ export function ativas(estado) {
 }
 
 /** As cargas ativas como cartões de buff da caçada (o cliente desenha junto dos buffs de magia). */
-export function buffs(estado) {
+// (08/11: `af` — a arte das Cargas de Frenesi da Dança Sangrenta, `visual:frenesi_sangue`: o cartão leva `arte: 'sangue'`)
+export function buffs(estado, af = null) {
   const c = estado?.hunt?.cargasPoe;
+  const arte = Number(af?.['visual:frenesi_sangue']) > 0 ? 'sangue' : null;
   const agora = estado?.hunt?.clock ?? 0;
   if (!c) return [];
   // (lote 8: + as cargas de único)
-  return [...TIPOS, ...EXTRAS].filter((t) => c[t] && c[t].ate > agora && c[t].n > 0).map((t) => ({ icone: null, nome: `Cargas ${NOME[t] ? `de ${NOME[t]}` : NOME_EXTRA[t]} ×${c[t].n}`, resta: c[t].ate - agora, tipo: 'cargaPoe', carga: t, n: c[t].n }));
+  return [...TIPOS, ...EXTRAS].filter((t) => c[t] && c[t].ate > agora && c[t].n > 0).map((t) => ({ icone: null, nome: `Cargas ${NOME[t] ? `de ${NOME[t]}` : NOME_EXTRA[t]} ×${c[t].n}`, resta: c[t].ate - agora, tipo: 'cargaPoe', carga: t, n: c[t].n, ...(t === 'frenesi' && arte ? { arte } : {}) }));
 }
 
 /*
@@ -113,7 +115,9 @@ function por(estado, tipo0, af, quantas = 1, rng = Math.random) {
   const tudo = tipo === 'tolerancia' && n(af, 'chance_tolerancia_maxima') > 0 && rng() * 100 < n(af, 'chance_tolerancia_maxima');
   // ("X% de chance de que se você fosse ganhar Cargas de Poder, você ganha o seu número máximo" — o mesmo do Destruidor, para o Poder.)
   const tudoPoder = tipo === 'poder' && n(af, 'chance_poder_maxima') > 0 && rng() * 100 < n(af, 'chance_poder_maxima');
-  const novo = tudo || tudoPoder ? max : Math.min(max, atual + quantas);
+  // (08/11, o Emblema do Precursor: "…se você fosse receber uma Carga de Frenesi, você recebe até o número máximo" — o mesmo, para o Frenesi)
+  const tudoFrenesi = tipo === 'frenesi' && n(af, 'chance_frenesi_maxima') > 0 && rng() * 100 < n(af, 'chance_frenesi_maxima');
+  const novo = tudo || tudoPoder || tudoFrenesi ? max : Math.min(max, atual + quantas);
   c[tipo] = { n: novo, ate: agora + duracao(af, tipo) };
   // O "ganhou uma Carga de X Recentemente" e o evento "ao atingir o Máximo de Cargas" (os únicos — `mods-poe.evento`).
   (hunt.poeRecente ??= {})[tipo === 'poder' ? 'ganhouPoder' : tipo === 'frenesi' ? 'ganhouFrenesi' : 'ganhouTolerancia'] = agora;

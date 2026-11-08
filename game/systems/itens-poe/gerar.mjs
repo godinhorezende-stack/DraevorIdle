@@ -129,7 +129,7 @@ export function modificadoresDoUnico(u, rng, manter = null, nivel = Infinity) {
   const sai = (m) => s && m.tipo === 'implicit' && m.modelo === s.substitui && !manter?.has(m.modelo);
   const ls = u.linhasSorteadas;
   const ns = u.nomeSorteado;
-  return u.modificadores.filter((m) => !sai(m)).flatMap((m) => {
+  const saida = u.modificadores.filter((m) => !sai(m)).flatMap((m) => {
     // (lote 56) o NOME sorteado: a marcação "Passive Skill" vira a pedra fundamental / o notável (o Orbe Divino mantém o que a peça tem)
     if (ns?.nomes?.length && m.modelo.includes(ns.marca)) {
       const molde = new RegExp(`^${escaparRe(m.modelo).replace(escaparRe(ns.marca), '(.+)')}$`);
@@ -137,8 +137,27 @@ export function modificadoresDoUnico(u, rng, manter = null, nivel = Infinity) {
       const nome = ja ? ja[1] : ns.nomes[Math.floor(rng() * ns.nomes.length)];
       return [{ tipo: m.tipo, ...rolarTexto({ ...m, modelo: m.modelo.replace(ns.marca, nome) }, rng) }];
     }
-    const n = ls?.substitui?.[m.modelo];
+    let n = ls?.substitui?.[m.modelo];
     if (!n) return [{ tipo: m.tipo, ...rolarTexto(m, rng) }];
+    // (08/11, balão 0 sem efeito) `composicao`: a marcação que junta pools ("[Two Endurance Charge mods and one Power Charge Mod]" — o Emblema do Precursor): N de
+    // cada pool; o Orbe Divino (`manter`) fica com as linhas da peça
+    if (n === 'composicao') {
+      return (ls.composicao?.[m.modelo] ?? []).flatMap(([nome, q]) => {
+        // (a Divina: a peça que já tem os revelados fica com eles — `manter` pelos modelos)
+        const pool = ls.pools?.[nome] ?? [];
+        const ja = manter ? pool.filter((l) => manter.has(l.modelo)).slice(0, q) : [];
+        return (ja.length ? ja : linhasDoPool(pool, q, rng)).map((l) => ({ tipo: m.tipo, sorteada: true, ...rolarTexto(l, rng) }));
+      });
+    }
+    // (08/11) 'faixa': o número de linhas sai da faixa da própria marcação ("[You have 1-2 Random Shrine Buff…]", "[3 to 5 of Arbalists Modifiers]")
+    if (n === 'faixa') {
+      const f = m.faixas ?? [];
+      const lo = Number(f[0]?.[0]) || 1;
+      const hi = Math.max(lo, Number(f.at(-1)?.[1]) || lo);
+      n = lo + Math.floor(rng() * (hi - lo + 1));
+      // (o Orbe Divino fica com quantas a peça tem)
+      if (manter) n = Math.max(n, ls.linhas.filter((l) => manter.has(l.modelo)).length);
+    }
     // (lote 57: a marcação com o pool próprio — `pools[marca]`: o Limitado pelo Destino, as linhas do seu número de itens)
     // (lote 79: a linha com o nível do mod — o Megalomaníaco — só sai com o Item Level da peça)
     const pool = (ls.pools?.[m.modelo] ?? ls.linhas).filter((l) => !(l.nivel > nivel));
@@ -156,6 +175,12 @@ export function modificadoresDoUnico(u, rng, manter = null, nivel = Infinity) {
     // (lote 79: a linha do Megalomaníaco leva o notável — os nós da joia saem dele)
     return (ja.length ? ja.slice(0, n) : linhasDoPool(pool, n, rng)).map((l) => ({ tipo: m.tipo, sorteada: true, ...rolarTexto(l, rng), ...(l.notavel ? { notavel: l.notavel } : {}) }));
   });
+  // (08/11, os VELADOS — a Bengala de Kulemak: "Magnitude de Modificadores Revelados aumentada em X%") os revelados com a magnitude, como no PoE (o texto e o valor
+  // já multiplicados; o sem ela fica em `valoresSemMagnitude`, como a dos implícitos)
+  if (!ls?.velado) return saida;
+  const mag = saida.find((x) => /^Magnitude de Modificadores Revelados aumentada em \{0\}%$/.test(x.modelo ?? ''));
+  const pct = Number(mag?.valores?.[0]) || 0;
+  return pct ? saida.map((x) => (x.sorteada ? { ...comMagnitude(x, pct), valoresSemMagnitude: x.valoresSemMagnitude ?? x.valores } : x)) : saida;
 }
 const escaparRe = (x) => String(x).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 /** (lote 55) N linhas distintas do pool, com a mesma chance. */
@@ -171,6 +196,12 @@ export function linhasDoPool(linhas, n, rng) {
  * o pool de síntese tem os pesos 0). O formato é o do implícito de pool (o do Orbe Vaal): `{ familia, tier, nome, ilvl, modelo, texto,
  * valores, origem, corrompido? }`.
  */
+/**
+ * (08/11, a Síntese) O filtro dos implícitos sorteados dos ÚNICOS (`jogo.mjs` registra: só os de Síntese com efeito no jogo — as frases do pool de
+ * Síntese que a tradução ainda não cobre ficam fora do sorteio). Sem registro, todos.
+ */
+let FILTRO_DO_SORTEADO = null;
+export function definirFiltroDoSorteado(fn) { FILTRO_DO_SORTEADO = typeof fn === 'function' ? fn : null; }
 export function implicitosDoUnico(s, ilvl, rng) {
   const [min, max] = s.quantidade ?? [1, 1];
   const quantos = min + (max > min ? Math.floor(rng() * (max - min + 1)) : 0);
@@ -180,7 +211,7 @@ export function implicitosDoUnico(s, ilvl, rng) {
     const candidatos = [];
     for (const g of s.grupos ?? []) {
       if (usadas.has(g.familia)) continue;
-      for (const t of g.tiers) if ((t.ilvl ?? 1) <= ilvl && (s.pesoIgual || (t.peso ?? 0) > 0)) candidatos.push([g, t]);
+      for (const t of g.tiers) if ((t.ilvl ?? 1) <= ilvl && (s.pesoIgual || (t.peso ?? 0) > 0) && (!FILTRO_DO_SORTEADO || FILTRO_DO_SORTEADO(t, s))) candidatos.push([g, t]);
     }
     if (!candidatos.length) break;
     let par;

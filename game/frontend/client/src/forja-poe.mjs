@@ -37,6 +37,9 @@ const AJUDA = {
   implicitos: 'O Orbe Abençoado sorteia de novo os VALORES dos implícitos; o Orbe Sagrado sorteia de novo a DEFESA da base (armadura, evasão, escudo de energia). Uma tentativa por vez.',
   influencia: 'Os Exaltados de influência (Criador, Ancião, Cruzado, Juiz, Caçador, Senhor da Guerra) põem um modificador da influência numa peça Rara sem influência. O Orbe do Domínio eleva um modificador influenciado (pede dois). Uma tentativa por vez.',
   ancestral: 'As Brasas (Exarca Abrasador) e os Fluidos (Devorador de Mundos) põem o implícito Eldritch em Peitoral, Botas, Luvas ou Elmo, do tier da moeda; o Ducado de Ukatoa, num amuleto não Único (Exarca ou Devorador, o tier sorteado). Os orbes Ancestrais mexem no lado que domina; o Conflito sobe um implícito e desce o outro. Uma tentativa por vez.',
+  encantar: 'UNGIR: escolha 3 Óleos — a combinação diz o notável da árvore de passivas que a peça Aloca (vestida, ele vale como alocado, sem precisar do caminho). Vale em amuletos e nas peças que "Podem ser ungidas"; os Óleos caem só dos chefes pináculo e saem os 3 juntos. ENCANTAMENTO: põe um encantamento do Labirinto em elmo, luvas ou botas. Cabe UM encantamento por peça ("Pode ter N Modificadores Encantados extras" soma N); cheia, o novo troca um do mesmo tipo. As outras moedas não tiram os encantamentos.',
+  sintese: 'O SINTETIZADOR junta TRÊS peças da mochila numa peça nova SINTETIZADA: a base de uma delas (sorteada), Normal, com 1 a 3 implícitos de Síntese (mais quanto mais modificadores as três tinham). Os Círculos põem o Modificador de Arauto deles como implícito a mais. As três somem. Não entram únicos (fora os Círculos), mapas, frascos e peças corrompidas ou sem identificar.',
+  omnichama: 'A CRIAÇÃO COM A OMNICHAMA (os Ducados do Soberano) vale em peça Rara. Cada criação dá 10% de INTANGIBILIDADE à peça, e a Intangibilidade é a chance de a próxima criação sair só uma cópia fantasmagórica (o Ducado é gasto e a peça não muda). O Ducado de Tzamoto zera a Intangibilidade ou destrói a peça; o do Metamorfo vira outro Ducado; o de Kishara divide a peça em formas fantasmagóricas, uma por modificador.',
   qualidade: 'Sobe a QUALIDADE (até 20%): +5% na Normal, +2% na Mágica, +1% na Rara e na Única. Amolador em arma, Sucata em armadura, Bolha em frasco. O resultado aparece antes de forjar.',
   corrupcao: 'O Orbe Vaal CORROMPE a peça (permanente: depois só as moedas Corroídas valem nela). As Corroídas valem só em peça corrompida; as de sockets ficam em Sockets, Cores e Links. O Orbe Mítico Corroído pode destruir a peça. Uma tentativa por vez.',
   especiais: 'O Espelho de Kalandra faz uma cópia espelhada (que não aceita mais moeda); o Orbe Ancestral troca o único por outro da mesma classe; o Orbe do Remorso dá um ponto para tirar um nó da árvore de passivas (não pede peça); os Pergaminhos do Emissário aprimoram o único base do Emissário (Pensamentos Agitados, Força Inabalada…) na versão mais poderosa.',
@@ -67,6 +70,8 @@ const f = {
   categoria: 'sockets', abaInv: 'equipamentos', filtro: 'todos',
   peca: null, // { alvo, base, ilvl, id }
   moeda: {}, desejo: {}, modo: 'uma', limite: 10, reiniciar: false,
+  oleos: [null, null, null], // (08/11) os 3 Óleos do Ungir (ids)
+  sintese: [null, null, null], // (08/11) as 3 peças do Sintetizador (índices da mochila)
   configAberta: false, ajuda: false, filtroMod: { tag: '', lado: '' },
   opcoes: null, pedido: 0, timer: null, exec: null, vigia: null,
 };
@@ -221,7 +226,7 @@ function pedirOpcoes() {
   f.timer = setTimeout(() => {
     if (!ctx) return;
     const x = escolhida();
-    ctx.send({ t: 'forjaOpcoes', pedido: ++f.pedido, alvo: x?.alvo ?? null, categoria: f.categoria, moeda: f.moeda[f.categoria] ?? null, desejo: desejoParaEnviar(f.categoria), reiniciar: f.reiniciar });
+    ctx.send({ t: 'forjaOpcoes', pedido: ++f.pedido, alvo: x?.alvo ?? null, categoria: f.categoria, moeda: f.moeda[f.categoria] ?? null, desejo: desejoParaEnviar(f.categoria), reiniciar: f.reiniciar, oleos: oleosParaEnviar() });
   }, 120);
 }
 /** A resposta das opções (só a do último pedido vale). */
@@ -242,6 +247,9 @@ export function chegouForjaOpcoes(m) {
   if (x && opcoesValem(m.categoria) && f.desejo[m.categoria] == null) f.desejo[m.categoria] = desejoInicial(m.categoria, x);
   redesenhar();
 }
+/** (08/11) Os 3 Óleos do Ungir, quando a categoria é a dos Encantamentos e os 3 estão escolhidos. */
+const oleosParaEnviar = () => (f.categoria === 'encantar' && f.oleos.every(Boolean) ? [...f.oleos] : undefined);
+const ehOleo = (id) => /_Oil$/.test(itens()[id]?.moedaPoe?.slug ?? '');
 const novoId = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 function vigiar() {
   clearTimeout(f.vigia);
@@ -261,7 +269,7 @@ function iniciar(repetir) {
   const desejo = repetir && f.opcoes?.validacao?.ok ? desejoParaEnviar(f.categoria) : null;
   const id = novoId();
   f.exec = { id, passo: 0, rodando: true, cancelando: false, feitas: 0, total: modo === 'limite' ? f.limite : modo === 'uma' ? 1 : null, gastos: [], historico: [], ultimo: null, fim: false, motivo: null, mensagem: null, modo };
-  ctx.send({ t: 'forjaRepetir', id, passo: 0, moeda, alvo: x?.alvo ?? null, categoria: f.categoria, desejo, modo, limite: f.limite, reiniciar: repetir && f.reiniciar });
+  ctx.send({ t: 'forjaRepetir', id, passo: 0, moeda, alvo: x?.alvo ?? null, categoria: f.categoria, desejo, modo, limite: f.limite, reiniciar: repetir && f.reiniciar, oleos: oleosParaEnviar() });
   vigiar();
   redesenhar();
 }
@@ -362,6 +370,13 @@ function centro(x) {
   else {
     const corpo = { sockets: opSockets, cores: opCores, links: opLinks, atributos: opAtributos, raridade: opRaridade }[f.categoria] ?? opGeral;
     corpo(op, x);
+  }
+  // (08/11) a Síntese não gasta material nem repete: as 3 peças e o botão
+  if (f.categoria === 'sintese') {
+    op.replaceChildren(el('h4', 'fp-titulo', cadastroDa(f.categoria)?.nome ?? ''));
+    opSintese(op);
+    sec.append(op);
+    return sec;
   }
   sec.append(op, barraDeMateriais(), painelDaRepeticao(), rodape(x));
   return sec;
@@ -768,6 +783,11 @@ function naPeca(x) {
     const eld = (p.implicitos ?? []).filter((i) => ELDRITCH[i.origem]);
     for (const i of eld) linha(ELDRITCH[i.origem], i.texto, 'impl');
     if (!eld.length) linha('Implícitos Eldritch', 'nenhum');
+  } else if (f.categoria === 'encantar') {
+    const encantos = (p.implicitos ?? []).filter((i) => i.encantamento);
+    for (const i of encantos) linha(i.ungido ? 'Ungido' : 'Encantamento', i.texto, 'impl');
+    if (!encantos.length) linha('Encantamentos', 'nenhum');
+    linha('Cabem', String(1 + Math.max(0, Math.floor(Number(p.af?.encantamentos_extras) || 0))));
   } else if (f.categoria === 'qualidade') {
     linha('Qualidade', `${p.qualidade ?? 0}% de 20%`);
     linha('Raridade', p.raridadeNome ?? p.raridade);
@@ -779,6 +799,63 @@ function naPeca(x) {
     linha('Espelhada', p.espelhado ? 'sim' : 'não');
   }
   return lista;
+}
+/** (08/11) O SINTETIZADOR: três casas com as peças do PoE da mochila (as que não entram, apagadas com o motivo) e o botão. */
+function opSintese(op) {
+  const inv = ctx.state.character?.inventory ?? [];
+  const pecasDaMochila = inv.map((p, indice) => (p?.poe ? { indice, p } : null)).filter(Boolean);
+  const motivo = (p) => {
+    const poe = p.poe;
+    if (poe.mapa || poe.classe === 'Maps' || itens()[p.id]?.frasco) return 'mapa ou frasco';
+    if (poe.identificado === false) return 'sem identificar';
+    if (poe.corrompido) return 'corrompida';
+    if (poe.raridade === 'unico' && !(Number(poe.af?.sintese_arauto_extra) > 0)) return 'único';
+    return null;
+  };
+  f.sintese = f.sintese.map((i) => (i != null && inv[i]?.poe && !motivo(inv[i]) ? i : null));
+  const caixa = el('div', 'fp-oleos');
+  f.sintese.forEach((atual, k) => {
+    const sel = el('select', 'fp-select');
+    sel.append(new Option(`Peça ${k + 1}…`, ''));
+    for (const { indice, p } of pecasDaMochila) {
+      const m = motivo(p);
+      const o = new Option(`${p.poe.nome ?? itens()[p.id]?.name}${m ? ` (${m})` : ''}`, String(indice));
+      o.disabled = !!m || (f.sintese.includes(indice) && atual !== indice);
+      sel.append(o);
+    }
+    sel.value = atual != null ? String(atual) : '';
+    sel.onchange = () => {
+      f.sintese[k] = sel.value ? Number(sel.value) : null;
+      redesenhar();
+    };
+    caixa.append(sel);
+  });
+  op.append(el('p', 'fp-legenda', AJUDA.sintese), caixa);
+  const pronto = f.sintese.every((i) => i != null);
+  const b = botao('fp-botao fp-forjar', 'Sintetizar', () => {
+    ctx.send({ t: 'sintetizar', indices: [...f.sintese] });
+    f.sintese = [null, null, null];
+  }, 'As três peças viram uma peça sintetizada (elas somem).');
+  b.disabled = !pronto;
+  op.append(el('footer', 'fp-rodape', b));
+}
+/** (08/11) As 3 casas do Ungir: cada uma, um dos Óleos que o personagem tem (a mochila e o baú). */
+function seletorDeOleos() {
+  const caixa = el('div', 'fp-oleos');
+  const tem = (f.opcoes?.materiais ?? []).filter((m) => ehOleo(m.id) && m.tem > 0);
+  f.oleos.forEach((atual, i) => {
+    const sel = el('select', 'fp-select');
+    sel.append(new Option(`Óleo ${i + 1}…`, ''));
+    for (const m of tem) sel.append(new Option(`${m.nome} (${m.tem})`, String(m.id)));
+    sel.value = atual ? String(atual) : '';
+    sel.disabled = !!f.exec?.rodando;
+    sel.onchange = () => {
+      f.oleos[i] = sel.value ? Number(sel.value) : null;
+      mudouDesejo();
+    };
+    caixa.append(sel);
+  });
+  return caixa;
 }
 /** As categorias sem resultado desejado: o que a peça tem × o que o material faz (e, sem sorteio, o resultado exato). */
 function opGeral(op, x) {
@@ -798,6 +875,7 @@ function opGeral(op, x) {
   if (!meta) faz.append(el('p', 'fp-legenda', 'Escolha um material na barra abaixo.'));
   else {
     faz.append(el('p', 'fp-legenda', meta.descricao ?? ''));
+    if (f.categoria === 'encantar' && ehOleo(material.id)) faz.append(seletorDeOleos());
     if (material.previa) faz.append(el('p', 'fp-resultado', `Resultado: ${material.previa}`));
     if (material.slug === 'Tainted_Mythic_Orb') faz.append(el('p', 'fp-aviso', 'Atenção: o Orbe Mítico Corroído pode DESTRUIR a peça.'));
     if (['Vaal_Orb', 'Volatile_Vaal_Orb', 'Djinn-Touched_Vaal_Orb'].includes(material.slug)) faz.append(el('p', 'fp-aviso', 'A corrupção é permanente: depois só as moedas Corroídas valem nesta peça.'));
@@ -830,6 +908,8 @@ function barraDeMateriais() {
     b.setAttribute('aria-label', `${meta?.name ?? m.nome}: ${m.tem}`);
     b.onclick = () => {
       f.moeda[f.categoria] = m.id;
+      // (o Óleo clicado entra nas casas vazias do Ungir)
+      if (ehOleo(m.id)) f.oleos = f.oleos.map((o) => o ?? m.id);
       if (!m.repete) f.modo = 'uma';
       mudouDesejo();
     };

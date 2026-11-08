@@ -33,6 +33,8 @@ import * as MissoesDeGemas from '../systems/itens-poe/missoes-de-gemas.mjs';
 import * as Missoes from '../systems/itens-poe/missoes.mjs';
 import * as PinaculosAcesso from '../systems/itens-poe/pinaculos-acesso.mjs';
 import * as MoedasPoe from '../systems/itens-poe/moedas.mjs';
+import * as Pesca from '../systems/itens-poe/pesca.mjs';
+import * as Sintese from '../systems/itens-poe/sintese.mjs';
 import * as ForjaPoe from '../systems/itens-poe/forja.mjs';
 import * as Mercenarios from '../systems/itens-poe/mercenarios.mjs';
 import * as Premium from '../systems/premium.mjs';
@@ -1286,6 +1288,12 @@ export class Sessao {
       // Uma moeda do PoE na Forja do PoE (`itens-poe/moedas.mjs`): `m.moeda` (o item) e `m.alvo` (a peça).
       case 'moeda':
         return this.aplicarComSkills(MoedasPoe.usar(this.estado, m));
+      // (08/11) a PESCA (`itens-poe/pesca.mjs`): lançar, recolher e puxar — o mesmo botão
+      case 'pescar':
+        return this.aplicarComSkills(Pesca.pescar(this.estado));
+      // (08/11) o SINTETIZADOR (`itens-poe/sintese.mjs`): 3 peças da mochila viram uma sintetizada
+      case 'sintetizar':
+        return this.aplicarComSkills(Sintese.sintetizar(this.estado, m.indices));
       // A FORJA do PoE reformulada (`itens-poe/forja.mjs`, dono 12/10): as opções da tela (só leitura), a repetição em lotes (cada tentativa
       // é a mesma moeda do `moeda` acima — o servidor valida, sorteia, gasta e grava) e o cancelar. Uma repetição por sessão: a nova toma
       // o lugar da anterior, e a mensagem repetida (o mesmo id e passo) não faz nada duas vezes.

@@ -950,6 +950,20 @@ export function alocadosPelasProibidas(estado) {
   return ARVORE.nos.filter((n) => n.ascendencia && n.tipo === 'notable' && ARVORE.ascendencias?.[n.ascendencia]?.classe === classe && !meus.has(n.id) && chama.has(slugDoNome(n.nome)) && carne.has(slugDoNome(n.nome))).map((n) => n.id);
 }
 
+/**
+ * (08/11) O UNGIR (`itens-poe/ungir.mjs`): a peça VESTIDA com "Aloca <Notável>" (a chave `ungido:<notável>` do af) faz o notável da árvore valer
+ * como alocado, como no PoE (o notável fora da ascendência, sem precisar do caminho). Os ids (fora os já alocados).
+ */
+export function alocadosPeloUngir(estado) {
+  const nomes = new Set();
+  for (const peca of Object.values(estado?.equipment ?? {})) {
+    for (const [k, v] of Object.entries(peca?.poe?.af ?? {})) if (v > 0 && k.startsWith('ungido:')) nomes.add(k.slice('ungido:'.length));
+  }
+  if (!nomes.size) return [];
+  const meus = new Set(estado?.passivas?.alocados ?? []);
+  return ARVORE.nos.filter((n) => !n.ascendencia && n.tipo === 'notable' && !meus.has(n.id) && nomes.has(slugDoNome(n.nome))).map((n) => n.id);
+}
+
 // --------------------------------------------------------------- os efeitos
 
 /*
@@ -967,7 +981,9 @@ export function efeitos(estado) {
   const alocados = estado.passivas?.alocados ?? [];
   // (100% — dados: + a versão das Tatuagens — tatuar muda os efeitos sem mudar a alocação)
   // (05/11: + a escolha dos Bandidos — o bônus da missão entra aqui, e escolher muda os efeitos sem mudar a alocação)
-  const joias = `${estado.passivas?.joiasVersao ?? 0}:${estado.passivas?.tatuagensVersao ?? 0}:${Missoes.versao(estado)}`;
+  // (08/11: + os notáveis ungidos — vestir ou tirar o amuleto ungido muda os efeitos sem mudar a alocação)
+  const ungidos = alocadosPeloUngir(estado);
+  const joias = `${estado.passivas?.joiasVersao ?? 0}:${estado.passivas?.tatuagensVersao ?? 0}:${Missoes.versao(estado)}:${ungidos.join('.')}`;
   const guardado = CACHE.get(estado);
   // Caminho rápido: o mesmo array, do mesmo tamanho e com a mesma ponta (alocar põe no fim; respec muda o tamanho).
   if (guardado && guardado.ref === alocados && guardado.n === alocados.length && guardado.ultimo === alocados[alocados.length - 1] && guardado.primeiro === alocados[0] && guardado.joias === joias) return guardado.valor;
@@ -991,8 +1007,8 @@ export function efeitos(estado) {
     if (ef.tag) { r.dano[ef.tag] = (r.dano[ef.tag] ?? 0) + ef.dano; fonte(ef.tag, 'Joia (raio)', ef.dano); }
     else if (ef.stat) { r.stats[ef.stat] = (r.stats[ef.stat] ?? 0) + ef.pct; fonte(ef.stat, 'Joia (raio)', ef.pct); }
   }
-  // (lote 56) + os notáveis de ascendência que a Chama e a Carne Proibida alocam
-  for (const id of [...alocados, ...alocadosPelasProibidas(estado)]) {
+  // (lote 56) + os notáveis de ascendência que a Chama e a Carne Proibida alocam; (08/11) + os que o Ungir aloca
+  for (const id of [...alocados, ...alocadosPelasProibidas(estado), ...ungidos.filter((id) => !alocados.includes(id))]) {
     const no = noDe(estado, id);
     if (!no) continue;
     if (no.dominio) r.dominios[no.dominio] = (r.dominios[no.dominio] ?? 0) + 1;

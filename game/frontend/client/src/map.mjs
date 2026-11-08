@@ -17,6 +17,7 @@ const cortinaDeViagemNaTela = () => typeof document !== 'undefined' && document.
 const EVENTOS_DA_CAMADA = new Set(['skill', 'cast', 'fx', 'explosao', 'area', 'shot', 'dmg', 'portal']);
 // As chaves de gráficos, escolhidas nos Ajustes da tela. Ver `graficos.mjs`.
 import { graficoLigado, tetoDeQuadros } from './graficos.mjs';
+import { criarVisuais } from './visuais-unicos.mjs';
 import { NameplateDoJogador, escalaDoNameplate } from './nameplate-do-jogador.mjs';
 import { ehTelefone } from './perfil.mjs';
 // O contador de FPS do canto conta o quadro daqui. Ver `medidor.mjs`.
@@ -599,6 +600,8 @@ function textoDoBloqueio(event) {
 
 export class MapView {
   constructor(canvas) {
+    // (08/11) os visuais e sons das peças únicas (as pegadas, o sangue, as asas, a Insanidade) — `visuais-unicos.mjs`
+    this.visuais = criarVisuais();
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d', { alpha: false });
     this.entities = new Map();
@@ -750,10 +753,18 @@ export class MapView {
        */
       canvas.style.cursor = peca ? 'grab' : '';
       // A casa sob o ponteiro, para quem quiser um balão dela (o do mob raro — ver main.mjs).
-      this.onTileHover?.(this.casaDoEvento(event), event);
+      const casa = this.casaDoEvento(event);
+      // (08/11) e para o rótulo do baú do PoE (`encontros-na-tela.mjs`): mudou de casa, repinta
+      if (casa?.x !== this.casaSobOMouse?.x || casa?.y !== this.casaSobOMouse?.y) {
+        this.casaSobOMouse = casa ?? null;
+        this.precisaDesenhar = true;
+      }
+      this.onTileHover?.(casa, event);
     });
     canvas.addEventListener('mouseleave', () => {
       this.onTileHover?.(null, null);
+      this.casaSobOMouse = null;
+      this.precisaDesenhar = true;
       this.pecaSobOCursor = null;
       canvas.draggable = false;
       canvas.style.cursor = '';
@@ -1188,6 +1199,8 @@ export class MapView {
       entity.y = data.y;
       teleportar(entity, now);
     } else if (entity.x !== data.x || entity.y !== data.y) {
+      // (08/11) a pegada das peças únicas fica na casa de onde ele saiu
+      if (data.visuais) this.visuais.passo({ ...data }, entity.x, entity.y, now);
       // Continua de onde o desenho parou: nada de teleporte quando dois passos
       // se encavalam entre dois pacotes do servidor.
       // (A conta, com a folga contra o jitter da rede, mora em `interpolacao.mjs` e é testada lá.)
@@ -1254,6 +1267,9 @@ export class MapView {
       mods: data.mods ?? null,
       // Os estados ativos do mob (congelado, atordoado, lento, queimando): um ícone de cada ao lado da barra.
       estados: data.estados ?? null,
+      // (08/11) os visuais das peças únicas do jogador (`visuais-unicos.mjs`) e a categoria do monstro (a Ambição de Veruso)
+      visuais: data.visuais ?? null,
+      categoria: data.categoria ?? null,
     });
   }
 
@@ -1420,6 +1436,8 @@ export class MapView {
       } else if (event.t === 'heal') {
         this.texts.push({ uid: deQuem(event), x: event.x, y: event.y, text: `+${event.v}`, color: event.color ?? '#ff6666', size: 13, born: now, life: 900, drift: 0, degrau: degrauDoNumero(deQuem(event)) });
       } else if (event.t === 'kill') {
+        // (08/11) o sangue a mais e os sons das peças únicas
+        this.visuais.abate(this.entities.get('player'), event, now);
         // Preso ao boneco de quem ganhou: em grupo sai um por pessoa, e sem o
         // `uid` os dois números ficariam plantados no chão, longe de quem
         // recebeu. Ver `deQuem`.
@@ -2716,6 +2734,7 @@ export class MapView {
       ctx.scale(absorcao.escala, absorcao.escala);
       ctx.translate(-cx, -cy);
     }
+    this.visuais.antes(ctx, entity, px, py, now);
     if (!info && entity.lookItem) {
       drawItem(ctx, entity.lookItem, px, py, { time: now });
     } else {
@@ -3346,8 +3365,10 @@ export class MapView {
     }
     // Os estados ativos: do mob (gemas do jogador) e do próprio JOGADOR (controle de boss/elite e dano contínuo dos mobs).
     if (ehMob && entity.estados?.length) this.drawEstadosDoMob(entity.estados, meio + width / 2 + 3, barTop);
-    if (ehMob && entity.mods?.length) {
-      const linha = placaDeTexto(entity.mods.join(' · '), corDoMob ?? '#cfc7b4', Math.max(8, NAME_SIZE - 2), this.overlayRatio());
+    // (08/11, a Ambição de Veruso) a categoria do monstro, junto dos modificadores na linha de cima
+    const deCima = ehMob ? [...(entity.categoria ? [entity.categoria] : []), ...(entity.mods ?? [])] : [];
+    if (ehMob && deCima.length) {
+      const linha = placaDeTexto(deCima.join(' · '), corDoMob ?? '#cfc7b4', Math.max(8, NAME_SIZE - 2), this.overlayRatio());
       ctx.drawImage(linha.lona, this.nitido(meio - linha.largura / 2), this.nitido(nomeY - linha.altura + 3), linha.largura, linha.altura);
     }
 
@@ -3848,6 +3869,10 @@ export class MapView {
     if (now >= this.trocaDeAnimacaoEm) return false;
     // Efeito, projétil, número de dano ou fala no ar.
     if (this.effects.length || this.missiles.length || this.texts.length || this.falas.length || this.buffsDoJogador?.length) return false;
+    // (08/11) as pegadas apagando, o sangue no ar, as asas batendo, a Insanidade
+    if (this.visuais.animando(this.entities.get('player'), now)) return false;
+    // (08/11) o Abismo do PoE no chão pulsa
+    if (this.snapshot.instancia?.encontros?.some?.((e) => e.tipo === 'abismo-poe' || e.tipo === 'fenda-poe')) return false;
     // (lote A3b: os objetos das gemas do PoE animam — a bola pulsa, o tornado gira)
     if (this.snapshot.poeObjetos?.length || this.snapshot.poeObjetosDoGrupo?.length) return false;
     /*
@@ -4102,6 +4127,7 @@ export class MapView {
       this.colunasVivas.get(y).add(k % 4096);
     };
     for (const k of porCasa.keys()) marcarViva(k);
+    for (const k of this.visuais.casas(now)) marcarViva(k);
     for (const [k, lista] of objetosPorCasa) {
       if (lista.some((objeto) => objeto.item)) marcarViva(k);
     }
@@ -4125,6 +4151,7 @@ export class MapView {
         }
         if (objeto.nome) this.drawNomeDoObjeto(objeto, x, y, now);
       }
+      this.visuais.chao(this.ctx, x, y, this.camera, now);
       for (const entity of porCasa.get(k) ?? []) this.drawEntity(entity, now);
     });
     for (const [k, lista] of porCasa) {
@@ -4188,7 +4215,7 @@ export class MapView {
      */
     // Baús e altares (se a caçada tem): por cima do chão e das criaturas, antes dos efeitos.
     if (this.snapshot?.instancia?.encontros?.length) {
-      desenharMarcadores(this.ctx, this.snapshot.instancia.encontros, { camX: this.camera.x, camY: this.camera.y, tile: TILE, z: this.snapshot.z, jogador: this.snapshot.player, desenharItem: drawItem });
+      desenharMarcadores(this.ctx, this.snapshot.instancia.encontros, { camX: this.camera.x, camY: this.camera.y, tile: TILE, z: this.snapshot.z, jogador: this.snapshot.player, desenharItem: drawItem, mouse: this.casaSobOMouse });
     }
     // As SAFE ZONES do andar (`map.seguras`, o editor de mapas): um véu e a borda, por baixo dos efeitos.
     this.drawZonasSeguras();
@@ -4200,6 +4227,8 @@ export class MapView {
     });
     if (graficoLigado('efeitos')) this.drawEffects(now);
     if (graficoLigado('projeteis')) this.drawMissiles(now);
+    // (08/11) o sangue a mais e a Insanidade das peças únicas (`visuais-unicos.mjs`)
+    this.visuais.depois(this.ctx, this.entities.get('player'), this.camera, now, this.canvas.width, this.canvas.height);
     // (lote "luz") a ESCURIDÃO fora do Raio de Iluminação: por cima do mapa, das criaturas e dos efeitos; o portal e os textos ficam por cima.
     this.drawEscuridao();
     // O portal de saída da viagem: sempre (não é enfeite — é a viagem), por cima de tudo, com a barra na camada de texto.

@@ -442,7 +442,15 @@ export function extrasDaGemaPoe(estado, peca, def, indice = null, soquetes = nul
   // Recarga", "Habilidades de Arco Encaixadas ganham N segundos de Recarga" — `recarga_local@<tags>`, em segundos.)
   const usos = somar(peca?.poe?.af, 'usos_local');
   const recarga = somar(peca?.poe?.af, 'recarga_local');
-  return { nivel: Math.round(nivel), qualidade: Math.round(qualidade), ...(semReserva ? { semReserva } : {}), ...(eficienciaReserva ? { eficienciaReserva } : {}), ...(custoEmVida ? { custoEmVida } : {}), ...(maisDano ? { maisDano } : {}), ...(custo ? { custo } : {}), ...(usos ? { usos } : {}), ...(recarga ? { recarga } : {}) };
+  // (08/11, balão 0 sem efeito — a Autoridade do Triunvirato: "Habilidades Vaal Encaixadas têm …") os efeitos da PEÇA só nas gemas encaixadas nela, com as tags
+  // delas: `gema_local:<atributo>@<tags>` → o `af:<atributo>` do uso (o mesmo caminho dos suportes — `efeitoNaSkill`, `acoes.comAsLinhasDaGema`)
+  const afDaPeca = {};
+  for (const [k, v] of Object.entries(peca?.poe?.af ?? {})) {
+    if (!k.startsWith('gema_local:') || typeof v !== 'number') continue;
+    const { stat, conds } = ModsPoe.partir(k.slice('gema_local:'.length));
+    if (conds.every((c) => tags.has(c))) afDaPeca[stat] = (afDaPeca[stat] ?? 0) + v;
+  }
+  return { nivel: Math.round(nivel), qualidade: Math.round(qualidade), ...(Object.keys(afDaPeca).length ? { af: afDaPeca } : {}), ...(semReserva ? { semReserva } : {}), ...(eficienciaReserva ? { eficienciaReserva } : {}), ...(custoEmVida ? { custoEmVida } : {}), ...(maisDano ? { maisDano } : {}), ...(custo ? { custo } : {}), ...(usos ? { usos } : {}), ...(recarga ? { recarga } : {}) };
 }
 
 // ---------------------------------------------------------------- sockets
@@ -664,7 +672,7 @@ export function skillsAtivas(estado) {
           // (o Feiticeiro: a magia ligada a ele — o nível dele —, e ele com quantas magias suporta)
           ...(feiticeiro && magiaDoFeiticeiro(x.def) ? { feiticeiro: { nivel: feiticeiro.g.nivel + bonus } } : {}),
           ...(ehFeiticeiro(x.def) ? { magiasDoFeiticeiro: noGrupo.filter((y) => magiaDoFeiticeiro(y.def)).length } : {}),
-          ...(doPoe.semReserva || doPoe.eficienciaReserva || doPoe.custoEmVida || doPoe.maisDano || doPoe.custo || doPoe.usos || doPoe.recarga ? { local: { semReserva: !!doPoe.semReserva, eficienciaReserva: doPoe.eficienciaReserva ?? 0, custoEmVida: !!doPoe.custoEmVida, maisDano: doPoe.maisDano ?? 0, custo: doPoe.custo ?? 0, usos: doPoe.usos ?? 0, recarga: doPoe.recarga ?? 0 } } : {}),
+          ...(doPoe.semReserva || doPoe.eficienciaReserva || doPoe.custoEmVida || doPoe.maisDano || doPoe.custo || doPoe.usos || doPoe.recarga || doPoe.af ? { local: { semReserva: !!doPoe.semReserva, eficienciaReserva: doPoe.eficienciaReserva ?? 0, custoEmVida: !!doPoe.custoEmVida, maisDano: doPoe.maisDano ?? 0, custo: doPoe.custo ?? 0, usos: doPoe.usos ?? 0, recarga: doPoe.recarga ?? 0, ...(doPoe.af ? { af: doPoe.af } : {}) } } : {}),
         });
       }
     }
@@ -987,6 +995,12 @@ export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
   if (a.local?.usos) e.usosExtra = a.local.usos;
   if (a.local?.recarga) e.recargaExtraMs = a.local.recarga * 1000;
   if (a.local?.custo) e.custoPct = ((1 + e.custoPct / 100) * Math.max(0, 1 + a.local.custo / 100) - 1) * 100;
+  // (08/11) os efeitos da peça só nas gemas encaixadas nela (`gema_local:` — `extrasDaGemaPoe`), como os `af:` dos suportes
+  // (o campo do efeito em camelCase — `efeitoAuraPct`, `duracaoPct` — entra direto nele; o atributo, como `af:`)
+  for (const [k, v] of Object.entries(a.local?.af ?? {})) {
+    if (/[A-Z]/.test(k)) e[k] = (e[k] ?? 0) + v;
+    else e[`af:${k}`] = (e[`af:${k}`] ?? 0) + v;
+  }
   // O lado da explosão (a tela mostra "explode 3×3"): o mesmo número que o motor usa.
   if (e.explosaoPct || e.segundaExplosaoPct) e.explosaoLado = CONFIG.golpesSecundarios?.explosao?.lado ?? 3;
   return e;

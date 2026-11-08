@@ -10130,6 +10130,162 @@
       "unidade": "%",
       "combate": true,
       "efeito": "afeccoes / cargas (08/11 — aproximadas A4)"
+    },
+    "chance_frenesi_maxima": {
+      "nome": "Chance de ganhar o máximo de Cargas de Frenesi",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas.ganhar (08/11 — o Emblema do Precursor)"
+    },
+    "magnitude_revelados": {
+      "nome": "Magnitude dos Modificadores Revelados",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "gerar.modificadoresDoUnico (08/11 — os velados da Traição)"
+    },
+    "evasao_regen_vida_pct": {
+      "nome": "Evasão Regenerada como Vida por segundo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.regenDoPoe (08/11 — a Fome da Rainha velada)"
+    },
+    "minion_crit_flat": {
+      "nome": "Chance de Golpe Crítico dos Lacaios (fixa)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "lacaios-poe: soma na base do crítico (08/11 — Espectros velados)"
+    },
+    "modificavel_corrompido": {
+      "nome": "Pode ser modificado enquanto Corrompido",
+      "unidade": "",
+      "combate": true,
+      "efeito": "moedas.mjs (08/11 — as regras de criação dos únicos)"
+    },
+    "implicitos_max": {
+      "nome": "Máximo de Modificadores Implícitos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "moedas.mjs (08/11 — as regras de criação dos únicos)"
+    },
+    "implicitos_extra": {
+      "nome": "Modificador Implícito adicional",
+      "unidade": "",
+      "combate": true,
+      "efeito": "moedas.mjs (08/11 — as regras de criação dos únicos)"
+    },
+    "sem_perda_exp_vinculo": {
+      "nome": "Não perde Experiência na morte pelo alvo Vinculado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDosVinculos → morte.conta (08/11 — o Vínculo D'alma)"
+    },
+    "qualidade_max": {
+      "nome": "Qualidade Máxima",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "moedas.subirQualidade (08/11 — a Tentação de Ixchel)"
+    },
+    "identifica_magicos": {
+      "nome": "Itens Mágicos encontrados são Identificados",
+      "unidade": "",
+      "combate": true,
+      "efeito": "hunt/combate.identificarAoAchar (08/11 — o Manto de Tawm'r Isley)"
+    },
+    "pode_ser_ungido": {
+      "nome": "Pode ser ungido",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ungir.ungivel (08/11 — o Cinto de Cordão)"
+    },
+    "encantamentos_extras": {
+      "nome": "Modificadores Encantados extras",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ungir.maximoDeEncantamentos (08/11 — o Suspiro Estrangulador e os Capotes)"
+    },
+    "pesca_sensibilidade_pct": {
+      "nome": "Sensibilidade da Fisgada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "pesca.mjs (08/11 — a Pesca)"
+    },
+    "pesca_consumo_pct": {
+      "nome": "Consumo da Reserva de Pesca",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "pesca.mjs (08/11 — a Pesca)"
+    },
+    "pesca_alcance_pct": {
+      "nome": "Alcance da Pesca",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "pesca.mjs (08/11 — a Pesca)"
+    },
+    "pesca_raridade_pct": {
+      "nome": "Raridade de Peixes Pescados",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "pesca.mjs (08/11 — a Pesca)"
+    },
+    "pesca_quantidade_pct": {
+      "nome": "Quantidade de Peixes Pescados",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "pesca.mjs (08/11 — a Pesca)"
+    },
+    "pesca_linha_pct": {
+      "nome": "Força da Linha de Pesca",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "pesca.mjs (08/11 — a Pesca)"
+    },
+    "pesca_corrompidos": {
+      "nome": "Pode pescar Peixes Corrompidos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "pesca.mjs (08/11 — a Pesca)"
+    },
+    "pesca_exoticos": {
+      "nome": "Pode pescar Peixes Exóticos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "pesca.mjs (08/11 — a Pesca)"
+    },
+    "pesca_isca": {
+      "nome": "Isca de pesca",
+      "unidade": "",
+      "combate": true,
+      "efeito": "pesca.mjs (08/11 — a Pesca)"
+    },
+    "pesca_anzol": {
+      "nome": "Anzol de pesca",
+      "unidade": "",
+      "combate": true,
+      "efeito": "pesca.mjs (08/11 — a Pesca)"
+    },
+    "dobrado_em_fenda": {
+      "nome": "Propriedades dobradas em uma Fenda",
+      "unidade": "",
+      "combate": true,
+      "efeito": "afixos.somarPeca × 2 com hunt.poeEmFenda (08/11 — o Anel da Fenda)"
+    },
+    "sintese_arauto_extra": {
+      "nome": "Modificador de Arauto adicional no Sintetizador",
+      "unidade": "",
+      "combate": true,
+      "efeito": "sintese.sintetizar (08/11 — os Círculos)"
+    },
+    "omnichama_como_raro": {
+      "nome": "Pode ser criado com Omnichama como se fosse raro",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ducados.aceita (08/11 — o Cutelo do Capitão Temido)"
+    },
+    "sem_intangibilidade": {
+      "nome": "Não pode ganhar Intangibilidade",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ducados.comOmnichama (08/11 — o Cutelo do Capitão Temido)"
     }
   }
 }

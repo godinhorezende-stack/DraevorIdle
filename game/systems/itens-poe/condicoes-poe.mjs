@@ -361,6 +361,8 @@ export const CONDICOES_DE_ESTADO = new Set([
   'gastouManaRecente', 'usouHabilidadeRecente', 'mudouPosturaRecente', 'recargaEsIniciouRecente', 'naoCritRecente', 'naoCriticouRecente',
   'naoMatouRecente2', 'usouRubiRecente', 'usouSafiraRecente', 'usouTopazioRecente', 'usouAmetistaRecente', 'naoConjurouAvancoRecente', 'conjurouAvancoRecente',
   'detonouMinaRecente', 'naoDetonouMinaRecente', 'usouFogoRecente', 'acertouUnicoRecente',
+  // (08/11, os velados da Traição:) durante a Anulação do Ganho de Almas.
+  'almasImpedidas',
   // (12/10, as Tinturas:) com uma Tintura ativa; usou um Frasco de Vida recentemente.
   'tinturaAtiva', 'usouFrascoVidaRecente',
   // (13/10, os parciais exatos:) a Garra na mão secundária (a Maestria de Garras); o efeito de um Frasco de Mana correndo (Extração de Essência).
@@ -447,7 +449,7 @@ export const TAGS_DE_GOLPE = new Set([
   // O ALVO do golpe (o estado dele naquele acerto): Resfriado, Congelado, Eletrizado, Cego, Sangrando, Envenenado, Incendiado, Amaldiçoado,
   // Lento, Mutilado, Provocado, a raridade, a vida cheia; e o golpe de perto ("em Curto Alcance"), na mão principal/secundária.
   'alvoResfriado', 'alvoCongelado', 'alvoEletrizado', 'alvoCego', 'alvoSangrando', 'alvoEnvenenado', 'alvoIncendiado', 'alvoAmaldicoado',
-  'alvoLento', 'alvoMutilado', 'alvoProvocado', 'alvoAtordoado', 'alvoComTeia', 'alvoTeias:3', 'alvoTeias:4', 'alvoNoSoloFungico', 'alvoNaAreaFria', 'ataqueNaoImpelido', 'impelidoPor:1', 'impelidoPor:2', 'impelidoPor:3', 'alvoEletrizadoOuCongelado', 'guarda', 'gemaCritica', 'alvoRaro', 'alvoUnico', 'alvoMagico', 'alvoVidaCheia', 'alvoPerto', 'canalizar', 'retaliacao', 'estandarte', 'custaVida',
+  'alvoLento', 'alvoMutilado', 'alvoProvocado', 'alvoAtordoado', 'alvoComTeia', 'alvoTeias:3', 'alvoTeias:4', 'alvoNoSoloFungico', 'alvoNaAreaFria', 'ataqueNaoImpelido', 'impelidoPor:1', 'impelidoPor:2', 'impelidoPor:3', 'alvoEletrizadoOuCongelado', 'guarda', 'gemaCritica', 'alvoRaro', 'alvoUnico', 'alvoMagico', 'alvoAbissal', 'alvoVidaCheia', 'alvoPerto', 'canalizar', 'retaliacao', 'estandarte', 'custaVida',
   'golpe', 'pancada', 'nova', 'runa', 'marca', 'feitico', 'vinculo', 'ativada', 'desarmadoGolpe', 'naoCritico',
   // (06/11, os Únicos — lote 3) as Habilidades de Pacto ("Habilidades de pacto têm a velocidade de conjuração aumentada")
   'pacto',
@@ -710,6 +712,8 @@ export function condicoesDe(estado, total = null, principais = null) {
     if (cadaveresPerto(h) > 0) v.add('cadaverPerto');
     // (lote G) Elusivo (o buff — antes a condição nunca valia), o Solo Sagrado, a Postura e o Estandarte.
     if (buffAtivo(estado, 'elusivo', total)) v.add('elusivo');
+    // (08/11, os velados da Traição) "durante a Anulação do Ganho de Almas": o impedimento das Almas Vaal (`hunt.poeAlmasImpedidasAte`)
+    if ((h.poeAlmasImpedidasAte ?? -Infinity) > agora) v.add('almasImpedidas');
     if (noSoloSagrado(h, agora)) v.add('soloSagrado');
     // (03/11) sobre Solo Congelado (o do monstro ou o seu — `noSoloCongelado`)
     if (noSoloCongelado(h, agora)) v.add('soloCongelado');
@@ -1175,6 +1179,13 @@ export function fatorDaEscala(estado, total, principais, escala) {
     // (a keystone Fúria — o Rampage do PoE: "a cada N Mortes de Fúria" — o contador de abates seguidos, `contarRampage`)
     case 'rampage': { const r = h?.rampage; const n = r && r.ate > agora ? r.n : 0; return a ? cada(n, a) : n; }
     // ("por cada Inimigo Eletrizado que você Matou Recentemente": os abates de eletrizados nos últimos 4 s — `hunt/combate`)
+    // (08/11, o Talismã do Grande Lobo — o dono: "Chefes de ato mortos") "por Rito da Lua concluído": os chefes de ato vencidos na dificuldade da
+    // caçada (fora dela, na maior), no máximo os 10 atos
+    case 'ritosDaLua': {
+      const dif = h?.campanha?.dificuldade;
+      const n = (d) => new Set(estado?.campanha?.[d]?.bosses ?? []).size;
+      return Math.min(10, dif ? n(dif) : Math.max(0, ...Object.keys(estado?.campanha ?? {}).map(n)));
+    }
     case 'eletrizadosMortosRecente': return (h?.poeEletrizadosMortos ?? []).filter((t) => agora - t <= RECENTE_MS).length;
     case 'vidaMax': return cada(estado?.maxHp ?? 0, a);
     case 'manaMax': return cada(estado?.maxMana ?? 0, a);
@@ -2137,7 +2148,8 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   if ((s.critico_sem_dano_extra ?? 0) > 0) f.critMultiplier = 1;
   // (o multiplicador de crítico BRUTO — o da Agonia Perfeita, que tira o dano extra do crítico mas usa o multiplicador nas afecções)
   if (critMult && ficha.critMultiplierBruto != null) f.critMultiplierBruto = ficha.critMultiplierBruto + critMult / 100;
-  const penPorElemento = { fire: s.fire_pen ?? 0, ice: s.ice_pen ?? 0, energy: s.energy_pen ?? 0 };
+  // (08/11, os velados da Traição: + o Caos — "Ataques com essa Arma Penetram X% da Resistência a Caos")
+  const penPorElemento = { fire: s.fire_pen ?? 0, ice: s.ice_pen ?? 0, energy: s.energy_pen ?? 0, chaos: s.chaos_pen ?? 0 };
   if (pen || s.phys_pen || Object.values(penPorElemento).some(Boolean)) {
     const p = ficha.penetracao ?? { fisica: 0, elemental: 0, porElemento: {} };
     const pe = { ...(p.porElemento ?? {}) };
@@ -2203,6 +2215,8 @@ export function tagsDoAlvo(alvo, agora) {
   if (rar === 'unico' || alvo.boss || alvo.chefe) t.push('alvoUnico');
   // (06/11: o monstro Mágico do jogo tem a raridade `modificado` — `modificadores-monstro.RARIDADE_DO_POE`; antes a tag nunca saía)
   if (rar === 'magico' || rar === 'modificado') t.push('alvoMagico');
+  // (08/11) o monstro das ondas do Abismo (`abismo.mjs`) — "contra Monstros Abissais"
+  if (alvo.abissal) t.push('alvoAbissal');
   if (at(e.causticado)) t.push('alvoCausticado');
   if ((e.vinhas?.n ?? 0) >= 3) t.push('alvoVinhas3');
   if (alvo.maxHp > 0 && alvo.hp >= alvo.maxHp) t.push('alvoVidaCheia');
@@ -2453,7 +2467,7 @@ export const slugDoNome = (nome) => String(nome ?? '').normalize('NFD').replace(
 // ---------------------------------------------------------------- os atributos DINÂMICOS (validação da tradução)
 
 /** Os eventos que `mods-poe.evento` dispara e as ações que ele sabe fazer. */
-export const EVENTOS = new Set(['estilhacar', 'maxDivina', 'perderEspiritual', 'golpeBrutalSofrido', 'ganharFurtividadeFelina', 'perderFurtividadeFelina', 'ganharAgilidadeFelina', 'ganharBuffDaAve', 'sangrar', 'ganharElusivo', 'incendiarNovo', 'ganharAdrenalina', 'amaldicoarSemMaldicao', 'amaldicoarSemMaldicaoNaoAura', 'usarFrascoVida', 'usarGuarda', 'matar', 'critico', 'bloquear', 'bloquearAtaque', 'bloquearMagia', 'bloquearProjetil', 'serAcertado', 'serAcertadoCritico', 'atordoar', 'incendiar', 'congelar', 'eletrizar', 'envenenar',
+export const EVENTOS = new Set(['concentrar', 'estilhacar', 'maxDivina', 'perderEspiritual', 'golpeBrutalSofrido', 'ganharFurtividadeFelina', 'perderFurtividadeFelina', 'ganharAgilidadeFelina', 'ganharBuffDaAve', 'sangrar', 'ganharElusivo', 'incendiarNovo', 'ganharAdrenalina', 'amaldicoarSemMaldicao', 'amaldicoarSemMaldicaoNaoAura', 'usarFrascoVida', 'usarGuarda', 'matar', 'critico', 'bloquear', 'bloquearAtaque', 'bloquearMagia', 'bloquearProjetil', 'serAcertado', 'serAcertadoCritico', 'atordoar', 'incendiar', 'congelar', 'eletrizar', 'envenenar',
   'acertar', 'usarHabilidade', 'usarMagia', 'usarAtaque', 'usarMovimento', 'usarVaal', 'usarClamor', 'usarFrasco', 'usarFrascoMana', 'suprimir', 'perderTolerancia',
   'maxPoder', 'maxFrenesi', 'maxTolerancia', 'tempo', 'provocar', 'golpeDeMisericordia', 'vidaBaixa', 'equipado', 'perderPoder', 'conjurarMaldicao', 'gastarMana', 'armadilha', 'morrer', 'lancarArmadilha', 'detonarMina', 'drenoCheio', 'rampage', 'empurrar',
   // (ciclo 7, lote D) quando Atordoado; quando sofrer Dano Físico de um Acerto (`mods-poe.aoSerAcertado`).
@@ -2528,10 +2542,11 @@ var acaoPeloNome;
 export function definirAcaoPeloNome(fn) { acaoPeloNome = fn; }
 // (lote 56: + `aura_unica:<gema>` — a Visão Sublime, "Habilidades de Aura diferentes de <Aura> são Desabilitadas" — `acoes.auraPermitida`)
 // (+ lote 56: `fuga_impossivel:<pedra>` e `proibida_chama:<notável>` / `proibida_carne:<notável>` — `passivas/arvore`)
-const DINAMICOS = /^(sempre|efeito_buff|concede|suporte_local|suporte_peitoral|suporte_elmo|keystone|aura_unica|fuga_impossivel|proibida_chama|proibida_carne):[\w-]+$/;
+// (+ 08/11: `ungido:<notável>` — o Ungir, `passivas/arvore.alocadosPeloUngir`)
+const DINAMICOS = /^(sempre|efeito_buff|concede|suporte_local|suporte_peitoral|suporte_elmo|keystone|aura_unica|fuga_impossivel|proibida_chama|proibida_carne|ungido):[\w-]+$/;
 /** As FAMÍLIAS de atributo com parâmetro que o código monta pelo nome (o parâmetro tem de ser um dos que ele conhece). */
 const ELS_P = '(physical|fire|ice|energy|chaos)';
-const TIPOS_DE_LACAIO = '(sentinela|zumbi|espectro|golem|esqueleto|totem|espirito|fantasma|reliquia|sagrado|arma|aranha|arqueiro|balista|arauto|qualquer)';
+const TIPOS_DE_LACAIO = '(sentinela|zumbi|espectro|golem|esqueleto|totem|espirito|fantasma|reliquia|sagrado|arma|aranha|arqueiro|balista|arauto|rastejador|arbalista|qualquer)';
 const PARAMETRICOS = [
   new RegExp(`^pode:(incendio|congelamento|resfriamento|eletrizacao|veneno|sangramento):${ELS_P}$`), // itens-poe/afeccoes.daSoma
   new RegExp(`^nao_pode:(incendio|congelamento|resfriamento|eletrizacao|veneno|sangramento)(:${ELS_P})?$`), // itens-poe/afeccoes.daSoma
@@ -2553,7 +2568,7 @@ const PARAMETRICOS = [
   // (14/10) o altar aleatório a cada N segundos (a Harmonia do Propósito — `mods-poe.aurasProximas`; o valor é a duração base, em segundos)
   /^altar_aleatorio:\d+$/,
   /^aura_proximos_res:(fire|ice|energy|chaos|todas)$/, /^aura_proximos_res_igual:(fire|ice|energy|chaos)$/,
-  /^gatilho_local:(usarAtaque|usarMagia|bloquear|critico|acertar|congelar|perderTolerancia|matar|gastarMana|armadilha):(magia|elemental|fogo|gelo|raio|maldicao|arco|clamor|lacaio)$/,
+  /^gatilho_local:(usarAtaque|usarMagia|bloquear|critico|acertar|congelar|perderTolerancia|matar|gastarMana|armadilha|concentrar):(magia|elemental|fogo|gelo|raio|maldicao|arco|clamor|lacaio)$/,
   new RegExp(`^(lacaio_somado_min|lacaio_somado_max|lacaio_conv_fogo|lacaio_so_fogo|lacaio_cinzas|lacaio_incendiar|lacaio_renova|lacaio_dreno_dono|lacaio_explodir|so_lacaio):${TIPOS_DE_LACAIO}$`), // lacaios-poe.oQueInvoca
   /^res_fixa(_tem)?:(fire|ice|energy|chaos)$/, // ficha (resistência fixa)
   /^frasco_regen_[ns]:(vida|mana|utilidade|todos)$/, /^frasco_instantaneo_baixa:(vida|mana)$/, /^sem_frasco:(vida|mana|utilidade)$/, // itens-poe/frascos
@@ -2562,6 +2577,12 @@ const PARAMETRICOS = [
   // MALDIÇÃO que a peça põe em você ("Você é Amaldiçoado com Vulnerabilidade" — `addsDasMaldicoesNoJogador`)
   new RegExp(`^aura_degen:${ELS_P}$`), new RegExp(`^aura_efeito_pelo_dano:${ELS_P}$`), /^maldicao_propria:(fraquezaElemental|vulnerabilidade|enfraquecer|flamabilidade|congelabilidade|condutividade|desespero)$/, // mods-poe.aurasProximas
   /^efeito_buff_gema:(aura|clamor|arauto|lacaio|todos|golem|vinculo|guarda|estandarte)$/,
+  // (08/11, o Triunvirato) o efeito da peça só nas gemas encaixadas nela — `skills/gemas.extrasDaGemaPoe`
+  // (08/11, a Marcha de Vorana) os efeitos de lacaio só de um tipo — `lacaios-poe.oQueInvoca`
+  new RegExp(`^lacaio_tipo:${TIPOS_DE_LACAIO}:minion_[a-z_]+$`),
+  // (08/11, balão 0 sem efeito — o dono: "Fazer o visual") os VISUAIS e SONS das peças: o cliente desenha (`cacadas.visuaisDoJogador` → `visuais-unicos.mjs`)
+  /^visual:(sangue|frenesi_sangue|som_deusa|som_gelo|insanidade|asas|categoria|brilho_peixe|pegadas:(sangue|necro|cascos|nevoa|celeste|mercurio))$/,
+  /^gema_local:(?:acertos_ignoram_res|ignora_reducao_fisica|projectile_speed|vaal_almas_menos|vaal_almas_de_volta_chance|vaal_elusivo_ao_usar|vaal_vento_ao_usar|duracaoPct|impedimento_almas_duracao_inc|dano_acertos_sortudo|efeitoAuraPct)$/,
   /^efeito_maldicao_expirou:\d+$/, /^maldicao_(lento|dano)_expirou:\d+$/, // acoes.efeitosDaMaldicao → Reforcos.marcar ("Efeito aumentado se Y% da Duração da Maldição expirou") // itens-poe/gemas-poe (reforços das gemas; golem: os bônus dos golens ao dono)
   new RegExp(`^sem_dano:(${ELS_P.slice(1, -1)}|elemental|naocaos|naoelemental|naofisico)$`), new RegExp(`^so_dano:${ELS_P}$`), // transformarPartes
   // (ciclo 7, lote D) mods-poe.aoSerAtordoado ("por 1 segundo por cada 100ms de Duração do Atordoamento") e os periódicos (mods-poe.aurasProximas).
@@ -2604,7 +2625,7 @@ export function dinamicoValido(stat) {
 /** (06/11) A ficha tem uma escala pelo Fogo sofrido recentemente (o Rompe-amanhecer)? — o acerto com Fogo refaz a ficha. */
 export const usaFogoSofrido = (ficha) => Object.keys(ficha?.afPoe ?? {}).some((k) => k.includes('%fogoSofridoRecente'));
 /** A escala é conhecida? */
-export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|oniciencia|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|joiasAbissais|joiaUnica|devocao|itemMagico|maldicoesEmVoce|abissalLocal|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|vinhas|crescimentoFragil|desdeUsou|afetadoPorClamor|valor|valorDoEstandarte|forcaDosVentos|stat|armaduraElmo|evasaoLuvas|esBotas|vidaReservadaPct|itensInfluencia|fogoSofridoRecente|todasGemasVermelhasLocal|corrompidaLocal|barreiras|teiasNoAlvo)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
+export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|oniciencia|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|joiasAbissais|joiaUnica|devocao|itemMagico|maldicoesEmVoce|abissalLocal|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|ritosDaLua|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|vinhas|crescimentoFragil|desdeUsou|afetadoPorClamor|valor|valorDoEstandarte|forcaDosVentos|stat|armaduraElmo|evasaoLuvas|esBotas|vidaReservadaPct|itensInfluencia|fogoSofridoRecente|todasGemasVermelhasLocal|corrompidaLocal|barreiras|teiasNoAlvo)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
 
 /** Os números base do PoE dos efeitos de acerto. */
 export const NO_ACERTO = {

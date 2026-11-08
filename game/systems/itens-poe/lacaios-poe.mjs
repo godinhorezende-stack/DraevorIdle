@@ -128,7 +128,11 @@ const PALAVRA_DO_TIPO = { sentinela: /sentinela|sentinel/i, zumbi: /zumbi|zombie
   // (ciclo 7) os clones da Flecha Ilusória / Flecha Espelhada ("Duração do Arqueiro Ilusório aumentada").
   arqueiro: /arqueir|clone|mirror arrow|blink arrow|flecha (?:ilusória|espelhada)/i, balista: /balista|ballista/i,
   // (lote 80, o Mensageiro Solitário: "Lacaios de Habilidades de Arautos" — a Sentinela da Pureza, o Rastejador Agonizante)
-  arauto: /herald|arauto/i, qualquer: /./ };
+  arauto: /herald|arauto/i,
+  // (08/11, os Círculos: "Rastejador Agonizante causa Dano aumentado" — só o do Arauto da Agonia)
+  rastejador: /rastejador|agony crawler/i,
+  // (08/11, a Marcha de Vorana: "Arbalistas Convocadas …" — o Convocar Arbalistas, "Acribata Convocado" no poedb)
+  arbalista: /arbalist|acribata/i, qualquer: /./ };
 
 // ---- a força de base por nível (a mediana dos monstros comuns da campanha) ----
 // PREGUIÇOSA (calculada no primeiro uso e guardada): calcular na carga do módulo lia `CAMPANHA` enquanto `monstros.mjs` ainda carregava,
@@ -256,6 +260,17 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
   const r = GemasPoe.doSlug(slug);
   if (!r) return null;
   const t = GemasPoe.textosDaGema(slug, nivelDaGema);
+  // (08/11, balão 0 sem efeito — a Marcha de Vorana) os efeitos de lacaio só de UM tipo (`lacaio_tipo:<tipo>:<atributo de lacaio>` — "Arbalistas Convocadas têm …"):
+  // entram como o atributo de sempre, só no lacaio daquele tipo
+  const textoDoTipo = `${t.nome ?? ''} ${r.gema?.en ?? ''} ${r.gema?.nome ?? ''}`;
+  const doTipo = Object.entries(af ?? {}).filter(([k, v]) => typeof v === 'number' && /^lacaio_tipo:/.test(k));
+  if (doTipo.length) {
+    af = { ...af };
+    for (const [k, v] of doTipo) {
+      const [, tipo, stat] = /^lacaio_tipo:(\w+):(.+)$/.exec(k) ?? [];
+      if (stat && PALAVRA_DO_TIPO[tipo]?.test(textoDoTipo)) af[stat] = (af[stat] ?? 0) + v;
+    }
+  }
   // (lote G20b: + a habilidade que um SUPORTE torna totem — `efeito.viraTotem`, o Totem de Magia, o Totem Balista, o Devastador)
   const doSuporte = r.arquetipo !== 'totem' && efeito?.viraTotem > 0;
   const totem = r.arquetipo === 'totem' || doSuporte || t.linhas.some((l) => /Invoca um Totem/i.test(l));
@@ -475,7 +490,7 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
   const permitidos = Object.entries(af ?? {}).filter(([k, v]) => /^so_lacaio:\w+$/.test(k) && v > 0).map(([k]) => k.split(':')[1]);
   const proibido = !totem && permitidos.length && !permitidos.some((tp) => PALAVRA_DO_TIPO[tp]?.test(texto)) ? `Um item equipado não deixa ter este lacaio (só: ${permitidos.join(', ')}).` : null;
   const resultado = {
-    estilo, velAtaquePct, critChance: (semprecritico ? 100 : 5) * (1 + m0('minion_crit_inc') / 100), critChanceBase: semprecritico ? 100 : 5, critMult: 1.5 + critMult / 100, somado, sangrar: Math.max(sangrar, m0('minion_chance_sangrar')),
+    estilo, velAtaquePct, critChance: Math.min(100, (semprecritico ? 100 : 5 + m0('minion_crit_flat')) * (1 + m0('minion_crit_inc') / 100)), critChanceBase: semprecritico ? 100 : 5 + m0('minion_crit_flat'), critMult: 1.5 + critMult / 100, somado, sangrar: Math.max(sangrar, m0('minion_chance_sangrar')),
     ...(Object.values(conversao).some((v) => v > 0) || soDano ? { conversao, soDano } : {}),
     ...(proibido ? { proibido } : {}),
     // Os mods do PoE dos lacaios (o tique deles lê): resistências, dano recebido, regeneração, roubo, movimento, multiplicador degenerativo,
@@ -502,7 +517,13 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
       chances: { cegar: mn('minion_chance_cegar'), provocar: semProvocar ? 0 : mn('minion_chance_provocar') + porTipo('lacaio_provocar') + (totem ? 0 : efeito?.lacaioProvocarPct ?? 0), desacelerar: mn('minion_chance_desacelerar'), envenenar: mn('minion_chance_envenenar'), incendiar: mn('minion_chance_incendiar') + porTipo('lacaio_incendiar'),
         definhar: mn('minion_chance_definhar') + porTipo('lacaio_definhar'), cinzas: porTipo('lacaio_cinzas'), empurrar: mn('minion_chance_empurrar'),
         // (lote 28) o Rasgacarne único: "Lacaios têm X% de chance de empalar ao atingir com ataques por joia Olho Medonho encaixada".
-        empalar: mn('minion_chance_empalar') },
+        empalar: mn('minion_chance_empalar'),
+        // (08/11, a Marcha de Vorana) Intimidar, Mutilar ("Dilacerar"), Inervar, Esmagar, a Exposição, Congelar e Eletrizar no acerto do lacaio
+        intimidar: mn('minion_chance_intimidar'), mutilar: mn('minion_chance_mutilar'), inervar: mn('minion_chance_inervar'), esmagar: mn('minion_chance_esmagar'),
+        exposicaoFogo: mn('minion_chance_exposicao_fogo'), exposicaoGelo: mn('minion_chance_exposicao_gelo'), exposicaoRaio: mn('minion_chance_exposicao_raio'),
+        congelar: mn('minion_chance_congelar'), eletrizar: mn('minion_chance_eletrizar') },
+      // (08/11, a Marcha de Vorana) os projéteis a mais do lacaio de longe: Projéteis adicionais, Atravessar, Difundir, Ricochetear e Dividir (`acoes.projeteisDoLacaio`)
+      ...(mn('minion_extra_projectiles') || mn('minion_perfurar') || mn('minion_bifurcar') || mn('minion_ricochetes') || mn('minion_divisao') ? { projeteisExtra: { alvosExtras: mn('minion_extra_projectiles'), perfurar: mn('minion_perfurar'), bifurcar: mn('minion_bifurcar'), encadear: mn('minion_ricochetes'), divisao: mn('minion_divisao') } } : {}),
       // (lote 28) as Luvas Rebitadas únicas: "Com uma joia Olho Medonho encaixada, os lacaios têm X% de chance de ganhar Poder Profano ao
       // atingir com magias" (4 s, como o "ao Matar").
       poderProfanoAoAcertarMagia: mn('minion_poder_profano_ao_acertar_magia'),
@@ -514,6 +535,8 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null, grup
       // recuperação, os buffs ao matar, o dano dobrado, ignorar a redução física, a penetração nos amaldiçoados, a vida na morte de outro
       // lacaio, o dreno para o dono — `aplicarNoLacaio`, `golpeDoLacaio`, `danoNoLacaio`, `aoMatarDoLacaio`.
       // (lote S2B: + a qualidade do Exemplar e da Carne Fresca — "Lacaios … têm Chance de Golpe Crítico aumentada em X%")
+      // (08/11, os velados da Traição: "Espectros levantados têm +X% para a chance de golpe crítico" — o fixo soma na base; `critBase` da gema também)
+      critFlat: mn('minion_crit_flat'),
       critInc: mn('minion_crit_inc') + (/mag[oa]|mage|espectro|spectre/i.test(`${nome} ${t.nome}`) ? mn('minion_crit_magico') : 0) + (e2a.critIncPct ?? 0) + (totem ? 0 : efeito?.lacaioCritIncPct ?? 0), critMult: mn('minion_crit_mult'), areaPct: mn('minion_area'), recargaPct: mn('minion_cdr') + porTipo('lacaio_cdr') + e1aQ.recargaPct,
       bloqueioMagico: mn('minion_spell_block'), reducaoFisica: mn('minion_phys_red') + (totem ? m0('totem_phys_red') : 0), esDaVidaPct: mn('minion_es_da_vida') + porTipo('lacaio_es_da_vida'), resMax: mn('minion_res_max') + (totem ? 0 : efeito?.lacaioResMaxPct ?? 0),
       // (lote 86, dono 19/10: a Égide Necromântica, parte A) o máximo de UMA resistência (o do escudo — `tetoDaResDoLacaio`); os efeitos AO

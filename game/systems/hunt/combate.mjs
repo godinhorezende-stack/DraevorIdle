@@ -53,6 +53,7 @@ import * as MoedasPoe from '../itens-poe/moedas.mjs';
 // (100% — dados, 03/11) as Tatuagens do PoE (a fonte simples, sem a liga Ancestral — `passivas/tatuagens.dropDoMonstro`)
 import * as Tatuagens from '../passivas/tatuagens.mjs';
 import * as Pinaculos from '../itens-poe/pinaculos.mjs';
+import * as Ungir from '../itens-poe/ungir.mjs';
 import * as Missoes from '../itens-poe/missoes.mjs';
 import * as PinaculosAcesso from '../itens-poe/pinaculos-acesso.mjs';
 import { tipoDoBicho } from './escalonamento.mjs';
@@ -363,6 +364,11 @@ export function subirDeLevel(estado) {
   refazerMaximos(estado, novo);
 }
 
+/** (08/11, o Manto de Tawm'r Isley: "Itens Mágicos encontrados são Identificados") a peça Mágica achada por quem tem a linha já vem identificada. */
+export function identificarAoAchar(estado, peca) {
+  if (peca?.poe?.raridade === 'magico' && ItensPoeJogo.naoIdentificada(peca) && itensPoeLigado() && ModsPoe.valor(Ficha.combate(estado), 'identifica_magicos') > 0) ItensPoeJogo.identificar(peca);
+  return peca;
+}
 /** (07/11, lote 22) o Pergaminho da Sabedoria do PoE (o id de item da moeda — `gamedata/itens-poe/moedas-poe-ids.json`). */
 const PERGAMINHO_DA_SABEDORIA = 915154;
 export function quantasMoedas(bicho, id, estado = null) {
@@ -445,6 +451,7 @@ function sacolaDoChefe(estado, hunt, alvo, quem, atoDoChefe) {
     // A SACOLA DO CHEFE NÃO PASSA PELO FILTRO DE LOOT (dono, 10/10: "sacola do boss do ato não tem filtro, vai direto para o baú do
     // boss"): tudo o que ele solta — peças, moedas, o mapa, o Único do pináculo — vai inteiro para o baú. O filtro vale no loot da caçada.
     for (const daPoe of ItensPoeJogo.dropsDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidade, raridadeDoDrop(estado, alvo))) {
+      identificarAoAchar(estado, daPoe);
       itens.push(daPoe);
       // O Único do PoE: o servidor inteiro fica sabendo (chat e faixa do alto — `anuncios.mjs`).
       Anuncios.dropRaro({ quem, peca: daPoe, bicho: alvo.name, boss: true, onde: alvo.name });
@@ -463,6 +470,8 @@ function sacolaDoChefe(estado, hunt, alvo, quem, atoDoChefe) {
       Anuncios.dropRaro({ quem, peca: exclusivo, bicho: alvo.name, boss: true, onde: alvo.name });
       DropsDoSite.anotarDropPoe({ quem, onde: alvo.name, bicho: alvo.name, boss: true, peca: exclusivo, estado }).catch((e) => console.error('drops-do-site', e.message));
     }
+    // (08/11) os ÓLEOS do Ungir caem só do chefe pináculo (`itens-poe/ungir.mjs`, `regras.json → moedas.oleos`)
+    if (hunt.bossId && Pinaculos.doDispositivo(hunt.bossId)) for (const slug of Ungir.oleosDoPinaculo()) itens.push({ id: MoedasPoe.idDa(slug), count: 1 });
   }
   return itens;
 }
@@ -890,7 +899,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // bônus online, que é de CHANCE no loot e não de quantidade de ouro.
   alvo.expDasMoedas = Math.round(semOnline);
   alvo.exp = exp;
-  eventos.push({ t: 'kill', name: alvo.name, exp, quem: personagem.nome, x: alvo.x, y: alvo.y, color: '#ffffff' });
+  // (08/11: + a raridade — os visuais e sons das peças no abate, `visuais-unicos.mjs`)
+  eventos.push({ t: 'kill', name: alvo.name, exp, quem: personagem.nome, x: alvo.x, y: alvo.y, color: '#ffffff', raridade: alvo.raridade ?? 'normal', ...(alvo.boss || alvo.isBoss ? { chefe: true } : {}) });
   estado.xp = (estado.xp ?? 0) + exp;
   const sessao = hunt.sessao;
   if (sessao) {
@@ -1069,6 +1079,7 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   const quantidadeDoJogador = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + (podio?.loot ?? 0) / 100) * fatorDaCacaOnline(hunt) * (1 + Math.max(0, Number(noMapa?.quantidade) || 0) / 100);
   const raridadeDoMorto = raridadeDoDrop(estado, alvo) + (Number(noMapa?.raridade) || 0);
   for (const daPoe of ItensPoeJogo.dropsDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidadeDoJogador, raridadeDoMorto)) {
+    identificarAoAchar(estado, daPoe);
     // O FILTRO DE LOOT (dono, 08/10: "está pegando itens mesmo setando as coisas"): a peça que o filtro não pega fica no chão ("Ignorado").
     if (Bolsa.ignora(estado, daPoe.id, daPoe)) {
       conta('ignorado', daPoe.id, 1);
@@ -1122,7 +1133,7 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // matou (`pinaculos-acesso.mjs → sortearDoAtlas`). Vão como a moeda (só a lista "Não coletar" os deixa no chão).
   // (06/11) e as PARTES e os PERGAMINHOS do Emissário e o DUCADO DE UKATOA, do chefe de qualquer mapa (`moedas.mjs → dropDoChefeDeMapa`)
   if (noMapa && alvo.chefeDoMapa) {
-    for (const id of [...PinaculosAcesso.sortearDoAtlas(noMapa.tier), ...MoedasPoe.dropDoChefeDeMapa()]) {
+    for (const id of [...PinaculosAcesso.sortearDoAtlas(noMapa.tier), ...MoedasPoe.dropDoChefeDeMapa(), ...MoedasPoe.ducadosDoChefeDeMapa()]) {
       if (Bolsa.ignora(estado, id)) conta('ignorado', id, 1);
       else if (Bolsa.porNaBolsa(estado, id, 1)) {
         caiu.push({ id, count: 1 });

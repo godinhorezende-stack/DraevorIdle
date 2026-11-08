@@ -60,7 +60,7 @@ import * as Salvaguarda from './personagem/salvaguarda.mjs';
 import * as Voos from './hunt/voos.mjs';
 import * as Ambiente from './ambiente-fixo.mjs';
 import * as GemasVoo from './itens-poe/projeteis-voo.mjs';
-import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, ATAQUE_DO_MONSTRO_MS, round, golpesDosMonstros, contextoDoDrop, pagarRecompensaDeAto, nivelDoDropPoe, raridadeDoDrop, naSalaDaPartilha, fatorDaCacaOnline, entregarMoedas } from './hunt/combate.mjs';
+import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, ATAQUE_DO_MONSTRO_MS, round, golpesDosMonstros, contextoDoDrop, pagarRecompensaDeAto, nivelDoDropPoe, raridadeDoDrop, naSalaDaPartilha, fatorDaCacaOnline, entregarMoedas, identificarAoAchar } from './hunt/combate.mjs';
 import { gerarItem, aceitaAtributos } from './itens/gerar.mjs';
 import * as Campanha from './campanha.mjs';
 import { bossUnico } from './bosses-unicos/catalogo.mjs';
@@ -78,6 +78,9 @@ import './encontros/tipos-de-bau.mjs'; // registra os baús e o altar
 import './encontros/tipos-de-onda.mjs'; // registra a sobrevivência e a fenda (ondas)
 import './encontros/tipos-de-captura.mjs'; // registra o aprisionado e o invasor
 import * as BausPoe from './itens-poe/baus-poe.mjs'; // registra os baús do PoE (dono, 03/11)
+import * as Abismo from './itens-poe/abismo.mjs'; // registra o Abismo do PoE (08/11)
+import * as Pesca from './itens-poe/pesca.mjs';
+import * as Fenda from './itens-poe/fenda.mjs'; // registra a Fenda do PoE (08/11)
 import * as EventosDeEncontro from './encontros/eventos.mjs';
 import * as CargasPoe from './itens-poe/cargas.mjs';
 import * as ModsPoe from './itens-poe/mods-poe.mjs';
@@ -118,6 +121,7 @@ import { fatorDoCompanheirismo } from './itens-poe/suportes-s2a.mjs';
 import * as Testador from './personagem/testador.mjs';
 // (100% — combate, 02/11: os lacaios sangram, o Sangramento em movimento no lacaio — `itens-poe/combate-100.mjs`)
 import * as Combate100 from './itens-poe/combate-100.mjs';
+import { msDoCongelamento } from './itens-poe/afeccoes.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
 export { nomeDaHunt, huntsJogaveis, gradeDaHunt, aquecerGrades } from './hunt/terreno.mjs';
@@ -139,6 +143,22 @@ BausPoe.definirLootDoMonstro({ fatorDaCacaOnline, entregarMoedas });
  * trocadas.
  */
 const compactarLista = (lista) => (Array.isArray(lista) ? lista.map(compactarMonstro) : lista);
+
+/**
+ * (08/11) Os visuais das peças (`visual:<nome>` no af do PoE): `{ visuais: ['sangue', 'pegadas:mercurio', …] }`, ou nada. (O brilho da Perdição
+ * do Recife só na área com o Peixe Único — `brilhaAqui`, de `Pesca.brilha`.)
+ */
+export function visuaisDoJogador(af, brilhaAqui = false) {
+  const v = Object.keys(af ?? {}).filter((k) => k.startsWith('visual:') && Number(af[k]) > 0 && (k !== 'visual:brilho_peixe' || brilhaAqui)).map((k) => k.slice(7));
+  return v.length ? { visuais: v } : {};
+}
+/** A CATEGORIA do monstro do PoE (Besta, Construto, Demônio, Humanoide, Morto-vivo) pela classe/raça do bestiário; sem classe, nenhuma. */
+const CATEGORIA_DA_CLASSE = {
+  Undead: 'Morto-vivo', Human: 'Humanoide', Humanoid: 'Humanoide', Giant: 'Humanoide', Demon: 'Demônio', 'Extra Dimensional': 'Demônio', Fey: 'Demônio',
+  Mammal: 'Besta', Vermin: 'Besta', Reptile: 'Besta', Bird: 'Besta', Aquatic: 'Besta', Lycanthrope: 'Besta', Amphibic: 'Besta', Dragon: 'Besta', Plant: 'Besta',
+  Construct: 'Construto', Elemental: 'Construto', Magical: 'Construto', Slime: 'Construto', Inkborn: 'Construto',
+};
+export const categoriaDoMonstro = (m) => CATEGORIA_DA_CLASSE[m?.class ?? BESTIARY[m?.key]?.class] ?? null;
 
 export function huntParaGravar(hunt) {
   if (!hunt) return hunt;
@@ -237,6 +257,8 @@ function projetar(estado, base, fator) {
       for (let k = 0; k < cabe; k++) {
         const peca = ItensPoeJogo.pecaSorteada(nivel, Math.random, undefined, raridade, baseDoPoe);
         if (!peca) continue;
+        // (08/11) sem identificar, como o drop da caçada online (o Manto de Tawm'r identifica as Mágicas)
+        identificarAoAchar(estado, ItensPoeJogo.semIdentificar(peca));
         // O filtro de loot vale offline também: a peça sorteada que ele não pega fica no chão ("Ignorado"), como na caçada online.
         if (Bolsa.ignora(estado, peca.id, peca)) {
           ignoradas++;
@@ -720,6 +742,10 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = n
     if (definicoes.length) Encontros.criar(instancia, definicoes);
     // (dono, 03/11 — "100%") os BAÚS do PoE nas áreas da campanha e nos mapas (`itens-poe/baus-poe.mjs`): perto dos monstros, abrem ao passar.
     if (itensPoeLigado() && (hunt?.poeArea || hunt?.poeMapa)) BausPoe.porNaInstancia(instancia, { grade, inicio, todos, nivel: mapa?.nivel ?? escala?.nivel ?? null, baus: doMapa?.baus ?? null });
+    // (08/11, o dono: "Criar a Fenda do Abismo") o ABISMO do PoE (`itens-poe/abismo.mjs`): nos mapas e nas áreas dos atos 6 a 10, pela chance
+    if (itensPoeLigado()) Abismo.porNaInstancia(instancia, { grade, inicio, todos, nivel: mapa?.nivel ?? escala?.nivel ?? null, onde: Abismo.valeNaArea(hunt) });
+    // (08/11) a FENDA do PoE (`itens-poe/fenda.mjs`): nos mapas do endgame, pela chance
+    if (itensPoeLigado()) Fenda.porNaInstancia(instancia, { grade, inicio, todos, nivel: mapa?.nivel ?? null, ehMapa: !!hunt?.poeMapa });
   }
   return { grade, inicio, andarInicial, monstros, outrosAndares, instancia, filaDoCrisol };
 }
@@ -1903,6 +1929,11 @@ function tiqueDaCacada(estado, personagem, agora) {
   ModsPoe.aurasProximas(estado, hunt, Ficha.combate(estado));
   // (dono, 03/11) os BAÚS do PoE abrem ao passar (cada um da sala — `itens-poe/baus-poe.mjs`)
   if (itensPoeLigado()) BausPoe.abrirAoPassar(estado, hunt, personagem);
+  // (08/11) o Abismo abre ao chegar perto; a linha da Pesca (a mordida, a janela)
+  if (itensPoeLigado()) Abismo.abrirAoPassar(estado, hunt, personagem);
+  if (itensPoeLigado()) Pesca.tique(estado, hunt);
+  // (08/11) a Fenda abre ao chegar perto; o "em uma Fenda" acompanha você (o Anel da Fenda)
+  if (itensPoeLigado()) Fenda.tique(estado, hunt, personagem, Ficha.invalidar);
   // Numa caçada em grupo, só o DONO da sala move os bichos e faz renascer —
   // senão eles andariam uma vez por membro a cada tique.
   const donoDaSala = !hunt.anfitriao;
@@ -2729,6 +2760,13 @@ export function efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo, ctx = {}) {
     GemasGBD.porLento(e, ate, 30, agora);
     ev('lento');
   }
+  // (08/11, a Marcha de Vorana: "Arbalistas Convocadas têm X% de chance de Intimidar / Dilacerar (Mutilar) / Inervar por 4 segundos ao Acertar", "…de Esmagar",
+  // "…de infligir Exposição a Fogo/Gelo/Raio", "…de Congelar / Eletrizar") os estados do jogo no alvo, 4 s; congelar e eletrizar pelo dano de Gelo/Raio do golpe
+  for (const [chance, estado] of [['intimidar', 'intimidado'], ['mutilar', 'mutilado'], ['inervar', 'inervado'], ['esmagar', 'esmagado'], ['exposicaoFogo', 'exposicaoFogo'], ['exposicaoGelo', 'exposicaoGelo'], ['exposicaoRaio', 'exposicaoRaio']]) {
+    if (sorte(p.chances[chance] ?? 0)) { ModsPoe.porNoAlvo(alvo, estado, agora + 4000, agora); ev(estado); }
+  }
+  if (tipo === 'ice' && !alvo.imuneCongelamento && sorte(p.chances.congelar ?? 0)) { e.congelado = { ate: Math.max(e.congelado?.ate ?? 0, agora + msDoCongelamento(dano, alvo.maxHp ?? dano)) }; ev('congelado'); }
+  if (tipo === 'energy' && sorte(p.chances.eletrizar ?? 0)) { ModsPoe.porNoAlvo(alvo, 'eletrizado', agora + 2000, agora); ev('eletrizado'); }
   const dot = (tipoDot, porSegundo, duracaoMs) => {
     const posto = Dot.aplicar(alvo, { tipo: tipoDot, total: dano * porSegundo * (duracaoMs / 1000) * (1 + (p.dotMulti ?? 0) / 100), duracaoMs, origem: { fonte: 'lacaio', habilidade: l.acao } }, agora);
     if (posto) ev(posto);
@@ -3522,7 +3560,7 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     if (l.r3bAtaques != null && --l.r3bAtaques <= 0) l.ate = agora;
     // (dono, 11/10: "faça os totens e lacaios também") O lacaio de longe: os PROJÉTEIS a mais dos suportes ligados na gema que o invocou
     // (Projéteis Múltiplos, Perfuração, Bifurcação, Corrente, Retorno), pelo mesmo motor do disparo do personagem — todos saem.
-    const r = deLonge ? Acoes.projeteisDoLacaio(estado, l.acao, { origem: origemDoTiro, alvo, vivos: hunt.monstros.filter((m) => m.hp > 0 && !m.dummy), alcance: l.alcanceDeAtaque }) : null;
+    const r = deLonge ? Acoes.projeteisDoLacaio(estado, l.acao, { origem: origemDoTiro, alvo, vivos: hunt.monstros.filter((m) => m.hp > 0 && !m.dummy), alcance: l.alcanceDeAtaque, extra: l.poe?.projeteisExtra ?? null }) : null;
     if (r) {
       for (const p of r.emitidos.slice(1)) eventos.push({ t: 'shot', id: tiro, x: p.de.x, y: p.de.y, tx: p.para.x, ty: p.para.y });
       for (const g of r.golpes) {
@@ -3681,7 +3719,7 @@ export function golpeDoLacaioNoBicho(c, b, pct, g) {
     // (o Vínculo Destrutivo no lacaio: "+X% de Multiplicador" e a chance de crítico igual à sua)
     const critico = vinculo ? { chance: vinculo.critPct > 0 ? vinculo.critPct : critico0.chance, mult: critico0.mult + vinculo.critMult / 100 } : critico0;
     // (rodada 4, lote L: a habilidade do PoB — o crítico de base da linha dela, `critBase`, sobre o do lacaio; o "não pode ser crítico" da Investida)
-    const crit = !g.semCritico && Math.random() * 100 < critico.chance * (g.critBase != null ? g.critBase / Math.max(0.1, l.critChanceBase ?? l.critChance ?? 5) : 1);
+    const crit = !g.semCritico && Math.random() * 100 < critico.chance * (g.critBase != null ? (g.critBase + (l.poe?.critFlat ?? 0)) / Math.max(0.1, l.critChanceBase ?? l.critChance ?? 5) : 1);
     if (crit) LacaiosPoe.aoCriticarDoLacaio(l, agora, critico, b, hunt.clock ?? agora);
     // (ciclo 7) o dano dobrado, ignorar a Redução de Dano Físico, a penetração no amaldiçoado e o Caos extra do Poder Profano.
     const doGolpe = LacaiosPoe.golpeDoLacaio(l, b, ficha, tipo, agora, Math.random, hunt.lacaios, hunt.clock ?? agora);
@@ -4214,13 +4252,16 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
   const tamanho = (x) => (x !== 1 ? { escala: x } : {});
   return {
     mapId: hunt.huntId,
+    // (08/11) a PESCA (`itens-poe/pesca.mjs`): com a Vara vestida, a fase e se dá para pescar aqui
+    ...(afDaLuz ? Pesca.paraCliente(estado) ?? {} : {}),
     // A ENTRADA neste mapa (a caçada, a sala da party, a instância): o cliente confirma o carregamento dela (`protecao.mjs`).
     entrada: hunt.entrada ?? null,
     z: hunt.z,
     ...(mandarMapa ? { map: gradeDaHunt(hd).mapa } : {}),
     // A duração do passo na tela acompanha a velocidade (ver `passosDoTique`).
     // (lote A1: + o contador `teleporte` — o salto e o teleporte das gemas de movimento, `Acoes.moverNoDeslocamento`: a tela põe o boneco na casa nova)
-    player: { x: hunt.pos.x, y: hunt.pos.y, dir: hunt.pos.dir, moveMs: Math.round(R.PASSO_MS / razaoDeVelocidade(estado)), ...(hunt.teleportes ? { teleporte: hunt.teleportes } : {}), ...(Controle.ativosNoJogador(hunt).length ? { controle: Controle.ativosNoJogador(hunt) } : {}), ...(estadosDoJogador(hunt).length ? { estados: estadosDoJogador(hunt) } : {}) },
+    // (08/11, balão 0 sem efeito) os VISUAIS e SONS das peças (`visual:*` no af — as pegadas, o sangue, os sons): o cliente desenha (`visuais-unicos.mjs`)
+    player: { x: hunt.pos.x, y: hunt.pos.y, dir: hunt.pos.dir, moveMs: Math.round(R.PASSO_MS / razaoDeVelocidade(estado)), ...visuaisDoJogador(afDaLuz, !!afDaLuz?.['visual:brilho_peixe'] && Pesca.brilha(estado, hunt)), ...(hunt.teleportes ? { teleporte: hunt.teleportes } : {}), ...(Controle.ativosNoJogador(hunt).length ? { controle: Controle.ativosNoJogador(hunt) } : {}), ...(estadosDoJogador(hunt).length ? { estados: estadosDoJogador(hunt) } : {}) },
     monsters: hunt.monstros.map((m) => ({
       uid: m.uid,
       x: m.x,
@@ -4242,6 +4283,8 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
       ...(m.estados ? ((a) => (a.length ? { estados: a } : {}))(Estados.ativosDe(m, hunt.clock ?? 0)) : {}),
       // (lote "luz") o "Tamanho do Personagem aumentado" dos modificadores do PoE: o desenho maior
       ...(afDaLuz ? tamanho(Iluminacao.tamanhoDoMonstro(m, MODS_DE_MONSTRO)) : {}),
+      // (08/11, a Ambição de Veruso: "Inimigos mostram sua Categoria de Monstros")
+      ...(Number(afDaLuz?.['visual:categoria']) > 0 && categoriaDoMonstro(m) ? { categoria: categoriaDoMonstro(m) } : {}),
     })),
     players: [],
     npcs: [],
@@ -4301,7 +4344,7 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     // As magias de suporte ligadas, com o tempo que RESTA (os cards acima da barra).
     // + as cargas do PoE ativas (Tolerância, Frenesi, Poder), como cartões de buff.
     // (+ 14/10: os buffs do PoE por nome — os altares, a Adrenalina, o Liberto —, a Casca e a Fúria Liberta: `ModsPoe.buffsDoCliente`)
-    buffs: [...Acoes.buffsAtivos(hunt, estado), ...CargasPoe.buffs(estado), ...FrascosPoe.buffs(estado), ...ModsPoe.buffsDoCliente(estado)],
+    buffs: [...Acoes.buffsAtivos(hunt, estado), ...CargasPoe.buffs(estado, afDaLuz), ...FrascosPoe.buffs(estado), ...ModsPoe.buffsDoCliente(estado)],
     // Por que cada slot não saiu, e o ✔/✖ de cada condição agora (o balão do slot e o editor).
     parados: Acoes.paradosParaCliente(hunt),
     condicoesAgora: Acoes.condicoesParaCliente(estado, hunt, alvoAtual(hunt)),

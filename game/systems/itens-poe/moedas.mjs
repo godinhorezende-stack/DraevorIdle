@@ -13,6 +13,9 @@ import { readFileSync } from 'node:fs';
 import { ITEM_CATALOG } from '../dados.mjs';
 import * as Catalogo from './catalogo.mjs';
 import * as Gerar from './gerar.mjs';
+import * as Catalisadores from './catalisadores.mjs';
+import * as Ungir from './ungir.mjs';
+import * as Ducados from './ducados.mjs';
 import * as Jogo from './jogo.mjs';
 import * as SocketsPoe from './sockets.mjs';
 import * as Gemas from '../skills/gemas.mjs';
@@ -158,12 +161,18 @@ function cadastroDoUnico(p) {
   const casa = (u) => (p.modificadores ?? []).filter((m) => u.modificadores.some((x) => x.modelo === m.modelo && (x.faixas ?? []).every((f, i) => !(Number(m.valores?.[i]) < f[0] || Number(m.valores?.[i]) > f[1])))).length;
   return lista.reduce((melhor, u) => (casa(u) > casa(melhor) ? u : melhor), lista[0]);
 }
+/** (08/11, as Mãos do Alto Templário e a Prévia do Caos) "Pode ser modificado enquanto Corrompido": a peça corrompida aceita as moedas (o Orbe Vaal também). */
+export const modificavelCorrompida = (p) => Number(p?.af?.modificavel_corrompido) > 0;
+/** Quantos implícitos a BASE da peça tem (o cadastro da base no catálogo). */
+const implicitosDaBase = (p) => (CAT()?.classes?.[p.classe]?.bases ?? []).find((b) => b.nome === nomeDaBase(p))?.implicitos?.length ?? 0;
 /** A qualidade a mais (Amolador, Sucata, Bolha): +5 na normal, +2 na mágica, +1 na rara/única, até 20%. */
+// (08/11, a Tentação de Ixchel: "Qualidade Máxima é X%" — `qualidade_max` da própria peça troca o teto de 20%)
 function subirQualidade(p) {
   const q = Number(p.qualidade) || 0;
-  if (q >= 20) return null;
+  const teto = Number(p.af?.qualidade_max) > 0 ? Number(p.af.qualidade_max) : 20;
+  if (q >= teto) return null;
   const ganho = p.raridade === 'normal' ? 5 : p.raridade === 'magico' ? 2 : 1;
-  p.qualidade = Math.min(20, q + ganho);
+  p.qualidade = Math.min(teto, q + ganho);
   return `Qualidade: ${q}% → ${p.qualidade}%.`;
 }
 /** Uma peça qualquer de uma base que tem único: vira um único sorteado da mesma base. */
@@ -318,6 +327,29 @@ const bolha = ({ p }) => {
   const t = subirQualidade(p);
   return t ? { ok: true, notice: t } : erro('O frasco já está com 20% de qualidade.');
 };
+// (08/11, o dono: "Criar os Catalisadores") os CATALISADORES: a qualidade da JOIA (anel, amuleto, cinto) que aumenta os mods do tipo dele
+// (`catalisadores.mjs`); outro tipo troca o tipo e zera a qualidade de antes. O Maculado (só em joia corrompida): tipo e porcentagem aleatórios.
+const catalisador = (tipo) => ({ p }) => {
+  if (!Catalisadores.JOIAS.has(p.classe)) return erro('O Catalisador vale em anel, amuleto ou cinto.');
+  const antes = { q: p.qualidade, tipo: p.qualidadeTipo };
+  if (p.qualidadeTipo !== tipo) p.qualidade = 0;
+  p.qualidadeTipo = tipo;
+  const t = subirQualidade(p);
+  if (!t) {
+    p.qualidade = antes.q;
+    p.qualidadeTipo = antes.tipo;
+    return erro('A joia já está no máximo de qualidade.');
+  }
+  return { ok: true, notice: `${t} (${Catalisadores.NOME_DO_TIPO[tipo]})` };
+};
+const catalisadorMaculado = ({ p, rng }) => {
+  if (!Catalisadores.JOIAS.has(p.classe)) return erro('O Catalisador Maculado vale em anel, amuleto ou cinto corrompido.');
+  const tipos = Object.values(Catalisadores.DO_CATALISADOR);
+  p.qualidadeTipo = tipos[Math.floor(rng() * tipos.length)];
+  const teto = Number(p.af?.qualidade_max) > 0 ? Number(p.af.qualidade_max) : 20;
+  p.qualidade = 1 + Math.floor(rng() * teto);
+  return { ok: true, notice: `Qualidade: ${p.qualidade}% (${Catalisadores.NOME_DO_TIPO[p.qualidadeTipo]}).` };
+};
 const elo = (ctx) => {
   const r = alquimia(ctx);
   if (!r.ok) return erro('A Orbe do Elo só vale em peça Normal.');
@@ -376,10 +408,15 @@ const vaal = (ctx) => {
   }
   const corrompido = Gerar.regrasDaBase(p.implicitos).implicitosFixos ? null : doPool(p, 'corrupted', rng, { lados: ['implicito'] });
   if (!corrompido) return { ok: true, notice: `${p.nome}: corrompida — nada mais mudou.` };
-  p.implicitos = [{ ...corrompido.mod, corrompido: true }];
+  // (08/11, as regras de criação dos únicos) "Pode ter até N Modificadores Implícitos enquanto o Item possuir este Modificador" (as Mãos do Alto
+  // Templário, `implicitos_max`) e "Possui um Mod Implícito adicional" (a Malha Sombria, `implicitos_extra`): o implícito corrompido ENTRA ao lado
+  // dos que a peça tem, até o máximo; cheio (ou sem esses mods), ele troca os implícitos, como sempre.
+  const maximo = Number(p.af?.implicitos_max) > 0 ? Number(p.af.implicitos_max) : Number(p.af?.implicitos_extra) > 0 ? implicitosDaBase(p) + Number(p.af.implicitos_extra) : 0;
+  const atuais = p.implicitos ?? [];
+  p.implicitos = atuais.length < maximo ? [...atuais, { ...corrompido.mod, corrompido: true }] : [{ ...corrompido.mod, corrompido: true }];
   // (Nos únicos com magnitude dos implícitos — Olhos, Nebulis — o implícito corrompido também sai multiplicado, como no PoE.)
   if (ehUnico(p)) Object.assign(p, Gerar.comMagnitudeNosImplicitos(p));
-  return { ok: true, notice: `${p.nome}: corrompida — implícito corrompido: ${p.implicitos[0].texto}.` };
+  return { ok: true, notice: `${p.nome}: corrompida — implícito corrompido: ${p.implicitos.at(-1).texto}.` };
 };
 
 // ---------------------------------------------------------------- as moedas dos POOLS ESPECIAIS
@@ -505,6 +542,8 @@ const juntarLascas = (alvoSlug, quantos = 20) => ({ estado, moeda }) => {
   porNaMochila(estado, idDa(alvoSlug), 1);
   return { ok: true, notice: `${quantos} ${moeda.nome} viraram 1 ${POR_SLUG.get(alvoSlug)?.nome}.`, semAlvo: true };
 };
+// (08/11, o dono: "Como no PoE") o Pergaminho da Sabedoria identifica a peça (`Jogo.identificar`)
+const sabedoria = ({ peca, p }) => (Jogo.identificar(peca) ? { ok: true, notice: `${p.nome} identificada.` } : erro('A peça já está identificada.'));
 const remorso = ({ estado }) => {
   const pa = (estado.passivas ??= {});
   pa.restituicoes = (pa.restituicoes ?? 0) + 1;
@@ -629,7 +668,7 @@ const tLagrima = soCorrompida(({ p, rng }) => {
   return { ok: true, notice: 'O tier de cada modificador subiu ou desceu.' };
 });
 const vaalVolatil = (ctx) => {
-  if (ctx.p.corrompido) return erro('A peça já está corrompida.');
+  if (ctx.p.corrompido && !modificavelCorrompida(ctx.p)) return erro('A peça já está corrompida.');
   ctx.p.corrompido = true;
   divino(ctx);
   return { ok: true, notice: `${ctx.p.nome}: corrompida — os valores foram sorteados de novo.` };
@@ -716,12 +755,70 @@ const ducadoDeUkatoa = ({ p, rng }) => {
   return erro(ilvls.length ? `O Ducado de Ukatoa pede item level ${Math.min(...ilvls)} (esta peça: ${p.ilvl}).` : 'Não há implícito sobrenatural para este amuleto.');
 };
 
+// (08/11, o dono: "Ungir + Orbe de Encantar" — `ungir.mjs`) os ÓLEOS: os 3 escolhidos na Forja (`oleos`, ids) ungem a peça e são gastos juntos;
+// o ENCANTAMENTO sorteia um encantamento do Labirinto em elmo, luvas ou botas.
+function ungirComOleos({ estado, p, oleos }) {
+  const slugs = (Array.isArray(oleos) ? oleos : []).map((id) => moedaDoItem(id)?.slug);
+  if (slugs.length !== 3 || !slugs.every(Ungir.ehOleo)) return erro('Escolha os 3 Óleos do Ungir (Forja → Encantamentos).');
+  const precisa = new Map();
+  for (const s of slugs) precisa.set(s, (precisa.get(s) ?? 0) + 1);
+  for (const [s, n] of precisa) if (quantasTem(estado, idDa(s)) < n) return erro(`Você não tem ${n} ${POR_SLUG.get(s).nome}.`);
+  const r = Ungir.ungir(p, slugs);
+  if (!r.ok) return r;
+  for (const [s, n] of precisa) gastar(estado, idDa(s), n);
+  return { ok: true, notice: r.notice, jaGastou: true };
+}
+const encantamento = ({ p, rng }) => Ungir.encantar(p, rng);
+
+// (08/11, o dono: "Ducados + Intangibilidade") a CRIAÇÃO COM A OMNICHAMA (`ducados.mjs`): os Ducados do Soberano, com a Intangibilidade.
+/** Um mod do pool da base, mesmo sem vaga (o Ducado de Merrick). */
+function porModSemVaga(p, rng) {
+  const achado = Gerar.acharBase(CAT(), p.base);
+  const novo = achado && Gerar.sortearDoPool({ pagina: Gerar.poolDa(achado.classe, achado.base), poe: p, regras: R(), rng, ignorarVagas: true });
+  if (!novo) return false;
+  (p[`${novo.lado}s`] ??= []).push(novo.mod);
+  return true;
+}
+/** O Ducado de Kishara: a peça vira a primeira forma; as outras entram na mochila. */
+function kisharaNaMochila(ctx) {
+  const r = Ducados.kishara(ctx);
+  if (!r.ok) return r;
+  const [primeira, ...outras] = r.copias;
+  Object.assign(ctx.p, primeira);
+  for (const c of outras) {
+    const nova = { ...structuredClone(ctx.peca), poe: c };
+    Jogo.recalcular(nova);
+    (ctx.estado.inventory ??= []).push(nova);
+  }
+  return { ok: true, notice: r.notice };
+}
+/** O Ducado de Tzamoto: metade das vezes zera a Intangibilidade, metade destrói a peça. */
+function tzamoto({ estado, p, rng, alvo }) {
+  if (!Ducados.aceita(p)) return erro('A criação com a Omnichama vale em peça Rara.');
+  if (rng() < 0.5) {
+    p.intangibilidade = 0;
+    return { ok: true, notice: `${p.nome}: a Intangibilidade sumiu.` };
+  }
+  destruir(estado, alvo);
+  return { ok: true, notice: `${p.nome} foi destruída.`, destruiu: true };
+}
+/** O Ducado do Metamorfo: vira outro Ducado (sem peça). */
+function metamorfo({ estado, rng }) {
+  const outros = Ducados.DUCADOS.filter((s) => POR_SLUG.has(s));
+  const slug = outros[Math.floor(rng() * outros.length)];
+  gastar(estado, idDa('The_Changelings_Ducat'), 1);
+  porNaMochila(estado, idDa(slug), 1);
+  return { ok: true, notice: `O Ducado do Metamorfo virou ${POR_SLUG.get(slug).nome}.`, jaGastou: true };
+}
+
 /** O efeito e o status de cada moeda que faz algo. `alvo`: 'peca' (equipamento do PoE), 'gema', 'nenhum'. `corrompida`: aceita corrompida. */
 const FAZ = {
   Orb_of_Transmutation: { f: transmutar }, Orb_of_Augmentation: { f: ampliar }, Orb_of_Alteration: { f: alterar }, Regal_Orb: { f: regio },
   Orb_of_Alchemy: { f: alquimia }, Chaos_Orb: { f: caos }, Exalted_Orb: { f: exaltar }, Orb_of_Scouring: { f: expurgar },
   Orb_of_Annulment: { f: anular }, Divine_Orb: { f: divino }, Blessed_Orb: { f: abencoar }, Sacred_Orb: { f: sagrado },
   Orb_of_Chance: { f: chance }, Blacksmiths_Whetstone: { f: amolador }, Armourers_Scrap: { f: sucata },
+  ...Object.fromEntries(Object.entries(Catalisadores.DO_CATALISADOR).map(([slug, tipo]) => [slug, { f: catalisador(tipo) }])),
+  Tainted_Catalyst: { f: catalisadorMaculado, corrompida: true },
   Glassblowers_Bauble: { f: bolha },
   Orb_of_Binding: { f: elo }, Fracturing_Orb: { f: talhar }, Mirror_of_Kalandra: { f: espelhar }, Ancient_Orb: { f: ancestral },
   // (07/11, lote 25: + numa gema da mochila — `gema`)
@@ -755,7 +852,16 @@ const FAZ = {
   Annulment_Shard: { f: juntarLascas('Orb_of_Annulment'), alvo: 'nenhum' }, Fracturing_Shard: { f: juntarLascas('Fracturing_Orb'), alvo: 'nenhum' },
   Mirror_Shard: { f: juntarLascas('Mirror_of_Kalandra'), alvo: 'nenhum' },
   ...Object.fromEntries(EMISSARIO.flatMap((c) => [...c.partes.map((s) => [s, { f: juntarPartes(c), alvo: 'nenhum' }]), [c.pergaminho, { f: aprimorarEmissario(c) }]])),
-  Ukatoas_Ducat: { f: ducadoDeUkatoa },
+  Ukatoas_Ducat: { f: Ducados.comOmnichama(ducadoDeUkatoa, { soRara: false }) },
+  Merricks_Ducat: { f: Ducados.comOmnichama(Ducados.merrick(porModSemVaga)) },
+  Cyaxans_Ducat: { f: Ducados.comOmnichama(Ducados.cyaxan(refazerMods)), parcial: 'sem o modificador Infame (não está na coleção do PoE do jogo)' },
+  The_Genteels_Ducat: { f: Ducados.comOmnichama(Ducados.cavalheiro) },
+  Rotmothers_Ducat: { f: Ducados.comOmnichama(Ducados.maeDaPodridao(doPool)), parcial: 'o modificador de armadilhas/minas é o da Essência (o pool próprio da liga não está no poedb)' },
+  Kisharas_Ducat: { f: Ducados.comOmnichama(kisharaNaMochila) },
+  Tzamotos_Ducat: { f: tzamoto },
+  The_Changelings_Ducat: { f: metamorfo, alvo: 'nenhum' },
+  ...Object.fromEntries(Ungir.OLEOS.map((slug) => [slug, { f: ungirComOleos, encanta: true }])), Enchant: { f: encantamento, encanta: true },
+  Scroll_of_Wisdom: { f: sabedoria, identifica: true }, Scroll_Fragment: { f: juntarLascas('Scroll_of_Wisdom', 5), alvo: 'nenhum' },
 };
 for (const [slug, f] of Object.entries(FAZ)) if (!POR_SLUG.has(slug)) delete FAZ[slug];
 
@@ -763,7 +869,6 @@ for (const [slug, f] of Object.entries(FAZ)) if (!POR_SLUG.has(slug)) delete FAZ
 function motivoDoNao(m) {
   const s = m.slug;
   const t = `${s} ${m.efeitos.join(' ')}`;
-  if (/Scroll_of_Wisdom|Scroll_Fragment/.test(s)) return 'não há itens sem identificar no jogo';
   if (/Portal_Scroll|Rogues_Marker|Silver_Coin/.test(s)) return 'não há portal para a vila/refúgio no jogo';
   if (/Chisel|Scrying|Horizons|Astrolabe|Memory_of|Unmaking|Intention|Telesias|Surveyors|Valdos/.test(s) || /Mapa|Atlas/i.test(t)) return 'mapas e o Atlas não existem no jogo';
   if (/Awakener/.test(s)) return 'ela junta DUAS peças, e a Forja do jogo trabalha com uma por vez';
@@ -790,7 +895,7 @@ export const STATUS = Object.fromEntries(MOEDAS.map((m) => {
  * influência, o Ancestral (Eldritch), a qualidade, a corrupção (Vaal e as outras Corroídas), as especiais, as de gema e as lascas. A que
  * não tem efeito no jogo fica em "Sem efeito no jogo" (com o motivo).
  */
-const LASCAS = ['Transmutation_Shard', 'Alteration_Shard', 'Alchemy_Shard', 'Chaos_Shard', 'Regal_Shard', 'Exalted_Shard', 'Annulment_Shard', 'Fracturing_Shard', 'Mirror_Shard'];
+const LASCAS = ['Scroll_Fragment', 'Transmutation_Shard', 'Alteration_Shard', 'Alchemy_Shard', 'Chaos_Shard', 'Regal_Shard', 'Exalted_Shard', 'Annulment_Shard', 'Fracturing_Shard', 'Mirror_Shard'];
 export const MOEDAS_DA_CATEGORIA = Object.freeze({
   sockets: ['Jewellers_Orb', 'Tainted_Jewellers_Orb'],
   cores: ['Chromatic_Orb', 'Tainted_Chromatic_Orb'],
@@ -807,15 +912,20 @@ export const MOEDAS_DA_CATEGORIA = Object.freeze({
     'Lesser_Eldritch_Ichor', 'Greater_Eldritch_Ichor', 'Grand_Eldritch_Ichor', 'Exceptional_Eldritch_Ichor',
     'Eldritch_Chaos_Orb', 'Eldritch_Exalted_Orb', 'Eldritch_Orb_of_Annulment', 'Orb_of_Conflict', 'Ukatoas_Ducat',
   ],
-  qualidade: ['Blacksmiths_Whetstone', 'Armourers_Scrap', 'Glassblowers_Bauble'],
+  qualidade: ['Blacksmiths_Whetstone', 'Armourers_Scrap', 'Glassblowers_Bauble', ...Object.keys(Catalisadores.DO_CATALISADOR)],
   corrupcao: [
     'Vaal_Orb', 'Volatile_Vaal_Orb', 'Djinn-Touched_Vaal_Orb', 'Tainted_Chaos_Orb', 'Tainted_Exalted_Orb', 'Tainted_Divine_Teardrop',
-    'Tainted_Armourers_Scrap', 'Tainted_Blacksmiths_Whetstone', 'Tainted_Mythic_Orb',
+    'Tainted_Armourers_Scrap', 'Tainted_Blacksmiths_Whetstone', 'Tainted_Mythic_Orb', 'Tainted_Catalyst',
   ],
+  encantar: [...Ungir.OLEOS, 'Enchant'],
+  // (08/11) a criação com a Omnichama: os Ducados do Soberano (o de Ukatoa segue em Ancestral)
+  omnichama: ['Merricks_Ducat', 'Cyaxans_Ducat', 'The_Genteels_Ducat', 'Rotmothers_Ducat', 'Kisharas_Ducat', 'Tzamotos_Ducat', 'The_Changelings_Ducat'],
+  // (08/11) o Sintetizador não gasta moeda (`sintese.mjs`)
+  sintese: [],
   gemas: ['Gemcutters_Prism', 'Gemcutters_Lens'],
   // (06/11) as Partes do Emissário juntam como as lascas (sem peça); os Pergaminhos vão em Especiais (o Ancestral também troca o único)
   lascas: [...LASCAS, ...EMISSARIO.flatMap((c) => c.partes)],
-  especiais: ['Mirror_of_Kalandra', 'Ancient_Orb', 'Orb_of_Regret', ...EMISSARIO.map((c) => c.pergaminho)],
+  especiais: ['Scroll_of_Wisdom', 'Mirror_of_Kalandra', 'Ancient_Orb', 'Orb_of_Regret', ...EMISSARIO.map((c) => c.pergaminho)],
 });
 const CATEGORIA_FIXA = new Map(Object.entries(MOEDAS_DA_CATEGORIA).flatMap(([cat, lista]) => lista.map((slug) => [slug, cat])));
 /** A categoria da Forja de uma moeda (a lista acima); a sem efeito no jogo, "semEfeito". */
@@ -932,7 +1042,7 @@ function pecaDoAlvo(estado, alvo) {
 }
 
 /** `send({t:'moeda', moeda: itemId, alvo})` — usa UMA moeda (a peça muda, e só então a moeda é gasta). */
-export function usar(estado, { moeda: idDaMoeda, alvo } = {}, rng = Math.random) {
+export function usar(estado, { moeda: idDaMoeda, alvo, oleos } = {}, rng = Math.random) {
   if (!Catalogo.ligado()) return erro('As moedas do PoE não estão ligadas.');
   const moeda = moedaDoItem(idDaMoeda);
   if (!moeda) return erro('Isso não é uma moeda do PoE.');
@@ -954,14 +1064,19 @@ export function usar(estado, { moeda: idDaMoeda, alvo } = {}, rng = Math.random)
     p = peca?.poe ?? null;
     if (!p) return erro('Escolha uma peça do PoE (vestida ou na mochila).');
     if (p.espelhado) return erro('Peça espelhada não aceita moeda.');
-    if (p.corrompido && !faz.corrompida) return erro('Peça corrompida não aceita esta moeda (só as Corroídas).');
+    if (p.corrompido && !faz.corrompida && !modificavelCorrompida(p)) return erro('Peça corrompida não aceita esta moeda (só as Corroídas).');
+    // (08/11) a peça sem identificar só aceita o Pergaminho da Sabedoria (e o Orbe Vaal, como no PoE)
+    if (p.identificado === false && !faz.identifica && moeda.slug !== 'Vaal_Orb') return erro('Identifique a peça antes (Pergaminho da Sabedoria).');
   }
   const antes = peca ? structuredClone(peca) : null;
-  const r = faz.f({ estado, peca, p, alvo, rng, moeda });
+  // (08/11) os encantamentos ficam fora do alcance das outras moedas (`Ungir.separar`) e voltam depois
+  const encantos = p && !faz.encanta ? Ungir.separar(p) : [];
+  const r = faz.f({ estado, peca, p, alvo, rng, moeda, oleos });
   if (!r?.ok) {
     if (peca && antes) Object.assign(peca, antes); // nada muda se a moeda não valeu
     return r ?? erro('Nada aconteceu.');
   }
+  if (p && !r.destruiu) Ungir.devolver(peca.poe ?? p, encantos);
   if (peca && !r.destruiu) Jogo.recalcular(peca);
   if (!r.jaGastou) gastar(estado, moeda.itemId, 1);
   return { ok: true, notice: r.notice };
@@ -995,6 +1110,12 @@ export function dropDoChefeDeMapa(rng = Math.random) {
   if (pergaminhos.length && rng() < (Number(cfg.chanceDoPergaminho) || 0)) saida.push(idDa(sortear(pergaminhos, rng)));
   if (POR_SLUG.has('Ukatoas_Ducat') && rng() < (Number(cfg.chanceDoUkatoa) || 0)) saida.push(idDa('Ukatoas_Ducat'));
   return saida;
+}
+/** (08/11) Os outros Ducados do Soberano do chefe de um mapa (a criação com a Omnichama — `ducados.mjs`): com `chanceDoDucado`, um por igual. Os ids. */
+export function ducadosDoChefeDeMapa(rng = Math.random) {
+  const cfg = R().moedas?.chefeDeMapa;
+  const ducados = MOEDAS_DA_CATEGORIA.omnichama.filter((s) => POR_SLUG.has(s));
+  return Catalogo.ligado() && ducados.length && rng() < (Number(cfg?.chanceDoDucado) || 0) ? [idDa(sortear(ducados, rng))] : [];
 }
 /** `n` moedas avulsas, pelos mesmos pesos do drop (o chefe do mapa único "derruba N Itens Monetários adicionais"). */
 export function moedasAvulsas(n, rng = Math.random) {

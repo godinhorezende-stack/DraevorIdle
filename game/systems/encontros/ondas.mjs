@@ -130,7 +130,7 @@ export function avancar(ctx, e) {
         // Sem `porOnda`, o loot vem inteiro no fim.
         if (!e.recompensa?.porOnda) pagarRolagens(ctx, e, e.recompensa?.rolagens ?? 1);
         pagarConclusao(ctx, e);
-        aviso(hunt, e, e.tipo === 'fenda' ? 'A fenda foi fechada!' : 'Você sobreviveu!', '#4fbf7a');
+        aviso(hunt, e, e.tipo === 'fenda' ? 'A fenda foi fechada!' : e.tipo === 'abismo-poe' ? 'O Abismo se fechou!' : e.tipo === 'fenda-poe' ? 'A Fenda se fechou!' : 'Você sobreviveu!', '#4fbf7a');
       }
       return;
     }
