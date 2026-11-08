@@ -84,6 +84,8 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
   // (lote 81) o excesso do golpe fatal fica no morto (a queima do Arauto das Cinzas — `combate.matarMonstro`)
   if (excedente > 0) alvo.poeExcedente = excedente;
   if (seu && excedente > 0 && v('roubo_excedente') > 0) drenoDaFicha?.(estado, { vida: (excedente * v('roubo_excedente')) / 100 }, ficha, eventos, personagem?.nome ?? null, hunt?.pos ?? null);
+  // (08/11, aproximadas A6, a Luz de Lunaris: "se você causou um Golpe Não Crítico Recentemente" — o acerto seu que não foi Crítico)
+  if (!crit && seu) marcar(hunt, 'naoCritico', agora);
   if (crit && seu) {
     marcar(hunt, 'critico', agora);
     // (a Sobrecarga Elemental: o crítico DESTA habilidade — `habilidade`, o id da ação; o golpe básico é `golpe`)

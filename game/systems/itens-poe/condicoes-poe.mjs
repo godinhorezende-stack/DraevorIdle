@@ -470,7 +470,7 @@ export const TAGS_DE_GOLPE = new Set([
   // (lote 57) o alvo sob o seu Solo Profano (`noSoloProfano`)
   'alvoNoSoloProfano',
   // (lote 57) a gema de suporte que não é Excepcional (`skills/gemas.extrasDaGemaPoe` — o nível das gemas)
-  'naoExcepcional',
+  'naoExcepcional', 'naoVaal',
   // (lote 54) o ataque com o ESCUDO (a mão secundária do PoE com escudo — `acoes.tagsPoeDaSkill`: a Fúria Fulminante)
   'ataqueDeEscudo',
   // (lote 55) a habilidade que NÃO é de Canalização ("Habilidades Não Canalizadoras têm … de Custo de Mana" — `acoes.tagsPoeDaSkill`)

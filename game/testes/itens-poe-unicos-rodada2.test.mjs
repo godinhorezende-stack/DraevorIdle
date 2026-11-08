@@ -88,9 +88,10 @@ test('o nível das gemas pela COR ("Gemas de Força Encaixadas") e pelo NOME ("t
 test('a MALDIÇÃO do item: "Amaldiçoa Inimigos com Vulnerabilidade ao Bloquear" amaldiçoa o atacante com a gema (o limite de 1 vale)', { skip: SEM }, () => {
   const r = traduz('Amaldiçoa Inimigos com Vulnerabilidade ao Bloquear');
   assert.ok(COM_EFEITO.includes(r.estado), r.estado);
-  assert.equal(r.efeitos[0].stat, 'ev:bloquear:maldicao:vulnerabilidade:10');
+  // (aval do dono 08/11: o nível 1 do PoB — ModParser "curse enemies with X on block" → triggerExtraSkill(skill, 1); antes, o 10 sem fonte)
+  assert.equal(r.efeitos[0].stat, 'ev:bloquear:maldicao:vulnerabilidade:1');
   // O evento de verdade: a ficha com o mod, o bloqueio dispara, o monstro fica amaldiçoado com os efeitos da Vulnerabilidade.
-  const e = comAf({ 'ev:bloquear:maldicao:vulnerabilidade:10': 100 });
+  const e = comAf({ 'ev:bloquear:maldicao:vulnerabilidade:1': 100 });
   e.hunt = { clock: 1000, monstros: [], pos: { x: 0, y: 0 } };
   const bicho = { uid: 7, hp: 100, maxHp: 100, x: 1, y: 0 };
   ModsPoe.evento(e, e.hunt, 'bloquear', Ficha.combate(e), { alvo: bicho, eventos: [], agora: 1000 });
@@ -107,7 +108,7 @@ test('a MALDIÇÃO do item: "Amaldiçoa Inimigos com Vulnerabilidade ao Bloquear
   // (dono, 16/10 — lote 55: "Manter o apelido") a Punição do texto é a gema que o jogo chama de Castigo (no PoE, Punishment): a maldição vale.
   const punicao = traduz('Amaldiçoa Inimigos com Punição quando você Bloquear seu Dano Corpo a Corpo, ignorando o Limite de Maldições');
   assert.ok(COM_EFEITO.includes(punicao.estado), punicao.estado);
-  assert.equal(punicao.efeitos[0].stat, 'ev:bloquearAtaque:maldicao:castigo:10:semLimite');
+  assert.equal(punicao.efeitos[0].stat, 'ev:bloquearAtaque:maldicao:castigo:1:semLimite');
 });
 
 test('os lacaios: a resistência a Fogo/Gelo e o dano extra do lacaio físico', { skip: SEM }, () => {

@@ -58,7 +58,8 @@ const comGrilhoes = (h) => Object.values(h.maldicoesNoJogador ?? {}).some((m) =>
 
 test('as linhas do lote saem com efeito (e o Anel da Fenda segue inerte: as Fendas não existem no jogo)', { skip: SEM }, () => {
   for (const [m, v] of LINHAS) assert.ok(!['inerte', 'registrado'].includes(tr(m, v ?? []).estado), m);
-  assert.deepEqual(tr(SENTARI[0]).efeitos.map((x) => x.stat), ['ev:bloquearProjetil:maldicao:grilhoes-temporais:10:semLimite']);
+  // (aval do dono 08/11: a maldição no nível 1 do PoB)
+  assert.deepEqual(tr(SENTARI[0]).efeitos.map((x) => x.stat), ['ev:bloquearProjetil:maldicao:grilhoes-temporais:1:semLimite']);
   assert.equal(tr('Propriedades são dobradas enquanto em uma Fenda').estado, 'inerte');
 });
 

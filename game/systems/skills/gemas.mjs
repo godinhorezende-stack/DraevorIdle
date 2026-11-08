@@ -393,7 +393,7 @@ export function extrasDaGemaPoe(estado, peca, def, indice = null, soquetes = nul
   const s = indice != null && peca ? soquetes ?? soquetesDe(peca) : null;
   const doEncaixe = ENCAIXE_DA_COR[s?.cores?.[indice]];
   // (lote 57: + `naoExcepcional` — o suporte que não é Excepcional: "+1 ao nível de todas as gemas de suporte não excepcionais", o Limitado pelo Destino)
-  const tags = new Set([...ModsPoe.tagsDoPoe(def?.tags ?? []), def?.tipo === 'support' ? 'suporte' : 'habilidade', ...(def?.tipo === 'support' && !ehExcepcional(def) ? ['naoExcepcional'] : []), ...(cor ? [cor] : []), ...(doEncaixe ? [doEncaixe] : []), ...(def?.nome ? [`gema:${ModsPoe.slugDoNome(def.nome)}`] : []), ...numerosDaGema(def).map((k) => `gema:${k}`)]);
+  const tags = new Set([...ModsPoe.tagsDoPoe(def?.tags ?? []), def?.tipo === 'support' ? 'suporte' : 'habilidade', ...(def?.tipo === 'support' && !ehExcepcional(def) ? ['naoExcepcional'] : []), ...(cor ? [cor] : []), ...(!(def?.tags ?? []).some((t) => /vaal/i.test(t)) ? ['naoVaal'] : []), ...(doEncaixe ? [doEncaixe] : []), ...(def?.nome ? [`gema:${ModsPoe.slugDoNome(def.nome)}`] : []), ...numerosDaGema(def).map((k) => `gema:${k}`)]);
   // A ESCALA (antes ignorada — "+1 ao Nível das Gemas de Habilidade Encaixadas por cada 25 Níveis do Jogador" dava sempre +1): o nível do
   // personagem, as gemas encaixadas na peça ("-1 … por Gema Encaixada") e as outras escalas do PoE; com o teto.
   const fator = (escala) => {
