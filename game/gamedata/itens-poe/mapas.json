@@ -4262,72 +4262,117 @@
       "texto": "Contém ondas de Monstros",
       "modelo": "Contém ondas de Monstros",
       "faixas": [],
-      "efeitos": [],
-      "nota": "as ondas de monstros ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "ondas_monstros",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Contém ondas adicionais de Monstros Mortos-Vivos",
       "modelo": "Contém ondas adicionais de Monstros Mortos-Vivos",
       "faixas": [],
-      "efeitos": [],
-      "nota": "as ondas de monstros ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "ondas_mortosVivos",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Área contém ondas de Fantasmas adicionais",
       "modelo": "Área contém ondas de Fantasmas adicionais",
       "faixas": [],
-      "efeitos": [],
-      "nota": "as ondas de monstros ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "ondas_fantasmas",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Área contém ondas de Zumbis Oriatianos adicionais",
       "modelo": "Área contém ondas de Zumbis Oriatianos adicionais",
       "faixas": [],
-      "efeitos": [],
-      "nota": "as ondas de monstros ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "ondas_zumbisOriatianos",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Área contém ondas de Espíritos adicionais",
       "modelo": "Área contém ondas de Espíritos adicionais",
       "faixas": [],
-      "efeitos": [],
-      "nota": "as ondas de monstros ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "ondas_espiritos",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Área contém ondas de Espíritos Furiosos adicionais",
       "modelo": "Área contém ondas de Espíritos Furiosos adicionais",
       "faixas": [],
-      "efeitos": [],
-      "nota": "as ondas de monstros ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "ondas_espiritosFuriosos",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Área contém ondas de Rhoas de Osso adicionais",
       "modelo": "Área contém ondas de Rhoas de Osso adicionais",
       "faixas": [],
-      "efeitos": [],
-      "nota": "as ondas de monstros ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "ondas_rhoasDeOsso",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Área contém ondas de Mandíbulas Devastadoras adicionais",
       "modelo": "Área contém ondas de Mandíbulas Devastadoras adicionais",
       "faixas": [],
-      "efeitos": [],
-      "nota": "as ondas de monstros ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "ondas_mandibulas",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Área contém ondas de Zumbis adicionais",
       "modelo": "Área contém ondas de Zumbis adicionais",
       "faixas": [],
-      "efeitos": [],
-      "nota": "as ondas de monstros ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "ondas_zumbis",
+        "fixo": 1
+       }
+      ]
      }
     ]
    },
@@ -6342,8 +6387,13 @@
         5
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "modsAleatorios",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6355,8 +6405,13 @@
         6
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "sinteseGlobais",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6458,8 +6513,13 @@
         5
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "modsAleatorios",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6471,8 +6531,13 @@
         4
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "sinteseGlobais",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6574,8 +6639,13 @@
         5
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "modsAleatorios",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6587,8 +6657,13 @@
         4
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "sinteseGlobais",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6690,8 +6765,13 @@
         5
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "modsAleatorios",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6703,8 +6783,13 @@
         4
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "sinteseGlobais",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6806,8 +6891,13 @@
         5
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "modsAleatorios",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6819,8 +6909,13 @@
         4
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "sinteseGlobais",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6922,8 +7017,13 @@
         8
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "modsAleatorios",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6935,8 +7035,13 @@
         6
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "sinteseGlobais",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",

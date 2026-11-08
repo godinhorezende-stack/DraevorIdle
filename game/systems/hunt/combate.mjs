@@ -50,6 +50,7 @@ import * as Gemas from '../gemas.mjs';
 import * as Charms from '../charms.mjs';
 import * as ItensPoeJogo from '../itens-poe/jogo.mjs';
 import * as Instancia from './instancia.mjs';
+import * as SinteseMapas from '../itens-poe/sintese-mapas.mjs';
 import * as MoedasPoe from '../itens-poe/moedas.mjs';
 // (100% — dados, 03/11) as Tatuagens do PoE (a fonte simples, sem a liga Ancestral — `passivas/tatuagens.dropDoMonstro`)
 import * as Tatuagens from '../passivas/tatuagens.mjs';
@@ -1078,13 +1079,27 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // do Draevor (Buff Power, afixo Loot, prey, pódio, Caça Online — sem o lootMult, que já é a raridade do bicho); números em `itens-poe/regras.json`.
   // (No MAPA do endgame: × a Quantidade de Itens dele, e a Raridade de Itens dele soma na sua — como no PoE.)
   const noMapa = salaDe(hunt)?.mapa ?? null;
-  const quantidadeDoJogador = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + (podio?.loot ?? 0) / 100) * fatorDaCacaOnline(hunt) * (1 + Math.max(0, Number(noMapa?.quantidade) || 0) / 100);
-  const raridadeDoMorto = raridadeDoDrop(estado, alvo) + (Number(noMapa?.raridade) || 0);
+  // (08/11, o Córtex e as Memórias) os Synthesis Globais do mapa que valem neste monstro, pela raridade dele (`itens-poe/sintese-mapas.mjs`)
+  const sint = noMapa?.efeitos?.sintese ? SinteseMapas.doMonstro(noMapa.efeitos.sintese, alvo) ?? {} : {};
+  const quantidadeDoJogador = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + (podio?.loot ?? 0) / 100) * fatorDaCacaOnline(hunt) * (1 + Math.max(0, Number(noMapa?.quantidade) || 0) / 100) * (1 + (Number(sint.quantidadePct) || 0) / 100);
+  const raridadeDoMorto = raridadeDoDrop(estado, alvo) + (Number(noMapa?.raridade) || 0) + (Number(sint.raridadePct) || 0);
   // (08/11, o Hospício de Poorjoy: "Chefe Único derruba N Raro adicional <classe>" — `alvo.rarosExtras`/`rarosClasse`, `mapas-areas.aplicarEfeitos`)
   const rarosDoChefe = alvo.rarosExtras > 0 ? Array.from({ length: alvo.rarosExtras }, () => ItensPoeJogo.pecaDaClasse(alvo.rarosClasse, nivelDoDropPoe(hunt, alvo), { raridade: 'raro' })).filter(Boolean).map((p) => ItensPoeJogo.semIdentificar(p)) : [];
   // (08/11, as Relíquias de Atziri e o Maquinário de Doryani: "Itens Encontrados têm X% de chance de caírem Corrompidos na Área")
-  const corrompidosPct = Number(noMapa?.efeitos?.instancia?.corrompidosPct) || 0;
-  for (const daPoe of [...ItensPoeJogo.dropsDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidadeDoJogador, raridadeDoMorto), ...rarosDoChefe]) {
+  const corrompidosPct = (Number(noMapa?.efeitos?.instancia?.corrompidosPct) || 0) + (Number(sint.corrompidosPct) || 0);
+  // (os Globais: o Item do Criador/do Ancião e a Joia a mais — `SinteseMapas`)
+  const doSintetizado = [];
+  const nivelDoMorto = nivelDoDropPoe(hunt, alvo);
+  for (const [stat, influencia] of [['shaperPct', 'shaper'], ['elderPct', 'elder']]) {
+    if (!(Math.random() * 100 < (Number(sint[stat]) || 0))) continue;
+    const p = ItensPoeJogo.pecaComInfluencia(nivelDoMorto, influencia);
+    if (p) doSintetizado.push(ItensPoeJogo.semIdentificar(p));
+  }
+  if (Math.random() * 100 < (Number(sint.joiaPct) || 0)) {
+    const p = ItensPoeJogo.pecaDaClasse('Jewels', nivelDoMorto, { raridade: ['magico', 'raro'][Math.floor(Math.random() * 2)] });
+    if (p) doSintetizado.push(ItensPoeJogo.semIdentificar(p));
+  }
+  for (const daPoe of [...ItensPoeJogo.dropsDoMonstro(nivelDoMorto, tipoDoBicho(alvo), Math.random, undefined, quantidadeDoJogador, raridadeDoMorto, { unicoPct: Number(sint.unicoPct) || 0 }), ...rarosDoChefe, ...doSintetizado]) {
     if (corrompidosPct > 0 && Math.random() * 100 < corrompidosPct) daPoe.poe.corrompido = true;
     identificarAoAchar(estado, daPoe);
     // O FILTRO DE LOOT (dono, 08/10: "está pegando itens mesmo setando as coisas"): a peça que o filtro não pega fica no chão ("Ignorado").
@@ -1105,7 +1120,9 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   if (noMapa) {
     const tipo = tipoDoBicho(alvo);
     // (O chefe do mapa ÚNICO: "Chefes Únicos derrubam N Mapas adicionais" — `efeitos.chefe.mapasExtras`.)
-    const sorteados = Mapas.sortearDrops({ tierDaArea: noMapa.tier, tipo, bonusDeQuantidade: Number(REGRAS_POE.drop?.bonusDeQuantidade?.[tipo]) || 0, quantidadePct: noMapa.quantidade, chefeDoMapa: !!alvo.chefeDoMapa, mapasExtras: alvo.chefeDoMapa ? noMapa.efeitos?.chefe?.mapasExtras : 0 });
+    // (+ os Globais: "chance aumentada de derrubar um Mapa" — soma na Quantidade do sorteio dos mapas — e "20% de chance de derrubar um Mapa")
+    const sorteados = Mapas.sortearDrops({ tierDaArea: noMapa.tier, tipo, bonusDeQuantidade: Number(REGRAS_POE.drop?.bonusDeQuantidade?.[tipo]) || 0, quantidadePct: noMapa.quantidade + (Number(sint.mapaPct) || 0), chefeDoMapa: !!alvo.chefeDoMapa, mapasExtras: alvo.chefeDoMapa ? noMapa.efeitos?.chefe?.mapasExtras : 0 });
+    if (Math.random() * 100 < (Number(sint.mapaExtraPct) || 0)) sorteados.push({ tier: Mapas.tierDoDrop(noMapa.tier, tipo) });
     for (const { tier } of sorteados) {
       const mapa = ItensPoeJogo.mapaSorteado(tier, { raridadeAumentada: raridadeDoMorto });
       if (!mapa) continue;
@@ -1181,6 +1198,9 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // As MOEDAS do PoE (Transmutação, Caos, Exaltado... — `itens-poe/moedas.mjs`, chances em `regras.json → moedas.drop`).
   // (+ as do chefe do mapa ÚNICO — "Chefe Único derruba N Itens Monetários adicionais": `efeitos.chefe.moedasExtras`.)
   const moedasDoChefe = noMapa && alvo.chefeDoMapa ? MoedasPoe.moedasAvulsas(Number(noMapa.efeitos?.chefe?.moedasExtras) || 0) : [];
+  // (os Globais: os Itens Monetários e os de Qualidade a mais do monstro Sintetizado)
+  const moedasDoSintetizado = noMapa?.efeitos?.sintese ? SinteseMapas.moedasDoMonstro(sint, Math.random, MoedasPoe) : [];
+  moedasDoChefe.push(...moedasDoSintetizado);
   // (100% — dados, 03/11: + as TATUAGENS — a chance pela raridade do bicho, a da Jornada só na área 81+; o filtro e a bolsa como as moedas)
   for (const moeda of [...MoedasPoe.dropDoMonstro(tipoDoBicho(alvo), Math.random, quantidadeDoJogador), ...moedasDoChefe, ...(BESTIARY[alvo.key]?.poe ? Tatuagens.dropDoMonstro(tipoDoBicho(alvo), nivelDoDropPoe(hunt, alvo), Math.random, quantidadeDoJogador) : [])]) {
     // A moeda marcada em "Não coletar" (a lista) fica no chão.
@@ -1227,6 +1247,9 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     const recDoAto = atoDoChefe ? Campanha.recompensaDoBoss(atoDoChefe) : null;
     if (recDoAto) pagarRecompensaDeAto({ estado, hunt, personagem, recompensa: recDoAto, nome: alvo.name, chave: `boss:${atoDoChefe}`, dificuldade: c.dificuldade, donos: [estado, ...outros] });
   }
+  // (08/11, os Globais do Raro Sintetizado: "ressuscitam como Aliados quando mortos" e "ganha os Modificadores dele por 20 segundos")
+  if (sint.aliado > 0) ModsPoe.aliadoDoSintetizado?.(estado, hunt, alvo);
+  if (sint.modificadoresS > 0) ModsPoe.aprenderDoRaro(estado, hunt, { afPoe: { aprendizado_inspirado_n: 99, aprendizado_inspirado_s: sint.modificadoresS } }, alvo, hunt.clock ?? 0);
   // Sede de sangue (knight) e Fonte eterna (sorcerer).
   Arvore.aoMatar(estado, eventos, hunt.pos, personagem?.nome);
   tirarMonstro(hunt, alvo);

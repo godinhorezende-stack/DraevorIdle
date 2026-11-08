@@ -1097,6 +1097,20 @@ ModsPoe.definirEsporoInfestado((estado, hunt, onde, rng = Math.random) => {
   Ficha.invalidar(estado);
 });
 /**
+ * (08/11, os Synthesis Globais do Córtex e das Memórias: "Monstros Sintetizados Raros ressuscitam como Aliados quando mortos") o Raro morto vira seu
+ * lacaio onde caiu: o desenho, a Vida máxima e o golpe dele (o maior golpe × a força), até morrer ou você sair do mapa.
+ */
+ModsPoe.definirAliadoDoSintetizado((estado, hunt, alvo) => {
+  if (!hunt?.pos || !alvo) return;
+  const af = Ficha.combate(estado).afPoe ?? {};
+  const agora = hunt.ultimoTique ?? Date.now();
+  const l = lacaioDoGuardian(estado, hunt, agora, af, alvo.name, 'physical', { aliadoSintetizado: true });
+  const vida = Math.max(10, Math.round(alvo.maxHp ?? l.maxHp));
+  const golpe = Math.max(1, (Poderes.golpeMaximoDoBicho(alvo) ?? (l.dano.max + l.dano.min) / 2) * (alvo.forca ?? 1));
+  (hunt.lacaios ??= []).push(Object.assign(l, { x: alvo.x, y: alvo.y, look: alvo.look ?? l.look, lookItem: alvo.lookItem ?? 0, colors: alvo.colors ?? l.colors, hp: vida, maxHp: vida, dano: { min: Math.round(golpe * 0.8), max: Math.round(golpe * 1.2) } }));
+  Ficha.invalidar(estado);
+});
+/**
  * (07/11, lote 25 das inertes — o PoB: FlasksApplyToMinion) o ABRAÇO DA MÃE: "Seus Lacaios usam seus Frascos quando convocados" — o lacaio novo usa cada frasco do cinto
  * com cargas (o custo × (1 − "Cargas de Frasco usadas reduzidas" dos lacaios)); o efeito é só nele, pela duração × (1 + "Duração do Efeito do Frasco aumentada" dos
  * lacaios): o de Vida cura a quantidade dele; o de utilidade dá o dano, as resistências, a armadura, a evasão e a velocidade do efeito (os campos do lacaio — `l.poe`),

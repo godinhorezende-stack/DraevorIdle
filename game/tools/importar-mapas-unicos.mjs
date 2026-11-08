@@ -133,6 +133,19 @@ export const REGRAS = [
   [/^Área possui muitos Totens$/, () => [{ alvo: 'instancia', stat: 'habitantes_totens', fixo: 1 }]],
   [/^Área possui aumento na variedade de monstros$/, () => [{ alvo: 'instancia', stat: 'habitantes_variedade', fixo: 1 }]],
   // (o poedb: "o jogador é morto se não matar todos os monstros dentro de 9 minutos sozinho, ou 6 em grupo")
+  // o Córtex e as Memórias: os mods de mapa a mais e os Synthesis Globais, sorteados ao nascer a peça (`sintese-mapas.mjs`)
+  [/^Mapa possui \{0\} Modificadores aleatórios adicionais$/, () => [{ alvo: 'peca', stat: 'modsAleatorios', de: 0 }]],
+  [/^Mapa tem \{0\} Modificadores Synthesis Globais adicionais$/, () => [{ alvo: 'peca', stat: 'sinteseGlobais', de: 0 }]],
+  // as ONDAS do Julgamento do Covarde (`mapas-areas.porOndasNaInstancia` — os grupos de `GRUPOS_DAS_ONDAS`)
+  [/^Contém ondas de Monstros$/, () => [{ alvo: 'instancia', stat: 'ondas_monstros', fixo: 1 }]],
+  [/^Contém ondas adicionais de Monstros Mortos-Vivos$/, () => [{ alvo: 'instancia', stat: 'ondas_mortosVivos', fixo: 1 }]],
+  [/^Área contém ondas de Fantasmas adicionais$/, () => [{ alvo: 'instancia', stat: 'ondas_fantasmas', fixo: 1 }]],
+  [/^Área contém ondas de Zumbis Oriatianos adicionais$/, () => [{ alvo: 'instancia', stat: 'ondas_zumbisOriatianos', fixo: 1 }]],
+  [/^Área contém ondas de Espíritos adicionais$/, () => [{ alvo: 'instancia', stat: 'ondas_espiritos', fixo: 1 }]],
+  [/^Área contém ondas de Espíritos Furiosos adicionais$/, () => [{ alvo: 'instancia', stat: 'ondas_espiritosFuriosos', fixo: 1 }]],
+  [/^Área contém ondas de Rhoas de Osso adicionais$/, () => [{ alvo: 'instancia', stat: 'ondas_rhoasDeOsso', fixo: 1 }]],
+  [/^Área contém ondas de Mandíbulas Devastadoras adicionais$/, () => [{ alvo: 'instancia', stat: 'ondas_mandibulas', fixo: 1 }]],
+  [/^Área contém ondas de Zumbis adicionais$/, () => [{ alvo: 'instancia', stat: 'ondas_zumbis', fixo: 1 }]],
   [/^Área se torna fatal após algum tempo$/, () => [{ alvo: 'instancia', stat: 'fatalS', fixo: 540 }]],
   [/^Área não contém monstros$/, () => [{ alvo: 'instancia', stat: 'semMonstros', fixo: 1 }]],
   [/^Mortos Inquietos$/, () => [{ alvo: 'monstros', stat: 'ressurgirS', fixo: 10 }]],

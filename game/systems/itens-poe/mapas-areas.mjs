@@ -291,3 +291,57 @@ export function comHabitantes(spawns, tier, habitantes = {}) {
   return spawns.map((s, i) => ({ ...s, criaturas: [{ key: totens.length && i % 2 === 1 ? totens[Math.floor(i / 2) % totens.length] : base[i % base.length], peso: 1 }] }));
 }
 
+// ---------------------------------------------------------------- as ONDAS do Julgamento do Covarde (08/11)
+
+/**
+ * O JULGAMENTO DO COVARDE: "Contém ondas de Monstros" e as "ondas adicionais" de cada tipo (Mortos-Vivos, Fantasmas, Zumbis Oriatianos, Espíritos,
+ * Espíritos Furiosos, Rhoas de Osso, Mandíbulas Devastadoras, Zumbis). No PoE o mapa é um caminho de ondas, sem os grupos de sempre: aqui a
+ * área não tem os grupos nem o chefe (`cacadas.povoar`), e a SOBREVIVÊNCIA (o motor de ondas — `encontros/ondas.mjs`) perto da entrada é a
+ * área: obrigatória, ela segura a limpeza até a última onda. A campanha do PoE não tem Fantasmas, Espíritos nem Zumbis com esse nome: cada
+ * tipo usa o morto-vivo da campanha mais perto dele (os Espectros, os Mortos de Oriath e de Wraeclast); os Espíritos Furiosos vêm Mágicos.
+ */
+export const GRUPOS_DAS_ONDAS = Object.freeze({
+  mortosVivos: { slugs: ['Undead_Vaal_Guard', 'Undead_Vaal_Archer', 'Undead_Vaal_Bladedancer', 'Experimented_Dead'] },
+  fantasmas: { slugs: ['Dockhand_Wraith'] },
+  zumbisOriatianos: { slugs: ['Noble_Dead'] },
+  espiritos: { slugs: ['Labourer_Wraith'] },
+  espiritosFuriosos: { slugs: ['Labourer_Wraith'], raridade: 'modificado' },
+  rhoasDeOsso: { slugs: ['Bone_Rhoa'] },
+  mandibulas: { slugs: ['Devourer'] },
+  zumbis: { slugs: ['Dripping_Dead', 'Disbanded_Dead', 'Ghoul'] },
+});
+export const ONDAS_DO_COVARDE = 10;
+/** As ondas: os grupos que o mapa tem (`grupos` — 'monstros' são os comuns do tier), revezando, cada vez com mais monstros (até o teto da onda). */
+export function ondasDoMapa(grupos, tier, { ondas = ONDAS_DO_COVARDE, teto = 10 } = {}) {
+  const tipos = (grupos ?? []).map((g) => (g === 'monstros' ? { chaves: comunsDoTier(tier) } : GRUPOS_DAS_ONDAS[g] ? { chaves: chavesNoTier(GRUPOS_DAS_ONDAS[g].slugs, tier), raridade: GRUPOS_DAS_ONDAS[g].raridade } : null)).filter((x) => x?.chaves.length);
+  const lista = [];
+  for (let i = 0; i < ondas && tipos.length; i++) {
+    // a onda: o tipo da vez e o seguinte, de 4 a `teto` monstros (cresce a cada onda)
+    const total = Math.min(teto, 4 + Math.floor((i * (teto - 4)) / Math.max(1, ondas - 1)));
+    const daVez = [tipos[i % tipos.length], tipos[(i + 1) % tipos.length]].filter((t, k, a) => a.indexOf(t) === k);
+    const criaturas = [];
+    for (let k = 0; k < total; k++) {
+      const t = daVez[k % daVez.length];
+      const key = t.chaves[(i + k) % t.chaves.length];
+      const c = criaturas.find((x) => x.key === key);
+      if (c && c.qtd < 8) c.qtd++;
+      else if (!c) criaturas.push({ key, qtd: 1 });
+    }
+    const raridade = daVez.find((t) => t.raridade)?.raridade ?? null;
+    lista.push({ criaturas, ...(raridade ? { raridade } : {}) });
+  }
+  return lista;
+}
+/** Põe a sobrevivência do mapa na instância (perto da entrada, a 4–9 casas dela). Devolve o encontro, ou null. */
+export function porOndasNaInstancia(instancia, { grade, inicio, grupos, tier, alcancaveis, nome = 'O Julgamento', rng = Math.random } = {}) {
+  const ondas = ondasDoMapa(grupos, tier);
+  if (!instancia || !ondas.length || !inicio) return null;
+  const z = inicio.z ?? grade?.z ?? 0;
+  const perto = [...(alcancaveis?.get(z) ?? [])].map((k) => k.split(',').map(Number)).filter(([x, y]) => { const d = Math.max(Math.abs(x - inicio.x), Math.abs(y - inicio.y)); return d >= 4 && d <= 9; });
+  if (!perto.length) return null;
+  const [x, y] = perto[Math.floor(rng() * perto.length)];
+  const e = { id: 'ondas-do-mapa', defId: 'sobrevivencia', tipo: 'sobrevivencia', nome, estado: 'disponivel', disponivelEm: 0, tentativas: 0, obrigatorio: true, condicao: { tipo: 'sempre' }, x, y, z, ondas, pausaMs: 3000 };
+  (instancia.encontros ??= {})[e.id] = e;
+  return e;
+}
+

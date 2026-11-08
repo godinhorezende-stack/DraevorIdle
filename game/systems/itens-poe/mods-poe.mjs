@@ -1070,6 +1070,14 @@ definirTiqueDosAspectos(tiqueDosAspectos);
 // eslint-disable-next-line no-var
 var esporoInfestado;
 export function definirEsporoInfestado(fn) { esporoInfestado = fn; }
+/**
+ * (08/11, o Córtex e as Memórias: "Monstros Sintetizados Raros ressuscitam como Aliados quando mortos" — `sintese-mapas.mjs`) o Raro morto volta como
+ * seu lacaio: quem cria é `acoes.mjs` (o ciclo de imports).
+ */
+// eslint-disable-next-line no-var
+var aliadoDoRaro;
+export function definirAliadoDoSintetizado(fn) { aliadoDoRaro = fn; }
+export const aliadoDoSintetizado = (estado, hunt, alvo) => aliadoDoRaro?.(estado, hunt, alvo);
 /** (07/11, lote 20 das inertes — sem fonte, o Tricorne de Fairgraves) os toques dos ESPÍRITOS ATORMENTADOS: um ao acaso, 20 s (`condicoes-poe.BUFFS.tocadoEspirito*`). */
 export const TOQUES_DOS_ESPIRITOS = Object.freeze(['tocadoEspiritoFuria', 'tocadoEspiritoPressa', 'tocadoEspiritoVida', 'tocadoEspiritoVento']);
 /** (07/11, lote 17) os Fantasmas Acorrentados da Marca da Penitência (`acoes.mjs` registra — `mobs/mecanicas.fantasmasDaPenitencia`). */

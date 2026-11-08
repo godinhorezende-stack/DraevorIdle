@@ -71,6 +71,7 @@ import * as Controle from './combate/controle.mjs';
 import * as Dot from './combate/dot.mjs';
 import * as Escalonamento from './hunt/escalonamento.mjs';
 import * as Setores from './hunt/setores.mjs';
+import * as SinteseMapas from './itens-poe/sintese-mapas.mjs';
 import * as Instancia from './hunt/instancia.mjs';
 import * as Encontros from './encontros/estado.mjs';
 import './encontros/tipos-de-boss.mjs'; // registra os encontros de boss (boss, miniboss, boss-secreto)
@@ -641,12 +642,24 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = n
   const casasDeSpawn = new Set();
   // O mapa muda a composição (o tamanho do grupo, mais Mágicos/Raros) e cada monstro (os efeitos dos afixos — `MapasAreas.aplicarEfeitos`).
   const doMapa = mapa ? Mapas.fatoresDaInstancia(mapa) : null;
-  const ajustesDoMapa = doMapa ? { fatorDoGrupo: doMapa.fatorDoGrupo, chancesDaRaridade: doMapa.chancesDaRaridade, ajustar: (m) => MapasAreas.aplicarEfeitos(m, mapa.efeitos?.monstros) } : {};
+  // (08/11, o Córtex e as Memórias: os Synthesis Globais — o grupo maior e a Experiência pela raridade do monstro, `itens-poe/sintese-mapas.mjs`)
+  const sintese = mapa?.efeitos?.sintese ?? null;
+  const ajustar = (m) => {
+    MapasAreas.aplicarEfeitos(m, mapa.efeitos?.monstros);
+    const xp = Number(SinteseMapas.doMonstro(sintese, m)?.experienciaPct) || 0;
+    if (xp) m.exp = Math.round((Number(m.exp) || 0) * (1 + xp / 100));
+  };
+  const ajustesDoMapa = doMapa ? { fatorDoGrupo: doMapa.fatorDoGrupo * (1 + (Number(sintese?.geral?.grupoPct) || 0) / 100), chancesDaRaridade: doMapa.chancesDaRaridade, ajustar } : {};
   const todos = comInstancia
     ? Instancia.comporBichos({ grade, spawns: spawnsDoMapa, dadosDaHunt: hunt, inicio, escala, aplicarEscala: Campanha.aplicarEscala, instanciaId, ...ajustesDoMapa })
     : [];
+  // (08/11) os Synthesis Globais que mudam os GRUPOS (melhorados para Mágicos/Raros, o Raro a mais, os Raros duplicados, os Baús com monstros)
+  if (comInstancia && sintese?.geral) sintetizarGrupos(todos, sintese.geral, { grade, hunt, escala, inicio, instanciaId, ajustar });
   // (08/11, as Relíquias de Atziri: "Área não contém monstros") ninguém nasce — onde nasceria cada grupo fica um baú (`BausPoe.porNaInstancia`, abaixo)
   const ondeNasceriam = mapa && doMapa?.semMonstros ? todos.splice(0).map(({ z, m }) => ({ z, m: { x: m.x, y: m.y } })) : null;
+  // (08/11, o Julgamento do Covarde) as ONDAS são a área: sem os grupos nem o chefe (a sobrevivência nasce com a instância, abaixo)
+  const soOndas = !!(mapa && doMapa?.ondas?.length);
+  if (soOndas) todos.splice(0);
   // A fase que conclui matando um chefe (ou pegando o item que um alvo solta) precisa TER esse monstro: o que os spawns do mapa não trazem
   // nasce no fundo da área (`chefeNaInstancia`).
   const conclusao = comInstancia && !mapa ? Campanha.conclusaoDa(huntId) : null;
@@ -660,7 +673,7 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = n
   // (05/11) O mapa do GUARDIÃO DO CRIADOR (`pinaculos-acesso.mjs`): o guardião é o chefe do mapa — o chefe do tier não nasce.
   const doEncontro = mapa?.encontro ? PinaculosAcesso.chefe(mapa.encontro) : null;
   if (mapa && comInstancia) {
-    const chave = doEncontro?.mapa || ondeNasceriam ? null : MapasAreas.chefeDoTier(mapa.tier);
+    const chave = doEncontro?.mapa || ondeNasceriam || soOndas ? null : MapasAreas.chefeDoTier(mapa.tier);
     for (let i = 0; chave && i < doMapa.chefes; i++) {
       const chefe = Instancia.chefeNaInstancia({ grade, todos, chave, inicio, escala, aplicarEscala: Campanha.aplicarEscala, dadosDaHunt: hunt, instanciaId });
       if (!chefe) break;
@@ -750,6 +763,8 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = n
     if (itensPoeLigado()) Abismo.porNaInstancia(instancia, { grade, inicio, todos, nivel: mapa?.nivel ?? escala?.nivel ?? null, onde: Abismo.valeNaArea(hunt) });
     // (08/11) a FENDA do PoE (`itens-poe/fenda.mjs`): nos mapas do endgame, pela chance
     if (itensPoeLigado()) Fenda.porNaInstancia(instancia, { grade, inicio, todos, nivel: mapa?.nivel ?? null, ehMapa: !!hunt?.poeMapa });
+    // (08/11) as ONDAS do Julgamento do Covarde (`MapasAreas.porOndasNaInstancia`)
+    if (itensPoeLigado() && soOndas) MapasAreas.porOndasNaInstancia(instancia, { grade, inicio, grupos: doMapa.ondas, tier: mapa.tier, alcancaveis: Instancia.casasAlcancaveis(grade, inicio), nome: hunt?.name ?? 'O Julgamento' });
     // (08/11) os TRECHOS DE SOLO do mapa único ("Área possui trechos de Solo Ardente" — `mapas-areas.porSolosNaInstancia`): o dano pelo golpe dos monstros da área
     if (itensPoeLigado() && Object.keys(doMapa?.solos ?? {}).length) {
       const golpes = todos.map(({ m }) => (Poderes.golpeMaximoDoBicho(m) ?? 0) * (m.forca ?? 1)).filter((g) => g > 0).sort((a, b) => a - b);
@@ -783,6 +798,68 @@ function areaFatal(estado, hunt, personagem) {
   estado.hp = 0;
   EventosDeEncontro.empurrar(hunt, [{ t: 'dmg', uid: 'player', quem: personagem?.nome, x: hunt.pos.x, y: hunt.pos.y, v: 0, foe: false, de: 'Tesouro Maldito de Oba', golpe: 'a área se tornou fatal', fatal: true, color: '#9b30ff' }]);
   estado.avisoDaHunt = 'A área se tornou fatal.';
+}
+
+/**
+ * (08/11, o Córtex e as Memórias) os SYNTHESIS GLOBAIS que mexem nos grupos da instância (`todos`, `[{ z, m }]`, muta): "X% de chance de Grupos
+ * Sintetizados serem melhorados para Mágicos/Raros" (o grupo — os monstros do mesmo spawn — renasce na raridade, com os modificadores dela), "50% de
+ * chance de Grupos Raros terem um Monstro Raro adicional", "Duplica até N Monstros Raros" (um igual ao lado) e os "Baús Sintetizados que contêm
+ * Monstros" (o baú abre e solta o grupo: aqui o grupo já está lá, num canto ao acaso da área — 3 monstros por baú).
+ */
+function sintetizarGrupos(todos, g, { grade, hunt, escala, inicio, instanciaId, ajustar, rng = Math.random }) {
+  const ocupadas = new Set(todos.map(({ z, m }) => `${m.x},${m.y},${z}`));
+  const setores = Setores.mapaDeSetores(Instancia.casasAlcancaveis(grade, inicio));
+  const nascer = (key, z, perto, raridade) => {
+    const gz = Protecao.gradeDosBichos(andarDaGrade(grade, z));
+    const casa = casaLivrePerto(gz, perto, (c) => ocupadas.has(`${c.x},${c.y},${z}`));
+    if (!casa) return null;
+    const m = Campanha.aplicarEscala(criarMonstro({ key, x: casa.x, y: casa.y, z }, hunt), escala);
+    if (!m) return null;
+    ocupadas.add(`${casa.x},${casa.y},${z}`);
+    delete m.spawn;
+    Raridade.aplicar(m, { raridade, sortear: raridade !== 'normal' });
+    ajustar(m);
+    m.instancia = instanciaId;
+    m.objetivo = 1;
+    m.setor = setores.setorDe(casa.x, casa.y, z);
+    return { z, m };
+  };
+  const trocar = (i, raridade) => {
+    const { z, m } = todos[i];
+    ocupadas.delete(`${m.x},${m.y},${z}`);
+    const novo = nascer(m.key, z, m, raridade);
+    if (novo) { novo.m.spawnId = m.spawnId; todos[i] = novo; }
+  };
+  const grupos = new Map();
+  todos.forEach(({ m }, i) => { if (!m.chefeDoMapa) (grupos.get(m.spawnId) ?? grupos.set(m.spawnId, []).get(m.spawnId)).push(i); });
+  for (const idx of grupos.values()) {
+    const sobe = rng() * 100 < (Number(g.gruposRarosPct) || 0) ? 'raro' : rng() * 100 < (Number(g.gruposMagicosPct) || 0) ? 'modificado' : null;
+    if (sobe) for (const i of idx) if (todos[i].m.raridade !== 'raro' && todos[i].m.raridade !== 'unico') trocar(i, sobe);
+    const raro = idx.map((i) => todos[i]).find(({ m }) => m.raridade === 'raro');
+    if (raro && rng() * 100 < (Number(g.raroExtraPct) || 0)) {
+      const extra = nascer(raro.m.key, raro.z, raro.m, 'raro');
+      if (extra) { extra.m.spawnId = raro.m.spawnId; todos.push(extra); }
+    }
+  }
+  const raros = todos.filter(({ m }) => m.raridade === 'raro');
+  for (let i = 0; i < Math.min(Number(g.duplicarRaros) || 0, raros.length); i++) {
+    const { z, m } = raros[i];
+    const copia = nascer(m.key, z, m, 'raro');
+    if (copia) { copia.m.mods = [...(m.mods ?? copia.m.mods ?? [])]; copia.m.spawnId = m.spawnId; todos.push(copia); }
+  }
+  // os Baús Sintetizados com monstros: cada baú, um grupo de 3 num ponto ao acaso das casas alcançáveis
+  const alcancaveis = [...Instancia.casasAlcancaveis(grade, inicio)].flatMap(([z, casas]) => [...casas].map((k) => [z, k]));
+  const comuns = [...new Set(todos.map(({ m }) => m.key))];
+  for (const [n, raridade] of [[g.bausNormais, 'normal'], [g.bausMagicos, 'modificado'], [g.bausRaros, 'raro']]) {
+    for (let b = 0; b < (Number(n) || 0) && alcancaveis.length && comuns.length; b++) {
+      const [z, k] = alcancaveis[Math.floor(rng() * alcancaveis.length)];
+      const [x, y] = k.split(',').map(Number);
+      for (let q = 0; q < (raridade === 'raro' ? 1 : 3); q++) {
+        const novo = nascer(comuns[Math.floor(rng() * comuns.length)], z, { x, y }, raridade);
+        if (novo) { novo.m.spawnId = `bau-sintetizado-${raridade}-${b}`; todos.push(novo); }
+      }
+    }
+  }
 }
 
 /** (08/11) Os baús do mapa sem monstros (as Relíquias de Atziri): um onde nasceria cada grupo, até este teto. */

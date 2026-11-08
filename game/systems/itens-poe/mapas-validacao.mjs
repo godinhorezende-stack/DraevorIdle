@@ -32,6 +32,8 @@ export function validarEfeito(e, valores) {
   const ef = {};
   // (08/11) a linha que o poedb mostra sem número vale ZERO no próprio PoE (o stat em inglês): age como lá, sem mudar nada
   if (e.zeroNoPoe) return ok(`o PoE dá 0 a esta linha (${e.zeroNoPoe})`);
+  // (08/11) o que a peça ganha ao nascer (os mods a mais, os Synthesis Globais — `jogo.pecaDoJogo`)
+  if (e.alvo === 'peca') return ['modsAleatorios', 'sinteseGlobais'].includes(e.stat) ? ok(`a peça ganha ao nascer (${e.stat})`) : falha(`"${e.stat}" não é o que a peça ganha ao nascer`);
   if (e.alvo === 'mapa') {
     const v = e.fixo ?? (Number(valores?.[e.de]) || 0);
     if (!DO_RESUMO.includes(e.stat)) return falha(`"${e.stat}" não é Quantidade, Raridade, Tamanho do Grupo nem Nível da área`);
