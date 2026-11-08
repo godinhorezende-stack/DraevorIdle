@@ -15,7 +15,7 @@ import * as Treino from '../systems/treino.mjs';
 import * as Reforcos from '../systems/skills/reforcos.mjs';
 import { ITEM_CATALOG, ACTION_CATALOG } from '../systems/dados.mjs';
 import { personagemDeTeste, comSkills } from './apoio.mjs';
-import { aAdaptar, doClassico } from './apoio-migracao.mjs';
+import { aAdaptar, doClassico, soNoOficial } from './apoio-migracao.mjs';
 
 const A = P.arvore();
 const no = (id) => A.porId.get(id);
@@ -42,6 +42,33 @@ const ficha = (e) => {
 const distancia = (a, b) => Math.hypot(no(a).x - no(b).x, no(a).y - no(b).y);
 // O 1º nó do caminho de atributo do início do Knight até a roda da Armour (versão 2 da árvore).
 const V1 = 'via_knight_armour_1';
+
+/*
+ * (08/11, adaptado ao PoE — o dono: "Adaptar antes") Os testes C da engine da árvore rodam na árvore do PoE (`arvore-poe.json`), com a
+ * HERDEIRA (Scion, sobre a vocação knight): o início dela é o único da árvore do PoE ligado a nós de atributo, como o do Knight era na do
+ * Draevor. Level 100 (o teto do PoE; o 400 do Draevor não existe). No PoE cada nó custa 1 (`custo` em arvore-poe.json) e não há level
+ * mínimo de keystone.
+ */
+const POE = {
+  inicio: A.inicios?.Scion,
+  outroInicio: A.inicios?.Ranger, // o início de outra classe
+  terceiroInicio: A.inicios?.Witch,
+  atributo: '48828', // "Dano Físico e Força" (+5 de Força), ligado ao início da Herdeira: o 1º do caminho de atributo
+  longe: '11924', // "Sopro das Chamas" (notável de Fogo, no lado da Bruxa): longe de tudo da Herdeira
+  notavel: '33287', // "Juggernaut" (notável de Armadura e Vida %), cujo caminho começa no nó de atributo
+  entrada: '49412', // um nó no meio desse caminho (tirá-lo ilha o resto do caminho até o notável)
+  vida: '61198', // "Coração do Guerreiro" (+10% de Vida máxima)
+  forca: '6981', // "Força" (+10 de Força)
+  keystone: '40907', // "Postura Inabalável"
+};
+function novoPoe(vocacao = 'knight', classe = 'scion', level = 100, extra = {}) {
+  const e = personagemDeTeste({ vocacao, level, ...extra });
+  e.classe = classe;
+  Treino.garantir(e);
+  P.garantir(e);
+  Comandos.depoisDeMudar(e);
+  return e;
+}
 
 // ---------- os dados ----------
 
@@ -76,13 +103,14 @@ test('1-2: personagem novo começa no início da classe e ganha pontos pelo leve
 
 // ---------- 3, 4, 5: alocar ----------
 
-test('3: alocar um nó ligado ao início (o 1º do caminho de atributo) — o ponto sai', { skip: aAdaptar("Regra da engine da árvore (só aloca ligado, sem ponto não aloca, keystone com nível, respec, servidor recusa inválido, árvore na ficha/balão/comparação/combate) — vale para a árvore do PoE; o teste usa nós da árvore do Draevor (armour_na, life_na…)") }, () => {
-  const e = novo();
-  const r = Comandos.comando(e, { action: 'alocar', id: V1 });
+test('3: alocar um nó ligado ao início (o 1º do caminho de atributo) — o ponto sai', { skip: soNoOficial('a árvore do PoE (arvore-poe.json)') }, () => {
+  const e = novoPoe();
+  const r = Comandos.comando(e, { action: 'alocar', id: POE.atributo });
   assert.equal(r.ok, true, r.erro);
-  assert.ok(e.passivas.alocados.includes(V1));
-  assert.equal(P.pontos(e).usados, P.CONFIG.custo.atributo, 'nó de atributo custa o do config');
-  assert.ok(no(V1).efeitos.some((ef) => ef.add === 'str'), 'perto do Knight dá STR');
+  assert.ok(e.passivas.alocados.includes(POE.atributo));
+  // (no PoE cada nó custa 1 — o `custo` do nó em arvore-poe.json; no Draevor, o de atributo custava 2, o do config)
+  assert.equal(P.pontos(e).usados, 1, 'nó de atributo custa o do PoE (1)');
+  assert.ok(no(POE.atributo).efeitos.some((ef) => ef.add === 'str'), 'perto da Herdeira dá STR');
 });
 
 test('4-5: alocar um NOTABLE e um KEYSTONE pelo caminho', { skip: doClassico("Árvore do Draevor (5 inícios por vocação, clusters v2, migração v1, Arqueiro Arcano, vessels do Gem Atelier, especialização); no oficial a árvore é a do PoE (arvore-poe.json)") }, () => {
@@ -96,17 +124,17 @@ test('4-5: alocar um NOTABLE e um KEYSTONE pelo caminho', { skip: doClassico("Á
 
 // ---------- 6, 7, 8, 29: o servidor recusa ----------
 
-test('6: nó sem conexão com um nó seu é recusado (não basta mandar "unlock node X")', { skip: aAdaptar("Regra da engine da árvore (só aloca ligado, sem ponto não aloca, keystone com nível, respec, servidor recusa inválido, árvore na ficha/balão/comparação/combate) — vale para a árvore do PoE; o teste usa nós da árvore do Draevor (armour_na, life_na…)") }, () => {
-  const e = novo();
-  const r = Comandos.comando(e, { action: 'alocar', id: 'fire_na' });
+test('6: nó sem conexão com um nó seu é recusado (não basta mandar "unlock node X")', { skip: soNoOficial('a árvore do PoE (arvore-poe.json)') }, () => {
+  const e = novoPoe();
+  const r = Comandos.comando(e, { action: 'alocar', id: POE.longe });
   assert.equal(r.ok, false);
   assert.equal(r.motivo, 'SEM_CAMINHO');
-  assert.ok(!e.passivas.alocados.includes('fire_na'));
+  assert.ok(!e.passivas.alocados.includes(POE.longe));
 });
 
-test('7: sem pontos, não aloca', { skip: aAdaptar("Regra da engine da árvore (só aloca ligado, sem ponto não aloca, keystone com nível, respec, servidor recusa inválido, árvore na ficha/balão/comparação/combate) — vale para a árvore do PoE; o teste usa nós da árvore do Draevor (armour_na, life_na…)") }, () => {
-  const e = novo('knight', 10); // 1 ponto; o nó de atributo custa 2
-  const r = Comandos.comando(e, { action: 'alocar', id: V1 });
+test('7: sem pontos, não aloca', { skip: soNoOficial('a árvore do PoE (arvore-poe.json)') }, () => {
+  const e = novoPoe('knight', 'scion', 1, { campanha: {} }); // 0 ponto (level 1, nenhuma missão); o nó de atributo custa 1
+  const r = Comandos.comando(e, { action: 'alocar', id: POE.atributo });
   assert.equal(r.motivo, 'SEM_PONTOS');
 });
 
@@ -117,30 +145,42 @@ test('8: keystone pede level mínimo', { skip: aAdaptar("Regra da engine da árv
   assert.equal(r.motivo, 'LEVEL');
 });
 
-test('29: o servidor recusa o inválido — nó que não existe, repetido, início de outra classe, pedido desconhecido', { skip: aAdaptar("Regra da engine da árvore (só aloca ligado, sem ponto não aloca, keystone com nível, respec, servidor recusa inválido, árvore na ficha/balão/comparação/combate) — vale para a árvore do PoE; o teste usa nós da árvore do Draevor (armour_na, life_na…)") }, () => {
-  const e = novo();
+test('29: o servidor recusa o inválido — nó que não existe, repetido, início de outra classe, pedido desconhecido', { skip: soNoOficial('a árvore do PoE (arvore-poe.json)') }, () => {
+  const e = novoPoe();
   assert.equal(Comandos.comando(e, { action: 'alocar', id: 'nao_existe' }).motivo, 'NAO_EXISTE');
-  Comandos.comando(e, { action: 'alocar', id: V1 });
-  assert.equal(Comandos.comando(e, { action: 'alocar', id: V1 }).motivo, 'JA_ALOCADO');
-  assert.equal(P.podeAlocar(e, 'inicio_paladin').ok, false);
+  Comandos.comando(e, { action: 'alocar', id: POE.atributo });
+  assert.equal(Comandos.comando(e, { action: 'alocar', id: POE.atributo }).motivo, 'JA_ALOCADO');
+  assert.equal(P.podeAlocar(e, POE.outroInicio).ok, false);
   assert.equal(Comandos.comando(e, { action: 'apagarTudo' }).ok, false);
   // Estado adulterado (nó que não existe, início de outra classe, repetido): `garantir` limpa.
-  e.passivas.alocados.push('xpto', 'inicio_sorcerer', V1);
+  e.passivas.alocados.push('xpto', POE.terceiroInicio, POE.atributo);
   P.garantir(e);
-  assert.deepEqual(e.passivas.alocados, ['inicio_knight', V1]);
+  assert.deepEqual(e.passivas.alocados, [POE.inicio, POE.atributo]);
 });
 
 // ---------- 9, 11: respec ----------
 
-test('9: respec — não tira nó que ilharia outros (a não ser junto); devolve o ponto e cobra o ouro', { skip: aAdaptar("Regra da engine da árvore (só aloca ligado, sem ponto não aloca, keystone com nível, respec, servidor recusa inválido, árvore na ficha/balão/comparação/combate) — vale para a árvore do PoE; o teste usa nós da árvore do Draevor (armour_na, life_na…)") }, () => {
+// (a parte do OURO saiu para o 9c, do clássico: no jogo oficial o respec é de graça — `respec.oficial` em passivas/config.json, dono 09/10)
+test('9: respec — não tira nó que ilharia outros (a não ser junto); devolve o ponto e cobra o ouro', { skip: soNoOficial('a árvore do PoE (arvore-poe.json)') }, () => {
+  const e = novoPoe();
+  const caminho = ate(e, POE.notavel);
+  assert.equal(caminho[0], POE.atributo, 'o caminho até o notável começa no nó de atributo');
+  const antes = P.pontos(e).usados;
+  const r = Comandos.comando(e, { action: 'respec', id: POE.entrada });
+  assert.equal(r.motivo, 'ILHARIA');
+  const plano = Comandos.comando(e, { action: 'planoRespec', id: POE.entrada, junto: true }).plano;
+  assert.equal(plano.tirar.length, P.ilhadosSemEles(e, [POE.entrada]).length + 1, 'sai a entrada e o que vem depois dela');
+  assert.ok(!plano.tirar.includes(POE.atributo), 'o caminho antes da entrada fica');
+  const r2 = Comandos.comando(e, { action: 'respec', id: POE.notavel });
+  assert.equal(r2.ok, true, r2.erro);
+  // (no PoE o notável custa 1, como todo nó; no Draevor, 8 — `P.CONFIG.custo.notable`)
+  assert.equal(P.pontos(e).usados, antes - 1);
+  assert.equal(Comandos.comando(e, { action: 'respec', id: POE.inicio }).motivo, 'INICIO');
+});
+
+test('9c: o respec cobra o ouro (por nó e por level)', { skip: doClassico('O respec com ouro é do Draevor; no jogo oficial o respec é de graça (respec.oficial em passivas/config.json, dono 09/10)') }, () => {
   const e = novo();
   ate(e, 'armour_na');
-  const antes = P.pontos(e).usados;
-  const r = Comandos.comando(e, { action: 'respec', id: 'armour_e' });
-  assert.equal(r.motivo, 'ILHARIA');
-  const plano = Comandos.comando(e, { action: 'planoRespec', id: 'armour_e', junto: true }).plano;
-  assert.equal(plano.tirar.length, P.ilhadosSemEles(e, ['armour_e']).length + 1, 'sai a entrada e o que vem depois dela');
-  assert.ok(!plano.tirar.includes(V1), 'o caminho antes da entrada fica');
   e.gold = 10;
   e.bank = 0;
   assert.equal(Comandos.comando(e, { action: 'respec', id: 'armour_na' }).motivo, 'SEM_OURO');
@@ -148,8 +188,6 @@ test('9: respec — não tira nó que ilharia outros (a não ser junto); devolve
   const r2 = Comandos.comando(e, { action: 'respec', id: 'armour_na' });
   assert.equal(r2.ok, true, r2.erro);
   assert.equal(r2.preco, P.CONFIG.respec.ouroPorNoPorLevel * e.level);
-  assert.equal(P.pontos(e).usados, antes - P.CONFIG.custo.notable);
-  assert.equal(Comandos.comando(e, { action: 'respec', id: 'inicio_knight' }).motivo, 'INICIO');
 });
 
 test('9b: full respec (o grátis da migração primeiro) e só fora da caçada', { skip: aAdaptar("Regra da engine da árvore (só aloca ligado, sem ponto não aloca, keystone com nível, respec, servidor recusa inválido, árvore na ficha/balão/comparação/combate) — vale para a árvore do PoE; o teste usa nós da árvore do Draevor (armour_na, life_na…)") }, () => {
@@ -166,13 +204,13 @@ test('9b: full respec (o grátis da migração primeiro) e só fora da caçada',
   assert.deepEqual(e.passivas.alocados, ['inicio_knight']);
 });
 
-test('10-11: os stats são refeitos ao alocar e ao tirar (Life % na vida máxima, Armour % na armadura)', { skip: aAdaptar("Regra da engine da árvore (só aloca ligado, sem ponto não aloca, keystone com nível, respec, servidor recusa inválido, árvore na ficha/balão/comparação/combate) — vale para a árvore do PoE; o teste usa nós da árvore do Draevor (armour_na, life_na…)") }, () => {
-  const e = novo();
+test('10-11: os stats são refeitos ao alocar e ao tirar (Life % na vida máxima, Armour % na armadura)', { skip: soNoOficial('a árvore do PoE (arvore-poe.json)') }, () => {
+  const e = novoPoe();
   const vida0 = e.maxHp;
   const arm0 = ficha(e).armor;
-  ate(e, 'life_na');
+  ate(e, POE.vida);
   assert.ok(e.maxHp > vida0, `vida ${vida0} → ${e.maxHp}`);
-  ate(e, 'armour_s2');
+  ate(e, POE.notavel); // (o Juggernaut: Armadura aumentada em 24%)
   assert.ok(ficha(e).armor >= arm0);
   e.gold = 1e12;
   Comandos.comando(e, { action: 'respec', tudo: true });
@@ -225,13 +263,13 @@ test('17b: o Knight chega ao Fire pelo anel, e o Sorcerer chega MAIS PERTO (o in
 
 // ---------- 21-24: com os outros sistemas ----------
 
-test('21: árvore + equipamento somam no mesmo número (STR da árvore + STR do item)', { skip: aAdaptar("Regra da engine da árvore (só aloca ligado, sem ponto não aloca, keystone com nível, respec, servidor recusa inválido, árvore na ficha/balão/comparação/combate) — vale para a árvore do PoE; o teste usa nós da árvore do Draevor (armour_na, life_na…)") }, () => {
-  const e = novo();
+test('21: árvore + equipamento somam no mesmo número (STR da árvore + STR do item)', { skip: soNoOficial('a árvore do PoE (arvore-poe.json)') }, () => {
+  const e = novoPoe();
   const str0 = ficha(e).atributos.str;
-  e.passivas.alocados.push('anel_0');
+  e.passivas.alocados.push(POE.forca);
   Comandos.depoisDeMudar(e);
-  assert.equal(ficha(e).atributos.str, str0 + P.arvore().porId.get('anel_0').efeitos[0].valor);
-  assert.equal(Afixos.soma(e).str, P.arvore().porId.get('anel_0').efeitos[0].valor);
+  assert.equal(ficha(e).atributos.str, str0 + P.arvore().porId.get(POE.forca).efeitos[0].valor);
+  assert.equal(Afixos.soma(e).str, P.arvore().porId.get(POE.forca).efeitos[0].valor);
 });
 
 test('22: árvore + gema — o dano da skill (o mesmo do balão) sobe com Fire da árvore', { skip: doClassico("Árvore do Draevor (5 inícios por vocação, clusters v2, migração v1, Arqueiro Arcano, vessels do Gem Atelier, especialização); no oficial a árvore é a do PoE (arvore-poe.json)") }, () => {
@@ -269,27 +307,29 @@ test('24: árvore + buff — o Blood Rage (+15% melee) soma por cima da árvore 
 
 // ---------- 25-28: todos leem a mesma fonte ----------
 
-test('25: a ficha mostra a árvore (afinidades, origem e keystones)', { skip: aAdaptar("Regra da engine da árvore (só aloca ligado, sem ponto não aloca, keystone com nível, respec, servidor recusa inválido, árvore na ficha/balão/comparação/combate) — vale para a árvore do PoE; o teste usa nós da árvore do Draevor (armour_na, life_na…)") }, () => {
-  const e = novo();
-  ate(e, 'armour_k');
+test('25: a ficha mostra a árvore (afinidades, origem e keystones)', { skip: soNoOficial('a árvore do PoE (arvore-poe.json)') }, () => {
+  const e = novoPoe();
+  ate(e, POE.keystone);
   const f = ficha(e);
-  assert.ok(f.passivas.keystones.includes('Última Muralha'));
+  assert.ok(f.passivas.keystones.includes('Postura Inabalável'));
 });
 
-test('26: o balão da skill (catálogo) reflete a árvore', { skip: aAdaptar("Regra da engine da árvore (só aloca ligado, sem ponto não aloca, keystone com nível, respec, servidor recusa inválido, árvore na ficha/balão/comparação/combate) — vale para a árvore do PoE; o teste usa nós da árvore do Draevor (armour_na, life_na…)") }, () => {
-  const e = comSkills(novo('sorcerer', 800), ['spell-flame-strike']);
-  const noBalao = () => Acoes.catalogo(e).spells.find((x) => x.id === 'spell-flame-strike').damage.max;
+test('26: o balão da skill (catálogo) reflete a árvore', { skip: soNoOficial('a árvore do PoE (arvore-poe.json)') }, () => {
+  // (a Bruxa, sobre a vocação sorcerer, com a Bola de Fogo do PoE; o notável de Fogo: o Sopro das Chamas, +30% de dano de Fogo)
+  const e = comSkills(novoPoe('sorcerer', 'witch'), ['poe-gema:Fireball']);
+  const noBalao = () => Acoes.catalogo(e).spells.find((x) => x.id === 'poe-gema:Fireball').damage.max;
   const antes = noBalao();
-  ate(e, 'fire_na');
+  ate(e, POE.longe);
   Ficha.invalidar(e);
   assert.ok(noBalao() > antes);
 });
 
-test('27: a comparação de item enxerga a árvore (o personagem da comparação já tem os nós)', { skip: aAdaptar("Regra da engine da árvore (só aloca ligado, sem ponto não aloca, keystone com nível, respec, servidor recusa inválido, árvore na ficha/balão/comparação/combate) — vale para a árvore do PoE; o teste usa nós da árvore do Draevor (armour_na, life_na…)") }, () => {
-  const e = novo();
-  const peca = { id: Number(Object.values(ITEM_CATALOG).find((i) => i.slot === 'body' && !i.stackable).id), count: 1 };
+test('27: a comparação de item enxerga a árvore (o personagem da comparação já tem os nós)', { skip: soNoOficial('a árvore do PoE (arvore-poe.json)') }, () => {
+  const e = novoPoe();
+  // (uma base de peito do PoE)
+  const peca = { id: Number(Object.values(ITEM_CATALOG).find((i) => i.slot === 'body' && !i.stackable && i.poe?.base).id), count: 1 };
   const sem = Comparar.comparar(e, peca);
-  ate(e, 'life_na');
+  ate(e, POE.vida);
   const com = Comparar.comparar(e, peca);
   assert.equal(sem.ok, true);
   assert.equal(com.ok, true);

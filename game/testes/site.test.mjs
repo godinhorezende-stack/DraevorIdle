@@ -11,7 +11,9 @@ import * as Guildas from '../systems/guildas.mjs';
 import * as Ranking from '../systems/ranking.mjs';
 import { personagemDeTeste, comMarcaNova } from './apoio.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
-import { aAdaptar, doClassico } from './apoio-migracao.mjs';
+import * as R from '../systems/regras.mjs';
+import { ligado as jogoOficial } from '../systems/itens-poe/catalogo.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const ler = (n) => comMarcaNova(JSON.parse(readFileSync(new URL(`../../api-mapeada/captura-site-0926/${n}`, import.meta.url), 'utf8')));
 const chaves = (o) => Object.keys(o).sort();
@@ -36,7 +38,13 @@ test('/api/status: as chaves e as linhas do original', { skip: doClassico("Contr
   assert.equal(nosso.online, 1);
 });
 
-test('exp de hoje e da última hora contam a partir da primeira amostra', { skip: aAdaptar("O personagem de teste é legado arquivado e não gera amostras") }, async () => {
+test('exp de hoje e da última hora contam a partir da primeira amostra', async () => {
+  // (08/11, adaptado ao PoE — o dono: "Adaptar antes") No jogo oficial, um level que o PoE tem (o teto é 100: no 300 a exp é infinita e
+  // nada conta). No clássico fica o de sempre (o /api/status de antes já marcou o dia dele).
+  if (jogoOficial()) {
+    s.estado.level = 30;
+    s.estado.xp = R.expForLevel(30);
+  }
   const t0 = Date.now();
   Site.amostrar(t0);
   s.estado.xp += 5_000_000;
@@ -47,9 +55,11 @@ test('exp de hoje e da última hora contam a partir da primeira amostra', { skip
   const hora = corpo.expHora.find((l) => l.name === NOME);
   assert.equal(hoje.value, 5_000_000);
   assert.equal(hoje.levels, 2);
-  assert.deepEqual(chaves(hoje), chaves(ler('status-level.json').expHoje[0]));
+  // As chaves do original; no jogo oficial cada linha leva também a `classe` do PoE (`site.mjs` comClasse; site-poe.test.mjs).
+  const doJogo = (linha) => (jogoOficial() ? { ...linha, classe: null } : linha);
+  assert.deepEqual(chaves(hoje), chaves(doJogo(ler('status-level.json').expHoje[0])));
   assert.equal(hora.value, 5_000_000);
-  assert.deepEqual(chaves(hora), chaves(ler('status-level.json').expHora[0]));
+  assert.deepEqual(chaves(hora), chaves(doJogo(ler('status-level.json').expHora[0])));
 });
 
 test('/api/personagem: a ficha inteira e o "não existe"', { skip: doClassico("Contrato da ficha do site do Draevor original; no jogo oficial a ficha leva `poe: true` (classe, árvore do PoE, sem perícias) — site-poe.test.mjs") }, async () => {
