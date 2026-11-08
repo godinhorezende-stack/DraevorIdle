@@ -68,7 +68,8 @@ test('o jogo: os híbridos vão para o cinto (ids depois de todos os outros, o r
   const ids = [...Jogo.registro().porBase.keys()];
   const hibridos = ids.filter((b) => b.startsWith('Hybrid_Flasks/'));
   assert.equal(hibridos.length, 6);
-  const maiorOutro = Math.max(...ids.filter((b) => !b.startsWith('Hybrid_Flasks/') && !Jogo.JOIAS[b]).map(Jogo.idDaBase));
+  // (aval do dono 08/11: a Vara de Pescar tem id fixo à parte, 7.900.001, como as Joias)
+  const maiorOutro = Math.max(...ids.filter((b) => !b.startsWith('Hybrid_Flasks/') && !Jogo.JOIAS[b] && b !== 'Fishing_Rods/Fishing_Rod').map(Jogo.idDaBase));
   assert.ok(hibridos.every((b) => Jogo.idDaBase(b) > maiorOutro), 'nenhum id que já existia muda');
   const meta = ITEM_CATALOG[Jogo.idDaBase('Hybrid_Flasks/Sacred_Hybrid_Flask')];
   assert.deepEqual([meta.frasco, meta.slot, meta.type, meta.minLevel], [true, undefined, 'flasks', 50]);

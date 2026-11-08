@@ -56,11 +56,12 @@ function personagem(linhas) {
 const ficha = (e) => { Ficha.invalidar(e); return Ficha.combate(e); };
 const comGrilhoes = (h) => Object.values(h.maldicoesNoJogador ?? {}).some((m) => m?.nome === 'Grilhões Temporais' && m.ate > h.clock);
 
-test('as linhas do lote saem com efeito (e o Anel da Fenda segue inerte: as Fendas não existem no jogo)', { skip: SEM }, () => {
+test('as linhas do lote saem com efeito (e o Anel da Fenda, com a Fenda criada no lote B17 — aval do dono 08/11)', { skip: SEM }, () => {
   for (const [m, v] of LINHAS) assert.ok(!['inerte', 'registrado'].includes(tr(m, v ?? []).estado), m);
   // (aval do dono 08/11: a maldição no nível 1 do PoB)
   assert.deepEqual(tr(SENTARI[0]).efeitos.map((x) => x.stat), ['ev:bloquearProjetil:maldicao:grilhoes-temporais:1:semLimite']);
-  assert.equal(tr('Propriedades são dobradas enquanto em uma Fenda').estado, 'inerte');
+  // (aval do dono 08/11: a Fenda existe — `itens-poe/fenda.mjs`; antes: inerte)
+  assert.deepEqual(tr('Propriedades são dobradas enquanto em uma Fenda').efeitos.map((x) => x.stat), ['dobrado_em_fenda']);
 });
 
 test('os GRILHÕES TEMPORAIS em você: −9% de Velocidade de Ação e os debuffs expiram 12,5% mais devagar (a gema no 20, com 50% menos efeito)', { skip: SEM }, () => {
