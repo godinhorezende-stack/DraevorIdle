@@ -247,7 +247,8 @@ export function tagsPoeDaSkill(entry) {
     const t = ModsPoe.tagsDoPoe(daGema);
     // (lote 55, o Olho do Vigia: "Habilidades Não Canalizadoras" — a tag `naoCanalizar` nas que não são de Canalização)
     // (revisão do C1: + `naoImpelivel` — as que o PoB marca NeverExertable: não gastam nem recebem o Impelido do Clamor e da Emboscada, `GemasC1.NAO_IMPELIVEL`)
-    return [...new Set([...t, ...(GemasC1.naoImpelivel(entry.poeGema.slug) ? ['naoImpelivel'] : []), ...(/_Banner$/.test(entry.poeGema.slug) ? ['estandarte'] : []), ...(ehAtaqueDeEscudo(entry.poeGema.slug, gema) ? ['ataqueDeEscudo'] : []), ...(t.includes('canalizar') ? [] : ['naoCanalizar']), ...(doTotem ? ['totem'] : []), 'habilidade'])];
+    // (08/11, os encantamentos do Labirinto: "Dano da Esfera Trovejante aumentado" — a tag `gema:<nome>` da própria habilidade, `@gema:<nome>` nas regras)
+    return [...new Set([...t, ...(gema.nome ? [`gema:${ModsPoe.slugDoNome(gema.nome)}`] : []), ...(GemasC1.naoImpelivel(entry.poeGema.slug) ? ['naoImpelivel'] : []), ...(/_Banner$/.test(entry.poeGema.slug) ? ['estandarte'] : []), ...(ehAtaqueDeEscudo(entry.poeGema.slug, gema) ? ['ataqueDeEscudo'] : []), ...(t.includes('canalizar') ? [] : ['naoCanalizar']), ...(doTotem ? ['totem'] : []), 'habilidade'])];
   }
   const t = new Set(Tags.tagsDaAcao(entry).map((x) => DRAEVOR_PARA_POE[x]).filter(Boolean));
   if (t.has('corpo') || (t.has('fisico') && t.has('projetil') && !t.has('magia'))) t.add('ataque');

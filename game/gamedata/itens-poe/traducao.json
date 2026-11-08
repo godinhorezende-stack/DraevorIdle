@@ -14,6 +14,174 @@
   ],
   "regras": [
     {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Fogo se você Matou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "added_fire_dmg_min@matouRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_fire_dmg_max@matouRecente",
+          "valor": "{2}"
+        },
+        {
+          "stat": "spell_added_fire_dmg_min@matouRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_fire_dmg_max@matouRecente",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar ser Atordoado se você Matou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "evitar_atordoamento@matouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração aumentada em \\{(\\d+)\\}% se você Matou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@matouRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed@matouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Dano Drenado como Vida se você Matou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "life_leech@matouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Congelar, Eletrizar e Incendiar se você não causou um Crítico Recentemente$",
+      "efeitos": [
+        {
+          "stat": "chance_freeze@naoCriticoRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "chance_shock@naoCriticoRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "chance_ignite@naoCriticoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Crítico aumentada em \\{(\\d+)\\}% se você não causou Críticos Recentemente$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@naoCriticoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Penetra \\{(\\d+)\\}% das Resistências Elementais Inimigas se você não Matou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "elem_pen@naoMatouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Regeneração de Mana aumentada em \\{(\\d+)\\}% caso tenha conjurado uma Magia Recentemente$",
+      "efeitos": [
+        {
+          "stat": "mana_regen_pct@usouTag:magia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Armadura enquanto Fortificado$",
+      "efeitos": [
+        {
+          "stat": "armor_flat@fortificado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recupere \\{(\\d+)\\}% de Vida ao Matar um Inimigo enquanto tiver Fúria$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:vidaPct@furiaMin:1",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Evasão enquanto tiver Trespassar$",
+      "efeitos": [
+        {
+          "stat": "evasion@buff:trespassar",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Precisão aumentada em \\{(\\d+)\\}% enquanto você tiver Agressividade$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc@buff:agressividade",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
       "padrao": "^\\{(\\d+)\\}% de aumento da Precisão de Lacaios$",
       "efeitos": [
         {
@@ -55697,6 +55865,454 @@
       ],
       "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
       "_nova": true
+    },
+    {
+      "padrao": "^Dano d(?:a|o|e|as|os) (.+?) aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) causa Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) tem Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) causa \\{(\\d+)\\}% de aumento de Dano$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano d(?:a|o|e|as|os) (.+?)$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Área de [Ee]feito d(?:a|o|e|as|os) (.+?) aumentad[ao] em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Efeito em Área d(?:a|o|e|as|os) (.+?) aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) tem (?:Área de Efeito|Efeito em Área) aumentad[ao] em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Duração d(?:a|o|e|as|os) (.+?) aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) tem Duração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) tem (?:Velocidade da )?Recuperação da Recarga aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cooldown_recovery@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Recuperação da Recarga d(?:a|o|e|as|os) (.+?) aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cooldown_recovery@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) dispara \\{(\\d+)\\} (?:Projéteis|Flechas) adicionais$",
+      "efeitos": [
+        {
+          "stat": "extra_projectiles@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque d(?:a|o|e|as|os) (.+?) aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) tem Velocidade de Ataque aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Velocidade de [Cc]onjuração d(?:a|o|e|as|os) (.+?) aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) tem Velocidade de Conjuração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) tem Velocidade de Projétil aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "projectile_speed@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Velocidade (?:de|do) Projétil d(?:a|o|e|as|os) (.+?) aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "projectile_speed@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Chance de Crítico d(?:a|o|e|as|os) (.+?) aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) possui \\+\\{(\\d+)\\}% de chance de Incendiar$",
+      "efeitos": [
+        {
+          "stat": "chance_ignite@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) possui \\+\\{(\\d+)\\}% de chance de Congelar$",
+      "efeitos": [
+        {
+          "stat": "chance_freeze@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) Ricocheteia \\{(\\d+)\\} vezes adicionais$",
+      "efeitos": [
+        {
+          "stat": "ricochetes@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Dano d(?:a|o|e|as|os) (.+?) aumenado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Chance (?:de )?Crítico d(?:a|o|e|as|os) (.+?) aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) tem (?:sua )?Área de Efeito aumentada (?:em )?\\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) possui \\{(\\d+)\\}% de aumento da Velocidade de Conjuração$",
+      "efeitos": [
+        {
+          "stat": "cast_speed@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Velocidade de Projéteis d(?:a|o|e|as|os) (.+?) aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "projectile_speed@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) dispara uma Flecha adicional$",
+      "efeitos": [
+        {
+          "stat": "extra_projectiles@gema:{NOME}",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) tem a Duração do Efeito da Habilidade aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) tem \\+\\{(\\d+)\\} Usos de Recarga$",
+      "efeitos": [
+        {
+          "stat": "usos_recarga@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome",
+      "_08_11r": "08/11 — encantamentos do Labirinto",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Efeito de Maldições aplicadas por (.+?) aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_maldicao@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na maldição do nome",
+      "_08_11r": "08/11 — encantamentos do Labirinto",
+      "_nova": true,
+      "_generica": true
     }
   ]
 }
