@@ -2186,6 +2186,138 @@
    "pilha": 10,
    "icone": "Ukatoas_Ducat.png",
    "itemId": 915220
+  },
+  {
+   "slug": "Abrasive_Catalyst",
+   "nome": "Catalisador Abrasivo",
+   "efeitos": [
+    "Adiciona qualidade que melhora os modificadores de Ataque em um anel, amuleto ou cinto.",
+    "Substitui outros tipos de qualidade.",
+    "Clique com o botão direito neste item, depois com o esquerdo em um amuleto, anel ou cinto para aplicar. Tem mais efeito em pedrarias não únicas de item de nível mais baixo. A qualidade máxima é de 20%. Pressione o Shift e clique para desempilhar."
+   ],
+   "pilha": 20,
+   "icone": "Abrasive_Catalyst.png",
+   "itemId": 915221
+  },
+  {
+   "slug": "Accelerating_Catalyst",
+   "nome": "Catalisador Acelerante",
+   "efeitos": [
+    "Adiciona qualidade que melhora modificadores de Velocidade em um anel, amuleto ou cinto",
+    "Substitui outros tipos de qualidade",
+    "Clique com o botão direito neste item, depois com o esquerdo em um amuleto, anel ou cinto para aplicar. Tem mais efeito em pedrarias não únicas de item de nível mais baixo. A qualidade máxima é de 20%. Pressione o Shift e clique para desempilhar."
+   ],
+   "pilha": 20,
+   "icone": "Accelerating_Catalyst.png",
+   "itemId": 915222
+  },
+  {
+   "slug": "Fertile_Catalyst",
+   "nome": "Catalisador Fértil",
+   "efeitos": [
+    "Adiciona qualidade que melhora modificadores de Vida e Mana em um anel, amuleto ou cinto.",
+    "Substitui outros tipos de qualidade.",
+    "Clique com o botão direito neste item, depois com o esquerdo em um amuleto, anel ou cinto para aplicar. Tem mais efeito em pedrarias não únicas de item de nível mais baixo. A qualidade máxima é de 20%. Pressione o Shift e clique para desempilhar."
+   ],
+   "pilha": 20,
+   "icone": "Fertile_Catalyst.png",
+   "itemId": 915223
+  },
+  {
+   "slug": "Imbued_Catalyst",
+   "nome": "Catalisador Imbuído",
+   "efeitos": [
+    "Adiciona qualidade que melhora os modificadores de Conjuração em um anel, amuleto ou cinto.",
+    "Substitui outros tipos de qualidade.",
+    "Clique com o botão direito neste item, depois com o esquerdo em um amuleto, anel ou cinto para aplicar. Tem mais efeito em pedrarias não únicas de item de nível mais baixo. A qualidade máxima é de 20%. Pressione o Shift e clique para desempilhar."
+   ],
+   "pilha": 20,
+   "icone": "Imbued_Catalyst.png",
+   "itemId": 915224
+  },
+  {
+   "slug": "Intrinsic_Catalyst",
+   "nome": "Catalisador Intrínseco",
+   "efeitos": [
+    "Adiciona qualidade que melhora modificadores de Atributos em um anel, amuleto ou cinto.",
+    "Substitui outros tipos de qualidade.",
+    "Clique com o botão direito neste item, depois com o esquerdo em um amuleto, anel ou cinto para aplicar. Tem mais efeito em pedrarias não únicas de item de nível mais baixo. A qualidade máxima é de 20%. Pressione o Shift e clique para desempilhar."
+   ],
+   "pilha": 20,
+   "icone": "Intrinsic_Catalyst.png",
+   "itemId": 915225
+  },
+  {
+   "slug": "Noxious_Catalyst",
+   "nome": "Catalisador Nocivo",
+   "efeitos": [
+    "Adiciona qualidade que melhora modificadores de Dano Físico e de Caos em um anel, amuleto ou cinto",
+    "Substitui outros tipos de qualidade",
+    "Clique com o botão direito neste item, depois com o esquerdo em um amuleto, anel ou cinto para aplicar. Tem mais efeito em pedrarias não únicas de item de nível mais baixo. A qualidade máxima é de 20%. Pressione o Shift e clique para desempilhar."
+   ],
+   "pilha": 20,
+   "icone": "Noxious_Catalyst.png",
+   "itemId": 915226
+  },
+  {
+   "slug": "Prismatic_Catalyst",
+   "nome": "Catalisador Prismático",
+   "efeitos": [
+    "Adiciona qualidade que melhora modificadores de Resistências em um anel, amuleto ou cinto.",
+    "Substitui outros tipos de qualidade.",
+    "Clique com o botão direito neste item, depois com o esquerdo em um amuleto, anel ou cinto para aplicar. Tem mais efeito em pedrarias não únicas de item de nível mais baixo. A qualidade máxima é de 20%. Pressione o Shift e clique para desempilhar."
+   ],
+   "pilha": 20,
+   "icone": "Prismatic_Catalyst.png",
+   "itemId": 915227
+  },
+  {
+   "slug": "Tempering_Catalyst",
+   "nome": "Catalisador Moderado",
+   "efeitos": [
+    "Adiciona qualidade que melhora modificadores de Defesa em um anel, amuleto ou cinto.",
+    "Substitui outros tipos de qualidade.",
+    "Clique com o botão direito neste item, depois com o esquerdo em um amuleto, anel ou cinto para aplicar. Tem mais efeito em pedrarias não únicas de item de nível mais baixo. A qualidade máxima é de 20%. Pressione o Shift e clique para desempilhar."
+   ],
+   "pilha": 20,
+   "icone": "Tempering_Catalyst.png",
+   "itemId": 915229
+  },
+  {
+   "slug": "Turbulent_Catalyst",
+   "nome": "Catalisador Turbulento",
+   "efeitos": [
+    "Adiciona qualidade que melhora os modificadores de Dano Elemental em um anel, amuleto ou cinto.",
+    "Substitui outros tipos de qualidade.",
+    "Clique com o botão direito neste item, depois com o esquerdo em um amuleto, anel ou cinto para aplicar. Tem mais efeito em pedrarias não únicas de item de nível mais baixo. A qualidade máxima é de 20%. Pressione o Shift e clique para desempilhar."
+   ],
+   "pilha": 20,
+   "icone": "Turbulent_Catalyst.png",
+   "itemId": 915230
+  },
+  {
+   "slug": "Unstable_Catalyst",
+   "nome": "Catalisador Instável",
+   "efeitos": [
+    "Adiciona qualidade que melhora modificadores Críticos em um anel, amuleto ou cinto",
+    "Substitui outros tipos de qualidade",
+    "Clique com o botão direito neste item, depois com o esquerdo em um amuleto, anel ou cinto para aplicar. Tem mais efeito em pedrarias não únicas de item de nível mais baixo. A qualidade máxima é de 20%. Pressione o Shift e clique para desempilhar."
+   ],
+   "pilha": 20,
+   "icone": "Unstable_Catalyst.png",
+   "itemId": 915231
+  },
+  {
+   "slug": "Tainted_Catalyst",
+   "nome": "Catalisador Maculado",
+   "efeitos": [
+    "Aplica um tipo de qualidade e porcentagem aleatória em um Anel, Amuleto ou Cinto Corrompidos",
+    "Substitui outros tipos de qualidade",
+    "Clique com o botão direito e então com o esquerdo em um Anel, Amuleto ou Cinto Corrompidos para aplicar. A qualidade máxima é de 20%. Pressione o Shift e clique para desempilhar."
+   ],
+   "pilha": 20,
+   "icone": "Tainted_Catalyst.png",
+   "itemId": 915228
   }
  ]
 }

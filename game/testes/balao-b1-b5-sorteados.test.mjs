@@ -217,3 +217,40 @@ test('B11, o Vínculo D\'alma: a morte porque o alvo Vinculado morreu não tira 
   e.hp = 100;
   assert.ok(Morte.conta(e).expPerdida > 0, 'vivo, a conta mostra a de sempre');
 });
+
+test('B12, os Catalisadores: a qualidade da joia aumenta só os mods do tipo; outro tipo zera; a Tentação de Ixchel vai até 200%', { skip: SEM }, async () => {
+  const M = await import('../systems/itens-poe/moedas.mjs');
+  const C = await import('../systems/itens-poe/catalisadores.mjs');
+  const { personagemDeTeste } = await import('./apoio.mjs');
+  assert.ok(C.linhaDoTipo('+{0} de Vida máxima', 'vidaMana'));
+  assert.ok(C.linhaDoTipo('+{0}% de Resistência a Fogo', 'resistencia'));
+  assert.ok(!C.linhaDoTipo('+{0}% de Resistência a Fogo', 'elemental'), 'a resistência não é dano elemental');
+  assert.ok(C.linhaDoTipo('Adiciona {0} a {1} de Dano de Fogo aos Ataques', 'elemental'));
+  // um anel mágico com Vida e Resistência
+  const g = gerarPeca({ catalogo: Catalogo.catalogo(), regras: Catalogo.REGRAS, base: 'Rings/Iron_Ring', raridade: 'normal', ilvl: 84, rng: () => 0.5 });
+  g.raridade = 'magico';
+  g.prefixos = [{ texto: '+50 de Vida máxima', modelo: '+{0} de Vida máxima', valores: [50] }];
+  g.sufixos = [{ texto: '+30% de Resistência a Fogo', modelo: '+{0}% de Resistência a Fogo', valores: [30] }];
+  const anel = J.pecaDoJogo(g);
+  const vida0 = anel.poe.af.life_flat ?? anel.poe.af.life ?? null;
+  const fertil = M.idDa('Fertile_Catalyst');
+  const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 80 }), { inventory: [anel, { id: fertil, count: 30 }, { id: M.idDa('Prismatic_Catalyst'), count: 1 }] });
+  for (let i = 0; i < 10; i++) assert.ok(M.usar(e, { moeda: fertil, alvo: { onde: 'inventory', indice: 0 } }).ok);
+  const p = e.inventory[0].poe;
+  assert.equal(p.qualidade, 20, '+2 por uso na mágica, até 20');
+  assert.equal(p.qualidadeTipo, 'vidaMana');
+  assert.equal(M.usar(e, { moeda: fertil, alvo: { onde: 'inventory', indice: 0 } }).ok, false, 'no teto');
+  assert.equal(p.catalisados.prefixos[0], '+60 de Vida máxima', 'a Vida × 1,2');
+  assert.equal(p.catalisados.sufixos[0], null, 'a Resistência fica');
+  const chaveVida = Object.keys(p.af).find((k) => p.af[k] === 60);
+  assert.ok(chaveVida, `o af com 60 de vida (antes ${vida0})`);
+  assert.equal(p.af.fire_res, 30);
+  // outro tipo: zera e troca
+  assert.ok(M.usar(e, { moeda: M.idDa('Prismatic_Catalyst'), alvo: { onde: 'inventory', indice: 0 } }).ok);
+  const p2 = e.inventory[0].poe;
+  assert.equal(p2.qualidade, 2);
+  assert.equal(p2.qualidadeTipo, 'resistencia');
+  assert.equal(p2.af.fire_res, 31, 'agora a Resistência × 1,02');
+  // a Tentação de Ixchel: "Qualidade Máxima é 200%"
+  assert.deepEqual(tr('Qualidade Máxima é {0}%', [200]).efeitos.map((x) => [x.stat, x.valor]), [['qualidade_max', 200]]);
+});

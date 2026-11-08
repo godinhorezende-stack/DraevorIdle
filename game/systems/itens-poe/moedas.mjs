@@ -13,6 +13,7 @@ import { readFileSync } from 'node:fs';
 import { ITEM_CATALOG } from '../dados.mjs';
 import * as Catalogo from './catalogo.mjs';
 import * as Gerar from './gerar.mjs';
+import * as Catalisadores from './catalisadores.mjs';
 import * as Jogo from './jogo.mjs';
 import * as SocketsPoe from './sockets.mjs';
 import * as Gemas from '../skills/gemas.mjs';
@@ -323,6 +324,29 @@ const bolha = ({ p }) => {
   if (!ehFrasco(p) || p.classe === 'Tinctures') return erro('A Bolha do Vidreiro vale em frasco.');
   const t = subirQualidade(p);
   return t ? { ok: true, notice: t } : erro('O frasco já está com 20% de qualidade.');
+};
+// (08/11, o dono: "Criar os Catalisadores") os CATALISADORES: a qualidade da JOIA (anel, amuleto, cinto) que aumenta os mods do tipo dele
+// (`catalisadores.mjs`); outro tipo troca o tipo e zera a qualidade de antes. O Maculado (só em joia corrompida): tipo e porcentagem aleatórios.
+const catalisador = (tipo) => ({ p }) => {
+  if (!Catalisadores.JOIAS.has(p.classe)) return erro('O Catalisador vale em anel, amuleto ou cinto.');
+  const antes = { q: p.qualidade, tipo: p.qualidadeTipo };
+  if (p.qualidadeTipo !== tipo) p.qualidade = 0;
+  p.qualidadeTipo = tipo;
+  const t = subirQualidade(p);
+  if (!t) {
+    p.qualidade = antes.q;
+    p.qualidadeTipo = antes.tipo;
+    return erro('A joia já está no máximo de qualidade.');
+  }
+  return { ok: true, notice: `${t} (${Catalisadores.NOME_DO_TIPO[tipo]})` };
+};
+const catalisadorMaculado = ({ p, rng }) => {
+  if (!Catalisadores.JOIAS.has(p.classe)) return erro('O Catalisador Maculado vale em anel, amuleto ou cinto corrompido.');
+  const tipos = Object.values(Catalisadores.DO_CATALISADOR);
+  p.qualidadeTipo = tipos[Math.floor(rng() * tipos.length)];
+  const teto = Number(p.af?.qualidade_max) > 0 ? Number(p.af.qualidade_max) : 20;
+  p.qualidade = 1 + Math.floor(rng() * teto);
+  return { ok: true, notice: `Qualidade: ${p.qualidade}% (${Catalisadores.NOME_DO_TIPO[p.qualidadeTipo]}).` };
 };
 const elo = (ctx) => {
   const r = alquimia(ctx);
@@ -733,6 +757,8 @@ const FAZ = {
   Orb_of_Alchemy: { f: alquimia }, Chaos_Orb: { f: caos }, Exalted_Orb: { f: exaltar }, Orb_of_Scouring: { f: expurgar },
   Orb_of_Annulment: { f: anular }, Divine_Orb: { f: divino }, Blessed_Orb: { f: abencoar }, Sacred_Orb: { f: sagrado },
   Orb_of_Chance: { f: chance }, Blacksmiths_Whetstone: { f: amolador }, Armourers_Scrap: { f: sucata },
+  ...Object.fromEntries(Object.entries(Catalisadores.DO_CATALISADOR).map(([slug, tipo]) => [slug, { f: catalisador(tipo) }])),
+  Tainted_Catalyst: { f: catalisadorMaculado, corrompida: true },
   Glassblowers_Bauble: { f: bolha },
   Orb_of_Binding: { f: elo }, Fracturing_Orb: { f: talhar }, Mirror_of_Kalandra: { f: espelhar }, Ancient_Orb: { f: ancestral },
   // (07/11, lote 25: + numa gema da mochila — `gema`)
@@ -818,10 +844,10 @@ export const MOEDAS_DA_CATEGORIA = Object.freeze({
     'Lesser_Eldritch_Ichor', 'Greater_Eldritch_Ichor', 'Grand_Eldritch_Ichor', 'Exceptional_Eldritch_Ichor',
     'Eldritch_Chaos_Orb', 'Eldritch_Exalted_Orb', 'Eldritch_Orb_of_Annulment', 'Orb_of_Conflict', 'Ukatoas_Ducat',
   ],
-  qualidade: ['Blacksmiths_Whetstone', 'Armourers_Scrap', 'Glassblowers_Bauble'],
+  qualidade: ['Blacksmiths_Whetstone', 'Armourers_Scrap', 'Glassblowers_Bauble', ...Object.keys(Catalisadores.DO_CATALISADOR)],
   corrupcao: [
     'Vaal_Orb', 'Volatile_Vaal_Orb', 'Djinn-Touched_Vaal_Orb', 'Tainted_Chaos_Orb', 'Tainted_Exalted_Orb', 'Tainted_Divine_Teardrop',
-    'Tainted_Armourers_Scrap', 'Tainted_Blacksmiths_Whetstone', 'Tainted_Mythic_Orb',
+    'Tainted_Armourers_Scrap', 'Tainted_Blacksmiths_Whetstone', 'Tainted_Mythic_Orb', 'Tainted_Catalyst',
   ],
   gemas: ['Gemcutters_Prism', 'Gemcutters_Lens'],
   // (06/11) as Partes do Emissário juntam como as lascas (sem peça); os Pergaminhos vão em Especiais (o Ancestral também troca o único)

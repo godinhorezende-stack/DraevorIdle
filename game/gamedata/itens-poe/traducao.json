@@ -14,6 +14,19 @@
   ],
   "regras": [
     {
+      "padrao": "^Qualidade Máxima é \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "qualidade_max",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o teto da qualidade da peça (os Catalisadores, `moedas.subirQualidade`)",
+      "_08_11q": "08/11 — balão 0 sem efeito, lote B12: os Catalisadores",
+      "_nova": true
+    },
+    {
       "padrao": "^Não Perde Experiência quando você morrer porque um alvo Vinculado morreu$",
       "efeitos": [
         {

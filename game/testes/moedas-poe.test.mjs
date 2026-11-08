@@ -32,7 +32,7 @@ const ARMADURA = 'Body_Armours/Plate_Vest';
 const ARMA = 'One_Hand_Swords/Rusted_Sword';
 
 test('as 195 moedas no catálogo, cada uma com status; as principais funcionam', { skip: SEM }, () => {
-  assert.equal(M.MOEDAS.length, 220); // (aval do dono 06/11: +25 — as 18 Partes e os 6 Pergaminhos do Emissário e o Ducado de Ukatoa)
+  assert.equal(M.MOEDAS.length, 231); // (aval do dono 06/11: +25 — as 18 Partes e os 6 Pergaminhos do Emissário e o Ducado de Ukatoa; 08/11: +11 — os Catalisadores)
   for (const m of M.MOEDAS) assert.ok(ITEM_CATALOG[m.itemId]?.stackable, m.slug);
   const st = (s) => M.STATUS[s].status;
   for (const s of ['Orb_of_Transmutation', 'Orb_of_Augmentation', 'Orb_of_Alteration', 'Regal_Orb', 'Orb_of_Alchemy', 'Chaos_Orb', 'Exalted_Orb', 'Orb_of_Scouring', 'Orb_of_Annulment', 'Divine_Orb', 'Blessed_Orb', 'Orb_of_Chance', 'Mirror_of_Kalandra', 'Fracturing_Orb', 'Gemcutters_Prism']) assert.equal(st(s), 'funciona', s);

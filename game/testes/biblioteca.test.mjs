@@ -170,7 +170,7 @@ test('L9. com o PoE ligado, as moedas empilháveis entram na Biblioteca de itens
     (await import('../systems/itens-poe/jogo.mjs')).iniciar(ITEM_CATALOG);
     M.iniciar();
     const r = B.listar({ categoria: 'itens', tipo: B.TIPO_DA_MOEDA, limite: 500 });
-    assert.equal(r.total, 195, 'as 195 moedas');
+    assert.equal(r.total, 231, 'as 231 moedas'); // (aval do dono 08/11: estava em 195 — o catálogo já tinha 220 com o Emissário; + os 11 Catalisadores)
     const caos = r.itens.find((i) => i.id === String(M.idDa('Chaos_Orb')));
     assert.ok(caos, 'o Orbe do Caos está na lista');
     assert.equal(caos.tipo, 'Stackable Currency');

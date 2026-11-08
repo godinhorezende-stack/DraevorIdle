@@ -10178,6 +10178,12 @@
       "unidade": "",
       "combate": true,
       "efeito": "acoes.tiqueDosVinculos → morte.conta (08/11 — o Vínculo D'alma)"
+    },
+    "qualidade_max": {
+      "nome": "Qualidade Máxima",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "moedas.subirQualidade (08/11 — a Tentação de Ixchel)"
     }
   }
 }

@@ -19,6 +19,7 @@ import * as Frascos from './frascos.mjs';
 import * as Mapas from './mapas.mjs';
 import * as PinaculosAcesso from './pinaculos-acesso.mjs';
 import { estadosDaRamificadora } from './ramificadoras.mjs';
+import { comCatalisador, NOME_DO_TIPO } from './catalisadores.mjs';
 import { readFileSync as lerArquivo } from 'node:fs';
 
 export const PRIMEIRO_ID = 7_000_000;
@@ -691,7 +692,16 @@ export function recalcular(peca, regras = Catalogo.REGRAS) {
     p.tv = VERSAO_DA_TRADUCAO;
     return peca;
   }
-  const t = traduzirPeca(p);
+  // (08/11) os CATALISADORES: na joia, as linhas do tipo da qualidade entram aumentadas (`catalisadores.comCatalisador`); o balão mostra os textos novos
+  const catalisada = comCatalisador(p);
+  const t = traduzirPeca(catalisada);
+  if (catalisada !== p) {
+    p.catalisados = Object.fromEntries(['implicitos', 'prefixos', 'sufixos', 'modificadores'].map((k) => [k, (catalisada[k] ?? []).map((m, i) => (m !== p[k][i] ? m.texto : null))]));
+    p.qualidadeNome = NOME_DO_TIPO[p.qualidadeTipo];
+  } else {
+    delete p.catalisados;
+    delete p.qualidadeNome;
+  }
   const af = { ...t.af };
   // (13/10: o "Sem Dano Físico" do único também aqui — antes, refazer a peça devolvia o dano físico da base — e o "sem Escudo de Energia"
   // d'O Apóstata: `baseDaPeca`, a mesma da peça nova.)
