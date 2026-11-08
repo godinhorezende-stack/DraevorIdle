@@ -8,11 +8,31 @@ import * as Campanha from '../systems/campanha.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import { spawnsDaHunt } from '../systems/hunt/terreno.mjs';
 import { contextoDoDrop } from '../systems/hunt/combate.mjs';
+import * as BausPoe from '../systems/itens-poe/baus-poe.mjs';
+import { catalogo as catalogoDoPoe, REGRAS as REGRAS_DO_POE } from '../systems/itens-poe/catalogo.mjs';
+import { gerarPeca } from '../systems/itens-poe/gerar.mjs';
+import * as JogoDoPoe from '../systems/itens-poe/jogo.mjs';
+import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE, huntDoPoe } from './apoio.mjs';
-import { aAdaptar, doClassico } from './apoio-migracao.mjs';
+import { aAdaptar, doClassico, soNoOficial } from './apoio-migracao.mjs';
 
 const F = Campanha.FASES;
 const novo = (level = 8) => personagemDeTeste({ level, campanha: {} });
+/*
+ * (08/11, adaptado ao PoE — o dono: "Adaptar antes") As regras da fase/instância nas áreas do Ato 1 do PoE (os testes marcados `soNoOficial`;
+ * no clássico seguem os da campanha do Draevor). A 1ª fase, a Costa do Crepúsculo, conclui MATANDO o Hillock (não limpando): a fase que
+ * conclui limpando é a 2ª, A Costa (`COSTA`), e a seguinte na numeração do mapa é a Ilha da Maré (`ILHA`).
+ */
+const [CREPUSCULO, COSTA, ILHA] = F;
+/** Um personagem novo com a Costa do Crepúsculo feita: A Costa é a fase aberta e por fazer (a "fase 1" dos testes do clássico). */
+function naCosta(level = 8) {
+  const e = novo(level);
+  e.campanha = { facil: { limpezas: {}, completas: [CREPUSCULO.huntId], bosses: [] } };
+  return e;
+}
+/** Os baús do PoE fechados seguram o CLEAR no automático (`BausPoe.seguramOClear`): limpar a área é também abri-los. */
+const abrirOsBaus = (e) => BausPoe.abrirNoRaio(e, e.hunt, PERSONAGEM, 1e9, { so: BausPoe.ehBauPoe });
+
 /** Completa as fases [de, ate) numa dificuldade: uma limpeza de instância em cada. */
 function completar(e, dif, de, ate) {
   for (let i = de; i < ate; i++) {
@@ -48,29 +68,31 @@ test('começa na fase 1 do Fácil: só ela abre; Médio e Difícil fechados', { 
   assert.equal(Cacadas.entrar(e, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
 });
 
-test('limpar a instância completa a fase e libera a seguinte (com o "Hunt Clear!" na tela)', { skip: aAdaptar("Regra da engine de fase/instância (limpar conclui e libera a seguinte, sem respawn, instância nova após o Hunt Clear, offline em loop, Ficar/Avançar) — vale nas áreas do PoE; o teste lê CAMPANHA.fases do Draevor (vazia no oficial)") }, () => {
-  const e = novo();
-  assert.equal(Cacadas.entrar(e, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
+test('limpar a instância completa a fase e libera a seguinte (com o "Hunt Clear!" na tela)', { skip: soNoOficial('adaptado ao PoE: as áreas do Ato 1 do PoE') }, () => {
+  const e = naCosta();
+  assert.equal(Cacadas.entrar(e, { huntId: COSTA.huntId, mode: 'auto' }).ok, true);
   assert.ok(e.hunt.instancia && e.hunt.instancia.status === 'ativa');
-  assert.equal(Campanha.faseLiberada(e, 'facil', F[1].huntId), false);
+  assert.equal(Campanha.faseLiberada(e, 'facil', ILHA.huntId), false);
+  abrirOsBaus(e);
   // Todos menos um mortos: ainda não.
   const vivos = () => [...e.hunt.monstros, ...Object.values(e.hunt.outrosAndares).flat()];
   for (const m of vivos().slice(1)) m.hp = 0;
   Cacadas.tique(e, PERSONAGEM, Date.now() + 250);
   assert.equal(e.hunt.instancia.status, 'ativa');
-  assert.equal(Campanha.faseCompleta(e, 'facil', F[0].huntId), false);
+  assert.equal(Campanha.faseCompleta(e, 'facil', COSTA.huntId), false);
   // O último: CLEAR, fase completa, a seguinte liberada.
   for (const m of vivos()) m.hp = 0;
   Cacadas.tique(e, PERSONAGEM, Date.now() + 500);
   assert.equal(e.hunt.instancia.status, 'limpa');
-  assert.match(e.avisoDaHunt, /Hunt Clear! Fase completa: Troll Cave \(Normal\). Liberou Amazon Camp/);
-  assert.equal(Campanha.faseLiberada(e, 'facil', F[1].huntId), true);
+  assert.match(e.avisoDaHunt, /Hunt Clear! Fase completa: A Costa \(Normal\). Liberou Ilha da Maré/);
+  assert.equal(Campanha.faseLiberada(e, 'facil', ILHA.huntId), true);
   assert.equal(Campanha.faseAtual(e, e.hunt).completa, true);
 });
 
-test('sem respawn; depois da pausa do "Hunt Clear!", uma instância NOVA (outro id, bichos sorteados de novo)', { skip: aAdaptar("Regra da engine de fase/instância (limpar conclui e libera a seguinte, sem respawn, instância nova após o Hunt Clear, offline em loop, Ficar/Avançar) — vale nas áreas do PoE; o teste lê CAMPANHA.fases do Draevor (vazia no oficial)") }, () => {
-  const e = novo();
-  assert.equal(Cacadas.entrar(e, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
+test('sem respawn; depois da pausa do "Hunt Clear!", uma instância NOVA (outro id, bichos sorteados de novo)', { skip: soNoOficial('adaptado ao PoE: as áreas do Ato 1 do PoE') }, () => {
+  const e = naCosta();
+  assert.equal(Cacadas.entrar(e, { huntId: COSTA.huntId, mode: 'auto' }).ok, true);
+  abrirOsBaus(e);
   const primeira = e.hunt.instancia;
   const uidsAntes = new Set(e.hunt.monstros.map((m) => m.uid));
   // Matar um não agenda respawn.
@@ -88,13 +110,14 @@ test('sem respawn; depois da pausa do "Hunt Clear!", uma instância NOVA (outro 
   assert.equal(segunda.status, 'ativa');
   assert.ok(e.hunt.monstros.every((m) => !uidsAntes.has(m.uid)), 'bichos novos');
   // Repetir limpo conta a limpeza, sem "completar" de novo.
+  abrirOsBaus(e);
   for (const m of [...e.hunt.monstros, ...Object.values(e.hunt.outrosAndares).flat()]) m.hp = 0;
   Cacadas.tique(e, PERSONAGEM, (t += 250));
-  assert.match(e.avisoDaHunt, /Hunt Clear! Troll Cave \(Normal\) limpa/);
-  assert.equal(e.campanha.facil.limpezas[F[0].huntId], 2);
+  assert.match(e.avisoDaHunt, /Hunt Clear! A Costa \(Normal\) limpa/);
+  assert.equal(e.campanha.facil.limpezas[COSTA.huntId], 2);
 });
 
-test('a instância nasce dos SPAWNS DO MAPA, igual em toda dificuldade, e o progresso é o % limpo', { skip: aAdaptar("Regra da engine de fase/instância (limpar conclui e libera a seguinte, sem respawn, instância nova após o Hunt Clear, offline em loop, Ficar/Avançar) — vale nas áreas do PoE; o teste lê CAMPANHA.fases do Draevor (vazia no oficial)") }, () => {
+test('a instância nasce dos SPAWNS DO MAPA, igual em toda dificuldade, e o progresso é o % limpo', () => {
   const tam = (dif) => {
     const e = personagemDeTeste({ level: 2000 });
     assert.equal(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto', dificuldade: dif }).ok, true);
@@ -104,7 +127,9 @@ test('a instância nasce dos SPAWNS DO MAPA, igual em toda dificuldade, e o prog
   const spawns = spawnsDaHunt(HUNT_DE_TESTE);
   const doMapa = spawns.reduce((n, s) => n + s.quantidade, 0);
   assert.equal(e.hunt.instancia.objetivos.total, doMapa, 'um objetivo por bicho que o mapa define');
-  assert.equal(tam('dificil').hunt.instancia.objetivos.total, doMapa);
+  // (08/11, adaptado ao PoE — o dono: "Adaptar antes") Toda dificuldade DO JOGO: no oficial só o Normal (o Cruel e o Merciless não existem
+  // mais no PoE — `dificuldadesDoJogo`); no clássico, as três.
+  for (const dif of Campanha.dificuldadesDoJogo()) assert.equal(tam(dif).hunt.instancia.objetivos.total, doMapa, dif);
   // Cada bicho está no raio do spawn dele e leva o id da instância.
   const porId = new Map(spawns.map((s) => [s.id, s]));
   for (const m of [...e.hunt.monstros, ...Object.values(e.hunt.outrosAndares).flat()]) {
@@ -181,16 +206,22 @@ test('o loot da fase usa o ato e a dificuldade dela, e o Item Level é o level a
   assert.equal(e.hunt.escala.nivel, F[30].nivel.dificil);
 });
 
-test('caçada offline: limpa a instância (conta para a fase) e fica em loop mesmo com "Seguir"', { skip: aAdaptar("Regra da engine de fase/instância (limpar conclui e libera a seguinte, sem respawn, instância nova após o Hunt Clear, offline em loop, Ficar/Avançar) — vale nas áreas do PoE; o teste lê CAMPANHA.fases do Draevor (vazia no oficial)") }, () => {
-  const e = novo(60);
+test('caçada offline: limpa a instância (conta para a fase) e fica em loop mesmo com "Seguir"', { skip: soNoOficial('adaptado ao PoE: as áreas do Ato 1 do PoE') }, () => {
+  // O personagem de teste (equipamento inicial) não vence os monstros do PoE (morre, ou trava num raro que regenera mais do que ele tira):
+  // imortal e com uma arma de verdade, o Machado Vaal — como na caçada offline de `encontros-etapa6.test.mjs`. O teste é da limpeza offline
+  // contar para a fase, não da luta.
+  const e = naCosta(60);
+  e.maxHp = e.hp = 1e9;
+  JogoDoPoe.iniciar(ITEM_CATALOG);
+  e.equipment = { ...(e.equipment ?? {}), weapon: JogoDoPoe.pecaDoJogo(gerarPeca({ catalogo: catalogoDoPoe(), regras: REGRAS_DO_POE, base: 'Two_Hand_Axes/Vaal_Axe', raridade: 'normal', ilvl: 64, rng: () => 0.5 })) };
   e.settings = { aoCompletarFase: 'seguir' };
   e.stamina = 2520;
-  assert.equal(Cacadas.entrar(e, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
+  assert.equal(Cacadas.entrar(e, { huntId: COSTA.huntId, mode: 'auto' }).ok, true);
   e.hunt.offlineDesde = Date.now() - 3 * 3_600_000;
   Cacadas.simularAusencia(e, PERSONAGEM, Date.now());
-  assert.equal(Campanha.faseCompleta(e, 'facil', F[0].huntId), true, `limpezas: ${JSON.stringify(e.campanha.facil.limpezas)}`);
+  assert.equal(Campanha.faseCompleta(e, 'facil', COSTA.huntId), true, `limpezas: ${JSON.stringify(e.campanha.facil.limpezas)}`);
   // Offline sempre na mesma hunt: a projeção não troca de fase (o Avançar é só no tique online).
-  assert.equal(e.hunt.huntId, F[0].huntId);
+  assert.equal(e.hunt.huntId, COSTA.huntId);
 });
 
 test('a tela: a campanha inteira por dificuldade e a fase atual no quadro da caçada', { skip: doClassico("Campanha do Draevor (48 fases, 4 atos de 12, Fácil/Médio/Difícil, Troll Cave, fase travada/pular); no oficial a campanha é a do PoE (10 atos + Epílogo, sem dificuldades)") }, () => {
@@ -216,45 +247,48 @@ test('nenhuma magia de bicho sai a cada tique (Werehyaenna North vinha com inter
   }
 });
 
-test('caçada de antes da instância: fase liberada entra de novo como instância; fechada termina com aviso', { skip: aAdaptar("Regra da engine de fase/instância (limpar conclui e libera a seguinte, sem respawn, instância nova após o Hunt Clear, offline em loop, Ficar/Avançar) — vale nas áreas do PoE; o teste lê CAMPANHA.fases do Draevor (vazia no oficial)") }, () => {
+test('caçada de antes da instância: fase liberada entra de novo como instância; fechada termina com aviso', { skip: soNoOficial('adaptado ao PoE: as áreas do Ato 1 do PoE') }, () => {
   // De antes da campanha (sem `campanha` nem `instancia`), fase liberada: vira a fase, já como instância.
-  const e = novo(20);
-  assert.equal(Cacadas.entrar(e, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
+  const e = naCosta(20);
+  assert.equal(Cacadas.entrar(e, { huntId: COSTA.huntId, mode: 'auto' }).ok, true);
   delete e.hunt.campanha;
   delete e.hunt.escala;
   delete e.hunt.instancia;
   assert.equal(Cacadas.adotarNaCampanha(e), null);
-  assert.deepEqual(e.hunt.campanha, { huntId: F[0].huntId, dificuldade: 'facil', ato: 1 });
+  assert.deepEqual(e.hunt.campanha, { huntId: COSTA.huntId, dificuldade: 'facil', ato: 1 });
   assert.ok(e.hunt.escala);
   assert.equal(e.hunt.instancia?.status, 'ativa');
-  assert.equal(Cacadas.snapshotDaHunt(e).fase.nome, 'Troll Cave');
-  // De depois da campanha e antes das instâncias (tem `campanha`, não tem `instancia`): mesma dificuldade.
+  assert.equal(Cacadas.snapshotDaHunt(e).fase.nome, 'A Costa');
+  // De depois da campanha e antes das instâncias (tem `campanha`, não tem `instancia`): mesma dificuldade — a última do jogo; no oficial
+  // a única, o Normal (o Médio do clássico não existe no PoE).
+  const dif = Campanha.dificuldadesDoJogo().at(-1);
   const m = personagemDeTeste({ level: 2000 });
-  assert.equal(Cacadas.entrar(m, { huntId: F[3].huntId, mode: 'auto', dificuldade: 'medio' }).ok, true);
+  assert.equal(Cacadas.entrar(m, { huntId: F[3].huntId, mode: 'auto', dificuldade: dif }).ok, true);
   delete m.hunt.instancia;
   assert.equal(Cacadas.adotarNaCampanha(m), null);
-  assert.equal(m.hunt.campanha.dificuldade, 'medio');
+  assert.equal(m.hunt.campanha.dificuldade, dif);
   assert.equal(m.hunt.instancia?.status, 'ativa');
-  // Fechada (fase 6 sem progresso): a caçada termina e o aviso explica.
+  // Fechada (fase 6 sem progresso): a caçada termina e o aviso explica. No ato do PoE (grafo) a anterior é a que LEVA a ela no mapa: a
+  // Passagem Submersa (6ª) se abre pelo Lamaçal (4ª), e o aviso a nomeia.
   const f = personagemDeTeste({ level: 200 });
   assert.equal(Cacadas.entrar(f, { huntId: F[5].huntId, mode: 'auto' }).ok, true);
   delete f.hunt.campanha;
   delete f.hunt.instancia;
   f.campanha = {};
-  assert.match(Cacadas.adotarNaCampanha(f), /A campanha chegou.*Complete a fase anterior/);
+  assert.match(Cacadas.adotarNaCampanha(f), new RegExp(`A campanha chegou.*Complete ${F[3].nome}`));
   assert.equal(f.hunt, null);
   // Já é instância: não mexe.
-  const g = novo(20);
-  assert.equal(Cacadas.entrar(g, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
+  const g = naCosta(20);
+  assert.equal(Cacadas.entrar(g, { huntId: COSTA.huntId, mode: 'auto' }).ok, true);
   const antes = g.hunt.instancia.id;
   assert.equal(Cacadas.adotarNaCampanha(g), null);
   assert.equal(g.hunt.instancia.id, antes);
 });
 
 
-test('"Ficar na fase" (padrão) fica em loop; "Avançar sozinho" vai para a próxima com a fase completa', { skip: aAdaptar("Regra da engine de fase/instância (limpar conclui e libera a seguinte, sem respawn, instância nova após o Hunt Clear, offline em loop, Ficar/Avançar) — vale nas áreas do PoE; o teste lê CAMPANHA.fases do Draevor (vazia no oficial)") }, () => {
-  const e = novo(20);
-  assert.equal(Cacadas.entrar(e, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
+test('"Ficar na fase" (padrão) fica em loop; "Avançar sozinho" vai para a próxima com a fase completa', { skip: soNoOficial('adaptado ao PoE: as áreas do Ato 1 do PoE') }, () => {
+  const e = naCosta(20);
+  assert.equal(Cacadas.entrar(e, { huntId: COSTA.huntId, mode: 'auto' }).ok, true);
   assert.equal(Campanha.aoCompletar(e), 'repetir');
   assert.equal(Cacadas.faseParaSeguir(e), null, 'incompleta: fica');
   Campanha.limpou(e, e.hunt);
@@ -264,7 +298,7 @@ test('"Ficar na fase" (padrão) fica em loop; "Avançar sozinho" vai para a pró
   // Já numa fase COMPLETA, ligar o "Avançar" leva para a próxima na hora.
   assert.equal(Cacadas.definirAoCompletarFase(e, { value: 'seguir' }).ok, true);
   assert.equal(Cacadas.definirAoCompletarFase(e, { value: 'x' }).ok, false);
-  assert.deepEqual(Cacadas.faseParaSeguir(e), { huntId: F[1].huntId, dificuldade: 'facil', nome: F[1].nome });
+  assert.deepEqual(Cacadas.faseParaSeguir(e), { huntId: ILHA.huntId, dificuldade: 'facil', nome: ILHA.nome });
   const snap = Cacadas.snapshotDaHunt(e).fase;
   assert.equal(snap.aoCompletar, 'seguir');
   assert.equal(snap.fimDoAto, false);
@@ -350,7 +384,7 @@ test('a fase depois de uma travada NÃO abre de graça: exige a última fase de 
   assert.match(Campanha.motivoParaNaoEntrar(e, 'facil', seguinte.huntId), new RegExp(primeiraDoAto.nome));
 });
 
-test('fase "completa" por carona (party) sem a anterior NÃO abre as seguintes: a liberação olha a cadeia inteira do ato', { skip: aAdaptar("Regra da engine de fase/instância (limpar conclui e libera a seguinte, sem respawn, instância nova após o Hunt Clear, offline em loop, Ficar/Avançar) — vale nas áreas do PoE; o teste lê CAMPANHA.fases do Draevor (vazia no oficial)") }, () => {
+test('fase "completa" por carona (party) sem a anterior NÃO abre as seguintes: a liberação olha a cadeia inteira do ato', { skip: aAdaptar("A regra vale no PoE, mas FALHA lá (bug relatado ao dono, 08/11): no ato do PoE (grafo — `liberadaNoGrafo`/`fasesAbertas`) basta UMA fase de antes estar completa, e a completa por carona conta — com o caminho até o Lamaçal feito e o Desfiladeiro/a Escalada completos por carona (sem a Passagem Submersa), a Escalada e a Prisão Inferior abrem") }, () => {
   const e = novo(2000);
   completar(e, 'facil', 0, 5); // fases 1-5 completas
   // A 7 e a 8 saem "completas" (limpeza dividida na party) — a 6 continua por fazer.

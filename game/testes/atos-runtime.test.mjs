@@ -7,18 +7,24 @@ import * as Campanha from '../systems/campanha.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Beta from '../systems/modo-beta.mjs';
 import { lerExecutaveis } from '../systems/atos-carregar.mjs';
+import * as BausPoe from '../systems/itens-poe/baus-poe.mjs';
 import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
 
-// Cada hunt pertence a um ato só: o ato de teste usa 6 hunts "emprestadas" do Ato 2 legado (este processo é só deste arquivo).
-const EMPRESTADAS = Campanha.FASES.filter((f) => f.ato === 2 && !f.pular).slice(0, 6).map((f) => f.huntId);
-Campanha._liberarHuntsParaTestes(EMPRESTADAS);
+// (08/11, adaptado ao PoE — o dono: "Adaptar antes") Cada hunt pertence a um ato só, e no jogo oficial todas as áreas do PoE já são de um
+// ato do PoE: o ato de teste toma o LUGAR do Ato 5 do PoE (este processo é só deste arquivo) — usa 6 áreas "emprestadas" dele e o chefe dele,
+// e vem depois do Ato 4 do PoE, como o de antes vinha depois do Ato 4 legado.
+const EMPRESTADAS = Campanha.FASES.filter((f) => f.ato === 5 && !f.pular).slice(0, 6).map((f) => f.huntId);
+const BOSS = Campanha.bossDoAto(5).bossId;
+Campanha._desregistrarAto(5);
 const [h1, h2, h3, h4, h5, h6] = EMPRESTADAS;
-const BOSS = 'ahau';
+// Os itens das recompensas, do PoE: o Orbe Divino (o drop de 100%, no lugar do hand axe) e o Orbe do Caos (no do crystal coin). Uma base
+// de equipamento do PoE não serve para o drop: o gerador do encontro a faz com afixos do Draevor e o jogo oficial a recusa (`podeEntrar`).
+const DIVINO = 915038;
+const ORBE = 915023;
 
 const fase = (id, huntId, extra = {}) => ({ id, nome: id.toUpperCase(), huntId, tipo: 'hunt-normal', nivel: { facil: 20, medio: 120, dificil: 620 }, ...extra });
 const ato5 = (mod = {}) => ({
-  id: 'ato-cinco', nome: 'Ato Cinco', estado: 'publicado', ordem: 5, anterior: 'legado-4', inicio: 'fase-1',
+  id: 'ato-cinco', nome: 'Ato Cinco', estado: 'publicado', ordem: 5, anterior: 'poe-ato-4', inicio: 'fase-1',
   fases: [fase('fase-1', h1, { ordem: 1 }), fase('fase-2', h2, { ordem: 2 }), fase('fase-3', h3, { ordem: 3 }), fase('fase-4', h4, { ordem: 4 }), fase('fase-5', h5, { ordem: 5 }), fase('fase-6', h6, { ordem: 6, obrigatoria: false })],
   conexoes: [['fase-1', 'fase-2'], ['fase-2', 'fase-3'], ['fase-2', 'fase-4'], ['fase-3', 'fase-5'], ['fase-4', 'fase-5']].map(([de, para]) => ({ de, para })).concat([{ de: 'fase-1', para: 'fase-6' }]),
   bossFinal: { bossId: BOSS, faseAnterior: 'fase-5' },
@@ -27,11 +33,13 @@ const ato5 = (mod = {}) => ({
 const registrar = (mod) => Campanha.registrarAto(ato5(mod));
 afterEach(() => { Campanha._desregistrarAto(5); Beta.definir(false); });
 
-const novo = (bosses = [4]) => personagemDeTeste({ level: 300, campanha: { facil: { limpezas: {}, completas: [], bosses } } });
+const novo = (bosses = [4]) => personagemDeTeste({ level: 60, campanha: { facil: { limpezas: {}, completas: [], bosses } } });
 const vivos = (e) => [...e.hunt.monstros, ...Object.values(e.hunt.outrosAndares ?? {}).flat()];
 function limpar(e) {
   for (let i = 0; i < 12 && e.hunt?.instancia?.status !== 'limpa'; i++) {
     for (const m of vivos(e)) m.hp = 0;
+    // Na área do PoE os baús fechados seguram o CLEAR no automático (`BausPoe.seguramOClear`): limpar a área é também abri-los.
+    BausPoe.abrirNoRaio(e, e.hunt, PERSONAGEM, 1e9, { so: BausPoe.ehBauPoe });
     Cacadas.tique(e, PERSONAGEM, Date.now() + 500 * (i + 1));
   }
 }
@@ -41,15 +49,26 @@ const jogar = (e, huntId) => {
   limpar(e);
   assert.equal(e.hunt.instancia.status, 'limpa', huntId);
 };
+/** O chefe do ato que sai do portal da última fase: a caçada anda (tiques de 250 ms) até ele nascer na casa do portal. */
+function chefeQueSaiu(e) {
+  let agora = Date.now();
+  for (let i = 0; i < 20; i++) {
+    const m = vivos(e).find((x) => x.chefeDoAto && x.hp > 0);
+    if (m) return m;
+    Cacadas.tique(e, PERSONAGEM, (agora += 250));
+  }
+  return null;
+}
 const abertas = (e) => ['fase-1', 'fase-2', 'fase-3', 'fase-4', 'fase-5', 'fase-6'].filter((id) => Campanha.faseLiberada(e, 'facil', ato5().fases.find((f) => f.id === id).huntId));
 
-test('R1. o ato do editor entra na campanha (fases com grafo, boss final, cliente vê o ato 5) e os legados seguem iguais', { skip: aAdaptar("O editor de Atos é o mesmo no PoE (gamedata/atos/poe-ato-N.json); o teste monta um ato com hunts do Draevor, que o oficial ignora (campanha.mjs:639) — \"Esta hunt não existe\"") }, () => {
-  const antes = Campanha.FASES.filter((f) => !f.grafo).length;
+test('R1. o ato do editor entra na campanha (fases com grafo, boss final, cliente vê o ato 5) e os legados seguem iguais', () => {
+  // No jogo oficial os "legados" são os outros atos do PoE (a campanha do Draevor e o `Campanha.ATOS` dela não existem lá).
+  const antes = Campanha.FASES.filter((f) => f.ato !== 5).length;
   const r = registrar();
   assert.equal(r.ok, true, JSON.stringify(r.problemas));
   assert.equal(r.numero, 5);
-  assert.equal(Campanha.ATOS, 4, 'a dificuldade segue o fim do Ato 4 legado');
-  assert.equal(Campanha.FASES.filter((f) => !f.grafo).length, antes);
+  for (const n of [1, 2, 3, 4, 6, 7, 8, 9, 10]) assert.equal(Campanha.ATOS_DO_EDITOR.get(n)?.ato.id, `poe-ato-${n}`, 'os atos do PoE seguem nos números deles');
+  assert.equal(Campanha.FASES.filter((f) => f.ato !== 5).length, antes);
   assert.equal(Campanha.ultimaFaseDoAto(5).huntId, h5);
   assert.equal(Campanha.ehBossDeAto(BOSS), true);
   const cli = Campanha.paraCliente(novo()).dificuldades[0];
@@ -57,14 +76,14 @@ test('R1. o ato do editor entra na campanha (fases com grafo, boss final, client
   assert.equal(cli.bosses.find((b) => b.ato === 5).bossId, BOSS);
 });
 
-test('R2. a porta do ato: sem o boss do ato anterior vencido nada abre; com ele, só a fase inicial', { skip: aAdaptar("O editor de Atos é o mesmo no PoE (gamedata/atos/poe-ato-N.json); o teste monta um ato com hunts do Draevor, que o oficial ignora (campanha.mjs:639) — \"Esta hunt não existe\"") }, () => {
+test('R2. a porta do ato: sem o boss do ato anterior vencido nada abre; com ele, só a fase inicial', () => {
   registrar();
   assert.deepEqual(abertas(novo([])), []);
   assert.match(Campanha.motivoParaNaoEntrar(novo([]), 'facil', h1), /Derrote o boss do Ato 4/);
   assert.deepEqual(abertas(novo([4])), ['fase-1']);
 });
 
-test('R3. progressão pelo grafo de verdade: bifurcação (2→3 e 2→4), ramal opcional, convergência em 5, e o boss só com as obrigatórias', { skip: aAdaptar("O editor de Atos é o mesmo no PoE (gamedata/atos/poe-ato-N.json); o teste monta um ato com hunts do Draevor, que o oficial ignora (campanha.mjs:639) — \"Esta hunt não existe\"") }, () => {
+test('R3. progressão pelo grafo de verdade: bifurcação (2→3 e 2→4), ramal opcional, convergência em 5, e o boss só com as obrigatórias', () => {
   registrar();
   const e = novo();
   jogar(e, h1);
@@ -81,20 +100,22 @@ test('R3. progressão pelo grafo de verdade: bifurcação (2→3 e 2→4), ramal
   assert.equal(Campanha.bossLiberado(e, 'facil', 5), true, 'a fase 6 é opcional: não conta');
 });
 
-test('R4. portal do boss final do ato do editor: só abre limpando a hunt NESTA execução, entra pelo portal, sem recarga, e a vitória não mexe na dificuldade', { skip: aAdaptar("O editor de Atos é o mesmo no PoE (gamedata/atos/poe-ato-N.json); o teste monta um ato com hunts do Draevor, que o oficial ignora (campanha.mjs:639) — \"Esta hunt não existe\"") }, () => {
+test('R4. portal do boss final do ato do editor: só abre limpando a hunt NESTA execução, entra pelo portal, sem recarga, e a vitória não mexe na dificuldade', () => {
   registrar();
   const e = novo();
   for (const h of [h1, h2, h3, h4]) jogar(e, h);
   assert.equal(Cacadas.entrar(e, { huntId: h5, mode: 'auto', dificuldade: 'facil' }).ok, true);
-  assert.equal(e.hunt.portalDoBoss, undefined, 'entrar na última fase não abre o portal');
+  // No jogo oficial o portal do chefe abre NA última fase (`instancia.chefeDoAto`) e o chefe sai dele, na mesma instância (a sala do
+  // boss é do clássico — `boss-do-ato.test.mjs`).
+  assert.equal(e.hunt.instancia.chefeDoAto, undefined, 'entrar na última fase não abre o portal');
   limpar(e);
-  assert.ok(e.hunt.portalDoBoss, 'limpou: portal aberto');
-  assert.equal(e.hunt.portalDoBoss.bossId, BOSS);
+  assert.ok(e.hunt.instancia.chefeDoAto, 'limpou: portal aberto');
+  assert.equal(e.hunt.instancia.chefeDoAto.bossId, BOSS);
   const d = Cacadas.entrar(e, { huntId: BOSS, mode: 'auto', dificuldade: 'facil', campanha: true });
   assert.equal(d.ok, false, 'direto no boss é recusado');
-  const r = Cacadas.entrarNoPortalDoBoss(e);
-  assert.equal(r.ok, true, r.erro);
-  assert.equal(e.hunt.campanha.bossDoAto, 5);
+  const chefe = chefeQueSaiu(e);
+  assert.ok(chefe, 'o chefe saiu do portal');
+  assert.equal(chefe.chefeDoAto, 5);
   const aviso = Campanha.venceuBoss(e, 'facil', 5);
   assert.match(aviso, /Ato Cinco concluído/);
   assert.equal(Campanha.bossVencido(e, 'facil', 5), true);
@@ -102,12 +123,12 @@ test('R4. portal do boss final do ato do editor: só abre limpando a hunt NESTA 
   assert.equal(Campanha.dificuldadeLiberada(e, 'dificil'), false, 'vencer um ato do editor não abre dificuldade: isso é só o Ato 4 legado');
   e.hunt = null;
   assert.equal(Cacadas.entrar(e, { huntId: h5, mode: 'auto', dificuldade: 'facil' }).ok, true);
-  assert.equal(e.hunt.portalDoBoss, undefined, 'ato já concluído: precisa limpar de novo');
+  assert.equal(e.hunt.instancia.chefeDoAto, undefined, 'ato já concluído: precisa limpar de novo');
 });
 
 // (Dono, 10/10: o "Avançar sozinho" segue a NUMERAÇÃO do mapa — a de menor número aberta e ainda não feita —, e não mais só as ligações da
 // fase atual. Antes, depois da fase 3, ia para a 5 (a ligada à 3) com a 4 aberta, e num beco parava.)
-test('R5. "Seguir" (Caça Automática) anda na numeração do mapa: a de menor número aberta e ainda não feita', { skip: aAdaptar("O editor de Atos é o mesmo no PoE (gamedata/atos/poe-ato-N.json); o teste monta um ato com hunts do Draevor, que o oficial ignora (campanha.mjs:639) — \"Esta hunt não existe\"") }, () => {
+test('R5. "Seguir" (Caça Automática) anda na numeração do mapa: a de menor número aberta e ainda não feita', () => {
   registrar();
   const e = novo();
   jogar(e, h1);
@@ -124,7 +145,7 @@ test('R5. "Seguir" (Caça Automática) anda na numeração do mapa: a de menor n
   assert.equal(Campanha.proximaParaSeguir(e, 'facil', h6), null, 'tudo feito: fica');
 });
 
-test('R6. estado beta só vale com o modo beta ligado; desligado, o ato some do cliente e fecha', { skip: aAdaptar("O editor de Atos é o mesmo no PoE (gamedata/atos/poe-ato-N.json); o teste monta um ato com hunts do Draevor, que o oficial ignora (campanha.mjs:639) — \"Esta hunt não existe\"") }, () => {
+test('R6. estado beta só vale com o modo beta ligado; desligado, o ato some do cliente e fecha', () => {
   registrar({ estado: 'beta' });
   assert.equal(Campanha.atoAtivo(5), false);
   assert.equal(Campanha.faseLiberada(novo(), 'facil', h1), false);
@@ -134,9 +155,10 @@ test('R6. estado beta só vale com o modo beta ligado; desligado, o ato some do 
   assert.equal(Campanha.paraCliente(novo()).dificuldades[0].bosses.some((b) => b.ato === 5), true);
 });
 
-test('R7. ato inválido NÃO entra (nenhum efeito): hunt de outro ato, boss repetido, ordem de legado, ciclo', { skip: aAdaptar("O editor de Atos é o mesmo no PoE (gamedata/atos/poe-ato-N.json); o teste monta um ato com hunts do Draevor, que o oficial ignora (campanha.mjs:639) — \"Esta hunt não existe\"") }, () => {
+test('R7. ato inválido NÃO entra (nenhum efeito): hunt de outro ato, boss repetido, ordem de legado, ciclo', () => {
   const n = Campanha.FASES.length;
-  const legada = Campanha.FASES.find((f) => !f.grafo).huntId;
+  const legada = Campanha.FASES.find((f) => f.ato !== 5).huntId; // uma área de outro ato do PoE
+  const atos = Campanha.ATOS_DO_EDITOR.size; // os atos do PoE (menos o 5, cujo lugar é do ato de teste)
   for (const mod of [
     { fases: ato5().fases.map((f) => (f.id === 'fase-2' ? { ...f, huntId: legada } : f)) },
     { bossFinal: { bossId: Campanha.bossDoAto(1).bossId, faseAnterior: 'fase-5' } },
@@ -147,7 +169,8 @@ test('R7. ato inválido NÃO entra (nenhum efeito): hunt de outro ato, boss repe
     const r = registrar(mod);
     assert.equal(r.ok, false);
     assert.equal(Campanha.FASES.length, n);
-    assert.equal(Campanha.ATOS_DO_EDITOR.size, 0);
+    assert.equal(Campanha.ATOS_DO_EDITOR.size, atos);
+    assert.equal(Campanha.ATOS_DO_EDITOR.has(5), false);
   }
 });
 
@@ -169,7 +192,7 @@ const comRec = (recFase, recBoss) => ato5({
   bossFinal: { bossId: BOSS, faseAnterior: 'fase-5', recompensas: recBoss },
 });
 
-test('P1. recompensa da fase: a primeira limpeza paga ouro/exp UMA vez por personagem; a repetição não paga a 1ª vez de novo', { skip: aAdaptar("O editor de Atos é o mesmo no PoE (gamedata/atos/poe-ato-N.json); o teste monta um ato com hunts do Draevor, que o oficial ignora (campanha.mjs:639) — \"Esta hunt não existe\"") }, () => {
+test('P1. recompensa da fase: a primeira limpeza paga ouro/exp UMA vez por personagem; a repetição não paga a 1ª vez de novo', () => {
   assert.equal(registrar(comRec({ drops: [], rolagens: 1, primeiraConclusao: { gold: 777, exp: 123 } })).ok, true);
   const e = novo();
   const xp0 = e.xp ?? 0;
@@ -187,35 +210,37 @@ test('P1. recompensa da fase: a primeira limpeza paga ouro/exp UMA vez por perso
   void ouro0;
 });
 
-test('P2. drops da fase: item com chance 100% cai a cada limpeza (repetível), pelo loot normal; chance 0 é recusada pela validação', { skip: aAdaptar("O editor de Atos é o mesmo no PoE (gamedata/atos/poe-ato-N.json); o teste monta um ato com hunts do Draevor, que o oficial ignora (campanha.mjs:639) — \"Esta hunt não existe\"") }, () => {
-  assert.equal(registrar(comRec({ drops: [{ id: 3268, chance: 100 }], rolagens: 2, moedasMedia: 10 })).ok, true);
+test('P2. drops da fase: item com chance 100% cai a cada limpeza (repetível), pelo loot normal; chance 0 é recusada pela validação', () => {
+  assert.equal(registrar(comRec({ drops: [{ id: DIVINO, chance: 100 }], rolagens: 2, moedasMedia: 10 })).ok, true);
   const e = novo();
   const r1 = Campanha.recompensaDaFase(h1);
-  assert.equal(r1.drops[0].id, 3268);
+  assert.equal(r1.drops[0].id, DIVINO);
   jogar(e, h1);
-  const cristais = () => JSON.stringify(e).split('"id":3268').length - 1;
+  // O orbe empilha: conta as unidades (a soma das pilhas), e não as entradas.
+  const cristais = () => [...JSON.stringify(e).matchAll(new RegExp(`"id":${DIVINO},"count":(\\d+)`, 'g'))].reduce((n, m) => n + Number(m[1]), 0);
   const depoisDe1 = cristais();
   assert.ok(depoisDe1 >= 1, 'o drop de 100% apareceu');
   e.hunt = null;
   jogar(e, h1);
   assert.ok(cristais() > depoisDe1, 'repetível: cai de novo');
   Campanha._desregistrarAto(5);
-  assert.equal(registrar(comRec({ drops: [{ id: 3043, chance: 0 }], rolagens: 1 })).ok, false);
+  assert.equal(registrar(comRec({ drops: [{ id: ORBE, chance: 0 }], rolagens: 1 })).ok, false);
   assert.equal(registrar(comRec({ drops: [{ id: 99999999, chance: 10 }], rolagens: 1 })).ok, false, 'item inexistente');
-  assert.equal(registrar(comRec({ drops: [{ id: 3043, chance: 10 }], rolagens: 9 })).ok, false, 'rolagens acima do teto');
+  assert.equal(registrar(comRec({ drops: [{ id: ORBE, chance: 10 }], rolagens: 9 })).ok, false, 'rolagens acima do teto');
 });
 
-test('P3. recompensa do boss final: paga na vitória (1ª vitória uma vez por personagem), sem pagar duas vezes por evento repetido', { skip: aAdaptar("O editor de Atos é o mesmo no PoE (gamedata/atos/poe-ato-N.json); o teste monta um ato com hunts do Draevor, que o oficial ignora (campanha.mjs:639) — \"Esta hunt não existe\"") }, () => {
-  assert.equal(registrar(comRec(null, { drops: [{ id: 3043, chance: 100 }], rolagens: 1, primeiraConclusao: { gold: 5000, exp: 900 } })).ok, true);
+test('P3. recompensa do boss final: paga na vitória (1ª vitória uma vez por personagem), sem pagar duas vezes por evento repetido', () => {
+  assert.equal(registrar(comRec(null, { drops: [{ id: ORBE, chance: 100 }], rolagens: 1, primeiraConclusao: { gold: 5000, exp: 900 } })).ok, true);
   const e = novo();
   for (const h of [h1, h2, h3, h4]) jogar(e, h);
   jogar(e, h5);
-  assert.equal(Cacadas.entrarNoPortalDoBoss(e).ok, true);
-  const alvo = e.hunt.monstros.find((m) => m.isBoss) ?? e.hunt.monstros[0];
+  // O chefe sai do portal na própria fase (jogo oficial); a vitória dele fica marcada na instância (`chefeDoAto.vencido`).
+  const alvo = chefeQueSaiu(e);
+  assert.ok(alvo, 'o chefe saiu do portal');
   alvo.hp = 0;
   Cacadas.tique(e, PERSONAGEM, Date.now() + 100);
   Cacadas.tique(e, PERSONAGEM, Date.now() + 600);
-  assert.ok(e.hunt.vitoria, 'o boss caiu');
+  assert.ok(e.hunt.instancia.chefeDoAto?.vencido, 'o boss caiu');
   assert.deepEqual(e.campanha.facil.premios.filter((k) => k.startsWith('boss')), ['boss:5']);
   const xp = e.xp ?? 0;
   for (let i = 0; i < 3; i++) Cacadas.tique(e, PERSONAGEM, Date.now() + 1000 + i * 500);
@@ -223,8 +248,8 @@ test('P3. recompensa do boss final: paga na vitória (1ª vitória uma vez por p
   assert.equal(Campanha.reivindicarPremio(e, 'facil', 'boss:5'), false);
 });
 
-test('P4. alertas da validação: duplicado, mesma fonte dupla e recompensa vazia viram aviso; erro bloqueia a publicação', { skip: aAdaptar("O editor de Atos é o mesmo no PoE (gamedata/atos/poe-ato-N.json); o teste monta um ato com hunts do Draevor, que o oficial ignora (campanha.mjs:639) — \"Esta hunt não existe\"") }, () => {
-  const r = Campanha.registrarAto(ato5({ fases: ato5().fases.map((f) => (f.id === 'fase-1' ? { ...f, recompensas: { drops: [{ id: 3043, chance: 5 }, { id: 3043, chance: 5 }], rolagens: 1, primeiraConclusao: { gold: 1, itens: [{ id: 3043, count: 1 }] } } } : f)) }));
+test('P4. alertas da validação: duplicado, mesma fonte dupla e recompensa vazia viram aviso; erro bloqueia a publicação', () => {
+  const r = Campanha.registrarAto(ato5({ fases: ato5().fases.map((f) => (f.id === 'fase-1' ? { ...f, recompensas: { drops: [{ id: ORBE, chance: 5 }, { id: ORBE, chance: 5 }], rolagens: 1, primeiraConclusao: { gold: 1, itens: [{ id: ORBE, count: 1 }] } } } : f)) }));
   assert.equal(r.ok, true);
   const msgs = r.problemas.map((p) => p.mensagem).join('|');
   assert.match(msgs, /mais de uma vez nos drops/);
@@ -234,7 +259,7 @@ test('P4. alertas da validação: duplicado, mesma fonte dupla e recompensa vazi
   assert.ok(vazia.problemas.some((p) => /Recompensa vazia/.test(p.mensagem)));
 });
 
-test('P5. party: a primeira vez paga cada personagem da sala uma vez; chamar de novo (evento duplicado) não paga ninguém de novo', { skip: aAdaptar("O editor de Atos é o mesmo no PoE (gamedata/atos/poe-ato-N.json); o teste monta um ato com hunts do Draevor, que o oficial ignora (campanha.mjs:639) — \"Esta hunt não existe\"") }, async () => {
+test('P5. party: a primeira vez paga cada personagem da sala uma vez; chamar de novo (evento duplicado) não paga ninguém de novo', async () => {
   const { pagarRecompensaDeAto } = await import('../systems/hunt/combate.mjs');
   assert.equal(registrar().ok, true);
   const dono = novo();

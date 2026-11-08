@@ -16,7 +16,6 @@ import { matarMonstro } from '../systems/hunt/combate.mjs';
 import { Sessao } from '../websocket/sessao.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
 
 const OURO = { id: 3031, chance: 100 };
 const BAU = { id: 'bau', tipo: 'bau-comum', nome: 'Baú da Cripta', recompensa: { drops: [OURO], moedasMedia: 100 } };
@@ -227,9 +226,11 @@ test('altar com penalidade: efeitos negativos e inimigos invocados; e vale para 
   assert.ok(e.hunt.efeitosDeAltar.some((x) => x.afixo === 'armour_pct' && x.valor === -10));
 });
 
-test('party: o loot do baú é SORTEADO entre os membros (o mesmo do loot de bicho) e a primeira conclusão paga cada membro', { skip: aAdaptar("Sistema de encontros da engine (baú, altar, ondas, decisão, captura, boss de encontro); no oficial a hunt do Draevor não é fase e não tem instância (\"semente\" em null). A área do PoE tem instância, mas nenhuma tem encontros cadastrados") }, () => {
-  const peca = Object.values(ITEM_CATALOG).filter((i) => i.slot === 'weapon' && !i.stackable && i.weight < 50).sort((a, b) => a.weight - b.weight)[0];
-  assert.ok(peca, 'há uma arma para o teste');
+test('party: o loot do baú é SORTEADO entre os membros (o mesmo do loot de bicho) e a primeira conclusão paga cada membro', () => {
+  // (08/11, adaptado ao PoE — o dono: "Adaptar antes") No jogo oficial só cai item do PoE, e uma base de equipamento do PoE sai do gerador
+  // do encontro com afixos do Draevor (o jogo a recusa — `podeEntrar`): o drop é o Orbe Divino, que empilha — `conta` soma as pilhas.
+  const peca = ITEM_CATALOG[915038];
+  assert.ok(peca, 'há um orbe para o teste');
   const defs = [{ ...BAU, recompensa: { drops: [{ id: Number(peca.id), chance: 100 }], rolagens: 16, primeiraConclusao: { gold: 500 } } }];
   const e = luta();
   const amigo = personagemDeTeste({ vocacao: 'knight', level: 60 });

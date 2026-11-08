@@ -8,7 +8,8 @@ import * as Bau from '../systems/bau.mjs';
 import { CATALOGO } from '../systems/dados.mjs';
 import { vitoriaNoBoss } from '../systems/hunt/combate.mjs';
 import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
-import { aAdaptar, doClassico } from './apoio-migracao.mjs';
+import { doClassico, soNoOficial } from './apoio-migracao.mjs';
+import * as BausPoe from '../systems/itens-poe/baus-poe.mjs';
 
 const F = Campanha.FASES;
 const HORA = 3_600_000;
@@ -283,11 +284,29 @@ test('P7. party: o portal vive na sala do dono; cada integrante entra por conta 
   assert.ok(dono.hunt.portalDoBoss, 'o portal segue aberto para os outros');
 });
 
-test('V1. a vitória no boss é registrada UMA vez por luta: evento repetido não paga outra sacola nem outra conclusão; outra luta paga a sua', { skip: aAdaptar("Idempotência da vitória no boss (evento repetido não paga de novo) vale para os chefes do PoE (pináculos na arena)") }, () => {
-  const e = novo(300);
+/**
+ * (08/11, adaptado ao PoE — o dono: "Adaptar antes") Uma LUTA com o chefe do Ato 1 no jogo oficial: entra na última fase do ato, mata tudo
+ * (e abre os baús do PoE, que seguram o CLEAR), e a caçada anda até o chefe sair do portal, na mesma instância. Devolve o chefe.
+ */
+function lutaComOChefeDoAto1(e) {
+  const r = Cacadas.entrar(e, { huntId: Campanha.ultimaFaseDoAto(1).huntId, mode: 'auto', dificuldade: 'facil' });
+  assert.equal(r.ok, true, r.erro);
+  let agora = Date.now();
+  for (let i = 0; i < 60; i++) {
+    const chefe = vivos(e).find((m) => m.chefeDoAto === 1 && m.hp > 0);
+    if (chefe) return chefe;
+    for (const m of vivos(e)) if (!m.chefeDoAto) m.hp = 0;
+    BausPoe.abrirNoRaio(e, e.hunt, PERSONAGEM, 1e9, { so: BausPoe.ehBauPoe });
+    Cacadas.tique(e, PERSONAGEM, (agora += 250));
+  }
+  assert.fail('o chefe do Ato 1 não saiu do portal');
+}
+
+test('V1. a vitória no boss é registrada UMA vez por luta: evento repetido não paga outra sacola nem outra conclusão; outra luta paga a sua', { skip: soNoOficial('o chefe do ato sai do portal na fase só no jogo oficial') }, () => {
+  // No jogo oficial o chefe do ato não tem sala: a luta é a da última fase (`instancia.chefeDoAto`), e "outra luta" é limpar a fase de novo.
+  const e = novo(90);
   completarAto(e, 'facil', 1, { menosAUltima: false });
-  Cacadas.entrar(e, { huntId: 'urmahlullu-the-immaculate', mode: 'auto', dificuldade: 'facil', campanha: true, viaPortal: true });
-  const alvo = e.hunt.monstros[0];
+  const alvo = lutaComOChefeDoAto1(e);
   const sacolas0 = (e.rewards ?? []).length;
   vitoriaNoBoss(e, e.hunt, alvo, PERSONAGEM);
   const sacolas1 = (Bau.garantir(e) && e.rewards).length;
@@ -297,8 +316,8 @@ test('V1. a vitória no boss é registrada UMA vez por luta: evento repetido nã
   assert.deepEqual(e.campanha.facil.bosses, [1]);
   // Outra luta (nova entrada): vitória registrada de novo (farm), sem duplicar a conclusão do ato.
   e.hunt = null;
-  Cacadas.entrar(e, { huntId: 'urmahlullu-the-immaculate', mode: 'auto', dificuldade: 'facil', campanha: true, viaPortal: true });
-  vitoriaNoBoss(e, e.hunt, e.hunt.monstros[0], PERSONAGEM);
+  const deNovo = lutaComOChefeDoAto1(e);
+  vitoriaNoBoss(e, e.hunt, deNovo, PERSONAGEM);
   assert.ok(e.rewards.length >= sacolas1);
   assert.deepEqual(e.campanha.facil.bosses, [1], 'o ato conta como concluído uma vez só');
 });

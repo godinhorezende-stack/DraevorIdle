@@ -85,7 +85,7 @@ test('guardiões e boss entram na conta (são bichos que dropam); altar não val
   }
 });
 
-test('o editor avisa (>30%) e RECUSA (>100%) encontros que valem mais que a fase, com os números', { skip: aAdaptar("Sistema de encontros da engine (baú, altar, ondas, decisão, captura, boss de encontro); no oficial a hunt do Draevor não é fase e não tem instância (\"semente\" em null). A área do PoE tem instância, mas nenhuma tem encontros cadastrados") }, () => {
+test('o editor avisa (>30%) e RECUSA (>100%) encontros que valem mais que a fase, com os números', { skip: aAdaptar("O teto é RELATIVO ao valor de limpar a fase (`Eco.valorDaInstancia`), e numa área do PoE ele dá 0 (os monstros do PoE não têm loot no bestiário com preço de NPC): toda recompensa viraria erro (\"moedasMedia precisa ser positivo\", fração infinita) — não há conteúdo do PoE que dê a base da conta") }, () => {
   const pasta = mkdtempSync(join(tmpdir(), 'draevor-eco-'));
   mkdirSync(join(pasta, 'hunts'));
   const original = { ...Conteudo.CAMINHOS };
