@@ -38,6 +38,7 @@ const AJUDA = {
   influencia: 'Os Exaltados de influência (Criador, Ancião, Cruzado, Juiz, Caçador, Senhor da Guerra) põem um modificador da influência numa peça Rara sem influência. O Orbe do Domínio eleva um modificador influenciado (pede dois). Uma tentativa por vez.',
   ancestral: 'As Brasas (Exarca Abrasador) e os Fluidos (Devorador de Mundos) põem o implícito Eldritch em Peitoral, Botas, Luvas ou Elmo, do tier da moeda; o Ducado de Ukatoa, num amuleto não Único (Exarca ou Devorador, o tier sorteado). Os orbes Ancestrais mexem no lado que domina; o Conflito sobe um implícito e desce o outro. Uma tentativa por vez.',
   encantar: 'UNGIR: escolha 3 Óleos — a combinação diz o notável da árvore de passivas que a peça Aloca (vestida, ele vale como alocado, sem precisar do caminho). Vale em amuletos e nas peças que "Podem ser ungidas"; os Óleos caem só dos chefes pináculo e saem os 3 juntos. ENCANTAMENTO: põe um encantamento do Labirinto em elmo, luvas ou botas. Cabe UM encantamento por peça ("Pode ter N Modificadores Encantados extras" soma N); cheia, o novo troca um do mesmo tipo. As outras moedas não tiram os encantamentos.',
+  sintese: 'O SINTETIZADOR junta TRÊS peças da mochila numa peça nova SINTETIZADA: a base de uma delas (sorteada), Normal, com 1 a 3 implícitos de Síntese (mais quanto mais modificadores as três tinham). Os Círculos põem o Modificador de Arauto deles como implícito a mais. As três somem. Não entram únicos (fora os Círculos), mapas, frascos e peças corrompidas ou sem identificar.',
   qualidade: 'Sobe a QUALIDADE (até 20%): +5% na Normal, +2% na Mágica, +1% na Rara e na Única. Amolador em arma, Sucata em armadura, Bolha em frasco. O resultado aparece antes de forjar.',
   corrupcao: 'O Orbe Vaal CORROMPE a peça (permanente: depois só as moedas Corroídas valem nela). As Corroídas valem só em peça corrompida; as de sockets ficam em Sockets, Cores e Links. O Orbe Mítico Corroído pode destruir a peça. Uma tentativa por vez.',
   especiais: 'O Espelho de Kalandra faz uma cópia espelhada (que não aceita mais moeda); o Orbe Ancestral troca o único por outro da mesma classe; o Orbe do Remorso dá um ponto para tirar um nó da árvore de passivas (não pede peça); os Pergaminhos do Emissário aprimoram o único base do Emissário (Pensamentos Agitados, Força Inabalada…) na versão mais poderosa.',
@@ -69,6 +70,7 @@ const f = {
   peca: null, // { alvo, base, ilvl, id }
   moeda: {}, desejo: {}, modo: 'uma', limite: 10, reiniciar: false,
   oleos: [null, null, null], // (08/11) os 3 Óleos do Ungir (ids)
+  sintese: [null, null, null], // (08/11) as 3 peças do Sintetizador (índices da mochila)
   configAberta: false, ajuda: false, filtroMod: { tag: '', lado: '' },
   opcoes: null, pedido: 0, timer: null, exec: null, vigia: null,
 };
@@ -367,6 +369,13 @@ function centro(x) {
   else {
     const corpo = { sockets: opSockets, cores: opCores, links: opLinks, atributos: opAtributos, raridade: opRaridade }[f.categoria] ?? opGeral;
     corpo(op, x);
+  }
+  // (08/11) a Síntese não gasta material nem repete: as 3 peças e o botão
+  if (f.categoria === 'sintese') {
+    op.replaceChildren(el('h4', 'fp-titulo', cadastroDa(f.categoria)?.nome ?? ''));
+    opSintese(op);
+    sec.append(op);
+    return sec;
   }
   sec.append(op, barraDeMateriais(), painelDaRepeticao(), rodape(x));
   return sec;
@@ -789,6 +798,45 @@ function naPeca(x) {
     linha('Espelhada', p.espelhado ? 'sim' : 'não');
   }
   return lista;
+}
+/** (08/11) O SINTETIZADOR: três casas com as peças do PoE da mochila (as que não entram, apagadas com o motivo) e o botão. */
+function opSintese(op) {
+  const inv = ctx.state.character?.inventory ?? [];
+  const pecasDaMochila = inv.map((p, indice) => (p?.poe ? { indice, p } : null)).filter(Boolean);
+  const motivo = (p) => {
+    const poe = p.poe;
+    if (poe.mapa || poe.classe === 'Maps' || itens()[p.id]?.frasco) return 'mapa ou frasco';
+    if (poe.identificado === false) return 'sem identificar';
+    if (poe.corrompido) return 'corrompida';
+    if (poe.raridade === 'unico' && !(Number(poe.af?.sintese_arauto_extra) > 0)) return 'único';
+    return null;
+  };
+  f.sintese = f.sintese.map((i) => (i != null && inv[i]?.poe && !motivo(inv[i]) ? i : null));
+  const caixa = el('div', 'fp-oleos');
+  f.sintese.forEach((atual, k) => {
+    const sel = el('select', 'fp-select');
+    sel.append(new Option(`Peça ${k + 1}…`, ''));
+    for (const { indice, p } of pecasDaMochila) {
+      const m = motivo(p);
+      const o = new Option(`${p.poe.nome ?? itens()[p.id]?.name}${m ? ` (${m})` : ''}`, String(indice));
+      o.disabled = !!m || (f.sintese.includes(indice) && atual !== indice);
+      sel.append(o);
+    }
+    sel.value = atual != null ? String(atual) : '';
+    sel.onchange = () => {
+      f.sintese[k] = sel.value ? Number(sel.value) : null;
+      redesenhar();
+    };
+    caixa.append(sel);
+  });
+  op.append(el('p', 'fp-legenda', AJUDA.sintese), caixa);
+  const pronto = f.sintese.every((i) => i != null);
+  const b = botao('fp-botao fp-forjar', 'Sintetizar', () => {
+    ctx.send({ t: 'sintetizar', indices: [...f.sintese] });
+    f.sintese = [null, null, null];
+  }, 'As três peças viram uma peça sintetizada (elas somem).');
+  b.disabled = !pronto;
+  op.append(el('footer', 'fp-rodape', b));
 }
 /** (08/11) As 3 casas do Ungir: cada uma, um dos Óleos que o personagem tem (a mochila e o baú). */
 function seletorDeOleos() {

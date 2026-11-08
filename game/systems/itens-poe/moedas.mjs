@@ -869,6 +869,8 @@ export const MOEDAS_DA_CATEGORIA = Object.freeze({
     'Tainted_Armourers_Scrap', 'Tainted_Blacksmiths_Whetstone', 'Tainted_Mythic_Orb', 'Tainted_Catalyst',
   ],
   encantar: [...Ungir.OLEOS, 'Enchant'],
+  // (08/11) o Sintetizador não gasta moeda (`sintese.mjs`)
+  sintese: [],
   gemas: ['Gemcutters_Prism', 'Gemcutters_Lens'],
   // (06/11) as Partes do Emissário juntam como as lascas (sem peça); os Pergaminhos vão em Especiais (o Ancestral também troca o único)
   lascas: [...LASCAS, ...EMISSARIO.flatMap((c) => c.partes)],

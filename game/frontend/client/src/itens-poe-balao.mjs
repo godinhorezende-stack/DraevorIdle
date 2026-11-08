@@ -187,6 +187,8 @@ export function balaoPoe(p0, { cor = p0.cor ?? '#ddd', raridadeNome = p0.raridad
     // (lote 28) as Joias Abissais encaixadas nos Encaixes Abissais da peça (o nome, na cor da raridade).
     p.abissais?.some(Boolean) ? [sep(), titulo('Encaixes Abissais'), p.abissais.map((j, i) => no('div', `poe-abissal${j ? ` r-${j.poe?.raridade ?? 'normal'}` : ' vazio'}`, j ? `${i + 1}. ${j.poe?.nome ?? 'Joia Abissal'}` : `${i + 1}. vazio`))] : null,
     // (Frente D) "Corrompido" no fim das linhas, em vermelho, como no PoE (a peça do Orbe Vaal e a que já cai corrompida — `sabores.json`)
+    // (08/11) a peça do Sintetizador (`itens-poe/sintese.mjs`)
+    p.sintetizado ? no('div', 'poe-sintetizado', 'Item Sintetizado') : null,
     p.corrompido ? no('div', 'poe-corrompido', 'Corrompido') : null,
     // (Frente D) o texto de sabor, depois de tudo o que é da peça (como no card do poedb: abaixo do "Corrompido", com o separador)
     vagaDoSabor(p),

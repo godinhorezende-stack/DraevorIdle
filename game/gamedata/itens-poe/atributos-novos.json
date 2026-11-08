@@ -10268,6 +10268,12 @@
       "unidade": "",
       "combate": true,
       "efeito": "afixos.somarPeca × 2 com hunt.poeEmFenda (08/11 — o Anel da Fenda)"
+    },
+    "sintese_arauto_extra": {
+      "nome": "Modificador de Arauto adicional no Sintetizador",
+      "unidade": "",
+      "combate": true,
+      "efeito": "sintese.sintetizar (08/11 — os Círculos)"
     }
   }
 }

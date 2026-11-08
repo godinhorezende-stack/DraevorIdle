@@ -361,3 +361,38 @@ test('B17, o Rito da Lua (o Talismã do Grande Lobo): cada chefe de ato vencido 
   assert.equal(C.fatorDaEscala({ campanha: { facil: { bosses: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] } } }, {}, {}, 'ritosDaLua'), 10);
   assert.ok(C.escalaValida('ritosDaLua'));
 });
+
+test('B18, a Síntese: os Círculos saem com 1 a 3 implícitos de Síntese; o Sintetizador junta 3 peças numa sintetizada e o Círculo põe o Modificador de Arauto', { skip: SEM }, async () => {
+  const S = await import('../systems/itens-poe/sintese.mjs');
+  const { personagemDeTeste } = await import('./apoio.mjs');
+  const [circulo] = sorteios('Circle_of_Fear', 1);
+  const sint = circulo.poe.implicitos.filter((m) => m.origem === 'synthesis');
+  assert.ok(sint.length >= 1 && sint.length <= 3, 'os implícitos de Síntese');
+  assert.ok(!circulo.poe.implicitos.some((m) => /^\[/.test(m.texto)), 'sem a marcação');
+  assert.ok(circulo.poe.estados.every((x) => !['inerte', 'registrado'].includes(x)), JSON.stringify(circulo.poe.estados));
+  assert.equal(circulo.poe.af.sintese_arauto_extra, 1);
+  const arauto = linhasDe(circulo).find((m) => m.sorteada && /Arauto/.test(m.texto));
+  assert.ok(arauto, 'o Modificador de Arauto sorteado no Círculo');
+  const raro = (base) => {
+    const g = gerarPeca({ catalogo: Catalogo.catalogo(), regras: Catalogo.REGRAS, base, raridade: 'raro', ilvl: 80, rng: () => 0.3 });
+    return J.pecaDoJogo(g);
+  };
+  const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 80 }), { inventory: [raro('Rings/Iron_Ring'), circulo, raro('Rings/Iron_Ring'), { id: 3031, count: 5 }] });
+  assert.equal(S.sintetizar(e, [0, 1]).ok, false, 'três peças');
+  const corrompido = raro('Rings/Iron_Ring');
+  corrompido.poe.corrompido = true;
+  e.inventory.push(corrompido);
+  assert.match(S.sintetizar(e, [0, 1, 4]).erro, /corrompida/);
+  e.inventory.pop();
+  let s = 5;
+  const r = S.sintetizar(e, [0, 1, 2], () => ((s = (s * 16807) % 2147483647) / 2147483647));
+  assert.ok(r.ok, r.erro);
+  assert.equal(e.inventory.length, 2, 'as três saem, a nova entra');
+  const p = e.inventory.at(-1).poe;
+  assert.equal(p.sintetizado, true);
+  assert.equal(p.raridade, 'normal');
+  assert.ok(p.implicitos.some((m) => m.arauto && m.texto === arauto.texto), 'o Arauto do Círculo como implícito');
+  assert.ok(p.implicitos.filter((m) => m.origem === 'synthesis').length >= 1);
+  assert.ok(p.estados.every((x) => !['inerte', 'registrado'].includes(x)), JSON.stringify(p.implicitos.map((m) => m.texto)));
+  assert.equal(tr('Quando usado no Sintetizador, o novo item terá um Modificador de Arauto adicional').estado, 'equivalente');
+});

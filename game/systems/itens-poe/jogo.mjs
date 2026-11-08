@@ -10,8 +10,8 @@
 // pelo cinto de frascos — `FRASCOS` —, os mapas pelo Dispositivo e as joias pelos encaixes da árvore — `JOIAS`, lote 27.)
 import * as Catalogo from './catalogo.mjs';
 import { definirLeitorDeBase } from './condicoes-poe.mjs';
-import { traduzirPeca } from './traduzir.mjs';
-import { gerarPeca, caiNoSorteio, modificadoresDoUnico } from './gerar.mjs';
+import { traduzirPeca, traduzirMod } from './traduzir.mjs';
+import { gerarPeca, caiNoSorteio, modificadoresDoUnico, definirFiltroDoSorteado } from './gerar.mjs';
 import { darPeca } from '../inventario.mjs';
 import * as DropsPorMonstro from './drops-por-monstro.mjs';
 import * as SocketsPoe from './sockets.mjs';
@@ -618,6 +618,17 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (89 — 08/11, o balão dos únicos com 0 sem efeito, lotes B8–B16 e o que vier no mesmo PR: os velados, a criação, os visuais, os Catalisadores, a
 // Identificação, o Ungir e o Encantamento, o Abismo, a Pesca…)
 export const VERSAO_DA_TRADUCAO = 89;
+
+/**
+ * (08/11, a Síntese) O implícito de pool (um tier: `{ modelo, faixas }`) tem efeito no jogo? (nem inerte nem só registrado — guardado por modelo.) Os
+ * implícitos de Síntese sorteados (os Círculos, o Nebulis, o Sintetizador — `sintese.mjs`) só saem dos que têm.
+ */
+const COM_EFEITO = new Map();
+export function implicitoComEfeito(t) {
+  if (!COM_EFEITO.has(t.modelo)) COM_EFEITO.set(t.modelo, !['inerte', 'registrado'].includes(traduzirMod({ modelo: t.modelo, valores: (t.faixas ?? []).map((f) => f[0]) }).estado));
+  return COM_EFEITO.get(t.modelo);
+}
+definirFiltroDoSorteado((t, s) => s.origem !== 'synthesis' || implicitoComEfeito(t));
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

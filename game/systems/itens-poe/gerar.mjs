@@ -196,6 +196,12 @@ export function linhasDoPool(linhas, n, rng) {
  * o pool de síntese tem os pesos 0). O formato é o do implícito de pool (o do Orbe Vaal): `{ familia, tier, nome, ilvl, modelo, texto,
  * valores, origem, corrompido? }`.
  */
+/**
+ * (08/11, a Síntese) O filtro dos implícitos sorteados dos ÚNICOS (`jogo.mjs` registra: só os de Síntese com efeito no jogo — as frases do pool de
+ * Síntese que a tradução ainda não cobre ficam fora do sorteio). Sem registro, todos.
+ */
+let FILTRO_DO_SORTEADO = null;
+export function definirFiltroDoSorteado(fn) { FILTRO_DO_SORTEADO = typeof fn === 'function' ? fn : null; }
 export function implicitosDoUnico(s, ilvl, rng) {
   const [min, max] = s.quantidade ?? [1, 1];
   const quantos = min + (max > min ? Math.floor(rng() * (max - min + 1)) : 0);
@@ -205,7 +211,7 @@ export function implicitosDoUnico(s, ilvl, rng) {
     const candidatos = [];
     for (const g of s.grupos ?? []) {
       if (usadas.has(g.familia)) continue;
-      for (const t of g.tiers) if ((t.ilvl ?? 1) <= ilvl && (s.pesoIgual || (t.peso ?? 0) > 0)) candidatos.push([g, t]);
+      for (const t of g.tiers) if ((t.ilvl ?? 1) <= ilvl && (s.pesoIgual || (t.peso ?? 0) > 0) && (!FILTRO_DO_SORTEADO || FILTRO_DO_SORTEADO(t, s))) candidatos.push([g, t]);
     }
     if (!candidatos.length) break;
     let par;

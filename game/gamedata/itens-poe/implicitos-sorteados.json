@@ -388,6 +388,96 @@
     "https://poedb.tw/pt/Rational_Doctrine — \"[One to three random synthesis implicit modifiers]\" (o implícito da peça: os de síntese da Joia Cobalto — gamedata/itens-poe/pools/synthesis.json, Jewels/Cobalt_Jewel)"
    ],
    "nota": "Como o Nebulis (dono, 11/10): no pool de síntese os pesos são 0 e a fonte não dá a chance de 1, 2 ou 3 — a quantidade, a família e o tier saem com a MESMA chance (lote 56)."
+  },
+  "Circle_of_Guilt": {
+   "classe": "Rings",
+   "nome": "Círculo da Culpa",
+   "substitui": "[One to three random synthesis implicit modifiers]",
+   "pool": "synthesis",
+   "quantidade": [
+    1,
+    3
+   ],
+   "pesoIgual": true,
+   "fontes": [
+    "https://poedb.tw/pt/Circle_of_Guilt — \"[One to three random synthesis implicit modifiers]\""
+   ],
+   "nota": "(08/11, a Síntese — o dono: \"Criar os sistemas\") como o Nebulis: a quantidade, a família e o tier com a MESMA chance (o pool de síntese do PoE tem peso 0)."
+  },
+  "Circle_of_Regret": {
+   "classe": "Rings",
+   "nome": "Círculo do Arrependimento",
+   "substitui": "[One to three random synthesis implicit modifiers]",
+   "pool": "synthesis",
+   "quantidade": [
+    1,
+    3
+   ],
+   "pesoIgual": true,
+   "fontes": [
+    "https://poedb.tw/pt/Circle_of_Regret — \"[One to three random synthesis implicit modifiers]\""
+   ],
+   "nota": "(08/11, a Síntese — o dono: \"Criar os sistemas\") como o Nebulis: a quantidade, a família e o tier com a MESMA chance (o pool de síntese do PoE tem peso 0)."
+  },
+  "Circle_of_Fear": {
+   "classe": "Rings",
+   "nome": "Círculo do Medo",
+   "substitui": "[One to three random synthesis implicit modifiers]",
+   "pool": "synthesis",
+   "quantidade": [
+    1,
+    3
+   ],
+   "pesoIgual": true,
+   "fontes": [
+    "https://poedb.tw/pt/Circle_of_Fear — \"[One to three random synthesis implicit modifiers]\""
+   ],
+   "nota": "(08/11, a Síntese — o dono: \"Criar os sistemas\") como o Nebulis: a quantidade, a família e o tier com a MESMA chance (o pool de síntese do PoE tem peso 0)."
+  },
+  "Circle_of_Anguish": {
+   "classe": "Rings",
+   "nome": "Círculo da Angústia",
+   "substitui": "[One to three random synthesis implicit modifiers]",
+   "pool": "synthesis",
+   "quantidade": [
+    1,
+    3
+   ],
+   "pesoIgual": true,
+   "fontes": [
+    "https://poedb.tw/pt/Circle_of_Anguish — \"[One to three random synthesis implicit modifiers]\""
+   ],
+   "nota": "(08/11, a Síntese — o dono: \"Criar os sistemas\") como o Nebulis: a quantidade, a família e o tier com a MESMA chance (o pool de síntese do PoE tem peso 0)."
+  },
+  "Circle_of_Ambition": {
+   "classe": "Rings",
+   "nome": "Círculo da Ambição",
+   "substitui": "[One to three random synthesis implicit modifiers]",
+   "pool": "synthesis",
+   "quantidade": [
+    1,
+    3
+   ],
+   "pesoIgual": true,
+   "fontes": [
+    "https://poedb.tw/pt/Circle_of_Ambition — \"[One to three random synthesis implicit modifiers]\""
+   ],
+   "nota": "(08/11, a Síntese — o dono: \"Criar os sistemas\") como o Nebulis: a quantidade, a família e o tier com a MESMA chance (o pool de síntese do PoE tem peso 0)."
+  },
+  "Circle_of_Nostalgia": {
+   "classe": "Rings",
+   "nome": "Círculo da Nostalgia",
+   "substitui": "[One to three random synthesis implicit modifiers]",
+   "pool": "synthesis",
+   "quantidade": [
+    1,
+    3
+   ],
+   "pesoIgual": true,
+   "fontes": [
+    "https://poedb.tw/pt/Circle_of_Nostalgia — \"[One to three random synthesis implicit modifiers]\""
+   ],
+   "nota": "(08/11, a Síntese — o dono: \"Criar os sistemas\") como o Nebulis: a quantidade, a família e o tier com a MESMA chance (o pool de síntese do PoE tem peso 0)."
   }
  }
 }
