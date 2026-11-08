@@ -964,6 +964,20 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
 }
 
 /**
+ * Uma peça de uma CLASSE (`classe`, a do catálogo — "Amulets"), na `raridade`, de uma base que cai no `nivel` (requisito até ele): os Raros a
+ * mais do chefe do Hospício de Poorjoy (`hunt/combate.mjs`). Null sem base.
+ */
+export function pecaDaClasse(classe, nivel, { raridade = 'raro', rng = Math.random, regras = Catalogo.REGRAS } = {}) {
+  const c = Catalogo.catalogo()?.classes?.[classe];
+  const ilvl = Math.max(1, Math.round(Number(nivel) || 1));
+  const bases = (c?.bases ?? []).filter((b) => REG.porBase.has(b.id) && (b.requisitos?.nivel ?? 1) <= ilvl && !b.slug?.startsWith('Royale_') && podeCairComo(c, b, raridade) && caiNoNivel(b, ilvl));
+  if (!bases.length) return null;
+  const base = bases[Math.floor(rng() * bases.length)];
+  const r = raridade === 'raro' && FRASCOS.includes(classe) ? 'magico' : raridade;
+  return qualidadeDoDrop(pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras, base: base.id, raridade: r, ilvl, rng }), regras, rng), rng, regras);
+}
+
+/**
  * Um MAPA do tier (`itens-poe/mapas.mjs`): a peça inteira, como cai do monstro. `raridade`: a fixa (o mapa garantido do Kitava); sem ela,
  * os pesos do loot (regras.json → drop.raridades) para Normal/Mágico/Raro e a chance própria do MAPA ÚNICO (mapas.json →
  * drop.chanceDoUnico), todos com a Raridade de Itens (`raridadeAumentada`, do mapa em que caiu). O Único sai no tier do drop (os únicos

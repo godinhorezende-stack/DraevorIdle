@@ -1,0 +1,19 @@
+{
+  "_nota": "Overrides de classes (systems/classes.mjs): só o NOVO ou DIFERENTE sobre classes.json, atributos-principais.json e classes-meta.json. Editado em /editor/conteudo (Classes).",
+  "ativo": true,
+  "classes": {
+    "ranger": {
+      "outfit": {
+        "male": 1102,
+        "female": 1103
+      }
+    },
+    "marauder": {
+      "outfit": {
+        "male": 957,
+        "female": 958
+      }
+    }
+  },
+  "efeitos": {}
+}

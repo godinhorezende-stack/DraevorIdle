@@ -11,7 +11,7 @@
 //     acerto (`fichaDoGolpe`), que devolve a ficha daquele golpe com o "aumentado", o crítico, a penetração e as afecções dele.
 import { ligado } from './catalogo.mjs';
 import { maximo as maximoDeCargas } from './cargas.mjs';
-import { maldicoesNoJogador as maldicoesDoMapa } from './mapas.mjs';
+import { maldicoesNoJogador as maldicoesDoMapa, solosDoMapa } from './mapas.mjs';
 import * as Limites from '../combate/limites.mjs';
 import * as Formulas from '../combate/formulas.mjs';
 import { simples } from '../combate/modificadores.mjs';
@@ -154,7 +154,9 @@ export function noSoloCongelado(h, agora = h?.clock ?? 0) {
   const p = h?.pos;
   if (!p) return false;
   const dentro = (s) => s.ate > agora && Math.max(Math.abs(s.x - p.x), Math.abs(s.y - p.y)) <= s.raio;
-  return (h.solosDosMonstros ?? []).some((s) => s.tipo === 'congelado' && (s.z ?? h.z ?? 0) === (h.z ?? 0) && dentro(s)) || (h.areasFrias ?? []).some((a) => a.soloCongelado && dentro(a));
+  // (08/11: + os trechos do mapa único — `mapas.solosDoMapa`, sem fim)
+  return (h.solosDosMonstros ?? []).some((s) => s.tipo === 'congelado' && (s.z ?? h.z ?? 0) === (h.z ?? 0) && dentro(s)) || (h.areasFrias ?? []).some((a) => a.soloCongelado && dentro(a))
+    || solosDoMapa(h).some((s) => s.tipo === 'congelado' && s.z === (h.z ?? 0) && Math.max(Math.abs(s.x - p.x), Math.abs(s.y - p.y)) <= s.raio);
 }
 /** (lote B1, D-B1.7) O raio das áreas frias que crescem, no instante `agora` (o tique — `cacadas.resfriarNasAreasFrias`). */
 export function atualizarAreasFrias(h, agora = h?.clock ?? 0) {
@@ -721,7 +723,8 @@ export function condicoesDe(estado, total = null, principais = null) {
     // (03/11) sobre Solo Congelado (o do monstro ou o seu — `noSoloCongelado`)
     if (noSoloCongelado(h, agora)) v.add('soloCongelado');
     // (06/11, lote 11) sobre o Solo Ardente / Eletrizado dos monstros (`hunt.solosDosMonstros`)
-    for (const sd of h.solosDosMonstros ?? []) if (sd.ate > agora && h.pos && (sd.z ?? 0) === (h.z ?? 0) && Math.max(Math.abs(sd.x - h.pos.x), Math.abs(sd.y - h.pos.y)) <= sd.raio) v.add(sd.tipo === 'ardente' ? 'soloArdente' : sd.tipo === 'eletrizado' ? 'soloEletrizado' : 'soloDoMonstro');
+    // (08/11: + os trechos do mapa único — `mapas.solosDoMapa`)
+    for (const sd of [...(h.solosDosMonstros ?? []), ...solosDoMapa(h).map((x) => ({ ...x, ate: Infinity }))]) if (sd.ate > agora && h.pos && (sd.z ?? 0) === (h.z ?? 0) && Math.max(Math.abs(sd.x - h.pos.x), Math.abs(sd.y - h.pos.y)) <= sd.raio) v.add(sd.tipo === 'ardente' ? 'soloArdente' : sd.tipo === 'eletrizado' ? 'soloEletrizado' : 'soloDoMonstro');
     v.add(posturaDe(h, agora) === 'areia' ? 'posturaAreia' : 'posturaSangue');
     if (emTempestadeSangrenta(h, agora)) v.add('emTempestadeSangrenta');
     if (estandarteAtivo(h, agora)) v.add('estandarteAtivo');

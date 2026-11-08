@@ -49,6 +49,7 @@ import * as Estados from '../skills/estados.mjs';
 import * as Gemas from '../gemas.mjs';
 import * as Charms from '../charms.mjs';
 import * as ItensPoeJogo from '../itens-poe/jogo.mjs';
+import * as Instancia from './instancia.mjs';
 import * as MoedasPoe from '../itens-poe/moedas.mjs';
 // (100% — dados, 03/11) as Tatuagens do PoE (a fonte simples, sem a liga Ancestral — `passivas/tatuagens.dropDoMonstro`)
 import * as Tatuagens from '../passivas/tatuagens.mjs';
@@ -66,7 +67,8 @@ import { BESTIARY, RESPAWN_MS } from './monstros.mjs';
  * O ITEM LEVEL do drop do PoE = o nível do monstro (regra do dono, 05/10: bicho nível 11 não solta mod de iLvl 23). O monstro do PoE tem
  * o nível dele no bestiário; os outros, o da fase. Os níveis a mais da raridade do Draevor (`levelExtra`) não sobem o iLvl.
  */
-export const nivelDoDropPoe = (hunt, alvo) => BESTIARY[alvo?.key]?.poe?.nivel ?? hunt?.escala?.nivel ?? AtributosDoPersonagem.levelDoBicho(hunt, { ...alvo, levelExtra: 0 });
+// (08/11, os mapas únicos: o nível do monstro mudado pelo mapa — `nivelPoe`, "Nível dos Monstros: 83" — e os "Itens de Níveis maiores" do chefe — `ilvlExtra`)
+export const nivelDoDropPoe = (hunt, alvo) => (alvo?.nivelPoe ?? BESTIARY[alvo?.key]?.poe?.nivel ?? hunt?.escala?.nivel ?? AtributosDoPersonagem.levelDoBicho(hunt, { ...alvo, levelExtra: 0 })) + (Number(alvo?.ilvlExtra) || 0);
 import { resistido, resistenciaEfetivaDe, resistenciaDe } from './resistencia.mjs';
 import * as ModsPoe from '../itens-poe/mods-poe.mjs';
 // (lote "projetil", dono 02/11) o golpe básico de longe VOA (o projétil da arma — `hunt/voos.mjs`)
@@ -1078,7 +1080,12 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   const noMapa = salaDe(hunt)?.mapa ?? null;
   const quantidadeDoJogador = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + (podio?.loot ?? 0) / 100) * fatorDaCacaOnline(hunt) * (1 + Math.max(0, Number(noMapa?.quantidade) || 0) / 100);
   const raridadeDoMorto = raridadeDoDrop(estado, alvo) + (Number(noMapa?.raridade) || 0);
-  for (const daPoe of ItensPoeJogo.dropsDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidadeDoJogador, raridadeDoMorto)) {
+  // (08/11, o Hospício de Poorjoy: "Chefe Único derruba N Raro adicional <classe>" — `alvo.rarosExtras`/`rarosClasse`, `mapas-areas.aplicarEfeitos`)
+  const rarosDoChefe = alvo.rarosExtras > 0 ? Array.from({ length: alvo.rarosExtras }, () => ItensPoeJogo.pecaDaClasse(alvo.rarosClasse, nivelDoDropPoe(hunt, alvo), { raridade: 'raro' })).filter(Boolean).map((p) => ItensPoeJogo.semIdentificar(p)) : [];
+  // (08/11, as Relíquias de Atziri e o Maquinário de Doryani: "Itens Encontrados têm X% de chance de caírem Corrompidos na Área")
+  const corrompidosPct = Number(noMapa?.efeitos?.instancia?.corrompidosPct) || 0;
+  for (const daPoe of [...ItensPoeJogo.dropsDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidadeDoJogador, raridadeDoMorto), ...rarosDoChefe]) {
+    if (corrompidosPct > 0 && Math.random() * 100 < corrompidosPct) daPoe.poe.corrompido = true;
     identificarAoAchar(estado, daPoe);
     // O FILTRO DE LOOT (dono, 08/10: "está pegando itens mesmo setando as coisas"): a peça que o filtro não pega fica no chão ("Ignorado").
     if (Bolsa.ignora(estado, daPoe.id, daPoe)) {
@@ -1223,6 +1230,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // Sede de sangue (knight) e Fonte eterna (sorcerer).
   Arvore.aoMatar(estado, eventos, hunt.pos, personagem?.nome);
   tirarMonstro(hunt, alvo);
+  // (08/11, o Pesadelo de Acton: "Mortos Inquietos" — os mortos-vivos se levantam 10 s depois de morrer, uma vez: `Instancia.guardarParaRessurgir`)
+  if (alvo.ressurgirMs > 0 && !alvo.ressurgiu) Instancia.guardarParaRessurgir(hunt, alvo, salaDe(hunt)?.clock ?? hunt.clock ?? 0);
   if (hunt.alvo === alvo.uid) hunt.alvo = null;
   // O setor da instância ficou limpo: a party toda é avisada (uma vez — o último bicho do setor só morre uma vez).
   const salaDoSetor = salaDe(hunt);

@@ -102,7 +102,7 @@ export function iniciar({ mapasSobDemanda = false } = {}) {
     const doChefe = t.chefe ? unicoPeloSlug(t.chefe) : null;
     if (t.chefe && !doChefe) problemas.push(`T${tier}: o chefe "${t.chefe}" não é um monstro único da campanha`);
     const chefe = doChefe ? Monstros.registrar(noNivel(doChefe, nivel), 'demon') : null;
-    DO_TIER.set(tier, { comuns, chefe });
+    DO_TIER.set(tier, { comuns, chefe, nativos, area: t.area });
     const id = `${PREFIXO}${tier}`;
     apelidarMapa(id, t.terreno);
     const criaturas = [...new Set([...comuns, ...(chefe ? [chefe] : [])])].map((k) => ({ key: k, name: BESTIARY[k].name, look: BESTIARY[k].look, exp: BESTIARY[k].exp, hp: BESTIARY[k].hp }));
@@ -162,5 +162,132 @@ export function aplicarEfeitos(m, ef) {
   for (const [k, v] of Object.entries(ef.noAcerto ?? {})) if (Number(v) > 0) m.noAcerto = { ...(m.noAcerto ?? {}), [k]: (m.noAcerto?.[k] ?? 0) + Number(v) };
   for (const [k, v] of Object.entries(ef.espinhos ?? {})) if (Number(v) > 0) m.espinhos = { ...(m.espinhos ?? {}), [k]: (m.espinhos?.[k] ?? 0) + Number(v) };
   if (n('semDreno') > 0) m.semDreno = true;
+  // (08/11 — dono: zerar as linhas sem efeito dos mapas únicos)
+  // O NÍVEL DOS MONSTROS ("Nível dos Monstros: 83", "+2 ao Nível dos Monstros da Área" — `nivelDelta`, a diferença para o nível do tier, do
+  // `Mapas.resumo`): a vida, o dano e a experiência pelo crescimento por nível do PoE (o mesmo de `noNivel`); o nível novo vale no drop (`nivelPoe`).
+  if (n('nivelDelta')) {
+    const d = n('nivelDelta');
+    const fator = (campo) => Math.exp((Number(CONFIG.crescimentoPorNivel?.[campo]) || 0) * d);
+    m.maxHp = Math.max(1, Math.round(m.maxHp * fator('vida')));
+    m.hp = m.maxHp;
+    if (m.esPoe) m.esPoe.ultimoHp = m.maxHp;
+    m.forca = (m.forca ?? 1) * fator('dano');
+    m.exp = Math.round((Number(m.exp) || 0) * fator('experiencia'));
+    m.nivelPoe = Math.max(1, (Number(m.nivelPoe ?? BESTIARY[m.key]?.poe?.nivel) || 1) + d);
+  }
+  // o drop do chefe: os Itens de Níveis maiores (o Santuário Olmeca, "+4" no poedb — `ilvlExtra`) e os Raros a mais de uma classe (o Hospício de
+  // Poorjoy — `rarosExtras`, `rarosClasse`: o índice da classe em `CLASSES_DOS_RAROS`) — `hunt/combate.mjs`
+  if (n('ilvlExtra')) m.ilvlExtra = (m.ilvlExtra ?? 0) + n('ilvlExtra');
+  if (n('rarosExtras') > 0) {
+    m.rarosExtras = (m.rarosExtras ?? 0) + Math.round(n('rarosExtras'));
+    m.rarosClasse = CLASSES_DOS_RAROS[Math.max(0, Math.min(CLASSES_DOS_RAROS.length - 1, Math.round(n('rarosClasse'))))];
+  }
+  // as AFECÇÕES: "Monstros têm X% de chance de Evitarem Afecções" (`afeccoes.aoAcertar`) e "Imunes a Atordoamentos ou Afecções Elementais
+  // aleatórias" (cada monstro, a sua: o Atordoamento ou uma das elementais — o Incêndio, o Resfriamento, o Congelamento, a Eletrização)
+  if (n('evitarAfeccoesPct') > 0) m.evitarAfeccoesPct = Math.min(100, (m.evitarAfeccoesPct ?? 0) + n('evitarAfeccoesPct'));
+  if (n('imuneAleatoria') > 0) {
+    const q = IMUNIDADES[Math.floor(Math.random() * IMUNIDADES.length)];
+    if (q === 'atordoamento') m.imuneAtordoamento = true;
+    else m.imuneAfeccoes = [...new Set([...(m.imuneAfeccoes ?? []), q])];
+  }
+  // as MALDIÇÕES: "Monstros Refletem Feitiços" (a sua Maldição volta em você — `skills/reforcos.marcarCom`, `refleteFeiticos`) e "Maldições têm
+  // seu efeito em Monstros reduzido em X%" (`efeitoMaldicaoMenosPct`)
+  if (n('refleteFeiticos') > 0) m.refleteFeiticos = Math.min(100, (m.refleteFeiticos ?? 0) + n('refleteFeiticos'));
+  if (n('efeitoMaldicaoMenosPct') > 0) m.efeitoMaldicaoMenosPct = Math.min(100, (m.efeitoMaldicaoMenosPct ?? 0) + n('efeitoMaldicaoMenosPct'));
+  // os MORTOS INQUIETOS ("map undead monsters get up after X seconds [10]" — `hunt/instancia.guardarParaRessurgir`)
+  if (n('ressurgirS') > 0) m.ressurgirMs = Math.round(n('ressurgirS') * 1000);
   return m;
 }
+/** As afecções de "Imunes a Atordoamentos ou Afecções Elementais aleatórias" (as do jogo; o PoE lista também o Causticado, o Fragilizado e o Exaurido). */
+export const IMUNIDADES = Object.freeze(['atordoamento', 'incendio', 'resfriamento', 'congelamento', 'eletrizacao']);
+/**
+ * As classes dos Raros a mais do chefe do Hospício de Poorjoy ("Chefe Único derruba N Raro adicional <classe>" — o poedb dá o índice 0–23 do
+ * `unique_map_boss_class_of_rare_items_to_drop`, sem a lista: aqui as 24 classes de equipamento do PoE).
+ */
+export const CLASSES_DOS_RAROS = Object.freeze(['Amulets', 'Rings', 'Belts', 'Body_Armours', 'Boots', 'Gloves', 'Helmets', 'Shields', 'Quivers', 'Bows', 'Claws', 'Daggers', 'Rune_Daggers', 'One_Hand_Axes', 'One_Hand_Maces', 'One_Hand_Swords', 'Thrusting_One_Hand_Swords', 'Sceptres', 'Wands', 'Staves', 'Warstaves', 'Two_Hand_Axes', 'Two_Hand_Maces', 'Two_Hand_Swords']);
+
+// ---------------------------------------------------------------- os TRECHOS DE SOLO do mapa único (08/11)
+
+/**
+ * Os SOLOS do mapa único ("Área possui trechos de Solo Ardente / solo congelado / solo profano" — o Pesadelo de Acton, o Vórtice do Caos, o
+ * Tesouro Maldito de Oba). O poedb em inglês dá: 20 trechos por 100 tiles ("map ground effect patches per 100 tiles"), o raio ("map ground
+ * effect radius": 14; o Oba, 10), o fogo 16000 por 10 s, o profano 25000 por minuto e o gelo de magnitude 10. Aqui:
+ *   - o TILE do PoE é 23 casas da grade dele (250 unidades); a casa do jogo é 20 unidades (`gemas-a3b.UNIDADES_POR_CASA`) — 100 tiles ≈ 15600
+ *     casas; o raio é na grade do PoE (× 10,87 unidades), no quadrado de mesma área do círculo;
+ *   - o dano segue a área (como o solo dos monstros — `mobs/mecanicas.criarSolo`, 62,5% do golpe máximo por segundo): o ARDENTE, 62,5% do golpe
+ *     dos monstros comuns da área; o PROFANO, na proporção do PoE (25000/min contra 96000/min do fogo: 16,3%); o CONGELADO Resfria em 10%.
+ */
+export const SOLOS_DO_MAPA = Object.freeze({
+  ardente: { pctDoGolpe: 62.5, efeito: 6 },
+  profanado: { pctDoGolpe: (62.5 * 25000) / 96000, efeito: 17 },
+  congelado: { resfriamentoPct: 10, efeito: 41 },
+});
+export const TRECHOS_POR_100_TILES = 20;
+export const CASAS_POR_TILE = (250 / 20) ** 2;
+const raioEmCasas = (raioPoe) => Math.max(1, Math.round(((Number(raioPoe) || 14) * 10.87 * Math.sqrt(Math.PI)) / 2 / 20));
+/**
+ * Põe os trechos na instância (`instancia.solosDoMapa`, as casas alcançáveis, longe da entrada): `solos` — `{ ardente: raio, … }` dos fatores
+ * da instância; `golpe`: o golpe máximo dos monstros comuns da área. A semente é a da instância (todos da party veem os mesmos).
+ */
+export function porSolosNaInstancia(instancia, { grade, inicio = null, solos = {}, golpe = 0, alcancaveis, rng = Math.random } = {}) {
+  const lista = [];
+  for (const [tipo, raioPoe] of Object.entries(solos ?? {})) {
+    const def = SOLOS_DO_MAPA[tipo];
+    if (!def || !(raioPoe > 0)) continue;
+    const raio = raioEmCasas(raioPoe);
+    for (const [z, casas] of alcancaveis ?? []) {
+      const todas = [...casas];
+      const n = Math.max(1, Math.round((todas.length * TRECHOS_POR_100_TILES) / (100 * CASAS_POR_TILE)));
+      for (let i = 0; i < n && todas.length; i++) {
+        const [x, y] = todas.splice(Math.floor(rng() * todas.length), 1)[0].split(',').map(Number);
+        // (nunca em cima da entrada: quem chega não nasce queimando)
+        if (inicio && (inicio.z ?? grade?.z ?? 0) === z && Math.max(Math.abs(inicio.x - x), Math.abs(inicio.y - y)) <= raio + 1) continue;
+        lista.push({ tipo, x, y, z, raio, efeito: def.efeito, ...(def.pctDoGolpe ? { dps: Math.round((golpe * def.pctDoGolpe) / 100) } : {}), ...(def.resfriamentoPct ? { pct: def.resfriamentoPct } : {}) });
+      }
+    }
+  }
+  if (lista.length && instancia) instancia.solosDoMapa = lista;
+  return lista;
+}
+
+// ---------------------------------------------------------------- os HABITANTES do mapa único (08/11)
+
+/**
+ * Quem HABITA o mapa único (no lugar dos monstros comuns do tier — os slugs da campanha do PoE): "Área é habitada por Esqueletos" (o Pesadelo
+ * de Acton — "map packs are skeletons"), "por seguidores de Lunaris / Solaris" (o Templo do Crepúsculo: os juramentados do Ato 8), "Área possui
+ * muitos Totens" (o Whakawairua Tuahu: metade dos grupos são Totens Inua) e "aumento na variedade de monstros" (+ os comuns de dois outros tiers).
+ */
+export const HABITANTES = Object.freeze({
+  esqueletos: ['Ancient_Bonestalker', 'Rattling_Bones', 'Colossal_Bonestalker', 'Bonewarped_Archer', 'Bonewarped_Warrior', 'Skeleton_Spriggan'],
+  lunaris: ['Lunarsworn_Wintermage', 'Lunaris_Elite', 'Lunar_Scout', 'Lunar_Miscreation', 'Lunaris_Concubine', 'Lunaris_Zealot'],
+  solaris: ['Solarsworn_Infernomage', 'Solaris_Elite', 'Solar_Scout', 'Solar_Elemental'],
+  totens: ['Inua_Totem'],
+});
+/** O monstro COMUM da campanha pelo slug (o de nível mais alto). */
+function comumPeloSlug(slug) {
+  let achado = null;
+  for (const a of Object.values(C.areas)) for (const m of a.monstros ?? []) if (m.slug === slug && !m.unico && (!achado || m.nivel > achado.nivel)) achado = m;
+  return achado;
+}
+/** As chaves do bestiário dos `slugs`, no nível do `tier` (registradas uma vez — `Monstros.registrar`). */
+export function chavesNoTier(slugs, tier) {
+  const nivel = Mapas.nivelDoTier(tier);
+  const nativos = DO_TIER.get(Number(tier))?.nativos ?? [];
+  return (slugs ?? []).map((slug) => comumPeloSlug(slug)).filter(Boolean).map((m, i) => Monstros.registrar(noNivel(m, nivel), nativos[i % Math.max(1, nativos.length)] ?? 'skeleton'));
+}
+/**
+ * Os spawns da instância com os HABITANTES do mapa (`habitantes`: `{ esqueletos, lunaris, solaris, totens, variedade }` dos fatores da instância):
+ * a quantidade e a raridade de cada spawn ficam; muda quem nasce. Sem habitantes, os spawns como vieram.
+ */
+export function comHabitantes(spawns, tier, habitantes = {}) {
+  const h = habitantes ?? {};
+  if (!spawns?.length || !Object.values(h).some((v) => v > 0)) return spawns;
+  let base = ['esqueletos', 'lunaris', 'solaris'].filter((g) => h[g] > 0).flatMap((g) => chavesNoTier(HABITANTES[g], tier));
+  if (!base.length) base = [...comunsDoTier(tier)];
+  // (a variedade: os comuns de dois outros tiers — os do meio do caminho, sempre os mesmos para o tier — no nível deste)
+  if (h.variedade > 0) for (const outro of [((tier + 4) % 16) + 1, ((tier + 9) % 16) + 1]) base.push(...chavesNoTier((C.areas[CONFIG.porTier?.find((t) => Number(t.tier) === outro)?.area]?.monstros ?? []).filter((m) => !m.unico).map((m) => m.slug), tier));
+  const totens = h.totens > 0 ? chavesNoTier(HABITANTES.totens, tier) : [];
+  if (!base.length) return spawns;
+  return spawns.map((s, i) => ({ ...s, criaturas: [{ key: totens.length && i % 2 === 1 ? totens[Math.floor(i / 2) % totens.length] : base[i % base.length], peso: 1 }] }));
+}
+

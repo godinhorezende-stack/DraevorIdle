@@ -632,7 +632,9 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = n
   // Hunt VIP/Instance/Divine como FASE de um ato do editor: elas não têm spawns no mapa (a sala é gerada), então a instância sai dos pontos da
   // própria sala gerada, com as criaturas e pesos do cadastro (`spawnPorAndar`). Sem isto a fase nunca limparia.
   // (O MAPA do endgame — `mapa`, o resumo da peça aberta no Dispositivo — também é uma instância nos spawns do terreno dele.)
-  const spawnsDoMapa = fase || mapa ? (spawnsDaHunt(huntId)?.length ? spawnsDaHunt(huntId) : tranca ? spawnsDaSalaGerada(posicoes, hunt, grade) : null) : null;
+  const spawnsDaArea = fase || mapa ? (spawnsDaHunt(huntId)?.length ? spawnsDaHunt(huntId) : tranca ? spawnsDaSalaGerada(posicoes, hunt, grade) : null) : null;
+  // (08/11) os HABITANTES do mapa único (os Esqueletos do Pesadelo de Acton, os seguidores de Lunaris e Solaris, os Totens — `MapasAreas.comHabitantes`)
+  const spawnsDoMapa = mapa ? MapasAreas.comHabitantes(spawnsDaArea, mapa.tier, Mapas.fatoresDaInstancia(mapa).habitantes) : spawnsDaArea;
   const comInstancia = !!spawnsDoMapa?.length;
   const instanciaId = comInstancia ? Instancia.gerarId() : null;
   // Uma criatura por casa (por andar).
@@ -643,6 +645,8 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = n
   const todos = comInstancia
     ? Instancia.comporBichos({ grade, spawns: spawnsDoMapa, dadosDaHunt: hunt, inicio, escala, aplicarEscala: Campanha.aplicarEscala, instanciaId, ...ajustesDoMapa })
     : [];
+  // (08/11, as Relíquias de Atziri: "Área não contém monstros") ninguém nasce — onde nasceria cada grupo fica um baú (`BausPoe.porNaInstancia`, abaixo)
+  const ondeNasceriam = mapa && doMapa?.semMonstros ? todos.splice(0).map(({ z, m }) => ({ z, m: { x: m.x, y: m.y } })) : null;
   // A fase que conclui matando um chefe (ou pegando o item que um alvo solta) precisa TER esse monstro: o que os spawns do mapa não trazem
   // nasce no fundo da área (`chefeNaInstancia`).
   const conclusao = comInstancia && !mapa ? Campanha.conclusaoDa(huntId) : null;
@@ -656,7 +660,7 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = n
   // (05/11) O mapa do GUARDIÃO DO CRIADOR (`pinaculos-acesso.mjs`): o guardião é o chefe do mapa — o chefe do tier não nasce.
   const doEncontro = mapa?.encontro ? PinaculosAcesso.chefe(mapa.encontro) : null;
   if (mapa && comInstancia) {
-    const chave = doEncontro?.mapa ? null : MapasAreas.chefeDoTier(mapa.tier);
+    const chave = doEncontro?.mapa || ondeNasceriam ? null : MapasAreas.chefeDoTier(mapa.tier);
     for (let i = 0; chave && i < doMapa.chefes; i++) {
       const chefe = Instancia.chefeNaInstancia({ grade, todos, chave, inicio, escala, aplicarEscala: Campanha.aplicarEscala, dadosDaHunt: hunt, instanciaId });
       if (!chefe) break;
@@ -741,14 +745,48 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = n
     const definicoes = encontrosDaHunt(huntId);
     if (definicoes.length) Encontros.criar(instancia, definicoes);
     // (dono, 03/11 — "100%") os BAÚS do PoE nas áreas da campanha e nos mapas (`itens-poe/baus-poe.mjs`): perto dos monstros, abrem ao passar.
-    if (itensPoeLigado() && (hunt?.poeArea || hunt?.poeMapa)) BausPoe.porNaInstancia(instancia, { grade, inicio, todos, nivel: mapa?.nivel ?? escala?.nivel ?? null, baus: doMapa?.baus ?? null });
+    if (itensPoeLigado() && (hunt?.poeArea || hunt?.poeMapa)) BausPoe.porNaInstancia(instancia, { grade, inicio, todos: ondeNasceriam ?? todos, nivel: mapa?.nivel ?? escala?.nivel ?? null, baus: doMapa?.baus ?? null, ...(ondeNasceriam ? { porArea: Math.min(BAUS_SEM_MONSTROS, spawnsDoMapa.length) } : {}) });
     // (08/11, o dono: "Criar a Fenda do Abismo") o ABISMO do PoE (`itens-poe/abismo.mjs`): nos mapas e nas áreas dos atos 6 a 10, pela chance
     if (itensPoeLigado()) Abismo.porNaInstancia(instancia, { grade, inicio, todos, nivel: mapa?.nivel ?? escala?.nivel ?? null, onde: Abismo.valeNaArea(hunt) });
     // (08/11) a FENDA do PoE (`itens-poe/fenda.mjs`): nos mapas do endgame, pela chance
     if (itensPoeLigado()) Fenda.porNaInstancia(instancia, { grade, inicio, todos, nivel: mapa?.nivel ?? null, ehMapa: !!hunt?.poeMapa });
+    // (08/11) os TRECHOS DE SOLO do mapa único ("Área possui trechos de Solo Ardente" — `mapas-areas.porSolosNaInstancia`): o dano pelo golpe dos monstros da área
+    if (itensPoeLigado() && Object.keys(doMapa?.solos ?? {}).length) {
+      const golpes = todos.map(({ m }) => (Poderes.golpeMaximoDoBicho(m) ?? 0) * (m.forca ?? 1)).filter((g) => g > 0).sort((a, b) => a - b);
+      MapasAreas.porSolosNaInstancia(instancia, { grade, inicio, solos: doMapa.solos, golpe: golpes[Math.floor(golpes.length / 2)] ?? 0, alcancaveis: Instancia.casasAlcancaveis(grade, inicio) });
+    }
   }
   return { grade, inicio, andarInicial, monstros, outrosAndares, instancia, filaDoCrisol };
 }
+
+/**
+ * (08/11, o Tesouro Maldito de Oba: "Área se torna fatal após algum tempo") o poedb: o jogador morre se não matar todos os monstros em 9 minutos
+ * sozinho (6 em grupo), a contar da entrada; quatro avisos no caminho e a contagem de Oba nos últimos 10 s. Aqui, a instância do mapa inteira
+ * (o PoE: os cinco andares do tesouro). A morte segue o caminho de sempre (a vida em 0).
+ */
+const AVISOS_DA_AREA_FATAL = [[1 / 3, 'O Pesadelo sentiu o seu cheiro no Tesouro de Oba.'], [5 / 9, 'O Pesadelo se aproxima.'], [7 / 9, 'O Pesadelo está quase aqui.'], [8 / 9, 'Falta pouco: limpe a área antes que ela se torne fatal!']];
+function areaFatal(estado, hunt, personagem) {
+  const fatal = Mapas.fatoresDaInstancia(hunt.mapa).fatalS;
+  const inst = Instancia.daSala(hunt);
+  if (!(fatal > 0) || !inst || inst.status !== 'ativa' || !(estado.hp > 0)) return;
+  const emGrupo = hunt.partilha?.ativa && hunt.partilha.membros.length > 1;
+  const limite = (emGrupo ? (fatal * 2) / 3 : fatal) * 1000;
+  const t = hunt.clock ?? 0;
+  const ja = (hunt.poeAreaFatal ??= { aviso: 0, contagem: 11 });
+  while (ja.aviso < AVISOS_DA_AREA_FATAL.length && t >= AVISOS_DA_AREA_FATAL[ja.aviso][0] * limite) estado.avisoDaHunt = AVISOS_DA_AREA_FATAL[ja.aviso++][1];
+  const falta = Math.ceil((limite - t) / 1000);
+  if (falta <= 10 && falta > 0 && falta < ja.contagem) {
+    ja.contagem = falta;
+    estado.avisoDaHunt = `Oba: ${falta}…`;
+  }
+  if (t < limite) return;
+  estado.hp = 0;
+  EventosDeEncontro.empurrar(hunt, [{ t: 'dmg', uid: 'player', quem: personagem?.nome, x: hunt.pos.x, y: hunt.pos.y, v: 0, foe: false, de: 'Tesouro Maldito de Oba', golpe: 'a área se tornou fatal', fatal: true, color: '#9b30ff' }]);
+  estado.avisoDaHunt = 'A área se tornou fatal.';
+}
+
+/** (08/11) Os baús do mapa sem monstros (as Relíquias de Atziri): um onde nasceria cada grupo, até este teto. */
+const BAUS_SEM_MONSTROS = 25;
 
 /** Quanto o portal do boss de ato espera aberto, com a hunt limpa, antes de a instância seguinte começar (e fechá-lo). */
 const TEMPO_DO_PORTAL_MS = 60_000;
@@ -1277,6 +1315,8 @@ function soltarChefeDoAto(hunt, agora) {
 }
 /** O chefe guardado (`Instancia.liberarReserva`: a Trindade Depravada, depois dos três) sai de um portal, com o aviso na tela de quem está na sala. */
 function soltarReserva(estado, hunt) {
+  // (08/11) os Mortos Inquietos do mapa único que se levantam (`Instancia.liberarRessurgidos`)
+  for (const m of Instancia.liberarRessurgidos(hunt, salaDe(hunt)?.clock ?? hunt.clock ?? 0)) EventosDeEncontro.empurrar(hunt, [{ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'ressurgiu', nome: m.name }]);
   for (const m of Instancia.liberarReserva(hunt)) {
     EventosDeEncontro.empurrar(hunt, [{ t: 'portal', x: m.x, y: m.y, ms: PORTAL_DO_CHEFE_ABRE_MS + PORTAL_DO_CHEFE_FECHA_MS, asset: 'fabrica-portal-do-chefe' }]);
     for (const e of quemEstaNaSala(estado, hunt)) e.avisoDaHunt = `${e.avisoDaHunt ? `${e.avisoDaHunt} ` : ''}${m.name} aparece!`;
@@ -1914,6 +1954,8 @@ function tiqueDaCacada(estado, personagem, agora) {
   hunt.clock = (hunt.clock ?? 0) + passou;
   hunt.ultimoTique = agora;
   Ficha.totais(estado).time += passou / 1000;
+  // (08/11, o Tesouro Maldito de Oba) a ÁREA que fica FATAL (`areaFatal`)
+  if (itensPoeLigado() && hunt.mapa) areaFatal(estado, hunt, personagem);
   Boosts.consumir(estado, passou);
   BuffPower.consumir(estado, passou);
   Prey.consumir(estado, passou); // "o relógio só corre dentro da hunt"
@@ -1959,7 +2001,8 @@ function tiqueDaCacada(estado, personagem, agora) {
       soltarChefeDoAto(hunt, agora);
       soltarReserva(estado, hunt);
       // (03/11) os baús do PoE fechados e alcançáveis seguram o fim da sala no automático (`BausPoe.seguramOClear`)
-      const segura = itensPoeLigado() ? () => BausPoe.seguramOClear(estado, hunt, andarDaGrade(gradeDaHunt(huntOuMapaCustom(hunt.huntId)), hunt.z)) : null;
+      // (08/11, as Relíquias de Atziri: "Área não contém monstros" — os baús são a área: ela conclui com todos abertos)
+      const segura = itensPoeLigado() ? () => BausPoe.seguramOClear(estado, hunt, andarDaGrade(gradeDaHunt(huntOuMapaCustom(hunt.huntId)), hunt.z)) || (!!hunt.mapa && Mapas.fatoresDaInstancia(hunt.mapa).semMonstros && BausPoe.bausFechados(hunt) > 0) : null;
       if (Instancia.marcarSeLimpou(hunt, hunt.clock ?? 0, { estado, personagem, segura })) aoLimparAInstancia(estado, hunt, personagem);
       // Com o portal do boss aberto a instância espera um pouco mais (dá tempo de entrar); passado isso, a nova fecha o portal. Com o
       // chefe do ato saindo do portal (ou vivo), ela espera ele morrer.

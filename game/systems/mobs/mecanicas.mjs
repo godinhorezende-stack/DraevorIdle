@@ -197,6 +197,7 @@ function criarSolo(hunt, m, mec, agora, eventos) {
 }
 /** (lote 70) Os solos dos monstros a cada tique: o que vale em você agora (e os que acabaram saem). */
 function tiqueDosSolos(estado, hunt, personagem, eventos, agora, ficha) {
+  tiqueDosSolosDoMapa(estado, hunt, personagem, eventos, agora, ficha);
   if (!hunt.solosDosMonstros?.length) return;
   hunt.solosDosMonstros = hunt.solosDosMonstros.filter((s) => s.ate > agora);
   for (const s of hunt.solosDosMonstros) {
@@ -214,6 +215,33 @@ function tiqueDosSolos(estado, hunt, personagem, eventos, agora, ficha) {
       ferirJogador(estado, hunt, personagem, s.de, s.dps, 'fire', eventos, 'Solo Ardente');
     }
   }
+}
+
+/** Os NOMES de quem fere nos solos do mapa (a caixa da morte diz "Solo Ardente"). */
+const DO_SOLO_DO_MAPA = { ardente: { name: 'Solo Ardente', key: null }, profanado: { name: 'Solo Profano', key: null } };
+/**
+ * (08/11) Os TRECHOS DE SOLO do mapa único (`instancia.solosDoMapa` — `itens-poe/mapas-areas.porSolosNaInstancia`): o mesmo efeito dos solos dos
+ * monstros em quem está neles (o Ardente e o Profano, por segundo, sem passar pela Salvaguarda; o Congelado Resfria), com o "Inafetado por Solo X".
+ * O segundo de cada um é de cada jogador (`hunt.poeSoloDoMapaEm`), e a tela vê os trechos perto de você a cada 2 s.
+ */
+function tiqueDosSolosDoMapa(estado, hunt, personagem, eventos, agora, ficha) {
+  const solos = daSala(hunt)?.solosDoMapa;
+  if (!solos?.length || !hunt.pos || estado.hp <= 0) return;
+  const z = hunt.z ?? 0;
+  if (agora - (hunt.poeSolosDoMapaVistosEm ?? -Infinity) >= 2000) {
+    hunt.poeSolosDoMapaVistosEm = agora;
+    for (const s of solos) if (s.z === z && distancia(hunt.pos, s) <= s.raio + 8) eventos.push({ t: 'area', id: s.efeito, x: s.x, y: s.y, casas: Areas.paraTela(Areas.quadrado(s, s.raio), s) });
+  }
+  const em = (hunt.poeSoloDoMapaEm ??= {});
+  solos.forEach((s, i) => {
+    if (s.z !== z || distancia(hunt.pos, s) > s.raio || estado.hp <= 0) return;
+    const tipo = s.tipo === 'profanado' ? 'profanado' : s.tipo;
+    if (Number(ficha?.afPoe?.[`imune_solo_${tipo}`]) > 0) return;
+    if (s.tipo === 'congelado') return Combate100.resfriarPeloSolo(hunt, ficha, agora, { pct: s.pct ?? Combate100.SOLO_CONGELADO.pct });
+    if (!(s.dps > 0) || agora < (em[i] ?? -Infinity)) return;
+    em[i] = agora + 1000;
+    ferirJogador(estado, hunt, personagem, DO_SOLO_DO_MAPA[s.tipo], s.dps, s.tipo === 'ardente' ? 'fire' : 'chaos', eventos, DO_SOLO_DO_MAPA[s.tipo].name);
+  });
 }
 
 /** O monstro é Raro no PoE? (o Elite do Draevor conta como Raro — `modificadores-monstro.RARIDADE_DO_POE`) */
@@ -411,6 +439,16 @@ Poderes.definirAoAcertarJogador(aoAcertarJogador);
 
 /** O golpe do mob `m` acertou o jogador: o debuff (dano ao longo do tempo). */
 export function aoAtacar(estado, hunt, personagem, m, danoDoGolpe, eventos) {
+  // (08/11, o Vórtice do Caos: "Ataques Corpo a Corpo dos Monstros aplicam Feitiços aleatórios ao Acertar" — `m.noAcerto.maldicaoAleatoria`, a chance;
+  // cada golpe sorteia uma das maldições que os monstros põem em você — `MALDICOES_DOS_MONSTROS`)
+  if (m?.noAcerto?.maldicaoAleatoria > 0 && danoDoGolpe > 0 && itensPoeLigado() && Math.random() * 100 < m.noAcerto.maldicaoAleatoria) {
+    const ids = Object.keys(ModsPoe.MALDICOES_DOS_MONSTROS);
+    const id = ids[Math.floor(Math.random() * ids.length)];
+    const def = ModsPoe.MALDICOES_DOS_MONSTROS[id];
+    ModsPoe.amaldicoarJogador(hunt, `${id}:${m.uid}`, { nome: def.nome, af: def.af, ms: ModsPoe.DURACAO_DA_MALDICAO_DO_MONSTRO_MS }, relogio(hunt));
+    eventos?.push({ t: 'estado', uid: 'player', quem: personagem?.nome, x: hunt.pos?.x, y: hunt.pos?.y, estado: 'amaldicoado', nome: def.nome, de: m.name });
+    Ficha.invalidar(estado);
+  }
   if (!m?.mods?.length || !(danoDoGolpe > 0)) return;
   const agora = relogio(hunt);
   for (const mec of Raridade.mecanicasDe(m)) {

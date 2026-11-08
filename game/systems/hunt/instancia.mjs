@@ -237,7 +237,40 @@ export function pendentes(hunt) {
   for (const m of bichosDaSala(hunt)) if (m.hp > 0 && m.instancia === inst?.id && !m.opcional) n += m.objetivo ?? 1;
   // O chefe guardado (ainda não apareceu) também falta.
   for (const r of inst?.reserva ?? []) n += r.m.objetivo ?? 1;
+  // (08/11) e o morto que ainda vai se levantar (os Mortos Inquietos — `guardarParaRessurgir`)
+  for (const r of inst?.ressurgir ?? []) n += r.m.objetivo ?? 1;
   return n;
+}
+
+/*
+ * ---- Os MORTOS INQUIETOS (o Pesadelo de Acton, 08/11: "map undead monsters get up after X seconds [10]") ----
+ * O monstro com `ressurgirMs` (`itens-poe/mapas-areas.aplicarEfeitos`) morre de verdade — a exp e o loot saem — e se levanta no mesmo lugar
+ * depois do tempo, com a vida cheia, uma vez só (`ressurgiu`). Enquanto espera, conta na limpeza (`pendentes`).
+ */
+export function guardarParaRessurgir(hunt, m, agora) {
+  const inst = daSala(hunt);
+  if (!inst || m.instancia !== inst.id) return false;
+  (inst.ressurgir ??= []).push({ z: m.z ?? salaDe(hunt)?.z ?? 0, em: agora + m.ressurgirMs, m });
+  return true;
+}
+/** Os que já podem se levantar voltam ao andar deles (vida cheia, sem afecções nem maldições). Devolve os que voltaram. */
+export function liberarRessurgidos(hunt, agora) {
+  const sala = salaDe(hunt);
+  const inst = sala?.instancia;
+  if (!inst?.ressurgir?.length || inst.status !== 'ativa') return [];
+  const voltaram = [];
+  inst.ressurgir = inst.ressurgir.filter((r) => {
+    if (r.em > agora) return true;
+    const m = r.m;
+    m.hp = m.maxHp;
+    m.ressurgiu = true;
+    for (const k of ['dots', 'estados', 'maldicoes', 'marcas', 'buffsDeMob', 'drenoPoe']) delete m[k];
+    delete m.recompensado;
+    (r.z === (sala.z ?? 0) ? sala.monstros : ((sala.outrosAndares ??= {})[r.z] ??= [])).push(m);
+    voltaram.push(m);
+    return false;
+  });
+  return voltaram;
 }
 
 /*
