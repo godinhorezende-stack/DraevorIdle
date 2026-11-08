@@ -14,6 +14,106 @@
   ],
   "regras": [
     {
+      "padrao": "^\\{(\\d+)\\} de Dano de Gelo sofrido quando Acertado$",
+      "efeitos": [
+        {
+          "stat": "ice_sofrido_acerto",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o dano de Gelo fixo dos acertos sofridos (`monstros-no-jogador`)",
+      "_08_11r": "08/11 — B18b: os implícitos de Síntese dos Círculos (anéis)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Dano de Raio sofrido quando Acertado$",
+      "efeitos": [
+        {
+          "stat": "energy_sofrido_acerto",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o dano de Raio fixo dos acertos sofridos (`monstros-no-jogador`)",
+      "_08_11r": "08/11 — B18b: os implícitos de Síntese dos Círculos (anéis)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano enquanto Drenando Vida aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@drenandoVida",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — B18b: os implícitos de Síntese dos Círculos (anéis)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano enquanto Drenando Mana aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@drenandoMana",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — B18b: os implícitos de Síntese dos Círculos (anéis)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você e seus Lacaios sofrem Dano Refletido reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "reflexo_evitado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o reflexo dos monstros (`monstros-no-jogador.fatorDoReflexo`); os lacaios não sofrem reflexo no jogo",
+      "_08_11r": "08/11 — B18b: os implícitos de Síntese dos Círculos (anéis)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você ganha Agressividade por \\{(\\d+)\\} segundos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:buff:agressividade",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — B18b: os implícitos de Síntese dos Círculos (anéis)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha Fúria Arcana ao Acertar com Magias$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:buff:furiaArcana@magia",
+          "valor": "4"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — B18b: os implícitos de Síntese dos Círculos (anéis)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano sofrido aumentado em \\{(\\d+)\\}% caso Corrompido$",
+      "efeitos": [
+        {
+          "stat": "dano_recebido_inc%corrompidaLocal",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "caso esta peça esteja corrompida",
+      "_08_11r": "08/11 — B18b: os implícitos de Síntese dos Círculos (anéis)",
+      "_nova": true
+    },
+    {
       "padrao": "^Pode ser criado com Omnichama como se fosse raro$",
       "efeitos": [
         {

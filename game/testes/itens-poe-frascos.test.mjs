@@ -31,7 +31,8 @@ test('os frascos de Vida, Mana e Utilidade entram no catálogo (sem slot, para o
   assert.deepEqual([meta.frasco, meta.slot, meta.type], [true, undefined, 'flasks']);
   // As peças de antes não mudam de id: os frascos vêm depois de todas as bases equipáveis.
   // (dono, 15/10: "Ajustar os 2 testes" — as JOIAS do lote 27 têm ids fixos à parte, 7.800.001+, e não contam aqui)
-  const maiorEquipavel = Math.max(...ids.filter((b) => !Jogo.FRASCOS.includes(b.split('/')[0]) && !Jogo.JOIAS[b]).map(Jogo.idDaBase));
+  // (aval do dono 08/11: a Vara de Pescar também tem id fixo à parte, 7.900.001, e não conta aqui)
+  const maiorEquipavel = Math.max(...ids.filter((b) => !Jogo.FRASCOS.includes(b.split('/')[0]) && !Jogo.JOIAS[b] && b !== 'Fishing_Rods/Fishing_Rod').map(Jogo.idDaBase));
   assert.ok(ids.filter((b) => Jogo.FRASCOS.includes(b.split('/')[0])).every((b) => Jogo.idDaBase(b) > maiorEquipavel));
   // No drop: aparecem, e nunca Raros (o PoE não tem frasco raro).
   const rng = semente(9);

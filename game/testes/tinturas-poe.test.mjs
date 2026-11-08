@@ -99,7 +99,8 @@ test('o ITEM: as 10 bases entram no jogo DEPOIS dos frascos (nenhum id existente
   assert.equal(ids.filter(Boolean).length, 10);
   // (dono, 15/10: "Ajustar os 2 testes" — as JOIAS do lote 27 têm ids fixos à parte, 7.800.001+, e não contam aqui)
   // (aval do dono 04/11: os FRASCOS HÍBRIDOS entram depois das Tinturas, sem mudar nenhum id existente, e também não contam aqui)
-  const outros = [...J.registro().porBase.entries()].filter(([b]) => !b.startsWith('Tinctures/') && !b.startsWith('Hybrid_Flasks/') && !J.JOIAS[b]).map(([, id]) => id);
+  // (aval do dono 08/11: a Vara de Pescar tem id fixo à parte, 7.900.001, e não conta aqui)
+  const outros = [...J.registro().porBase.entries()].filter(([b]) => !b.startsWith('Tinctures/') && !b.startsWith('Hybrid_Flasks/') && !J.JOIAS[b] && b !== 'Fishing_Rods/Fishing_Rod').map(([, id]) => id);
   assert.ok(Math.min(...ids) > Math.max(...outros), 'os ids das Tinturas vêm depois de todas as bases que já existiam');
   assert.equal(ITEM_CATALOG[ids[0]].frasco, true);
   assert.equal(ITEM_CATALOG[ids[0]].tintura, true);
