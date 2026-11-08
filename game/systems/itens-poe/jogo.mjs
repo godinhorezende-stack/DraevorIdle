@@ -617,7 +617,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // não-Vaal; a Luz de Lunaris pelo acerto Não Crítico)
 // (89 — 08/11, o balão dos únicos com 0 sem efeito, lotes B8–B16 e o que vier no mesmo PR: os velados, a criação, os visuais, os Catalisadores, a
 // Identificação, o Ungir e o Encantamento, o Abismo, a Pesca…)
-export const VERSAO_DA_TRADUCAO = 89;
+// (90 — 08/11, depois do PR #290: o pool de Síntese (49 frases), os encantamentos do Labirinto — elmo pelo `@gema:<nome>`, botas, luvas (Palavra/Édito/Decreto/
+// Mandamento) e cintos)
+export const VERSAO_DA_TRADUCAO = 90;
 
 /**
  * (08/11, a Síntese) O implícito de pool (um tier: `{ modelo, faixas }`) tem efeito no jogo? (nem inerte nem só registrado — guardado por modelo.) Os
