@@ -2017,7 +2017,7 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   // (+ lote G17: o "não pode" — o Foco Elemental e a Sede de Sangue, nas linhas dos suportes)
   // (lote A5, dono 20/10: + o máximo da Eletrização, o −X% de Fogo dos Incendiados, o "Eletriza ao resfriar / Resfria ao eletrizar" do Coursing Current e o Resfriamento Ósseo —
   // as linhas da gema e dos suportes que as afecções do golpe leem)
-  const temAfeccao = Object.keys(s).some((k) => /^(chance_|dot_|dano_dot_|ailment_|poison_|bleed_|ignite_|duracao_|efeito_|envenena|pode:|nao_pode:|congelamento_como|eletrizacao_como|resfriamento_como|eletrizacao_maximo|res_menos_|eletriza_ao_|resfria_ao_|resfriado_fragil_gelo|sangramento_mais_rapido)/.test(k));
+  const temAfeccao = Object.keys(s).some((k) => /^(veneno_mais_|incendio_mais|chance_|dot_|dano_dot_|ailment_|poison_|bleed_|ignite_|duracao_|efeito_|envenena|pode:|nao_pode:|congelamento_como|eletrizacao_como|resfriamento_como|eletrizacao_maximo|res_menos_|eletriza_ao_|resfria_ao_|resfriado_fragil_gelo|sangramento_mais_rapido)/.test(k));
   // Os sorteios do golpe: "Dano Dobrado"/"Triplicado" e "ignorar a Redução de Dano Físico" (a chance sem condição + a do golpe).
   const chance = (k) => (Number(ficha.afPoe[k]) || 0) + (s[k] ?? 0);
   const triplo = chance('chance_dano_triplo') > 0 && rng() * 100 < chance('chance_dano_triplo');
@@ -2375,7 +2375,11 @@ export function tiqueDaFuria(hunt, agora = hunt?.clock ?? 0) {
 
 /** A chave de um atributo da peça vestida em `slot`, resolvendo a condição de ESPAÇO (anel, mão): no espaço certo, sem a condição; noutro, null. */
 export function doAnel(chave, slot) {
-  const { stat, escala, conds, teto } = partir(chave);
+  const { stat, escala, conds: conds0, teto } = partir(chave);
+  // (08/11) "com esta Arma" (`estaArma`, `jogo.separarDestaArma`): a mão do slot onde a arma está; fora das mãos, não vale
+  const conds = conds0.includes('estaArma') ? conds0.map((c) => (c === 'estaArma' ? { weapon: 'maoPrincipal', shield: 'maoSecundaria' }[slot] ?? null : c)) : conds0;
+  if (conds.includes(null)) return null;
+  if (conds !== conds0) { const base = escala ? `${stat}%${escala}${teto != null ? `~${teto}` : ''}` : stat; return doAnel(`${base}@${conds.join('+')}`, slot); }
   const deAnel = conds.filter((c) => CONDICOES_DE_ANEL[c]);
   if (!deAnel.length) return chave;
   if (!deAnel.every((c) => CONDICOES_DE_ANEL[c] === slot)) return null;
