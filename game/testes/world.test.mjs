@@ -12,7 +12,7 @@ import * as Arquivos from '../systems/encontros/arquivos.mjs';
 import * as Instancia from '../systems/hunt/instancia.mjs';
 import { layoutDoAto, colunasPara, estadoDoNo, RAIO_DA_FASE, RAIO_DO_BOSS } from '../frontend/client/src/world.mjs';
 import { encontroNaCasa, encontroPerto, assinaturaDosEncontros, ALCANCE_DE_INTERACAO } from '../frontend/client/src/encontros-na-tela.mjs';
-import { aAdaptar, soNoOficial } from './apoio-migracao.mjs';
+import { soNoOficial } from './apoio-migracao.mjs';
 import { personagemDeTeste, HUNT_DE_TESTE } from './apoio.mjs';
 
 const [F1, F2, F3] = Campanha.FASES;
@@ -71,19 +71,18 @@ test('o que o jogador ENCONTROU aparece (só isso): o registro de concluídos re
   assert.equal(Campanha.paraCliente(e).bossesDerrotados.find((b) => b.id === 'sem-indice').nome, 'sem-indice');
 });
 
-test('requisito de entrada = PROGRESSO (exige completar fases), e o level é só RECOMENDADO: nível baixo entra, falta de fase não', { skip: aAdaptar("(08/11) BUG no PoE: a exigência do CONTEÚDO do WORLD (`requisitos.exige`) não fecha a fase — `campanha.mjs` (`if (f.grafo) return liberadaNoGrafo`) ignora `exigidasDaFase` em toda fase com grafo (todas no PoE), mas o WORLD mostra a exigência ao jogador; o teste volta quando o dono decidir") }, () => {
+// (08/11, adaptado ao PoE — com a correção: a exigência do CONTEÚDO do WORLD também fecha a área do ato do PoE, `campanha.liberadaNoGrafo`)
+// O Lamaçal (aberto pela Costa) passa a exigir uma área de OUTRO ato (a primeira do Ato 2): o "fora da cadeia" do clássico.
+test('requisito de entrada = PROGRESSO (exige completar fases), e o level é só RECOMENDADO: nível baixo entra, falta de fase não', { skip: soNoOficial('o WORLD da campanha do PoE (os atos e as áreas do PoE)') }, () => {
   comConteudo(CONTEUDO);
   const e = personagemDeTeste({ level: 8 });
   assert.equal(Campanha.faseLiberada(e, 'facil', F1.huntId), true, 'level 8 < recomendado 500: entra mesmo assim (regra do dono)');
-  // F3 exige F1 além da cadeia do ato: sem a cadeia nem chega aqui; com a cadeia completa mas sem F1... F1 já faz parte dela,
-  // então o teste usa uma exigência fora da cadeia (fase de outro ato).
-  const comIndice = Campanha.FASES.map((f, indice) => ({ ...f, indice }));
-  const outroAto = comIndice.find((f) => f.ato === 2 && !f.pular);
-  const alvo = comIndice.find((f) => f.ato === 1 && f.indice === 3 && !f.pular) ?? F3;
+  const alvo = Campanha.faseDe('poe-a1-the-mud-flats');
+  const outroAto = Campanha.FASES.find((f) => f.ato === 2 && !f.pular);
   comConteudo({ [alvo.huntId]: { requisitos: { exige: [outroAto.huntId] } } });
   const x = personagemDeTeste({ level: 60 });
-  x.campanha = { facil: { limpezas: {}, completas: comIndice.filter((f) => f.ato === 1 && f.indice < alvo.indice).map((f) => f.huntId), bosses: [] } };
-  assert.equal(Campanha.faseLiberada(x, 'facil', alvo.huntId), false, 'a cadeia do ato está completa, mas falta a exigência de fora');
+  x.campanha = { facil: { limpezas: {}, completas: ['poe-a1-the-twilight-strand', 'poe-a1-the-coast'], bosses: [] } };
+  assert.equal(Campanha.faseLiberada(x, 'facil', alvo.huntId), false, 'o caminho do ato está feito, mas falta a exigência de fora');
   assert.match(Campanha.motivoParaNaoEntrar(x, 'facil', alvo.huntId), /Complete antes/);
   x.campanha.facil.completas.push(outroAto.huntId);
   assert.equal(Campanha.faseLiberada(x, 'facil', alvo.huntId), true, 'cumpriu: abre');

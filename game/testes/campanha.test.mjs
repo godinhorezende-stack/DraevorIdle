@@ -14,7 +14,7 @@ import { gerarPeca } from '../systems/itens-poe/gerar.mjs';
 import * as JogoDoPoe from '../systems/itens-poe/jogo.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE, huntDoPoe } from './apoio.mjs';
-import { aAdaptar, doClassico, soNoOficial } from './apoio-migracao.mjs';
+import { doClassico, soNoOficial } from './apoio-migracao.mjs';
 
 const F = Campanha.FASES;
 const novo = (level = 8) => personagemDeTeste({ level, campanha: {} });
@@ -384,19 +384,21 @@ test('a fase depois de uma travada NÃO abre de graça: exige a última fase de 
   assert.match(Campanha.motivoParaNaoEntrar(e, 'facil', seguinte.huntId), new RegExp(primeiraDoAto.nome));
 });
 
-test('fase "completa" por carona (party) sem a anterior NÃO abre as seguintes: a liberação olha a cadeia inteira do ato', { skip: aAdaptar("A regra vale no PoE, mas FALHA lá (bug relatado ao dono, 08/11): no ato do PoE (grafo — `liberadaNoGrafo`/`fasesAbertas`) basta UMA fase de antes estar completa, e a completa por carona conta — com o caminho até o Lamaçal feito e o Desfiladeiro/a Escalada completos por carona (sem a Passagem Submersa), a Escalada e a Prisão Inferior abrem") }, () => {
-  const e = novo(2000);
-  completar(e, 'facil', 0, 5); // fases 1-5 completas
-  // A 7 e a 8 saem "completas" (limpeza dividida na party) — a 6 continua por fazer.
-  Campanha.limpou(e, { campanha: { huntId: F[6].huntId, dificuldade: 'facil', ato: 1 } });
-  Campanha.limpou(e, { campanha: { huntId: F[7].huntId, dificuldade: 'facil', ato: 1 } });
-  assert.equal(Campanha.faseCompleta(e, 'facil', F[6].huntId), true);
-  assert.equal(Campanha.faseLiberada(e, 'facil', F[5].huntId), true, 'a 6 está aberta');
-  assert.equal(Campanha.faseLiberada(e, 'facil', F[6].huntId), false, 'a 7 fica fechada');
-  assert.equal(Campanha.faseLiberada(e, 'facil', F[7].huntId), false, 'a 8 fica fechada');
-  assert.equal(Campanha.faseLiberada(e, 'facil', F[8].huntId), false, 'e a 9 também');
-  assert.match(Campanha.motivoParaNaoEntrar(e, 'facil', F[8].huntId), new RegExp(F[5].nome));
-  // Fez a 6: tudo abre de uma vez (as duas por carona já contam).
-  Campanha.limpou(e, { campanha: { huntId: F[5].huntId, dificuldade: 'facil', ato: 1 } });
-  assert.equal(Campanha.faseLiberada(e, 'facil', F[8].huntId), true);
+// (08/11, adaptado ao PoE — com a correção da carona no ato do PoE, `campanha.fasesAbertasDe`) No grafo do Ato 1: o caminho até O Lamaçal
+// feito; O Desfiladeiro e A Escalada "completos" de carona (a limpeza dividida na party), sem a Passagem Submersa, que leva a eles.
+test('fase "completa" por carona (party) sem a anterior NÃO abre as seguintes: a liberação olha a cadeia inteira do ato', { skip: soNoOficial('adaptado ao PoE: as áreas do Ato 1 do PoE') }, () => {
+  const e = naCosta(2000);
+  const limpa = (huntId) => Campanha.limpou(e, { campanha: { huntId, dificuldade: 'facil', ato: 1 } });
+  for (const id of ['poe-a1-the-coast', 'poe-a1-the-mud-flats']) limpa(id);
+  limpa('poe-a1-the-ledge');
+  limpa('poe-a1-the-climb');
+  assert.equal(Campanha.faseCompleta(e, 'facil', 'poe-a1-the-ledge'), true);
+  assert.equal(Campanha.faseLiberada(e, 'facil', 'poe-a1-the-submerged-passage'), true, 'a Passagem Submersa está aberta');
+  assert.equal(Campanha.faseLiberada(e, 'facil', 'poe-a1-the-ledge'), false, 'o Desfiladeiro fica fechado');
+  assert.equal(Campanha.faseLiberada(e, 'facil', 'poe-a1-the-climb'), false, 'a Escalada fica fechada');
+  assert.equal(Campanha.faseLiberada(e, 'facil', 'poe-a1-the-lower-prison'), false, 'e a Prisão Inferior também');
+  assert.ok(Campanha.motivoParaNaoEntrar(e, 'facil', 'poe-a1-the-lower-prison'));
+  // Fez a Passagem Submersa: tudo abre de uma vez (as duas por carona já contam).
+  limpa('poe-a1-the-submerged-passage');
+  assert.equal(Campanha.faseLiberada(e, 'facil', 'poe-a1-the-lower-prison'), true);
 });
