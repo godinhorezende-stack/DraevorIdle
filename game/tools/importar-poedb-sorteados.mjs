@@ -108,6 +108,33 @@ for (const [slug, o] of Object.entries(OUTROS)) {
   unicos.Precursors_Emblem = { classe: 'Rings', substitui: Object.fromEntries(marcas.map((m) => [m, 'composicao'])), composicao, pools: cargas, fonte, linhas };
   console.log(`Precursors_Emblem: frenesi ${cargas.frenesi.length}, tolerância ${cargas.tolerancia.length}, poder ${cargas.poder.length}`);
 }
+// (08/11, balão 0 sem efeito — o dono: "os velados já revelados, sorteados do pool do PoE") os MODS VELADOS da Traição nos únicos ("veiled mod seed [N,…]" /
+// "veiled mod type [T]"): o pool dos revelados é o da aba "Oculto Modificadores" do poedb (a página do Orbe do Caos Velado — 233 mods, com o peso por tag do item; o
+// peso de cada mod é o da PRIMEIRA tag da lista que a peça tem, como no PoE). T = 2: um Sufixo; 4: um Prefixo (+ os da Catarina — o Ponto do Vínculo Amargurado, os
+// Espectros); 3 e 6: um Prefixo e um Sufixo (o "seed" N = 2). A linha do tipo sai (a composição vazia); a Bengala de Kulemak multiplica os revelados ("Magnitude de
+// Modificadores Revelados aumentada" — `gerar.modificadoresDoUnico`).
+{
+  const velado = JSON.parse(readFileSync(`${PASTA}/Veiled_Chaos_Orb.json`, 'utf8'));
+  const tab = velado.abas.find((x) => x.id === 'OcultoModificadores')?.cards.flatMap((c) => c.tabelas ?? []).flatMap((t) => t.linhas ?? []) ?? [];
+  if (!tab.length) throw new Error('Velados: a aba "Oculto Modificadores" não está no arquivo do Scrapling');
+  const peso = (r, tags) => { for (const p of String(r[4]).split(' / ')) { const [t, w] = p.trim().split(' '); if (t === 'default' || tags.includes(t)) return Number(w) || 0; } return 0; };
+  const TAGS = { Belts: ['belt'], Rings: ['ring'], Helmets: ['helmet', 'armour'], Shields: ['shield', 'armour'], Body_Armours: ['body_armour', 'armour'], Bows: ['bow', 'two_hand_weapon', 'weapon', 'ranged'], Warstaves: ['staff', 'warstaff', 'two_hand_weapon', 'weapon'], Thrusting_One_Hand_Swords: ['sword', 'rapier', 'one_hand_weapon', 'weapon'] };
+  const VELADOS = { Hyperboreus: 'Belts', Vivinsect: 'Rings', The_Queens_Hunger: 'Body_Armours', The_Devouring_Diadem: 'Helmets', Bitterbind_Point: 'Shields', The_Crimson_Storm: 'Bows', Cane_of_Kulemak: 'Warstaves', Paradoxica: 'Thrusting_One_Hand_Swords', Replica_Paradoxica: 'Thrusting_One_Hand_Swords' };
+  const COMPOSICAO = { 2: [['sufixo', 1]], 4: [['prefixo', 1]], 3: [['prefixo', 1], ['sufixo', 1]], 6: [['prefixo', 1], ['sufixo', 1]] };
+  const CAT = JSON.parse(readFileSync(new URL('../gamedata/itens-poe/catalogo-itens.json', import.meta.url), 'utf8'));
+  for (const [slug, classe] of Object.entries(VELADOS)) {
+    const u = CAT.classes[classe]?.unicos?.find((x) => x.slug === slug);
+    const tipo = Number(/^veiled mod type \[(\d+)\]$/.exec(u?.modificadores.find((m) => /^veiled mod type/.test(m.texto))?.texto ?? '')?.[1]);
+    if (!u || !COMPOSICAO[tipo]) throw new Error(`Velados: ${slug} sem o tipo (${tipo})`);
+    const tags = [...TAGS[classe], ...(tipo === 4 ? ['catarina_veiled_prefix'] : [])];
+    const doTipo = (t) => tab.filter((r) => r[2] === t && peso(r, tags) > 0).map((r) => noFormatoDoCatalogo(String(r[3]).trim()));
+    const pools = { prefixo: doTipo('Prefixo'), sufixo: doTipo('Sufixo') };
+    const seed = u.modificadores.find((m) => /^veiled mod seed/.test(m.texto));
+    const marcaDoTipo = u.modificadores.find((m) => /^veiled mod type/.test(m.texto)).modelo;
+    unicos[slug] = { classe, substitui: { [seed.modelo]: 'composicao', [marcaDoTipo]: 'composicao' }, composicao: { [seed.modelo]: COMPOSICAO[tipo], [marcaDoTipo]: [] }, pools, fonte: velado.fonte, linhas: [...pools.prefixo, ...pools.sufixo], velado: true };
+    console.log(`${slug}: tipo ${tipo} — ${pools.prefixo.length} prefixos, ${pools.sufixo.length} sufixos`);
+  }
+}
 // (lote 56) Os NOMES SORTEADOS: a marcação "Passive Skill" do texto vira um nome — a Fuga Impossível, uma das pedras fundamentais da aba "Notável"
 // do poedb (as que estão na árvore do jogo); a Chama e a Carne Proibida, um notável de ascendência (os da árvore do jogo — os 7 escondidos da
 // variação do Exarca Supremo não estão nela). Com a mesma chance.

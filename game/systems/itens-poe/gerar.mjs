@@ -129,7 +129,7 @@ export function modificadoresDoUnico(u, rng, manter = null, nivel = Infinity) {
   const sai = (m) => s && m.tipo === 'implicit' && m.modelo === s.substitui && !manter?.has(m.modelo);
   const ls = u.linhasSorteadas;
   const ns = u.nomeSorteado;
-  return u.modificadores.filter((m) => !sai(m)).flatMap((m) => {
+  const saida = u.modificadores.filter((m) => !sai(m)).flatMap((m) => {
     // (lote 56) o NOME sorteado: a marcação "Passive Skill" vira a pedra fundamental / o notável (o Orbe Divino mantém o que a peça tem)
     if (ns?.nomes?.length && m.modelo.includes(ns.marca)) {
       const molde = new RegExp(`^${escaparRe(m.modelo).replace(escaparRe(ns.marca), '(.+)')}$`);
@@ -143,6 +143,7 @@ export function modificadoresDoUnico(u, rng, manter = null, nivel = Infinity) {
     // cada pool; o Orbe Divino (`manter`) fica com as linhas da peça
     if (n === 'composicao') {
       return (ls.composicao?.[m.modelo] ?? []).flatMap(([nome, q]) => {
+        // (a Divina: a peça que já tem os revelados fica com eles — `manter` pelos modelos)
         const pool = ls.pools?.[nome] ?? [];
         const ja = manter ? pool.filter((l) => manter.has(l.modelo)).slice(0, q) : [];
         return (ja.length ? ja : linhasDoPool(pool, q, rng)).map((l) => ({ tipo: m.tipo, sorteada: true, ...rolarTexto(l, rng) }));
@@ -174,6 +175,12 @@ export function modificadoresDoUnico(u, rng, manter = null, nivel = Infinity) {
     // (lote 79: a linha do Megalomaníaco leva o notável — os nós da joia saem dele)
     return (ja.length ? ja.slice(0, n) : linhasDoPool(pool, n, rng)).map((l) => ({ tipo: m.tipo, sorteada: true, ...rolarTexto(l, rng), ...(l.notavel ? { notavel: l.notavel } : {}) }));
   });
+  // (08/11, os VELADOS — a Bengala de Kulemak: "Magnitude de Modificadores Revelados aumentada em X%") os revelados com a magnitude, como no PoE (o texto e o valor
+  // já multiplicados; o sem ela fica em `valoresSemMagnitude`, como a dos implícitos)
+  if (!ls?.velado) return saida;
+  const mag = saida.find((x) => /^Magnitude de Modificadores Revelados aumentada em \{0\}%$/.test(x.modelo ?? ''));
+  const pct = Number(mag?.valores?.[0]) || 0;
+  return pct ? saida.map((x) => (x.sorteada ? { ...comMagnitude(x, pct), valoresSemMagnitude: x.valoresSemMagnitude ?? x.valores } : x)) : saida;
 }
 const escaparRe = (x) => String(x).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 /** (lote 55) N linhas distintas do pool, com a mesma chance. */

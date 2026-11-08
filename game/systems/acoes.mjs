@@ -5277,6 +5277,8 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
     const nivel = ativas().get(entry.id)?.nivel ?? 20;
     const r = HabilidadesDeItens.usar(estado, hunt, entry.poeGema.slug, { id: entry.id, nivel, alvo, agora: hunt.clock ?? 0, af: ficha.afPoe ?? {}, resistir: (m, tipo, v) => resistido(hunt, m, tipo, v, ficha) });
     if (r.ok) Ficha.invalidar(estado);
+    // (08/11, os velados da Traição) "ao se Concentrar": o uso do Concentrar é o evento `concentrar` (as linhas e os gatilhos da peça)
+    if (r.ok && entry.poeGema.slug === 'Focus') ModsPoe.evento(estado, hunt, 'concentrar', ficha, { personagem, eventos: r.eventos, agora: hunt.clock ?? 0 });
     return r;
   }
   // (14/10) O Infestador alterna sozinho, ligado na barra (`tiqueDaPraga`).

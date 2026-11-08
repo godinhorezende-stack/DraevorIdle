@@ -93,3 +93,45 @@ test('B7, as Arbalistas da Marcha de Vorana: os efeitos lacaio_tipo:arbalista s�
   assert.equal(zumbi.poe.chances.intimidar, 0, 'o Zumbi não é Arbalista');
   assert.equal(zumbi.poe.projeteisExtra, undefined);
 });
+
+test('B8, os velados da Traição: saem já revelados, do pool do poedb, com a magnitude da peça, e nenhuma linha fica sem efeito', { skip: SEM }, () => {
+  for (const slug of ['Hyperboreus', 'Vivinsect', 'The_Queens_Hunger', 'The_Devouring_Diadem', 'Bitterbind_Point', 'The_Crimson_Storm', 'Cane_of_Kulemak', 'Paradoxica', 'Replica_Paradoxica']) {
+    for (const p of sorteios(slug, 15)) {
+      const ls = linhasDe(p);
+      assert.ok(!ls.some((m) => /veiled|^\[/i.test(m.texto)), `${slug}: a marcação do velado saiu`);
+      assert.ok(ls.some((m) => m.sorteada), `${slug}: o mod revelado entrou`);
+      ls.forEach((m, k) => assert.ok(!['inerte', 'registrado'].includes(p.poe.estados[k]), `${slug}: ${m.texto} → ${p.poe.estados[k]}`));
+    }
+  }
+  // (o Bastão de Kulemak: "Magnitude de Modificadores Revelados aumentada em X%" — o revelado sai com a magnitude; o valor sem ela fica guardado)
+  for (const p of sorteios('Cane_of_Kulemak', 10)) {
+    const pct = Number(linhasDe(p).find((m) => /^Magnitude de Modificadores Revelados/.test(m.modelo ?? ''))?.valores?.[0]) || 0;
+    for (const m of linhasDe(p).filter((x) => x.sorteada && x.valoresSemMagnitude)) {
+      m.valores.forEach((v, i) => assert.ok(Math.abs(Math.abs(v) - Math.abs(m.valoresSemMagnitude[i]) * (1 + pct / 100)) <= 1, `${m.texto}: ${m.valoresSemMagnitude[i]} × ${pct}%`));
+    }
+  }
+});
+
+test('B8: as frases da Concentração, da Anulação das Almas e dos Espectros', () => {
+  const st = (m, v = [10, 10]) => tr(m, v).efeitos.map((e) => e.stat);
+  assert.deepEqual(st('Sua Chance de Acerto Crítico é Sortuda enquanto Concentrado'), ['critico_sortudo@buff:concentrado']);
+  assert.deepEqual(st('Recupera {0}% de Mana e Escudo de Energia ao se Concentrar'), ['ev:concentrar:manaPct', 'ev:concentrar:esPct']);
+  assert.deepEqual(st('Ativa Magias Encaixadas quando você Focar, com Recarga de {0} segundo'), ['gatilho_local:concentrar:magia']);
+  assert.deepEqual(st('+{0} de Armadura durante a Anulação do Ganho de Almas'), ['armor_flat@almasImpedidas']);
+  assert.deepEqual(st('Espectros levantados têm +{0}% para a chance de golpe crítico'), ['lacaio_tipo:espectro:minion_crit_flat']);
+  assert.deepEqual(st('Ataques com essa Arma Penetram {0}% da Resistência a Caos'), ['chaos_pen@ataque']);
+  assert.deepEqual(st('Magnitude de Modificadores Revelados aumentada em {0}%'), ['magnitude_revelados']);
+});
+
+test('B8: a Evasão regenerada como Vida entra na regeneração; o crítico fixo do Espectro soma na base', { skip: SEM }, async () => {
+  const Ficha = await import('../systems/ficha.mjs');
+  const r0 = Ficha.regenDoPoe({ maxHp: 1000 }, {}, 2000);
+  const r1 = Ficha.regenDoPoe({ maxHp: 1000 }, { evasao_regen_vida_pct: 1 }, 2000);
+  assert.equal(r1.vidaPorSegundo - r0.vidaPorSegundo, 20, '1% de 2000 de Evasão');
+  const LacaiosPoe = await import('../systems/itens-poe/lacaios-poe.mjs');
+  const af = { 'lacaio_tipo:espectro:minion_crit_flat': 3 };
+  const esp = LacaiosPoe.oQueInvoca('Raise_Spectre', 20, null, af);
+  const zumbi = LacaiosPoe.oQueInvoca('Raise_Zombie', 20, null, af);
+  if (esp) assert.equal(esp.poe.critFlat, 3);
+  assert.equal(zumbi.poe.critFlat, 0, 'o Zumbi não é Espectro');
+});

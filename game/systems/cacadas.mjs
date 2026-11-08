@@ -3689,7 +3689,7 @@ export function golpeDoLacaioNoBicho(c, b, pct, g) {
     // (o Vínculo Destrutivo no lacaio: "+X% de Multiplicador" e a chance de crítico igual à sua)
     const critico = vinculo ? { chance: vinculo.critPct > 0 ? vinculo.critPct : critico0.chance, mult: critico0.mult + vinculo.critMult / 100 } : critico0;
     // (rodada 4, lote L: a habilidade do PoB — o crítico de base da linha dela, `critBase`, sobre o do lacaio; o "não pode ser crítico" da Investida)
-    const crit = !g.semCritico && Math.random() * 100 < critico.chance * (g.critBase != null ? g.critBase / Math.max(0.1, l.critChanceBase ?? l.critChance ?? 5) : 1);
+    const crit = !g.semCritico && Math.random() * 100 < critico.chance * (g.critBase != null ? (g.critBase + (l.poe?.critFlat ?? 0)) / Math.max(0.1, l.critChanceBase ?? l.critChance ?? 5) : 1);
     if (crit) LacaiosPoe.aoCriticarDoLacaio(l, agora, critico, b, hunt.clock ?? agora);
     // (ciclo 7) o dano dobrado, ignorar a Redução de Dano Físico, a penetração no amaldiçoado e o Caos extra do Poder Profano.
     const doGolpe = LacaiosPoe.golpeDoLacaio(l, b, ficha, tipo, agora, Math.random, hunt.lacaios, hunt.clock ?? agora);

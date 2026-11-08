@@ -626,7 +626,7 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // "% a mais de regeneração": a árvore + o add Life/Mana Regeneration %.
     regenDaArvore: { hp: (arv.regenHp ?? 0) + (af.life_regen_pct ?? 0) / 100, mana: (arv.regenMana ?? 0) + (af.mana_regen_pct ?? 0) / 100 },
     // A regeneração do PoE (só com ITENS_POE=1): vida = (+N/s + N% da vida máxima/s) × (1 + aumentada%); mana = (1,8% da máxima + N/s) × (1 + aumentada%).
-    regenPoe: itensPoeLigado() ? regenDoPoe(estado, af) : null,
+    regenPoe: itensPoeLigado() ? regenDoPoe(estado, af, defesas.evasion) : null,
     // A SUPRESSÃO DE FEITIÇO do PoE (chance, 0 a 1): a magia suprimida causa 50% menos dano (`poderes.mjs → dispararMagia`).
     // (a Acrobacia: "Modificadores de Chance de Suprimir Dano Mágico se aplicam à Chance de Esquivar dos Acertos Mágicos em 50% de seu valor, ao
     // invés"; "Chance Máxima de Esquiva Mágica é 75%" — a Supressão some e vira a Esquiva Mágica: a magia inteira não pega, `poderes`.)
@@ -795,7 +795,7 @@ export function penalidadeDeResistencia(estado) {
 }
 /** A regeneração por segundo no PoE (`{ vidaPorSegundo, manaPorSegundo, vidaPctDoMax, vidaAumentada, manaAumentada }`). */
 export const MANA_REGEN_BASE_POE = 1.8;
-export function regenDoPoe(estado, af) {
+export function regenDoPoe(estado, af, evasao = 0) {
   const vidaPctDoMax = af.life_regen_max_pct ?? 0;
   // (09/10) + a "Velocidade de Recuperação de Vida/Mana aumentada" (os implícitos eldritch e as influências): a regeneração é recuperação.
   const vidaAumentada = (af.life_regen_pct ?? 0) + (af.recuperacao_inc ?? 0) + (af.recuperacao_vida_inc ?? 0);
@@ -803,7 +803,9 @@ export function regenDoPoe(estado, af) {
   // ("Você não possui Regeneração de Vida", "Espaço de anel direito: Não pode Regenerar Mana"; "X% de Mana Regenerada por segundo".)
   // (06/11, o Espírito de Kaom: "Regenera 1 de Fúria por segundo por cada 200 de Recuperação de Vida por segundo da Regeneração" — a regeneração de antes do
   // "não é aplicada": `vidaBruta`, que `condicoes-poe.tiqueDaFuria` lê)
-  const vidaBruta = Math.max(0, ((af.life_regen ?? 0) + ((estado.maxHp ?? 0) * vidaPctDoMax) / 100) * (1 + vidaAumentada / 100));
+  // (08/11, a Fome da Rainha: "X% de Evasão é Regenerada como Vida por segundo enquanto Concentrado" — a evasão da ficha, como regeneração fixa)
+  const daEvasao = ((Number(evasao) || 0) * (Number(af.evasao_regen_vida_pct) || 0)) / 100;
+  const vidaBruta = Math.max(0, ((af.life_regen ?? 0) + daEvasao + ((estado.maxHp ?? 0) * vidaPctDoMax) / 100) * (1 + vidaAumentada / 100));
   const regenDaVida = af.sem_regen_vida > 0 ? 0 : vidaBruta;
   // (Juramento do Zelote: "Regeneração de Vida é aplicada ao Escudo de Energia" — a vida não regenera; o escudo ganha o mesmo por segundo.)
   // (a keystone da árvore, `regen_vida_no_escudo`, e a que as PEÇAS dão — `keystone:juramentoDoZelote`/`sempre:` — pelo mesmo caminho)

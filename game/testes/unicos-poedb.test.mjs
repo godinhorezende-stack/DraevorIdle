@@ -73,7 +73,8 @@ test('o sorteio de cada único cai dentro das faixas, com todas as linhas', SKIP
       for (const m of g.modificadores.filter((x) => x.sorteada)) {
         const l = ls.linhas.find((x) => x.modelo === m.modelo);
         assert.ok(l, `${u.slug}: a sorteada "${m.texto}" é do pool`);
-        (l.faixas ?? []).forEach((f, x) => assert.ok(m.valores[x] >= Math.min(...f) && m.valores[x] <= Math.max(...f), `${u.slug}: ${m.texto}`));
+        // (08/11, com aval do dono: o velado revelado com a "Magnitude de Modificadores Revelados" do Kulemak — a faixa vale no valor de antes dela, como nas fixas)
+        (l.faixas ?? []).forEach((f, x) => { const v = (m.valoresSemMagnitude ?? m.valores)[x]; assert.ok(v >= Math.min(...f) && v <= Math.max(...f), `${u.slug}: ${m.texto}`); });
       }
       fixas.forEach((m, i) =>
         (doCadastro[i].faixas ?? []).forEach((f, x) => {

@@ -10136,6 +10136,24 @@
       "unidade": "%",
       "combate": true,
       "efeito": "cargas.ganhar (08/11 — o Emblema do Precursor)"
+    },
+    "magnitude_revelados": {
+      "nome": "Magnitude dos Modificadores Revelados",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "gerar.modificadoresDoUnico (08/11 — os velados da Traição)"
+    },
+    "evasao_regen_vida_pct": {
+      "nome": "Evasão Regenerada como Vida por segundo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.regenDoPoe (08/11 — a Fome da Rainha velada)"
+    },
+    "minion_crit_flat": {
+      "nome": "Chance de Golpe Crítico dos Lacaios (fixa)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "lacaios-poe: soma na base do crítico (08/11 — Espectros velados)"
     }
   }
 }

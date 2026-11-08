@@ -1,6 +1,6 @@
 {
  "_nota": "As LINHAS SORTEADAS das únicas de joia do PoE (lote 55, J31): `substitui` — a linha de marcação do catálogo (\"[Two random aura modifiers]\") → quantas linhas do pool `linhas` ela vira, sem repetir e com a mesma chance (o poedb não dá o peso). (lote 56) `nomeSorteado` — a marcação `marca` (\"Passive Skill\") do texto vira um dos `nomes` (a pedra fundamental da Fuga Impossível, o notável de ascendência da Chama/Carne Proibida). A coleção não traz; o catálogo põe por cima (`itens-poe/catalogo.mjs`) e o gerador sorteia (`itens-poe/gerar.modificadoresDoUnico`). Feito por `tools/importar-poedb-sorteados.mjs` a partir das abas \"Modificadores\" do poedb (o Scrapling).",
- "geradoEm": "2026-11-08T03:05:33.677Z",
+ "geradoEm": "2026-11-08T03:50:37.688Z",
  "unicos": {
   "Watchers_Eye": {
    "classe": "Jewels",
@@ -5324,6 +5324,5408 @@
      "faixas": []
     }
    ]
+  },
+  "Hyperboreus": {
+   "classe": "Belts",
+   "substitui": {
+    "veiled mod seed [{0},{1}]": "composicao",
+    "veiled mod type [{0}]": "composicao"
+   },
+   "composicao": {
+    "veiled mod seed [{0},{1}]": [
+     [
+      "sufixo",
+      1
+     ]
+    ],
+    "veiled mod type [{0}]": []
+   },
+   "pools": {
+    "prefixo": [
+     {
+      "texto": "+(365—400) de Armadura e Evasão",
+      "modelo": "+{0} de Armadura e Evasão",
+      "faixas": [
+       [
+        365,
+        400
+       ]
+      ]
+     },
+     {
+      "texto": "+(365—400) de Armadura / +(31—35) de Escudo de Energia máximo",
+      "modelo": "+{0} de Armadura / +{1} de Escudo de Energia máximo",
+      "faixas": [
+       [
+        365,
+        400
+       ],
+       [
+        31,
+        35
+       ]
+      ]
+     },
+     {
+      "texto": "+(365—400) de Evasão / +(31—35) de Escudo de Energia máximo",
+      "modelo": "+{0} de Evasão / +{1} de Escudo de Energia máximo",
+      "faixas": [
+       [
+        365,
+        400
+       ],
+       [
+        31,
+        35
+       ]
+      ]
+     },
+     {
+      "texto": "Recarga de Frasco recebida reduzida em 33% / Frascos aplicados a você tem Efeito aumentado em (15—18)%",
+      "modelo": "Recarga de Frasco recebida reduzida em {0}% / Frascos aplicados a você tem Efeito aumentado em {1}%",
+      "faixas": [
+       [
+        33,
+        33
+       ],
+       [
+        15,
+        18
+       ]
+      ]
+     },
+     {
+      "texto": "+(55—60) de Vida máxima / 5.3 de Mana Regenerada por segundo",
+      "modelo": "+{0} de Vida máxima / {1} de Mana Regenerada por segundo",
+      "faixas": [
+       [
+        55,
+        60
+       ],
+       [
+        5.3,
+        5.3
+       ]
+      ]
+     },
+     {
+      "texto": "33.3 de Vida Regenerada por segundo / +(55—60) de Mana máxima",
+      "modelo": "{0} de Vida Regenerada por segundo / +{1} de Mana máxima",
+      "faixas": [
+       [
+        33.3,
+        33.3
+       ],
+       [
+        55,
+        60
+       ]
+      ]
+     }
+    ],
+    "sufixo": [
+     {
+      "texto": "+(31—35) de Força e Destreza",
+      "modelo": "+{0} de Força e Destreza",
+      "faixas": [
+       [
+        31,
+        35
+       ]
+      ]
+     },
+     {
+      "texto": "+(31—35) de Destreza e Inteligência",
+      "modelo": "+{0} de Destreza e Inteligência",
+      "faixas": [
+       [
+        31,
+        35
+       ]
+      ]
+     },
+     {
+      "texto": "+(31—35) de Força e Inteligência",
+      "modelo": "+{0} de Força e Inteligência",
+      "faixas": [
+       [
+        31,
+        35
+       ]
+      ]
+     },
+     {
+      "texto": "Velocidade de Recarga aumentada em (13—16)%",
+      "modelo": "Velocidade de Recarga aumentada em {0}%",
+      "faixas": [
+       [
+        13,
+        16
+       ]
+      ]
+     },
+     {
+      "texto": "200 de Escudo de Energia Regenerado por segundo enquanto um Inimigo Raro ou Único estiver Próximo",
+      "modelo": "{0} de Escudo de Energia Regenerado por segundo enquanto um Inimigo Raro ou Único estiver Próximo",
+      "faixas": [
+       [
+        200,
+        200
+       ]
+      ]
+     },
+     {
+      "texto": "Velocidade de Arremesso da Armadilha aumentada em (14—16)%",
+      "modelo": "Velocidade de Arremesso da Armadilha aumentada em {0}%",
+      "faixas": [
+       [
+        14,
+        16
+       ]
+      ]
+     },
+     {
+      "texto": "Sua Chance de Acerto Crítico é Sortuda enquanto Concentrado / Velocidade da Recuperação da Recarga da Concentração aumentada em (5—8)% / grant focus skill [1]",
+      "modelo": "Sua Chance de Acerto Crítico é Sortuda enquanto Concentrado / Velocidade da Recuperação da Recarga da Concentração aumentada em {0}% / grant focus skill [{1}]",
+      "faixas": [
+       [
+        5,
+        8
+       ],
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "+(16—20)% de Resistência de Fogo e Caos",
+      "modelo": "+{0}% de Resistência de Fogo e Caos",
+      "faixas": [
+       [
+        16,
+        20
+       ]
+      ]
+     },
+     {
+      "texto": "+(16—20)% de Resistência a Raio e Caos",
+      "modelo": "+{0}% de Resistência a Raio e Caos",
+      "faixas": [
+       [
+        16,
+        20
+       ]
+      ]
+     },
+     {
+      "texto": "+(16—20)% de Resistência a Gelo e Caos",
+      "modelo": "+{0}% de Resistência a Gelo e Caos",
+      "faixas": [
+       [
+        16,
+        20
+       ]
+      ]
+     }
+    ]
+   },
+   "fonte": "https://poedb.tw/pt/Veiled_Chaos_Orb",
+   "linhas": [
+    {
+     "texto": "+(365—400) de Armadura e Evasão",
+     "modelo": "+{0} de Armadura e Evasão",
+     "faixas": [
+      [
+       365,
+       400
+      ]
+     ]
+    },
+    {
+     "texto": "+(365—400) de Armadura / +(31—35) de Escudo de Energia máximo",
+     "modelo": "+{0} de Armadura / +{1} de Escudo de Energia máximo",
+     "faixas": [
+      [
+       365,
+       400
+      ],
+      [
+       31,
+       35
+      ]
+     ]
+    },
+    {
+     "texto": "+(365—400) de Evasão / +(31—35) de Escudo de Energia máximo",
+     "modelo": "+{0} de Evasão / +{1} de Escudo de Energia máximo",
+     "faixas": [
+      [
+       365,
+       400
+      ],
+      [
+       31,
+       35
+      ]
+     ]
+    },
+    {
+     "texto": "Recarga de Frasco recebida reduzida em 33% / Frascos aplicados a você tem Efeito aumentado em (15—18)%",
+     "modelo": "Recarga de Frasco recebida reduzida em {0}% / Frascos aplicados a você tem Efeito aumentado em {1}%",
+     "faixas": [
+      [
+       33,
+       33
+      ],
+      [
+       15,
+       18
+      ]
+     ]
+    },
+    {
+     "texto": "+(55—60) de Vida máxima / 5.3 de Mana Regenerada por segundo",
+     "modelo": "+{0} de Vida máxima / {1} de Mana Regenerada por segundo",
+     "faixas": [
+      [
+       55,
+       60
+      ],
+      [
+       5.3,
+       5.3
+      ]
+     ]
+    },
+    {
+     "texto": "33.3 de Vida Regenerada por segundo / +(55—60) de Mana máxima",
+     "modelo": "{0} de Vida Regenerada por segundo / +{1} de Mana máxima",
+     "faixas": [
+      [
+       33.3,
+       33.3
+      ],
+      [
+       55,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "+(31—35) de Força e Destreza",
+     "modelo": "+{0} de Força e Destreza",
+     "faixas": [
+      [
+       31,
+       35
+      ]
+     ]
+    },
+    {
+     "texto": "+(31—35) de Destreza e Inteligência",
+     "modelo": "+{0} de Destreza e Inteligência",
+     "faixas": [
+      [
+       31,
+       35
+      ]
+     ]
+    },
+    {
+     "texto": "+(31—35) de Força e Inteligência",
+     "modelo": "+{0} de Força e Inteligência",
+     "faixas": [
+      [
+       31,
+       35
+      ]
+     ]
+    },
+    {
+     "texto": "Velocidade de Recarga aumentada em (13—16)%",
+     "modelo": "Velocidade de Recarga aumentada em {0}%",
+     "faixas": [
+      [
+       13,
+       16
+      ]
+     ]
+    },
+    {
+     "texto": "200 de Escudo de Energia Regenerado por segundo enquanto um Inimigo Raro ou Único estiver Próximo",
+     "modelo": "{0} de Escudo de Energia Regenerado por segundo enquanto um Inimigo Raro ou Único estiver Próximo",
+     "faixas": [
+      [
+       200,
+       200
+      ]
+     ]
+    },
+    {
+     "texto": "Velocidade de Arremesso da Armadilha aumentada em (14—16)%",
+     "modelo": "Velocidade de Arremesso da Armadilha aumentada em {0}%",
+     "faixas": [
+      [
+       14,
+       16
+      ]
+     ]
+    },
+    {
+     "texto": "Sua Chance de Acerto Crítico é Sortuda enquanto Concentrado / Velocidade da Recuperação da Recarga da Concentração aumentada em (5—8)% / grant focus skill [1]",
+     "modelo": "Sua Chance de Acerto Crítico é Sortuda enquanto Concentrado / Velocidade da Recuperação da Recarga da Concentração aumentada em {0}% / grant focus skill [{1}]",
+     "faixas": [
+      [
+       5,
+       8
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+(16—20)% de Resistência de Fogo e Caos",
+     "modelo": "+{0}% de Resistência de Fogo e Caos",
+     "faixas": [
+      [
+       16,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "+(16—20)% de Resistência a Raio e Caos",
+     "modelo": "+{0}% de Resistência a Raio e Caos",
+     "faixas": [
+      [
+       16,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "+(16—20)% de Resistência a Gelo e Caos",
+     "modelo": "+{0}% de Resistência a Gelo e Caos",
+     "faixas": [
+      [
+       16,
+       20
+      ]
+     ]
+    }
+   ],
+   "velado": true
+  },
+  "Vivinsect": {
+   "classe": "Rings",
+   "substitui": {
+    "veiled mod seed [{0},{1}]": "composicao",
+    "veiled mod type [{0}]": "composicao"
+   },
+   "composicao": {
+    "veiled mod seed [{0},{1}]": [
+     [
+      "sufixo",
+      1
+     ]
+    ],
+    "veiled mod type [{0}]": []
+   },
+   "pools": {
+    "prefixo": [
+     {
+      "texto": "+(51—55) de Mana máxima / 5.3 de Mana Regenerada por segundo",
+      "modelo": "+{0} de Mana máxima / {1} de Mana Regenerada por segundo",
+      "faixas": [
+       [
+        51,
+        55
+       ],
+       [
+        5.3,
+        5.3
+       ]
+      ]
+     },
+     {
+      "texto": "+(51—55) de Mana máxima / Eficiência de custo de mana aumentada em (13—15)%",
+      "modelo": "+{0} de Mana máxima / Eficiência de custo de mana aumentada em {1}%",
+      "faixas": [
+       [
+        51,
+        55
+       ],
+       [
+        13,
+        15
+       ]
+      ]
+     },
+     {
+      "texto": "+(51—55) de Mana máxima / (7—8)% do Dano sofrido é Recuperado como Mana",
+      "modelo": "+{0} de Mana máxima / {1}% do Dano sofrido é Recuperado como Mana",
+      "faixas": [
+       [
+        51,
+        55
+       ],
+       [
+        7,
+        8
+       ]
+      ]
+     },
+     {
+      "texto": "+(55—60) de Vida máxima / 5.3 de Mana Regenerada por segundo",
+      "modelo": "+{0} de Vida máxima / {1} de Mana Regenerada por segundo",
+      "faixas": [
+       [
+        55,
+        60
+       ],
+       [
+        5.3,
+        5.3
+       ]
+      ]
+     },
+     {
+      "texto": "33.3 de Vida Regenerada por segundo / +(55—60) de Mana máxima",
+      "modelo": "{0} de Vida Regenerada por segundo / +{1} de Mana máxima",
+      "faixas": [
+       [
+        33.3,
+        33.3
+       ],
+       [
+        55,
+        60
+       ]
+      ]
+     },
+     {
+      "texto": "Adiciona (14—16) a (20—22) de Dano de Fogo / Adiciona (14—16) a (20—22) de Dano de Gelo",
+      "modelo": "Adiciona {0} a {1} de Dano de Fogo / Adiciona {2} a {3} de Dano de Gelo",
+      "faixas": [
+       [
+        14,
+        16
+       ],
+       [
+        20,
+        22
+       ],
+       [
+        14,
+        16
+       ],
+       [
+        20,
+        22
+       ]
+      ]
+     },
+     {
+      "texto": "Adiciona (14—16) a (20—22) de Dano de Fogo / Adiciona (14—16) a (20—22) de Dano de Raio",
+      "modelo": "Adiciona {0} a {1} de Dano de Fogo / Adiciona {2} a {3} de Dano de Raio",
+      "faixas": [
+       [
+        14,
+        16
+       ],
+       [
+        20,
+        22
+       ],
+       [
+        14,
+        16
+       ],
+       [
+        20,
+        22
+       ]
+      ]
+     },
+     {
+      "texto": "Adiciona (14—16) a (20—22) de Dano de Gelo / Adiciona (14—16) a (20—22) de Dano de Raio",
+      "modelo": "Adiciona {0} a {1} de Dano de Gelo / Adiciona {2} a {3} de Dano de Raio",
+      "faixas": [
+       [
+        14,
+        16
+       ],
+       [
+        20,
+        22
+       ],
+       [
+        14,
+        16
+       ],
+       [
+        20,
+        22
+       ]
+      ]
+     }
+    ],
+    "sufixo": [
+     {
+      "texto": "+(31—35) de Força e Destreza",
+      "modelo": "+{0} de Força e Destreza",
+      "faixas": [
+       [
+        31,
+        35
+       ]
+      ]
+     },
+     {
+      "texto": "+(31—35) de Destreza e Inteligência",
+      "modelo": "+{0} de Destreza e Inteligência",
+      "faixas": [
+       [
+        31,
+        35
+       ]
+      ]
+     },
+     {
+      "texto": "+(31—35) de Força e Inteligência",
+      "modelo": "+{0} de Força e Inteligência",
+      "faixas": [
+       [
+        31,
+        35
+       ]
+      ]
+     },
+     {
+      "texto": "+1 ao Mínimo de Cargas de Tolerância / (3—4)% de chance de receber uma Carga de Tolerância ao Matar",
+      "modelo": "+{0} ao Mínimo de Cargas de Tolerância / {1}% de chance de receber uma Carga de Tolerância ao Matar",
+      "faixas": [
+       [
+        1,
+        1
+       ],
+       [
+        3,
+        4
+       ]
+      ]
+     },
+     {
+      "texto": "+1 ao Mínimo de Cargas de Poder / (3—4)% de chance de ganhar uma Carga de Poder ao Matar",
+      "modelo": "+{0} ao Mínimo de Cargas de Poder / {1}% de chance de ganhar uma Carga de Poder ao Matar",
+      "faixas": [
+       [
+        1,
+        1
+       ],
+       [
+        3,
+        4
+       ]
+      ]
+     },
+     {
+      "texto": "+1 ao Mínimo de Cargas de Frenesi / (3—4)% de chance de ganhar uma Carga de Frenesi ao Matar",
+      "modelo": "+{0} ao Mínimo de Cargas de Frenesi / {1}% de chance de ganhar uma Carga de Frenesi ao Matar",
+      "faixas": [
+       [
+        1,
+        1
+       ],
+       [
+        3,
+        4
+       ]
+      ]
+     },
+     {
+      "texto": "Velocidade da Recuperação da Recarga da Concentração aumentada em (5—8)% / Eletriza Inimigos próximos por 4 Segundos ao se Concentrar / grant focus skill [1]",
+      "modelo": "Velocidade da Recuperação da Recarga da Concentração aumentada em {0}% / Eletriza Inimigos próximos por {1} Segundos ao se Concentrar / grant focus skill [{2}]",
+      "faixas": [
+       [
+        5,
+        8
+       ],
+       [
+        4,
+        4
+       ],
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "+(16—20)% de Resistência de Fogo e Caos",
+      "modelo": "+{0}% de Resistência de Fogo e Caos",
+      "faixas": [
+       [
+        16,
+        20
+       ]
+      ]
+     },
+     {
+      "texto": "+(16—20)% de Resistência a Raio e Caos",
+      "modelo": "+{0}% de Resistência a Raio e Caos",
+      "faixas": [
+       [
+        16,
+        20
+       ]
+      ]
+     },
+     {
+      "texto": "+(16—20)% de Resistência a Gelo e Caos",
+      "modelo": "+{0}% de Resistência a Gelo e Caos",
+      "faixas": [
+       [
+        16,
+        20
+       ]
+      ]
+     }
+    ]
+   },
+   "fonte": "https://poedb.tw/pt/Veiled_Chaos_Orb",
+   "linhas": [
+    {
+     "texto": "+(51—55) de Mana máxima / 5.3 de Mana Regenerada por segundo",
+     "modelo": "+{0} de Mana máxima / {1} de Mana Regenerada por segundo",
+     "faixas": [
+      [
+       51,
+       55
+      ],
+      [
+       5.3,
+       5.3
+      ]
+     ]
+    },
+    {
+     "texto": "+(51—55) de Mana máxima / Eficiência de custo de mana aumentada em (13—15)%",
+     "modelo": "+{0} de Mana máxima / Eficiência de custo de mana aumentada em {1}%",
+     "faixas": [
+      [
+       51,
+       55
+      ],
+      [
+       13,
+       15
+      ]
+     ]
+    },
+    {
+     "texto": "+(51—55) de Mana máxima / (7—8)% do Dano sofrido é Recuperado como Mana",
+     "modelo": "+{0} de Mana máxima / {1}% do Dano sofrido é Recuperado como Mana",
+     "faixas": [
+      [
+       51,
+       55
+      ],
+      [
+       7,
+       8
+      ]
+     ]
+    },
+    {
+     "texto": "+(55—60) de Vida máxima / 5.3 de Mana Regenerada por segundo",
+     "modelo": "+{0} de Vida máxima / {1} de Mana Regenerada por segundo",
+     "faixas": [
+      [
+       55,
+       60
+      ],
+      [
+       5.3,
+       5.3
+      ]
+     ]
+    },
+    {
+     "texto": "33.3 de Vida Regenerada por segundo / +(55—60) de Mana máxima",
+     "modelo": "{0} de Vida Regenerada por segundo / +{1} de Mana máxima",
+     "faixas": [
+      [
+       33.3,
+       33.3
+      ],
+      [
+       55,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "Adiciona (14—16) a (20—22) de Dano de Fogo / Adiciona (14—16) a (20—22) de Dano de Gelo",
+     "modelo": "Adiciona {0} a {1} de Dano de Fogo / Adiciona {2} a {3} de Dano de Gelo",
+     "faixas": [
+      [
+       14,
+       16
+      ],
+      [
+       20,
+       22
+      ],
+      [
+       14,
+       16
+      ],
+      [
+       20,
+       22
+      ]
+     ]
+    },
+    {
+     "texto": "Adiciona (14—16) a (20—22) de Dano de Fogo / Adiciona (14—16) a (20—22) de Dano de Raio",
+     "modelo": "Adiciona {0} a {1} de Dano de Fogo / Adiciona {2} a {3} de Dano de Raio",
+     "faixas": [
+      [
+       14,
+       16
+      ],
+      [
+       20,
+       22
+      ],
+      [
+       14,
+       16
+      ],
+      [
+       20,
+       22
+      ]
+     ]
+    },
+    {
+     "texto": "Adiciona (14—16) a (20—22) de Dano de Gelo / Adiciona (14—16) a (20—22) de Dano de Raio",
+     "modelo": "Adiciona {0} a {1} de Dano de Gelo / Adiciona {2} a {3} de Dano de Raio",
+     "faixas": [
+      [
+       14,
+       16
+      ],
+      [
+       20,
+       22
+      ],
+      [
+       14,
+       16
+      ],
+      [
+       20,
+       22
+      ]
+     ]
+    },
+    {
+     "texto": "+(31—35) de Força e Destreza",
+     "modelo": "+{0} de Força e Destreza",
+     "faixas": [
+      [
+       31,
+       35
+      ]
+     ]
+    },
+    {
+     "texto": "+(31—35) de Destreza e Inteligência",
+     "modelo": "+{0} de Destreza e Inteligência",
+     "faixas": [
+      [
+       31,
+       35
+      ]
+     ]
+    },
+    {
+     "texto": "+(31—35) de Força e Inteligência",
+     "modelo": "+{0} de Força e Inteligência",
+     "faixas": [
+      [
+       31,
+       35
+      ]
+     ]
+    },
+    {
+     "texto": "+1 ao Mínimo de Cargas de Tolerância / (3—4)% de chance de receber uma Carga de Tolerância ao Matar",
+     "modelo": "+{0} ao Mínimo de Cargas de Tolerância / {1}% de chance de receber uma Carga de Tolerância ao Matar",
+     "faixas": [
+      [
+       1,
+       1
+      ],
+      [
+       3,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "+1 ao Mínimo de Cargas de Poder / (3—4)% de chance de ganhar uma Carga de Poder ao Matar",
+     "modelo": "+{0} ao Mínimo de Cargas de Poder / {1}% de chance de ganhar uma Carga de Poder ao Matar",
+     "faixas": [
+      [
+       1,
+       1
+      ],
+      [
+       3,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "+1 ao Mínimo de Cargas de Frenesi / (3—4)% de chance de ganhar uma Carga de Frenesi ao Matar",
+     "modelo": "+{0} ao Mínimo de Cargas de Frenesi / {1}% de chance de ganhar uma Carga de Frenesi ao Matar",
+     "faixas": [
+      [
+       1,
+       1
+      ],
+      [
+       3,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Velocidade da Recuperação da Recarga da Concentração aumentada em (5—8)% / Eletriza Inimigos próximos por 4 Segundos ao se Concentrar / grant focus skill [1]",
+     "modelo": "Velocidade da Recuperação da Recarga da Concentração aumentada em {0}% / Eletriza Inimigos próximos por {1} Segundos ao se Concentrar / grant focus skill [{2}]",
+     "faixas": [
+      [
+       5,
+       8
+      ],
+      [
+       4,
+       4
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+(16—20)% de Resistência de Fogo e Caos",
+     "modelo": "+{0}% de Resistência de Fogo e Caos",
+     "faixas": [
+      [
+       16,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "+(16—20)% de Resistência a Raio e Caos",
+     "modelo": "+{0}% de Resistência a Raio e Caos",
+     "faixas": [
+      [
+       16,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "+(16—20)% de Resistência a Gelo e Caos",
+     "modelo": "+{0}% de Resistência a Gelo e Caos",
+     "faixas": [
+      [
+       16,
+       20
+      ]
+     ]
+    }
+   ],
+   "velado": true
+  },
+  "The_Queens_Hunger": {
+   "classe": "Body_Armours",
+   "substitui": {
+    "veiled mod seed [{0},{1}]": "composicao",
+    "veiled mod type [{0}]": "composicao"
+   },
+   "composicao": {
+    "veiled mod seed [{0},{1}]": [
+     [
+      "prefixo",
+      1
+     ],
+     [
+      "sufixo",
+      1
+     ]
+    ],
+    "veiled mod type [{0}]": []
+   },
+   "pools": {
+    "prefixo": [
+     {
+      "texto": "+(3201—4000) de Armadura durante a Anulação do Ganho de Almas",
+      "modelo": "+{0} de Armadura durante a Anulação do Ganho de Almas",
+      "faixas": [
+       [
+        3201,
+        4000
+       ]
+      ]
+     },
+     {
+      "texto": "Vida máxima aumentada em (9—10)% / Mana máxima aumentada em (9—10)%",
+      "modelo": "Vida máxima aumentada em {0}% / Mana máxima aumentada em {1}%",
+      "faixas": [
+       [
+        9,
+        10
+       ],
+       [
+        9,
+        10
+       ]
+      ]
+     },
+     {
+      "texto": "(8—9)% de Chance de Bloquear o Dano de Ataques",
+      "modelo": "{0}% de Chance de Bloquear o Dano de Ataques",
+      "faixas": [
+       [
+        8,
+        9
+       ]
+      ]
+     },
+     {
+      "texto": "(9—10)% de Chance de Bloquear o Dano Mágico",
+      "modelo": "{0}% de Chance de Bloquear o Dano Mágico",
+      "faixas": [
+       [
+        9,
+        10
+       ]
+      ]
+     },
+     {
+      "texto": "(30—35)% de chance de Evitar Afecções Elementais / (30—35)% de chance de Evitar ser Atordoado",
+      "modelo": "{0}% de chance de Evitar Afecções Elementais / {1}% de chance de Evitar ser Atordoado",
+      "faixas": [
+       [
+        30,
+        35
+       ],
+       [
+        30,
+        35
+       ]
+      ]
+     }
+    ],
+    "sufixo": [
+     {
+      "texto": "+(31—35) de Força e Destreza",
+      "modelo": "+{0} de Força e Destreza",
+      "faixas": [
+       [
+        31,
+        35
+       ]
+      ]
+     },
+     {
+      "texto": "+(31—35) de Destreza e Inteligência",
+      "modelo": "+{0} de Destreza e Inteligência",
+      "faixas": [
+       [
+        31,
+        35
+       ]
+      ]
+     },
+     {
+      "texto": "+(31—35) de Força e Inteligência",
+      "modelo": "+{0} de Força e Inteligência",
+      "faixas": [
+       [
+        31,
+        35
+       ]
+      ]
+     },
+     {
+      "texto": "(10—12)% de chance de evitar dano de cada elemento de ataques durante o impedimento de ganho de almas",
+      "modelo": "{0}% de chance de evitar dano de cada elemento de ataques durante o impedimento de ganho de almas",
+      "faixas": [
+       [
+        10,
+        12
+       ]
+      ]
+     },
+     {
+      "texto": "200 de Escudo de Energia Regenerado por segundo enquanto um Inimigo Raro ou Único estiver Próximo",
+      "modelo": "{0} de Escudo de Energia Regenerado por segundo enquanto um Inimigo Raro ou Único estiver Próximo",
+      "faixas": [
+       [
+        200,
+        200
+       ]
+      ]
+     },
+     {
+      "texto": "1.5% de Evasão é Regenerada como Vida por segundo enquanto Concentrado / grant focus skill [1]",
+      "modelo": "{0}% de Evasão é Regenerada como Vida por segundo enquanto Concentrado / grant focus skill [{1}]",
+      "faixas": [
+       [
+        1.5,
+        1.5
+       ],
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "Recupera (37—40)% de Mana e Escudo de Energia ao se Concentrar / grant focus skill [1]",
+      "modelo": "Recupera {0}% de Mana e Escudo de Energia ao se Concentrar / grant focus skill [{1}]",
+      "faixas": [
+       [
+        37,
+        40
+       ],
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "+10 ao máximo de Fortificações enquanto Concentrado / grant focus skill [1]",
+      "modelo": "+{0} ao máximo de Fortificações enquanto Concentrado / grant focus skill [{1}]",
+      "faixas": [
+       [
+        10,
+        10
+       ],
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "(18—22)% do Dano é retirado da Mana antes da Vida enquanto Concentrado / grant focus skill [1]",
+      "modelo": "{0}% do Dano é retirado da Mana antes da Vida enquanto Concentrado / grant focus skill [{1}]",
+      "faixas": [
+       [
+        18,
+        22
+       ],
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "+(16—20)% de Resistência de Fogo e Caos",
+      "modelo": "+{0}% de Resistência de Fogo e Caos",
+      "faixas": [
+       [
+        16,
+        20
+       ]
+      ]
+     },
+     {
+      "texto": "+(16—20)% de Resistência a Raio e Caos",
+      "modelo": "+{0}% de Resistência a Raio e Caos",
+      "faixas": [
+       [
+        16,
+        20
+       ]
+      ]
+     },
+     {
+      "texto": "+(16—20)% de Resistência a Gelo e Caos",
+      "modelo": "+{0}% de Resistência a Gelo e Caos",
+      "faixas": [
+       [
+        16,
+        20
+       ]
+      ]
+     },
+     {
+      "texto": "+(31—35) de Força / (21—25)% de chance de Evitar ser Incendiado",
+      "modelo": "+{0} de Força / {1}% de chance de Evitar ser Incendiado",
+      "faixas": [
+       [
+        31,
+        35
+       ],
+       [
+        21,
+        25
+       ]
+      ]
+     },
+     {
+      "texto": "+(31—35) de Destreza / (21—25)% de chance de Evitar ser Congelado",
+      "modelo": "+{0} de Destreza / {1}% de chance de Evitar ser Congelado",
+      "faixas": [
+       [
+        31,
+        35
+       ],
+       [
+        21,
+        25
+       ]
+      ]
+     },
+     {
+      "texto": "+(31—35) de Inteligência / (21—25)% de chance de Evitar ser Eletrizado",
+      "modelo": "+{0} de Inteligência / {1}% de chance de Evitar ser Eletrizado",
+      "faixas": [
+       [
+        31,
+        35
+       ],
+       [
+        21,
+        25
+       ]
+      ]
+     }
+    ]
+   },
+   "fonte": "https://poedb.tw/pt/Veiled_Chaos_Orb",
+   "linhas": [
+    {
+     "texto": "+(3201—4000) de Armadura durante a Anulação do Ganho de Almas",
+     "modelo": "+{0} de Armadura durante a Anulação do Ganho de Almas",
+     "faixas": [
+      [
+       3201,
+       4000
+      ]
+     ]
+    },
+    {
+     "texto": "Vida máxima aumentada em (9—10)% / Mana máxima aumentada em (9—10)%",
+     "modelo": "Vida máxima aumentada em {0}% / Mana máxima aumentada em {1}%",
+     "faixas": [
+      [
+       9,
+       10
+      ],
+      [
+       9,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "(8—9)% de Chance de Bloquear o Dano de Ataques",
+     "modelo": "{0}% de Chance de Bloquear o Dano de Ataques",
+     "faixas": [
+      [
+       8,
+       9
+      ]
+     ]
+    },
+    {
+     "texto": "(9—10)% de Chance de Bloquear o Dano Mágico",
+     "modelo": "{0}% de Chance de Bloquear o Dano Mágico",
+     "faixas": [
+      [
+       9,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "(30—35)% de chance de Evitar Afecções Elementais / (30—35)% de chance de Evitar ser Atordoado",
+     "modelo": "{0}% de chance de Evitar Afecções Elementais / {1}% de chance de Evitar ser Atordoado",
+     "faixas": [
+      [
+       30,
+       35
+      ],
+      [
+       30,
+       35
+      ]
+     ]
+    },
+    {
+     "texto": "+(31—35) de Força e Destreza",
+     "modelo": "+{0} de Força e Destreza",
+     "faixas": [
+      [
+       31,
+       35
+      ]
+     ]
+    },
+    {
+     "texto": "+(31—35) de Destreza e Inteligência",
+     "modelo": "+{0} de Destreza e Inteligência",
+     "faixas": [
+      [
+       31,
+       35
+      ]
+     ]
+    },
+    {
+     "texto": "+(31—35) de Força e Inteligência",
+     "modelo": "+{0} de Força e Inteligência",
+     "faixas": [
+      [
+       31,
+       35
+      ]
+     ]
+    },
+    {
+     "texto": "(10—12)% de chance de evitar dano de cada elemento de ataques durante o impedimento de ganho de almas",
+     "modelo": "{0}% de chance de evitar dano de cada elemento de ataques durante o impedimento de ganho de almas",
+     "faixas": [
+      [
+       10,
+       12
+      ]
+     ]
+    },
+    {
+     "texto": "200 de Escudo de Energia Regenerado por segundo enquanto um Inimigo Raro ou Único estiver Próximo",
+     "modelo": "{0} de Escudo de Energia Regenerado por segundo enquanto um Inimigo Raro ou Único estiver Próximo",
+     "faixas": [
+      [
+       200,
+       200
+      ]
+     ]
+    },
+    {
+     "texto": "1.5% de Evasão é Regenerada como Vida por segundo enquanto Concentrado / grant focus skill [1]",
+     "modelo": "{0}% de Evasão é Regenerada como Vida por segundo enquanto Concentrado / grant focus skill [{1}]",
+     "faixas": [
+      [
+       1.5,
+       1.5
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "Recupera (37—40)% de Mana e Escudo de Energia ao se Concentrar / grant focus skill [1]",
+     "modelo": "Recupera {0}% de Mana e Escudo de Energia ao se Concentrar / grant focus skill [{1}]",
+     "faixas": [
+      [
+       37,
+       40
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+10 ao máximo de Fortificações enquanto Concentrado / grant focus skill [1]",
+     "modelo": "+{0} ao máximo de Fortificações enquanto Concentrado / grant focus skill [{1}]",
+     "faixas": [
+      [
+       10,
+       10
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "(18—22)% do Dano é retirado da Mana antes da Vida enquanto Concentrado / grant focus skill [1]",
+     "modelo": "{0}% do Dano é retirado da Mana antes da Vida enquanto Concentrado / grant focus skill [{1}]",
+     "faixas": [
+      [
+       18,
+       22
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+(16—20)% de Resistência de Fogo e Caos",
+     "modelo": "+{0}% de Resistência de Fogo e Caos",
+     "faixas": [
+      [
+       16,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "+(16—20)% de Resistência a Raio e Caos",
+     "modelo": "+{0}% de Resistência a Raio e Caos",
+     "faixas": [
+      [
+       16,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "+(16—20)% de Resistência a Gelo e Caos",
+     "modelo": "+{0}% de Resistência a Gelo e Caos",
+     "faixas": [
+      [
+       16,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "+(31—35) de Força / (21—25)% de chance de Evitar ser Incendiado",
+     "modelo": "+{0} de Força / {1}% de chance de Evitar ser Incendiado",
+     "faixas": [
+      [
+       31,
+       35
+      ],
+      [
+       21,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "+(31—35) de Destreza / (21—25)% de chance de Evitar ser Congelado",
+     "modelo": "+{0} de Destreza / {1}% de chance de Evitar ser Congelado",
+     "faixas": [
+      [
+       31,
+       35
+      ],
+      [
+       21,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "+(31—35) de Inteligência / (21—25)% de chance de Evitar ser Eletrizado",
+     "modelo": "+{0} de Inteligência / {1}% de chance de Evitar ser Eletrizado",
+     "faixas": [
+      [
+       31,
+       35
+      ],
+      [
+       21,
+       25
+      ]
+     ]
+    }
+   ],
+   "velado": true
+  },
+  "The_Devouring_Diadem": {
+   "classe": "Helmets",
+   "substitui": {
+    "veiled mod seed [{0},{1}]": "composicao",
+    "veiled mod type [{0}]": "composicao"
+   },
+   "composicao": {
+    "veiled mod seed [{0},{1}]": [
+     [
+      "sufixo",
+      1
+     ]
+    ],
+    "veiled mod type [{0}]": []
+   },
+   "pools": {
+    "prefixo": [
+     {
+      "texto": "Vida máxima dos Lacaios aumentada em (8—10)% / +1 ao número máximo de Zumbis / +1 ao número máximo de Esqueletos",
+      "modelo": "Vida máxima dos Lacaios aumentada em {0}% / +{1} ao número máximo de Zumbis / +{2} ao número máximo de Esqueletos",
+      "faixas": [
+       [
+        8,
+        10
+       ],
+       [
+        1,
+        1
+       ],
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "+2 ao Nível das Gemas de AoE Encaixadas / Área de Efeito aumentada em (8—10)%",
+      "modelo": "+{0} ao Nível das Gemas de AoE Encaixadas / Área de Efeito aumentada em {1}%",
+      "faixas": [
+       [
+        2,
+        2
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     {
+      "texto": "+2 ao Nível das Gemas de Projéteis Encaixadas / Projéteis Perfuram 1 Alvos adicionais",
+      "modelo": "+{0} ao Nível das Gemas de Projéteis Encaixadas / Projéteis Perfuram {1} Alvos adicionais",
+      "faixas": [
+       [
+        2,
+        2
+       ],
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "+2 ao Nível das Gemas Corpo a Corpo Encaixadas / +0.2 metros ao Alcance de Golpes Corpo a Corpo",
+      "modelo": "+{0} ao Nível das Gemas Corpo a Corpo Encaixadas / +{1} metros ao Alcance de Golpes Corpo a Corpo",
+      "faixas": [
+       [
+        2,
+        2
+       ],
+       [
+        0.2,
+        0.2
+       ]
+      ]
+     },
+     {
+      "texto": "+(55—60) de Vida máxima / 5.3 de Mana Regenerada por segundo",
+      "modelo": "+{0} de Vida máxima / {1} de Mana Regenerada por segundo",
+      "faixas": [
+       [
+        55,
+        60
+       ],
+       [
+        5.3,
+        5.3
+       ]
+      ]
+     },
+     {
+      "texto": "33.3 de Vida Regenerada por segundo / +(55—60) de Mana máxima",
+      "modelo": "{0} de Vida Regenerada por segundo / +{1} de Mana máxima",
+      "faixas": [
+       [
+        33.3,
+        33.3
+       ],
+       [
+        55,
+        60
+       ]
+      ]
+     },
+     {
+      "texto": "Evasão aumentada em (30—32)% enquanto Concentrado / grant focus skill [1]",
+      "modelo": "Evasão aumentada em {0}% enquanto Concentrado / grant focus skill [{1}]",
+      "faixas": [
+       [
+        30,
+        32
+       ],
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "(13—15)% de Redução adicional de Dano Físico enquanto Concentrado / grant focus skill [1]",
+      "modelo": "{0}% de Redução adicional de Dano Físico enquanto Concentrado / grant focus skill [{1}]",
+      "faixas": [
+       [
+        13,
+        15
+       ],
+       [
+        1,
+        1
+       ]
+      ]
+     }
+    ],
+    "sufixo": [
+     {
+      "texto": "+(31—35) de Força e Destreza",
+      "modelo": "+{0} de Força e Destreza",
+      "faixas": [
+       [
+        31,
+        35
+       ]
+      ]
+     },
+     {
+      "texto": "+(31—35) de Destreza e Inteligência",
+      "modelo": "+{0} de Destreza e Inteligência",
+      "faixas": [
+       [
+        31,
+        35
+       ]
+      ]
+     },
+     {
+      "texto": "+(31—35) de Força e Inteligência",
+      "modelo": "+{0} de Força e Inteligência",
+      "faixas": [
+       [
+        31,
+        35
+       ]
+      ]
+     },
+     {
+      "texto": "(10—12)% de chance de evitar dano de cada elemento de ataques durante o impedimento de ganho de almas",
+      "modelo": "{0}% de chance de evitar dano de cada elemento de ataques durante o impedimento de ganho de almas",
+      "faixas": [
+       [
+        10,
+        12
+       ]
+      ]
+     },
+     {
+      "texto": "Velocidade de Arremesso de Minas aumentada em (14—16)%",
+      "modelo": "Velocidade de Arremesso de Minas aumentada em {0}%",
+      "faixas": [
+       [
+        14,
+        16
+       ]
+      ]
+     },
+     {
+      "texto": "Duração das Afecções causadas por você aumentada em (36—40)% enquanto Concentrado / grant focus skill [1]",
+      "modelo": "Duração das Afecções causadas por você aumentada em {0}% enquanto Concentrado / grant focus skill [{1}]",
+      "faixas": [
+       [
+        36,
+        40
+       ],
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "Ativa Magias Encaixadas quando você Focar, com Recarga de 0.25 segundo / Velocidade da Recuperação da Recarga da Concentração aumentada em (5—8)% / grant focus skill [1]",
+      "modelo": "Ativa Magias Encaixadas quando você Focar, com Recarga de {0} segundo / Velocidade da Recuperação da Recarga da Concentração aumentada em {1}% / grant focus skill [{2}]",
+      "faixas": [
+       [
+        0.25,
+        0.25
+       ],
+       [
+        5,
+        8
+       ],
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "+(16—20)% de Resistência de Fogo e Caos",
+      "modelo": "+{0}% de Resistência de Fogo e Caos",
+      "faixas": [
+       [
+        16,
+        20
+       ]
+      ]
+     },
+     {
+      "texto": "+(16—20)% de Resistência a Raio e Caos",
+      "modelo": "+{0}% de Resistência a Raio e Caos",
+      "faixas": [
+       [
+        16,
+        20
+       ]
+      ]
+     },
+     {
+      "texto": "+(16—20)% de Resistência a Gelo e Caos",
+      "modelo": "+{0}% de Resistência a Gelo e Caos",
+      "faixas": [
+       [
+        16,
+        20
+       ]
+      ]
+     }
+    ]
+   },
+   "fonte": "https://poedb.tw/pt/Veiled_Chaos_Orb",
+   "linhas": [
+    {
+     "texto": "Vida máxima dos Lacaios aumentada em (8—10)% / +1 ao número máximo de Zumbis / +1 ao número máximo de Esqueletos",
+     "modelo": "Vida máxima dos Lacaios aumentada em {0}% / +{1} ao número máximo de Zumbis / +{2} ao número máximo de Esqueletos",
+     "faixas": [
+      [
+       8,
+       10
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+2 ao Nível das Gemas de AoE Encaixadas / Área de Efeito aumentada em (8—10)%",
+     "modelo": "+{0} ao Nível das Gemas de AoE Encaixadas / Área de Efeito aumentada em {1}%",
+     "faixas": [
+      [
+       2,
+       2
+      ],
+      [
+       8,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "+2 ao Nível das Gemas de Projéteis Encaixadas / Projéteis Perfuram 1 Alvos adicionais",
+     "modelo": "+{0} ao Nível das Gemas de Projéteis Encaixadas / Projéteis Perfuram {1} Alvos adicionais",
+     "faixas": [
+      [
+       2,
+       2
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+2 ao Nível das Gemas Corpo a Corpo Encaixadas / +0.2 metros ao Alcance de Golpes Corpo a Corpo",
+     "modelo": "+{0} ao Nível das Gemas Corpo a Corpo Encaixadas / +{1} metros ao Alcance de Golpes Corpo a Corpo",
+     "faixas": [
+      [
+       2,
+       2
+      ],
+      [
+       0.2,
+       0.2
+      ]
+     ]
+    },
+    {
+     "texto": "+(55—60) de Vida máxima / 5.3 de Mana Regenerada por segundo",
+     "modelo": "+{0} de Vida máxima / {1} de Mana Regenerada por segundo",
+     "faixas": [
+      [
+       55,
+       60
+      ],
+      [
+       5.3,
+       5.3
+      ]
+     ]
+    },
+    {
+     "texto": "33.3 de Vida Regenerada por segundo / +(55—60) de Mana máxima",
+     "modelo": "{0} de Vida Regenerada por segundo / +{1} de Mana máxima",
+     "faixas": [
+      [
+       33.3,
+       33.3
+      ],
+      [
+       55,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "Evasão aumentada em (30—32)% enquanto Concentrado / grant focus skill [1]",
+     "modelo": "Evasão aumentada em {0}% enquanto Concentrado / grant focus skill [{1}]",
+     "faixas": [
+      [
+       30,
+       32
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "(13—15)% de Redução adicional de Dano Físico enquanto Concentrado / grant focus skill [1]",
+     "modelo": "{0}% de Redução adicional de Dano Físico enquanto Concentrado / grant focus skill [{1}]",
+     "faixas": [
+      [
+       13,
+       15
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+(31—35) de Força e Destreza",
+     "modelo": "+{0} de Força e Destreza",
+     "faixas": [
+      [
+       31,
+       35
+      ]
+     ]
+    },
+    {
+     "texto": "+(31—35) de Destreza e Inteligência",
+     "modelo": "+{0} de Destreza e Inteligência",
+     "faixas": [
+      [
+       31,
+       35
+      ]
+     ]
+    },
+    {
+     "texto": "+(31—35) de Força e Inteligência",
+     "modelo": "+{0} de Força e Inteligência",
+     "faixas": [
+      [
+       31,
+       35
+      ]
+     ]
+    },
+    {
+     "texto": "(10—12)% de chance de evitar dano de cada elemento de ataques durante o impedimento de ganho de almas",
+     "modelo": "{0}% de chance de evitar dano de cada elemento de ataques durante o impedimento de ganho de almas",
+     "faixas": [
+      [
+       10,
+       12
+      ]
+     ]
+    },
+    {
+     "texto": "Velocidade de Arremesso de Minas aumentada em (14—16)%",
+     "modelo": "Velocidade de Arremesso de Minas aumentada em {0}%",
+     "faixas": [
+      [
+       14,
+       16
+      ]
+     ]
+    },
+    {
+     "texto": "Duração das Afecções causadas por você aumentada em (36—40)% enquanto Concentrado / grant focus skill [1]",
+     "modelo": "Duração das Afecções causadas por você aumentada em {0}% enquanto Concentrado / grant focus skill [{1}]",
+     "faixas": [
+      [
+       36,
+       40
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "Ativa Magias Encaixadas quando você Focar, com Recarga de 0.25 segundo / Velocidade da Recuperação da Recarga da Concentração aumentada em (5—8)% / grant focus skill [1]",
+     "modelo": "Ativa Magias Encaixadas quando você Focar, com Recarga de {0} segundo / Velocidade da Recuperação da Recarga da Concentração aumentada em {1}% / grant focus skill [{2}]",
+     "faixas": [
+      [
+       0.25,
+       0.25
+      ],
+      [
+       5,
+       8
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+(16—20)% de Resistência de Fogo e Caos",
+     "modelo": "+{0}% de Resistência de Fogo e Caos",
+     "faixas": [
+      [
+       16,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "+(16—20)% de Resistência a Raio e Caos",
+     "modelo": "+{0}% de Resistência a Raio e Caos",
+     "faixas": [
+      [
+       16,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "+(16—20)% de Resistência a Gelo e Caos",
+     "modelo": "+{0}% de Resistência a Gelo e Caos",
+     "faixas": [
+      [
+       16,
+       20
+      ]
+     ]
+    }
+   ],
+   "velado": true
+  },
+  "Bitterbind_Point": {
+   "classe": "Shields",
+   "substitui": {
+    "veiled mod seed [{0},{1}]": "composicao",
+    "veiled mod type [{0}]": "composicao"
+   },
+   "composicao": {
+    "veiled mod seed [{0},{1}]": [
+     [
+      "prefixo",
+      1
+     ]
+    ],
+    "veiled mod type [{0}]": []
+   },
+   "pools": {
+    "prefixo": [
+     {
+      "texto": "+(3201—4000) de Armadura durante a Anulação do Ganho de Almas",
+      "modelo": "+{0} de Armadura durante a Anulação do Ganho de Almas",
+      "faixas": [
+       [
+        3201,
+        4000
+       ]
+      ]
+     },
+     {
+      "texto": "Adiciona (14—16) a (20—22) de Dano de Fogo / Adiciona (14—16) a (20—22) de Dano de Gelo",
+      "modelo": "Adiciona {0} a {1} de Dano de Fogo / Adiciona {2} a {3} de Dano de Gelo",
+      "faixas": [
+       [
+        14,
+        16
+       ],
+       [
+        20,
+        22
+       ],
+       [
+        14,
+        16
+       ],
+       [
+        20,
+        22
+       ]
+      ]
+     },
+     {
+      "texto": "Adiciona (14—16) a (20—22) de Dano de Fogo / Adiciona (14—16) a (20—22) de Dano de Raio",
+      "modelo": "Adiciona {0} a {1} de Dano de Fogo / Adiciona {2} a {3} de Dano de Raio",
+      "faixas": [
+       [
+        14,
+        16
+       ],
+       [
+        20,
+        22
+       ],
+       [
+        14,
+        16
+       ],
+       [
+        20,
+        22
+       ]
+      ]
+     },
+     {
+      "texto": "Adiciona (14—16) a (20—22) de Dano de Gelo / Adiciona (14—16) a (20—22) de Dano de Raio",
+      "modelo": "Adiciona {0} a {1} de Dano de Gelo / Adiciona {2} a {3} de Dano de Raio",
+      "faixas": [
+       [
+        14,
+        16
+       ],
+       [
+        20,
+        22
+       ],
+       [
+        14,
+        16
+       ],
+       [
+        20,
+        22
+       ]
+      ]
+     },
+     {
+      "texto": "+1 ao número máximo de Espectros",
+      "modelo": "+{0} ao número máximo de Espectros",
+      "faixas": [
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "Espectros levantados têm +(5—10)% para todas as resistências máximas",
+      "modelo": "Espectros levantados têm +{0}% para todas as resistências máximas",
+      "faixas": [
+       [
+        5,
+        10
+       ]
+      ]
+     },
+     {
+      "texto": "Espectros levantados disparam 2 projéteis adicionais",
+      "modelo": "Espectros levantados disparam {0} projéteis adicionais",
+      "faixas": [
+       [
+        2,
+        2
+       ]
+      ]
+     },
+     {
+      "texto": "Espectros levantados têm +(3—5)% para a chance de golpe crítico",
+      "modelo": "Espectros levantados têm +{0}% para a chance de golpe crítico",
+      "faixas": [
+       [
+        3,
+        5
+       ]
+      ]
+     },
+     {
+      "texto": "Lacaios têm Efeito em Área aumentado em (30—50)%",
+      "modelo": "Lacaios têm Efeito em Área aumentado em {0}%",
+      "faixas": [
+       [
+        30,
+        50
+       ]
+      ]
+     }
+    ],
+    "sufixo": [
+     {
+      "texto": "(6—7)% de chance de causar Dano Dobrado",
+      "modelo": "{0}% de chance de causar Dano Dobrado",
+      "faixas": [
+       [
+        6,
+        7
+       ]
+      ]
+     },
+     {
+      "texto": "+(31—35) de Força e Destreza",
+      "modelo": "+{0} de Força e Destreza",
+      "faixas": [
+       [
+        31,
+        35
+       ]
+      ]
+     },
+     {
+      "texto": "+(31—35) de Destreza e Inteligência",
+      "modelo": "+{0} de Destreza e Inteligência",
+      "faixas": [
+       [
+        31,
+        35
+       ]
+      ]
+     },
+     {
+      "texto": "+(31—35) de Força e Inteligência",
+      "modelo": "+{0} de Força e Inteligência",
+      "faixas": [
+       [
+        31,
+        35
+       ]
+      ]
+     },
+     {
+      "texto": "Efeito das suas Maldições aumentado em (8—10)%",
+      "modelo": "Efeito das suas Maldições aumentado em {0}%",
+      "faixas": [
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     {
+      "texto": "(18—20)% de chance de causar Dano Dobrado enquanto Concentrado / grant focus skill [1]",
+      "modelo": "{0}% de chance de causar Dano Dobrado enquanto Concentrado / grant focus skill [{1}]",
+      "faixas": [
+       [
+        18,
+        20
+       ],
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "+(16—20)% de Resistência de Fogo e Caos",
+      "modelo": "+{0}% de Resistência de Fogo e Caos",
+      "faixas": [
+       [
+        16,
+        20
+       ]
+      ]
+     },
+     {
+      "texto": "+(16—20)% de Resistência a Raio e Caos",
+      "modelo": "+{0}% de Resistência a Raio e Caos",
+      "faixas": [
+       [
+        16,
+        20
+       ]
+      ]
+     },
+     {
+      "texto": "+(16—20)% de Resistência a Gelo e Caos",
+      "modelo": "+{0}% de Resistência a Gelo e Caos",
+      "faixas": [
+       [
+        16,
+        20
+       ]
+      ]
+     },
+     {
+      "texto": "+(31—35) de Força / (21—25)% de chance de Evitar ser Incendiado",
+      "modelo": "+{0} de Força / {1}% de chance de Evitar ser Incendiado",
+      "faixas": [
+       [
+        31,
+        35
+       ],
+       [
+        21,
+        25
+       ]
+      ]
+     },
+     {
+      "texto": "+(31—35) de Destreza / (21—25)% de chance de Evitar ser Congelado",
+      "modelo": "+{0} de Destreza / {1}% de chance de Evitar ser Congelado",
+      "faixas": [
+       [
+        31,
+        35
+       ],
+       [
+        21,
+        25
+       ]
+      ]
+     },
+     {
+      "texto": "+(31—35) de Inteligência / (21—25)% de chance de Evitar ser Eletrizado",
+      "modelo": "+{0} de Inteligência / {1}% de chance de Evitar ser Eletrizado",
+      "faixas": [
+       [
+        31,
+        35
+       ],
+       [
+        21,
+        25
+       ]
+      ]
+     }
+    ]
+   },
+   "fonte": "https://poedb.tw/pt/Veiled_Chaos_Orb",
+   "linhas": [
+    {
+     "texto": "+(3201—4000) de Armadura durante a Anulação do Ganho de Almas",
+     "modelo": "+{0} de Armadura durante a Anulação do Ganho de Almas",
+     "faixas": [
+      [
+       3201,
+       4000
+      ]
+     ]
+    },
+    {
+     "texto": "Adiciona (14—16) a (20—22) de Dano de Fogo / Adiciona (14—16) a (20—22) de Dano de Gelo",
+     "modelo": "Adiciona {0} a {1} de Dano de Fogo / Adiciona {2} a {3} de Dano de Gelo",
+     "faixas": [
+      [
+       14,
+       16
+      ],
+      [
+       20,
+       22
+      ],
+      [
+       14,
+       16
+      ],
+      [
+       20,
+       22
+      ]
+     ]
+    },
+    {
+     "texto": "Adiciona (14—16) a (20—22) de Dano de Fogo / Adiciona (14—16) a (20—22) de Dano de Raio",
+     "modelo": "Adiciona {0} a {1} de Dano de Fogo / Adiciona {2} a {3} de Dano de Raio",
+     "faixas": [
+      [
+       14,
+       16
+      ],
+      [
+       20,
+       22
+      ],
+      [
+       14,
+       16
+      ],
+      [
+       20,
+       22
+      ]
+     ]
+    },
+    {
+     "texto": "Adiciona (14—16) a (20—22) de Dano de Gelo / Adiciona (14—16) a (20—22) de Dano de Raio",
+     "modelo": "Adiciona {0} a {1} de Dano de Gelo / Adiciona {2} a {3} de Dano de Raio",
+     "faixas": [
+      [
+       14,
+       16
+      ],
+      [
+       20,
+       22
+      ],
+      [
+       14,
+       16
+      ],
+      [
+       20,
+       22
+      ]
+     ]
+    },
+    {
+     "texto": "+1 ao número máximo de Espectros",
+     "modelo": "+{0} ao número máximo de Espectros",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "Espectros levantados têm +(5—10)% para todas as resistências máximas",
+     "modelo": "Espectros levantados têm +{0}% para todas as resistências máximas",
+     "faixas": [
+      [
+       5,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Espectros levantados disparam 2 projéteis adicionais",
+     "modelo": "Espectros levantados disparam {0} projéteis adicionais",
+     "faixas": [
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "texto": "Espectros levantados têm +(3—5)% para a chance de golpe crítico",
+     "modelo": "Espectros levantados têm +{0}% para a chance de golpe crítico",
+     "faixas": [
+      [
+       3,
+       5
+      ]
+     ]
+    },
+    {
+     "texto": "Lacaios têm Efeito em Área aumentado em (30—50)%",
+     "modelo": "Lacaios têm Efeito em Área aumentado em {0}%",
+     "faixas": [
+      [
+       30,
+       50
+      ]
+     ]
+    },
+    {
+     "texto": "(6—7)% de chance de causar Dano Dobrado",
+     "modelo": "{0}% de chance de causar Dano Dobrado",
+     "faixas": [
+      [
+       6,
+       7
+      ]
+     ]
+    },
+    {
+     "texto": "+(31—35) de Força e Destreza",
+     "modelo": "+{0} de Força e Destreza",
+     "faixas": [
+      [
+       31,
+       35
+      ]
+     ]
+    },
+    {
+     "texto": "+(31—35) de Destreza e Inteligência",
+     "modelo": "+{0} de Destreza e Inteligência",
+     "faixas": [
+      [
+       31,
+       35
+      ]
+     ]
+    },
+    {
+     "texto": "+(31—35) de Força e Inteligência",
+     "modelo": "+{0} de Força e Inteligência",
+     "faixas": [
+      [
+       31,
+       35
+      ]
+     ]
+    },
+    {
+     "texto": "Efeito das suas Maldições aumentado em (8—10)%",
+     "modelo": "Efeito das suas Maldições aumentado em {0}%",
+     "faixas": [
+      [
+       8,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "(18—20)% de chance de causar Dano Dobrado enquanto Concentrado / grant focus skill [1]",
+     "modelo": "{0}% de chance de causar Dano Dobrado enquanto Concentrado / grant focus skill [{1}]",
+     "faixas": [
+      [
+       18,
+       20
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+(16—20)% de Resistência de Fogo e Caos",
+     "modelo": "+{0}% de Resistência de Fogo e Caos",
+     "faixas": [
+      [
+       16,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "+(16—20)% de Resistência a Raio e Caos",
+     "modelo": "+{0}% de Resistência a Raio e Caos",
+     "faixas": [
+      [
+       16,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "+(16—20)% de Resistência a Gelo e Caos",
+     "modelo": "+{0}% de Resistência a Gelo e Caos",
+     "faixas": [
+      [
+       16,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "+(31—35) de Força / (21—25)% de chance de Evitar ser Incendiado",
+     "modelo": "+{0} de Força / {1}% de chance de Evitar ser Incendiado",
+     "faixas": [
+      [
+       31,
+       35
+      ],
+      [
+       21,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "+(31—35) de Destreza / (21—25)% de chance de Evitar ser Congelado",
+     "modelo": "+{0} de Destreza / {1}% de chance de Evitar ser Congelado",
+     "faixas": [
+      [
+       31,
+       35
+      ],
+      [
+       21,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "+(31—35) de Inteligência / (21—25)% de chance de Evitar ser Eletrizado",
+     "modelo": "+{0} de Inteligência / {1}% de chance de Evitar ser Eletrizado",
+     "faixas": [
+      [
+       31,
+       35
+      ],
+      [
+       21,
+       25
+      ]
+     ]
+    }
+   ],
+   "velado": true
+  },
+  "The_Crimson_Storm": {
+   "classe": "Bows",
+   "substitui": {
+    "veiled mod seed [{0},{1}]": "composicao",
+    "veiled mod type [{0}]": "composicao"
+   },
+   "composicao": {
+    "veiled mod seed [{0},{1}]": [
+     [
+      "sufixo",
+      1
+     ]
+    ],
+    "veiled mod type [{0}]": []
+   },
+   "pools": {
+    "prefixo": [
+     {
+      "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Empalar Inimigos ao Acertar com Ataques",
+      "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Empalar Inimigos ao Acertar com Ataques",
+      "faixas": [
+       [
+        120,
+        139
+       ],
+       [
+        21,
+        25
+       ]
+      ]
+     },
+     {
+      "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de causar Sangramento ao Acertar",
+      "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de causar Sangramento ao Acertar",
+      "faixas": [
+       [
+        120,
+        139
+       ],
+       [
+        21,
+        25
+       ]
+      ]
+     },
+     {
+      "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Cegar Inimigos ao acertar",
+      "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Cegar Inimigos ao acertar",
+      "faixas": [
+       [
+        120,
+        139
+       ],
+       [
+        21,
+        25
+       ]
+      ]
+     },
+     {
+      "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Envenenar ao Acertar",
+      "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Envenenar ao Acertar",
+      "faixas": [
+       [
+        120,
+        139
+       ],
+       [
+        21,
+        25
+       ]
+      ]
+     },
+     {
+      "texto": "Ataques com essa Arma Penetram (14—16)% das Resistências Elementais",
+      "modelo": "Ataques com essa Arma Penetram {0}% das Resistências Elementais",
+      "faixas": [
+       [
+        14,
+        16
+       ]
+      ]
+     },
+     {
+      "texto": "Ataques com essa Arma Penetram (14—16)% da Resistência a Caos",
+      "modelo": "Ataques com essa Arma Penetram {0}% da Resistência a Caos",
+      "faixas": [
+       [
+        14,
+        16
+       ]
+      ]
+     },
+     {
+      "texto": "Vida máxima dos Lacaios aumentada em (50—59)% / Lacaios causam Dano aumentado em (50—59)%",
+      "modelo": "Vida máxima dos Lacaios aumentada em {0}% / Lacaios causam Dano aumentado em {1}%",
+      "faixas": [
+       [
+        50,
+        59
+       ],
+       [
+        50,
+        59
+       ]
+      ]
+     }
+    ],
+    "sufixo": [
+     {
+      "texto": "(12—14)% de chance de causar Dano Dobrado",
+      "modelo": "{0}% de chance de causar Dano Dobrado",
+      "faixas": [
+       [
+        12,
+        14
+       ]
+      ]
+     },
+     {
+      "texto": "Lacaios possuem um aumento de (34—38)% de Velocidade de Ataque / Lacaios possuem um aumento de (34—38)% de Velocidade de Conjuração",
+      "modelo": "Lacaios possuem um aumento de {0}% de Velocidade de Ataque / Lacaios possuem um aumento de {1}% de Velocidade de Conjuração",
+      "faixas": [
+       [
+        34,
+        38
+       ],
+       [
+        34,
+        38
+       ]
+      ]
+     },
+     {
+      "texto": "+(24—28)% do Multiplicador de Dano de Caos",
+      "modelo": "+{0}% do Multiplicador de Dano de Caos",
+      "faixas": [
+       [
+        24,
+        28
+       ]
+      ]
+     },
+     {
+      "texto": "+(24—28)% de Multiplicador do Dano Físico Degenerativo",
+      "modelo": "+{0}% de Multiplicador do Dano Físico Degenerativo",
+      "faixas": [
+       [
+        24,
+        28
+       ]
+      ]
+     },
+     {
+      "texto": "+(24—28)% de Multiplicador do Dano Degenerativo de Fogo",
+      "modelo": "+{0}% de Multiplicador do Dano Degenerativo de Fogo",
+      "faixas": [
+       [
+        24,
+        28
+       ]
+      ]
+     },
+     {
+      "texto": "Dano aumentado em (7—8)% por Carga de Tolerância",
+      "modelo": "Dano aumentado em {0}% por Carga de Tolerância",
+      "faixas": [
+       [
+        7,
+        8
+       ]
+      ]
+     },
+     {
+      "texto": "(7—8)% de aumento de Dano por Carga de Frenesi",
+      "modelo": "{0}% de aumento de Dano por Carga de Frenesi",
+      "faixas": [
+       [
+        7,
+        8
+       ]
+      ]
+     },
+     {
+      "texto": "Dano aumentado em (7—8)% por Carga de Poder",
+      "modelo": "Dano aumentado em {0}% por Carga de Poder",
+      "faixas": [
+       [
+        7,
+        8
+       ]
+      ]
+     },
+     {
+      "texto": "+(54—60)% de Multiplicador de Acerto Crítico enquanto houver um Inimigo Raro ou Único Próximo",
+      "modelo": "+{0}% de Multiplicador de Acerto Crítico enquanto houver um Inimigo Raro ou Único Próximo",
+      "faixas": [
+       [
+        54,
+        60
+       ]
+      ]
+     },
+     {
+      "texto": "(27—30)% de aumento da Velocidade de Ataque enquanto houver um Inimigo Raro ou Único Próximo",
+      "modelo": "{0}% de aumento da Velocidade de Ataque enquanto houver um Inimigo Raro ou Único Próximo",
+      "faixas": [
+       [
+        27,
+        30
+       ]
+      ]
+     },
+     {
+      "texto": "(36—40)% de chance de causar Dano Dobrado enquanto Concentrado / grant focus skill [1]",
+      "modelo": "{0}% de chance de causar Dano Dobrado enquanto Concentrado / grant focus skill [{1}]",
+      "faixas": [
+       [
+        36,
+        40
+       ],
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "+(25—28) de Destreza e Inteligência / Velocidade de Ataque aumentada em (12—15)%",
+      "modelo": "+{0} de Destreza e Inteligência / Velocidade de Ataque aumentada em {1}%",
+      "faixas": [
+       [
+        25,
+        28
+       ],
+       [
+        12,
+        15
+       ]
+      ]
+     },
+     {
+      "texto": "+(25—28) de Força e Inteligência / Chance de Crítico aumentada em (28—32)%",
+      "modelo": "+{0} de Força e Inteligência / Chance de Crítico aumentada em {1}%",
+      "faixas": [
+       [
+        25,
+        28
+       ],
+       [
+        28,
+        32
+       ]
+      ]
+     },
+     {
+      "texto": "+(25—28) de Força e Destreza / +(311—350) de Precisão",
+      "modelo": "+{0} de Força e Destreza / +{1} de Precisão",
+      "faixas": [
+       [
+        25,
+        28
+       ],
+       [
+        311,
+        350
+       ]
+      ]
+     },
+     {
+      "texto": "15% de chance de Ativar Fúria Sangrenta Nível 1 ao Matar um Inimigo / Velocidade de Ataque aumentada em (12—15)%",
+      "modelo": "{0}% de chance de Ativar Fúria Sangrenta Nível {1} ao Matar um Inimigo / Velocidade de Ataque aumentada em {2}%",
+      "faixas": [
+       [
+        15,
+        15
+       ],
+       [
+        1,
+        1
+       ],
+       [
+        12,
+        15
+       ]
+      ]
+     },
+     {
+      "texto": "Velocidade de Conjuração aumentada em (26—31)% / 15% de chance de ganhar Fúria Arcana ao Matar um Inimigo",
+      "modelo": "Velocidade de Conjuração aumentada em {0}% / {1}% de chance de ganhar Fúria Arcana ao Matar um Inimigo",
+      "faixas": [
+       [
+        26,
+        31
+       ],
+       [
+        15,
+        15
+       ]
+      ]
+     }
+    ]
+   },
+   "fonte": "https://poedb.tw/pt/Veiled_Chaos_Orb",
+   "linhas": [
+    {
+     "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Empalar Inimigos ao Acertar com Ataques",
+     "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Empalar Inimigos ao Acertar com Ataques",
+     "faixas": [
+      [
+       120,
+       139
+      ],
+      [
+       21,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de causar Sangramento ao Acertar",
+     "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de causar Sangramento ao Acertar",
+     "faixas": [
+      [
+       120,
+       139
+      ],
+      [
+       21,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Cegar Inimigos ao acertar",
+     "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Cegar Inimigos ao acertar",
+     "faixas": [
+      [
+       120,
+       139
+      ],
+      [
+       21,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Envenenar ao Acertar",
+     "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Envenenar ao Acertar",
+     "faixas": [
+      [
+       120,
+       139
+      ],
+      [
+       21,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "Ataques com essa Arma Penetram (14—16)% das Resistências Elementais",
+     "modelo": "Ataques com essa Arma Penetram {0}% das Resistências Elementais",
+     "faixas": [
+      [
+       14,
+       16
+      ]
+     ]
+    },
+    {
+     "texto": "Ataques com essa Arma Penetram (14—16)% da Resistência a Caos",
+     "modelo": "Ataques com essa Arma Penetram {0}% da Resistência a Caos",
+     "faixas": [
+      [
+       14,
+       16
+      ]
+     ]
+    },
+    {
+     "texto": "Vida máxima dos Lacaios aumentada em (50—59)% / Lacaios causam Dano aumentado em (50—59)%",
+     "modelo": "Vida máxima dos Lacaios aumentada em {0}% / Lacaios causam Dano aumentado em {1}%",
+     "faixas": [
+      [
+       50,
+       59
+      ],
+      [
+       50,
+       59
+      ]
+     ]
+    },
+    {
+     "texto": "(12—14)% de chance de causar Dano Dobrado",
+     "modelo": "{0}% de chance de causar Dano Dobrado",
+     "faixas": [
+      [
+       12,
+       14
+      ]
+     ]
+    },
+    {
+     "texto": "Lacaios possuem um aumento de (34—38)% de Velocidade de Ataque / Lacaios possuem um aumento de (34—38)% de Velocidade de Conjuração",
+     "modelo": "Lacaios possuem um aumento de {0}% de Velocidade de Ataque / Lacaios possuem um aumento de {1}% de Velocidade de Conjuração",
+     "faixas": [
+      [
+       34,
+       38
+      ],
+      [
+       34,
+       38
+      ]
+     ]
+    },
+    {
+     "texto": "+(24—28)% do Multiplicador de Dano de Caos",
+     "modelo": "+{0}% do Multiplicador de Dano de Caos",
+     "faixas": [
+      [
+       24,
+       28
+      ]
+     ]
+    },
+    {
+     "texto": "+(24—28)% de Multiplicador do Dano Físico Degenerativo",
+     "modelo": "+{0}% de Multiplicador do Dano Físico Degenerativo",
+     "faixas": [
+      [
+       24,
+       28
+      ]
+     ]
+    },
+    {
+     "texto": "+(24—28)% de Multiplicador do Dano Degenerativo de Fogo",
+     "modelo": "+{0}% de Multiplicador do Dano Degenerativo de Fogo",
+     "faixas": [
+      [
+       24,
+       28
+      ]
+     ]
+    },
+    {
+     "texto": "Dano aumentado em (7—8)% por Carga de Tolerância",
+     "modelo": "Dano aumentado em {0}% por Carga de Tolerância",
+     "faixas": [
+      [
+       7,
+       8
+      ]
+     ]
+    },
+    {
+     "texto": "(7—8)% de aumento de Dano por Carga de Frenesi",
+     "modelo": "{0}% de aumento de Dano por Carga de Frenesi",
+     "faixas": [
+      [
+       7,
+       8
+      ]
+     ]
+    },
+    {
+     "texto": "Dano aumentado em (7—8)% por Carga de Poder",
+     "modelo": "Dano aumentado em {0}% por Carga de Poder",
+     "faixas": [
+      [
+       7,
+       8
+      ]
+     ]
+    },
+    {
+     "texto": "+(54—60)% de Multiplicador de Acerto Crítico enquanto houver um Inimigo Raro ou Único Próximo",
+     "modelo": "+{0}% de Multiplicador de Acerto Crítico enquanto houver um Inimigo Raro ou Único Próximo",
+     "faixas": [
+      [
+       54,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "(27—30)% de aumento da Velocidade de Ataque enquanto houver um Inimigo Raro ou Único Próximo",
+     "modelo": "{0}% de aumento da Velocidade de Ataque enquanto houver um Inimigo Raro ou Único Próximo",
+     "faixas": [
+      [
+       27,
+       30
+      ]
+     ]
+    },
+    {
+     "texto": "(36—40)% de chance de causar Dano Dobrado enquanto Concentrado / grant focus skill [1]",
+     "modelo": "{0}% de chance de causar Dano Dobrado enquanto Concentrado / grant focus skill [{1}]",
+     "faixas": [
+      [
+       36,
+       40
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+(25—28) de Destreza e Inteligência / Velocidade de Ataque aumentada em (12—15)%",
+     "modelo": "+{0} de Destreza e Inteligência / Velocidade de Ataque aumentada em {1}%",
+     "faixas": [
+      [
+       25,
+       28
+      ],
+      [
+       12,
+       15
+      ]
+     ]
+    },
+    {
+     "texto": "+(25—28) de Força e Inteligência / Chance de Crítico aumentada em (28—32)%",
+     "modelo": "+{0} de Força e Inteligência / Chance de Crítico aumentada em {1}%",
+     "faixas": [
+      [
+       25,
+       28
+      ],
+      [
+       28,
+       32
+      ]
+     ]
+    },
+    {
+     "texto": "+(25—28) de Força e Destreza / +(311—350) de Precisão",
+     "modelo": "+{0} de Força e Destreza / +{1} de Precisão",
+     "faixas": [
+      [
+       25,
+       28
+      ],
+      [
+       311,
+       350
+      ]
+     ]
+    },
+    {
+     "texto": "15% de chance de Ativar Fúria Sangrenta Nível 1 ao Matar um Inimigo / Velocidade de Ataque aumentada em (12—15)%",
+     "modelo": "{0}% de chance de Ativar Fúria Sangrenta Nível {1} ao Matar um Inimigo / Velocidade de Ataque aumentada em {2}%",
+     "faixas": [
+      [
+       15,
+       15
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       12,
+       15
+      ]
+     ]
+    },
+    {
+     "texto": "Velocidade de Conjuração aumentada em (26—31)% / 15% de chance de ganhar Fúria Arcana ao Matar um Inimigo",
+     "modelo": "Velocidade de Conjuração aumentada em {0}% / {1}% de chance de ganhar Fúria Arcana ao Matar um Inimigo",
+     "faixas": [
+      [
+       26,
+       31
+      ],
+      [
+       15,
+       15
+      ]
+     ]
+    }
+   ],
+   "velado": true
+  },
+  "Cane_of_Kulemak": {
+   "classe": "Warstaves",
+   "substitui": {
+    "veiled mod seed [{0},{1}]": "composicao",
+    "veiled mod type [{0}]": "composicao"
+   },
+   "composicao": {
+    "veiled mod seed [{0},{1}]": [
+     [
+      "prefixo",
+      1
+     ],
+     [
+      "sufixo",
+      1
+     ]
+    ],
+    "veiled mod type [{0}]": []
+   },
+   "pools": {
+    "prefixo": [
+     {
+      "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Empalar Inimigos ao Acertar com Ataques",
+      "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Empalar Inimigos ao Acertar com Ataques",
+      "faixas": [
+       [
+        120,
+        139
+       ],
+       [
+        21,
+        25
+       ]
+      ]
+     },
+     {
+      "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de causar Sangramento ao Acertar",
+      "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de causar Sangramento ao Acertar",
+      "faixas": [
+       [
+        120,
+        139
+       ],
+       [
+        21,
+        25
+       ]
+      ]
+     },
+     {
+      "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Cegar Inimigos ao acertar",
+      "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Cegar Inimigos ao acertar",
+      "faixas": [
+       [
+        120,
+        139
+       ],
+       [
+        21,
+        25
+       ]
+      ]
+     },
+     {
+      "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Envenenar ao Acertar",
+      "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Envenenar ao Acertar",
+      "faixas": [
+       [
+        120,
+        139
+       ],
+       [
+        21,
+        25
+       ]
+      ]
+     },
+     {
+      "texto": "Ataques com essa Arma Penetram (14—16)% das Resistências Elementais",
+      "modelo": "Ataques com essa Arma Penetram {0}% das Resistências Elementais",
+      "faixas": [
+       [
+        14,
+        16
+       ]
+      ]
+     },
+     {
+      "texto": "Ataques com essa Arma Penetram (14—16)% da Resistência a Caos",
+      "modelo": "Ataques com essa Arma Penetram {0}% da Resistência a Caos",
+      "faixas": [
+       [
+        14,
+        16
+       ]
+      ]
+     },
+     {
+      "texto": "Dano de Fogo aumentado em (123—138)% / (35—40)% de chance de Incendiar",
+      "modelo": "Dano de Fogo aumentado em {0}% / {1}% de chance de Incendiar",
+      "faixas": [
+       [
+        123,
+        138
+       ],
+       [
+        35,
+        40
+       ]
+      ]
+     },
+     {
+      "texto": "Dano de Gelo aumentado em (123—138)% / (35—40)% de chance de Congelar",
+      "modelo": "Dano de Gelo aumentado em {0}% / {1}% de chance de Congelar",
+      "faixas": [
+       [
+        123,
+        138
+       ],
+       [
+        35,
+        40
+       ]
+      ]
+     },
+     {
+      "texto": "Dano de Raio aumentado em (123—138)% / (35—40)% de chance de Eletrizar",
+      "modelo": "Dano de Raio aumentado em {0}% / {1}% de chance de Eletrizar",
+      "faixas": [
+       [
+        123,
+        138
+       ],
+       [
+        35,
+        40
+       ]
+      ]
+     },
+     {
+      "texto": "Dano de Caos aumentado em (105—120)% / Duração das Habilidades de Caos aumentada em (26—30)%",
+      "modelo": "Dano de Caos aumentado em {0}% / Duração das Habilidades de Caos aumentada em {1}%",
+      "faixas": [
+       [
+        105,
+        120
+       ],
+       [
+        26,
+        30
+       ]
+      ]
+     },
+     {
+      "texto": "Dano Mágico aumentado em (123—138)% / Regeneração de Mana aumentada em (36—40)%",
+      "modelo": "Dano Mágico aumentado em {0}% / Regeneração de Mana aumentada em {1}%",
+      "faixas": [
+       [
+        123,
+        138
+       ],
+       [
+        36,
+        40
+       ]
+      ]
+     },
+     {
+      "texto": "Dano Mágico aumentado em (105—120)% / Ganha (9—10)% de Dano Não Caos como Dano de Caos extra",
+      "modelo": "Dano Mágico aumentado em {0}% / Ganha {1}% de Dano Não Caos como Dano de Caos extra",
+      "faixas": [
+       [
+        105,
+        120
+       ],
+       [
+        9,
+        10
+       ]
+      ]
+     },
+     {
+      "texto": "Vida máxima dos Lacaios aumentada em (50—59)% / Lacaios causam Dano aumentado em (50—59)%",
+      "modelo": "Vida máxima dos Lacaios aumentada em {0}% / Lacaios causam Dano aumentado em {1}%",
+      "faixas": [
+       [
+        50,
+        59
+       ],
+       [
+        50,
+        59
+       ]
+      ]
+     }
+    ],
+    "sufixo": [
+     {
+      "texto": "(12—14)% de chance de causar Dano Dobrado",
+      "modelo": "{0}% de chance de causar Dano Dobrado",
+      "faixas": [
+       [
+        12,
+        14
+       ]
+      ]
+     },
+     {
+      "texto": "Lacaios possuem um aumento de (34—38)% de Velocidade de Ataque / Lacaios possuem um aumento de (34—38)% de Velocidade de Conjuração",
+      "modelo": "Lacaios possuem um aumento de {0}% de Velocidade de Ataque / Lacaios possuem um aumento de {1}% de Velocidade de Conjuração",
+      "faixas": [
+       [
+        34,
+        38
+       ],
+       [
+        34,
+        38
+       ]
+      ]
+     },
+     {
+      "texto": "+(44—48)% do Multiplicador de Dano de Caos",
+      "modelo": "+{0}% do Multiplicador de Dano de Caos",
+      "faixas": [
+       [
+        44,
+        48
+       ]
+      ]
+     },
+     {
+      "texto": "+(44—48)% de Multiplicador do Dano Físico Degenerativo",
+      "modelo": "+{0}% de Multiplicador do Dano Físico Degenerativo",
+      "faixas": [
+       [
+        44,
+        48
+       ]
+      ]
+     },
+     {
+      "texto": "+(44—48)% de Multiplicador de Dano de Gelo Degenerativo",
+      "modelo": "+{0}% de Multiplicador de Dano de Gelo Degenerativo",
+      "faixas": [
+       [
+        44,
+        48
+       ]
+      ]
+     },
+     {
+      "texto": "+(44—48)% de Multiplicador do Dano Degenerativo de Fogo",
+      "modelo": "+{0}% de Multiplicador do Dano Degenerativo de Fogo",
+      "faixas": [
+       [
+        44,
+        48
+       ]
+      ]
+     },
+     {
+      "texto": "Dano aumentado em (7—8)% por Carga de Tolerância",
+      "modelo": "Dano aumentado em {0}% por Carga de Tolerância",
+      "faixas": [
+       [
+        7,
+        8
+       ]
+      ]
+     },
+     {
+      "texto": "(7—8)% de aumento de Dano por Carga de Frenesi",
+      "modelo": "{0}% de aumento de Dano por Carga de Frenesi",
+      "faixas": [
+       [
+        7,
+        8
+       ]
+      ]
+     },
+     {
+      "texto": "Dano aumentado em (7—8)% por Carga de Poder",
+      "modelo": "Dano aumentado em {0}% por Carga de Poder",
+      "faixas": [
+       [
+        7,
+        8
+       ]
+      ]
+     },
+     {
+      "texto": "+(54—60)% de Multiplicador de Acerto Crítico enquanto houver um Inimigo Raro ou Único Próximo",
+      "modelo": "+{0}% de Multiplicador de Acerto Crítico enquanto houver um Inimigo Raro ou Único Próximo",
+      "faixas": [
+       [
+        54,
+        60
+       ]
+      ]
+     },
+     {
+      "texto": "(27—30)% de aumento da Velocidade de Ataque enquanto houver um Inimigo Raro ou Único Próximo",
+      "modelo": "{0}% de aumento da Velocidade de Ataque enquanto houver um Inimigo Raro ou Único Próximo",
+      "faixas": [
+       [
+        27,
+        30
+       ]
+      ]
+     },
+     {
+      "texto": "(36—40)% de chance de causar Dano Dobrado enquanto Concentrado / grant focus skill [1]",
+      "modelo": "{0}% de chance de causar Dano Dobrado enquanto Concentrado / grant focus skill [{1}]",
+      "faixas": [
+       [
+        36,
+        40
+       ],
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "+(25—28) de Destreza e Inteligência / Velocidade de Ataque aumentada em (18—22)%",
+      "modelo": "+{0} de Destreza e Inteligência / Velocidade de Ataque aumentada em {1}%",
+      "faixas": [
+       [
+        25,
+        28
+       ],
+       [
+        18,
+        22
+       ]
+      ]
+     },
+     {
+      "texto": "+(25—28) de Força e Inteligência / Chance de Crítico aumentada em (28—32)%",
+      "modelo": "+{0} de Força e Inteligência / Chance de Crítico aumentada em {1}%",
+      "faixas": [
+       [
+        25,
+        28
+       ],
+       [
+        28,
+        32
+       ]
+      ]
+     },
+     {
+      "texto": "+(25—28) de Força e Destreza / +(311—350) de Precisão",
+      "modelo": "+{0} de Força e Destreza / +{1} de Precisão",
+      "faixas": [
+       [
+        25,
+        28
+       ],
+       [
+        311,
+        350
+       ]
+      ]
+     },
+     {
+      "texto": "15% de chance de Ativar Fúria Sangrenta Nível 1 ao Matar um Inimigo / Velocidade de Ataque aumentada em (18—22)%",
+      "modelo": "{0}% de chance de Ativar Fúria Sangrenta Nível {1} ao Matar um Inimigo / Velocidade de Ataque aumentada em {2}%",
+      "faixas": [
+       [
+        15,
+        15
+       ],
+       [
+        1,
+        1
+       ],
+       [
+        18,
+        22
+       ]
+      ]
+     },
+     {
+      "texto": "Velocidade de Conjuração aumentada em (26—31)% / 15% de chance de ganhar Fúria Arcana ao Matar um Inimigo",
+      "modelo": "Velocidade de Conjuração aumentada em {0}% / {1}% de chance de ganhar Fúria Arcana ao Matar um Inimigo",
+      "faixas": [
+       [
+        26,
+        31
+       ],
+       [
+        15,
+        15
+       ]
+      ]
+     }
+    ]
+   },
+   "fonte": "https://poedb.tw/pt/Veiled_Chaos_Orb",
+   "linhas": [
+    {
+     "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Empalar Inimigos ao Acertar com Ataques",
+     "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Empalar Inimigos ao Acertar com Ataques",
+     "faixas": [
+      [
+       120,
+       139
+      ],
+      [
+       21,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de causar Sangramento ao Acertar",
+     "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de causar Sangramento ao Acertar",
+     "faixas": [
+      [
+       120,
+       139
+      ],
+      [
+       21,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Cegar Inimigos ao acertar",
+     "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Cegar Inimigos ao acertar",
+     "faixas": [
+      [
+       120,
+       139
+      ],
+      [
+       21,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Envenenar ao Acertar",
+     "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Envenenar ao Acertar",
+     "faixas": [
+      [
+       120,
+       139
+      ],
+      [
+       21,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "Ataques com essa Arma Penetram (14—16)% das Resistências Elementais",
+     "modelo": "Ataques com essa Arma Penetram {0}% das Resistências Elementais",
+     "faixas": [
+      [
+       14,
+       16
+      ]
+     ]
+    },
+    {
+     "texto": "Ataques com essa Arma Penetram (14—16)% da Resistência a Caos",
+     "modelo": "Ataques com essa Arma Penetram {0}% da Resistência a Caos",
+     "faixas": [
+      [
+       14,
+       16
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Fogo aumentado em (123—138)% / (35—40)% de chance de Incendiar",
+     "modelo": "Dano de Fogo aumentado em {0}% / {1}% de chance de Incendiar",
+     "faixas": [
+      [
+       123,
+       138
+      ],
+      [
+       35,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Gelo aumentado em (123—138)% / (35—40)% de chance de Congelar",
+     "modelo": "Dano de Gelo aumentado em {0}% / {1}% de chance de Congelar",
+     "faixas": [
+      [
+       123,
+       138
+      ],
+      [
+       35,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Raio aumentado em (123—138)% / (35—40)% de chance de Eletrizar",
+     "modelo": "Dano de Raio aumentado em {0}% / {1}% de chance de Eletrizar",
+     "faixas": [
+      [
+       123,
+       138
+      ],
+      [
+       35,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Caos aumentado em (105—120)% / Duração das Habilidades de Caos aumentada em (26—30)%",
+     "modelo": "Dano de Caos aumentado em {0}% / Duração das Habilidades de Caos aumentada em {1}%",
+     "faixas": [
+      [
+       105,
+       120
+      ],
+      [
+       26,
+       30
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Mágico aumentado em (123—138)% / Regeneração de Mana aumentada em (36—40)%",
+     "modelo": "Dano Mágico aumentado em {0}% / Regeneração de Mana aumentada em {1}%",
+     "faixas": [
+      [
+       123,
+       138
+      ],
+      [
+       36,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Mágico aumentado em (105—120)% / Ganha (9—10)% de Dano Não Caos como Dano de Caos extra",
+     "modelo": "Dano Mágico aumentado em {0}% / Ganha {1}% de Dano Não Caos como Dano de Caos extra",
+     "faixas": [
+      [
+       105,
+       120
+      ],
+      [
+       9,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Vida máxima dos Lacaios aumentada em (50—59)% / Lacaios causam Dano aumentado em (50—59)%",
+     "modelo": "Vida máxima dos Lacaios aumentada em {0}% / Lacaios causam Dano aumentado em {1}%",
+     "faixas": [
+      [
+       50,
+       59
+      ],
+      [
+       50,
+       59
+      ]
+     ]
+    },
+    {
+     "texto": "(12—14)% de chance de causar Dano Dobrado",
+     "modelo": "{0}% de chance de causar Dano Dobrado",
+     "faixas": [
+      [
+       12,
+       14
+      ]
+     ]
+    },
+    {
+     "texto": "Lacaios possuem um aumento de (34—38)% de Velocidade de Ataque / Lacaios possuem um aumento de (34—38)% de Velocidade de Conjuração",
+     "modelo": "Lacaios possuem um aumento de {0}% de Velocidade de Ataque / Lacaios possuem um aumento de {1}% de Velocidade de Conjuração",
+     "faixas": [
+      [
+       34,
+       38
+      ],
+      [
+       34,
+       38
+      ]
+     ]
+    },
+    {
+     "texto": "+(44—48)% do Multiplicador de Dano de Caos",
+     "modelo": "+{0}% do Multiplicador de Dano de Caos",
+     "faixas": [
+      [
+       44,
+       48
+      ]
+     ]
+    },
+    {
+     "texto": "+(44—48)% de Multiplicador do Dano Físico Degenerativo",
+     "modelo": "+{0}% de Multiplicador do Dano Físico Degenerativo",
+     "faixas": [
+      [
+       44,
+       48
+      ]
+     ]
+    },
+    {
+     "texto": "+(44—48)% de Multiplicador de Dano de Gelo Degenerativo",
+     "modelo": "+{0}% de Multiplicador de Dano de Gelo Degenerativo",
+     "faixas": [
+      [
+       44,
+       48
+      ]
+     ]
+    },
+    {
+     "texto": "+(44—48)% de Multiplicador do Dano Degenerativo de Fogo",
+     "modelo": "+{0}% de Multiplicador do Dano Degenerativo de Fogo",
+     "faixas": [
+      [
+       44,
+       48
+      ]
+     ]
+    },
+    {
+     "texto": "Dano aumentado em (7—8)% por Carga de Tolerância",
+     "modelo": "Dano aumentado em {0}% por Carga de Tolerância",
+     "faixas": [
+      [
+       7,
+       8
+      ]
+     ]
+    },
+    {
+     "texto": "(7—8)% de aumento de Dano por Carga de Frenesi",
+     "modelo": "{0}% de aumento de Dano por Carga de Frenesi",
+     "faixas": [
+      [
+       7,
+       8
+      ]
+     ]
+    },
+    {
+     "texto": "Dano aumentado em (7—8)% por Carga de Poder",
+     "modelo": "Dano aumentado em {0}% por Carga de Poder",
+     "faixas": [
+      [
+       7,
+       8
+      ]
+     ]
+    },
+    {
+     "texto": "+(54—60)% de Multiplicador de Acerto Crítico enquanto houver um Inimigo Raro ou Único Próximo",
+     "modelo": "+{0}% de Multiplicador de Acerto Crítico enquanto houver um Inimigo Raro ou Único Próximo",
+     "faixas": [
+      [
+       54,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "(27—30)% de aumento da Velocidade de Ataque enquanto houver um Inimigo Raro ou Único Próximo",
+     "modelo": "{0}% de aumento da Velocidade de Ataque enquanto houver um Inimigo Raro ou Único Próximo",
+     "faixas": [
+      [
+       27,
+       30
+      ]
+     ]
+    },
+    {
+     "texto": "(36—40)% de chance de causar Dano Dobrado enquanto Concentrado / grant focus skill [1]",
+     "modelo": "{0}% de chance de causar Dano Dobrado enquanto Concentrado / grant focus skill [{1}]",
+     "faixas": [
+      [
+       36,
+       40
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+(25—28) de Destreza e Inteligência / Velocidade de Ataque aumentada em (18—22)%",
+     "modelo": "+{0} de Destreza e Inteligência / Velocidade de Ataque aumentada em {1}%",
+     "faixas": [
+      [
+       25,
+       28
+      ],
+      [
+       18,
+       22
+      ]
+     ]
+    },
+    {
+     "texto": "+(25—28) de Força e Inteligência / Chance de Crítico aumentada em (28—32)%",
+     "modelo": "+{0} de Força e Inteligência / Chance de Crítico aumentada em {1}%",
+     "faixas": [
+      [
+       25,
+       28
+      ],
+      [
+       28,
+       32
+      ]
+     ]
+    },
+    {
+     "texto": "+(25—28) de Força e Destreza / +(311—350) de Precisão",
+     "modelo": "+{0} de Força e Destreza / +{1} de Precisão",
+     "faixas": [
+      [
+       25,
+       28
+      ],
+      [
+       311,
+       350
+      ]
+     ]
+    },
+    {
+     "texto": "15% de chance de Ativar Fúria Sangrenta Nível 1 ao Matar um Inimigo / Velocidade de Ataque aumentada em (18—22)%",
+     "modelo": "{0}% de chance de Ativar Fúria Sangrenta Nível {1} ao Matar um Inimigo / Velocidade de Ataque aumentada em {2}%",
+     "faixas": [
+      [
+       15,
+       15
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       18,
+       22
+      ]
+     ]
+    },
+    {
+     "texto": "Velocidade de Conjuração aumentada em (26—31)% / 15% de chance de ganhar Fúria Arcana ao Matar um Inimigo",
+     "modelo": "Velocidade de Conjuração aumentada em {0}% / {1}% de chance de ganhar Fúria Arcana ao Matar um Inimigo",
+     "faixas": [
+      [
+       26,
+       31
+      ],
+      [
+       15,
+       15
+      ]
+     ]
+    }
+   ],
+   "velado": true
+  },
+  "Paradoxica": {
+   "classe": "Thrusting_One_Hand_Swords",
+   "substitui": {
+    "veiled mod seed [{0},{1}]": "composicao",
+    "veiled mod type [{0}]": "composicao"
+   },
+   "composicao": {
+    "veiled mod seed [{0},{1}]": [
+     [
+      "prefixo",
+      1
+     ],
+     [
+      "sufixo",
+      1
+     ]
+    ],
+    "veiled mod type [{0}]": []
+   },
+   "pools": {
+    "prefixo": [
+     {
+      "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Empalar Inimigos ao Acertar com Ataques",
+      "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Empalar Inimigos ao Acertar com Ataques",
+      "faixas": [
+       [
+        120,
+        139
+       ],
+       [
+        21,
+        25
+       ]
+      ]
+     },
+     {
+      "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de causar Sangramento ao Acertar",
+      "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de causar Sangramento ao Acertar",
+      "faixas": [
+       [
+        120,
+        139
+       ],
+       [
+        21,
+        25
+       ]
+      ]
+     },
+     {
+      "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Cegar Inimigos ao acertar",
+      "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Cegar Inimigos ao acertar",
+      "faixas": [
+       [
+        120,
+        139
+       ],
+       [
+        21,
+        25
+       ]
+      ]
+     },
+     {
+      "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Envenenar ao Acertar",
+      "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Envenenar ao Acertar",
+      "faixas": [
+       [
+        120,
+        139
+       ],
+       [
+        21,
+        25
+       ]
+      ]
+     },
+     {
+      "texto": "Ataques com essa Arma Penetram (14—16)% das Resistências Elementais",
+      "modelo": "Ataques com essa Arma Penetram {0}% das Resistências Elementais",
+      "faixas": [
+       [
+        14,
+        16
+       ]
+      ]
+     },
+     {
+      "texto": "Ataques com essa Arma Penetram (14—16)% da Resistência a Caos",
+      "modelo": "Ataques com essa Arma Penetram {0}% da Resistência a Caos",
+      "faixas": [
+       [
+        14,
+        16
+       ]
+      ]
+     },
+     {
+      "texto": "Dano de Fogo aumentado em (70—79)% / (21—23)% de chance de Incendiar",
+      "modelo": "Dano de Fogo aumentado em {0}% / {1}% de chance de Incendiar",
+      "faixas": [
+       [
+        70,
+        79
+       ],
+       [
+        21,
+        23
+       ]
+      ]
+     },
+     {
+      "texto": "Dano de Gelo aumentado em (70—79)% / (21—23)% de chance de Congelar",
+      "modelo": "Dano de Gelo aumentado em {0}% / {1}% de chance de Congelar",
+      "faixas": [
+       [
+        70,
+        79
+       ],
+       [
+        21,
+        23
+       ]
+      ]
+     },
+     {
+      "texto": "Dano de Raio aumentado em (70—79)% / (21—23)% de chance de Eletrizar",
+      "modelo": "Dano de Raio aumentado em {0}% / {1}% de chance de Eletrizar",
+      "faixas": [
+       [
+        70,
+        79
+       ],
+       [
+        21,
+        23
+       ]
+      ]
+     },
+     {
+      "texto": "Dano de Caos aumentado em (60—69)% / Duração das Habilidades de Caos aumentada em (13—15)%",
+      "modelo": "Dano de Caos aumentado em {0}% / Duração das Habilidades de Caos aumentada em {1}%",
+      "faixas": [
+       [
+        60,
+        69
+       ],
+       [
+        13,
+        15
+       ]
+      ]
+     },
+     {
+      "texto": "Dano Mágico aumentado em (70—79)% / Regeneração de Mana aumentada em (18—20)%",
+      "modelo": "Dano Mágico aumentado em {0}% / Regeneração de Mana aumentada em {1}%",
+      "faixas": [
+       [
+        70,
+        79
+       ],
+       [
+        18,
+        20
+       ]
+      ]
+     },
+     {
+      "texto": "Dano Mágico aumentado em (60—69)% / Ganha 5% de Dano Não Caos como Dano de Caos extra",
+      "modelo": "Dano Mágico aumentado em {0}% / Ganha {1}% de Dano Não Caos como Dano de Caos extra",
+      "faixas": [
+       [
+        60,
+        69
+       ],
+       [
+        5,
+        5
+       ]
+      ]
+     },
+     {
+      "texto": "Vida máxima dos Lacaios aumentada em (34—38)% / Lacaios causam Dano aumentado em (34—38)%",
+      "modelo": "Vida máxima dos Lacaios aumentada em {0}% / Lacaios causam Dano aumentado em {1}%",
+      "faixas": [
+       [
+        34,
+        38
+       ],
+       [
+        34,
+        38
+       ]
+      ]
+     }
+    ],
+    "sufixo": [
+     {
+      "texto": "(6—7)% de chance de causar Dano Dobrado",
+      "modelo": "{0}% de chance de causar Dano Dobrado",
+      "faixas": [
+       [
+        6,
+        7
+       ]
+      ]
+     },
+     {
+      "texto": "Lacaios possuem um aumento de (18—20)% de Velocidade de Ataque / Lacaios possuem um aumento de (18—20)% de Velocidade de Conjuração",
+      "modelo": "Lacaios possuem um aumento de {0}% de Velocidade de Ataque / Lacaios possuem um aumento de {1}% de Velocidade de Conjuração",
+      "faixas": [
+       [
+        18,
+        20
+       ],
+       [
+        18,
+        20
+       ]
+      ]
+     },
+     {
+      "texto": "+(24—28)% do Multiplicador de Dano de Caos",
+      "modelo": "+{0}% do Multiplicador de Dano de Caos",
+      "faixas": [
+       [
+        24,
+        28
+       ]
+      ]
+     },
+     {
+      "texto": "+(24—28)% de Multiplicador do Dano Físico Degenerativo",
+      "modelo": "+{0}% de Multiplicador do Dano Físico Degenerativo",
+      "faixas": [
+       [
+        24,
+        28
+       ]
+      ]
+     },
+     {
+      "texto": "+(24—28)% de Multiplicador de Dano de Gelo Degenerativo",
+      "modelo": "+{0}% de Multiplicador de Dano de Gelo Degenerativo",
+      "faixas": [
+       [
+        24,
+        28
+       ]
+      ]
+     },
+     {
+      "texto": "+(24—28)% de Multiplicador do Dano Degenerativo de Fogo",
+      "modelo": "+{0}% de Multiplicador do Dano Degenerativo de Fogo",
+      "faixas": [
+       [
+        24,
+        28
+       ]
+      ]
+     },
+     {
+      "texto": "Dano aumentado em (5—6)% por Carga de Tolerância",
+      "modelo": "Dano aumentado em {0}% por Carga de Tolerância",
+      "faixas": [
+       [
+        5,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "(5—6)% de aumento de Dano por Carga de Frenesi",
+      "modelo": "{0}% de aumento de Dano por Carga de Frenesi",
+      "faixas": [
+       [
+        5,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "Dano aumentado em (5—6)% por Carga de Poder",
+      "modelo": "Dano aumentado em {0}% por Carga de Poder",
+      "faixas": [
+       [
+        5,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "+(36—40)% de Multiplicador de Acerto Crítico enquanto houver um Inimigo Raro ou Único Próximo",
+      "modelo": "+{0}% de Multiplicador de Acerto Crítico enquanto houver um Inimigo Raro ou Único Próximo",
+      "faixas": [
+       [
+        36,
+        40
+       ]
+      ]
+     },
+     {
+      "texto": "(12—15)% de aumento da Velocidade de Ataque enquanto houver um Inimigo Raro ou Único Próximo",
+      "modelo": "{0}% de aumento da Velocidade de Ataque enquanto houver um Inimigo Raro ou Único Próximo",
+      "faixas": [
+       [
+        12,
+        15
+       ]
+      ]
+     },
+     {
+      "texto": "(18—20)% de chance de causar Dano Dobrado enquanto Concentrado / grant focus skill [1]",
+      "modelo": "{0}% de chance de causar Dano Dobrado enquanto Concentrado / grant focus skill [{1}]",
+      "faixas": [
+       [
+        18,
+        20
+       ],
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "+(25—28) de Destreza e Inteligência / Velocidade de Ataque aumentada em (18—22)%",
+      "modelo": "+{0} de Destreza e Inteligência / Velocidade de Ataque aumentada em {1}%",
+      "faixas": [
+       [
+        25,
+        28
+       ],
+       [
+        18,
+        22
+       ]
+      ]
+     },
+     {
+      "texto": "+(25—28) de Força e Inteligência / Chance de Crítico aumentada em (28—32)%",
+      "modelo": "+{0} de Força e Inteligência / Chance de Crítico aumentada em {1}%",
+      "faixas": [
+       [
+        25,
+        28
+       ],
+       [
+        28,
+        32
+       ]
+      ]
+     },
+     {
+      "texto": "+(25—28) de Força e Destreza / +(311—350) de Precisão",
+      "modelo": "+{0} de Força e Destreza / +{1} de Precisão",
+      "faixas": [
+       [
+        25,
+        28
+       ],
+       [
+        311,
+        350
+       ]
+      ]
+     },
+     {
+      "texto": "15% de chance de Ativar Fúria Sangrenta Nível 1 ao Matar um Inimigo / Velocidade de Ataque aumentada em (18—22)%",
+      "modelo": "{0}% de chance de Ativar Fúria Sangrenta Nível {1} ao Matar um Inimigo / Velocidade de Ataque aumentada em {2}%",
+      "faixas": [
+       [
+        15,
+        15
+       ],
+       [
+        1,
+        1
+       ],
+       [
+        18,
+        22
+       ]
+      ]
+     },
+     {
+      "texto": "Velocidade de Conjuração aumentada em (18—22)% / 15% de chance de ganhar Fúria Arcana ao Matar um Inimigo",
+      "modelo": "Velocidade de Conjuração aumentada em {0}% / {1}% de chance de ganhar Fúria Arcana ao Matar um Inimigo",
+      "faixas": [
+       [
+        18,
+        22
+       ],
+       [
+        15,
+        15
+       ]
+      ]
+     }
+    ]
+   },
+   "fonte": "https://poedb.tw/pt/Veiled_Chaos_Orb",
+   "linhas": [
+    {
+     "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Empalar Inimigos ao Acertar com Ataques",
+     "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Empalar Inimigos ao Acertar com Ataques",
+     "faixas": [
+      [
+       120,
+       139
+      ],
+      [
+       21,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de causar Sangramento ao Acertar",
+     "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de causar Sangramento ao Acertar",
+     "faixas": [
+      [
+       120,
+       139
+      ],
+      [
+       21,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Cegar Inimigos ao acertar",
+     "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Cegar Inimigos ao acertar",
+     "faixas": [
+      [
+       120,
+       139
+      ],
+      [
+       21,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Envenenar ao Acertar",
+     "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Envenenar ao Acertar",
+     "faixas": [
+      [
+       120,
+       139
+      ],
+      [
+       21,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "Ataques com essa Arma Penetram (14—16)% das Resistências Elementais",
+     "modelo": "Ataques com essa Arma Penetram {0}% das Resistências Elementais",
+     "faixas": [
+      [
+       14,
+       16
+      ]
+     ]
+    },
+    {
+     "texto": "Ataques com essa Arma Penetram (14—16)% da Resistência a Caos",
+     "modelo": "Ataques com essa Arma Penetram {0}% da Resistência a Caos",
+     "faixas": [
+      [
+       14,
+       16
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Fogo aumentado em (70—79)% / (21—23)% de chance de Incendiar",
+     "modelo": "Dano de Fogo aumentado em {0}% / {1}% de chance de Incendiar",
+     "faixas": [
+      [
+       70,
+       79
+      ],
+      [
+       21,
+       23
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Gelo aumentado em (70—79)% / (21—23)% de chance de Congelar",
+     "modelo": "Dano de Gelo aumentado em {0}% / {1}% de chance de Congelar",
+     "faixas": [
+      [
+       70,
+       79
+      ],
+      [
+       21,
+       23
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Raio aumentado em (70—79)% / (21—23)% de chance de Eletrizar",
+     "modelo": "Dano de Raio aumentado em {0}% / {1}% de chance de Eletrizar",
+     "faixas": [
+      [
+       70,
+       79
+      ],
+      [
+       21,
+       23
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Caos aumentado em (60—69)% / Duração das Habilidades de Caos aumentada em (13—15)%",
+     "modelo": "Dano de Caos aumentado em {0}% / Duração das Habilidades de Caos aumentada em {1}%",
+     "faixas": [
+      [
+       60,
+       69
+      ],
+      [
+       13,
+       15
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Mágico aumentado em (70—79)% / Regeneração de Mana aumentada em (18—20)%",
+     "modelo": "Dano Mágico aumentado em {0}% / Regeneração de Mana aumentada em {1}%",
+     "faixas": [
+      [
+       70,
+       79
+      ],
+      [
+       18,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Mágico aumentado em (60—69)% / Ganha 5% de Dano Não Caos como Dano de Caos extra",
+     "modelo": "Dano Mágico aumentado em {0}% / Ganha {1}% de Dano Não Caos como Dano de Caos extra",
+     "faixas": [
+      [
+       60,
+       69
+      ],
+      [
+       5,
+       5
+      ]
+     ]
+    },
+    {
+     "texto": "Vida máxima dos Lacaios aumentada em (34—38)% / Lacaios causam Dano aumentado em (34—38)%",
+     "modelo": "Vida máxima dos Lacaios aumentada em {0}% / Lacaios causam Dano aumentado em {1}%",
+     "faixas": [
+      [
+       34,
+       38
+      ],
+      [
+       34,
+       38
+      ]
+     ]
+    },
+    {
+     "texto": "(6—7)% de chance de causar Dano Dobrado",
+     "modelo": "{0}% de chance de causar Dano Dobrado",
+     "faixas": [
+      [
+       6,
+       7
+      ]
+     ]
+    },
+    {
+     "texto": "Lacaios possuem um aumento de (18—20)% de Velocidade de Ataque / Lacaios possuem um aumento de (18—20)% de Velocidade de Conjuração",
+     "modelo": "Lacaios possuem um aumento de {0}% de Velocidade de Ataque / Lacaios possuem um aumento de {1}% de Velocidade de Conjuração",
+     "faixas": [
+      [
+       18,
+       20
+      ],
+      [
+       18,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "+(24—28)% do Multiplicador de Dano de Caos",
+     "modelo": "+{0}% do Multiplicador de Dano de Caos",
+     "faixas": [
+      [
+       24,
+       28
+      ]
+     ]
+    },
+    {
+     "texto": "+(24—28)% de Multiplicador do Dano Físico Degenerativo",
+     "modelo": "+{0}% de Multiplicador do Dano Físico Degenerativo",
+     "faixas": [
+      [
+       24,
+       28
+      ]
+     ]
+    },
+    {
+     "texto": "+(24—28)% de Multiplicador de Dano de Gelo Degenerativo",
+     "modelo": "+{0}% de Multiplicador de Dano de Gelo Degenerativo",
+     "faixas": [
+      [
+       24,
+       28
+      ]
+     ]
+    },
+    {
+     "texto": "+(24—28)% de Multiplicador do Dano Degenerativo de Fogo",
+     "modelo": "+{0}% de Multiplicador do Dano Degenerativo de Fogo",
+     "faixas": [
+      [
+       24,
+       28
+      ]
+     ]
+    },
+    {
+     "texto": "Dano aumentado em (5—6)% por Carga de Tolerância",
+     "modelo": "Dano aumentado em {0}% por Carga de Tolerância",
+     "faixas": [
+      [
+       5,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "(5—6)% de aumento de Dano por Carga de Frenesi",
+     "modelo": "{0}% de aumento de Dano por Carga de Frenesi",
+     "faixas": [
+      [
+       5,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "Dano aumentado em (5—6)% por Carga de Poder",
+     "modelo": "Dano aumentado em {0}% por Carga de Poder",
+     "faixas": [
+      [
+       5,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "+(36—40)% de Multiplicador de Acerto Crítico enquanto houver um Inimigo Raro ou Único Próximo",
+     "modelo": "+{0}% de Multiplicador de Acerto Crítico enquanto houver um Inimigo Raro ou Único Próximo",
+     "faixas": [
+      [
+       36,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "(12—15)% de aumento da Velocidade de Ataque enquanto houver um Inimigo Raro ou Único Próximo",
+     "modelo": "{0}% de aumento da Velocidade de Ataque enquanto houver um Inimigo Raro ou Único Próximo",
+     "faixas": [
+      [
+       12,
+       15
+      ]
+     ]
+    },
+    {
+     "texto": "(18—20)% de chance de causar Dano Dobrado enquanto Concentrado / grant focus skill [1]",
+     "modelo": "{0}% de chance de causar Dano Dobrado enquanto Concentrado / grant focus skill [{1}]",
+     "faixas": [
+      [
+       18,
+       20
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+(25—28) de Destreza e Inteligência / Velocidade de Ataque aumentada em (18—22)%",
+     "modelo": "+{0} de Destreza e Inteligência / Velocidade de Ataque aumentada em {1}%",
+     "faixas": [
+      [
+       25,
+       28
+      ],
+      [
+       18,
+       22
+      ]
+     ]
+    },
+    {
+     "texto": "+(25—28) de Força e Inteligência / Chance de Crítico aumentada em (28—32)%",
+     "modelo": "+{0} de Força e Inteligência / Chance de Crítico aumentada em {1}%",
+     "faixas": [
+      [
+       25,
+       28
+      ],
+      [
+       28,
+       32
+      ]
+     ]
+    },
+    {
+     "texto": "+(25—28) de Força e Destreza / +(311—350) de Precisão",
+     "modelo": "+{0} de Força e Destreza / +{1} de Precisão",
+     "faixas": [
+      [
+       25,
+       28
+      ],
+      [
+       311,
+       350
+      ]
+     ]
+    },
+    {
+     "texto": "15% de chance de Ativar Fúria Sangrenta Nível 1 ao Matar um Inimigo / Velocidade de Ataque aumentada em (18—22)%",
+     "modelo": "{0}% de chance de Ativar Fúria Sangrenta Nível {1} ao Matar um Inimigo / Velocidade de Ataque aumentada em {2}%",
+     "faixas": [
+      [
+       15,
+       15
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       18,
+       22
+      ]
+     ]
+    },
+    {
+     "texto": "Velocidade de Conjuração aumentada em (18—22)% / 15% de chance de ganhar Fúria Arcana ao Matar um Inimigo",
+     "modelo": "Velocidade de Conjuração aumentada em {0}% / {1}% de chance de ganhar Fúria Arcana ao Matar um Inimigo",
+     "faixas": [
+      [
+       18,
+       22
+      ],
+      [
+       15,
+       15
+      ]
+     ]
+    }
+   ],
+   "velado": true
+  },
+  "Replica_Paradoxica": {
+   "classe": "Thrusting_One_Hand_Swords",
+   "substitui": {
+    "veiled mod seed [{0},{1}]": "composicao",
+    "veiled mod type [{0}]": "composicao"
+   },
+   "composicao": {
+    "veiled mod seed [{0},{1}]": [
+     [
+      "prefixo",
+      1
+     ],
+     [
+      "sufixo",
+      1
+     ]
+    ],
+    "veiled mod type [{0}]": []
+   },
+   "pools": {
+    "prefixo": [
+     {
+      "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Empalar Inimigos ao Acertar com Ataques",
+      "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Empalar Inimigos ao Acertar com Ataques",
+      "faixas": [
+       [
+        120,
+        139
+       ],
+       [
+        21,
+        25
+       ]
+      ]
+     },
+     {
+      "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de causar Sangramento ao Acertar",
+      "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de causar Sangramento ao Acertar",
+      "faixas": [
+       [
+        120,
+        139
+       ],
+       [
+        21,
+        25
+       ]
+      ]
+     },
+     {
+      "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Cegar Inimigos ao acertar",
+      "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Cegar Inimigos ao acertar",
+      "faixas": [
+       [
+        120,
+        139
+       ],
+       [
+        21,
+        25
+       ]
+      ]
+     },
+     {
+      "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Envenenar ao Acertar",
+      "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Envenenar ao Acertar",
+      "faixas": [
+       [
+        120,
+        139
+       ],
+       [
+        21,
+        25
+       ]
+      ]
+     },
+     {
+      "texto": "Ataques com essa Arma Penetram (14—16)% das Resistências Elementais",
+      "modelo": "Ataques com essa Arma Penetram {0}% das Resistências Elementais",
+      "faixas": [
+       [
+        14,
+        16
+       ]
+      ]
+     },
+     {
+      "texto": "Ataques com essa Arma Penetram (14—16)% da Resistência a Caos",
+      "modelo": "Ataques com essa Arma Penetram {0}% da Resistência a Caos",
+      "faixas": [
+       [
+        14,
+        16
+       ]
+      ]
+     },
+     {
+      "texto": "Dano de Fogo aumentado em (70—79)% / (21—23)% de chance de Incendiar",
+      "modelo": "Dano de Fogo aumentado em {0}% / {1}% de chance de Incendiar",
+      "faixas": [
+       [
+        70,
+        79
+       ],
+       [
+        21,
+        23
+       ]
+      ]
+     },
+     {
+      "texto": "Dano de Gelo aumentado em (70—79)% / (21—23)% de chance de Congelar",
+      "modelo": "Dano de Gelo aumentado em {0}% / {1}% de chance de Congelar",
+      "faixas": [
+       [
+        70,
+        79
+       ],
+       [
+        21,
+        23
+       ]
+      ]
+     },
+     {
+      "texto": "Dano de Raio aumentado em (70—79)% / (21—23)% de chance de Eletrizar",
+      "modelo": "Dano de Raio aumentado em {0}% / {1}% de chance de Eletrizar",
+      "faixas": [
+       [
+        70,
+        79
+       ],
+       [
+        21,
+        23
+       ]
+      ]
+     },
+     {
+      "texto": "Dano de Caos aumentado em (60—69)% / Duração das Habilidades de Caos aumentada em (13—15)%",
+      "modelo": "Dano de Caos aumentado em {0}% / Duração das Habilidades de Caos aumentada em {1}%",
+      "faixas": [
+       [
+        60,
+        69
+       ],
+       [
+        13,
+        15
+       ]
+      ]
+     },
+     {
+      "texto": "Dano Mágico aumentado em (70—79)% / Regeneração de Mana aumentada em (18—20)%",
+      "modelo": "Dano Mágico aumentado em {0}% / Regeneração de Mana aumentada em {1}%",
+      "faixas": [
+       [
+        70,
+        79
+       ],
+       [
+        18,
+        20
+       ]
+      ]
+     },
+     {
+      "texto": "Dano Mágico aumentado em (60—69)% / Ganha 5% de Dano Não Caos como Dano de Caos extra",
+      "modelo": "Dano Mágico aumentado em {0}% / Ganha {1}% de Dano Não Caos como Dano de Caos extra",
+      "faixas": [
+       [
+        60,
+        69
+       ],
+       [
+        5,
+        5
+       ]
+      ]
+     },
+     {
+      "texto": "Vida máxima dos Lacaios aumentada em (34—38)% / Lacaios causam Dano aumentado em (34—38)%",
+      "modelo": "Vida máxima dos Lacaios aumentada em {0}% / Lacaios causam Dano aumentado em {1}%",
+      "faixas": [
+       [
+        34,
+        38
+       ],
+       [
+        34,
+        38
+       ]
+      ]
+     }
+    ],
+    "sufixo": [
+     {
+      "texto": "(6—7)% de chance de causar Dano Dobrado",
+      "modelo": "{0}% de chance de causar Dano Dobrado",
+      "faixas": [
+       [
+        6,
+        7
+       ]
+      ]
+     },
+     {
+      "texto": "Lacaios possuem um aumento de (18—20)% de Velocidade de Ataque / Lacaios possuem um aumento de (18—20)% de Velocidade de Conjuração",
+      "modelo": "Lacaios possuem um aumento de {0}% de Velocidade de Ataque / Lacaios possuem um aumento de {1}% de Velocidade de Conjuração",
+      "faixas": [
+       [
+        18,
+        20
+       ],
+       [
+        18,
+        20
+       ]
+      ]
+     },
+     {
+      "texto": "+(24—28)% do Multiplicador de Dano de Caos",
+      "modelo": "+{0}% do Multiplicador de Dano de Caos",
+      "faixas": [
+       [
+        24,
+        28
+       ]
+      ]
+     },
+     {
+      "texto": "+(24—28)% de Multiplicador do Dano Físico Degenerativo",
+      "modelo": "+{0}% de Multiplicador do Dano Físico Degenerativo",
+      "faixas": [
+       [
+        24,
+        28
+       ]
+      ]
+     },
+     {
+      "texto": "+(24—28)% de Multiplicador de Dano de Gelo Degenerativo",
+      "modelo": "+{0}% de Multiplicador de Dano de Gelo Degenerativo",
+      "faixas": [
+       [
+        24,
+        28
+       ]
+      ]
+     },
+     {
+      "texto": "+(24—28)% de Multiplicador do Dano Degenerativo de Fogo",
+      "modelo": "+{0}% de Multiplicador do Dano Degenerativo de Fogo",
+      "faixas": [
+       [
+        24,
+        28
+       ]
+      ]
+     },
+     {
+      "texto": "Dano aumentado em (5—6)% por Carga de Tolerância",
+      "modelo": "Dano aumentado em {0}% por Carga de Tolerância",
+      "faixas": [
+       [
+        5,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "(5—6)% de aumento de Dano por Carga de Frenesi",
+      "modelo": "{0}% de aumento de Dano por Carga de Frenesi",
+      "faixas": [
+       [
+        5,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "Dano aumentado em (5—6)% por Carga de Poder",
+      "modelo": "Dano aumentado em {0}% por Carga de Poder",
+      "faixas": [
+       [
+        5,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "+(36—40)% de Multiplicador de Acerto Crítico enquanto houver um Inimigo Raro ou Único Próximo",
+      "modelo": "+{0}% de Multiplicador de Acerto Crítico enquanto houver um Inimigo Raro ou Único Próximo",
+      "faixas": [
+       [
+        36,
+        40
+       ]
+      ]
+     },
+     {
+      "texto": "(12—15)% de aumento da Velocidade de Ataque enquanto houver um Inimigo Raro ou Único Próximo",
+      "modelo": "{0}% de aumento da Velocidade de Ataque enquanto houver um Inimigo Raro ou Único Próximo",
+      "faixas": [
+       [
+        12,
+        15
+       ]
+      ]
+     },
+     {
+      "texto": "(18—20)% de chance de causar Dano Dobrado enquanto Concentrado / grant focus skill [1]",
+      "modelo": "{0}% de chance de causar Dano Dobrado enquanto Concentrado / grant focus skill [{1}]",
+      "faixas": [
+       [
+        18,
+        20
+       ],
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "+(25—28) de Destreza e Inteligência / Velocidade de Ataque aumentada em (18—22)%",
+      "modelo": "+{0} de Destreza e Inteligência / Velocidade de Ataque aumentada em {1}%",
+      "faixas": [
+       [
+        25,
+        28
+       ],
+       [
+        18,
+        22
+       ]
+      ]
+     },
+     {
+      "texto": "+(25—28) de Força e Inteligência / Chance de Crítico aumentada em (28—32)%",
+      "modelo": "+{0} de Força e Inteligência / Chance de Crítico aumentada em {1}%",
+      "faixas": [
+       [
+        25,
+        28
+       ],
+       [
+        28,
+        32
+       ]
+      ]
+     },
+     {
+      "texto": "+(25—28) de Força e Destreza / +(311—350) de Precisão",
+      "modelo": "+{0} de Força e Destreza / +{1} de Precisão",
+      "faixas": [
+       [
+        25,
+        28
+       ],
+       [
+        311,
+        350
+       ]
+      ]
+     },
+     {
+      "texto": "15% de chance de Ativar Fúria Sangrenta Nível 1 ao Matar um Inimigo / Velocidade de Ataque aumentada em (18—22)%",
+      "modelo": "{0}% de chance de Ativar Fúria Sangrenta Nível {1} ao Matar um Inimigo / Velocidade de Ataque aumentada em {2}%",
+      "faixas": [
+       [
+        15,
+        15
+       ],
+       [
+        1,
+        1
+       ],
+       [
+        18,
+        22
+       ]
+      ]
+     },
+     {
+      "texto": "Velocidade de Conjuração aumentada em (18—22)% / 15% de chance de ganhar Fúria Arcana ao Matar um Inimigo",
+      "modelo": "Velocidade de Conjuração aumentada em {0}% / {1}% de chance de ganhar Fúria Arcana ao Matar um Inimigo",
+      "faixas": [
+       [
+        18,
+        22
+       ],
+       [
+        15,
+        15
+       ]
+      ]
+     }
+    ]
+   },
+   "fonte": "https://poedb.tw/pt/Veiled_Chaos_Orb",
+   "linhas": [
+    {
+     "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Empalar Inimigos ao Acertar com Ataques",
+     "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Empalar Inimigos ao Acertar com Ataques",
+     "faixas": [
+      [
+       120,
+       139
+      ],
+      [
+       21,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de causar Sangramento ao Acertar",
+     "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de causar Sangramento ao Acertar",
+     "faixas": [
+      [
+       120,
+       139
+      ],
+      [
+       21,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Cegar Inimigos ao acertar",
+     "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Cegar Inimigos ao acertar",
+     "faixas": [
+      [
+       120,
+       139
+      ],
+      [
+       21,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Físico aumentado em (120—139)% / (21—25)% de chance de Envenenar ao Acertar",
+     "modelo": "Dano Físico aumentado em {0}% / {1}% de chance de Envenenar ao Acertar",
+     "faixas": [
+      [
+       120,
+       139
+      ],
+      [
+       21,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "Ataques com essa Arma Penetram (14—16)% das Resistências Elementais",
+     "modelo": "Ataques com essa Arma Penetram {0}% das Resistências Elementais",
+     "faixas": [
+      [
+       14,
+       16
+      ]
+     ]
+    },
+    {
+     "texto": "Ataques com essa Arma Penetram (14—16)% da Resistência a Caos",
+     "modelo": "Ataques com essa Arma Penetram {0}% da Resistência a Caos",
+     "faixas": [
+      [
+       14,
+       16
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Fogo aumentado em (70—79)% / (21—23)% de chance de Incendiar",
+     "modelo": "Dano de Fogo aumentado em {0}% / {1}% de chance de Incendiar",
+     "faixas": [
+      [
+       70,
+       79
+      ],
+      [
+       21,
+       23
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Gelo aumentado em (70—79)% / (21—23)% de chance de Congelar",
+     "modelo": "Dano de Gelo aumentado em {0}% / {1}% de chance de Congelar",
+     "faixas": [
+      [
+       70,
+       79
+      ],
+      [
+       21,
+       23
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Raio aumentado em (70—79)% / (21—23)% de chance de Eletrizar",
+     "modelo": "Dano de Raio aumentado em {0}% / {1}% de chance de Eletrizar",
+     "faixas": [
+      [
+       70,
+       79
+      ],
+      [
+       21,
+       23
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Caos aumentado em (60—69)% / Duração das Habilidades de Caos aumentada em (13—15)%",
+     "modelo": "Dano de Caos aumentado em {0}% / Duração das Habilidades de Caos aumentada em {1}%",
+     "faixas": [
+      [
+       60,
+       69
+      ],
+      [
+       13,
+       15
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Mágico aumentado em (70—79)% / Regeneração de Mana aumentada em (18—20)%",
+     "modelo": "Dano Mágico aumentado em {0}% / Regeneração de Mana aumentada em {1}%",
+     "faixas": [
+      [
+       70,
+       79
+      ],
+      [
+       18,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Mágico aumentado em (60—69)% / Ganha 5% de Dano Não Caos como Dano de Caos extra",
+     "modelo": "Dano Mágico aumentado em {0}% / Ganha {1}% de Dano Não Caos como Dano de Caos extra",
+     "faixas": [
+      [
+       60,
+       69
+      ],
+      [
+       5,
+       5
+      ]
+     ]
+    },
+    {
+     "texto": "Vida máxima dos Lacaios aumentada em (34—38)% / Lacaios causam Dano aumentado em (34—38)%",
+     "modelo": "Vida máxima dos Lacaios aumentada em {0}% / Lacaios causam Dano aumentado em {1}%",
+     "faixas": [
+      [
+       34,
+       38
+      ],
+      [
+       34,
+       38
+      ]
+     ]
+    },
+    {
+     "texto": "(6—7)% de chance de causar Dano Dobrado",
+     "modelo": "{0}% de chance de causar Dano Dobrado",
+     "faixas": [
+      [
+       6,
+       7
+      ]
+     ]
+    },
+    {
+     "texto": "Lacaios possuem um aumento de (18—20)% de Velocidade de Ataque / Lacaios possuem um aumento de (18—20)% de Velocidade de Conjuração",
+     "modelo": "Lacaios possuem um aumento de {0}% de Velocidade de Ataque / Lacaios possuem um aumento de {1}% de Velocidade de Conjuração",
+     "faixas": [
+      [
+       18,
+       20
+      ],
+      [
+       18,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "+(24—28)% do Multiplicador de Dano de Caos",
+     "modelo": "+{0}% do Multiplicador de Dano de Caos",
+     "faixas": [
+      [
+       24,
+       28
+      ]
+     ]
+    },
+    {
+     "texto": "+(24—28)% de Multiplicador do Dano Físico Degenerativo",
+     "modelo": "+{0}% de Multiplicador do Dano Físico Degenerativo",
+     "faixas": [
+      [
+       24,
+       28
+      ]
+     ]
+    },
+    {
+     "texto": "+(24—28)% de Multiplicador de Dano de Gelo Degenerativo",
+     "modelo": "+{0}% de Multiplicador de Dano de Gelo Degenerativo",
+     "faixas": [
+      [
+       24,
+       28
+      ]
+     ]
+    },
+    {
+     "texto": "+(24—28)% de Multiplicador do Dano Degenerativo de Fogo",
+     "modelo": "+{0}% de Multiplicador do Dano Degenerativo de Fogo",
+     "faixas": [
+      [
+       24,
+       28
+      ]
+     ]
+    },
+    {
+     "texto": "Dano aumentado em (5—6)% por Carga de Tolerância",
+     "modelo": "Dano aumentado em {0}% por Carga de Tolerância",
+     "faixas": [
+      [
+       5,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "(5—6)% de aumento de Dano por Carga de Frenesi",
+     "modelo": "{0}% de aumento de Dano por Carga de Frenesi",
+     "faixas": [
+      [
+       5,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "Dano aumentado em (5—6)% por Carga de Poder",
+     "modelo": "Dano aumentado em {0}% por Carga de Poder",
+     "faixas": [
+      [
+       5,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "+(36—40)% de Multiplicador de Acerto Crítico enquanto houver um Inimigo Raro ou Único Próximo",
+     "modelo": "+{0}% de Multiplicador de Acerto Crítico enquanto houver um Inimigo Raro ou Único Próximo",
+     "faixas": [
+      [
+       36,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "(12—15)% de aumento da Velocidade de Ataque enquanto houver um Inimigo Raro ou Único Próximo",
+     "modelo": "{0}% de aumento da Velocidade de Ataque enquanto houver um Inimigo Raro ou Único Próximo",
+     "faixas": [
+      [
+       12,
+       15
+      ]
+     ]
+    },
+    {
+     "texto": "(18—20)% de chance de causar Dano Dobrado enquanto Concentrado / grant focus skill [1]",
+     "modelo": "{0}% de chance de causar Dano Dobrado enquanto Concentrado / grant focus skill [{1}]",
+     "faixas": [
+      [
+       18,
+       20
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+(25—28) de Destreza e Inteligência / Velocidade de Ataque aumentada em (18—22)%",
+     "modelo": "+{0} de Destreza e Inteligência / Velocidade de Ataque aumentada em {1}%",
+     "faixas": [
+      [
+       25,
+       28
+      ],
+      [
+       18,
+       22
+      ]
+     ]
+    },
+    {
+     "texto": "+(25—28) de Força e Inteligência / Chance de Crítico aumentada em (28—32)%",
+     "modelo": "+{0} de Força e Inteligência / Chance de Crítico aumentada em {1}%",
+     "faixas": [
+      [
+       25,
+       28
+      ],
+      [
+       28,
+       32
+      ]
+     ]
+    },
+    {
+     "texto": "+(25—28) de Força e Destreza / +(311—350) de Precisão",
+     "modelo": "+{0} de Força e Destreza / +{1} de Precisão",
+     "faixas": [
+      [
+       25,
+       28
+      ],
+      [
+       311,
+       350
+      ]
+     ]
+    },
+    {
+     "texto": "15% de chance de Ativar Fúria Sangrenta Nível 1 ao Matar um Inimigo / Velocidade de Ataque aumentada em (18—22)%",
+     "modelo": "{0}% de chance de Ativar Fúria Sangrenta Nível {1} ao Matar um Inimigo / Velocidade de Ataque aumentada em {2}%",
+     "faixas": [
+      [
+       15,
+       15
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       18,
+       22
+      ]
+     ]
+    },
+    {
+     "texto": "Velocidade de Conjuração aumentada em (18—22)% / 15% de chance de ganhar Fúria Arcana ao Matar um Inimigo",
+     "modelo": "Velocidade de Conjuração aumentada em {0}% / {1}% de chance de ganhar Fúria Arcana ao Matar um Inimigo",
+     "faixas": [
+      [
+       18,
+       22
+      ],
+      [
+       15,
+       15
+      ]
+     ]
+    }
+   ],
+   "velado": true
   },
   "Impossible_Escape": {
    "classe": "Jewels",

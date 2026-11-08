@@ -14,6 +14,300 @@
   ],
   "regras": [
     {
+      "padrao": "^Sua Chance de Acerto Crítico é Sortuda enquanto Concentrado$",
+      "efeitos": [
+        {
+          "stat": "critico_sortudo@buff:concentrado",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Eletriza Inimigos próximos por \\{(\\d+)\\} Segundos ao se Concentrar$",
+      "efeitos": [
+        {
+          "stat": "ev:concentrar:proximos:eletrizado:{V1}",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os monstros a até 3 casas (o PoE não publica o raio)",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao Nível das Gemas de AoE Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local@area",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Evasão aumentada em \\{(\\d+)\\}% enquanto Concentrado$",
+      "efeitos": [
+        {
+          "stat": "evasion_pct@buff:concentrado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Redução adicional de Dano Físico enquanto Concentrado$",
+      "efeitos": [
+        {
+          "stat": "phys_res@buff:concentrado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Magias Encaixadas quando você Focar, com Recarga de \\{(\\d+)\\} segundos?$",
+      "efeitos": [
+        {
+          "stat": "gatilho_local:concentrar:magia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\}% de Dano Não Caos como Dano de Caos extra$",
+      "efeitos": [
+        {
+          "stat": "naocaos_as_extra_chaos",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Duração das Afecções causadas por você aumentada em \\{(\\d+)\\}% enquanto Concentrado$",
+      "efeitos": [
+        {
+          "stat": "ailment_duration@buff:concentrado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Duração das Afecções causadas por você aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_duration",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de causar Dano Dobrado enquanto Concentrado$",
+      "efeitos": [
+        {
+          "stat": "chance_dano_dobrado@buff:concentrado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano é retirado da Mana antes da Vida enquanto Concentrado$",
+      "efeitos": [
+        {
+          "stat": "dano_pela_mana_pct@buff:concentrado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano é retirado da Mana antes da Vida$",
+      "efeitos": [
+        {
+          "stat": "dano_pela_mana_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao máximo de Fortificações enquanto Concentrado$",
+      "efeitos": [
+        {
+          "stat": "max_fortificacao@buff:concentrado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Acerto Crítico enquanto houver um Inimigo Raro ou Único Próximo$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@raroOuUnicoPerto",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Velocidade de Ataque enquanto houver um Inimigo Raro ou Único Próximo$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@raroOuUnicoPerto",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ataques com essa Arma Penetram \\{(\\d+)\\}% da Resistência a Caos$",
+      "efeitos": [
+        {
+          "stat": "chaos_pen@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Espectros levantados têm \\+\\{(\\d+)\\}% para todas as resistências máximas$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:espectro:minion_res_max",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Espectros levantados disparam \\{(\\d+)\\} projéteis adicionais$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:espectro:minion_extra_projectiles",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Espectros levantados têm \\+\\{(\\d+)\\}% para a chance de golpe crítico$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:espectro:minion_crit_flat",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Armadura durante a Anulação do Ganho de Almas$",
+      "efeitos": [
+        {
+          "stat": "armor_flat@almasImpedidas",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de evitar dano de cada elemento de ataques durante o impedimento de ganho de almas$",
+      "efeitos": [
+        {
+          "stat": "evitar_dano_elemental_ataque@almasImpedidas",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Evasão é Regenerada como Vida por segundo enquanto Concentrado$",
+      "efeitos": [
+        {
+          "stat": "evasao_regen_vida_pct@buff:concentrado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% de Mana e Escudo de Energia ao se Concentrar$",
+      "efeitos": [
+        {
+          "stat": "ev:concentrar:manaPct",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ev:concentrar:esPct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
+      "padrao": "^Magnitude de Modificadores Revelados aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "magnitude_revelados",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "os mods revelados da peça já saem com a magnitude (o texto e o valor)",
+      "_08_11m": "08/11 — balão 0 sem efeito, lote B8: os velados da Traição",
+      "_nova": true
+    },
+    {
       "estado": "equivalente",
       "padrao": "^\\+\\{(\\d+)\\} ao número de Arbalistas Convocadas$",
       "efeitos": [

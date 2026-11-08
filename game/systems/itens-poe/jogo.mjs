@@ -318,8 +318,8 @@ function separarLocaisDaArma(classe, t, af) {
  * `estaArma`, que a soma da peça troca pela mão do slot onde ela está (`condicoes-poe.doAnel`: na Mão Principal, `maoPrincipal`; na Secundária, `maoSecundaria` —
  * as tags do golpe, `fichaDoGolpe`). Só os efeitos que o golpe lê pela ficha dele (a lista); os eventos ("ao matar com esta arma") seguem globais.
  */
-const DESTA_ARMA = /\b(?:com|desta|por|n?esta) [Aa]rma\b/;
-const LIDOS_NO_GOLPE = /^(?:phys_as_extra_gelo_ou_raio|chama_santificada_corpo|veneno_mais_chance|veneno_mais_pct|incendio_mais|dot_multi_bleed)(?:@|$)/;
+const DESTA_ARMA = /\b(?:com|desta|dessa|por|n?esta|n?essa) [Aa]rma\b/;
+const LIDOS_NO_GOLPE = /^(?:phys_as_extra_gelo_ou_raio|chama_santificada_corpo|veneno_mais_chance|veneno_mais_pct|incendio_mais|dot_multi_bleed|chaos_pen)(?:@|$)/;
 function separarDestaArma(classe, t, af) {
   if (CLASSES_DO_JOGO[classe]?.slot !== 'weapon') return;
   for (const l of t.linhas) {
