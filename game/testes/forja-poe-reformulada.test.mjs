@@ -72,7 +72,7 @@ test('as categorias: TODA moeda com efeito está numa lista (sem cair por sobra)
     Exalted_Orb: 'atributos', Orb_of_Alchemy: 'raridade', Orb_of_Chance: 'raridade', Orb_of_Scouring: 'raridade', Blessed_Orb: 'implicitos', Sacred_Orb: 'implicitos',
     Shapers_Exalted_Orb: 'influencia', Orb_of_Dominance: 'influencia', Lesser_Eldritch_Ember: 'ancestral', Orb_of_Conflict: 'ancestral',
     Blacksmiths_Whetstone: 'qualidade', Glassblowers_Bauble: 'qualidade', Vaal_Orb: 'corrupcao', Tainted_Chaos_Orb: 'corrupcao',
-    Mirror_of_Kalandra: 'especiais', Orb_of_Regret: 'especiais', Gemcutters_Prism: 'gemas', Chaos_Shard: 'lascas', Portal_Scroll: 'semEfeito',
+    Mirror_of_Kalandra: 'especiais', Orb_of_Regret: 'especiais', Gemcutters_Prism: 'gemas', Chaos_Shard: 'lascas', Portal_Scroll: 'especiais', // (aval do dono 08/11: o Pergaminho de Portal funciona — antes 'semEfeito')
   };
   for (const [slug, cat] of Object.entries(esperado)) {
     assert.equal(M.categoriaDaMoeda(slug), cat, slug);

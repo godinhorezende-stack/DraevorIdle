@@ -16,6 +16,7 @@ import * as Gerar from './gerar.mjs';
 import * as Catalisadores from './catalisadores.mjs';
 import * as Ungir from './ungir.mjs';
 import * as Ducados from './ducados.mjs';
+import * as PortalDaGema from './portal-da-gema.mjs';
 import * as Jogo from './jogo.mjs';
 import * as SocketsPoe from './sockets.mjs';
 import * as Gemas from '../skills/gemas.mjs';
@@ -802,6 +803,18 @@ function tzamoto({ estado, p, rng, alvo }) {
   destruir(estado, alvo);
   return { ok: true, notice: `${p.nome} foi destruída.`, destruiu: true };
 }
+/**
+ * (08/11, o dono: "Pergaminho de Portal, utilizado para sair no meio da fase para cidade") o PERGAMINHO DE PORTAL: como no PoE, abre o mesmo portal
+ * da gema Portal (`portal-da-gema.mjs`) — você vai para a cidade, a caçada fica guardada e o "Voltar pelo portal" leva de volta ao mesmo lugar.
+ * A saída é marcada aqui (`hunt.saidaPeloPortal`); quem leva para a cidade é a sessão (`entrarNoPortalDaGema`).
+ */
+function pergaminhoDePortal({ estado }) {
+  const hunt = estado?.hunt;
+  const motivo = PortalDaGema.motivoParaNaoAbrir(hunt);
+  if (motivo) return erro(motivo);
+  hunt.saidaPeloPortal = { em: hunt.clock ?? 0 };
+  return { ok: true, notice: 'Você abriu um portal para a cidade.' };
+}
 /** O Ducado do Metamorfo: vira outro Ducado (sem peça). */
 function metamorfo({ estado, rng }) {
   const outros = Ducados.DUCADOS.filter((s) => POR_SLUG.has(s));
@@ -861,6 +874,7 @@ const FAZ = {
   Tzamotos_Ducat: { f: tzamoto },
   The_Changelings_Ducat: { f: metamorfo, alvo: 'nenhum' },
   ...Object.fromEntries(Ungir.OLEOS.map((slug) => [slug, { f: ungirComOleos, encanta: true }])), Enchant: { f: encantamento, encanta: true },
+  Portal_Scroll: { f: pergaminhoDePortal, alvo: 'nenhum' },
   Scroll_of_Wisdom: { f: sabedoria, identifica: true }, Scroll_Fragment: { f: juntarLascas('Scroll_of_Wisdom', 5), alvo: 'nenhum' },
 };
 for (const [slug, f] of Object.entries(FAZ)) if (!POR_SLUG.has(slug)) delete FAZ[slug];
@@ -925,7 +939,7 @@ export const MOEDAS_DA_CATEGORIA = Object.freeze({
   gemas: ['Gemcutters_Prism', 'Gemcutters_Lens'],
   // (06/11) as Partes do Emissário juntam como as lascas (sem peça); os Pergaminhos vão em Especiais (o Ancestral também troca o único)
   lascas: [...LASCAS, ...EMISSARIO.flatMap((c) => c.partes)],
-  especiais: ['Scroll_of_Wisdom', 'Mirror_of_Kalandra', 'Ancient_Orb', 'Orb_of_Regret', ...EMISSARIO.map((c) => c.pergaminho)],
+  especiais: ['Scroll_of_Wisdom', 'Portal_Scroll', 'Mirror_of_Kalandra', 'Ancient_Orb', 'Orb_of_Regret', ...EMISSARIO.map((c) => c.pergaminho)],
 });
 const CATEGORIA_FIXA = new Map(Object.entries(MOEDAS_DA_CATEGORIA).flatMap(([cat, lista]) => lista.map((slug) => [slug, cat])));
 /** A categoria da Forja de uma moeda (a lista acima); a sem efeito no jogo, "semEfeito". */
