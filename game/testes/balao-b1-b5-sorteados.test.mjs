@@ -161,3 +161,24 @@ test('B9, as regras de criação: as Mãos do Alto Templário aceitam o Orbe Vaa
   e.inventory.unshift(outra);
   assert.equal(M.usar(e, { moeda: vaal, alvo: { onde: 'inventory', indice: 0 } }, () => 0.9).ok, false);
 });
+
+test('as peças ANTIGAS: a marcação "[...]" que ficou na peça vira as linhas sorteadas ao entrar; o resto da peça fica', { skip: SEM }, () => {
+  const { u } = unico('Screams_of_the_Desiccated');
+  const [p] = sorteios('Screams_of_the_Desiccated', 1);
+  const marca = u.modificadores.find((m) => u.linhasSorteadas.substitui[m.modelo]);
+  const fixas = p.poe.modificadores.filter((m) => !m.sorteada);
+  // (a peça como era antes: a marcação no lugar das sorteadas, numa versão de tradução já atual)
+  p.poe.modificadores = [...fixas, { tipo: marca.tipo, modelo: marca.modelo, texto: marca.modelo, valores: [1, 2] }];
+  p.poe.tv = J.VERSAO_DA_TRADUCAO;
+  J.recalcular(p);
+  assert.ok(p.poe.estados.some((e) => ['inerte', 'registrado'].includes(e)), 'antes: a marcação sem efeito');
+  const e = { inventory: [p] };
+  assert.equal(J.refazerPecasAntigas(e), 1);
+  const ms = p.poe.modificadores;
+  assert.ok(!ms.some((m) => m.modelo === marca.modelo), 'a marcação saiu');
+  const n = ms.filter((m) => m.sorteada).length;
+  assert.ok(n >= 1 && n <= 2, `${n} altar(es)`);
+  assert.deepEqual(ms.filter((m) => !m.sorteada).map((m) => m.texto), fixas.map((m) => m.texto), 'as fixas, como estavam');
+  assert.ok(!p.poe.estados.some((x) => ['inerte', 'registrado'].includes(x)));
+  assert.equal(J.refazerPecasAntigas(e), 0, 'na segunda entrada, nada');
+});

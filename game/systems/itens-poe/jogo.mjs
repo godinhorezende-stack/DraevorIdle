@@ -11,7 +11,7 @@
 import * as Catalogo from './catalogo.mjs';
 import { definirLeitorDeBase } from './condicoes-poe.mjs';
 import { traduzirPeca } from './traduzir.mjs';
-import { gerarPeca, caiNoSorteio } from './gerar.mjs';
+import { gerarPeca, caiNoSorteio, modificadoresDoUnico } from './gerar.mjs';
 import { darPeca } from '../inventario.mjs';
 import * as DropsPorMonstro from './drops-por-monstro.mjs';
 import * as SocketsPoe from './sockets.mjs';
@@ -614,6 +614,9 @@ export function refazerPecasAntigas(estado) {
   const andar = (x, fundo = 0) => {
     if (!x || typeof x !== 'object' || visto.has(x) || fundo > 8) return;
     visto.add(x);
+    // (08/11, dono: "Re-sortear só a marcação") a peça única de antes dos sorteados com a marcação "[...]" ainda no lugar: só ela vira as linhas do pool
+    const remarcou = x.poe?.base && sortearMarcacoesAntigas(x.poe);
+    if (remarcou && (x.poe.tv ?? 1) >= VERSAO_DA_TRADUCAO) { recalcular(x); n++; }
     if (x.poe?.base && (x.poe.tv ?? 1) < VERSAO_DA_TRADUCAO) {
       recalcular(x);
       x.poe.tv = VERSAO_DA_TRADUCAO;
@@ -624,6 +627,25 @@ export function refazerPecasAntigas(estado) {
   };
   for (const [k, v] of Object.entries(estado)) if (!['hunt', 'derived', 'bestiary', 'quests', 'totals', 'progress'].includes(k)) andar(v);
   return n;
+}
+
+/**
+ * (08/11) As MARCAÇÕES das peças únicas antigas ("[veiled mod]", "[1-2 Random Shrine Buff]"…, de antes das linhas sorteadas): cada linha da peça cujo modelo
+ * é uma marcação do único (`linhasSorteadas.substitui`) sai, e no lugar dela entram as linhas sorteadas do pool — como na peça nova (`gerar.modificadoresDoUnico`,
+ * com a magnitude dos revelados, se a peça tem). As outras linhas e os valores ficam. Devolve se mudou.
+ */
+export function sortearMarcacoesAntigas(p, rng = Math.random) {
+  if (p?.raridade !== 'unico' || !p.unico || !(p.modificadores ?? []).length) return false;
+  const u = (Catalogo.catalogo()?.classes?.[p.classe]?.unicos ?? []).find((x) => x.slug === p.unico && x.linhasSorteadas?.substitui);
+  const marcas = u?.linhasSorteadas.substitui;
+  if (!marcas || !p.modificadores.some((m) => marcas[m.modelo])) return false;
+  const magnitude = (p.modificadores ?? []).filter((m) => /^Magnitude de Modificadores Revelados aumentada em \{0\}%$/.test(m.modelo ?? '')).map((m) => ({ ...m, faixas: (m.valores ?? []).map((v) => [v, v]) }));
+  p.modificadores = p.modificadores.flatMap((m) => {
+    const cadastro = marcas[m.modelo] ? u.modificadores.find((x) => x.modelo === m.modelo) : null;
+    if (!cadastro) return [m];
+    return modificadoresDoUnico({ ...u, implicitosSorteados: null, nomeSorteado: null, modificadores: [cadastro, ...magnitude] }, rng).filter((x) => x.sorteada);
+  });
+  return true;
 }
 
 /**
