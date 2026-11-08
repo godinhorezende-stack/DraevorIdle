@@ -597,7 +597,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // o Impelir, os cadáveres, as Posturas e as habilidades concedidas; o lembrete entre parênteses do Oni-Goroshi deixa de virar efeito)
 // (87 — 08/11, as aproximadas dos únicos: as DEFESAS LOCAIS da peça de armadura — "+X de Armadura/Evasão/Escudo de Energia máximo" e "Armadura/Evasão/Escudo de
 // Energia aumentado" do Peitoral, Elmo, Luvas, Botas e Escudo valem só na peça, como no PoE (`separarDefesasLocais`))
-export const VERSAO_DA_TRADUCAO = 87;
+// (88 — 08/11, aproximadas A5/A6: "com esta Arma" só na mão da arma (`separarDestaArma`); a maldição dos itens no nível 1 do PoB; a Carícia Vaal só nas
+// não-Vaal; a Luz de Lunaris pelo acerto Não Crítico)
+export const VERSAO_DA_TRADUCAO = 88;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
