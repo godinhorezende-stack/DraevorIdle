@@ -256,7 +256,9 @@ export function somaDeItens(estado) {
   const daAljava = 1 + Object.entries(estado.equipment ?? {}).reduce((n, [slot, p]) => n + (slot !== 'backpack' ? Number(p?.poe?.af?.bonus_aljava) || 0 : 0), 0) / 100;
   for (const [slot, peca] of Object.entries(estado.equipment ?? {})) {
     if (!peca || slot === 'backpack') continue;
-    somarPeca(total, estado, slot, peca, daAljava !== 1 && peca.poe?.classe === 'Quivers' ? daAljava : 1);
+    // (08/11, o Anel da Fenda: "Propriedades são dobradas enquanto em uma Fenda" — `itens-poe/fenda.mjs`, `hunt.poeEmFenda`)
+    const naFenda = Number(peca.poe?.af?.dobrado_em_fenda) > 0 && estado.hunt?.poeEmFenda ? 2 : 1;
+    somarPeca(total, estado, slot, peca, (daAljava !== 1 && peca.poe?.classe === 'Quivers' ? daAljava : 1) * naFenda);
   }
   // (15/10, lote 27) as JOIAS nos encaixes alocados da árvore do PoE: os mods delas somam como os de uma peça.
   // (lote 52, O Adornado: "Efeito de Habilidades Passivas em Encaixes de Joias contendo Joias Mágicas Corrompidas aumentado em X%" — as mágicas

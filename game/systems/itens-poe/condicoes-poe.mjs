@@ -1179,6 +1179,13 @@ export function fatorDaEscala(estado, total, principais, escala) {
     // (a keystone Fúria — o Rampage do PoE: "a cada N Mortes de Fúria" — o contador de abates seguidos, `contarRampage`)
     case 'rampage': { const r = h?.rampage; const n = r && r.ate > agora ? r.n : 0; return a ? cada(n, a) : n; }
     // ("por cada Inimigo Eletrizado que você Matou Recentemente": os abates de eletrizados nos últimos 4 s — `hunt/combate`)
+    // (08/11, o Talismã do Grande Lobo — o dono: "Chefes de ato mortos") "por Rito da Lua concluído": os chefes de ato vencidos na dificuldade da
+    // caçada (fora dela, na maior), no máximo os 10 atos
+    case 'ritosDaLua': {
+      const dif = h?.campanha?.dificuldade;
+      const n = (d) => new Set(estado?.campanha?.[d]?.bosses ?? []).size;
+      return Math.min(10, dif ? n(dif) : Math.max(0, ...Object.keys(estado?.campanha ?? {}).map(n)));
+    }
     case 'eletrizadosMortosRecente': return (h?.poeEletrizadosMortos ?? []).filter((t) => agora - t <= RECENTE_MS).length;
     case 'vidaMax': return cada(estado?.maxHp ?? 0, a);
     case 'manaMax': return cada(estado?.maxMana ?? 0, a);
@@ -2618,7 +2625,7 @@ export function dinamicoValido(stat) {
 /** (06/11) A ficha tem uma escala pelo Fogo sofrido recentemente (o Rompe-amanhecer)? — o acerto com Fogo refaz a ficha. */
 export const usaFogoSofrido = (ficha) => Object.keys(ficha?.afPoe ?? {}).some((k) => k.includes('%fogoSofridoRecente'));
 /** A escala é conhecida? */
-export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|oniciencia|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|joiasAbissais|joiaUnica|devocao|itemMagico|maldicoesEmVoce|abissalLocal|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|vinhas|crescimentoFragil|desdeUsou|afetadoPorClamor|valor|valorDoEstandarte|forcaDosVentos|stat|armaduraElmo|evasaoLuvas|esBotas|vidaReservadaPct|itensInfluencia|fogoSofridoRecente|todasGemasVermelhasLocal|corrompidaLocal|barreiras|teiasNoAlvo)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
+export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|oniciencia|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|joiasAbissais|joiaUnica|devocao|itemMagico|maldicoesEmVoce|abissalLocal|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|ritosDaLua|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|vinhas|crescimentoFragil|desdeUsou|afetadoPorClamor|valor|valorDoEstandarte|forcaDosVentos|stat|armaduraElmo|evasaoLuvas|esBotas|vidaReservadaPct|itensInfluencia|fogoSofridoRecente|todasGemasVermelhasLocal|corrompidaLocal|barreiras|teiasNoAlvo)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
 
 /** Os números base do PoE dos efeitos de acerto. */
 export const NO_ACERTO = {

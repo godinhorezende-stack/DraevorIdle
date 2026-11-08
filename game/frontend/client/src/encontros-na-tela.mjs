@@ -102,7 +102,50 @@ function desenharAbismo(ctx, x, y, tile, ativo) {
   ctx.restore();
 }
 
-const COR = { ...COR_DO_BAU_POE, 'abismo-poe': '#3fd38f', portal: '#8a6bff', 'bau-comum': '#e0b84a', 'bau-raro': '#4ab3ff', 'bau-amaldicoado': '#b04aff', altar: '#ffd24c', sobrevivencia: '#ff6a4a', fenda: '#7a5cff', aprisionado: '#4fd0b0', 'area-secreta': '#5cc8ff', escolta: '#8fd06a' };
+/**
+ * (08/11) A FENDA do PoE (`itens-poe/fenda.mjs`, a Breach): fechada, a mão roxa no chão pulsando; aberta, o círculo (o `raio` dela) onde você está
+ * "em uma Fenda".
+ */
+function desenharFenda(ctx, x, y, tile, ativa, raio) {
+  const t = (typeof performance !== 'undefined' ? performance.now() : 0) / 500;
+  const cx = x + tile / 2;
+  const cy = y + tile / 2;
+  ctx.save();
+  if (ativa) {
+    const r = tile * (raio + 0.5);
+    const g = ctx.createRadialGradient(cx, cy, r * 0.2, cx, cy, r);
+    g.addColorStop(0, 'rgba(150, 60, 220, 0.05)');
+    g.addColorStop(0.85, 'rgba(150, 60, 220, 0.16)');
+    g.addColorStop(1, 'rgba(150, 60, 220, 0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = `rgba(200, 120, 255, ${0.5 + 0.25 * Math.sin(t)})`;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+  ctx.shadowColor = '#b05cff';
+  ctx.shadowBlur = 10;
+  ctx.fillStyle = `rgba(176, 92, 255, ${0.7 + 0.2 * Math.sin(t)})`;
+  // a mão: a palma e cinco dedos abertos
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + tile * 0.12, tile * 0.18, tile * 0.14, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = ctx.fillStyle;
+  ctx.lineWidth = tile * 0.08;
+  for (let i = 0; i < 5; i++) {
+    const a = -Math.PI / 2 + (i - 2) * 0.42;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(a) * tile * 0.12, cy + tile * 0.1 + Math.sin(a) * tile * 0.1);
+    ctx.lineTo(cx + Math.cos(a) * tile * 0.38, cy + tile * 0.1 + Math.sin(a) * tile * 0.34);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+const COR = { ...COR_DO_BAU_POE, 'abismo-poe': '#3fd38f', 'fenda-poe': '#c78bff', portal: '#8a6bff', 'bau-comum': '#e0b84a', 'bau-raro': '#4ab3ff', 'bau-amaldicoado': '#b04aff', altar: '#ffd24c', sobrevivencia: '#ff6a4a', fenda: '#7a5cff', aprisionado: '#4fd0b0', 'area-secreta': '#5cc8ff', escolta: '#8fd06a' };
 
 /**
  * Desenha os marcadores: o SPRITE do jogo (`desenharItem`, que devolve `false` enquanto a folha não chegou) ou, até lá,
@@ -126,6 +169,11 @@ export function desenharMarcadores(ctx, lista, { camX, camY, tile, z, jogador, d
       ctx.drawImage(imagemBau, Math.round(x + tile / 2 - lado / 2), topo, lado, lado);
       ctx.restore();
       if (mouse && mouse.x === e.x && mouse.y === e.y && e.estado === 'disponivel') rotuloDoPoe(ctx, e.nome || 'Baú', x + tile / 2, topo + lado * 0.22, cor);
+      continue;
+    }
+    if (e.tipo === 'fenda-poe') {
+      desenharFenda(ctx, x, y, tile, e.estado === 'ativo', e.raio ?? 6);
+      if (mouse && mouse.x === e.x && mouse.y === e.y) rotuloDoPoe(ctx, e.nome || 'Fenda', x + tile / 2, y - 2, cor);
       continue;
     }
     if (e.tipo === 'abismo-poe') {

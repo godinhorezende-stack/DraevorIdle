@@ -10262,6 +10262,12 @@
       "unidade": "",
       "combate": true,
       "efeito": "pesca.mjs (08/11 — a Pesca)"
+    },
+    "dobrado_em_fenda": {
+      "nome": "Propriedades dobradas em uma Fenda",
+      "unidade": "",
+      "combate": true,
+      "efeito": "afixos.somarPeca × 2 com hunt.poeEmFenda (08/11 — o Anel da Fenda)"
     }
   }
 }

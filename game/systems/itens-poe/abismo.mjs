@@ -34,8 +34,9 @@ const ABISSAIS = new Set([...Object.values(DADOS.grupos).flatMap((g) => g.monstr
 export const ehAbissal = (slug) => ABISSAIS.has(slug);
 
 /** O monstro abissal no nível (os status do poedb: o padrão do nível × a % dele), registrado no bestiário; a chave. */
-export function chaveDoMonstro(slug, nivel) {
-  const d = DADOS.monstros[slug];
+export const chaveDoMonstro = (slug, nivel) => registrarDoPoedb(DADOS.monstros[slug], slug, nivel);
+/** (08/11, também a Fenda — `fenda.mjs`) Um monstro do poedb (`d`: `{ nome, vidaPct, danoPct, expPct, tempoAtaque, resistencias, esDaVidaPct }`) no nível. */
+export function registrarDoPoedb(d, slug, nivel) {
   if (!d) return null;
   const n = Math.max(1, Math.min(100, Math.round(Number(nivel) || 1)));
   const padrao = (k) => DADOS.porNivel[k][n - 1];
@@ -94,6 +95,17 @@ function casaPerto(grade, alcancaveis, p, ocupadas) {
   return null;
 }
 
+/** (08/11, também a Fenda) A casa do encontro: perto de um monstro da metade do caminho para a frente (não em cima da entrada). */
+export function casaDoEncontro({ grade, alcancaveis, todos, ocupadas, rng }) {
+  const ancoras = todos.slice(Math.floor(todos.length / 3));
+  let casa = null;
+  for (let i = 0; i < 12 && !casa && ancoras.length; i++) {
+    const { z, m } = ancoras[Math.floor(rng() * ancoras.length)];
+    casa = casaPerto(grade, alcancaveis, { x: m.x, y: m.y, z: z ?? grade.z }, ocupadas);
+  }
+  return casa;
+}
+
 /**
  * Põe (ou não, pela chance) o Abismo na instância nova (`Cacadas.povoar`, depois dos baús). `onde`: 'mapa' ou 'campanha' (`valeNaArea`);
  * `nivel`: o nível dos monstros. Pela semente da instância. Devolve o encontro, ou null.
@@ -108,13 +120,7 @@ export function porNaInstancia(instancia, { grade, inicio = null, todos = [], ni
   const ocupadas = new Set(todos.map(({ z, m }) => `${m.x},${m.y},${z ?? grade.z}`));
   for (const e of Object.values(instancia.encontros ?? {})) if (e.x != null) ocupadas.add(`${e.x},${e.y},${e.z ?? grade.z}`);
   if (inicio) ocupadas.add(`${inicio.x},${inicio.y},${inicio.z ?? grade.z}`);
-  // (a âncora: um monstro da metade do caminho para a frente — o Abismo não nasce em cima da entrada)
-  const ancoras = todos.slice(Math.floor(todos.length / 3));
-  let casa = null;
-  for (let i = 0; i < 12 && !casa && ancoras.length; i++) {
-    const { z, m } = ancoras[Math.floor(rng() * ancoras.length)];
-    casa = casaPerto(grade, alcancaveis, { x: m.x, y: m.y, z: z ?? grade.z }, ocupadas);
-  }
+  const casa = casaDoEncontro({ grade, alcancaveis, todos, ocupadas, rng });
   if (!casa) return null;
   const e = {
     id: 'abismo-poe-1', defId: TIPO, tipo: TIPO, nome: `${NOME} (${DADOS.grupos[grupo].nome})`, grupo, nivel: Number(nivel), estado: 'disponivel', disponivelEm: 0,

@@ -3872,7 +3872,7 @@ export class MapView {
     // (08/11) as pegadas apagando, o sangue no ar, as asas batendo, a Insanidade
     if (this.visuais.animando(this.entities.get('player'), now)) return false;
     // (08/11) o Abismo do PoE no chão pulsa
-    if (this.snapshot.instancia?.encontros?.some?.((e) => e.tipo === 'abismo-poe')) return false;
+    if (this.snapshot.instancia?.encontros?.some?.((e) => e.tipo === 'abismo-poe' || e.tipo === 'fenda-poe')) return false;
     // (lote A3b: os objetos das gemas do PoE animam — a bola pulsa, o tornado gira)
     if (this.snapshot.poeObjetos?.length || this.snapshot.poeObjetosDoGrupo?.length) return false;
     /*

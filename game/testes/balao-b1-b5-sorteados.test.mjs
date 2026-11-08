@@ -351,3 +351,13 @@ test('B14, o Ungir e o Encantamento: 3 Óleos ungem o amuleto (o notável vale v
   }
   assert.ok(!Object.keys(Catalogo.REGRAS.moedas.drop.pesos).some(U.ehOleo), 'fora do drop comum');
 });
+
+test('B17, o Rito da Lua (o Talismã do Grande Lobo): cada chefe de ato vencido na dificuldade é um Rito (o dono: "Chefes de ato mortos"), até 10', { skip: SEM }, async () => {
+  const C = await import('../systems/itens-poe/condicoes-poe.mjs');
+  assert.deepEqual(tr('Dano aumentado em {0}% por Rito da Lua concluído', [44]).efeitos.map((x) => [x.stat, x.valor]), [['dmg_inc%ritosDaLua', 44]]);
+  const e = { campanha: { facil: { bosses: [1, 2, 3] }, medio: { bosses: [1] } } };
+  assert.equal(C.fatorDaEscala(e, {}, {}, 'ritosDaLua'), 3, 'fora da caçada, a maior');
+  assert.equal(C.fatorDaEscala({ ...e, hunt: { campanha: { dificuldade: 'medio' } } }, {}, {}, 'ritosDaLua'), 1, 'na caçada, a da dificuldade');
+  assert.equal(C.fatorDaEscala({ campanha: { facil: { bosses: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] } } }, {}, {}, 'ritosDaLua'), 10);
+  assert.ok(C.escalaValida('ritosDaLua'));
+});

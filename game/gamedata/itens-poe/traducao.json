@@ -14,6 +14,32 @@
   ],
   "regras": [
     {
+      "padrao": "^Propriedades são dobradas enquanto em uma Fenda$",
+      "efeitos": [
+        {
+          "stat": "dobrado_em_fenda",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "dentro de uma Fenda aberta (`fenda.mjs`, nos mapas), os números da peça contam em dobro (`afixos.somarPeca`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B17: a Fenda",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% por Rito da Lua concluído$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%ritosDaLua",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o Rito da Lua (o dono, 08/11: \"Chefes de ato mortos\" — o PoE não diz): cada chefe de ato vencido na dificuldade, até 10",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B17: o Rito da Lua",
+      "_nova": true
+    },
+    {
       "padrao": "^Sensibilidade da Fisgada aumentada em \\{(\\d+)\\}%$",
       "efeitos": [
         {

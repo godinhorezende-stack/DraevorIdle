@@ -80,6 +80,7 @@ import './encontros/tipos-de-captura.mjs'; // registra o aprisionado e o invasor
 import * as BausPoe from './itens-poe/baus-poe.mjs'; // registra os baús do PoE (dono, 03/11)
 import * as Abismo from './itens-poe/abismo.mjs'; // registra o Abismo do PoE (08/11)
 import * as Pesca from './itens-poe/pesca.mjs';
+import * as Fenda from './itens-poe/fenda.mjs'; // registra a Fenda do PoE (08/11)
 import * as EventosDeEncontro from './encontros/eventos.mjs';
 import * as CargasPoe from './itens-poe/cargas.mjs';
 import * as ModsPoe from './itens-poe/mods-poe.mjs';
@@ -743,6 +744,8 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = n
     if (itensPoeLigado() && (hunt?.poeArea || hunt?.poeMapa)) BausPoe.porNaInstancia(instancia, { grade, inicio, todos, nivel: mapa?.nivel ?? escala?.nivel ?? null, baus: doMapa?.baus ?? null });
     // (08/11, o dono: "Criar a Fenda do Abismo") o ABISMO do PoE (`itens-poe/abismo.mjs`): nos mapas e nas áreas dos atos 6 a 10, pela chance
     if (itensPoeLigado()) Abismo.porNaInstancia(instancia, { grade, inicio, todos, nivel: mapa?.nivel ?? escala?.nivel ?? null, onde: Abismo.valeNaArea(hunt) });
+    // (08/11) a FENDA do PoE (`itens-poe/fenda.mjs`): nos mapas do endgame, pela chance
+    if (itensPoeLigado()) Fenda.porNaInstancia(instancia, { grade, inicio, todos, nivel: mapa?.nivel ?? null, ehMapa: !!hunt?.poeMapa });
   }
   return { grade, inicio, andarInicial, monstros, outrosAndares, instancia, filaDoCrisol };
 }
@@ -1929,6 +1932,8 @@ function tiqueDaCacada(estado, personagem, agora) {
   // (08/11) o Abismo abre ao chegar perto; a linha da Pesca (a mordida, a janela)
   if (itensPoeLigado()) Abismo.abrirAoPassar(estado, hunt, personagem);
   if (itensPoeLigado()) Pesca.tique(estado, hunt);
+  // (08/11) a Fenda abre ao chegar perto; o "em uma Fenda" acompanha você (o Anel da Fenda)
+  if (itensPoeLigado()) Fenda.tique(estado, hunt, personagem, Ficha.invalidar);
   // Numa caçada em grupo, só o DONO da sala move os bichos e faz renascer —
   // senão eles andariam uma vez por membro a cada tique.
   const donoDaSala = !hunt.anfitriao;

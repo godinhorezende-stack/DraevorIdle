@@ -93,3 +93,54 @@ test('caçando no ato 6: o Abismo abre ao chegar perto, as 3 ondas de Abissais e
   assert.equal(joia?.poe?.classe, 'Abyss_Jewels', 'a Joia Abissal');
   assert.equal(BausPoe.joiaDoRepositorio(70, 0, () => 0.99), null, 'pela chance');
 });
+
+test('a FENDA (Breach): abre ao chegar perto, as ondas do Senhor; dentro do círculo você está "em uma Fenda" e o Anel da Fenda dobra', { skip: SEM }, async () => {
+  const Fenda = await import('../systems/itens-poe/fenda.mjs');
+  const Afixos = await import('../systems/afixos.mjs');
+  const Jogo = await import('../systems/itens-poe/jogo.mjs');
+  const { gerarPeca } = await import('../systems/itens-poe/gerar.mjs');
+  const { acharHunt, gradeDaHunt } = await import('../systems/hunt/terreno.mjs');
+  assert.deepEqual(Object.keys(Fenda.DADOS.senhores), ['xoph', 'tul', 'esh', 'uulNetol', 'chayula']);
+  const ondas = Fenda.ondasDo('xoph', 75, () => 0.3);
+  assert.ok(ondas.every((o) => o.criaturas.every((c) => BESTIARY[c.key])));
+  assert.ok(ondas[2].criaturas.some((c) => BESTIARY[c.key].name === 'Fiel de Xoph'), 'o comandante na última');
+  // numa instância de verdade (a Costa do ato 6), forçada como mapa
+  const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 70 }), { sistema: 'poe', classePoe: 'Marauder' });
+  delete e.classe;
+  P.garantir(e);
+  e.campanha = { facil: { completas: Campanha.FASES.map((x) => x.huntId).filter((id) => id !== AREA), bosses: [1, 2, 3, 4, 5] } };
+  assert.equal(Cacadas.entrar(e, { huntId: AREA, mode: 'auto', strategy: 'nearest', dificuldade: 'facil' }).ok, true);
+  const h = e.hunt;
+  const inst = Instancia.daSala(h);
+  const todos = h.monstros.map((m) => ({ z: h.z, m }));
+  const cfg = Catalogo.REGRAS.fenda;
+  const antes = cfg.chance;
+  cfg.chance = 1;
+  let fe;
+  try {
+    fe = Fenda.porNaInstancia(inst, { grade: gradeDaHunt(acharHunt(AREA)), inicio: h.pos, todos, nivel: 75, ehMapa: true });
+  } finally {
+    cfg.chance = antes;
+  }
+  assert.ok(fe && Instancia.encontrosVisiveis(inst).some((x) => x.tipo === Fenda.TIPO && x.raio === fe.raio));
+  assert.equal(Fenda.porNaInstancia({ encontros: {} }, { grade: gradeDaHunt(acharHunt(AREA)), todos, nivel: 75, ehMapa: false }), null, 'só nos mapas');
+  // o Anel da Fenda: os números da peça em dobro dentro da Fenda
+  const anel = Jogo.pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras: Catalogo.REGRAS, base: 'Rings/Breach_Ring', raridade: 'magico', ilvl: 80, rng: () => 0.4 }));
+  anel.poe.af.fire_res = 30;
+  e.equipment = { ...(e.equipment ?? {}), ring: anel };
+  assert.equal(anel.poe.af.dobrado_em_fenda, 1);
+  assert.equal(Afixos.somaDeItens(e).fire_res, 30, 'fora da Fenda');
+  let invalidou = 0;
+  h.pos = { ...h.pos, x: fe.x + 2, y: fe.y };
+  h.z = fe.z;
+  assert.equal(Fenda.tique(e, h, PERSONAGEM, () => invalidou++), true, 'abriu');
+  assert.equal(fe.estado, 'ativo');
+  assert.equal(h.poeEmFenda, true);
+  assert.equal(invalidou, 1, 'a ficha é refeita ao entrar');
+  assert.equal(Afixos.somaDeItens(e).fire_res, 60, 'dentro da Fenda, em dobro');
+  h.pos = { ...h.pos, x: fe.x + fe.raio + 3 };
+  Fenda.tique(e, h, PERSONAGEM, () => invalidou++);
+  assert.equal(h.poeEmFenda, undefined);
+  assert.equal(invalidou, 2);
+  assert.ok(T.traduzirMod({ modelo: 'Propriedades são dobradas enquanto em uma Fenda', valores: [] }).estado === 'equivalente');
+});
