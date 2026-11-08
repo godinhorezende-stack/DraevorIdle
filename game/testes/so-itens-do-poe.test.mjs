@@ -140,11 +140,14 @@ test('mercado: não se anuncia, compra nem vê item do Draevor', { skip: SEM }, 
 
 test('Store: o produto que entrega item do Draevor e o Buff Power não se compram; o resto sim; a Inbox não solta item do Draevor', { skip: SEM }, () => {
   const e = { ...doPoe(), coins: 1e9 };
-  for (const id of ['item-28723', 'boost-55343', 'tier-up', 'buffpower-trio', 'buffpower-55711']) {
+  // (08/11) + o `buff-trio` ("Os três Buff Power", o id real: ele entregava os três Buff Power do Draevor) — fora da vitrine também.
+  for (const id of ['item-28723', 'boost-55343', 'tier-up', 'buffpower-trio', 'buffpower-55711', 'buff-trio']) {
     const antes = e.coins;
     assert.equal(Loja.comprar(e, { id }).ok, false, id);
     assert.equal(e.coins, antes, `${id}: nada cobrado`);
   }
+  assert.equal(JSON.stringify(Loja.catalogoDaLoja(e)).includes('"buff-trio"'), false, 'o buff-trio não aparece na Store');
+  assert.equal((e.storeInbox ?? []).length, 0, 'nada chegou nas Chegadas');
   assert.equal(Loja.comprar(e, { id: 'premium-30' }).ok, true, 'premium continua');
   e.storeInbox = [{ id: ESPADA_DO_DRAEVOR, count: 1 }];
   assert.match(Loja.moverDaInbox(e, { mover: { id: ESPADA_DO_DRAEVOR, count: 1 } }, () => true).erro, /Path of Exile/);
