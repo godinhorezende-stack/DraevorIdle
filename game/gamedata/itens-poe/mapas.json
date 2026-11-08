@@ -5722,8 +5722,13 @@
       "texto": "Chefe Único derruba cartas de adivinhação",
       "modelo": "Chefe Único derruba cartas de adivinhação",
       "faixas": [],
-      "efeitos": [],
-      "nota": "as cartas de adivinhação não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "chefe",
+        "stat": "cartas",
+        "fixo": 3
+       }
+      ]
      },
      {
       "tipo": "explicit",

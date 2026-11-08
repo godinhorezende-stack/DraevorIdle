@@ -1527,7 +1527,12 @@ export function linhasDosOrbes(estado) {
 }
 
 /** Comprar `count` gemas (nível 1, na `raridade` pedida) na loja: paga do bolso e depois do banco; vão para a mochila. */
+// (08/11) a TROCA das cartas de adivinhação na mesma loja (`itens-poe/cartas.mjs` registra — o ciclo de imports): a linha da carta troca a pilha
+let trocaDeCarta = null;
+export const usarTrocaDeCartas = (f) => (trocaDeCarta = f);
 export function comprarNaLoja(estado, { id, count = 1, raridade = 'comum' }) {
+  const troca = trocaDeCarta?.(estado, Number(id), count);
+  if (troca) return troca;
   const orbe = (SocketsPoe.poeLigado() ? (lojaDeMoedas ? lojaDeMoedas(estado) : Object.values(ORBES_DO_POE).filter((o) => o?.itemId)) : [O.encaixe, O.ligacao]).find((o) => o.itemId === Number(id));
   if (orbe) return comprarOrbe(estado, orbe, count);
   const def = DEFS.get(Number(id));

@@ -51,6 +51,7 @@ import * as Charms from '../charms.mjs';
 import * as ItensPoeJogo from '../itens-poe/jogo.mjs';
 import * as Instancia from './instancia.mjs';
 import * as SinteseMapas from '../itens-poe/sintese-mapas.mjs';
+import * as Cartas from '../itens-poe/cartas.mjs';
 import * as MoedasPoe from '../itens-poe/moedas.mjs';
 // (100% — dados, 03/11) as Tatuagens do PoE (a fonte simples, sem a liga Ancestral — `passivas/tatuagens.dropDoMonstro`)
 import * as Tatuagens from '../passivas/tatuagens.mjs';
@@ -1201,6 +1202,10 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // (os Globais: os Itens Monetários e os de Qualidade a mais do monstro Sintetizado)
   const moedasDoSintetizado = noMapa?.efeitos?.sintese ? SinteseMapas.moedasDoMonstro(sint, Math.random, MoedasPoe) : [];
   moedasDoChefe.push(...moedasDoSintetizado);
+  // (08/11) as CARTAS DE ADIVINHAÇÃO (`itens-poe/cartas.mjs`): as do chefe do Claustro Pútrido ("Chefe Único derruba cartas de adivinhação" —
+  // `efeitos.chefe.cartas`) e a do Global "chance de derrubar uma Carta"; vão como a moeda (a lista "Não coletar" as deixa no chão)
+  if (noMapa && alvo.chefeDoMapa && Number(noMapa.efeitos?.chefe?.cartas) > 0) moedasDoChefe.push(...Cartas.cartasSorteadas(Number(noMapa.efeitos.chefe.cartas), nivelDoMorto));
+  if (Math.random() * 100 < (Number(sint.cartaPct) || 0)) moedasDoChefe.push(...Cartas.cartasSorteadas(1, nivelDoMorto));
   // (100% — dados, 03/11: + as TATUAGENS — a chance pela raridade do bicho, a da Jornada só na área 81+; o filtro e a bolsa como as moedas)
   for (const moeda of [...MoedasPoe.dropDoMonstro(tipoDoBicho(alvo), Math.random, quantidadeDoJogador), ...moedasDoChefe, ...(BESTIARY[alvo.key]?.poe ? Tatuagens.dropDoMonstro(tipoDoBicho(alvo), nivelDoDropPoe(hunt, alvo), Math.random, quantidadeDoJogador) : [])]) {
     // A moeda marcada em "Não coletar" (a lista) fica no chão.

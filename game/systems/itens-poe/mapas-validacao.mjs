@@ -16,7 +16,7 @@ import * as Catalogo from './catalogo.mjs';
 
 export const ESTADOS = ['funciona', 'parcial', 'inexiste', 'erro'];
 /** Os efeitos do chefe que o DROP lê (não o monstro): os mapas e as moedas a mais do mapa único. */
-export const DO_DROP_DO_CHEFE = ['mapasExtras', 'moedasExtras', 'rarosClasse'];
+export const DO_DROP_DO_CHEFE = ['mapasExtras', 'moedasExtras', 'rarosClasse', 'cartas'];
 const DO_RESUMO = ['quantidade', 'raridade', 'grupo', 'nivel', 'nivelDelta'];
 
 const monstroDeTeste = () => ({ key: 'validacao', hp: 1000, maxHp: 1000, exp: 1000, forca: 1, resist: {} });

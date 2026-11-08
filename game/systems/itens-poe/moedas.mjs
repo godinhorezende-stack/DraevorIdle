@@ -824,6 +824,17 @@ function metamorfo({ estado, rng }) {
   return { ok: true, notice: `O Ducado do Metamorfo virou ${POR_SLUG.get(slug).nome}.`, jaGastou: true };
 }
 
+// (08/11) as CARTAS DE ADIVINHAÇÃO (`cartas.mjs` — ele registra: o ciclo de imports): o Baralho Empilhado abre uma (uma carta qualquer, pelo peso do
+// sorteio delas) e a loja da Zuma troca a pilha (`linhasDaLoja`)
+let Cartas = null;
+export function usarCartas(c) { Cartas = c; }
+function baralho({ estado, rng }) {
+  const c = Cartas?.sortear(Infinity, rng);
+  if (!c) return erro('Não há carta para tirar do baralho.');
+  porNaMochila(estado, c.id, 1);
+  return { ok: true, notice: `Do Baralho Empilhado saiu: ${c.nome}.` };
+}
+
 /** O efeito e o status de cada moeda que faz algo. `alvo`: 'peca' (equipamento do PoE), 'gema', 'nenhum'. `corrompida`: aceita corrompida. */
 const FAZ = {
   Orb_of_Transmutation: { f: transmutar }, Orb_of_Augmentation: { f: ampliar }, Orb_of_Alteration: { f: alterar }, Regal_Orb: { f: regio },
@@ -875,6 +886,7 @@ const FAZ = {
   The_Changelings_Ducat: { f: metamorfo, alvo: 'nenhum' },
   ...Object.fromEntries(Ungir.OLEOS.map((slug) => [slug, { f: ungirComOleos, encanta: true }])), Enchant: { f: encantamento, encanta: true },
   Portal_Scroll: { f: pergaminhoDePortal, alvo: 'nenhum' },
+  Stacked_Deck: { f: baralho, alvo: 'nenhum' },
   Scroll_of_Wisdom: { f: sabedoria, identifica: true }, Scroll_Fragment: { f: juntarLascas('Scroll_of_Wisdom', 5), alvo: 'nenhum' },
 };
 for (const [slug, f] of Object.entries(FAZ)) if (!POR_SLUG.has(slug)) delete FAZ[slug];
@@ -889,7 +901,7 @@ function motivoDoNao(m) {
   if (/Shaper|Elder|Crusader|Redeemer|Hunter|Warlord|Dominance|Conflict|Eldritch|Ember|Ichor/.test(s)) return 'o efeito dela ainda não foi ligado às influências';
   if (/Veiled_Scarab/.test(s)) return 'mapas e o Atlas não existem no jogo';
   if (/Cyaxan/.test(s)) return 'os modificadores Infames não estão na coleção do PoE do jogo';
-  if (/Lifeforce|Wisps|Rancour|Geode|Coinage|Scrap_Metal|Astragali|Burial|Artifact|Sulphur|Message_in_a_Bottle|Bestiary|Coffin|Ritual|Magmatic|Power_Core|Stacked_Deck|Prophecy|Feather|Claw|Red_Packet|Puzzle/.test(s)) return 'é moeda de uma liga do PoE (o sistema dela não existe no jogo)';
+  if (/Lifeforce|Wisps|Rancour|Geode|Coinage|Scrap_Metal|Astragali|Burial|Artifact|Sulphur|Message_in_a_Bottle|Bestiary|Coffin|Ritual|Magmatic|Power_Core|Prophecy|Feather|Claw|Red_Packet|Puzzle/.test(s)) return 'é moeda de uma liga do PoE (o sistema dela não existe no jogo)';
   if (/Recombinator|Mist|Kishara|Ducat|Pearls/.test(s)) return 'o sistema dela (recombinar, refletir, ducados) não existe no jogo';
   if (/Enchant|Tempering|Tailoring|Refracting|Enkindling|Instilling|Imprint|Lens/.test(s)) return 'encantamentos e gravações não existem no jogo';
   if (/Coin_of|Enshrouding|Xesht|Remembrance|Unravelling|Corrupt|Tainted_Blessing|Uncarved|Hinekora|Orb_of_Unmaking|Broken_Mirror/.test(s)) return 'o sistema dela (únicos alternativos, fios de memória, gemas corrompidas) não existe no jogo';
@@ -1150,5 +1162,5 @@ export function linhasDaLoja(estado) {
   return Object.entries(R().moedas?.loja ?? {}).filter(([s]) => POR_SLUG.has(s)).map(([slug, preco]) => {
     const m = POR_SLUG.get(slug);
     return { id: m.itemId, chave: `${m.itemId}:moeda`, categoria: 'orbes', categoriaNome: 'Moedas do PoE', nome: m.nome, buy: preco, tenho: tenho(m.itemId), loja: { disponivel: true, preco }, nomeEn: m.nome, itemId: m.itemId };
-  });
+  }).concat(Cartas?.linhasDaLoja(estado) ?? []);
 }
