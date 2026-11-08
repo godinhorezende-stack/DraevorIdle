@@ -81,7 +81,7 @@ export const SISTEMAS = {
     apelidos: ['hunt', 'cacadas', 'engine', 'motor'],
     fontes: [
       /^systems\/cacadas\.mjs$/, /^systems\/hunt\//, /^systems\/mapa\//, /^systems\/(morte|limpeza-do-chao|limpeza-do-chao-config|treino|sem-treino)\.mjs$/,
-      /^engine\/(andar-visivel|prazos)\.mjs$/, /^gamedata\/hunts\//, /^gamedata\/(hunts-spawns-capturados|treino-map|city-map|city-meta)\.json$/,
+      /^engine\/(andar-visivel|prazos)\.mjs$/, /^gamedata\/hunts\//, /^gamedata\/(hunts-spawns-capturados|city-map|city-meta)\.json$/,
     ],
     testes: [
       /^percurso/, /^progresso-da-hunt/, /^alvo-mais-perto/, /^kite-parede-diagonal/, /^caminho/, /^andares/, /^agua/, /^moverMonstros/, /^setores/,

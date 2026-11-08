@@ -1064,7 +1064,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   darExtra(fundidora);
   // Os ORBES de socket (config `orbes`): a chance por ato é ZERO por enquanto (a fonte é a loja da Zuma) —
   // o gancho existe para ligar quando houver balanceamento, sem tocar de novo no combate.
-  for (const tipo of ['encaixe', 'ligacao']) {
+  // (08/11, lote 0 do clássico) no jogo do PoE os orbes do Draevor e o drop do Gem Atelier nem são sorteados (o `podeEntrar` os jogava fora)
+  for (const tipo of itensPoeLigado() ? [] : ['encaixe', 'ligacao']) {
     const orbe = GemasDeSkill.sortearOrbe(tipo, {
       ato: Number(contextoDoDrop(hunt).ato) || 1,
       fatorDeChance: BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100),
@@ -1073,7 +1074,7 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   }
   // No PoE: o Joalheiro, a Fusão e o Cromático (`itens-poe/regras.json` → `sockets.orbes`).
   for (const orbe of GemasDeSkill.sortearOrbesDoPoe({ ato: Number(contextoDoDrop(hunt).ato) || 1, fatorDeChance: BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) })) darExtra(orbe);
-  soltarDrops({ estado, hunt, personagem, alvo, drops: [...alvo.loot, ...Gemas.dropDoBicho(BESTIARY[alvo.key])], eventos, juntos, sala, caiu, conta, deOutros, podio });
+  soltarDrops({ estado, hunt, personagem, alvo, drops: itensPoeLigado() ? alvo.loot : [...alvo.loot, ...Gemas.dropDoBicho(BESTIARY[alvo.key])], eventos, juntos, sala, caiu, conta, deOutros, podio });
   // (07/11, lote 22 das inertes, o Sinete de Perandus: "X% de chance de monstros Mortos derrubarem um Pergaminho da Sabedoria adicional")
   const chanceDoPergaminho = itensPoeLigado() ? ModsPoe.valor(Ficha.combate(estado), 'pergaminho_extra_chance') : 0;
   if (chanceDoPergaminho > 0 && Math.random() * 100 < chanceDoPergaminho) darExtra({ id: PERGAMINHO_DA_SABEDORIA });

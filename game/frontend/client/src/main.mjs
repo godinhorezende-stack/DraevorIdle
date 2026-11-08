@@ -72,7 +72,6 @@ import {
   renderAppearance, openStore, openMarket, openBank, openLocker, openRanking,
   openLootFilter, openLimparBolsa, openLimparMochila, openVenderMochila, openVenderSacolas, openVenderBossPouch, openFriends, openParty, corpoDaJanelaDaParty, atualizarBarrasDaParty, openBarSettings, caixaDoDepositoAberta, openForja, openMercenarios,
   openDiario, openLojaNpc, abrirObterCoins,
-  resumoDasGemasParaBalao,
   resumoDaMorteLigado, ligarResumoDaMorte, aplicarEstiloDaRaridade,
   openArena,
   openCyclopedia, openBestiary, openReport, openLojaDeBossToken, openLojaDeTaskToken, openLobby, TITULO_DO_LOBBY, openPresente, abrirMarcoAberto,
@@ -86,7 +85,7 @@ import { initTooltip, tipFor, tipPanel, tipTexto, ligarComparacao, receberCompar
 import { qrcode } from '/packages/shared/src/qrcode.mjs';
 import { initArvore } from './arvore.mjs';
 import { initPassivas, openPassivas, aoReceberPassivas, resumoDasPassivasParaBalao } from './passivas.mjs';
-import { initGemas, openGemas } from './gemas.mjs';
+import { initGemas } from './gemas.mjs';
 /* As guildas — e, depois, o castle war. Ver `guildas.mjs`. */
 import { initGuildas, openGuildas, bauDaGuildaAberto, guardarNoBauDaGuilda } from './guildas.mjs';
 // As chaves de gráficos dos Ajustes da tela. Ver `graficos.mjs`.
@@ -2896,13 +2895,7 @@ const SISTEMAS = [
      */
     corpo: () => resumoDasPassivasParaBalao(),
     alerta: () => (state.character?.passivas?.pontos?.livres ?? 0) > 0 },
-  /*
-   * O Gem Atelier logo depois da Árvore: as gemas acendem com os vessels que a
-   * árvore enche, e as duas telas são lidas juntas. Ver `gemas.mjs`.
-   */
-  { id: 'gemas', label: 'Gem Atelier', curto: 'Gemas', abre: () => openGemas(),
-    tip: 'Revela gemas, encaixa nos domínios da árvore e sobe o grau dos modificadores com fragmentos.',
-    corpo: () => resumoDasGemasParaBalao() },
+  // (08/11, lote 0 do clássico) O Gem Atelier do Draevor clássico saiu daqui: no jogo do PoE ele não existe (o servidor recusa `gemas`).
   /*
    * (16/10, lote 38) Os MERCENÁRIOS do PoE: contratar por ouro, o equipamento dele e as gemas do arquétipo (o nó do Luminary libera). Sem
    * desenho próprio ainda: o da ficha do personagem.
@@ -3805,16 +3798,6 @@ function buildTopbar() {
   /* A Arena abre a fileira, à esquerda do Mercado. Ver `ARENA`. */
   nav.append(ferramentaLigada(ARENA));
   if (mercado) nav.append(mercado);
-  /*
-   * ---- O catálogo que o BALÃO precisa ----
-   *
-   * As gemas não viajam na atualização do personagem — são pedidas, e quem pedia
-   * era o painel ao abrir. O balão do ícone ficaria vazio até alguém abrir o
-   * painel uma vez, que é exatamente a viagem que ele existe para poupar.
-   *
-   * Um pedido, uma vez, ao montar a barra.
-   */
-  send({ t: 'gemas' });
   // As gavetas moram no `body`: montar a barra de novo não pode deixar as
   // antigas penduradas lá.
   for (const velha of document.querySelectorAll('.gaveta-da-barra')) velha.remove();

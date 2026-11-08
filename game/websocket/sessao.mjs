@@ -182,6 +182,12 @@ const COMANDOS_DE_CAIXA = new Set(['split', 'juntar', 'trocar', 'organizar']);
 const LEITURAS = new Set(['offers', 'historico']);
 const PASSAM_CARREGANDO = new Set(['release', 'logout', 'login', 'resume', 'register', 'delta', 'jaTenhoCatalogo', 'oculta']);
 // Sem personagem em jogo: a conta, o handshake e as consultas que não leem o personagem (ver `despachar`).
+/** Os comandos dos sistemas do Draevor clássico (a Forja de tier e afixos, o Craft, o Desmanche, o Gem Atelier): recusados no jogo do PoE. */
+const COMANDOS_DO_CLASSICO = new Set([
+  'forja', 'forjaSubir', 'forjaTransferir', 'craft', 'craftFazer', 'desmanche', 'desmancharPeca', 'forjaAfixos', 'forjaAfixoPrevia',
+  'forjaAfixoPreviaRetirar', 'forjaAfixoPreviaInserir', 'forjaAfixoPreviaFundir', 'forjaAfixoReroll', 'forjaAfixoTransferir', 'forjaAfixoRetirar',
+  'forjaAfixoInserir', 'forjaAfixoFundir', 'gemas',
+]);
 const PASSAM_SEM_PERSONAGEM = new Set([...PASSAM_CARREGANDO, 'createCharacter', 'deleteCharacter', 'play', 'previaPoe', 'ranking', 'perfil', 'presenca', 'ouvirAudio']);
 const CAMPOS_DE_TODO_QUADRO = ['hp', 'mana'];
 
@@ -1180,6 +1186,9 @@ export class Sessao {
     // `play`): o comando de jogo estourava lá dentro, em `this.estado` nulo — 16/10, depois de um deploy: "sessao gema -> Cannot read
     // properties of null (reading 'equipment')". Como na entrada, ele é ignorado em silêncio; só passa o que não precisa de personagem.
     if (!this.personagem && !PASSAM_SEM_PERSONAGEM.has(m.t)) return;
+    // (08/11, o dono: "quero tirar essas coisas do clássico" — lote 0) No jogo do PoE os sistemas do Draevor clássico (a Forja de tier e
+    // afixos, o Craft, o Desmanche, o Gem Atelier) não existem: o comando é recusado antes de mexer no personagem.
+    if (COMANDOS_DO_CLASSICO.has(m.t) && ItensPoeCatalogo.ligado()) return this.erro('Isso não existe no jogo do Path of Exile.');
     switch (m.t) {
       case 'register':
         return this.registrar(m);
