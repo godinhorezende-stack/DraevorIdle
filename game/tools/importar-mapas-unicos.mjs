@@ -133,6 +133,9 @@ export const REGRAS = [
   [/^Área possui muitos Totens$/, () => [{ alvo: 'instancia', stat: 'habitantes_totens', fixo: 1 }]],
   [/^Área possui aumento na variedade de monstros$/, () => [{ alvo: 'instancia', stat: 'habitantes_variedade', fixo: 1 }]],
   // (o poedb: "o jogador é morto se não matar todos os monstros dentro de 9 minutos sozinho, ou 6 em grupo")
+  // o TERRENO próprio (o dono: "Terreno próprio" — `mapas-areas.TERRENOS_PROPRIOS`, a hunt do Draevor medida para cada um)
+  [/^Área é um imenso Labirinto$/, () => [{ alvo: 'instancia', stat: 'terreno_labirinto', fixo: 1 }]],
+  [/^Área contém brechas sem passagem atravessar$/, () => [{ alvo: 'instancia', stat: 'terreno_brechas', fixo: 1 }]],
   // o Córtex e as Memórias: os mods de mapa a mais e os Synthesis Globais, sorteados ao nascer a peça (`sintese-mapas.mjs`)
   [/^Mapa possui \{0\} Modificadores aleatórios adicionais$/, () => [{ alvo: 'peca', stat: 'modsAleatorios', de: 0 }]],
   [/^Mapa tem \{0\} Modificadores Synthesis Globais adicionais$/, () => [{ alvo: 'peca', stat: 'sinteseGlobais', de: 0 }]],

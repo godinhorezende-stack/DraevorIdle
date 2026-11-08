@@ -4187,8 +4187,13 @@
       "texto": "Área é um imenso Labirinto",
       "modelo": "Área é um imenso Labirinto",
       "faixas": [],
-      "efeitos": [],
-      "nota": "o terreno é o do tier do mapa"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "terreno_labirinto",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -4842,8 +4847,13 @@
       "texto": "Área é um imenso Labirinto",
       "modelo": "Área é um imenso Labirinto",
       "faixas": [],
-      "efeitos": [],
-      "nota": "o terreno é o do tier do mapa"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "terreno_labirinto",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -5927,8 +5937,13 @@
       "texto": "Área contém brechas sem passagem atravessar",
       "modelo": "Área contém brechas sem passagem atravessar",
       "faixas": [],
-      "efeitos": [],
-      "nota": "o terreno é o do tier do mapa"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "terreno_brechas",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -7120,8 +7135,13 @@
       "texto": "Área contém brechas sem passagem atravessar",
       "modelo": "Área contém brechas sem passagem atravessar",
       "faixas": [],
-      "efeitos": [],
-      "nota": "o terreno é o do tier do mapa"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "terreno_brechas",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -7472,8 +7492,13 @@
       "texto": "Área é um imenso Labirinto",
       "modelo": "Área é um imenso Labirinto",
       "faixas": [],
-      "efeitos": [],
-      "nota": "o terreno é o do tier do mapa"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "terreno_labirinto",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",

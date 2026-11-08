@@ -20,10 +20,24 @@ const PREFIXO = 'poe-mapa-';
 
 /** A hunt virtual do tier (`poe-mapa-<tier>`), ou null fora de T1…T16. */
 export const huntIdDoTier = (tier) => (POR_TIER.has(Number(tier)) && Mapas.nivelDoTier(tier) ? `${PREFIXO}${Number(tier)}` : null);
-/** O tier de uma hunt de mapa (ou null: não é mapa). */
+/** O tier de uma hunt de mapa (ou null: não é mapa). (08/11: + as do terreno próprio do mapa único — `poe-mapa-<tier>-<terreno>`) */
 export function tierDaHunt(huntId) {
-  const m = /^poe-mapa-(\d+)$/.exec(String(huntId ?? ''));
+  const m = /^poe-mapa-(\d+)(?:-[a-z]+)?$/.exec(String(huntId ?? ''));
   return m && POR_TIER.has(Number(m[1])) ? Number(m[1]) : null;
+}
+/**
+ * (08/11 — o dono: "Terreno próprio") os TERRENOS dos mapas únicos que o PoE descreve pelo terreno: "Área é um imenso Labirinto" (o Pesadelo de
+ * Acton, o Hospício de Poorjoy) e "Área contém brechas sem passagem atravessar" (os Pilares de Arun). A hunt do Draevor de cada um foi medida
+ * (as casas alcançáveis): o labirinto é a Black Serpent Dungeon (3.889 casas, 17% de corredor — das maiores com corredor), as brechas são a
+ * Hive Surface (4.127 casas, 0,20 buraco sem passagem por casa — a que mais tem); nenhuma é terreno de tier. Os monstros e o chefe são os do tier.
+ */
+export const TERRENOS_PROPRIOS = Object.freeze({ labirinto: 'black-serpent-dungeon', brechas: 'hive-surface' });
+/** A hunt virtual do mapa aberto: a do terreno próprio do único (`efeitos.instancia.terreno_<tipo>`), ou a do tier. */
+export function huntIdDoMapa(tier, peca) {
+  const base = huntIdDoTier(tier);
+  const inst = peca?.poe?.mapa?.efeitos?.instancia ?? (peca?.poe ? Mapas.resumo({ poe: peca.poe }).efeitos.instancia : {});
+  const tipo = Object.keys(TERRENOS_PROPRIOS).find((t) => Number(inst?.[`terreno_${t}`]) > 0);
+  return base && tipo && CATALOGO.hunts.some((h) => h.id === `${base}-${tipo}`) ? `${base}-${tipo}` : base;
 }
 
 // (lote A5e) A armadura e a evasão NÃO crescem pela curva: no combate saem da tabela do PoE no nível × o multiplicador do tipo
@@ -110,6 +124,17 @@ export function iniciar({ mapasSobDemanda = false } = {}) {
     const i = CATALOGO.hunts.findIndex((h) => h.id === id);
     if (i >= 0) CATALOGO.hunts[i] = hunt;
     else CATALOGO.hunts.push(hunt);
+    // (08/11) o mesmo tier nos terrenos próprios dos únicos (`TERRENOS_PROPRIOS`): os monstros e o chefe do tier, o terreno do único
+    for (const [tipo, terreno] of Object.entries(TERRENOS_PROPRIOS)) {
+      const doTerreno = acharHunt(terreno);
+      if (!doTerreno || doTerreno.poeArea || doTerreno.poeMapa) { problemas.push(`o terreno "${terreno}" (${tipo}) não é uma hunt do Draevor`); continue; }
+      const idT = `${id}-${tipo}`;
+      apelidarMapa(idT, terreno);
+      const huntT = { ...doTerreno, id: idT, name: `Mapa (Nível ${tier})`, level: nivel, blurb: `Mapa do Atlas · Nível ${tier} (PoE)`, poeMapa: tier, creatures: criaturas };
+      const j = CATALOGO.hunts.findIndex((h) => h.id === idT);
+      if (j >= 0) CATALOGO.hunts[j] = huntT;
+      else CATALOGO.hunts.push(huntT);
+    }
   }
   // Os spawns do terreno com os monstros comuns do tier, revezando (a quantidade, a raridade e os modificadores do spawn ficam).
   definirTransformadorDeSpawns((huntId, spawns) => {
