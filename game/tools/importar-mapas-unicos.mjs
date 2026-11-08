@@ -118,6 +118,8 @@ export const REGRAS = [
   // o DROP do chefe: os Itens de Níveis maiores ("display map final boss drops higher level gear 4") e os Raros de uma classe
   [/^Chefe Final derruba Itens de Níveis maiores$/, () => [{ alvo: 'chefe', stat: 'ilvlExtra', fixo: 4 }]],
   [/^Chefe Único derruba \{0\} Raro adicional \{1\}$/, () => [{ alvo: 'chefe', stat: 'rarosExtras', de: 0 }, { alvo: 'chefe', stat: 'rarosClasse', de: 1 }]],
+  // o Salão dos Grão-Mestres: os personagens do ranking, com a regra de PvP do jogo (`itens-poe/grao-mestres.mjs`)
+  [/^Contém os Grão-Mestres Imortalizados \/ Escalonamento de dano de PvP em efeito$/, () => [{ alvo: 'instancia', stat: 'graoMestres', fixo: 1 }]],
   // o Maquinário de Doryani: os três Braços, ampliados pelo jogador (`itens-poe/doryani.mjs`)
   [/^Chefe Único é ampliado pelas escolhas do Jogador$/, () => [{ alvo: 'instancia', stat: 'doryani', fixo: 1 }]],
   // (as cartas de adivinhação — `itens-poe/cartas.mjs`; o poedb só diz que o chefe as derruba: 3)

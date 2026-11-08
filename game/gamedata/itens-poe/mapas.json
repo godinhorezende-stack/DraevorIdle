@@ -5328,8 +5328,13 @@
       "texto": "Contém os Grão-Mestres Imortalizados / Escalonamento de dano de PvP em efeito",
       "modelo": "Contém os Grão-Mestres Imortalizados / Escalonamento de dano de PvP em efeito",
       "faixas": [],
-      "efeitos": [],
-      "nota": "os Grão-Mestres ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "graoMestres",
+        "fixo": 1
+       }
+      ]
      }
     ]
    },

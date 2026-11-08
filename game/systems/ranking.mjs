@@ -34,6 +34,8 @@ export const CATEGORIAS = ligado() ? ['exp', 'level'] : ['exp', 'level', 'magic'
 
 let vivas = new Map(); // nome -> Sessao (injetado por sessao.mjs)
 export const ligar = (mapa) => void (vivas = mapa);
+/** As sessões vivas (os Grão-Mestres do mapa único — `itens-poe/grao-mestres.mjs`). */
+export const sessoesVivas = () => vivas;
 
 /** O caminho do valor dentro do estado, para o `json_extract`. */
 const caminho = (cat) => (cat === 'exp' ? '$.xp' : cat === 'level' ? '$.level' : cat === 'magic' ? '$.magic.value' : `$.skills.${cat}.value`);

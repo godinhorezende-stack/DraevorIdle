@@ -73,6 +73,7 @@ import * as Escalonamento from './hunt/escalonamento.mjs';
 import * as Setores from './hunt/setores.mjs';
 import * as SinteseMapas from './itens-poe/sintese-mapas.mjs';
 import * as Doryani from './itens-poe/doryani.mjs';
+import * as GraoMestres from './itens-poe/grao-mestres.mjs';
 import * as Instancia from './hunt/instancia.mjs';
 import * as Encontros from './encontros/estado.mjs';
 import './encontros/tipos-de-boss.mjs'; // registra os encontros de boss (boss, miniboss, boss-secreto)
@@ -592,7 +593,7 @@ function chaveDoChefe(alvo, nivel = null) {
   return chaves.reduce((m, k) => (Math.abs(nivelDe(k) - (nivel ?? nivelDe(k))) < Math.abs(nivelDe(m) - (nivel ?? nivelDe(m))) ? k : m));
 }
 
-function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = null, crisol = null }) {
+function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = null, crisol = null, estadoQueAbre = null, nomeQueAbre = null }) {
   const grade = gradeDaHunt(hunt ?? { id: huntId });
   const posicoes = boss ? posicaoDoBoss(boss, grade) : hunt?.posicoes?.length ? pontosNoMapa(hunt, grade.mapa?.floors ? grade.mapa : null) : spawnsCapturados(huntId) ?? grade.posicoes ?? mapaCustom?.posicoes ?? pontosDosSpawns(spawnsDaHunt(huntId));
   /*
@@ -661,6 +662,9 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = n
   // (08/11, o Julgamento do Covarde) as ONDAS são a área: sem os grupos nem o chefe (a sobrevivência nasce com a instância, abaixo)
   const soOndas = !!(mapa && doMapa?.ondas?.length);
   if (soOndas) todos.splice(0);
+  // (08/11, o Salão dos Grão-Mestres) os personagens do ranking no lugar dos grupos: um Grão-Mestre onde nasceria cada grupo, sem chefe
+  const comGraoMestres = !!(mapa && doMapa?.graoMestres && itensPoeLigado());
+  if (comGraoMestres) colocarGraoMestres(todos, { estadoDeQuemAbriu: estadoQueAbre, nomeDeQuemAbriu: nomeQueAbre ?? 'Você' });
   // A fase que conclui matando um chefe (ou pegando o item que um alvo solta) precisa TER esse monstro: o que os spawns do mapa não trazem
   // nasce no fundo da área (`chefeNaInstancia`).
   const conclusao = comInstancia && !mapa ? Campanha.conclusaoDa(huntId) : null;
@@ -674,7 +678,7 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = n
   // (05/11) O mapa do GUARDIÃO DO CRIADOR (`pinaculos-acesso.mjs`): o guardião é o chefe do mapa — o chefe do tier não nasce.
   const doEncontro = mapa?.encontro ? PinaculosAcesso.chefe(mapa.encontro) : null;
   if (mapa && comInstancia) {
-    const chave = doEncontro?.mapa || ondeNasceriam || soOndas ? null : MapasAreas.chefeDoTier(mapa.tier);
+    const chave = doEncontro?.mapa || ondeNasceriam || soOndas || comGraoMestres ? null : MapasAreas.chefeDoTier(mapa.tier);
     for (let i = 0; chave && i < doMapa.chefes; i++) {
       const chefe = Instancia.chefeNaInstancia({ grade, todos, chave, inicio, escala, aplicarEscala: Campanha.aplicarEscala, dadosDaHunt: hunt, instanciaId });
       if (!chefe) break;
@@ -801,6 +805,25 @@ function areaFatal(estado, hunt, personagem) {
   estado.hp = 0;
   EventosDeEncontro.empurrar(hunt, [{ t: 'dmg', uid: 'player', quem: personagem?.nome, x: hunt.pos.x, y: hunt.pos.y, v: 0, foe: false, de: 'Tesouro Maldito de Oba', golpe: 'a área se tornou fatal', fatal: true, color: '#9b30ff' }]);
   estado.avisoDaHunt = 'A área se tornou fatal.';
+}
+
+/**
+ * (08/11, o Salão dos Grão-Mestres) cada GRUPO da instância dá lugar a um Grão-Mestre (`itens-poe/grao-mestres.mjs`): o primeiro monstro do grupo
+ * vira o personagem do ranking (o golpe pela força do monstro), os outros saem; os Grão-Mestres que sobram (mais grupos que Grão-Mestres) não
+ * repetem. Muta `todos`.
+ */
+function colocarGraoMestres(todos, { estadoDeQuemAbriu = null, nomeDeQuemAbriu = 'Você' } = {}) {
+  const mestres = GraoMestres.atuais({ reserva: estadoDeQuemAbriu, nomeDaReserva: nomeDeQuemAbriu });
+  const grupos = new Map();
+  for (const x of todos) if (!grupos.has(x.m.spawnId)) grupos.set(x.m.spawnId, x);
+  const ficam = [];
+  for (const [i, g] of mestres.entries()) {
+    const x = [...grupos.values()][Math.floor((i * grupos.size) / Math.max(1, mestres.length))];
+    if (!x || ficam.includes(x)) continue;
+    GraoMestres.virarGraoMestre(x.m, g, { golpeBase: Poderes.golpeMaximoDoBicho(x.m) ?? 0 });
+    ficam.push(x);
+  }
+  todos.splice(0, todos.length, ...ficam);
 }
 
 /**
@@ -947,7 +970,7 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
   // (05/11, etapa 3) o Calvário da Maven: os chefes do convite (os testemunhados, ou os 4 do grupo)
   const crisol = boss?.crisolMaven ? PinaculosAcesso.chefesDoCrisol(estado, boss.crisolMaven) : null;
   if (crisol && !crisol.length) return { ok: false, erro: 'A Maven não testemunhou nenhum chefe para este Calvário.' };
-  const { grade, inicio, andarInicial, monstros, outrosAndares, instancia, filaDoCrisol } = povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa, crisol });
+  const { grade, inicio, andarInicial, monstros, outrosAndares, instancia, filaDoCrisol } = povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa, crisol, estadoQueAbre: estado, nomeQueAbre: estado.nome ?? null });
   // A cidade do personagem fora da caçada é a do ato onde ele caçou por último (o nó azul do mapa da campanha — `Campanha.paraCliente`).
   if (fase?.ato != null) estado.atoDaCidade = fase.ato;
   else if (atoDoBoss != null) estado.atoDaCidade = atoDoBoss;

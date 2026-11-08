@@ -951,7 +951,8 @@ export const MOEDAS_DA_CATEGORIA = Object.freeze({
   gemas: ['Gemcutters_Prism', 'Gemcutters_Lens'],
   // (06/11) as Partes do Emissário juntam como as lascas (sem peça); os Pergaminhos vão em Especiais (o Ancestral também troca o único)
   lascas: [...LASCAS, ...EMISSARIO.flatMap((c) => c.partes)],
-  especiais: ['Scroll_of_Wisdom', 'Portal_Scroll', 'Mirror_of_Kalandra', 'Ancient_Orb', 'Orb_of_Regret', ...EMISSARIO.map((c) => c.pergaminho)],
+  // (08/11: + o Baralho Empilhado — abre uma carta de adivinhação, `cartas.mjs`)
+  especiais: ['Scroll_of_Wisdom', 'Portal_Scroll', 'Mirror_of_Kalandra', 'Ancient_Orb', 'Orb_of_Regret', 'Stacked_Deck', ...EMISSARIO.map((c) => c.pergaminho)],
 });
 const CATEGORIA_FIXA = new Map(Object.entries(MOEDAS_DA_CATEGORIA).flatMap(([cat, lista]) => lista.map((slug) => [slug, cat])));
 /** A categoria da Forja de uma moeda (a lista acima); a sem efeito no jogo, "semEfeito". */
