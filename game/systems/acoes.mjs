@@ -9536,7 +9536,10 @@ export function tiqueDosVinculos(estado, hunt, personagem, eventos = [], agora =
   frigidoNosVinculosR3c(estado, hunt, eventos, agora);
   // (lote P4, 27/10) o Vínculo Intuitivo: o acerto do aliado vinculado ativa as suas magias ligadas (`intuitivoNoTique`)
   intuitivoNoTique(estado, hunt, personagem, eventos);
+  // (08/11, o Vínculo D'alma: "Não Perde Experiência quando você morrer porque um alvo Vinculado morreu" — a marca que `Morte.conta` lê; ela some se você seguir vivo)
+  if ((estado.hp ?? 0) > 0) delete hunt.morreuPeloVinculo;
   if (morreu && (estado.hp ?? 0) > 0) {
+    if (ModsPoe.valor(ficha, 'sem_perda_exp_vinculo') > 0) hunt.morreuPeloVinculo = true;
     estado.hp = Testador.pisoDaVida(estado); // (o personagem de teste fica no piso; o comum zera, como antes)
     eventos.push({ t: 'say', uid: 'player', quem: personagem?.nome, text: 'O alvo vinculado morreu.', x: hunt.pos?.x, y: hunt.pos?.y, color: '#ff5b4f' });
   }

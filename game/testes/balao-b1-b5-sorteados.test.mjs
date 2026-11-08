@@ -202,3 +202,18 @@ test('B10, os visuais e sons: as linhas saem com efeito, viajam no retrato da ca
   assert.equal(cartoes.find((b) => b.carga === 'poder').arte, undefined);
   assert.equal(CargasPoe.buffs(e).find((b) => b.carga === 'frenesi').arte, undefined);
 });
+
+test('B11, o Vínculo D\'alma: a morte porque o alvo Vinculado morreu não tira experiência; a morte comum tira', { skip: SEM }, async () => {
+  assert.deepEqual(tr('Não Perde Experiência quando você morrer porque um alvo Vinculado morreu').efeitos.map((e) => e.stat), ['sem_perda_exp_vinculo']);
+  const Morte = await import('../systems/morte.mjs');
+  const R = await import('../systems/regras.mjs');
+  const { personagemDeTeste } = await import('./apoio.mjs');
+  const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 60 }), { hp: 0 });
+  e.xp = R.expForLevel(60) + Math.round((R.expForLevel(61) - R.expForLevel(60)) * 0.8);
+  e.hunt = { clock: 0 };
+  assert.ok(Morte.conta(e).expPerdida > 0, 'a morte comum');
+  e.hunt.morreuPeloVinculo = true;
+  assert.equal(Morte.conta(e).expPerdida, 0, 'pelo vínculo');
+  e.hp = 100;
+  assert.ok(Morte.conta(e).expPerdida > 0, 'vivo, a conta mostra a de sempre');
+});

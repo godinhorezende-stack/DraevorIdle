@@ -10172,6 +10172,12 @@
       "unidade": "",
       "combate": true,
       "efeito": "moedas.mjs (08/11 — as regras de criação dos únicos)"
+    },
+    "sem_perda_exp_vinculo": {
+      "nome": "Não perde Experiência na morte pelo alvo Vinculado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDosVinculos → morte.conta (08/11 — o Vínculo D'alma)"
     }
   }
 }

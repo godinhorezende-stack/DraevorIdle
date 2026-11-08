@@ -14,6 +14,19 @@
   ],
   "regras": [
     {
+      "padrao": "^Não Perde Experiência quando você morrer porque um alvo Vinculado morreu$",
+      "efeitos": [
+        {
+          "stat": "sem_perda_exp_vinculo",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a morte porque o alvo vinculado morreu não tira experiência (`Morte.conta`)",
+      "_08_11p": "08/11 — balão 0 sem efeito, lote B11: os sistemas",
+      "_nova": true
+    },
+    {
       "padrao": "^Sanguinolência Extra$",
       "efeitos": [
         {
