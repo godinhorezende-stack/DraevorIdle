@@ -118,6 +118,7 @@ import { fatorDoCompanheirismo } from './itens-poe/suportes-s2a.mjs';
 import * as Testador from './personagem/testador.mjs';
 // (100% — combate, 02/11: os lacaios sangram, o Sangramento em movimento no lacaio — `itens-poe/combate-100.mjs`)
 import * as Combate100 from './itens-poe/combate-100.mjs';
+import { msDoCongelamento } from './itens-poe/afeccoes.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
 export { nomeDaHunt, huntsJogaveis, gradeDaHunt, aquecerGrades } from './hunt/terreno.mjs';
@@ -2729,6 +2730,13 @@ export function efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo, ctx = {}) {
     GemasGBD.porLento(e, ate, 30, agora);
     ev('lento');
   }
+  // (08/11, a Marcha de Vorana: "Arbalistas Convocadas têm X% de chance de Intimidar / Dilacerar (Mutilar) / Inervar por 4 segundos ao Acertar", "…de Esmagar",
+  // "…de infligir Exposição a Fogo/Gelo/Raio", "…de Congelar / Eletrizar") os estados do jogo no alvo, 4 s; congelar e eletrizar pelo dano de Gelo/Raio do golpe
+  for (const [chance, estado] of [['intimidar', 'intimidado'], ['mutilar', 'mutilado'], ['inervar', 'inervado'], ['esmagar', 'esmagado'], ['exposicaoFogo', 'exposicaoFogo'], ['exposicaoGelo', 'exposicaoGelo'], ['exposicaoRaio', 'exposicaoRaio']]) {
+    if (sorte(p.chances[chance] ?? 0)) { ModsPoe.porNoAlvo(alvo, estado, agora + 4000, agora); ev(estado); }
+  }
+  if (tipo === 'ice' && !alvo.imuneCongelamento && sorte(p.chances.congelar ?? 0)) { e.congelado = { ate: Math.max(e.congelado?.ate ?? 0, agora + msDoCongelamento(dano, alvo.maxHp ?? dano)) }; ev('congelado'); }
+  if (tipo === 'energy' && sorte(p.chances.eletrizar ?? 0)) { ModsPoe.porNoAlvo(alvo, 'eletrizado', agora + 2000, agora); ev('eletrizado'); }
   const dot = (tipoDot, porSegundo, duracaoMs) => {
     const posto = Dot.aplicar(alvo, { tipo: tipoDot, total: dano * porSegundo * (duracaoMs / 1000) * (1 + (p.dotMulti ?? 0) / 100), duracaoMs, origem: { fonte: 'lacaio', habilidade: l.acao } }, agora);
     if (posto) ev(posto);
@@ -3522,7 +3530,7 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     if (l.r3bAtaques != null && --l.r3bAtaques <= 0) l.ate = agora;
     // (dono, 11/10: "faça os totens e lacaios também") O lacaio de longe: os PROJÉTEIS a mais dos suportes ligados na gema que o invocou
     // (Projéteis Múltiplos, Perfuração, Bifurcação, Corrente, Retorno), pelo mesmo motor do disparo do personagem — todos saem.
-    const r = deLonge ? Acoes.projeteisDoLacaio(estado, l.acao, { origem: origemDoTiro, alvo, vivos: hunt.monstros.filter((m) => m.hp > 0 && !m.dummy), alcance: l.alcanceDeAtaque }) : null;
+    const r = deLonge ? Acoes.projeteisDoLacaio(estado, l.acao, { origem: origemDoTiro, alvo, vivos: hunt.monstros.filter((m) => m.hp > 0 && !m.dummy), alcance: l.alcanceDeAtaque, extra: l.poe?.projeteisExtra ?? null }) : null;
     if (r) {
       for (const p of r.emitidos.slice(1)) eventos.push({ t: 'shot', id: tiro, x: p.de.x, y: p.de.y, tx: p.para.x, ty: p.para.y });
       for (const g of r.golpes) {

@@ -59,11 +59,15 @@ test('o sorteio de cada único cai dentro das faixas, com todas as linhas', SKIP
     // (dono, 16/10 — lote 55: "Ajustar o teste") a marcação das linhas SORTEADAS ("[Two random modifiers]" — `linhasSorteadas`) vira N linhas do
     // pool da única: conta como N linhas, e cada sorteada confere a faixa dela no pool.
     const ls = u.linhasSorteadas;
-    const quantas = cadastro.reduce((n, m) => n + (ls?.substitui?.[m.modelo] ?? 1), 0);
+    // (aval do dono 08/11: a marcação de quantidade variável — 'faixa', "[You have 1-2 Random Shrine Buff…]": de mín. a máx. — e a 'composicao' do Emblema do
+    // Precursor — a soma das partes, "duas de Tolerância e uma de Poder" = 3)
+    const porMarca = (m, k) => { const v = ls?.substitui?.[m.modelo]; if (v === 'composicao') return (ls.composicao?.[m.modelo] ?? []).reduce((n, [, q]) => n + q, 0); if (v === 'faixa') { const f = m.faixas ?? []; return k === 'max' ? Math.max(Number(f[0]?.[0]) || 1, Number(f.at(-1)?.[1]) || 1) : Number(f[0]?.[0]) || 1; } return v ?? 1; };
+    const quantasMin = cadastro.reduce((n, m) => n + porMarca(m, 'min'), 0);
+    const quantas = cadastro.reduce((n, m) => n + porMarca(m, 'max'), 0);
     for (let k = 0; k < 8; k++) {
       const g = gerarPeca({ catalogo: cat, regras: Catalogo.REGRAS, base: base.id, raridade: 'unico', ilvl: 84, rng, unico: u.slug });
       assert.ok(!g.erro, `${u.slug}: ${g.erro}`);
-      assert.equal(g.modificadores.length, quantas, u.slug);
+      assert.ok(g.modificadores.length >= quantasMin && g.modificadores.length <= quantas, `${u.slug}: ${g.modificadores.length} linhas (de ${quantasMin} a ${quantas})`);
       const doCadastro = cadastro.filter((m) => !ls?.substitui?.[m.modelo]);
       const fixas = g.modificadores.filter((m) => !m.sorteada);
       for (const m of g.modificadores.filter((x) => x.sorteada)) {

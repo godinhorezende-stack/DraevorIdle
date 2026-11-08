@@ -1,6 +1,6 @@
 {
  "_nota": "As LINHAS SORTEADAS das únicas de joia do PoE (lote 55, J31): `substitui` — a linha de marcação do catálogo (\"[Two random aura modifiers]\") → quantas linhas do pool `linhas` ela vira, sem repetir e com a mesma chance (o poedb não dá o peso). (lote 56) `nomeSorteado` — a marcação `marca` (\"Passive Skill\") do texto vira um dos `nomes` (a pedra fundamental da Fuga Impossível, o notável de ascendência da Chama/Carne Proibida). A coleção não traz; o catálogo põe por cima (`itens-poe/catalogo.mjs`) e o gerador sorteia (`itens-poe/gerar.modificadoresDoUnico`). Feito por `tools/importar-poedb-sorteados.mjs` a partir das abas \"Modificadores\" do poedb (o Scrapling).",
- "geradoEm": "2026-10-18T17:57:47.361Z",
+ "geradoEm": "2026-11-08T03:05:33.677Z",
  "unicos": {
   "Watchers_Eye": {
    "classe": "Jewels",
@@ -2996,6 +2996,2332 @@
        6
       ]
      ]
+    }
+   ]
+  },
+  "Screams_of_the_Desiccated": {
+   "classe": "Belts",
+   "substitui": {
+    "[You have {0}-{1} Random Shrine Buff while affected by no Flasks]": "faixa"
+   },
+   "fonte": "https://poedb.tw/pt/Screams_of_the_Desiccated",
+   "linhas": [
+    {
+     "texto": "Você tem o bônus do Altar da Aceleração, se não estiver sob o efeito de frascos",
+     "modelo": "Você tem o bônus do Altar da Aceleração, se não estiver sob o efeito de frascos",
+     "faixas": []
+    },
+    {
+     "texto": "Você tem o bônus do Altar Brutal, se não estiver sob o efeito de frascos",
+     "modelo": "Você tem o bônus do Altar Brutal, se não estiver sob o efeito de frascos",
+     "faixas": []
+    },
+    {
+     "texto": "Você tem o bônus do Altar Congelante Maior, se não estiver sob o efeito de frascos / Efeito dos Buffs de Altares em você aumentado em (15—20)%",
+     "modelo": "Você tem o bônus do Altar Congelante Maior, se não estiver sob o efeito de frascos / Efeito dos Buffs de Altares em você aumentado em {0}%",
+     "faixas": [
+      [
+       15,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "Você tem o bônus do Altar Diamante, se não estiver sob o efeito de frascos",
+     "modelo": "Você tem o bônus do Altar Diamante, se não estiver sob o efeito de frascos",
+     "faixas": []
+    },
+    {
+     "texto": "Você tem o bônus do Altar Ecoante, se não estiver sob o efeito de frascos",
+     "modelo": "Você tem o bônus do Altar Ecoante, se não estiver sob o efeito de frascos",
+     "faixas": []
+    },
+    {
+     "texto": "Você tem o bônus do Altar Sombrio, se não estiver sob o efeito de frascos",
+     "modelo": "Você tem o bônus do Altar Sombrio, se não estiver sob o efeito de frascos",
+     "faixas": []
+    },
+    {
+     "texto": "Você tem o bônus do Altar Impenetrável, se não estiver sob o efeito de frascos",
+     "modelo": "Você tem o bônus do Altar Impenetrável, se não estiver sob o efeito de frascos",
+     "faixas": []
+    },
+    {
+     "texto": "Você tem o bônus do Altar Maciço, se não estiver sob o efeito de frascos",
+     "modelo": "Você tem o bônus do Altar Maciço, se não estiver sob o efeito de frascos",
+     "faixas": []
+    },
+    {
+     "texto": "Você tem o bônus do Altar Revigorante, se não estiver sob o efeito de frascos",
+     "modelo": "Você tem o bônus do Altar Revigorante, se não estiver sob o efeito de frascos",
+     "faixas": []
+    },
+    {
+     "texto": "Você tem o bônus do Altar da Resistência, se não estiver sob o efeito de frascos",
+     "modelo": "Você tem o bônus do Altar da Resistência, se não estiver sob o efeito de frascos",
+     "faixas": []
+    },
+    {
+     "texto": "Você tem o bônus do Altar Ressonante, se não estiver sob o efeito de frascos",
+     "modelo": "Você tem o bônus do Altar Ressonante, se não estiver sob o efeito de frascos",
+     "faixas": []
+    },
+    {
+     "texto": "Você tem o bônus do Altar Eletrificante Maior, se não estiver sob o efeito de frascos / Efeito dos Buffs de Altares em você aumentado em (15—20)%",
+     "modelo": "Você tem o bônus do Altar Eletrificante Maior, se não estiver sob o efeito de frascos / Efeito dos Buffs de Altares em você aumentado em {0}%",
+     "faixas": [
+      [
+       15,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "Você tem o bônus do Altar Descarnado Maior, se não estiver sob o efeito de frascos / Efeito dos Buffs de Altares em você aumentado em (15—20)%",
+     "modelo": "Você tem o bônus do Altar Descarnado Maior, se não estiver sob o efeito de frascos / Efeito dos Buffs de Altares em você aumentado em {0}%",
+     "faixas": [
+      [
+       15,
+       20
+      ]
+     ]
+    }
+   ]
+  },
+  "Voranas_March": {
+   "classe": "Boots",
+   "substitui": {
+    "[{0} to {1} of Arbalists Modifiers]": "faixa"
+   },
+   "fonte": "https://poedb.tw/pt/Voranas_March",
+   "linhas": [
+    {
+     "texto": "+1 ao número de Arbalistas Convocadas",
+     "modelo": "+{0} ao número de Arbalistas Convocadas",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "Arbalistas Convocadas disparam (2—4) Projéteis adicionais",
+     "modelo": "Arbalistas Convocadas disparam {0} Projéteis adicionais",
+     "faixas": [
+      [
+       2,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Arbalistas Convocadas têm Velocidade de Ataque aumentada em (30—40)%",
+     "modelo": "Arbalistas Convocadas têm Velocidade de Ataque aumentada em {0}%",
+     "faixas": [
+      [
+       30,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "Projéteis da Arbalista Convocada Atravessam (2—4) Alvos adicionais",
+     "modelo": "Projéteis da Arbalista Convocada Atravessam {0} Alvos adicionais",
+     "faixas": [
+      [
+       2,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Projéteis da Arbalista Convocada se Difundem",
+     "modelo": "Projéteis da Arbalista Convocada se Difundem",
+     "faixas": []
+    },
+    {
+     "texto": "Projéteis da Arbalista Convocada Ricocheteiam 2 vezes",
+     "modelo": "Projéteis da Arbalista Convocada Ricocheteiam {0} vezes",
+     "faixas": [
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "texto": "Projéteis da Arbalista Convocada se Dividem em 3",
+     "modelo": "Projéteis da Arbalista Convocada se Dividem em {0}",
+     "faixas": [
+      [
+       3,
+       3
+      ]
+     ]
+    },
+    {
+     "texto": "Arbalistas Convocadas têm (25—35)% de chance de causar Dano Dobrado",
+     "modelo": "Arbalistas Convocadas têm {0}% de chance de causar Dano Dobrado",
+     "faixas": [
+      [
+       25,
+       35
+      ]
+     ]
+    },
+    {
+     "texto": "Arbalistas Convocadas têm (20—30)% de chance de Dilacerar por 4 segundos ao Acertar",
+     "modelo": "Arbalistas Convocadas têm {0}% de chance de Dilacerar por {1} segundos ao Acertar",
+     "faixas": [
+      [
+       20,
+       30
+      ],
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Arbalistas Convocadas têm (20—30)% de chance de Intimidar por 4 segundos ao Acertar",
+     "modelo": "Arbalistas Convocadas têm {0}% de chance de Intimidar por {1} segundos ao Acertar",
+     "faixas": [
+      [
+       20,
+       30
+      ],
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Arbalistas Convocadas têm (20—30)% de chance de Inervar por 4 segundos ao Acertar",
+     "modelo": "Arbalistas Convocadas têm {0}% de chance de Inervar por {1} segundos ao Acertar",
+     "faixas": [
+      [
+       20,
+       30
+      ],
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Arbalistas Convocadas têm (10—20)% de chance de infligir Exposição a Fogo ao Acertar",
+     "modelo": "Arbalistas Convocadas têm {0}% de chance de infligir Exposição a Fogo ao Acertar",
+     "faixas": [
+      [
+       10,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "Arbalistas Convocadas têm (10—20)% de chance de infligir Exposição a Gelo ao Acertar",
+     "modelo": "Arbalistas Convocadas têm {0}% de chance de infligir Exposição a Gelo ao Acertar",
+     "faixas": [
+      [
+       10,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "Arbalistas Convocadas têm (10—20)% de chance de infligir Exposição a Raio ao Acertar",
+     "modelo": "Arbalistas Convocadas têm {0}% de chance de infligir Exposição a Raio ao Acertar",
+     "faixas": [
+      [
+       10,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "Arbalistas Convocadas têm (10—20)% de chance de Esmagar ao Acertar",
+     "modelo": "Arbalistas Convocadas têm {0}% de chance de Esmagar ao Acertar",
+     "faixas": [
+      [
+       10,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "Arbalistas Convocadas Convertem 100% do Dano Físico para Dano de Fogo / Arbalistas Convocadas têm (10—20)% de chance de Incendiar",
+     "modelo": "Arbalistas Convocadas Convertem {0}% do Dano Físico para Dano de Fogo / Arbalistas Convocadas têm {1}% de chance de Incendiar",
+     "faixas": [
+      [
+       100,
+       100
+      ],
+      [
+       10,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "Arbalistas Convocadas Convertem 100% do Dano Físico para Dano de Gelo / Arbalistas Convocadas têm (10—20)% de chance de Congelar",
+     "modelo": "Arbalistas Convocadas Convertem {0}% do Dano Físico para Dano de Gelo / Arbalistas Convocadas têm {1}% de chance de Congelar",
+     "faixas": [
+      [
+       100,
+       100
+      ],
+      [
+       10,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "Arbalistas Convocadas Convertem 100% do Dano Físico para Dano de Raio / Arbalistas Convocadas têm (10—20)% de chance de Eletrizar",
+     "modelo": "Arbalistas Convocadas Convertem {0}% do Dano Físico para Dano de Raio / Arbalistas Convocadas têm {1}% de chance de Eletrizar",
+     "faixas": [
+      [
+       100,
+       100
+      ],
+      [
+       10,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "Arbalistas Convocadas ganham (30—40)% do Dano Físico como Dano de Fogo Extra / Arbalistas Convocadas têm 20% de chance de infligir Exposição a Fogo ao Acertar",
+     "modelo": "Arbalistas Convocadas ganham {0}% do Dano Físico como Dano de Fogo Extra / Arbalistas Convocadas têm {1}% de chance de infligir Exposição a Fogo ao Acertar",
+     "faixas": [
+      [
+       30,
+       40
+      ],
+      [
+       20,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "Arbalistas Convocadas ganham (30—40)% do Dano Físico como Dano de Gelo Extra / Arbalistas Convocadas têm 20% de chance de infligir Exposição a Gelo ao Acertar",
+     "modelo": "Arbalistas Convocadas ganham {0}% do Dano Físico como Dano de Gelo Extra / Arbalistas Convocadas têm {1}% de chance de infligir Exposição a Gelo ao Acertar",
+     "faixas": [
+      [
+       30,
+       40
+      ],
+      [
+       20,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "Arbalistas Convocadas ganham (30—40)% do Dano Físico como Dano de Raio Extra / Arbalistas Convocadas têm 20% de chance de infligir Exposição a Raio ao Acertar",
+     "modelo": "Arbalistas Convocadas ganham {0}% do Dano Físico como Dano de Raio Extra / Arbalistas Convocadas têm {1}% de chance de infligir Exposição a Raio ao Acertar",
+     "faixas": [
+      [
+       30,
+       40
+      ],
+      [
+       20,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "Ataques da Arbalista Convocada têm (40—60)% de chance de infligir Sangramento",
+     "modelo": "Ataques da Arbalista Convocada têm {0}% de chance de infligir Sangramento",
+     "faixas": [
+      [
+       40,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "Arbalistas Convocadas têm (40—60)% de chance de Envenenar",
+     "modelo": "Arbalistas Convocadas têm {0}% de chance de Envenenar",
+     "faixas": [
+      [
+       40,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "Arbalistas Convocadas têm (15—25)% de chance de Congelar, Eletrizar e Incendiar",
+     "modelo": "Arbalistas Convocadas têm {0}% de chance de Congelar, Eletrizar e Incendiar",
+     "faixas": [
+      [
+       15,
+       25
+      ]
+     ]
+    }
+   ]
+  },
+  "Tombfist": {
+   "classe": "Gloves",
+   "substitui": {
+    "[{0} random Abyss Jewel-dependent modifiers]": "faixa"
+   },
+   "fonte": "https://poedb.tw/pt/Tombfist",
+   "linhas": [
+    {
+     "texto": "Com um Olho Hipnótico Encaixado, recebe Fúria Arcana ao Acertar com Magias",
+     "modelo": "Com um Olho Hipnótico Encaixado, recebe Fúria Arcana ao Acertar com Magias",
+     "faixas": []
+    },
+    {
+     "texto": "Com uma Joia do Olho Examinador Encaixada, Cega Inimigos por 4 segundos ao Acertar com Ataques",
+     "modelo": "Com uma Joia do Olho Examinador Encaixada, Cega Inimigos por {0} segundos ao Acertar com Ataques",
+     "faixas": [
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Com uma Joia do Olho Assassinho Encaixada, Acertos Corpo a Corpo têm 25% de chance de Fortificar",
+     "modelo": "Com uma Joia do Olho Assassinho Encaixada, Acertos Corpo a Corpo têm {0}% de chance de Fortificar",
+     "faixas": [
+      [
+       25,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "Com uma Joia do Olho Assassino Encaixada, Intimida Inimigos por 4 segundos ao Acertar com Ataques",
+     "modelo": "Com uma Joia do Olho Assassino Encaixada, Intimida Inimigos por {0} segundos ao Acertar com Ataques",
+     "faixas": [
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Com uma Joia do Olho Examinador Encaixada, Mutila Inimigos por 4 segundos ao Acertar com Ataques",
+     "modelo": "Com uma Joia do Olho Examinador Encaixada, Mutila Inimigos por {0} segundos ao Acertar com Ataques",
+     "faixas": [
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Com um Olho Fantasmagórico Encaixado, Lacaios possuem +1000 de Precisão",
+     "modelo": "Com um Olho Fantasmagórico Encaixado, Lacaios possuem +{0} de Precisão",
+     "faixas": [
+      [
+       1000,
+       1000
+      ]
+     ]
+    },
+    {
+     "texto": "Com uma Joia do Olho Examinador Encaixada, Ataques têm 25% de chance de concederem Agressividade ao Matar",
+     "modelo": "Com uma Joia do Olho Examinador Encaixada, Ataques têm {0}% de chance de concederem Agressividade ao Matar",
+     "faixas": [
+      [
+       25,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "Com uma Joia do Olho Assassino Encaixada, Ataques Corpo a Corpo concedem 1 de Fúria ao Acertar",
+     "modelo": "Com uma Joia do Olho Assassino Encaixada, Ataques Corpo a Corpo concedem {0} de Fúria ao Acertar",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    }
+   ]
+  },
+  "Triumvirate_Authority": {
+   "classe": "Rings",
+   "substitui": {
+    "[Four random modifiers]": 4,
+    "[Three random modifiers]": 3
+   },
+   "fonte": "https://poedb.tw/pt/Triumvirate_Authority",
+   "linhas": [
+    {
+     "texto": "Habilidades Vaal Encaixadas causam 150% mais Dano",
+     "modelo": "Habilidades Vaal Encaixadas causam {0}% mais Dano",
+     "faixas": [
+      [
+       150,
+       150
+      ]
+     ]
+    },
+    {
+     "texto": "Habilidades Vaal Encaixadas requerem 30% menos Almas por Uso",
+     "modelo": "Habilidades Vaal Encaixadas requerem {0}% menos Almas por Uso",
+     "faixas": [
+      [
+       30,
+       30
+      ]
+     ]
+    },
+    {
+     "texto": "Habilidades Vaal Encaixadas têm 20% de chance de ganharem novamente as Almas consumidas quando utilizadas",
+     "modelo": "Habilidades Vaal Encaixadas têm {0}% de chance de ganharem novamente as Almas consumidas quando utilizadas",
+     "faixas": [
+      [
+       20,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "Acertos de Habilidades Vaal Encaixadas ignoram as Resistências dos Monstros Inimigos",
+     "modelo": "Acertos de Habilidades Vaal Encaixadas ignoram as Resistências dos Monstros Inimigos",
+     "faixas": []
+    },
+    {
+     "texto": "Acertos com Habilidades Vaal Encaixadas ignoram a Redução de Dano Físico dos Monstros",
+     "modelo": "Acertos com Habilidades Vaal Encaixadas ignoram a Redução de Dano Físico dos Monstros",
+     "faixas": []
+    },
+    {
+     "texto": "Habilidades Vaal Encaixadas concedem Elusivo quando Usadas",
+     "modelo": "Habilidades Vaal Encaixadas concedem Elusivo quando Usadas",
+     "faixas": []
+    },
+    {
+     "texto": "Você tem Vento Favorável se usou uma Habilidade Vaal Encaixada Recentemente",
+     "modelo": "Você tem Vento Favorável se usou uma Habilidade Vaal Encaixada Recentemente",
+     "faixas": []
+    },
+    {
+     "texto": "Habilidades Vaal Encaixadas têm Efeito em Área aumentado em 60%",
+     "modelo": "Habilidades Vaal Encaixadas têm Efeito em Área aumentado em {0}%",
+     "faixas": [
+      [
+       60,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "Habilidades Vaal Encaixadas têm Velocidade de Projétil aumentada em 80%",
+     "modelo": "Habilidades Vaal Encaixadas têm Velocidade de Projétil aumentada em {0}%",
+     "faixas": [
+      [
+       80,
+       80
+      ]
+     ]
+    },
+    {
+     "texto": "Habilidades Vaal Encaixadas têm Duração do Efeito da Habilidade aumentada em 80%",
+     "modelo": "Habilidades Vaal Encaixadas têm Duração do Efeito da Habilidade aumentada em {0}%",
+     "faixas": [
+      [
+       80,
+       80
+      ]
+     ]
+    },
+    {
+     "texto": "Habilidades Vaal Encaixadas têm Duração da Prevenção do Ganho de Almas reduzido em 30%",
+     "modelo": "Habilidades Vaal Encaixadas têm Duração da Prevenção do Ganho de Almas reduzido em {0}%",
+     "faixas": [
+      [
+       30,
+       30
+      ]
+     ]
+    },
+    {
+     "texto": "Dano com Acertos das Habilidades Vaal Encaixadas é Sortudo",
+     "modelo": "Dano com Acertos das Habilidades Vaal Encaixadas é Sortudo",
+     "faixas": []
+    },
+    {
+     "texto": "Habilidades Vaal Encaixadas têm Efeito de Aura aumentado em 50%",
+     "modelo": "Habilidades Vaal Encaixadas têm Efeito de Aura aumentado em {0}%",
+     "faixas": [
+      [
+       50,
+       50
+      ]
+     ]
+    }
+   ]
+  },
+  "Cinderswallow_Urn": {
+   "classe": "Utility_Flasks",
+   "substitui": {
+    "[One random modifier]": 1
+   },
+   "fonte": "https://poedb.tw/pt/Cinderswallow_Urn",
+   "linhas": [
+    {
+     "texto": "Recupera (1—3)% do Escudo de Energia quando você Matar um Inimigo durante o Efeito",
+     "modelo": "Recupera {0}% do Escudo de Energia quando você Matar um Inimigo durante o Efeito",
+     "faixas": [
+      [
+       1,
+       3
+      ]
+     ]
+    },
+    {
+     "texto": "Recupera (1—3)% de Vida quando você Matar um Inimigo durante o Efeito",
+     "modelo": "Recupera {0}% de Vida quando você Matar um Inimigo durante o Efeito",
+     "faixas": [
+      [
+       1,
+       3
+      ]
+     ]
+    },
+    {
+     "texto": "Recupera (1—3)% de Mana quando você Matar um inimigo durante o Efeito",
+     "modelo": "Recupera {0}% de Mana quando você Matar um inimigo durante o Efeito",
+     "faixas": [
+      [
+       1,
+       3
+      ]
+     ]
+    }
+   ]
+  },
+  "Circle_of_Guilt": {
+   "classe": "Rings",
+   "substitui": {
+    "[Random Herald of Purity modifier]": 1
+   },
+   "fonte": "https://poedb.tw/pt/Circle_of_Guilt",
+   "linhas": [
+    {
+     "texto": "Arauto da Pureza tem Eficácia da Reserva de Mana aumentada em (30—40)%",
+     "modelo": "Arauto da Pureza tem Eficácia da Reserva de Mana aumentada em {0}%",
+     "faixas": [
+      [
+       30,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Físico aumentado em (40—60)% enquanto afetado por Arauto da Pureza",
+     "modelo": "Dano Físico aumentado em {0}% enquanto afetado por Arauto da Pureza",
+     "faixas": [
+      [
+       40,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "Arauto da Pureza possui (40—60)% de aumento do Efeito do Buff",
+     "modelo": "Arauto da Pureza possui {0}% de aumento do Efeito do Buff",
+     "faixas": [
+      [
+       40,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "Sentinelas da Pureza causam Dano aumentado em (70—100)%",
+     "modelo": "Sentinelas da Pureza causam Dano aumentado em {0}%",
+     "faixas": [
+      [
+       70,
+       100
+      ]
+     ]
+    },
+    {
+     "texto": "Redução de Dano Físico enquanto afetado por Arauto da Pureza aumentada em 4%",
+     "modelo": "Redução de Dano Físico enquanto afetado por Arauto da Pureza aumentada em {0}%",
+     "faixas": [
+      [
+       4,
+       4
+      ]
+     ]
+    }
+   ]
+  },
+  "Circle_of_Regret": {
+   "classe": "Rings",
+   "substitui": {
+    "[Random Herald of Thunder modifier]": 1
+   },
+   "fonte": "https://poedb.tw/pt/Circle_of_Regret",
+   "linhas": [
+    {
+     "texto": "Arauto Trovejante tem Eficácia da Reserva de Mana aumentada em (30—40)%",
+     "modelo": "Arauto Trovejante tem Eficácia da Reserva de Mana aumentada em {0}%",
+     "faixas": [
+      [
+       30,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Raio aumentado em (40—60)% enquanto afetado por Arauto Trovejante",
+     "modelo": "Dano de Raio aumentado em {0}% enquanto afetado por Arauto Trovejante",
+     "faixas": [
+      [
+       40,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "Arauto Trovejante tem o Efeito do Buff aumentado em (40—60)%",
+     "modelo": "Arauto Trovejante tem o Efeito do Buff aumentado em {0}%",
+     "faixas": [
+      [
+       40,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "+1% de Resistência a Raio máxima enquanto afetado por Arauto Trovejante",
+     "modelo": "+{0}% de Resistência a Raio máxima enquanto afetado por Arauto Trovejante",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+(50—60)% de Resistência a Raio enquanto afetado por Arauto Trovejante",
+     "modelo": "+{0}% de Resistência a Raio enquanto afetado por Arauto Trovejante",
+     "faixas": [
+      [
+       50,
+       60
+      ]
+     ]
+    }
+   ]
+  },
+  "Circle_of_Fear": {
+   "classe": "Rings",
+   "substitui": {
+    "[Random Herald of Ice modifier]": 1
+   },
+   "fonte": "https://poedb.tw/pt/Circle_of_Fear",
+   "linhas": [
+    {
+     "texto": "Arauto Glacial tem Eficácia da Reserva de Mana aumentada em (30—40)%",
+     "modelo": "Arauto Glacial tem Eficácia da Reserva de Mana aumentada em {0}%",
+     "faixas": [
+      [
+       30,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "Arauto Glacial tem Eficácia da Reserva de Mana reduzida em (30—40)%",
+     "modelo": "Arauto Glacial tem Eficácia da Reserva de Mana reduzida em {0}%",
+     "faixas": [
+      [
+       30,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Gelo enquanto afetado por Arauto Glacial aumentado em (40—60)%",
+     "modelo": "Dano de Gelo enquanto afetado por Arauto Glacial aumentado em {0}%",
+     "faixas": [
+      [
+       40,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "Arauto Glacial tem o Efeito do Buff aumentado em (40—60)%",
+     "modelo": "Arauto Glacial tem o Efeito do Buff aumentado em {0}%",
+     "faixas": [
+      [
+       40,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "+1% de Resistência a Gelo máxima enquanto afetado por Arauto Glacial",
+     "modelo": "+{0}% de Resistência a Gelo máxima enquanto afetado por Arauto Glacial",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+(50—60)% de Resistência a Gelo enquanto afetado por Arauto Glacial",
+     "modelo": "+{0}% de Resistência a Gelo enquanto afetado por Arauto Glacial",
+     "faixas": [
+      [
+       50,
+       60
+      ]
+     ]
+    }
+   ]
+  },
+  "Circle_of_Anguish": {
+   "classe": "Rings",
+   "substitui": {
+    "[Random Herald of Ash modifier]": 1
+   },
+   "fonte": "https://poedb.tw/pt/Circle_of_Anguish",
+   "linhas": [
+    {
+     "texto": "Arauto Flamejante tem Eficácia da Reserva de Mana aumentada em (30—40)%",
+     "modelo": "Arauto Flamejante tem Eficácia da Reserva de Mana aumentada em {0}%",
+     "faixas": [
+      [
+       30,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Fogo enquanto afetado por Arauto Flamejante aumentado em (40—60)%",
+     "modelo": "Dano de Fogo enquanto afetado por Arauto Flamejante aumentado em {0}%",
+     "faixas": [
+      [
+       40,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "Arauto Flamejante tem o Efeito do Buff aumentado em (40—60)%",
+     "modelo": "Arauto Flamejante tem o Efeito do Buff aumentado em {0}%",
+     "faixas": [
+      [
+       40,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "+1% de Resistência a Fogo máxima enquanto afetado por Arauto Flamejante",
+     "modelo": "+{0}% de Resistência a Fogo máxima enquanto afetado por Arauto Flamejante",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+(50—60)% de Resistência a Fogo enquanto afetado por Arauto Flamejante",
+     "modelo": "+{0}% de Resistência a Fogo enquanto afetado por Arauto Flamejante",
+     "faixas": [
+      [
+       50,
+       60
+      ]
+     ]
+    }
+   ]
+  },
+  "Circle_of_Nostalgia": {
+   "classe": "Rings",
+   "substitui": {
+    "[Random Herald of Agony modifier]": 1
+   },
+   "fonte": "https://poedb.tw/pt/Circle_of_Nostalgia",
+   "linhas": [
+    {
+     "texto": "Arauto da Agonia tem Eficácia da Reserva de Mana aumentada em (30—40)%",
+     "modelo": "Arauto da Agonia tem Eficácia da Reserva de Mana aumentada em {0}%",
+     "faixas": [
+      [
+       30,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Caos enquanto afetado por Arauto da Agonia aumentado em (40—60)%",
+     "modelo": "Dano de Caos enquanto afetado por Arauto da Agonia aumentado em {0}%",
+     "faixas": [
+      [
+       40,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "Arauto da Agonia tem o Efeito do Buff aumentado em (40—60)%",
+     "modelo": "Arauto da Agonia tem o Efeito do Buff aumentado em {0}%",
+     "faixas": [
+      [
+       40,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "Rastejador Agonizante causa Dano aumentado em (70—100)%",
+     "modelo": "Rastejador Agonizante causa Dano aumentado em {0}%",
+     "faixas": [
+      [
+       70,
+       100
+      ]
+     ]
+    },
+    {
+     "texto": "+(31—43)% de Resistência a Caos enquanto afetado por Arauto da Agonia",
+     "modelo": "+{0}% de Resistência a Caos enquanto afetado por Arauto da Agonia",
+     "faixas": [
+      [
+       31,
+       43
+      ]
+     ]
+    }
+   ]
+  },
+  "Auls_Uprising": {
+   "classe": "Amulets",
+   "substitui": {
+    "[Random Strength aura Reserves no Mana]": 1,
+    "[Random Dexterity aura Reserves no Mana]": 1,
+    "[Random Intelligence aura Reserves no Mana]": 1
+   },
+   "pools": {
+    "[Random Strength aura Reserves no Mana]": [
+     {
+      "texto": "Cólera não possui Reserva",
+      "modelo": "Cólera não possui Reserva",
+      "faixas": []
+     },
+     {
+      "texto": "Determinação não tem Reserva",
+      "modelo": "Determinação não tem Reserva",
+      "faixas": []
+     },
+     {
+      "texto": "Pureza do Fogo não tem Reserva",
+      "modelo": "Pureza do Fogo não tem Reserva",
+      "faixas": []
+     },
+     {
+      "texto": "Vitalidade não tem Reserva",
+      "modelo": "Vitalidade não tem Reserva",
+      "faixas": []
+     },
+     {
+      "texto": "Orgulho não tem Reserva",
+      "modelo": "Orgulho não tem Reserva",
+      "faixas": []
+     }
+    ],
+    "[Random Dexterity aura Reserves no Mana]": [
+     {
+      "texto": "Graça não tem Reserva",
+      "modelo": "Graça não tem Reserva",
+      "faixas": []
+     },
+     {
+      "texto": "Ímpeto não tem Reserva",
+      "modelo": "Ímpeto não tem Reserva",
+      "faixas": []
+     },
+     {
+      "texto": "Ódio não tem Reserva",
+      "modelo": "Ódio não tem Reserva",
+      "faixas": []
+     },
+     {
+      "texto": "Pureza do Gelo não tem Reserva",
+      "modelo": "Pureza do Gelo não tem Reserva",
+      "faixas": []
+     }
+    ],
+    "[Random Intelligence aura Reserves no Mana]": [
+     {
+      "texto": "Clareza não possui Reserva",
+      "modelo": "Clareza não possui Reserva",
+      "faixas": []
+     },
+     {
+      "texto": "Disciplina não tem Reserva",
+      "modelo": "Disciplina não tem Reserva",
+      "faixas": []
+     },
+     {
+      "texto": "Pureza dos Elementos não tem Reserva",
+      "modelo": "Pureza dos Elementos não tem Reserva",
+      "faixas": []
+     },
+     {
+      "texto": "Pureza do Raio não tem Reserva",
+      "modelo": "Pureza do Raio não tem Reserva",
+      "faixas": []
+     },
+     {
+      "texto": "Ira não tem Reserva",
+      "modelo": "Ira não tem Reserva",
+      "faixas": []
+     },
+     {
+      "texto": "Malevolência não tem Reserva",
+      "modelo": "Malevolência não tem Reserva",
+      "faixas": []
+     },
+     {
+      "texto": "Fanatismo não tem Reserva",
+      "modelo": "Fanatismo não tem Reserva",
+      "faixas": []
+     }
+    ]
+   },
+   "fonte": "https://poedb.tw/pt/Auls_Uprising",
+   "linhas": [
+    {
+     "texto": "Cólera não possui Reserva",
+     "modelo": "Cólera não possui Reserva",
+     "faixas": []
+    },
+    {
+     "texto": "Clareza não possui Reserva",
+     "modelo": "Clareza não possui Reserva",
+     "faixas": []
+    },
+    {
+     "texto": "Determinação não tem Reserva",
+     "modelo": "Determinação não tem Reserva",
+     "faixas": []
+    },
+    {
+     "texto": "Disciplina não tem Reserva",
+     "modelo": "Disciplina não tem Reserva",
+     "faixas": []
+    },
+    {
+     "texto": "Graça não tem Reserva",
+     "modelo": "Graça não tem Reserva",
+     "faixas": []
+    },
+    {
+     "texto": "Ímpeto não tem Reserva",
+     "modelo": "Ímpeto não tem Reserva",
+     "faixas": []
+    },
+    {
+     "texto": "Ódio não tem Reserva",
+     "modelo": "Ódio não tem Reserva",
+     "faixas": []
+    },
+    {
+     "texto": "Pureza dos Elementos não tem Reserva",
+     "modelo": "Pureza dos Elementos não tem Reserva",
+     "faixas": []
+    },
+    {
+     "texto": "Pureza do Fogo não tem Reserva",
+     "modelo": "Pureza do Fogo não tem Reserva",
+     "faixas": []
+    },
+    {
+     "texto": "Pureza do Gelo não tem Reserva",
+     "modelo": "Pureza do Gelo não tem Reserva",
+     "faixas": []
+    },
+    {
+     "texto": "Pureza do Raio não tem Reserva",
+     "modelo": "Pureza do Raio não tem Reserva",
+     "faixas": []
+    },
+    {
+     "texto": "Vitalidade não tem Reserva",
+     "modelo": "Vitalidade não tem Reserva",
+     "faixas": []
+    },
+    {
+     "texto": "Ira não tem Reserva",
+     "modelo": "Ira não tem Reserva",
+     "faixas": []
+    },
+    {
+     "texto": "Inveja não tem Reserva",
+     "modelo": "Inveja não tem Reserva",
+     "faixas": []
+    },
+    {
+     "texto": "Malevolência não tem Reserva",
+     "modelo": "Malevolência não tem Reserva",
+     "faixas": []
+    },
+    {
+     "texto": "Fanatismo não tem Reserva",
+     "modelo": "Fanatismo não tem Reserva",
+     "faixas": []
+    },
+    {
+     "texto": "Orgulho não tem Reserva",
+     "modelo": "Orgulho não tem Reserva",
+     "faixas": []
+    }
+   ]
+  },
+  "Precursors_Emblem": {
+   "classe": "Rings",
+   "substitui": {
+    "[Three Power Charge mods]": "composicao",
+    "[Three Frenzy Charge mods]": "composicao",
+    "[Three Endurance Charge mods]": "composicao",
+    "[Endurance Charge mod]": "composicao",
+    "[Frenzy Charge mod]": "composicao",
+    "[Power Charge mod]": "composicao",
+    "[Two Endurance Charge mods and one Power Charge Mod]": "composicao",
+    "[One Endurance Charge mod and Two Power Charge Mods]": "composicao",
+    "[Two Frenzy Charge mods and one Power Charge Mod]": "composicao",
+    "[One Frenzy Charge mod and Two Power Charge Mods]": "composicao",
+    "[Two Endurance Charge mods and one Frenzy Charge Mod]": "composicao",
+    "[One Endurance Charge mod and Two Frenzy Charge Mods]": "composicao"
+   },
+   "composicao": {
+    "[Three Power Charge mods]": [
+     [
+      "poder",
+      3
+     ]
+    ],
+    "[Three Frenzy Charge mods]": [
+     [
+      "frenesi",
+      3
+     ]
+    ],
+    "[Three Endurance Charge mods]": [
+     [
+      "tolerancia",
+      3
+     ]
+    ],
+    "[Endurance Charge mod]": [
+     [
+      "tolerancia",
+      1
+     ]
+    ],
+    "[Frenzy Charge mod]": [
+     [
+      "frenesi",
+      1
+     ]
+    ],
+    "[Power Charge mod]": [
+     [
+      "poder",
+      1
+     ]
+    ],
+    "[Two Endurance Charge mods and one Power Charge Mod]": [
+     [
+      "tolerancia",
+      2
+     ],
+     [
+      "poder",
+      1
+     ]
+    ],
+    "[One Endurance Charge mod and Two Power Charge Mods]": [
+     [
+      "tolerancia",
+      1
+     ],
+     [
+      "poder",
+      2
+     ]
+    ],
+    "[Two Frenzy Charge mods and one Power Charge Mod]": [
+     [
+      "frenesi",
+      2
+     ],
+     [
+      "poder",
+      1
+     ]
+    ],
+    "[One Frenzy Charge mod and Two Power Charge Mods]": [
+     [
+      "frenesi",
+      1
+     ],
+     [
+      "poder",
+      2
+     ]
+    ],
+    "[Two Endurance Charge mods and one Frenzy Charge Mod]": [
+     [
+      "tolerancia",
+      2
+     ],
+     [
+      "frenesi",
+      1
+     ]
+    ],
+    "[One Endurance Charge mod and Two Frenzy Charge Mods]": [
+     [
+      "tolerancia",
+      1
+     ],
+     [
+      "frenesi",
+      2
+     ]
+    ]
+   },
+   "pools": {
+    "frenesi": [
+     {
+      "texto": "Precisão aumentada em 10% por Carga de Frenesi",
+      "modelo": "Precisão aumentada em {0}% por Carga de Frenesi",
+      "faixas": [
+       [
+        10,
+        10
+       ]
+      ]
+     },
+     {
+      "texto": "(6—8) a (12—13) de Dano de Gelo Adicional por Carga de Frenesi",
+      "modelo": "{0} a {1} de Dano de Gelo Adicional por Carga de Frenesi",
+      "faixas": [
+       [
+        6,
+        8
+       ],
+       [
+        12,
+        13
+       ]
+      ]
+     },
+     {
+      "texto": "+1% de Chance de Bloquear o Dano de Ataques por Carga de Frenesi",
+      "modelo": "+{0}% de Chance de Bloquear o Dano de Ataques por Carga de Frenesi",
+      "faixas": [
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "15% de chance de se você fosse receber uma Carga de Frenesi, você recebe até o número máximo de Cargas de Frenesi ao invés",
+      "modelo": "{0}% de chance de se você fosse receber uma Carga de Frenesi, você recebe até o número máximo de Cargas de Frenesi ao invés",
+      "faixas": [
+       [
+        15,
+        15
+       ]
+      ]
+     },
+     {
+      "texto": "Recebe 1% de Dano de Gelo como Dano Extra de Caos por Carga de Frenesi",
+      "modelo": "Recebe {0}% de Dano de Gelo como Dano Extra de Caos por Carga de Frenesi",
+      "faixas": [
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "6% de aumento da Chance de Acerto Crítico por Carga de Frenesi",
+      "modelo": "{0}% de aumento da Chance de Acerto Crítico por Carga de Frenesi",
+      "faixas": [
+       [
+        6,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "5% de aumento de Dano por Carga de Frenesi",
+      "modelo": "{0}% de aumento de Dano por Carga de Frenesi",
+      "faixas": [
+       [
+        5,
+        5
+       ]
+      ]
+     },
+     {
+      "texto": "+1% de chance de Suprimir o Dano Mágico por Carga de Frenesi",
+      "modelo": "+{0}% de chance de Suprimir o Dano Mágico por Carga de Frenesi",
+      "faixas": [
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "Evasão aumentados em 8% por Carga de Frenesi",
+      "modelo": "Evasão aumentados em {0}% por Carga de Frenesi",
+      "faixas": [
+       [
+        8,
+        8
+       ]
+      ]
+     },
+     {
+      "texto": "Recebe uma Carga de Frasco ao causar um Acerto Crítico enquanto no máximo de Cargas de Frenesi",
+      "modelo": "Recebe uma Carga de Frasco ao causar um Acerto Crítico enquanto no máximo de Cargas de Frenesi",
+      "faixas": []
+     },
+     {
+      "texto": "Duração da Carga de Frenesi aumentada em (20—40)%",
+      "modelo": "Duração da Carga de Frenesi aumentada em {0}%",
+      "faixas": [
+       [
+        20,
+        40
+       ]
+      ]
+     },
+     {
+      "texto": "10% de chance de receber uma Carga de Frenesi ao Acertar",
+      "modelo": "{0}% de chance de receber uma Carga de Frenesi ao Acertar",
+      "faixas": [
+       [
+        10,
+        10
+       ]
+      ]
+     },
+     {
+      "texto": "10% de chance de ganhar uma Carga de Frenesi ao Matar",
+      "modelo": "{0}% de chance de ganhar uma Carga de Frenesi ao Matar",
+      "faixas": [
+       [
+        10,
+        10
+       ]
+      ]
+     },
+     {
+      "texto": "Você possui Reflexos de Ferro enquanto no máximo de Cargas de Frenesi",
+      "modelo": "Você possui Reflexos de Ferro enquanto no máximo de Cargas de Frenesi",
+      "faixas": []
+     },
+     {
+      "texto": "0.3% de Vida Regenerada por segundo por Carga de Frenesi",
+      "modelo": "{0}% de Vida Regenerada por segundo por Carga de Frenesi",
+      "faixas": [
+       [
+        0.3,
+        0.3
+       ]
+      ]
+     },
+     {
+      "texto": "+1 ao Máximo de Cargas de Frenesi",
+      "modelo": "+{0} ao Máximo de Cargas de Frenesi",
+      "faixas": [
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "Velocidade de Movimento aumentada em 1% por Carga de Frenesi",
+      "modelo": "Velocidade de Movimento aumentada em {0}% por Carga de Frenesi",
+      "faixas": [
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "Recebe Agressividade por 4 segundos ao Acertar enquanto no Máximo de Cargas de Frenesi",
+      "modelo": "Recebe Agressividade por {0} segundos ao Acertar enquanto no Máximo de Cargas de Frenesi",
+      "faixas": [
+       [
+        4,
+        4
+       ]
+      ]
+     }
+    ],
+    "tolerancia": [
+     {
+      "texto": "(7—9) a (13—14) de Dano de Fogo por Carga de Tolerância",
+      "modelo": "{0} a {1} de Dano de Fogo por Carga de Tolerância",
+      "faixas": [
+       [
+        7,
+        9
+       ],
+       [
+        13,
+        14
+       ]
+      ]
+     },
+     {
+      "texto": "6% de aumento de Armadura por Carga de Tolerância",
+      "modelo": "{0}% de aumento de Armadura por Carga de Tolerância",
+      "faixas": [
+       [
+        6,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "1% de aumento das Velocidades de Ataque e Conjuração por Carga de Tolerância",
+      "modelo": "{0}% de aumento das Velocidades de Ataque e Conjuração por Carga de Tolerância",
+      "faixas": [
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "+1% de Chance de Bloquear o Dano de Ataques por Carga de Tolerância",
+      "modelo": "+{0}% de Chance de Bloquear o Dano de Ataques por Carga de Tolerância",
+      "faixas": [
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "Você não pode ser Atordoado enquanto no máximo de Cargas de Tolerância",
+      "modelo": "Você não pode ser Atordoado enquanto no máximo de Cargas de Tolerância",
+      "faixas": []
+     },
+     {
+      "texto": "15% de chance de que se você ganhasse Cargas de Tolerância, você ganha o seu número máximo de Cargas de Tolerância",
+      "modelo": "{0}% de chance de que se você ganhasse Cargas de Tolerância, você ganha o seu número máximo de Cargas de Tolerância",
+      "faixas": [
+       [
+        15,
+        15
+       ]
+      ]
+     },
+     {
+      "texto": "+4% de Resistência a Caos por Carga de Tolerância",
+      "modelo": "+{0}% de Resistência a Caos por Carga de Tolerância",
+      "faixas": [
+       [
+        4,
+        4
+       ]
+      ]
+     },
+     {
+      "texto": "6% de aumento da Chance de Acerto Crítico por Carga de Tolerância",
+      "modelo": "{0}% de aumento da Chance de Acerto Crítico por Carga de Tolerância",
+      "faixas": [
+       [
+        6,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "Dano aumentado em 5% por Carga de Tolerância",
+      "modelo": "Dano aumentado em {0}% por Carga de Tolerância",
+      "faixas": [
+       [
+        5,
+        5
+       ]
+      ]
+     },
+     {
+      "texto": "+1% de chance de Suprimir o Dano Mágico por Carga de Tolerância",
+      "modelo": "+{0}% de chance de Suprimir o Dano Mágico por Carga de Tolerância",
+      "faixas": [
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "Duração da Carga de Tolerância aumentada em (20—40)%",
+      "modelo": "Duração da Carga de Tolerância aumentada em {0}%",
+      "faixas": [
+       [
+        20,
+        40
+       ]
+      ]
+     },
+     {
+      "texto": "Ganha 1 Cargas de Tolerância por segundo se foi Acertado Recentemente",
+      "modelo": "Ganha {0} Cargas de Tolerância por segundo se foi Acertado Recentemente",
+      "faixas": [
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "10% de chance de receber uma Carga de Tolerância ao Matar",
+      "modelo": "{0}% de chance de receber uma Carga de Tolerância ao Matar",
+      "faixas": [
+       [
+        10,
+        10
+       ]
+      ]
+     },
+     {
+      "texto": "Recebe 1% de Dano de Fogo como Dano de Caos Extra por Carga de Tolerância",
+      "modelo": "Recebe {0}% de Dano de Fogo como Dano de Caos Extra por Carga de Tolerância",
+      "faixas": [
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "Intimida Inimigos por 4 segundos ao Acertar com Ataques enquanto no máximo de Cargas de Tolerância",
+      "modelo": "Intimida Inimigos por {0} segundos ao Acertar com Ataques enquanto no máximo de Cargas de Tolerância",
+      "faixas": [
+       [
+        4,
+        4
+       ]
+      ]
+     },
+     {
+      "texto": "Regenera 0.3% de Vida por segundo por Carga de Tolerância",
+      "modelo": "Regenera {0}% de Vida por segundo por Carga de Tolerância",
+      "faixas": [
+       [
+        0.3,
+        0.3
+       ]
+      ]
+     },
+     {
+      "texto": "+1 ao Máximo de Cargas de Tolerância",
+      "modelo": "+{0} ao Máximo de Cargas de Tolerância",
+      "faixas": [
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "1% de aumento da Velocidade de Movimento por Carga de Tolerância",
+      "modelo": "{0}% de aumento da Velocidade de Movimento por Carga de Tolerância",
+      "faixas": [
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "Você possui Pacto Vaal enquanto no máximo de Cargas de Tolerância",
+      "modelo": "Você possui Pacto Vaal enquanto no máximo de Cargas de Tolerância",
+      "faixas": []
+     }
+    ],
+    "poder": [
+     {
+      "texto": "(1—2) a (18—20) de Dano de Raio por Carga de Poder",
+      "modelo": "{0} a {1} de Dano de Raio por Carga de Poder",
+      "faixas": [
+       [
+        1,
+        2
+       ],
+       [
+        18,
+        20
+       ]
+      ]
+     },
+     {
+      "texto": "Você pode aplicar 1 Maldições adicionais à Inimigos enquanto no máximo de Cargas de Poder",
+      "modelo": "Você pode aplicar {0} Maldições adicionais à Inimigos enquanto no máximo de Cargas de Poder",
+      "faixas": [
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "Recebe Fúria Arcana ao Acertar com Magias enquanto no máximo de Cargas de Poder",
+      "modelo": "Recebe Fúria Arcana ao Acertar com Magias enquanto no máximo de Cargas de Poder",
+      "faixas": []
+     },
+     {
+      "texto": "1% de aumento das Velocidades de Ataque e Conjuração por Carga de Poder",
+      "modelo": "{0}% de aumento das Velocidades de Ataque e Conjuração por Carga de Poder",
+      "faixas": [
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "+1% de Chance de Bloquear o Dano de Ataques por Carga de Poder",
+      "modelo": "+{0}% de Chance de Bloquear o Dano de Ataques por Carga de Poder",
+      "faixas": [
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "15% de chance de que se você fosse ganhar Cargas de Poder, você ganha o seu número máximo de Cargas de Poder",
+      "modelo": "{0}% de chance de que se você fosse ganhar Cargas de Poder, você ganha o seu número máximo de Cargas de Poder",
+      "faixas": [
+       [
+        15,
+        15
+       ]
+      ]
+     },
+     {
+      "texto": "+3% ao Multiplicador de Crítico por Carga de Poder",
+      "modelo": "+{0}% ao Multiplicador de Crítico por Carga de Poder",
+      "faixas": [
+       [
+        3,
+        3
+       ]
+      ]
+     },
+     {
+      "texto": "Dano aumentado em 5% por Carga de Poder",
+      "modelo": "Dano aumentado em {0}% por Carga de Poder",
+      "faixas": [
+       [
+        5,
+        5
+       ]
+      ]
+     },
+     {
+      "texto": "+1% de chance de Suprimir o Dano Mágico por Carga de Poder",
+      "modelo": "+{0}% de chance de Suprimir o Dano Mágico por Carga de Poder",
+      "faixas": [
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "3% de aumento do Escudo de Energia por Carga de Poder",
+      "modelo": "{0}% de aumento do Escudo de Energia por Carga de Poder",
+      "faixas": [
+       [
+        3,
+        3
+       ]
+      ]
+     },
+     {
+      "texto": "Regenera 0.3% de vida por segundo por Carga de Poder",
+      "modelo": "Regenera {0}% de vida por segundo por Carga de Poder",
+      "faixas": [
+       [
+        0.3,
+        0.3
+       ]
+      ]
+     },
+     {
+      "texto": "Recebe 1% do Dano de Raio como Dano Extra de Caos por carga de Poder",
+      "modelo": "Recebe {0}% do Dano de Raio como Dano Extra de Caos por carga de Poder",
+      "faixas": [
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "+1 ao Máximo de Cargas de Poder",
+      "modelo": "+{0} ao Máximo de Cargas de Poder",
+      "faixas": [
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "Você possui Mente sobre Matéria enquanto no máximo de Cargas de Poder",
+      "modelo": "Você possui Mente sobre Matéria enquanto no máximo de Cargas de Poder",
+      "faixas": []
+     },
+     {
+      "texto": "1% de aumento da Velocidade de Movimento por Carga de Poder",
+      "modelo": "{0}% de aumento da Velocidade de Movimento por Carga de Poder",
+      "faixas": [
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "1% de Redução de Dano Físico adicional por Carga de Poder",
+      "modelo": "{0}% de Redução de Dano Físico adicional por Carga de Poder",
+      "faixas": [
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "1% de Redução adicional do Dano Físico por Carga de Poder",
+      "modelo": "{0}% de Redução adicional do Dano Físico por Carga de Poder",
+      "faixas": [
+       [
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "texto": "Duração da Carga de Poder aumentada em (20—40)%",
+      "modelo": "Duração da Carga de Poder aumentada em {0}%",
+      "faixas": [
+       [
+        20,
+        40
+       ]
+      ]
+     },
+     {
+      "texto": "20% de chance de receber uma Carga de Poder ao acertar um Golpe Crítico",
+      "modelo": "{0}% de chance de receber uma Carga de Poder ao acertar um Golpe Crítico",
+      "faixas": [
+       [
+        20,
+        20
+       ]
+      ]
+     },
+     {
+      "texto": "10% de chance de ganhar uma Carga de Poder ao Matar",
+      "modelo": "{0}% de chance de ganhar uma Carga de Poder ao Matar",
+      "faixas": [
+       [
+        10,
+        10
+       ]
+      ]
+     }
+    ]
+   },
+   "fonte": "https://poedb.tw/pt/Precursors_Emblem",
+   "linhas": [
+    {
+     "texto": "Precisão aumentada em 10% por Carga de Frenesi",
+     "modelo": "Precisão aumentada em {0}% por Carga de Frenesi",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "(6—8) a (12—13) de Dano de Gelo Adicional por Carga de Frenesi",
+     "modelo": "{0} a {1} de Dano de Gelo Adicional por Carga de Frenesi",
+     "faixas": [
+      [
+       6,
+       8
+      ],
+      [
+       12,
+       13
+      ]
+     ]
+    },
+    {
+     "texto": "(7—9) a (13—14) de Dano de Fogo por Carga de Tolerância",
+     "modelo": "{0} a {1} de Dano de Fogo por Carga de Tolerância",
+     "faixas": [
+      [
+       7,
+       9
+      ],
+      [
+       13,
+       14
+      ]
+     ]
+    },
+    {
+     "texto": "(1—2) a (18—20) de Dano de Raio por Carga de Poder",
+     "modelo": "{0} a {1} de Dano de Raio por Carga de Poder",
+     "faixas": [
+      [
+       1,
+       2
+      ],
+      [
+       18,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "Você pode aplicar 1 Maldições adicionais à Inimigos enquanto no máximo de Cargas de Poder",
+     "modelo": "Você pode aplicar {0} Maldições adicionais à Inimigos enquanto no máximo de Cargas de Poder",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "Recebe Fúria Arcana ao Acertar com Magias enquanto no máximo de Cargas de Poder",
+     "modelo": "Recebe Fúria Arcana ao Acertar com Magias enquanto no máximo de Cargas de Poder",
+     "faixas": []
+    },
+    {
+     "texto": "6% de aumento de Armadura por Carga de Tolerância",
+     "modelo": "{0}% de aumento de Armadura por Carga de Tolerância",
+     "faixas": [
+      [
+       6,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "1% de aumento das Velocidades de Ataque e Conjuração por Carga de Tolerância",
+     "modelo": "{0}% de aumento das Velocidades de Ataque e Conjuração por Carga de Tolerância",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "1% de aumento das Velocidades de Ataque e Conjuração por Carga de Poder",
+     "modelo": "{0}% de aumento das Velocidades de Ataque e Conjuração por Carga de Poder",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+1% de Chance de Bloquear o Dano de Ataques por Carga de Tolerância",
+     "modelo": "+{0}% de Chance de Bloquear o Dano de Ataques por Carga de Tolerância",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+1% de Chance de Bloquear o Dano de Ataques por Carga de Frenesi",
+     "modelo": "+{0}% de Chance de Bloquear o Dano de Ataques por Carga de Frenesi",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+1% de Chance de Bloquear o Dano de Ataques por Carga de Poder",
+     "modelo": "+{0}% de Chance de Bloquear o Dano de Ataques por Carga de Poder",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "Você não pode ser Atordoado enquanto no máximo de Cargas de Tolerância",
+     "modelo": "Você não pode ser Atordoado enquanto no máximo de Cargas de Tolerância",
+     "faixas": []
+    },
+    {
+     "texto": "15% de chance de que se você ganhasse Cargas de Tolerância, você ganha o seu número máximo de Cargas de Tolerância",
+     "modelo": "{0}% de chance de que se você ganhasse Cargas de Tolerância, você ganha o seu número máximo de Cargas de Tolerância",
+     "faixas": [
+      [
+       15,
+       15
+      ]
+     ]
+    },
+    {
+     "texto": "15% de chance de se você fosse receber uma Carga de Frenesi, você recebe até o número máximo de Cargas de Frenesi ao invés",
+     "modelo": "{0}% de chance de se você fosse receber uma Carga de Frenesi, você recebe até o número máximo de Cargas de Frenesi ao invés",
+     "faixas": [
+      [
+       15,
+       15
+      ]
+     ]
+    },
+    {
+     "texto": "15% de chance de que se você fosse ganhar Cargas de Poder, você ganha o seu número máximo de Cargas de Poder",
+     "modelo": "{0}% de chance de que se você fosse ganhar Cargas de Poder, você ganha o seu número máximo de Cargas de Poder",
+     "faixas": [
+      [
+       15,
+       15
+      ]
+     ]
+    },
+    {
+     "texto": "+4% de Resistência a Caos por Carga de Tolerância",
+     "modelo": "+{0}% de Resistência a Caos por Carga de Tolerância",
+     "faixas": [
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Recebe 1% de Dano de Gelo como Dano Extra de Caos por Carga de Frenesi",
+     "modelo": "Recebe {0}% de Dano de Gelo como Dano Extra de Caos por Carga de Frenesi",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "6% de aumento da Chance de Acerto Crítico por Carga de Tolerância",
+     "modelo": "{0}% de aumento da Chance de Acerto Crítico por Carga de Tolerância",
+     "faixas": [
+      [
+       6,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "6% de aumento da Chance de Acerto Crítico por Carga de Frenesi",
+     "modelo": "{0}% de aumento da Chance de Acerto Crítico por Carga de Frenesi",
+     "faixas": [
+      [
+       6,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "+3% ao Multiplicador de Crítico por Carga de Poder",
+     "modelo": "+{0}% ao Multiplicador de Crítico por Carga de Poder",
+     "faixas": [
+      [
+       3,
+       3
+      ]
+     ]
+    },
+    {
+     "texto": "Dano aumentado em 5% por Carga de Tolerância",
+     "modelo": "Dano aumentado em {0}% por Carga de Tolerância",
+     "faixas": [
+      [
+       5,
+       5
+      ]
+     ]
+    },
+    {
+     "texto": "5% de aumento de Dano por Carga de Frenesi",
+     "modelo": "{0}% de aumento de Dano por Carga de Frenesi",
+     "faixas": [
+      [
+       5,
+       5
+      ]
+     ]
+    },
+    {
+     "texto": "Dano aumentado em 5% por Carga de Poder",
+     "modelo": "Dano aumentado em {0}% por Carga de Poder",
+     "faixas": [
+      [
+       5,
+       5
+      ]
+     ]
+    },
+    {
+     "texto": "+1% de chance de Suprimir o Dano Mágico por Carga de Tolerância",
+     "modelo": "+{0}% de chance de Suprimir o Dano Mágico por Carga de Tolerância",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+1% de chance de Suprimir o Dano Mágico por Carga de Frenesi",
+     "modelo": "+{0}% de chance de Suprimir o Dano Mágico por Carga de Frenesi",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+1% de chance de Suprimir o Dano Mágico por Carga de Poder",
+     "modelo": "+{0}% de chance de Suprimir o Dano Mágico por Carga de Poder",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "Duração da Carga de Tolerância aumentada em (20—40)%",
+     "modelo": "Duração da Carga de Tolerância aumentada em {0}%",
+     "faixas": [
+      [
+       20,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "Ganha 1 Cargas de Tolerância por segundo se foi Acertado Recentemente",
+     "modelo": "Ganha {0} Cargas de Tolerância por segundo se foi Acertado Recentemente",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "10% de chance de receber uma Carga de Tolerância ao Matar",
+     "modelo": "{0}% de chance de receber uma Carga de Tolerância ao Matar",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "3% de aumento do Escudo de Energia por Carga de Poder",
+     "modelo": "{0}% de aumento do Escudo de Energia por Carga de Poder",
+     "faixas": [
+      [
+       3,
+       3
+      ]
+     ]
+    },
+    {
+     "texto": "Evasão aumentados em 8% por Carga de Frenesi",
+     "modelo": "Evasão aumentados em {0}% por Carga de Frenesi",
+     "faixas": [
+      [
+       8,
+       8
+      ]
+     ]
+    },
+    {
+     "texto": "Recebe 1% de Dano de Fogo como Dano de Caos Extra por Carga de Tolerância",
+     "modelo": "Recebe {0}% de Dano de Fogo como Dano de Caos Extra por Carga de Tolerância",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "Recebe uma Carga de Frasco ao causar um Acerto Crítico enquanto no máximo de Cargas de Frenesi",
+     "modelo": "Recebe uma Carga de Frasco ao causar um Acerto Crítico enquanto no máximo de Cargas de Frenesi",
+     "faixas": []
+    },
+    {
+     "texto": "Duração da Carga de Frenesi aumentada em (20—40)%",
+     "modelo": "Duração da Carga de Frenesi aumentada em {0}%",
+     "faixas": [
+      [
+       20,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "10% de chance de receber uma Carga de Frenesi ao Acertar",
+     "modelo": "{0}% de chance de receber uma Carga de Frenesi ao Acertar",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "10% de chance de ganhar uma Carga de Frenesi ao Matar",
+     "modelo": "{0}% de chance de ganhar uma Carga de Frenesi ao Matar",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Intimida Inimigos por 4 segundos ao Acertar com Ataques enquanto no máximo de Cargas de Tolerância",
+     "modelo": "Intimida Inimigos por {0} segundos ao Acertar com Ataques enquanto no máximo de Cargas de Tolerância",
+     "faixas": [
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Você possui Reflexos de Ferro enquanto no máximo de Cargas de Frenesi",
+     "modelo": "Você possui Reflexos de Ferro enquanto no máximo de Cargas de Frenesi",
+     "faixas": []
+    },
+    {
+     "texto": "Regenera 0.3% de Vida por segundo por Carga de Tolerância",
+     "modelo": "Regenera {0}% de Vida por segundo por Carga de Tolerância",
+     "faixas": [
+      [
+       0.3,
+       0.3
+      ]
+     ]
+    },
+    {
+     "texto": "0.3% de Vida Regenerada por segundo por Carga de Frenesi",
+     "modelo": "{0}% de Vida Regenerada por segundo por Carga de Frenesi",
+     "faixas": [
+      [
+       0.3,
+       0.3
+      ]
+     ]
+    },
+    {
+     "texto": "Regenera 0.3% de vida por segundo por Carga de Poder",
+     "modelo": "Regenera {0}% de vida por segundo por Carga de Poder",
+     "faixas": [
+      [
+       0.3,
+       0.3
+      ]
+     ]
+    },
+    {
+     "texto": "Recebe 1% do Dano de Raio como Dano Extra de Caos por carga de Poder",
+     "modelo": "Recebe {0}% do Dano de Raio como Dano Extra de Caos por carga de Poder",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+1 ao Máximo de Cargas de Tolerância",
+     "modelo": "+{0} ao Máximo de Cargas de Tolerância",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+1 ao Máximo de Cargas de Frenesi",
+     "modelo": "+{0} ao Máximo de Cargas de Frenesi",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+1 ao Máximo de Cargas de Poder",
+     "modelo": "+{0} ao Máximo de Cargas de Poder",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "Você possui Mente sobre Matéria enquanto no máximo de Cargas de Poder",
+     "modelo": "Você possui Mente sobre Matéria enquanto no máximo de Cargas de Poder",
+     "faixas": []
+    },
+    {
+     "texto": "1% de aumento da Velocidade de Movimento por Carga de Tolerância",
+     "modelo": "{0}% de aumento da Velocidade de Movimento por Carga de Tolerância",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "Velocidade de Movimento aumentada em 1% por Carga de Frenesi",
+     "modelo": "Velocidade de Movimento aumentada em {0}% por Carga de Frenesi",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "1% de aumento da Velocidade de Movimento por Carga de Poder",
+     "modelo": "{0}% de aumento da Velocidade de Movimento por Carga de Poder",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "Recebe Agressividade por 4 segundos ao Acertar enquanto no Máximo de Cargas de Frenesi",
+     "modelo": "Recebe Agressividade por {0} segundos ao Acertar enquanto no Máximo de Cargas de Frenesi",
+     "faixas": [
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "1% de Redução de Dano Físico adicional por Carga de Poder",
+     "modelo": "{0}% de Redução de Dano Físico adicional por Carga de Poder",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "1% de Redução adicional do Dano Físico por Carga de Poder",
+     "modelo": "{0}% de Redução adicional do Dano Físico por Carga de Poder",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "Duração da Carga de Poder aumentada em (20—40)%",
+     "modelo": "Duração da Carga de Poder aumentada em {0}%",
+     "faixas": [
+      [
+       20,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "20% de chance de receber uma Carga de Poder ao acertar um Golpe Crítico",
+     "modelo": "{0}% de chance de receber uma Carga de Poder ao acertar um Golpe Crítico",
+     "faixas": [
+      [
+       20,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "10% de chance de ganhar uma Carga de Poder ao Matar",
+     "modelo": "{0}% de chance de ganhar uma Carga de Poder ao Matar",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Você possui Pacto Vaal enquanto no máximo de Cargas de Tolerância",
+     "modelo": "Você possui Pacto Vaal enquanto no máximo de Cargas de Tolerância",
+     "faixas": []
     }
    ]
   },

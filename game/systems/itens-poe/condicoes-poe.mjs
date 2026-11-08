@@ -2531,7 +2531,7 @@ export function definirAcaoPeloNome(fn) { acaoPeloNome = fn; }
 const DINAMICOS = /^(sempre|efeito_buff|concede|suporte_local|suporte_peitoral|suporte_elmo|keystone|aura_unica|fuga_impossivel|proibida_chama|proibida_carne):[\w-]+$/;
 /** As FAMÍLIAS de atributo com parâmetro que o código monta pelo nome (o parâmetro tem de ser um dos que ele conhece). */
 const ELS_P = '(physical|fire|ice|energy|chaos)';
-const TIPOS_DE_LACAIO = '(sentinela|zumbi|espectro|golem|esqueleto|totem|espirito|fantasma|reliquia|sagrado|arma|aranha|arqueiro|balista|arauto|qualquer)';
+const TIPOS_DE_LACAIO = '(sentinela|zumbi|espectro|golem|esqueleto|totem|espirito|fantasma|reliquia|sagrado|arma|aranha|arqueiro|balista|arauto|rastejador|arbalista|qualquer)';
 const PARAMETRICOS = [
   new RegExp(`^pode:(incendio|congelamento|resfriamento|eletrizacao|veneno|sangramento):${ELS_P}$`), // itens-poe/afeccoes.daSoma
   new RegExp(`^nao_pode:(incendio|congelamento|resfriamento|eletrizacao|veneno|sangramento)(:${ELS_P})?$`), // itens-poe/afeccoes.daSoma
@@ -2562,6 +2562,10 @@ const PARAMETRICOS = [
   // MALDIÇÃO que a peça põe em você ("Você é Amaldiçoado com Vulnerabilidade" — `addsDasMaldicoesNoJogador`)
   new RegExp(`^aura_degen:${ELS_P}$`), new RegExp(`^aura_efeito_pelo_dano:${ELS_P}$`), /^maldicao_propria:(fraquezaElemental|vulnerabilidade|enfraquecer|flamabilidade|congelabilidade|condutividade|desespero)$/, // mods-poe.aurasProximas
   /^efeito_buff_gema:(aura|clamor|arauto|lacaio|todos|golem|vinculo|guarda|estandarte)$/,
+  // (08/11, o Triunvirato) o efeito da peça só nas gemas encaixadas nela — `skills/gemas.extrasDaGemaPoe`
+  // (08/11, a Marcha de Vorana) os efeitos de lacaio só de um tipo — `lacaios-poe.oQueInvoca`
+  new RegExp(`^lacaio_tipo:${TIPOS_DE_LACAIO}:minion_[a-z_]+$`),
+  /^gema_local:(?:acertos_ignoram_res|ignora_reducao_fisica|projectile_speed|vaal_almas_menos|vaal_almas_de_volta_chance|vaal_elusivo_ao_usar|vaal_vento_ao_usar|duracaoPct|impedimento_almas_duracao_inc|dano_acertos_sortudo|efeitoAuraPct)$/,
   /^efeito_maldicao_expirou:\d+$/, /^maldicao_(lento|dano)_expirou:\d+$/, // acoes.efeitosDaMaldicao → Reforcos.marcar ("Efeito aumentado se Y% da Duração da Maldição expirou") // itens-poe/gemas-poe (reforços das gemas; golem: os bônus dos golens ao dono)
   new RegExp(`^sem_dano:(${ELS_P.slice(1, -1)}|elemental|naocaos|naoelemental|naofisico)$`), new RegExp(`^so_dano:${ELS_P}$`), // transformarPartes
   // (ciclo 7, lote D) mods-poe.aoSerAtordoado ("por 1 segundo por cada 100ms de Duração do Atordoamento") e os periódicos (mods-poe.aurasProximas).

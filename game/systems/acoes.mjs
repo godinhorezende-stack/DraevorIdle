@@ -3526,11 +3526,16 @@ function fragmentosNoUso(estado, hunt, entry, efeitoDaGema, agora, { doTotem = f
  * como no PoE, o Projéteis Múltiplos Maior no Erguer Espectro vale nos projéteis dos espectros. As peças do personagem não entram (são
  * dele, não dos lacaios). Sem gema ou sem suporte de projétil: só o principal (o chamador já deu). Devolve o do `Secundarios.resolver`.
  */
-export function projeteisDoLacaio(estado, acaoDaGema, { origem, alvo, vivos, alcance }) {
+export function projeteisDoLacaio(estado, acaoDaGema, { origem, alvo, vivos, alcance, extra = null }) {
   const entry = POR_ID.get(acaoDaGema);
-  if (!entry || !Gemas.ehSkillDeGema(entry)) return null;
-  const efeito = Gemas.efeitoNaSkill(estado, entry.id);
-  if (!efeito) return null;
+  // (08/11, a Marcha de Vorana: `extra` — os projéteis a mais do PRÓPRIO lacaio, "Arbalistas Convocadas disparam N Projéteis adicionais / Atravessam / se Difundem /
+  // Ricocheteiam / se Dividem" — `LacaiosPoe.oQueInvoca` → `projeteisExtra`), somados aos dos suportes ligados na gema
+  const temExtra = extra && Object.values(extra).some((v) => Number(v) > 0);
+  if ((!entry || !Gemas.ehSkillDeGema(entry)) && !temExtra) return null;
+  const doSuporte = entry && Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id) : null;
+  if (!doSuporte && !temExtra) return null;
+  const efeito = { ...(doSuporte ?? {}) };
+  if (temExtra) for (const [k, v] of Object.entries(extra)) if (Number(v) > 0) efeito[k] = (Number(efeito[k]) || 0) + Number(v);
   return Secundarios.resolver({ efeito, tags: ['projectile', 'single', 'hit'], origem, alvo, atingidos: [alvo], vivos, alcance, voo: itensPoeLigado() && !Voos.geometriaAntiga() });
 }
 
@@ -7775,7 +7780,8 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
       })() : fichaDoCritico;
       const rolado = Ficha.rolarCritico(estado, base, bicho, eventos, sempreNaFinal || retaliacaoCritica || pulsoForteDoUso?.sempreCritico ? { ...fichaDoCritico2, critChance: 1, critChanceMagia: 1 } : semForaDaFinal ? { ...fichaDoCritico2, critChance: 0 } : fichaDoCritico2);
       // PoE: "Golpes Críticos de Ataques ignoram a Resistência Elemental dos Monstros" — no crítico, a parte elemental sem a resistência positiva.
-      if (rolado.crit && base > 0 && ModsPoe.valor(ficha, 'critico_ignora_res') > 0) {
+      // (08/11, o Triunvirato: "Acertos de Habilidades Vaal Encaixadas ignoram as Resistências dos Monstros" — `acertos_ignoram_res` do uso, todo acerto dela)
+      if (base > 0 && ((rolado.crit && ModsPoe.valor(ficha, 'critico_ignora_res') > 0) || ModsPoe.valor(ficha, 'acertos_ignoram_res') > 0)) {
         // (revisão G) as razões partem da mesma ficha da `base` (`fichaDaRes` — o Caos da Detonação pela menor/maior resistência)
         const semRes = pedacos ? pedacos.reduce((t, p) => t + (['fire', 'ice', 'energy'].includes(p.elemento) ? Math.max(p.dano, resistido(hunt, bicho, p.elemento, p.dano, fichaDaRes)) : resistido(hunt, bicho, p.elemento, p.dano, fichaDaRes)), 0) : (['fire', 'ice', 'energy'].includes(tipo) ? Math.max(bruto, base) : base);
         rolado.dano = Math.round((rolado.dano * semRes) / base);
@@ -9158,7 +9164,9 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
   // foi do arremesso.)
   // (lote 51, o Reino de Atziri — dono, 16/10: "Traduzir para a recarga": as Almas Vaal do PoE são a recarga das Vaal no jogo) "Habilidades
   // Vaal tem X% de chance de ganharem as Almas consumidas novamente quando usadas" = a Vaal usada não entra em recarga, na chance.
-  const vaalDeGraca = !plantada && recarga > 0 && entry.poeGema && tagsPoeDaSkill(entry).includes('vaal') && Math.random() * 100 < ModsPoe.valor(fichaDaRecarga, 'vaal_almas_de_volta_chance');
+  // (08/11: + a da peça onde a gema está — "Habilidades Vaal Encaixadas têm X% de chance de ganharem novamente as Almas", o Triunvirato: `af:` do uso)
+  const doUso = (k) => Number(efeitoDaGema?.[`af:${k}`]) || 0;
+  const vaalDeGraca = !plantada && recarga > 0 && entry.poeGema && tagsPoeDaSkill(entry).includes('vaal') && Math.random() * 100 < ModsPoe.valor(fichaDaRecarga, 'vaal_almas_de_volta_chance') + doUso('vaal_almas_de_volta_chance');
   // (lote A1b, dono 19/10: D-a: a recarga pulada com a carga não recomeça)
   // (07/11, lote 14 das inertes) as ALMAS na recarga das Vaal: a Forja do Ódio — "Habilidades de Ataque Vaal que você Usar manualmente Custam Fúria ao invés de exigirem
   // Almas": com Fúria igual às Almas por Utilização (− o "Custo de Fúria reduzido"), o ataque Vaal à mão gasta a Fúria e não entra em recarga; o Pastor das Almas —
@@ -9173,6 +9181,8 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
     const recentes = (hunt.poeVaalUsadas = (hunt.poeVaalUsadas ?? []).filter((t) => t > inicio - 8000)).length;
     recargaVaal = Math.round(recarga * 0.2 * (1 + recentes));
   }
+  // (08/11, o Triunvirato: "Habilidades Vaal Encaixadas requerem X% menos Almas por Uso" — as Almas são a recarga das Vaal no jogo: a recarga × (1 − X%))
+  if (ehVaal && doUso('vaal_almas_menos') > 0) recargaVaal = Math.round(recargaVaal * Math.max(0, 1 - doUso('vaal_almas_menos') / 100));
   if (ehVaal) hunt.poeVaalUsadas = [...(hunt.poeVaalUsadas ?? []), inicio];
   if (!plantada && !vaalDeGraca && !continuaCanal && !pulaARecarga && !pagouComFuria) cds[action.id] = { ate: inicio + recargaVaal, total: recargaVaal };
   // (lote P4, decisão do dono 27/10) o IMPEDIMENTO DE GANHO DE ALMAS: o seu uso de uma Vaal (não o ativado — o Duplo, a plantada) para a recarga de toda Vaal da barra pelo
@@ -9279,6 +9289,9 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
     for (const [tag, rec, ev] of [['movimento', 'usouMovimento', 'usarMovimento'], ['vaal', 'usouVaal', 'usarVaal'], ['clamor', 'clamou', 'usarClamor'], ['maldicao', null, 'conjurarMaldicao'], ['guarda', null, 'usarGuarda'], ['mina', null, 'mina']]) {
       if (!tagsPoe.includes(tag)) continue;
       if (rec) ModsPoe.marcar(hunt, rec);
+      // (08/11, o Triunvirato: "Habilidades Vaal Encaixadas concedem Elusivo quando Usadas"; "Você tem Vento Favorável se usou uma Habilidade Vaal Encaixada Recentemente")
+      if (tag === 'vaal' && Number(efeitoDaGema?.['af:vaal_elusivo_ao_usar']) > 0) ModsPoe.ganharBuff(hunt, 'elusivo', 4, hunt.clock ?? 0);
+      if (tag === 'vaal' && Number(efeitoDaGema?.['af:vaal_vento_ao_usar']) > 0) ModsPoe.ganharBuff(hunt, 'ventoFavoravel', ModsPoe.RECENTE_MS / 1000, hunt.clock ?? 0);
       ModsPoe.evento(estado, hunt, ev, fichaDoUso, ctxDoUso);
     }
     if (/^Dash$|Avanço$/i.test(GemasPoe.doSlug(entry.poeGema.slug)?.gema?.en ?? '')) ModsPoe.marcar(hunt, 'usouAvanco');
@@ -9570,7 +9583,7 @@ const keystonesAlocadasP4 = (estado) => (efeitosDaArvore(estado)?.keystones ?? [
 function msDoImpedimentoP4(estado, entry, ef) {
   const t = GemasPoe.textosDaGema(entry.poeGema.slug, ef?.nivel ?? 1);
   // (07/11, lote 14: × a "Duração da Prevenção do Ganho de Almas reduzida" — o Acordo de Yaomac, o Apanhador de Almas durante o efeito)
-  const inc = ModsPoe.valor(Ficha.combate(estado), 'impedimento_almas_duracao_inc');
+  const inc = ModsPoe.valor(Ficha.combate(estado), 'impedimento_almas_duracao_inc') + (Number(ef?.['af:impedimento_almas_duracao_inc']) || 0);
   return GemasP4.msDoImpedimento(SuportesS2A.impedimentoDasProps(t.props), t.linhas, fatorDeDuracao(estado, entry, ef)) * Math.max(0, 1 + inc / 100);
 }
 /**

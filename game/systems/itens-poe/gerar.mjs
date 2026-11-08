@@ -137,8 +137,26 @@ export function modificadoresDoUnico(u, rng, manter = null, nivel = Infinity) {
       const nome = ja ? ja[1] : ns.nomes[Math.floor(rng() * ns.nomes.length)];
       return [{ tipo: m.tipo, ...rolarTexto({ ...m, modelo: m.modelo.replace(ns.marca, nome) }, rng) }];
     }
-    const n = ls?.substitui?.[m.modelo];
+    let n = ls?.substitui?.[m.modelo];
     if (!n) return [{ tipo: m.tipo, ...rolarTexto(m, rng) }];
+    // (08/11, balão 0 sem efeito) `composicao`: a marcação que junta pools ("[Two Endurance Charge mods and one Power Charge Mod]" — o Emblema do Precursor): N de
+    // cada pool; o Orbe Divino (`manter`) fica com as linhas da peça
+    if (n === 'composicao') {
+      return (ls.composicao?.[m.modelo] ?? []).flatMap(([nome, q]) => {
+        const pool = ls.pools?.[nome] ?? [];
+        const ja = manter ? pool.filter((l) => manter.has(l.modelo)).slice(0, q) : [];
+        return (ja.length ? ja : linhasDoPool(pool, q, rng)).map((l) => ({ tipo: m.tipo, sorteada: true, ...rolarTexto(l, rng) }));
+      });
+    }
+    // (08/11) 'faixa': o número de linhas sai da faixa da própria marcação ("[You have 1-2 Random Shrine Buff…]", "[3 to 5 of Arbalists Modifiers]")
+    if (n === 'faixa') {
+      const f = m.faixas ?? [];
+      const lo = Number(f[0]?.[0]) || 1;
+      const hi = Math.max(lo, Number(f.at(-1)?.[1]) || lo);
+      n = lo + Math.floor(rng() * (hi - lo + 1));
+      // (o Orbe Divino fica com quantas a peça tem)
+      if (manter) n = Math.max(n, ls.linhas.filter((l) => manter.has(l.modelo)).length);
+    }
     // (lote 57: a marcação com o pool próprio — `pools[marca]`: o Limitado pelo Destino, as linhas do seu número de itens)
     // (lote 79: a linha com o nível do mod — o Megalomaníaco — só sai com o Item Level da peça)
     const pool = (ls.pools?.[m.modelo] ?? ls.linhas).filter((l) => !(l.nivel > nivel));

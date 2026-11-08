@@ -52,6 +52,62 @@ for (const [slug, { aba, substitui }] of Object.entries(UNICOS)) {
   unicos[slug] = { classe: 'Jewels', substitui: quantas, ...(proprios.length ? { pools } : {}), fonte: d.fonte, linhas };
   console.log(`${slug}: ${linhas.length} linhas`);
 }
+// (08/11, balão 0 sem efeito — o dono: "Fazer todos") os MODS SORTEADOS dos outros únicos, pela aba "Modificadores" do poedb (o texto do mod é a célula mais
+// longa da linha — o Triunvirato traz "Únicos", o texto, o peso e o nível). `substitui`: o número de linhas, ou 'faixa' (o número sai da faixa da própria marcação:
+// "[You have 1-2 Random Shrine Buff…]", "[3 to 5 of Arbalists Modifiers]"); `composicao`: a marcação que junta pools ("[Two Endurance Charge mods and one Power Charge
+// Mod]" — o Emblema do Precursor).
+const textoDaLinha = (r) => String([...r].sort((x, y) => String(y).length - String(x).length)[0] ?? '').trim();
+const linhasDaAba = (slug, aba) => {
+  const d = JSON.parse(readFileSync(`${PASTA}/${slug}.json`, 'utf8'));
+  const a = d.abas.find((x) => aba.test(x.id));
+  if (!a) throw new Error(`${slug}: a aba do pool não está no arquivo do Scrapling`);
+  return { fonte: d.fonte, linhas: a.cards.flatMap((c) => c.tabelas ?? []).flatMap((t) => t.linhas ?? []).map((r) => noFormatoDoCatalogo(textoDaLinha(r))) };
+};
+const OUTROS = {
+  Screams_of_the_Desiccated: { classe: 'Belts', aba: /Modificadores$/, substitui: { '[You have {0}-{1} Random Shrine Buff while affected by no Flasks]': 'faixa' } },
+  Voranas_March: { classe: 'Boots', aba: /Modificadores$/, substitui: { '[{0} to {1} of Arbalists Modifiers]': 'faixa' } },
+  Tombfist: { classe: 'Gloves', aba: /Modificadores$/, substitui: { '[{0} random Abyss Jewel-dependent modifiers]': 'faixa' } },
+  Triumvirate_Authority: { classe: 'Rings', aba: /^TriumvirateAuthorityMods$/, substitui: { '[Four random modifiers]': 4, '[Three random modifiers]': 3 } },
+  Cinderswallow_Urn: { classe: 'Utility_Flasks', aba: /Modificadores$/, substitui: { '[One random modifier]': 1 } },
+  Circle_of_Guilt: { classe: 'Rings', aba: /Modificadores$/, substitui: { '[Random Herald of Purity modifier]': 1 } },
+  Circle_of_Regret: { classe: 'Rings', aba: /Modificadores$/, substitui: { '[Random Herald of Thunder modifier]': 1 } },
+  Circle_of_Fear: { classe: 'Rings', aba: /Modificadores$/, substitui: { '[Random Herald of Ice modifier]': 1 } },
+  Circle_of_Anguish: { classe: 'Rings', aba: /Modificadores$/, substitui: { '[Random Herald of Ash modifier]': 1 } },
+  Circle_of_Nostalgia: { classe: 'Rings', aba: /Modificadores$/, substitui: { '[Random Herald of Agony modifier]': 1 } },
+};
+for (const [slug, o] of Object.entries(OUTROS)) {
+  const { fonte, linhas } = linhasDaAba(slug, o.aba);
+  unicos[slug] = { classe: o.classe, substitui: o.substitui, fonte, linhas };
+  console.log(`${slug}: ${linhas.length} linhas`);
+}
+// A ASCENSÃO DE AUL: o pool por ATRIBUTO da aura (as variantes do PoB — Data/Uniques/amulet.lua: Força, Destreza e Inteligência; a Inveja é uma variante à parte, sem marcação no catálogo)
+{
+  const { fonte, linhas } = linhasDaAba('Auls_Uprising', /Modificadores$/);
+  const POR_ATRIBUTO = { forca: ['Cólera', 'Determinação', 'Orgulho', 'Pureza do Fogo', 'Vitalidade'], destreza: ['Graça', 'Ímpeto', 'Ódio', 'Pureza do Gelo'], inteligencia: ['Clareza', 'Disciplina', 'Malevolência', 'Pureza dos Elementos', 'Pureza do Raio', 'Ira', 'Fanatismo'] };
+  const daAura = (l) => l.texto.replace(/ não (?:possui|tem) Reserva.*$/, '');
+  const pool = (nomes) => linhas.filter((l) => nomes.includes(daAura(l)));
+  const marcas = { '[Random Strength aura Reserves no Mana]': 'forca', '[Random Dexterity aura Reserves no Mana]': 'destreza', '[Random Intelligence aura Reserves no Mana]': 'inteligencia' };
+  const pools = Object.fromEntries(Object.entries(marcas).map(([m, a]) => [m, pool(POR_ATRIBUTO[a])]));
+  for (const [m, l] of Object.entries(pools)) if (l.length !== POR_ATRIBUTO[marcas[m]].length) throw new Error(`Ascensão de Aul: ${m} com ${l.length} linhas`);
+  unicos.Auls_Uprising = { classe: 'Amulets', substitui: Object.fromEntries(Object.keys(marcas).map((m) => [m, 1])), pools, fonte, linhas };
+  console.log(`Auls_Uprising: ${Object.values(pools).map((l) => l.length).join(' / ')} auras`);
+}
+// O EMBLEMA DO PRECURSOR: o pool por CARGA (a linha que fala da carga) e cada marcação, quantas de cada
+{
+  const { fonte, linhas } = linhasDaAba('Precursors_Emblem', /Modificadores$/);
+  const daCarga = (l) => (/Frenesi/.test(l.texto) ? 'frenesi' : /Tolerância/.test(l.texto) ? 'tolerancia' : /Poder/.test(l.texto) ? 'poder' : null);
+  const cargas = { frenesi: linhas.filter((l) => daCarga(l) === 'frenesi'), tolerancia: linhas.filter((l) => daCarga(l) === 'tolerancia'), poder: linhas.filter((l) => daCarga(l) === 'poder') };
+  const sem = linhas.filter((l) => !daCarga(l));
+  if (sem.length) throw new Error(`Precursor: linhas sem carga: ${sem.map((l) => l.texto).join('; ')}`);
+  const N = { One: 1, Two: 2, Three: 3 };
+  const C = { Power: 'poder', Frenzy: 'frenesi', Endurance: 'tolerancia' };
+  const marcas = ['[Three Power Charge mods]', '[Three Frenzy Charge mods]', '[Three Endurance Charge mods]', '[Endurance Charge mod]', '[Frenzy Charge mod]', '[Power Charge mod]',
+    '[Two Endurance Charge mods and one Power Charge Mod]', '[One Endurance Charge mod and Two Power Charge Mods]', '[Two Frenzy Charge mods and one Power Charge Mod]',
+    '[One Frenzy Charge mod and Two Power Charge Mods]', '[Two Endurance Charge mods and one Frenzy Charge Mod]', '[One Endurance Charge mod and Two Frenzy Charge Mods]'];
+  const composicao = Object.fromEntries(marcas.map((m) => [m, [...m.matchAll(/(?:(One|Two|Three) )?(Power|Frenzy|Endurance) Charge [Mm]ods?/gi)].map(([, n, c]) => [C[c[0].toUpperCase() + c.slice(1).toLowerCase()], N[n ? n[0].toUpperCase() + n.slice(1).toLowerCase() : 'One']])]));
+  unicos.Precursors_Emblem = { classe: 'Rings', substitui: Object.fromEntries(marcas.map((m) => [m, 'composicao'])), composicao, pools: cargas, fonte, linhas };
+  console.log(`Precursors_Emblem: frenesi ${cargas.frenesi.length}, tolerância ${cargas.tolerancia.length}, poder ${cargas.poder.length}`);
+}
 // (lote 56) Os NOMES SORTEADOS: a marcação "Passive Skill" do texto vira um nome — a Fuga Impossível, uma das pedras fundamentais da aba "Notável"
 // do poedb (as que estão na árvore do jogo); a Chama e a Carne Proibida, um notável de ascendência (os da árvore do jogo — os 7 escondidos da
 // variação do Exarca Supremo não estão nela). Com a mesma chance.

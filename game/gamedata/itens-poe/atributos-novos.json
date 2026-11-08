@@ -10130,6 +10130,12 @@
       "unidade": "%",
       "combate": true,
       "efeito": "afeccoes / cargas (08/11 — aproximadas A4)"
+    },
+    "chance_frenesi_maxima": {
+      "nome": "Chance de ganhar o máximo de Cargas de Frenesi",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas.ganhar (08/11 — o Emblema do Precursor)"
     }
   }
 }
