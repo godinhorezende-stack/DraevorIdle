@@ -14,7 +14,7 @@ import { resistido } from '../systems/hunt/resistencia.mjs';
 import { criarMonstro, BESTIARY } from '../systems/hunt/monstros.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
-import { aAdaptar, doClassico } from './apoio-migracao.mjs';
+import { doClassico, soNoOficial } from './apoio-migracao.mjs';
 
 const troll = (extra = {}) => Object.assign(criarMonstro({ key: 'troll', x: 1, y: 1 }, null), extra);
 const comConfig = (fn, mudar) => {
@@ -122,23 +122,27 @@ test('o bloqueio do bicho: nenhum por padrão; só espécie ou modificador; no t
   comConfig(() => assert.equal(M.bloqueioDe(troll()), 0.2), (c) => { c.porEspecie.especies = { troll: { bloqueio: 20 } }; });
 });
 
-test('o golpe do jogador em quem bloqueia não causa dano (gema); sem bloqueio causa', { skip: aAdaptar("Bloqueio do monstro vale no PoE; o golpe do teste é magia do Draevor") }, () => {
+// (08/11, adaptado ao PoE — o dono: "Adaptar antes") A magia é uma GEMA do PoE (Arco) numa varinha do PoE (Varinha de Madeira Balsa), contra
+// um monstro do PoE da própria área (o Marinheiro Amaldiçoado).
+const MAGIA_POE = 'poe-gema:Arc';
+test('o golpe do jogador em quem bloqueia não causa dano (gema); sem bloqueio causa', { skip: soNoOficial('a gema, a varinha e o monstro do PoE') }, () => {
   const e = personagemDeTeste({ vocacao: 'sorcerer', level: 300 });
   e.magic = { value: 80 };
   e.maxHp = e.hp = 1e9;
   e.maxMana = e.mana = 1e9;
-  const wand = Number(Object.values(ITEM_CATALOG).find((i) => i.name === 'wand of vortex').id);
-  e.equipment.weapon = { id: wand, count: 1, soquetes: { abertos: 1, links: [], gemas: [G.novaGema(G.ITEM_DA_ACAO.get('spell-energy-strike'))] } };
+  const wand = Number(Object.values(ITEM_CATALOG).find((i) => i.poe?.base === 'Wands/Driftwood_Wand').id);
+  e.equipment.weapon = { id: wand, count: 1, soquetes: { abertos: 1, links: [], gemas: [G.novaGema(G.ITEM_DA_ACAO.get(MAGIA_POE))] } };
   Ficha.invalidar(e);
   assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const h = e.hunt;
   delete h.instancia;
   h.respawns = [];
-  const m = Object.assign(criarMonstro({ key: 'troll', x: h.pos.x + 1, y: h.pos.y }, null), { hp: 1e12, maxHp: 1e12 });
+  const m = Object.assign(criarMonstro({ key: 'poe-cursed-mariner-12', x: h.pos.x + 1, y: h.pos.y }, null), { hp: 1e12, maxHp: 1e12 });
   h.monstros = [m];
   e.actions = Array(Acoes.SLOTS).fill(null);
-  const slot = Acoes.PAPEL_DO_SLOT.indexOf('attack');
-  assert.ok(Acoes.definir(e, { slot, value: { id: 'spell-energy-strike' } }).ok);
+  // (a barra do PoE: todo slot é de habilidade — não há o slot "attack" do Draevor)
+  const slot = Acoes.PAPEL_DO_SLOT.indexOf('skill');
+  assert.ok(Acoes.definir(e, { slot, value: { id: MAGIA_POE } }).ok);
   const lancar = () => {
     h.cooldowns = {};
     delete h.ultimoAtaqueEm;

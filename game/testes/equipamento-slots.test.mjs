@@ -10,23 +10,33 @@ import { round } from '../systems/hunt/combate.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
 
 const todos = Object.values(ITEM_CATALOG);
 /** Uma peça real e simples de cada slot (sem requisito de atributo, nível baixo, que não empilha). */
 const simples = (slot, filtro = () => true) => todos.find((i) => i.slot === slot && !i.stackable && !(i.minLevel > 5) && !i.requisitos && !i.twoHanded && !i.quiver && !String(i.name).startsWith('Crafted') && filtro(i));
+// (08/11, adaptado ao PoE — o dono: "Adaptar antes") A amostra é de BASES do PoE (`poe`), uma por slot do jogo oficial — com as luvas e o
+// segundo anel (`ring2`, que recebe um anel, como no PoE). O cinto do PoE é o slot `legs`. Sem base do PoE: a munição (o PoE não tem esse
+// slot de conteúdo: a flecha do Draevor é a única peça real dele) e a mochila (o contêiner do personagem, que entra no oficial: `so-itens-do-poe`).
+const doPoe = (slot, classe) => simples(slot, (i) => i.poe?.classe === classe);
 const AMOSTRA = {
-  head: simples('head', (i) => i.type === 'helmets'),
-  neck: simples('neck', (i) => /amulets/.test(i.type)),
-  body: simples('body', (i) => i.type === 'armors'),
-  legs: simples('legs', (i) => i.type === 'legs'),
-  feet: simples('feet', (i) => i.type === 'boots'),
-  ring: simples('ring', (i) => i.type === 'rings'),
-  weapon: simples('weapon', (i) => i.type === 'sword weapons'),
-  shield: simples('shield', (i) => i.type === 'shields'),
+  head: doPoe('head', 'Helmets'),
+  neck: doPoe('neck', 'Amulets'),
+  body: doPoe('body', 'Body_Armours'),
+  legs: doPoe('legs', 'Belts'),
+  feet: doPoe('feet', 'Boots'),
+  ring: doPoe('ring', 'Rings'),
+  weapon: doPoe('weapon', 'One_Hand_Swords'),
+  shield: doPoe('shield', 'Shields'),
   ammo: todos.find((i) => i.slot === 'ammo' && i.ammo === 'arrow' && i.attack && !(i.minLevel > 5)),
-  backpack: simples('backpack', (i) => i.type === 'containers'),
+  backpack: ITEM_CATALOG[2854],
+  gloves: doPoe('gloves', 'Gloves'),
+  ring2: simples('ring', (i) => i.poe?.classe === 'Rings' && i.id !== doPoe('ring', 'Rings')?.id),
 };
+/**
+ * As trocas que o PoE ACEITA entre slots diferentes (não são "outra categoria"): um anel nos dois anéis, e a arma de UMA mão na mão secundária
+ * (uma em cada mão — `Equipamento.cabeNoSlot`).
+ */
+const MESMA_CATEGORIA_NO_POE = new Set(['ring>ring2', 'ring2>ring', 'weapon>shield']);
 const nome = (id) => ITEM_CATALOG[id].name;
 
 function personagem(extra = {}) {
@@ -38,7 +48,7 @@ function personagem(extra = {}) {
 const unidades = (e, id) => (e.inventory ?? []).filter((p) => p.id === id).reduce((n, p) => n + (p.count ?? 1), 0) + Object.values(e.equipment ?? {}).filter((p) => p?.id === id).reduce((n, p) => n + (p.count ?? 1), 0);
 const fotografia = (e) => JSON.stringify({ i: e.inventory, q: e.equipment });
 
-test('a amostra tem uma peça real para cada slot do jogo', { skip: aAdaptar("Slots valem no PoE, que tem luvas; a amostra de peças não tem luvas (\"sem peça de teste para gloves\")") }, () => {
+test('a amostra tem uma peça real para cada slot do jogo', () => {
   for (const slot of Equipamento.SLOTS_DE_EQUIPAMENTO) assert.ok(AMOSTRA[slot], `sem peça de teste para ${slot}`);
 });
 
@@ -51,15 +61,24 @@ test('cada peça entra no SEU slot (arrastar para o slot certo e clique, sem diz
     assert.equal(unidades(e, meta.id), 1, 'uma só cópia: no corpo, não na mochila');
     const clique = personagem();
     clique.inventory = [{ id: meta.id, count: 1 }];
+    // PoE: o anel clicado vai no PRIMEIRO anel livre — com o primeiro ocupado, o do segundo anel vai no `ring2`.
+    if (slot === 'ring2') clique.equipment.ring = { id: AMOSTRA.ring.id, count: 1 };
     assert.equal(Inventario.equipar(clique, { id: meta.id }).ok, true, `clique: ${meta.name}`);
     assert.equal(clique.equipment[slot].id, meta.id, 'o clique vai para o slot do item, não para o primeiro livre');
   }
 });
 
-test('nenhuma peça entra em slot de outra categoria: recusa com a frase certa e NADA muda (mochila e corpo intactos)', { skip: aAdaptar("Slots valem no PoE, que tem luvas; a amostra de peças não tem luvas (\"sem peça de teste para gloves\")") }, () => {
+test('nenhuma peça entra em slot de outra categoria: recusa com a frase certa e NADA muda (mochila e corpo intactos)', () => {
   for (const [slotCerto, meta] of Object.entries(AMOSTRA)) {
     for (const slotErrado of Equipamento.SLOTS_DE_EQUIPAMENTO) {
       if (slotErrado === slotCerto) continue;
+      if (MESMA_CATEGORIA_NO_POE.has(`${slotCerto}>${slotErrado}`)) {
+        // As trocas que o PoE aceita (os dois anéis; a arma de uma mão na mão secundária): entram.
+        const e = personagem();
+        e.inventory = [{ id: meta.id, count: 1 }];
+        assert.equal(Inventario.equipar(e, { id: meta.id, slot: slotErrado }).ok, true, `${meta.name} (${slotCerto}) em ${slotErrado} vale no PoE`);
+        continue;
+      }
       const e = personagem();
       e.inventory = [{ id: meta.id, count: 1 }, { id: AMOSTRA[slotErrado].id, count: 1 }];
       e.equipment[slotErrado] = { id: AMOSTRA[slotErrado].id, count: 1 };
@@ -130,15 +149,17 @@ test('desequipar devolve UMA cópia à mochila; atributos acompanham equipar e d
   assert.equal(Inventario.desequipar(e, { slot: 'backpack' }).ok, false, 'a mochila não sai');
 });
 
-test('persistência: o equipamento sobrevive ao salvar e carregar (JSON); peça em slot errado de antes volta para a mochila sem perda', { skip: aAdaptar("Slots valem no PoE, que tem luvas; a amostra de peças não tem luvas (\"sem peça de teste para gloves\")") }, () => {
+test('persistência: o equipamento sobrevive ao salvar e carregar (JSON); peça em slot errado de antes volta para a mochila sem perda', () => {
   const e = personagem();
   e.inventory = [{ id: AMOSTRA.head.id, count: 1 }];
   Inventario.equipar(e, { id: AMOSTRA.head.id, slot: 'head' });
   const recarregado = JSON.parse(JSON.stringify(e));
   assert.deepEqual(recarregado.equipment, e.equipment);
-  // Estado antigo: uma espada vestida no slot do escudo e um anel no slot do capacete.
+  // Estado antigo: uma espada vestida no slot do escudo e um anel no slot do capacete. (PoE: a espada de UMA mão vale na mão secundária — a
+  // errada lá é a de DUAS mãos.)
+  const espada = todos.find((i) => i.poe?.classe === 'Two_Hand_Swords' && i.twoHanded);
   const antigo = personagem();
-  antigo.equipment.shield = { id: AMOSTRA.weapon.id, count: 1 };
+  antigo.equipment.shield = { id: espada.id, count: 1 };
   antigo.equipment.head = { id: AMOSTRA.ring.id, count: 1 };
   antigo.equipment.body = { id: AMOSTRA.body.id, count: 1 };
   const saiu = Inventario.recolherPecasNoSlotErrado(antigo);
@@ -146,7 +167,7 @@ test('persistência: o equipamento sobrevive ao salvar e carregar (JSON); peça 
   assert.equal(antigo.equipment.shield, null);
   assert.equal(antigo.equipment.head, null);
   assert.equal(antigo.equipment.body.id, AMOSTRA.body.id, 'a peça no slot certo fica');
-  assert.equal(unidades(antigo, AMOSTRA.weapon.id), 1);
+  assert.equal(unidades(antigo, espada.id), 1);
   assert.equal(unidades(antigo, AMOSTRA.ring.id), 1);
   assert.deepEqual(Inventario.recolherPecasNoSlotErrado(antigo), [], 'rodar de novo não faz nada');
 });

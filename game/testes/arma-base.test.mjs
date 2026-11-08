@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync, readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { aAdaptar, doClassico } from './apoio-migracao.mjs';
+import { doClassico, soNoOficial } from './apoio-migracao.mjs';
 
 const tmp = mkdtempSync(join(tmpdir(), 'arma-'));
 process.env.DRAEVOR_OVERRIDES = tmp;
@@ -25,6 +25,8 @@ const Ed = await import('../admin/item-power-editor.mjs');
 const Itens = await import('../admin/overrides-itens.mjs');
 const { ITEM_CATALOG } = await import('../systems/dados.mjs');
 const { criarEstrategias } = await import('../systems/hot-reload-estrategias.mjs');
+// (08/11) O jogo do PoE carregado como no servidor (as bases do PoE no catálogo — o AB8 usa uma); no clássico não faz nada.
+await (await import('../systems/itens-poe/iniciar.mjs')).iniciarJogoDoPoe();
 
 const ESPADA = 7383; // relic sword: attack 42, nível 50, sem APS próprio
 const estrategia = () => criarEstrategias({ overrides: tmp, atos: join(tmp, 'atos') }).itens;
@@ -104,19 +106,24 @@ test('AB7. REGRESSÃO: sem qualidade nem locais a ficha é IDÊNTICA à de antes
   const sword14 = Ficha.combate(estado('knight', 8, { weapon: peca(3264) })); assert.deepEqual([sword14.damage.min, sword14.damage.max], [6, 13]);
 });
 
-test('AB8. qualidade na ENGINE: dano da ficha e intervalo usam o valor final UMA vez (não duplica); equipar/desequipar; troca de arma não herda a qualidade', { skip: aAdaptar("Qualidade aplicada uma vez na engine vale para as armas do PoE") }, () => {
-  const base = Ficha.combate(estado('knight', 50, { weapon: peca(ESPADA) }));
-  const q20 = Ficha.combate(estado('knight', 50, { weapon: peca(ESPADA, { qualidade: 20 }) }));
-  assert.equal(q20.ataqueMin, Math.round(42 * 1.2)); assert.equal(q20.ataqueMax, Math.round(42 * 1.2)); // 50
-  assert.equal(q20.intervaloDoGolpeMs, Math.round(1000 / (0.5 * 1.2) / (1 + q20.efeitosDosAtributos.velocidadeDeAtaquePct / 100)));
-  const manual = Math.max(1, Math.floor(50.4 * 0.0425 * 14 * (1 - 0.3) + 10 * 0 + 10 * 0)); void manual;
+// (08/11, adaptado ao PoE — o dono: "Adaptar antes") A espada é uma BASE do PoE (a Espada de Charan: 8 de ataque, 1,45 APS) e a troca vai para
+// outra base do PoE (a Lâmina Dourada). No PoE a ficha usa o dano FINAL da arma direto (sem a fórmula de dano do Draevor, skill × level):
+// o dano da ficha é o da arma com a qualidade, 8 × 1,2 = 9,6 → 10 (e não 8 × 1,2 × 1,2 = 11,52 → 12, a qualidade duas vezes).
+const ESPADA_POE = Number(Object.values(ITEM_CATALOG).find((i) => i.poe?.base === 'One_Hand_Swords/Charans_Sword')?.id);
+const OUTRA_ARMA_POE = Number(Object.values(ITEM_CATALOG).find((i) => i.poe?.base === 'One_Hand_Swords/Golden_Blade')?.id);
+test('AB8. qualidade na ENGINE: dano da ficha e intervalo usam o valor final UMA vez (não duplica); equipar/desequipar; troca de arma não herda a qualidade', { skip: soNoOficial('as bases do PoE') }, () => {
+  assert.deepEqual([ITEM_CATALOG[ESPADA_POE].attack, ITEM_CATALOG[ESPADA_POE].aps], [8, 1.45]);
+  const base = Ficha.combate(estado('knight', 50, { weapon: peca(ESPADA_POE) }));
+  const q20 = Ficha.combate(estado('knight', 50, { weapon: peca(ESPADA_POE, { qualidade: 20 }) }));
+  assert.equal(q20.ataqueMin, Math.round(8 * 1.2)); assert.equal(q20.ataqueMax, Math.round(8 * 1.2)); // 10
+  assert.equal(q20.intervaloDoGolpeMs, Math.round(1000 / (1.45 * 1.2) / (1 + q20.efeitosDosAtributos.velocidadeDeAtaquePct / 100)));
   assert.ok(q20.damage.max > base.damage.max && q20.damage.min > base.damage.min);
-  const mult = 0.0425 * (10 + 4);
-  const mediaEsperada = Math.round(42 * 1.2) * mult + 50 / 5;
-  assert.equal(q20.damage.min, Math.max(1, Math.floor(mediaEsperada * 0.7))); assert.equal(q20.damage.max, Math.ceil(mediaEsperada * 1.3));
-  assert.notEqual(q20.damage.max, Math.ceil((Math.round(42 * 1.2 * 1.2)) * mult * 1.3), 'a qualidade NÃO foi aplicada duas vezes');
-  const duas = Ficha.combate(estado('knight', 50, { weapon: peca(ESPADA, { qualidade: 20 }) })); assert.deepEqual(duas.damage, q20.damage);
-  const trocada = Ficha.combate(estado('knight', 50, { weapon: peca(3278) })); assert.equal(trocada.arma.qualidade, 0);
+  // PoE: o dano da ficha é o da arma (sem a fórmula de skill × level do Draevor).
+  const mediaEsperada = Math.round(8 * 1.2);
+  assert.equal(q20.damage.min, mediaEsperada); assert.equal(q20.damage.max, mediaEsperada);
+  assert.notEqual(q20.damage.max, Math.round(8 * 1.2 * 1.2), 'a qualidade NÃO foi aplicada duas vezes');
+  const duas = Ficha.combate(estado('knight', 50, { weapon: peca(ESPADA_POE, { qualidade: 20 }) })); assert.deepEqual(duas.damage, q20.damage);
+  const trocada = Ficha.combate(estado('knight', 50, { weapon: peca(OUTRA_ARMA_POE) })); assert.equal(trocada.arma.qualidade, 0);
   const desequipada = Ficha.combate(estado('knight', 50, { weapon: null })); assert.equal(desequipada.arma, null);
 });
 

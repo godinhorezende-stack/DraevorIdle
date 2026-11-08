@@ -17,7 +17,7 @@ import { eventosDoQuadro } from '../websocket/quadro.mjs';
 import { ACTION_CATALOG, ITEM_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { personagemDeTeste, PERSONAGEM, comSkills, HUNT_DE_TESTE } from './apoio.mjs';
-import { aAdaptar, doClassico } from './apoio-migracao.mjs';
+import { doClassico, soNoOficial } from './apoio-migracao.mjs';
 
 const HP = 1e12;
 const k = Areas.chave;
@@ -77,14 +77,14 @@ test('geometria: quem está na área, por índice de casa — rápido com muitos
 
 // ---------------------------------------------------------------- as magias de verdade
 
-function montar(ids, supports = []) {
+/** `arma`/`sockets`: a arma das supports (a wand of vortex, 4 sockets; no PoE, uma varinha do PoE, 3 sockets). */
+function montar(ids, supports = [], { arma = Object.values(ITEM_CATALOG).find((i) => i.name === 'wand of vortex'), sockets = 4 } = {}) {
   const e = personagemDeTeste({ vocacao: 'sorcerer', level: 600 });
   Treino.garantir(e);
   comSkills(e, ids);
   if (supports.length) {
     const SUP = (id) => [...G.DEFS.values()].find((d) => d.tipo === 'support' && d.id === id).itemId;
-    const arma = Object.values(ITEM_CATALOG).find((i) => i.name === 'wand of vortex');
-    e.equipment.weapon = { id: Number(arma.id), count: 1, soquetes: { abertos: 4, links: [true, true, true], gemas: [G.novaGema(G.ITEM_DA_ACAO.get(ids[0])), ...supports.map((s) => G.novaGema(SUP(s))), ...Array(3 - supports.length).fill(null)] } };
+    e.equipment.weapon = { id: Number(arma.id), count: 1, soquetes: { abertos: sockets, links: Array(sockets - 1).fill(true), gemas: [G.novaGema(G.ITEM_DA_ACAO.get(ids[0])), ...supports.map((s) => G.novaGema(SUP(s))), ...Array(sockets - 1 - supports.length).fill(null)] } };
     Ficha.invalidar(e);
   }
   assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
@@ -111,14 +111,21 @@ function encher(e, raio = 8) {
 function lancar(e, id, alvo) {
   const h = e.hunt;
   e.actions = Array(Acoes.SLOTS).fill(null);
-  const slot = Acoes.PAPEL_DO_SLOT.indexOf('attack');
+  // (a barra do PoE: todo slot é de habilidade — não há o slot "attack" do Draevor)
+  const slot = Acoes.PAPEL_DO_SLOT.includes('attack') ? Acoes.PAPEL_DO_SLOT.indexOf('attack') : Acoes.PAPEL_DO_SLOT.indexOf('skill');
   assert.ok(Acoes.definir(e, { slot, value: { id } }).ok, id);
   h.cooldowns = {};
   delete h.ultimoAtaqueEm;
   delete h.conjurando;
   const r = Acoes.disparar(e, h, PERSONAGEM, slot, alvo);
   assert.ok(r.ok, `${id}: ${r.erro}`);
-  const areas = r.eventos.filter((x) => x.t === 'area');
+  // (PoE: a gema do PoE tem o tempo de conjuração dela — a conjuração termina aqui, como no golpe da explosão abaixo)
+  let eventos = r.eventos;
+  if (r.conjurando) {
+    h.conjurando.fim = 0;
+    eventos = Acoes.concluirConjuracao(e, h, PERSONAGEM);
+  }
+  const areas = eventos.filter((x) => x.t === 'area');
   assert.equal(areas.length, 1, `${id}: um evento de área`);
   return {
     atingidas: conjunto(h.monstros.filter((m) => m.hp < HP)),
@@ -186,14 +193,18 @@ test(`todas as ${COM_FORMA.length} skills de ataque com forma: o dano cai exatam
   }
 });
 
-test('gemas de área: Area of Effect aumenta e Concentrated Effect reduz — e a tela acompanha', { skip: aAdaptar("Increased Area of Effect/Concentrated Effect existem no PoE; o teste usa Rage of the Skies") }, () => {
-  const base = montar(['spell-rage-of-the-skies']);
+// (08/11, adaptado ao PoE — o dono: "Adaptar antes") A magia de área é uma GEMA do PoE (Nova Elétrica) e as supports são as do PoE (Área de
+// Efeito Aumentada e Efeito: Concentrado), numa varinha do PoE (3 sockets ligados).
+test('gemas de área: Area of Effect aumenta e Concentrated Effect reduz — e a tela acompanha', { skip: soNoOficial('a gema, as supports e a varinha do PoE') }, () => {
+  const MAGIA = 'poe-gema:Shock_Nova';
+  const varinha = { arma: Object.values(ITEM_CATALOG).find((i) => i.poe?.base === 'Wands/Driftwood_Wand'), sockets: 3 };
+  const base = montar([MAGIA]);
   encher(base);
-  const normal = lancar(base, 'spell-rage-of-the-skies', base.hunt.monstros[0]).desenhadas.size;
-  for (const [sup, cresce] of [['area-of-effect', true], ['concentrated-effect', false]]) {
-    const e = montar(['spell-rage-of-the-skies'], [sup]);
+  const normal = lancar(base, MAGIA, base.hunt.monstros[0]).desenhadas.size;
+  for (const [sup, cresce] of [['poe-suporte:Increased_Area_of_Effect_Support', true], ['poe-suporte:Concentrated_Effect_Support', false]]) {
+    const e = montar([MAGIA], [sup], varinha);
     encher(e, 9);
-    const { atingidas, desenhadas } = lancar(e, 'spell-rage-of-the-skies', e.hunt.monstros[0]);
+    const { atingidas, desenhadas } = lancar(e, MAGIA, e.hunt.monstros[0]);
     assert.ok(cresce ? desenhadas.size > normal : desenhadas.size < normal, `${sup}: ${desenhadas.size} casas (normal ${normal})`);
     iguais(atingidas, new Set([...desenhadas].filter((c) => ocupadas(e).has(c))), sup);
   }
