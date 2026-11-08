@@ -615,7 +615,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // Energia aumentado" do Peitoral, Elmo, Luvas, Botas e Escudo valem só na peça, como no PoE (`separarDefesasLocais`))
 // (88 — 08/11, aproximadas A5/A6: "com esta Arma" só na mão da arma (`separarDestaArma`); a maldição dos itens no nível 1 do PoB; a Carícia Vaal só nas
 // não-Vaal; a Luz de Lunaris pelo acerto Não Crítico)
-export const VERSAO_DA_TRADUCAO = 88;
+// (89 — 08/11, o balão dos únicos com 0 sem efeito, lotes B8–B16 e o que vier no mesmo PR: os velados, a criação, os visuais, os Catalisadores, a
+// Identificação, o Ungir e o Encantamento, o Abismo, a Pesca…)
+export const VERSAO_DA_TRADUCAO = 89;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
