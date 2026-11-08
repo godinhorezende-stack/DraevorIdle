@@ -2574,7 +2574,7 @@ const PARAMETRICOS = [
   // (08/11, a Marcha de Vorana) os efeitos de lacaio só de um tipo — `lacaios-poe.oQueInvoca`
   new RegExp(`^lacaio_tipo:${TIPOS_DE_LACAIO}:minion_[a-z_]+$`),
   // (08/11, balão 0 sem efeito — o dono: "Fazer o visual") os VISUAIS e SONS das peças: o cliente desenha (`cacadas.visuaisDoJogador` → `visuais-unicos.mjs`)
-  /^visual:(sangue|frenesi_sangue|som_deusa|som_gelo|insanidade|asas|categoria|pegadas:(sangue|necro|cascos|nevoa|celeste|mercurio))$/,
+  /^visual:(sangue|frenesi_sangue|som_deusa|som_gelo|insanidade|asas|categoria|brilho_peixe|pegadas:(sangue|necro|cascos|nevoa|celeste|mercurio))$/,
   /^gema_local:(?:acertos_ignoram_res|ignora_reducao_fisica|projectile_speed|vaal_almas_menos|vaal_almas_de_volta_chance|vaal_elusivo_ao_usar|vaal_vento_ao_usar|duracaoPct|impedimento_almas_duracao_inc|dano_acertos_sortudo|efeitoAuraPct)$/,
   /^efeito_maldicao_expirou:\d+$/, /^maldicao_(lento|dano)_expirou:\d+$/, // acoes.efeitosDaMaldicao → Reforcos.marcar ("Efeito aumentado se Y% da Duração da Maldição expirou") // itens-poe/gemas-poe (reforços das gemas; golem: os bônus dos golens ao dono)
   new RegExp(`^sem_dano:(${ELS_P.slice(1, -1)}|elemental|naocaos|naoelemental|naofisico)$`), new RegExp(`^so_dano:${ELS_P}$`), // transformarPartes

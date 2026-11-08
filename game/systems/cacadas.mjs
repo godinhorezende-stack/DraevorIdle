@@ -79,6 +79,7 @@ import './encontros/tipos-de-onda.mjs'; // registra a sobrevivência e a fenda (
 import './encontros/tipos-de-captura.mjs'; // registra o aprisionado e o invasor
 import * as BausPoe from './itens-poe/baus-poe.mjs'; // registra os baús do PoE (dono, 03/11)
 import * as Abismo from './itens-poe/abismo.mjs'; // registra o Abismo do PoE (08/11)
+import * as Pesca from './itens-poe/pesca.mjs';
 import * as EventosDeEncontro from './encontros/eventos.mjs';
 import * as CargasPoe from './itens-poe/cargas.mjs';
 import * as ModsPoe from './itens-poe/mods-poe.mjs';
@@ -142,9 +143,12 @@ BausPoe.definirLootDoMonstro({ fatorDaCacaOnline, entregarMoedas });
  */
 const compactarLista = (lista) => (Array.isArray(lista) ? lista.map(compactarMonstro) : lista);
 
-/** (08/11) Os visuais das peças (`visual:<nome>` no af do PoE): `{ visuais: ['sangue', 'pegadas:mercurio', …] }`, ou nada. */
-export function visuaisDoJogador(af) {
-  const v = Object.keys(af ?? {}).filter((k) => k.startsWith('visual:') && Number(af[k]) > 0).map((k) => k.slice(7));
+/**
+ * (08/11) Os visuais das peças (`visual:<nome>` no af do PoE): `{ visuais: ['sangue', 'pegadas:mercurio', …] }`, ou nada. (O brilho da Perdição
+ * do Recife só na área com o Peixe Único — `brilhaAqui`, de `Pesca.brilha`.)
+ */
+export function visuaisDoJogador(af, brilhaAqui = false) {
+  const v = Object.keys(af ?? {}).filter((k) => k.startsWith('visual:') && Number(af[k]) > 0 && (k !== 'visual:brilho_peixe' || brilhaAqui)).map((k) => k.slice(7));
   return v.length ? { visuais: v } : {};
 }
 /** A CATEGORIA do monstro do PoE (Besta, Construto, Demônio, Humanoide, Morto-vivo) pela classe/raça do bestiário; sem classe, nenhuma. */
@@ -1922,8 +1926,9 @@ function tiqueDaCacada(estado, personagem, agora) {
   ModsPoe.aurasProximas(estado, hunt, Ficha.combate(estado));
   // (dono, 03/11) os BAÚS do PoE abrem ao passar (cada um da sala — `itens-poe/baus-poe.mjs`)
   if (itensPoeLigado()) BausPoe.abrirAoPassar(estado, hunt, personagem);
-  // (08/11) o Abismo abre ao chegar perto
+  // (08/11) o Abismo abre ao chegar perto; a linha da Pesca (a mordida, a janela)
   if (itensPoeLigado()) Abismo.abrirAoPassar(estado, hunt, personagem);
+  if (itensPoeLigado()) Pesca.tique(estado, hunt);
   // Numa caçada em grupo, só o DONO da sala move os bichos e faz renascer —
   // senão eles andariam uma vez por membro a cada tique.
   const donoDaSala = !hunt.anfitriao;
@@ -4242,6 +4247,8 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
   const tamanho = (x) => (x !== 1 ? { escala: x } : {});
   return {
     mapId: hunt.huntId,
+    // (08/11) a PESCA (`itens-poe/pesca.mjs`): com a Vara vestida, a fase e se dá para pescar aqui
+    ...(afDaLuz ? Pesca.paraCliente(estado) ?? {} : {}),
     // A ENTRADA neste mapa (a caçada, a sala da party, a instância): o cliente confirma o carregamento dela (`protecao.mjs`).
     entrada: hunt.entrada ?? null,
     z: hunt.z,
@@ -4249,7 +4256,7 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     // A duração do passo na tela acompanha a velocidade (ver `passosDoTique`).
     // (lote A1: + o contador `teleporte` — o salto e o teleporte das gemas de movimento, `Acoes.moverNoDeslocamento`: a tela põe o boneco na casa nova)
     // (08/11, balão 0 sem efeito) os VISUAIS e SONS das peças (`visual:*` no af — as pegadas, o sangue, os sons): o cliente desenha (`visuais-unicos.mjs`)
-    player: { x: hunt.pos.x, y: hunt.pos.y, dir: hunt.pos.dir, moveMs: Math.round(R.PASSO_MS / razaoDeVelocidade(estado)), ...visuaisDoJogador(afDaLuz), ...(hunt.teleportes ? { teleporte: hunt.teleportes } : {}), ...(Controle.ativosNoJogador(hunt).length ? { controle: Controle.ativosNoJogador(hunt) } : {}), ...(estadosDoJogador(hunt).length ? { estados: estadosDoJogador(hunt) } : {}) },
+    player: { x: hunt.pos.x, y: hunt.pos.y, dir: hunt.pos.dir, moveMs: Math.round(R.PASSO_MS / razaoDeVelocidade(estado)), ...visuaisDoJogador(afDaLuz, !!afDaLuz?.['visual:brilho_peixe'] && Pesca.brilha(estado, hunt)), ...(hunt.teleportes ? { teleporte: hunt.teleportes } : {}), ...(Controle.ativosNoJogador(hunt).length ? { controle: Controle.ativosNoJogador(hunt) } : {}), ...(estadosDoJogador(hunt).length ? { estados: estadosDoJogador(hunt) } : {}) },
     monsters: hunt.monstros.map((m) => ({
       uid: m.uid,
       x: m.x,

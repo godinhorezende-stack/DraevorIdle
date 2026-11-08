@@ -4,7 +4,7 @@
 //   passo   — o boneco andou uma casa: deixa a pegada na casa de onde saiu;
 //   abate   — o evento `kill` (com a raridade): o sangue a mais e os sons;
 //   chao    — as pegadas de uma casa, pintadas antes das criaturas dela;
-//   antes   — as asas da Entropia, atrás do boneco;
+//   antes   — as asas da Entropia e o brilho da Perdição do Recife, atrás do boneco;
 //   depois  — o sangue, por cima de tudo, e a Insanidade (a tela que tremula).
 // Os sons são sintetizados (WebAudio, sem arquivo) e respeitam a chave "Sons" dos gráficos.
 import { graficoLigado } from './graficos.mjs';
@@ -158,8 +158,19 @@ export function criarVisuais() {
         ctx.restore();
       }
     },
-    /** As asas da Entropia, atrás do boneco (`px`, `py`: o canto da casa na tela). */
+    /** As asas da Entropia e o brilho da Perdição do Recife, atrás do boneco (`px`, `py`: o canto da casa na tela). */
     antes(ctx, entity, px, py, now) {
+      if (tem(entity, 'brilho_peixe')) {
+        // ("Brilha enquanto estiver em uma área contendo um Peixe Único": o halo azul-esverdeado pulsando em volta)
+        const r = TILE * (0.9 + 0.12 * Math.sin(now / 320));
+        const g = ctx.createRadialGradient(px + TILE / 2, py + TILE / 2, TILE * 0.15, px + TILE / 2, py + TILE / 2, r);
+        g.addColorStop(0, 'rgba(120, 230, 255, 0.45)');
+        g.addColorStop(1, 'rgba(120, 230, 255, 0)');
+        ctx.save();
+        ctx.fillStyle = g;
+        ctx.fillRect(px + TILE / 2 - r, py + TILE / 2 - r, r * 2, r * 2);
+        ctx.restore();
+      }
       if (!tem(entity, 'asas')) return;
       const bate = Math.sin(now / 260) * 0.18;
       const cx = px + TILE / 2;
@@ -227,7 +238,7 @@ export function criarVisuais() {
     },
     /** Ainda há o que animar (o mapa não pode pular o quadro). */
     animando(eu, now) {
-      return sangue.length > 0 || pegadas.some((p) => now - p.nasceu < VIDA_DA_PEGADA) || tem(eu, 'insanidade') || tem(eu, 'asas');
+      return sangue.length > 0 || pegadas.some((p) => now - p.nasceu < VIDA_DA_PEGADA) || tem(eu, 'insanidade') || tem(eu, 'asas') || tem(eu, 'brilho_peixe');
     },
   };
 }

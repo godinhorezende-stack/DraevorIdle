@@ -212,6 +212,21 @@ export function iniciar(itemCatalog) {
     REG.porBase.set(b.id, id);
     REG.porId.set(id, b.id);
   }
+  // (08/11, a Pesca — `pesca.mjs`) a VARA DE PESCAR: com o id FIXO 7.900.001 (fora da sequência acima, para não empurrar o id de outra peça). Veste
+  // na mão (duas mãos) e não ataca (no PoE a vara não usa habilidades de ataque); cai como as outras bases.
+  {
+    const b = cat.classes.Fishing_Rods?.bases.find((x) => x.id === 'Fishing_Rods/Fishing_Rod');
+    if (b) {
+      const id = 7_900_001;
+      itemCatalog[id] = {
+        id, name: b.nome, type: 'tools', slot: 'weapon', twoHanded: true, weight: 20, hasSprite: false, rarity: 'comum', stackable: false,
+        poe: { base: b.id, classe: 'Fishing_Rods', icone: b.icone ?? null, ...requisitosDaBase(b), ...previaDaBase(b) },
+      };
+      REG.porBase.set(b.id, id);
+      REG.porId.set(id, b.id);
+      REG.naoEquipaveis = REG.naoEquipaveis.filter((c) => c !== 'Fishing_Rods');
+    }
+  }
   // Os itens de missão (Acts do PoE: o item que o monstro alvo solta) entram junto.
   DropsPorMonstro.registrarItens(itemCatalog);
   return REG;

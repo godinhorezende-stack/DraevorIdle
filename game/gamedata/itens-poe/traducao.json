@@ -14,6 +14,175 @@
   ],
   "regras": [
     {
+      "padrao": "^Sensibilidade da Fisgada aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "pesca_sensibilidade_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a janela para puxar depois da mordida (`pesca.mjs`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Consumo da Reserva de Pesca aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "pesca_consumo_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "cada peixe gasta mais da reserva da área (`pesca.mjs`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Consumo da Reserva de Pesca reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "pesca_consumo_pct",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "cada peixe gasta menos da reserva da área (`pesca.mjs`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Alcance da Pesca aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "pesca_alcance_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a água ao alcance da linha (`pesca.mjs`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Raridade de Peixes Pescados aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "pesca_raridade_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a chance do peixe raro, exótico e único (`pesca.mjs`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Quantidade de Peixes Pescados aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "pesca_quantidade_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a chance de mais um peixe por puxada (`pesca.mjs`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Quantidade de Peixes Pescados reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "pesca_quantidade_pct",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a chance de a puxada vir sem peixe (`pesca.mjs`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Força da Linha de Pesca aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "pesca_linha_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a chance de a linha arrebentar cai (`pesca.mjs`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você pode pescar Peixes Corrompidos$",
+      "efeitos": [
+        {
+          "stat": "pesca_corrompidos",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o Peixe Corrompido (e a chance de um Orbe Vaal) — `pesca.mjs`",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você pode pescar Peixes Exóticos$",
+      "efeitos": [
+        {
+          "stat": "pesca_exoticos",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o Peixe Exótico das Sereias (`pesca.mjs`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Isca (?:de Pena de Rhoa|de Verme da Sereia|Taumatúrgica)$",
+      "efeitos": [
+        {
+          "stat": "pesca_isca",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a isca: a mordida vem mais cedo (o PoE não dá número — `regras.pesca.iscaPct`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Anzol de Pedra Karui$",
+      "efeitos": [
+        {
+          "stat": "pesca_anzol",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o anzol: a janela para puxar é maior (o PoE não dá número — `regras.pesca.anzolPct`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
+      "padrao": "^Brilha enquanto estiver em uma área contendo um Peixe Único$",
+      "efeitos": [
+        {
+          "stat": "visual:brilho_peixe",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o brilho em volta de você na área com o Peixe Único (`pesca.brilha`)",
+      "_08_11r": "08/11 — balão 0 sem efeito, lote B16: a Pesca",
+      "_nova": true
+    },
+    {
       "padrao": "^Dano com Acertos e Afecções contra Monstros Abissais aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {

@@ -10202,6 +10202,66 @@
       "unidade": "",
       "combate": true,
       "efeito": "ungir.maximoDeEncantamentos (08/11 — o Suspiro Estrangulador e os Capotes)"
+    },
+    "pesca_sensibilidade_pct": {
+      "nome": "Sensibilidade da Fisgada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "pesca.mjs (08/11 — a Pesca)"
+    },
+    "pesca_consumo_pct": {
+      "nome": "Consumo da Reserva de Pesca",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "pesca.mjs (08/11 — a Pesca)"
+    },
+    "pesca_alcance_pct": {
+      "nome": "Alcance da Pesca",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "pesca.mjs (08/11 — a Pesca)"
+    },
+    "pesca_raridade_pct": {
+      "nome": "Raridade de Peixes Pescados",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "pesca.mjs (08/11 — a Pesca)"
+    },
+    "pesca_quantidade_pct": {
+      "nome": "Quantidade de Peixes Pescados",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "pesca.mjs (08/11 — a Pesca)"
+    },
+    "pesca_linha_pct": {
+      "nome": "Força da Linha de Pesca",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "pesca.mjs (08/11 — a Pesca)"
+    },
+    "pesca_corrompidos": {
+      "nome": "Pode pescar Peixes Corrompidos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "pesca.mjs (08/11 — a Pesca)"
+    },
+    "pesca_exoticos": {
+      "nome": "Pode pescar Peixes Exóticos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "pesca.mjs (08/11 — a Pesca)"
+    },
+    "pesca_isca": {
+      "nome": "Isca de pesca",
+      "unidade": "",
+      "combate": true,
+      "efeito": "pesca.mjs (08/11 — a Pesca)"
+    },
+    "pesca_anzol": {
+      "nome": "Anzol de pesca",
+      "unidade": "",
+      "combate": true,
+      "efeito": "pesca.mjs (08/11 — a Pesca)"
     }
   }
 }

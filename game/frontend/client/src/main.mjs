@@ -2142,6 +2142,7 @@ function applyState(message) {
   }
   confirmarCarregamento();
   atualizarBotaoDeInteragir();
+  atualizarBotaoDePescar();
   atualizarBotaoDoPortal();
   atualizarBotaoDoPortalDaGema();
   // Só na fase (na cidade não): os pontos andam a cada retrato; a geometria é refeita só ao trocar de fase/andar.
@@ -6325,6 +6326,29 @@ function atualizarBotaoDoPortalDaGema() {
   }
   const texto = `Voltar pelo portal — ${portal.nome}`;
   if (botao.textContent !== texto) botao.textContent = texto;
+  botao.removeAttribute('hidden');
+}
+
+/**
+ * (08/11) O botão da PESCA (`itens-poe/pesca.mjs`): com a Vara de Pescar vestida, na caçada. "Pescar" lança a linha (apagado, com o motivo, longe da
+ * água ou no Automático); com a linha na água, "Recolher"; com o peixe mordendo, "Puxar!" — o servidor diz a fase (`hunt.pesca`).
+ */
+function atualizarBotaoDePescar() {
+  const pesca = state.hunt?.pesca ?? null;
+  let botao = document.getElementById('btn-pescar');
+  if (!pesca) return void botao?.setAttribute('hidden', '');
+  if (!botao) {
+    botao = el('button', 'btn-pescar');
+    botao.id = 'btn-pescar';
+    botao.type = 'button';
+    botao.onclick = () => send({ t: 'pescar' });
+    document.body.append(botao);
+  }
+  const texto = pesca.fase === 'mordida' ? 'Puxar!' : pesca.fase === 'esperando' ? 'Recolher a linha' : 'Pescar';
+  if (botao.textContent !== texto) botao.textContent = texto;
+  botao.classList.toggle('mordida', pesca.fase === 'mordida');
+  botao.disabled = pesca.fase === 'parado' && !pesca.pode;
+  botao.title = pesca.motivo ?? (pesca.reserva != null ? `Peixes nesta área: ${pesca.reserva}` : '');
   botao.removeAttribute('hidden');
 }
 
