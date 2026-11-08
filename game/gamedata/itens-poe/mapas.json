@@ -6286,8 +6286,13 @@
       "texto": "Chefe Único é ampliado pelas escolhas do Jogador",
       "modelo": "Chefe Único é ampliado pelas escolhas do Jogador",
       "faixas": [],
-      "efeitos": [],
-      "nota": "a escolha do chefe ainda não existe no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "doryani",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",

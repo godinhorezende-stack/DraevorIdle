@@ -52,6 +52,7 @@ import * as ItensPoeJogo from '../itens-poe/jogo.mjs';
 import * as Instancia from './instancia.mjs';
 import * as SinteseMapas from '../itens-poe/sintese-mapas.mjs';
 import * as Cartas from '../itens-poe/cartas.mjs';
+import * as Doryani from '../itens-poe/doryani.mjs';
 import * as MoedasPoe from '../itens-poe/moedas.mjs';
 // (100% — dados, 03/11) as Tatuagens do PoE (a fonte simples, sem a liga Ancestral — `passivas/tatuagens.dropDoMonstro`)
 import * as Tatuagens from '../passivas/tatuagens.mjs';
@@ -1098,6 +1099,12 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   }
   if (Math.random() * 100 < (Number(sint.joiaPct) || 0)) {
     const p = ItensPoeJogo.pecaDaClasse('Jewels', nivelDoMorto, { raridade: ['magico', 'raro'][Math.floor(Math.random() * 2)] });
+    if (p) doSintetizado.push(ItensPoeJogo.semIdentificar(p));
+  }
+  // (08/11, o Maquinário de Doryani: a Assembleia Ápice sempre derruba a Ilusão de Doryani — na base do elemento mais escolhido nos Braços)
+  if (noMapa?.efeitos?.instancia?.doryani && alvo.chefeDoMapa) {
+    const el = Doryani.elementoDaIlusao(Doryani.escolhas(Instancia.daSala(hunt)));
+    const p = ItensPoeJogo.unicoNaBase('Doryanis_Delusion', Doryani.ELEMENTOS[el]?.base, nivelDoMorto);
     if (p) doSintetizado.push(ItensPoeJogo.semIdentificar(p));
   }
   for (const daPoe of [...ItensPoeJogo.dropsDoMonstro(nivelDoMorto, tipoDoBicho(alvo), Math.random, undefined, quantidadeDoJogador, raridadeDoMorto, { unicoPct: Number(sint.unicoPct) || 0 }), ...rarosDoChefe, ...doSintetizado]) {

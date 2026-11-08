@@ -72,6 +72,7 @@ import * as Dot from './combate/dot.mjs';
 import * as Escalonamento from './hunt/escalonamento.mjs';
 import * as Setores from './hunt/setores.mjs';
 import * as SinteseMapas from './itens-poe/sintese-mapas.mjs';
+import * as Doryani from './itens-poe/doryani.mjs';
 import * as Instancia from './hunt/instancia.mjs';
 import * as Encontros from './encontros/estado.mjs';
 import './encontros/tipos-de-boss.mjs'; // registra os encontros de boss (boss, miniboss, boss-secreto)
@@ -763,6 +764,8 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = n
     if (itensPoeLigado()) Abismo.porNaInstancia(instancia, { grade, inicio, todos, nivel: mapa?.nivel ?? escala?.nivel ?? null, onde: Abismo.valeNaArea(hunt) });
     // (08/11) a FENDA do PoE (`itens-poe/fenda.mjs`): nos mapas do endgame, pela chance
     if (itensPoeLigado()) Fenda.porNaInstancia(instancia, { grade, inicio, todos, nivel: mapa?.nivel ?? null, ehMapa: !!hunt?.poeMapa });
+    // (08/11) os três Braços de Doryani (`itens-poe/doryani.mjs`)
+    if (itensPoeLigado() && doMapa?.doryani) Doryani.porNaInstancia(instancia, { grade, inicio, alcancaveis: Instancia.casasAlcancaveis(grade, inicio) });
     // (08/11) as ONDAS do Julgamento do Covarde (`MapasAreas.porOndasNaInstancia`)
     if (itensPoeLigado() && soOndas) MapasAreas.porOndasNaInstancia(instancia, { grade, inicio, grupos: doMapa.ondas, tier: mapa.tier, alcancaveis: Instancia.casasAlcancaveis(grade, inicio), nome: hunt?.name ?? 'O Julgamento' });
     // (08/11) os TRECHOS DE SOLO do mapa único ("Área possui trechos de Solo Ardente" — `mapas-areas.porSolosNaInstancia`): o dano pelo golpe dos monstros da área

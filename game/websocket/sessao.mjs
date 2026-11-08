@@ -2332,6 +2332,15 @@ export class Sessao {
 
   /** `{t:'decidir', id, aceitar}`: a resposta do líder à janela de decisão (aceitar = o mesmo que interagir; recusar descarta o encontro). */
   decidirEncontro(m) {
+    // (08/11) o encontro com ESCOLHAS (os Braços de Doryani — `itens-poe/doryani.mjs`): a escolha vale antes de ativar
+    if (m.aceitar !== false && m.escolha != null) {
+      const hunt = this.estado?.hunt;
+      const e = hunt ? InstanciaDaHunt.daSala(hunt)?.encontros?.[String(m.id)] : null;
+      if (!e?.escolhas?.some((x) => x.valor === m.escolha)) return this.erro('Essa escolha não existe.');
+      if (e.estado !== 'disponivel') return this.erro('Já foi escolhido.');
+      if (!Party.decidePeloGrupo(this)) return this.erro('Só o líder da party decide isso.');
+      e.escolha = m.escolha;
+    }
     if (m.aceitar !== false) return this.interagirComEncontro(m);
     const hunt = this.estado?.hunt;
     const inst = hunt ? InstanciaDaHunt.daSala(hunt) : null;

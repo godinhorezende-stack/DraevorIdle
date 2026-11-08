@@ -118,6 +118,8 @@ export const REGRAS = [
   // o DROP do chefe: os Itens de Níveis maiores ("display map final boss drops higher level gear 4") e os Raros de uma classe
   [/^Chefe Final derruba Itens de Níveis maiores$/, () => [{ alvo: 'chefe', stat: 'ilvlExtra', fixo: 4 }]],
   [/^Chefe Único derruba \{0\} Raro adicional \{1\}$/, () => [{ alvo: 'chefe', stat: 'rarosExtras', de: 0 }, { alvo: 'chefe', stat: 'rarosClasse', de: 1 }]],
+  // o Maquinário de Doryani: os três Braços, ampliados pelo jogador (`itens-poe/doryani.mjs`)
+  [/^Chefe Único é ampliado pelas escolhas do Jogador$/, () => [{ alvo: 'instancia', stat: 'doryani', fixo: 1 }]],
   // (as cartas de adivinhação — `itens-poe/cartas.mjs`; o poedb só diz que o chefe as derruba: 3)
   [/^Chefe Único derruba cartas de adivinhação$/, () => [{ alvo: 'chefe', stat: 'cartas', fixo: 3 }]],
   [/^Itens Encontrados têm \{0\}% de chance de caírem Corrompidos na Área$/, () => [{ alvo: 'instancia', stat: 'corrompidosPct', de: 0 }]],

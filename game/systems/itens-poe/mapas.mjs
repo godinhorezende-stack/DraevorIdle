@@ -240,6 +240,8 @@ export function fatoresDaInstancia(r) {
     // (08/11) os HABITANTES ("Área é habitada por Esqueletos", "por seguidores de Lunaris", "muitos Totens", "variedade de monstros" — `mapas-areas.comHabitantes`)
     // (08/11) "Área não contém monstros" (as Relíquias de Atziri): só os baús, onde nasceriam os grupos (`cacadas.povoar`)
     semMonstros: Number(inst.semMonstros) > 0,
+    // (08/11) "Chefe Único é ampliado pelas escolhas do Jogador" (o Maquinário de Doryani — `doryani.mjs`)
+    doryani: Number(inst.doryani) > 0,
     // (08/11) o TERRENO próprio do único ("imenso Labirinto", "brechas sem passagem" — `mapas-areas.huntIdDoMapa`)
     terreno: ['labirinto', 'brechas'].find((t) => Number(inst[`terreno_${t}`]) > 0) ?? null,
     // (08/11) "Área se torna fatal após algum tempo" (o Tesouro Maldito de Oba): os segundos até ficar fatal (`cacadas.areaFatal`)

@@ -404,7 +404,8 @@ export function paraCliente(hunt, portal = null) {
 }
 
 /** Os tipos que pedem uma DECISÃO do líder do grupo antes de começar (o cliente mostra a janela de decisão). */
-const DECISAO = new Set(['area-secreta', 'escolta']);
+// (08/11: + os Braços de Doryani — a escolha do elemento, `itens-poe/doryani.mjs`)
+const DECISAO = new Set(['area-secreta', 'escolta', 'braco-doryani']);
 
 /**
  * Os encontros que o jogador PODE VER e usar agora: baús, altares, sobrevivências e fendas com posição, disponíveis (ou em andamento).
@@ -414,5 +415,5 @@ const DECISAO = new Set(['area-secreta', 'escolta']);
 export function encontrosVisiveis(inst) {
   return Object.values(inst?.encontros ?? {})
     .filter((e) => (e.tipo.startsWith('bau') || e.tipo === 'altar' || e.tipo === 'sobrevivencia' || e.tipo === 'fenda' || e.tipo === 'aprisionado' || e.tipo === 'abismo-poe' || e.tipo === 'fenda-poe' || DECISAO.has(e.tipo)) && (e.estado === 'disponivel' || e.estado === 'ativo') && e.x != null)
-    .map((e) => ({ id: e.id, tipo: e.tipo, nome: e.nome, x: e.x, y: e.y, ...(e.z != null ? { z: e.z } : {}), ...(e.raio ? { raio: e.raio } : {}), estado: e.estado, ...(DECISAO.has(e.tipo) ? { decisao: true, ...(e.descricao ? { descricao: e.descricao } : {}) } : {}) }));
+    .map((e) => ({ id: e.id, tipo: e.tipo, nome: e.nome, x: e.x, y: e.y, ...(e.z != null ? { z: e.z } : {}), ...(e.raio ? { raio: e.raio } : {}), estado: e.estado, ...(DECISAO.has(e.tipo) ? { decisao: true, ...(e.descricao ? { descricao: e.descricao } : {}), ...(e.escolhas ? { escolhas: e.escolhas } : {}) } : {}) }));
 }

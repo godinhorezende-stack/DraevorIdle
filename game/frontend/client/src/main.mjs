@@ -6278,6 +6278,22 @@ function abrirJanelaDeDecisao(encontro) {
     send({ t: 'decidir', id: encontro.id, aceitar });
     fechar();
   };
+  // (08/11) o encontro com ESCOLHAS (os Braços de Doryani): um botão por escolha
+  if (encontro.escolhas?.length) {
+    const botoes = encontro.escolhas.map((x) => {
+      const b = el('button', 'decisao-sim', x.rotulo);
+      b.type = 'button';
+      b.onclick = () => { send({ t: 'decidir', id: encontro.id, aceitar: true, escolha: x.valor }); fechar(); };
+      return b;
+    });
+    const depoisE = el('button', 'decisao-depois', 'Decidir depois');
+    depoisE.type = 'button';
+    depoisE.onclick = fechar;
+    janela.append(el('h3', '', encontro.nome), el('p', '', encontro.descricao ?? ''), el('p', 'decisao-dica', 'Em grupo, quem decide é o líder.'), el('div', 'decisao-botoes'));
+    janela.lastChild.append(...botoes, depoisE);
+    document.body.append(janela);
+    return;
+  }
   const aceitar = el('button', 'decisao-sim', encontro.tipo === 'escolta' ? 'Partir' : 'Entrar');
   const recusar = el('button', 'decisao-nao', 'Recusar');
   const depois = el('button', 'decisao-depois', 'Decidir depois');

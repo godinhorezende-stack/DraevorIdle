@@ -985,6 +985,16 @@ export function pecaDaClasse(classe, nivel, { raridade = 'raro', rng = Math.rand
   return qualidadeDoDrop(pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras, base: base.id, raridade: r, ilvl, rng }), regras, rng), rng, regras);
 }
 
+/** (08/11) O Único `slug` na base de nome `nomeDaBase` (o português do catálogo — a Ilusão de Doryani nas Grevas do Leviatã), no `nivel`. Null sem ela. */
+export function unicoNaBase(slug, nomeDaBase, nivel, rng = Math.random, regras = Catalogo.REGRAS) {
+  for (const c of Object.values(Catalogo.catalogo()?.classes ?? {})) {
+    const b = (c.bases ?? []).find((x) => x.nome === nomeDaBase);
+    if (!b || !(c.unicos ?? []).some((u) => u.slug === slug && u.base === nomeDaBase)) continue;
+    return pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras, base: b.id, raridade: 'unico', ilvl: Math.max(1, Math.round(Number(nivel) || 1)), rng, unico: slug }), regras, rng);
+  }
+  return null;
+}
+
 /**
  * (08/11, os Synthesis Globais: "têm X% de chance de derrubar um Item do Criador / do Ancião") uma peça Rara de equipamento (de uma classe que leva
  * influência) com a influência dada, no `nivel`. Null sem base.
