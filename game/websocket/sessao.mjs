@@ -1286,8 +1286,12 @@ export class Sessao {
         return this.aplicar(m.action === 'tirar' ? FrascosPoe.tirar(this.estado, m) : FrascosPoe.por(this.estado, m));
       // As GEMAS DE SKILL nos sockets das peças vestidas (`skills/gemas.mjs`): encaixar, tirar.
       // Uma moeda do PoE na Forja do PoE (`itens-poe/moedas.mjs`): `m.moeda` (o item) e `m.alvo` (a peça).
-      case 'moeda':
-        return this.aplicarComSkills(MoedasPoe.usar(this.estado, m));
+      case 'moeda': {
+        const r = this.aplicarComSkills(MoedasPoe.usar(this.estado, m));
+        // (08/11) o Pergaminho de Portal marcou a saída: para a cidade, pelo portal (o mesmo da gema)
+        if (this.estado.hunt?.saidaPeloPortal) this.entrarNoPortalDaGema();
+        return r;
+      }
       // (08/11) a PESCA (`itens-poe/pesca.mjs`): lançar, recolher e puxar — o mesmo botão
       case 'pescar':
         return this.aplicarComSkills(Pesca.pescar(this.estado));
@@ -1303,7 +1307,10 @@ export class Sessao {
         const r = ForjaPoe.repetir(this.estado, this.forjaRepeticao ?? null, m);
         this.forjaRepeticao = r.guardado;
         if (r.mudou) this.aplicarComSkills({ ok: true });
-        return this.enviar({ t: 'forjaResultado', ...r.resposta });
+        this.enviar({ t: 'forjaResultado', ...r.resposta });
+        // (08/11) o Pergaminho de Portal usado na Forja: para a cidade, pelo portal
+        if (this.estado.hunt?.saidaPeloPortal) this.entrarNoPortalDaGema();
+        return;
       }
       case 'forjaCancelar': {
         const r = ForjaPoe.cancelar(this.forjaRepeticao ?? null, m.id);

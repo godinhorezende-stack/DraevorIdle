@@ -2143,6 +2143,7 @@ function applyState(message) {
   confirmarCarregamento();
   atualizarBotaoDeInteragir();
   atualizarBotaoDePescar();
+  atualizarBotaoDoPergaminhoDePortal();
   atualizarBotaoDoPortal();
   atualizarBotaoDoPortalDaGema();
   // Só na fase (na cidade não): os pontos andam a cada retrato; a geometria é refeita só ao trocar de fase/andar.
@@ -6349,6 +6350,28 @@ function atualizarBotaoDePescar() {
   botao.classList.toggle('mordida', pesca.fase === 'mordida');
   botao.disabled = pesca.fase === 'parado' && !pesca.pode;
   botao.title = pesca.motivo ?? (pesca.reserva != null ? `Peixes nesta área: ${pesca.reserva}` : '');
+  botao.removeAttribute('hidden');
+}
+
+/**
+ * (08/11) O PERGAMINHO DE PORTAL (`itens-poe/moedas.mjs`): na caçada, com um Pergaminho de Portal na mochila, o botão "Portal para a cidade" — a
+ * caçada fica guardada e, na cidade, o "Voltar pelo portal" leva de volta ao mesmo lugar (o mesmo portal da gema).
+ */
+function atualizarBotaoDoPergaminhoDePortal() {
+  const meta = Object.values(state.items ?? {}).find((i) => i?.moedaPoe?.slug === 'Portal_Scroll');
+  const n = meta ? (state.character?.inventory ?? []).filter((p) => p?.id === meta.id).reduce((t, p) => t + (p.count ?? 1), 0) : 0;
+  let botao = document.getElementById('btn-pergaminho-portal');
+  if (!state.hunt || !n) return void botao?.setAttribute('hidden', '');
+  if (!botao) {
+    botao = el('button', 'btn-pergaminho-portal');
+    botao.id = 'btn-pergaminho-portal';
+    botao.type = 'button';
+    document.body.append(botao);
+  }
+  botao.onclick = () => send({ t: 'moeda', moeda: meta.id });
+  const texto = `Portal para a cidade (${n})`;
+  if (botao.textContent !== texto) botao.textContent = texto;
+  botao.title = 'Pergaminho de Portal: vai para a cidade e guarda a caçada; volte pelo portal para o mesmo lugar.';
   botao.removeAttribute('hidden');
 }
 

@@ -433,3 +433,17 @@ test('B19, a Omnichama: os Ducados valem em peça Rara (e no Cutelo, "como se fo
   assert.ok(D.DUCADOS.some((s) => M.quantasTem(e, M.idDa(s)) > (s === 'Cyaxans_Ducat' ? 2 : s === 'Tzamotos_Ducat' ? 1 : 0)));
   for (const s of ['Merricks_Ducat', 'Cyaxans_Ducat', 'The_Genteels_Ducat', 'Rotmothers_Ducat', 'Kisharas_Ducat', 'Tzamotos_Ducat', 'The_Changelings_Ducat']) assert.notEqual(M.STATUS[s].status, 'nao', s);
 });
+
+test('o Pergaminho de Portal (o dono: "utilizado para sair no meio da fase para cidade"): na caçada marca a saída pelo portal; fora dela, não', { skip: SEM }, async () => {
+  const M = await import('../systems/itens-poe/moedas.mjs');
+  const { personagemDeTeste } = await import('./apoio.mjs');
+  const id = M.idDa('Portal_Scroll');
+  assert.equal(M.STATUS.Portal_Scroll.status, 'funciona');
+  const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 30 }), { inventory: [{ id, count: 2 }] });
+  assert.equal(M.usar(e, { moeda: id }).ok, false, 'fora da caçada');
+  e.hunt = { clock: 1234, pos: { x: 1, y: 1 } };
+  assert.ok(M.usar(e, { moeda: id }).ok);
+  assert.deepEqual(e.hunt.saidaPeloPortal, { em: 1234 });
+  assert.equal(M.quantasTem(e, id), 1);
+  assert.ok(Catalogo.REGRAS.moedas.loja.Portal_Scroll > 0 && Catalogo.REGRAS.moedas.drop.pesos.Portal_Scroll > 0);
+});

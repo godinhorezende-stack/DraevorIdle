@@ -27803,6 +27803,13 @@ button.soquete-elo.escolhido { outline: 1px solid #e8c66a; }
   color: #e8f6ff; background: linear-gradient(180deg, #2f6f93, #1b4560); border: 1px solid #0f2c40; box-shadow: 0 4px 18px #000a; cursor: pointer;
 }
 .btn-pescar[hidden] { display: none; }
+/* (08/11) o Pergaminho de Portal na caçada: no canto, em roxo como o portal */
+.btn-pergaminho-portal {
+  position: fixed; right: 16px; bottom: 170px; z-index: 60; padding: 8px 14px; min-height: 40px; border-radius: 10px;
+  font: 600 13px var(--font-heading, Oswald, system-ui, sans-serif); color: #f1eaff; background: linear-gradient(180deg, #6a4bd1, #3d2a86);
+  border: 1px solid #261858; box-shadow: 0 4px 14px #000a; cursor: pointer;
+}
+.btn-pergaminho-portal[hidden] { display: none; }
 .btn-pescar:disabled { opacity: 0.55; cursor: default; }
 .btn-pescar.mordida { color: #102030; background: linear-gradient(180deg, #9be7ff, #45b6e8); animation: btn-pescar-pulso 0.4s ease-in-out infinite alternate; }
 @keyframes btn-pescar-pulso { from { box-shadow: 0 0 6px #7fd6ff; } to { box-shadow: 0 0 22px #7fd6ff; } }
