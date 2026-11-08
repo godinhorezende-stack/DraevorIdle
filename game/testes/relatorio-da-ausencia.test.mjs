@@ -9,7 +9,6 @@ import { Sessao, vivas } from '../websocket/sessao.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as SimulacaoOffline from '../systems/simulacao-offline.mjs';
 import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
 
 const HORA = 3_600_000;
 const limpar = [];
@@ -24,9 +23,14 @@ async function conta() {
   return c;
 }
 
-/** Um personagem caçando que saiu há `horas`. `morre`: sem vida — morre no primeiro golpe. `mexer` ajusta antes de gravar. */
+/**
+ * Um personagem caçando que saiu há `horas`. `morre`: sem vida — morre no primeiro golpe. `mexer` ajusta antes de gravar.
+ * (08/11, adaptado ao PoE — o dono: "Adaptar antes") O que não morre: level 90, e não 200 (acima do 100 a XP do nível é Infinity na tabela do
+ * PoE), com a marca do personagem de teste do jogo oficial (`testador`, não morre) — sem nada do PoE equipado, ele morreria na área do PoE.
+ */
 async function personagem(c, { horas = 3, morre = false, mexer } = {}) {
-  const e = personagemDeTeste({ vocacao: 'knight', level: morre ? 12 : 200 });
+  const e = personagemDeTeste({ vocacao: 'knight', level: morre ? 12 : 90 });
+  if (!morre) e.testador = true;
   assert.equal(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto', strategy: 'nearest' }).ok, true);
   if (morre) {
     e.xp = 5e6;
@@ -84,7 +88,7 @@ test('morre offline SEM loot: uma mensagem só, com a morte e as penalidades, gr
   sair(a);
 });
 
-test('loot e DEPOIS a morte: o loot de antes da morte está no relatório, e o relatório diz até quando vai', { skip: aAdaptar("O relatório da ausência é da engine; o personagem de teste morre de outro jeito na área do PoE") }, async () => {
+test('loot e DEPOIS a morte: o loot de antes da morte está no relatório, e o relatório diz até quando vai', async () => {
   const c = await conta();
   const T = Date.now() - 3 * HORA;
   const nome = await personagem(c, {
@@ -94,6 +98,7 @@ test('loot e DEPOIS a morte: o loot de antes da morte está no relatório, e o r
       const parcial = Cacadas.consolidarAusencia(e, PERSONAGEM, T + 10 * 60_000);
       assert.equal(parcial.avancou, true);
       assert.equal(parcial.morreu, false);
+      delete e.testador; // (a marca sai: daqui em diante ele morre)
       e.level = 12;
       e.xp = 5e6;
       e.hp = 0;
@@ -119,7 +124,7 @@ test('morre depois de caçada offline LONGA (5 h fora): a morte vale, o período
   sair(a);
 });
 
-test('NÃO morre: o relatório volta com o loot, sem morte, e some depois do OK', { skip: aAdaptar("O personagem de teste é legado arquivado (5 delas surgiram com o arquivamento); \"duas sessões\" usa a morte do Draevor") }, async () => {
+test('NÃO morre: o relatório volta com o loot, sem morte, e some depois do OK', async () => {
   const c = await conta();
   const nome = await personagem(c);
   const a = await entrar(c, nome);

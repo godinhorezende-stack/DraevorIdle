@@ -11,7 +11,6 @@ import * as Cacadas from '../systems/cacadas.mjs';
 import * as R from '../systems/regras.mjs';
 import * as Acoes from '../systems/acoes.mjs';
 import { personagemDeTeste, HUNT_DE_TESTE, huntDoPoe } from './apoio.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
 
 const limpar = [];
 after(async () => {
@@ -116,13 +115,16 @@ test('de outra conta, ou o próprio char: recusado', async () => {
   assert.match(a.ultima('error').message, /em que você está/);
 });
 
-test('+ Party num char caçando OFFLINE: ele volta ao mundo sem aba, entra na party e sai quando ela acaba', { skip: aAdaptar("Os chars de teste da conta são legados arquivados: \"entrou em …\" falha") }, async () => {
+test('+ Party num char caçando OFFLINE: ele volta ao mundo sem aba, entra na party e sai quando ela acaba', async () => {
   const c = await conta();
   const eu = await char(c, { level: 60 });
   const outro = await char(c, {
     vocacao: 'paladin',
     level: 60,
     estado: (e) => {
+      // (08/11, adaptado ao PoE — o dono: "Adaptar antes") Com a marca do personagem de teste do jogo oficial (`testador`, não morre): sem
+      // nada do PoE equipado, o personagem de teste morre na área do PoE, e a ausência não deixaria a caçada para ele seguir.
+      e.testador = true;
       assert.equal(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok, true);
       e.hunt.offlineDesde = Date.now() - 20 * 60_000; // caçando offline há 20 min
     },

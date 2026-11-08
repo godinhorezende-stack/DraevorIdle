@@ -5,16 +5,17 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as B from '../database/banco.mjs';
 import * as Amigos from '../systems/amigos.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
 
 const ler = (n) => JSON.parse(readFileSync(new URL(`../../api-mapeada/captura-social-0926/${n}`, import.meta.url), 'utf8'));
 const CONTA = 'conta-teste-amigos';
 const NOMES = ['Amigotesteum', 'Amigotestedois'];
 
 B.db.prepare('INSERT OR IGNORE INTO contas (id, email, senha, criada_em) VALUES (?, ?, ?, ?)').run(CONTA, 'amigos@teste.local', 'x', Date.now());
+// (08/11, adaptado ao PoE — o dono: "Adaptar antes") Personagens do jogo oficial: a classe do PoE por cima da vocação (Marauder sobre o
+// knight, Templar sobre o druid — a classe padrão de cada vocação), como a criação grava (`criarPersonagem`).
 for (const [i, nome] of NOMES.entries()) {
   B.db.prepare('DELETE FROM personagens WHERE nome = ?').run(nome);
-  const estado = { vocation: i ? 'druid' : 'knight', level: 50 + i, outfit: { type: 131, head: 78, body: 88, legs: 58, feet: 76, addons: 0, mount: 0 } };
+  const estado = { vocation: i ? 'druid' : 'knight', classePoe: i ? 'Templar' : 'Marauder', sistema: 'poe', level: 50 + i, outfit: { type: 131, head: 78, body: 88, legs: 58, feet: 76, addons: 0, mount: 0 } };
   B.db.prepare('INSERT INTO personagens (id, conta, nome, vocacao, sexo, criado_em, estado) VALUES (?, ?, ?, ?, ?, ?, ?)').run(`id-${nome}`, CONTA, nome, estado.vocation, 'male', Date.now(), JSON.stringify(estado));
 }
 after(() => {
@@ -28,7 +29,7 @@ test('lista vazia: igual à do original', async () => {
   assert.deepEqual(await Amigos.lista(NOMES[0]), { t, amigos, pedidos, enviados, max, notice });
 });
 
-test('pedir, aceitar, tirar — e os erros', { skip: aAdaptar("vocationName \"Marauder\" (classe do PoE) em vez de \"Knight\"; o segundo falha em cascata (o primeiro deixou a amizade)") }, async () => {
+test('pedir, aceitar, tirar — e os erros', async () => {
   const [um, dois] = NOMES;
   let r = await Amigos.comando(um, { action: 'add', name: dois.toLowerCase() });
   assert.deepEqual(r.enviados.map((p) => p.name), [dois]);
@@ -37,13 +38,13 @@ test('pedir, aceitar, tirar — e os erros', { skip: aAdaptar("vocationName \"Ma
   assert.match((await Amigos.comando(um, { action: 'add', name: um })).message, /si mesmo/);
   assert.match((await Amigos.comando(um, { action: 'add', name: 'Ninguemaqui' })).message, /não existe ninguém chamado/);
   r = await Amigos.comando(dois, { action: 'accept', name: um });
-  assert.deepEqual(r.amigos, [{ name: um, online: false, vocation: 'knight', vocationName: 'Knight', level: 50, hunt: null }]);
+  assert.deepEqual(r.amigos, [{ name: um, online: false, vocation: 'knight', vocationName: 'Marauder', level: 50, hunt: null }]);
   assert.deepEqual((await Amigos.lista(um)).amigos.map((p) => p.name), [dois]);
   r = await Amigos.comando(um, { action: 'remove', name: dois });
   assert.deepEqual([r.amigos, (await Amigos.lista(dois)).amigos], [[], []]);
 });
 
-test('pedir a quem já te pediu vira amizade; recusar apaga o pedido', { skip: aAdaptar("vocationName \"Marauder\" (classe do PoE) em vez de \"Knight\"; o segundo falha em cascata (o primeiro deixou a amizade)") }, async () => {
+test('pedir a quem já te pediu vira amizade; recusar apaga o pedido', async () => {
   const [um, dois] = NOMES;
   await Amigos.comando(um, { action: 'add', name: dois });
   assert.equal((await Amigos.comando(dois, { action: 'add', name: um })).amigos.length, 1);

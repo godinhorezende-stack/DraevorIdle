@@ -10,11 +10,13 @@ import * as B from '../database/banco.mjs';
 import { Sessao, vivas } from '../websocket/sessao.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { personagemDeTeste } from './apoio.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
+import * as MoedasPoe from '../systems/itens-poe/moedas.mjs';
 
 const socket = () => ({ readyState: 1, send: () => {} });
 const noBanco = (id) => JSON.parse(B.db.prepare('SELECT estado FROM personagens WHERE id = ?').get(id).estado);
 const quantos = (estado, item) => (estado.inventory ?? []).filter((p) => p.id === item).reduce((a, p) => a + (p.count ?? 1), 0);
+
+const ORBE_DO_CAOS = MoedasPoe.idDa('Chaos_Orb');
 
 /** Um jogador ONLINE (sessão viva, em `vivas`), com a linha no banco. */
 async function jogador(t, prefixo) {
@@ -22,6 +24,8 @@ async function jogador(t, prefixo) {
   const nome = `${prefixo}${randomUUID().replace(/[^a-z]/g, '').slice(0, 8)}`;
   const estado = personagemDeTeste({ level: 100 });
   estado.gold = 10_000;
+  // (08/11, adaptado ao PoE — o dono: "Adaptar antes") No jogo oficial só item do PoE entra no mercado: na mochila, umas Chaos Orbs.
+  estado.inventory = [...(estado.inventory ?? []), { id: ORBE_DO_CAOS, count: 3 }];
   const p = await B.criarPersonagem({ conta: conta.id, nome, vocacao: 'knight', sexo: 'male', estadoInicial: estado });
   const s = new Sessao(socket());
   s.conta = await B.contaPorId(conta.id);
@@ -39,10 +43,10 @@ async function jogador(t, prefixo) {
   return { s, id: p.id, nome };
 }
 
-test('mercado: anunciar e comprar deixam o banco certo sem esperar o autosave', { skip: aAdaptar("O personagem de teste é legado arquivado: \"não entrou no jogo\"") }, async (t) => {
+test('mercado: anunciar e comprar deixam o banco certo sem esperar o autosave', async (t) => {
   const vendedor = await jogador(t, 'Vend');
   const comprador = await jogador(t, 'Comp');
-  const item = vendedor.s.estado.inventory.find((p) => ITEM_CATALOG[p.id])?.id;
+  const item = vendedor.s.estado.inventory.find((p) => ITEM_CATALOG[p.id] && p.id === ORBE_DO_CAOS)?.id;
   assert.ok(item, 'o personagem de teste não tem item na mochila');
   const tinha = quantos(vendedor.s.estado, item);
 

@@ -15,13 +15,20 @@ import assert from 'node:assert/strict';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Prey from '../systems/prey.mjs';
 import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
+
+/*
+ * (08/11, adaptado ao PoE — o dono: "Adaptar antes") Os testes que precisam de um abate (o evento `kill`, o bônus de pódio): level 90, e não
+ * 400 (acima do 100 a XP do nível é Infinity na tabela do PoE), na Praia do Ato 1 — no Navio Encalhado o personagem de teste, sem nada do
+ * PoE equipado, não abate nada.
+ */
+const NIVEL_QUE_ABATE = 90;
+const AREA_QUE_ABATE = 'poe-a1-the-coast';
 
 /** Prey sorteado com Math.random de verdade — chamar ANTES de qualquer `Math.random = () => x` no teste, senão o sorteio de candidatas do prey trava num `while` que nunca acha uma nova (ver podio-combate.test.mjs). */
-function personagemPronto(opcoes) {
+function personagemPronto(opcoes, huntId = HUNT_DE_TESTE) {
   const e = personagemDeTeste(opcoes);
   Prey.garantir(e);
-  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId, mode: 'auto' }).ok);
   e.hunt.ultimoTique = Date.now();
   return e;
 }
@@ -74,8 +81,8 @@ test('ticar no worker dá o MESMO resultado que ticar direto (mesmo estado, mesm
   }
 });
 
-test('os eventos do tique no worker são os mesmos que `Cacadas.tique` devolveria (ex.: kill)', { skip: aAdaptar("O worker do tique é da engine (sem defeito: sem o worker também dá 0 abates); o personagem de teste não mata nada na área do PoE") }, async () => {
-  let estado = personagemPronto({ level: 400 }); // Prey.garantir precisa de Math.random de verdade — ver a nota em personagemPronto
+test('os eventos do tique no worker são os mesmos que `Cacadas.tique` devolveria (ex.: kill)', async () => {
+  let estado = personagemPronto({ level: NIVEL_QUE_ABATE }, AREA_QUE_ABATE); // Prey.garantir precisa de Math.random de verdade — ver a nota em personagemPronto
   const original = Math.random;
   Math.random = () => 0.5;
   try {
@@ -92,7 +99,7 @@ test('os eventos do tique no worker são os mesmos que `Cacadas.tique` devolveri
   }
 });
 
-test('o bônus de pódio (não-enumerável em hunt.podio) atravessa o worker — a mesma correção de podio-combate.test.mjs', { skip: aAdaptar("O worker do tique é da engine (sem defeito: sem o worker também dá 0 abates); o personagem de teste não mata nada na área do PoE") }, async () => {
+test('o bônus de pódio (não-enumerável em hunt.podio) atravessa o worker — a mesma correção de podio-combate.test.mjs', async () => {
   // `hunt.podio` é não-enumerável de propósito (não vai para o banco) —
   // clone estruturado (`postMessage`) não leva propriedade não-enumerável, e
   // sem `Simulador.tique` receber `podio` à parte (4º argumento) o bônus
@@ -100,8 +107,8 @@ test('o bônus de pódio (não-enumerável em hunt.podio) atravessa o worker —
   // As duas fichas nascem ANTES de travar o dado — a segunda não pode nascer
   // no meio do bloco travado (é exatamente o bug que já apareceu duas vezes
   // neste arquivo: `Prey.garantir` com Math.random travado trava para sempre).
-  let semBonus = personagemPronto({ level: 400 });
-  let comBonus = personagemPronto({ level: 400 });
+  let semBonus = personagemPronto({ level: NIVEL_QUE_ABATE }, AREA_QUE_ABATE);
+  let comBonus = personagemPronto({ level: NIVEL_QUE_ABATE }, AREA_QUE_ABATE);
   const original = Math.random;
   Math.random = () => 0.5;
   let semExp;

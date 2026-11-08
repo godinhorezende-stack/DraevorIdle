@@ -9,18 +9,25 @@ import * as B from '../database/banco.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as SimulacaoOffline from '../systems/simulacao-offline.mjs';
 import { Sessao, vivas } from '../websocket/sessao.mjs';
-import { personagemDeTeste, HUNT_DE_TESTE, huntDoPoe } from './apoio.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
+import { personagemDeTeste, HUNT_DE_TESTE } from './apoio.mjs';
 
 after(() => SimulacaoOffline.encerrar());
 
 const HORA = 3_600_000;
 
-/** Um personagem level 600 que não morre, caçando offline há `horas`. */
-function estadoCacandoOffline(horas) {
-  const e = personagemDeTeste({ vocacao: 'knight', level: 600 });
+/**
+ * Um personagem que não morre, caçando offline há `horas`. (08/11, adaptado ao PoE — o dono: "Adaptar antes") Level 90, e não 600: acima
+ * do 100 a XP do nível é Infinity na tabela do PoE. Na Ilha da Maré (Ato 1), e não nos Campos Antigos (a área do PoE sobre o terreno dos
+ * werelions): menos bichos, a simulação mais curta. E `naoMorre` (os testes que precisam da caçada rendendo / seguindo depois da entrada):
+ * a marca do personagem de teste do jogo oficial (`testador`, o GODINES) — a vida de 1e12 não sobrevive à entrada pela sessão (o máximo é
+ * recalculado), e o personagem de teste, sem nada do PoE equipado, morre na área do PoE. Os outros seguem como antes (a vida de 1e12 só).
+ */
+const AREA = 'poe-a1-the-tidal-island';
+function estadoCacandoOffline(horas, { naoMorre = false } = {}) {
+  const e = personagemDeTeste({ vocacao: 'knight', level: 90 });
   e.hp = e.maxHp = 1e12;
-  assert.ok(Cacadas.entrar(e, { huntId: huntDoPoe('werelions-1'), mode: 'auto', strategy: 'nearest' }).ok);
+  if (naoMorre) e.testador = true;
+  assert.ok(Cacadas.entrar(e, { huntId: AREA, mode: 'auto', strategy: 'nearest' }).ok);
   e.hunt.offlineDesde = Date.now() - horas * HORA;
   return e;
 }
@@ -42,8 +49,8 @@ async function maiorTravada(promessa) {
   }
 }
 
-test('na thread à parte: a caçada rende, e a thread do jogo segue respondendo', { skip: aAdaptar("Personagem de teste acima do nível 100: a XP do nível é Infinity na tabela do PoE") }, async () => {
-  const e = estadoCacandoOffline(2);
+test('na thread à parte: a caçada rende, e a thread do jogo segue respondendo', async () => {
+  const e = estadoCacandoOffline(2, { naoMorre: true });
   const xp = e.xp;
   // Aquece a thread (carregar os dados do jogo nela é uma vez só).
   await SimulacaoOffline.simular(estadoCacandoOffline(0.01), { id: 'x', nome: 'Aquece' });
@@ -67,10 +74,10 @@ function socket() {
   return { readyState: 1, send: (t) => recebidas.push(JSON.parse(t)), recebidas, tipos: () => recebidas.map((m) => m.t) };
 }
 
-async function contaComPersonagem(t, horas) {
+async function contaComPersonagem(t, horas, opcoes) {
   const conta = await B.criarConta({ email: `offline-${randomUUID()}@teste.local`, senha: 'x' });
   const nome = `Off${randomUUID().replace(/[^a-z]/g, '').slice(0, 8)}`;
-  const e = estadoCacandoOffline(horas);
+  const e = estadoCacandoOffline(horas, opcoes);
   const p = await B.criarPersonagem({ conta: conta.id, nome, vocacao: 'knight', sexo: 'male', estadoInicial: { ...e, hunt: Cacadas.huntParaGravar(e.hunt) } });
   t.after(() => {
     for (const s of [...vivas.values()]) if (s.personagem?.nome === nome) s.desconectar();
@@ -88,8 +95,8 @@ function sessao(conta) {
   return { s, ws };
 }
 
-test('play com caçada offline: carrega sem personagem, e entra com o relatório', { skip: aAdaptar("O personagem de teste é legado arquivado e não carrega") }, async (t) => {
-  const { conta, nome } = await contaComPersonagem(t, 1);
+test('play com caçada offline: carrega sem personagem, e entra com o relatório', async (t) => {
+  const { conta, nome } = await contaComPersonagem(t, 1, { naoMorre: true });
   const { s, ws } = sessao(conta);
   s.receber({ t: 'play', name: nome });
   // `entrarNoPersonagem` agora é assíncrona (lê o banco antes de disparar a
@@ -104,7 +111,7 @@ test('play com caçada offline: carrega sem personagem, e entra com o relatório
   await esperar(() => ws.tipos().includes('welcome'));
   const welcome = ws.recebidas.find((m) => m.t === 'welcome');
   assert.ok(welcome.andamento, 'o welcome veio sem o "Progresso enquanto você esteve fora"');
-  assert.equal(s.estado.hunt.huntId, huntDoPoe('werelions-1'));
+  assert.equal(s.estado.hunt.huntId, AREA);
   assert.equal(s.estado.hunt.offlineDesde, undefined);
   assert.equal(vivas.get(nome), s);
   assert.equal(s.carregando, null);
