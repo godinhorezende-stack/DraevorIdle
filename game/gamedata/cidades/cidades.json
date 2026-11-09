@@ -1263,6 +1263,223 @@
    ]
   },
   {
+   "id": "poe-a7-the-bridge-encampment",
+   "nome": "Acampamento da Ponte",
+   "mapa": {
+    "gerador": "ponte",
+    "semente": 71
+   },
+   "chegada": {
+    "x": 32,
+    "y": 24,
+    "z": 7,
+    "dir": 2
+   },
+   "npcs": [
+    {
+     "uid": "npc:lilly-roth",
+     "id": "lilly-roth",
+     "name": "Lilly Roth",
+     "x": 30,
+     "y": 23,
+     "z": 7,
+     "dir": 2,
+     "look": 140,
+     "colors": {
+      "type": 140,
+      "head": 78,
+      "body": 94,
+      "legs": 94,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "loja"
+    },
+    {
+     "uid": "npc:weylam-roth",
+     "id": "weylam-roth",
+     "name": "Weylam Roth",
+     "x": 27,
+     "y": 21,
+     "z": 7,
+     "dir": 2,
+     "look": 151,
+     "colors": {
+      "type": 151,
+      "head": 0,
+      "body": 94,
+      "legs": 94,
+      "feet": 95,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "banco"
+    },
+    {
+     "uid": "npc:helena",
+     "id": "helena",
+     "name": "Helena",
+     "x": 37,
+     "y": 23,
+     "z": 7,
+     "dir": 2,
+     "look": 140,
+     "colors": {
+      "type": 140,
+      "head": 58,
+      "body": 94,
+      "legs": 94,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "Do outro lado da ponte só há escuridão. A Aranha guarda a floresta, e ninguém volta da Ponte Quebrada."
+    },
+    {
+     "uid": "npc:eramir",
+     "id": "eramir",
+     "name": "Eramir",
+     "x": 33,
+     "y": 26,
+     "z": 7,
+     "dir": 2,
+     "look": 145,
+     "colors": {
+      "type": 145,
+      "head": 0,
+      "body": 86,
+      "legs": 86,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "A luz está se apagando, exilado. Arakaali tece a sua teia sobre Wraeclast, e nós estamos no meio dela."
+    }
+   ],
+   "objetos": [
+    {
+     "uid": "marco:aventuras:35,25",
+     "x": 35,
+     "y": 25,
+     "item": null,
+     "nome": "Aventuras",
+     "cor": "dourado",
+     "acao": "aventuras",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:boss-diarios:29,25",
+     "x": 29,
+     "y": 25,
+     "item": null,
+     "nome": "Boss Diarios",
+     "cor": "boss",
+     "acao": "boss-diarios",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:forja:24,23",
+     "x": 24,
+     "y": 23,
+     "item": null,
+     "nome": "Forja",
+     "cor": "vermelho",
+     "acao": "forja",
+     "pisar": false,
+     "nomeDx": -0.5,
+     "nomeDy": -0.5
+    },
+    {
+     "uid": "marco:arvore:39,23:39,23",
+     "x": 39,
+     "y": 23,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,23:40,23",
+     "x": 40,
+     "y": 23,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,23:41,23",
+     "x": 41,
+     "y": 23,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,23:39,24",
+     "x": 39,
+     "y": 24,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,23:40,24",
+     "x": 40,
+     "y": 24,
+     "item": null,
+     "nome": "Arvore De Habilidade",
+     "cor": "verde-azul",
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,23:41,24",
+     "x": 41,
+     "y": 24,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,23:39,25",
+     "x": 39,
+     "y": 25,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,23:40,25",
+     "x": 40,
+     "y": 25,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,23:41,25",
+     "x": 41,
+     "y": 25,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    }
+   ]
+  },
+  {
    "id": "poe-a8-the-sarn-encampment",
    "nome": "Acampamento de Sarn",
    "igualA": "poe-a3-the-sarn-encampment"
