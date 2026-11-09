@@ -422,7 +422,7 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // (+ "Defende com X% da Armadura contra Ataques de Projéteis" — a armadura × X%.)
   const defendeCom = projetil ? ModsPoe.valor(ficha, 'armadura_projetil_defende_pct') : 0;
   const armaduraContra = (ficha.armaduraDaReducao ?? ficha.armor ?? 0) * (projetil ? 1 + ModsPoe.valor(ficha, 'armadura_projetil_inc') / 100 : 1) * (defendeCom > 0 ? defendeCom / 100 : 1);
-  const daParteDaMagia = a.elemento === 'physical' && ModsPoe.somaFisicaDoPoe() ? ModsPoe.acertoFisicoRecebido(ficha, daMagia, armaduraContra) : daMagia * fatorDaResistencia * ModsPoe.armaduraNoElemento(ficha, a.elemento, daMagia);
+  const daParteDaMagia = a.elemento === 'physical' && ModsPoe.somaFisicaDoPoe() ? ModsPoe.acertoFisicoRecebido(ficha, daMagia, armaduraContra, { overwhelm: Number(bicho?.sobrecargaFisicaPct) || 0 }) : daMagia * fatorDaResistencia * ModsPoe.armaduraNoElemento(ficha, a.elemento, daMagia);
   somarParte(a.elemento, daMagia, daParteDaMagia);
   const bruto = daParteDaMagia + doutrosTipos + extraDoMapa + convertido;
   // A SUPRESSÃO DE FEITIÇO do PoE: a magia suprimida causa 50% menos dano (`ficha.supressaoDeMagia`, a chance) — sorteada ANTES das

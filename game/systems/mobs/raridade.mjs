@@ -145,7 +145,7 @@ export const avisosDoSpawn = (s) => {
 /** A soma dos stats dos modificadores. */
 export function statsDos(ids) {
   const t = { vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0,
-    esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, danoExtraAleatorioPct: 0, naoCaosComoCaosPct: 0, velocidadeDeConjuracaoPct: 0, dotFisicoSofridoPct: 0, sempreEletriza: 0, todoDanoResfria: 0, todoDanoEletriza: 0, efeitoResfriamentoPct: 0, efeitoEletrizacaoPct: 0, duracaoEletrizacaoPct: 0, chanceCongelar: 0, todoDanoCongela: 0, duracaoCongelamentoPct: 0, danoProjetilPct: 0, critChancePct: 0, sempreCritico: 0,
+    esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, danoExtraAleatorioPct: 0, naoCaosComoCaosPct: 0, velocidadeDeConjuracaoPct: 0, dotFisicoSofridoPct: 0, sempreEletriza: 0, todoDanoResfria: 0, todoDanoEletriza: 0, efeitoResfriamentoPct: 0, efeitoEletrizacaoPct: 0, duracaoEletrizacaoPct: 0, chanceCongelar: 0, todoDanoCongela: 0, duracaoCongelamentoPct: 0, bloqueioMagia: 0, danoBloqueadoPct: 0, limiarAtordoamentoPct: 0, imuneAtordoamento: 0, sempreAtordoa: 0, dobrarAtordoamentoPct: 0, limiarInimigoMenosPct: 0, imuneMisericordia: 0, danoExtraCriticoRedPct: 0, semLentidao: 0, semLentidaoMovimento: 0, sobrecargaFisicaPct: 0, danoProjetilPct: 0, critChancePct: 0, sempreCritico: 0,
     resist: {}, danoTipoPct: {}, danoExtraPct: {}, conversaoPct: {}, afeccaoEfeitoPct: {}, afeccaoDuracaoPct: {}, resistDot: {} };
   // (09/11, lote 1 dos modificadores de monstro) os campos POR ELEMENTO: o "+X% de Dano de Fogo" (`danoTipoPct`), o "Ganha X% do Dano Físico como
   // Dano Extra de Fogo" (`danoExtraPct`) e o "X% do Dano Físico Convertido em Fogo" (`conversaoPct`) — somados como as resistências
@@ -249,6 +249,11 @@ export function aplicar(m, { raridade = 'normal', modificadores = [], sortear = 
   if (st.efeitoResfriamentoPct) m.efeitoResfriamentoPct = st.efeitoResfriamentoPct;
   for (const k of ['efeitoEletrizacaoPct', 'duracaoEletrizacaoPct', 'chanceCongelar', 'duracaoCongelamentoPct']) if (st[k]) m[k] = st[k];
   if (st.todoDanoCongela) m.todoDanoCongela = true;
+  // (09/11, lote 3) a DEFESA: o bloqueio de magia e o dano que passa no bloqueado (`mobs/atributos.bloqueou`), o atordoamento (o limiar dele, imune — `skills/estados`,
+  // `mods-poe` — e o que ele causa em você — `combate/controle`, `mobs/mecanicas`), imune ao Golpe de Misericórdia, o crítico recebido (`ficha.rolarCritico`), a
+  // velocidade que não cai abaixo da base (`skills/estados`) e a Sobrecarga da sua redução física (`hunt/combate`, `poderes`)
+  for (const k of ['bloqueioMagia', 'danoBloqueadoPct', 'limiarAtordoamentoPct', 'dobrarAtordoamentoPct', 'limiarInimigoMenosPct', 'danoExtraCriticoRedPct', 'sobrecargaFisicaPct']) if (st[k]) m[k] = st[k];
+  for (const k of ['imuneAtordoamento', 'sempreAtordoa', 'imuneMisericordia', 'semLentidao', 'semLentidaoMovimento']) if (st[k]) m[k] = true;
   if (st.critMultiplicador) m.critMultiplicador = st.critMultiplicador;
   if (Object.keys(st.resist).length) m.resist = st.resist;
   if (r.elite) m.elite = true;

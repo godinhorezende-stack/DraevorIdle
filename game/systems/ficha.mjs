@@ -1060,7 +1060,8 @@ export function rolarCritico(estado, base, alvo, eventos, ficha = combate(estado
   // E os efeitos de item (Fúria do Desespero, Carrasco, Colheita de Almas — ver `systems/itens/efeitos.mjs`).
   // ("Golpes Críticos não causam Dano", "Golpes não-críticos causam N% menos Dano": `mais_dano_critico` / `mais_dano_nao_critico`, o golpe inteiro.)
   const doTipoDeGolpe = Math.max(0, 1 + ModsPoe.valor(ficha, crit ? 'mais_dano_critico' : 'mais_dano_nao_critico') / 100);
-  const multiplicador = ficha.critMultiplier + doCharm.dano / 100;
+  // (09/11, lote 3 dos modificadores de monstro: "Dano Extra recebido de Acertos Críticos em Você reduzido em X%" do monstro — `danoExtraCriticoRedPct`, só a parte extra)
+  const multiplicador = 1 + (ficha.critMultiplier + doCharm.dano / 100 - 1) * Math.max(0, 1 - (Number(alvo?.danoExtraCriticoRedPct) || 0) / 100);
   const dano = Math.round(base * doTipoDeGolpe * (crit ? (bifurcado ? 1 + 2 * (multiplicador - 1) : multiplicador) : 1) * (dobraNoCritico ? 2 : 1) * (onslaught ? FORMULAS.critico.onslaught : 1) * Prey.fatorDeDano(estado, alvo.key) * daArvore * EfeitosDeItem.fatorDeDano(estado, alvo) * fatorContraOAlvo(estado, alvo, ficha));
   if (crit) eventos.push({ t: 'fx', id: EFEITO_CRITICO, uid: alvo.uid, x: alvo.x, y: alvo.y });
   return { dano, crit, onslaught, chance: chanceDeCritico, ...(bifurcado ? { bifurcado } : {}), ...(dobraNoCritico ? { dobraNoCritico } : {}) };

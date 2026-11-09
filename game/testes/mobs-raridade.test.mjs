@@ -31,7 +31,9 @@ test('dados: toda raridade tem cor e multiplicadores; todo modificador tem nome 
     // (lote 2 — aval do dono para este e os próximos lotes: "sempre só somando os campos novos") as afecções em si, a resistência contra o dano contínuo,
     // o Físico contínuo sofrido e as afecções que o monstro causa em você
     'afeccaoEfeitoPct', 'afeccaoDuracaoPct', 'resistDot', 'dotFisicoSofridoPct', 'sempreEletriza', 'todoDanoResfria', 'todoDanoEletriza', 'efeitoResfriamentoPct',
-    'efeitoEletrizacaoPct', 'duracaoEletrizacaoPct', 'chanceCongelar', 'todoDanoCongela', 'duracaoCongelamentoPct']);
+    'efeitoEletrizacaoPct', 'duracaoEletrizacaoPct', 'chanceCongelar', 'todoDanoCongela', 'duracaoCongelamentoPct',
+    // (lote 3, pelo mesmo aval) a defesa do monstro
+    'bloqueioMagia', 'danoBloqueadoPct', 'limiarAtordoamentoPct', 'imuneAtordoamento', 'sempreAtordoa', 'dobrarAtordoamentoPct', 'limiarInimigoMenosPct', 'imuneMisericordia', 'danoExtraCriticoRedPct', 'semLentidao', 'semLentidaoMovimento', 'sobrecargaFisicaPct']);
   const GATILHOS = new Set(['aoMorrer', 'vidaBaixa', 'aoReceberDano', 'aoAtacar', 'aliadoMorreu', 'aura']);
   for (const [id, m] of Object.entries(Raridade.MODIFICADORES)) {
     assert.ok(m.nome, id);

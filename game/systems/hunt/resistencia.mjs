@@ -98,6 +98,8 @@ export function resistenciaEfetivaDe(hunt, alvo, tipo, ficha = null, { extra = 0
  */
 export function resistido(hunt, alvo, tipo, valor, ficha = null, { armadura = true, dot = false } = {}) {
   let v = valor;
+  // (09/11, lote 3) o golpe que o monstro bloqueou e ainda passa ("Você sofre 20% do Dano de Acertos Bloqueados" — `AtributosDoMob.bloqueou`)
+  if (ficha && !dot && hunt?.bloqueioParcial && hunt.bloqueioParcial.uid === alvo?.uid && hunt.bloqueioParcial.em === (hunt.clock ?? 0)) v *= hunt.bloqueioParcial.fator;
   // (09/11, lote 2 dos modificadores de monstro) o DANO CONTÍNUO: "Dano Físico Degenerativo sofrido aumentado" (`dotFisicoSofridoPct`)
   if (dot && tipo === 'physical' && alvo?.dotFisicoSofridoPct) v *= Math.max(0, 1 + alvo.dotFisicoSofridoPct / 100);
   // PoE: "Acertos ignoram a Redução de Dano Físico dos Monstros Inimigos" (a ficha do golpe sorteou): sem armadura nem resistência física.

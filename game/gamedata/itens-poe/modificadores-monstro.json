@@ -578,8 +578,8 @@
     "esPct": 40,
     "esAtrasoMenosPct": 150
    },
-   "estado": "parcial",
-   "valem": 2,
+   "estado": "efeito",
+   "valem": 3,
    "total": 3,
    "statsPoe": [
     {
@@ -771,13 +771,16 @@
    "stats": {
     "velocidadeDeAtaquePct": -30,
     "velocidadeDeConjuracaoPct": -30,
+    "limiarAtordoamentoPct": 250,
+    "sempreAtordoa": 1,
+    "dobrarAtordoamentoPct": 25,
     "danoTipoPct": {
      "physical": 40
     },
     "precisaoPct": 100
    },
    "estado": "parcial",
-   "valem": 3,
+   "valem": 6,
    "total": 8,
    "statsPoe": [
     {
@@ -892,6 +895,8 @@
    "pesoMagico": 5000,
    "pesoRaro": 5000,
    "stats": {
+    "limiarAtordoamentoPct": 250,
+    "sobrecargaFisicaPct": 10,
     "danoTipoPct": {
      "physical": 40
     },
@@ -900,7 +905,7 @@
     }
    },
    "estado": "parcial",
-   "valem": 2,
+   "valem": 4,
    "total": 5,
    "statsPoe": [
     {
@@ -992,10 +997,11 @@
     "velocidadePct": 40,
     "velocidadeDeAtaquePct": 75,
     "velocidadeDeConjuracaoPct": 75,
+    "imuneMisericordia": 1,
     "reducaoDeDano": 30
    },
    "estado": "parcial",
-   "valem": 5,
+   "valem": 6,
    "total": 7,
    "statsPoe": [
     {
@@ -1050,10 +1056,12 @@
    "pesoMagico": 0,
    "pesoRaro": 3000,
    "stats": {
+    "bloqueioMagia": 50,
+    "danoBloqueadoPct": 20,
     "bloqueio": 50
    },
-   "estado": "parcial",
-   "valem": 1,
+   "estado": "efeito",
+   "valem": 3,
    "total": 3,
    "statsPoe": [
     {
@@ -1092,7 +1100,10 @@
    "pesoMagico": 2000,
    "pesoRaro": 2000,
    "stats": {
-    "danoPct": 20
+    "danoPct": 20,
+    "imuneAtordoamento": 1,
+    "semLentidao": 1,
+    "semLentidaoMovimento": 1
    },
    "mecanicas": [
     {
@@ -1103,7 +1114,7 @@
     }
    ],
    "estado": "parcial",
-   "valem": 2,
+   "valem": 5,
    "total": 7,
    "statsPoe": [
     {
@@ -1436,7 +1447,8 @@
    "pesoMagico": 800,
    "pesoRaro": 800,
    "stats": {
-    "sempreCritico": 1
+    "sempreCritico": 1,
+    "danoExtraCriticoRedPct": 50
    },
    "mecanicas": [
     {
@@ -1446,8 +1458,8 @@
      "efeitoPct": 100
     }
    ],
-   "estado": "parcial",
-   "valem": 3,
+   "estado": "efeito",
+   "valem": 4,
    "total": 4,
    "statsPoe": [
     {
@@ -1602,9 +1614,11 @@
    "nivel": 27,
    "pesoMagico": 0,
    "pesoRaro": 800,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "imuneMisericordia": 1
+   },
+   "estado": "parcial",
+   "valem": 1,
    "total": 3,
    "statsPoe": [
     {
@@ -2501,10 +2515,12 @@
    "pesoMagico": 0,
    "pesoRaro": 300,
    "stats": {
+    "bloqueioMagia": 30,
+    "danoBloqueadoPct": 20,
     "bloqueio": 30
    },
    "estado": "parcial",
-   "valem": 1,
+   "valem": 3,
    "total": 4,
    "statsPoe": [
     {
@@ -3463,8 +3479,8 @@
     "esPct": 40,
     "esAtrasoMenosPct": 50
    },
-   "estado": "parcial",
-   "valem": 2,
+   "estado": "efeito",
+   "valem": 3,
    "total": 3,
    "statsPoe": [
     {
@@ -3678,13 +3694,16 @@
    "stats": {
     "velocidadeDeAtaquePct": -40,
     "velocidadeDeConjuracaoPct": -40,
+    "limiarAtordoamentoPct": 250,
+    "dobrarAtordoamentoPct": 25,
+    "limiarInimigoMenosPct": 50,
     "danoTipoPct": {
      "physical": 60
     },
     "precisaoPct": 100
    },
    "estado": "parcial",
-   "valem": 3,
+   "valem": 6,
    "total": 8,
    "statsPoe": [
     {
@@ -4298,10 +4317,12 @@
    "pesoMagico": 3000,
    "pesoRaro": 0,
    "stats": {
+    "bloqueioMagia": 50,
+    "danoBloqueadoPct": 10,
     "bloqueio": 50
    },
-   "estado": "parcial",
-   "valem": 1,
+   "estado": "efeito",
+   "valem": 3,
    "total": 3,
    "statsPoe": [
     {
@@ -5060,9 +5081,11 @@
    "nivel": 27,
    "pesoMagico": 0,
    "pesoRaro": 1500,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "sempreAtordoa": 1
+   },
+   "estado": "efeito",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -5388,9 +5411,12 @@
    "nivel": 19,
    "pesoMagico": 2000,
    "pesoRaro": 2000,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "semLentidao": 1,
+    "semLentidaoMovimento": 1
+   },
+   "estado": "efeito",
+   "valem": 2,
    "total": 2,
    "statsPoe": [
     {
@@ -5417,9 +5443,11 @@
    "nivel": 19,
    "pesoMagico": 2000,
    "pesoRaro": 2000,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "imuneAtordoamento": 1
+   },
+   "estado": "efeito",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -5523,9 +5551,11 @@
    "nivel": 19,
    "pesoMagico": 1500,
    "pesoRaro": 1500,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "danoExtraCriticoRedPct": 100
+   },
+   "estado": "efeito",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -7598,10 +7628,11 @@
    "pesoRaro": 0,
    "stats": {
     "critChancePct": 120,
+    "danoExtraCriticoRedPct": 100,
     "precisaoPct": 80
    },
-   "estado": "parcial",
-   "valem": 2,
+   "estado": "efeito",
+   "valem": 3,
    "total": 3,
    "statsPoe": [
     {
@@ -7637,10 +7668,11 @@
    "pesoRaro": 0,
    "stats": {
     "danoPct": 100,
+    "imuneAtordoamento": 1,
     "regenPct": 3
    },
-   "estado": "parcial",
-   "valem": 2,
+   "estado": "efeito",
+   "valem": 3,
    "total": 3,
    "statsPoe": [
     {
@@ -7678,10 +7710,11 @@
    "stats": {
     "velocidadePct": 20,
     "velocidadeDeAtaquePct": 20,
-    "velocidadeDeConjuracaoPct": 20
+    "velocidadeDeConjuracaoPct": 20,
+    "semLentidao": 1
    },
-   "estado": "parcial",
-   "valem": 3,
+   "estado": "efeito",
+   "valem": 4,
    "total": 4,
    "statsPoe": [
     {

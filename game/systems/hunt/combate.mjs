@@ -270,7 +270,7 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segun
   }
   // O bicho BLOQUEIA o tiro (só quem tem bloqueio configurado): sem dano. ("Monstros não podem Bloquear seus Ataques": não bloqueia.)
   // (lote A2: + o Subjugado no bicho — a Redução de Chance de Bloqueio)
-  if (!(ModsPoe.valor(ficha, 'inimigos_nao_bloqueiam') > 0) && AtributosDoMob.bloqueou(alvo, Math.random, 1, { menosPontos: AtributosDoMob.subjugadoPontos(alvo, hunt.clock ?? 0) })) {
+  if (!(ModsPoe.valor(ficha, 'inimigos_nao_bloqueiam') > 0) && AtributosDoMob.bloqueou(alvo, Math.random, 1, { menosPontos: AtributosDoMob.subjugadoPontos(alvo, hunt.clock ?? 0), hunt, eventos })) {
     eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', bloqueado: true });
     return true;
   }
@@ -1424,7 +1424,7 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   const fixoFisico = ModsPoe.fixoRecebido(ficha, 'physical', { ataque: true, de: bicho });
   const protegido = somaFisica
     // (08/11, a Síntese: "X% de Redução adicional de Dano Físico contra Monstros Abissais" — o golpe do monstro das ondas do Abismo)
-    ? Math.max(0, Math.round(ModsPoe.acertoFisicoRecebido(ficha, brutoFisico, armorDoPersonagem(estado), { fixo: fixoFisico, ...(bicho.abissal && ModsPoe.valor(ficha, 'phys_res_vs_abissal') ? { protecao: { ...(ficha.protection ?? {}), physical: (Number(ficha.protection?.physical) || 0) + ModsPoe.valor(ficha, 'phys_res_vs_abissal') } } : {}) })))
+    ? Math.max(0, Math.round(ModsPoe.acertoFisicoRecebido(ficha, brutoFisico, armorDoPersonagem(estado), { fixo: fixoFisico, overwhelm: Number(bicho.sobrecargaFisicaPct) || 0, ...(bicho.abissal && ModsPoe.valor(ficha, 'phys_res_vs_abissal') ? { protecao: { ...(ficha.protection ?? {}), physical: (Number(ficha.protection?.physical) || 0) + ModsPoe.valor(ficha, 'phys_res_vs_abissal') } } : {}) })))
     : Math.max(0, Math.round(brutoFisico * (itensPoeLigado() ? ModsPoe.fatorDaResistenciaRecebida(ficha, 'physical') : 1 - Math.min(100, ficha.protection.physical ?? 0) / 100) + fixoFisico));
   // (PoE: o Físico NEGADO pela defesa — o "Regenerado como Escudo de Energia/Vida por segundo" do Escudo Divino.)
   ModsPoe.registrarFisicoNegado(hunt, Math.max(0, brutoFisico - protegido));
@@ -1905,7 +1905,7 @@ function golpeDoRound(estado, personagem) {
         }
         // O bicho BLOQUEIA o golpe (só quem tem bloqueio configurado — `mobs/atributos.mjs`): o golpe não causa dano.
       // ("Chance de Inimigos Bloquearem Ataques com Espada reduzida em X%" — `inimigos_bloqueio_red@comEspada`.)
-      if (!(ModsPoe.valor(ficha, 'inimigos_nao_bloqueiam') > 0) && AtributosDoMob.bloqueou(alvo, Math.random, Math.max(0, 1 - ModsPoe.valor(ficha, 'inimigos_bloqueio_red') / 100), { menosPontos: AtributosDoMob.subjugadoPontos(alvo, hunt.clock ?? 0) })) {
+      if (!(ModsPoe.valor(ficha, 'inimigos_nao_bloqueiam') > 0) && AtributosDoMob.bloqueou(alvo, Math.random, Math.max(0, 1 - ModsPoe.valor(ficha, 'inimigos_bloqueio_red') / 100), { menosPontos: AtributosDoMob.subjugadoPontos(alvo, hunt.clock ?? 0), hunt, eventos })) {
         Treino.treinar(estado, pericia);
         eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', bloqueado: true });
         return true;

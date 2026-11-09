@@ -72,9 +72,11 @@ export function aplicar(bicho, efeito, dano, agora, rng = Math.random, salaDeBos
   // tira as Geadas do alvo.)
   if (podeControlar && efeito.congelarChance > 0 && rng() * 100 < efeito.congelarChance) prender('congelado', efeito.congelarMs > 0 ? efeito.congelarMs : (cfg.congelado?.duracao ?? 1500) * (1 + (efeito.congelarDuracaoPct ?? 0) / 100), efeito.congelarMinimoMs ?? 0, efeito.resfriarAoDescongelar > 0 ? { resfriarAoSair: efeito.resfriarAoDescongelar } : null);
   // (`imuneAtordoamento`: o mapa do endgame com "Monstros não podem ser Atordoados".)
-  else if (podeControlar && !bicho.imuneAtordoamento && efeito.atordoarChance > 0 && rng() * 100 < efeito.atordoarChance) prender('atordoado', cfg.atordoado?.duracao ?? 1500);
+  // (09/11, lote 3: "Ponto de Atordoamento aumentado em X%" do monstro — `limiarAtordoamentoPct`: a chance ÷ (1 + X%), como o lacaio)
+  else if (podeControlar && !bicho.imuneAtordoamento && efeito.atordoarChance > 0 && rng() * 100 < efeito.atordoarChance / (1 + Math.max(0, Number(bicho.limiarAtordoamentoPct) || 0) / 100)) prender('atordoado', cfg.atordoado?.duracao ?? 1500);
 
-  if (efeito.lentidaoPct > 0) {
+  // (lote 3: "Velocidade de Ação não pode ser modificada para abaixo do valor base" — `semLentidao`: nenhuma lentidão pega)
+  if (efeito.lentidaoPct > 0 && !bicho.semLentidao) {
     const maximo = cfg.lento?.maximo ?? 40;
     const pct = Math.min(maximo, efeito.lentidaoPct) * (chefe ? cfg.chefe?.lento ?? 1 : 1);
     if (pct > 0) {
@@ -140,6 +142,8 @@ export const pctDoTolhimento = (m, agora) => Math.max(0, ...instanciasDoTolhimen
 export const regenMenosDoTolhimento = (m, agora) => Math.max(0, ...instanciasDoTolhimento(m?.estados?.tolhido, agora).map((i) => i.regenMenosPct ?? 0));
 /** Quanto o passo do bicho Tolhido demora a mais (1 = normal): 1 / (1 − %), até 90%. */
 export function fatorDeTolhimento(m, agora) {
+  // (lote 3: "Velocidade de Movimento não pode ser modificada para abaixo do valor base" — `semLentidaoMovimento`)
+  if (m?.semLentidaoMovimento || m?.semLentidao) return 1;
   const pct = pctDoTolhimento(m, agora);
   return pct > 0 ? 1 / Math.max(0.1, 1 - pct / 100) : 1;
 }
@@ -161,6 +165,7 @@ export const fugindo = (m, agora) => ativo(m?.estados?.fugindo, agora);
 
 /** Quanto o bicho LENTO demora a mais (1 = normal): passo e intervalo do golpe × isto. */
 export function fatorDeLentidao(m, agora) {
+  if (m?.semLentidao) return 1;
   const s = m?.estados?.lento;
   return ativo(s, agora) ? 1 / (1 - s.pct / 100) : 1;
 }

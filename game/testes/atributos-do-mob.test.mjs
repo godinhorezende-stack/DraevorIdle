@@ -150,7 +150,8 @@ test('o golpe do jogador em quem bloqueia não causa dano (gema); sem bloqueio c
     return (r.conjurando ? (h.conjurando.fim = 0, Acoes.concluirConjuracao(e, h, PERSONAGEM)) : r.eventos) ?? [];
   };
   assert.ok(lancar().some((x) => x.t === 'dmg' && x.foe), 'sem bloqueio: bate');
-  m.bloqueio = 1000; // no teto de 75%: com o sorteio forçado em 0, sempre bloqueia
+  // (09/11, lote 3 — aval do dono: "seguir o PoE") a magia é bloqueada pela chance de Bloquear o Dano MÁGICO, separada da de ataque
+  m.bloqueioMagia = 1000; // no teto de 75%: com o sorteio forçado em 0, sempre bloqueia
   const original = Math.random;
   Math.random = () => 0;
   try {

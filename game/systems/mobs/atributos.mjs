@@ -109,10 +109,23 @@ export const reducaoDeDano = (m) => limitar(((especieDe(m)?.reducaoDeDano ?? 0) 
  * O bicho bloqueou este golpe? (`rng` para o teste; `fator`: o do atacante — PoE, "Chance de Inimigos Bloquearem … reduzida".) (lote A2, dono 19/10:
  * + `menosPontos` — a Redução de Chance de Bloqueio do PoE, "Inimigos possuem -20% de chance de Bloquear", e o Subjugado no bicho: pontos de %.)
  */
-export const bloqueou = (m, rng = Math.random, fator = 1, { menosPontos = 0 } = {}) => {
-  const b = Math.max(0, bloqueioDe(m) - (Number(menosPontos) || 0) / 100) * fator;
-  return b > 0 && rng() < b;
+export const bloqueou = (m, rng = Math.random, fator = 1, { menosPontos = 0, magia = false, hunt = null, eventos = null } = {}) => {
+  // (09/11, lote 3 dos modificadores de monstro) a MAGIA é bloqueada pela chance de Bloquear o Dano MÁGICO (`m.bloqueioMagia` — "50% de Chance de
+  // Bloquear o Dano Mágico", o Sentinela); o monstro do PoE não tem nenhuma sem o modificador. Antes a magia usava o bloqueio de ataque.
+  const b = Math.max(0, (magia ? bloqueioMagiaDe(m) : bloqueioDe(m)) - (Number(menosPontos) || 0) / 100) * fator;
+  const foi = b > 0 && rng() < b;
+  if (hunt) hunt.bloqueioParcial = null;
+  // "Você sofre 20% do Dano de Acertos Bloqueados" (`m.danoBloqueadoPct`): o golpe bloqueado passa com essa fração (`hunt/resistencia.resistido` lê
+  // `hunt.bloqueioParcial` no acerto seguinte, o deste golpe) — quem chama segue como se não tivesse bloqueado
+  if (foi && m?.danoBloqueadoPct > 0 && hunt) {
+    hunt.bloqueioParcial = { uid: m.uid, fator: Math.min(1, m.danoBloqueadoPct / 100), em: hunt.clock ?? 0 };
+    eventos?.push({ t: 'block', uid: m.uid, x: m.x, y: m.y, color: '#999999', bloqueado: true, parcial: true });
+    return false;
+  }
+  return foi;
 };
+/** (lote 3) A chance de o bicho Bloquear o Dano Mágico (0–1): só com o modificador. */
+export const bloqueioMagiaDe = (m) => limitar(Number(m?.bloqueioMagia) || 0, L.bloqueioMaximo) / 100;
 /**
  * (lote A2) O SUBJUGADO do PoE (a Redução de Chance de Bloqueio: "Habilidades Suportadas infligem Subjugado por 4 segundos ao Bloquear", "Subjugado
  * aplica -5% à chance de Bloquear"): cada bloqueio do bicho contra a habilidade suportada põe um, com a duração dele; acumulam sem limite. `pontos`:

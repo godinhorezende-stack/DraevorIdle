@@ -87,7 +87,9 @@ export function tentar(hunt, bicho, ficha, agora = hunt?.clock ?? 0, rng = Math.
   // (+ ciclo 7: "Não pode ser Atordoado por Acertos que causem apenas Dano Físico" — `soFisico`: o golpe só tem Físico; o Escudo de Energia
   // no Ponto de Atordoamento — `estado`.)
   const poe = ModsPoe.controleNoJogador(ficha, efeito, rng, hunt, { soFisico, estado });
-  if (!(sorte < cfg.chance * poe.chanceFator) || poe.evitou) return null;
+  // (09/11, lote 3 dos modificadores de monstro) "Ponto de Atordoamento Inimigo reduzido em X%" do monstro: o Atordoamento dele sai mais fácil
+  const doBicho = efeito === 'atordoado' && bicho?.limiarInimigoMenosPct > 0 ? 1 / Math.max(0.05, 1 - bicho.limiarInimigoMenosPct / 100) : 1;
+  if (!(sorte < cfg.chance * poe.chanceFator * doBicho) || poe.evitou) return null;
   const c = (hunt.controle ??= {});
   const preso = ativo(c.congelado, agora) || ativo(c.atordoado, agora) || agora < (c.imuneAte ?? 0);
   if (efeito !== 'lento' && preso) return null;
@@ -135,6 +137,23 @@ export function resfriar(hunt, ficha, pct0, agora = hunt?.clock ?? 0, rng = Math
   const atual = c.lento;
   c.lento = ativo(atual, agora) ? { ate: Math.max(atual.ate, agora + duracao), pct: Math.max(atual.pct, pct) } : { ate: agora + duracao, pct };
   ModsPoe.imunidadeApos(hunt, ficha, 'resfriamento', agora);
+  return true;
+}
+/**
+ * (09/11, lote 3 dos modificadores de monstro) o ATORDOAMENTO do acerto do monstro que não depende da classe dele ("Sempre Atordoa Inimigos ao Acertar" — o
+ * Quebra-ossos): a duração do jogo, × 2 no "X% de chance de dobrar a Duração de Atordoamentos"; os mesmos evitar/imunidade/duração do PoE. Devolve se atordoou.
+ */
+export function atordoarJogador(hunt, ficha, agora = hunt?.clock ?? 0, rng = Math.random, { dobrarChance = 0 } = {}) {
+  if (!hunt) return false;
+  const poe = ModsPoe.controleNoJogador(ficha, 'atordoado', rng, hunt, {});
+  if (poe.evitou) return false;
+  const c = (hunt.controle ??= {});
+  if (ativo(c.congelado, agora) || ativo(c.atordoado, agora) || agora < (c.imuneAte ?? 0)) return false;
+  const resistencia = limitar(ficha?.resistenciaAControle ?? 0, CONFIG.jogador.resistenciaMaxima);
+  const duracao = Math.round(CONFIG.jogador.duracaoMs.atordoado * (1 - resistencia / 100) * poe.duracaoFator * (dobrarChance > 0 && rng() * 100 < dobrarChance ? 2 : 1));
+  if (!(duracao > 0)) return false;
+  c.atordoado = { ate: agora + duracao, desde: agora, ms: duracao };
+  c.imuneAte = agora + duracao + CONFIG.jogador.imunidadeMs;
   return true;
 }
 export function congelar(hunt, ficha, ms, agora = hunt?.clock ?? 0, rng = Math.random) {

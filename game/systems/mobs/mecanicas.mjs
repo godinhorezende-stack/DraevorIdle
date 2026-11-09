@@ -385,7 +385,7 @@ export function aoAcertarJogador(estado, hunt, personagem, m, { dano = 0, bruto 
   const mecs = m.mods?.length ? Raridade.mecanicasDe(m).filter((x) => x.gatilho === 'aoAtacar' && DO_ACERTO.has(x.efeito)) : [];
   const efeitos = [...mecs, ...doMapa(m)];
   // (lote 2: + o Resfriamento do Gelo, o "Sempre Eletriza" e o "Todo o Dano pode Resfriar" — valem em todo acerto, ver o fim)
-  if (!efeitos.length && !critico && !hunt.debuffsDoJogador?.empalamentos?.length && !((brutas.ice ?? 0) > 0) && !m.sempreEletriza && !m.todoDanoResfria && !(m.chanceCongelar > 0) && !(Number(Ficha.combate(estado).afPoe?.todo_dano_resfria_voce) > 0)) return;
+  if (!efeitos.length && !critico && !hunt.debuffsDoJogador?.empalamentos?.length && !((brutas.ice ?? 0) > 0) && !m.sempreEletriza && !m.todoDanoResfria && !(m.chanceCongelar > 0) && !m.sempreAtordoa && !(Number(Ficha.combate(estado).afPoe?.todo_dano_resfria_voce) > 0)) return;
   const ficha = Ficha.combate(estado);
   const naTela = (nome, extra = {}) => eventos.push({ t: 'estado', uid: 'player', quem: personagem?.nome, x: hunt.pos?.x, y: hunt.pos?.y, estado: nome, de: m.name, ...extra });
   const origem = { fonte: 'mob', mob: m.name, uid: m.uid, key: m.key };
@@ -464,6 +464,8 @@ export function aoAcertarJogador(estado, hunt, personagem, m, { dano = 0, bruto 
     }
     // "X% de chance de Congelar" (o Congelamento Permanente): o Congelamento pelo Gelo do acerto — com "Todo Dano pode Congelar", o dano todo —, × a
     // "Duração do Congelamento em Inimigos aumentada"
+    // (lote 3) "Sempre Atordoa Inimigos ao Acertar" (o Quebra-ossos), com o "25% de chance de dobrar a Duração de Atordoamentos"
+    if (m.sempreAtordoa && Controle.atordoarJogador(hunt, ficha, agora, rng, { dobrarChance: Number(m.dobrarAtordoamentoPct) || 0 })) naTela('atordoado');
     if (m.chanceCongelar > 0 && rng() * 100 < m.chanceCongelar) {
       const gelo = m.todoDanoCongela ? Object.values(partes).reduce((t, x) => t + (Number(x) || 0), 0) : partes.ice ?? 0;
       const ms = Math.round(NoJogador.msDoCongelamento(gelo, limiar) * Math.max(0, 1 + (Number(m.duracaoCongelamentoPct) || 0) / 100));
