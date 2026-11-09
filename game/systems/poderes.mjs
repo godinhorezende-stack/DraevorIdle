@@ -386,7 +386,10 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   const brutas = {};
   const partes = {};
   const somarParte = (el, antes, depois) => { brutas[el] = (brutas[el] ?? 0) + antes; partes[el] = (partes[el] ?? 0) + depois; return depois; };
-  const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(null, a).reduce((n, x) => { const parte = rolar(x.elemento, x.min, x.max) * forcaDaMagia * elemFator(x.elemento); return n + somarParte(x.elemento, parte, parte * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento) * ModsPoe.armaduraNoElemento(ficha, x.elemento, parte)); }, 0);
+  // (09/11, lote 1 dos modificadores de monstro) cada parte com o aumento do seu tipo ("+X% de Dano de Fogo" — `AtributosDoMob.fatorDoTipo`; e o de
+  // Projéteis, se a magia é um projétil)
+  const fatorTipo = (el, doFisico = false) => (bicho ? AtributosDoMob.fatorDoTipo(bicho, el, { convertidoDoFisico: doFisico, projetil: !!projetil }) : 1);
+  const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(null, a).reduce((n, x) => { const parte = rolar(x.elemento, x.min, x.max) * forcaDaMagia * elemFator(x.elemento) * fatorTipo(x.elemento); return n + somarParte(x.elemento, parte, parte * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento) * ModsPoe.armaduraNoElemento(ficha, x.elemento, parte)); }, 0);
   // (O MAPA do endgame: o dano extra por elemento em % do dano da magia — `bicho.danoExtraPct`.)
   // (ciclo 7, lote E: "Dano de Raio dos Inimigos Acertando você enquanto você estiver Eletrizado é Azarado"; "O Dano dos Inimigos Acertando
   // você é Azarado" — `dano_recebido_azarado`: o menor de dois sorteios.)
@@ -400,13 +403,19 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   const azarado = supressaoAntes === true || ModsPoe.valor(ficha, 'dano_recebido_azarado') > 0 || (a.elemento === 'energy' && ModsPoe.valor(ficha, 'raio_azarado_eletrizado') > 0 && (hunt.efeitosDoJogador?.dots ?? []).some((d) => d.tipo === 'choque' && d.falta > 0));
   // ("-N de Dano Físico sofrido por Ataques de Projéteis": o fixo a menos no projétil físico do bicho.)
   const daMagiaToda = Math.max(0, (azarado ? Math.min(rolar(a.elemento, a.min, a.max), rolar(a.elemento, a.min, a.max)) : rolar(a.elemento, a.min, a.max)) * forcaDaMagia * elemFator(a.elemento) + (projetil && a.elemento === 'physical' ? ModsPoe.valor(ficha, 'fisico_sofrido_projetil') : 0));
-  const extraDoMapa = AtributosDoMob.danoExtraPctDoBicho(bicho).reduce((n, x) => n + somarParte(x.elemento, daMagiaToda * (x.pct / 100), daMagiaToda * (x.pct / 100) * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento)), 0);
+  // (lote 1) + o extra que sai do Físico ("Ganha X% do Dano Físico como Dano Extra de Fogo", só na magia física) e o "X% do Dano Não-Caos como Caos Extra"
+  const extrasDoBicho = [...AtributosDoMob.danoExtraPctDoBicho(bicho), ...(a.elemento === 'physical' ? AtributosDoMob.extrasDoFisicoDoBicho(bicho) : []), ...(a.elemento !== 'chaos' && AtributosDoMob.naoCaosComoCaosDoBicho(bicho) > 0 ? [{ elemento: 'chaos', pct: AtributosDoMob.naoCaosComoCaosDoBicho(bicho) }] : [])];
+  const extraDoMapa = extrasDoBicho.reduce((n, x) => { const parte = daMagiaToda * (x.pct / 100) * fatorTipo(x.elemento, a.elemento === 'physical') * (excomungado && x.elemento === 'chaos' ? 0 : 1); return n + somarParte(x.elemento, parte, parte * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento)); }, 0);
   // (PoE, dono 27/10) a CONVERSÃO do dano físico do golpe (`a.convertePct` — o Terremoto Supercarregado do Adus: 50% em Raio): a parte convertida
   // é do outro elemento (a resistência dele, a armadura só com "Armadura também é aplicada…"); a física que sobra segue abaixo
-  const conversoes = a.elemento === 'physical' ? Object.entries(a.convertePct ?? {}).filter(([, p]) => Number(p) > 0) : [];
+  // (lote 1) + a conversão do PRÓPRIO monstro ("25% do Dano Físico Convertido em Fogo" — `AtributosDoMob.conversaoDoBicho`); passando de 100%, encolhem juntas
+  const convBruta = {};
+  if (a.elemento === 'physical') for (const fonte of [a.convertePct ?? {}, AtributosDoMob.conversaoDoBicho(bicho)]) for (const [el, p] of Object.entries(fonte)) if (Number(p) > 0) convBruta[el] = (convBruta[el] ?? 0) + Number(p);
+  const somaConv = Object.values(convBruta).reduce((t, p) => t + p, 0);
+  const conversoes = Object.entries(convBruta).map(([el, p]) => [el, somaConv > 100 ? (p * 100) / somaConv : p]);
   const restoFisico = Math.max(0, 1 - conversoes.reduce((t, [, p]) => t + Number(p), 0) / 100);
-  const convertido = conversoes.reduce((n, [el, p]) => { const parte = daMagiaToda * (Math.min(100, Number(p)) / 100) * elemFator(el); return n + somarParte(el, parte, parte * ModsPoe.fatorDaResistenciaRecebida(ficha, el) * ModsPoe.armaduraNoElemento(ficha, el, parte)); }, 0);
-  const daMagia = daMagiaToda * restoFisico;
+  const convertido = conversoes.reduce((n, [el, p]) => { const parte = daMagiaToda * (Math.min(100, Number(p)) / 100) * elemFator(el) * fatorTipo(el, true) * (excomungado && el === 'chaos' ? 0 : 1); return n + somarParte(el, parte, parte * ModsPoe.fatorDaResistenciaRecebida(ficha, el) * ModsPoe.armaduraNoElemento(ficha, el, parte)); }, 0);
+  const daMagia = daMagiaToda * restoFisico * fatorTipo(a.elemento);
   // PoE 1 (dono, 10/10): a magia FÍSICA do bicho também é um acerto físico — passa pela armadura do personagem, somada à redução física
   // adicional, no teto de 90% (`ModsPoe.acertoFisicoRecebido`), como o golpe corpo a corpo.
   // ("Armadura contra Projéteis aumentada em X%": a armadura do personagem no projétil físico do bicho.)

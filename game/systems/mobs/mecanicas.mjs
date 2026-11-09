@@ -346,6 +346,18 @@ export const semDrenoDeEs = (m) => !!m?.mods?.length && Raridade.mecanicasDe(m).
 /** Os efeitos do PoE no acerto do monstro (gatilho `aoAtacar`; o `debuff` e a `maldicao` de sempre ficam com `aoAtacar`, só no golpe). */
 const DO_ACERTO = new Set(['cegar', 'mutilar', 'empalar', 'exposicao', 'sangueCorrompido', 'drenar', 'carga']);
 
+/** Estende os acúmulos de Sangue Corrompido no jogador até o fim do mais novo, com o dano a mais do tempo a mais (o mesmo por pulso). */
+export function renovarSangueCorrompido(hunt) {
+  const pulsoMs = Dot.CONFIG.tipos.sangueCorrompido?.pulsoMs ?? 1000;
+  const lista = (hunt.efeitosDoJogador?.dots ?? []).filter((d) => d.tipo === 'sangueCorrompido' && d.falta > 0);
+  const ate = Math.max(0, ...lista.map((d) => d.ate ?? 0));
+  for (const d of lista) {
+    if (d.tipo !== 'sangueCorrompido' || !(d.falta > 0) || !(ate > d.ate)) continue;
+    d.falta += (d.porPulso ?? 0) * Math.floor((ate - d.ate) / pulsoMs);
+    d.ate = ate;
+  }
+}
+
 /** O que o MAPA pôs nos monstros para o acerto (`m.noAcerto` — `itens-poe/mapas-areas.aplicarEfeitos`), no formato das mecânicas. */
 function doMapa(m) {
   const n = m?.noAcerto;
@@ -397,6 +409,9 @@ export function aoAcertarJogador(estado, hunt, personagem, m, { dano = 0, bruto 
       const total = ((bruto * (mec.pctPorMinuto ?? 0)) / 100 / 60) * ((mec.duracaoMs ?? 4000) / 1000);
       let posto = null;
       for (let i = 0; i < Math.max(1, mec.pilhas ?? 1); i++) posto = ModsPoe.dotNoJogador(hunt, { tipo: 'sangueCorrompido', total, duracaoMs: mec.duracaoMs ?? null, origem }, agora, rng) ?? posto;
+      // (09/11, lote 1 dos modificadores de monstro) como no PoE, o acerto RENOVA a duração de todos os acúmulos que já estão em você (cada um
+      // segue pagando o mesmo por segundo até o fim novo)
+      if (posto) renovarSangueCorrompido(hunt);
       if (posto) naTela('sangueCorrompido');
     } else if (mec.efeito === 'drenar') drenar(m, ficha, dano, mec, agora);
     else if (mec.efeito === 'carga' && ganharCarga(m, mec.carga, agora, ficha)) eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: `carga:${mec.carga}` });

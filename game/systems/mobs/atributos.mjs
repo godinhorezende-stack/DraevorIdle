@@ -188,7 +188,10 @@ export function intervaloDoGolpe(m, { base = A.intervaloBaseMs, lentidao = 1, bu
  */
 export function critico(m, ataque = null) {
   const e = especieDe(m) ?? {};
-  const chance = limitar((ataque?.critChance ?? e.critChance ?? 0) + (m?.critChance ?? 0), CONFIG.critico.chanceMaxima) / 100;
+  // (09/11, lote 1 dos modificadores de monstro) o "+X% de Chance de Acerto Crítico" do PoE é AUMENTADA: multiplica a base da espécie (a do
+  // monstro do PoE é 5%); o "Sempre Crita" (Assassino) crita em todo acerto
+  const base = ataque?.critChance ?? e.critChance ?? (m?.critChancePct ? 5 : 0);
+  const chance = m?.sempreCritico ? 1 : limitar(base * (1 + (m?.critChancePct ?? 0) / 100) + (m?.critChance ?? 0), CONFIG.critico.chanceMaxima) / 100;
   const pct = ataque?.critMultiplicador ?? e.critMultiplicador ?? (m?.critMultiplicador ? CONFIG.critico.multiplicadorPadraoPct + m.critMultiplicador : CONFIG.critico.multiplicadorPadraoPct);
   return { chance, fator: Math.max(1, pct / 100) };
 }
@@ -210,7 +213,34 @@ export function danoExtraDoGolpe(m, ataque = null) {
  * `itens-poe/mapas-areas.aplicarEfeitos`): `[{ elemento, pct }]`.
  */
 const SEM_DANO_EXTRA = Object.freeze([]);
+const ELEMENTOS = ['fire', 'ice', 'energy'];
 export const danoExtraPctDoBicho = (m) => (m?.danoExtraPct ? Object.entries(m.danoExtraPct).filter(([, v]) => Number(v) > 0).map(([elemento, pct]) => ({ elemento, pct: Number(pct) })) : SEM_DANO_EXTRA);
+
+/**
+ * (09/11, lote 1 dos modificadores de monstro do PoE) o dano extra que sai do FÍSICO: "Ganha X% do Dano Físico como Dano Extra de Fogo/Gelo/Raio"
+ * (`m.extraDoFisicoPct`) e "… de um Elemento aleatório" (`m.danoExtraAleatorioPct`, o elemento sorteado a cada acerto) — sobre o físico do golpe
+ * antes da conversão; a magia que não é física não ganha nada. `[{ elemento, pct }]`.
+ */
+export function extrasDoFisicoDoBicho(m, rng = Math.random) {
+  const lista = m?.extraDoFisicoPct ? Object.entries(m.extraDoFisicoPct).filter(([, v]) => Number(v) > 0).map(([elemento, pct]) => ({ elemento, pct: Number(pct) })) : [];
+  if (m?.danoExtraAleatorioPct > 0) lista.push({ elemento: ELEMENTOS[Math.floor(rng() * 3)], pct: m.danoExtraAleatorioPct });
+  return lista.length ? lista : SEM_DANO_EXTRA;
+}
+/** (lote 1) "Ganha X% do Dano Não-Caos como Dano Extra de Caos" (`m.naoCaosComoCaosPct`). */
+export const naoCaosComoCaosDoBicho = (m) => Number(m?.naoCaosComoCaosPct) || 0;
+
+/**
+ * (09/11, lote 1 dos modificadores de monstro do PoE) o dano por TIPO: "Dano de Fogo aumentado em X%" (`m.danoTipoPct`) multiplica só a parte
+ * daquele tipo; a parte CONVERTIDA do Físico leva o aumento dos dois (o do Físico e o do tipo novo), como no PoE. `projetil`: + "Dano de
+ * Projéteis aumentado em X%" (`m.danoProjetilPct`).
+ */
+export function fatorDoTipo(m, el, { convertidoDoFisico = false, projetil = false } = {}) {
+  const t = m?.danoTipoPct;
+  const inc = (t?.[el] ?? 0) + (convertidoDoFisico && el !== 'physical' ? t?.physical ?? 0 : 0) + (projetil ? m?.danoProjetilPct ?? 0 : 0);
+  return Math.max(0, 1 + inc / 100);
+}
+/** (lote 1) "X% do Dano Físico Convertido em Fogo/Gelo/Raio/Caos" do monstro: `{ elemento: pct }` (vazio sem conversão). */
+export const conversaoDoBicho = (m) => m?.conversaoPct ?? {};
 
 /** Os efeitos de dano contínuo que o golpe do mob põe no jogador: `[{ tipo, chance, pctDoGolpe, duracaoMs? }]` (espécie + ataque). */
 export const efeitosDoGolpe = (m, ataque = null) => [...(especieDe(m)?.efeitos ?? []), ...(ataque?.efeitos ?? [])].filter((x) => x?.tipo && x.pctDoGolpe > 0);

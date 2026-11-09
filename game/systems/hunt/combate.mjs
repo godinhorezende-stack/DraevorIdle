@@ -1376,6 +1376,13 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   const emFogoPct = ModsPoe.ativo(bicho.estados?.fisicoEmFogo, agoraDoGolpe) ? bicho.estados.fisicoEmFogo.pct : 0;
   // (06/11, o Aperto Pirotécnico Chocante: o Eletrizado por você converte parte do Físico em Raio — `mods-poe.aurasProximas` põe `fisicoEmRaio`)
   const emRaioPct = Math.min(100 - emFogoPct, ModsPoe.ativo(bicho.estados?.fisicoEmRaio, agoraDoGolpe) ? bicho.estados.fisicoEmRaio.pct : 0);
+  // (09/11, lote 1 dos modificadores de monstro) + a CONVERSÃO do próprio monstro ("25% do Dano Físico Convertido em Fogo/Gelo/Raio/Caos" —
+  // `conversaoPct`): somada às das auras; passando de 100%, todas encolhem na mesma proporção (o PoE)
+  const convBruta = { fire: emFogoPct, energy: emRaioPct, ice: 0, chaos: 0 };
+  for (const [el, p] of Object.entries(AtributosDoMob.conversaoDoBicho(bicho))) if (el in convBruta) convBruta[el] += Number(p) || 0;
+  const somaConv = Object.values(convBruta).reduce((a, b) => a + b, 0);
+  const conv = Object.fromEntries(Object.entries(convBruta).map(([el, p]) => [el, somaConv > 100 ? (p * 100) / somaConv : p]));
+  const restoFisicoPct = Math.max(0, 100 - Object.values(conv).reduce((a, b) => a + b, 0));
   // (06/11, a Parede de Névoa: "+X% de chance de evitar dano de cada elemento de ataques durante Forma Etérea"; a Réplica: "+X% de chance de Evitar Dano Físico de
   // Acertos enquanto Trespassando" — cada tipo sorteia uma vez no golpe; o evitado não entra)
   const evitarEl = itensPoeLigado() ? ModsPoe.valor(ficha, 'evitar_dano_elemental_ataque') : 0;
@@ -1386,7 +1393,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   }));
   const evitouFisico = itensPoeLigado() && ModsPoe.valor(ficha, 'evitar_dano_fisico_acerto') > 0 && Math.random() * 100 < Math.min(75, ModsPoe.valor(ficha, 'evitar_dano_fisico_acerto'));
   const elemFator = (el) => (evitado[el] ? 0 : 1) * (['fire', 'ice', 'energy'].includes(el) && ModsPoe.ativo(bicho.estados?.elemMenos, agoraDoGolpe) ? Math.max(0, 1 - bicho.estados.elemMenos.pct / 100) : 1);
-  const brutoFisico = evitouFisico ? 0 : bruto * (1 - (emFogoPct + emRaioPct) / 100);
+  // (lote 1: o "Dano Físico aumentado em X%" do monstro — `AtributosDoMob.fatorDoTipo` — só na parte física e na convertida dela)
+  const brutoFisico = evitouFisico ? 0 : bruto * (restoFisicoPct / 100) * AtributosDoMob.fatorDoTipo(bicho, 'physical');
   // O golpe ACERTOU (passou da esquiva e do bloqueio): boss e elite podem CONGELAR, ATORDOAR ou fazer LENTIDÃO no jogador
   // (`combate/controle.mjs`), mesmo que o Energy Shield engula o dano; a resistência a controle dele encurta o efeito.
   if (bruto > 0) {
@@ -1435,7 +1443,10 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   const brutas = { physical: brutoFisico };
   const partes = {};
   const somarParte = (el, antes, depois) => { brutas[el] = (brutas[el] ?? 0) + antes; partes[el] = (partes[el] ?? 0) + depois; return depois; };
-  const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(bicho).reduce((n, x) => { const parte = rolarParte(x) * forcaDoGolpe * critDoMob.fator * elemFator(x.elemento); return n + somarParte(x.elemento, parte, Math.round(parte * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento) * ModsPoe.armaduraNoElemento(ficha, x.elemento, parte))); }, 0) + somarParte('fire', bruto * (emFogoPct / 100) * elemFator('fire'), Math.round(bruto * (emFogoPct / 100) * elemFator('fire') * ModsPoe.fatorDaResistenciaRecebida(ficha, 'fire'))) + somarParte('energy', bruto * (emRaioPct / 100) * elemFator('energy'), Math.round(bruto * (emRaioPct / 100) * elemFator('energy') * ModsPoe.fatorDaResistenciaRecebida(ficha, 'energy'))) + Math.round(ModsPoe.extraDoFisicoRecebido(ficha, brutoFisico)) + AtributosDoMob.danoExtraPctDoBicho(bicho).reduce((n, x) => n + somarParte(x.elemento, bruto * (x.pct / 100) * elemFator(x.elemento), Math.round(bruto * (x.pct / 100) * elemFator(x.elemento) * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento))), 0);
+  // (lote 1) cada parte com o aumento do SEU tipo (`fatorDoTipo`): a convertida e a "extra como" levam também o do Físico, de onde vieram
+  const fatorEl = (el, doFisico) => elemFator(el) * AtributosDoMob.fatorDoTipo(bicho, el, { convertidoDoFisico: doFisico });
+  const convertidas = Object.entries(conv).filter(([, p]) => p > 0).reduce((n, [el, p]) => { const parte = bruto * (p / 100) * fatorEl(el, true) * (excomungado && el === 'chaos' ? 0 : 1); return n + somarParte(el, parte, Math.round(parte * ModsPoe.fatorDaResistenciaRecebida(ficha, el))); }, 0);
+  const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(bicho).reduce((n, x) => { const parte = rolarParte(x) * forcaDoGolpe * critDoMob.fator * fatorEl(x.elemento, false); return n + somarParte(x.elemento, parte, Math.round(parte * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento) * ModsPoe.armaduraNoElemento(ficha, x.elemento, parte))); }, 0) + convertidas + Math.round(ModsPoe.extraDoFisicoRecebido(ficha, brutoFisico)) + [...AtributosDoMob.danoExtraPctDoBicho(bicho), ...AtributosDoMob.extrasDoFisicoDoBicho(bicho), ...(AtributosDoMob.naoCaosComoCaosDoBicho(bicho) > 0 ? [{ elemento: 'chaos', pct: AtributosDoMob.naoCaosComoCaosDoBicho(bicho) }] : [])].reduce((n, x) => { const parte = bruto * (x.pct / 100) * fatorEl(x.elemento, true) * (excomungado && x.elemento === 'chaos' ? 0 : 1); return n + somarParte(x.elemento, parte, Math.round(parte * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento))); }, 0);
   // (06/11, o Rompe-amanhecer: "por cada 200 de Dano de Fogo sofrido de Acertos Recentemente" — o Fogo deste acerto, depois das resistências: a escala `fogoSofridoRecente`)
   if (itensPoeLigado() && (partes.fire ?? 0) > 0) { (hunt.poeFogoSofrido ??= []).push({ em: agoraDoGolpe, v: partes.fire }); if (ModsPoe.usaFogoSofrido(ficha)) hunt.poeFichaMudou = true; }
   // Prey de defesa: corta o que SOBROU da armadura. Antes dela, a armadura

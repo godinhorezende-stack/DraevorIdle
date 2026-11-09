@@ -24,7 +24,10 @@ test('dados: toda raridade tem cor e multiplicadores; todo modificador tem nome 
   // (+ os do PoE que o mob aplica desde 09/10: o escudo de energia, a espera da recarga, à prova de maldições e "Reflete Feitiços" — `raridade.aplicar`)
   // (+ 11/10, decisão do dono: "Vida Não Pode ser Drenada" — `semDreno`, o dreno de vida não pega nele)
   const STATS = new Set(['vidaPct', 'danoPct', 'velocidadePct', 'velocidadeDeAtaquePct', 'regenPct', 'resist', 'precisaoPct', 'evasaoPct', 'armaduraPct', 'bloqueio', 'reducaoDeDano', 'critChance', 'critMultiplicador',
-    'esPct', 'esAtrasoMenosPct', 'aProvaDeMaldicoes', 'refleteFeiticos', 'semDreno']);
+    'esPct', 'esAtrasoMenosPct', 'aProvaDeMaldicoes', 'refleteFeiticos', 'semDreno',
+    // (09/11, lote 1 dos modificadores de monstro — aval do dono: "pode acrescentar") o dano por tipo, a conversão, o extra do Físico, o elemento
+    // aleatório, o não-Caos como Caos, o de Projéteis, a velocidade de conjuração e o crítico do PoE
+    'danoTipoPct', 'conversaoPct', 'danoExtraPct', 'danoExtraAleatorioPct', 'naoCaosComoCaosPct', 'danoProjetilPct', 'velocidadeDeConjuracaoPct', 'critChancePct', 'sempreCritico']);
   const GATILHOS = new Set(['aoMorrer', 'vidaBaixa', 'aoReceberDano', 'aoAtacar', 'aliadoMorreu', 'aura']);
   for (const [id, m] of Object.entries(Raridade.MODIFICADORES)) {
     assert.ok(m.nome, id);

@@ -15,20 +15,26 @@ const DESTINO = new URL('../gamedata/itens-poe/modificadores-monstro.json', impo
 /** Stat do PoE → o que soma nos campos do mob do Draevor (`t`). `aprox` = aproximado (o Draevor não tem a mesma conta). */
 const MAPA = {
   'damage +%': { f: (t, v) => (t.danoPct += v) },
-  'physical damage +%': { f: (t, v) => (t.danoPct += v), aprox: true },
-  'fire damage +%': { f: (t, v) => (t.danoPct += v / 2), aprox: true },
-  'cold damage +%': { f: (t, v) => (t.danoPct += v / 2), aprox: true },
-  'lightning damage +%': { f: (t, v) => (t.danoPct += v / 2), aprox: true },
-  'chaos damage +%': { f: (t, v) => (t.danoPct += v / 2), aprox: true },
-  'projectile damage +%': { f: (t, v) => (t.danoPct += v / 2), aprox: true },
-  'physical damage % to add as fire': { f: (t, v) => (t.danoPct += v), aprox: true },
-  'physical damage % to add as cold': { f: (t, v) => (t.danoPct += v), aprox: true },
-  'physical damage % to add as lightning': { f: (t, v) => (t.danoPct += v), aprox: true },
-  'physical damage % to add as random element': { f: (t, v) => (t.danoPct += v), aprox: true },
-  'non chaos damage to add as chaos damage %': { f: (t, v) => (t.danoPct += v), aprox: true },
+  // (09/11, lote 1 — dono: "resolver os aproximados e parciais") o dano POR TIPO, como no PoE (`mobs/atributos.fatorDoTipo`, `hunt/combate`, `poderes`):
+  // o "+X% de Dano de Fogo" só na parte de Fogo (e na convertida do Físico), a conversão, o extra que sai do Físico, o de Projéteis
+  'physical damage +%': { f: (t, v) => porEl(t, 'danoTipoPct', 'physical', v) },
+  'fire damage +%': { f: (t, v) => porEl(t, 'danoTipoPct', 'fire', v) },
+  'cold damage +%': { f: (t, v) => porEl(t, 'danoTipoPct', 'ice', v) },
+  'lightning damage +%': { f: (t, v) => porEl(t, 'danoTipoPct', 'energy', v) },
+  'chaos damage +%': { f: (t, v) => porEl(t, 'danoTipoPct', 'chaos', v) },
+  'projectile damage +%': { f: (t, v) => (t.danoProjetilPct += v) },
+  'physical damage % to add as fire': { f: (t, v) => porEl(t, 'danoExtraPct', 'fire', v) },
+  'physical damage % to add as cold': { f: (t, v) => porEl(t, 'danoExtraPct', 'ice', v) },
+  'physical damage % to add as lightning': { f: (t, v) => porEl(t, 'danoExtraPct', 'energy', v) },
+  'physical damage % to add as random element': { f: (t, v) => (t.danoExtraAleatorioPct += v) },
+  'non chaos damage to add as chaos damage %': { f: (t, v) => (t.naoCaosComoCaosPct += v) },
+  'base physical damage % to convert to fire': { f: (t, v) => porEl(t, 'conversaoPct', 'fire', v) },
+  'base physical damage % to convert to cold': { f: (t, v) => porEl(t, 'conversaoPct', 'ice', v) },
+  'base physical damage % to convert to lightning': { f: (t, v) => porEl(t, 'conversaoPct', 'energy', v) },
+  'base physical damage % to convert to chaos': { f: (t, v) => porEl(t, 'conversaoPct', 'chaos', v) },
   'attack speed +%': { f: (t, v) => (t.velocidadeDeAtaquePct += v) },
-  'base cast speed +%': { f: (t, v) => (t.velocidadeDeAtaquePct += v), aprox: true },
-  'attack and cast speed +%': { f: (t, v) => (t.velocidadeDeAtaquePct += v) },
+  'base cast speed +%': { f: (t, v) => (t.velocidadeDeConjuracaoPct += v) },
+  'attack and cast speed +%': { f: (t, v) => { t.velocidadeDeAtaquePct += v; t.velocidadeDeConjuracaoPct += v; } },
   'base movement velocity +%': { f: (t, v) => (t.velocidadePct += v) },
   'accuracy rating +%': { f: (t, v) => (t.precisaoPct += v) },
   'evasion rating +%': { f: (t, v) => (t.evasaoPct += v) },
@@ -45,14 +51,16 @@ const MAPA = {
   'cannot have life leeched from': { f: (t) => (t.semDreno = 1) },
   'life regeneration rate per minute %': { f: (t, v) => (t.regenPct += v / 60) },
   'monster base block %': { f: (t, v) => (t.bloqueio += v) },
-  'base additional physical damage reduction %': { f: (t, v) => (t.resist.physical = (t.resist.physical ?? 0) + v), aprox: true },
+  // (lote 1) a Redução de Dano Físico adicional do monstro: SOMA com a armadura dele, no teto de 90% (`hunt/resistencia`, o PoE — dono, 10/10)
+  'base additional physical damage reduction %': { f: (t, v) => (t.resist.physical = (t.resist.physical ?? 0) + v) },
   'base resist all elements %': { f: (t, v) => { for (const e of ['fire', 'ice', 'energy']) t.resist[e] = (t.resist[e] ?? 0) + v; } },
   'base fire damage resistance %': { f: (t, v) => (t.resist.fire = (t.resist.fire ?? 0) + v) },
   'base cold damage resistance %': { f: (t, v) => (t.resist.ice = (t.resist.ice ?? 0) + v) },
   'base lightning damage resistance %': { f: (t, v) => (t.resist.energy = (t.resist.energy ?? 0) + v) },
   'base chaos damage resistance %': { f: (t, v) => (t.resist.chaos = (t.resist.chaos ?? 0) + v) },
-  'critical strike chance +%': { f: (t, v) => (t.critChance += Math.round((5 * v) / 100)), aprox: true }, // "aumentada" sobre os 5% de base
-  'always crit': { f: (t) => (t.critChance += 100), aprox: true },
+  // (lote 1) o crítico: "aumentada" multiplica a base da espécie (`mobs/atributos.critico`); "Sempre Crita" crita em todo acerto
+  'critical strike chance +%': { f: (t, v) => (t.critChancePct += v) },
+  'always crit': { f: (t) => (t.sempreCritico = 1) },
   'base damage taken +%': { f: (t, v) => (t.reducaoDeDano -= v) },
   // As doenças (ailments) que dão dano ao longo do tempo: viram o debuff no golpe dos mobs do Draevor (`mobs/mecanicas.aoAtacar`, `combate/dot.mjs`).
   'always ignite': { f: (t) => dot(t, 'fire') },
@@ -64,8 +72,9 @@ const MAPA = {
   'ignite duration +%': { f: (t, v) => (dot(t, 'fire').duracao += v) },
   'base poison duration +%': { f: (t, v) => (dot(t, 'earth').duracao += v) },
   'base bleed duration +%': { f: (t, v) => (dot(t, 'physical').duracao += v) },
-  'all damage can ignite': { f: () => {}, aprox: true },
-  'all damage can poison': { f: () => {}, aprox: true },
+  // (lote 1) "Todo o Dano pode Incendiar/Envenenar": o debuff do monstro já sai do golpe INTEIRO (`danoPctDoGolpe` sobre todos os tipos — `mobs/mecanicas`)
+  'all damage can ignite': { f: () => {} },
+  'all damage can poison': { f: () => {} },
   // (12/10 — dono: "ligar os modificadores" que a árvore combate) O que o monstro faz ao ACERTAR você — o golpe e a magia
   // (`mobs/mecanicas.aoAcertarJogador`, gatilho `aoAtacar`): Cegar, a Exposição, o Sangue Corrompido, o dreno de vida e as cargas.
   'global chance to blind on hit %': { f: (t, v) => (acerto(t).cegar.chance += v) },
@@ -77,10 +86,10 @@ const MAPA = {
   'fire exposure on hit magnitude': { f: (t, v) => Object.assign(acerto(t).exposicao.fire, { chance: 100, pct: Math.abs(v) }) },
   'cold exposure on hit magnitude': { f: (t, v) => Object.assign(acerto(t).exposicao.ice, { chance: 100, pct: Math.abs(v) }) },
   'lightning exposure on hit magnitude': { f: (t, v) => Object.assign(acerto(t).exposicao.energy, { chance: 100, pct: Math.abs(v) }) },
-  // (O Sangue Corrompido: o PoE renova a duração de todos os acúmulos a cada acerto; no jogo cada acúmulo tem a sua — aproximado.)
-  'corrupted blood on hit duration': { f: (t, v) => (acerto(t).sangue.duracaoMs = v), aprox: true },
-  'corrupted blood on hit num stacks': { f: (t, v) => (acerto(t).sangue.pilhas = v), aprox: true },
-  'corrupted blood on hit % average damage to deal per minute per stack': { f: (t, v) => (acerto(t).sangue.pctPorMinuto = v), aprox: true },
+  // (O Sangue Corrompido: o acerto renova a duração de todos os acúmulos — `mobs/mecanicas.renovarSangueCorrompido`, lote 1.)
+  'corrupted blood on hit duration': { f: (t, v) => (acerto(t).sangue.duracaoMs = v) },
+  'corrupted blood on hit num stacks': { f: (t, v) => (acerto(t).sangue.pilhas = v) },
+  'corrupted blood on hit % average damage to deal per minute per stack': { f: (t, v) => (acerto(t).sangue.pctPorMinuto = v) },
   'life leech from any damage permyriad': { f: (t, v) => (acerto(t).dreno.pct = v / 100) },
   'life leech speed +%': { f: (t, v) => (acerto(t).dreno.velocidadePct += v) },
   'life leech does not stop at full life': { f: (t) => (acerto(t).dreno.naoParaNaVidaCheia = true) },
@@ -102,8 +111,10 @@ function mecanicasDosDots(dots) {
     .map(([el, d]) => ({ gatilho: 'aoAtacar', efeito: 'debuff', elemento: el, chance: BASE_DO_DOT[el].chance, danoPctDoGolpe: Math.round(BASE_DO_DOT[el].pct * (1 + d.mais / 100)), duracaoMs: Math.round((BASE_DO_DOT[el].ms * (1 + d.duracao / 100)) / 1000) * 1000 }));
 }
 
-const vazio = () => ({ vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0, esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, resist: {}, _dots: {} });
-const limpar = (t) => Object.fromEntries(Object.entries(t).filter(([k]) => k !== '_dots' && k !== '_acerto').filter(([k, v]) => (k === 'resist' ? Object.keys(v).length : v)).map(([k, v]) => [k, k === 'resist' ? v : Math.round(v * 100) / 100]));
+const vazio = () => ({ vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, velocidadeDeConjuracaoPct: 0, danoProjetilPct: 0, danoExtraAleatorioPct: 0, naoCaosComoCaosPct: 0, critChancePct: 0, sempreCritico: 0, danoTipoPct: {}, danoExtraPct: {}, conversaoPct: {}, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0, esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, resist: {}, _dots: {} });
+const POR_ELEMENTO = ['resist', 'danoTipoPct', 'danoExtraPct', 'conversaoPct'];
+const porEl = (t, campo, el, v) => (t[campo][el] = (t[campo][el] ?? 0) + v);
+const limpar = (t) => Object.fromEntries(Object.entries(t).filter(([k]) => k !== '_dots' && k !== '_acerto').filter(([k, v]) => (POR_ELEMENTO.includes(k) ? Object.keys(v).length : v)).map(([k, v]) => [k, POR_ELEMENTO.includes(k) ? v : Math.round(v * 100) / 100]));
 
 /** O que o monstro faz ao acertar (12/10): os acumuladores dos stats do PoE, que viram as mecânicas `aoAtacar` (e a Tolerância por segundo, `aoReceberDano`). */
 const acerto = (t) => (t._acerto ??= {

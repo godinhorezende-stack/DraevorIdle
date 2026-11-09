@@ -134,11 +134,15 @@ export const avisosDoSpawn = (s) => {
 /** A soma dos stats dos modificadores. */
 export function statsDos(ids) {
   const t = { vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0,
-    esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, resist: {} };
+    esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, danoExtraAleatorioPct: 0, naoCaosComoCaosPct: 0, velocidadeDeConjuracaoPct: 0, danoProjetilPct: 0, critChancePct: 0, sempreCritico: 0,
+    resist: {}, danoTipoPct: {}, danoExtraPct: {}, conversaoPct: {} };
+  // (09/11, lote 1 dos modificadores de monstro) os campos POR ELEMENTO: o "+X% de Dano de Fogo" (`danoTipoPct`), o "Ganha X% do Dano Físico como
+  // Dano Extra de Fogo" (`danoExtraPct`) e o "X% do Dano Físico Convertido em Fogo" (`conversaoPct`) — somados como as resistências
+  const POR_ELEMENTO = ['resist', 'danoTipoPct', 'danoExtraPct', 'conversaoPct'];
   for (const id of ids ?? []) {
     const s = MODIFICADORES[id]?.stats ?? {};
-    for (const k of Object.keys(t)) if (k !== 'resist' && Number.isFinite(s[k])) t[k] += s[k];
-    for (const [el, v] of Object.entries(s.resist ?? {})) t.resist[el] = (t.resist[el] ?? 0) + v;
+    for (const k of Object.keys(t)) if (!POR_ELEMENTO.includes(k) && Number.isFinite(s[k])) t[k] += s[k];
+    for (const k of POR_ELEMENTO) for (const [el, v] of Object.entries(s[k] ?? {})) t[k][el] = (t[k][el] ?? 0) + v;
   }
   return t;
 }
@@ -199,6 +203,8 @@ export function aplicar(m, { raridade = 'normal', modificadores = [], sortear = 
   // os "aumentados" da raridade e dos mods somam entre si e escalam a base. Antes ela TROCAVA a base: o Raro (+33%) de um bicho de 0,93 s
   // passava a bater a cada 1,5 s, mais devagar que o Comum da mesma espécie.
   if (st.velocidadeDeAtaquePct) m.velocidadeDeAtaque = (m.velocidadeDeAtaque ?? 1) * (1 + st.velocidadeDeAtaquePct / 100);
+  // (09/11, lote 1) a velocidade de CONJURAÇÃO (as magias do monstro — `poderes.mjs`, `velocidadeDeConjuracao`), separada da de ataque
+  if (st.velocidadeDeConjuracaoPct) m.velocidadeDeConjuracao = (m.velocidadeDeConjuracao ?? 1) * (1 + st.velocidadeDeConjuracaoPct / 100);
   if (st.regenPct) m.regen = st.regenPct;
   // Os atributos de defesa e precisão do bicho (`mobs/atributos.mjs`): % sobre a curva, e bloqueio/redução em % (só quem declara).
   if (st.precisaoPct) m.precisaoPct = st.precisaoPct;
@@ -207,6 +213,17 @@ export function aplicar(m, { raridade = 'normal', modificadores = [], sortear = 
   if (st.bloqueio) m.bloqueio = st.bloqueio;
   if (st.reducaoDeDano) m.reducaoDeDano = st.reducaoDeDano;
   if (st.critChance) m.critChance = st.critChance;
+  // (lote 1) o crítico do PoE: "+X% de Chance de Acerto Crítico" (aumentada, sobre a base da espécie) e o "Sempre Crita"
+  if (st.critChancePct) m.critChancePct = st.critChancePct;
+  if (st.sempreCritico) m.sempreCritico = true;
+  // (lote 1) o dano por elemento (ver `statsDos`): o "+X% de Dano de Fogo", a conversão e o extra que sai do Físico (`AtributosDoMob.extrasDoFisicoDoBicho`;
+  // o `danoExtraPct` dos mapas — "X% do Dano como extra" — é outro campo)
+  if (Object.keys(st.danoTipoPct).length) m.danoTipoPct = st.danoTipoPct;
+  if (Object.keys(st.conversaoPct).length) m.conversaoPct = st.conversaoPct;
+  if (Object.keys(st.danoExtraPct).length) m.extraDoFisicoPct = st.danoExtraPct;
+  if (st.danoExtraAleatorioPct) m.danoExtraAleatorioPct = st.danoExtraAleatorioPct;
+  if (st.naoCaosComoCaosPct) m.naoCaosComoCaosPct = st.naoCaosComoCaosPct;
+  if (st.danoProjetilPct) m.danoProjetilPct = st.danoProjetilPct;
   if (st.critMultiplicador) m.critMultiplicador = st.critMultiplicador;
   if (Object.keys(st.resist).length) m.resist = st.resist;
   if (r.elite) m.elite = true;

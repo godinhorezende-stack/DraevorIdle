@@ -72,7 +72,7 @@ export function multiplicadoresDe(raridade) {
   return {
     // A exp pela raridade: a regra do dono (`expPorRaridade`: Mágico ×3, Raro ×5, Único ×5); sem ela, a dos ocultos do PoE.
     multiplicadores: { vida: 1 + (o.vidaMais ?? 0), dano: 1 + (o.danoMais ?? 0), exp: Number(DADOS.expPorRaridade?.[RARIDADE_DO_POE[raridade]]) || 1 + (o.expMais ?? 0), levelExtra: 0 },
-    extra: { velocidadeDeAtaquePct: o.velocidadeDeAtaquePct ?? 0, velocidadePct: o.velocidadePct ?? 0 },
+    extra: { velocidadeDeAtaquePct: o.velocidadeDeAtaquePct ?? 0, velocidadeDeConjuracaoPct: o.velocidadeDeAtaquePct ?? 0, velocidadePct: o.velocidadePct ?? 0 }, // (o oculto é "attack AND cast speed": as duas)
   };
 }
 
