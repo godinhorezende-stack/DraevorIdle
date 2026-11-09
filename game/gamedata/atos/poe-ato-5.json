@@ -2,7 +2,7 @@
   "id": "poe-ato-5",
   "nome": "Ato 5",
   "descricao": "Ato 5 da campanha do Path of Exile.",
-  "imagem": null,
+  "imagem": "imagens/poe-ato-5.webp",
   "nivelRecomendado": 41,
   "ordem": 5,
   "anterior": "poe-ato-4",
