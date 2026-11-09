@@ -53,6 +53,7 @@ const NPCS_DO_PoE = {
   'poe-a2-the-forest-encampment': [['Greust', 'banco'], ['Yeena', 'loja'], ['Silk', 'fala'], ['Helena', 'fala'], ['Eramir', 'fala']],
   'poe-a3-the-sarn-encampment': [['Clarissa', 'loja'], ['Hargan', 'banco'], ['Maramoa', 'fala'], ['Grigor', 'fala']],
   'poe-a4-highgate': [['Petarus e Vanja', 'loja'], ['Tasuni', 'banco'], ['Dialla', 'fala'], ['Oyun', 'fala']],
+  'poe-a5-overseers-tower': [['Lani', 'loja'], ['Bannon', 'banco'], ['Utula', 'fala']],
 };
 test('os NPCs do PoE em cada cidade com mapa, de pé em casa livre e alcançáveis da chegada; os marcos também', { skip: SEM }, () => {
   for (const [id, esperados] of Object.entries(NPCS_DO_PoE)) {

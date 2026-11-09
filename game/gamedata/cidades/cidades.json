@@ -870,6 +870,202 @@
    ]
   },
   {
+   "id": "poe-a5-overseers-tower",
+   "nome": "Torre do Supervisor",
+   "mapa": {
+    "gerador": "torre",
+    "semente": 53
+   },
+   "chegada": {
+    "x": 31,
+    "y": 31,
+    "z": 7,
+    "dir": 2
+   },
+   "npcs": [
+    {
+     "uid": "npc:lani",
+     "id": "lani",
+     "name": "Lani",
+     "x": 27,
+     "y": 27,
+     "z": 7,
+     "dir": 2,
+     "look": 136,
+     "colors": {
+      "type": 136,
+      "head": 78,
+      "body": 86,
+      "legs": 86,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "loja"
+    },
+    {
+     "uid": "npc:bannon",
+     "id": "bannon",
+     "name": "Bannon",
+     "x": 36,
+     "y": 26,
+     "z": 7,
+     "dir": 2,
+     "look": 131,
+     "colors": {
+      "type": 131,
+      "head": 95,
+      "body": 57,
+      "legs": 57,
+      "feet": 95,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "banco"
+    },
+    {
+     "uid": "npc:utula",
+     "id": "utula",
+     "name": "Utula",
+     "x": 31,
+     "y": 23,
+     "z": 7,
+     "dir": 2,
+     "look": 142,
+     "colors": {
+      "type": 142,
+      "head": 0,
+      "body": 114,
+      "legs": 114,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "Oriath prendeu o meu povo e chamou isso de justiça. Agora a justiça vem de baixo, exilado."
+    }
+   ],
+   "objetos": [
+    {
+     "uid": "marco:aventuras:34,33",
+     "x": 34,
+     "y": 33,
+     "item": null,
+     "nome": "Aventuras",
+     "cor": "dourado",
+     "acao": "aventuras",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:boss-diarios:29,33",
+     "x": 29,
+     "y": 33,
+     "item": null,
+     "nome": "Boss Diarios",
+     "cor": "boss",
+     "acao": "boss-diarios",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:forja:28,22",
+     "x": 28,
+     "y": 22,
+     "item": null,
+     "nome": "Forja",
+     "cor": "vermelho",
+     "acao": "forja",
+     "pisar": false,
+     "nomeDx": -0.5,
+     "nomeDy": -0.5
+    },
+    {
+     "uid": "marco:arvore:34,20:34,20",
+     "x": 34,
+     "y": 20,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,20:35,20",
+     "x": 35,
+     "y": 20,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,20:36,20",
+     "x": 36,
+     "y": 20,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,20:34,21",
+     "x": 34,
+     "y": 21,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,20:35,21",
+     "x": 35,
+     "y": 21,
+     "item": null,
+     "nome": "Arvore De Habilidade",
+     "cor": "verde-azul",
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,20:36,21",
+     "x": 36,
+     "y": 21,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,20:34,22",
+     "x": 34,
+     "y": 22,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,20:35,22",
+     "x": 35,
+     "y": 22,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,20:36,22",
+     "x": 36,
+     "y": 22,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    }
+   ]
+  },
+  {
    "id": "poe-a6-lioneyes-watch",
    "nome": "Vigília de Lioneye",
    "igualA": "poe-a1-lioneyes-watch"

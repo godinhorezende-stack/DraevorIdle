@@ -12,7 +12,7 @@ import { codificarPng } from '../../engine/png-minimo.mjs';
 import { G, desenhar } from './sprites.mjs';
 import { compor, alcancaveis } from './comum.mjs';
 
-const GERADORES = { lioneye: () => import('./lioneye.mjs'), floresta: () => import('./floresta.mjs'), sarn: () => import('./sarn.mjs'), highgate: () => import('./highgate.mjs') };
+const GERADORES = { lioneye: () => import('./lioneye.mjs'), floresta: () => import('./floresta.mjs'), sarn: () => import('./sarn.mjs'), highgate: () => import('./highgate.mjs'), torre: () => import('./torre.mjs') };
 
 const args = process.argv.slice(2);
 const iPrevia = args.indexOf('--previa');
