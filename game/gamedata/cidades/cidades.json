@@ -436,9 +436,231 @@
    ]
   },
   {
+   "id": "poe-a3-the-sarn-encampment",
+   "nome": "Acampamento de Sarn",
+   "mapa": {
+    "gerador": "sarn",
+    "semente": 31
+   },
+   "chegada": {
+    "x": 31,
+    "y": 26,
+    "z": 7,
+    "dir": 2
+   },
+   "npcs": [
+    {
+     "uid": "npc:clarissa",
+     "id": "clarissa",
+     "name": "Clarissa",
+     "x": 26,
+     "y": 22,
+     "z": 7,
+     "dir": 2,
+     "look": 140,
+     "colors": {
+      "type": 140,
+      "head": 78,
+      "body": 86,
+      "legs": 86,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "loja"
+    },
+    {
+     "uid": "npc:hargan",
+     "id": "hargan",
+     "name": "Hargan",
+     "x": 35,
+     "y": 21,
+     "z": 7,
+     "dir": 2,
+     "look": 151,
+     "colors": {
+      "type": 151,
+      "head": 95,
+      "body": 114,
+      "legs": 114,
+      "feet": 95,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "banco"
+    },
+    {
+     "uid": "npc:maramoa",
+     "id": "maramoa",
+     "name": "Maramoa",
+     "x": 25,
+     "y": 27,
+     "z": 7,
+     "dir": 2,
+     "look": 158,
+     "colors": {
+      "type": 158,
+      "head": 0,
+      "body": 79,
+      "legs": 79,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "Os espíritos de Sarn não descansam. Ouça com atenção, exilado, e eles dirão quem os acordou."
+    },
+    {
+     "uid": "npc:grigor",
+     "id": "grigor",
+     "name": "Grigor",
+     "x": 38,
+     "y": 24,
+     "z": 7,
+     "dir": 2,
+     "look": 146,
+     "colors": {
+      "type": 146,
+      "head": 0,
+      "body": 57,
+      "legs": 57,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "Esta cidade já foi a joia do Império. Agora sobrou a praça, a chuva e nós."
+    }
+   ],
+   "objetos": [
+    {
+     "uid": "marco:aventuras:33,28",
+     "x": 33,
+     "y": 28,
+     "item": null,
+     "nome": "Aventuras",
+     "cor": "dourado",
+     "acao": "aventuras",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:boss-diarios:28,28",
+     "x": 28,
+     "y": 28,
+     "item": null,
+     "nome": "Boss Diarios",
+     "cor": "boss",
+     "acao": "boss-diarios",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:forja:38,18",
+     "x": 38,
+     "y": 18,
+     "item": null,
+     "nome": "Forja",
+     "cor": "vermelho",
+     "acao": "forja",
+     "pisar": false,
+     "nomeDx": -0.5,
+     "nomeDy": -0.5
+    },
+    {
+     "uid": "marco:arvore:36,27:36,27",
+     "x": 36,
+     "y": 27,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:36,27:37,27",
+     "x": 37,
+     "y": 27,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:36,27:38,27",
+     "x": 38,
+     "y": 27,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:36,27:36,28",
+     "x": 36,
+     "y": 28,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:36,27:37,28",
+     "x": 37,
+     "y": 28,
+     "item": null,
+     "nome": "Arvore De Habilidade",
+     "cor": "verde-azul",
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:36,27:38,28",
+     "x": 38,
+     "y": 28,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:36,27:36,29",
+     "x": 36,
+     "y": 29,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:36,27:37,29",
+     "x": 37,
+     "y": 29,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:36,27:38,29",
+     "x": 38,
+     "y": 29,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    }
+   ]
+  },
+  {
    "id": "poe-a6-lioneyes-watch",
    "nome": "Vigília de Lioneye",
    "igualA": "poe-a1-lioneyes-watch"
+  },
+  {
+   "id": "poe-a8-the-sarn-encampment",
+   "nome": "Acampamento de Sarn",
+   "igualA": "poe-a3-the-sarn-encampment"
   }
  ]
 }
