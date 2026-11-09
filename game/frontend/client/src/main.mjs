@@ -68,7 +68,7 @@ import {
   atualizarBarraDeOutro,
 } from './actionbar.mjs';
 import {
-  initPanels, openHunts, openBlessings, openQuests, openOutfits,
+  initPanels, openHunts, openMapas, openBlessings, openQuests, openOutfits,
   renderAppearance, openStore, openMarket, openBank, openLocker, openRanking,
   openLootFilter, openLimparBolsa, openLimparMochila, openVenderMochila, openVenderSacolas, openVenderBossPouch, openFriends, openParty, corpoDaJanelaDaParty, atualizarBarrasDaParty, openBarSettings, caixaDoDepositoAberta, openForja, openMercenarios,
   openDiario, openLojaNpc, abrirObterCoins,
@@ -6444,6 +6444,8 @@ const ABERTURAS_DE_OBJETO = {
   forja: () => openForja(),
   // Não é janela: é a porta da arena. Quem decide se entra é o servidor.
   'boss-diarios': () => send({ t: 'entrarNaArena' }),
+  // (09/11) o Dispositivo de Mapas da cidade do endgame (a Costa Karui): a aba Mapas da tela da campanha
+  dispositivo: () => openMapas(),
 };
 
 /*

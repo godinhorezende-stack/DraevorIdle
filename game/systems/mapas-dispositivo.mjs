@@ -110,6 +110,8 @@ export function abrir(estado, { onde = 'inventory', indice, assinatura: aDaTela,
   const pilha = Number(peca.count) > 1;
   const aberto = MapaAberto.abrir(estado, pilha ? { ...peca, count: 1 } : peca);
   const r = Cacadas.entrar(estado, { huntId, mode, strategy, mapa: aberto });
+  // (09/11) quem está no endgame mora na cidade do Epílogo (a Costa Karui): a volta do mapa é para lá
+  if (r.ok && Campanha.epilogo()) estado.atoDaCidade = Campanha.epilogo().ato;
   if (!r.ok) {
     st.aberto = null;
     return r;

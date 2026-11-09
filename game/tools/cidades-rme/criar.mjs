@@ -42,8 +42,8 @@ for (const def of dados.cidades) {
     const out = new Uint8ClampedArray(W * 32 * H * 32 * 4);
     pilhas.forEach((p, i) => { for (const id of p) desenhar(out, W * 32, H * 32, id, (i % W) * 32, Math.floor(i / W) * 32); });
     // os pontos do jogo, em quadrados coloridos: a chegada (verde), Aventuras (amarelo), Boss Diários (roxo), a forja (vermelho), a árvore
-    // (verde-azulado) e os NPCs (azul)
-    const COR = { chegada: [40, 220, 60], aventuras: [255, 200, 0], 'boss-diarios': [200, 40, 200], forja: [255, 60, 30], arvore: [0, 160, 140], npc: [0, 220, 255] };
+    // (verde-azulado), o Dispositivo de Mapas (branco) e os NPCs (azul)
+    const COR = { chegada: [40, 220, 60], aventuras: [255, 200, 0], 'boss-diarios': [200, 40, 200], forja: [255, 60, 30], arvore: [0, 160, 140], npc: [0, 220, 255], dispositivo: [255, 255, 255] };
     const quadro = (x, y, c) => { for (let j = 2; j < 30; j++) for (let k = 2; k < 30; k++) if (j < 5 || k < 5 || j >= 27 || k >= 27) { const d = ((y * 32 + j) * W * 32 + x * 32 + k) * 4; out.set([...c, 255], d); } };
     quadro(def.chegada.x, def.chegada.y, COR.chegada);
     for (const o of def.objetos ?? []) quadro(o.x, o.y, COR[o.acao]);

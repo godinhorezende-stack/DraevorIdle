@@ -383,6 +383,12 @@ const PORTAS_ESPECIAIS = [
   },
 ];
 
+/** (09/11) O Dispositivo de Mapas (o marco da Costa Karui): a tela da campanha já na aba Mapas. */
+export function openMapas() {
+  ctx.tabs.campanhaMapas = true;
+  openHunts();
+}
+
 export function openHunts() {
   /*
    * A LOJA, por causa da aba de Treino.

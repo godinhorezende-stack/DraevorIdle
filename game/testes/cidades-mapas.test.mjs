@@ -13,6 +13,8 @@ const CM = await import('../systems/cidades-mapas.mjs');
 const { Sessao } = await import('../websocket/sessao.mjs');
 const VIGILIA = 'poe-a1-lioneyes-watch';
 const Cidades = await import('../systems/cidades.mjs');
+const Campanha = await import('../systems/campanha.mjs');
+const MapasDispositivo = await import('../systems/mapas-dispositivo.mjs');
 // (09/11) Uma cidade de ato SEM entrada em cidades.json segue a de sempre. Todas as dos atos já têm a sua: a do teste é registrada só
 // durante o teste (e a lista de antes volta no fim).
 const SEM_MAPA = { id: 'cidade-de-teste-sem-mapa', nome: 'Cidade de Teste', ato: 99 };
@@ -134,4 +136,33 @@ test('na Vigília: o retrato manda o mapa e os NPCs dela; Nessa abre a loja de g
   assert.equal(enviados.at(-1)?.tipo, 'banco');
   s.falarComNpc({ id: 'bestel' });
   assert.match(s.avisoPendente, /^Bestel: /);
+});
+
+// (09/11, o dono: "Hub do endgame") A COSTA KARUI (o Epílogo): a cidade do ato 11, sem fases, abre ao vencer o chefe do Ato 10; quem o vence
+// passa a morar nela; a viagem até ela é recusada antes; o Dispositivo de Mapas fica lá (o marco e a configuração).
+test('o Epílogo: a Costa Karui abre ao vencer o chefe do Ato 10, vira a cidade de quem o vence e tem o Dispositivo de Mapas', { skip: SEM }, () => {
+  const KARUI = 'poe-a11-karui-shores';
+  assert.equal(Cidades.daCidadeDoAto(11)?.id, KARUI, 'a cidade do ato 11 está registrada');
+  assert.deepEqual(Campanha.epilogo()?.id, KARUI);
+  const e = personagemDeTeste({ level: 90 });
+  for (const p of Object.values(e.campanha)) p.bosses = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  e.atoDaCidade = 10;
+  assert.equal(Campanha.cidadeAberta(e, 11), false, 'fechada antes do chefe do Ato 10');
+  const enviados = [];
+  const s = new Sessao({ readyState: 1, send: (t) => enviados.push(JSON.parse(t)) });
+  s.personagem = { id: 0, nome: 'Epilogo' };
+  s.estado = e;
+  s.receber({ t: 'irParaCidade', ato: 11 });
+  assert.match(enviados.findLast((m) => m.t === 'error')?.message ?? '', /Ato 11 ainda não está aberto/);
+  assert.equal(e.atoDaCidade, 10);
+  Campanha.venceuBoss(e, 'facil', 10);
+  assert.equal(Campanha.cidadeAberta(e, 11), true, 'aberta depois do chefe do Ato 10');
+  assert.equal(e.atoDaCidade, 11, 'quem vence o chefe do Ato 10 passa a morar na Costa Karui');
+  assert.equal(Campanha.paraCliente(e).epilogo?.aberto, true, 'a tela recebe o Epílogo aberto');
+  e.atoDaCidade = 10;
+  s.receber({ t: 'irParaCidade', ato: 11 });
+  assert.equal(e.atoDaCidade, 11, 'a viagem até ela vale');
+  assert.deepEqual({ x: e.pos.x, y: e.pos.y }, { x: CM.chegadaDa(KARUI).x, y: CM.chegadaDa(KARUI).y });
+  assert.ok(CM.metaDa(KARUI).objetos.some((o) => o.acao === 'dispositivo'), 'o Dispositivo de Mapas na aldeia');
+  assert.equal(MapasDispositivo.cidade(), KARUI, 'a configuração do dispositivo aponta para a Costa Karui');
 });

@@ -1758,7 +1758,7 @@
      },
      "addons": 0,
      "tipo": "fala",
-     "fala": "O Atlas espera, exilado. Quando estiver pronto para os mapas, venha falar comigo."
+     "fala": "O Atlas espera, exilado. O Dispositivo de Mapas está ali, no meio da aldeia: ponha um mapa nele e vamos."
     }
    ],
    "objetos": [
@@ -1878,6 +1878,18 @@
      "nome": null,
      "cor": null,
      "acao": "arvore"
+    },
+    {
+     "uid": "marco:dispositivo:31,24",
+     "x": 31,
+     "y": 24,
+     "item": null,
+     "nome": "Dispositivo de Mapas",
+     "cor": "dourado",
+     "acao": "dispositivo",
+     "pisar": false,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
     }
    ]
   }

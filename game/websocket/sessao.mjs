@@ -1615,7 +1615,7 @@ export class Sessao {
       case 'irParaCidade': {
         const destino = Cidades.daCidadeDoAto(m.ato);
         if (!destino) return this.erro('Essa cidade não existe.');
-        if (!Campanha.atoAberto(this.estado, destino.ato)) return this.erro(`O Ato ${destino.ato} ainda não está aberto para você.`);
+        if (!Campanha.cidadeAberta(this.estado, destino.ato)) return this.erro(`O Ato ${destino.ato} ainda não está aberto para você.`);
         const mudou = Number(this.estado.atoDaCidade) !== destino.ato;
         // A cidade e a casa de chegada ANTES de sair da caçada: o primeiro quadro da praça já é o da cidade nova.
         this.estado.atoDaCidade = destino.ato;
