@@ -1684,6 +1684,202 @@
      "acao": "arvore"
     }
    ]
+  },
+  {
+   "id": "poe-a11-karui-shores",
+   "nome": "Costa Karui",
+   "mapa": {
+    "gerador": "karui",
+    "semente": 111
+   },
+   "chegada": {
+    "x": 26,
+    "y": 25,
+    "z": 7,
+    "dir": 2
+   },
+   "npcs": [
+    {
+     "uid": "npc:lilly-roth",
+     "id": "lilly-roth",
+     "name": "Lilly Roth",
+     "x": 24,
+     "y": 21,
+     "z": 7,
+     "dir": 2,
+     "look": 140,
+     "colors": {
+      "type": 140,
+      "head": 78,
+      "body": 94,
+      "legs": 94,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "loja"
+    },
+    {
+     "uid": "npc:utula",
+     "id": "utula",
+     "name": "Utula",
+     "x": 29,
+     "y": 22,
+     "z": 7,
+     "dir": 2,
+     "look": 142,
+     "colors": {
+      "type": 142,
+      "head": 0,
+      "body": 114,
+      "legs": 114,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "banco"
+    },
+    {
+     "uid": "npc:kirac",
+     "id": "kirac",
+     "name": "Kirac",
+     "x": 26,
+     "y": 28,
+     "z": 7,
+     "dir": 2,
+     "look": 134,
+     "colors": {
+      "type": 134,
+      "head": 0,
+      "body": 57,
+      "legs": 57,
+      "feet": 95,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "O Atlas espera, exilado. Quando estiver pronto para os mapas, venha falar comigo."
+    }
+   ],
+   "objetos": [
+    {
+     "uid": "marco:aventuras:29,26",
+     "x": 29,
+     "y": 26,
+     "item": null,
+     "nome": "Aventuras",
+     "cor": "dourado",
+     "acao": "aventuras",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:boss-diarios:23,26",
+     "x": 23,
+     "y": 26,
+     "item": null,
+     "nome": "Boss Diarios",
+     "cor": "boss",
+     "acao": "boss-diarios",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:forja:31,18",
+     "x": 31,
+     "y": 18,
+     "item": null,
+     "nome": "Forja",
+     "cor": "vermelho",
+     "acao": "forja",
+     "pisar": false,
+     "nomeDx": -0.5,
+     "nomeDy": -0.5
+    },
+    {
+     "uid": "marco:arvore:20,16:20,16",
+     "x": 20,
+     "y": 16,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:20,16:21,16",
+     "x": 21,
+     "y": 16,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:20,16:22,16",
+     "x": 22,
+     "y": 16,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:20,16:20,17",
+     "x": 20,
+     "y": 17,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:20,16:21,17",
+     "x": 21,
+     "y": 17,
+     "item": null,
+     "nome": "Arvore De Habilidade",
+     "cor": "verde-azul",
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:20,16:22,17",
+     "x": 22,
+     "y": 17,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:20,16:20,18",
+     "x": 20,
+     "y": 18,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:20,16:21,18",
+     "x": 21,
+     "y": 18,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:20,16:22,18",
+     "x": 22,
+     "y": 18,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    }
+   ]
   }
  ]
 }
