@@ -13,9 +13,18 @@ const CM = await import('../systems/cidades-mapas.mjs');
 const { Sessao } = await import('../websocket/sessao.mjs');
 const VIGILIA = 'poe-a1-lioneyes-watch';
 const Cidades = await import('../systems/cidades.mjs');
-// (09/11) Uma cidade de ato ainda SEM entrada em cidades.json (as cidades ganham mapa uma a uma): a que segue a de sempre.
-const DEFINIDAS = new Set(JSON.parse((await import('node:fs')).readFileSync(new URL('../gamedata/cidades/cidades.json', import.meta.url), 'utf8')).cidades.map((c) => c.id));
-const SEM_MAPA = Cidades.cidades().find((c) => !DEFINIDAS.has(c.id));
+// (09/11) Uma cidade de ato SEM entrada em cidades.json segue a de sempre. Todas as dos atos já têm a sua: a do teste é registrada só
+// durante o teste (e a lista de antes volta no fim).
+const SEM_MAPA = { id: 'cidade-de-teste-sem-mapa', nome: 'Cidade de Teste', ato: 99 };
+function comCidadeSemMapa(fn) {
+  const antes = Cidades.cidades();
+  Cidades.registrar([...antes, SEM_MAPA]);
+  try {
+    return fn();
+  } finally {
+    Cidades.registrar(antes);
+  }
+}
 
 /** As casas andáveis alcançadas a pé da chegada da cidade. */
 function alcancadas(id) {
@@ -39,7 +48,6 @@ test('a Vigília de Lioneye tem o seu mapa; o Ato 6 usa o mesmo; a cidade sem ma
   assert.equal(CM.mapaIdDa('poe-a6-lioneyes-watch'), 'poe-a6-lioneyes-watch', 'o Ato 6 tem a Vigília depois da guerra (o dono, 09/11: "opção 3")');
   assert.equal(CM.mapaIdDa('poe-a8-the-sarn-encampment'), 'poe-a3-the-sarn-encampment', 'o PoE repete Sarn no Ato 8');
   assert.equal(CM.mapaIdDa('poe-a2-the-forest-encampment'), 'poe-a2-the-forest-encampment', 'o Acampamento da Floresta tem o seu');
-  assert.ok(SEM_MAPA, 'há cidade de ato ainda sem mapa');
   assert.equal(CM.mapaIdDa(SEM_MAPA.id), CM.SEMPRE);
   const m = CM.mapaDa(VIGILIA);
   assert.equal(m.atlas, `cidades/${VIGILIA}`);
@@ -96,8 +104,10 @@ test('a posição de outra cidade (ou fora do mapa) vira a chegada; a desta cida
   e.atoDaCidade = 6;
   e.pos = { x: 30, y: 21, z: 7, dir: 1, cidade: VIGILIA };
   assert.deepEqual(CM.garantirPosicao(e), { ...CM.chegadaDa('poe-a6-lioneyes-watch'), cidade: 'poe-a6-lioneyes-watch' });
-  e.atoDaCidade = SEM_MAPA.ato;
-  assert.deepEqual(CM.garantirPosicao(e), { ...CM.chegadaDa(SEM_MAPA.id), cidade: CM.SEMPRE });
+  comCidadeSemMapa(() => {
+    e.atoDaCidade = SEM_MAPA.ato;
+    assert.deepEqual(CM.garantirPosicao(e), { ...CM.chegadaDa(SEM_MAPA.id), cidade: CM.SEMPRE });
+  });
 });
 
 test('na Vigília: o retrato manda o mapa e os NPCs dela; Nessa abre a loja de gemas, Tarkleigh o banco, Bestel fala', { skip: SEM }, () => {
