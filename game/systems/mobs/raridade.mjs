@@ -77,8 +77,19 @@ export function motivoDeNaoEntrar(id, raridade, key = null) {
 export function forcaDaCombinacao(raridade, ids) {
   const st = statsDos(ids);
   const r = CONFIG.raridades[raridade] ?? CONFIG.raridades.normal;
-  const ofensivo = (r.dano ?? 1) * (1 + st.danoPct / 100) * (1 + st.velocidadeDeAtaquePct / 100);
-  return { ofensivo, danoPct: st.danoPct, velocidadeDeAtaquePct: st.velocidadeDeAtaquePct, vidaPct: st.vidaPct, resistenciaFisica: st.resist.physical ?? 0, resist: st.resist };
+  const danoPct = danoEquivalentePct(st);
+  const ofensivo = (r.dano ?? 1) * (1 + danoPct / 100) * (1 + st.velocidadeDeAtaquePct / 100);
+  return { ofensivo, danoPct, velocidadeDeAtaquePct: st.velocidadeDeAtaquePct, vidaPct: st.vidaPct, resistenciaFisica: st.resist.physical ?? 0, resist: st.resist };
+}
+
+/**
+ * (09/11, lote 1 dos modificadores de monstro) o dano dos modificadores num número só, para quem não tem o golpe por tipo (o teto de força da combinação, o
+ * lacaio do Monarca Santificado): o "+X% de Dano", o do Físico inteiro, o de cada elemento pela metade (o golpe é de um tipo só), o extra e o convertido.
+ */
+export function danoEquivalentePct(st) {
+  const soma = (o) => Object.values(o ?? {}).reduce((t, v) => t + (Number(v) || 0), 0);
+  const elementos = soma(st.danoTipoPct) - (st.danoTipoPct?.physical ?? 0);
+  return st.danoPct + (st.danoTipoPct?.physical ?? 0) + elementos / 2 + soma(st.danoExtraPct) + (st.danoExtraAleatorioPct ?? 0) + (st.naoCaosComoCaosPct ?? 0);
 }
 
 /**
