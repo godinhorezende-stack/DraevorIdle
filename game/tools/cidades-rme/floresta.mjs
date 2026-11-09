@@ -38,14 +38,21 @@ export function gerar(def, semente = 23) {
   const { pilhas, faltas } = M.pintar(g, { rng, existe });
   if (Object.keys(faltas).length) throw new Error(`Floresta: peças de borda sem sprite ${JSON.stringify(faltas)}`);
 
-  // a PONTE: as tábuas por cima do riacho na estrada (o chão continua água — as bordas das margens ficam inteiras)
+  // a PONTE: as tábuas por cima do riacho na estrada (o chão continua água — as bordas das margens ficam inteiras), e mais UMA casa sobre
+  // cada margem: sem ela, entre a terra da estrada e a primeira tábua aparecia a borda da margem com a água (o dono: "aqui tá estranho")
   const PONTE = new Set();
   const TABUAS = M.PINCEIS.get('grimy wooden plank horizontal').itens;
-  for (const y of ESTRADA) for (let x = 0; x < W; x++) if (g[y][x] === 'sea') {
+  const naAgua = (x) => ESTRADA.some((y) => g[y][x] === 'sea');
+  const xs = [...Array(W).keys()].filter(naAgua);
+  const [px0, px1] = [Math.min(...xs) - 1, Math.max(...xs) + 1];
+  for (const y of ESTRADA) for (let x = px0; x <= px1; x++) {
     PONTE.add(`${x},${y}`);
     pilhas[y * W + x] = [TABUAS[Math.floor(rng() * TABUAS.length)].id];
   }
   const cam = new O.Camada(W, H, existe);
+  // o guarda-corpo (o pincel "bridge" do editor) nas duas bordas da ponte, por cima da água e das margens
+  const CORRIMAO = O.PAREDES.get('bridge').tipos.horizontal.map((i) => i.id).find(existe);
+  if (CORRIMAO) for (let x = px0; x <= px1; x++) for (const y of [ESTRADA[0] - 1, ESTRADA.at(-1) + 1]) cam.por(x, y, CORRIMAO);
 
   // ---- os MARCOS do jogo primeiro; o lugar dos NPCs, da chegada e dos portais fica livre
   const duras = porMarcos(cam, def.objetos ?? []);
@@ -74,7 +81,9 @@ export function gerar(def, semente = 23) {
   cam.por(30, 14, 3497);
 
   // ---- a NATUREZA: a mata fechada em volta da clareira (pinheiros escuros e árvores verdes em manchas), as plantas do riacho, os tufos
-  const naoCaminho = (x, y) => !ESTRADA.includes(y) && pode(x, y) && !PONTE.has(`${x},${y}`);
+  // (nem árvore cobrindo a ponte: em volta dela fica só o mato rasteiro)
+  const juntoDaPonte = (x, y) => x >= px0 - 1 && x <= px1 + 2 && y >= ESTRADA[0] - 2 && y <= ESTRADA.at(-1) + 3;
+  const naoCaminho = (x, y) => !ESTRADA.includes(y) && pode(x, y) && !PONTE.has(`${x},${y}`) && !juntoDaPonte(x, y);
   const perto = (x, y, c) => [[0, -1], [1, 0], [0, 1], [-1, 0]].some(([dx, dy]) => g[y + dy]?.[x + dx] === c);
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     if (!cam.livre(x, y) || !naoCaminho(x, y) || dentro(x, y) || (x >= PAL.x0 - 1 && x <= PAL.x1 + 1 && y >= PAL.y0 - 1 && y <= PAL.y1 + 1)) continue;
