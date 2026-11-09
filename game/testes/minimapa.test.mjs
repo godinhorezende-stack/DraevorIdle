@@ -168,3 +168,12 @@ test('passagem que não leva a lugar nenhum não aparece; a rampa larga vira um 
   map.floors[6] = {};
   assert.equal(passagensDoAndar(map, 7).filter((p) => p.sentido === 'sobe').length, 2, 'com o andar de cima, as de subir aparecem');
 });
+
+test('na cidade (09/11): os NPCs e os marcos com nome viram pontos; o jogador continua por último', () => {
+  const snap = {
+    player: { x: 5, y: 5 },
+    npcs: [{ x: 1, y: 1 }, { x: 2, y: 2 }],
+    objetos: [{ x: 3, y: 3, nome: 'Forja' }, { x: 4, y: 4, nome: null }],
+  };
+  assert.deepEqual(pontosDoRetrato(snap).map((p) => `${p.tipo}@${p.x}`), ['npc@1', 'npc@2', 'marco@3', 'jogador@5']);
+});

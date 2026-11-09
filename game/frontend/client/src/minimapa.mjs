@@ -28,6 +28,8 @@ const CORES = {
   boss: '#ffd34d',
   aliado: '#4ade80',
   jogador: '#3fa2ff',
+  npc: '#f0d78c',
+  marco: '#b48cff',
   desce: '#f5c542',
   sobe: '#5ee0c8',
 };
@@ -81,7 +83,7 @@ export function initMinimapa(mapView, opcoes = {}) {
 }
 
 /**
- * Chamado a cada retrato do mapa (`setSnapshot`): `naCacada` — o minimapa só existe na fase.
+ * Chamado a cada retrato do mapa (`setSnapshot`): `naCacada` — a fase ou a cidade (sem cena, some).
  * Barato: só agenda um desenho para o próximo quadro.
  */
 export function atualizarMinimapa(naCacada) {
@@ -175,6 +177,9 @@ export function pontosDoRetrato(snap) {
     const tipo = snap.isBoss || m.uid === bossUid ? 'boss' : m.raridade && m.raridade !== 'normal' ? 'raro' : 'monstro';
     pontos.push({ x: m.x, y: m.y, tipo });
   }
+  // (09/11 — o dono: "na cidade tbm colocar minimapa") na cidade: os NPCs e os marcos de usar (os portais, a forja, o Dispositivo — um ponto por marco)
+  for (const n of snap.npcs ?? []) if (Number.isFinite(n.x)) pontos.push({ x: n.x, y: n.y, tipo: 'npc' });
+  for (const o of snap.objetos ?? []) if (o.nome && Number.isFinite(o.x)) pontos.push({ x: o.x, y: o.y, tipo: 'marco' });
   for (const a of snap.aliados ?? []) if (Number.isFinite(a.x)) pontos.push({ x: a.x, y: a.y, tipo: 'aliado' });
   if (snap.player && Number.isFinite(snap.player.x)) pontos.push({ x: snap.player.x, y: snap.player.y, tipo: 'jogador' });
   return pontos;
@@ -294,7 +299,7 @@ function desenhar() {
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.85)';
     ctx.stroke();
   }
-  const raio = { monstro: 1.6, raro: 2.2, boss: 3.4, aliado: 2.2, jogador: 2.8 };
+  const raio = { monstro: 1.6, raro: 2.2, boss: 3.4, npc: 2.2, marco: 2.2, aliado: 2.2, jogador: 2.8 };
   for (const p of pontosDoRetrato(snap)) {
     const x = ox + (p.x + 0.5) * s;
     const y = oy + (p.y + 0.5) * s;
