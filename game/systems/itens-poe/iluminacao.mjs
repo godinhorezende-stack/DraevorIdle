@@ -85,10 +85,10 @@ function escalasDosMods(dados) {
 /** O tamanho de um monstro no desenho (×): a soma do "Tamanho do Personagem aumentado" dos modificadores do PoE dele (`m.mods`: `poe:<id>`). */
 export function tamanhoDoMonstro(m, dados) {
   const tab = escalasDosMods(dados);
-  if (!tab || !m?.mods?.length) return 1;
-  let pct = 0;
-  for (const id of m.mods) pct += tab.get(String(id).replace(/^poe:/, '')) ?? 0;
-  return escala(pct);
+  // (09/11, lote 4: + o tamanho que a União das Almas deu ao bando — `m.escalaExtraPct`, `mobs/mecanicas.aoMorrer`)
+  let pct = Number(m?.escalaExtraPct) || 0;
+  if (tab) for (const id of m?.mods ?? []) pct += tab.get(String(id).replace(/^poe:/, '')) ?? 0;
+  return pct ? escala(pct) : 1;
 }
 
 /**

@@ -16,6 +16,7 @@ const GS = await import('../systems/skills/gemas.mjs');
 const G = await import('../systems/itens-poe/gemas-poe.mjs');
 const GBD = await import('../systems/itens-poe/gemas-gbd.mjs');
 const Cacadas = await import('../systems/cacadas.mjs');
+const { criarMonstro } = await import('../systems/hunt/monstros.mjs');
 const Ficha = await import('../systems/ficha.mjs');
 const Afixos = await import('../systems/afixos.mjs');
 const Combate = await import('../systems/hunt/combate.mjs');
@@ -130,7 +131,10 @@ function apanhar(e, b, v = 0.5) {
 // ---------------------------------------------------------------- G-B: as Guardas
 
 test('G-B: a Pele de Aço absorve 70% do acerto, antes da Vida, até 2209; esgotada, o buff acaba e a recarga começa ali', { skip: SEM }, async () => {
-  const { e, b } = await montar('Steelskin');
+  const { e, b: sorteado } = await montar('Steelskin');
+  // (09/11, aval do dono) um Comum da mesma espécie, sem modificadores: o sorteado com "Dano Extra de Raio e Exposição" deixava o 2º golpe maior (a Exposição do 1º)
+  const b = Object.assign(criarMonstro({ key: sorteado.key, x: sorteado.x, y: sorteado.y }, null), { hp: 1e12, maxHp: 1e12, estados: {}, resist: {}, armaduraPct: -100, evasao: 0 });
+  e.hunt.monstros.splice(e.hunt.monstros.indexOf(sorteado), 1, b);
   e.es = 0;
   const sem = apanhar(e, b);
   assert.ok(sem.perdeu > 0, 'o golpe do monstro fere');

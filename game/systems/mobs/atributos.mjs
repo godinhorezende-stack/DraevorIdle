@@ -124,6 +124,8 @@ export const bloqueou = (m, rng = Math.random, fator = 1, { menosPontos = 0, mag
   }
   return foi;
 };
+/** (09/11, lote 4 dos modificadores de monstro) "X% de chance de Evitar Projéteis" (o Fragmentador — `m.evitarProjeteisPct`): o projétil que ele evitou não acerta. */
+export const evitouProjetil = (m, rng = Math.random) => Number(m?.evitarProjeteisPct) > 0 && rng() * 100 < Math.min(100, Number(m.evitarProjeteisPct));
 /** (lote 3) A chance de o bicho Bloquear o Dano Mágico (0–1): só com o modificador. */
 export const bloqueioMagiaDe = (m) => limitar(Number(m?.bloqueioMagia) || 0, L.bloqueioMaximo) / 100;
 /**
@@ -191,8 +193,21 @@ const A = CONFIG.ataque;
 export const velocidadeDeAtaque = (m, buffPct = 0) => Math.max(A.velocidadeMinima, Math.min(A.velocidadeMaxima, (m?.velocidadeDeAtaque ?? 1) * (1 + (buffPct || 0) / 100)));
 
 /** O intervalo (ms) até o próximo golpe do mob: `base` (o do boss ou o padrão) × a lentidão ÷ a velocidade, nunca abaixo do mínimo. */
-export function intervaloDoGolpe(m, { base = A.intervaloBaseMs, lentidao = 1, buffPct = 0 } = {}) {
-  return Math.max(A.intervaloMinimoMs, Math.round((base * lentidao) / velocidadeDeAtaque(m, buffPct)));
+export function intervaloDoGolpe(m, { base = A.intervaloBaseMs, lentidao = 1, buffPct = 0, contar = false } = {}) {
+  return Math.max(A.intervaloMinimoMs, Math.round((base * lentidao) / velocidadeDeAtaque(m, buffPct))) + (contar ? pausaDaRepeticao(m, '_repGolpe') : 0);
+}
+/**
+ * (09/11, lote 4 dos modificadores de monstro) as AÇÕES TRIPLAS do PoE: "Habilidades se Repetem 2 Vezes mais" (`m.repeticoes`) e a pausa depois ("interrupt for
+ * X ms after skill use" — `m.pausaMs`): o golpe (ou a magia) sai, repete N vezes no ritmo dele e só então o monstro para os X ms. Chamada a cada uso (`contar`):
+ * devolve o tempo a mais antes do próximo — 0 nas repetições, a pausa depois da última.
+ */
+export function pausaDaRepeticao(m, chave = '_repGolpe') {
+  const n = Number(m?.repeticoes) || 0;
+  if (!(n > 0)) return 0;
+  m[chave] = (m[chave] ?? 0) + 1;
+  if (m[chave] <= n) return 0;
+  m[chave] = 0;
+  return Number(m.pausaMs) || 0;
 }
 
 /**

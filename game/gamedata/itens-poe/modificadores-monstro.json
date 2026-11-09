@@ -780,7 +780,7 @@
     "precisaoPct": 100
    },
    "estado": "parcial",
-   "valem": 6,
+   "valem": 7,
    "total": 8,
    "statsPoe": [
     {
@@ -952,10 +952,11 @@
    "pesoRaro": 8000,
    "stats": {
     "vidaPct": 40,
-    "danoPct": 20
+    "danoPct": 20,
+    "areaPct": 80
    },
-   "estado": "parcial",
-   "valem": 2,
+   "estado": "efeito",
+   "valem": 4,
    "total": 4,
    "statsPoe": [
     {
@@ -1000,8 +1001,8 @@
     "imuneMisericordia": 1,
     "reducaoDeDano": 30
    },
-   "estado": "parcial",
-   "valem": 6,
+   "estado": "efeito",
+   "valem": 7,
    "total": 7,
    "statsPoe": [
     {
@@ -1103,7 +1104,8 @@
     "danoPct": 20,
     "imuneAtordoamento": 1,
     "semLentidao": 1,
-    "semLentidaoMovimento": 1
+    "semLentidaoMovimento": 1,
+    "areaPct": 30
    },
    "mecanicas": [
     {
@@ -1113,8 +1115,8 @@
      "porSegundo": 2
     }
    ],
-   "estado": "parcial",
-   "valem": 5,
+   "estado": "aproximado",
+   "valem": 7,
    "total": 7,
    "statsPoe": [
     {
@@ -3273,10 +3275,13 @@
    "pesoMagico": 1000,
    "pesoRaro": 0,
    "stats": {
-    "vidaPct": 30
+    "vidaPct": 30,
+    "areaPct": 20,
+    "packVidaPct": 40,
+    "packEscalaPct": 10
    },
-   "estado": "parcial",
-   "valem": 1,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -3703,7 +3708,7 @@
     "precisaoPct": 100
    },
    "estado": "parcial",
-   "valem": 6,
+   "valem": 7,
    "total": 8,
    "statsPoe": [
     {
@@ -3763,10 +3768,11 @@
    "pesoMagico": 0,
    "pesoRaro": 0,
    "stats": {
-    "danoProjetilPct": 30
+    "danoProjetilPct": 30,
+    "evitarProjeteisPct": 30
    },
    "estado": "parcial",
-   "valem": 1,
+   "valem": 2,
    "total": 3,
    "statsPoe": [
     {
@@ -5107,9 +5113,11 @@
    "nivel": 9,
    "pesoMagico": 3000,
    "pesoRaro": 3000,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "areaPct": 80
+   },
+   "estado": "efeito",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -5175,10 +5183,12 @@
    "pesoRaro": 0,
    "stats": {
     "velocidadeDeAtaquePct": 200,
-    "velocidadeDeConjuracaoPct": 200
+    "velocidadeDeConjuracaoPct": 200,
+    "repeticoes": 2,
+    "pausaMs": 1500
    },
-   "estado": "parcial",
-   "valem": 2,
+   "estado": "efeito",
+   "valem": 4,
    "total": 4,
    "statsPoe": [
     {
@@ -6985,8 +6995,8 @@
     "velocidadeDeConjuracaoPct": 75,
     "reducaoDeDano": 30
    },
-   "estado": "parcial",
-   "valem": 5,
+   "estado": "efeito",
+   "valem": 6,
    "total": 6,
    "statsPoe": [
     {
@@ -7577,9 +7587,12 @@
    "nivel": 19,
    "pesoMagico": 1000,
    "pesoRaro": 0,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "packVidaPct": 40,
+    "packEscalaPct": 10
+   },
+   "estado": "efeito",
+   "valem": 2,
    "total": 2,
    "statsPoe": [
     {

@@ -173,6 +173,20 @@ export function aoMorrer(estado, hunt, personagem, m, eventos) {
     } else if (mec.efeito === 'gerar') gerar(hunt, m, mec, eventos);
     else if (mec.efeito === 'solo') criarSolo(hunt, m, mec, agora, eventos);
   }
+  // (09/11, lote 4 dos modificadores de monstro) a UNIÃO DAS ALMAS: ao morrer, os do MESMO bando (o mesmo spawn — `spawnId`; sem ele, os de perto) ganham
+  // "+X% de Vida Máxima" (a vida que falta continua faltando) e "+X% de Tamanho" (o desenho — `iluminacao.tamanhoDoMonstro`)
+  if (m.packVidaPct > 0 || m.packEscalaPct > 0) {
+    for (const o of hunt.monstros) {
+      if (o === m || o.hp <= 0 || o.dummy || (m.spawnId != null ? o.spawnId !== m.spawnId : distancia(o, m) > 6)) continue;
+      if (m.packVidaPct > 0) {
+        const novo = Math.round((o.maxHp ?? o.hp) * (1 + m.packVidaPct / 100));
+        o.hp += novo - (o.maxHp ?? o.hp);
+        o.maxHp = novo;
+      }
+      if (m.packEscalaPct > 0) o.escalaExtraPct = (o.escalaExtraPct ?? 0) + m.packEscalaPct;
+      eventos.push({ t: 'fx', id: 14, uid: o.uid, x: o.x, y: o.y });
+    }
+  }
   for (const o of hunt.monstros) {
     if (o === m || o.hp <= 0) continue;
     for (const mec of Raridade.mecanicasDe(o)) {

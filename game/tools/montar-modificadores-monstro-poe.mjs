@@ -71,6 +71,14 @@ const MAPA = {
   'enemy phys reduction % penalty vs hit': { f: (t, v) => (t.sobrecargaFisicaPct += v) },
   // ("Dano de Caos sofrido não ultrapassa o Escudo de Energia": no jogo o Escudo do monstro já fica por cima de TODO dano, o Caos também — `skills/estados`, `esPoe`)
   'chaos damage does not bypass energy shield': { f: () => {} },
+  // (09/11, lote 4) o TAMANHO (o desenho — `iluminacao.tamanhoDoMonstro`, que lê o stat do PoE), a ÁREA das magias, Evitar Projéteis, as Ações Triplas e a União das Almas
+  'base actor scale +%': { f: () => {} },
+  'base skill area of effect +%': { f: (t, v) => (t.areaPct += v) },
+  'base avoid projectiles % chance': { f: (t, v) => (t.evitarProjeteisPct += v) },
+  'skill repeat count': { f: (t, v) => (t.repeticoes += v) },
+  'interrupt for X ms after skill use': { f: (t, v) => (t.pausaMs += v) },
+  'maximum life +% granted to pack members on death': { f: (t, v) => (t.packVidaPct += v) },
+  'actor scale +% granted to pack members on death': { f: (t, v) => (t.packEscalaPct += v) },
   'attack speed +%': { f: (t, v) => (t.velocidadeDeAtaquePct += v) },
   'base cast speed +%': { f: (t, v) => (t.velocidadeDeConjuracaoPct += v) },
   'attack and cast speed +%': { f: (t, v) => { t.velocidadeDeAtaquePct += v; t.velocidadeDeConjuracaoPct += v; } },
@@ -150,7 +158,7 @@ function mecanicasDosDots(dots) {
     .map(([el, d]) => ({ gatilho: 'aoAtacar', efeito: 'debuff', elemento: el, chance: BASE_DO_DOT[el].chance, danoPctDoGolpe: Math.round(BASE_DO_DOT[el].pct * (1 + d.mais / 100)), duracaoMs: Math.round((BASE_DO_DOT[el].ms * (1 + d.duracao / 100)) / 1000) * 1000 }));
 }
 
-const vazio = () => ({ vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, velocidadeDeConjuracaoPct: 0, danoProjetilPct: 0, danoExtraAleatorioPct: 0, naoCaosComoCaosPct: 0, critChancePct: 0, sempreCritico: 0, dotFisicoSofridoPct: 0, sempreEletriza: 0, todoDanoResfria: 0, todoDanoEletriza: 0, efeitoResfriamentoPct: 0, efeitoEletrizacaoPct: 0, duracaoEletrizacaoPct: 0, chanceCongelar: 0, todoDanoCongela: 0, duracaoCongelamentoPct: 0, bloqueioMagia: 0, danoBloqueadoPct: 0, limiarAtordoamentoPct: 0, imuneAtordoamento: 0, sempreAtordoa: 0, dobrarAtordoamentoPct: 0, limiarInimigoMenosPct: 0, imuneMisericordia: 0, danoExtraCriticoRedPct: 0, semLentidao: 0, semLentidaoMovimento: 0, sobrecargaFisicaPct: 0, danoTipoPct: {}, danoExtraPct: {}, conversaoPct: {}, afeccaoEfeitoPct: {}, afeccaoDuracaoPct: {}, resistDot: {}, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0, esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, resist: {}, _dots: {} });
+const vazio = () => ({ vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, velocidadeDeConjuracaoPct: 0, danoProjetilPct: 0, danoExtraAleatorioPct: 0, naoCaosComoCaosPct: 0, critChancePct: 0, sempreCritico: 0, dotFisicoSofridoPct: 0, sempreEletriza: 0, todoDanoResfria: 0, todoDanoEletriza: 0, efeitoResfriamentoPct: 0, efeitoEletrizacaoPct: 0, duracaoEletrizacaoPct: 0, chanceCongelar: 0, todoDanoCongela: 0, duracaoCongelamentoPct: 0, bloqueioMagia: 0, danoBloqueadoPct: 0, limiarAtordoamentoPct: 0, imuneAtordoamento: 0, sempreAtordoa: 0, dobrarAtordoamentoPct: 0, limiarInimigoMenosPct: 0, imuneMisericordia: 0, danoExtraCriticoRedPct: 0, semLentidao: 0, semLentidaoMovimento: 0, sobrecargaFisicaPct: 0, areaPct: 0, evitarProjeteisPct: 0, repeticoes: 0, pausaMs: 0, packVidaPct: 0, packEscalaPct: 0, danoTipoPct: {}, danoExtraPct: {}, conversaoPct: {}, afeccaoEfeitoPct: {}, afeccaoDuracaoPct: {}, resistDot: {}, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0, esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, resist: {}, _dots: {} });
 const POR_ELEMENTO = ['resist', 'danoTipoPct', 'danoExtraPct', 'conversaoPct', 'afeccaoEfeitoPct', 'afeccaoDuracaoPct', 'resistDot'];
 const porEl = (t, campo, el, v) => (t[campo][el] = (t[campo][el] ?? 0) + v);
 const limpar = (t) => Object.fromEntries(Object.entries(t).filter(([k]) => k !== '_dots' && k !== '_acerto').filter(([k, v]) => (POR_ELEMENTO.includes(k) ? Object.keys(v).length : v)).map(([k, v]) => [k, POR_ELEMENTO.includes(k) ? v : Math.round(v * 100) / 100]));

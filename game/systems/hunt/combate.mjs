@@ -264,7 +264,8 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segun
   // A ficha do golpe básico: + crítico de auto-ataque da proficiência.
   const ficha = Ficha.combate(estado);
   // Accuracy: o tiro pode errar (a mana já foi gasta, como um golpe no ar).
-  if (Defesa.errou(ficha, hunt, alvo)) {
+  // (+ 09/11, lote 4: o monstro que Evita Projéteis — o tiro da varinha é um projétil)
+  if (Defesa.errou(ficha, hunt, alvo) || AtributosDoMob.evitouProjetil(alvo)) {
     eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', esquiva: true, errou: true });
     return true;
   }
@@ -1669,7 +1670,7 @@ export function golpesDosMonstros(estado, hunt, personagem) {
     // O modificador de velocidade de ataque (`velocidadeDeAtaque`) encurta o intervalo do golpe.
     // (+ o buff de velocidade de ataque das mecânicas: Enfurecido, Vingativo — `mobs/buffs.mjs`.)
     // O intervalo entre golpes (`mobs/atributos.mjs`): o base × a lentidão ÷ a velocidade (modificador × buffs), com limites configuráveis.
-    bicho.proximoGolpe = agora + AtributosDoMob.intervaloDoGolpe(bicho, { base: bicho.boss?.melee?.intervaloMs ?? ATAQUE_DO_MONSTRO_MS, lentidao: Estados.fatorDeLentidao(bicho, agora) * GemasGAC.fatorDeAcao(bicho, agora), buffPct: BuffsDeMob.soma(bicho, agora, 'velocidadeDeAtaquePct') });
+    bicho.proximoGolpe = agora + AtributosDoMob.intervaloDoGolpe(bicho, { base: bicho.boss?.melee?.intervaloMs ?? ATAQUE_DO_MONSTRO_MS, lentidao: Estados.fatorDeLentidao(bicho, agora) * GemasGAC.fatorDeAcao(bicho, agora), buffPct: BuffsDeMob.soma(bicho, agora, 'velocidadeDeAtaquePct'), contar: true });
     contraAtaque(estado, hunt, personagem, bicho, eventos);
   }
   return eventos;
@@ -1897,7 +1898,8 @@ function golpeDoRound(estado, personagem) {
         // (lote G20b: o golpe de longe é um projétil de ataque seu, acerte ou erre — a Balista Focada ataca depois dele, `cacadas.tiqueDosLacaios`)
         if (!segundo && categoriaDaArma(arma) === 'distancia') hunt.poeProjetilDeAtaqueEm = hunt.clock ?? 0;
         // Accuracy: o golpe pode errar o bicho (a perícia treina igual, como no Tibia).
-        if (Defesa.errou(ficha, hunt, alvo)) {
+        // (+ 09/11, lote 4: a flecha do arco — um projétil — no monstro que Evita Projéteis)
+        if (Defesa.errou(ficha, hunt, alvo) || (categoriaDaArma(arma) === 'distancia' && AtributosDoMob.evitouProjetil(alvo))) {
           Treino.treinar(estado, pericia);
           if (categoriaDaArma(arma) === 'distancia' && !tiroJaSaiu) eventos.push({ t: 'shot', id: tiroDaArma(estado, arma), x: hunt.pos.x, y: hunt.pos.y, tx: alvo.x, ty: alvo.y });
           eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', esquiva: true, errou: true });

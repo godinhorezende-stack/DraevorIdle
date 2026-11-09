@@ -157,7 +157,8 @@ export function golpeCorpoACorpo(bicho) {
 
 /** As casas que a magia pega (para acertar o jogador e para desenhar o efeito) — geometria de `engine/areas.mjs`. */
 function casasDa(a, bicho, alvo) {
-  if (a.forma === 'area') return Areas.circulo(a.noAlvo ? alvo : bicho, a.raio);
+  // (09/11, lote 4 dos modificadores de monstro: "Área de Efeito aumentada em X%" do monstro — `areaPct`: a área × (1 + X%), o raio × a raiz)
+  if (a.forma === 'area') return Areas.circulo(a.noAlvo ? alvo : bicho, bicho?.areaPct ? a.raio * Math.sqrt(Math.max(0, 1 + bicho.areaPct / 100)) : a.raio);
   // Sai para o lado em que o jogador está (o boss vira para ele), e abre em leque quando tem `espalha` (as ondas).
   if (a.forma === 'feixe') return Areas.feixe(bicho, alvo, a.comprimento, !!a.espalha);
   return [{ x: alvo.x, y: alvo.y }];
@@ -603,7 +604,8 @@ export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, t
     const eletrizado = ModsPoe.ativo(bicho.estados?.chocado, agora) ? Math.max(0.1, 1 - ModsPoe.valor(ficha, 'eletrizados_conjuracao_lenta') / 100) : 1;
     // (PoE, o Sabotador: "Inimigos Próximos têm Recuperação da Recarga reduzido em X%" — a aura põe `recargaMenos`, `mods-poe.aurasProximas`.)
     const recarga = ModsPoe.ativo(bicho.estados?.recargaMenos, agora) ? Math.max(0.1, 1 - bicho.estados.recargaMenos.pct / 100) : 1;
-    bicho.proximoPoder[i] = agora + a.intervalo / Math.max(0.1, (Number(bicho.velocidadeDeConjuracao) || 1) * eletrizado * recarga);
+    // (+ 09/11, lote 4: as Ações Triplas — a magia repete e depois o monstro pausa, `AtributosDoMob.pausaDaRepeticao`)
+    bicho.proximoPoder[i] = agora + a.intervalo / Math.max(0.1, (Number(bicho.velocidadeDeConjuracao) || 1) * eletrizado * recarga) + AtributosDoMob.pausaDaRepeticao(bicho, '_repMagia');
     if (Math.random() * 100 >= a.chance) return;
     // (lote 41, P019) o lacaio mais perto do bicho que você leva a magia de dano
     if (noLacaio && noLacaio.hp > 0 && (a.min > 0 || a.max > 0) && alcanca(a, bicho, noLacaio)) {

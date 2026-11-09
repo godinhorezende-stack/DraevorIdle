@@ -19,6 +19,7 @@ const Jogo = await import('../systems/itens-poe/jogo.mjs');
 const Gerar = await import('../systems/itens-poe/gerar.mjs');
 const GS = await import('../systems/skills/gemas.mjs');
 const GP = await import('../systems/itens-poe/gemas-poe.mjs');
+const { criarMonstro } = await import('../systems/hunt/monstros.mjs');
 const SP = await import('../systems/itens-poe/suportes-poe.mjs');
 const Acoes = await import('../systems/acoes.mjs');
 const Cacadas = await import('../systems/cacadas.mjs');
@@ -83,6 +84,9 @@ function cacar(e, slug, { segundos = 20, antes = null } = {}) {
   while (t < comeco + segundos * 1000) {
     const h = e.hunt;
     h.monstros = h.monstros.slice(0, 1);
+    // (09/11, aval do dono) um Comum da mesma espécie, sem modificadores, e sem o Resfriamento do Gelo dele em você (a regra do PoE) — mede só o ritmo da gema
+    if (!h.monstros[0].comumDoTeste) h.monstros[0] = Object.assign(criarMonstro({ key: h.monstros[0].key, x: h.pos.x + 1, y: h.pos.y }, null), { comumDoTeste: true });
+    if (h.controle) delete h.controle.lento;
     Object.assign(h.monstros[0], { hp: 1e12, maxHp: 1e12, x: h.pos.x + 1, y: h.pos.y });
     h.alvo = h.monstros[0].uid;
     Object.assign(e, { hp: e.maxHp, mana: 1e6, maxMana: 1e6 });
@@ -214,6 +218,9 @@ function porSegundo(e, slug = null, segundos = 20) {
   while (t < comeco + segundos * 1000) {
     const h = e.hunt;
     h.monstros = h.monstros.slice(0, 1);
+    // (09/11, aval do dono) um Comum da mesma espécie, sem modificadores, e sem o Resfriamento do Gelo dele em você (a regra do PoE) — mede só o ritmo da gema
+    if (!h.monstros[0].comumDoTeste) h.monstros[0] = Object.assign(criarMonstro({ key: h.monstros[0].key, x: h.pos.x + 1, y: h.pos.y }, null), { comumDoTeste: true });
+    if (h.controle) delete h.controle.lento;
     Object.assign(h.monstros[0], { hp: 1e12, maxHp: 1e12, x: h.pos.x + 1, y: h.pos.y });
     h.alvo = h.monstros[0].uid;
     Object.assign(e, { hp: e.maxHp, mana: 1e6, maxMana: 1e6 });

@@ -7656,6 +7656,11 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
         registrarGolpe(() => ({ origem: 'gema-errou', habilidade: entry.id, alvo: bicho.name, errou: true, precisao: fichaNoAlvo.accuracy ?? 0 }));
         return;
       }
+      // (09/11, lote 4) o monstro que Evita Projéteis (o Fragmentador): o projétil que ele evitou erra
+      if (deProjetil && !entry.overTime && AtributosDoMob.evitouProjetil(bicho)) {
+        eventos.push({ t: 'block', uid: bicho.uid, x: bicho.x, y: bicho.y, color: '#999999', esquiva: true, errou: true });
+        return;
+      }
       if (rolaPrecisao) { acertadosNoUso.add(bicho); acertadosNoPasse.add(bicho); }
       // O golpe da gema do PoE com MAIS DE UM elemento (ou de outro elemento que o da skill): cada parte com o "aumentado", a marca de
       // vulnerável e a resistência do elemento dela; o golpe leva o elemento da maior parte (a cor, o registro, as mecânicas do mob).
