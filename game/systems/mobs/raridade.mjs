@@ -134,11 +134,13 @@ export const avisosDoSpawn = (s) => {
 /** A soma dos stats dos modificadores. */
 export function statsDos(ids) {
   const t = { vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0,
-    esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, danoExtraAleatorioPct: 0, naoCaosComoCaosPct: 0, velocidadeDeConjuracaoPct: 0, danoProjetilPct: 0, critChancePct: 0, sempreCritico: 0,
-    resist: {}, danoTipoPct: {}, danoExtraPct: {}, conversaoPct: {} };
+    esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, danoExtraAleatorioPct: 0, naoCaosComoCaosPct: 0, velocidadeDeConjuracaoPct: 0, dotFisicoSofridoPct: 0, sempreEletriza: 0, todoDanoResfria: 0, todoDanoEletriza: 0, efeitoResfriamentoPct: 0, efeitoEletrizacaoPct: 0, duracaoEletrizacaoPct: 0, chanceCongelar: 0, todoDanoCongela: 0, duracaoCongelamentoPct: 0, danoProjetilPct: 0, critChancePct: 0, sempreCritico: 0,
+    resist: {}, danoTipoPct: {}, danoExtraPct: {}, conversaoPct: {}, afeccaoEfeitoPct: {}, afeccaoDuracaoPct: {}, resistDot: {} };
   // (09/11, lote 1 dos modificadores de monstro) os campos POR ELEMENTO: o "+X% de Dano de Fogo" (`danoTipoPct`), o "Ganha X% do Dano Físico como
   // Dano Extra de Fogo" (`danoExtraPct`) e o "X% do Dano Físico Convertido em Fogo" (`conversaoPct`) — somados como as resistências
-  const POR_ELEMENTO = ['resist', 'danoTipoPct', 'danoExtraPct', 'conversaoPct'];
+  // (lote 2) + as afecções EM SI (`afeccaoEfeitoPct`/`afeccaoDuracaoPct`: eletrizacao, resfriamento, causticacao / congelamento, incendio, definhar) e a
+  // resistência a mais contra o dano contínuo (`resistDot`)
+  const POR_ELEMENTO = ['resist', 'danoTipoPct', 'danoExtraPct', 'conversaoPct', 'afeccaoEfeitoPct', 'afeccaoDuracaoPct', 'resistDot'];
   for (const id of ids ?? []) {
     const s = MODIFICADORES[id]?.stats ?? {};
     for (const k of Object.keys(t)) if (!POR_ELEMENTO.includes(k) && Number.isFinite(s[k])) t[k] += s[k];
@@ -224,6 +226,18 @@ export function aplicar(m, { raridade = 'normal', modificadores = [], sortear = 
   if (st.danoExtraAleatorioPct) m.danoExtraAleatorioPct = st.danoExtraAleatorioPct;
   if (st.naoCaosComoCaosPct) m.naoCaosComoCaosPct = st.naoCaosComoCaosPct;
   if (st.danoProjetilPct) m.danoProjetilPct = st.danoProjetilPct;
+  // (09/11, lote 2) as afecções: as que o monstro SOFRE (efeito e duração em si — `itens-poe/afeccoes.aoAcertar`, `mods-poe.porNoAlvo`), a resistência
+  // contra o dano contínuo e o Físico contínuo sofrido (`hunt/resistencia.resistido`, `dot: true`), e as que ele CAUSA em você (`mobs/mecanicas.aoAcertarJogador`)
+  if (Object.keys(st.afeccaoEfeitoPct).length) m.afeccaoEfeitoPct = st.afeccaoEfeitoPct;
+  if (Object.keys(st.afeccaoDuracaoPct).length) m.afeccaoDuracaoPct = st.afeccaoDuracaoPct;
+  if (Object.keys(st.resistDot).length) m.resistDot = st.resistDot;
+  if (st.dotFisicoSofridoPct) m.dotFisicoSofridoPct = st.dotFisicoSofridoPct;
+  if (st.sempreEletriza) m.sempreEletriza = true;
+  if (st.todoDanoResfria) m.todoDanoResfria = true;
+  if (st.todoDanoEletriza) m.todoDanoEletriza = true;
+  if (st.efeitoResfriamentoPct) m.efeitoResfriamentoPct = st.efeitoResfriamentoPct;
+  for (const k of ['efeitoEletrizacaoPct', 'duracaoEletrizacaoPct', 'chanceCongelar', 'duracaoCongelamentoPct']) if (st[k]) m[k] = st[k];
+  if (st.todoDanoCongela) m.todoDanoCongela = true;
   if (st.critMultiplicador) m.critMultiplicador = st.critMultiplicador;
   if (Object.keys(st.resist).length) m.resist = st.resist;
   if (r.elite) m.elite = true;

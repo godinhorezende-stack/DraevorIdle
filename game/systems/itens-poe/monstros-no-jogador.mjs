@@ -120,15 +120,16 @@ export function eletrizarPeloSolo(hunt, ficha, pct, agora = hunt?.clock ?? 0) {
   return pct;
 }
 /** A ELETRIZAÇÃO do crítico do monstro (`dano`: o de Raio que o acerto causou; `vidaMax`: o limiar). Devolve o % posto (0: nada). */
-export function eletrizar(hunt, ficha, dano, vidaMax, { agora = hunt?.clock ?? 0, rng = Math.random } = {}) {
+export function eletrizar(hunt, ficha, dano, vidaMax, { agora = hunt?.clock ?? 0, rng = Math.random, efeitoPct = 0, duracaoPct = 0 } = {}) {
   const E = NUMEROS.eletrizacao;
   if (!ligado() || !hunt || !(dano > 0) || !(vidaMax > 0)) return 0;
-  const pct = Math.min(E.maximoPct, 50 * (dano / vidaMax) ** 0.4) * Math.max(0, 1 + v(ficha, 'efeito_eletrizacao_proprio') / 100);
+  // (09/11, lote 2 dos modificadores de monstro: `efeitoPct`/`duracaoPct` — o "Efeito/Duração da Eletrização aumentado" do monstro que eletriza, o Eletrocutante)
+  const pct = Math.min(E.maximoPct, 50 * (dano / vidaMax) ** 0.4 * Math.max(0, 1 + efeitoPct / 100)) * Math.max(0, 1 + v(ficha, 'efeito_eletrizacao_proprio') / 100);
   if (pct < E.minimoPct || evitou(hunt, ficha, 'eletrizacao', { elemental: true, rng, agora })) return 0;
   const d = registro(hunt);
   const antes = ativo(d.eletrizado, agora) ? d.eletrizado : null;
   const final = Math.round(Math.max(antes?.pct ?? 0, pct) * 10) / 10;
-  d.eletrizado = { ate: Math.max(antes?.ate ?? 0, agora + Math.round(E.duracaoMs * fatorDaDuracao(ficha, 'eletrizacao'))), pct: final };
+  d.eletrizado = { ate: Math.max(antes?.ate ?? 0, agora + Math.round(E.duracaoMs * Math.max(0, 1 + duracaoPct / 100) * fatorDaDuracao(ficha, 'eletrizacao'))), pct: final };
   imunidadeApos(hunt, ficha, 'eletrizacao', agora);
   return final;
 }

@@ -384,7 +384,8 @@ export function aoAcertarJogador(estado, hunt, personagem, m, { dano = 0, bruto 
   const agora = relogio(hunt);
   const mecs = m.mods?.length ? Raridade.mecanicasDe(m).filter((x) => x.gatilho === 'aoAtacar' && DO_ACERTO.has(x.efeito)) : [];
   const efeitos = [...mecs, ...doMapa(m)];
-  if (!efeitos.length && !critico && !hunt.debuffsDoJogador?.empalamentos?.length) return;
+  // (lote 2: + o Resfriamento do Gelo, o "Sempre Eletriza" e o "Todo o Dano pode Resfriar" — valem em todo acerto, ver o fim)
+  if (!efeitos.length && !critico && !hunt.debuffsDoJogador?.empalamentos?.length && !((brutas.ice ?? 0) > 0) && !m.sempreEletriza && !m.todoDanoResfria && !(m.chanceCongelar > 0) && !(Number(Ficha.combate(estado).afPoe?.todo_dano_resfria_voce) > 0)) return;
   const ficha = Ficha.combate(estado);
   const naTela = (nome, extra = {}) => eventos.push({ t: 'estado', uid: 'player', quem: personagem?.nome, x: hunt.pos?.x, y: hunt.pos?.y, estado: nome, de: m.name, ...extra });
   const origem = { fonte: 'mob', mob: m.name, uid: m.uid, key: m.key };
@@ -438,14 +439,35 @@ export function aoAcertarJogador(estado, hunt, personagem, m, { dano = 0, bruto 
     const peloEscudo = Number(ficha.afPoe?.congelamento_pelo_escudo_pct) || 0;
     const msGelo = NoJogador.msDoCongelamento(partes.ice ?? 0, peloEscudo > 0 ? Math.max(1, ((Number(ficha.energyShield) || 0) * peloEscudo) / 100) : vidaMax);
     if (msGelo > 0 && pega() && Controle.congelar(hunt, ficha, msGelo, agora, rng)) naTela('congelado');
-    // (07/11, lote 16 das inertes, o Chamado do Vazio: "Todo o Dano Sofrido de Acertos pode te Resfriar" — o Resfriamento do dano todo do acerto, como o Incêndio do Mokou)
-    if (Number(ficha.afPoe?.todo_dano_resfria_voce) > 0) {
-      const pctFrio = NoJogador.pctDoResfriamento(Object.values(brutas).reduce((t, x) => t + (Number(x) || 0), 0), peloEscudo > 0 ? Math.max(1, ((Number(ficha.energyShield) || 0) * peloEscudo) / 100) : vidaMax);
-      if (pctFrio > 0 && pega() && Controle.resfriar(hunt, ficha, pctFrio, agora, rng, N.resfriamento.duracaoMs)) naTela('enregelado', { pct: pctFrio });
-    }
-    if ((partes.energy ?? 0) > 0 && pega()) {
+    if ((partes.energy ?? 0) > 0 && pega() && !m.sempreEletriza) {
       const eletrizou = NoJogador.eletrizar(hunt, ficha, partes.energy ?? 0, vidaMax, { agora, rng });
       if (eletrizou > 0) { naTela('eletrizado', { pct: eletrizou }); mudou = true; }
+    }
+  }
+  // (09/11, lote 2 dos modificadores de monstro) o RESFRIAMENTO do PoE: todo acerto com Gelo te Resfria (inerente, sem chance nem crítico), pela força do
+  // Gelo sobre o limiar; com "Todo o Dano pode Resfriar" do monstro (o Prismático) ou o "Todo o Dano Sofrido de Acertos pode te Resfriar" (o Chamado do Vazio),
+  // o dano todo do acerto; × o "Efeito do Resfriamento aumentado" do monstro (o Andarilho Gélido)
+  if (estado.hp > 0 && !Vinculos.noFeixe(hunt, m)) {
+    const N = NoJogador.NUMEROS;
+    const peloEscudo = Number(ficha.afPoe?.congelamento_pelo_escudo_pct) || 0;
+    const limiar = peloEscudo > 0 ? Math.max(1, ((Number(ficha.energyShield) || 0) * peloEscudo) / 100) : Math.max(1, estado.maxHp ?? 0);
+    const todoResfria = m.todoDanoResfria || Number(ficha.afPoe?.todo_dano_resfria_voce) > 0;
+    const frio = todoResfria ? Object.values(brutas).reduce((t, x) => t + (Number(x) || 0), 0) : brutas.ice ?? 0;
+    const pctFrio = Math.min(N.resfriamento.maximoPct, Math.round(NoJogador.pctDoResfriamento(frio, limiar) * Math.max(0, 1 + (Number(m.efeitoResfriamentoPct) || 0) / 100) * 10) / 10);
+    if (pctFrio > 0 && Controle.resfriar(hunt, ficha, pctFrio, agora, rng, N.resfriamento.duracaoMs)) naTela('enregelado', { pct: pctFrio });
+    // "Sempre Eletriza" (o Prismático): todo acerto com Raio te Eletriza — com "Todo o Dano pode Eletrizar", o dano todo
+    // (o Eletrocutante: + o "Efeito/Duração da Eletrização em Inimigos aumentado" dele)
+    if (m.sempreEletriza) {
+      const raio = m.todoDanoEletriza ? Object.values(partes).reduce((t, x) => t + (Number(x) || 0), 0) : partes.energy ?? 0;
+      const eletrizou = raio > 0 ? NoJogador.eletrizar(hunt, ficha, raio, Math.max(1, estado.maxHp ?? 0), { agora, rng, efeitoPct: Number(m.efeitoEletrizacaoPct) || 0, duracaoPct: Number(m.duracaoEletrizacaoPct) || 0 }) : 0;
+      if (eletrizou > 0) { naTela('eletrizado', { pct: eletrizou }); mudou = true; }
+    }
+    // "X% de chance de Congelar" (o Congelamento Permanente): o Congelamento pelo Gelo do acerto — com "Todo Dano pode Congelar", o dano todo —, × a
+    // "Duração do Congelamento em Inimigos aumentada"
+    if (m.chanceCongelar > 0 && rng() * 100 < m.chanceCongelar) {
+      const gelo = m.todoDanoCongela ? Object.values(partes).reduce((t, x) => t + (Number(x) || 0), 0) : partes.ice ?? 0;
+      const ms = Math.round(NoJogador.msDoCongelamento(gelo, limiar) * Math.max(0, 1 + (Number(m.duracaoCongelamentoPct) || 0) / 100));
+      if (ms > 0 && Controle.congelar(hunt, ficha, ms, agora, rng)) naTela('congelado');
     }
   }
   if (mudou) Ficha.invalidar(estado);

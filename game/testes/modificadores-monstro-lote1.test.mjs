@@ -77,7 +77,8 @@ test('o crítico do PoE: "+100% de Chance de Acerto Crítico" dobra a base da es
 test('os modificadores do arquivo: o Manipulador do Fogo com o dano de Fogo, o extra e a conversão por elemento; o Atirador e o Assassino exatos; a raridade aplica os campos', () => {
   const d = JSON.parse(readFileSync(new URL('../gamedata/itens-poe/modificadores-monstro.json', import.meta.url), 'utf8'));
   const por = (id) => d.mods.find((m) => m.id === id);
-  assert.deepEqual(por('MonsterArchnemesisFlameTouched').stats, { danoTipoPct: { fire: 50 }, danoExtraPct: { fire: 50 }, conversaoPct: { fire: 25 }, resist: { fire: 50 } });
+  // (+ o lote 2: o "−50% de Efeito de Chamuscar em si" — `afeccaoEfeitoPct.causticacao`)
+  assert.deepEqual(por('MonsterArchnemesisFlameTouched').stats, { danoTipoPct: { fire: 50 }, danoExtraPct: { fire: 50 }, conversaoPct: { fire: 25 }, afeccaoEfeitoPct: { causticacao: -50 }, resist: { fire: 50 } });
   assert.equal(por('MonsterArchnemesisDeadeye').estado, 'efeito');
   assert.equal(por('MonsterArchnemesisDeadeye').stats.critChancePct, 100);
   // a raridade põe os campos no monstro (o mod registrado à mão, como o catálogo do PoE faz)

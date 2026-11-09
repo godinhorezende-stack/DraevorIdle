@@ -866,7 +866,9 @@ export const CORROSAO = Object.freeze({ armadura: 5000, evasao: 1000 });
 const naoFoge = (alvo) => !!(alvo?.boss || alvo?.chefe || alvo?.isBoss || /raro|elite|unico|único|boss/i.test(String(alvo?.raridade ?? '')));
 const SEGUNDOS_PADRAO = 4;
 /** Põe um estado do PoE (`cego`, `cinzas`, `definhado`…) no alvo até `ate` — o mesmo das auras e dos eventos (o dos lacaios usa). */
-export const porNoAlvo = (alvo, nome, ate, agora) => (nome === 'fugindo' && naoFoge(alvo) ? undefined : ESTADOS_NO_ALVO[nome]?.((alvo.estados ??= {}), ate, agora));
+// (09/11, lote 2 dos modificadores de monstro) "Duração do Definhamento em si reduzida" do monstro (`afeccaoDuracaoPct.definhar`)
+const ateNoAlvo = (alvo, nome, ate, agora) => (nome === 'definhado' && alvo?.afeccaoDuracaoPct?.definhar ? agora + Math.max(0, Math.round((ate - agora) * Math.max(0, 1 + alvo.afeccaoDuracaoPct.definhar / 100))) : ate);
+export const porNoAlvo = (alvo, nome, ate, agora) => (nome === 'fugindo' && naoFoge(alvo) ? undefined : ESTADOS_NO_ALVO[nome]?.((alvo.estados ??= {}), ateNoAlvo(alvo, nome, ate, agora), agora));
 /**
  * (11/10) Põe o estado com os mods do personagem: o DEFINHAMENTO — "Definhamentos infligidos por você expiram X% mais lentamente" (a duração ÷
  * (1 − X%)) e "X% de chance de, quando você infligir Definhamento, infligir até um máximo de 15 Debuffs de Definhamento ao invés".
@@ -887,7 +889,7 @@ function porComMods(fazer, nome, e, ate, agora, ficha, rng) {
   if (menos > 0) e.resMenosDefinhado = Math.max(e.resMenosDefinhado ?? 0, menos);
 }
 /** (lote A1) Põe o estado no alvo com os mods do personagem (`porComMods`) — o Definhar do Passo Definhante (`acoes.passoDefinhante`). */
-export const porNoAlvoComMods = (alvo, nome, ate, agora, ficha, rng = Math.random) => (ESTADOS_NO_ALVO[nome] ? porComMods(ESTADOS_NO_ALVO[nome], nome, (alvo.estados ??= {}), ate, agora, ficha, rng) : undefined);
+export const porNoAlvoComMods = (alvo, nome, ate, agora, ficha, rng = Math.random) => (ESTADOS_NO_ALVO[nome] ? porComMods(ESTADOS_NO_ALVO[nome], nome, (alvo.estados ??= {}), ateNoAlvo(alvo, nome, ate, agora), agora, ficha, rng) : undefined);
 // (lote 31, P044) O dano da EXPLOSÃO em cada vizinho, pela defesa dele (`hunt/resistencia.resistido`): quem registra é a caçada (o ciclo de imports).
 // eslint-disable-next-line no-var
 var danoDaExplosao;

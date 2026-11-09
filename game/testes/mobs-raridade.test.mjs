@@ -27,7 +27,11 @@ test('dados: toda raridade tem cor e multiplicadores; todo modificador tem nome 
     'esPct', 'esAtrasoMenosPct', 'aProvaDeMaldicoes', 'refleteFeiticos', 'semDreno',
     // (09/11, lote 1 dos modificadores de monstro — aval do dono: "pode acrescentar") o dano por tipo, a conversão, o extra do Físico, o elemento
     // aleatório, o não-Caos como Caos, o de Projéteis, a velocidade de conjuração e o crítico do PoE
-    'danoTipoPct', 'conversaoPct', 'danoExtraPct', 'danoExtraAleatorioPct', 'naoCaosComoCaosPct', 'danoProjetilPct', 'velocidadeDeConjuracaoPct', 'critChancePct', 'sempreCritico']);
+    'danoTipoPct', 'conversaoPct', 'danoExtraPct', 'danoExtraAleatorioPct', 'naoCaosComoCaosPct', 'danoProjetilPct', 'velocidadeDeConjuracaoPct', 'critChancePct', 'sempreCritico',
+    // (lote 2 — aval do dono para este e os próximos lotes: "sempre só somando os campos novos") as afecções em si, a resistência contra o dano contínuo,
+    // o Físico contínuo sofrido e as afecções que o monstro causa em você
+    'afeccaoEfeitoPct', 'afeccaoDuracaoPct', 'resistDot', 'dotFisicoSofridoPct', 'sempreEletriza', 'todoDanoResfria', 'todoDanoEletriza', 'efeitoResfriamentoPct',
+    'efeitoEletrizacaoPct', 'duracaoEletrizacaoPct', 'chanceCongelar', 'todoDanoCongela', 'duracaoCongelamentoPct']);
   const GATILHOS = new Set(['aoMorrer', 'vidaBaixa', 'aoReceberDano', 'aoAtacar', 'aliadoMorreu', 'aura']);
   for (const [id, m] of Object.entries(Raridade.MODIFICADORES)) {
     assert.ok(m.nome, id);

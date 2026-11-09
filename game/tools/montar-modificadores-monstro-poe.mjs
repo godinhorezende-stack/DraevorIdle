@@ -32,6 +32,29 @@ const MAPA = {
   'base physical damage % to convert to cold': { f: (t, v) => porEl(t, 'conversaoPct', 'ice', v) },
   'base physical damage % to convert to lightning': { f: (t, v) => porEl(t, 'conversaoPct', 'energy', v) },
   'base physical damage % to convert to chaos': { f: (t, v) => porEl(t, 'conversaoPct', 'chaos', v) },
+  // (09/11, lote 2) as AFECÇÕES: as que o monstro sofre (efeito e duração em si — `itens-poe/afeccoes.aoAcertar`, `mods-poe.porNoAlvo`), a resistência a mais
+  // contra o dano contínuo e o Físico contínuo sofrido (`hunt/resistencia.resistido`), e as que ele causa em você (`mobs/mecanicas.aoAcertarJogador`).
+  // (O "-%" do poedb vem com sinal trocado em alguns: a linha do PoE é sempre "reduzida" — vale o módulo.)
+  'lightning ailment effect on self +%': { f: (t, v) => porEl(t, 'afeccaoEfeitoPct', 'eletrizacao', v) },
+  'shocked effect on self +%': { f: (t, v) => porEl(t, 'afeccaoEfeitoPct', 'eletrizacao', v) },
+  'cold ailment effect on self +%': { f: (t, v) => porEl(t, 'afeccaoEfeitoPct', 'resfriamento', v) },
+  'chill effectiveness on self +%': { f: (t, v) => porEl(t, 'afeccaoEfeitoPct', 'resfriamento', v) },
+  'scorch ailment effect on self +%': { f: (t, v) => porEl(t, 'afeccaoEfeitoPct', 'causticacao', v) },
+  'base self freeze duration -%': { f: (t, v) => porEl(t, 'afeccaoDuracaoPct', 'congelamento', -Math.abs(v)) },
+  'base self ignite duration -%': { f: (t, v) => porEl(t, 'afeccaoDuracaoPct', 'incendio', -Math.abs(v)) },
+  'self wither duration +%': { f: (t, v) => porEl(t, 'afeccaoDuracaoPct', 'definhar', v) },
+  'additional chaos resistance against damage over time %': { f: (t, v) => porEl(t, 'resistDot', 'chaos', v) },
+  'additional fire resistance against damage over time %': { f: (t, v) => porEl(t, 'resistDot', 'fire', v) },
+  'base physical damage over time taken +%': { f: (t, v) => (t.dotFisicoSofridoPct += v) },
+  'chill effect +%': { f: (t, v) => (t.efeitoResfriamentoPct += v) },
+  'always shock': { f: (t) => (t.sempreEletriza = 1) },
+  'all damage can chill': { f: (t) => (t.todoDanoResfria = 1) },
+  'all damage can shock': { f: (t) => (t.todoDanoEletriza = 1) },
+  'shock effect +%': { f: (t, v) => (t.efeitoEletrizacaoPct += v) },
+  'shock duration +%': { f: (t, v) => (t.duracaoEletrizacaoPct += v) },
+  'base chance to freeze %': { f: (t, v) => (t.chanceCongelar += v) },
+  'all damage can freeze': { f: (t) => (t.todoDanoCongela = 1) },
+  'freeze duration +%': { f: (t, v) => (t.duracaoCongelamentoPct += v) },
   'attack speed +%': { f: (t, v) => (t.velocidadeDeAtaquePct += v) },
   'base cast speed +%': { f: (t, v) => (t.velocidadeDeConjuracaoPct += v) },
   'attack and cast speed +%': { f: (t, v) => { t.velocidadeDeAtaquePct += v; t.velocidadeDeConjuracaoPct += v; } },
@@ -111,8 +134,8 @@ function mecanicasDosDots(dots) {
     .map(([el, d]) => ({ gatilho: 'aoAtacar', efeito: 'debuff', elemento: el, chance: BASE_DO_DOT[el].chance, danoPctDoGolpe: Math.round(BASE_DO_DOT[el].pct * (1 + d.mais / 100)), duracaoMs: Math.round((BASE_DO_DOT[el].ms * (1 + d.duracao / 100)) / 1000) * 1000 }));
 }
 
-const vazio = () => ({ vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, velocidadeDeConjuracaoPct: 0, danoProjetilPct: 0, danoExtraAleatorioPct: 0, naoCaosComoCaosPct: 0, critChancePct: 0, sempreCritico: 0, danoTipoPct: {}, danoExtraPct: {}, conversaoPct: {}, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0, esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, resist: {}, _dots: {} });
-const POR_ELEMENTO = ['resist', 'danoTipoPct', 'danoExtraPct', 'conversaoPct'];
+const vazio = () => ({ vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, velocidadeDeConjuracaoPct: 0, danoProjetilPct: 0, danoExtraAleatorioPct: 0, naoCaosComoCaosPct: 0, critChancePct: 0, sempreCritico: 0, dotFisicoSofridoPct: 0, sempreEletriza: 0, todoDanoResfria: 0, todoDanoEletriza: 0, efeitoResfriamentoPct: 0, efeitoEletrizacaoPct: 0, duracaoEletrizacaoPct: 0, chanceCongelar: 0, todoDanoCongela: 0, duracaoCongelamentoPct: 0, danoTipoPct: {}, danoExtraPct: {}, conversaoPct: {}, afeccaoEfeitoPct: {}, afeccaoDuracaoPct: {}, resistDot: {}, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0, esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, resist: {}, _dots: {} });
+const POR_ELEMENTO = ['resist', 'danoTipoPct', 'danoExtraPct', 'conversaoPct', 'afeccaoEfeitoPct', 'afeccaoDuracaoPct', 'resistDot'];
 const porEl = (t, campo, el, v) => (t[campo][el] = (t[campo][el] ?? 0) + v);
 const limpar = (t) => Object.fromEntries(Object.entries(t).filter(([k]) => k !== '_dots' && k !== '_acerto').filter(([k, v]) => (POR_ELEMENTO.includes(k) ? Object.keys(v).length : v)).map(([k, v]) => [k, POR_ELEMENTO.includes(k) ? v : Math.round(v * 100) / 100]));
 
@@ -158,7 +181,7 @@ const HABILIDADES = {
  */
 const SEM_A_IDENTIDADE = new Set();
 /** O poedb escreve "Seus Acertos empre Incendeiam/Eletrizam" (sem o s): a linha sai certa. */
-const corrigirTexto = (l) => String(l).replace(/\bempre\b/g, 'sempre');
+const corrigirTexto = (l) => String(l).replace(/\bempre\b/g, 'sempre').replace(/Duração do Incêndio em Você aumentada em/, 'Duração do Incêndio em Você reduzida em'); // (lote 2: o PoE — "80% reduced Ignite Duration on you")
 
 /** Os stats do PoE → os do Draevor e o estado. */
 export function traduzir(statsPoe) {
