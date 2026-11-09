@@ -383,7 +383,16 @@ export function paraTela(estado, { versaoDaTela = null } = {}) {
   if (!ligado()) return null;
   const st = MapaAberto.doPersonagem(estado);
   const mapas = mapasCarregados(estado);
-  const versao = versaoDosMapas(mapas);
+  // (09/11 — o dono: "enxugar a resposta") os PINÁCULOS (o que cada um pede, a influência, a Maven, as Memórias) também só vão quando mudam:
+  // a versão cobre a lista de mapas E eles (a tela aberta pergunta a cada 8 s; eles eram ~3 KB em toda resposta).
+  const doAtlas = {
+    pinaculos: pinaculosParaTela(estado),
+    influencia: PinaculosAcesso.influenciaParaTela(estado),
+    maven: PinaculosAcesso.mavenParaTela(estado),
+    // (etapa 4) as Memórias: quantas você tem, o mapa e o Eco de cada uma
+    memorias: PinaculosAcesso.memorias().map((m) => ({ id: m.itemId, nome: m.nome, tem: contarItem(estado, m.itemId), mapa: PinaculosAcesso.DADOS.mapas.find((x) => x.chefe === m.memoria)?.nome ?? null, chefe: PinaculosAcesso.chefe(m.memoria)?.nome ?? null })),
+  };
+  const versao = `${versaoDosMapas(mapas)}.${createHash('sha256').update(JSON.stringify(doAtlas)).digest('base64url').slice(0, 10)}`;
   const iguais = versaoDaTela != null && String(versaoDaTela) === versao;
   return {
     liberado: liberado(estado),
@@ -398,12 +407,8 @@ export function paraTela(estado, { versaoDaTela = null } = {}) {
     // Os do Baú da Conta não abrem (é compartilhado entre os personagens): a tela só diz quantos há lá.
     noBauDaConta: mapasNoBauDaConta(estado),
     loop: MapasLoop.paraTela(estado),
-    // (05/11) os pináculos: o que cada um pede no Dispositivo e o aberto (os portais)
-    pinaculos: pinaculosParaTela(estado),
-    influencia: PinaculosAcesso.influenciaParaTela(estado),
-    maven: PinaculosAcesso.mavenParaTela(estado),
-    // (etapa 4) as Memórias: quantas você tem, o mapa e o Eco de cada uma
-    memorias: PinaculosAcesso.memorias().map((m) => ({ id: m.itemId, nome: m.nome, tem: contarItem(estado, m.itemId), mapa: PinaculosAcesso.DADOS.mapas.find((x) => x.chefe === m.memoria)?.nome ?? null, chefe: PinaculosAcesso.chefe(m.memoria)?.nome ?? null })),
+    // (05/11) os pináculos: o que cada um pede no Dispositivo e o aberto (os portais) — iguais aos da tela, não vão (ver `doAtlas`)
+    ...(iguais ? {} : doAtlas),
     pinaculoAberto: estado?.pinaculoAberto ? { ...estado.pinaculoAberto, nome: Pinaculos.doDispositivo(estado.pinaculoAberto.id)?.nome ?? estado.pinaculoAberto.id, naArena: estado.hunt?.bossId === estado.pinaculoAberto.id } : null,
     estatisticas: { concluidos: st.concluidos, falhos: st.falhos, mortes: st.mortes, maiorTier: st.maiorTier, porTier: st.porTier, ultimo: st.ultimo },
     tiers: Mapas.TIERS,
