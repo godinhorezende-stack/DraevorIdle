@@ -17,6 +17,7 @@ const GERADORES = { lioneye: () => import('./lioneye.mjs'), floresta: () => impo
 const args = process.argv.slice(2);
 const iPrevia = args.indexOf('--previa');
 const previa = iPrevia >= 0 ? args.splice(iPrevia, 2)[1] : null;
+const bloqueio = args.includes('--bloqueio') && !!args.splice(args.indexOf('--bloqueio'), 1);
 const dados = JSON.parse(readFileSync(join(G, 'cidades', 'cidades.json'), 'utf8'));
 mkdirSync(join(G, 'sprites', 'cidades'), { recursive: true });
 for (const def of dados.cidades) {
@@ -41,6 +42,8 @@ for (const def of dados.cidades) {
   if (previa) {
     const out = new Uint8ClampedArray(W * 32 * H * 32 * 4);
     pilhas.forEach((p, i) => { for (const id of p) desenhar(out, W * 32, H * 32, id, (i % W) * 32, Math.floor(i / W) * 32); });
+    // com --bloqueio: as casas que não se anda ficam com um véu vermelho (para achar colisão sem nada desenhado)
+    if (bloqueio) blocked.forEach((b, i) => { if (!b) return; const x0 = (i % W) * 32, y0 = Math.floor(i / W) * 32; for (let j = 0; j < 32; j++) for (let k = 0; k < 32; k++) { const d = ((y0 + j) * W * 32 + x0 + k) * 4; out[d] = (out[d] + 255) >> 1; out[d + 1] >>= 1; out[d + 2] >>= 1; } });
     // os pontos do jogo, em quadrados coloridos: a chegada (verde), Aventuras (amarelo), Boss Diários (roxo), a forja (vermelho), a árvore
     // (verde-azulado), o Dispositivo de Mapas (branco) e os NPCs (azul)
     const COR = { chegada: [40, 220, 60], aventuras: [255, 200, 0], 'boss-diarios': [200, 40, 200], forja: [255, 60, 30], arvore: [0, 160, 140], npc: [0, 220, 255], dispositivo: [255, 255, 255] };
