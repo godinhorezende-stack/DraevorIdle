@@ -653,6 +653,223 @@
    ]
   },
   {
+   "id": "poe-a4-highgate",
+   "nome": "Highgate",
+   "mapa": {
+    "gerador": "highgate",
+    "semente": 41
+   },
+   "chegada": {
+    "x": 34,
+    "y": 25,
+    "z": 7,
+    "dir": 2
+   },
+   "npcs": [
+    {
+     "uid": "npc:petarus-e-vanja",
+     "id": "petarus-e-vanja",
+     "name": "Petarus e Vanja",
+     "x": 28,
+     "y": 25,
+     "z": 7,
+     "dir": 2,
+     "look": 132,
+     "colors": {
+      "type": 132,
+      "head": 78,
+      "body": 77,
+      "legs": 77,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "loja"
+    },
+    {
+     "uid": "npc:tasuni",
+     "id": "tasuni",
+     "name": "Tasuni",
+     "x": 36,
+     "y": 22,
+     "z": 7,
+     "dir": 2,
+     "look": 157,
+     "colors": {
+      "type": 157,
+      "head": 0,
+      "body": 86,
+      "legs": 86,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "banco"
+    },
+    {
+     "uid": "npc:dialla",
+     "id": "dialla",
+     "name": "Dialla",
+     "x": 33,
+     "y": 20,
+     "z": 7,
+     "dir": 2,
+     "look": 141,
+     "colors": {
+      "type": 141,
+      "head": 95,
+      "body": 113,
+      "legs": 113,
+      "feet": 95,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "O Coração de Malachai bate debaixo de nós. Cada passo nas minas o deixa mais perto de acordar."
+    },
+    {
+     "uid": "npc:oyun",
+     "id": "oyun",
+     "name": "Oyun",
+     "x": 35,
+     "y": 30,
+     "z": 7,
+     "dir": 2,
+     "look": 147,
+     "colors": {
+      "type": 147,
+      "head": 78,
+      "body": 58,
+      "legs": 58,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "As minas eram a vida de Highgate. Agora só os loucos e os exilados descem lá."
+    }
+   ],
+   "objetos": [
+    {
+     "uid": "marco:aventuras:36,27",
+     "x": 36,
+     "y": 27,
+     "item": null,
+     "nome": "Aventuras",
+     "cor": "dourado",
+     "acao": "aventuras",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:boss-diarios:30,26",
+     "x": 30,
+     "y": 26,
+     "item": null,
+     "nome": "Boss Diarios",
+     "cor": "boss",
+     "acao": "boss-diarios",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:forja:30,32",
+     "x": 30,
+     "y": 32,
+     "item": null,
+     "nome": "Forja",
+     "cor": "vermelho",
+     "acao": "forja",
+     "pisar": false,
+     "nomeDx": -0.5,
+     "nomeDy": -0.5
+    },
+    {
+     "uid": "marco:arvore:39,24:39,24",
+     "x": 39,
+     "y": 24,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,24:40,24",
+     "x": 40,
+     "y": 24,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,24:41,24",
+     "x": 41,
+     "y": 24,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,24:39,25",
+     "x": 39,
+     "y": 25,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,24:40,25",
+     "x": 40,
+     "y": 25,
+     "item": null,
+     "nome": "Arvore De Habilidade",
+     "cor": "verde-azul",
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,24:41,25",
+     "x": 41,
+     "y": 25,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,24:39,26",
+     "x": 39,
+     "y": 26,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,24:40,26",
+     "x": 40,
+     "y": 26,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,24:41,26",
+     "x": 41,
+     "y": 26,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    }
+   ]
+  },
+  {
    "id": "poe-a6-lioneyes-watch",
    "nome": "Vigília de Lioneye",
    "igualA": "poe-a1-lioneyes-watch"
@@ -661,6 +878,11 @@
    "id": "poe-a8-the-sarn-encampment",
    "nome": "Acampamento de Sarn",
    "igualA": "poe-a3-the-sarn-encampment"
+  },
+  {
+   "id": "poe-a9-highgate",
+   "nome": "Highgate",
+   "igualA": "poe-a4-highgate"
   }
  ]
 }

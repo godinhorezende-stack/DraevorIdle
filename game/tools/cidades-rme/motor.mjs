@@ -87,7 +87,10 @@ export function pintar(grade, { rng = Math.random, existe = () => true } = {}) {
         if (!nome) break;
         const ids = pc[nome] ? [pc[nome]] : ({ dnw: ['w', 'n'], dne: ['e', 'n'], dsw: ['s', 'w'], dse: ['s', 'e'] }[nome] ?? []).map((e) => pc[e]);
         for (const id of ids) {
-          if (id && existe(id)) pilha.push(id);
+          // a peça que o pincel não define não se desenha (como no editor: o paredão da montanha só tem os lados sul e leste); falta é a
+          // peça definida sem sprite no jogo
+          if (!id) continue;
+          if (existe(id)) pilha.push(id);
           else faltas[nome] = (faltas[nome] ?? 0) + 1;
         }
       }
