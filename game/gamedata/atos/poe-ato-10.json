@@ -2,7 +2,7 @@
   "id": "poe-ato-10",
   "nome": "Ato 10",
   "descricao": "Ato 10 da campanha do Path of Exile.",
-  "imagem": null,
+  "imagem": "imagens/poe-ato-10.webp",
   "nivelRecomendado": 64,
   "ordem": 10,
   "anterior": "poe-ato-9",

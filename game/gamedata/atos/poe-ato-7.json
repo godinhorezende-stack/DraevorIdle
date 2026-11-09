@@ -2,7 +2,7 @@
   "id": "poe-ato-7",
   "nome": "Ato 7",
   "descricao": "Ato 7 da campanha do Path of Exile.",
-  "imagem": null,
+  "imagem": "imagens/poe-ato-7.webp",
   "nivelRecomendado": 50,
   "ordem": 7,
   "anterior": "poe-ato-6",

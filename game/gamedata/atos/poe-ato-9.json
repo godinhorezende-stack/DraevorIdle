@@ -2,7 +2,7 @@
   "id": "poe-ato-9",
   "nome": "Ato 9",
   "descricao": "Ato 9 da campanha do Path of Exile.",
-  "imagem": null,
+  "imagem": "imagens/poe-ato-9.webp",
   "nivelRecomendado": 61,
   "ordem": 9,
   "anterior": "poe-ato-8",

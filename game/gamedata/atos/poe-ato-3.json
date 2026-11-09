@@ -2,7 +2,7 @@
   "id": "poe-ato-3",
   "nome": "Ato 3",
   "descricao": "Ato 3 da campanha do Path of Exile.",
-  "imagem": null,
+  "imagem": "imagens/poe-ato-3.webp",
   "nivelRecomendado": 23,
   "ordem": 3,
   "anterior": "poe-ato-2",
