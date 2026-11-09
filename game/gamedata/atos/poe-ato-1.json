@@ -17,8 +17,8 @@
   "cidade": {
     "nome": "Vigília de Lioneye",
     "posicao": {
-      "x": 68,
-      "y": 189
+      "x": 135,
+      "y": 140
     },
     "conexoes": [
       "poe-a1-the-twilight-strand"
@@ -56,8 +56,8 @@
       "eventos": [],
       "sobrescritas": {},
       "posicao": {
-        "x": 71,
-        "y": 354
+        "x": 92,
+        "y": 241
       }
     },
     {
@@ -93,8 +93,8 @@
       "eventos": [],
       "sobrescritas": {},
       "posicao": {
-        "x": 158,
-        "y": 427
+        "x": 125,
+        "y": 363
       }
     },
     {
@@ -129,8 +129,8 @@
       "eventos": [],
       "sobrescritas": {},
       "posicao": {
-        "x": 303,
-        "y": 447
+        "x": 341,
+        "y": 426
       }
     },
     {
@@ -166,8 +166,8 @@
       "eventos": [],
       "sobrescritas": {},
       "posicao": {
-        "x": 236,
-        "y": 330
+        "x": 325,
+        "y": 307
       }
     },
     {
@@ -199,8 +199,8 @@
       "eventos": [],
       "sobrescritas": {},
       "posicao": {
-        "x": 293,
-        "y": 242
+        "x": 325,
+        "y": 241
       }
     },
     {
@@ -232,8 +232,8 @@
       "eventos": [],
       "sobrescritas": {},
       "posicao": {
-        "x": 369,
-        "y": 377
+        "x": 507,
+        "y": 322
       }
     },
     {
@@ -267,8 +267,8 @@
       "eventos": [],
       "sobrescritas": {},
       "posicao": {
-        "x": 514,
-        "y": 380
+        "x": 640,
+        "y": 412
       }
     },
     {
@@ -295,7 +295,7 @@
       "eventos": [],
       "sobrescritas": {},
       "posicao": {
-        "x": 363,
+        "x": 541,
         "y": 196
       }
     },
@@ -323,8 +323,8 @@
       "eventos": [],
       "sobrescritas": {},
       "posicao": {
-        "x": 579,
-        "y": 285
+        "x": 615,
+        "y": 231
       }
     },
     {
@@ -351,8 +351,8 @@
       "eventos": [],
       "sobrescritas": {},
       "posicao": {
-        "x": 720,
-        "y": 283
+        "x": 682,
+        "y": 190
       }
     },
     {
@@ -379,8 +379,8 @@
       "eventos": [],
       "sobrescritas": {},
       "posicao": {
-        "x": 776,
-        "y": 415
+        "x": 823,
+        "y": 266
       }
     },
     {
@@ -412,8 +412,8 @@
       "eventos": [],
       "sobrescritas": {},
       "posicao": {
-        "x": 376,
-        "y": 48
+        "x": 350,
+        "y": 36
       }
     },
     {
@@ -452,8 +452,8 @@
       "eventos": [],
       "sobrescritas": {},
       "posicao": {
-        "x": 555,
-        "y": 190
+        "x": 533,
+        "y": 115
       }
     },
     {
@@ -485,8 +485,8 @@
       "eventos": [],
       "sobrescritas": {},
       "posicao": {
-        "x": 506,
-        "y": 53
+        "x": 511,
+        "y": 40
       }
     },
     {
@@ -513,8 +513,8 @@
       "eventos": [],
       "sobrescritas": {},
       "posicao": {
-        "x": 653,
-        "y": 67
+        "x": 752,
+        "y": 56
       }
     },
     {
@@ -541,8 +541,8 @@
       "eventos": [],
       "sobrescritas": {},
       "posicao": {
-        "x": 750,
-        "y": 83
+        "x": 852,
+        "y": 84
       }
     }
   ],

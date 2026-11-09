@@ -112,3 +112,32 @@ test('do zero: a fase que completa agora avança logo (o chefe da fase morreu), 
   assert.equal(Campanha.faseCompleta(e, Campanha.DIFICULDADES[0], doAto1()[0].huntId), true);
   assert.equal(Cacadas.faseParaSeguir(e)?.huntId, doAto1()[1].huntId);
 });
+
+// (Dono, 09/11: "não consigo usar avançar sozinho do ato 1 fase 1 e ir até o ato X final, tudo sozinho… quero uma forma que dê, se o
+// personagem for conseguindo passar".) No fim do ato o "Avançar sozinho" espera o chefe; vencido o chefe, segue para o ato seguinte.
+test('o "Avançar sozinho" atravessa a campanha: no fim do ato espera o chefe; vencido ele, vai à fase 1 do ato seguinte, do Ato 1 ao Ato 10', { skip: soNoOficial('os atos do PoE') }, () => {
+  const e = personagemDeTeste({ vocacao: 'knight', level: 90, campanha: {} });
+  e.campanha = {};
+  const dif = Campanha.DIFICULDADES[0];
+  let atual = Campanha.FASES.find((f) => f.ato === 1 && Campanha.faseLiberada(e, dif, f.huntId));
+  const caminho = [];
+  for (let passos = 0; atual && passos < 500; passos++) {
+    caminho.push([atual.ato, Campanha.numeroNoAto(atual.huntId)]);
+    ((e.campanha[dif] ??= {}).completas ??= []).push(atual.huntId);
+    let proxima = Campanha.proximaParaSeguir(e, dif, atual.huntId);
+    if (!proxima && Campanha.ehUltimaFaseDoAto(atual.huntId) && !Campanha.bossVencido(e, dif, atual.ato)) {
+      // o chefe ainda de pé: fica na última fase
+      assert.equal(proxima, null, `Ato ${atual.ato}: espera o chefe`);
+      Campanha.venceuBoss(e, dif, atual.ato);
+      proxima = Campanha.proximaParaSeguir(e, dif, atual.huntId);
+      if (atual.ato < 10) assert.deepEqual([proxima?.ato, Campanha.numeroNoAto(proxima?.huntId)], [atual.ato + 1, 1], `vencido o chefe do Ato ${atual.ato}: a fase 1 do Ato ${atual.ato + 1}`);
+    }
+    atual = proxima;
+  }
+  for (const ato of ATOS) {
+    const n = Campanha.FASES.filter((f) => f.ato === ato && !f.pular).length;
+    assert.deepEqual(caminho.filter(([a]) => a === ato).map(([, i]) => i), Array.from({ length: n }, (_, i) => i + 1), `Ato ${ato}: todas as fases, em ordem`);
+    assert.equal(Campanha.bossVencido(e, dif, ato), true, `o chefe do Ato ${ato}`);
+  }
+  assert.equal(caminho.at(-1)[0], 10, 'para no fim do Ato 10 (o Epílogo é o endgame)');
+});

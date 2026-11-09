@@ -352,18 +352,31 @@ export const aoCompletar = (estado) => (AO_COMPLETAR.includes(estado.settings?.a
 
 /**
  * A fase seguinte para quem escolheu "Seguir": a próxima do MESMO ato que não
- * se pula e já está liberada. No fim do ato não segue: o boss é uma luta, não
- * uma fase — o aviso da tela diz que ele abriu. `null` = fica onde está.
+ * se pula e já está liberada. No fim do ato espera o chefe: enquanto ele não
+ * cai, fica (o chefe sai do portal na última fase e a Caça Automática luta);
+ * com o chefe do ato VENCIDO, segue para a primeira fase aberta do ato
+ * seguinte (o dono, 09/11: "avançar sozinho do ato 1 fase 1 e ir até o ato X
+ * final, tudo sozinho, se o personagem for conseguindo passar"). `null` = fica.
  */
 export function proximaParaSeguir(estado, dif, huntId) {
   const f = faseDe(huntId);
   if (!f) return null;
-  if (f.grafo) return proximaNoGrafo(estado, dif, f);
+  const noAto = f.grafo ? proximaNoGrafo(estado, dif, f) : proximaNoAtoLegado(estado, dif, f);
+  if (noAto !== undefined) return noAto;
+  return bossVencido(estado, dif, f.ato) ? primeiraAbertaDoAto(estado, dif, f.ato + 1) : null;
+}
+/** A próxima do mesmo ato (a campanha linear); `undefined` = não há mais fase no ato (o que vem é o chefe). */
+function proximaNoAtoLegado(estado, dif, f) {
   for (let i = f.indice + 1; i < FASES.length && FASES[i].ato === f.ato; i++) {
     if (FASES[i].pular) continue;
     return faseLiberada(estado, dif, FASES[i].huntId) ? FASES[i] : null;
   }
-  return null;
+  return undefined;
+}
+/** A primeira fase do ato `ato` (na numeração do mapa) que não se pula e já está aberta, ou `null`. */
+function primeiraAbertaDoAto(estado, dif, ato) {
+  const f = FASES.find((x) => x.ato === ato && !x.pular && faseLiberada(estado, dif, x.huntId));
+  return f ? (f.grafo ? faseDe(f.huntId) : f) : null;
 }
 
 /**
@@ -532,7 +545,7 @@ export function faseAtual(estado, hunt) {
     // no Draevor clássico, a posição nas 48 fases.
     tipo: 'fase', aoCompletar: aoCompletar(estado), ato: f.ato, numero: itensPoeLigado() ? numeroNoAto(f.huntId) : f.indice + 1, dificuldade: c.dificuldade, nomeDaDificuldade: dif?.nome, nome: f.nome,
     limpezas: p.limpezas[f.huntId] ?? 0, completa,
-    // Completa e sem próxima para seguir: fim do ato (o boss é o jogador quem chama).
+    // Completa e sem próxima para seguir: fim do ato (o chefe ainda não caiu).
     fimDoAto: completa && !proximaParaSeguir(estado, c.dificuldade, f.huntId),
   };
 }
@@ -676,9 +689,14 @@ function motivoNoGrafo(estado, dif, f, nomeDif) {
 function proximaNoGrafo(estado, dif, f) {
   if (!ATOS_DO_EDITOR.get(f.ato)) return null;
   // A SEGUINTE na numeração que está aberta — feita ou não (dono, 11/10: quem repete um ato já feito também avança; antes, "a menor ainda
-  // não feita" não achava nenhuma e o avançar parava). Depois da última, nada (o chefe do ato é pelo portal).
-  for (let i = f.indice + 1; i < FASES.length && FASES[i].ato === f.ato; i++) if (!FASES[i].pular && faseLiberada(estado, dif, FASES[i].huntId)) return faseDe(FASES[i].huntId);
-  return null;
+  // não feita" não achava nenhuma e o avançar parava). Depois da última, `undefined`: o que vem é o chefe do ato (`proximaParaSeguir`).
+  let haMais = false;
+  for (let i = f.indice + 1; i < FASES.length && FASES[i].ato === f.ato; i++) {
+    if (FASES[i].pular) continue;
+    haMais = true;
+    if (faseLiberada(estado, dif, FASES[i].huntId)) return faseDe(FASES[i].huntId);
+  }
+  return haMais ? null : undefined;
 }
 
 /** O boss é de ato: sem recarga (catálogo e `semEspera`), igual aos legados. */
