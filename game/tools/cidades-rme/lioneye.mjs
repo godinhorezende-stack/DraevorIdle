@@ -1,4 +1,4 @@
-// A VIGÍLIA DE LIONEYE (Ato 1 — e o 6, que o PoE repete): o acampamento dos exilados na praia. A paliçada de toras com os portões a leste e ao
+// A VIGÍLIA DE LIONEYE (Ato 1; e, com `guerra`, a do Ato 6 — o dono: "uma vigília depois da guerra"): o acampamento dos exilados na praia. A paliçada de toras com os portões a leste e ao
 // sul, o pátio de terra com as tendas, a fogueira e o poço, o caminho até o píer com os barcos, a mata fechando o norte e o oeste. Os pontos do
 // jogo (a chegada, os NPCs, os marcos) vêm de `cidades.json` (`def`).
 import * as M from './motor.mjs';
@@ -8,7 +8,7 @@ import { sorteio, ruidoSuave, porMarcos } from './comum.mjs';
 
 export const W = 64, H = 48;
 
-export function gerar(def, semente = 11) {
+export function gerar(def, semente = 11, { guerra = false } = {}) {
   const rng = sorteio(semente);
   const ruido = ruidoSuave(rng, W, H);
 
@@ -24,6 +24,8 @@ export function gerar(def, semente = 11) {
     if (x > PAL.x0 + 1 && x < PAL.x1 - 1 && y > PAL.y0 + 1 && y < PAL.y1 - 1) g[y][x] = 'dirt';
     if (PORTAO_L.includes(y) && x >= PAL.x1 - 2 && g[y][x] === 'grass') g[y][x] = 'dirt';
     if (PORTAO_S.includes(x) && y >= PAL.y1 - 2 && g[y][x] === 'grass') g[y][x] = 'dirt';
+    // (guerra) a grama queimada em manchas em volta do acampamento
+    if (guerra && g[y][x] === 'grass' && ruido(x * 3 + 7, y * 3 + 5, 8) > 0.55) g[y][x] = 'grass (dried)';
   }
   // o filtro de maioria (sem pontas nem buracos de uma casa) fora do que é desenhado à mão
   const V8 = [[-1, -1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0]];
@@ -56,6 +58,13 @@ export function gerar(def, semente = 11) {
   const toras = new Set();
   for (let x = PAL.x0; x <= PAL.x1; x++) for (const y of [PAL.y0, PAL.y1]) if (!(y === PAL.y1 && PORTAO_S.includes(x))) toras.add(`${x},${y}`);
   for (let y = PAL.y0; y <= PAL.y1; y++) for (const x of [PAL.x0, PAL.x1]) if (!(x === PAL.x1 && PORTAO_L.includes(y))) toras.add(`${x},${y}`);
+  // (guerra) os trechos da paliçada que caíram na invasão (os cantos ficam de pé): no lugar, as toras partidas
+  const caidas = [];
+  if (guerra) for (const k of [...toras]) {
+    const [x, y] = k.split(',').map(Number);
+    const canto = (x === PAL.x0 || x === PAL.x1) && (y === PAL.y0 || y === PAL.y1);
+    if (!canto && ruido(x * 5 + 3, y * 5 + 1, 8) > 0.6) { toras.delete(k); caidas.push([x, y]); }
+  }
   O.porParede(cam, 'wooden wall', toras, rng);
   for (const [x, y] of [[PAL.x1, PORTAO_L[0] - 1], [PAL.x1, PORTAO_L.at(-1) + 1], [PORTAO_S[0] - 1, PAL.y1], [PORTAO_S.at(-1) + 1, PAL.y1]]) O.porDoodad(cam, 'wall torch - lit', x, y, rng, { exigeLivre: false });
 
@@ -63,7 +72,14 @@ export function gerar(def, semente = 11) {
   const cx = 26, cy = 20;
   O.porDoodad(cam, 'campfire', cx, cy, rng, { alt: 2 });
   for (const [x, y, alt] of [[cx - 2, cy - 1, 1], [cx + 2, cy, 1], [cx, cy - 2, 0], [cx - 1, cy + 2, 0]]) O.porDoodad(cam, 'bench', x, y, rng, { alt, pode });
-  for (const [x, y] of [[16, 12], [20, 12], [32, 12], [35, 12], [16, 26], [20, 27], [33, 26]]) O.porDoodad(cam, 'gray striped tent', x, y, rng, { pode });
+  // (guerra) as tendas que queimaram viram o entulho delas, uma ainda em brasa
+  const TENDAS = [[16, 12], [20, 12], [32, 12], [35, 12], [16, 26], [20, 27], [33, 26]];
+  TENDAS.forEach(([x, y], i) => {
+    if (guerra && i % 2 === 1) {
+      for (const [n, dx, dy] of [['wooden trash', 0, 0], ['debris (medium)', -1, 0], ['pieces of wood', 0, -1], ['debris (small)', -1, -1]]) O.porDoodad(cam, n, x + dx, y + dy, rng, { pode });
+      if (i === 3) O.porDoodad(cam, 'fire field (decaying)', x - 1, y + 1, rng, { pode });
+    } else O.porDoodad(cam, 'gray striped tent', x, y, rng, { pode });
+  });
   O.porDoodad(cam, 'water well', 31, 19, rng, { pode });
   const CAIXA = 2471, BARRIL = 2523;
   for (const [x, y, id] of [[18, 14, CAIXA], [19, 14, BARRIL], [34, 14, CAIXA], [37, 13, BARRIL], [18, 29, CAIXA], [36, 28, BARRIL], [36, 27, CAIXA]]) if (cam.livre(x, y) && pode(x, y)) cam.por(x, y, id);
@@ -71,8 +87,23 @@ export function gerar(def, semente = 11) {
   // o COFRE do depósito (o "Baú" do PoE), ao lado de Tarkleigh
   cam.por(23, 13, 3497);
 
-  // ---- os BARCOS ao lado do píer
-  if (pierX0 != null) { O.porMesa(cam, 'small boat', pierX0 + 2, PORTAO_L[1] + 2, 4, 'vertical', rng); O.porMesa(cam, 'small boat', pierX0 + 5, PORTAO_L[0] - 5, 4, 'vertical', rng); }
+  // ---- os BARCOS ao lado do píer (na guerra, sobrou um)
+  if (pierX0 != null) { O.porMesa(cam, 'small boat', pierX0 + 2, PORTAO_L[1] + 2, 4, 'vertical', rng); if (!guerra) O.porMesa(cam, 'small boat', pierX0 + 5, PORTAO_L[0] - 5, 4, 'vertical', rng); }
+
+  // ---- (guerra) o que a invasão deixou: as toras partidas onde a paliçada caiu, os totens dos Karui fincados nos portões, os ossos, o
+  // sangue e o entulho espalhados pelo pátio
+  if (guerra) {
+    for (const [x, y] of caidas) O.porDoodad(cam, rng() < 0.5 ? 'pieces of wood' : 'debris (bigger)', x, y, rng, { pode });
+    for (const [x, y] of [[PAL.x1 + 1, PORTAO_L[0] - 2], [PAL.x1 + 1, PORTAO_L.at(-1) + 2], [PORTAO_S[0] - 2, PAL.y1 + 1], [PORTAO_S.at(-1) + 2, PAL.y1 + 1]]) O.porDoodad(cam, 'totem poles', x, y, rng, { pode });
+    for (let y = PAL.y0 + 1; y < PAL.y1; y++) for (let x = PAL.x0 + 1; x < PAL.x1; x++) {
+      if (!cam.livre(x, y) || !pode(x, y)) continue;
+      const r = rng();
+      if (r < 0.025) O.porDoodad(cam, 'bones', x, y, rng);
+      else if (r < 0.04) O.porDoodad(cam, 'blood', x, y, rng);
+      else if (r < 0.06) O.porDoodad(cam, 'debris (small)', x, y, rng);
+      else if (r < 0.065) O.porDoodad(cam, 'skeletons', x, y, rng);
+    }
+  }
 
   // ---- a NATUREZA: a mata que fecha o norte e o oeste, as árvores em grupos, as palmeiras e pedras na praia, os tufos
   const longe = (x, y) => !(x >= PAL.x0 - 2 && x <= PAL.x1 + 2 && y >= PAL.y0 - 2 && y <= PAL.y1 + 2);
@@ -82,10 +113,12 @@ export function gerar(def, semente = 11) {
     const c = g[y][x];
     if (c === 'grass' && longe(x, y)) {
       const mata = Math.min(x, y) <= 3 ? 0.75 : ruido(x * 3, y * 3, 8) > 0.68 ? 0.45 : 0.02;
-      if (rng() < mata) { O.porDoodad(cam, 'green trees', x, y, rng, { pode }); continue; }
+      if (rng() < mata) { O.porDoodad(cam, guerra && rng() < 0.3 ? 'dead trees' : 'green trees', x, y, rng, { pode }); continue; }
       if (rng() < 0.06) { O.porDoodad(cam, 'grass tufts', x, y, rng); continue; }
       if (rng() < 0.012) O.porDoodad(cam, 'mossy rocks (small)', x, y, rng);
     } else if (c === 'grass' && !dentro(x, y) && rng() < 0.05) O.porDoodad(cam, 'grass tufts', x, y, rng);
+    else if (c === 'grass (dried)' && longe(x, y) && rng() < 0.12) O.porDoodad(cam, rng() < 0.6 ? 'dead trees' : 'dry grass tufts', x, y, rng, { pode });
+    else if (c === 'grass (dried)' && rng() < 0.06) O.porDoodad(cam, 'dry grass tufts', x, y, rng);
     else if (c === 'sand') {
       const perto = [[0, -1], [1, 0], [0, 1], [-1, 0]].some(([dx, dy]) => g[y + dy]?.[x + dx] === 'grass');
       if (perto && rng() < 0.12) O.porDoodad(cam, 'palm trees', x, y, rng, { pode });
@@ -95,7 +128,7 @@ export function gerar(def, semente = 11) {
 
   // ---- o BLOQUEIO: o chão que bloqueia nos mapas capturados (a água), os marcos de pé, e as peças de pé (árvores, tendas, poço, mobília): tudo
   // menos tapete, tufo, pedrinha, tocha de parede e lenha no chão
-  const SOLTOS = new Set(['grass tufts', 'rocks (small)', 'brown bear skin rug', 'wall torch - lit', 'lumberjack stuff']
+  const SOLTOS = new Set(['grass tufts', 'rocks (small)', 'brown bear skin rug', 'wall torch - lit', 'lumberjack stuff', 'dry grass tufts', 'bones', 'blood', 'debris (small)', 'debris (medium)', 'wooden trash', 'pieces of wood', 'skeletons', 'fire field (decaying)']
     .flatMap((n) => O.DOODADS.get(n).alternativas.flatMap((a) => [...a.soltos.map((s) => s.id), ...a.compostos.flatMap((c) => c.casas.flatMap((t) => t.itens))])));
   SOLTOS.add(25056); // o portal: pisa-se nele
   const blocked = pilhas.map((p, i) => {

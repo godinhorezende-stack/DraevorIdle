@@ -15,6 +15,9 @@ const Inventario = await import('../systems/inventario.mjs');
 const Chat = await import('../systems/chat.mjs');
 const { Sessao, vivas } = await import('../websocket/sessao.mjs');
 const R = await import('../systems/regras.mjs');
+// (09/11) cada cidade de ato tem o seu mapa e a sua CHEGADA (`cidades-mapas.mjs`; aval do dono, opção A: o teste usa o mapa da cidade)
+const CidadesMapas = await import('../systems/cidades-mapas.mjs');
+const chegadaDoAto = (ato) => CidadesMapas.chegadaDa(Cidades.daCidadeDoAto(ato).id);
 
 /** Um personagem numa cidade (`ato`), parado num ponto da praça. */
 function naCidade(ato, pos = { x: 300, y: 300 }) {
@@ -93,7 +96,7 @@ test('viajar pelo mapa: só para ato aberto; a caçada acaba; chega no ponto de 
   s.receber({ t: 'irParaCidade', ato: 2 });
   assert.equal(s.estado.hunt, null, 'saiu da caçada');
   assert.equal(s.estado.atoDaCidade, 2);
-  assert.deepEqual({ x: s.estado.pos.x, y: s.estado.pos.y }, { x: R.POSICAO_INICIAL.x, y: R.POSICAO_INICIAL.y });
+  assert.deepEqual({ x: s.estado.pos.x, y: s.estado.pos.y }, { x: chegadaDoAto(2).x, y: chegadaDoAto(2).y });
   assert.equal(enviados.findLast((m) => m.t === 'campanha')?.campanha?.atoDaCidade, 2);
   assert.equal(enviados.findLast((m) => m.t === 'campanha')?.campanha?.cidadesPorAto, true);
   // Uma cidade que não existe.
@@ -120,10 +123,10 @@ test('a viagem é um TELETRANSPORTE: a praça marca a chegada (o cliente não pu
   assert.equal(s.estado.destino, null, 'o caminho que ele andava acabou');
   const quadro = enviados.find((m) => m.city?.player && m.events?.some((ev) => ev.t === 'portal'));
   assert.ok(quadro, 'o quadro da chegada leva a casa nova e o portal');
-  assert.deepEqual([quadro.city.player.x, quadro.city.player.y], [R.POSICAO_INICIAL.x, R.POSICAO_INICIAL.y]);
+  assert.deepEqual([quadro.city.player.x, quadro.city.player.y], [chegadaDoAto(2).x, chegadaDoAto(2).y]);
   assert.equal(quadro.city.player.teleporte, 1, 'marcado como teletransporte');
   const portal = quadro.events.find((ev) => ev.t === 'portal');
-  assert.deepEqual([portal.x, portal.y, portal.chegada], [R.POSICAO_INICIAL.x, R.POSICAO_INICIAL.y, true], 'o portal de viagem na chegada');
+  assert.deepEqual([portal.x, portal.y, portal.chegada], [chegadaDoAto(2).x, chegadaDoAto(2).y, true], 'o portal de viagem na chegada');
   assert.equal(quadro.city.cidade.ato, 2);
   // Ir para a cidade em que já está: nada de teletransporte.
   enviados.length = 0;

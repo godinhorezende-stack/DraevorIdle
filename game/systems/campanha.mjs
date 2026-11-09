@@ -377,6 +377,21 @@ export function atoDaFronteira(estado, dif = DIFICULDADES[0]) {
 /** O ato está aberto para `estado` (alguma fase dele liberada no Normal)? É o que deixa viajar até a cidade dele. */
 export const atoAberto = (estado, ato, dif = DIFICULDADES[0]) => FASES.some((f) => f.ato === Number(ato) && faseLiberada(estado, dif, f.huntId));
 
+/**
+ * A CIDADE do ato está aberta para `estado`? O ato com fases: o ato aberto (`atoAberto`). O ato que só tem a cidade (o Epílogo do PoE — a
+ * Costa Karui, a cidade do endgame; o dono, 09/11): o chefe do ato anterior vencido, em qualquer dificuldade.
+ */
+export function cidadeAberta(estado, ato) {
+  const n = Number(ato);
+  if (FASES.some((f) => f.ato === n)) return atoAberto(estado, n);
+  return n > 1 && DIFICULDADES.some((dif) => bossVencido(estado, dif, n - 1));
+}
+/** O EPÍLOGO (a cidade do ato depois do último, sem fases), se existe: `{ ato, id, nome }`. */
+export function epilogo() {
+  const c = Cidades.cidades().at(-1);
+  return c && !FASES.some((f) => f.ato === c.ato) ? c : null;
+}
+
 /** O boss do ato caiu: a primeira vitória libera o ato seguinte (ou a dificuldade seguinte). */
 export function venceuBoss(estado, dif, ato) {
   const p = progresso(estado, dif);
@@ -386,6 +401,9 @@ export function venceuBoss(estado, dif, ato) {
   const doEditor = ATOS_DO_EDITOR.get(Number(ato));
   // As missões do PoE que terminam no chefe do ato (O Eterno Pesadelo, o Malachai do Ato 4).
   const daMissao = MissoesDeGemas.aoVencerBoss(estado, ato);
+  // (09/11) o chefe do último ato: quem o vence passa a morar na cidade do Epílogo (a Costa Karui, a cidade do endgame)
+  const doEpilogo = epilogo();
+  if (doEpilogo && doEpilogo.ato === Number(ato) + 1) estado.atoDaCidade = doEpilogo.ato;
   if (doEditor) {
     // Ato do editor: concluir libera o ato seguinte que o exige; NÃO mexe na dificuldade (essa é a campanha legada).
     estado.avisoDaHunt = `${doEditor.ato.nome} concluído no ${nomeDif}!${doEditor.ato.seguinte ? ' O próximo ato está liberado.' : ''}${daMissao}`;
@@ -462,6 +480,8 @@ export function paraCliente(estado) {
     // cidade para onde viajou. `cidadesPorAto`: cada cidade é uma instância e se viaja até ela pelo mapa (`cidades.mjs`, o jogo oficial).
     atoDaCidade: Number(estado.atoDaCidade) || null,
     ...(Cidades.porAto() ? { cidadesPorAto: true } : {}),
+    // (09/11) o Epílogo (a Costa Karui): o botão de ir para ele no painel da cidade do último ato
+    ...(epilogo() ? { epilogo: { ...epilogo(), aberto: cidadeAberta(estado, epilogo().ato) } } : {}),
     dificuldades: dificuldadesDoJogo().map((dif) => {
       const p = progresso(estado, dif);
       return {

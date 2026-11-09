@@ -198,9 +198,1700 @@
    ]
   },
   {
+   "id": "poe-a2-the-forest-encampment",
+   "nome": "Acampamento da Floresta",
+   "mapa": {
+    "gerador": "floresta",
+    "semente": 23
+   },
+   "chegada": {
+    "x": 32,
+    "y": 26,
+    "z": 7,
+    "dir": 2
+   },
+   "npcs": [
+    {
+     "uid": "npc:greust",
+     "id": "greust",
+     "name": "Greust",
+     "x": 23,
+     "y": 13,
+     "z": 7,
+     "dir": 2,
+     "look": 143,
+     "colors": {
+      "type": 143,
+      "head": 78,
+      "body": 58,
+      "legs": 58,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "banco"
+    },
+    {
+     "uid": "npc:yeena",
+     "id": "yeena",
+     "name": "Yeena",
+     "x": 28,
+     "y": 20,
+     "z": 7,
+     "dir": 2,
+     "look": 148,
+     "colors": {
+      "type": 148,
+      "head": 79,
+      "body": 82,
+      "legs": 82,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "loja"
+    },
+    {
+     "uid": "npc:silk",
+     "id": "silk",
+     "name": "Silk",
+     "x": 44,
+     "y": 22,
+     "z": 7,
+     "dir": 2,
+     "look": 153,
+     "colors": {
+      "type": 153,
+      "head": 95,
+      "body": 95,
+      "legs": 95,
+      "feet": 95,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "A floresta tem olhos, exilado. Eu sou um deles."
+    },
+    {
+     "uid": "npc:helena",
+     "id": "helena",
+     "name": "Helena",
+     "x": 30,
+     "y": 30,
+     "z": 7,
+     "dir": 2,
+     "look": 140,
+     "colors": {
+      "type": 140,
+      "head": 58,
+      "body": 94,
+      "legs": 94,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "Este acampamento é o último lugar seguro antes da floresta. Descanse enquanto pode."
+    },
+    {
+     "uid": "npc:eramir",
+     "id": "eramir",
+     "name": "Eramir",
+     "x": 41,
+     "y": 13,
+     "z": 7,
+     "dir": 2,
+     "look": 145,
+     "colors": {
+      "type": 145,
+      "head": 0,
+      "body": 86,
+      "legs": 86,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "Os bandidos fecharam os caminhos da floresta. Ajude um deles, ou acabe com os três — a escolha é sua, exilado."
+    }
+   ],
+   "objetos": [
+    {
+     "uid": "marco:aventuras:35,27",
+     "x": 35,
+     "y": 27,
+     "item": null,
+     "nome": "Aventuras",
+     "cor": "dourado",
+     "acao": "aventuras",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:boss-diarios:28,26",
+     "x": 28,
+     "y": 26,
+     "item": null,
+     "nome": "Boss Diarios",
+     "cor": "boss",
+     "acao": "boss-diarios",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:forja:26,21",
+     "x": 26,
+     "y": 21,
+     "item": null,
+     "nome": "Forja",
+     "cor": "vermelho",
+     "acao": "forja",
+     "pisar": false,
+     "nomeDx": -0.5,
+     "nomeDy": -0.5
+    },
+    {
+     "uid": "marco:arvore:35,17:35,17",
+     "x": 35,
+     "y": 17,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:35,17:36,17",
+     "x": 36,
+     "y": 17,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:35,17:37,17",
+     "x": 37,
+     "y": 17,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:35,17:35,18",
+     "x": 35,
+     "y": 18,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:35,17:36,18",
+     "x": 36,
+     "y": 18,
+     "item": null,
+     "nome": "Arvore De Habilidade",
+     "cor": "verde-azul",
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:35,17:37,18",
+     "x": 37,
+     "y": 18,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:35,17:35,19",
+     "x": 35,
+     "y": 19,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:35,17:36,19",
+     "x": 36,
+     "y": 19,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:35,17:37,19",
+     "x": 37,
+     "y": 19,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    }
+   ]
+  },
+  {
+   "id": "poe-a3-the-sarn-encampment",
+   "nome": "Acampamento de Sarn",
+   "mapa": {
+    "gerador": "sarn",
+    "semente": 31
+   },
+   "chegada": {
+    "x": 32,
+    "y": 27,
+    "z": 7,
+    "dir": 2
+   },
+   "npcs": [
+    {
+     "uid": "npc:clarissa",
+     "id": "clarissa",
+     "name": "Clarissa",
+     "x": 26,
+     "y": 23,
+     "z": 7,
+     "dir": 2,
+     "look": 140,
+     "colors": {
+      "type": 140,
+      "head": 78,
+      "body": 86,
+      "legs": 86,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "loja"
+    },
+    {
+     "uid": "npc:hargan",
+     "id": "hargan",
+     "name": "Hargan",
+     "x": 37,
+     "y": 20,
+     "z": 7,
+     "dir": 2,
+     "look": 151,
+     "colors": {
+      "type": 151,
+      "head": 95,
+      "body": 114,
+      "legs": 114,
+      "feet": 95,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "banco"
+    },
+    {
+     "uid": "npc:maramoa",
+     "id": "maramoa",
+     "name": "Maramoa",
+     "x": 28,
+     "y": 33,
+     "z": 7,
+     "dir": 2,
+     "look": 158,
+     "colors": {
+      "type": 158,
+      "head": 0,
+      "body": 79,
+      "legs": 79,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "Os espíritos de Sarn não descansam. Ouça com atenção, exilado, e eles dirão quem os acordou."
+    },
+    {
+     "uid": "npc:grigor",
+     "id": "grigor",
+     "name": "Grigor",
+     "x": 40,
+     "y": 28,
+     "z": 7,
+     "dir": 2,
+     "look": 146,
+     "colors": {
+      "type": 146,
+      "head": 0,
+      "body": 57,
+      "legs": 57,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "Esta cidade já foi a joia do Império. Agora sobrou a praça, a chuva e nós."
+    }
+   ],
+   "objetos": [
+    {
+     "uid": "marco:aventuras:34,31",
+     "x": 34,
+     "y": 31,
+     "item": null,
+     "nome": "Aventuras",
+     "cor": "dourado",
+     "acao": "aventuras",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:boss-diarios:29,31",
+     "x": 29,
+     "y": 31,
+     "item": null,
+     "nome": "Boss Diarios",
+     "cor": "boss",
+     "acao": "boss-diarios",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:forja:39,24",
+     "x": 39,
+     "y": 24,
+     "item": null,
+     "nome": "Forja",
+     "cor": "vermelho",
+     "acao": "forja",
+     "pisar": false,
+     "nomeDx": -0.5,
+     "nomeDy": -0.5
+    },
+    {
+     "uid": "marco:arvore:22,29:22,29",
+     "x": 22,
+     "y": 29,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,29:23,29",
+     "x": 23,
+     "y": 29,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,29:24,29",
+     "x": 24,
+     "y": 29,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,29:22,30",
+     "x": 22,
+     "y": 30,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,29:23,30",
+     "x": 23,
+     "y": 30,
+     "item": null,
+     "nome": "Arvore De Habilidade",
+     "cor": "verde-azul",
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,29:24,30",
+     "x": 24,
+     "y": 30,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,29:22,31",
+     "x": 22,
+     "y": 31,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,29:23,31",
+     "x": 23,
+     "y": 31,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,29:24,31",
+     "x": 24,
+     "y": 31,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    }
+   ]
+  },
+  {
+   "id": "poe-a4-highgate",
+   "nome": "Highgate",
+   "mapa": {
+    "gerador": "highgate",
+    "semente": 41
+   },
+   "chegada": {
+    "x": 34,
+    "y": 25,
+    "z": 7,
+    "dir": 2
+   },
+   "npcs": [
+    {
+     "uid": "npc:petarus-e-vanja",
+     "id": "petarus-e-vanja",
+     "name": "Petarus e Vanja",
+     "x": 28,
+     "y": 25,
+     "z": 7,
+     "dir": 2,
+     "look": 132,
+     "colors": {
+      "type": 132,
+      "head": 78,
+      "body": 77,
+      "legs": 77,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "loja"
+    },
+    {
+     "uid": "npc:tasuni",
+     "id": "tasuni",
+     "name": "Tasuni",
+     "x": 36,
+     "y": 22,
+     "z": 7,
+     "dir": 2,
+     "look": 157,
+     "colors": {
+      "type": 157,
+      "head": 0,
+      "body": 86,
+      "legs": 86,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "banco"
+    },
+    {
+     "uid": "npc:dialla",
+     "id": "dialla",
+     "name": "Dialla",
+     "x": 33,
+     "y": 20,
+     "z": 7,
+     "dir": 2,
+     "look": 141,
+     "colors": {
+      "type": 141,
+      "head": 95,
+      "body": 113,
+      "legs": 113,
+      "feet": 95,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "O Coração de Malachai bate debaixo de nós. Cada passo nas minas o deixa mais perto de acordar."
+    },
+    {
+     "uid": "npc:oyun",
+     "id": "oyun",
+     "name": "Oyun",
+     "x": 35,
+     "y": 30,
+     "z": 7,
+     "dir": 2,
+     "look": 147,
+     "colors": {
+      "type": 147,
+      "head": 78,
+      "body": 58,
+      "legs": 58,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "As minas eram a vida de Highgate. Agora só os loucos e os exilados descem lá."
+    }
+   ],
+   "objetos": [
+    {
+     "uid": "marco:aventuras:36,27",
+     "x": 36,
+     "y": 27,
+     "item": null,
+     "nome": "Aventuras",
+     "cor": "dourado",
+     "acao": "aventuras",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:boss-diarios:30,26",
+     "x": 30,
+     "y": 26,
+     "item": null,
+     "nome": "Boss Diarios",
+     "cor": "boss",
+     "acao": "boss-diarios",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:forja:30,32",
+     "x": 30,
+     "y": 32,
+     "item": null,
+     "nome": "Forja",
+     "cor": "vermelho",
+     "acao": "forja",
+     "pisar": false,
+     "nomeDx": -0.5,
+     "nomeDy": -0.5
+    },
+    {
+     "uid": "marco:arvore:39,24:39,24",
+     "x": 39,
+     "y": 24,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,24:40,24",
+     "x": 40,
+     "y": 24,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,24:41,24",
+     "x": 41,
+     "y": 24,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,24:39,25",
+     "x": 39,
+     "y": 25,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,24:40,25",
+     "x": 40,
+     "y": 25,
+     "item": null,
+     "nome": "Arvore De Habilidade",
+     "cor": "verde-azul",
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,24:41,25",
+     "x": 41,
+     "y": 25,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,24:39,26",
+     "x": 39,
+     "y": 26,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,24:40,26",
+     "x": 40,
+     "y": 26,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,24:41,26",
+     "x": 41,
+     "y": 26,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    }
+   ]
+  },
+  {
+   "id": "poe-a5-overseers-tower",
+   "nome": "Torre do Supervisor",
+   "mapa": {
+    "gerador": "torre",
+    "semente": 53
+   },
+   "chegada": {
+    "x": 31,
+    "y": 31,
+    "z": 7,
+    "dir": 2
+   },
+   "npcs": [
+    {
+     "uid": "npc:lani",
+     "id": "lani",
+     "name": "Lani",
+     "x": 27,
+     "y": 27,
+     "z": 7,
+     "dir": 2,
+     "look": 136,
+     "colors": {
+      "type": 136,
+      "head": 78,
+      "body": 86,
+      "legs": 86,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "loja"
+    },
+    {
+     "uid": "npc:bannon",
+     "id": "bannon",
+     "name": "Bannon",
+     "x": 36,
+     "y": 26,
+     "z": 7,
+     "dir": 2,
+     "look": 131,
+     "colors": {
+      "type": 131,
+      "head": 95,
+      "body": 57,
+      "legs": 57,
+      "feet": 95,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "banco"
+    },
+    {
+     "uid": "npc:utula",
+     "id": "utula",
+     "name": "Utula",
+     "x": 31,
+     "y": 23,
+     "z": 7,
+     "dir": 2,
+     "look": 142,
+     "colors": {
+      "type": 142,
+      "head": 0,
+      "body": 114,
+      "legs": 114,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "Oriath prendeu o meu povo e chamou isso de justiça. Agora a justiça vem de baixo, exilado."
+    }
+   ],
+   "objetos": [
+    {
+     "uid": "marco:aventuras:34,33",
+     "x": 34,
+     "y": 33,
+     "item": null,
+     "nome": "Aventuras",
+     "cor": "dourado",
+     "acao": "aventuras",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:boss-diarios:29,33",
+     "x": 29,
+     "y": 33,
+     "item": null,
+     "nome": "Boss Diarios",
+     "cor": "boss",
+     "acao": "boss-diarios",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:forja:28,22",
+     "x": 28,
+     "y": 22,
+     "item": null,
+     "nome": "Forja",
+     "cor": "vermelho",
+     "acao": "forja",
+     "pisar": false,
+     "nomeDx": -0.5,
+     "nomeDy": -0.5
+    },
+    {
+     "uid": "marco:arvore:34,20:34,20",
+     "x": 34,
+     "y": 20,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,20:35,20",
+     "x": 35,
+     "y": 20,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,20:36,20",
+     "x": 36,
+     "y": 20,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,20:34,21",
+     "x": 34,
+     "y": 21,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,20:35,21",
+     "x": 35,
+     "y": 21,
+     "item": null,
+     "nome": "Arvore De Habilidade",
+     "cor": "verde-azul",
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,20:36,21",
+     "x": 36,
+     "y": 21,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,20:34,22",
+     "x": 34,
+     "y": 22,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,20:35,22",
+     "x": 35,
+     "y": 22,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,20:36,22",
+     "x": 36,
+     "y": 22,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    }
+   ]
+  },
+  {
    "id": "poe-a6-lioneyes-watch",
    "nome": "Vigília de Lioneye",
-   "igualA": "poe-a1-lioneyes-watch"
+   "mapa": {
+    "gerador": "lioneye",
+    "semente": 11,
+    "guerra": true
+   },
+   "chegada": {
+    "x": 28,
+    "y": 23,
+    "z": 7,
+    "dir": 2
+   },
+   "npcs": [
+    {
+     "uid": "npc:lilly-roth",
+     "id": "lilly-roth",
+     "name": "Lilly Roth",
+     "x": 21,
+     "y": 15,
+     "z": 7,
+     "dir": 2,
+     "look": 140,
+     "colors": {
+      "type": 140,
+      "head": 78,
+      "body": 94,
+      "legs": 94,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "loja"
+    },
+    {
+     "uid": "npc:tarkleigh",
+     "id": "tarkleigh",
+     "name": "Tarkleigh",
+     "x": 24,
+     "y": 14,
+     "z": 7,
+     "dir": 2,
+     "look": 128,
+     "colors": {
+      "type": 128,
+      "head": 95,
+      "body": 57,
+      "legs": 40,
+      "feet": 95,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "banco"
+    },
+    {
+     "uid": "npc:bestel",
+     "id": "bestel",
+     "name": "Bestel",
+     "x": 45,
+     "y": 21,
+     "z": 7,
+     "dir": 2,
+     "look": 129,
+     "colors": {
+      "type": 129,
+      "head": 116,
+      "body": 38,
+      "legs": 58,
+      "feet": 94,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "A Vigília aguentou, exilado. Por pouco. Os Karui vieram pelo mar e deixaram os totens deles nos portões."
+    }
+   ],
+   "objetos": [
+    {
+     "uid": "marco:aventuras:30,25",
+     "x": 30,
+     "y": 25,
+     "item": null,
+     "nome": "Aventuras",
+     "cor": "dourado",
+     "acao": "aventuras",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:boss-diarios:22,24",
+     "x": 22,
+     "y": 24,
+     "item": null,
+     "nome": "Boss Diarios",
+     "cor": "boss",
+     "acao": "boss-diarios",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:forja:23,17",
+     "x": 23,
+     "y": 17,
+     "item": null,
+     "nome": "Forja",
+     "cor": "vermelho",
+     "acao": "forja",
+     "pisar": false,
+     "nomeDx": -0.5,
+     "nomeDy": -0.5
+    },
+    {
+     "uid": "marco:arvore:17,17:17,17",
+     "x": 17,
+     "y": 17,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:18,17",
+     "x": 18,
+     "y": 17,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:19,17",
+     "x": 19,
+     "y": 17,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:17,18",
+     "x": 17,
+     "y": 18,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:18,18",
+     "x": 18,
+     "y": 18,
+     "item": null,
+     "nome": "Arvore De Habilidade",
+     "cor": "verde-azul",
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:19,18",
+     "x": 19,
+     "y": 18,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:17,19",
+     "x": 17,
+     "y": 19,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:18,19",
+     "x": 18,
+     "y": 19,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:19,19",
+     "x": 19,
+     "y": 19,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    }
+   ]
+  },
+  {
+   "id": "poe-a7-the-bridge-encampment",
+   "nome": "Acampamento da Ponte",
+   "mapa": {
+    "gerador": "ponte",
+    "semente": 71
+   },
+   "chegada": {
+    "x": 32,
+    "y": 24,
+    "z": 7,
+    "dir": 2
+   },
+   "npcs": [
+    {
+     "uid": "npc:lilly-roth",
+     "id": "lilly-roth",
+     "name": "Lilly Roth",
+     "x": 30,
+     "y": 23,
+     "z": 7,
+     "dir": 2,
+     "look": 140,
+     "colors": {
+      "type": 140,
+      "head": 78,
+      "body": 94,
+      "legs": 94,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "loja"
+    },
+    {
+     "uid": "npc:weylam-roth",
+     "id": "weylam-roth",
+     "name": "Weylam Roth",
+     "x": 27,
+     "y": 21,
+     "z": 7,
+     "dir": 2,
+     "look": 151,
+     "colors": {
+      "type": 151,
+      "head": 0,
+      "body": 94,
+      "legs": 94,
+      "feet": 95,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "banco"
+    },
+    {
+     "uid": "npc:helena",
+     "id": "helena",
+     "name": "Helena",
+     "x": 37,
+     "y": 23,
+     "z": 7,
+     "dir": 2,
+     "look": 140,
+     "colors": {
+      "type": 140,
+      "head": 58,
+      "body": 94,
+      "legs": 94,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "Do outro lado da ponte só há escuridão. A Aranha guarda a floresta, e ninguém volta da Ponte Quebrada."
+    },
+    {
+     "uid": "npc:eramir",
+     "id": "eramir",
+     "name": "Eramir",
+     "x": 33,
+     "y": 26,
+     "z": 7,
+     "dir": 2,
+     "look": 145,
+     "colors": {
+      "type": 145,
+      "head": 0,
+      "body": 86,
+      "legs": 86,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "A luz está se apagando, exilado. Arakaali tece a sua teia sobre Wraeclast, e nós estamos no meio dela."
+    }
+   ],
+   "objetos": [
+    {
+     "uid": "marco:aventuras:35,25",
+     "x": 35,
+     "y": 25,
+     "item": null,
+     "nome": "Aventuras",
+     "cor": "dourado",
+     "acao": "aventuras",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:boss-diarios:29,25",
+     "x": 29,
+     "y": 25,
+     "item": null,
+     "nome": "Boss Diarios",
+     "cor": "boss",
+     "acao": "boss-diarios",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:forja:24,23",
+     "x": 24,
+     "y": 23,
+     "item": null,
+     "nome": "Forja",
+     "cor": "vermelho",
+     "acao": "forja",
+     "pisar": false,
+     "nomeDx": -0.5,
+     "nomeDy": -0.5
+    },
+    {
+     "uid": "marco:arvore:39,23:39,23",
+     "x": 39,
+     "y": 23,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,23:40,23",
+     "x": 40,
+     "y": 23,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,23:41,23",
+     "x": 41,
+     "y": 23,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,23:39,24",
+     "x": 39,
+     "y": 24,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,23:40,24",
+     "x": 40,
+     "y": 24,
+     "item": null,
+     "nome": "Arvore De Habilidade",
+     "cor": "verde-azul",
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,23:41,24",
+     "x": 41,
+     "y": 24,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,23:39,25",
+     "x": 39,
+     "y": 25,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,23:40,25",
+     "x": 40,
+     "y": 25,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:39,23:41,25",
+     "x": 41,
+     "y": 25,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    }
+   ]
+  },
+  {
+   "id": "poe-a8-the-sarn-encampment",
+   "nome": "Acampamento de Sarn",
+   "igualA": "poe-a3-the-sarn-encampment"
+  },
+  {
+   "id": "poe-a9-highgate",
+   "nome": "Highgate",
+   "igualA": "poe-a4-highgate"
+  },
+  {
+   "id": "poe-a10-oriath-docks",
+   "nome": "Docas de Oriath",
+   "mapa": {
+    "gerador": "docas",
+    "semente": 101
+   },
+   "chegada": {
+    "x": 32,
+    "y": 22,
+    "z": 7,
+    "dir": 2
+   },
+   "npcs": [
+    {
+     "uid": "npc:lilly-roth",
+     "id": "lilly-roth",
+     "name": "Lilly Roth",
+     "x": 28,
+     "y": 20,
+     "z": 7,
+     "dir": 2,
+     "look": 140,
+     "colors": {
+      "type": 140,
+      "head": 78,
+      "body": 94,
+      "legs": 94,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "loja"
+    },
+    {
+     "uid": "npc:bannon",
+     "id": "bannon",
+     "name": "Bannon",
+     "x": 37,
+     "y": 19,
+     "z": 7,
+     "dir": 2,
+     "look": 131,
+     "colors": {
+      "type": 131,
+      "head": 95,
+      "body": 57,
+      "legs": 57,
+      "feet": 95,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "banco"
+    },
+    {
+     "uid": "npc:lani",
+     "id": "lani",
+     "name": "Lani",
+     "x": 34,
+     "y": 26,
+     "z": 7,
+     "dir": 2,
+     "look": 136,
+     "colors": {
+      "type": 136,
+      "head": 78,
+      "body": 86,
+      "legs": 86,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "Oriath queima, exilado, e Kitava está no coração da cidade. Se alguém pode acabar com isso, é você."
+    }
+   ],
+   "objetos": [
+    {
+     "uid": "marco:aventuras:36,25",
+     "x": 36,
+     "y": 25,
+     "item": null,
+     "nome": "Aventuras",
+     "cor": "dourado",
+     "acao": "aventuras",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:boss-diarios:28,25",
+     "x": 28,
+     "y": 25,
+     "item": null,
+     "nome": "Boss Diarios",
+     "cor": "boss",
+     "acao": "boss-diarios",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:forja:40,21",
+     "x": 40,
+     "y": 21,
+     "item": null,
+     "nome": "Forja",
+     "cor": "vermelho",
+     "acao": "forja",
+     "pisar": false,
+     "nomeDx": -0.5,
+     "nomeDy": -0.5
+    },
+    {
+     "uid": "marco:arvore:22,19:22,19",
+     "x": 22,
+     "y": 19,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,19:23,19",
+     "x": 23,
+     "y": 19,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,19:24,19",
+     "x": 24,
+     "y": 19,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,19:22,20",
+     "x": 22,
+     "y": 20,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,19:23,20",
+     "x": 23,
+     "y": 20,
+     "item": null,
+     "nome": "Arvore De Habilidade",
+     "cor": "verde-azul",
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,19:24,20",
+     "x": 24,
+     "y": 20,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,19:22,21",
+     "x": 22,
+     "y": 21,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,19:23,21",
+     "x": 23,
+     "y": 21,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,19:24,21",
+     "x": 24,
+     "y": 21,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    }
+   ]
+  },
+  {
+   "id": "poe-a11-karui-shores",
+   "nome": "Costa Karui",
+   "mapa": {
+    "gerador": "karui",
+    "semente": 111
+   },
+   "chegada": {
+    "x": 26,
+    "y": 25,
+    "z": 7,
+    "dir": 2
+   },
+   "npcs": [
+    {
+     "uid": "npc:lilly-roth",
+     "id": "lilly-roth",
+     "name": "Lilly Roth",
+     "x": 24,
+     "y": 21,
+     "z": 7,
+     "dir": 2,
+     "look": 140,
+     "colors": {
+      "type": 140,
+      "head": 78,
+      "body": 94,
+      "legs": 94,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "loja"
+    },
+    {
+     "uid": "npc:utula",
+     "id": "utula",
+     "name": "Utula",
+     "x": 29,
+     "y": 22,
+     "z": 7,
+     "dir": 2,
+     "look": 142,
+     "colors": {
+      "type": 142,
+      "head": 0,
+      "body": 114,
+      "legs": 114,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "banco"
+    },
+    {
+     "uid": "npc:kirac",
+     "id": "kirac",
+     "name": "Kirac",
+     "x": 26,
+     "y": 28,
+     "z": 7,
+     "dir": 2,
+     "look": 134,
+     "colors": {
+      "type": 134,
+      "head": 0,
+      "body": 57,
+      "legs": 57,
+      "feet": 95,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "O Atlas espera, exilado. O Dispositivo de Mapas está ali, no meio da aldeia: ponha um mapa nele e vamos."
+    }
+   ],
+   "objetos": [
+    {
+     "uid": "marco:aventuras:29,26",
+     "x": 29,
+     "y": 26,
+     "item": null,
+     "nome": "Aventuras",
+     "cor": "dourado",
+     "acao": "aventuras",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:boss-diarios:23,26",
+     "x": 23,
+     "y": 26,
+     "item": null,
+     "nome": "Boss Diarios",
+     "cor": "boss",
+     "acao": "boss-diarios",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:forja:31,18",
+     "x": 31,
+     "y": 18,
+     "item": null,
+     "nome": "Forja",
+     "cor": "vermelho",
+     "acao": "forja",
+     "pisar": false,
+     "nomeDx": -0.5,
+     "nomeDy": -0.5
+    },
+    {
+     "uid": "marco:arvore:20,16:20,16",
+     "x": 20,
+     "y": 16,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:20,16:21,16",
+     "x": 21,
+     "y": 16,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:20,16:22,16",
+     "x": 22,
+     "y": 16,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:20,16:20,17",
+     "x": 20,
+     "y": 17,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:20,16:21,17",
+     "x": 21,
+     "y": 17,
+     "item": null,
+     "nome": "Arvore De Habilidade",
+     "cor": "verde-azul",
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:20,16:22,17",
+     "x": 22,
+     "y": 17,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:20,16:20,18",
+     "x": 20,
+     "y": 18,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:20,16:21,18",
+     "x": 21,
+     "y": 18,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:20,16:22,18",
+     "x": 22,
+     "y": 18,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:dispositivo:31,24",
+     "x": 31,
+     "y": 24,
+     "item": null,
+     "nome": "Dispositivo de Mapas",
+     "cor": "dourado",
+     "acao": "dispositivo",
+     "pisar": false,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    }
+   ]
   }
  ]
 }

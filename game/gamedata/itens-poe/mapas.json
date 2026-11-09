@@ -92,7 +92,7 @@
  "dispositivo": {
   "_nota": "O DISPOSITIVO DE MAPAS: libera depois do chefe do `atoQueLibera`; fica na aba Mapas da tela Mundo e na cidade `cidade`. Cada mapa aberto dá `portais` entradas (cada morte gasta uma; sem portal, o mapa acaba — como no PoE).",
   "atoQueLibera": 10,
-  "cidade": "poe-a10-oriath-docks",
+  "cidade": "poe-a11-karui-shores",
   "portais": 6
  },
  "instancia": {

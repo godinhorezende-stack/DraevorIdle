@@ -725,6 +725,16 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
         voltar.onclick = () => h.voltarParaCidade?.();
         acao.append(voltar, el('p', 'w2-nota', 'Encerra a caçada atual (se houver) e volta para a vila.'));
       }
+      // (09/11) O EPÍLOGO (a Costa Karui, a cidade do endgame): sem fases, ele não tem aba de ato — o caminho até ele sai da cidade do último
+      // ato, e abre ao vencer o chefe dele
+      const ep = campanha.epilogo;
+      if (ep && campanha.cidadesPorAto && h.irParaCidade && atoAtual.ato === ep.ato - 1) {
+        const estou = onde?.id === `cidade:${ep.ato}` || Number(campanha.atoDaCidade) === ep.ato;
+        const irEp = botao('w2-entrar', estou ? `Você está em ${ep.nome}` : `Ir para ${ep.nome}`);
+        irEp.disabled = estou || !ep.aberto;
+        irEp.onclick = () => h.irParaCidade(ep.ato);
+        acao.append(irEp, el('p', 'w2-nota', ep.aberto ? `${ep.nome}: a cidade do endgame, com o Dispositivo de Mapas.` : `${ep.nome} abre depois de vencer o chefe do Ato ${romano(atoAtual.ato)}.`));
+      }
       // O Dispositivo de Mapas fica na cidade do Ato dele (as Docas de Oriath): o atalho para a aba Mapas.
       if (campanha.mapas && h.abrirMapas && atoAtual.ato === campanha.mapas.ato) {
         const dispositivo = botao('w2-entrar w2-dispositivo', 'Dispositivo de Mapas');

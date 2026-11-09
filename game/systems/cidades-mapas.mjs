@@ -76,5 +76,11 @@ export function garantirPosicao(estado) {
   else if (pos.cidade !== mid) estado.pos = { ...pos, cidade: mid };
   return estado.pos;
 }
+/** Põe o personagem na CHEGADA da cidade dele (a viagem, a morte, a saída da arena): a casa de entrada daquela cidade, não a da praça antiga. */
+export function irParaAChegada(estado) {
+  const cidade = cidadeDe(estado);
+  estado.pos = { ...chegadaDa(cidade.id), cidade: mapaIdDa(cidade.id) };
+  return estado.pos;
+}
 /** Para a cidade do estado: o id da cidade (a chave do chão e da praça). */
 export const idDe = (estado) => cidadeDe(estado).id;

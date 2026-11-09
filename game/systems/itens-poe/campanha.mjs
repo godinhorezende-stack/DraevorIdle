@@ -289,7 +289,11 @@ export function iniciar({ mapasSobDemanda = false } = {}) {
     atos.push(r.numero);
   }
   // As CIDADES de cada ato registrado (a Vigília de Lioneye, o Acampamento da Floresta…): uma instância por cidade (`systems/cidades.mjs`).
-  Cidades.registrar(Object.values(C.areas).filter((a) => a.cidade && atos.includes(a.ato)).map((a) => ({ id: a.id, nome: a.nome, ato: a.ato })));
+  // (09/11, o dono: a Costa Karui como a cidade do endgame) e a do ato SEGUINTE ao último registrado quando ele só tem a cidade (o
+  // Epílogo do PoE: a Costa Karui, sem fases nem chefe — abre ao vencer o chefe do último ato, `Campanha.cidadeAberta`)
+  const ultimo = Math.max(0, ...atos);
+  const soCidade = (a) => a.ato === ultimo + 1 && !Object.values(C.areas).some((b) => b.ato === a.ato && !b.cidade);
+  Cidades.registrar(Object.values(C.areas).filter((a) => a.cidade && (atos.includes(a.ato) || soCidade(a))).map((a) => ({ id: a.id, nome: a.nome, ato: a.ato })));
   INICIADO = { areas, atos, problemas };
   return INICIADO;
 }

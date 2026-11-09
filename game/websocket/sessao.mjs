@@ -1615,14 +1615,15 @@ export class Sessao {
       case 'irParaCidade': {
         const destino = Cidades.daCidadeDoAto(m.ato);
         if (!destino) return this.erro('Essa cidade não existe.');
-        if (!Campanha.atoAberto(this.estado, destino.ato)) return this.erro(`O Ato ${destino.ato} ainda não está aberto para você.`);
+        if (!Campanha.cidadeAberta(this.estado, destino.ato)) return this.erro(`O Ato ${destino.ato} ainda não está aberto para você.`);
         const mudou = Number(this.estado.atoDaCidade) !== destino.ato;
         // A cidade e a casa de chegada ANTES de sair da caçada: o primeiro quadro da praça já é o da cidade nova.
         this.estado.atoDaCidade = destino.ato;
         if (mudou) {
           // Um TELETRANSPORTE (dono, 10/10: "de forma natural, tipo teletransporte, sem eu ver o boneco sendo puxado"): a casa de chegada
           // vai marcada (`teleporte`, contador da sessão — o cliente põe o boneco lá sem desenhar o caminho) e o caminho que ele andava acaba.
-          this.estado.pos = { ...R.POSICAO_INICIAL };
+          // (09/11) a chegada da cidade de DESTINO (cada cidade de ato tem a sua): o portal de chegada aparece nela, não na casa da praça antiga
+          CidadesMapas.irParaAChegada(this.estado);
           this.estado.rumo = null;
           this.estado.destino = null;
           this.teleporte = (this.teleporte ?? 0) + 1;
@@ -3176,7 +3177,7 @@ export class Sessao {
     this.estado.es = null; // Energy Shield cheio de novo
     // Acordou na cidade: os frascos do cinto cheios (dono, 07/10), como ao voltar para a cidade.
     FrascosPoe.encherNaCidade(this.estado);
-    this.estado.pos = { ...R.POSICAO_INICIAL };
+    CidadesMapas.irParaAChegada(this.estado); // (09/11) acorda na chegada da cidade dele
     return morte;
   }
 

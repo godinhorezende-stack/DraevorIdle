@@ -1,6 +1,7 @@
 // O que toda cidade usa: o sorteio com semente, o ruído suave, os MARCOS do jogo no chão (o portal, a forja, a árvore — os mesmos sprites da
 // cidade de sempre), a conferência do caminho (a chegada alcança tudo) e a MONTAGEM do mapa no formato da cidade (`dados.CITY_MAP`) com o atlas.
 import { daPaleta, atlas as atlasDa } from './sprites.mjs';
+import { porDoodad } from './objetos.mjs';
 
 export function sorteio(semente) {
   let s = semente;
@@ -31,6 +32,8 @@ export function porMarcos(cam, objetos) {
   const feitos = new Set();
   for (const o of objetos) {
     if (o.acao === 'aventuras' || o.acao === 'boss-diarios') cam.por(o.x, o.y, PORTAL);
+    // (09/11) o DISPOSITIVO DE MAPAS da cidade do endgame (a Costa Karui): a poça roxa em redemoinho, de pé (clica-se nele)
+    else if (o.acao === 'dispositivo') for (const [x, y] of porDoodad(cam, 'color purple pool', o.x, o.y, () => 0, { alt: 0, exigeLivre: false }) ?? [[o.x, o.y]]) duras.add(`${x},${y}`);
     else if (o.acao === 'forja') for (const [dx, dy, id] of FORJA) { cam.por(o.x + dx, o.y + dy, id); duras.add(`${o.x + dx},${o.y + dy}`); }
     else if (o.acao === 'arvore') {
       const [x0, y0] = o.uid.split(':')[2].split(',').map(Number); // `marco:arvore:<canto>:<casa>`

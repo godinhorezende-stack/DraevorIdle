@@ -37,6 +37,7 @@
 import { readFileSync } from 'node:fs';
 import { banco } from '../database/banco.mjs';
 import * as R from './regras.mjs';
+import * as CidadesMapas from './cidades-mapas.mjs';
 import * as Cacadas from './cacadas.mjs';
 import * as Ficha from './ficha.mjs';
 import * as Defesa from './personagem/defesa.mjs';
@@ -733,7 +734,7 @@ async function terminar(id, vencedor, motivo, quemSaiu = null) {
     e.hunt = null;
     restaurar(e);
     // Quem perde "acorda no templo" (o texto da tela de fim do cliente); quem vence volta para onde estava.
-    if (nome !== vencedor) e.pos = { ...R.POSICAO_INICIAL };
+    if (nome !== vencedor) CidadesMapas.irParaAChegada(e); // (09/11) a chegada da cidade dele
     const a = garantir(e, agora);
     const antes = { pontos: a.pontos, moedas: a.moedas ?? 0, patente: patente(a.pontos, a.pontosTotais) };
     if (nome === vencedor) {
