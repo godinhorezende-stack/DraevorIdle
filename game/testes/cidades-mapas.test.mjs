@@ -57,6 +57,7 @@ const NPCS_DO_PoE = {
   'poe-a5-overseers-tower': [['Lani', 'loja'], ['Bannon', 'banco'], ['Utula', 'fala']],
   'poe-a6-lioneyes-watch': [['Lilly Roth', 'loja'], ['Tarkleigh', 'banco'], ['Bestel', 'fala']],
   'poe-a7-the-bridge-encampment': [['Lilly Roth', 'loja'], ['Weylam Roth', 'banco'], ['Helena', 'fala'], ['Eramir', 'fala']],
+  'poe-a10-oriath-docks': [['Lilly Roth', 'loja'], ['Bannon', 'banco'], ['Lani', 'fala']],
 };
 test('os NPCs do PoE em cada cidade com mapa, de pé em casa livre e alcançáveis da chegada; os marcos também', { skip: SEM }, () => {
   for (const [id, esperados] of Object.entries(NPCS_DO_PoE)) {

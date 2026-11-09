@@ -1488,6 +1488,202 @@
    "id": "poe-a9-highgate",
    "nome": "Highgate",
    "igualA": "poe-a4-highgate"
+  },
+  {
+   "id": "poe-a10-oriath-docks",
+   "nome": "Docas de Oriath",
+   "mapa": {
+    "gerador": "docas",
+    "semente": 101
+   },
+   "chegada": {
+    "x": 32,
+    "y": 22,
+    "z": 7,
+    "dir": 2
+   },
+   "npcs": [
+    {
+     "uid": "npc:lilly-roth",
+     "id": "lilly-roth",
+     "name": "Lilly Roth",
+     "x": 28,
+     "y": 20,
+     "z": 7,
+     "dir": 2,
+     "look": 140,
+     "colors": {
+      "type": 140,
+      "head": 78,
+      "body": 94,
+      "legs": 94,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "loja"
+    },
+    {
+     "uid": "npc:bannon",
+     "id": "bannon",
+     "name": "Bannon",
+     "x": 37,
+     "y": 19,
+     "z": 7,
+     "dir": 2,
+     "look": 131,
+     "colors": {
+      "type": 131,
+      "head": 95,
+      "body": 57,
+      "legs": 57,
+      "feet": 95,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "banco"
+    },
+    {
+     "uid": "npc:lani",
+     "id": "lani",
+     "name": "Lani",
+     "x": 34,
+     "y": 26,
+     "z": 7,
+     "dir": 2,
+     "look": 136,
+     "colors": {
+      "type": 136,
+      "head": 78,
+      "body": 86,
+      "legs": 86,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "Oriath queima, exilado, e Kitava está no coração da cidade. Se alguém pode acabar com isso, é você."
+    }
+   ],
+   "objetos": [
+    {
+     "uid": "marco:aventuras:36,25",
+     "x": 36,
+     "y": 25,
+     "item": null,
+     "nome": "Aventuras",
+     "cor": "dourado",
+     "acao": "aventuras",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:boss-diarios:28,25",
+     "x": 28,
+     "y": 25,
+     "item": null,
+     "nome": "Boss Diarios",
+     "cor": "boss",
+     "acao": "boss-diarios",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:forja:40,21",
+     "x": 40,
+     "y": 21,
+     "item": null,
+     "nome": "Forja",
+     "cor": "vermelho",
+     "acao": "forja",
+     "pisar": false,
+     "nomeDx": -0.5,
+     "nomeDy": -0.5
+    },
+    {
+     "uid": "marco:arvore:22,19:22,19",
+     "x": 22,
+     "y": 19,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,19:23,19",
+     "x": 23,
+     "y": 19,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,19:24,19",
+     "x": 24,
+     "y": 19,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,19:22,20",
+     "x": 22,
+     "y": 20,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,19:23,20",
+     "x": 23,
+     "y": 20,
+     "item": null,
+     "nome": "Arvore De Habilidade",
+     "cor": "verde-azul",
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,19:24,20",
+     "x": 24,
+     "y": 20,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,19:22,21",
+     "x": 22,
+     "y": 21,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,19:23,21",
+     "x": 23,
+     "y": 21,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:22,19:24,21",
+     "x": 24,
+     "y": 21,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    }
+   ]
   }
  ]
 }
