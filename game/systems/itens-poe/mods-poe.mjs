@@ -465,10 +465,13 @@ export function aoAmaldicoar(ficha, bicho, agora) {
 
 /** O "X% do Dano de <elemento> sofrido é Recuperado como Vida" de cada elemento de golpe. */
 const RECOUP_DO_ELEMENTO = { physical: 'recoup_life_phys', fire: 'recoup_life_fire', ice: 'recoup_life_ice', energy: 'recoup_life_energy', chaos: 'recoup_life_chaos' };
-export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorpo = false, ataque = false, magia = false, tipo = null, agora = hunt?.clock ?? 0, rng = Math.random, eventos = [] } = {}) {
+export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorpo = false, ataque = false, magia = false, critico = false, tipo = null, agora = hunt?.clock ?? 0, rng = Math.random, eventos = [] } = {}) {
   if (!ligado() || !hunt || !ficha?.afPoe) return eventos;
   const v = (k) => valor(ficha, k);
   marcar(hunt, 'acertado', agora);
+  // (08/11, os encantamentos do Labirinto: "se você sofreu um Golpe Crítico Recentemente", "se você sofreu Dano Mágico Recentemente")
+  if (critico) marcar(hunt, 'criticoSofrido', agora);
+  if (magia && dano > 0) marcar(hunt, 'danoMagico', agora);
   // (lote G-C, dono 25/10) a Punição: "Inimigos Amaldiçoados são Debilitados por N Segundos quando Acertarem" (o Debilitado do jogo — `ESTADOS_NO_ALVO.debilitado`)
   const debilitarMs = bicho ? GemasGAC.debilitarAoAcertar(bicho, agora) : 0;
   if (debilitarMs > 0) {
@@ -1067,6 +1070,14 @@ definirTiqueDosAspectos(tiqueDosAspectos);
 // eslint-disable-next-line no-var
 var esporoInfestado;
 export function definirEsporoInfestado(fn) { esporoInfestado = fn; }
+/**
+ * (08/11, o Córtex e as Memórias: "Monstros Sintetizados Raros ressuscitam como Aliados quando mortos" — `sintese-mapas.mjs`) o Raro morto volta como
+ * seu lacaio: quem cria é `acoes.mjs` (o ciclo de imports).
+ */
+// eslint-disable-next-line no-var
+var aliadoDoRaro;
+export function definirAliadoDoSintetizado(fn) { aliadoDoRaro = fn; }
+export const aliadoDoSintetizado = (estado, hunt, alvo) => aliadoDoRaro?.(estado, hunt, alvo);
 /** (07/11, lote 20 das inertes — sem fonte, o Tricorne de Fairgraves) os toques dos ESPÍRITOS ATORMENTADOS: um ao acaso, 20 s (`condicoes-poe.BUFFS.tocadoEspirito*`). */
 export const TOQUES_DOS_ESPIRITOS = Object.freeze(['tocadoEspiritoFuria', 'tocadoEspiritoPressa', 'tocadoEspiritoVida', 'tocadoEspiritoVento']);
 /** (07/11, lote 17) os Fantasmas Acorrentados da Marca da Penitência (`acoes.mjs` registra — `mobs/mecanicas.fantasmasDaPenitencia`). */
@@ -1483,6 +1494,10 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
         // Sangramento ou o Veneno —, sorteada
         const tem = AFECCOES_NO_JOGADOR.filter((a) => ['incendio', 'sangramento', 'veneno'].includes(a.nome) && a.tem(hunt, agora));
         if (tem.length) tem[Math.floor(rng() * tem.length)].tirar(hunt);
+      } else if (['incendio', 'frio', 'eletrizacao'].includes(ev.param)) {
+        // (08/11, a Síntese: "Remove Incêndio e Queimação / Resfriamento e Congelamento / Eletrização quando você usar um Frasco")
+        const nomes = { incendio: ['incendio'], frio: ['resfriamento', 'congelamento'], eletrizacao: ['eletrizacao'] }[ev.param];
+        for (const a of AFECCOES_NO_JOGADOR) if (nomes.includes(a.nome) && a.tem(hunt, agora)) a.tirar(hunt);
       } else if (ev.param === 'naoElemental' || ev.param === 'aleatoria') {
         // (13/10) UMA afecção aleatória (a de todas as pilhas do tipo, como no PoE): `naoElemental` — o Sangramento ou o Veneno (a Maestria de
         // Frascos); `aleatoria` — qualquer uma, as elementais também: o Incêndio, o Congelamento, o Resfriamento e a Eletrização (a Maestria de

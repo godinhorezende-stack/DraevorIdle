@@ -72,7 +72,6 @@ import {
   renderAppearance, openStore, openMarket, openBank, openLocker, openRanking,
   openLootFilter, openLimparBolsa, openLimparMochila, openVenderMochila, openVenderSacolas, openVenderBossPouch, openFriends, openParty, corpoDaJanelaDaParty, atualizarBarrasDaParty, openBarSettings, caixaDoDepositoAberta, openForja, openMercenarios,
   openDiario, openLojaNpc, abrirObterCoins,
-  resumoDasGemasParaBalao,
   resumoDaMorteLigado, ligarResumoDaMorte, aplicarEstiloDaRaridade,
   openArena,
   openCyclopedia, openBestiary, openReport, openLojaDeBossToken, openLojaDeTaskToken, openLobby, TITULO_DO_LOBBY, openPresente, abrirMarcoAberto,
@@ -86,7 +85,7 @@ import { initTooltip, tipFor, tipPanel, tipTexto, ligarComparacao, receberCompar
 import { qrcode } from '/packages/shared/src/qrcode.mjs';
 import { initArvore } from './arvore.mjs';
 import { initPassivas, openPassivas, aoReceberPassivas, resumoDasPassivasParaBalao } from './passivas.mjs';
-import { initGemas, openGemas } from './gemas.mjs';
+import { initGemas } from './gemas.mjs';
 /* As guildas — e, depois, o castle war. Ver `guildas.mjs`. */
 import { initGuildas, openGuildas, bauDaGuildaAberto, guardarNoBauDaGuilda } from './guildas.mjs';
 // As chaves de gráficos dos Ajustes da tela. Ver `graficos.mjs`.
@@ -1159,24 +1158,6 @@ function handle(message) {
       if (message.view?.aviso) notice(message.view.aviso);
       panelCtx.redraw?.();
       break;
-    /*
-     * A forja manda o retrato inteiro (peças, preços, ouro) a cada resposta —
-     * inclusive DEPOIS de forjar. É o que faz a tela mostrar o tier novo e o
-     * ouro novo sem ninguém fechar e reabrir a janela.
-     */
-    case 'forja':
-      state.forja = message;
-      panelCtx.redraw?.();
-      break;
-    /*
-     * A aba de AFIXOS da forja: mesmo desenho do `forja` acima — o retrato
-     * inteiro a cada resposta, inclusive depois de forjar, para a tela mostrar
-     * as estrelas novas e o saldo novo sem ninguém fechar a janela.
-     */
-    case 'forjaAfixos':
-      state.forjaAfixos = message;
-      panelCtx.redraw?.();
-      break;
     // A Forja do PoE reformulada (`forja-poe.mjs`): as opções da tela e o resultado de cada lote da forja.
     case 'forjaOpcoes':
       chegouForjaOpcoes(message);
@@ -1187,54 +1168,6 @@ function handle(message) {
     // (16/10, lote 38) A tela dos Mercenários do PoE: a resposta de cada pedido é a tela inteira (`mercenarios.mjs`).
     case 'mercenarios':
       chegouMercenarios(message);
-      break;
-    /*
-     * E a prévia da transferência, que chega à parte porque ela é uma PERGUNTA
-     * (só lê) e o retrato é uma resposta. Guardá-la no mesmo campo faria toda
-     * prévia apagar a lista de peças enquanto a pessoa ainda escolhe.
-     */
-    case 'forjaAfixoPrevia':
-      panelCtx.tabs.afixoPrevia = message;
-      panelCtx.redraw?.();
-      break;
-    /*
-     * As outras três prévias, cada uma no campo dela.
-     *
-     * Um campo só para as quatro pareceria economia e seria defeito: a bancada
-     * de essências mostra a de RETIRAR e a de INSERIR na mesma tela (as duas
-     * abas viraram uma, a pedido do dono), e um campo compartilhado faria a
-     * segunda resposta apagar a primeira — a prévia certa piscando e sumindo
-     * conforme a ordem em que o servidor respondesse.
-     */
-    case 'forjaAfixoPreviaRetirar':
-      panelCtx.tabs.afixoPreviaRetirar = message;
-      panelCtx.redraw?.();
-      break;
-    case 'forjaAfixoPreviaInserir':
-      panelCtx.tabs.afixoPreviaInserir = message;
-      panelCtx.redraw?.();
-      break;
-    case 'forjaAfixoPreviaFundir':
-      panelCtx.tabs.afixoPreviaFundir = message;
-      panelCtx.redraw?.();
-      break;
-    /*
-     * O catálogo do craft chega separado do retrato da forja, e uma vocação por
-     * vez: são 118 receitas com quinze materiais cada, e mandá-las junto faria
-     * toda subida de tier arrastar o catálogo inteiro pelo socket.
-     */
-    case 'craft':
-      state.craft = message;
-      panelCtx.redraw?.();
-      break;
-    /*
-     * A Máquina de Desmanche, pela mesma porta e pelo mesmo motivo: ela lista
-     * 134 peças e só as que a pessoa TEM, então o retrato dela é pedido quando
-     * a aba abre — e não junto do retrato da forja.
-     */
-    case 'desmanche':
-      state.desmanche = message;
-      panelCtx.redraw?.();
       break;
     /*
      * ---- A resposta de um NPC ----
@@ -1555,12 +1488,6 @@ function resetCharacterState() {
   // E a mobília das criaturas, que é do mapa do personagem anterior. As duas
   // memórias — esta e a do servidor — esvaziam juntas. Ver `juntarAsCriaturas`.
   mobiliaDasCriaturas.clear();
-  // A forja é do personagem: a lista de peças do anterior não vale para este.
-  state.forja = null;
-  // E o craft mostra o que ESTE personagem tem na mochila. Ver `craftView`.
-  state.craft = null;
-  // O desmanche também: ele lista as peças deste personagem. Ver `desmancheView`.
-  state.desmanche = null;
   state.shop = null;
   state.store = null;
   state.market = null;
@@ -2896,13 +2823,7 @@ const SISTEMAS = [
      */
     corpo: () => resumoDasPassivasParaBalao(),
     alerta: () => (state.character?.passivas?.pontos?.livres ?? 0) > 0 },
-  /*
-   * O Gem Atelier logo depois da Árvore: as gemas acendem com os vessels que a
-   * árvore enche, e as duas telas são lidas juntas. Ver `gemas.mjs`.
-   */
-  { id: 'gemas', label: 'Gem Atelier', curto: 'Gemas', abre: () => openGemas(),
-    tip: 'Revela gemas, encaixa nos domínios da árvore e sobe o grau dos modificadores com fragmentos.',
-    corpo: () => resumoDasGemasParaBalao() },
+  // (08/11, lote 0 do clássico) O Gem Atelier do Draevor clássico saiu daqui: no jogo do PoE ele não existe (o servidor recusa `gemas`).
   /*
    * (16/10, lote 38) Os MERCENÁRIOS do PoE: contratar por ouro, o equipamento dele e as gemas do arquétipo (o nó do Luminary libera). Sem
    * desenho próprio ainda: o da ficha do personagem.
@@ -3805,16 +3726,6 @@ function buildTopbar() {
   /* A Arena abre a fileira, à esquerda do Mercado. Ver `ARENA`. */
   nav.append(ferramentaLigada(ARENA));
   if (mercado) nav.append(mercado);
-  /*
-   * ---- O catálogo que o BALÃO precisa ----
-   *
-   * As gemas não viajam na atualização do personagem — são pedidas, e quem pedia
-   * era o painel ao abrir. O balão do ícone ficaria vazio até alguém abrir o
-   * painel uma vez, que é exatamente a viagem que ele existe para poupar.
-   *
-   * Um pedido, uma vez, ao montar a barra.
-   */
-  send({ t: 'gemas' });
   // As gavetas moram no `body`: montar a barra de novo não pode deixar as
   // antigas penduradas lá.
   for (const velha of document.querySelectorAll('.gaveta-da-barra')) velha.remove();
@@ -6278,6 +6189,22 @@ function abrirJanelaDeDecisao(encontro) {
     send({ t: 'decidir', id: encontro.id, aceitar });
     fechar();
   };
+  // (08/11) o encontro com ESCOLHAS (os Braços de Doryani): um botão por escolha
+  if (encontro.escolhas?.length) {
+    const botoes = encontro.escolhas.map((x) => {
+      const b = el('button', 'decisao-sim', x.rotulo);
+      b.type = 'button';
+      b.onclick = () => { send({ t: 'decidir', id: encontro.id, aceitar: true, escolha: x.valor }); fechar(); };
+      return b;
+    });
+    const depoisE = el('button', 'decisao-depois', 'Decidir depois');
+    depoisE.type = 'button';
+    depoisE.onclick = fechar;
+    janela.append(el('h3', '', encontro.nome), el('p', '', encontro.descricao ?? ''), el('p', 'decisao-dica', 'Em grupo, quem decide é o líder.'), el('div', 'decisao-botoes'));
+    janela.lastChild.append(...botoes, depoisE);
+    document.body.append(janela);
+    return;
+  }
   const aceitar = el('button', 'decisao-sim', encontro.tipo === 'escolta' ? 'Partir' : 'Entrar');
   const recusar = el('button', 'decisao-nao', 'Recusar');
   const depois = el('button', 'decisao-depois', 'Decidir depois');

@@ -1,0 +1,603 @@
+{
+  "salvoEm": 1791506976484,
+  "ato": {
+    "id": "poe-ato-7",
+    "nome": "Ato 7",
+    "descricao": "Ato 7 da campanha do Path of Exile.",
+    "imagem": null,
+    "nivelRecomendado": 50,
+    "ordem": 7,
+    "anterior": "poe-ato-6",
+    "seguinte": null,
+    "requisitos": {
+      "exige": []
+    },
+    "progressao": {},
+    "estado": "publicado",
+    "versao": 4,
+    "inicio": "poe-a7-the-broken-bridge",
+    "cidade": {
+      "nome": "Acampamento da Ponte",
+      "posicao": {
+        "x": 85,
+        "y": 290
+      },
+      "conexoes": [
+        "poe-a7-the-broken-bridge"
+      ]
+    },
+    "fases": [
+      {
+        "id": "poe-a7-the-broken-bridge",
+        "nome": "Ponte Quebrada",
+        "descricao": "As pedras tremem no topo desta terra petrificada.",
+        "ordem": 1,
+        "huntId": "poe-a7-the-broken-bridge",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 50,
+          "medio": 50,
+          "dificil": 50
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [
+          {
+            "missao": "Medalhão Prateado",
+            "texto": "Encontre o Medalhão Prateado do Weylam"
+          }
+        ],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 150,
+          "y": 420
+        }
+      },
+      {
+        "id": "poe-a7-the-crossroads",
+        "nome": "A Encruzilhada",
+        "descricao": "A crueldade ancestral dilacera através da intersecção pavimentada.",
+        "ordem": 2,
+        "huntId": "poe-a7-the-crossroads",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 51,
+          "medio": 51,
+          "dificil": 51
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 237,
+          "y": 294
+        }
+      },
+      {
+        "id": "poe-a7-the-fellshrine-ruins",
+        "nome": "Ruínas do Santuário Caído",
+        "descricao": "Um espírito de sadismo mancha a terra.",
+        "ordem": 3,
+        "huntId": "poe-a7-the-fellshrine-ruins",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 51,
+          "medio": 51,
+          "dificil": 51
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [
+          {
+            "missao": "Tentações do Sanctum",
+            "texto": "Investigue o estranho objeto na verdadeira entrada para o Sanctum"
+          }
+        ],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 324,
+          "y": 409
+        }
+      },
+      {
+        "id": "poe-a7-the-crypt",
+        "nome": "A Cripta",
+        "descricao": "Memórias ancestrais de volta à vida, depois enfurecidas.",
+        "ordem": 4,
+        "huntId": "poe-a7-the-crypt",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 51,
+          "medio": 51,
+          "dificil": 51
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 411,
+          "y": 443
+        }
+      },
+      {
+        "id": "poe-a7-the-chamber-of-sins-level-1",
+        "nome": "Câmara dos Pecados Nível 1",
+        "descricao": "Ruínas decrépitas renascidas. Um mal cobiçante à espreita pelos salões.",
+        "ordem": 5,
+        "huntId": "poe-a7-the-chamber-of-sins-level-1",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 52,
+          "medio": 52,
+          "dificil": 52
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 324,
+          "y": 249
+        }
+      },
+      {
+        "id": "poe-a7-the-chamber-of-sins-level-2",
+        "nome": "Câmara dos Pecados Nível 2",
+        "descricao": "",
+        "ordem": 6,
+        "huntId": "poe-a7-the-chamber-of-sins-level-2",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 52,
+          "medio": 52,
+          "dificil": 52
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 411,
+          "y": 203
+        }
+      },
+      {
+        "id": "poe-a7-maligaros-sanctum",
+        "nome": "Santuário do Maligaro",
+        "descricao": "As profundezas de uma escuridão decadente.",
+        "ordem": 7,
+        "huntId": "poe-a7-maligaros-sanctum",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 52,
+          "medio": 52,
+          "dificil": 52
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [
+          {
+            "missao": "Essência do Artista",
+            "texto": "Mate Maligaro"
+          },
+          {
+            "missao": "Rede de Segredos",
+            "texto": "Pegue o Veneno Negro"
+          }
+        ],
+        "conclusao": {
+          "tipo": "item-de-missao",
+          "item": 7600009,
+          "monstro": "Maligaro,_the_Artist",
+          "nome": "Maligaro, o Artista"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 411,
+          "y": 123
+        }
+      },
+      {
+        "id": "poe-a7-the-den",
+        "nome": "A Gruta",
+        "descricao": "Esporos encharcados florescem e se alimentam de carne podre.",
+        "ordem": 8,
+        "huntId": "poe-a7-the-den",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 53,
+          "medio": 53,
+          "dificil": 53
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 237,
+          "y": 374
+        }
+      },
+      {
+        "id": "poe-a7-the-ashen-fields",
+        "nome": "Campos Cinzentos",
+        "descricao": "Uma terra causticada e cinzas dormentes.",
+        "ordem": 9,
+        "huntId": "poe-a7-the-ashen-fields",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 53,
+          "medio": 53,
+          "dificil": 53
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [
+          {
+            "missao": "O Mestre das Milhões de Faces",
+            "texto": "Mate o Greust"
+          }
+        ],
+        "conclusao": {
+          "tipo": "matar-chefe",
+          "monstro": "Greust,_Lord_of_the_Forest",
+          "nome": "Greust, Lorde da Floresta"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 324,
+          "y": 329
+        }
+      },
+      {
+        "id": "poe-a7-the-northern-forest",
+        "nome": "Floresta do Norte",
+        "descricao": "Uma torre alta de sentinelas de madeira.",
+        "ordem": 10,
+        "huntId": "poe-a7-the-northern-forest",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 53,
+          "medio": 53,
+          "dificil": 53
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [
+          {
+            "missao": "Em Memória a Greust",
+            "texto": "Coloque o Colar de Greust no altar de Azmeri"
+          }
+        ],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 411,
+          "y": 283
+        }
+      },
+      {
+        "id": "poe-a7-the-dread-thicket",
+        "nome": "Matagal Horrendo",
+        "descricao": "Gotejando com raiva e tristeza, o antigo matagal chora.",
+        "ordem": 11,
+        "huntId": "poe-a7-the-dread-thicket",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 53,
+          "medio": 53,
+          "dificil": 53
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [
+          {
+            "missao": "Iluminando o Caminho",
+            "texto": "Procure pelos Vaga-Lumes restantes no Matagal Horrendo"
+          },
+          {
+            "missao": "Rainha do Desespero",
+            "texto": "Mate o Gruthkul"
+          }
+        ],
+        "conclusao": {
+          "tipo": "matar-chefe",
+          "monstro": "Gruthkul,_Mother_of_Despair",
+          "nome": "Gruthkul, Mãe do Desespero"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 499,
+          "y": 317
+        }
+      },
+      {
+        "id": "poe-a7-the-causeway",
+        "nome": "A Ponte",
+        "descricao": "Ruínas primordiais guardam segredos antiquários.",
+        "ordem": 12,
+        "huntId": "poe-a7-the-causeway",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 54,
+          "medio": 54,
+          "dificil": 54
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [
+          {
+            "missao": "Estrela de Kishara",
+            "texto": "Encontre a Estrela de Kishara"
+          },
+          {
+            "missao": "Não Há Hora Melhor Que Agora",
+            "texto": "Complete a Incursão"
+          }
+        ],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 499,
+          "y": 237
+        }
+      },
+      {
+        "id": "poe-a7-the-vaal-city",
+        "nome": "Cidade Vaal",
+        "descricao": "Antigo e arcano, uma civilização perdida na poeira da história.",
+        "ordem": 13,
+        "huntId": "poe-a7-the-vaal-city",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 54,
+          "medio": 54,
+          "dificil": 54
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 586,
+          "y": 191
+        }
+      },
+      {
+        "id": "poe-a7-the-temple-of-decay-level-1",
+        "nome": "Templo da Decadência Nível 1",
+        "descricao": "Servos aracnídeos babam e salivam, uma carne peregrina cobiçada para alimentar desejos abomináveis.",
+        "ordem": 14,
+        "huntId": "poe-a7-the-temple-of-decay-level-1",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 54,
+          "medio": 54,
+          "dificil": 54
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 673,
+          "y": 146
+        }
+      },
+      {
+        "id": "poe-a7-the-temple-of-decay-level-2",
+        "nome": "Templo da Decadência Nível 2",
+        "descricao": "",
+        "ordem": 15,
+        "huntId": "poe-a7-the-temple-of-decay-level-2",
+        "tipo": "fase-final-do-ato",
+        "nivel": {
+          "facil": 55,
+          "medio": 55,
+          "dificil": 55
+        },
+        "obrigatoria": true,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 760,
+          "y": 100
+        }
+      }
+    ],
+    "conexoes": [
+      {
+        "de": "poe-a7-the-broken-bridge",
+        "para": "poe-a7-the-crossroads",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a7-the-crossroads",
+        "para": "poe-a7-the-fellshrine-ruins",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a7-the-crossroads",
+        "para": "poe-a7-the-chamber-of-sins-level-1",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a7-the-fellshrine-ruins",
+        "para": "poe-a7-the-crypt",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a7-the-chamber-of-sins-level-1",
+        "para": "poe-a7-maligaros-sanctum",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a7-the-chamber-of-sins-level-1",
+        "para": "poe-a7-the-chamber-of-sins-level-2",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a7-the-den",
+        "para": "poe-a7-the-ashen-fields",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a7-the-ashen-fields",
+        "para": "poe-a7-the-northern-forest",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a7-the-northern-forest",
+        "para": "poe-a7-the-dread-thicket",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a7-the-northern-forest",
+        "para": "poe-a7-the-causeway",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a7-the-causeway",
+        "para": "poe-a7-the-vaal-city",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a7-the-vaal-city",
+        "para": "poe-a7-the-temple-of-decay-level-1",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a7-the-temple-of-decay-level-1",
+        "para": "poe-a7-the-temple-of-decay-level-2",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a7-the-broken-bridge",
+        "para": "poe-a7-the-den",
+        "requisito": null,
+        "rotulo": ""
+      }
+    ],
+    "bossFinal": {
+      "bossId": "poe-chefe-ato-7",
+      "faseAnterior": "poe-a7-the-temple-of-decay-level-2",
+      "nivel": {
+        "facil": 55,
+        "medio": 55,
+        "dificil": 55
+      },
+      "arena": null,
+      "recompensas": null
+    }
+  }
+}

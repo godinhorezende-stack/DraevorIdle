@@ -32,13 +32,13 @@ export const SISTEMAS = {
     apelidos: ['items', 'item', 'inventario', 'equipamento'],
     fontes: [
       /^systems\/itens\//, /^systems\/itens-poe\/(gerar|jogo|mods-poe|traduzir|frascos|moedas|so-itens-do-poe|sockets|forja|forja-chances)\.mjs$/, /^engine\/forja-poe\.mjs$/,
-      /^systems\/(inventario|bolsa|bau|deposito|troca|forja|craft|desmanche|afixos|conjuntos|item-power|tiers|charms)\.mjs$/,
-      /^gamedata\/(itens|itens-poe|armas)\//, /^gamedata\/(item-catalog|catalog-real|conjuntos|item-power|item-sprites|craft-receitas|desmanche|equipamento-por-vocacao)\.json$/,
+      /^systems\/(inventario|bolsa|bau|deposito|troca|forja|craft|desmanche|afixos|item-power|tiers|charms)\.mjs$/,
+      /^gamedata\/(itens|itens-poe|armas)\//, /^gamedata\/(item-catalog|catalog-real|item-power|item-sprites|equipamento-por-vocacao)\.json$/,
       /^frontend\/client\/src\/(inventory|itens-poe-balao|tooltip|paperdoll|pilha|loot-do-bicho|sheet|folha)\.mjs$/,
-      /^admin\/(itens-poe-|item-power|overrides-itens|overrides-conjuntos|overrides-sprites-itens)/,
+      /^admin\/(itens-poe-|item-power|overrides-itens|overrides-sprites-itens)/,
     ],
     testes: [
-      /^itens-/, /^itens-poe$/, /^item-/, /^implicitos/, /^comparar/, /^conjuntos/, /^defesas-novas/, /^equipamento/, /^arma-base/, /^base-por-raridade/,
+      /^itens-/, /^itens-poe$/, /^item-/, /^implicitos/, /^comparar/, /^defesas-novas/, /^equipamento/, /^arma-base/, /^base-por-raridade/,
       /^preco-de-venda/, /^preco-das-pocoes/, /^pocoes/, /^overrides-itens/, /^icones/, /^so-itens-do-poe/, /^moedas-/, /^forja/, /^pilha-de-/,
       /^mochila-redesenho/, /^bolsa-mover/, /^chao-e-troca/, /^chegadas/, /^atributos-efeito/, /^gemas-raridade/, /^sockets-joias-poe/, /^filtro-/,
     ],
@@ -81,7 +81,7 @@ export const SISTEMAS = {
     apelidos: ['hunt', 'cacadas', 'engine', 'motor'],
     fontes: [
       /^systems\/cacadas\.mjs$/, /^systems\/hunt\//, /^systems\/mapa\//, /^systems\/(morte|limpeza-do-chao|limpeza-do-chao-config|treino|sem-treino)\.mjs$/,
-      /^engine\/(andar-visivel|prazos)\.mjs$/, /^gamedata\/hunts\//, /^gamedata\/(hunts-spawns-capturados|treino-map|city-map|city-meta)\.json$/,
+      /^engine\/(andar-visivel|prazos)\.mjs$/, /^gamedata\/hunts\//, /^gamedata\/(hunts-spawns-capturados|city-map|city-meta)\.json$/,
     ],
     testes: [
       /^percurso/, /^progresso-da-hunt/, /^alvo-mais-perto/, /^kite-parede-diagonal/, /^caminho/, /^andares/, /^agua/, /^moverMonstros/, /^setores/,
@@ -161,7 +161,7 @@ export const SISTEMAS = {
     testes: [
       /^editor-/, /^infra-editores/, /^sprites-/, /^biblioteca/, /^mapa-editor/, /^mapa-fundo/, /^atos-editor-tela/, /^campanha-editor/, /^item-power/,
       /^itens-poe-(telas|pendencias)/, /^classes/, /^overrides/, /^hot-reload/, /^versoes/, /^validacao/, /^acesso/, /^isolamento-dos-testes/, /^git-/,
-      /^publicacao/, /^operacao/, /^modo-beta/, /^itens-novos-sprites/, /^efeitos-visuais/, /^conjuntos/, /^atos-armazem/, /^atos-versoes/,
+      /^publicacao/, /^operacao/, /^modo-beta/, /^itens-novos-sprites/, /^efeitos-visuais/, /^atos-armazem/, /^atos-versoes/,
       /^raridade-dos-mapas/, /^apagar-arquivados/, /^safe-zones/,
     ],
   },

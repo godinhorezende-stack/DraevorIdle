@@ -17,7 +17,10 @@ import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { round, contraAtaque } from '../systems/hunt/combate.mjs';
 import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
-import { aAdaptar, doClassico } from './apoio-migracao.mjs';
+import { doClassico, soNoOficial } from './apoio-migracao.mjs';
+import * as CatalogoPoe from '../systems/itens-poe/catalogo.mjs';
+import * as JogoPoe from '../systems/itens-poe/jogo.mjs';
+import { gerarPeca } from '../systems/itens-poe/gerar.mjs';
 
 const idDe = (nome) => Number(Object.values(ITEM_CATALOG).find((i) => i.name === nome).id);
 const ANEL = idDe('might ring');
@@ -29,13 +32,23 @@ function comAnel(e, af) {
   Ficha.invalidar(e);
   return Ficha.combate(e);
 }
-function naCacada(e) {
+/** (PoE) Um Anel de Ferro do PoE, Mágico, com os prefixos dados (`[modelo, valor]`), no primeiro anel. */
+function comAnelDoPoe(e, mods) {
+  const g = gerarPeca({ catalogo: CatalogoPoe.catalogo(), regras: CatalogoPoe.REGRAS, base: 'Rings/Iron_Ring', raridade: 'normal', ilvl: 84, rng: () => 0.5 });
+  g.raridade = 'magico';
+  g.prefixos = mods.map(([modelo, v]) => ({ texto: modelo.replace('{0}', v), modelo, valores: [v] }));
+  e.equipment.ring = JogoPoe.pecaDoJogo(g);
+  Afixos.sincronizarMaximos(e);
+  Ficha.invalidar(e);
+  return Ficha.combate(e);
+}
+function naCacada(e, key = 'troll') {
   Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' });
   const h = e.hunt;
   delete h.instancia;
   h.respawns = [];
   h.outrosAndares = {};
-  const m = criarMonstro({ key: 'troll', x: h.pos.x + 1, y: h.pos.y }, null);
+  const m = criarMonstro({ key, x: h.pos.x + 1, y: h.pos.y }, null);
   m.hp = m.maxHp = 1e12;
   delete m.spawn;
   h.monstros.splice(0, h.monstros.length, m);
@@ -140,11 +153,14 @@ test('Chance to Avoid Damage: evita o golpe inteiro (evento de esquiva, nenhum d
 
 // ---------------------------------------------------------------- Energy Shield
 
-test('Energy Shield: absorve antes da vida, reinicia a espera e recarrega depois dela', { skip: aAdaptar("Verificado: o ES absorve antes da vida e recarrega no PoE; o valor muda porque a INT do PoE aumenta o ES (200 → 213 com 32 de INT)") }, () => {
+// (08/11, adaptado ao PoE — o dono: "Adaptar antes") O ES vem de um anel do PoE ("+X de Escudo de Energia máximo"). No PoE a INT aumenta o
+// ES (1% a cada 5: os 32 de INT do sorcerer dão +6%): o anel de +189 dá os mesmos 200 de ES de antes (189 × 1,06 = 200,3).
+test('Energy Shield: absorve antes da vida, reinicia a espera e recarrega depois dela', { skip: soNoOficial('o anel e a INT do PoE') }, () => {
   const e = personagemDeTeste({ vocacao: 'sorcerer', level: 100 });
   // Sem o kit (que já dá um pouco de Energy Shield): só o do anel.
   e.equipment = {};
-  const f = comAnel(e, [{ id: 'energy_shield', nivel: 5, value: 200 }]);
+  const f = comAnelDoPoe(e, [['+{0} de Escudo de Energia máximo', 189]]);
+  assert.equal(f.atributos.int, 32, 'a INT do PoE que aumenta o ES em 6%');
   assert.equal(f.energyShield, 200);
   assert.equal(Defesa.esAtual(e, f), 200, 'começa cheio');
   const ev = [];
@@ -153,20 +169,23 @@ test('Energy Shield: absorve antes da vida, reinicia a espera e recarrega depois
   assert.equal(ev[0].es, true);
   assert.equal(Defesa.absorver(e, f, 80, ev, { uid: 'player' }), 30, 'o que sobra passa para a vida');
   assert.equal(e.es, 0);
-  // Durante a espera, nada volta.
-  Defesa.recarregar(e, f, C.energyShield.ATRASO_MS - 1);
+  // Durante a espera, nada volta. (PoE: a espera e a recarga do PoE 1 — ATRASO_MS_POE, 2 s, e RECARGA_POR_SEGUNDO_POE, 33%/s.)
+  Defesa.recarregar(e, f, C.energyShield.ATRASO_MS_POE - 1);
   assert.equal(e.es, 0);
   // Depois dela, RECARGA_POR_SEGUNDO da barra por segundo, até o máximo.
   Defesa.recarregar(e, f, 1 + 1000);
-  assert.equal(e.es, Math.floor(200 * C.energyShield.RECARGA_POR_SEGUNDO));
+  assert.equal(e.es, Math.floor(200 * C.energyShield.RECARGA_POR_SEGUNDO_POE));
   Defesa.recarregar(e, f, 60_000);
   assert.equal(e.es, 200);
 });
 
-test('Energy Shield no combate: o golpe do bicho sai do ES antes da vida; a regeneração da caçada recarrega', { skip: aAdaptar("Verificado: o ES absorve antes da vida e recarrega no PoE; o valor muda porque a INT do PoE aumenta o ES (200 → 213 com 32 de INT)") }, () => {
+// (08/11, adaptado ao PoE) O anel do PoE com +1.000.000 de ES (o "Chance to Avoid Damage 0" do Draevor não tem mod no PoE: sem ele, já é 0) e
+// um monstro do PoE da própria área.
+test('Energy Shield no combate: o golpe do bicho sai do ES antes da vida; a regeneração da caçada recarrega', { skip: soNoOficial('o anel e o monstro do PoE') }, () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 50 });
-  comAnel(e, [{ id: 'energy_shield', nivel: 5, value: 1e6 }, { id: 'avoid_damage', nivel: 1, value: 0 }]);
-  const m = naCacada(e);
+  // (a INT do PoE aumenta o ES: o máximo é o da ficha, um pouco acima de 1.000.000)
+  const max = comAnelDoPoe(e, [['+{0} de Escudo de Energia máximo', 1e6]]).energyShield;
+  const m = naCacada(e, 'poe-cursed-mariner-12');
   m.forca = 30;
   const vida = e.hp;
   const ev = [];
@@ -175,10 +194,10 @@ test('Energy Shield no combate: o golpe do bicho sai do ES antes da vida; a rege
     for (let i = 0; i < 20; i++) contraAtaque(e, e.hunt, PERSONAGEM, m, ev);
   });
   assert.equal(e.hp, vida, 'a vida não mexeu');
-  assert.ok(e.es < 1e6, 'o ES pagou');
+  assert.ok(e.es < max, 'o ES pagou');
   assert.ok(ev.some((x) => x.t === 'dmg' && x.es));
   const gasto = e.es;
-  Cacadas.regenerar(e, C.energyShield.ATRASO_MS + 2000);
+  Cacadas.regenerar(e, C.energyShield.ATRASO_MS_POE + 2000);
   assert.ok(e.es > gasto, 'recarregou na regeneração');
 });
 

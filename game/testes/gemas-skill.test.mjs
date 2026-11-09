@@ -13,8 +13,8 @@ import { converterPersonagem, converterTudo } from '../systems/itens/item.mjs';
 import { gerarItem } from '../systems/itens/gerar.mjs';
 import { ITEM_CATALOG, ACTION_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
-import { personagemDeTeste, PERSONAGEM, comSkills, HUNT_DE_TESTE } from './apoio.mjs';
-import { aAdaptar, doClassico } from './apoio-migracao.mjs';
+import { personagemDeTeste, PERSONAGEM, comSkills, HUNT_DE_TESTE, pousarVoos } from './apoio.mjs';
+import { doClassico, soNoOficial } from './apoio-migracao.mjs';
 
 const idDe = (nome) => Number(Object.values(ITEM_CATALOG).find((i) => i.name === nome).id);
 const GEMA = (acao) => G.ITEM_DA_ACAO.get(acao);
@@ -71,6 +71,59 @@ function danoDaFlame(montar) {
       e.hunt.cooldowns = {};
       e.hunt.ultimoAtaqueEm = null;
       Acoes.disparar(e, e.hunt, PERSONAGEM, slot, bicho);
+    }
+    return 1e12 - bicho.hp;
+  });
+}
+
+// (08/11, adaptado ao PoE — o dono: "Adaptar antes") As gemas do PoE em peças do PoE (os sockets do jeito do PoE: `cores`): a Flame Strike → a Nova de Gelo
+// (área em volta de você, sem projétil no ar), a Greater Damage → o Efeito Concentrado (25% mais Dano em Área no nível 1), a Multiple Projectiles → os
+// Projéteis Múltiplos do PoE no Dreno de Essência, a Light Healing → a Pele de Aço (a Guarda; o PoE não tem gema de cura); a wand of vortex → a Varinha de
+// Madeira Flutuante, o might ring → uma Veste Arcana (anel do PoE não tem socket). A conjuração é a do PoE; o golpe do projétil cai quando ele chega.
+const poe = async () => ({
+  GP: await import('../systems/itens-poe/gemas-poe.mjs'),
+  SP: await import('../systems/itens-poe/suportes-poe.mjs'),
+  Catalogo: await import('../systems/itens-poe/catalogo.mjs'),
+  J: await import('../systems/itens-poe/jogo.mjs'),
+  gerarPeca: (await import('../systems/itens-poe/gerar.mjs')).gerarPeca,
+});
+/** A gema do PoE (ativa ou suporte) pelo slug, nova, no nível 1. */
+async function gemaPoe(slug) {
+  const { GP, SP } = await poe();
+  return G.novaGema((GP.doSlug(slug) ?? SP.doSlug(slug)).itemId);
+}
+const acaoPoe = async (slug) => (await poe()).GP.doSlug(slug).acao;
+/** Uma peça do PoE (`base`) no slot, com um socket por gema e os `links`. */
+async function vestirPoe(e, slot, base, { links = [], gemas = [] } = {}) {
+  const { Catalogo, J, gerarPeca } = await poe();
+  const peca = J.pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras: Catalogo.REGRAS, base, raridade: 'normal', ilvl: 60, rng: () => 0.5 }));
+  const n = Math.max(1, gemas.length);
+  peca.soquetes = { abertos: n, links: Array.from({ length: n - 1 }, (_, i) => !!links[i]), gemas: Array.from({ length: n }, (_, i) => gemas[i] ?? null), cores: Array(n).fill('W') };
+  e.equipment[slot] = peca;
+  Ficha.invalidar(e);
+  return peca;
+}
+const VARINHA = 'Wands/Driftwood_Wand';
+const VESTE = 'Body_Armours/Arcane_Vestment';
+/** O dano de 30 usos de `slug` com o arranjo de sockets `montar(e)` (o sorteio com semente; cada uso concluído e pousado). */
+async function danoPoe(slug, montar) {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 90 });
+  await montar(e);
+  const acao = await acaoPoe(slug);
+  return comSemente(() => {
+    const bicho = naCacada(e);
+    e.actions = Array(Acoes.SLOTS).fill(null);
+    assert.ok(Acoes.definir(e, { slot: 0, value: { id: acao } }).ok);
+    for (let i = 0; i < 30; i++) {
+      e.hunt.cooldowns = {};
+      e.hunt.ultimoAtaqueEm = null;
+      delete e.hunt.conjurando;
+      Acoes.disparar(e, e.hunt, PERSONAGEM, 0, bicho);
+      if (e.hunt.conjurando) {
+        e.hunt.clock = e.hunt.conjurando.fim;
+        Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM);
+      }
+      pousarVoos(e.hunt);
     }
     return 1e12 - bicho.hp;
   });
@@ -140,17 +193,18 @@ test('10–11. socket aberto aceita; socket bloqueado recusa encaixar', () => {
 
 // ---------------------------------------------------------------- links e supports (12, 13, 29)
 
-test('12–13. support LIGADA à gema ativa modifica a skill; a mesma support sem link, não', { skip: aAdaptar("Regra da engine de gemas (link do suporte, XP pela morte, gema entra sozinha no slot, configuração guardada) vale para as gemas do PoE; o teste usa gemas do Draevor") }, () => {
-  const GD = SUPPORT('greater-damage');
-  const sem = danoDaFlame((e) => vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME))] }));
-  const ligada = danoDaFlame((e) => vestir(e, 'weapon', 'wand of vortex', { links: [true], gemas: [G.novaGema(GEMA(FLAME)), G.novaGema(GD)] }));
-  const solta = danoDaFlame((e) => vestir(e, 'weapon', 'wand of vortex', { links: [false], gemas: [G.novaGema(GEMA(FLAME)), G.novaGema(GD)] }));
+test('12–13. support LIGADA à gema ativa modifica a skill; a mesma support sem link, não', { skip: soNoOficial('as gemas e as peças do PoE') }, async () => {
+  const ATIVA = 'Ice_Nova';
+  const GD = 'Concentrated_Effect_Support';
+  const sem = await danoPoe(ATIVA, async (e) => vestirPoe(e, 'weapon', VARINHA, { gemas: [await gemaPoe(ATIVA)] }));
+  const ligada = await danoPoe(ATIVA, async (e) => vestirPoe(e, 'weapon', VARINHA, { links: [true], gemas: [await gemaPoe(ATIVA), await gemaPoe(GD)] }));
+  const solta = await danoPoe(ATIVA, async (e) => vestirPoe(e, 'weapon', VARINHA, { links: [false], gemas: [await gemaPoe(ATIVA), await gemaPoe(GD)] }));
   assert.ok(Math.abs(ligada / sem - 1.25) < 0.03, `ligada ${sem} → ${ligada}`);
   assert.equal(solta, sem, 'sem link a support não faz nada');
   // Numa OUTRA peça também não (link é dentro da peça).
-  const outraPeca = danoDaFlame((e) => {
-    vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME))] });
-    vestir(e, 'ring', 'might ring', { gemas: [G.novaGema(GD)] });
+  const outraPeca = await danoPoe(ATIVA, async (e) => {
+    await vestirPoe(e, 'weapon', VARINHA, { gemas: [await gemaPoe(ATIVA)] });
+    await vestirPoe(e, 'body', VESTE, { gemas: [await gemaPoe(GD)] });
   });
   assert.equal(outraPeca, sem);
 });
@@ -168,18 +222,24 @@ test('29. support removida deixa de modificar; compatibilidade por tags (Multipl
   assert.deepEqual(G.efeitoNaSkill(k, 'spell-brutal-strike').supports, []);
 });
 
-test('Multiple Projectiles: os bichos ao alcance levam o projétil também', { skip: aAdaptar("Regra da engine de gemas (link do suporte, XP pela morte, gema entra sozinha no slot, configuração guardada) vale para as gemas do PoE; o teste usa gemas do Draevor") }, () => {
-  G.DEFS.get(GEMA(FLAME)).castTime = 0;
-  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
-  vestir(e, 'weapon', 'wand of vortex', { links: [true], gemas: [G.novaGema(GEMA(FLAME)), G.novaGema(SUPPORT('multiple-projectiles'))] });
+test('Multiple Projectiles: os bichos ao alcance levam o projétil também', { skip: soNoOficial('as gemas e as peças do PoE') }, async () => {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 90 });
+  await vestirPoe(e, 'weapon', VARINHA, { links: [true], gemas: [await gemaPoe('Essence_Drain'), await gemaPoe('Multiple_Projectiles_Support')] });
   const alvo = naCacada(e);
   const outros = [2, 3].map((dx) => Object.assign(criarMonstro({ key: 'troll', x: e.hunt.pos.x + dx, y: e.hunt.pos.y }, null), { hp: 1e9, maxHp: 1e9 }));
   e.hunt.monstros.push(...outros);
-  const slot = Acoes.PAPEL_DO_SLOT.indexOf('attack');
+  const slot = 0;
+  const acao = await acaoPoe('Essence_Drain');
   e.actions = Array(Acoes.SLOTS).fill(null);
-  assert.ok(Acoes.definir(e, { slot, value: { id: FLAME } }).ok);
+  assert.ok(Acoes.definir(e, { slot, value: { id: acao } }).ok);
   const r = Acoes.disparar(e, e.hunt, PERSONAGEM, slot, alvo);
   assert.ok(r.ok);
+  // (a conjuração do PoE concluída e os projéteis no ar pousados)
+  if (e.hunt.conjurando) {
+    e.hunt.clock = e.hunt.conjurando.fim;
+    Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM);
+  }
+  pousarVoos(e.hunt);
   assert.ok(outros.every((b) => b.hp < 1e9), 'os dois extras apanharam');
 });
 
@@ -209,10 +269,10 @@ test('o nível da gema é um bônus a mais no dano da skill (a progressão dela)
   assert.ok(Math.abs(n11 / n1 / esperado - 1) < 0.03, `${n1} → ${n11} (×${esperado})`);
 });
 
-test('a XP das gemas vem da morte de verdade (matarMonstro)', { skip: aAdaptar("Regra da engine de gemas (link do suporte, XP pela morte, gema entra sozinha no slot, configuração guardada) vale para as gemas do PoE; o teste usa gemas do Draevor") }, async () => {
+test('a XP das gemas vem da morte de verdade (matarMonstro)', { skip: soNoOficial('as gemas e as peças do PoE') }, async () => {
   const { matarMonstro } = await import('../systems/hunt/combate.mjs');
-  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
-  const peca = vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME))] });
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 90 });
+  const peca = await vestirPoe(e, 'weapon', VARINHA, { gemas: [await gemaPoe('Fireball')] });
   naCacada(e);
   const m = criarMonstro({ key: 'troll', x: 1, y: 1 }, null);
   e.hunt.monstros.push(m);
@@ -512,27 +572,30 @@ test('sem trava: qualquer personagem usa qualquer gema; o dano base escala pelo 
 
 // ---------------------------------------------------------------- a barra segue as gemas encaixadas
 
-test('barra: gema encaixada entra sozinha no slot livre do papel dela; gema tirada (ou peça desvestida) esvazia o slot', { skip: aAdaptar("Regra da engine de gemas (link do suporte, XP pela morte, gema entra sozinha no slot, configuração guardada) vale para as gemas do PoE; o teste usa gemas do Draevor") }, () => {
-  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
+test('barra: gema encaixada entra sozinha no slot livre do papel dela; gema tirada (ou peça desvestida) esvazia o slot', { skip: soNoOficial('as gemas e as peças do PoE') }, async () => {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 90 });
   e.actions = Array(Acoes.SLOTS).fill(null);
   const pocao = Acoes.catalogo(e).items[0];
   e.actions[0] = { id: pocao.id, kind: 'item', enabled: true, conditions: [] };
-  vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME)), G.novaGema(GEMA('spell-light-healing'))] });
+  const FLAME_POE = await acaoPoe('Ice_Nova');
+  const CURA_POE = await acaoPoe('Steelskin');
+  await vestirPoe(e, 'weapon', VARINHA, { gemas: [await gemaPoe('Ice_Nova'), await gemaPoe('Steelskin')] });
   assert.equal(Acoes.sincronizarBarraComGemas(e), true);
   const onde = (id) => e.actions.findIndex((a) => a?.id === id);
-  assert.equal(Acoes.PAPEL_DO_SLOT[onde(FLAME)], 'attack');
-  assert.equal(Acoes.PAPEL_DO_SLOT[onde('spell-light-healing')], 'hp');
+  // (no PoE a barra tem um papel só — 'skill', qualquer gema —: o ataque e a Guarda vão para slots livres dela)
+  assert.equal(Acoes.PAPEL_DO_SLOT[onde(FLAME_POE)], 'skill');
+  assert.equal(Acoes.PAPEL_DO_SLOT[onde(CURA_POE)], 'skill');
   assert.equal(e.actions[0].id, pocao.id, 'a poção fica');
   assert.equal(Acoes.sincronizarBarraComGemas(e), false, 'nada mudou');
   // Tirou a gema: o slot esvazia; a poção continua.
   G.tirar(e, { slot: 'weapon', indice: 0 });
   Acoes.sincronizarBarraComGemas(e);
-  assert.equal(onde(FLAME), -1);
-  assert.ok(onde('spell-light-healing') >= 0);
+  assert.equal(onde(FLAME_POE), -1);
+  assert.ok(onde(CURA_POE) >= 0);
   // Desvestiu a peça: as skills dela saem da barra.
   Inventario.desequipar(e, { slot: 'weapon' });
   Acoes.sincronizarBarraComGemas(e);
-  assert.equal(onde('spell-light-healing'), -1);
+  assert.equal(onde(CURA_POE), -1);
   assert.equal(e.actions[0].id, pocao.id);
 });
 
@@ -614,23 +677,25 @@ test('personagem novo: gemas iniciais da classe (ataque + cura), encaixadas, uma
   for (const v of ['knight', 'paladin', 'sorcerer', 'monk']) for (const a of G.CONFIG.iniciais[v]) assert.ok(G.ITEM_DA_ACAO.has(a), a);
 });
 
-test('barra: a configuração do slot fica guardada quando a gema sai, e volta igual (mesmo slot) quando ela volta', { skip: aAdaptar("Regra da engine de gemas (link do suporte, XP pela morte, gema entra sozinha no slot, configuração guardada) vale para as gemas do PoE; o teste usa gemas do Draevor") }, () => {
-  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
+test('barra: a configuração do slot fica guardada quando a gema sai, e volta igual (mesmo slot) quando ela volta', { skip: soNoOficial('as gemas e as peças do PoE') }, async () => {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 90 });
   e.actions = Array(Acoes.SLOTS).fill(null);
-  vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME))] });
-  const slot = Acoes.PAPEL_DO_SLOT.lastIndexOf('attack');
-  assert.equal(Acoes.definir(e, { slot, value: { id: FLAME, minMana: 55, conditions: [{ kind: 'boss', op: 'sim' }] } }).ok, true);
+  await vestirPoe(e, 'weapon', VARINHA, { gemas: [await gemaPoe('Ice_Nova')] });
+  const FLAME_POE = await acaoPoe('Ice_Nova');
+  // (no PoE todo slot é de 'skill': o último da barra)
+  const slot = Acoes.PAPEL_DO_SLOT.lastIndexOf('skill');
+  assert.equal(Acoes.definir(e, { slot, value: { id: FLAME_POE, minMana: 55, conditions: [{ kind: 'boss', op: 'sim' }] } }).ok, true);
   const arma = e.equipment.weapon;
   Inventario.desequipar(e, { slot: 'weapon' });
   Acoes.sincronizarBarraComGemas(e);
   assert.equal(e.actions[slot], null);
-  assert.equal(e.barraGuardada[FLAME].slot, slot);
+  assert.equal(e.barraGuardada[FLAME_POE].slot, slot);
   e.equipment.weapon = arma; // vestiu de novo
   Acoes.sincronizarBarraComGemas(e);
-  assert.equal(e.actions[slot]?.id, FLAME, 'voltou para o mesmo slot');
+  assert.equal(e.actions[slot]?.id, FLAME_POE, 'voltou para o mesmo slot');
   assert.equal(e.actions[slot].minMana, 55);
   assert.deepEqual(e.actions[slot].conditions, [{ kind: 'boss', op: 'sim' }]);
-  assert.equal(e.barraGuardada[FLAME], undefined);
+  assert.equal(e.barraGuardada[FLAME_POE], undefined);
 });
 
 test('XP da gema pelo level ATUAL do personagem: o mesmo nível pede a mesma fração de UM level dele', { skip: doClassico("Regra das gemas do Draevor (nível como bônus, sem trava de atributo, runa virou gema, migração v5, XP pelo level do personagem, Forked Glacier); no PoE vale a tabela de cada gema") }, async () => {

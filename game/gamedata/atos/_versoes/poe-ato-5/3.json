@@ -1,0 +1,443 @@
+{
+  "salvoEm": 1791506886173,
+  "ato": {
+    "id": "poe-ato-5",
+    "nome": "Ato 5",
+    "descricao": "Ato 5 da campanha do Path of Exile.",
+    "imagem": null,
+    "nivelRecomendado": 41,
+    "ordem": 5,
+    "anterior": "poe-ato-4",
+    "seguinte": null,
+    "requisitos": {
+      "exige": []
+    },
+    "progressao": {},
+    "estado": "publicado",
+    "versao": 3,
+    "inicio": "poe-a5-the-slave-pens",
+    "cidade": {
+      "nome": "Torre do Capataz",
+      "posicao": {
+        "x": 60,
+        "y": 290
+      },
+      "conexoes": [
+        "poe-a5-the-slave-pens"
+      ]
+    },
+    "fases": [
+      {
+        "id": "poe-a5-the-slave-pens",
+        "nome": "Abrigo Escravo",
+        "descricao": "No canto mais escuro de Oriath, uma faísca de rebelião acende.",
+        "ordem": 1,
+        "huntId": "poe-a5-the-slave-pens",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 41,
+          "medio": 41,
+          "dificil": 41
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 150,
+          "y": 420
+        }
+      },
+      {
+        "id": "poe-a5-the-control-blocks",
+        "nome": "Central de Comando",
+        "descricao": "A ilusão de controle é rapidamente decepada pela lâmina da realidade.",
+        "ordem": 2,
+        "huntId": "poe-a5-the-control-blocks",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 41,
+          "medio": 41,
+          "dificil": 41
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [
+          {
+            "missao": "Chave da Liberdade",
+            "texto": "Mate o Justicar Casticus"
+          },
+          {
+            "missao": "A Serviço da Ciência",
+            "texto": "Encontre o Miasmetro da Vilenta"
+          },
+          {
+            "missao": "Morte à Pureza",
+            "texto": "Pegue os Olhos do Zelo"
+          }
+        ],
+        "conclusao": {
+          "tipo": "item-de-missao",
+          "item": 7600007,
+          "monstro": "Justicar_Casticus",
+          "nome": "Justicar Casticus"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 237,
+          "y": 374
+        }
+      },
+      {
+        "id": "poe-a5-oriath-square",
+        "nome": "Praça de Oriath",
+        "descricao": "O que já foi o coração da cidade agora é o coração da batalha.",
+        "ordem": 3,
+        "huntId": "poe-a5-oriath-square",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 42,
+          "medio": 42,
+          "dificil": 42
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 324,
+          "y": 329
+        }
+      },
+      {
+        "id": "poe-a5-the-ruined-square",
+        "nome": "Praça Arruinada",
+        "descricao": "O coração sangrento de Oriath é o prato principal em um terrível banquete.",
+        "ordem": 4,
+        "huntId": "poe-a5-the-ruined-square",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 44,
+          "medio": 44,
+          "dificil": 44
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [
+          {
+            "missao": "Banquete do Rei",
+            "texto": "Mate Utula"
+          },
+          {
+            "missao": "O Rei Voraz",
+            "texto": "Encontre a entrada para o Ossuário Procure pelo Sinal da Pureza no Ossuário"
+          }
+        ],
+        "conclusao": {
+          "tipo": "matar-chefe",
+          "monstro": "Utula,_Stone_and_Steel",
+          "nome": "Utula, Pedra e Aço"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 673,
+          "y": 146
+        }
+      },
+      {
+        "id": "poe-a5-the-templar-courts",
+        "nome": "Corte Templária",
+        "descricao": "Apenas aqueles com olhos fieis podem entrar nestas câmaras solenes voluntariamente.",
+        "ordem": 5,
+        "huntId": "poe-a5-the-templar-courts",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 42,
+          "medio": 42,
+          "dificil": 42
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [
+          {
+            "missao": "Morte à Pureza",
+            "texto": "Use os Olhos do Zelo para acessar a Corte Templária Encontre o Alto Templário Avarius e abata-o"
+          }
+        ],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 411,
+          "y": 283
+        }
+      },
+      {
+        "id": "poe-a5-the-torched-courts",
+        "nome": "Corte Incendiada",
+        "descricao": "Carregado por sangue e caos, um inferno sombrio engole os salões da justiça.",
+        "ordem": 6,
+        "huntId": "poe-a5-the-torched-courts",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 44,
+          "medio": 44,
+          "dificil": 44
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 586,
+          "y": 191
+        }
+      },
+      {
+        "id": "poe-a5-the-chamber-of-innocence",
+        "nome": "Câmara de Innocence",
+        "descricao": "No santuário mais sagrado, o Alto Templário comunga com Deus e entrega Seu divino julgamento.",
+        "ordem": 7,
+        "huntId": "poe-a5-the-chamber-of-innocence",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 43,
+          "medio": 43,
+          "dificil": 43
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [
+          {
+            "missao": "Morte à Pureza",
+            "texto": "Fale com Sin"
+          },
+          {
+            "missao": "Banquete do Rei",
+            "texto": "Fale com Bannon na Câmara de Innocence"
+          },
+          {
+            "missao": "O Rei Voraz",
+            "texto": "Viaje de volta para a Corte Templária Encontre o Ossuário Procure pelo Sinal da Pureza no Ossuário"
+          }
+        ],
+        "conclusao": {
+          "tipo": "matar-chefe",
+          "monstro": "High_Templar_Avarius",
+          "nome": "Alto Templário Avarius"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 499,
+          "y": 237
+        }
+      },
+      {
+        "id": "poe-a5-the-ossuary",
+        "nome": "O Ossuário",
+        "descricao": "Os fieis mortos vigiam a cidade com olhos vazios.",
+        "ordem": 8,
+        "huntId": "poe-a5-the-ossuary",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 44,
+          "medio": 44,
+          "dificil": 44
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [
+          {
+            "missao": "O Rei Voraz",
+            "texto": "Procure pelo Sinal da Pureza no Ossuário"
+          }
+        ],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 760,
+          "y": 180
+        }
+      },
+      {
+        "id": "poe-a5-the-reliquary",
+        "nome": "O Relicário",
+        "descricao": "Um tesouro com relíquias vergonhosas exibidas com orgulho.",
+        "ordem": 9,
+        "huntId": "poe-a5-the-reliquary",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 44,
+          "medio": 44,
+          "dificil": 44
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [
+          {
+            "missao": "Tormentos de Kitava",
+            "texto": "Encontre o último Tormento de Kitava"
+          }
+        ],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 760,
+          "y": 260
+        }
+      },
+      {
+        "id": "poe-a5-the-cathedral-rooftop",
+        "nome": "Telhado da Catedral",
+        "descricao": "No topo deste monumento em chamas de arrogância, resta a última esperança de Oriath.",
+        "ordem": 10,
+        "huntId": "poe-a5-the-cathedral-rooftop",
+        "tipo": "fase-final-do-ato",
+        "nivel": {
+          "facil": 45,
+          "medio": 45,
+          "dificil": 45
+        },
+        "obrigatoria": true,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [
+          {
+            "missao": "O Rei Voraz",
+            "texto": "Use o navio para voltar para Wraeclast"
+          }
+        ],
+        "conclusao": {
+          "tipo": "matar-chefe",
+          "monstro": "Kitava,_the_Insatiable",
+          "nome": "Kitava, o Insaciável"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 760,
+          "y": 100
+        }
+      }
+    ],
+    "conexoes": [
+      {
+        "de": "poe-a5-the-slave-pens",
+        "para": "poe-a5-the-control-blocks",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a5-the-control-blocks",
+        "para": "poe-a5-oriath-square",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a5-oriath-square",
+        "para": "poe-a5-the-templar-courts",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a5-the-ruined-square",
+        "para": "poe-a5-the-ossuary",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a5-the-ruined-square",
+        "para": "poe-a5-the-cathedral-rooftop",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a5-the-ruined-square",
+        "para": "poe-a5-the-reliquary",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a5-the-templar-courts",
+        "para": "poe-a5-the-chamber-of-innocence",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a5-the-torched-courts",
+        "para": "poe-a5-the-ruined-square",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a5-the-chamber-of-innocence",
+        "para": "poe-a5-the-torched-courts",
+        "requisito": null,
+        "rotulo": ""
+      }
+    ],
+    "bossFinal": {
+      "bossId": "poe-chefe-ato-5",
+      "faseAnterior": "poe-a5-the-cathedral-rooftop",
+      "nivel": {
+        "facil": 45,
+        "medio": 45,
+        "dificil": 45
+      },
+      "arena": null,
+      "recompensas": null
+    }
+  }
+}

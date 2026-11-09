@@ -15,7 +15,7 @@ import { personagemDeTeste, HUNT_DE_TESTE, huntDoPoe } from './apoio.mjs';
 const DIF_DE_TESTE = HUNT_DE_TESTE === 'troll-cave' ? 'medio' : 'facil';
 import * as Combate from '../systems/hunt/combate.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
+import { ehDoPoe } from '../systems/itens-poe/so-itens-do-poe.mjs';
 
 const VOCACOES = ['knight', 'paladin', 'druid', 'sorcerer', 'monk', 'knight'];
 const criadas = [];
@@ -180,8 +180,11 @@ function matar(quem, loot, key) {
   return eventos;
 }
 
+// (08/11, adaptado ao PoE — o dono: "Adaptar antes") Itens leves do PoE (os MAPAS do endgame, ids 7.700.001+) no lugar dos itens do
+// Draevor, que não entram no jogo oficial (`so-itens-do-poe.mjs`). Os mapas porque só caem DENTRO de um mapa: numa área da campanha nenhum
+// cai por acaso no meio da conta (as moedas, as gemas e as tatuagens do PoE caem sozinhas e somariam nos 48).
 const leve = Object.entries(ITEM_CATALOG)
-  .filter(([id, it]) => (it.weight ?? 0) > 0 && (it.weight ?? 0) <= 100 && ![3031, 3035, 3043].includes(Number(id)) && it.pickupable !== false)
+  .filter(([id, it]) => ehDoPoe(id) && Number(id) >= 7_700_001 && Number(id) <= 7_726_999 && (it.weight ?? 0) > 0 && (it.weight ?? 0) <= 100 && it.pickupable !== false)
   .map(([id]) => Number(id))
   .slice(0, 50);
 
@@ -197,7 +200,7 @@ test('party: o OURO de cada bicho vai em partes iguais para os quatro (o resto r
   for (const [i, j] of js.entries()) assert.equal(j.s.estado.hunt.sessao.gold >= ganho[i], true);
 });
 
-test('party: os ITENS são SORTEADOS entre os quatro — todos recebem, nenhum se perde, e o chat de quem recebeu mostra', { skip: aAdaptar("O sorteio de itens da party é da engine; o teste sorteia itens do Draevor, que não entram no jogo oficial") }, async () => {
+test('party: os ITENS são SORTEADOS entre os quatro — todos recebem, nenhum se perde, e o chat de quem recebeu mostra', async () => {
   const { js, lider } = await quatroCacando();
   const itensDe = (j) => Object.entries(j.s.estado.hunt.sessao.itens.loot).filter(([id]) => leve.includes(Number(id))).reduce((a, [, n]) => a + n, 0);
   const antes = js.map(itensDe);
@@ -215,7 +218,7 @@ test('party: os ITENS são SORTEADOS entre os quatro — todos recebem, nenhum s
   }
 });
 
-test('party: quem não pode levar (filtro do loot) fica fora do sorteio — o item não se perde', { skip: aAdaptar("O sorteio de itens da party é da engine; o teste sorteia itens do Draevor, que não entram no jogo oficial") }, async () => {
+test('party: quem não pode levar (filtro do loot) fica fora do sorteio — o item não se perde', async () => {
   const { js, lider } = await quatroCacando();
   const item = leve[0];
   // O paladin (js[1]) não quer este item.
@@ -350,9 +353,13 @@ test('"Seguir líder" não leva quem ainda não liberou a fase (o líder não ca
   grupo(segue.s, 'sair');
 });
 
-test('colisão: cinco na mesma caçada nunca dividem casa (nem com bicho), e ninguém fica travado', { skip: aAdaptar("Colisão da party é da engine; a caçada de um dos cinco (nível 3) acaba no meio dos 5 minutos na área do PoE") }, async () => {
+test('colisão: cinco na mesma caçada nunca dividem casa (nem com bicho), e ninguém fica travado', async () => {
   const js = [];
   for (let i = 0; i < 5; i++) js.push(await jogador(i, 3));
+  // (08/11, adaptado ao PoE — o dono: "Adaptar antes") Na área do PoE os bichos do Ato 1 matam o personagem de teste (level 60, sem
+  // equipamento do PoE) no meio dos 5 minutos — e o morto volta à cidade. O teste é da colisão: os cinco com a marca do personagem de
+  // teste do PoE (`testador`: toma o dano e não morre), como o Troll Cave do Draevor, onde ninguém morria.
+  for (const j of js) j.s.estado.testador = true;
   const [lider, ...outros] = js;
   partyDe(lider, ...outros);
   for (const o of outros) o.s.estado.settings.seguirLider = true;

@@ -101,7 +101,8 @@ export function abrir(estado, { onde = 'inventory', indice, assinatura: aDaTela,
   if (!Mapas.ehMapa(peca)) return { ok: false, erro: 'Isso não é um mapa.' };
   if (aDaTela == null || assinatura(peca) !== String(aDaTela)) return { ok: false, erro: 'Esse mapa mudou de lugar: abra a lista de novo.' };
   const tier = Mapas.tierDaPeca(peca);
-  const huntId = MapasAreas.huntIdDoTier(tier);
+  // (08/11: o mapa único com terreno próprio — o Labirinto, as brechas — abre na hunt do terreno dele, `MapasAreas.huntIdDoMapa`)
+  const huntId = MapasAreas.huntIdDoMapa(tier, peca);
   if (!huntId || !Mapas.nivelDoTier(tier)) return { ok: false, erro: `O Mapa (Nível ${tier}) não existe no jogo.` };
   antes?.();
   // O registro primeiro (a caçada precisa do id), desfeito se a instância não nascer: a peça só sai depois. (Um mapa empilhado — não
@@ -137,7 +138,7 @@ export function voltar(estado, { mode, strategy } = {}, { antes = null } = {}) {
   if (!a) return { ok: false, erro: 'Você não tem um mapa aberto.' };
   if (MapaAberto.cacadaDoAberto(estado)) return { ok: false, erro: 'Você já está no mapa.' };
   if (!(a.portais > 0)) return { ok: false, erro: 'Os portais desse mapa acabaram.' };
-  const huntId = MapasAreas.huntIdDoTier(a.tier);
+  const huntId = MapasAreas.huntIdDoMapa(a.tier, a.peca);
   if (!huntId) return { ok: false, erro: `O Mapa (Nível ${a.tier}) não existe no jogo.` };
   antes?.();
   const r = Cacadas.entrar(estado, { huntId, mode, strategy, mapa: a });

@@ -5,7 +5,7 @@ import { mkdtempSync, rmSync, writeFileSync, readFileSync, mkdirSync, copyFileSy
 import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { aAdaptar, doClassico } from './apoio-migracao.mjs';
+import { doClassico, soNoOficial } from './apoio-migracao.mjs';
 
 const pasta = mkdtempSync(join(tmpdir(), 'hot-int-'));
 const OV = join(pasta, 'overrides');
@@ -15,6 +15,8 @@ process.env.DRAEVOR_OVERRIDES = OV;
 const campanhaTmp = join(pasta, 'campanha.json');
 copyFileSync(new URL('../gamedata/campanha.json', import.meta.url), campanhaTmp);
 after(() => rmSync(pasta, { recursive: true, force: true }));
+// O jogo do PoE carregado como no servidor (as áreas, os 10 atos e os chefes do PoE): o HI8 roda sobre eles. No clássico não faz nada.
+await import('./apoio.mjs');
 
 const { CATALOGO, ITEM_CATALOG } = await import('../systems/dados.mjs');
 const Poderes = await import('../systems/poderes.mjs');
@@ -203,53 +205,67 @@ test('HI7. SPRITE: desligar o override (ou apagá-lo) manda o cliente de volta a
   assert.equal(ultimo().indice, true);
 });
 
+// (o HI9, do clássico, conta com estas 6 hunts da campanha legada "emprestadas"; no jogo oficial as fases são todas de atos do editor e
+// isto não tira nada)
 const hunts = Campanha.FASES.filter((f) => f.ato === 2 && !f.pular).slice(0, 6).map((f) => f.huntId);
 Campanha._liberarHuntsParaTestes(hunts);
+// (08/11, adaptado ao PoE — o dono: "Adaptar antes") Com o PoE ligado só os atos `poe-ato-*` valem (`Campanha.recarregarAto`) e as áreas
+// do PoE são todas dos 10 atos: o ato de teste é um `poe-ato-` que toma o LUGAR do Ato 10 (o do boot sai durante o teste e volta no fim),
+// com 6 áreas do Ato 10 e o chefe dele, depois do Ato 9 (no clássico era o Ato 5, com 6 hunts do Ato 2, depois do legado-4).
+const NUMERO = 10;
+const ATO_ID = 'poe-ato-quente';
 const fase = (id, huntId, extra = {}) => ({ id, nome: id.toUpperCase(), huntId, tipo: 'hunt-normal', nivel: { facil: 20, medio: 120, dievel: 0, dificil: 620 }, ...extra });
-const ato5 = (mod = {}) => ({
-  id: 'ato-quente', nome: 'Ato Quente', estado: 'publicado', ordem: 5, anterior: 'legado-4', inicio: 'fase-1',
-  fases: hunts.map((h, i) => fase(`fase-${i + 1}`, h, { ordem: i + 1, ...(i === 5 ? { obrigatoria: false } : {}) })),
+const atoQuente = (areas, mod = {}) => ({
+  id: ATO_ID, nome: 'Ato Quente', estado: 'publicado', ordem: NUMERO, anterior: 'poe-ato-9', inicio: 'fase-1',
+  fases: areas.map((h, i) => fase(`fase-${i + 1}`, h, { ordem: i + 1, ...(i === 5 ? { obrigatoria: false } : {}) })),
   conexoes: [['fase-1', 'fase-2'], ['fase-2', 'fase-3'], ['fase-2', 'fase-4'], ['fase-3', 'fase-5'], ['fase-4', 'fase-5'], ['fase-1', 'fase-6']].map(([de, para]) => ({ de, para })),
-  bossFinal: { bossId: 'ahau', faseAnterior: 'fase-5' },
+  bossFinal: { bossId: 'poe-chefe-ato-10', faseAnterior: 'fase-5' },
   ...mod,
 });
 
-test('HI8. ACT: um ato novo entra no jogo sem reiniciar, editar o arquivo o SUBSTITUI, um ato inválido mantém o anterior, rascunho/apagar o tiram', { skip: aAdaptar("Hot reload do Ato vale para poe-ato-*; o teste usa um ato do Draevor") }, async () => {
-  const arquivo = join(ATOS, 'ato-quente.json');
+test('HI8. ACT: um ato novo entra no jogo sem reiniciar, editar o arquivo o SUBSTITUI, um ato inválido mantém o anterior, rascunho/apagar o tiram', { skip: soNoOficial('o ato de teste é um ato do PoE (poe-ato-*), sobre as áreas do Ato 10') }, async () => {
+  const doBoot = Campanha.ATOS_DO_EDITOR.get(NUMERO).ato;
+  const areas = [...doBoot.fases].sort((a, b) => a.ordem - b.ordem).slice(0, 6).map((f) => f.huntId);
+  Campanha._desregistrarAto(NUMERO);
+  const outrosAtos = Campanha.ATOS_DO_EDITOR.size;
+  const fasesDosOutros = Campanha.FASES.filter((f) => f.grafo).length;
+  const ato5 = (mod) => atoQuente(areas, mod);
+  const arquivo = join(ATOS, `${ATO_ID}.json`);
   const grava = (a) => writeFileSync(arquivo, JSON.stringify(a));
   grava(ato5());
-  let e = await recarregar('atos', 'atos/ato-quente.json');
+  let e = await recarregar('atos', `atos/${ATO_ID}.json`);
   assert.equal(e.estado, 'atualizado', e.mensagem);
-  assert.equal(Campanha.ATOS_DO_EDITOR.get(5).ato.nome, 'Ato Quente');
-  assert.deepEqual(ultimo().atos, ['ato-quente']);
+  assert.equal(Campanha.ATOS_DO_EDITOR.get(NUMERO).ato.nome, 'Ato Quente');
+  assert.deepEqual(ultimo().atos, [ATO_ID]);
   grava(ato5({ nome: 'Ato Renomeado' }));
-  e = await recarregar('atos', 'atos/ato-quente.json');
-  assert.equal(Campanha.ATOS_DO_EDITOR.get(5).ato.nome, 'Ato Renomeado');
-  assert.equal(Campanha.ATOS_DO_EDITOR.size, 1, 'substituiu, não duplicou');
-  assert.equal(Campanha.FASES.filter((f) => f.grafo?.atoId === 'ato-quente').length, 6, 'as fases não foram duplicadas');
+  e = await recarregar('atos', `atos/${ATO_ID}.json`);
+  assert.equal(Campanha.ATOS_DO_EDITOR.get(NUMERO).ato.nome, 'Ato Renomeado');
+  assert.equal(Campanha.ATOS_DO_EDITOR.size, outrosAtos + 1, 'substituiu, não duplicou');
+  assert.equal(Campanha.FASES.filter((f) => f.grafo?.atoId === ATO_ID).length, 6, 'as fases não foram duplicadas');
   // inválido: boss que não existe
   grava(ato5({ nome: 'Quebrado', bossFinal: { bossId: 'nao-existe', faseAnterior: 'fase-5' } }));
-  e = await recarregar('atos', 'atos/ato-quente.json');
+  e = await recarregar('atos', `atos/${ATO_ID}.json`);
   assert.equal(e.estado, 'erro');
   assert.match(e.mensagem, /última versão válida/);
-  assert.equal(Campanha.ATOS_DO_EDITOR.get(5).ato.nome, 'Ato Renomeado', 'o ato anterior continua no jogo');
-  assert.equal(Campanha.FASES.filter((f) => f.grafo?.atoId === 'ato-quente').length, 6);
+  assert.equal(Campanha.ATOS_DO_EDITOR.get(NUMERO).ato.nome, 'Ato Renomeado', 'o ato anterior continua no jogo');
+  assert.equal(Campanha.FASES.filter((f) => f.grafo?.atoId === ATO_ID).length, 6);
   // JSON quebrado
   writeFileSync(arquivo, '{ ops');
-  e = await recarregar('atos', 'atos/ato-quente.json');
+  e = await recarregar('atos', `atos/${ATO_ID}.json`);
   assert.equal(e.estado, 'erro');
-  assert.equal(Campanha.ATOS_DO_EDITOR.get(5).ato.nome, 'Ato Renomeado');
+  assert.equal(Campanha.ATOS_DO_EDITOR.get(NUMERO).ato.nome, 'Ato Renomeado');
   // rascunho tira do jogo; voltar a publicado põe; apagar o arquivo tira
   grava(ato5({ estado: 'rascunho' }));
-  await recarregar('atos', 'atos/ato-quente.json');
-  assert.equal(Campanha.ATOS_DO_EDITOR.has(5), false);
+  await recarregar('atos', `atos/${ATO_ID}.json`);
+  assert.equal(Campanha.ATOS_DO_EDITOR.has(NUMERO), false);
   grava(ato5());
-  await recarregar('atos', 'atos/ato-quente.json');
-  assert.equal(Campanha.ATOS_DO_EDITOR.has(5), true);
+  await recarregar('atos', `atos/${ATO_ID}.json`);
+  assert.equal(Campanha.ATOS_DO_EDITOR.has(NUMERO), true);
   rmSync(arquivo);
-  await recarregar('atos', 'atos/ato-quente.json');
-  assert.equal(Campanha.ATOS_DO_EDITOR.has(5), false);
-  assert.equal(Campanha.FASES.filter((f) => f.grafo).length, 0, 'nenhuma fase órfã');
+  await recarregar('atos', `atos/${ATO_ID}.json`);
+  assert.equal(Campanha.ATOS_DO_EDITOR.has(NUMERO), false);
+  assert.equal(Campanha.FASES.filter((f) => f.grafo).length, fasesDosOutros, 'nenhuma fase órfã');
+  Campanha.registrarAto(doBoot);
 });
 
 test('HI9. CAMPANHA: níveis das fases e dos bosses recarregam a quente; estrutura diferente (fase a mais) exige reinício e não toca em nada', { skip: doClassico("Níveis das 48 fases/bosses da campanha do Draevor") }, async () => {

@@ -447,3 +447,18 @@ test('o Pergaminho de Portal (o dono: "utilizado para sair no meio da fase para 
   assert.equal(M.quantasTem(e, id), 1);
   assert.ok(Catalogo.REGRAS.moedas.loja.Portal_Scroll > 0 && Catalogo.REGRAS.moedas.drop.pesos.Portal_Scroll > 0);
 });
+
+test('os encantamentos do Labirinto de UMA habilidade: a regra põe `@gema:<nome>` e a habilidade leva a tag `gema:<nome>` no golpe (só nela)', { skip: SEM }, async () => {
+  const Acoes = await import('../systems/acoes.mjs');
+  const C = await import('../systems/itens-poe/condicoes-poe.mjs');
+  const ef = tr('Dano da Esfera Trovejante aumentado em {0}%', [40]).efeitos;
+  assert.deepEqual(ef.map((x) => [x.stat, x.valor]), [['dmg_inc@gema:esfera-trovejante', 40]]);
+  assert.deepEqual(tr('Área de Efeito do Vórtice de Lâminas aumentada em {0}%', [20]).efeitos.map((x) => x.stat), ['area_inc@gema:vortice-de-laminas']);
+  assert.deepEqual(tr('Dano da Lança de Gelo aumentado em {0}%', [40]).efeitos.map((x) => x.stat), ['dmg_inc@gema:lanca-gelida'], 'o apelido do texto do encantamento');
+  assert.equal(tr('Dano de Fogo aumentado em {0}%', [10]).efeitos[0].stat, 'fire_dmg', 'as regras de sempre vêm antes da genérica');
+  const tags = Acoes.tagsPoeDaSkill({ poeGema: { slug: 'Ball_Lightning' } });
+  assert.ok(tags.includes('gema:esfera-trovejante'), JSON.stringify(tags));
+  const ficha = { porTag: C.porTag({}, { 'dmg_inc@gema:esfera-trovejante': 40 }) };
+  assert.equal(C.somaPorTags(ficha, tags).dmg_inc, 40);
+  assert.equal(C.somaPorTags(ficha, Acoes.tagsPoeDaSkill({ poeGema: { slug: 'Fireball' } })).dmg_inc, undefined, 'outra habilidade, não');
+});

@@ -373,7 +373,7 @@ export function criarEditorDeItens({ api, raiz, sujo = null, podeGravar = () => 
   const f_desenho = () => E.ficha?.desenho ?? null;
 
   const corpo = (aba) => {
-    if (aba === 'usos') return el('div', {}, E.ficha.usos.length ? el('ul', { class: 'op-lista' }, E.ficha.usos.map((x) => el('li', {}, `${x.nome ?? x.id} `, el('small', { class: 'dica' }, x.categoria ?? x.tipo ?? '')))) : el('div', { class: 'dica' }, 'Este item não é usado em nenhuma hunt, boss ou encontro.'), (E.ficha.conjuntos ?? []).length ? el('div', {}, el('h4', {}, 'Conjuntos que usam este item'), el('ul', { class: 'op-lista' }, E.ficha.conjuntos.map((c) => el('li', {}, `${c.nome} `, el('small', { class: 'dica' }, `${c.classe} · Ato ${c.ato} · ${c.slot}${c.ativo ? '' : ' · inativo'}`), ' ', irPara ? el('button', { type: 'button', class: 'fantasma', onclick: () => irPara('conjuntos', null, [c.id]) }, 'abrir conjunto') : null)))) : el('div', { class: 'dica' }, 'Nenhum conjunto usa este item.'));
+    if (aba === 'usos') return el('div', {}, E.ficha.usos.length ? el('ul', { class: 'op-lista' }, E.ficha.usos.map((x) => el('li', {}, `${x.nome ?? x.id} `, el('small', { class: 'dica' }, x.categoria ?? x.tipo ?? '')))) : el('div', { class: 'dica' }, 'Este item não é usado em nenhuma hunt, boss ou encontro.'));
     if (aba === 'combate') return abaCombate();
     if (aba === 'geral') return abaGeral();
     if (aba === 'historico') return abaHistorico();

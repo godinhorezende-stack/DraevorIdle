@@ -237,7 +237,40 @@ export function pendentes(hunt) {
   for (const m of bichosDaSala(hunt)) if (m.hp > 0 && m.instancia === inst?.id && !m.opcional) n += m.objetivo ?? 1;
   // O chefe guardado (ainda não apareceu) também falta.
   for (const r of inst?.reserva ?? []) n += r.m.objetivo ?? 1;
+  // (08/11) e o morto que ainda vai se levantar (os Mortos Inquietos — `guardarParaRessurgir`)
+  for (const r of inst?.ressurgir ?? []) n += r.m.objetivo ?? 1;
   return n;
+}
+
+/*
+ * ---- Os MORTOS INQUIETOS (o Pesadelo de Acton, 08/11: "map undead monsters get up after X seconds [10]") ----
+ * O monstro com `ressurgirMs` (`itens-poe/mapas-areas.aplicarEfeitos`) morre de verdade — a exp e o loot saem — e se levanta no mesmo lugar
+ * depois do tempo, com a vida cheia, uma vez só (`ressurgiu`). Enquanto espera, conta na limpeza (`pendentes`).
+ */
+export function guardarParaRessurgir(hunt, m, agora) {
+  const inst = daSala(hunt);
+  if (!inst || m.instancia !== inst.id) return false;
+  (inst.ressurgir ??= []).push({ z: m.z ?? salaDe(hunt)?.z ?? 0, em: agora + m.ressurgirMs, m });
+  return true;
+}
+/** Os que já podem se levantar voltam ao andar deles (vida cheia, sem afecções nem maldições). Devolve os que voltaram. */
+export function liberarRessurgidos(hunt, agora) {
+  const sala = salaDe(hunt);
+  const inst = sala?.instancia;
+  if (!inst?.ressurgir?.length || inst.status !== 'ativa') return [];
+  const voltaram = [];
+  inst.ressurgir = inst.ressurgir.filter((r) => {
+    if (r.em > agora) return true;
+    const m = r.m;
+    m.hp = m.maxHp;
+    m.ressurgiu = true;
+    for (const k of ['dots', 'estados', 'maldicoes', 'marcas', 'buffsDeMob', 'drenoPoe']) delete m[k];
+    delete m.recompensado;
+    (r.z === (sala.z ?? 0) ? sala.monstros : ((sala.outrosAndares ??= {})[r.z] ??= [])).push(m);
+    voltaram.push(m);
+    return false;
+  });
+  return voltaram;
 }
 
 /*
@@ -371,7 +404,8 @@ export function paraCliente(hunt, portal = null) {
 }
 
 /** Os tipos que pedem uma DECISÃO do líder do grupo antes de começar (o cliente mostra a janela de decisão). */
-const DECISAO = new Set(['area-secreta', 'escolta']);
+// (08/11: + os Braços de Doryani — a escolha do elemento, `itens-poe/doryani.mjs`)
+const DECISAO = new Set(['area-secreta', 'escolta', 'braco-doryani']);
 
 /**
  * Os encontros que o jogador PODE VER e usar agora: baús, altares, sobrevivências e fendas com posição, disponíveis (ou em andamento).
@@ -381,5 +415,5 @@ const DECISAO = new Set(['area-secreta', 'escolta']);
 export function encontrosVisiveis(inst) {
   return Object.values(inst?.encontros ?? {})
     .filter((e) => (e.tipo.startsWith('bau') || e.tipo === 'altar' || e.tipo === 'sobrevivencia' || e.tipo === 'fenda' || e.tipo === 'aprisionado' || e.tipo === 'abismo-poe' || e.tipo === 'fenda-poe' || DECISAO.has(e.tipo)) && (e.estado === 'disponivel' || e.estado === 'ativo') && e.x != null)
-    .map((e) => ({ id: e.id, tipo: e.tipo, nome: e.nome, x: e.x, y: e.y, ...(e.z != null ? { z: e.z } : {}), ...(e.raio ? { raio: e.raio } : {}), estado: e.estado, ...(DECISAO.has(e.tipo) ? { decisao: true, ...(e.descricao ? { descricao: e.descricao } : {}) } : {}) }));
+    .map((e) => ({ id: e.id, tipo: e.tipo, nome: e.nome, x: e.x, y: e.y, ...(e.z != null ? { z: e.z } : {}), ...(e.raio ? { raio: e.raio } : {}), estado: e.estado, ...(DECISAO.has(e.tipo) ? { decisao: true, ...(e.descricao ? { descricao: e.descricao } : {}), ...(e.escolhas ? { escolhas: e.escolhas } : {}) } : {}) }));
 }

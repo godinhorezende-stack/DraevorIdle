@@ -76,6 +76,20 @@ export const APELIDOS_DE_GEMA = Object.freeze({
   'Pureza Elemental': 'Pureza Elementar',
   // (07/11, lote 14 das inertes: a Forja do Ódio diz Furor, a gema é a Fúria; o Modela-Barro, Golem de Pedra; a Trilha Bubônica, "o Passo da Morte")
   Furor: 'Fúria', 'Convocar Golem de Pedra': 'Convocar Golem Pedregulho', 'o Passo da Morte': 'Passo da Morte',
+  // (08/11, os encantamentos do Labirinto: o nome da habilidade no texto do encantamento × o da gema — conferidos pelo slug do poedb)
+  'Turbilhão': 'Vórtice', 'Contágio': 'Contagiar', 'Golpe Combinado': 'Ataque Combinado', 'Mina Piroclástica': 'Mina Explosiva de Fogo',
+  'Totem da Chama Sagrada': 'Totem Flamejante Sagrado', 'Totem de Onda de Choque': 'Totem Sísmico', 'Flecha Repartida': 'Flecha Dividida',
+  'Conduíte de Raio': 'Condutor Elétrico', 'Flecha Ilusória e dos Clones da Flecha Ilusória': 'Flecha Ilusória',
+  'Flecha Espelhada e dos Clones da Flecha Espelhada': 'Flecha Espelhada', 'Dreno de Essência': 'Drenar Essência', 'Mistura Explosiva': 'Composto Explosivo',
+  'Mistura Venenosa': 'Composto Venenoso', 'Tempestade de Fogo': 'Tormenta Flamejante', 'Bomba de Gelo': 'Bomba Congelante', 'Golpe Pesado': 'Pancada',
+  'Tiro de Gelo': 'Tiro Gélido', 'Lança de Gelo': 'Lança Gélida', 'Centelha': 'Faísca', Fagulha: 'Faísca', 'Chamado da Tempestade': 'Invocar Tormenta',
+  'Orbe das Tempestades': 'Orbe Trovejante', 'Marca do Senhor da Guerra': 'Marca do Comandante', 'Relíquia Sagrada Convocada': 'Convocar Relíquia Sagrada',
+  'Lâminas de Gelo': 'Lâminas Gélidas', 'Totem Protetor Ancestral': 'Protetor Ancestral', 'Totem Chefe Guerreiro Ancestral': 'Chefe Guerreiro Ancestral',
+  'Guardiões Animados': 'Animar Guardião', 'Armas Animadas': 'Animar Arma', 'Arma Animada': 'Animar Arma', 'Marca do Armagedom': 'Runa do Armagedom',
+  'Marca Tempestuosa': 'Runa Tempestuosa', 'Armadilha de Lâmians': 'Armadilha de Lâminas', 'Estalo Gelado': 'Estalo Gélido', 'Facas Etéreos': 'Facas Etéreas',
+  'Pancada de Gelo': 'Pancada Glacial', 'Armadilha Sifão': 'Armadilha Sifão de Gelo', 'Golpe Relampejante': 'Golpe Trovejante', 'Armadilha Sísmica': 'Armadilha Císmica',
+  'Fogo da Justiça': 'Círculo Ardente', 'Flecha do Flagelo': 'Flecha Virulenta', 'Ligação Cauterizadora': 'Vínculo Cauterizador', 'Vínculo Protedor': 'Vínculo Protetor',
+  'Comando do Túmulo': 'Mandamento do Túmulo', Punir: 'Castigo', 'Disparo da Tempestade': 'Tormenta Explosiva', 'Escudo da Tempestade': 'Escudo Tempestuoso', Hidrosfera: 'Hidroesfera', 'Oferenda de Ossos': 'Oferenda Óssea',
 });
 const slugDaGema = (nome) => slugDoNome(APELIDOS_DE_GEMA[nome] ?? nome);
 

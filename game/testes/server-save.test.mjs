@@ -13,7 +13,6 @@ import * as SimulacaoOffline from '../systems/simulacao-offline.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as B from '../database/banco.mjs';
 import { personagemDeTeste, HUNT_DE_TESTE } from './apoio.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
 
 after(() => SimulacaoOffline.encerrar());
 
@@ -69,9 +68,15 @@ afterEach(async () => {
   await limparCiclos();
 });
 
-async function ausente({ saida = Date.now() - 2 * HORA, nome = null, extra = {} } = {}) {
+/**
+ * (08/11, adaptado ao PoE — o dono: "Adaptar antes") `naoMorre`: o que tem de render caçando (F6, F7) — level 90, e não 200 (acima do 100 a
+ * XP do nível é Infinity na tabela do PoE), com a marca do personagem de teste do jogo oficial (`testador`, não morre): sem nada do PoE
+ * equipado ele morre na área do PoE sem abater nada.
+ */
+async function ausente({ saida = Date.now() - 2 * HORA, nome = null, extra = {}, naoMorre = false } = {}) {
   const c = await B.criarConta({ email: `ss-${randomUUID()}@teste.local`, senha: 'senha-123' });
-  const e = personagemDeTeste({ vocacao: 'knight', level: 200 });
+  const e = personagemDeTeste({ vocacao: 'knight', level: naoMorre ? 90 : 200 });
+  if (naoMorre) e.testador = true;
   assert.equal(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto', strategy: 'nearest' }).ok, true);
   e.hunt.offlineDesde = saida;
   const p = await B.criarPersonagem({ conta: c.id, nome: nome ?? `Ss${randomUUID().replace(/[^a-z]/g, '').slice(0, 9)}`, vocacao: 'knight', sexo: 'male', estadoInicial: { ...e, ...extra, hunt: Cacadas.huntParaGravar(e.hunt) } });
@@ -306,8 +311,8 @@ test('F5. recompensas pendentes (créditos) não são perdidas nem duplicadas pe
   assert.equal(Number((await B.banco.prepare('SELECT gold FROM creditos WHERE personagem = ?').get(nome)).gold), 500);
 });
 
-test('F6. a caçada offline segue correndo depois do save: a consolidação avança uma vez, e repetir o mesmo instante não processa de novo', { skip: aAdaptar("Consolidação offline na hunt do Draevor com personagem legado") }, async () => {
-  const q = await ausente({ saida: Date.now() - 2 * HORA });
+test('F6. a caçada offline segue correndo depois do save: a consolidação avança uma vez, e repetir o mesmo instante não processa de novo', async () => {
+  const q = await ausente({ saida: Date.now() - 2 * HORA, naoMorre: true });
   await SS.iniciar({ relogio: relogioFalso(T0), logger: quieto, anunciar: mensagens().anunciar });
   await SS.executarAgora();
   const agora = Date.now();
@@ -321,8 +326,8 @@ test('F6. a caçada offline segue correndo depois do save: a consolidação avan
   assert.equal(JSON.parse((await linha(q.id)).estado).xp, xp1);
 });
 
-test('F7. o retorno do jogador DURANTE o save não conflita: a consolidação concorrente grava, o save não, e o XP não duplica', { skip: aAdaptar("Consolidação offline na hunt do Draevor com personagem legado") }, async () => {
-  const q = await ausente({ saida: Date.now() - 2 * HORA });
+test('F7. o retorno do jogador DURANTE o save não conflita: a consolidação concorrente grava, o save não, e o XP não duplica', async () => {
+  const q = await ausente({ saida: Date.now() - 2 * HORA, naoMorre: true });
   await SS.iniciar({ relogio: relogioFalso(T0), logger: quieto, anunciar: mensagens().anunciar });
   const [save, cons] = await Promise.all([SS.executarAgora(), Consolidacao.consolidarUm(await linha(q.id), Date.now())]);
   assert.equal(save.ok, true);

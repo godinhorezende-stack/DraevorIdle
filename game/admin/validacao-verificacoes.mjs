@@ -105,20 +105,6 @@ export function criarVerificacoes() {
       },
     },
     {
-      id: 'conjuntos', modulo: 'conjuntos', titulo: 'Conjuntos (sets de equipamento): classes, Atos, slots, itens e níveis',
-      async rodar(ctx) {
-        const Con = await import('../systems/conjuntos.mjs');
-        const arquivo = join(ctx.overrides ?? join(RAIZ, 'overrides'), 'conjuntos.json');
-        let ov = null;
-        if (existsSync(arquivo)) { try { ov = JSON.parse(readFileSync(arquivo, 'utf8')); } catch (e) { return { achados: [erro('overrides/conjuntos.json', `JSON inválido: ${e.message}`)] }; } }
-        const mapa = Con.efetivo(Con.ORIGINAL, ov);
-        const v = Con.validarTodos(mapa, Con.contextoDoJogo());
-        const achados = [...v.erros.map((m) => erro('conjuntos', m)), ...v.avisos.map((m) => aviso('conjuntos', m))];
-        if (ov?.ativo === false && Object.keys(ov.conjuntos ?? {}).length) achados.push(aviso('overrides/conjuntos.json', 'a camada de overrides de conjuntos está DESLIGADA: nenhuma alteração vale.'));
-        return { achados, detalhe: `${Object.keys(mapa).length} conjunto(s)` };
-      },
-    },
-    {
       id: 'item-power', modulo: 'item-power', titulo: 'Item Power Base: pesos, normalização, curva de referência e regras de distribuição',
       async rodar(ctx) {
         const IP = await import('../systems/item-power.mjs');

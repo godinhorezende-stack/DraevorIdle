@@ -129,7 +129,7 @@ export const rngDaSemente = (semente, chave = 'baus-poe') => {
  * que nasceram (`[{ z, m }]`, as âncoras); `nivel`: o nível da área (o loot). Devolve os baús criados. (03/11: sem `rng`, sorteia pela
  * semente da instância — a dos encontros, criada aqui se a área não tem encontros.)
  */
-export function porNaInstancia(instancia, { grade, inicio = null, todos = [], nivel = null, baus = null, rng = null } = {}) {
+export function porNaInstancia(instancia, { grade, inicio = null, todos = [], nivel = null, baus = null, rng = null, porArea = POR_AREA } = {}) {
   if (!ligado() || !instancia || !grade) return [];
   if (!rng) rng = rngDaSemente((instancia.semente ??= novaSemente()));
   const alcancaveis = casasAlcancaveis(grade, inicio);
@@ -138,7 +138,7 @@ export function porNaInstancia(instancia, { grade, inicio = null, todos = [], ni
   for (const e of Object.values(instancia.encontros ?? {})) if (e.x != null) ocupadas.add(`${e.x},${e.y},${e.z ?? grade.z}`);
   const ancoras = embaralhar(todos.map(({ z, m }) => ({ x: m.x, y: m.y, z: z ?? grade.z })), rng);
   const grandes = Math.max(0, Math.round(Number(baus?.grandes) || 0));
-  const raridades = [...Array.from({ length: grandes }, () => 'grande'), ...Array.from({ length: POR_AREA }, () => DA_RARIDADE_DO_MONSTRO[sortearRaridade(rng)] ?? 'normal')];
+  const raridades = [...Array.from({ length: grandes }, () => 'grande'), ...Array.from({ length: porArea }, () => DA_RARIDADE_DO_MONSTRO[sortearRaridade(rng)] ?? 'normal')];
   const criados = [];
   let a = 0;
   for (const raridade of raridades) {
@@ -205,7 +205,10 @@ export function pagar(estado, hunt, e, rng = Math.random, personagem = null) {
   const conta = (grupo, id, n, ses = sessao) => { if (ses?.itens?.[grupo]) ses.itens[grupo][id] = (ses.itens[grupo][id] ?? 0) + n; };
   const caiu = [];
   const onde = nomeDaHunt(hunt.huntId);
+  // (08/11, as Relíquias de Atziri: "Itens Encontrados têm X% de chance de caírem Corrompidos na Área" — os baús também)
+  const corrompidosPct = Number(mapa?.efeitos?.instancia?.corrompidosPct) || 0;
   for (const peca of pecas) {
+    if (corrompidosPct > 0 && peca.poe && rng() * 100 < corrompidosPct) peca.poe.corrompido = true;
     if (Bolsa.ignora(estado, peca.id, peca)) { conta('ignorado', peca.id, 1); continue; }
     if (!Bolsa.porNaBolsa(estado, peca.id, 1, peca)) break;
     caiu.push({ id: peca.id, count: 1 });
@@ -276,6 +279,9 @@ export function seguramOClear(estado, hunt, grade) {
   inst.bausSeguramDesde ??= agora;
   return agora - inst.bausSeguramDesde <= SEGURA_O_CLEAR_MS;
 }
+
+/** (08/11) Os baús do PoE ainda fechados na sala (todos os andares) — o mapa sem monstros (as Relíquias de Atziri) só conclui sem nenhum. */
+export const bausFechados = (hunt) => Object.values(daSala(hunt)?.encontros ?? {}).filter((e) => ehBauPoe(e) && e.estado === 'disponivel').length;
 
 /**
  * (03/11, rodada 2) Os baús SEGURAM A SAÍDA do MAPA do endgame? O mapa conclui ao limpar (como sempre — a conclusão, o aviso, o loop); passada a

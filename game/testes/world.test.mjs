@@ -12,8 +12,8 @@ import * as Arquivos from '../systems/encontros/arquivos.mjs';
 import * as Instancia from '../systems/hunt/instancia.mjs';
 import { layoutDoAto, colunasPara, estadoDoNo, RAIO_DA_FASE, RAIO_DO_BOSS } from '../frontend/client/src/world.mjs';
 import { encontroNaCasa, encontroPerto, assinaturaDosEncontros, ALCANCE_DE_INTERACAO } from '../frontend/client/src/encontros-na-tela.mjs';
+import { soNoOficial } from './apoio-migracao.mjs';
 import { personagemDeTeste, HUNT_DE_TESTE } from './apoio.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
 
 const [F1, F2, F3] = Campanha.FASES;
 let restaurar = () => {};
@@ -38,7 +38,7 @@ const CONTEUDO = {
   [F3.huntId]: { requisitos: { exige: [F1.huntId] } },
 };
 
-test('o WORLD recebe descrição, ambiente, conexões, boss principal e a condição de conclusão — e NENHUM segredo', { skip: aAdaptar("O WORLD (descrição, requisito, payload) é da engine; o teste usa a campanha do Draevor") }, () => {
+test('o WORLD recebe descrição, ambiente, conexões, boss principal e a condição de conclusão — e NENHUM segredo', { skip: soNoOficial('o WORLD da campanha do PoE (os atos e as áreas do PoE)') }, () => {
   comConteudo(CONTEUDO);
   const e = personagemDeTeste({ level: 50 });
   const m = Campanha.paraCliente(e).mundo[F1.huntId];
@@ -51,7 +51,9 @@ test('o WORLD recebe descrição, ambiente, conexões, boss principal e a condi�
   assert.equal(m.descobertos, undefined, 'nada encontrado ainda');
   const texto = JSON.stringify(Campanha.paraCliente(e));
   assert.ok(!texto.includes('Cofre Esquecido') && !texto.includes('A Sombra') && !texto.includes('cofre-secreto'), 'o baú e o boss secretos não vão para a tela');
-  assert.equal(Campanha.paraCliente(e).mundo[F2.huntId], undefined, 'fase sem conteúdo nem entra no payload');
+  // (08/11, adaptado ao PoE — o dono: "Adaptar antes") No jogo oficial toda fase é de um ato do editor: ela leva sempre o grafo do ato
+  // (o mapa segue a Engine — `mundoDaFase`), e mais nada sem conteúdo cadastrado. No clássico a fase legada sem conteúdo nem entrava.
+  assert.deepEqual(Object.keys(Campanha.paraCliente(e).mundo[F2.huntId]), ['grafo'], 'fase sem conteúdo não leva nada além do grafo do ato');
 });
 
 test('o que o jogador ENCONTROU aparece (só isso): o registro de concluídos revela o nome, e os bosses derrotados são listados', () => {
@@ -69,19 +71,18 @@ test('o que o jogador ENCONTROU aparece (só isso): o registro de concluídos re
   assert.equal(Campanha.paraCliente(e).bossesDerrotados.find((b) => b.id === 'sem-indice').nome, 'sem-indice');
 });
 
-test('requisito de entrada = PROGRESSO (exige completar fases), e o level é só RECOMENDADO: nível baixo entra, falta de fase não', { skip: aAdaptar("O WORLD (descrição, requisito, payload) é da engine; o teste usa a campanha do Draevor") }, () => {
+// (08/11, adaptado ao PoE — com a correção: a exigência do CONTEÚDO do WORLD também fecha a área do ato do PoE, `campanha.liberadaNoGrafo`)
+// O Lamaçal (aberto pela Costa) passa a exigir uma área de OUTRO ato (a primeira do Ato 2): o "fora da cadeia" do clássico.
+test('requisito de entrada = PROGRESSO (exige completar fases), e o level é só RECOMENDADO: nível baixo entra, falta de fase não', { skip: soNoOficial('o WORLD da campanha do PoE (os atos e as áreas do PoE)') }, () => {
   comConteudo(CONTEUDO);
   const e = personagemDeTeste({ level: 8 });
   assert.equal(Campanha.faseLiberada(e, 'facil', F1.huntId), true, 'level 8 < recomendado 500: entra mesmo assim (regra do dono)');
-  // F3 exige F1 além da cadeia do ato: sem a cadeia nem chega aqui; com a cadeia completa mas sem F1... F1 já faz parte dela,
-  // então o teste usa uma exigência fora da cadeia (fase de outro ato).
-  const comIndice = Campanha.FASES.map((f, indice) => ({ ...f, indice }));
-  const outroAto = comIndice.find((f) => f.ato === 2 && !f.pular);
-  const alvo = comIndice.find((f) => f.ato === 1 && f.indice === 3 && !f.pular) ?? F3;
+  const alvo = Campanha.faseDe('poe-a1-the-mud-flats');
+  const outroAto = Campanha.FASES.find((f) => f.ato === 2 && !f.pular);
   comConteudo({ [alvo.huntId]: { requisitos: { exige: [outroAto.huntId] } } });
   const x = personagemDeTeste({ level: 60 });
-  x.campanha = { facil: { limpezas: {}, completas: comIndice.filter((f) => f.ato === 1 && f.indice < alvo.indice).map((f) => f.huntId), bosses: [] } };
-  assert.equal(Campanha.faseLiberada(x, 'facil', alvo.huntId), false, 'a cadeia do ato está completa, mas falta a exigência de fora');
+  x.campanha = { facil: { limpezas: {}, completas: ['poe-a1-the-twilight-strand', 'poe-a1-the-coast'], bosses: [] } };
+  assert.equal(Campanha.faseLiberada(x, 'facil', alvo.huntId), false, 'o caminho do ato está feito, mas falta a exigência de fora');
   assert.match(Campanha.motivoParaNaoEntrar(x, 'facil', alvo.huntId), /Complete antes/);
   x.campanha.facil.completas.push(outroAto.huntId);
   assert.equal(Campanha.faseLiberada(x, 'facil', alvo.huntId), true, 'cumpriu: abre');
@@ -92,14 +93,17 @@ test('requisito de entrada = PROGRESSO (exige completar fases), e o level é só
   assert.equal(Cacadas.entrar(y, { huntId: alvo.huntId, mode: 'auto', strategy: 'nearest', dificuldade: 'facil' }).ok, false);
 });
 
-test('sem conteúdo cadastrado (produção hoje), o payload da campanha é o de sempre, com `mundo` vazio', { skip: aAdaptar("O WORLD (descrição, requisito, payload) é da engine; o teste usa a campanha do Draevor") }, () => {
+test('sem conteúdo cadastrado (produção hoje), o payload da campanha é o de sempre, com `mundo` vazio', { skip: soNoOficial('o WORLD da campanha do PoE (os atos e as áreas do PoE)') }, () => {
   comConteudo({});
   const e = personagemDeTeste({ level: 50 });
   const p = Campanha.paraCliente(e);
-  assert.deepEqual(p.mundo, {});
+  // (08/11, adaptado ao PoE — o dono: "Adaptar antes") No jogo oficial o `mundo` de cada fase é só o grafo do ato do PoE (nenhum conteúdo do
+  // WORLD); a campanha é a do PoE: uma dificuldade (o Normal — o Cruel e o Merciless não existem mais no PoE) e as 143 áreas dos 10 atos.
+  assert.ok(Object.values(p.mundo).every((m) => JSON.stringify(Object.keys(m)) === '["grafo"]'), 'nenhum conteúdo do WORLD, só o grafo do ato');
+  assert.equal(Object.keys(p.mundo).length, 143);
   assert.deepEqual(p.bossesDerrotados, []);
-  assert.equal(p.dificuldades.length, 3);
-  assert.equal(p.dificuldades[0].fases.length, 48);
+  assert.equal(p.dificuldades.length, 1);
+  assert.equal(p.dificuldades[0].fases.length, 143);
 });
 
 test('encontros visíveis na caçada: baú/altar com posição, disponível ou em andamento — nunca boss, dormindo, concluído ou sem posição', () => {

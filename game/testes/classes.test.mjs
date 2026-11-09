@@ -5,11 +5,13 @@ import { mkdtempSync, rmSync, readFileSync, existsSync, writeFileSync } from 'no
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { aAdaptar, doClassico } from './apoio-migracao.mjs';
+import { aAdaptar, doClassico, soNoOficial } from './apoio-migracao.mjs';
 
 const tmp = mkdtempSync(join(tmpdir(), 'cls-'));
 process.env.DRAEVOR_OVERRIDES = tmp;
 after(() => rmSync(tmp, { recursive: true, force: true }));
+// O jogo do PoE carregado como no servidor (as bases do PoE no catálogo de itens: as peças do CL5). No clássico não faz nada.
+await import('./apoio.mjs');
 
 const C = await import('../systems/classes.mjs');
 const Adm = await import('../admin/overrides-classes.mjs');
@@ -24,14 +26,21 @@ const B = await import('../database/banco.mjs');
 const { criarEstrategias } = await import('../systems/hot-reload-estrategias.mjs');
 const { criarVerificacoes } = await import('../admin/validacao-verificacoes.mjs');
 const { ITEM_CATALOG } = await import('../systems/dados.mjs');
+const Jogo = await import('../systems/itens-poe/jogo.mjs');
 
 const copia = (o) => JSON.parse(JSON.stringify(o));
 const grava = (ov) => writeFileSync(join(tmp, 'classes.json'), JSON.stringify(ov));
-const reset = () => { if (existsSync(join(tmp, 'classes.json'))) rmSync(join(tmp, 'classes.json')); C.aplicar(null); };
+// (o arquivo do override é o do sistema em uso: `classes.json`; no jogo oficial, `classes-poe.json`)
+const ARQ = C.ARQUIVO_DE_OVERRIDE;
+const reset = () => { if (existsSync(ARQ)) rmSync(ARQ); C.aplicar(null); };
 beforeEach(reset);
 const estado = (vocation, level, extra = {}) => { const e = { level, xp: 0, vocation, hp: 1, maxHp: 1, mana: 1, maxMana: 1, equipment: {}, inventory: [], ...extra }; try { Afixos.sincronizarMaximos(e); } catch { /* ok */ } Ficha.invalidar(e); return e; };
 const efetivoDe = (ov) => C.efetivo(C.ORIGINAL, ov);
 const erros = (ov) => C.validarConfiguracao(efetivoDe(ov)).erros.join(' | ');
+// (08/11, adaptado ao PoE — o dono: "Adaptar antes") Os testes C do Editor de Classes rodam sobre as 7 classes do PoE (a fábrica do jogo
+// oficial, `itens-poe/classes.json`): Marauder no lugar do Knight (os dois sobre a vocação knight), Caçadora (ranger) no do Paladin,
+// Bruxa (witch) no do Sorcerer, Templário (templar) no do Druid. As vocações-base (knight, sorcerer, monk…) seguem as do motor.
+const chama = async (metodo, rota, corpo, q = '') => { const r = []; await Http.atender({ method: metodo }, {}, `/api/mapas/_conteudo/${rota}`, new URL(`http://x/?${q}`), { json: (a, c, b) => r.push([c, b]), corpoJson: async () => corpo }); return r[0]; };
 
 test('CL1. a fábrica é o que o jogo JÁ tem: 5 classes (nome de classes.json, atributos de atributos-principais.json), bônus de fábrica idênticos aos de antes, sem inventar valores', { skip: doClassico("A fábrica esperada são as 5 classes do Draevor; no oficial a fábrica são as 7 do PoE") }, () => {
   assert.deepEqual(Object.keys(C.ORIGINAL.classes), ['knight', 'paladin', 'druid', 'sorcerer', 'monk']);
@@ -47,7 +56,7 @@ test('CL1. a fábrica é o que o jogo JÁ tem: 5 classes (nome de classes.json, 
   assert.equal(C.obter('none'), null, '"none" não é uma classe criável');
 });
 
-test('CL2. validação: ID, nome, cor, ícone, ativo, vocação-base, atributos negativos/não inteiros, ganho por level, bônus fora do limite, classe de fábrica apagada, nenhuma ativa', { skip: aAdaptar("Regras do Editor de Classes (validação, override, hot reload, rotas, criação valida a classe) valem para as classes do PoE; o teste usa ids do Draevor (knight) — \"vocação-base undefined\"") }, () => {
+test('CL2. validação: ID, nome, cor, ícone, ativo, vocação-base, atributos negativos/não inteiros, ganho por level, bônus fora do limite, classe de fábrica apagada, nenhuma ativa', { skip: soNoOficial('as 7 classes do PoE (o Editor de Classes do jogo oficial)') }, () => {
   const nova = (c) => ({ ativo: true, classes: { 'mago-negro': { nome: 'Mago Negro', vocacaoBase: 'sorcerer', ...c } } });
   assert.equal(erros(nova({ atributosIniciais: { str: 1, dex: 2, int: 30 } })), '');
   assert.match(erros({ classes: { 'A!': { nome: 'x', vocacaoBase: 'knight' } } }), /o ID precisa ter 3 a 32/);
@@ -59,19 +68,20 @@ test('CL2. validação: ID, nome, cor, ícone, ativo, vocação-base, atributos 
   assert.match(erros(nova({ atributosIniciais: { str: -1 } })), /Força inicial precisa ser um inteiro de 0 a 1000/);
   assert.match(erros(nova({ atributosIniciais: { dex: 2.5 } })), /Destreza inicial/); assert.match(erros(nova({ atributosIniciais: { int: 5000 } })), /Inteligência inicial/);
   assert.match(erros(nova({ porLevel: { str: -0.1 } })), /ganho de Força por level/); assert.match(erros(nova({ porLevel: { int: 11 } })), /ganho de Inteligência/);
-  assert.match(erros({ classes: { knight: { excluido: true } } }), /classes de fábrica não podem ser apagadas/);
+  assert.match(erros({ classes: { marauder: { excluido: true } } }), /classes de fábrica não podem ser apagadas/);
   assert.match(erros({ classes: Object.fromEntries(Object.keys(C.ORIGINAL.classes).map((id) => [id, { ativo: false }])) }), /Ao menos uma classe precisa ficar ativa/);
   assert.match(erros({ efeitos: { STR_LIFE_PER_POINT: -1 } }), /Vida por ponto de Força: precisa ser um número de 0 a 100/);
   assert.match(erros({ efeitos: { DEX_EVASION_PCT_PER_POINT: 50 } }), /Evasão \(%\)/); assert.match(erros({ efeitos: { INVENTADO: 1 } }), /efeito "INVENTADO" não existe/);
   assert.match(erros({ efeitos: { STR_LIFE_PER_POINT: 'x' } }), /precisa ser um número/);
 });
 
-test('CL3. ID duplicado não existe: o ID é a chave (uma classe com ID de fábrica EDITA a de fábrica); minimizar grava só o diferente; classe criada vai inteira', { skip: aAdaptar("Regras do Editor de Classes (validação, override, hot reload, rotas, criação valida a classe) valem para as classes do PoE; o teste usa ids do Draevor (knight) — \"vocação-base undefined\"") }, () => {
-  const e = efetivoDe({ classes: { knight: { nome: 'Cavaleiro', atributosIniciais: { str: 25 } }, novo: { nome: 'Novo', vocacaoBase: 'monk', atributosIniciais: { str: 1, dex: 1, int: 1 } } } });
-  assert.equal(e.classes.knight.nome, 'Cavaleiro'); assert.equal(e.classes.knight.builtin, true); assert.deepEqual(e.classes.knight.atributosIniciais, { str: 25, dex: 10, int: 5 });
-  assert.equal(e.classes.knight.vocacaoBase, 'knight', 'uma classe de fábrica não troca de vocação-base'); assert.equal(Object.keys(e.classes).filter((k) => k === 'knight').length, 1);
-  const min = Adm.minimizar(C.ORIGINAL, { ativo: true, classes: { knight: { ...C.ORIGINAL.classes.knight, nome: 'Cavaleiro' }, paladin: copia(C.ORIGINAL.classes.paladin), novo: { nome: 'Novo', vocacaoBase: 'monk', atributosIniciais: { str: 1, dex: 1, int: 1 } } }, efeitos: { ...C.ORIGINAL.efeitos, STR_LIFE_PER_POINT: 1 } });
-  assert.deepEqual(min.classes.knight, { nome: 'Cavaleiro' }); assert.equal(min.classes.paladin, undefined, 'igual à fábrica = nada'); assert.equal(min.classes.novo.vocacaoBase, 'monk');
+test('CL3. ID duplicado não existe: o ID é a chave (uma classe com ID de fábrica EDITA a de fábrica); minimizar grava só o diferente; classe criada vai inteira', { skip: soNoOficial('as 7 classes do PoE (o Editor de Classes do jogo oficial)') }, () => {
+  // (o Marauder do PoE: 32/14/14 — a Destreza e a Inteligência que não mudam são as dele; o Knight do Draevor tinha 10/5)
+  const e = efetivoDe({ classes: { marauder: { nome: 'Cavaleiro', atributosIniciais: { str: 25 } }, novo: { nome: 'Novo', vocacaoBase: 'monk', atributosIniciais: { str: 1, dex: 1, int: 1 } } } });
+  assert.equal(e.classes.marauder.nome, 'Cavaleiro'); assert.equal(e.classes.marauder.builtin, true); assert.deepEqual(e.classes.marauder.atributosIniciais, { str: 25, dex: 14, int: 14 });
+  assert.equal(e.classes.marauder.vocacaoBase, 'knight', 'uma classe de fábrica não troca de vocação-base'); assert.equal(Object.keys(e.classes).filter((k) => k === 'marauder').length, 1);
+  const min = Adm.minimizar(C.ORIGINAL, { ativo: true, classes: { marauder: { ...C.ORIGINAL.classes.marauder, nome: 'Cavaleiro' }, ranger: copia(C.ORIGINAL.classes.ranger), novo: { nome: 'Novo', vocacaoBase: 'monk', atributosIniciais: { str: 1, dex: 1, int: 1 } } }, efeitos: { ...C.ORIGINAL.efeitos, STR_LIFE_PER_POINT: 1 } });
+  assert.deepEqual(min.classes.marauder, { nome: 'Cavaleiro' }); assert.equal(min.classes.ranger, undefined, 'igual à fábrica = nada'); assert.equal(min.classes.novo.vocacaoBase, 'monk');
   assert.deepEqual(min.efeitos, { STR_LIFE_PER_POINT: 1 });
 });
 
@@ -89,32 +99,36 @@ test('CL4. atributos na ENGINE: inicial + ganho por level × (level − 1), deri
   assert.equal(Ficha.combate(estado('knight', 1)).atributos.str, 20);
 });
 
-test('CL5. bônus por ponto: vida (STR), precisão e evasão (DEX), mana (INT) saem de UMA tabela; mudar no editor muda a ficha; sem duplicar; os 2 bônus % novos entram em Evasion e Energy Shield', { skip: aAdaptar("Regras do Editor de Classes (validação, override, hot reload, rotas, criação valida a classe) valem para as classes do PoE; o teste usa ids do Draevor (knight) — \"vocação-base undefined\"") }, () => {
+test('CL5. bônus por ponto: vida (STR), precisão e evasão (DEX), mana (INT) saem de UMA tabela; mudar no editor muda a ficha; sem duplicar; os 2 bônus % novos entram em Evasion e Energy Shield', { skip: soNoOficial('as 7 classes do PoE (o Editor de Classes do jogo oficial)') }, () => {
   const nu = (v) => Math.round(v * 1000) / 1000;
   const ef = (p) => At.efeitos(p);
-  assert.deepEqual([ef({ str: 20, dex: 20, int: 20 }).vida, ef({ str: 20, dex: 20, int: 20 }).precisao, ef({ str: 20, dex: 20, int: 20 }).mana], [100, 40, 100], 'fábrica: 5 de vida, 2 de precisão, 5 de mana por ponto');
+  // (a fábrica do PoE: 0,5 de vida, 2 de precisão e 0,5 de mana por ponto — `atributos.EFEITOS_DO_POE`; a do Draevor era 5/2/5 → 100/40/100)
+  assert.deepEqual([ef({ str: 20, dex: 20, int: 20 }).vida, ef({ str: 20, dex: 20, int: 20 }).precisao, ef({ str: 20, dex: 20, int: 20 }).mana], [10, 40, 10], 'fábrica: 0,5 de vida, 2 de precisão, 0,5 de mana por ponto');
   C.aplicar({ ativo: true, efeitos: { STR_LIFE_PER_POINT: 0.5, STR_PHYSICAL_DAMAGE_PER_POINT: 0.2, DEX_ACCURACY_PER_POINT: 2, DEX_EVASION_PCT_PER_POINT: 0.2, INT_MANA_PER_POINT: 0.5, INT_ENERGY_SHIELD_PCT_PER_POINT: 0.2 } });
   const e = ef({ str: 20, dex: 20, int: 20 });
   assert.deepEqual([nu(e.vida), nu(e.danoFisicoPct), nu(e.precisao), nu(e.evasaoPct), nu(e.mana), nu(e.energyShieldPct)], [10, 4, 40, 4, 10, 4], 'o exemplo do pedido: +10 vida, +4%, +40 precisão, +4% evasão, +10 mana, +4% ES');
   assert.equal(At.CONFIG.efeitos.STR_LIFE_PER_POINT, 0.5, 'a tabela que a engine lê é a mesma do editor');
-  const ficha = Ficha.combate(estado('knight', 1)); assert.equal(nu(ficha.efeitosDosAtributos.vida), nu(20 * 0.5), 'a ficha usa o bônus novo (uma vez)');
-  // Evasion/ES em %: uma peça com Evasion e uma com Energy Shield
-  const corpoEva = Object.values(ITEM_CATALOG).find((m) => m.slot === 'body' && m.vocations?.length && m.vocations.every((v) => v === 'paladin') && m.armor > 0);
-  const corpoEs = Object.values(ITEM_CATALOG).find((m) => m.slot === 'body' && m.vocations?.length && m.vocations.every((v) => ['sorcerer', 'druid'].includes(v)) && m.armor > 0);
-  const eq = (m) => ({ equipment: { body: { id: m.id, count: 1 } } });
+  // (o Marauder no level 1: 32 de Força)
+  const ficha = Ficha.combate(estado('knight', 1, { classe: 'marauder' })); assert.equal(nu(ficha.efeitosDosAtributos.vida), nu(32 * 0.5), 'a ficha usa o bônus novo (uma vez)');
+  // (no PoE o exemplo acima É a fábrica: um valor diferente dela, para a ficha mostrar que mudou)
+  C.aplicar({ ativo: true, efeitos: { STR_LIFE_PER_POINT: 1 } }); assert.equal(nu(Ficha.combate(estado('knight', 1, { classe: 'marauder' })).efeitosDosAtributos.vida), nu(32 * 1), 'mudar no editor muda a ficha');
+  // Evasion/ES em %: uma peça com Evasion e uma com Energy Shield (as bases do PoE: Justilho Gasto, só evasão; Robe Simples, só escudo de energia)
+  const corpoEva = Jogo.pecaNormalDaBase('Body_Armours/Shabby_Jerkin', 20);
+  const corpoEs = Jogo.pecaNormalDaBase('Body_Armours/Simple_Robe', 20);
+  const eq = (m) => ({ equipment: { body: structuredClone(m) } });
   C.aplicar(null);
-  const evaBase = Ficha.combate(estado('paladin', 60, eq(corpoEva))).evasion; const esBase = Ficha.combate(estado('sorcerer', 60, eq(corpoEs))).energyShield;
+  const evaBase = Ficha.combate(estado('paladin', 60, { classe: 'ranger', ...eq(corpoEva) })).evasion; const esBase = Ficha.combate(estado('sorcerer', 60, { classe: 'witch', ...eq(corpoEs) })).energyShield;
   C.aplicar({ ativo: true, efeitos: { DEX_EVASION_PCT_PER_POINT: 1, INT_ENERGY_SHIELD_PCT_PER_POINT: 1 } });
-  const evaNovo = Ficha.combate(estado('paladin', 60, eq(corpoEva)));
+  const evaNovo = Ficha.combate(estado('paladin', 60, { classe: 'ranger', ...eq(corpoEva) }));
   assert.ok(evaNovo.evasion > evaBase, 'DEX × % aumenta a Evasion'); const pctDex = evaNovo.efeitosDosAtributos.evasaoPct; assert.ok(pctDex > 0);
   const base = Math.round(((evaBase - 0) / 1)); void base;
-  assert.ok(evaNovo.energyShield === Ficha.combate(estado('paladin', 60, eq(corpoEva))).energyShield, 'cálculo estável');
-  const esNovo = Ficha.combate(estado('sorcerer', 60, eq(corpoEs))).energyShield; assert.ok(esNovo > esBase, 'INT × % aumenta o Energy Shield');
+  assert.ok(evaNovo.energyShield === Ficha.combate(estado('paladin', 60, { classe: 'ranger', ...eq(corpoEva) })).energyShield, 'cálculo estável');
+  const esNovo = Ficha.combate(estado('sorcerer', 60, { classe: 'witch', ...eq(corpoEs) })).energyShield; assert.ok(esNovo > esBase, 'INT × % aumenta o Energy Shield');
   C.aplicar(null);
-  assert.equal(Ficha.combate(estado('paladin', 60, eq(corpoEva))).evasion, evaBase, 'voltou à fábrica: nada ficou grudado');
+  assert.equal(Ficha.combate(estado('paladin', 60, { classe: 'ranger', ...eq(corpoEva) })).evasion, evaBase, 'voltou à fábrica: nada ficou grudado');
 });
 
-test('CL6. prévia dos efeitos pelas regras configuradas (Força 20 → +10 vida, +4%; Destreza 20 → +40 precisão, +4% evasão; Inteligência 20 → +10 mana, +4% ES) e igual ao que a engine calcula', { skip: aAdaptar("Regras do Editor de Classes (validação, override, hot reload, rotas, criação valida a classe) valem para as classes do PoE; o teste usa ids do Draevor (knight) — \"vocação-base undefined\"") }, () => {
+test('CL6. prévia dos efeitos pelas regras configuradas (Força 20 → +10 vida, +4%; Destreza 20 → +40 precisão, +4% evasão; Inteligência 20 → +10 mana, +4% ES) e igual ao que a engine calcula', { skip: soNoOficial('as 7 classes do PoE (o Editor de Classes do jogo oficial)') }, () => {
   const efeitos = { ...C.ORIGINAL.efeitos, STR_LIFE_PER_POINT: 0.5, STR_PHYSICAL_DAMAGE_PER_POINT: 0.2, DEX_ACCURACY_PER_POINT: 2, DEX_EVASION_PCT_PER_POINT: 0.2, INT_MANA_PER_POINT: 0.5, INT_ENERGY_SHIELD_PCT_PER_POINT: 0.2 };
   const p = C.previaDeEfeitos(efeitos, { str: 20, dex: 20, int: 20 });
   assert.deepEqual([p.str.vida, p.str.danoFisicoPct, p.dex.precisao, p.dex.evasaoPct, p.int.mana, p.int.energyShieldPct], [10, 4, 40, 4, 10, 4]);
@@ -122,16 +136,21 @@ test('CL6. prévia dos efeitos pelas regras configuradas (Força 20 → +10 vida
   const real = At.efeitos({ str: 20, dex: 20, int: 20 });
   assert.deepEqual([real.vida, real.danoFisicoPct, real.precisao, real.evasaoPct, real.mana, real.energyShieldPct].map((v) => Math.round(v * 1000) / 1000), [p.str.vida, p.str.danoFisicoPct, p.dex.precisao, p.dex.evasaoPct, p.int.mana, p.int.energyShieldPct], 'a prévia do editor = a engine');
   assert.deepEqual(C.previaDeEfeitos({}, {}).str, { vida: 0, danoFisicoPct: 0 });
+});
+
+// (08/11) A linha do perfil sugerido saiu do CL6: o perfil sugerido é do Draevor (`classes-meta.json`); a fábrica do PoE não tem (null).
+test('CL6b. o perfil sugerido NÃO é aplicado por padrão', { skip: doClassico('O perfil sugerido é das 5 classes do Draevor (classes-meta.json); a fábrica do PoE não tem perfil sugerido') }, () => {
   const sug = C.ORIGINAL.perfilSugerido; assert.deepEqual(sug.atributosIniciais.knight, { str: 12, dex: 6, int: 2 }); assert.equal(C.ORIGINAL.classes.knight.atributosIniciais.str, 20, 'o perfil sugerido NÃO é aplicado por padrão');
 });
 
-test('CL7. override do editor: propor não grava; salvar grava só o diferente com versão; conflito 409; reverter; restaurar versão; comparar versões; apagar classe com personagens é recusado; desativar avisa', { skip: aAdaptar("Regras do Editor de Classes (validação, override, hot reload, rotas, criação valida a classe) valem para as classes do PoE; o teste usa ids do Draevor (knight) — \"vocação-base undefined\"") }, () => {
-  const ov = { ativo: true, classes: { knight: { nome: 'Cavaleiro' }, 'mago-negro': { nome: 'Mago Negro', vocacaoBase: 'sorcerer', atributosIniciais: { str: 1, dex: 2, int: 30 } } }, efeitos: { STR_LIFE_PER_POINT: 1 } };
-  const p = Adm.propor(ov); assert.equal(p.ok, true, JSON.stringify(p.erros)); assert.deepEqual(p.impacto.map((i) => [i.id, i.mudanca]).sort(), [['knight', 'alterada'], ['mago-negro', 'nova']]); assert.deepEqual(p.efeitosAlterados, [{ chave: 'STR_LIFE_PER_POINT', de: 5, para: 1 }]);
-  assert.equal(existsSync(join(tmp, 'classes.json')), false);
-  const fabrica = readFileSync(new URL('../gamedata/atributos-principais.json', import.meta.url), 'utf8');
+test('CL7. override do editor: propor não grava; salvar grava só o diferente com versão; conflito 409; reverter; restaurar versão; comparar versões; apagar classe com personagens é recusado; desativar avisa', { skip: soNoOficial('as 7 classes do PoE (o Editor de Classes do jogo oficial)') }, () => {
+  const ov = { ativo: true, classes: { marauder: { nome: 'Cavaleiro' }, 'mago-negro': { nome: 'Mago Negro', vocacaoBase: 'sorcerer', atributosIniciais: { str: 1, dex: 2, int: 30 } } }, efeitos: { STR_LIFE_PER_POINT: 1 } };
+  const p = Adm.propor(ov); assert.equal(p.ok, true, JSON.stringify(p.erros)); assert.deepEqual(p.impacto.map((i) => [i.id, i.mudanca]).sort(), [['mago-negro', 'nova'], ['marauder', 'alterada']]); assert.deepEqual(p.efeitosAlterados, [{ chave: 'STR_LIFE_PER_POINT', de: 0.5, para: 1 }]); // (a fábrica do PoE: 0,5 de vida por ponto; a do Draevor, 5)
+  assert.equal(existsSync(ARQ), false);
+  // (a fábrica do PoE: itens-poe/classes.json)
+  const fabrica = readFileSync(new URL('../gamedata/itens-poe/classes.json', import.meta.url), 'utf8');
   let rev = Adm.obter().revisao; assert.equal(Adm.salvar(ov, rev).ok, true);
-  assert.deepEqual(Object.keys(JSON.parse(readFileSync(join(tmp, 'classes.json'), 'utf8')).classes).sort(), ['knight', 'mago-negro']); assert.equal(readFileSync(new URL('../gamedata/atributos-principais.json', import.meta.url), 'utf8'), fabrica, 'a fábrica não mudou');
+  assert.deepEqual(Object.keys(JSON.parse(readFileSync(ARQ, 'utf8')).classes).sort(), ['mago-negro', 'marauder']); assert.equal(readFileSync(new URL('../gamedata/itens-poe/classes.json', import.meta.url), 'utf8'), fabrica, 'a fábrica não mudou');
   rev = Adm.obter().revisao; assert.equal(Adm.salvar({ ...ov, efeitos: { STR_LIFE_PER_POINT: 2 } }, rev).ok, true); assert.ok(Adm.versoes().length >= 1);
   assert.equal(Adm.salvar(ov, rev).codigo, 'conflito');
   const cmp = Adm.comparar(Adm.versoes().at(-1), 'atual'); assert.equal(cmp.ok, true); assert.ok(cmp.mudancas.some((m) => m.campo === 'STR_LIFE_PER_POINT' && m.de === 1 && m.para === 2));
@@ -139,11 +158,11 @@ test('CL7. override do editor: propor não grava; salvar grava só o diferente c
   const apagar = { ...ov, classes: { ...ov.classes, 'mago-negro': { excluido: true } } };
   const bloq = Adm.propor(apagar, { contagens: { 'mago-negro': 3 } }); assert.equal(bloq.ok, false); assert.match(bloq.erros.join(' '), /3 personagem\(ns\) ainda usam esta classe — migre-os/);
   assert.equal(Adm.propor(apagar, { contagens: { 'mago-negro': 0 } }).ok, true);
-  const desat = Adm.propor({ ...ov, classes: { ...ov.classes, knight: { ativo: false } } }, { contagens: { knight: 4 } }); assert.equal(desat.ok, true); assert.match(desat.avisos.join(' '), /4 personagem\(ns\) já existem nela; desativar só impede NOVOS/);
+  const desat = Adm.propor({ ...ov, classes: { ...ov.classes, marauder: { ativo: false } } }, { contagens: { marauder: 4 } }); assert.equal(desat.ok, true); assert.match(desat.avisos.join(' '), /4 personagem\(ns\) já existem nela; desativar só impede NOVOS/);
   assert.match(Adm.propor({ dps: 1 }).erros.join(' '), /"dps" não existe/); assert.match(Adm.propor({ classes: { x1x: { nome: 'a', vocacaoBase: 'knight', inventado: 1 } } }).erros.join(' '), /o campo "inventado" não existe/);
   assert.equal(Adm.reverter(Adm.obter().revisao).ok, true); assert.deepEqual(Adm.lerOverride().classes, {});
   assert.equal(Adm.restaurar(Adm.versoes()[0], Adm.obter().revisao).ok, true);
-  assert.equal(Adm.propor(copia(Adm.obter().classes.find((c) => c.id === 'knight') && { ativo: true, classes: { knight: Adm.obter().classes.find((c) => c.id === 'knight') } })).ok, true, 'a tela devolve os campos derivados e eles não atrapalham');
+  assert.equal(Adm.propor(copia(Adm.obter().classes.find((c) => c.id === 'marauder') && { ativo: true, classes: { marauder: Adm.obter().classes.find((c) => c.id === 'marauder') } })).ok, true, 'a tela devolve os campos derivados e eles não atrapalham');
 });
 
 test('CL8. Hot Reload: a estratégia aplica sem reiniciar, mantém a última versão válida se o arquivo for inválido e volta à fábrica quando o override some; validação central, Git e rotas reconhecem o módulo', { skip: aAdaptar("Regras do Editor de Classes (validação, override, hot reload, rotas, criação valida a classe) valem para as classes do PoE; o teste usa ids do Draevor (knight) — \"vocação-base undefined\"") }, async () => {
@@ -163,29 +182,34 @@ test('CL8. Hot Reload: a estratégia aplica sem reiniciar, mantém a última ver
   assert.equal(Git.moduloDe('game/gamedata/overrides/classes.json'), 'classes'); assert.equal(Git.moduloDe('game/gamedata/classes-meta.json'), 'classes');
 });
 
-test('CL9. rotas: configuração com personagens por classe, prévia, validar/salvar/reverter/restaurar/comparar; migração exige banco, confirmação, classe ativa e destino diferente; ACL', { skip: aAdaptar("Regras do Editor de Classes (validação, override, hot reload, rotas, criação valida a classe) valem para as classes do PoE; o teste usa ids do Draevor (knight) — \"vocação-base undefined\"") }, async () => {
-  const chama = async (metodo, rota, corpo, q = '') => { const r = []; await Http.atender({ method: metodo }, {}, `/api/mapas/_conteudo/${rota}`, new URL(`http://x/?${q}`), { json: (a, c, b) => r.push([c, b]), corpoJson: async () => corpo }); return r[0]; };
-  const migrados = []; Http.ligarBancoDeClasses({ contar: async () => ({ knight: 7, paladin: 1 }), migrar: async (de, para, voc) => { migrados.push([de, para, voc]); return 7; } });
+test('CL9. rotas: configuração com personagens por classe, prévia, validar/salvar/reverter/restaurar/comparar; migração exige banco, confirmação, classe ativa e destino diferente; ACL', { skip: soNoOficial('as 7 classes do PoE (o Editor de Classes do jogo oficial)') }, async () => {
+  const migrados = []; Http.ligarBancoDeClasses({ contar: async () => ({ marauder: 7, ranger: 1 }), migrar: async (de, para, voc) => { migrados.push([de, para, voc]); return 7; } });
   try {
-    const g = await chama('GET', 'classes'); assert.equal(g[0], 200); assert.equal(g[1].classes.find((c) => c.id === 'knight').personagens, 7); assert.equal(g[1].totalDePersonagens, 8); assert.equal(g[1].classes.find((c) => c.id === 'druid').personagens, 0);
-    assert.ok(g[1].classes[0].previaDosIniciais.str.vida > 0); assert.equal(g[1].definicaoDosEfeitos.STR_LIFE_PER_POINT.atributo, 'str'); assert.deepEqual(g[1].perfilSugerido.atributosIniciais.monk, { str: 8, dex: 10, int: 4 });
+    const g = await chama('GET', 'classes'); assert.equal(g[0], 200); assert.equal(g[1].classes.find((c) => c.id === 'marauder').personagens, 7); assert.equal(g[1].totalDePersonagens, 8); assert.equal(g[1].classes.find((c) => c.id === 'templar').personagens, 0);
+    assert.ok(g[1].classes[0].previaDosIniciais.str.vida > 0); assert.equal(g[1].definicaoDosEfeitos.STR_LIFE_PER_POINT.atributo, 'str'); // (o perfil sugerido, do Draevor, foi para o CL9b)
     const pr = await chama('POST', 'classes/previa', { efeitos: { STR_LIFE_PER_POINT: 0.5, STR_PHYSICAL_DAMAGE_PER_POINT: 0.2 }, str: 20 }); assert.deepEqual([pr[1].previa.str.vida, pr[1].previa.str.danoFisicoPct], [10, 4]);
-    const del = await chama('POST', 'classes/validar', { override: { ativo: true, classes: { knight: { excluido: true } } } }); assert.equal(del[1].ok, false);
-    const ok = await chama('POST', 'classes/validar', { override: { ativo: true, classes: { knight: { ativo: false } } } }); assert.equal(ok[1].ok, true); assert.match(ok[1].avisos.join(' '), /7 personagem/);
-    const s = await chama('POST', 'classes', { acao: 'salvar', override: { ativo: true, classes: { knight: { nome: 'Cavaleiro' } } }, revisao: g[1].revisao }); assert.equal(s[0], 200); assert.equal(s[1].ok, true);
+    const del = await chama('POST', 'classes/validar', { override: { ativo: true, classes: { marauder: { excluido: true } } } }); assert.equal(del[1].ok, false);
+    const ok = await chama('POST', 'classes/validar', { override: { ativo: true, classes: { marauder: { ativo: false } } } }); assert.equal(ok[1].ok, true); assert.match(ok[1].avisos.join(' '), /7 personagem/);
+    const s = await chama('POST', 'classes', { acao: 'salvar', override: { ativo: true, classes: { marauder: { nome: 'Cavaleiro' } } }, revisao: g[1].revisao }); assert.equal(s[0], 200); assert.equal(s[1].ok, true);
     assert.equal((await chama('POST', 'classes', { acao: 'salvar', override: { ativo: true }, revisao: g[1].revisao }))[0], 409);
     assert.equal((await chama('GET', 'classes/versoes'))[0], 200); assert.equal((await chama('GET', 'classes/comparar', null, 'de=999'))[0], 404);
     assert.equal((await chama('POST', 'classes', { acao: 'nada' }))[0], 400);
-    assert.equal((await chama('POST', 'classes', { acao: 'migrar', de: 'knight', para: 'paladin' }))[0], 400, 'sem confirmar');
-    assert.equal((await chama('POST', 'classes', { acao: 'migrar', de: 'knight', para: 'knight', confirmar: true }))[0], 400);
-    assert.equal((await chama('POST', 'classes', { acao: 'migrar', de: 'knight', para: 'inexistente', confirmar: true }))[0], 400);
-    const m = await chama('POST', 'classes', { acao: 'migrar', de: 'knight', para: 'paladin', confirmar: true }); assert.deepEqual([m[0], m[1].migrados, migrados[0]], [200, 7, ['knight', 'paladin', 'paladin']]);
+    assert.equal((await chama('POST', 'classes', { acao: 'migrar', de: 'marauder', para: 'ranger' }))[0], 400, 'sem confirmar');
+    assert.equal((await chama('POST', 'classes', { acao: 'migrar', de: 'marauder', para: 'marauder', confirmar: true }))[0], 400);
+    assert.equal((await chama('POST', 'classes', { acao: 'migrar', de: 'marauder', para: 'inexistente', confirmar: true }))[0], 400);
+    // (a Caçadora do PoE está sobre a vocação paladin: é a vocação que o migrado leva)
+    const m = await chama('POST', 'classes', { acao: 'migrar', de: 'marauder', para: 'ranger', confirmar: true }); assert.deepEqual([m[0], m[1].migrados, migrados[0]], [200, 7, ['marauder', 'ranger', 'paladin']]);
     await chama('POST', 'classes', { acao: 'reverter', revisao: (await chama('GET', 'classes'))[1].revisao });
-    assert.equal((await chama('POST', 'classes', { acao: 'salvar', override: { ativo: true, classes: { paladin: { ativo: false } } }, revisao: (await chama('GET', 'classes'))[1].revisao }))[1].ok, true);
-    assert.equal((await chama('POST', 'classes', { acao: 'migrar', de: 'knight', para: 'paladin', confirmar: true }))[0], 400, 'destino inativo');
+    assert.equal((await chama('POST', 'classes', { acao: 'salvar', override: { ativo: true, classes: { ranger: { ativo: false } } }, revisao: (await chama('GET', 'classes'))[1].revisao }))[1].ok, true);
+    assert.equal((await chama('POST', 'classes', { acao: 'migrar', de: 'marauder', para: 'ranger', confirmar: true }))[0], 400, 'destino inativo');
   } finally { Http.ligarBancoDeClasses(null); }
-  assert.equal((await chama('POST', 'classes', { acao: 'migrar', de: 'knight', para: 'druid', confirmar: true }))[0], 409, 'sem banco ligado a migração é recusada');
+  assert.equal((await chama('POST', 'classes', { acao: 'migrar', de: 'marauder', para: 'templar', confirmar: true }))[0], 409, 'sem banco ligado a migração é recusada');
   assert.equal(A.classeDaRota('GET', '/api/mapas/_conteudo/classes'), 'leitura'); assert.equal(A.classeDaRota('POST', '/api/mapas/_conteudo/classes/validar'), 'leitura'); assert.equal(A.classeDaRota('POST', '/api/mapas/_conteudo/classes/previa'), 'leitura'); assert.equal(A.classeDaRota('POST', '/api/mapas/_conteudo/classes'), 'grava');
+});
+
+// (08/11) A linha do perfil sugerido saiu do CL9: é do Draevor (`classes-meta.json`); a fábrica do PoE não tem (null).
+test('CL9b. rota: a configuração traz o perfil sugerido', { skip: doClassico('O perfil sugerido é das 5 classes do Draevor (classes-meta.json); a fábrica do PoE não tem perfil sugerido') }, async () => {
+  const g = await chama('GET', 'classes'); assert.deepEqual(g[1].perfilSugerido.atributosIniciais.monk, { str: 8, dex: 10, int: 4 });
 });
 
 test('CL10. banco: o personagem guarda a classe; antigo (sem classe) conta na própria vocação; a migração explícita muda coluna e estado; classe NULL compatível', async () => {
@@ -203,12 +227,12 @@ test('CL10. banco: o personagem guarda a classe; antigo (sem classe) conta na pr
   } finally { for (const p of [a, b, velho]) await B.excluirPersonagem(p.id); }
 });
 
-test('CL11. criação de personagem: o servidor VALIDA a classe (existe e está ativa), a vocação sai da classe, a classe vai no estado e no banco; tela de criação e rota pública usam as classes ativas; sem confiar no cliente', { skip: aAdaptar("Regras do Editor de Classes (validação, override, hot reload, rotas, criação valida a classe) valem para as classes do PoE; o teste usa ids do Draevor (knight) — \"vocação-base undefined\"") }, () => {
-  assert.equal(C.resolverParaCriacao('knight').id, 'knight'); assert.equal(C.resolverParaCriacao('nao-existe'), null); assert.equal(C.resolverParaCriacao(undefined), null);
-  C.aplicar({ ativo: true, classes: { paladin: { ativo: false }, 'mago-negro': { nome: 'Mago Negro', vocacaoBase: 'sorcerer', ativo: true, atributosIniciais: { str: 1, dex: 2, int: 30 } } } });
-  assert.equal(C.resolverParaCriacao('paladin'), null, 'classe desativada não cria personagem'); assert.equal(C.resolverParaCriacao('mago-negro').vocacaoBase, 'sorcerer');
-  assert.equal(C.obter('paladin').ativo, false, 'mas continua existindo para quem já tem');
-  const pub = C.paraOCliente(); assert.ok(!pub.classes.some((c) => c.id === 'paladin') && pub.classes.some((c) => c.id === 'mago-negro')); assert.deepEqual(Object.keys(pub.classes[0]).sort(), ['atributosIniciais', 'cor', 'descricao', 'icone', 'id', 'nome', 'porLevel', 'vocacaoBase']);
+test('CL11. criação de personagem: o servidor VALIDA a classe (existe e está ativa), a vocação sai da classe, a classe vai no estado e no banco; tela de criação e rota pública usam as classes ativas; sem confiar no cliente', { skip: soNoOficial('as 7 classes do PoE (o Editor de Classes do jogo oficial)') }, () => {
+  assert.equal(C.resolverParaCriacao('marauder').id, 'marauder'); assert.equal(C.resolverParaCriacao('nao-existe'), null); assert.equal(C.resolverParaCriacao(undefined), null);
+  C.aplicar({ ativo: true, classes: { ranger: { ativo: false }, 'mago-negro': { nome: 'Mago Negro', vocacaoBase: 'sorcerer', ativo: true, atributosIniciais: { str: 1, dex: 2, int: 30 } } } });
+  assert.equal(C.resolverParaCriacao('ranger'), null, 'classe desativada não cria personagem'); assert.equal(C.resolverParaCriacao('mago-negro').vocacaoBase, 'sorcerer');
+  assert.equal(C.obter('ranger').ativo, false, 'mas continua existindo para quem já tem');
+  const pub = C.paraOCliente(); assert.ok(!pub.classes.some((c) => c.id === 'ranger') && pub.classes.some((c) => c.id === 'mago-negro')); assert.deepEqual(Object.keys(pub.classes[0]).sort(), ['atributosIniciais', 'cor', 'descricao', 'icone', 'id', 'nome', 'porLevel', 'vocacaoBase']);
   assert.ok(pub.efeitos.length > 0 && pub.efeitos.every((e) => e.valor > 0), 'só os bônus ligados vão para a tela');
   const s = readFileSync(new URL('../websocket/sessao.mjs', import.meta.url), 'utf8');
   for (const t of ['Classes.resolverParaCriacao(typeof classe', "'Classe inválida ou desativada.'", 'vocation = cls.vocacaoBase', 'classe: cls.id,', 'estadoInicialPersonagem(vocation, sex, cls.id)', 'classe: p.classe ?? p.vocacao']) assert.ok(s.includes(t), t);

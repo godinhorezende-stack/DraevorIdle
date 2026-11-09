@@ -436,9 +436,9 @@ export function emprestarDoCatalogo(catalogo) {
       itemSprites[id] = { w: 32, h: 32, x: 0, y: 0, gerada: chave };
       continue;
     }
-    // Os orbes do PoE (Joalheiro, Fusão, Cromático): o ícone do PoE (48×48), no lugar do desenho emprestado.
+    // Os orbes do PoE (Joalheiro, Fusão, Cromático): o ícone do PoE (78×78, alguns 48×48 ou 156×78 — desenhado inteiro, `desenharInteiro`), no lugar do desenho emprestado.
     if (meta?.poeMoeda?.icone) {
-      itemSprites[id] = { w: 48, h: 48, x: 0, y: 0, umaCasa: true, gerada: `/api/jogo/poe/icone/moeda/${encodeURIComponent(meta.poeMoeda.icone)}` };
+      itemSprites[id] = { w: 78, h: 78, x: 0, y: 0, umaCasa: true, gerada: `/api/jogo/poe/icone/moeda/${encodeURIComponent(meta.poeMoeda.icone)}` };
       continue;
     }
     if (meta?.spriteDe && !itemSprites[id] && itemSprites[meta.spriteDe]) itemSprites[id] = itemSprites[meta.spriteDe];
@@ -497,6 +497,19 @@ function viewOf(sprite, { count = 0, time = 0 } = {}) {
 // O sprite GERADO no cliente (os ícones das gemas) não tem folha: a chave aponta para o canvas dele.
 const pageSrc = (sprite, page) => sprite.gerada ?? `/gamedata/sprites/items/${sprite.b ?? 'items32-'}${page}.png`;
 
+/**
+ * O ícone do PoE INTEIRO no quadro (`umaCasa`): o tamanho real da imagem (os orbes do PoE são 78×78, alguns 48×48, os artefatos 156×78 —
+ * antes o quadro de 48 cortava o canto de cima e o pergaminho saía pela metade, dono 08/11), reduzido sem deformar e centralizado.
+ */
+function desenharInteiro(ctx, img, sprite, x, y, w, h) {
+  const sw = img.naturalWidth || img.width || sprite.w;
+  const sh = img.naturalHeight || img.height || sprite.h;
+  const k = Math.min(w / sw, h / sh);
+  const dw = sw * k;
+  const dh = sh * k;
+  ctx.drawImage(img, 0, 0, sw, sh, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+}
+
 /** Desenha um item ancorado no canto inferior direito do tile, como no jogo. */
 export function drawItem(ctx, id, x, y, options) {
   const sprite = itemSprites[id];
@@ -515,7 +528,12 @@ export function drawItem(ctx, id, x, y, options) {
    * está em 1 tile"). Ele vai reduzido para dentro da casa.
    */
   if (sprite.umaCasa) {
-    ctx.drawImage(atlas.image, view[1], view[2], sprite.w, sprite.h, x, y, 32, 32);
+    // (inteiro, no tamanho real da imagem, sem deformar e centralizado — o mesmo de `desenharInteiro`)
+    const img = atlas.image;
+    const sw = img.naturalWidth || img.width || sprite.w;
+    const sh = img.naturalHeight || img.height || sprite.h;
+    const k = Math.min(32 / sw, 32 / sh);
+    ctx.drawImage(img, 0, 0, sw, sh, x + (32 - sw * k) / 2, y + (32 - sh * k) / 2, sw * k, sh * k);
     return true;
   }
   ctx.drawImage(
@@ -602,7 +620,8 @@ export function itemCanvas(id, cssSize = 32, count = 0) {
     if (atlas.ready && view[1] !== last) {
       last = view[1];
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(atlas.image, view[1], view[2], sprite.w, sprite.h, 0, 0, sprite.w, sprite.h);
+      if (sprite.umaCasa) desenharInteiro(ctx, atlas.image, sprite, 0, 0, canvas.width, canvas.height);
+      else ctx.drawImage(atlas.image, view[1], view[2], sprite.w, sprite.h, 0, 0, sprite.w, sprite.h);
     }
     return sprite.f > 1 || !atlas.ready;
   };

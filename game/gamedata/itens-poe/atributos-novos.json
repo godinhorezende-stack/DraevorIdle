@@ -10286,6 +10286,42 @@
       "unidade": "",
       "combate": true,
       "efeito": "ducados.comOmnichama (08/11 — o Cutelo do Capitão Temido)"
+    },
+    "phys_res_vs_abissal": {
+      "nome": "Redução adicional de Dano Físico contra Monstros Abissais",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "08/11 — o pool de Síntese"
+    },
+    "dano_na_mana_pct_physical": {
+      "nome": "Dano Físico sofrido na Mana antes da Vida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "08/11 — o pool de Síntese"
+    },
+    "evitar_dano_fire_acerto": {
+      "nome": "Chance de Evitar o Dano de Fogo de Acertos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "08/11 — o pool de Síntese"
+    },
+    "evitar_dano_ice_acerto": {
+      "nome": "Chance de Evitar o Dano de Gelo de Acertos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "08/11 — o pool de Síntese"
+    },
+    "evitar_dano_energy_acerto": {
+      "nome": "Chance de Evitar o Dano de Raio de Acertos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "08/11 — o pool de Síntese"
+    },
+    "minion_precisao_inc": {
+      "nome": "Precisão dos Lacaios aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "lacaios-poe (precisaoInc) — 08/11, o pool de Síntese"
     }
   }
 }

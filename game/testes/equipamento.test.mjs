@@ -9,13 +9,10 @@ import * as Ficha from '../systems/ficha.mjs';
 import * as Bolsa from '../systems/bolsa.mjs';
 import * as Gerar from '../systems/itens/gerar.mjs';
 import { personagemDeTeste } from './apoio.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
 
 const porNome = (nome) => Object.values(ITEM_CATALOG).find((i) => i.name === nome);
 const DUAS_MAOS = porNome('two handed sword');
 const ESCUDO = porNome('dwarven shield');
-const ARCO = Object.values(ITEM_CATALOG).find((i) => i.twoHanded && i.ammo && !i.minLevel && !i.vocations?.length) ?? Object.values(ITEM_CATALOG).find((i) => i.twoHanded && i.ammo);
-const ALJAVA = porNome('quiver');
 
 function comNaMochila(voc, ...itens) {
   const e = personagemDeTeste({ vocacao: voc, level: 500 });
@@ -44,14 +41,21 @@ test('vestir escudo com arma de duas mãos na mão tira a arma', () => {
   assert.ok(e.inventory.some((p) => p.id === DUAS_MAOS.id));
 });
 
-test('arco de duas mãos e aljava convivem', { skip: aAdaptar("Arco de duas mãos + aljava vale no PoE; o teste usa peças do Draevor") }, () => {
-  const e = comNaMochila('paladin', ARCO, ALJAVA);
+// (08/11, adaptado ao PoE — o dono: "Adaptar antes") O arco e a aljava são BASES do PoE. No PoE a aljava só entra com um arco na mão
+// (`Equipamento.validarEquipar`): um primeiro arco segura a aljava, e é o arco do teste que entra depois com ela já vestida.
+const BASES_POE = Object.values(ITEM_CATALOG).filter((i) => i.poe && !(i.minLevel > 5));
+const [ARCO_POE, OUTRO_ARCO_POE] = BASES_POE.filter((i) => i.poe.classe === 'Bows' && i.twoHanded);
+const ALJAVA_POE = BASES_POE.find((i) => i.poe.classe === 'Quivers' && i.quiver);
+
+test('arco de duas mãos e aljava convivem', () => {
+  const e = comNaMochila('paladin', OUTRO_ARCO_POE, ARCO_POE, ALJAVA_POE);
   e.level = 999;
-  assert.equal(Inventario.equipar(e, { id: ALJAVA.id }).ok, true);
-  const r = Inventario.equipar(e, { id: ARCO.id });
+  assert.equal(Inventario.equipar(e, { id: OUTRO_ARCO_POE.id }).ok, true);
+  assert.equal(Inventario.equipar(e, { id: ALJAVA_POE.id }).ok, true);
+  const r = Inventario.equipar(e, { id: ARCO_POE.id });
   assert.equal(r.ok, true, r.erro);
-  assert.equal(e.equipment.shield?.id, ALJAVA.id, 'a aljava continua');
-  assert.equal(e.equipment.weapon.id, ARCO.id);
+  assert.equal(e.equipment.shield?.id, ALJAVA_POE.id, 'a aljava continua');
+  assert.equal(e.equipment.weapon.id, ARCO_POE.id);
   assert.equal(r.notice, undefined);
 });
 

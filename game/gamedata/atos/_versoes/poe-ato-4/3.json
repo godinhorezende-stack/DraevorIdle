@@ -1,0 +1,539 @@
+{
+  "salvoEm": 1791506886168,
+  "ato": {
+    "id": "poe-ato-4",
+    "nome": "Ato 4",
+    "descricao": "Ato 4 da campanha do Path of Exile.",
+    "imagem": null,
+    "nivelRecomendado": 33,
+    "ordem": 4,
+    "anterior": "poe-ato-3",
+    "seguinte": null,
+    "requisitos": {
+      "exige": []
+    },
+    "progressao": {},
+    "estado": "publicado",
+    "versao": 3,
+    "inicio": "poe-a4-the-aqueduct",
+    "cidade": {
+      "nome": "Highgate",
+      "posicao": {
+        "x": 60,
+        "y": 290
+      },
+      "conexoes": [
+        "poe-a4-the-aqueduct"
+      ]
+    },
+    "fases": [
+      {
+        "id": "poe-a4-the-aqueduct",
+        "nome": "Aqueduto",
+        "descricao": "A força vital de um Império há muito morto.",
+        "ordem": 1,
+        "huntId": "poe-a4-the-aqueduct",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 33,
+          "medio": 33,
+          "dificil": 33
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [
+          {
+            "missao": "O Eterno Pesadelo",
+            "texto": "Fale com Dialla"
+          }
+        ],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 150,
+          "y": 420
+        }
+      },
+      {
+        "id": "poe-a4-the-dried-lake",
+        "nome": "Lago Seco",
+        "descricao": "Ossos da traição, cinzas da purificação.",
+        "ordem": 2,
+        "huntId": "poe-a4-the-dried-lake",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 34,
+          "medio": 34,
+          "dificil": 34
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [
+          {
+            "missao": "Quebrando o Selo",
+            "texto": "Pegue o Estandarte de Deshret"
+          }
+        ],
+        "conclusao": {
+          "tipo": "item-de-missao",
+          "item": 7600004,
+          "monstro": "Voll,_Emperor_of_Purity",
+          "nome": "Voll, Imperador da Pureza"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 353,
+          "y": 153
+        }
+      },
+      {
+        "id": "poe-a4-the-mines-level-1",
+        "nome": "Minas Nível 1",
+        "descricao": "Doença na escuridão.",
+        "ordem": 3,
+        "huntId": "poe-a4-the-mines-level-1",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 34,
+          "medio": 34,
+          "dificil": 34
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 353,
+          "y": 393
+        }
+      },
+      {
+        "id": "poe-a4-the-mines-level-2",
+        "nome": "Minas Nível 2",
+        "descricao": "",
+        "ordem": 4,
+        "huntId": "poe-a4-the-mines-level-2",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 35,
+          "medio": 35,
+          "dificil": 35
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 557,
+          "y": 447
+        }
+      },
+      {
+        "id": "poe-a4-the-crystal-veins",
+        "nome": "Veias de Cristal",
+        "descricao": "Presentes Bestiais, esperando serem levados.",
+        "ordem": 5,
+        "huntId": "poe-a4-the-crystal-veins",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 36,
+          "medio": 36,
+          "dificil": 36
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [
+          {
+            "missao": "O Eterno Pesadelo",
+            "texto": "Ative o Dispositivo Arrebatador com as gemas do Kaom e Daresso"
+          },
+          {
+            "missao": "O Rei da Fúria",
+            "texto": "Leve o Olho da Fúria para Dialla"
+          },
+          {
+            "missao": "O Rei do Desejo",
+            "texto": "Levar o Olho do Desejo para Dialla"
+          }
+        ],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 353,
+          "y": 233
+        }
+      },
+      {
+        "id": "poe-a4-kaoms-dream",
+        "nome": "Sonho de Kaom",
+        "descricao": "Fúria e chama avivadas.",
+        "ordem": 6,
+        "huntId": "poe-a4-kaoms-dream",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 37,
+          "medio": 37,
+          "dificil": 37
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 557,
+          "y": 367
+        }
+      },
+      {
+        "id": "poe-a4-kaoms-stronghold",
+        "nome": "Fortaleza de Kaom",
+        "descricao": "Um suporte feito de soberba.",
+        "ordem": 7,
+        "huntId": "poe-a4-kaoms-stronghold",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 38,
+          "medio": 38,
+          "dificil": 38
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [
+          {
+            "missao": "O Rei da Fúria",
+            "texto": "Pegue o Olho da Fúria"
+          }
+        ],
+        "conclusao": {
+          "tipo": "item-de-missao",
+          "item": 7600005,
+          "monstro": "King_Kaom",
+          "nome": "Rei Kaom"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 760,
+          "y": 340
+        }
+      },
+      {
+        "id": "poe-a4-daressos-dream",
+        "nome": "Sonho de Daresso",
+        "descricao": "Não importa quão alto escalar, você nunca escapará do Fosso.",
+        "ordem": 8,
+        "huntId": "poe-a4-daressos-dream",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 37,
+          "medio": 37,
+          "dificil": 37
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 557,
+          "y": 287
+        }
+      },
+      {
+        "id": "poe-a4-the-grand-arena",
+        "nome": "Grande Arena",
+        "descricao": "Sangue escorrendo e flores chorando.",
+        "ordem": 9,
+        "huntId": "poe-a4-the-grand-arena",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 38,
+          "medio": 38,
+          "dificil": 38
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [
+          {
+            "missao": "O Rei do Desejo",
+            "texto": "Pegue o Olho do Desejo"
+          }
+        ],
+        "conclusao": {
+          "tipo": "item-de-missao",
+          "item": 7600006,
+          "monstro": "Daresso,_King_of_Swords",
+          "nome": "Daresso, Rei das Espadas"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 760,
+          "y": 260
+        }
+      },
+      {
+        "id": "poe-a4-the-belly-of-the-beast-level-1",
+        "nome": "O Ventre da Besta Nível 1",
+        "descricao": "Entre no Pesadelo.",
+        "ordem": 10,
+        "huntId": "poe-a4-the-belly-of-the-beast-level-1",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 38,
+          "medio": 38,
+          "dificil": 38
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 557,
+          "y": 127
+        }
+      },
+      {
+        "id": "poe-a4-the-belly-of-the-beast-level-2",
+        "nome": "O Ventre da Besta Nível 2",
+        "descricao": "",
+        "ordem": 11,
+        "huntId": "poe-a4-the-belly-of-the-beast-level-2",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 39,
+          "medio": 39,
+          "dificil": 39
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 760,
+          "y": 180
+        }
+      },
+      {
+        "id": "poe-a4-the-harvest",
+        "nome": "A Colheita",
+        "descricao": "Onde os sonhos vêm morrer.",
+        "ordem": 12,
+        "huntId": "poe-a4-the-harvest",
+        "tipo": "hunt-normal",
+        "nivel": {
+          "facil": 40,
+          "medio": 40,
+          "dificil": 40
+        },
+        "obrigatoria": false,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [
+          {
+            "missao": "O Eterno Pesadelo",
+            "texto": "Mate Malachai"
+          },
+          {
+            "missao": "Corpus Malachus",
+            "texto": "Entregue os órgãos para Piety"
+          }
+        ],
+        "conclusao": {
+          "tipo": "matar-chefe",
+          "monstro": "Maligaro,_The_Inquisitor",
+          "nome": "Maligaro, O Inquisidor"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 353,
+          "y": 73
+        }
+      },
+      {
+        "id": "poe-a4-the-ascent",
+        "nome": "A Ascensão",
+        "descricao": "Quanto maior a altura, maior a queda.",
+        "ordem": 13,
+        "huntId": "poe-a4-the-ascent",
+        "tipo": "fase-final-do-ato",
+        "nivel": {
+          "facil": 40,
+          "medio": 40,
+          "dificil": 40
+        },
+        "obrigatoria": true,
+        "requisitos": {
+          "exige": []
+        },
+        "objetivos": [
+          {
+            "missao": "Retorne a Oriath",
+            "texto": "Entre no portal para Oriath"
+          }
+        ],
+        "conclusao": {
+          "tipo": "limpar-hunt"
+        },
+        "recompensas": null,
+        "eventos": [],
+        "sobrescritas": {},
+        "posicao": {
+          "x": 760,
+          "y": 100
+        }
+      }
+    ],
+    "conexoes": [
+      {
+        "de": "poe-a4-the-aqueduct",
+        "para": "poe-a4-the-dried-lake",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a4-the-aqueduct",
+        "para": "poe-a4-the-mines-level-1",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a4-the-aqueduct",
+        "para": "poe-a4-the-ascent",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a4-the-mines-level-1",
+        "para": "poe-a4-the-mines-level-2",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a4-the-crystal-veins",
+        "para": "poe-a4-kaoms-dream",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a4-the-crystal-veins",
+        "para": "poe-a4-daressos-dream",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a4-the-crystal-veins",
+        "para": "poe-a4-the-belly-of-the-beast-level-1",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a4-kaoms-dream",
+        "para": "poe-a4-kaoms-stronghold",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a4-daressos-dream",
+        "para": "poe-a4-the-grand-arena",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a4-the-belly-of-the-beast-level-1",
+        "para": "poe-a4-the-belly-of-the-beast-level-2",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a4-the-aqueduct",
+        "para": "poe-a4-the-crystal-veins",
+        "requisito": null,
+        "rotulo": ""
+      },
+      {
+        "de": "poe-a4-the-aqueduct",
+        "para": "poe-a4-the-harvest",
+        "requisito": null,
+        "rotulo": ""
+      }
+    ],
+    "bossFinal": {
+      "bossId": "poe-chefe-ato-4",
+      "faseAnterior": "poe-a4-the-ascent",
+      "nivel": {
+        "facil": 40,
+        "medio": 40,
+        "dificil": 40
+      },
+      "arena": null,
+      "recompensas": null
+    }
+  }
+}

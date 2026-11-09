@@ -21,6 +21,7 @@ import * as SocketsPoe from '../itens-poe/sockets.mjs';
 import * as CompatSuportes from '../itens-poe/compat-suportes.mjs';
 import * as ModsPoe from '../itens-poe/condicoes-poe.mjs';
 import { pilhaMaxima } from '../itens/pilha.mjs';
+import { salaDe } from '../hunt/sala.mjs';
 import { MAIS_LOCAL_QUE_MULTIPLICA } from '../itens-poe/suportes-t3.mjs';
 
 const ler = (f) => JSON.parse(readFileSync(new URL(`../../gamedata/gemas/${f}.json`, import.meta.url), 'utf8'));
@@ -801,6 +802,14 @@ function dasPecas(estado, saida) {
       saida.set(def.acao, { acao: def.acao, itemId: def.itemId, nivel: Math.round(v), nivelBase: Math.round(v), bonusDaPeca: 0, xp: 0, raridade: raridadeDaGema(null), qualidade: 0, def, supports: [], onde: { slot: 'altar', indice: -1 }, daPeca: true, ativadaPorItem: true });
     }
   }
+  // (08/11, os Pilares de Arun: "Jogadores têm a Habilidade Avanço Nível 20") a habilidade que o MAPA dá a você enquanto está nele (`concede:<gema>` nos efeitos
+  // `jogador` do mapa da caçada — `itens-poe/mapas.mjs`): vai para a barra como a da peça
+  for (const [k, v] of Object.entries(salaDe(estado?.hunt)?.mapa?.efeitos?.jogador ?? {})) {
+    const nome = /^concede:(.+)$/.exec(k)?.[1];
+    const def = nome && v > 0 ? ativaPeloNome(nome) : null;
+    if (!def || (saida.get(def.acao)?.nivel ?? 0) >= v) continue;
+    saida.set(def.acao, { acao: def.acao, itemId: def.itemId, nivel: Math.round(v), nivelBase: Math.round(v), bonusDaPeca: 0, xp: 0, raridade: raridadeDaGema(null), qualidade: 0, def, supports: [], onde: { slot: 'mapa', indice: -1 }, daPeca: true });
+  }
   // (07/11, lote 15) a EXIGÊNCIA DA RAINHA (a gema, de onde vier) ativa as Chamas e a Tormenta do Julgamento: as duas existem para o disparo, no 20 do Mandado de Atziri
   // se a peça não disser o nível
   if ([...saida.keys()].some((acao) => acao === 'poe-gema:Queens_Demand')) {
@@ -1518,7 +1527,12 @@ export function linhasDosOrbes(estado) {
 }
 
 /** Comprar `count` gemas (nível 1, na `raridade` pedida) na loja: paga do bolso e depois do banco; vão para a mochila. */
+// (08/11) a TROCA das cartas de adivinhação na mesma loja (`itens-poe/cartas.mjs` registra — o ciclo de imports): a linha da carta troca a pilha
+let trocaDeCarta = null;
+export const usarTrocaDeCartas = (f) => (trocaDeCarta = f);
 export function comprarNaLoja(estado, { id, count = 1, raridade = 'comum' }) {
+  const troca = trocaDeCarta?.(estado, Number(id), count);
+  if (troca) return troca;
   const orbe = (SocketsPoe.poeLigado() ? (lojaDeMoedas ? lojaDeMoedas(estado) : Object.values(ORBES_DO_POE).filter((o) => o?.itemId)) : [O.encaixe, O.ligacao]).find((o) => o.itemId === Number(id));
   if (orbe) return comprarOrbe(estado, orbe, count);
   const def = DEFS.get(Number(id));

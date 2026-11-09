@@ -12,7 +12,7 @@ import * as Cacadas from '../systems/cacadas.mjs';
 import * as Campanha from '../systems/campanha.mjs';
 import * as R from '../systems/regras.mjs';
 import { personagemDeTeste } from './apoio.mjs';
-import { aAdaptar, soNoOficial } from './apoio-migracao.mjs';
+import { soNoOficial } from './apoio-migracao.mjs';
 
 const criadas = [];
 after(async () => {
@@ -38,35 +38,6 @@ async function jogador(i, aoCompletar) {
   return { s, nome };
 }
 
-async function partyNaFase(aoCompletarDele, aoCompletarDoOutro) {
-  const [lider, outro] = [await jogador(0, aoCompletarDele), await jogador(1, aoCompletarDoOutro)];
-  assert.equal(Party.comandoDoGrupo(lider.s, { action: 'convidar', name: outro.nome }).ok, true);
-  assert.equal(Party.comandoDoGrupo(outro.s, { action: 'aceitar' }).ok, true);
-  const fase = Campanha.FASES[0];
-  assert.equal(Cacadas.entrar(lider.s.estado, { huntId: fase.huntId, mode: 'auto', dificuldade: 'facil' }).ok, true);
-  assert.equal(Party.comandoDaCaca(lider.s, { action: 'invite', name: outro.nome }).ok, true);
-  assert.equal(Party.comandoDaCaca(outro.s, { action: 'accept' }).ok, true);
-  assert.equal(Cacadas.salaDe(lider.s.estado.hunt), Cacadas.salaDe(outro.s.estado.hunt), 'começam na mesma sala');
-  return { lider, outro, proxima: Campanha.FASES[1] };
-}
-
-test('os dois com "Avançar sozinho": vão JUNTOS para a próxima fase', { skip: aAdaptar("\"Avançar sozinho\" em grupo vale nas áreas do PoE; o teste lê a campanha do Draevor") }, async () => {
-  const { lider, outro, proxima } = await partyNaFase('seguir', 'seguir');
-  lider.s.seguirParaAProximaFase();
-  assert.equal(lider.s.estado.hunt.huntId, proxima.huntId, 'o líder foi para a próxima');
-  assert.equal(outro.s.estado.hunt?.huntId, proxima.huntId, 'o outro foi junto');
-  assert.equal(Cacadas.salaDe(lider.s.estado.hunt), Cacadas.salaDe(outro.s.estado.hunt), 'na MESMA sala');
-});
-
-// (Dono, 10/10: a sala vai com o líder. Antes, quem estava em "Ficar na fase" ficava, e o líder avançava sozinho.)
-test('o outro em "Ficar na fase": o líder avança e a sala vai JUNTO (o líder decide)', { skip: aAdaptar("\"Avançar sozinho\" em grupo vale nas áreas do PoE; o teste lê a campanha do Draevor") }, async () => {
-  const { lider, outro, proxima } = await partyNaFase('seguir', 'repetir');
-  lider.s.seguirParaAProximaFase();
-  assert.equal(lider.s.estado.hunt.huntId, proxima.huntId);
-  assert.equal(outro.s.estado.hunt?.huntId, proxima.huntId, 'foi junto, mesmo em "Ficar na fase"');
-  assert.equal(Cacadas.salaDe(lider.s.estado.hunt), Cacadas.salaDe(outro.s.estado.hunt), 'na MESMA sala');
-});
-
 // ---- No jogo oficial (as áreas do PoE): o Ato 1 com a fase 1 feita; a próxima pela numeração é a 2 (A Costa). ----
 const F1 = () => Campanha.FASES.find((f) => f.ato === 1 && Campanha.numeroNoAto(f.huntId) === 1);
 const F2 = () => Campanha.FASES.find((f) => f.ato === 1 && Campanha.numeroNoAto(f.huntId) === 2);
@@ -84,6 +55,31 @@ async function partyNoAto1(aoLider, aoOutro, dono = 'lider') {
   assert.equal(Cacadas.salaDe(lider.s.estado.hunt), Cacadas.salaDe(outro.s.estado.hunt), 'começam na mesma sala');
   return { lider, outro };
 }
+
+// (08/11, adaptado ao PoE — o dono: "Adaptar antes") As duas regras de 10/10 nas áreas do Ato 1 do PoE (a fase 1 e a seguinte, a 2),
+// no lugar das fases da campanha do Draevor (`Campanha.FASES[0]` e `[1]`); o líder abre a sala. No PoE a fase 1 já feita não avança só
+// por estar completa (`faseParaSeguir`: tem de ser concluída NESTA rodada): o avanço vem do clique do líder no "Avançar sozinho" durante a
+// caçada (`definirAoCompletarFase`), como nos testes do oficial abaixo.
+test('os dois com "Avançar sozinho": vão JUNTOS para a próxima fase', async () => {
+  const { lider, outro } = await partyNoAto1('seguir', 'seguir');
+  const proxima = F2();
+  Cacadas.definirAoCompletarFase(lider.s.estado, { value: 'seguir' });
+  lider.s.seguirParaAProximaFase();
+  assert.equal(lider.s.estado.hunt.huntId, proxima.huntId, 'o líder foi para a próxima');
+  assert.equal(outro.s.estado.hunt?.huntId, proxima.huntId, 'o outro foi junto');
+  assert.equal(Cacadas.salaDe(lider.s.estado.hunt), Cacadas.salaDe(outro.s.estado.hunt), 'na MESMA sala');
+});
+
+// (Dono, 10/10: a sala vai com o líder. Antes, quem estava em "Ficar na fase" ficava, e o líder avançava sozinho.)
+test('o outro em "Ficar na fase": o líder avança e a sala vai JUNTO (o líder decide)', async () => {
+  const { lider, outro } = await partyNoAto1('seguir', 'repetir');
+  const proxima = F2();
+  Cacadas.definirAoCompletarFase(lider.s.estado, { value: 'seguir' });
+  lider.s.seguirParaAProximaFase();
+  assert.equal(lider.s.estado.hunt.huntId, proxima.huntId);
+  assert.equal(outro.s.estado.hunt?.huntId, proxima.huntId, 'foi junto, mesmo em "Ficar na fase"');
+  assert.equal(Cacadas.salaDe(lider.s.estado.hunt), Cacadas.salaDe(outro.s.estado.hunt), 'na MESMA sala');
+});
 
 test('o líder CONVIDADO na sala de outro, com "Avançar sozinho": avança, e o dono da sala (em "Ficar na fase") vai junto', { skip: soNoOficial('as áreas do Ato 1 do PoE') }, async () => {
   const { lider, outro } = await partyNoAto1('seguir', 'repetir', 'outro');

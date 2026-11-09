@@ -4148,32 +4148,52 @@
       "texto": "Área possui trechos de Solo Ardente",
       "modelo": "Área possui trechos de Solo Ardente",
       "faixas": [],
-      "efeitos": [],
-      "nota": "o solo ardente/gélido/profano ainda não existe no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "solo_ardente",
+        "fixo": 14
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Área é habitada por Esqueletos",
       "modelo": "Área é habitada por Esqueletos",
       "faixas": [],
-      "efeitos": [],
-      "nota": "os monstros da área são os do tier do mapa"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "habitantes_esqueletos",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Mortos Inquietos",
       "modelo": "Mortos Inquietos",
       "faixas": [],
-      "efeitos": [],
-      "nota": "os monstros da área são os do tier do mapa"
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "ressurgirS",
+        "fixo": 10
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Área é um imenso Labirinto",
       "modelo": "Área é um imenso Labirinto",
       "faixas": [],
-      "efeitos": [],
-      "nota": "o terreno é o do tier do mapa"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "terreno_labirinto",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -4247,72 +4267,117 @@
       "texto": "Contém ondas de Monstros",
       "modelo": "Contém ondas de Monstros",
       "faixas": [],
-      "efeitos": [],
-      "nota": "as ondas de monstros ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "ondas_monstros",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Contém ondas adicionais de Monstros Mortos-Vivos",
       "modelo": "Contém ondas adicionais de Monstros Mortos-Vivos",
       "faixas": [],
-      "efeitos": [],
-      "nota": "as ondas de monstros ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "ondas_mortosVivos",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Área contém ondas de Fantasmas adicionais",
       "modelo": "Área contém ondas de Fantasmas adicionais",
       "faixas": [],
-      "efeitos": [],
-      "nota": "as ondas de monstros ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "ondas_fantasmas",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Área contém ondas de Zumbis Oriatianos adicionais",
       "modelo": "Área contém ondas de Zumbis Oriatianos adicionais",
       "faixas": [],
-      "efeitos": [],
-      "nota": "as ondas de monstros ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "ondas_zumbisOriatianos",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Área contém ondas de Espíritos adicionais",
       "modelo": "Área contém ondas de Espíritos adicionais",
       "faixas": [],
-      "efeitos": [],
-      "nota": "as ondas de monstros ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "ondas_espiritos",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Área contém ondas de Espíritos Furiosos adicionais",
       "modelo": "Área contém ondas de Espíritos Furiosos adicionais",
       "faixas": [],
-      "efeitos": [],
-      "nota": "as ondas de monstros ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "ondas_espiritosFuriosos",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Área contém ondas de Rhoas de Osso adicionais",
       "modelo": "Área contém ondas de Rhoas de Osso adicionais",
       "faixas": [],
-      "efeitos": [],
-      "nota": "as ondas de monstros ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "ondas_rhoasDeOsso",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Área contém ondas de Mandíbulas Devastadoras adicionais",
       "modelo": "Área contém ondas de Mandíbulas Devastadoras adicionais",
       "faixas": [],
-      "efeitos": [],
-      "nota": "as ondas de monstros ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "ondas_mandibulas",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Área contém ondas de Zumbis adicionais",
       "modelo": "Área contém ondas de Zumbis adicionais",
       "faixas": [],
-      "efeitos": [],
-      "nota": "as ondas de monstros ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "ondas_zumbis",
+        "fixo": 1
+       }
+      ]
      }
     ]
    },
@@ -4337,16 +4402,27 @@
       "texto": "Área possui trechos de solo congelado",
       "modelo": "Área possui trechos de solo congelado",
       "faixas": [],
-      "efeitos": [],
-      "nota": "o solo ardente/gélido/profano ainda não existe no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "solo_congelado",
+        "fixo": 14
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "% do Dano dos Monstros é convertido em Raio",
       "modelo": "% do Dano dos Monstros é convertido em Raio",
       "faixas": [],
-      "efeitos": [],
-      "nota": "o poedb não traz o valor"
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "conversaoRaioPct",
+        "fixo": 0,
+        "zeroNoPoe": "map monsters % physical damage to convert to lightning = 0"
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -4371,24 +4447,39 @@
       "texto": "Monstros são Imunes a Atordoamentos ou Afecções Elementais aleatórias",
       "modelo": "Monstros são Imunes a Atordoamentos ou Afecções Elementais aleatórias",
       "faixas": [],
-      "efeitos": [],
-      "nota": "a imunidade a afecções dos monstros ainda não existe no jogo"
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "imuneAleatoria",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Ataques Corpo a Corpo dos Monstros aplicam Feitiços aleatórios ao Acertar",
       "modelo": "Ataques Corpo a Corpo dos Monstros aplicam Feitiços aleatórios ao Acertar",
       "faixas": [],
-      "efeitos": [],
-      "nota": "os feitiços dos monstros ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "noAcerto.maldicaoAleatoria",
+        "fixo": 100
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Monstros Refletem Feitiços",
       "modelo": "Monstros Refletem Feitiços",
       "faixas": [],
-      "efeitos": [],
-      "nota": "os feitiços dos monstros ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "refleteFeiticos",
+        "fixo": 100
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -4467,8 +4558,14 @@
       "texto": "% do Dano dos Monstros é convertido em Raio",
       "modelo": "% do Dano dos Monstros é convertido em Raio",
       "faixas": [],
-      "efeitos": [],
-      "nota": "o poedb não traz o valor"
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "conversaoRaioPct",
+        "fixo": 0,
+        "zeroNoPoe": "map monsters % physical damage to convert to lightning = 0"
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -4493,16 +4590,26 @@
       "texto": "Monstros ganham uma Carga de Tolerância ao Acertar",
       "modelo": "Monstros ganham uma Carga de Tolerância ao Acertar",
       "faixas": [],
-      "efeitos": [],
-      "nota": "os monstros ainda não ganham cargas"
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "noAcerto.tolerancia",
+        "fixo": 100
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Monstros ganham uma Carga de Poder ao Acertar",
       "modelo": "Monstros ganham uma Carga de Poder ao Acertar",
       "faixas": [],
-      "efeitos": [],
-      "nota": "os monstros ainda não ganham cargas"
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "noAcerto.poder",
+        "fixo": 100
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -4582,8 +4689,13 @@
       "texto": "Chefe Final derruba Itens de Níveis maiores",
       "modelo": "Chefe Final derruba Itens de Níveis maiores",
       "faixas": [],
-      "efeitos": [],
-      "nota": "o nível dos itens do chefe ainda não sobe no jogo"
+      "efeitos": [
+       {
+        "alvo": "chefe",
+        "stat": "ilvlExtra",
+        "fixo": 4
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -4735,8 +4847,13 @@
       "texto": "Área é um imenso Labirinto",
       "modelo": "Área é um imenso Labirinto",
       "faixas": [],
-      "efeitos": [],
-      "nota": "o terreno é o do tier do mapa"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "terreno_labirinto",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -4752,8 +4869,46 @@
         23
        ]
       ],
-      "efeitos": [],
-      "nota": "os Raros a mais do chefe ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "chefe",
+        "stat": "rarosExtras",
+        "de": 0
+       },
+       {
+        "alvo": "chefe",
+        "stat": "rarosClasse",
+        "de": 1
+       }
+      ],
+      "rotulos": {
+       "1": [
+        "Amuletos",
+        "Anéis",
+        "Cintos",
+        "Armaduras",
+        "Botas",
+        "Luvas",
+        "Elmos",
+        "Escudos",
+        "Aljavas",
+        "Arcos",
+        "Garras",
+        "Adagas",
+        "Adagas Rúnicas",
+        "Machados de Uma Mão",
+        "Maças de Uma Mão",
+        "Espadas de Uma Mão",
+        "Espadas de Estocada",
+        "Cetros",
+        "Varinhas",
+        "Cajados",
+        "Cajados de Guerra",
+        "Machados de Duas Mãos",
+        "Maças de Duas Mãos",
+        "Espadas de Duas Mãos"
+       ]
+      }
      },
      {
       "tipo": "explicit",
@@ -4832,8 +4987,13 @@
       "texto": "Área não contém monstros",
       "modelo": "Área não contém monstros",
       "faixas": [],
-      "efeitos": [],
-      "nota": "as áreas dos mapas sempre têm monstros"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "semMonstros",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -4845,8 +5005,13 @@
         40
        ]
       ],
-      "efeitos": [],
-      "nota": "o item corrompido no drop ainda não existe no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "corrompidosPct",
+        "de": 0
+       }
+      ]
      }
     ]
    },
@@ -4979,8 +5144,13 @@
       "texto": "Área possui trechos de solo profano",
       "modelo": "Área possui trechos de solo profano",
       "faixas": [],
-      "efeitos": [],
-      "nota": "o solo ardente/gélido/profano ainda não existe no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "solo_profanado",
+        "fixo": 10
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -5024,8 +5194,13 @@
       "texto": "Área se torna fatal após algum tempo",
       "modelo": "Área se torna fatal após algum tempo",
       "faixas": [],
-      "efeitos": [],
-      "nota": "a área que fica fatal ainda não existe no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "fatalS",
+        "fixo": 540
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -5068,8 +5243,13 @@
       "texto": "Área possui muitos Totens",
       "modelo": "Área possui muitos Totens",
       "faixas": [],
-      "efeitos": [],
-      "nota": "os monstros da área são os do tier do mapa"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "habitantes_totens",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -5081,8 +5261,13 @@
         50
        ]
       ],
-      "efeitos": [],
-      "nota": "os feitiços dos monstros ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "efeitoMaldicaoMenosPct",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -5143,8 +5328,13 @@
       "texto": "Contém os Grão-Mestres Imortalizados / Escalonamento de dano de PvP em efeito",
       "modelo": "Contém os Grão-Mestres Imortalizados / Escalonamento de dano de PvP em efeito",
       "faixas": [],
-      "efeitos": [],
-      "nota": "os Grão-Mestres ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "graoMestres",
+        "fixo": 1
+       }
+      ]
      }
     ]
    },
@@ -5537,8 +5727,13 @@
       "texto": "Chefe Único derruba cartas de adivinhação",
       "modelo": "Chefe Único derruba cartas de adivinhação",
       "faixas": [],
-      "efeitos": [],
-      "nota": "as cartas de adivinhação não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "chefe",
+        "stat": "cartas",
+        "fixo": 3
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -5667,8 +5862,13 @@
         2
        ]
       ],
-      "efeitos": [],
-      "nota": "o nível dos monstros é o do tier do mapa (ainda não muda por modificador)"
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "nivelDelta",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -5747,8 +5947,13 @@
       "texto": "Área contém brechas sem passagem atravessar",
       "modelo": "Área contém brechas sem passagem atravessar",
       "faixas": [],
-      "efeitos": [],
-      "nota": "o terreno é o do tier do mapa"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "terreno_brechas",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -5760,8 +5965,13 @@
         50
        ]
       ],
-      "efeitos": [],
-      "nota": "a imunidade a afecções dos monstros ainda não existe no jogo"
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "evitarAfeccoesPct",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -5827,8 +6037,13 @@
         20
        ]
       ],
-      "efeitos": [],
-      "nota": "as habilidades de movimento ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "concede:avanco",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -5840,8 +6055,13 @@
         200
        ]
       ],
-      "efeitos": [],
-      "nota": "as habilidades de movimento ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "cooldown_recovery@movimento",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -5902,16 +6122,27 @@
       "texto": "Ganho de Experiência aumentado em %",
       "modelo": "Ganho de Experiência aumentado em %",
       "faixas": [],
-      "efeitos": [],
-      "nota": "o poedb não traz o valor"
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "experienciaPct",
+        "fixo": 0,
+        "zeroNoPoe": "map experience gain +% = 0"
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Área possui aumento na variedade de monstros",
       "modelo": "Área possui aumento na variedade de monstros",
       "faixas": [],
-      "efeitos": [],
-      "nota": "os monstros da área são os do tier do mapa"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "habitantes_variedade",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -5944,16 +6175,26 @@
       "texto": "Área é habitada por seguidores de Lunaris",
       "modelo": "Área é habitada por seguidores de Lunaris",
       "faixas": [],
-      "efeitos": [],
-      "nota": "os monstros da área são os do tier do mapa"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "habitantes_lunaris",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
       "texto": "Área é habitada por seguidores de Solaris",
       "modelo": "Área é habitada por seguidores de Solaris",
       "faixas": [],
-      "efeitos": [],
-      "nota": "os monstros da área são os do tier do mapa"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "habitantes_solaris",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6050,8 +6291,13 @@
       "texto": "Chefe Único é ampliado pelas escolhas do Jogador",
       "modelo": "Chefe Único é ampliado pelas escolhas do Jogador",
       "faixas": [],
-      "efeitos": [],
-      "nota": "a escolha do chefe ainda não existe no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "doryani",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6099,8 +6345,13 @@
         10
        ]
       ],
-      "efeitos": [],
-      "nota": "o item corrompido no drop ainda não existe no jogo"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "corrompidosPct",
+        "de": 0
+       }
+      ]
      }
     ]
    },
@@ -6148,8 +6399,13 @@
         83
        ]
       ],
-      "efeitos": [],
-      "nota": "o nível dos monstros é o do tier do mapa (ainda não muda por modificador)"
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "nivel",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6161,8 +6417,13 @@
         5
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "modsAleatorios",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6174,8 +6435,13 @@
         6
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "sinteseGlobais",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6259,8 +6525,13 @@
         81
        ]
       ],
-      "efeitos": [],
-      "nota": "o nível dos monstros é o do tier do mapa (ainda não muda por modificador)"
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "nivel",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6272,8 +6543,13 @@
         5
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "modsAleatorios",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6285,8 +6561,13 @@
         4
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "sinteseGlobais",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6370,8 +6651,13 @@
         81
        ]
       ],
-      "efeitos": [],
-      "nota": "o nível dos monstros é o do tier do mapa (ainda não muda por modificador)"
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "nivel",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6383,8 +6669,13 @@
         5
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "modsAleatorios",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6396,8 +6687,13 @@
         4
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "sinteseGlobais",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6481,8 +6777,13 @@
         81
        ]
       ],
-      "efeitos": [],
-      "nota": "o nível dos monstros é o do tier do mapa (ainda não muda por modificador)"
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "nivel",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6494,8 +6795,13 @@
         5
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "modsAleatorios",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6507,8 +6813,13 @@
         4
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "sinteseGlobais",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6592,8 +6903,13 @@
         81
        ]
       ],
-      "efeitos": [],
-      "nota": "o nível dos monstros é o do tier do mapa (ainda não muda por modificador)"
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "nivel",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6605,8 +6921,13 @@
         5
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "modsAleatorios",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6618,8 +6939,13 @@
         4
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "sinteseGlobais",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6703,8 +7029,13 @@
         84
        ]
       ],
-      "efeitos": [],
-      "nota": "o nível dos monstros é o do tier do mapa (ainda não muda por modificador)"
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "nivel",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6716,8 +7047,13 @@
         8
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "modsAleatorios",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6729,8 +7065,13 @@
         6
        ]
       ],
-      "efeitos": [],
-      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "peca",
+        "stat": "sinteseGlobais",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6809,8 +7150,13 @@
       "texto": "Área contém brechas sem passagem atravessar",
       "modelo": "Área contém brechas sem passagem atravessar",
       "faixas": [],
-      "efeitos": [],
-      "nota": "o terreno é o do tier do mapa"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "terreno_brechas",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6822,8 +7168,13 @@
         50
        ]
       ],
-      "efeitos": [],
-      "nota": "a imunidade a afecções dos monstros ainda não existe no jogo"
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "evitarAfeccoesPct",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6907,8 +7258,13 @@
         20
        ]
       ],
-      "efeitos": [],
-      "nota": "as habilidades de movimento ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "concede:avanco",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -6920,8 +7276,13 @@
         200
        ]
       ],
-      "efeitos": [],
-      "nota": "as habilidades de movimento ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "cooldown_recovery@movimento",
+        "de": 0
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -7146,8 +7507,13 @@
       "texto": "Área é um imenso Labirinto",
       "modelo": "Área é um imenso Labirinto",
       "faixas": [],
-      "efeitos": [],
-      "nota": "o terreno é o do tier do mapa"
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "terreno_labirinto",
+        "fixo": 1
+       }
+      ]
      },
      {
       "tipo": "explicit",
@@ -7163,8 +7529,46 @@
         23
        ]
       ],
-      "efeitos": [],
-      "nota": "os Raros a mais do chefe ainda não existem no jogo"
+      "efeitos": [
+       {
+        "alvo": "chefe",
+        "stat": "rarosExtras",
+        "de": 0
+       },
+       {
+        "alvo": "chefe",
+        "stat": "rarosClasse",
+        "de": 1
+       }
+      ],
+      "rotulos": {
+       "1": [
+        "Amuletos",
+        "Anéis",
+        "Cintos",
+        "Armaduras",
+        "Botas",
+        "Luvas",
+        "Elmos",
+        "Escudos",
+        "Aljavas",
+        "Arcos",
+        "Garras",
+        "Adagas",
+        "Adagas Rúnicas",
+        "Machados de Uma Mão",
+        "Maças de Uma Mão",
+        "Espadas de Uma Mão",
+        "Espadas de Estocada",
+        "Cetros",
+        "Varinhas",
+        "Cajados",
+        "Cajados de Guerra",
+        "Machados de Duas Mãos",
+        "Maças de Duas Mãos",
+        "Espadas de Duas Mãos"
+       ]
+      }
      },
      {
       "tipo": "explicit",

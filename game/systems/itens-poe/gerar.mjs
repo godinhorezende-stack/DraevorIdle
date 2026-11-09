@@ -35,7 +35,8 @@ export const escrever = (modelo, valores) => String(modelo ?? '').replace(/\{(\d
 // O modelo vai junto com os valores: é por ele que a tradução para os atributos do Draevor casa as regras (traduzir.mjs).
 const rolarTexto = (t, rng) => {
   const valores = (t.faixas ?? []).map((f) => sortearNaFaixa(f, rng));
-  return { modelo: t.modelo, valores, texto: escrever(t.modelo, valores) };
+  // (08/11) `rotulos`: o valor que é um ÍNDICE vira o nome no texto (a classe dos Raros a mais do Hospício de Poorjoy — `{ "1": [nomes] }`)
+  return { modelo: t.modelo, valores, texto: escrever(t.modelo, t.rotulos ? valores.map((v, i) => t.rotulos[i]?.[v] ?? v) : valores) };
 };
 
 /**

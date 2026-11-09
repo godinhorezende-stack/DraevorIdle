@@ -1,19 +1,16 @@
 // "mobs nas fases não podem andar sobre a água e player também não".
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
-import { ITEM_CATALOG, CATALOGO } from '../systems/dados.mjs';
+import { readFileSync } from 'node:fs';
+import { ITEM_CATALOG } from '../systems/dados.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
-import { personagemDeTeste, PERSONAGEM, huntDoPoe } from './apoio.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
+import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
 
-const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata', 'hunts');
-// Só as hunts: as salas de boss ficam como o original (a da Magma Bubble é
-// chão de lava, e é nele que se entra — ver `mapaRealCapturado`).
-const SALAS_DE_BOSS = new Set(CATALOGO.bosses.map((b) => b.id));
-const HUNTS = readdirSync(RAIZ).map((f) => f.replace(/-map\.json$/, '')).filter((id) => !SALAS_DE_BOSS.has(id));
+// (08/11, adaptado ao PoE — o dono: "Adaptar antes") As ÁREAS da campanha do PoE (todas, menos as cidades): o terreno de cada uma é um
+// mapa capturado, e é nele que a regra vale.
+const AREAS = Object.entries(JSON.parse(readFileSync(new URL('../gamedata/itens-poe/campanha-poe.json', import.meta.url), 'utf8')).areas).filter(([, a]) => !a.cidade);
+const HUNTS = AREAS.map(([id]) => id);
+const ULTIMO_ATO = Math.max(...AREAS.map(([, a]) => Number(a.ato) || 0));
 const LIQUIDO = /^(shallow water|water|swamp|lava|tar|muddy water|dirty water|bog water|ghostly water)$/;
 
 function casaLiquida(mapa, x, y) {
@@ -22,14 +19,20 @@ function casaLiquida(mapa, x, y) {
   return LIQUIDO.test(ITEM_CATALOG[chao]?.name ?? '');
 }
 
-// Level acima de toda hunt (a mais alta pede 1200): o teste é do mapa, não da porta de level.
-function entrarEPegarMapa(huntId, estado = personagemDeTeste({ level: 1300 })) {
+/** Um personagem com os chefes de todos os atos vencidos (as áreas de todo ato abertas): o teste é do mapa, não da porta da campanha. */
+function todosOsAtos() {
+  const e = personagemDeTeste({ level: 100 });
+  for (const p of Object.values(e.campanha)) p.bosses = Array.from({ length: ULTIMO_ATO }, (_, i) => i + 1);
+  return e;
+}
+
+function entrarEPegarMapa(huntId, estado = todosOsAtos()) {
   const r = Cacadas.entrar(estado, { huntId, mode: 'auto' });
   assert.ok(r.ok, `${huntId}: ${r.erro}`);
   return { estado, mapa: Cacadas.snapshotDaHunt(estado, true).map };
 }
 
-test('nenhuma casa de chão líquido fica andável em nenhum mapa real', { skip: aAdaptar("A água não ser andável (nascer/pisar) é da engine e vale nas áreas do PoE; o teste percorre as hunts do Draevor, que o jogo oficial recusa") }, () => {
+test('nenhuma casa de chão líquido fica andável em nenhum mapa real', () => {
   for (const huntId of HUNTS) {
     const { mapa } = entrarEPegarMapa(huntId);
     const andar = mapa.floors?.[mapa.z] ?? mapa;
@@ -42,7 +45,7 @@ test('nenhuma casa de chão líquido fica andável em nenhum mapa real', { skip:
   }
 });
 
-test('ninguém nasce na água: jogador e bichos começam em chão seco', { skip: aAdaptar("A água não ser andável (nascer/pisar) é da engine e vale nas áreas do PoE; o teste percorre as hunts do Draevor, que o jogo oficial recusa") }, () => {
+test('ninguém nasce na água: jogador e bichos começam em chão seco', () => {
   for (const huntId of HUNTS) {
     const { estado, mapa } = entrarEPegarMapa(huntId);
     assert.ok(!casaLiquida(mapa, estado.hunt.pos.x, estado.hunt.pos.y), `${huntId}: jogador nasceu na água`);
@@ -50,9 +53,17 @@ test('ninguém nasce na água: jogador e bichos começam em chão seco', { skip:
   }
 });
 
-test('caçando 3 minutos nas hunts com lago, ninguém pisa na água', { skip: aAdaptar("A água não ser andável (nascer/pisar) é da engine e vale nas áreas do PoE; o teste percorre as hunts do Draevor, que o jogo oficial recusa") }, () => {
-  // As quatro que tinham mais água "livre" antes da correção.
-  for (const huntId of ['winter-dream-court', 'hive-surface', huntDoPoe('werelions-1'), 'dark-pyramid']) {
+test('caçando 3 minutos nas áreas com lago, ninguém pisa na água', () => {
+  // As quatro áreas com mais água no terreno.
+  const comAgua = HUNTS.map((id) => {
+    const { mapa } = entrarEPegarMapa(id);
+    const andar = mapa.floors?.[mapa.z] ?? mapa;
+    let n = 0;
+    for (let i = 0; i < andar.stacks.length; i++) if (casaLiquida(mapa, i % mapa.width, Math.floor(i / mapa.width))) n++;
+    return [id, n];
+  }).sort((a, b) => b[1] - a[1]).slice(0, 4);
+  assert.ok(comAgua.every(([, n]) => n > 0), `áreas com água: ${JSON.stringify(comAgua)}`);
+  for (const [huntId] of comAgua) {
     const { estado, mapa } = entrarEPegarMapa(huntId);
     // Imortal para o teste não acabar numa morte: o que importa é o caminho.
     estado.maxHp = estado.hp = 1e9;

@@ -13,7 +13,8 @@ import * as Boosts from '../systems/boosts.mjs';
 import { gradesCacheadas } from '../systems/hunt/terreno.mjs';
 import * as Caminho from '../systems/hunt/caminho.mjs';
 import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
+import * as Ficha from '../systems/ficha.mjs';
+import { ITEM_CATALOG } from '../systems/dados.mjs';
 
 const criadas = [];
 after(async () => {
@@ -25,6 +26,8 @@ after(async () => {
   }
 });
 
+// Uma arma do PoE de uma mão sem level mínimo alto (o Machado Revestido, level 11): a do teste "quatro independentes".
+const MACHADO_DO_POE = Number(Object.entries(ITEM_CATALOG).find(([id, it]) => Number(id) >= 7_000_000 && it.poe?.classe === 'One_Hand_Axes' && it.name === 'Machado Revestido')[0]);
 const cheb = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 let proximaGrade = 0;
 
@@ -231,7 +234,7 @@ test('independente: não segue ninguém (nem a ponta) e não anda; voltar a segu
   assert.ok(cheb(pos(js[1]), pos(js[0])) <= 2, 'voltou a seguir');
 });
 
-test('quatro independentes em regiões diferentes limpam os bichos de cada região; a sala é uma só (cada bicho morre uma vez) e a exp é dividida', { skip: aAdaptar("Bichos do Draevor numa grade de teste com personagem do Draevor: sobram 4 de 8 no tempo do teste") }, async () => {
+test('quatro independentes em regiões diferentes limpam os bichos de cada região; a sala é uma só (cada bicho morre uma vez) e a exp é dividida', async () => {
   const { js, sala } = await partyNaGrade([
     '1......#.........2',
     'm.m....#.......m.m',
@@ -243,6 +246,12 @@ test('quatro independentes em regiões diferentes limpam os bichos de cada regi�
   ].map((l) => l.padEnd(19, '.')), 4);
   for (const j of js.slice(1)) assert.ok(Party.comandoDaCaca(j.s, { action: 'modo', valor: 'independente' }).ok);
   assert.ok(Party.comandoDaCaca(js[0].s, { action: 'modo', valor: 'independente' }).ok);
+  // (08/11, adaptado ao PoE — o dono: "Adaptar antes") A arma do PoE na mão dos quatro (um machado de uma mão, base do PoE) no lugar das
+  // armas iniciais do Draevor: no jogo oficial a varinha do Draevor do sorcerer acerta 1 a cada ~4 s, e os bichos dele sobravam.
+  for (const j of js) {
+    j.s.estado.equipment.weapon = { id: MACHADO_DO_POE, count: 1 };
+    Ficha.invalidar(j.s.estado);
+  }
   const total = sala.monstros.length;
   assert.equal(total, 8);
   for (const j of js) j.s.estado.hunt.alvo = null;

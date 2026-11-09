@@ -13,8 +13,11 @@ import * as Cacadas from '../systems/cacadas.mjs';
 import * as Ficha from '../systems/ficha.mjs';
 import { resistenciaDe } from '../systems/hunt/resistencia.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
-import { personagemDeTeste, PERSONAGEM, comSkills, HUNT_DE_TESTE } from './apoio.mjs';
-import { aAdaptar, doClassico } from './apoio-migracao.mjs';
+import * as CatalogoPoe from '../systems/itens-poe/catalogo.mjs';
+import * as PoeJogo from '../systems/itens-poe/jogo.mjs';
+import { gerarPeca as gerarPecaPoe } from '../systems/itens-poe/gerar.mjs';
+import { personagemDeTeste, PERSONAGEM, comSkills, HUNT_DE_TESTE, pousarVoos } from './apoio.mjs';
+import { aAdaptar, doClassico, soNoOficial } from './apoio-migracao.mjs';
 
 test('increased/reduced SOMAM e more/less MULTIPLICAM: 100 × (1 + 0,5 + 0,3) × 1,4 × 0,8 = 201,6', () => {
   const r = F.combinarModificadores(100, { aumentos: [{ valor: 50, origem: 'árvore' }, { valor: 30, origem: 'anel' }], mais: [{ valor: 40, origem: 'gema' }], menos: [{ valor: 20, origem: 'efeito' }] });
@@ -148,29 +151,54 @@ function sorcerer() {
   return { e, alvo, slot };
 }
 
-test('o registro de golpe fica DESLIGADO por padrão (produção) e, ligado, guarda o que a conta fez', { skip: aAdaptar("Registro de golpe e simulador de dano são ferramentas da engine; o teste usa a ficha do Draevor") }, () => {
+// (08/11, adaptado ao PoE — o dono: "Adaptar antes") A gema do PoE na barra do PoE: a Energy Strike (magia de Raio, alvo único) → a Seta Congelante (magia de
+// Gelo, um projétil); a resistência do alvo é a do elemento dela. O golpe cai no fim da conjuração do PoE, quando o projétil chega.
+const GEMA_POE = 'poe-gema:Frostbolt';
+const ELEMENTO_POE = 'ice';
+function sorcererPoe() {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 90 });
+  e.maxHp = e.hp = 1e9;
+  e.maxMana = e.mana = 1e9;
+  const alvo = naCacada(e);
+  e.actions = Array(Acoes.SLOTS).fill(null);
+  comSkills(e, [GEMA_POE]);
+  const slot = 0;
+  assert.ok(Acoes.definir(e, { slot, value: { id: GEMA_POE } }).ok);
+  return { e, alvo, slot };
+}
+/** Um uso da gema do PoE até o golpe cair: o disparo, a conjuração concluída e o voo pousado. */
+function usarPoe(e, slot, alvo) {
+  const h = e.hunt;
+  h.cooldowns = {};
+  h.ultimoAtaqueEm = null;
+  delete h.conjurando;
+  e.mana = e.maxMana;
+  const r = Acoes.disparar(e, h, PERSONAGEM, slot, alvo);
+  if (h.conjurando) {
+    h.clock = h.conjurando.fim;
+    Acoes.concluirConjuracao(e, h, PERSONAGEM);
+  }
+  pousarVoos(h);
+  return r;
+}
+
+test('o registro de golpe fica DESLIGADO por padrão (produção) e, ligado, guarda o que a conta fez', { skip: soNoOficial('a gema do PoE na barra do PoE') }, () => {
   assert.equal(Registro.nivelDoRegistro(), 0);
-  const { e, alvo, slot } = sorcerer();
+  const { e, alvo, slot } = sorcererPoe();
   Registro.limparRegistro();
-  e.hunt.cooldowns = {};
-  Acoes.disparar(e, e.hunt, PERSONAGEM, slot, alvo);
+  usarPoe(e, slot, alvo);
   assert.equal(Registro.ultimosGolpes().length, 0, 'desligado: nada guardado');
   Registro.definirNivel(2);
   try {
-    e.hunt.cooldowns = {};
-    e.hunt.ultimoAtaqueEm = null;
-    e.mana = e.maxMana;
-    Acoes.disparar(e, e.hunt, PERSONAGEM, slot, alvo);
+    usarPoe(e, slot, alvo);
     const g = Registro.ultimosGolpes()[0];
     assert.equal(g.origem, 'gema');
-    assert.equal(g.habilidade, 'spell-energy-strike');
+    assert.equal(g.habilidade, GEMA_POE);
     for (const campo of ['tipo', 'danoAntesDaResistencia', 'resistenciaDoAlvo', 'penetracao', 'resistenciaEfetiva', 'chanceCritica', 'critico', 'danoFinal', 'vidaRestante']) assert.ok(campo in g, campo);
     assert.ok(g.detalhe, 'o nível 2 traz o detalhe');
     Registro.definirNivel(1);
     Registro.limparRegistro();
-    e.hunt.cooldowns = {};
-    e.hunt.ultimoAtaqueEm = null;
-    Acoes.disparar(e, e.hunt, PERSONAGEM, slot, alvo);
+    usarPoe(e, slot, alvo);
     assert.equal(Registro.ultimosGolpes()[0].detalhe, undefined, 'o nível 1 é só o resumo');
   } finally {
     Registro.definirNivel(0);
@@ -210,12 +238,15 @@ test('o simulador: min, máx, médio, crítico, DPS teórico e efetivo, golpes p
   assert.ok(m.golpes >= 600);
 });
 
-test('o simulador: a penetração e a resistência do alvo mudam o dano efetivo; a mitigação do personagem mostra a proteção e a armadura', { skip: aAdaptar("Registro de golpe e simulador de dano são ferramentas da engine; o teste usa a ficha do Draevor") }, () => {
-  const { e } = sorcerer();
-  const sem = Simulador.simular(e, 'spell-energy-strike', { level: 300, resistencias: { energy: 60 } });
-  e.equipment.ring = { id: Number(Object.values((await_catalogo()).values).find((i) => i.name === 'might ring').id), count: 1, af: [{ id: 'elem_pen', nivel: 5, value: 40 }] };
+test('o simulador: a penetração e a resistência do alvo mudam o dano efetivo; a mitigação do personagem mostra a proteção e a armadura', { skip: soNoOficial('a gema do PoE na barra do PoE') }, () => {
+  const { e } = sorcererPoe();
+  const sem = Simulador.simular(e, GEMA_POE, { level: 70, resistencias: { [ELEMENTO_POE]: 60 } });
+  // (adaptado ao PoE: o "might ring" do Draevor → um Anel de Ferro do PoE, com a mesma penetração elemental de 40% no `af` dele)
+  const anel = PoeJogo.pecaDoJogo(gerarPecaPoe({ catalogo: CatalogoPoe.catalogo(), regras: CatalogoPoe.REGRAS, base: 'Rings/Iron_Ring', raridade: 'normal', ilvl: 60, rng: () => 0.5 }));
+  anel.poe.af.elem_pen = 40;
+  e.equipment.ring = anel;
   Ficha.invalidar(e);
-  const com = Simulador.simular(e, 'spell-energy-strike', { level: 300, resistencias: { energy: 60 } });
+  const com = Simulador.simular(e, GEMA_POE, { level: 70, resistencias: { [ELEMENTO_POE]: 60 } });
   assert.equal(sem.alvo.resistenciaEfetiva, 60);
   assert.equal(com.alvo.penetracao, 40);
   assert.equal(com.alvo.resistenciaEfetiva, 20);
@@ -225,9 +256,3 @@ test('o simulador: a penetração e a resistência do alvo mudam o dano efetivo;
   assert.ok(mit.reducaoTotalPct >= 0);
   assert.equal(Simulador.simular(e, 'spell-que-nao-existe').ok, false);
 });
-
-function await_catalogo() {
-  // O catálogo de itens (carregado na importação de `dados.mjs`).
-  return { values: globalThis.__ITENS__ };
-}
-globalThis.__ITENS__ = (await import('../systems/dados.mjs')).ITEM_CATALOG;

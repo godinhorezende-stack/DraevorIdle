@@ -7,7 +7,7 @@ import * as Atos from '../admin/atos.mjs';
 import * as Http from '../admin/conteudo-http.mjs';
 import * as M from '../systems/atos-modelo.mjs';
 import { HUNT_DE_TESTE } from './apoio.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const pasta = mkdtempSync(join(tmpdir(), 'atos-v-'));
 Atos.CAMINHOS.atos = pasta;
@@ -64,7 +64,9 @@ test('V4. restaurar grava uma versão NOVA com o conteúdo antigo, SEMPRE como r
   assert.equal(c.ato.length, 0, 'a restaurada é igual à versão de origem');
 });
 
-test('V5. checklist de publicação: aponta o que falta, diz se o ato já está no jogo e como publicar (arquivo + reinício)', { skip: aAdaptar("Checklist de publicação vale; só a última linha usa o ato \"legado-1\" do Draevor") }, () => {
+// (08/11, adaptado ao PoE — o dono: "Adaptar antes") O checklist vale no jogo oficial; a linha do ato LEGADO foi para o V5b: os atos
+// `legado-N` são os atos do Draevor (`Campanha.ATOS`), que o jogo oficial não tem (lá são 0).
+test('V5. checklist de publicação: aponta o que falta, diz se o ato já está no jogo e como publicar (arquivo + reinício)', () => {
   const c = Atos.checklistDePublicacao('ato-versoes');
   assert.equal(c.pronto, false);
   assert.ok(c.itens.some((i) => !i.ok && /Validação/.test(i.texto)));
@@ -72,6 +74,9 @@ test('V5. checklist de publicação: aponta o que falta, diz se o ato já está 
   assert.equal(c.noJogoAgora, false);
   assert.match(c.comoPublicar, /próximo boot/);
   assert.equal(Atos.checklistDePublicacao('nao-existe'), null);
+});
+
+test('V5b. checklist de publicação de um ato legado: o primeiro item (ato do editor) fica de fora', { skip: doClassico("Os atos legado-N são os atos do Draevor (Campanha.ATOS); no oficial são 0 e o legado-1 não existe") }, () => {
   assert.equal(Atos.checklistDePublicacao('legado-1').itens[0].ok, false);
 });
 

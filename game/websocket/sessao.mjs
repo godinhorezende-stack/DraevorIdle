@@ -76,7 +76,6 @@ import * as InstanciaDaHunt from '../systems/hunt/instancia.mjs';
 import * as EstadoDosEncontros from '../systems/encontros/estado.mjs';
 import * as TiposDosEncontros from '../systems/encontros/tipos.mjs';
 import { registrarGrandes, jsonComGrandes } from './json.mjs';
-import * as Forja from '../systems/forja.mjs';
 import * as Afixos from '../systems/afixos.mjs';
 import * as Prey from '../systems/prey.mjs';
 import * as Arvore from '../systems/arvore.mjs';
@@ -87,8 +86,6 @@ import * as Troca from '../systems/troca.mjs';
 import * as Combo from '../systems/combo.mjs';
 import * as Raridade from '../systems/mobs/raridade.mjs';
 import * as Banqueiro from '../systems/banqueiro.mjs';
-import * as Craft from '../systems/craft.mjs';
-import * as Desmanche from '../systems/desmanche.mjs';
 import * as SimulacaoOffline from '../systems/simulacao-offline.mjs';
 import { VERSAO_DO_CLIENTE } from '../systems/versao-do-cliente.mjs';
 import * as ItensDoJogo from '../systems/itens/item.mjs';
@@ -99,6 +96,7 @@ import * as MapaAberto from '../systems/itens-poe/mapa-aberto.mjs';
 import * as PortalDaGema from '../systems/itens-poe/portal-da-gema.mjs';
 import * as Protecao from '../systems/protecao.mjs';
 import * as Cidades from '../systems/cidades.mjs';
+import * as CidadesMapas from '../systems/cidades-mapas.mjs';
 import * as Comparar from '../systems/itens/comparar.mjs';
 import * as Atributos from '../systems/personagem/atributos.mjs';
 import * as AtributosDoMob from '../systems/mobs/atributos.mjs';
@@ -181,6 +179,12 @@ const COMANDOS_DE_CAIXA = new Set(['split', 'juntar', 'trocar', 'organizar']);
 const LEITURAS = new Set(['offers', 'historico']);
 const PASSAM_CARREGANDO = new Set(['release', 'logout', 'login', 'resume', 'register', 'delta', 'jaTenhoCatalogo', 'oculta']);
 // Sem personagem em jogo: a conta, o handshake e as consultas que não leem o personagem (ver `despachar`).
+/** Os comandos dos sistemas do Draevor clássico (a Forja de tier e afixos, o Craft, o Desmanche, o Gem Atelier): recusados no jogo do PoE. */
+const COMANDOS_DO_CLASSICO = new Set([
+  'forja', 'forjaSubir', 'forjaTransferir', 'craft', 'craftFazer', 'desmanche', 'desmancharPeca', 'forjaAfixos', 'forjaAfixoPrevia',
+  'forjaAfixoPreviaRetirar', 'forjaAfixoPreviaInserir', 'forjaAfixoPreviaFundir', 'forjaAfixoReroll', 'forjaAfixoTransferir', 'forjaAfixoRetirar',
+  'forjaAfixoInserir', 'forjaAfixoFundir', 'gemas',
+]);
 const PASSAM_SEM_PERSONAGEM = new Set([...PASSAM_CARREGANDO, 'createCharacter', 'deleteCharacter', 'play', 'previaPoe', 'ranking', 'perfil', 'presenca', 'ouvirAudio']);
 const CAMPOS_DE_TODO_QUADRO = ['hp', 'mana'];
 
@@ -191,6 +195,8 @@ const enviar = (ws, msg) => {
   if (ws.readyState !== 1) return;
   // O mapa de uma hunt também é fixo (o objeto guardado por `Cacadas`).
   if (msg.hunt?.map) registrarGrandes(msg.hunt.map);
+  // (08/11) e o de cada cidade de ato (o objeto guardado por `cidades-mapas.mjs`)
+  if (msg.city?.map) registrarGrandes(msg.city.map);
   const grande = msg.t === 'hello' || msg.t === 'welcome' || msg.city?.map || msg.hunt?.map;
   ws.send(grande ? jsonComGrandes(msg) : JSON.stringify(msg));
 };
@@ -296,11 +302,15 @@ function estadoInicialPersonagem(vocacao, sexo, classe = null) {
 function snapshotDaPraca(estado, comMapa, sessao = null) {
   // A cidade em que ele está (cada ato tem a sua instância — `cidades.mjs`): o nome vai para a tela, e o chão é só o dela.
   const cidade = Cidades.cidadeDe(estado);
+  // (08/11) Cada cidade de ato com o seu mapa (`cidades-mapas.mjs`): o `mapId` muda com ela, e o cliente pede o mapa novo (`pedirMapa`). A
+  // posição que não é desta cidade (a viagem, a morte, o personagem novo) vira a chegada dela.
+  CidadesMapas.garantirPosicao(estado);
+  const meta = CidadesMapas.metaDa(cidade.id);
   return {
-    mapId: 'city',
+    mapId: CidadesMapas.mapaIdDa(cidade.id),
     cidade,
     z: estado.pos.z ?? R.POSICAO_INICIAL.z,
-    ...(comMapa ? { map: CITY_MAP } : {}),
+    ...(comMapa ? { map: CidadesMapas.mapaDa(cidade.id) } : {}),
     // (`teleporte`: o contador das viagens da sessão — mudou, o cliente põe o boneco na casa nova sem desenhar o caminho.)
     player: { x: estado.pos.x, y: estado.pos.y, dir: estado.pos.dir ?? 2, moveMs: R.PASSO_MS, ...(sessao?.teleporte ? { teleporte: sessao.teleporte } : {}) },
     monsters: [],
@@ -309,8 +319,8 @@ function snapshotDaPraca(estado, comMapa, sessao = null) {
       const players = sessao ? Chat.jogadoresNaPraca(sessao) : [];
       return { players, brasoes: Chat.brasoesDaPraca(players) };
     })(),
-    npcs: CITY_META.npcs,
-    objetos: CITY_META.objetos,
+    npcs: meta.npcs,
+    objetos: meta.objetos,
     chao: Inventario.chaoParaCliente(cidade.id),
   };
 }
@@ -739,16 +749,23 @@ export class Sessao {
    * `api-mapeada/servidor/npc-naji.json`), e o client abre o banco.
    */
   falarComNpc({ id }) {
-    const npc = CITY_META.npcs.find((n) => n.id === id);
+    // (08/11) Os NPCs da cidade em que ele está (na Vigília, os do PoE: Nessa vende as gemas, Tarkleigh guarda o banco, Bestel conversa). O
+    // pedido da loja de sempre (`zuma`, a sonda do cliente) vai para quem vende as gemas nesta cidade.
+    const npcs = CidadesMapas.metaDa(CidadesMapas.idDe(this.estado)).npcs;
+    const npc = npcs.find((n) => n.id === id) ?? (id === GemasDeSkill.CONFIG.loja.npc ? npcs.find((n) => n.tipo === 'loja') : null);
     if (!npc) return this.erro('Ninguém para conversar aqui.');
     // A Zuma Magehide vende as GEMAS DE SKILL (decisão do dono) — o balcão de NPC do cliente.
-    if (npc.id === GemasDeSkill.CONFIG.loja.npc) return this.mandarLojaDeGemas(npc);
+    if (npc.id === GemasDeSkill.CONFIG.loja.npc || npc.tipo === 'loja') return this.mandarLojaDeGemas(npc);
+    if (npc.tipo === 'fala' && npc.fala) {
+      this.avisoPendente = `${npc.name}: ${npc.fala}`;
+      return;
+    }
     if (npc.tipo !== 'banco') return this.erro(`${npc.name} ainda não atende neste servidor.`);
     this.enviar({ t: 'npcFala', id: npc.id, nome: npc.name, tipo: 'banco', fala: Banqueiro.FALA_DO_BANQUEIRO, catalogo: null, gold: this.estado.gold ?? 0 });
   }
 
   /** A loja de gemas (`npcFala`, `tipo: 'loja'`), no formato do balcão de NPC do cliente. */
-  mandarLojaDeGemas(npc = CITY_META.npcs.find((n) => n.id === GemasDeSkill.CONFIG.loja.npc)) {
+  mandarLojaDeGemas(npc = CidadesMapas.metaDa(CidadesMapas.idDe(this.estado)).npcs.find((n) => n.id === GemasDeSkill.CONFIG.loja.npc || n.tipo === 'loja')) {
     this.enviar({
       t: 'npcFala',
       id: npc.id,
@@ -1166,6 +1183,10 @@ export class Sessao {
     // `play`): o comando de jogo estourava lá dentro, em `this.estado` nulo — 16/10, depois de um deploy: "sessao gema -> Cannot read
     // properties of null (reading 'equipment')". Como na entrada, ele é ignorado em silêncio; só passa o que não precisa de personagem.
     if (!this.personagem && !PASSAM_SEM_PERSONAGEM.has(m.t)) return;
+    // (08/11, o dono: "quero tirar essas coisas do clássico" — lote 0) No jogo do PoE os sistemas do Draevor clássico (a Forja de tier e
+    // afixos, o Craft, o Desmanche, o Gem Atelier) não existem: o comando é recusado antes de mexer no personagem. (Lote 1: a Forja, o
+    // Craft e o Desmanche saíram do jogo — o pedido de um cliente velho recebe a mesma resposta.)
+    if (COMANDOS_DO_CLASSICO.has(m.t) && ItensPoeCatalogo.ligado()) return this.erro('Isso não existe no jogo do Path of Exile.');
     switch (m.t) {
       case 'register':
         return this.registrar(m);
@@ -1341,66 +1362,6 @@ export class Sessao {
           m.action === 'orbePoe' ? GemasDeSkill.usarOrbeDoPoe(this.estado, m) :
           { ok: false, erro: 'Ação de gema desconhecida.' }
         );
-      // A Forja: tier (subir com chance, passar) e afixos (rerroll, transferir,
-      // retirar, inserir, fundir) — cada resposta é o retrato inteiro de novo.
-      case 'forja':
-        return this.enviar(Forja.viewDoTier(this.estado));
-      case 'forjaSubir':
-      case 'forjaTransferir': {
-        const r = m.t === 'forjaSubir' ? Forja.subirTier(this.estado, m) : Forja.transferirTier(this.estado, m);
-        if (r.erro) this.erro(r.erro);
-        else if (r.notice) this.avisoPendente = r.notice;
-        Afixos.sincronizarMaximos(this.estado);
-        this.mandarEstado();
-        return this.enviar(Forja.viewDoTier(this.estado, r.forjou));
-      }
-      // As outras duas abas da Forja: o Craft (sets Craftado e V2) e a Máquina
-      // de Desmanche — mesma regra: a resposta é a ficha inteira de novo.
-      case 'craft':
-        return this.enviar(Craft.view(this.estado, m));
-      case 'craftFazer': {
-        const r = Craft.craftar(this.estado, m);
-        if (!r.ok) this.erro(r.erro);
-        else this.avisoPendente = r.notice;
-        Afixos.sincronizarMaximos(this.estado);
-        this.mandarEstado();
-        // A aba Tier só pede a ficha dela ao abrir a Forja: sem esta, ela
-        // mostraria o ouro e as peças de ANTES do craft até alguém reabrir.
-        this.enviar(Forja.viewDoTier(this.estado));
-        return this.enviar(Craft.view(this.estado, m, r.craftou));
-      }
-      case 'desmanche':
-        return this.enviar(Desmanche.view(this.estado));
-      case 'desmancharPeca': {
-        const r = Desmanche.desmanchar(this.estado, m);
-        if (!r.ok) this.erro(r.erro);
-        else this.avisoPendente = r.notice;
-        this.mandarEstado();
-        this.enviar(Forja.viewDoTier(this.estado)); // mesma razão do craft: as peças mudaram
-        return this.enviar(Desmanche.view(this.estado));
-      }
-      case 'forjaAfixos':
-        return this.enviar(Forja.viewDosAfixos(this.estado));
-      case 'forjaAfixoPrevia':
-        return this.enviar(Forja.previaTransferir(this.estado, m));
-      case 'forjaAfixoPreviaRetirar':
-        return this.enviar(Forja.previaRetirar(this.estado, m));
-      case 'forjaAfixoPreviaInserir':
-        return this.enviar(Forja.previaInserir(this.estado, m));
-      case 'forjaAfixoPreviaFundir':
-        return this.enviar(Forja.previaFundir(this.estado, m));
-      case 'forjaAfixoReroll':
-      case 'forjaAfixoTransferir':
-      case 'forjaAfixoRetirar':
-      case 'forjaAfixoInserir':
-      case 'forjaAfixoFundir': {
-        const faz = { forjaAfixoReroll: Forja.rerrolar, forjaAfixoTransferir: Forja.transferir, forjaAfixoRetirar: Forja.retirar, forjaAfixoInserir: Forja.inserir, forjaAfixoFundir: Forja.fundir }[m.t];
-        const r = faz(this.estado, m);
-        if (r.erro) this.erro(r.erro);
-        Afixos.sincronizarMaximos(this.estado);
-        this.mandarEstado();
-        return this.enviar(Forja.viewDosAfixos(this.estado, r.fez));
-      }
       case 'grupo':
         return this.aplicar(Party.comandoDoGrupo(this, m));
       case 'party':
@@ -2102,9 +2063,12 @@ export class Sessao {
       const estado = JSON.parse(personagem.estado);
       // Os bichos da caçada voltam completos (ver `Cacadas.huntParaGravar`).
       Cacadas.huntAoCarregar(estado.hunt);
-      estado.pos = corrigirPosicaoAntiga(estado.pos);
+      // (08/11) a posição antiga, de antes das cidades com mapa próprio (sem `pos.cidade`), confere-se no mapa de sempre; a de uma cidade
+      // de ato, no dela (`garantirPosicao`, logo abaixo, com a cidade dele já definida)
+      if ((estado.pos?.cidade ?? CidadesMapas.SEMPRE) === CidadesMapas.SEMPRE) estado.pos = corrigirPosicaoAntiga(estado.pos ?? {});
       // A CIDADE dele (uma instância por ato — `cidades.mjs`): quem ainda não tem fica na do ato da próxima fase da campanha.
       if (Cidades.porAto() && !estado.atoDaCidade) estado.atoDaCidade = Campanha.atoDaFronteira(estado);
+      CidadesMapas.garantirPosicao(estado);
       // Migração: personagens salvos antes do sistema de recompensas existir
       // não têm `wildcards`/`presentes`/`diario` no `estado` gravado — sem
       // isto, COLETAR (não só exibir) quebraria em silêncio para eles.
@@ -2332,6 +2296,15 @@ export class Sessao {
 
   /** `{t:'decidir', id, aceitar}`: a resposta do líder à janela de decisão (aceitar = o mesmo que interagir; recusar descarta o encontro). */
   decidirEncontro(m) {
+    // (08/11) o encontro com ESCOLHAS (os Braços de Doryani — `itens-poe/doryani.mjs`): a escolha vale antes de ativar
+    if (m.aceitar !== false && m.escolha != null) {
+      const hunt = this.estado?.hunt;
+      const e = hunt ? InstanciaDaHunt.daSala(hunt)?.encontros?.[String(m.id)] : null;
+      if (!e?.escolhas?.some((x) => x.valor === m.escolha)) return this.erro('Essa escolha não existe.');
+      if (e.estado !== 'disponivel') return this.erro('Já foi escolhido.');
+      if (!Party.decidePeloGrupo(this)) return this.erro('Só o líder da party decide isso.');
+      e.escolha = m.escolha;
+    }
     if (m.aceitar !== false) return this.interagirComEncontro(m);
     const hunt = this.estado?.hunt;
     const inst = hunt ? InstanciaDaHunt.daSala(hunt) : null;
@@ -2635,7 +2608,8 @@ export class Sessao {
       this.estado.destino = null;
       return;
     }
-    if (bloqueado(destino.x, destino.y) || !temCaminho(gradeDaCidade(), pos, destino)) {
+    const cidade = CidadesMapas.idDe(this.estado);
+    if (CidadesMapas.bloqueadoNa(cidade, destino.x, destino.y) || !temCaminho(CidadesMapas.gradeDa(cidade), pos, destino)) {
       this.estado.destino = null;
       return this.erro('Não dá para chegar lá.');
     }
@@ -2671,7 +2645,7 @@ export class Sessao {
     if (estado.rumo) ({ dx, dy } = estado.rumo);
     else {
       // O destino do clique/toque: o próximo passo pela busca de sempre, recalculado a cada passo.
-      const passo = proximoPassoAte(gradeDaCidade(), pos, estado.destino);
+      const passo = proximoPassoAte(CidadesMapas.gradeDa(CidadesMapas.idDe(estado)), pos, estado.destino);
       if (!passo) {
         estado.destino = null;
         return;
@@ -2683,12 +2657,12 @@ export class Sessao {
     else if (dy > 0) pos.dir = 2;
     else if (dx > 0) pos.dir = 1;
     else if (dx < 0) pos.dir = 3;
-    // Colisão real: `CITY_MAP.blocked` é o mesmo mapa de bloqueio que o
-    // servidor original manda (ver `bloqueado`, em `dados.mjs`). Sem o `if`,
+    // Colisão real: o `blocked` do mapa da cidade dele (`cidades-mapas.mjs`; o de sempre é o
+    // mesmo mapa de bloqueio que o servidor original manda — `dados.mjs`). Sem o `if`,
     // o personagem atravessava parede — o placeholder antigo só clampava
     // numa caixa, e uma cidade de verdade não é uma caixa.
     const destino = { x: pos.x + dx, y: pos.y + dy };
-    if (!bloqueado(destino.x, destino.y)) {
+    if (!CidadesMapas.bloqueadoNa(CidadesMapas.idDe(estado), destino.x, destino.y)) {
       pos.x = destino.x;
       pos.y = destino.y;
     }

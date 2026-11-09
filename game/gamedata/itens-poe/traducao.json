@@ -14,6 +14,850 @@
   ],
   "regras": [
     {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de Suprimir o Dano Mágico se você / sofreu Dano Mágico Recentemente$",
+      "efeitos": [
+        {
+          "stat": "spell_suppression@sofreuMagiaRecente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de Suprimir o Dano Mágico se você sofreu Dano Mágico Recentemente$",
+      "efeitos": [
+        {
+          "stat": "spell_suppression@sofreuMagiaRecente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você sofre Dano Extra dos Golpes Críticos reduzido em \\{(\\d+)\\}% se você sofreu um Golpe Crítico Recentemente$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg_taken_red@sofreuCriticoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Caos se você sofreu um Golpe Crítico Recentemente$",
+      "efeitos": [
+        {
+          "stat": "added_chaos_dmg_min@sofreuCriticoRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_chaos_dmg_max@sofreuCriticoRecente",
+          "valor": "{2}"
+        },
+        {
+          "stat": "spell_added_chaos_dmg_min@sofreuCriticoRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_chaos_dmg_max@sofreuCriticoRecente",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Fogo se você Matou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "added_fire_dmg_min@matouRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_fire_dmg_max@matouRecente",
+          "valor": "{2}"
+        },
+        {
+          "stat": "spell_added_fire_dmg_min@matouRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_fire_dmg_max@matouRecente",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar ser Atordoado se você Matou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "evitar_atordoamento@matouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração aumentada em \\{(\\d+)\\}% se você Matou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@matouRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed@matouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Dano Drenado como Vida se você Matou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "life_leech@matouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Congelar, Eletrizar e Incendiar se você não causou um Crítico Recentemente$",
+      "efeitos": [
+        {
+          "stat": "chance_freeze@naoCriticoRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "chance_shock@naoCriticoRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "chance_ignite@naoCriticoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Crítico aumentada em \\{(\\d+)\\}% se você não causou Críticos Recentemente$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@naoCriticoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Penetra \\{(\\d+)\\}% das Resistências Elementais Inimigas se você não Matou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "elem_pen@naoMatouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Regeneração de Mana aumentada em \\{(\\d+)\\}% caso tenha conjurado uma Magia Recentemente$",
+      "efeitos": [
+        {
+          "stat": "mana_regen_pct@usouTag:magia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Armadura enquanto Fortificado$",
+      "efeitos": [
+        {
+          "stat": "armor_flat@fortificado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recupere \\{(\\d+)\\}% de Vida ao Matar um Inimigo enquanto tiver Fúria$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:vidaPct@furiaMin:1",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Evasão enquanto tiver Trespassar$",
+      "efeitos": [
+        {
+          "stat": "evasion@buff:trespassar",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Precisão aumentada em \\{(\\d+)\\}% enquanto você tiver Agressividade$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc@buff:agressividade",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — os encantamentos do Labirinto (botas e cintos)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Precisão de Lacaios$",
+      "efeitos": [
+        {
+          "stat": "minion_precisao_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Redução adicional de Dano Físico contra Monstros Abissais$",
+      "efeitos": [
+        {
+          "stat": "phys_res_vs_abissal",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true,
+      "nota": "no golpe dos monstros do Abismo (`abismo.mjs`)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Alma Vaal adicional ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:almaVaal",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% à Qualidade das Gemas de AoE Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local@area",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% à Qualidade das Gemas de Projéteis Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local@projetil",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração durante Agressividade aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@buff:agressividade",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed@buff:agressividade",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Físico é sofrido na Mana antes da Vida$",
+      "efeitos": [
+        {
+          "stat": "dano_na_mana_pct_physical",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Crítico de Habilidades Vaal aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@vaal",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano dos Zumbis aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:zumbi:minion_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano dos Esqueletos aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:esqueleto:minion_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Espectros têm um aumento de \\{(\\d+)\\}% de Dano$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tipo:espectro:minion_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% da sua Mana máxima quando você Bloquear$",
+      "efeitos": [
+        {
+          "stat": "ev:bloquear:manaPct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% de Vida ao bloquear$",
+      "efeitos": [
+        {
+          "stat": "ev:bloquear:vidaPct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Mana Regenerada por Segundo enquanto em Empunhadura Dupla$",
+      "efeitos": [
+        {
+          "stat": "mana_regen@duasArmas",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Acerto Crítico para Magias aumentada em \\{(\\d+)\\}% enquanto Portando um Cajado$",
+      "efeitos": [
+        {
+          "stat": "spell_crit_chance_inc@comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Acerto Crítico para Magias aumentada em \\{(\\d+)\\}% enquanto em Dupla Empunhadura$",
+      "efeitos": [
+        {
+          "stat": "spell_crit_chance_inc@duasArmas",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Acerto Crítico para Magias aumentada em \\{(\\d+)\\}% enquanto Portando um Escudo$",
+      "efeitos": [
+        {
+          "stat": "spell_crit_chance_inc@comEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Acerto Crítico para Magias enquanto portando um Cajado$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@magia+comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Acerto Crítico para Magias enquanto em Dupla Empunhadura$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@magia+duasArmas",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Acerto Crítico para Magias enquanto portando um Escudo$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@magia+comEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano de Fogo com Habilidades Mágicas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "fire_dmg@magia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano de Gelo com Habilidades Mágicas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ice_dmg@magia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano de Raio com Habilidades Mágicas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "energy_dmg@magia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Físico com Habilidades Mágicas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@magia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano de Caos com Habilidades Mágicas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "chaos_dmg@magia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Físico aumentado em \\{(\\d+)\\}% com Habilidades de Ataque$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano de Caos aumentado em \\{(\\d+)\\}% com Habilidades de Ataque$",
+      "efeitos": [
+        {
+          "stat": "chaos_dmg@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Físico aumentado em \\{(\\d+)\\}% enquanto possuir Poder Profano$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@buff:poderProfano",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano sofrido reduzido em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Força$",
+      "efeitos": [
+        {
+          "stat": "dano_recebido_inc%atr:str:{V2}",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano sofrido reduzido em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Destreza$",
+      "efeitos": [
+        {
+          "stat": "dano_recebido_inc%atr:dex:{V2}",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano sofrido reduzido em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Inteligência$",
+      "efeitos": [
+        {
+          "stat": "dano_recebido_inc%atr:int:{V2}",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar o Dano de Fogo de Acertos$",
+      "efeitos": [
+        {
+          "stat": "evitar_dano_fire_acerto",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar o Dano de Gelo de Acertos$",
+      "efeitos": [
+        {
+          "stat": "evitar_dano_ice_acerto",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar o Dano de Raio de Acertos$",
+      "efeitos": [
+        {
+          "stat": "evitar_dano_energy_acerto",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% caso Corrompido$",
+      "efeitos": [
+        {
+          "stat": "move_speed%corrompidaLocal",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true,
+      "nota": "caso esta peça esteja corrompida"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração aumentada em \\{(\\d+)\\}% caso Corrompido$",
+      "efeitos": [
+        {
+          "stat": "atk_speed%corrompidaLocal",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed%corrompidaLocal",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true,
+      "nota": "caso esta peça esteja corrompida"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de todas as Resistências Elementais caso Corrompido$",
+      "efeitos": [
+        {
+          "stat": "fire_res%corrompidaLocal",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res%corrompidaLocal",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res%corrompidaLocal",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true,
+      "nota": "caso esta peça esteja corrompida"
+    },
+    {
+      "padrao": "^Vida máxima aumentada em \\{(\\d+)\\}% caso Corrompido$",
+      "efeitos": [
+        {
+          "stat": "life_inc%corrompidaLocal",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true,
+      "nota": "caso esta peça esteja corrompida"
+    },
+    {
+      "padrao": "^Escudo de Energia máximo aumentado em \\{(\\d+)\\}% caso Corrompido$",
+      "efeitos": [
+        {
+          "stat": "es_pct%corrompidaLocal",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true,
+      "nota": "caso esta peça esteja corrompida"
+    },
+    {
+      "padrao": "^Chance de Acerto Crítico Global aumentada em \\{(\\d+)\\}% caso Corrompido$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc%corrompidaLocal",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true,
+      "nota": "caso esta peça esteja corrompida"
+    },
+    {
+      "padrao": "^Imune a Maldições caso Corrompido$",
+      "efeitos": [
+        {
+          "stat": "imune_maldicao%corrompidaLocal",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true,
+      "nota": "caso esta peça esteja corrompida"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Armadura e Evasão enquanto Fortificado$",
+      "efeitos": [
+        {
+          "stat": "armor_flat@fortificado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "evasion@fortificado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Mágico aumentado em \\{(\\d+)\\}% a cada \\{(\\d+)\\} de Força$",
+      "efeitos": [
+        {
+          "stat": "spell_dmg%atr:str:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% a cada \\{(\\d+)\\} de Força$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%atr:str:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% a cada \\{(\\d+)\\} de Inteligência$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%atr:int:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Degenerativo recebido reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dano_degen_recebido_menos",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Remove Incêndio e Queimação quando você usar um Frasco$",
+      "efeitos": [
+        {
+          "stat": "ev:usarFrasco:removerAfeccao:incendio",
+          "valor": "100"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Remove Resfriamento e Congelamento quando você usar um Frasco$",
+      "efeitos": [
+        {
+          "stat": "ev:usarFrasco:removerAfeccao:frio",
+          "valor": "100"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Remove Eletrização quando você usa um Frasco$",
+      "efeitos": [
+        {
+          "stat": "ev:usarFrasco:removerAfeccao:eletrizacao",
+          "valor": "100"
+        }
+      ],
+      "estado": "equivalente",
+      "_08_11r": "08/11 — o pool de Síntese (o Sintetizador)",
+      "_nova": true
+    },
+    {
       "padrao": "^\\{(\\d+)\\} de Dano de Gelo sofrido quando Acertado$",
       "efeitos": [
         {
@@ -55081,6 +55925,528 @@
       ],
       "_06_11b": "06/11 — Harbinger e Ukatoa: os únicos novos (os 6 base do Emissário e os 2 dos Frascos Híbridos)",
       "_nova": true
+    },
+    {
+      "padrao": "^Dano d(?:a|o|e|as|os) (.+?) aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) causa Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) tem Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) causa \\{(\\d+)\\}% de aumento de Dano$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano d(?:a|o|e|as|os) (.+?)$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Área de [Ee]feito d(?:a|o|e|as|os) (.+?) aumentad[ao] em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Efeito em Área d(?:a|o|e|as|os) (.+?) aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) tem (?:Área de Efeito|Efeito em Área) aumentad[ao] em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Duração d(?:a|o|e|as|os) (.+?) aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) tem Duração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) tem (?:Velocidade da )?Recuperação da Recarga aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cooldown_recovery@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Recuperação da Recarga d(?:a|o|e|as|os) (.+?) aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cooldown_recovery@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) dispara \\{(\\d+)\\} (?:Projéteis|Flechas) adicionais$",
+      "efeitos": [
+        {
+          "stat": "extra_projectiles@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque d(?:a|o|e|as|os) (.+?) aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) tem Velocidade de Ataque aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Velocidade de [Cc]onjuração d(?:a|o|e|as|os) (.+?) aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) tem Velocidade de Conjuração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) tem Velocidade de Projétil aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "projectile_speed@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Velocidade (?:de|do) Projétil d(?:a|o|e|as|os) (.+?) aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "projectile_speed@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Chance de Crítico d(?:a|o|e|as|os) (.+?) aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) possui \\+\\{(\\d+)\\}% de chance de Incendiar$",
+      "efeitos": [
+        {
+          "stat": "chance_ignite@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) possui \\+\\{(\\d+)\\}% de chance de Congelar$",
+      "efeitos": [
+        {
+          "stat": "chance_freeze@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) Ricocheteia \\{(\\d+)\\} vezes adicionais$",
+      "efeitos": [
+        {
+          "stat": "ricochetes@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Dano d(?:a|o|e|as|os) (.+?) aumenado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Chance (?:de )?Crítico d(?:a|o|e|as|os) (.+?) aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) tem (?:sua )?Área de Efeito aumentada (?:em )?\\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) possui \\{(\\d+)\\}% de aumento da Velocidade de Conjuração$",
+      "efeitos": [
+        {
+          "stat": "cast_speed@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Velocidade de Projéteis d(?:a|o|e|as|os) (.+?) aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "projectile_speed@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) dispara uma Flecha adicional$",
+      "efeitos": [
+        {
+          "stat": "extra_projectiles@gema:{NOME}",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) tem a Duração do Efeito da Habilidade aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome (a tag `gema:<nome>` do golpe — `acoes.tagsPoeDaSkill`)",
+      "_08_11r": "08/11 — os encantamentos do Labirinto: o atributo de UMA habilidade (`@gema:<nome>`)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^(.+?) tem \\+\\{(\\d+)\\} Usos de Recarga$",
+      "efeitos": [
+        {
+          "stat": "usos_recarga@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na habilidade do nome",
+      "_08_11r": "08/11 — encantamentos do Labirinto",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Efeito de Maldições aplicadas por (.+?) aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_maldicao@gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "só na maldição do nome",
+      "_08_11r": "08/11 — encantamentos do Labirinto",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Ativa (.+?) ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:gatilho:{NOME}",
+          "valor": "20"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a habilidade do encantamento (as 60 do poedb — `habilidades-de-itens.json`), no nível dela, com a recarga dela",
+      "_08_11r": "08/11 — os encantamentos de luvas do Labirinto (Palavra/Édito/Decreto/Mandamento)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Ativa (.+?) ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:gatilho:{NOME}",
+          "valor": "20"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a habilidade do encantamento (as 60 do poedb — `habilidades-de-itens.json`), no nível dela, com a recarga dela",
+      "_08_11r": "08/11 — os encantamentos de luvas do Labirinto (Palavra/Édito/Decreto/Mandamento)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Ativa (.+?) quando Acertado$",
+      "efeitos": [
+        {
+          "stat": "ev:serAcertado:gatilho:{NOME}",
+          "valor": "20"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a habilidade do encantamento (as 60 do poedb — `habilidades-de-itens.json`), no nível dela, com a recarga dela",
+      "_08_11r": "08/11 — os encantamentos de luvas do Labirinto (Palavra/Édito/Decreto/Mandamento)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Ativa (.+?) quando você sofrer um Golpe Crítico$",
+      "efeitos": [
+        {
+          "stat": "ev:serAcertadoCritico:gatilho:{NOME}",
+          "valor": "20"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a habilidade do encantamento (as 60 do poedb — `habilidades-de-itens.json`), no nível dela, com a recarga dela",
+      "_08_11r": "08/11 — os encantamentos de luvas do Labirinto (Palavra/Édito/Decreto/Mandamento)",
+      "_nova": true,
+      "_generica": true
+    },
+    {
+      "padrao": "^Ativa (.+?) quando suas Habilidades ou Lacaios Matarem$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:gatilho:{NOME}",
+          "valor": "20"
+        },
+        {
+          "stat": "ev:matarLacaio:gatilho:{NOME}",
+          "valor": "20"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "a habilidade do encantamento (as 60 do poedb — `habilidades-de-itens.json`), no nível dela, com a recarga dela",
+      "_08_11r": "08/11 — os encantamentos de luvas do Labirinto (Palavra/Édito/Decreto/Mandamento)",
+      "_nova": true,
+      "_generica": true
     }
   ]
 }

@@ -104,6 +104,70 @@ export const REGRAS = [
   [/^Velocidade de Conjuração dos Monstros aumentada em \{0\}%$/, () => [{ alvo: 'monstros', stat: 'velocidadeDeConjuracaoPct', de: 0 }]],
   [/^Monstros têm a Chance de Crítico aumentada em \{0\}%$/, () => [{ alvo: 'monstros', stat: 'critChance', de: 0, escala: 0.05 }]],
   [/^\+\{0\}% ao Multiplicador de Crítico do Monstro$/, () => [{ alvo: 'monstros', stat: 'critMultiplicador', de: 0 }]],
+  // (08/11 — dono: "sim" a zerar as linhas sem efeito dos mapas únicos)
+  // As linhas que o poedb mostra SEM número valem ZERO no próprio PoE (o poedb em inglês dá o stat: "map monsters % physical damage to convert
+  // to lightning 0—0", "map experience gain +% 0—0" no Templo do Crepúsculo): agem como no PoE, sem mudar nada (`zeroNoPoe`).
+  [/^% do Dano dos Monstros é convertido em Raio$/, () => [{ alvo: 'monstros', stat: 'conversaoRaioPct', fixo: 0, zeroNoPoe: 'map monsters % physical damage to convert to lightning = 0' }]],
+  [/^Ganho de Experiência aumentado em %$/, () => [{ alvo: 'monstros', stat: 'experienciaPct', fixo: 0, zeroNoPoe: 'map experience gain +% = 0' }]],
+  // as CARGAS no acerto (`mobs/mecanicas.aoAcertarJogador`, `m.noAcerto`)
+  [/^Monstros ganham uma Carga de Tolerância ao Acertar$/, () => [{ alvo: 'monstros', stat: 'noAcerto.tolerancia', fixo: 100 }]],
+  [/^Monstros ganham uma Carga de Poder ao Acertar$/, () => [{ alvo: 'monstros', stat: 'noAcerto.poder', fixo: 100 }]],
+  // o NÍVEL da área (`Mapas.resumo` → `efeitos.monstros.nivelDelta`)
+  [/^Nível dos Monstros: \{0\}$/, () => [{ alvo: 'mapa', stat: 'nivel', de: 0 }]],
+  [/^\{0\} ao Nível dos Monstros da Área$/, () => [{ alvo: 'mapa', stat: 'nivelDelta', de: 0 }]],
+  // o DROP do chefe: os Itens de Níveis maiores ("display map final boss drops higher level gear 4") e os Raros de uma classe
+  [/^Chefe Final derruba Itens de Níveis maiores$/, () => [{ alvo: 'chefe', stat: 'ilvlExtra', fixo: 4 }]],
+  [/^Chefe Único derruba \{0\} Raro adicional \{1\}$/, () => [{ alvo: 'chefe', stat: 'rarosExtras', de: 0 }, { alvo: 'chefe', stat: 'rarosClasse', de: 1 }]],
+  // o Salão dos Grão-Mestres: os personagens do ranking, com a regra de PvP do jogo (`itens-poe/grao-mestres.mjs`)
+  [/^Contém os Grão-Mestres Imortalizados \/ Escalonamento de dano de PvP em efeito$/, () => [{ alvo: 'instancia', stat: 'graoMestres', fixo: 1 }]],
+  // o Maquinário de Doryani: os três Braços, ampliados pelo jogador (`itens-poe/doryani.mjs`)
+  [/^Chefe Único é ampliado pelas escolhas do Jogador$/, () => [{ alvo: 'instancia', stat: 'doryani', fixo: 1 }]],
+  // (as cartas de adivinhação — `itens-poe/cartas.mjs`; o poedb só diz que o chefe as derruba: 3)
+  [/^Chefe Único derruba cartas de adivinhação$/, () => [{ alvo: 'chefe', stat: 'cartas', fixo: 3 }]],
+  [/^Itens Encontrados têm \{0\}% de chance de caírem Corrompidos na Área$/, () => [{ alvo: 'instancia', stat: 'corrompidosPct', de: 0 }]],
+  // as AFECÇÕES e as MALDIÇÕES dos monstros (`afeccoes.aoAcertar`, `skills/reforcos.marcarCom`, `mobs/mecanicas.aoAtacar`)
+  [/^Monstros têm \{0\}% de chance de Evitarem Afecções$/, () => [{ alvo: 'monstros', stat: 'evitarAfeccoesPct', de: 0 }]],
+  [/^Monstros são Imunes a Atordoamentos ou Afecções Elementais aleatórias$/, () => [{ alvo: 'monstros', stat: 'imuneAleatoria', fixo: 1 }]],
+  [/^Ataques Corpo a Corpo dos Monstros aplicam Feitiços aleatórios ao Acertar$/, () => [{ alvo: 'monstros', stat: 'noAcerto.maldicaoAleatoria', fixo: 100 }]],
+  [/^Monstros Refletem Feitiços$/, () => [{ alvo: 'monstros', stat: 'refleteFeiticos', fixo: 100 }]],
+  [/^Maldições têm seu efeito em Monstros reduzido em \{0\}%$/, () => [{ alvo: 'monstros', stat: 'efeitoMaldicaoMenosPct', de: 0 }]],
+  // as HABILIDADES DE MOVIMENTO em você (`skills/gemas.dasPecas` — a habilidade do mapa vai para a barra; a recarga das de Movimento, a da tradução)
+  // os HABITANTES (`mapas-areas.comHabitantes`) e os Mortos Inquietos (`hunt/instancia.guardarParaRessurgir` — "get up after X seconds [10]")
+  [/^Área é habitada por Esqueletos$/, () => [{ alvo: 'instancia', stat: 'habitantes_esqueletos', fixo: 1 }]],
+  [/^Área é habitada por seguidores de Lunaris$/, () => [{ alvo: 'instancia', stat: 'habitantes_lunaris', fixo: 1 }]],
+  [/^Área é habitada por seguidores de Solaris$/, () => [{ alvo: 'instancia', stat: 'habitantes_solaris', fixo: 1 }]],
+  [/^Área possui muitos Totens$/, () => [{ alvo: 'instancia', stat: 'habitantes_totens', fixo: 1 }]],
+  [/^Área possui aumento na variedade de monstros$/, () => [{ alvo: 'instancia', stat: 'habitantes_variedade', fixo: 1 }]],
+  // (o poedb: "o jogador é morto se não matar todos os monstros dentro de 9 minutos sozinho, ou 6 em grupo")
+  // o TERRENO próprio (o dono: "Terreno próprio" — `mapas-areas.TERRENOS_PROPRIOS`, a hunt do Draevor medida para cada um)
+  [/^Área é um imenso Labirinto$/, () => [{ alvo: 'instancia', stat: 'terreno_labirinto', fixo: 1 }]],
+  [/^Área contém brechas sem passagem atravessar$/, () => [{ alvo: 'instancia', stat: 'terreno_brechas', fixo: 1 }]],
+  // o Córtex e as Memórias: os mods de mapa a mais e os Synthesis Globais, sorteados ao nascer a peça (`sintese-mapas.mjs`)
+  [/^Mapa possui \{0\} Modificadores aleatórios adicionais$/, () => [{ alvo: 'peca', stat: 'modsAleatorios', de: 0 }]],
+  [/^Mapa tem \{0\} Modificadores Synthesis Globais adicionais$/, () => [{ alvo: 'peca', stat: 'sinteseGlobais', de: 0 }]],
+  // as ONDAS do Julgamento do Covarde (`mapas-areas.porOndasNaInstancia` — os grupos de `GRUPOS_DAS_ONDAS`)
+  [/^Contém ondas de Monstros$/, () => [{ alvo: 'instancia', stat: 'ondas_monstros', fixo: 1 }]],
+  [/^Contém ondas adicionais de Monstros Mortos-Vivos$/, () => [{ alvo: 'instancia', stat: 'ondas_mortosVivos', fixo: 1 }]],
+  [/^Área contém ondas de Fantasmas adicionais$/, () => [{ alvo: 'instancia', stat: 'ondas_fantasmas', fixo: 1 }]],
+  [/^Área contém ondas de Zumbis Oriatianos adicionais$/, () => [{ alvo: 'instancia', stat: 'ondas_zumbisOriatianos', fixo: 1 }]],
+  [/^Área contém ondas de Espíritos adicionais$/, () => [{ alvo: 'instancia', stat: 'ondas_espiritos', fixo: 1 }]],
+  [/^Área contém ondas de Espíritos Furiosos adicionais$/, () => [{ alvo: 'instancia', stat: 'ondas_espiritosFuriosos', fixo: 1 }]],
+  [/^Área contém ondas de Rhoas de Osso adicionais$/, () => [{ alvo: 'instancia', stat: 'ondas_rhoasDeOsso', fixo: 1 }]],
+  [/^Área contém ondas de Mandíbulas Devastadoras adicionais$/, () => [{ alvo: 'instancia', stat: 'ondas_mandibulas', fixo: 1 }]],
+  [/^Área contém ondas de Zumbis adicionais$/, () => [{ alvo: 'instancia', stat: 'ondas_zumbis', fixo: 1 }]],
+  [/^Área se torna fatal após algum tempo$/, () => [{ alvo: 'instancia', stat: 'fatalS', fixo: 540 }]],
+  [/^Área não contém monstros$/, () => [{ alvo: 'instancia', stat: 'semMonstros', fixo: 1 }]],
+  [/^Mortos Inquietos$/, () => [{ alvo: 'monstros', stat: 'ressurgirS', fixo: 10 }]],
+  // os TRECHOS DE SOLO (`mapas-areas.porSolosNaInstancia`): o raio do PoE ("map ground effect radius" — 14; o Oba, 10)
+  [/^Área possui trechos de Solo Ardente$/, () => [{ alvo: 'instancia', stat: 'solo_ardente', fixo: 14 }]],
+  [/^Área possui trechos de solo congelado$/, () => [{ alvo: 'instancia', stat: 'solo_congelado', fixo: 14 }]],
+  [/^Área possui trechos de solo profano$/, () => [{ alvo: 'instancia', stat: 'solo_profanado', fixo: 10 }]],
+  [/^Jogadores têm a Habilidade Avanço Nível \{0\}$/, () => [{ alvo: 'jogador', stat: 'concede:avanco', de: 0 }]],
+  [/^Jogadores têm \{0\}% de Velocidade de Recarga aumentada para Habilidades de Movimento$/, () => [{ alvo: 'jogador', stat: 'cooldown_recovery@movimento', de: 0 }]],
+];
+/** Os nomes dos valores que são ÍNDICES (`rotulos` da linha — `gerar.rolarTexto`): a classe dos Raros do Hospício de Poorjoy (`mapas-areas.CLASSES_DOS_RAROS`). */
+export const ROTULOS = [
+  [/^Chefe Único derruba \{0\} Raro adicional \{1\}$/, { 1: ['Amuletos', 'Anéis', 'Cintos', 'Armaduras', 'Botas', 'Luvas', 'Elmos', 'Escudos', 'Aljavas', 'Arcos', 'Garras', 'Adagas', 'Adagas Rúnicas', 'Machados de Uma Mão', 'Maças de Uma Mão', 'Espadas de Uma Mão', 'Espadas de Estocada', 'Cetros', 'Varinhas', 'Cajados', 'Cajados de Guerra', 'Machados de Duas Mãos', 'Maças de Duas Mãos', 'Espadas de Duas Mãos'] }],
 ];
 /** As linhas que o poedb dá CRUAS (o id do stat) e que agem no PoE → a linha em português (`{v}`: o valor, ou a faixa "(a—b)"). Valor 0: fora. */
 export const CRUAS = [
@@ -163,7 +227,8 @@ export function modificadorDe(texto) {
   for (const [re, fazer] of REGRAS) {
     const m = modelo.match(re);
     const efeitos = m ? fazer(m) : null;
-    if (efeitos) return { tipo: 'explicit', texto: t, modelo, faixas, efeitos };
+    const rotulos = ROTULOS.find(([r]) => r.test(modelo))?.[1];
+    if (efeitos) return { tipo: 'explicit', texto: t, modelo, faixas, efeitos, ...(rotulos ? { rotulos } : {}) };
   }
   const nota = NOTAS.find(([re]) => re.test(modelo))?.[1] ?? 'ainda não tem a mecânica no jogo';
   return { tipo: 'explicit', texto: t, modelo, faixas, efeitos: [], nota };

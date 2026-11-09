@@ -4,7 +4,8 @@
 // cima de quem mexeu no personagem no meio (nem de quem está no jogo).
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { randomUUID } from 'node:crypto';
+import cripto, { randomUUID } from 'node:crypto';
+import { syncBuiltinESMExports } from 'node:module';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as B from '../database/banco.mjs';
 import * as SimulacaoOffline from '../systems/simulacao-offline.mjs';
@@ -17,9 +18,15 @@ after(() => SimulacaoOffline.encerrar());
 const MIN = 60_000;
 const HORA = 60 * MIN;
 
-/** Math.random com semente: as duas maneiras de avançar veem os mesmos sorteios. */
+/**
+ * Math.random com semente: as duas maneiras de avançar veem os mesmos sorteios.
+ * (08/11, adaptado ao PoE — o dono: "Adaptar antes") E a semente da INSTÂNCIA também: na área do PoE os encontros (baús, Fenda, Abismo)
+ * são sorteados uma vez por instância com uma semente do `crypto.randomInt` (`encontros/sorteio.mjs`, decisão do dono), fora do
+ * Math.random — sem fixá-la, cada caçada nascia com outros encontros e as duas maneiras não viam a mesma caçada.
+ */
 function comSemente(semente, fn) {
   const original = Math.random;
+  const randomIntOriginal = cripto.randomInt;
   let s = semente >>> 0;
   Math.random = () => {
     s = (s + 0x6d2b79f5) >>> 0;
@@ -28,16 +35,29 @@ function comSemente(semente, fn) {
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
+  cripto.randomInt = (min, max, ...resto) => {
+    if (typeof max !== 'number') return randomIntOriginal(min, max, ...resto);
+    return min + Math.floor(Math.random() * (max - min));
+  };
+  syncBuiltinESMExports();
   try {
     return fn();
   } finally {
     Math.random = original;
+    cripto.randomInt = randomIntOriginal;
+    syncBuiltinESMExports();
   }
 }
 
-/** Um knight caçando na troll-cave, que saiu (aba fechada) em `saida`. */
-function cacandoOffline(saida) {
-  const e = personagemDeTeste({ vocacao: 'knight', level: 200 });
+/**
+ * Um knight caçando na área de teste, que saiu (aba fechada) em `saida`.
+ * (08/11, adaptado ao PoE — o dono: "Adaptar antes") Level 90, e não 200 (acima do 100 a XP do nível é Infinity na tabela do PoE), e com a
+ * marca do personagem de teste do jogo oficial (`testador`, não morre; `naoMorre`): sem nada do PoE equipado ele morre na área do PoE com 0
+ * abates. Quem vai para o ranking (o site, o Top Exp/h) vai sem a marca — o ranking não lista o personagem de teste.
+ */
+function cacandoOffline(saida, { naoMorre = true } = {}) {
+  const e = personagemDeTeste({ vocacao: 'knight', level: 90 });
+  if (naoMorre) e.testador = true;
   assert.equal(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto', strategy: 'nearest' }).ok, true);
   e.hunt.offlineDesde = saida;
   return e;
@@ -50,7 +70,7 @@ function peloBanco(e) {
   return volta;
 }
 
-test('em pedaços depois dos 30 min simulados: soma o mesmo que projetar tudo na volta', { skip: aAdaptar("Verificado: as 7 regras de consolidação/stamina/tempo PASSAM numa área do PoE com personagem do PoE; falham com knight level 200 na troll-cave (morre/0 abates) e, as de banco, porque o personagem é legado") }, () => {
+test('em pedaços depois dos 30 min simulados: soma o mesmo que projetar tudo na volta', () => {
   const T0 = Date.UTC(2026, 8, 29, 3, 0, 0);
   const deUmaVez = comSemente(7, () => {
     const e = cacandoOffline(T0);
@@ -81,7 +101,7 @@ test('em pedaços depois dos 30 min simulados: soma o mesmo que projetar tudo na
   assert.equal(emPedacos.hunt.ausencia, undefined);
 });
 
-test('pedaços DENTRO dos 30 min simulados: o tique continua de onde parou, e o total fecha', { skip: aAdaptar("Verificado: as 7 regras de consolidação/stamina/tempo PASSAM numa área do PoE com personagem do PoE; falham com knight level 200 na troll-cave (morre/0 abates) e, as de banco, porque o personagem é legado") }, () => {
+test('pedaços DENTRO dos 30 min simulados: o tique continua de onde parou, e o total fecha', () => {
   const T0 = Date.UTC(2026, 8, 29, 3, 0, 0);
   const deUmaVez = comSemente(11, () => {
     const e = cacandoOffline(T0);
@@ -103,11 +123,12 @@ test('pedaços DENTRO dos 30 min simulados: o tique continua de onde parou, e o 
   assert.ok(Math.abs(emPedacos - ganhoUm) / ganhoUm <= 0.05, `xp: ${emPedacos} × ${ganhoUm}`);
 });
 
-test('morreu num pedaço: não avança mais, e o login aplica a morte', { skip: aAdaptar("A consolidação da morte é da engine; o personagem de teste (knight) não vence na área do PoE e a morte cai em outro pedaço") }, () => {
+test('morreu num pedaço: não avança mais, e o login aplica a morte', () => {
   const T0 = Date.UTC(2026, 8, 29, 3, 0, 0);
   const e = personagemDeTeste({ vocacao: 'knight', level: 8 });
-  // No Médio: no Fácil a Troll Cave é a fase 1 (level alvo 1) e o troll não tira nem 1 de vida.
-  assert.equal(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto', strategy: 'nearest', dificuldade: 'medio' }).ok, true);
+  // (08/11, adaptado ao PoE — o dono: "Adaptar antes") Sem o Médio: a campanha do PoE é uma passada só, no Normal (o Cruel não abre); a
+  // área de teste do PoE já tem o level dela, e os bichos tiram a 1 de vida.
+  assert.equal(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto', strategy: 'nearest' }).ok, true);
   e.hunt.offlineDesde = T0;
   e.hp = 1;
   e.maxHp = 1;
@@ -123,17 +144,17 @@ test('morreu num pedaço: não avança mais, e o login aplica a morte', { skip: 
 
 // ------------------------------------------------------------ banco
 
-async function ausenteNoBanco(horasFora) {
+async function ausenteNoBanco(horasFora, { naoMorre = false } = {}) {
   const c = await B.criarConta({ email: `consolida-${randomUUID()}@teste.local`, senha: 'senha-123' });
   const nome = `Cons${randomUUID().replace(/[^a-z]/g, '').slice(0, 8)}`;
-  const e = cacandoOffline(Date.now() - horasFora * HORA);
+  const e = cacandoOffline(Date.now() - horasFora * HORA, { naoMorre });
   const p = await B.criarPersonagem({ conta: c.id, nome, vocacao: 'knight', sexo: 'male', estadoInicial: { ...e, hunt: Cacadas.huntParaGravar(e.hunt) } });
   const linha = await B.banco.prepare('SELECT id, conta, nome, vocacao, estado FROM personagens WHERE id = ?').get(p.id);
   return { c, p, nome, linha, xpAntes: e.xp };
 }
 
-test('consolidarUm: grava o avanço, ainda ausente, com o ganho no dia de hoje', { skip: aAdaptar("Verificado: as 7 regras de consolidação/stamina/tempo PASSAM numa área do PoE com personagem do PoE; falham com knight level 200 na troll-cave (morre/0 abates) e, as de banco, porque o personagem é legado") }, async (t) => {
-  const { p, linha, xpAntes } = await ausenteNoBanco(2);
+test('consolidarUm: grava o avanço, ainda ausente, com o ganho no dia de hoje', async (t) => {
+  const { p, linha, xpAntes } = await ausenteNoBanco(2, { naoMorre: true });
   t.after(() => B.excluirPersonagem(p.id));
   const agora = Date.now();
   assert.equal(await Consolidacao.consolidarUm(linha, agora), 'gravado');
@@ -190,7 +211,7 @@ test('colunas: fora de caçada nada; caçando, até o limite da caça offline (4
   assert.deepEqual(colunasDaCacaOffline({ hunt: { offlineDesde: T0, ausencia: { inicio: T0, esgotou: true } } }), [T0, null]);
 });
 
-test('o tempo caçando offline CONTA inteiro (não só os 30 min simulados)', { skip: aAdaptar("Verificado: as 7 regras de consolidação/stamina/tempo PASSAM numa área do PoE com personagem do PoE; falham com knight level 200 na troll-cave (morre/0 abates) e, as de banco, porque o personagem é legado") }, () => {
+test('o tempo caçando offline CONTA inteiro (não só os 30 min simulados)', () => {
   const T0 = Date.UTC(2026, 8, 29, 3);
   const e = cacandoOffline(T0);
   const tempoAntes = Ficha.totais(e).time;
@@ -199,7 +220,7 @@ test('o tempo caçando offline CONTA inteiro (não só os 30 min simulados)', { 
   assert.ok(Math.abs(contou - 3 * 3600) <= 60, `tempo caçando: ${Math.round(contou)} s de ${3 * 3600}`);
 });
 
-test('bateu o limite (4 h, free): a caçada offline para ali, e no login ele está na cidade', { skip: aAdaptar("Verificado: as 7 regras de consolidação/stamina/tempo PASSAM numa área do PoE com personagem do PoE; falham com knight level 200 na troll-cave (morre/0 abates) e, as de banco, porque o personagem é legado") }, () => {
+test('bateu o limite (4 h, free): a caçada offline para ali, e no login ele está na cidade', () => {
   const T0 = Date.UTC(2026, 8, 29, 3);
   const e = cacandoOffline(T0);
   const tempoAntes = Ficha.totais(e).time;
@@ -217,7 +238,7 @@ test('bateu o limite (4 h, free): a caçada offline para ali, e no login ele est
   assert.ok(Math.abs(contou - 4 * 3600) <= 60, `caçou ${Math.round(contou)} s — deveria ser as 4 h do limite`);
 });
 
-test('o VIP caça 12 h: com 6 h fora ele ainda caça (o free já parou nas 4 h)', { skip: aAdaptar("Verificado: as 7 regras de consolidação/stamina/tempo PASSAM numa área do PoE com personagem do PoE; falham com knight level 200 na troll-cave (morre/0 abates) e, as de banco, porque o personagem é legado") }, () => {
+test('o VIP caça 12 h: com 6 h fora ele ainda caça (o free já parou nas 4 h)', () => {
   const T0 = Date.UTC(2026, 8, 29, 3);
   const tempo = (premium) => comSemente(23, () => {
     const e = cacandoOffline(T0);
@@ -276,7 +297,6 @@ test('online: quem caça de aba fechada conta; quem está conectado não conta d
 });
 
 import * as Site from '../systems/site.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
 
 test('site: quem caça offline sai como "caçando offline" na ficha e com o ponto amarelo no ranking', async (t) => {
   const { p, nome } = await ausenteNoBanco(1);

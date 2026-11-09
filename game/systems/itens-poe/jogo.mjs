@@ -9,6 +9,7 @@
 // Classes sem slot no Draevor (frascos, joias, talismãs, varas de pesca) não entram — ficam listadas em `naoEquipaveis`. (Os frascos entram
 // pelo cinto de frascos — `FRASCOS` —, os mapas pelo Dispositivo e as joias pelos encaixes da árvore — `JOIAS`, lote 27.)
 import * as Catalogo from './catalogo.mjs';
+import * as SinteseMapas from './sintese-mapas.mjs';
 import { definirLeitorDeBase } from './condicoes-poe.mjs';
 import { traduzirPeca, traduzirMod } from './traduzir.mjs';
 import { gerarPeca, caiNoSorteio, modificadoresDoUnico, definirFiltroDoSorteado } from './gerar.mjs';
@@ -439,6 +440,12 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
   // quantidade/raridade de itens, tamanho do grupo, os efeitos) e o estado de cada linha.
   // (O MAPA ÚNICO leva qual é — `unico`, o slug —: os efeitos de cada linha vêm do cadastro dele; e as notas das linhas sem efeito.)
   if (gerada.classe === Mapas.CLASSE) {
+    // (08/11, o Córtex e as Memórias) os mods de mapa a mais e os Synthesis Globais, sorteados uma vez, ao nascer (`sintese-mapas.mjs`)
+    if (gerada.unico && !(gerada.prefixos ?? []).length && !(gerada.sufixos ?? []).length && !(gerada.modificadores ?? []).some((m) => m.sintese)) {
+      const extras = Mapas.extrasDoUnico({ unico: gerada.unico, modificadores: gerada.modificadores });
+      if (extras.aleatorios > 0) SinteseMapas.porAleatorios(gerada, extras.aleatorios, rng);
+      if (extras.globais > 0) gerada.modificadores = [...(gerada.modificadores ?? []), ...SinteseMapas.sortearGlobais(extras.globais, rng)];
+    }
     const poe = { base: gerada.base, classe: gerada.classe, raridade: gerada.raridade, raridadeNome: R.nome ?? gerada.raridade, cor: R.cor ?? null, ilvl: gerada.ilvl, nome: gerada.nome, ...(gerada.unico ? { unico: gerada.unico } : {}), ...(gerada.corrompido ? { corrompido: true } : {}),
       atributos: a, implicitos: gerada.implicitos ?? [], prefixos: gerada.prefixos ?? [], sufixos: gerada.sufixos ?? [], modificadores: gerada.modificadores ?? [] };
     const mapa = Mapas.resumo({ poe });
@@ -617,7 +624,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // não-Vaal; a Luz de Lunaris pelo acerto Não Crítico)
 // (89 — 08/11, o balão dos únicos com 0 sem efeito, lotes B8–B16 e o que vier no mesmo PR: os velados, a criação, os visuais, os Catalisadores, a
 // Identificação, o Ungir e o Encantamento, o Abismo, a Pesca…)
-export const VERSAO_DA_TRADUCAO = 89;
+// (90 — 08/11, depois do PR #290: o pool de Síntese (49 frases), os encantamentos do Labirinto — elmo pelo `@gema:<nome>`, botas, luvas (Palavra/Édito/Decreto/
+// Mandamento) e cintos)
+export const VERSAO_DA_TRADUCAO = 90;
 
 /**
  * (08/11, a Síntese) O implícito de pool (um tier: `{ modelo, faixas }`) tem efeito no jogo? (nem inerte nem só registrado — guardado por modelo.) Os
@@ -893,7 +902,8 @@ const RAMIFICADORA_NO_SORTEIO = Symbol('ramificadora');
 /** (lote 82) A Ramificadora só cai do Item Level mínimo dela para cima (dono: "Só nos mapas"). */
 export const caiNoNivel = (base, ilvl) => !ehRamificadora(base) || ilvl >= RAMIFICADORAS_ILVL_MINIMO;
 
-export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.REGRAS, raridadeAumentada = 0, baseFixa = null) {
+// (08/11 — `unicoPct`: a "chance aumentada de derrubar um Item Único" dos Synthesis Globais — `sintese-mapas.mjs`: multiplica o peso do Único)
+export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.REGRAS, raridadeAumentada = 0, baseFixa = null, { unicoPct = 0 } = {}) {
   const cat = Catalogo.catalogo();
   const D = regras.drop;
   if (!cat || !D) return null;
@@ -902,7 +912,7 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
   // O MAPA ÚNICO tem a chance PRÓPRIA (mapas.json → drop.chanceDoUnico; dono, 10/10: "2% dos mapas que caem"), também multiplicada pela
   // Raridade de Itens: o Único sai do sorteio comum do mapa (com os 0,055% do loot, quase nunca caía).
   const ehMapa = !!baseFixa && baseFixa.split('/')[0] === Mapas.CLASSE;
-  const pesos = Object.entries(D.raridades ?? {}).filter(([r, p]) => p > 0 && regras.raridades[r] && !(ehMapa && r === 'unico')).map(([r, p]) => [r, r === 'normal' ? p : p * fatorDeRaridade]);
+  const pesos = Object.entries(D.raridades ?? {}).filter(([r, p]) => p > 0 && regras.raridades[r] && !(ehMapa && r === 'unico')).map(([r, p]) => [r, r === 'normal' ? p : p * fatorDeRaridade * (r === 'unico' ? Math.max(0, 1 + (Number(unicoPct) || 0) / 100) : 1)]);
   const total = pesos.reduce((n, [, p]) => n + p, 0);
   if (!(total > 0)) return null;
   let sorte = rng() * total;
@@ -962,6 +972,41 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
 }
 
 /**
+ * Uma peça de uma CLASSE (`classe`, a do catálogo — "Amulets"), na `raridade`, de uma base que cai no `nivel` (requisito até ele): os Raros a
+ * mais do chefe do Hospício de Poorjoy (`hunt/combate.mjs`). Null sem base.
+ */
+export function pecaDaClasse(classe, nivel, { raridade = 'raro', rng = Math.random, regras = Catalogo.REGRAS } = {}) {
+  const c = Catalogo.catalogo()?.classes?.[classe];
+  const ilvl = Math.max(1, Math.round(Number(nivel) || 1));
+  const bases = (c?.bases ?? []).filter((b) => REG.porBase.has(b.id) && (b.requisitos?.nivel ?? 1) <= ilvl && !b.slug?.startsWith('Royale_') && podeCairComo(c, b, raridade) && caiNoNivel(b, ilvl));
+  if (!bases.length) return null;
+  const base = bases[Math.floor(rng() * bases.length)];
+  const r = raridade === 'raro' && FRASCOS.includes(classe) ? 'magico' : raridade;
+  return qualidadeDoDrop(pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras, base: base.id, raridade: r, ilvl, rng }), regras, rng), rng, regras);
+}
+
+/** (08/11) O Único `slug` na base de nome `nomeDaBase` (o português do catálogo — a Ilusão de Doryani nas Grevas do Leviatã), no `nivel`. Null sem ela. */
+export function unicoNaBase(slug, nomeDaBase, nivel, rng = Math.random, regras = Catalogo.REGRAS) {
+  for (const c of Object.values(Catalogo.catalogo()?.classes ?? {})) {
+    const b = (c.bases ?? []).find((x) => x.nome === nomeDaBase);
+    if (!b || !(c.unicos ?? []).some((u) => u.slug === slug && u.base === nomeDaBase)) continue;
+    return pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras, base: b.id, raridade: 'unico', ilvl: Math.max(1, Math.round(Number(nivel) || 1)), rng, unico: slug }), regras, rng);
+  }
+  return null;
+}
+
+/**
+ * (08/11, os Synthesis Globais: "têm X% de chance de derrubar um Item do Criador / do Ancião") uma peça Rara de equipamento (de uma classe que leva
+ * influência) com a influência dada, no `nivel`. Null sem base.
+ */
+export function pecaComInfluencia(nivel, influencia, rng = Math.random, regras = Catalogo.REGRAS) {
+  const classes = Object.keys(Catalogo.catalogo()?.classes ?? {}).filter((c) => !CLASSES_SEM_INFLUENCIA.test(c) && !FRASCOS.includes(c) && c !== 'Fishing_Rods');
+  const p = classes.length ? pecaDaClasse(classes[Math.floor(rng() * classes.length)], nivel, { raridade: 'raro', rng, regras }) : null;
+  if (p?.poe) p.poe.influencias = [influencia];
+  return p;
+}
+
+/**
  * Um MAPA do tier (`itens-poe/mapas.mjs`): a peça inteira, como cai do monstro. `raridade`: a fixa (o mapa garantido do Kitava); sem ela,
  * os pesos do loot (regras.json → drop.raridades) para Normal/Mágico/Raro e a chance própria do MAPA ÚNICO (mapas.json →
  * drop.chanceDoUnico), todos com a Raridade de Itens (`raridadeAumentada`, do mapa em que caiu). O Único sai no tier do drop (os únicos
@@ -977,12 +1022,12 @@ export function mapaSorteado(tier, { rng = Math.random, raridade = null, raridad
 }
 
 /** As peças do PoE que caem do bicho morto (lista, talvez vazia). Só com o sistema ligado. */
-export function dropsDoMonstro(nivelDoBicho, tipo = 'normal', rng = Math.random, regras = Catalogo.REGRAS, fatorDoJogador = 1, raridadeAumentada = 0) {
+export function dropsDoMonstro(nivelDoBicho, tipo = 'normal', rng = Math.random, regras = Catalogo.REGRAS, fatorDoJogador = 1, raridadeAumentada = 0, opcoes = {}) {
   if (!Catalogo.catalogo() || !regras.drop) return [];
   const n = quantasPecas(tipo, rng, regras, fatorDoJogador);
   const pecas = [];
   for (let i = 0; i < n; i++) {
-    const p = pecaSorteada(nivelDoBicho, rng, regras, raridadeAumentada);
+    const p = pecaSorteada(nivelDoBicho, rng, regras, raridadeAumentada, null, opcoes);
     if (p) pecas.push(semIdentificar(p));
   }
   return pecas;

@@ -1,0 +1,206 @@
+{
+ "_nota": "As cidades dos atos (o dono, 08/11: uma diferente para cada ato, no tema do PoE, com os NPCs do PoE). `mapa.gerador`: a planta criada do zero com os sprites do jogo (tools/cidades-rme/criar.mjs → gamedata/cidades/<id>-map.json e o atlas em sprites/cidades); `igualA`: o PoE repete a cidade (a Vigília no Ato 6, Sarn no 8, Highgate no 9). `chegada`: onde se nasce; `npcs`/`objetos`: no formato de city-meta.json.",
+ "cidades": [
+  {
+   "id": "poe-a1-lioneyes-watch",
+   "nome": "Vigília de Lioneye",
+   "mapa": {
+    "gerador": "lioneye",
+    "semente": 11
+   },
+   "chegada": {
+    "x": 28,
+    "y": 23,
+    "z": 7,
+    "dir": 2
+   },
+   "npcs": [
+    {
+     "uid": "npc:nessa",
+     "id": "nessa",
+     "name": "Nessa",
+     "x": 21,
+     "y": 15,
+     "z": 7,
+     "dir": 2,
+     "look": 136,
+     "colors": {
+      "type": 136,
+      "head": 78,
+      "body": 94,
+      "legs": 115,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "loja"
+    },
+    {
+     "uid": "npc:tarkleigh",
+     "id": "tarkleigh",
+     "name": "Tarkleigh",
+     "x": 24,
+     "y": 14,
+     "z": 7,
+     "dir": 2,
+     "look": 128,
+     "colors": {
+      "type": 128,
+      "head": 95,
+      "body": 57,
+      "legs": 40,
+      "feet": 95,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "banco"
+    },
+    {
+     "uid": "npc:bestel",
+     "id": "bestel",
+     "name": "Bestel",
+     "x": 45,
+     "y": 21,
+     "z": 7,
+     "dir": 2,
+     "look": 129,
+     "colors": {
+      "type": 129,
+      "head": 116,
+      "body": 38,
+      "legs": 58,
+      "feet": 94,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "Nada como o cheiro do mar e o som das ondas para acalmar a mente de um velho marinheiro. Fique à vontade na Vigília, exilado."
+    }
+   ],
+   "objetos": [
+    {
+     "uid": "marco:aventuras:30,25",
+     "x": 30,
+     "y": 25,
+     "item": null,
+     "nome": "Aventuras",
+     "cor": "dourado",
+     "acao": "aventuras",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:boss-diarios:22,24",
+     "x": 22,
+     "y": 24,
+     "item": null,
+     "nome": "Boss Diarios",
+     "cor": "boss",
+     "acao": "boss-diarios",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:forja:23,17",
+     "x": 23,
+     "y": 17,
+     "item": null,
+     "nome": "Forja",
+     "cor": "vermelho",
+     "acao": "forja",
+     "pisar": false,
+     "nomeDx": -0.5,
+     "nomeDy": -0.5
+    },
+    {
+     "uid": "marco:arvore:17,17:17,17",
+     "x": 17,
+     "y": 17,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:18,17",
+     "x": 18,
+     "y": 17,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:19,17",
+     "x": 19,
+     "y": 17,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:17,18",
+     "x": 17,
+     "y": 18,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:18,18",
+     "x": 18,
+     "y": 18,
+     "item": null,
+     "nome": "Arvore De Habilidade",
+     "cor": "verde-azul",
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:19,18",
+     "x": 19,
+     "y": 18,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:17,19",
+     "x": 17,
+     "y": 19,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:18,19",
+     "x": 18,
+     "y": 19,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:19,19",
+     "x": 19,
+     "y": 19,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    }
+   ]
+  },
+  {
+   "id": "poe-a6-lioneyes-watch",
+   "nome": "Vigília de Lioneye",
+   "igualA": "poe-a1-lioneyes-watch"
+  }
+ ]
+}

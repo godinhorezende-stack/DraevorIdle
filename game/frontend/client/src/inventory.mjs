@@ -13,7 +13,7 @@ import { faixaDoVipEBencaos } from './hud.mjs';
 import {
   windowBody, setVisible, toggleWindow, fecharAoClicarFora, atalhosDaCaixa, botaoNoCabecalho,
 } from './windows.mjs';
-import { tipFor, tipTexto, tipPanel, previaDaMagia, classeDaRaridade, classeSemRaridade, raridadeDaPeca, estrelasDosAfixos, seloDeEstrelas, marcaDeItem, numerosDoItem as ganhosDoItem, ehEssencia, ehVermelha } from './tooltip.mjs';
+import { definirIdentificar, tipFor, tipTexto, tipPanel, previaDaMagia, classeDaRaridade, classeSemRaridade, raridadeDaPeca, estrelasDosAfixos, seloDeEstrelas, marcaDeItem, numerosDoItem as ganhosDoItem, ehEssencia, ehVermelha } from './tooltip.mjs';
 import { chatEscrevendo, inserirNoChat } from './chat.mjs';
 import { organizar, chaveDaPilha, ORDENS } from './bolsa-organizada.mjs';
 
@@ -183,6 +183,12 @@ export const _arrasto = { vigiaMs: VIGIA_DO_ARRASTO_MS, venceuOVigia: terminouAr
 
 export function initInventory(context) {
   ctx = context;
+  // (08/11) o botão Identificar do balão: a peça da mochila (achada pela identidade) ou a vestida (o slot do balão)
+  definirIdentificar((peca, slot) => {
+    if (slot) return identificar(peca, { slot });
+    const indice = (ctx.state.character?.inventory ?? []).indexOf(peca);
+    return identificar(peca, { indice: indice >= 0 ? indice : null });
+  });
   document.addEventListener('click', () => closeMenu());
   document.addEventListener('contextmenu', (event) => {
     if (!event.target.closest('[data-item]')) closeMenu();
@@ -636,10 +642,28 @@ export function selarSoquetes(cell, peca, aoTocar = null) {
  * Então o direito faz uma coisa só: o que a peça faz. Não fazendo nada, não
  * acontece nada, e quem quer a lista segura o Ctrl.
  */
+/**
+ * (08/11, o dono: "o botão Identificar no balão da peça") Identifica a peça do PoE: um Pergaminho da Sabedoria nela (`{t:'moeda'}` — o servidor
+ * valida, gasta o pergaminho da mochila ou do baú e identifica). Na mochila (`indice`) ou vestida (`slot`). Devolve se mandou.
+ */
+function identificar(peca, { slot = null, indice = null } = {}) {
+  const pergaminho = Object.values(ctx?.state?.items ?? {}).find((i) => i?.moedaPoe?.slug === 'Scroll_of_Wisdom');
+  if (!pergaminho) return false;
+  const alvo = slot ? { onde: 'equipment', slot } : Number.isInteger(indice) ? { onde: 'inventory', indice } : null;
+  if (!alvo) {
+    ctx.notice?.('Leve a peça para a mochila para identificar.');
+    return false;
+  }
+  ctx.send({ t: 'moeda', moeda: pergaminho.id, alvo });
+  return true;
+}
+
 function acaoDoDireito(event, id, { from, pilha = null, alvo = null, peca = null, slotNoCorpo = null }) {
   if (event.ctrlKey) return itemMenu(event, id, { from, pilha, alvo, peca, slotNoCorpo });
   // O menu do navegador não aparece em cima da mochila em nenhum caso.
   event.preventDefault();
+  // (08/11) a peça do PoE não identificada: o direito identifica (um Pergaminho da Sabedoria)
+  if (peca?.poe?.identificado === false && (from === 'bag' || from === 'equipment')) return void identificar(peca, from === 'equipment' ? { slot: slotNoCorpo } : { indice: pilha });
   const meta = ctx.state.items[id];
   /*
    * ---- O mesmo gesto abre e fecha ----

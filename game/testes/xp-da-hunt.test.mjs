@@ -44,7 +44,7 @@ test('o VIP: x1,5 com premium, x1 sem — a stamina saiu, não há mais faixa de
   assert.equal(Stamina.fatorDeExp({ premiumAte: Date.now() - 1 }), 1, 'o premium vencido não vale');
 });
 
-test('XP concedido = conta independente = estimativa da ficha, com e sem VIP (Cyclops, level 60 e 30)', { skip: aAdaptar("XP concedido = conta independente vale no PoE; usa o Cyclops de uma fase do Draevor") }, () => {
+test('XP concedido = conta independente = estimativa da ficha, com e sem VIP (Cyclops, level 60 e 30)', { skip: aAdaptar("(08/11) Não adaptado: a regra vale no PoE, mas a conta do XP do PoE (`Boosts.expDoBicho`) não tem a penalidade por diferença de level do PoE 1 (zona segura 3 + level/16) — uma conta independente do PoE sairia diferente do jogo; decisão do dono") }, () => {
   for (const level of [30, 60]) {
     {
       for (const premium of [false, true]) {

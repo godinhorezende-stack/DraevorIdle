@@ -6,6 +6,7 @@
 //   - Os ids dos mapas são FIXOS (`itemId` da base, 7.700.000 + tier): nunca mudam com o catálogo nem empurram os ids de outras peças.
 import { readFileSync, existsSync } from 'node:fs';
 import { salaDe } from '../hunt/sala.mjs';
+import * as SinteseMapas from './sintese-mapas.mjs';
 
 const ARQUIVO = new URL('../../gamedata/itens-poe/mapas.json', import.meta.url);
 export const DADOS = existsSync(ARQUIVO) ? JSON.parse(readFileSync(ARQUIVO, 'utf8')) : { tiers: [], classe: null };
@@ -82,6 +83,8 @@ export function somar(efeitos, e, valores) {
   else no[ultima] = Math.round(((no[ultima] ?? 0) + valor) * 100) / 100;
 }
 
+/** O teto do nível da área (o PoE: 86 — o Réplica: Córtex é 84). */
+export const NIVEL_MAXIMO_DA_AREA = 86;
 /**
  * O RESUMO do mapa (vai na peça, `poe.mapa`, e o balão mostra): o tier e o nível da área, a quantidade e a raridade de itens e o tamanho
  * do grupo (a soma dos mods + a qualidade, que no PoE dá quantidade de itens), os efeitos somados por alvo e o estado de cada linha
@@ -110,7 +113,14 @@ export function resumo({ poe }) {
   // As linhas do MAPA ÚNICO (`poe.modificadores`, sorteadas na faixa de cada uma): os efeitos da linha no único (pelo modelo do texto). A
   // Quantidade/Raridade de Itens e o Tamanho do Grupo (`alvo: 'mapa'`) somam no resumo, com o valor sorteado.
   const doUnico = unicoDoMapa(poe?.unico);
+  let nivelFixo = null;
+  let nivelDelta = 0;
   for (const m of poe?.modificadores ?? []) {
+    // (08/11) o Modificador Synthesis Global da peça (o Córtex, as Memórias — `sintese-mapas.mjs`): vale nos monstros, pela raridade
+    if (m.sintese === 'global') {
+      linhas.push({ texto: m.texto, estado: SinteseMapas.globalDa(m.chave) ? 'equivalente' : 'inerte', ...(SinteseMapas.globalDa(m.chave) ? {} : { nota: 'o modificador de Síntese não existe no jogo' }) });
+      continue;
+    }
     const def = doUnico?.modificadores?.find((x) => x.modelo === m.modelo) ?? null;
     if (!def?.efeitos?.length) {
       linhas.push({ texto: m.texto, estado: 'inerte', nota: def?.nota ?? 'ainda não tem a mecânica no jogo' });
@@ -122,13 +132,25 @@ export function resumo({ poe }) {
         if (e.stat === 'quantidade') quantidade += v;
         else if (e.stat === 'raridade') raridade += v;
         else if (e.stat === 'grupo') grupo += v;
+        // (08/11) o NÍVEL DA ÁREA: "Nível dos Monstros: 83" (o Córtex, as Memórias — `nivel`) e "+2 ao Nível dos Monstros da Área" (as Terras Sagradas — `nivelDelta`)
+        else if (e.stat === 'nivel') nivelFixo = v;
+        else if (e.stat === 'nivelDelta') nivelDelta += v;
         continue;
       }
+      // (08/11) o que a peça ganha ao NASCER ("Mapa possui N Modificadores aleatórios adicionais", os Synthesis Globais — `alvo: 'peca'`, `jogo.pecaDoJogo`)
+      if (e.alvo === 'peca') continue;
       somar(efeitos, e, m.valores);
     }
     linhas.push({ texto: m.texto, estado: def.parcial ? 'parcial' : 'equivalente', ...(def.parcial ? { nota: def.parcial } : {}) });
   }
-  return { tier, nivel: nivelDoTier(tier), quantidade, raridade, grupo, efeitos, linhas };
+  // (08/11) os Synthesis Globais somados (`sintese-mapas.efeitosDosGlobais`: pela raridade do monstro)
+  const globais = (poe?.modificadores ?? []).filter((m) => m.sintese === 'global');
+  if (globais.length) efeitos.sintese = SinteseMapas.efeitosDosGlobais(globais);
+  // O nível da área mudado pelo mapa único: os monstros sobem/descem pela diferença (`efeitos.monstros.nivelDelta` — `mapas-areas.aplicarEfeitos`).
+  const doTier = nivelDoTier(tier);
+  const nivel = doTier && (nivelFixo != null || nivelDelta) ? Math.max(1, Math.min(NIVEL_MAXIMO_DA_AREA, Math.round(nivelFixo ?? doTier + nivelDelta))) : doTier;
+  if (doTier && nivel !== doTier) efeitos.monstros.nivelDelta = nivel - doTier;
+  return { tier, nivel, quantidade, raridade, grupo, efeitos, linhas };
 }
 
 /** Os estados das linhas na ordem da peça (implícitos, prefixos, sufixos, as do único) — o mesmo formato de `poe.estados` das outras peças. */
@@ -211,6 +233,24 @@ export function fatoresDaInstancia(r) {
     // (dono, 03/11 — "100%") os BAÚS do mapa único: "Área contém um Grande Baú" (`grandesBaus`) e "Baús têm a Raridade de Itens aumentada em
     // X%" (`bausRaridadePct`) — `itens-poe/baus-poe.mjs` (o Grande Baú nasce com a instância; a raridade vale no loot do baú)
     baus: { grandes: Math.max(0, Math.round(Number(inst.grandesBaus) || 0)), raridadePct: Math.max(0, Number(inst.bausRaridadePct) || 0) },
+    // (08/11) "Itens Encontrados têm X% de chance de caírem Corrompidos na Área" (o loot dos monstros e dos baús — `hunt/combate.mjs`, `baus-poe.pagar`)
+    corrompidosPct: Math.max(0, Math.min(100, Number(inst.corrompidosPct) || 0)),
+    // (08/11) os TRECHOS DE SOLO ("Área possui trechos de Solo Ardente" — o raio do PoE de cada um: `mapas-areas.porSolosNaInstancia`)
+    solos: Object.fromEntries(['ardente', 'congelado', 'profanado'].map((t) => [t, Number(inst[`solo_${t}`]) || 0]).filter(([, r]) => r > 0)),
+    // (08/11) os HABITANTES ("Área é habitada por Esqueletos", "por seguidores de Lunaris", "muitos Totens", "variedade de monstros" — `mapas-areas.comHabitantes`)
+    // (08/11) "Área não contém monstros" (as Relíquias de Atziri): só os baús, onde nasceriam os grupos (`cacadas.povoar`)
+    semMonstros: Number(inst.semMonstros) > 0,
+    // (08/11) "Chefe Único é ampliado pelas escolhas do Jogador" (o Maquinário de Doryani — `doryani.mjs`)
+    doryani: Number(inst.doryani) > 0,
+    // (08/11) "Contém os Grão-Mestres Imortalizados" (o Salão dos Grão-Mestres — `grao-mestres.mjs`)
+    graoMestres: Number(inst.graoMestres) > 0,
+    // (08/11) o TERRENO próprio do único ("imenso Labirinto", "brechas sem passagem" — `mapas-areas.huntIdDoMapa`)
+    terreno: ['labirinto', 'brechas'].find((t) => Number(inst[`terreno_${t}`]) > 0) ?? null,
+    // (08/11) "Área se torna fatal após algum tempo" (o Tesouro Maldito de Oba): os segundos até ficar fatal (`cacadas.areaFatal`)
+    fatalS: Math.max(0, Number(inst.fatalS) || 0),
+    // (08/11) as ONDAS do Julgamento do Covarde ("Contém ondas de Monstros", "ondas adicionais de …" — `mapas-areas.porOndasNaInstancia`)
+    ondas: Object.keys(inst).filter((k) => k.startsWith('ondas_') && Number(inst[k]) > 0).map((k) => k.slice('ondas_'.length)),
+    habitantes: Object.fromEntries(['esqueletos', 'lunaris', 'solaris', 'totens', 'variedade'].map((g) => [g, Number(inst[`habitantes_${g}`]) || 0]).filter(([, v]) => v > 0)),
   };
 }
 
@@ -221,3 +261,23 @@ export const resumoNaCacada = (id, peca) => {
   // (05/11) `encontro`: o chefe a mais do mapa (o Guardião, o Conquistador — `pinaculos-acesso.mjs`), que nasce na instância
   return { id, tier: r.tier, nivel: r.nivel, quantidade: r.quantidade, raridade: r.raridade, grupo: r.grupo, efeitos: r.efeitos, ...(peca?.poe?.encontro ? { encontro: peca.poe.encontro } : {}) };
 };
+/** (08/11) Os TRECHOS DE SOLO do mapa único em que a caçada está (`instancia.solosDoMapa` — `mapas-areas.porSolosNaInstancia`). */
+export const solosDoMapa = (hunt) => salaDe(hunt)?.instancia?.solosDoMapa ?? [];
+/**
+ * (08/11) O que a peça do mapa único GANHA AO NASCER: `{ aleatorios, globais }` — a soma dos valores das linhas com `alvo: 'peca'` ("Mapa possui N
+ * Modificadores aleatórios adicionais" — `modsAleatorios`; "Mapa tem N Modificadores Synthesis Globais adicionais" — `sinteseGlobais`).
+ */
+export function extrasDoUnico(poe) {
+  const u = unicoDoMapa(poe?.unico);
+  const saida = { aleatorios: 0, globais: 0 };
+  for (const m of poe?.modificadores ?? []) {
+    for (const e of u?.modificadores?.find((x) => x.modelo === m.modelo)?.efeitos ?? []) {
+      if (e.alvo !== 'peca') continue;
+      const v = Math.round(e.fixo ?? (Number(m.valores?.[e.de]) || 0));
+      if (e.stat === 'modsAleatorios') saida.aleatorios += v;
+      else if (e.stat === 'sinteseGlobais') saida.globais += v;
+    }
+  }
+  return saida;
+}
+

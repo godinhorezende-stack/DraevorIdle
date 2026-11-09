@@ -7,16 +7,21 @@ import { montarBase, escala, pontosDoRetrato } from '../frontend/client/src/mini
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Campanha from '../systems/campanha.mjs';
 import { personagemDeTeste, huntDoPoe } from './apoio.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
+
+// (08/11, adaptado ao PoE — o dono: "Adaptar antes") As fases da campanha são as ÁREAS do PoE (`Campanha.FASES`, as dos atos do editor):
+// o personagem com os chefes de todos os atos vencidos (as áreas de todo ato abertas; o de teste só vence os 4 primeiros) — o teste é do
+// minimapa, não da porta da campanha.
+const ULTIMO_ATO = Math.max(...Campanha.FASES.map((f) => Number(f.ato) || 0));
 
 function retratoDa(huntId) {
   const e = personagemDeTeste({ level: 2000 });
+  for (const p of Object.values(e.campanha)) p.bosses = Array.from({ length: ULTIMO_ATO }, (_, i) => i + 1);
   const r = Cacadas.entrar(e, { huntId, mode: 'auto', dificuldade: 'facil' });
   if (!r.ok) return null;
   return Cacadas.snapshotDaHunt(e, true);
 }
 
-test('todas as fases da campanha: a geometria monta, e todo monstro e o jogador caem DENTRO do mapa', { skip: aAdaptar("Minimapa é da engine; o teste percorre CAMPANHA.fases do Draevor (vazia no oficial: \"0 fases conferidas\")") }, () => {
+test('todas as fases da campanha: a geometria monta, e todo monstro e o jogador caem DENTRO do mapa', () => {
   let fases = 0;
   for (const f of Campanha.FASES) {
     if (f.pular) continue;
@@ -128,7 +133,7 @@ test('radarDosBichos: só os vivos, boss e raridade marcados', async () => {
   assert.deepEqual(radarDosBichos([{ uid: 9, x: 0, y: 0, hp: 1 }], null, true), [0, 0, 2], 'sala de boss');
 });
 
-test('buracos e escadas: só os que FUNCIONAM, pela mesma regra do servidor, em todas as fases', { skip: aAdaptar("Minimapa é da engine; o teste percorre CAMPANHA.fases do Draevor (vazia no oficial: \"0 fases conferidas\")") }, async () => {
+test('buracos e escadas: só os que FUNCIONAM, pela mesma regra do servidor, em todas as fases', async () => {
   const { passagensDoAndar } = await import('../frontend/client/src/minimapa.mjs');
   const { destinoDaMudanca } = await import('../systems/hunt/andares.mjs');
   let total = 0;

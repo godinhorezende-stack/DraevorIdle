@@ -16,8 +16,8 @@ import * as Catalogo from './catalogo.mjs';
 
 export const ESTADOS = ['funciona', 'parcial', 'inexiste', 'erro'];
 /** Os efeitos do chefe que o DROP lê (não o monstro): os mapas e as moedas a mais do mapa único. */
-export const DO_DROP_DO_CHEFE = ['mapasExtras', 'moedasExtras'];
-const DO_RESUMO = ['quantidade', 'raridade', 'grupo'];
+export const DO_DROP_DO_CHEFE = ['mapasExtras', 'moedasExtras', 'rarosClasse', 'cartas'];
+const DO_RESUMO = ['quantidade', 'raridade', 'grupo', 'nivel', 'nivelDelta'];
 
 const monstroDeTeste = () => ({ key: 'validacao', hp: 1000, maxHp: 1000, exp: 1000, forca: 1, resist: {} });
 const mesmo = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -30,10 +30,14 @@ const falha = (motivo) => ({ ok: false, motivo });
  */
 export function validarEfeito(e, valores) {
   const ef = {};
+  // (08/11) a linha que o poedb mostra sem número vale ZERO no próprio PoE (o stat em inglês): age como lá, sem mudar nada
+  if (e.zeroNoPoe) return ok(`o PoE dá 0 a esta linha (${e.zeroNoPoe})`);
+  // (08/11) o que a peça ganha ao nascer (os mods a mais, os Synthesis Globais — `jogo.pecaDoJogo`)
+  if (e.alvo === 'peca') return ['modsAleatorios', 'sinteseGlobais'].includes(e.stat) ? ok(`a peça ganha ao nascer (${e.stat})`) : falha(`"${e.stat}" não é o que a peça ganha ao nascer`);
   if (e.alvo === 'mapa') {
     const v = e.fixo ?? (Number(valores?.[e.de]) || 0);
-    if (!DO_RESUMO.includes(e.stat)) return falha(`"${e.stat}" não é Quantidade, Raridade nem Tamanho do Grupo`);
-    return v > 0 ? ok(`o resumo do mapa (${e.stat})`) : falha('o valor é zero');
+    if (!DO_RESUMO.includes(e.stat)) return falha(`"${e.stat}" não é Quantidade, Raridade, Tamanho do Grupo nem Nível da área`);
+    return v !== 0 && Number.isFinite(v) ? ok(`o resumo do mapa (${e.stat})`) : falha('o valor é zero');
   }
   if (e.alvo === 'jogador' && e.stat === 'maldicao') return MALDICOES_DOS_MONSTROS[e.fixo] ? ok(`a maldição ${MALDICOES_DOS_MONSTROS[e.fixo].nome} em você`) : falha(`a maldição "${e.fixo}" não existe no jogo`);
   Mapas.somar(ef, e, valores);
@@ -61,6 +65,7 @@ export const PALAVRAS = {
   'danoExtraPct.fire': /Fogo/, 'danoExtraPct.ice': /Gelo/, 'danoExtraPct.energy': /Raio/, experienciaPct: /Experiência/,
   rarosPct: /Raros/, magicosPct: /Mágicos/, mapasExtras: /Mapas/, moedasExtras: /Monetários/, bausRaridadePct: /Baús têm a Raridade de Itens/,
   quantidade: /Quantidade de Itens/, raridade: /Raridade de Itens/, grupo: /Tamanho do Grupo/,
+  'concede:avanco': /Avanço/, 'cooldown_recovery@movimento': /Recarga/, nivel: /Nível dos Monstros/, nivelDelta: /Nível dos Monstros/, rarosExtras: /Raro/, corrompidosPct: /Corrompidos/, evitarAfeccoesPct: /Afecções/, efeitoMaldicaoMenosPct: /Maldições/,
   recuperacao_inc: /Recuperação/, frasco_cargas_recebidas: /Cargas de Frasco/, cooldown_recovery: /Recarga/, accuracy_less: /Precisão/,
   fire_res_max: /máximos de Resistências/, ice_res_max: /máximos de Resistências/, energy_res_max: /máximos de Resistências/, chaos_res_max: /máximos de Resistências/,
   'frasco_regen_n:todos': /Cargas de Frasco/, 'frasco_regen_s:todos': /segundos/,

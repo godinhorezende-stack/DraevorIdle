@@ -200,6 +200,8 @@ function congelarNoGolpeFatal(bicho, partes, { afeccoes, crit, agora, rng, salaD
  * crítico; `ataque`: é ataque (golpe da arma, habilidade de ataque) — as chances "com Ataques" só valem nele. `afeccoes`: o de `daSoma`
  * (a ficha guarda). Devolve os nomes dos estados postos (o evento na tela). Sem o sistema do PoE, não faz nada.
  */
+/** As afecções que o golpe inflige (as de `naoPode`). */
+export const AFECCOES = Object.freeze(['incendio', 'congelamento', 'resfriamento', 'eletrizacao', 'veneno', 'sangramento']);
 export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = false, agora = 0, rng = Math.random, salaDeBoss = false, praga = null, fatoresDoDano = null, fonte = 'poe', aoPor = null, sofrido = null } = {}) {
   if (!ligado() || !bicho || bicho.dummy) return [];
   // (lote 81 — dono: "Golpe fatal também") o golpe que MATA e congelaria: o morto conta como Congelado (o PoE Estilhaça — a explosão do Arauto
@@ -208,7 +210,14 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     congelarNoGolpeFatal(bicho, partes, { afeccoes, crit, agora, rng, salaDeBoss });
     return [];
   }
-  const a = afeccoes ?? daSoma();
+  let a = afeccoes ?? daSoma();
+  // (08/11, os mapas únicos) o monstro IMUNE a uma afecção (o Vórtice do Caos: "Imunes a Atordoamentos ou Afecções Elementais aleatórias" —
+  // `bicho.imuneAfeccoes`) e o "X% de chance de Evitarem Afecções" (os Pilares de Arun — `bicho.evitarAfeccoesPct`, uma rolagem por afecção):
+  // a afecção sai como se o golpe não pudesse infligi-la (`naoPode`)
+  if (bicho.imuneAfeccoes?.length || bicho.evitarAfeccoesPct > 0) {
+    const fora = AFECCOES.filter((t) => bicho.imuneAfeccoes?.includes(t) || (bicho.evitarAfeccoesPct > 0 && rng() * 100 < bicho.evitarAfeccoesPct));
+    if (fora.length) a = { ...a, naoPode: { ...(a.naoPode ?? {}), ...Object.fromEntries(fora.map((t) => [t, true])) } };
+  }
   // "Golpes não Críticos não infligem Afecções" (a Agonia Perfeita).
   if (a.semAfeccaoSemCritico && !crit) return [];
   const dano = (el) => partes.filter((p) => p.elemento === el).reduce((s, p) => s + (Number(p.dano) || 0), 0);

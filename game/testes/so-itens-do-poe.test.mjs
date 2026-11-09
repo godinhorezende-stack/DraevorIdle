@@ -12,8 +12,6 @@ import * as Cacadas from '../systems/cacadas.mjs';
 import * as Inventario from '../systems/inventario.mjs';
 import * as Mercado from '../systems/mercado.mjs';
 import * as Loja from '../systems/loja.mjs';
-import * as Desmanche from '../systems/desmanche.mjs';
-import * as Forja from '../systems/forja.mjs';
 import * as Recompensas from '../systems/recompensas.mjs';
 import * as GemasDeSkill from '../systems/skills/gemas.mjs';
 import * as SimulacaoOffline from '../systems/simulacao-offline.mjs';
@@ -142,24 +140,24 @@ test('mercado: não se anuncia, compra nem vê item do Draevor', { skip: SEM }, 
 
 test('Store: o produto que entrega item do Draevor e o Buff Power não se compram; o resto sim; a Inbox não solta item do Draevor', { skip: SEM }, () => {
   const e = { ...doPoe(), coins: 1e9 };
-  for (const id of ['item-28723', 'boost-55343', 'tier-up', 'buffpower-trio', 'buffpower-55711']) {
+  // (08/11) + o `buff-trio` ("Os três Buff Power", o id real: ele entregava os três Buff Power do Draevor) — fora da vitrine também.
+  for (const id of ['item-28723', 'boost-55343', 'tier-up', 'buffpower-trio', 'buffpower-55711', 'buff-trio']) {
     const antes = e.coins;
     assert.equal(Loja.comprar(e, { id }).ok, false, id);
     assert.equal(e.coins, antes, `${id}: nada cobrado`);
   }
+  assert.equal(JSON.stringify(Loja.catalogoDaLoja(e)).includes('"buff-trio"'), false, 'o buff-trio não aparece na Store');
+  assert.equal((e.storeInbox ?? []).length, 0, 'nada chegou nas Chegadas');
   assert.equal(Loja.comprar(e, { id: 'premium-30' }).ok, true, 'premium continua');
   e.storeInbox = [{ id: ESPADA_DO_DRAEVOR, count: 1 }];
   assert.match(Loja.moverDaInbox(e, { mover: { id: ESPADA_DO_DRAEVOR, count: 1 } }, () => true).erro, /Path of Exile/);
   assert.equal(e.storeInbox.length, 1, 'fica na Inbox');
 });
 
-test('máquinas e lojas do Draevor recusam ANTES de tirar ou cobrar: desmanche, Forja do Draevor, loja de gemas (suporte do Draevor)', { skip: SEM }, () => {
+test('as lojas do Draevor recusam ANTES de tirar ou cobrar: loja de gemas (suporte do Draevor) — (08/11, lote 1 do clássico: o desmanche e a Forja do Draevor saíram do jogo)', { skip: SEM }, () => {
   const e = doPoe();
   e.inventory = [{ id: ESPADA_DO_DRAEVOR, count: 1 }];
   const antes = JSON.stringify(e);
-  assert.match(Desmanche.desmanchar(e, { pedidos: [{ id: ESPADA_DO_DRAEVOR, quantidade: 1 }] }).erro, /Draevor clássico/);
-  assert.match(Forja.retirar(e, { slot: 'weapon', indice: 0, moeda: 'gold' }).erro, /Forja do Draevor/);
-  assert.match(Forja.fundir(e, { moeda: 'gold' }).erro, /Forja do Draevor/);
   const suporteDoDraevor = [...GemasDeSkill.DEFS.values()].find((d) => !So.ehDoPoe(d.itemId));
   if (suporteDoDraevor) assert.equal(GemasDeSkill.comprarNaLoja(e, { id: suporteDoDraevor.itemId }).ok, false);
   assert.equal(JSON.stringify(e), antes, 'nada mudou no personagem');

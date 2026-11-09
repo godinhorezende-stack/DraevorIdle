@@ -120,12 +120,14 @@ export function afDaMaldicaoNoJogador(efeitos) {
 export function amaldicoar(bicho, id, efeitosPoe, { agora = Date.now(), dur = 6000, ignorarLimite = false, limite = 1, hunt = null } = {}) {
   if (!bicho || bicho.hp <= 0 || bicho.dummy) return false;
   const efeitos = [];
+  // (08/11, o Whakawairua Tuahu: "Maldições têm seu efeito em Monstros reduzido em X%" — como no `marcarCom`)
+  const f = bicho.efeitoMaldicaoMenosPct > 0 ? Math.max(0, 1 - bicho.efeitoMaldicaoMenosPct / 100) : 1;
   for (const e of efeitosPoe ?? []) {
-    if (e.efeito === 'marcaVulneravel') efeitos.push({ tipo: 'vulneravel', pct: e.pct, tipos: e.tipos, ...(e.res ? { res: true } : {}) });
-    if (e.efeito === 'marcaEnfraquece') efeitos.push({ tipo: 'enfraquecido', pct: e.pct, ...(e.pctRaro != null ? { pctRaro: e.pctRaro } : {}) });
+    if (e.efeito === 'marcaVulneravel') efeitos.push({ tipo: 'vulneravel', pct: e.pct * f, tipos: e.tipos, ...(e.res ? { res: true } : {}) });
+    if (e.efeito === 'marcaEnfraquece') efeitos.push({ tipo: 'enfraquecido', pct: e.pct * f, ...(e.pctRaro != null ? { pctRaro: e.pctRaro * f } : {}) });
     // (07/11, lote 26 das inertes) + os do lote G-A/G-C (`gac:<tipo>` — os Grilhões Temporais, o Castigo…), como no `marcarCom`: sem eles, a maldição
     // da peça (a Resposta de Sentari) não pegava
-    const gac = GemasGAC.efeitoNoBicho(e);
+    const gac = GemasGAC.efeitoNoBicho(e, f);
     if (gac) efeitos.push(gac);
   }
   if (!efeitos.length) return false;
@@ -207,16 +209,22 @@ export function marcarCom(hunt, bicho, lista, agora = hunt?.clock ?? Date.now(),
   const vizinhos = new Map();
   for (const { id, def, fator, lancado, emAura } of lista) {
     if (ehMaldicao(def)) {
-      const efeitos = [];
+      // (08/11, o mapa único Whakawairua Tuahu: "Maldições têm seu efeito em Monstros reduzido em X%" — `bicho.efeitoMaldicaoMenosPct`, `mapas-areas.aplicarEfeitos`)
+      const efeitosCom = (f) => {
+        const saida = [];
+        for (const e of def.efeitos ?? []) {
+          if (e.efeito === 'marcaVulneravel') saida.push({ tipo: 'vulneravel', pct: e.pct * f, tipos: e.tipos, ...(e.res ? { res: true } : {}) });
+          if (e.efeito === 'marcaEnfraquece') saida.push({ tipo: 'enfraquecido', pct: e.pct * f, ...(e.pctRaro != null ? { pctRaro: e.pctRaro * f } : {}) });
+          // (lotes G-A e G-C) os do lote: `gac:<tipo>` (`GemasGAC.efeitoNoBicho`)
+          const gac = GemasGAC.efeitoNoBicho(e, f);
+          if (gac) saida.push(gac);
+        }
+        return saida;
+      };
+      const efeitos = efeitosCom(fator);
+      const efeitosNo = (b) => (b?.efeitoMaldicaoMenosPct > 0 ? efeitosCom(fator * Math.max(0, 1 - b.efeitoMaldicaoMenosPct / 100)) : efeitos);
       let dur = 0;
-      for (const e of def.efeitos ?? []) {
-        if (e.efeito === 'marcaVulneravel') efeitos.push({ tipo: 'vulneravel', pct: e.pct * fator, tipos: e.tipos, ...(e.res ? { res: true } : {}) });
-        if (e.efeito === 'marcaEnfraquece') efeitos.push({ tipo: 'enfraquecido', pct: e.pct * fator, ...(e.pctRaro != null ? { pctRaro: e.pctRaro * fator } : {}) });
-        // (lotes G-A e G-C) os do lote: `gac:<tipo>` (`GemasGAC.efeitoNoBicho`)
-        const gac = GemasGAC.efeitoNoBicho(e, fator);
-        if (gac) efeitos.push(gac);
-        if (/^marca/.test(e.efeito)) dur = Math.max(dur, e.durMarca ?? 0);
-      }
+      for (const e of def.efeitos ?? []) if (/^marca/.test(e.efeito)) dur = Math.max(dur, e.durMarca ?? 0);
       // (17/10, lote G6: + o que a Marca dá aos acertos CONTRA o amaldiçoado e ao abate dele — `maldicaoContra`, de `GemasPoe.buffNoNivel`)
       const contra = (def.efeitos ?? []).find((e) => e.efeito === 'maldicaoContra');
       if (!efeitos.length && !contra && !(def.efeitos ?? []).some((e) => e.efeito === 'maldicaoRegras')) continue;
@@ -247,7 +255,7 @@ export function marcarCom(hunt, bicho, lista, agora = hunt?.clock ?? Date.now(),
         dur ||= 6000;
         if (opcoes.solo) dur = SEM_DURACAO_MS;
         // (lote 52: `aura` — a posta pela aura, a Blasfêmia; a Desgraça das Bruxas só conta o Feitiço não-aura)
-        maldicoes[id] = { ate: agora + dur, desde: agora, lancada: lancado, dur, efeitos, ...(marca ? { marca: true } : {}), ...(emAura ? { aura: true } : {}), ...(regras.expirou?.length ? { expirou: regras.expirou } : {}), ...(regras.desacelera ? { desacelera: regras.desacelera } : {}), ...(regras.lentoApos ? { lentoApos: regras.lentoApos } : {}), ...(regras.danoApos ? { danoApos: regras.danoApos } : {}),
+        maldicoes[id] = { ate: agora + dur, desde: agora, lancada: lancado, dur, efeitos: efeitosNo(bicho), ...(marca ? { marca: true } : {}), ...(emAura ? { aura: true } : {}), ...(regras.expirou?.length ? { expirou: regras.expirou } : {}), ...(regras.desacelera ? { desacelera: regras.desacelera } : {}), ...(regras.lentoApos ? { lentoApos: regras.lentoApos } : {}), ...(regras.danoApos ? { danoApos: regras.danoApos } : {}),
           ...(regras.regenMenos ? { regenMenos: regras.regenMenos } : {}), ...(regras.semRecargaEs ? { semRecargaEs: true } : {}), ...(regras.destruir ? { destruir: true } : {}),
           // (ciclo 7) as regras da árvore no Inimigo Marcado (`acoes.efeitosDaMaldicao` → `daMarca`)
           ...(regras.daMarca ? { daMarca: regras.daMarca } : {}),

@@ -4,14 +4,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Sessao } from '../websocket/sessao.mjs';
-import * as R from '../systems/regras.mjs';
 import { personagemDeTeste } from './apoio.mjs';
+import * as CidadesMapas from '../systems/cidades-mapas.mjs';
 
 function andar(intervalos) {
   const s = new Sessao({ readyState: 1, send() {} });
   s.personagem = { id: 0, nome: 'Andar' };
   s.estado = personagemDeTeste();
-  s.estado.pos = { ...R.POSICAO_INICIAL };
+  // (08/11) a chegada da cidade dele (cada cidade de ato tem o seu mapa — `cidades-mapas.mjs`)
+  s.estado.pos = { ...CidadesMapas.chegadaDa(CidadesMapas.idDe(s.estado)) };
   // Anda para um lado livre da praça (o primeiro dos quatro que não é parede).
   const livre = [[1, 0], [-1, 0], [0, 1], [0, -1]].find(([dx, dy]) => {
     for (let i = 1; i <= intervalos.length + 1; i++) {

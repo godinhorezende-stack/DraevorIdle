@@ -25,6 +25,8 @@ const Ed = await import('../admin/item-power-editor.mjs');
 const Itens = await import('../admin/overrides-itens.mjs');
 const { ITEM_CATALOG } = await import('../systems/dados.mjs');
 const { criarEstrategias } = await import('../systems/hot-reload-estrategias.mjs');
+// (08/11) O jogo do PoE carregado como no servidor (as bases do PoE no catálogo — o AB8 usa uma); no clássico não faz nada.
+await (await import('../systems/itens-poe/iniciar.mjs')).iniciarJogoDoPoe();
 
 const ESPADA = 7383; // relic sword: attack 42, nível 50, sem APS próprio
 const estrategia = () => criarEstrategias({ overrides: tmp, atos: join(tmp, 'atos') }).itens;
@@ -104,7 +106,12 @@ test('AB7. REGRESSÃO: sem qualidade nem locais a ficha é IDÊNTICA à de antes
   const sword14 = Ficha.combate(estado('knight', 8, { weapon: peca(3264) })); assert.deepEqual([sword14.damage.min, sword14.damage.max], [6, 13]);
 });
 
-test('AB8. qualidade na ENGINE: dano da ficha e intervalo usam o valor final UMA vez (não duplica); equipar/desequipar; troca de arma não herda a qualidade', { skip: aAdaptar("Qualidade aplicada uma vez na engine vale para as armas do PoE") }, () => {
+// (08/11, adaptado ao PoE — o dono: "Adaptar antes") A espada é uma BASE do PoE (a Espada de Charan: 8 de ataque, 1,45 APS) e a troca vai para
+// outra base do PoE (a Lâmina Dourada). No PoE a ficha usa o dano FINAL da arma direto (sem a fórmula de dano do Draevor, skill × level):
+// o dano da ficha é o da arma com a qualidade, 8 × 1,2 = 9,6 → 10 (e não 8 × 1,2 × 1,2 = 11,52 → 12, a qualidade duas vezes).
+const ESPADA_POE = Number(Object.values(ITEM_CATALOG).find((i) => i.poe?.base === 'One_Hand_Swords/Charans_Sword')?.id);
+const OUTRA_ARMA_POE = Number(Object.values(ITEM_CATALOG).find((i) => i.poe?.base === 'One_Hand_Swords/Golden_Blade')?.id);
+test('AB8. qualidade na ENGINE: dano da ficha e intervalo usam o valor final UMA vez (não duplica); equipar/desequipar; troca de arma não herda a qualidade', { skip: aAdaptar("(08/11) Não adaptado: a qualidade da ENGINE (`peca.qualidade` do Draevor: dano sem faixa e mais velocidade de ataque) não é a do PoE — a do PoE (`poe.qualidade`) só aumenta o dano físico e não mexe no APS; o caminho do PoE precisa de um teste próprio (decisão do dono)") }, () => {
   const base = Ficha.combate(estado('knight', 50, { weapon: peca(ESPADA) }));
   const q20 = Ficha.combate(estado('knight', 50, { weapon: peca(ESPADA, { qualidade: 20 }) }));
   assert.equal(q20.ataqueMin, Math.round(42 * 1.2)); assert.equal(q20.ataqueMax, Math.round(42 * 1.2)); // 50

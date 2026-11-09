@@ -607,8 +607,25 @@ function portaoDoAtoAberto(estado, dif, g) {
 function liberadaNoGrafo(estado, dif, f) {
   const g = ATOS_DO_EDITOR.get(f.ato);
   if (!g || !atoAtivo(f.ato) || !portaoDoAtoAberto(estado, dif, g)) return false;
-  const feitas = new Set(g.ato.fases.filter((x) => faseCompleta(estado, dif, x.huntId)).map((x) => x.id));
-  return fasesAbertas(g.ato, feitas).has(f.grafo.faseId);
+  if (!fasesAbertasDe(estado, dif, g).has(f.grafo.faseId)) return false;
+  // Requisitos de entrada do CONTEÚDO (o editor do WORLD, que o mapa mostra ao jogador): fases que precisam estar completas além do grafo.
+  return exigidasDaFase(f.huntId).every((id) => faseCompleta(estado, dif, id));
+}
+/**
+ * As fases ABERTAS do ato do editor para quem tem este progresso. (08/11) Só abre caminho a fase completa que ESTAVA aberta: com a party,
+ * uma fase fica "completa" de carona (a limpeza conta para todos da sala) sem o caminho até ela — e contando essa marca, ela abria as
+ * seguintes (a mesma regra da cadeia do ato do Draevor, `primeiraIncompleta`). Vai abrindo a partir do início até não mudar mais.
+ */
+function fasesAbertasDe(estado, dif, g) {
+  const completas = g.ato.fases.filter((x) => faseCompleta(estado, dif, x.huntId)).map((x) => x.id);
+  let feitas = new Set();
+  let abertas = fasesAbertas(g.ato, feitas);
+  for (;;) {
+    const valem = new Set(completas.filter((id) => abertas.has(id)));
+    if (valem.size === feitas.size) return abertas;
+    feitas = valem;
+    abertas = fasesAbertas(g.ato, feitas);
+  }
 }
 function motivoNoGrafo(estado, dif, f, nomeDif) {
   const g = ATOS_DO_EDITOR.get(f.ato);
@@ -622,6 +639,11 @@ function motivoNoGrafo(estado, dif, f, nomeDif) {
   const exige = g.ato.fases.find((x) => x.id === f.grafo.faseId)?.requisitos.exige ?? [];
   const faltaExigida = exige.find((id) => !faseCompleta(estado, dif, g.huntPorFase.get(id)));
   if (faltaExigida) return `Complete antes ${nomeDe(faltaExigida)} no ${nomeDif} para abrir esta.`;
+  // (08/11) aberta pelo grafo, mas falta a exigência do conteúdo (o editor do WORLD)
+  if (fasesAbertasDe(estado, dif, g).has(f.grafo.faseId)) {
+    const faltaDoConteudo = exigidasDaFase(f.huntId).find((id) => !faseCompleta(estado, dif, id));
+    if (faltaDoConteudo) return `Complete antes ${faseDe(faltaDoConteudo)?.nome ?? faltaDoConteudo} no ${nomeDif} para abrir esta.`;
+  }
   return `Complete ${antes.length > 1 ? `uma de: ${antes.join(', ')}` : (antes[0] ?? 'a fase anterior')} no ${nomeDif} para abrir esta.`;
 }
 /**

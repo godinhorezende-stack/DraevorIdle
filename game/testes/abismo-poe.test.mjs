@@ -144,3 +144,30 @@ test('a FENDA (Breach): abre ao chegar perto, as ondas do Senhor; dentro do cír
   assert.equal(invalidou, 2);
   assert.ok(T.traduzirMod({ modelo: 'Propriedades são dobradas enquanto em uma Fenda', valores: [] }).estado === 'equivalente');
 });
+
+test('as luvas do Labirinto: "Ativa Mandamento das Chamas ao Acertar" — a habilidade do poedb dispara no acerto e queima os monstros perto', { skip: SEM }, async () => {
+  const J = await import('../systems/itens-poe/jogo.mjs');
+  const { gerarPeca } = await import('../systems/itens-poe/gerar.mjs');
+  const Ficha = await import('../systems/ficha.mjs');
+  const ModsPoe = await import('../systems/itens-poe/mods-poe.mjs');
+  const GemasPoe = await import('../systems/itens-poe/gemas-poe.mjs');
+  for (const t of ['Word', 'Edict', 'Decree', 'Commandment']) for (const f of ['Blades', 'Flames', 'Frost', 'Inferno', 'Thunder', 'the_Tempest', 'Winter', 'Ire', 'Light', 'War', 'the_Grave', 'Force', 'Fury', 'Spite', 'Reflection']) assert.ok(GemasPoe.doSlug(`${t}_of_${f}`)?.gema?.nome, `${t}_of_${f}`);
+  assert.equal(GemasPoe.doSlug('Edict_of_Frost').gema.nome, 'Édito do Gelo');
+  const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 70 }), { sistema: 'poe', classePoe: 'Marauder' });
+  delete e.classe;
+  P.garantir(e);
+  const luva = J.pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras: Catalogo.REGRAS, base: 'Gloves/Iron_Gauntlets', raridade: 'normal', ilvl: 70, rng: () => 0.5 }));
+  luva.poe.implicitos.push({ modelo: 'Ativa Mandamento das Chamas ao Acertar', texto: 'Ativa Mandamento das Chamas ao Acertar', valores: [], encantamento: true, labirinto: true });
+  J.recalcular(luva);
+  assert.ok(!['inerte', 'registrado'].includes(luva.poe.estados.at(-1)));
+  e.equipment = { gloves: luva };
+  Ficha.invalidar(e);
+  e.campanha = { facil: { completas: Campanha.FASES.map((x) => x.huntId), bosses: [1, 2, 3, 4, 5] } };
+  assert.equal(Cacadas.entrar(e, { huntId: 'poe-a1-the-coast', mode: 'online', strategy: 'nearest', dificuldade: 'facil' }).ok, true);
+  const h = e.hunt;
+  const alvo = h.monstros[0];
+  h.pos = { ...h.pos, x: alvo.x + 1, y: alvo.y };
+  const antes = alvo.hp;
+  ModsPoe.evento(e, h, 'acertar', Ficha.combate(e), { alvo, eventos: [], personagem: PERSONAGEM });
+  assert.ok(alvo.hp < antes, `o Mandamento das Chamas queimou (${antes} → ${alvo.hp})`);
+});
