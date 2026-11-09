@@ -1068,7 +1068,199 @@
   {
    "id": "poe-a6-lioneyes-watch",
    "nome": "Vigília de Lioneye",
-   "igualA": "poe-a1-lioneyes-watch"
+   "mapa": {
+    "gerador": "lioneye",
+    "semente": 11,
+    "guerra": true
+   },
+   "chegada": {
+    "x": 28,
+    "y": 23,
+    "z": 7,
+    "dir": 2
+   },
+   "npcs": [
+    {
+     "uid": "npc:lilly-roth",
+     "id": "lilly-roth",
+     "name": "Lilly Roth",
+     "x": 21,
+     "y": 15,
+     "z": 7,
+     "dir": 2,
+     "look": 140,
+     "colors": {
+      "type": 140,
+      "head": 78,
+      "body": 94,
+      "legs": 94,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "loja"
+    },
+    {
+     "uid": "npc:tarkleigh",
+     "id": "tarkleigh",
+     "name": "Tarkleigh",
+     "x": 24,
+     "y": 14,
+     "z": 7,
+     "dir": 2,
+     "look": 128,
+     "colors": {
+      "type": 128,
+      "head": 95,
+      "body": 57,
+      "legs": 40,
+      "feet": 95,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "banco"
+    },
+    {
+     "uid": "npc:bestel",
+     "id": "bestel",
+     "name": "Bestel",
+     "x": 45,
+     "y": 21,
+     "z": 7,
+     "dir": 2,
+     "look": 129,
+     "colors": {
+      "type": 129,
+      "head": 116,
+      "body": 38,
+      "legs": 58,
+      "feet": 94,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "A Vigília aguentou, exilado. Por pouco. Os Karui vieram pelo mar e deixaram os totens deles nos portões."
+    }
+   ],
+   "objetos": [
+    {
+     "uid": "marco:aventuras:30,25",
+     "x": 30,
+     "y": 25,
+     "item": null,
+     "nome": "Aventuras",
+     "cor": "dourado",
+     "acao": "aventuras",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:boss-diarios:22,24",
+     "x": 22,
+     "y": 24,
+     "item": null,
+     "nome": "Boss Diarios",
+     "cor": "boss",
+     "acao": "boss-diarios",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:forja:23,17",
+     "x": 23,
+     "y": 17,
+     "item": null,
+     "nome": "Forja",
+     "cor": "vermelho",
+     "acao": "forja",
+     "pisar": false,
+     "nomeDx": -0.5,
+     "nomeDy": -0.5
+    },
+    {
+     "uid": "marco:arvore:17,17:17,17",
+     "x": 17,
+     "y": 17,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:18,17",
+     "x": 18,
+     "y": 17,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:19,17",
+     "x": 19,
+     "y": 17,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:17,18",
+     "x": 17,
+     "y": 18,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:18,18",
+     "x": 18,
+     "y": 18,
+     "item": null,
+     "nome": "Arvore De Habilidade",
+     "cor": "verde-azul",
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:19,18",
+     "x": 19,
+     "y": 18,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:17,19",
+     "x": 17,
+     "y": 19,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:18,19",
+     "x": 18,
+     "y": 19,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:17,17:19,19",
+     "x": 19,
+     "y": 19,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    }
+   ]
   },
   {
    "id": "poe-a8-the-sarn-encampment",

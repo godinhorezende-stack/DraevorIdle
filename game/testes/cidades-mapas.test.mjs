@@ -36,7 +36,8 @@ const encosta = (vis, { x, y }) => [-1, 0, 1].some((dx) => [-1, 0, 1].some((dy) 
 
 test('a Vigília de Lioneye tem o seu mapa; o Ato 6 usa o mesmo; a cidade sem mapa próprio segue a de sempre', { skip: SEM }, () => {
   assert.equal(CM.mapaIdDa(VIGILIA), VIGILIA);
-  assert.equal(CM.mapaIdDa('poe-a6-lioneyes-watch'), VIGILIA, 'o PoE repete a Vigília no Ato 6');
+  assert.equal(CM.mapaIdDa('poe-a6-lioneyes-watch'), 'poe-a6-lioneyes-watch', 'o Ato 6 tem a Vigília depois da guerra (o dono, 09/11: "opção 3")');
+  assert.equal(CM.mapaIdDa('poe-a8-the-sarn-encampment'), 'poe-a3-the-sarn-encampment', 'o PoE repete Sarn no Ato 8');
   assert.equal(CM.mapaIdDa('poe-a2-the-forest-encampment'), 'poe-a2-the-forest-encampment', 'o Acampamento da Floresta tem o seu');
   assert.ok(SEM_MAPA, 'há cidade de ato ainda sem mapa');
   assert.equal(CM.mapaIdDa(SEM_MAPA.id), CM.SEMPRE);
@@ -54,6 +55,7 @@ const NPCS_DO_PoE = {
   'poe-a3-the-sarn-encampment': [['Clarissa', 'loja'], ['Hargan', 'banco'], ['Maramoa', 'fala'], ['Grigor', 'fala']],
   'poe-a4-highgate': [['Petarus e Vanja', 'loja'], ['Tasuni', 'banco'], ['Dialla', 'fala'], ['Oyun', 'fala']],
   'poe-a5-overseers-tower': [['Lani', 'loja'], ['Bannon', 'banco'], ['Utula', 'fala']],
+  'poe-a6-lioneyes-watch': [['Lilly Roth', 'loja'], ['Tarkleigh', 'banco'], ['Bestel', 'fala']],
 };
 test('os NPCs do PoE em cada cidade com mapa, de pé em casa livre e alcançáveis da chegada; os marcos também', { skip: SEM }, () => {
   for (const [id, esperados] of Object.entries(NPCS_DO_PoE)) {
@@ -81,8 +83,17 @@ test('a posição de outra cidade (ou fora do mapa) vira a chegada; a desta cida
   assert.deepEqual(CM.garantirPosicao(e), { ...CM.chegadaDa(VIGILIA), cidade: VIGILIA });
   e.pos = { x: 30, y: 21, z: 7, dir: 1, cidade: VIGILIA };
   assert.deepEqual(CM.garantirPosicao(e), { x: 30, y: 21, z: 7, dir: 1, cidade: VIGILIA });
+  // a cidade que repete o mapa de outra (`igualA` — Sarn no Ato 8): a casa de lá vale aqui
+  const SARN = 'poe-a3-the-sarn-encampment';
+  const c = CM.chegadaDa(SARN);
+  e.atoDaCidade = 3;
+  e.pos = { x: c.x, y: c.y, z: 7, dir: 1, cidade: SARN };
+  e.atoDaCidade = 8;
+  assert.deepEqual(CM.garantirPosicao(e), { x: c.x, y: c.y, z: 7, dir: 1, cidade: SARN }, 'Sarn no Ato 8 é o mesmo mapa: a casa vale');
+  // e a Vigília do Ato 6 (depois da guerra) é OUTRO mapa: quem estava na do Ato 1 vai para a chegada dela
   e.atoDaCidade = 6;
-  assert.equal(CM.garantirPosicao(e).x, 30, 'a Vigília do Ato 6 é o mesmo mapa: a casa vale');
+  e.pos = { x: 30, y: 21, z: 7, dir: 1, cidade: VIGILIA };
+  assert.deepEqual(CM.garantirPosicao(e), { ...CM.chegadaDa('poe-a6-lioneyes-watch'), cidade: 'poe-a6-lioneyes-watch' });
   e.atoDaCidade = SEM_MAPA.ato;
   assert.deepEqual(CM.garantirPosicao(e), { ...CM.chegadaDa(SEM_MAPA.id), cidade: CM.SEMPRE });
 });

@@ -23,7 +23,7 @@ for (const def of dados.cidades) {
   if ((args.length && !args.includes(def.id)) || !def.mapa?.gerador) continue;
   const gerador = await GERADORES[def.mapa.gerador]?.();
   if (!gerador) throw new Error(`${def.id}: gerador desconhecido ${def.mapa.gerador}`);
-  const { W, H, pilhas, blocked } = gerador.gerar(def, def.mapa.semente);
+  const { W, H, pilhas, blocked } = gerador.gerar(def, def.mapa.semente, def.mapa);
 
   // a conferência: a chegada é andável e alcança (encostando) cada NPC e cada marco
   const livre = (x, y) => !blocked[y * W + x];
