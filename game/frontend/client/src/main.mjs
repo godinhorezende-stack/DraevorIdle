@@ -2073,8 +2073,8 @@ function applyState(message) {
   atualizarBotaoDoPergaminhoDePortal();
   atualizarBotaoDoPortal();
   atualizarBotaoDoPortalDaGema();
-  // Só na fase (na cidade não): os pontos andam a cada retrato; a geometria é refeita só ao trocar de fase/andar.
-  atualizarMinimapa(!!message.hunt);
+  // Na fase e na cidade (09/11): os pontos andam a cada retrato; a geometria é refeita só ao trocar de fase/andar.
+  atualizarMinimapa(!!(message.hunt || message.city));
   /*
    * ---- A tela em branco pede o mapa de volta ----
    *
@@ -7668,7 +7668,7 @@ function soltarAMorte() {
   if (state.hunt || state.city) {
     mapView.setSnapshot(state.hunt ?? state.city, state.character);
     cenaNaTela = chaveDaCena({ hunt: state.hunt, city: state.city });
-    atualizarMinimapa(!!state.hunt);
+    atualizarMinimapa(!!(state.hunt || state.city));
   }
   if (m.eventos.length && !abaEscondida) mapView.addEvents(semMeusPortais(m.eventos));
   if (mapView.faltaOMapa() && $('entrada')?.hidden !== false && $('viagem')?.hidden !== false) mostrarViagem({ hunt: nomeDaCena({ hunt: state.hunt, city: state.city }), motivo: 'carregando' });
@@ -7704,7 +7704,7 @@ function fecharViagemDoPortal() {
   if (state.hunt || state.city) {
     mapView.setSnapshot(state.hunt ?? state.city, state.character);
     cenaNaTela = chaveDaCena({ hunt: state.hunt, city: state.city });
-    atualizarMinimapa(!!state.hunt);
+    atualizarMinimapa(!!(state.hunt || state.city));
   }
   // O portal de chegada que o servidor mandou para a casa dele vira a CHEGADA animada (os da party, nas casas deles, seguem como vieram).
   const eu = (state.hunt ?? state.city)?.player ?? null;

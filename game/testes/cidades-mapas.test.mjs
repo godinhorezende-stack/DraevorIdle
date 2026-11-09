@@ -70,7 +70,7 @@ const NPCS_DO_PoE = {
   'poe-a10-oriath-docks': [['Lilly Roth', 'loja'], ['Bannon', 'banco'], ['Lani', 'fala']],
   'poe-a11-karui-shores': [['Lilly Roth', 'loja'], ['Utula', 'banco'], ['Kirac', 'fala']],
 };
-test('os NPCs do PoE em cada cidade com mapa, de pé em casa livre e alcançáveis da chegada; os marcos também', { skip: SEM }, () => {
+test('os NPCs do PoE em cada cidade com mapa, de pé em casa livre, com colisão e alcançáveis da chegada; os marcos também', { skip: SEM }, () => {
   for (const [id, esperados] of Object.entries(NPCS_DO_PoE)) {
     const meta = CM.metaDa(id);
     assert.deepEqual(meta.npcs.map((n) => [n.name, n.tipo]), esperados, id);
@@ -78,7 +78,11 @@ test('os NPCs do PoE em cada cidade com mapa, de pé em casa livre e alcançáve
     assert.equal(CM.bloqueadoNa(id, c.x, c.y), false, `${id}: a chegada é andável`);
     const vis = alcancadas(id);
     for (const n of meta.npcs) {
-      assert.equal(CM.bloqueadoNa(id, n.x, n.y), false, `${id}: ${n.name} em casa livre`);
+      const m = CM.mapaDa(id);
+      assert.equal(m.blocked[n.y * m.width + n.x], 0, `${id}: ${n.name} em casa livre do mapa`);
+      // (09/11 — o dono: "npc tem colisão tbm") ninguém passa por cima do NPC: a casa dele bloqueia o passo e o caminho
+      assert.equal(CM.bloqueadoNa(id, n.x, n.y), true, `${id}: ${n.name} tem colisão`);
+      assert.equal(CM.gradeDa(id).andavel.has(`${n.x},${n.y}`), false, `${id}: o caminho desvia de ${n.name}`);
       assert.ok(encosta(vis, n), `${id}: ${n.name} alcançável`);
     }
     for (const acao of ['aventuras', 'boss-diarios', 'forja', 'arvore']) assert.ok(meta.objetos.some((o) => o.acao === acao), `${id}: ${acao}`);
