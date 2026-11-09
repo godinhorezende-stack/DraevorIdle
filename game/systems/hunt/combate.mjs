@@ -52,6 +52,7 @@ import * as ItensPoeJogo from '../itens-poe/jogo.mjs';
 import * as Instancia from './instancia.mjs';
 import * as SinteseMapas from '../itens-poe/sintese-mapas.mjs';
 import * as Cartas from '../itens-poe/cartas.mjs';
+import * as LootDosTocados from '../itens-poe/loot-dos-tocados.mjs';
 import * as Doryani from '../itens-poe/doryani.mjs';
 import * as MoedasPoe from '../itens-poe/moedas.mjs';
 // (100% — dados, 03/11) as Tatuagens do PoE (a fonte simples, sem a liga Ancestral — `passivas/tatuagens.dropDoMonstro`)
@@ -1109,7 +1110,17 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     const p = ItensPoeJogo.unicoNaBase('Doryanis_Delusion', Doryani.ELEMENTOS[el]?.base, nivelDoMorto);
     if (p) doSintetizado.push(ItensPoeJogo.semIdentificar(p));
   }
-  for (const daPoe of [...ItensPoeJogo.dropsDoMonstro(nivelDoMorto, tipoDoBicho(alvo), Math.random, undefined, quantidadeDoJogador, raridadeDoMorto, { unicoPct: Number(sint.unicoPct) || 0 }), ...rarosDoChefe, ...doSintetizado]) {
+  // (09/11, lote 5 dos modificadores de monstro) o LOOT dos Tocados: cada peça vira o que o modificador diz (moedas, carta, mapa, outra classe; corrompida, uma
+  // raridade acima, com o máximo de encaixes) — `itens-poe/loot-dos-tocados.mjs`; as moedas e as cartas vão como as outras moedas (`darExtra`)
+  const pecasDoMorto = [...ItensPoeJogo.dropsDoMonstro(nivelDoMorto, tipoDoBicho(alvo), Math.random, undefined, quantidadeDoJogador, raridadeDoMorto, { unicoPct: Number(sint.unicoPct) || 0 }), ...rarosDoChefe, ...doSintetizado];
+  const doMorto = LootDosTocados.mudaOLoot(alvo)
+    ? pecasDoMorto.flatMap((p) => {
+        const r = LootDosTocados.converter(p, alvo, { nivel: nivelDoMorto, tierDaArea: noMapa?.tier ?? null, ato: Number(contextoDoDrop(hunt).ato) || 1, gema: () => GemasDeSkill.sortearDrop({ ato: Number(contextoDoDrop(hunt).ato) || 1, levelDaFase: nivelDoMorto, fatorDeChance: 1e9 }) });
+        for (const m of r.moedas) for (let i = 0; i < (m.count ?? 1); i++) darExtra({ ...m, count: 1 });
+        return r.pecas;
+      })
+    : pecasDoMorto;
+  for (const daPoe of doMorto) {
     if (corrompidosPct > 0 && Math.random() * 100 < corrompidosPct) daPoe.poe.corrompido = true;
     identificarAoAchar(estado, daPoe);
     // O FILTRO DE LOOT (dono, 08/10: "está pegando itens mesmo setando as coisas"): a peça que o filtro não pega fica no chão ("Ignorado").

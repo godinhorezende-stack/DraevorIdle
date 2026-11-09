@@ -79,6 +79,20 @@ const MAPA = {
   'interrupt for X ms after skill use': { f: (t, v) => (t.pausaMs += v) },
   'maximum life +% granted to pack members on death': { f: (t, v) => (t.packVidaPct += v) },
   'actor scale +% granted to pack members on death': { f: (t, v) => (t.packEscalaPct += v) },
+  // (09/11, lote 5) o LOOT dos Tocados (`itens-poe/loot-dos-tocados.mjs`; decisões do dono: a moeda pela raridade, o Escaravelho vira Mapa)
+  'dropped items are converted to currency based on rarity': { f: (t, v) => { if (v) t.lootVira = 'moeda'; } },
+  'dropped items are converted to divination cards': { f: (t, v) => { if (v) t.lootVira = 'carta'; } },
+  'dropped items are converted to maps': { f: (t, v) => { if (v) t.lootVira = 'mapa'; } },
+  'dropped items are converted to scarabs based on rarity': { f: (t, v) => { if (v) t.lootVira = 'escaravelho'; } },
+  'dropped items are converted to jewels': { f: (t, v) => { if (v) t.lootVira = 'joia'; } },
+  'dropped items are converted to rings': { f: (t, v) => { if (v) t.lootVira = 'anel'; } },
+  'dropped items are converted to amulets': { f: (t, v) => { if (v) t.lootVira = 'amuleto'; } },
+  'dropped items are converted to utility flasks': { f: (t, v) => { if (v) t.lootVira = 'frascoUtilitario'; } },
+  'dropped items are converted to gems': { f: (t, v) => { if (v) t.lootVira = 'gema'; } },
+  'dropped items are corrupted': { f: (t, v) => (t.lootCorrompido = v ? 1 : t.lootCorrompido) },
+  'dropped items are one rarity higher': { f: (t, v) => (t.lootRaridadeAcima = v ? 1 : t.lootRaridadeAcima) },
+  'dropped items have maximum sockets': { f: (t, v) => (t.lootSoquetesMax = v ? 1 : t.lootSoquetesMax) },
+  'dropped quality items converted to 20 quality currency': { f: (t, v) => (t.lootQualidadeViraMoeda = v ? 1 : t.lootQualidadeViraMoeda) },
   'attack speed +%': { f: (t, v) => (t.velocidadeDeAtaquePct += v) },
   'base cast speed +%': { f: (t, v) => (t.velocidadeDeConjuracaoPct += v) },
   'attack and cast speed +%': { f: (t, v) => { t.velocidadeDeAtaquePct += v; t.velocidadeDeConjuracaoPct += v; } },
@@ -158,10 +172,10 @@ function mecanicasDosDots(dots) {
     .map(([el, d]) => ({ gatilho: 'aoAtacar', efeito: 'debuff', elemento: el, chance: BASE_DO_DOT[el].chance, danoPctDoGolpe: Math.round(BASE_DO_DOT[el].pct * (1 + d.mais / 100)), duracaoMs: Math.round((BASE_DO_DOT[el].ms * (1 + d.duracao / 100)) / 1000) * 1000 }));
 }
 
-const vazio = () => ({ vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, velocidadeDeConjuracaoPct: 0, danoProjetilPct: 0, danoExtraAleatorioPct: 0, naoCaosComoCaosPct: 0, critChancePct: 0, sempreCritico: 0, dotFisicoSofridoPct: 0, sempreEletriza: 0, todoDanoResfria: 0, todoDanoEletriza: 0, efeitoResfriamentoPct: 0, efeitoEletrizacaoPct: 0, duracaoEletrizacaoPct: 0, chanceCongelar: 0, todoDanoCongela: 0, duracaoCongelamentoPct: 0, bloqueioMagia: 0, danoBloqueadoPct: 0, limiarAtordoamentoPct: 0, imuneAtordoamento: 0, sempreAtordoa: 0, dobrarAtordoamentoPct: 0, limiarInimigoMenosPct: 0, imuneMisericordia: 0, danoExtraCriticoRedPct: 0, semLentidao: 0, semLentidaoMovimento: 0, sobrecargaFisicaPct: 0, areaPct: 0, evitarProjeteisPct: 0, repeticoes: 0, pausaMs: 0, packVidaPct: 0, packEscalaPct: 0, danoTipoPct: {}, danoExtraPct: {}, conversaoPct: {}, afeccaoEfeitoPct: {}, afeccaoDuracaoPct: {}, resistDot: {}, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0, esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, resist: {}, _dots: {} });
+const vazio = () => ({ vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, velocidadeDeConjuracaoPct: 0, danoProjetilPct: 0, danoExtraAleatorioPct: 0, naoCaosComoCaosPct: 0, critChancePct: 0, sempreCritico: 0, dotFisicoSofridoPct: 0, sempreEletriza: 0, todoDanoResfria: 0, todoDanoEletriza: 0, efeitoResfriamentoPct: 0, efeitoEletrizacaoPct: 0, duracaoEletrizacaoPct: 0, chanceCongelar: 0, todoDanoCongela: 0, duracaoCongelamentoPct: 0, bloqueioMagia: 0, danoBloqueadoPct: 0, limiarAtordoamentoPct: 0, imuneAtordoamento: 0, sempreAtordoa: 0, dobrarAtordoamentoPct: 0, limiarInimigoMenosPct: 0, imuneMisericordia: 0, danoExtraCriticoRedPct: 0, semLentidao: 0, semLentidaoMovimento: 0, sobrecargaFisicaPct: 0, areaPct: 0, evitarProjeteisPct: 0, repeticoes: 0, pausaMs: 0, packVidaPct: 0, packEscalaPct: 0, lootCorrompido: 0, lootRaridadeAcima: 0, lootSoquetesMax: 0, lootQualidadeViraMoeda: 0, lootVira: null, danoTipoPct: {}, danoExtraPct: {}, conversaoPct: {}, afeccaoEfeitoPct: {}, afeccaoDuracaoPct: {}, resistDot: {}, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0, esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, resist: {}, _dots: {} });
 const POR_ELEMENTO = ['resist', 'danoTipoPct', 'danoExtraPct', 'conversaoPct', 'afeccaoEfeitoPct', 'afeccaoDuracaoPct', 'resistDot'];
 const porEl = (t, campo, el, v) => (t[campo][el] = (t[campo][el] ?? 0) + v);
-const limpar = (t) => Object.fromEntries(Object.entries(t).filter(([k]) => k !== '_dots' && k !== '_acerto').filter(([k, v]) => (POR_ELEMENTO.includes(k) ? Object.keys(v).length : v)).map(([k, v]) => [k, POR_ELEMENTO.includes(k) ? v : Math.round(v * 100) / 100]));
+const limpar = (t) => Object.fromEntries(Object.entries(t).filter(([k]) => k !== '_dots' && k !== '_acerto').filter(([k, v]) => (POR_ELEMENTO.includes(k) ? Object.keys(v).length : v)).map(([k, v]) => [k, POR_ELEMENTO.includes(k) || typeof v === 'string' ? v : Math.round(v * 100) / 100]));
 
 /** O que o monstro faz ao acertar (12/10): os acumuladores dos stats do PoE, que viram as mecânicas `aoAtacar` (e a Tolerância por segundo, `aoReceberDano`). */
 const acerto = (t) => (t._acerto ??= {
