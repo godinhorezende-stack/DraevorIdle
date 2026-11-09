@@ -322,12 +322,14 @@ test('a AFECÇÃO INERENTE do Golpe Crítico do monstro: Fogo incendeia, Gelo co
   assert.ok(Math.abs(pct - Math.round(50 * 0.1 ** 0.4 * 10) / 10) < 1e-9, String(pct));
   assert.equal(Afixos.soma(e).dano_recebido_inc ?? 0, pct, 'Eletrizado: dano recebido aumentado');
   assert.ok(ev.some((x) => x.estado === 'eletrizado'));
-  // sem crítico, nada
+  // sem crítico, nada de inerente — só o Resfriamento, que todo acerto com Gelo põe (09/11, aval do dono: "manter a regra do PoE")
   const s = novo();
   cacada(s);
   acertar(s, monstro(), { ...golpe, critico: false });
   assert.equal(s.hunt.efeitosDoJogador.dots.length, 0);
-  assert.equal(s.hunt.controle, undefined);
+  assert.equal(s.hunt.controle?.congelado, undefined);
+  assert.equal(NoJogador.ativosEmVoce(s.hunt).eletrizado, 0);
+  assert.ok(s.hunt.controle?.lento?.pct > 0, 'o Gelo resfria mesmo sem crítico');
   const p = novo();
   alocar(p, /^critico_recebido_sem_afeccao$/);
   cacada(p);

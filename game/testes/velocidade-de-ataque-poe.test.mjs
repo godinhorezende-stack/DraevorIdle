@@ -17,6 +17,7 @@ const Cacadas = await import('../systems/cacadas.mjs');
 const FichaPoe = await import('../systems/personagem/ficha-poe.mjs');
 const Registro = await import('../systems/combate/registro.mjs');
 const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
+const { criarMonstro } = await import('../systems/hunt/monstros.mjs');
 if (!SEM) Jogo.iniciar(ITEM_CATALOG);
 
 /** Os Ataques por Segundo da base no catálogo do PoE (a fonte da verdade). */
@@ -179,6 +180,9 @@ function golpesEm60s(arma, passo = () => 250) {
   while (t < inicio + 60_000) {
     const h = e.hunt;
     h.monstros = h.monstros.slice(0, 1);
+    // (09/11, aval do dono — "manter a regra do PoE": o Gelo do monstro resfria; o bicho é um Comum da mesma espécie, sem modificadores, para medir só o ritmo
+    // da arma — o Raro sorteado com Gelo resfriava você e atrasava os golpes)
+    if (!h.monstros[0].comumDoTeste) h.monstros[0] = Object.assign(criarMonstro({ key: h.monstros[0].key, x: h.pos.x + alcance, y: h.pos.y }, null), { comumDoTeste: true });
     Object.assign(h.monstros[0], { hp: 1e12, maxHp: 1e12, x: h.pos.x + alcance, y: h.pos.y });
     h.alvo = h.monstros[0].uid;
     e.hp = e.maxHp;
