@@ -198,6 +198,244 @@
    ]
   },
   {
+   "id": "poe-a2-the-forest-encampment",
+   "nome": "Acampamento da Floresta",
+   "mapa": {
+    "gerador": "floresta",
+    "semente": 23
+   },
+   "chegada": {
+    "x": 32,
+    "y": 25,
+    "z": 7,
+    "dir": 2
+   },
+   "npcs": [
+    {
+     "uid": "npc:greust",
+     "id": "greust",
+     "name": "Greust",
+     "x": 31,
+     "y": 15,
+     "z": 7,
+     "dir": 2,
+     "look": 143,
+     "colors": {
+      "type": 143,
+      "head": 78,
+      "body": 58,
+      "legs": 58,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "banco"
+    },
+    {
+     "uid": "npc:yeena",
+     "id": "yeena",
+     "name": "Yeena",
+     "x": 27,
+     "y": 20,
+     "z": 7,
+     "dir": 2,
+     "look": 148,
+     "colors": {
+      "type": 148,
+      "head": 79,
+      "body": 82,
+      "legs": 82,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "loja"
+    },
+    {
+     "uid": "npc:silk",
+     "id": "silk",
+     "name": "Silk",
+     "x": 37,
+     "y": 21,
+     "z": 7,
+     "dir": 2,
+     "look": 153,
+     "colors": {
+      "type": 153,
+      "head": 95,
+      "body": 95,
+      "legs": 95,
+      "feet": 95,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "A floresta tem olhos, exilado. Eu sou um deles."
+    },
+    {
+     "uid": "npc:helena",
+     "id": "helena",
+     "name": "Helena",
+     "x": 35,
+     "y": 28,
+     "z": 7,
+     "dir": 2,
+     "look": 140,
+     "colors": {
+      "type": 140,
+      "head": 58,
+      "body": 94,
+      "legs": 94,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "Este acampamento é o último lugar seguro antes da floresta. Descanse enquanto pode."
+    },
+    {
+     "uid": "npc:eramir",
+     "id": "eramir",
+     "name": "Eramir",
+     "x": 28,
+     "y": 30,
+     "z": 7,
+     "dir": 2,
+     "look": 145,
+     "colors": {
+      "type": 145,
+      "head": 0,
+      "body": 86,
+      "legs": 86,
+      "feet": 76,
+      "addons": 0
+     },
+     "addons": 0,
+     "tipo": "fala",
+     "fala": "Os bandidos fecharam os caminhos da floresta. Ajude um deles, ou acabe com os três — a escolha é sua, exilado."
+    }
+   ],
+   "objetos": [
+    {
+     "uid": "marco:aventuras:34,26",
+     "x": 34,
+     "y": 26,
+     "item": null,
+     "nome": "Aventuras",
+     "cor": "dourado",
+     "acao": "aventuras",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:boss-diarios:28,26",
+     "x": 28,
+     "y": 26,
+     "item": null,
+     "nome": "Boss Diarios",
+     "cor": "boss",
+     "acao": "boss-diarios",
+     "pisar": true,
+     "nomeDx": -0.5,
+     "nomeDy": -0.6
+    },
+    {
+     "uid": "marco:forja:40,21",
+     "x": 40,
+     "y": 21,
+     "item": null,
+     "nome": "Forja",
+     "cor": "vermelho",
+     "acao": "forja",
+     "pisar": false,
+     "nomeDx": -0.5,
+     "nomeDy": -0.5
+    },
+    {
+     "uid": "marco:arvore:34,12:34,12",
+     "x": 34,
+     "y": 12,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,12:35,12",
+     "x": 35,
+     "y": 12,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,12:36,12",
+     "x": 36,
+     "y": 12,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,12:34,13",
+     "x": 34,
+     "y": 13,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,12:35,13",
+     "x": 35,
+     "y": 13,
+     "item": null,
+     "nome": "Arvore De Habilidade",
+     "cor": "verde-azul",
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,12:36,13",
+     "x": 36,
+     "y": 13,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,12:34,14",
+     "x": 34,
+     "y": 14,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,12:35,14",
+     "x": 35,
+     "y": 14,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    },
+    {
+     "uid": "marco:arvore:34,12:36,14",
+     "x": 36,
+     "y": 14,
+     "item": null,
+     "nome": null,
+     "cor": null,
+     "acao": "arvore"
+    }
+   ]
+  },
+  {
    "id": "poe-a6-lioneyes-watch",
    "nome": "Vigília de Lioneye",
    "igualA": "poe-a1-lioneyes-watch"
