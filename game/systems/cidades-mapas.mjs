@@ -45,21 +45,29 @@ export function chegadaDa(id) {
   const c = definicao(id);
   return { x: c.chegada.x, y: c.chegada.y, z: c.chegada.z ?? mapaDa(id).z, dir: c.chegada.dir ?? 2 };
 }
-/** A casa está bloqueada no mapa da cidade? (fora do mapa: sim) */
+// (09/11 — o dono: "npc tem colisão tbm") as casas dos NPCs da cidade: ninguém passa por cima deles
+const DOS_NPCS = new Map();
+function casasDosNpcs(id) {
+  const chave = String(id ?? '');
+  if (!DOS_NPCS.has(chave)) DOS_NPCS.set(chave, new Set((metaDa(id).npcs ?? []).filter((n) => Number.isFinite(n.x) && Number.isFinite(n.y)).map((n) => `${n.x},${n.y}`)));
+  return DOS_NPCS.get(chave);
+}
+/** A casa está bloqueada no mapa da cidade? (fora do mapa: sim; a casa de um NPC: sim) */
 export function bloqueadoNa(id, x, y) {
   const m = mapaDa(id);
   if (x < 0 || y < 0 || x >= m.width || y >= m.height) return true;
-  return !!m.blocked[y * m.width + x];
+  return !!m.blocked[y * m.width + x] || casasDosNpcs(id).has(`${x},${y}`);
 }
-/** A cidade no formato de grade do caminho (`caminho.mjs`). */
+/** A cidade no formato de grade do caminho (`caminho.mjs`); uma por cidade (a que repete o mapa de outra tem os NPCs dela). */
 export function gradeDa(id) {
-  const mid = mapaIdDa(id);
-  if (GRADES.has(mid)) return GRADES.get(mid);
+  const chave = String(id ?? '');
+  if (GRADES.has(chave)) return GRADES.get(chave);
   const m = mapaDa(id);
+  const npcs = casasDosNpcs(id);
   const andavel = new Set();
-  for (let y = 0; y < m.height; y++) for (let x = 0; x < m.width; x++) if (!m.blocked[y * m.width + x]) andavel.add(`${x},${y}`);
+  for (let y = 0; y < m.height; y++) for (let x = 0; x < m.width; x++) if (!m.blocked[y * m.width + x] && !npcs.has(`${x},${y}`)) andavel.add(`${x},${y}`);
   const g = { minX: 0, maxX: m.width - 1, minY: 0, maxY: m.height - 1, andavel };
-  GRADES.set(mid, g);
+  GRADES.set(chave, g);
   return g;
 }
 
