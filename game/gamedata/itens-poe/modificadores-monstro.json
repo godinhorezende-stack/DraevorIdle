@@ -311,7 +311,7 @@
     "velocidadeDeConjuracaoPct": 30,
     "evasaoPct": 100
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 5,
    "total": 5,
    "statsPoe": [
@@ -396,9 +396,11 @@
    "nivel": 27,
    "pesoMagico": 0,
    "pesoRaro": 0,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "danoPorDistanciaPct": 60
+   },
+   "estado": "efeito",
+   "valem": 4,
    "total": 4,
    "statsPoe": [
     {
@@ -774,13 +776,14 @@
     "limiarAtordoamentoPct": 250,
     "sempreAtordoa": 1,
     "dobrarAtordoamentoPct": 25,
+    "sangueExtra": 1,
     "danoTipoPct": {
      "physical": 40
     },
     "precisaoPct": 100
    },
-   "estado": "parcial",
-   "valem": 7,
+   "estado": "efeito",
+   "valem": 8,
    "total": 8,
    "statsPoe": [
     {
@@ -897,6 +900,7 @@
    "stats": {
     "limiarAtordoamentoPct": 250,
     "sobrecargaFisicaPct": 10,
+    "sangueRobo": 1,
     "danoTipoPct": {
      "physical": 40
     },
@@ -904,8 +908,8 @@
      "physical": 30
     }
    },
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -1115,7 +1119,7 @@
      "porSegundo": 2
     }
    ],
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 7,
    "total": 7,
    "statsPoe": [
@@ -1327,10 +1331,11 @@
    "pesoRaro": 1000,
    "stats": {
     "velocidadePct": -20,
+    "danoFinalPct": -30,
     "reducaoDeDano": -30
    },
-   "estado": "parcial",
-   "valem": 2,
+   "estado": "efeito",
+   "valem": 3,
    "total": 3,
    "statsPoe": [
     {
@@ -1419,8 +1424,8 @@
    "stats": {
     "lootSoquetesMax": 1
    },
-   "estado": "parcial",
-   "valem": 1,
+   "estado": "efeito",
+   "valem": 2,
    "total": 2,
    "statsPoe": [
     {
@@ -1620,10 +1625,11 @@
    "pesoMagico": 0,
    "pesoRaro": 800,
    "stats": {
-    "imuneMisericordia": 1
+    "imuneMisericordia": 1,
+    "executorPct": 15
    },
    "estado": "parcial",
-   "valem": 1,
+   "valem": 2,
    "total": 3,
    "statsPoe": [
     {
@@ -2469,7 +2475,8 @@
    "pesoMagico": 0,
    "pesoRaro": 200,
    "stats": {
-    "lootCorrompido": 1
+    "lootCorrompido": 1,
+    "sangueAoSerAcertadoPct": 60
    },
    "mecanicas": [
     {
@@ -2481,8 +2488,8 @@
      "pilhas": 1
     }
    ],
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -3666,7 +3673,7 @@
     "velocidadeDeConjuracaoPct": 30,
     "evasaoPct": 100
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 5,
    "total": 5,
    "statsPoe": [
@@ -3722,13 +3729,14 @@
     "limiarAtordoamentoPct": 250,
     "dobrarAtordoamentoPct": 25,
     "limiarInimigoMenosPct": 50,
+    "sangueExtra": 1,
     "danoTipoPct": {
      "physical": 60
     },
     "precisaoPct": 100
    },
-   "estado": "parcial",
-   "valem": 7,
+   "estado": "efeito",
+   "valem": 8,
    "total": 8,
    "statsPoe": [
     {
@@ -3791,8 +3799,8 @@
     "danoProjetilPct": 30,
     "evitarProjeteisPct": 30
    },
-   "estado": "parcial",
-   "valem": 2,
+   "estado": "efeito",
+   "valem": 3,
    "total": 3,
    "statsPoe": [
     {
@@ -4286,7 +4294,9 @@
    "nivel": 36,
    "pesoMagico": 800,
    "pesoRaro": 0,
-   "stats": {},
+   "stats": {
+    "sangueAoSerAcertadoPct": 60
+   },
    "mecanicas": [
     {
      "gatilho": "aoAtacar",
@@ -4297,8 +4307,8 @@
      "pilhas": 1
     }
    ],
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -4561,10 +4571,11 @@
    "pesoMagico": 0,
    "pesoRaro": 0,
    "stats": {
-    "danoExtraAleatorioPct": 60
+    "danoExtraAleatorioPct": 60,
+    "equilibrioElemental": 1
    },
-   "estado": "parcial",
-   "valem": 1,
+   "estado": "efeito",
+   "valem": 2,
    "total": 2,
    "statsPoe": [
     {
@@ -5246,8 +5257,8 @@
    "pesoMagico": 0,
    "pesoRaro": 0,
    "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "estado": "efeito",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -5361,7 +5372,7 @@
      "porSegundo": 1
     }
    ],
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 1,
    "total": 1,
    "statsPoe": [
@@ -5393,7 +5404,7 @@
      "chance": 100
     }
    ],
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 1,
    "total": 1,
    "statsPoe": [
@@ -5635,8 +5646,8 @@
    "pesoMagico": 0,
    "pesoRaro": 0,
    "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "estado": "efeito",
+   "valem": 2,
    "total": 2,
    "statsPoe": [
     {
@@ -5664,9 +5675,11 @@
    "nivel": 27,
    "pesoMagico": 0,
    "pesoRaro": 0,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "danoPorDistanciaPct": 60
+   },
+   "estado": "efeito",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -5688,9 +5701,11 @@
    "nivel": 27,
    "pesoMagico": 1500,
    "pesoRaro": 1500,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "executorPct": 20
+   },
+   "estado": "efeito",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -5739,7 +5754,9 @@
    "nivel": 36,
    "pesoMagico": 500,
    "pesoRaro": 500,
-   "stats": {},
+   "stats": {
+    "sangueAoSerAcertadoPct": 60
+   },
    "mecanicas": [
     {
      "gatilho": "aoAtacar",
@@ -5750,8 +5767,8 @@
      "pilhas": 1
     }
    ],
-   "estado": "parcial",
-   "valem": 3,
+   "estado": "efeito",
+   "valem": 4,
    "total": 4,
    "statsPoe": [
     {

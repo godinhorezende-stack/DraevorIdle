@@ -24,6 +24,7 @@
 import * as Formulas from './combate/formulas.mjs';
 import * as Controle from './combate/controle.mjs';
 import * as AtributosDoMob from './mobs/atributos.mjs';
+import * as BuffsDeMob from './mobs/buffs.mjs';
 import * as Dot from './combate/dot.mjs';
 import { readFileSync } from 'node:fs';
 import * as Overrides from './overrides.mjs';
@@ -139,6 +140,11 @@ export const semCorpoACorpo = (bicho) => (bicho?.boss ? !bicho.boss.melee : !!PO
 /** O EFEITO na tela quando o golpe corpo a corpo acerta (o id do efeito do Tibia): o do cadastro (aba Mobs → Ataques e efeitos) ou o sangue (1). */
 export const efeitoDoGolpe = (bicho) => (bicho?.boss ? bicho.boss.melee?.efeito : PODERES[bicho?.key]?.ataques.find((a) => a.tipo === 'melee')?.efeito) ?? EFEITO_DO_SANGUE;
 
+/** (09/11, lote 6) O golpe corpo a corpo MÉDIO do bicho (a média da faixa do arquivo), ou null sem golpe no arquivo — a "média de dano" do Sangue Corrompido. */
+export function golpeMedioDoBicho(bicho) {
+  const m = bicho?.boss ? bicho.boss.melee : PODERES[bicho?.key]?.ataques?.find((a) => a.tipo === 'melee');
+  return m ? (Number(m.min) + Number(m.max)) / 2 : null;
+}
 /** (lote 70) O MAIOR golpe corpo a corpo do bicho (o arquivo de poderes dele: o máximo da faixa), ou null sem golpe no arquivo. */
 export function golpeMaximoDoBicho(bicho) {
   if (bicho?.boss) return bicho.boss.melee?.max ?? null;
@@ -373,7 +379,10 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   const critDoMob = ModsPoe.criticoDoBicho(AtributosDoMob.critico(bicho, a), bicho, ficha, agora) ?? AtributosDoMob.rolarCritico(bicho, a);
   // (+ PoE: "Dano Mágico Sofrido de Inimigos Cegos reduzido em X%" — o bicho cego.)
   const deCego = ModsPoe.ativo(bicho?.estados?.cego, agora) ? Math.max(0, 1 - ModsPoe.valor(ficha, 'dano_magico_de_cegos_red') / 100) : 1;
-  const forcaDaMagia = Reforcos.forcaDoBicho(bicho, agora) * fatorDoBloqueio * critDoMob.fator * ModsPoe.doBicho(bicho, agora, { ficha }).danoFator * deCego;
+  // (+ 09/11, lote 6: o Executor — "Dano de Acerto aumentado em X% por cada 10% de Vida faltando do inimigo", `AtributosDoMob.fatorDoExecutor`)
+  // (+ lote 6: o Combardeiro — "Projéteis ganham Dano conforme viajam adiante, até X% aumentado": o projétil × (1 + X% × a distância ÷ o alcance dele))
+  const daDistancia = projetil && bicho?.danoPorDistanciaPct > 0 ? 1 + (bicho.danoPorDistanciaPct * Math.min(1, distancia(bicho, alvo) / Math.max(1, a.alcance || 7))) / 100 : 1;
+  const forcaDaMagia = Reforcos.forcaDoBicho(bicho, agora) * fatorDoBloqueio * critDoMob.fator * ModsPoe.doBicho(bicho, agora, { ficha }).danoFator * deCego * AtributosDoMob.fatorDoExecutor(bicho, estado) * daDistancia;
   // `extras` da magia: dano de OUTROS tipos no mesmo lançamento, cada um com a proteção do SEU elemento.
   // ("O Dano de Raio dos Inimigos Acertando você é Sortudo": a parte de Raio rola duas vezes e fica a maior.)
   const raioSortudo = ModsPoe.valor(ficha, 'dano_raio_recebido_sortudo') > 0;
@@ -605,7 +614,8 @@ export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, t
     // (PoE, o Sabotador: "Inimigos Próximos têm Recuperação da Recarga reduzido em X%" — a aura põe `recargaMenos`, `mods-poe.aurasProximas`.)
     const recarga = ModsPoe.ativo(bicho.estados?.recargaMenos, agora) ? Math.max(0.1, 1 - bicho.estados.recargaMenos.pct / 100) : 1;
     // (+ 09/11, lote 4: as Ações Triplas — a magia repete e depois o monstro pausa, `AtributosDoMob.pausaDaRepeticao`)
-    bicho.proximoPoder[i] = agora + a.intervalo / Math.max(0.1, (Number(bicho.velocidadeDeConjuracao) || 1) * eletrizado * recarga) + AtributosDoMob.pausaDaRepeticao(bicho, '_repMagia');
+    // (+ lote 6: a "+X% de Velocidade de Conjuração" dos buffs do monstro — as Cargas de Frenesi)
+    bicho.proximoPoder[i] = agora + a.intervalo / Math.max(0.1, (Number(bicho.velocidadeDeConjuracao) || 1) * (1 + BuffsDeMob.soma(bicho, agora, 'velocidadeDeConjuracaoPct') / 100) * eletrizado * recarga) + AtributosDoMob.pausaDaRepeticao(bicho, '_repMagia');
     if (Math.random() * 100 >= a.chance) return;
     // (lote 41, P019) o lacaio mais perto do bicho que você leva a magia de dano
     if (noLacaio && noLacaio.hp > 0 && (a.min > 0 || a.max > 0) && alcanca(a, bicho, noLacaio)) {

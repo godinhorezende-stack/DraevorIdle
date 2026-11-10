@@ -28,8 +28,13 @@ export const NUMEROS = {
   // (07/11, lote 16 das inertes: o Resfriamento do PoE — 50% × (dano ÷ limiar)^0,4, de 5% a 30%, 2 s; o Chamado do Vazio: "Todo o Dano Sofrido de Acertos pode te Resfriar")
   resfriamento: { duracaoMs: 2000, minimoPct: 5, maximoPct: 30 },
   incendio: { pctDoFogo: 90, duracaoMs: 4000 },
-  cargas: { maximo: 3, duracaoMs: 10_000, recentementeMs: 4000, tolerancia: { resist: 4 }, frenesi: { danoPct: 4, velocidadeDeAtaquePct: 4 }, poder: { critAumentadoPct: 50 } },
+  // (09/11, lote 6 dos modificadores de monstro — o dono: "procurar no PoB") o efeito por carga do MONSTRO, o do PoB (`data.monsterConstants`, o "if not player minion"):
+  // Tolerância 11% de Redução de Dano Físico e +15% de Resistências Elementais; Frenesi +11% de Velocidade de Ataque e de Conjuração, +5% de Movimento e 4% MAIS Dano;
+  // Poder +150% de Chance de Crítico. (Antes: o efeito do personagem — 4/4/50.)
+  cargas: { maximo: 3, duracaoMs: 10_000, recentementeMs: 4000, tolerancia: { fisicoPct: 11, elementalPct: 15 }, frenesi: { danoMaisPct: 4, velocidadeDeAtaquePct: 11, velocidadeDeConjuracaoPct: 11, velocidadePct: 5 }, poder: { critAumentadoPct: 150 } },
   dreno: { taxaPct: 2 },
+  // (09/11, lote 6) o Equilíbrio Elemental do monstro em você: +25% ao elemento que acertou, −50% aos outros, 5 s (a keystone do PoE)
+  equilibrio: { maisPct: 25, menosPct: 50, duracaoMs: 5000 },
 };
 /** Os elementos da Exposição (o do jogo → a resistência do personagem). */
 const RES = { fire: 'fire_res', ice: 'ice_res', energy: 'energy_res' };
@@ -210,5 +215,6 @@ export function addsDosDebuffsNoJogador(estado) {
   if (ativo(d.mutilado, agora)) somar('move_speed', -NUMEROS.mutilar.lentidaoPct);
   for (const [el, x] of Object.entries(d.exposicao ?? {})) if (RES[el] && ativo(x, agora)) somar(RES[el], -x.pct);
   if (ativo(d.eletrizado, agora)) somar('dano_recebido_inc', d.eletrizado.pct);
+  if (ativo(d.equilibrio, agora)) for (const [el, k] of Object.entries(RES)) somar(k, d.equilibrio.els.includes(el) ? NUMEROS.equilibrio.maisPct : -NUMEROS.equilibrio.menosPct);
   return Object.keys(s).length ? s : null;
 }

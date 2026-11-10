@@ -93,6 +93,21 @@ const MAPA = {
   'dropped items are one rarity higher': { f: (t, v) => (t.lootRaridadeAcima = v ? 1 : t.lootRaridadeAcima) },
   'dropped items have maximum sockets': { f: (t, v) => (t.lootSoquetesMax = v ? 1 : t.lootSoquetesMax) },
   'dropped quality items converted to 20 quality currency': { f: (t, v) => (t.lootQualidadeViraMoeda = v ? 1 : t.lootQualidadeViraMoeda) },
+  // (09/11, lote 6) o resto: o Maldito ("X% menos Dano final"), o Executor, o Equilíbrio Elemental (em você), o Sangue Corrompido em quem o acerta, o sangue na tela
+  'hellscape monster damage +% final': { f: (t, v) => (t.danoFinalPct += v) },
+  'hit damage +% per 10% missing enemy life': { f: (t, v) => (t.executorPct += v) },
+  'keystone elemental equilibrium': { f: (t) => (t.equilibrioElemental = 1) },
+  'base corrupt blood when hit % average damage to deal per minute per stack': { f: (t, v) => (t.sangueAoSerAcertadoPct += v) },
+  'extra gore': { f: (t) => (t.sangueExtra = 1) },
+  'blood and armour type override robot': { f: (t) => (t.sangueRobo = 1) },
+  // ("buff impl stat": o stat interno do PoE, sem linha nem efeito na tela; "Habilidades disparam N Projéteis adicionais": saem, mas contra você só UM acerta —
+  // o dono, 09/11)
+  'buff impl stat': { f: () => {} },
+  'number of additional projectiles': { f: () => {} },
+  // (o Combardeiro: o Ricochete — contra você o projétil não volta, como os adicionais; o dano pela distância vale — `poderes`, `danoPorDistanciaPct`)
+  'number of chains': { f: () => {} },
+  'projectile chain from terrain chance %': { f: () => {} },
+  'projectile damage +% max as distance travelled increases': { f: (t, v) => (t.danoPorDistanciaPct += v) },
   'attack speed +%': { f: (t, v) => (t.velocidadeDeAtaquePct += v) },
   'base cast speed +%': { f: (t, v) => (t.velocidadeDeConjuracaoPct += v) },
   'attack and cast speed +%': { f: (t, v) => { t.velocidadeDeAtaquePct += v; t.velocidadeDeConjuracaoPct += v; } },
@@ -158,9 +173,9 @@ const MAPA = {
   // De Você" (o seu dreno de Escudo de Energia não pega nele — `mobs/mecanicas.semDrenoDeEs`).
   'damage +% while life leeching': { f: (t, v) => (acerto(t).dreno.danoPct += v) },
   'cannot have energy shield leeched from': { f: (t) => (acerto(t).semDrenoDeEs = true) },
-  // (As cargas do monstro: o efeito por carga é o do personagem — o PoE não mostra o dos monstros; aproximado.)
-  'add frenzy charge on skill hit %': { f: (t, v) => (acerto(t).frenesi += v), aprox: true },
-  'gain endurance charge per second if have been hit recently': { f: (t, v) => (acerto(t).toleranciaPorSegundo += v), aprox: true },
+  // (As cargas do monstro: o efeito por carga é o do PoB para monstros — `monstros-no-jogador.NUMEROS.cargas`, lote 6.)
+  'add frenzy charge on skill hit %': { f: (t, v) => (acerto(t).frenesi += v) },
+  'gain endurance charge per second if have been hit recently': { f: (t, v) => (acerto(t).toleranciaPorSegundo += v) },
 };
 
 /** O debuff de dano ao longo do tempo de um elemento (a base do PoE: queimadura 90% do golpe em 4 s; veneno 30% em 2 s; sangramento 70% em 5 s, em 25% dos golpes). */
@@ -172,7 +187,7 @@ function mecanicasDosDots(dots) {
     .map(([el, d]) => ({ gatilho: 'aoAtacar', efeito: 'debuff', elemento: el, chance: BASE_DO_DOT[el].chance, danoPctDoGolpe: Math.round(BASE_DO_DOT[el].pct * (1 + d.mais / 100)), duracaoMs: Math.round((BASE_DO_DOT[el].ms * (1 + d.duracao / 100)) / 1000) * 1000 }));
 }
 
-const vazio = () => ({ vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, velocidadeDeConjuracaoPct: 0, danoProjetilPct: 0, danoExtraAleatorioPct: 0, naoCaosComoCaosPct: 0, critChancePct: 0, sempreCritico: 0, dotFisicoSofridoPct: 0, sempreEletriza: 0, todoDanoResfria: 0, todoDanoEletriza: 0, efeitoResfriamentoPct: 0, efeitoEletrizacaoPct: 0, duracaoEletrizacaoPct: 0, chanceCongelar: 0, todoDanoCongela: 0, duracaoCongelamentoPct: 0, bloqueioMagia: 0, danoBloqueadoPct: 0, limiarAtordoamentoPct: 0, imuneAtordoamento: 0, sempreAtordoa: 0, dobrarAtordoamentoPct: 0, limiarInimigoMenosPct: 0, imuneMisericordia: 0, danoExtraCriticoRedPct: 0, semLentidao: 0, semLentidaoMovimento: 0, sobrecargaFisicaPct: 0, areaPct: 0, evitarProjeteisPct: 0, repeticoes: 0, pausaMs: 0, packVidaPct: 0, packEscalaPct: 0, lootCorrompido: 0, lootRaridadeAcima: 0, lootSoquetesMax: 0, lootQualidadeViraMoeda: 0, lootVira: null, danoTipoPct: {}, danoExtraPct: {}, conversaoPct: {}, afeccaoEfeitoPct: {}, afeccaoDuracaoPct: {}, resistDot: {}, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0, esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, resist: {}, _dots: {} });
+const vazio = () => ({ vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, velocidadeDeConjuracaoPct: 0, danoProjetilPct: 0, danoExtraAleatorioPct: 0, naoCaosComoCaosPct: 0, critChancePct: 0, sempreCritico: 0, dotFisicoSofridoPct: 0, sempreEletriza: 0, todoDanoResfria: 0, todoDanoEletriza: 0, efeitoResfriamentoPct: 0, efeitoEletrizacaoPct: 0, duracaoEletrizacaoPct: 0, chanceCongelar: 0, todoDanoCongela: 0, duracaoCongelamentoPct: 0, bloqueioMagia: 0, danoBloqueadoPct: 0, limiarAtordoamentoPct: 0, imuneAtordoamento: 0, sempreAtordoa: 0, dobrarAtordoamentoPct: 0, limiarInimigoMenosPct: 0, imuneMisericordia: 0, danoExtraCriticoRedPct: 0, semLentidao: 0, semLentidaoMovimento: 0, sobrecargaFisicaPct: 0, areaPct: 0, evitarProjeteisPct: 0, repeticoes: 0, pausaMs: 0, packVidaPct: 0, packEscalaPct: 0, lootCorrompido: 0, lootRaridadeAcima: 0, lootSoquetesMax: 0, lootQualidadeViraMoeda: 0, lootVira: null, danoFinalPct: 0, executorPct: 0, equilibrioElemental: 0, sangueAoSerAcertadoPct: 0, sangueExtra: 0, sangueRobo: 0, danoPorDistanciaPct: 0, danoTipoPct: {}, danoExtraPct: {}, conversaoPct: {}, afeccaoEfeitoPct: {}, afeccaoDuracaoPct: {}, resistDot: {}, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0, esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, resist: {}, _dots: {} });
 const POR_ELEMENTO = ['resist', 'danoTipoPct', 'danoExtraPct', 'conversaoPct', 'afeccaoEfeitoPct', 'afeccaoDuracaoPct', 'resistDot'];
 const porEl = (t, campo, el, v) => (t[campo][el] = (t[campo][el] ?? 0) + v);
 const limpar = (t) => Object.fromEntries(Object.entries(t).filter(([k]) => k !== '_dots' && k !== '_acerto').filter(([k, v]) => (POR_ELEMENTO.includes(k) ? Object.keys(v).length : v)).map(([k, v]) => [k, POR_ELEMENTO.includes(k) || typeof v === 'string' ? v : Math.round(v * 100) / 100]));

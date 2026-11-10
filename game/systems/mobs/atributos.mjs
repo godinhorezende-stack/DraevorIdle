@@ -126,6 +126,13 @@ export const bloqueou = (m, rng = Math.random, fator = 1, { menosPontos = 0, mag
 };
 /** (09/11, lote 4 dos modificadores de monstro) "X% de chance de Evitar Projéteis" (o Fragmentador — `m.evitarProjeteisPct`): o projétil que ele evitou não acerta. */
 export const evitouProjetil = (m, rng = Math.random) => Number(m?.evitarProjeteisPct) > 0 && rng() * 100 < Math.min(100, Number(m.evitarProjeteisPct));
+/** (09/11, lote 6) o EXECUTOR: "Dano de Acerto aumentado em X% por cada 10% de Vida faltando do inimigo" (`m.executorPct`) — o fator no acerto em `alvo` (vida/maxHp). */
+export function fatorDoExecutor(m, alvo) {
+  const pct = Number(m?.executorPct) || 0;
+  if (!(pct > 0) || !(alvo?.maxHp > 0)) return 1;
+  const faltando = Math.max(0, Math.min(1, 1 - (alvo.hp ?? alvo.maxHp) / alvo.maxHp));
+  return 1 + (pct * Math.floor(faltando * 10)) / 100;
+}
 /** (lote 3) A chance de o bicho Bloquear o Dano Mágico (0–1): só com o modificador. */
 export const bloqueioMagiaDe = (m) => limitar(Number(m?.bloqueioMagia) || 0, L.bloqueioMaximo) / 100;
 /**

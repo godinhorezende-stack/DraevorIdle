@@ -145,7 +145,7 @@ export const avisosDoSpawn = (s) => {
 /** A soma dos stats dos modificadores. */
 export function statsDos(ids) {
   const t = { vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0,
-    esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, danoExtraAleatorioPct: 0, naoCaosComoCaosPct: 0, velocidadeDeConjuracaoPct: 0, dotFisicoSofridoPct: 0, sempreEletriza: 0, todoDanoResfria: 0, todoDanoEletriza: 0, efeitoResfriamentoPct: 0, efeitoEletrizacaoPct: 0, duracaoEletrizacaoPct: 0, chanceCongelar: 0, todoDanoCongela: 0, duracaoCongelamentoPct: 0, bloqueioMagia: 0, danoBloqueadoPct: 0, limiarAtordoamentoPct: 0, imuneAtordoamento: 0, sempreAtordoa: 0, dobrarAtordoamentoPct: 0, limiarInimigoMenosPct: 0, imuneMisericordia: 0, danoExtraCriticoRedPct: 0, semLentidao: 0, semLentidaoMovimento: 0, sobrecargaFisicaPct: 0, areaPct: 0, evitarProjeteisPct: 0, repeticoes: 0, pausaMs: 0, packVidaPct: 0, packEscalaPct: 0, lootCorrompido: 0, lootRaridadeAcima: 0, lootSoquetesMax: 0, lootQualidadeViraMoeda: 0, lootVira: null, danoProjetilPct: 0, critChancePct: 0, sempreCritico: 0,
+    esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, danoExtraAleatorioPct: 0, naoCaosComoCaosPct: 0, velocidadeDeConjuracaoPct: 0, dotFisicoSofridoPct: 0, sempreEletriza: 0, todoDanoResfria: 0, todoDanoEletriza: 0, efeitoResfriamentoPct: 0, efeitoEletrizacaoPct: 0, duracaoEletrizacaoPct: 0, chanceCongelar: 0, todoDanoCongela: 0, duracaoCongelamentoPct: 0, bloqueioMagia: 0, danoBloqueadoPct: 0, limiarAtordoamentoPct: 0, imuneAtordoamento: 0, sempreAtordoa: 0, dobrarAtordoamentoPct: 0, limiarInimigoMenosPct: 0, imuneMisericordia: 0, danoExtraCriticoRedPct: 0, semLentidao: 0, semLentidaoMovimento: 0, sobrecargaFisicaPct: 0, areaPct: 0, evitarProjeteisPct: 0, repeticoes: 0, pausaMs: 0, packVidaPct: 0, packEscalaPct: 0, lootCorrompido: 0, lootRaridadeAcima: 0, lootSoquetesMax: 0, lootQualidadeViraMoeda: 0, lootVira: null, danoFinalPct: 0, executorPct: 0, equilibrioElemental: 0, sangueAoSerAcertadoPct: 0, sangueExtra: 0, sangueRobo: 0, danoPorDistanciaPct: 0, danoProjetilPct: 0, critChancePct: 0, sempreCritico: 0,
     resist: {}, danoTipoPct: {}, danoExtraPct: {}, conversaoPct: {}, afeccaoEfeitoPct: {}, afeccaoDuracaoPct: {}, resistDot: {} };
   // (09/11, lote 1 dos modificadores de monstro) os campos POR ELEMENTO: o "+X% de Dano de Fogo" (`danoTipoPct`), o "Ganha X% do Dano Físico como
   // Dano Extra de Fogo" (`danoExtraPct`) e o "X% do Dano Físico Convertido em Fogo" (`conversaoPct`) — somados como as resistências
@@ -206,7 +206,8 @@ export function aplicar(m, { raridade = 'normal', modificadores = [], sortear = 
   if (st.refleteFeiticos) m.refleteFeiticos = st.refleteFeiticos;
   // (PoE: "Vida Não Pode ser Drenada" — o dreno de vida de quem acerta não pega nele.)
   if (st.semDreno) m.semDreno = true;
-  const forca = (m.forca ?? 1) * r.dano * (1 + st.danoPct / 100);
+  // (+ 09/11, lote 6: o "X% menos/mais Dano final" — o Maldito, `danoFinalPct`)
+  const forca = (m.forca ?? 1) * r.dano * (1 + st.danoPct / 100) * Math.max(0, 1 + st.danoFinalPct / 100);
   if (forca !== 1) m.forca = forca;
   if (r.exp !== 1) {
     m.exp = Math.max(0, Math.round((m.exp ?? 0) * r.exp));
@@ -261,6 +262,9 @@ export function aplicar(m, { raridade = 'normal', modificadores = [], sortear = 
   // (09/11, lote 5) o loot dos Tocados (`itens-poe/loot-dos-tocados.mjs`, `hunt/combate`)
   if (st.lootVira) m.lootVira = st.lootVira;
   for (const k of ['lootCorrompido', 'lootRaridadeAcima', 'lootSoquetesMax', 'lootQualidadeViraMoeda']) if (st[k]) m[k] = true;
+  // (09/11, lote 6) o Executor (`atributos.fatorDoExecutor`), o Equilíbrio Elemental (em você — `mecanicas.aoAcertarJogador`), o Sangue Corrompido em quem o acerta (`mecanicas.aoReceberDano`), o sangue na tela
+  for (const k of ['executorPct', 'sangueAoSerAcertadoPct', 'danoPorDistanciaPct']) if (st[k]) m[k] = st[k];
+  for (const k of ['equilibrioElemental', 'sangueExtra', 'sangueRobo']) if (st[k]) m[k] = true;
   if (st.critMultiplicador) m.critMultiplicador = st.critMultiplicador;
   if (Object.keys(st.resist).length) m.resist = st.resist;
   if (r.elite) m.elite = true;

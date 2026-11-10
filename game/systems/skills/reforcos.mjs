@@ -155,7 +155,8 @@ export function fatorDeDesaceleracao(bicho, agora) {
   // (+ "ficam Lentos se Y% da Duração da Maldição expirou": a lentidão vale depois daquela parte da duração.)
   const pct = Math.max(0, ...maldicoesAtivas(bicho, agora).map((m) => Math.max(m.desacelera ?? 0, m.lentoApos && agora - m.desde >= m.lentoApos.apos * m.dur ? m.lentoApos.pct : 0)));
   // (lote B2, dono 20/10 — D-B2.1: × o lento por fonte — os esporos da Chuva Tóxica; fontes diferentes multiplicam, `GemasB2.fatorDosLentosPorFonte`)
-  return (pct > 0 ? 1 / Math.max(0.1, 1 - pct / 100) : 1) * fatorDosLentosPorFonte(bicho, agora);
+  // (+ 09/11, lote 6: o "+X% de Velocidade de Movimento" dos buffs do monstro — as Cargas de Frenesi; o passo encurta)
+  return ((pct > 0 ? 1 / Math.max(0.1, 1 - pct / 100) : 1) * fatorDosLentosPorFonte(bicho, agora)) / (1 + Math.max(0, BuffsDeMob.soma(bicho, agora, 'velocidadePct')) / 100);
 }
 
 /** Registra o reforço de uma gema de fora do catálogo (as do PoE — `itens-poe/gemas-poe.mjs`): `{ dur, tipo, efeitos }`. */
@@ -356,7 +357,8 @@ export function forcaDoBicho(bicho, agora) {
   const em = bicho?.estados?.emblema;
   if (em && em.ate > agora && em.pct > 0) f *= Math.max(0, 1 - em.pct / 100);
   // × o buff de dano das mecânicas do mob (Enfurecido, Vingativo — `mobs/buffs.mjs`).
-  return (bicho?.forca ?? 1) * f * (1 + BuffsDeMob.soma(bicho, agora, 'danoPct') / 100);
+  // (+ 09/11, lote 6: o "X% mais Dano" das Cargas de Frenesi do monstro — `danoMaisPct`, multiplica)
+  return (bicho?.forca ?? 1) * f * (1 + BuffsDeMob.soma(bicho, agora, 'danoPct') / 100) * BuffsDeMob.produto(bicho, agora, 'danoMaisPct');
 }
 
 /**

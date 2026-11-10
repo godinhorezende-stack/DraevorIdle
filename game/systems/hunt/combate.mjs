@@ -907,7 +907,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   alvo.expDasMoedas = Math.round(semOnline);
   alvo.exp = exp;
   // (08/11: + a raridade — os visuais e sons das peças no abate, `visuais-unicos.mjs`)
-  eventos.push({ t: 'kill', name: alvo.name, exp, quem: personagem.nome, x: alvo.x, y: alvo.y, color: '#ffffff', raridade: alvo.raridade ?? 'normal', ...(alvo.boss || alvo.isBoss ? { chefe: true } : {}) });
+  // (+ 09/11, lote 6: o sangue do monstro — "Sanguinolência Extra" e "Sangue de Robô", `visuais-unicos.abate`)
+  eventos.push({ t: 'kill', name: alvo.name, exp, quem: personagem.nome, x: alvo.x, y: alvo.y, color: '#ffffff', raridade: alvo.raridade ?? 'normal', ...(alvo.boss || alvo.isBoss ? { chefe: true } : {}), ...(alvo.sangueRobo ? { sangue: 'robo' } : alvo.sangueExtra ? { sangue: 'extra' } : {}) });
   estado.xp = (estado.xp ?? 0) + exp;
   const sessao = hunt.sessao;
   if (sessao) {
@@ -1470,7 +1471,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // (lote G-B — D7: + a Armadura Ártica Vaal, "Você sofre 90% menos Dano de Acertos" — o MORE do PoB, `GemasGBD.fatorDoGeloVaal`)
   // (06/11, A Princesa: "Dano recebido de Esqueletos / de Fantasmas aumentado em X%" — pelo nome do monstro)
   const daPrincesa = itensPoeLigado() ? ((/esqueleto|skeleton/i.test(bicho.name ?? '') ? ModsPoe.valor(ficha, 'dano_de_esqueletos_inc') : 0) + (/fantasma|ghost|phantasm/i.test(bicho.name ?? '') ? ModsPoe.valor(ficha, 'dano_de_fantasmas_inc') : 0)) : 0;
-  const fatorFinal = (1 + daPrincesa / 100) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100) * Math.max(0, 1 - ModsPoe.valor(ficha, 'menos_dano_acertos') / 100) * Math.max(0, 1 - Acoes.menosDanoDaCanalizacao(estado, hunt) / 100) * GemasGBD.fatorDoGeloVaal(hunt, hunt.clock ?? 0);
+  // (+ 09/11, lote 6: o Executor — mais dano por cada 10% da sua vida faltando)
+  const fatorFinal = AtributosDoMob.fatorDoExecutor(bicho, estado) * (1 + daPrincesa / 100) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100) * Math.max(0, 1 - ModsPoe.valor(ficha, 'menos_dano_acertos') / 100) * Math.max(0, 1 - Acoes.menosDanoDaCanalizacao(estado, hunt) / 100) * GemasGBD.fatorDoGeloVaal(hunt, hunt.clock ?? 0);
   let final = Math.round((fisicoProtegido + doutrosTipos) * fatorFinal);
   // (lote G-B — D6) o Chamado Imortal Vaal: você não pode morrer — o PoB: immortal_call_prevent_all_damage (todo dano impedido)
   if (final > 0 && GemasGBD.imortal(hunt, hunt.clock ?? 0)) final = 0;

@@ -37,7 +37,9 @@ test('dados: toda raridade tem cor e multiplicadores; todo modificador tem nome 
     // (lote 4, pelo mesmo aval) a área, Evitar Projéteis, as Ações Triplas e a União das Almas
     'areaPct', 'evitarProjeteisPct', 'repeticoes', 'pausaMs', 'packVidaPct', 'packEscalaPct',
     // (lote 5, pelo mesmo aval) o loot dos Tocados
-    'lootVira', 'lootCorrompido', 'lootRaridadeAcima', 'lootSoquetesMax', 'lootQualidadeViraMoeda']);
+    'lootVira', 'lootCorrompido', 'lootRaridadeAcima', 'lootSoquetesMax', 'lootQualidadeViraMoeda',
+    // (lote 6, pelo mesmo aval) o Maldito, o Executor, o Equilíbrio Elemental, o Sangue Corrompido em quem o acerta, o sangue na tela
+    'danoFinalPct', 'executorPct', 'equilibrioElemental', 'sangueAoSerAcertadoPct', 'sangueExtra', 'sangueRobo', 'danoPorDistanciaPct']);
   const GATILHOS = new Set(['aoMorrer', 'vidaBaixa', 'aoReceberDano', 'aoAtacar', 'aliadoMorreu', 'aura']);
   for (const [id, m] of Object.entries(Raridade.MODIFICADORES)) {
     assert.ok(m.nome, id);
