@@ -79,3 +79,36 @@ test('os modificadores do arquivo: nenhum stat aproximado; o Assassino, o Combar
   assert.equal(d.mods.find((m) => m.nome === 'Combardeiro').stats.danoPorDistanciaPct, 60);
   assert.equal(d.mods.find((m) => m.nome === 'Infundido com Aço').stats.sangueRobo, 1);
 });
+
+test('as decisões do dono: o Guardião Benevolente deixa os de perto 1 s sem sofrer dano; a Cria de Abaxoth deixa um Comum ao morrer; o Executor segura a sua recuperação em 50%', async () => {
+  const { resistido } = await import('../systems/hunt/resistencia.mjs');
+  const guardiao = troll({ guardiaoPulso: true, x: 5, y: 5 });
+  const perto = troll({ x: 6, y: 5 });
+  const longe = troll({ x: 20, y: 5 });
+  const hunt = { clock: 1000, pos: { x: 50, y: 50 }, monstros: [guardiao, perto, longe] };
+  const e = { hp: 100, maxHp: 100, es: 0 };
+  Mecanicas.tique(e, hunt, { nome: 't' }, []);
+  assert.equal(resistido(hunt, perto, 'fire', 1000), 0, 'no pulso: sem dano');
+  assert.ok(resistido(hunt, longe, 'fire', 1000) > 0);
+  hunt.clock = 2500;
+  assert.ok(resistido(hunt, perto, 'fire', 1000) > 0, 'passou 1 s');
+  // a Cria de Abaxoth
+  const cria = troll({ criaAoMorrer: true, hp: 0, x: 30, y: 30 });
+  const h2 = { clock: 0, pos: { x: 99, y: 99 }, monstros: [cria] };
+  Mecanicas.aoMorrer({ hp: 1 }, h2, { nome: 't' }, cria, []);
+  assert.equal(h2.monstros.length, 2);
+  assert.equal(h2.monstros[1].key, cria.key);
+  assert.equal(h2.monstros[1].mods, undefined, 'sem os modificadores');
+  // o Executor: a vida não sobe acima de 50% enquanto ele está na tela
+  const ex = troll({ tetoDeRecuperacao: true, x: 51, y: 50 });
+  const h3 = { clock: 0, pos: { x: 50, y: 50 }, monstros: [ex] };
+  const p = { hp: 40, maxHp: 100, es: 0 };
+  Mecanicas.tique(p, h3, { nome: 't' }, []);
+  p.hp = 90;
+  Mecanicas.tique(p, h3, { nome: 't' }, []);
+  assert.equal(p.hp, 50, 'a cura parou em 50%');
+  ex.hp = 0;
+  p.hp = 90;
+  Mecanicas.tique(p, h3, { nome: 't' }, []);
+  assert.equal(p.hp, 90, 'morto o Executor, a cura volta');
+});
