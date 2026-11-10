@@ -28,8 +28,13 @@ export const NUMEROS = {
   // (07/11, lote 16 das inertes: o Resfriamento do PoE — 50% × (dano ÷ limiar)^0,4, de 5% a 30%, 2 s; o Chamado do Vazio: "Todo o Dano Sofrido de Acertos pode te Resfriar")
   resfriamento: { duracaoMs: 2000, minimoPct: 5, maximoPct: 30 },
   incendio: { pctDoFogo: 90, duracaoMs: 4000 },
-  cargas: { maximo: 3, duracaoMs: 10_000, recentementeMs: 4000, tolerancia: { resist: 4 }, frenesi: { danoPct: 4, velocidadeDeAtaquePct: 4 }, poder: { critAumentadoPct: 50 } },
+  // (09/11, lote 6 dos modificadores de monstro — o dono: "procurar no PoB") o efeito por carga do MONSTRO, o do PoB (`data.monsterConstants`, o "if not player minion"):
+  // Tolerância 11% de Redução de Dano Físico e +15% de Resistências Elementais; Frenesi +11% de Velocidade de Ataque e de Conjuração, +5% de Movimento e 4% MAIS Dano;
+  // Poder +150% de Chance de Crítico. (Antes: o efeito do personagem — 4/4/50.)
+  cargas: { maximo: 3, duracaoMs: 10_000, recentementeMs: 4000, tolerancia: { fisicoPct: 11, elementalPct: 15 }, frenesi: { danoMaisPct: 4, velocidadeDeAtaquePct: 11, velocidadeDeConjuracaoPct: 11, velocidadePct: 5 }, poder: { critAumentadoPct: 150 } },
   dreno: { taxaPct: 2 },
+  // (09/11, lote 6) o Equilíbrio Elemental do monstro em você: +25% ao elemento que acertou, −50% aos outros, 5 s (a keystone do PoE)
+  equilibrio: { maisPct: 25, menosPct: 50, duracaoMs: 5000 },
 };
 /** Os elementos da Exposição (o do jogo → a resistência do personagem). */
 const RES = { fire: 'fire_res', ice: 'ice_res', energy: 'energy_res' };
@@ -120,15 +125,16 @@ export function eletrizarPeloSolo(hunt, ficha, pct, agora = hunt?.clock ?? 0) {
   return pct;
 }
 /** A ELETRIZAÇÃO do crítico do monstro (`dano`: o de Raio que o acerto causou; `vidaMax`: o limiar). Devolve o % posto (0: nada). */
-export function eletrizar(hunt, ficha, dano, vidaMax, { agora = hunt?.clock ?? 0, rng = Math.random } = {}) {
+export function eletrizar(hunt, ficha, dano, vidaMax, { agora = hunt?.clock ?? 0, rng = Math.random, efeitoPct = 0, duracaoPct = 0 } = {}) {
   const E = NUMEROS.eletrizacao;
   if (!ligado() || !hunt || !(dano > 0) || !(vidaMax > 0)) return 0;
-  const pct = Math.min(E.maximoPct, 50 * (dano / vidaMax) ** 0.4) * Math.max(0, 1 + v(ficha, 'efeito_eletrizacao_proprio') / 100);
+  // (09/11, lote 2 dos modificadores de monstro: `efeitoPct`/`duracaoPct` — o "Efeito/Duração da Eletrização aumentado" do monstro que eletriza, o Eletrocutante)
+  const pct = Math.min(E.maximoPct, 50 * (dano / vidaMax) ** 0.4 * Math.max(0, 1 + efeitoPct / 100)) * Math.max(0, 1 + v(ficha, 'efeito_eletrizacao_proprio') / 100);
   if (pct < E.minimoPct || evitou(hunt, ficha, 'eletrizacao', { elemental: true, rng, agora })) return 0;
   const d = registro(hunt);
   const antes = ativo(d.eletrizado, agora) ? d.eletrizado : null;
   const final = Math.round(Math.max(antes?.pct ?? 0, pct) * 10) / 10;
-  d.eletrizado = { ate: Math.max(antes?.ate ?? 0, agora + Math.round(E.duracaoMs * fatorDaDuracao(ficha, 'eletrizacao'))), pct: final };
+  d.eletrizado = { ate: Math.max(antes?.ate ?? 0, agora + Math.round(E.duracaoMs * Math.max(0, 1 + duracaoPct / 100) * fatorDaDuracao(ficha, 'eletrizacao'))), pct: final };
   imunidadeApos(hunt, ficha, 'eletrizacao', agora);
   return final;
 }
@@ -209,5 +215,6 @@ export function addsDosDebuffsNoJogador(estado) {
   if (ativo(d.mutilado, agora)) somar('move_speed', -NUMEROS.mutilar.lentidaoPct);
   for (const [el, x] of Object.entries(d.exposicao ?? {})) if (RES[el] && ativo(x, agora)) somar(RES[el], -x.pct);
   if (ativo(d.eletrizado, agora)) somar('dano_recebido_inc', d.eletrizado.pct);
+  if (ativo(d.equilibrio, agora)) for (const [el, k] of Object.entries(RES)) somar(k, d.equilibrio.els.includes(el) ? NUMEROS.equilibrio.maisPct : -NUMEROS.equilibrio.menosPct);
   return Object.keys(s).length ? s : null;
 }

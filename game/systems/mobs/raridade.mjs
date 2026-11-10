@@ -77,8 +77,19 @@ export function motivoDeNaoEntrar(id, raridade, key = null) {
 export function forcaDaCombinacao(raridade, ids) {
   const st = statsDos(ids);
   const r = CONFIG.raridades[raridade] ?? CONFIG.raridades.normal;
-  const ofensivo = (r.dano ?? 1) * (1 + st.danoPct / 100) * (1 + st.velocidadeDeAtaquePct / 100);
-  return { ofensivo, danoPct: st.danoPct, velocidadeDeAtaquePct: st.velocidadeDeAtaquePct, vidaPct: st.vidaPct, resistenciaFisica: st.resist.physical ?? 0, resist: st.resist };
+  const danoPct = danoEquivalentePct(st);
+  const ofensivo = (r.dano ?? 1) * (1 + danoPct / 100) * (1 + st.velocidadeDeAtaquePct / 100);
+  return { ofensivo, danoPct, velocidadeDeAtaquePct: st.velocidadeDeAtaquePct, vidaPct: st.vidaPct, resistenciaFisica: st.resist.physical ?? 0, resist: st.resist };
+}
+
+/**
+ * (09/11, lote 1 dos modificadores de monstro) o dano dos modificadores num número só, para quem não tem o golpe por tipo (o teto de força da combinação, o
+ * lacaio do Monarca Santificado): o "+X% de Dano", o do Físico inteiro, o de cada elemento pela metade (o golpe é de um tipo só), o extra e o convertido.
+ */
+export function danoEquivalentePct(st) {
+  const soma = (o) => Object.values(o ?? {}).reduce((t, v) => t + (Number(v) || 0), 0);
+  const elementos = soma(st.danoTipoPct) - (st.danoTipoPct?.physical ?? 0);
+  return st.danoPct + (st.danoTipoPct?.physical ?? 0) + elementos / 2 + soma(st.danoExtraPct) + (st.danoExtraAleatorioPct ?? 0) + (st.naoCaosComoCaosPct ?? 0);
 }
 
 /**
@@ -134,11 +145,19 @@ export const avisosDoSpawn = (s) => {
 /** A soma dos stats dos modificadores. */
 export function statsDos(ids) {
   const t = { vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0,
-    esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, resist: {} };
+    esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, danoExtraAleatorioPct: 0, naoCaosComoCaosPct: 0, velocidadeDeConjuracaoPct: 0, dotFisicoSofridoPct: 0, sempreEletriza: 0, todoDanoResfria: 0, todoDanoEletriza: 0, efeitoResfriamentoPct: 0, efeitoEletrizacaoPct: 0, duracaoEletrizacaoPct: 0, chanceCongelar: 0, todoDanoCongela: 0, duracaoCongelamentoPct: 0, bloqueioMagia: 0, danoBloqueadoPct: 0, limiarAtordoamentoPct: 0, imuneAtordoamento: 0, sempreAtordoa: 0, dobrarAtordoamentoPct: 0, limiarInimigoMenosPct: 0, imuneMisericordia: 0, danoExtraCriticoRedPct: 0, semLentidao: 0, semLentidaoMovimento: 0, sobrecargaFisicaPct: 0, areaPct: 0, evitarProjeteisPct: 0, repeticoes: 0, pausaMs: 0, packVidaPct: 0, packEscalaPct: 0, lootCorrompido: 0, lootRaridadeAcima: 0, lootSoquetesMax: 0, lootQualidadeViraMoeda: 0, lootVira: null, danoFinalPct: 0, executorPct: 0, equilibrioElemental: 0, sangueAoSerAcertadoPct: 0, sangueExtra: 0, sangueRobo: 0, danoPorDistanciaPct: 0, tetoDeRecuperacao: 0, secaAura: 0, tiraCargaDeFrascoPct: 0, guardiaoPulso: 0, criaAoMorrer: 0, danoProjetilPct: 0, critChancePct: 0, sempreCritico: 0,
+    resist: {}, danoTipoPct: {}, danoExtraPct: {}, conversaoPct: {}, afeccaoEfeitoPct: {}, afeccaoDuracaoPct: {}, resistDot: {} };
+  // (09/11, lote 1 dos modificadores de monstro) os campos POR ELEMENTO: o "+X% de Dano de Fogo" (`danoTipoPct`), o "Ganha X% do Dano Físico como
+  // Dano Extra de Fogo" (`danoExtraPct`) e o "X% do Dano Físico Convertido em Fogo" (`conversaoPct`) — somados como as resistências
+  // (lote 2) + as afecções EM SI (`afeccaoEfeitoPct`/`afeccaoDuracaoPct`: eletrizacao, resfriamento, causticacao / congelamento, incendio, definhar) e a
+  // resistência a mais contra o dano contínuo (`resistDot`)
+  const POR_ELEMENTO = ['resist', 'danoTipoPct', 'danoExtraPct', 'conversaoPct', 'afeccaoEfeitoPct', 'afeccaoDuracaoPct', 'resistDot'];
   for (const id of ids ?? []) {
     const s = MODIFICADORES[id]?.stats ?? {};
-    for (const k of Object.keys(t)) if (k !== 'resist' && Number.isFinite(s[k])) t[k] += s[k];
-    for (const [el, v] of Object.entries(s.resist ?? {})) t.resist[el] = (t.resist[el] ?? 0) + v;
+    for (const k of Object.keys(t)) if (!POR_ELEMENTO.includes(k) && Number.isFinite(s[k])) t[k] += s[k];
+    for (const k of POR_ELEMENTO) for (const [el, v] of Object.entries(s[k] ?? {})) t[k][el] = (t[k][el] ?? 0) + v;
+    // (lote 5) o que o loot vira (`itens-poe/loot-dos-tocados.mjs`): um texto — o último modificador que diz vale
+    if (s.lootVira) t.lootVira = s.lootVira;
   }
   return t;
 }
@@ -187,7 +206,8 @@ export function aplicar(m, { raridade = 'normal', modificadores = [], sortear = 
   if (st.refleteFeiticos) m.refleteFeiticos = st.refleteFeiticos;
   // (PoE: "Vida Não Pode ser Drenada" — o dreno de vida de quem acerta não pega nele.)
   if (st.semDreno) m.semDreno = true;
-  const forca = (m.forca ?? 1) * r.dano * (1 + st.danoPct / 100);
+  // (+ 09/11, lote 6: o "X% menos/mais Dano final" — o Maldito, `danoFinalPct`)
+  const forca = (m.forca ?? 1) * r.dano * (1 + st.danoPct / 100) * Math.max(0, 1 + st.danoFinalPct / 100);
   if (forca !== 1) m.forca = forca;
   if (r.exp !== 1) {
     m.exp = Math.max(0, Math.round((m.exp ?? 0) * r.exp));
@@ -199,6 +219,8 @@ export function aplicar(m, { raridade = 'normal', modificadores = [], sortear = 
   // os "aumentados" da raridade e dos mods somam entre si e escalam a base. Antes ela TROCAVA a base: o Raro (+33%) de um bicho de 0,93 s
   // passava a bater a cada 1,5 s, mais devagar que o Comum da mesma espécie.
   if (st.velocidadeDeAtaquePct) m.velocidadeDeAtaque = (m.velocidadeDeAtaque ?? 1) * (1 + st.velocidadeDeAtaquePct / 100);
+  // (09/11, lote 1) a velocidade de CONJURAÇÃO (as magias do monstro — `poderes.mjs`, `velocidadeDeConjuracao`), separada da de ataque
+  if (st.velocidadeDeConjuracaoPct) m.velocidadeDeConjuracao = (m.velocidadeDeConjuracao ?? 1) * (1 + st.velocidadeDeConjuracaoPct / 100);
   if (st.regenPct) m.regen = st.regenPct;
   // Os atributos de defesa e precisão do bicho (`mobs/atributos.mjs`): % sobre a curva, e bloqueio/redução em % (só quem declara).
   if (st.precisaoPct) m.precisaoPct = st.precisaoPct;
@@ -207,6 +229,45 @@ export function aplicar(m, { raridade = 'normal', modificadores = [], sortear = 
   if (st.bloqueio) m.bloqueio = st.bloqueio;
   if (st.reducaoDeDano) m.reducaoDeDano = st.reducaoDeDano;
   if (st.critChance) m.critChance = st.critChance;
+  // (lote 1) o crítico do PoE: "+X% de Chance de Acerto Crítico" (aumentada, sobre a base da espécie) e o "Sempre Crita"
+  if (st.critChancePct) m.critChancePct = st.critChancePct;
+  if (st.sempreCritico) m.sempreCritico = true;
+  // (lote 1) o dano por elemento (ver `statsDos`): o "+X% de Dano de Fogo", a conversão e o extra que sai do Físico (`AtributosDoMob.extrasDoFisicoDoBicho`;
+  // o `danoExtraPct` dos mapas — "X% do Dano como extra" — é outro campo)
+  if (Object.keys(st.danoTipoPct).length) m.danoTipoPct = st.danoTipoPct;
+  if (Object.keys(st.conversaoPct).length) m.conversaoPct = st.conversaoPct;
+  if (Object.keys(st.danoExtraPct).length) m.extraDoFisicoPct = st.danoExtraPct;
+  if (st.danoExtraAleatorioPct) m.danoExtraAleatorioPct = st.danoExtraAleatorioPct;
+  if (st.naoCaosComoCaosPct) m.naoCaosComoCaosPct = st.naoCaosComoCaosPct;
+  if (st.danoProjetilPct) m.danoProjetilPct = st.danoProjetilPct;
+  // (09/11, lote 2) as afecções: as que o monstro SOFRE (efeito e duração em si — `itens-poe/afeccoes.aoAcertar`, `mods-poe.porNoAlvo`), a resistência
+  // contra o dano contínuo e o Físico contínuo sofrido (`hunt/resistencia.resistido`, `dot: true`), e as que ele CAUSA em você (`mobs/mecanicas.aoAcertarJogador`)
+  if (Object.keys(st.afeccaoEfeitoPct).length) m.afeccaoEfeitoPct = st.afeccaoEfeitoPct;
+  if (Object.keys(st.afeccaoDuracaoPct).length) m.afeccaoDuracaoPct = st.afeccaoDuracaoPct;
+  if (Object.keys(st.resistDot).length) m.resistDot = st.resistDot;
+  if (st.dotFisicoSofridoPct) m.dotFisicoSofridoPct = st.dotFisicoSofridoPct;
+  if (st.sempreEletriza) m.sempreEletriza = true;
+  if (st.todoDanoResfria) m.todoDanoResfria = true;
+  if (st.todoDanoEletriza) m.todoDanoEletriza = true;
+  if (st.efeitoResfriamentoPct) m.efeitoResfriamentoPct = st.efeitoResfriamentoPct;
+  for (const k of ['efeitoEletrizacaoPct', 'duracaoEletrizacaoPct', 'chanceCongelar', 'duracaoCongelamentoPct']) if (st[k]) m[k] = st[k];
+  if (st.todoDanoCongela) m.todoDanoCongela = true;
+  // (09/11, lote 3) a DEFESA: o bloqueio de magia e o dano que passa no bloqueado (`mobs/atributos.bloqueou`), o atordoamento (o limiar dele, imune — `skills/estados`,
+  // `mods-poe` — e o que ele causa em você — `combate/controle`, `mobs/mecanicas`), imune ao Golpe de Misericórdia, o crítico recebido (`ficha.rolarCritico`), a
+  // velocidade que não cai abaixo da base (`skills/estados`) e a Sobrecarga da sua redução física (`hunt/combate`, `poderes`)
+  for (const k of ['bloqueioMagia', 'danoBloqueadoPct', 'limiarAtordoamentoPct', 'dobrarAtordoamentoPct', 'limiarInimigoMenosPct', 'danoExtraCriticoRedPct', 'sobrecargaFisicaPct']) if (st[k]) m[k] = st[k];
+  for (const k of ['imuneAtordoamento', 'sempreAtordoa', 'imuneMisericordia', 'semLentidao', 'semLentidaoMovimento']) if (st[k]) m[k] = true;
+  // (09/11, lote 4) a área das magias (`poderes`), Evitar Projéteis (`atributos.evitouProjetil`), as Ações Triplas (`atributos.pausaDaRepeticao`), a União das Almas (`mecanicas.aoMorrer`)
+  for (const k of ['areaPct', 'evitarProjeteisPct', 'repeticoes', 'pausaMs', 'packVidaPct', 'packEscalaPct']) if (st[k]) m[k] = st[k];
+  // (09/11, lote 5) o loot dos Tocados (`itens-poe/loot-dos-tocados.mjs`, `hunt/combate`)
+  if (st.lootVira) m.lootVira = st.lootVira;
+  for (const k of ['lootCorrompido', 'lootRaridadeAcima', 'lootSoquetesMax', 'lootQualidadeViraMoeda']) if (st[k]) m[k] = true;
+  // (09/11, lote 6) o Executor (`atributos.fatorDoExecutor`), o Equilíbrio Elemental (em você — `mecanicas.aoAcertarJogador`), o Sangue Corrompido em quem o acerta (`mecanicas.aoReceberDano`), o sangue na tela
+  for (const k of ['executorPct', 'sangueAoSerAcertadoPct', 'danoPorDistanciaPct']) if (st[k]) m[k] = st[k];
+  for (const k of ['equilibrioElemental', 'sangueExtra', 'sangueRobo']) if (st[k]) m[k] = true;
+  // (lote 6, decisões do dono) o Executor (o teto de recuperação), o Portador da Seca, o Guardião Benevolente, a Cria de Abaxoth (`mecanicas.tiqueDosEspeciais`, `aoMorrer`)
+  if (st.tiraCargaDeFrascoPct) m.tiraCargaDeFrascoPct = st.tiraCargaDeFrascoPct;
+  for (const k of ['tetoDeRecuperacao', 'secaAura', 'guardiaoPulso', 'criaAoMorrer']) if (st[k]) m[k] = true;
   if (st.critMultiplicador) m.critMultiplicador = st.critMultiplicador;
   if (Object.keys(st.resist).length) m.resist = st.resist;
   if (r.elite) m.elite = true;

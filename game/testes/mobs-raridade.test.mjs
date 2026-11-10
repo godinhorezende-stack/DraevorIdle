@@ -24,7 +24,23 @@ test('dados: toda raridade tem cor e multiplicadores; todo modificador tem nome 
   // (+ os do PoE que o mob aplica desde 09/10: o escudo de energia, a espera da recarga, à prova de maldições e "Reflete Feitiços" — `raridade.aplicar`)
   // (+ 11/10, decisão do dono: "Vida Não Pode ser Drenada" — `semDreno`, o dreno de vida não pega nele)
   const STATS = new Set(['vidaPct', 'danoPct', 'velocidadePct', 'velocidadeDeAtaquePct', 'regenPct', 'resist', 'precisaoPct', 'evasaoPct', 'armaduraPct', 'bloqueio', 'reducaoDeDano', 'critChance', 'critMultiplicador',
-    'esPct', 'esAtrasoMenosPct', 'aProvaDeMaldicoes', 'refleteFeiticos', 'semDreno']);
+    'esPct', 'esAtrasoMenosPct', 'aProvaDeMaldicoes', 'refleteFeiticos', 'semDreno',
+    // (09/11, lote 1 dos modificadores de monstro — aval do dono: "pode acrescentar") o dano por tipo, a conversão, o extra do Físico, o elemento
+    // aleatório, o não-Caos como Caos, o de Projéteis, a velocidade de conjuração e o crítico do PoE
+    'danoTipoPct', 'conversaoPct', 'danoExtraPct', 'danoExtraAleatorioPct', 'naoCaosComoCaosPct', 'danoProjetilPct', 'velocidadeDeConjuracaoPct', 'critChancePct', 'sempreCritico',
+    // (lote 2 — aval do dono para este e os próximos lotes: "sempre só somando os campos novos") as afecções em si, a resistência contra o dano contínuo,
+    // o Físico contínuo sofrido e as afecções que o monstro causa em você
+    'afeccaoEfeitoPct', 'afeccaoDuracaoPct', 'resistDot', 'dotFisicoSofridoPct', 'sempreEletriza', 'todoDanoResfria', 'todoDanoEletriza', 'efeitoResfriamentoPct',
+    'efeitoEletrizacaoPct', 'duracaoEletrizacaoPct', 'chanceCongelar', 'todoDanoCongela', 'duracaoCongelamentoPct',
+    // (lote 3, pelo mesmo aval) a defesa do monstro
+    'bloqueioMagia', 'danoBloqueadoPct', 'limiarAtordoamentoPct', 'imuneAtordoamento', 'sempreAtordoa', 'dobrarAtordoamentoPct', 'limiarInimigoMenosPct', 'imuneMisericordia', 'danoExtraCriticoRedPct', 'semLentidao', 'semLentidaoMovimento', 'sobrecargaFisicaPct',
+    // (lote 4, pelo mesmo aval) a área, Evitar Projéteis, as Ações Triplas e a União das Almas
+    'areaPct', 'evitarProjeteisPct', 'repeticoes', 'pausaMs', 'packVidaPct', 'packEscalaPct',
+    // (lote 5, pelo mesmo aval) o loot dos Tocados
+    'lootVira', 'lootCorrompido', 'lootRaridadeAcima', 'lootSoquetesMax', 'lootQualidadeViraMoeda',
+    // (lote 6, pelo mesmo aval) o Maldito, o Executor, o Equilíbrio Elemental, o Sangue Corrompido em quem o acerta, o sangue na tela
+    'danoFinalPct', 'executorPct', 'equilibrioElemental', 'sangueAoSerAcertadoPct', 'sangueExtra', 'sangueRobo', 'danoPorDistanciaPct',
+    'tetoDeRecuperacao', 'secaAura', 'tiraCargaDeFrascoPct', 'guardiaoPulso', 'criaAoMorrer']);
   const GATILHOS = new Set(['aoMorrer', 'vidaBaixa', 'aoReceberDano', 'aoAtacar', 'aliadoMorreu', 'aura']);
   for (const [id, m] of Object.entries(Raridade.MODIFICADORES)) {
     assert.ok(m.nome, id);

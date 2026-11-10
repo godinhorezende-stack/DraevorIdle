@@ -1338,7 +1338,11 @@ function handle(message) {
       const dm = message.campanha?.mapas;
       if (dm?.mapasIguais) {
         const antes = state.campanha?.mapas;
-        if (Array.isArray(antes?.mapas) && antes.versaoDosMapas === dm.versaoDosMapas) dm.mapas = antes.mapas;
+        // (09/11) os pináculos (o que cada um pede, a influência, a Maven, as Memórias) entram na mesma versão: iguais, ficam os de antes
+        if (Array.isArray(antes?.mapas) && antes.versaoDosMapas === dm.versaoDosMapas) {
+          dm.mapas = antes.mapas;
+          for (const campo of ['pinaculos', 'influencia', 'maven', 'memorias']) if (!(campo in dm) && campo in antes) dm[campo] = antes[campo];
+        }
         else {
           send({ t: 'campanha' });
           break;

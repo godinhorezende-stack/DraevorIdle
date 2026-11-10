@@ -1318,3 +1318,5 @@ footer a:hover { color: var(--texto); }
 
 /* A aba de categoria que o servidor não tem (no jogo oficial: as perícias do Draevor) some — o `display` da aba venceria o `hidden`. */
 .top5-aba[hidden] { display: none; }
+/* (09/11) O retrato da classe do PoE no lugar do boneco (top5.mjs `retratoDaClasse`): enche a moldura. */
+.retrato-da-classe { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; display: block; }

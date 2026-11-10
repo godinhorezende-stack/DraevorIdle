@@ -954,6 +954,21 @@ export function ganharCargas(estado, n = 1) {
   return mudou;
 }
 
+/**
+ * (09/11, lote 6 dos modificadores de monstro — o Portador da Seca) tira `n` cargas de CADA frasco do cinto (a Tintura não tem cargas). Devolve se mudou.
+ */
+export function perderCargas(estado, n = 1) {
+  if (!ligado() || !(n > 0)) return false;
+  const afp = doPersonagem(estado);
+  let mudou = false;
+  for (const p of cinto(estado)) {
+    if (!p || ehTinturaDoCinto(p)) continue;
+    const antes = cargasDe(p, parametros(p, afp));
+    if (antes > 0) { p.poe.cargas = Math.max(0, antes - n); mudou = true; }
+  }
+  return mudou;
+}
+
 /** PoE: o personagem foi acertado por OUTRO JOGADOR (o duelo): os frascos com "Efeito é removido quando Acertado por um Jogador" acabam. */
 export function aoSerAcertadoPorJogador(estado) {
   const st = estado?.hunt?.frascosPoe;

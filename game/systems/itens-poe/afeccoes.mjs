@@ -211,6 +211,10 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     return [];
   }
   let a = afeccoes ?? daSoma();
+  // (09/11, lote 2 dos modificadores de monstro) o que o MONSTRO tem contra as afecções: "−X% de Efeito de Afecções de Raio/Gelo/Chamuscar em si",
+  // "Efetividade do Resfriamento em si reduzida" (a força), "Duração do Congelamento/Incêndio em si reduzida" (a duração)
+  const efeitoEmSi = (t) => Math.max(0, 1 + (Number(bicho.afeccaoEfeitoPct?.[t]) || 0) / 100);
+  const duracaoEmSi = (t) => Math.max(0, 1 + (Number(bicho.afeccaoDuracaoPct?.[t]) || 0) / 100);
   // (08/11, os mapas únicos) o monstro IMUNE a uma afecção (o Vórtice do Caos: "Imunes a Atordoamentos ou Afecções Elementais aleatórias" —
   // `bicho.imuneAfeccoes`) e o "X% de chance de Evitarem Afecções" (os Pilares de Arun — `bicho.evitarAfeccoesPct`, uma rolagem por afecção):
   // a afecção sai como se o golpe não pudesse infligi-la (`naoPode`)
@@ -296,7 +300,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     // (o Warden: a CAUSTICAÇÃO no lugar do Incêndio — "Inimigos Causticados têm suas Resistências reduzidas em até 30%, baseado no Dano de Fogo
     // do Acerto, por 4 segundos"; com a adicional, as duas mais fortes valem juntas — `condicoes-poe.causticado`.)
     // (lote 33, P009: × o "Efeito de Afecções Não-Danificadoras" — e o do crítico —, no teto de 30%)
-    const pct = comEfeito(forca(fogo, bicho.maxHp ?? bicho.hp, CAUSTICACAO), (a.efeitoNaoDano ?? 0) + (crit ? a.efeitoNaoDanoCritico ?? 0 : 0), CAUSTICACAO.maximo);
+    const pct = Math.round(comEfeito(forca(fogo, bicho.maxHp ?? bicho.hp, CAUSTICACAO), (a.efeitoNaoDano ?? 0) + (crit ? a.efeitoNaoDanoCritico ?? 0 : 0), CAUSTICACAO.maximo) * efeitoEmSi('causticacao') * 10) / 10;
     const e = (bicho.estados ??= {});
     const ate = agora + duracaoDe(CAUSTICACAO.duracaoMs);
     if (pct > 0) {
@@ -312,7 +316,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
   if (fogo > 0 && ((crit && !a.criticoNaoIncendeia) || sorte(chance('incendio'))) && a.incendioViraCausticacao) {
     causticar();
   } else if (fogo > 0 && ((crit && !a.criticoNaoIncendeia) || sorte(chance('incendio')))) {
-    const posto = dot('queimadura', BASE.incendio.porSegundo, Math.round(duracaoDe(a.incendioDuracaoBaseMs > 0 ? a.incendioDuracaoBaseMs : BASE.incendio.duracaoMs, a.duracaoIncendio ?? 0) * Math.max(0, 1 + (a.duracaoIncendioMais ?? 0) / 100)), fogo, multiplicadorBase + a.multiplicadorFogo + (crit ? a.multiplicadorIncendioCritico ?? 0 : 0), (a.danoIncendio ?? 0) + aumDoSuporte('incendio'), { mais: comSuporte('incendio', a.incendioMais ?? 0), chave: chaveDoIncendio() });
+    const posto = dot('queimadura', BASE.incendio.porSegundo, Math.max(100, Math.round(duracaoDe(a.incendioDuracaoBaseMs > 0 ? a.incendioDuracaoBaseMs : BASE.incendio.duracaoMs, a.duracaoIncendio ?? 0) * Math.max(0, 1 + (a.duracaoIncendioMais ?? 0) / 100) * duracaoEmSi('incendio'))), fogo, multiplicadorBase + a.multiplicadorFogo + (crit ? a.multiplicadorIncendioCritico ?? 0 : 0), (a.danoIncendio ?? 0) + aumDoSuporte('incendio'), { mais: comSuporte('incendio', a.incendioMais ?? 0), chave: chaveDoIncendio() });
     // (o "ao Incendiar um Inimigo não Incendiado" — `mods-poe.aoPorAfeccoes` lê e apaga)
     if (posto && !jaIncendiado) (bicho.estados ??= {}).incendiadoNovo = true;
     // (06/11, a Chama Negra: o seu Incêndio dói como Caos — a resistência a Caos do monstro)
@@ -358,7 +362,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
   const maxEl = a.eletrizacaoMaximoFixo > 0 ? a.eletrizacaoMaximoFixo : BASE.eletrizacao.maximo + (a.eletrizacaoMaximo ?? 0);
   const eletrizar = (pct0) => {
     if (bicho.imuneChoque) return false;
-    const pct = Math.min(maxEl, pct0);
+    const pct = Math.min(maxEl, Math.round(pct0 * efeitoEmSi('eletrizacao') * 10) / 10);
     const e = (bicho.estados ??= {});
     const ate = agora + duracaoDe(BASE.eletrizacao.duracaoMs, a.duracaoEletrizacao ?? 0);
     if (pct > 0 && a.eletrizacoesMax > 1) {
@@ -386,7 +390,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     // (14/10: a duração pela conta do PoE — `msDoCongelamento`; curta demais, não congela e, com o Juramento do Inverno, vira Geada)
     const tentou = gelo > 0 && (crit || sorte(chance('congelamento')));
     // ("Congela Inimigos como se causasse X% mais Dano": o Gelo da conta × (1 + X%))
-    const congelarMs = tentou ? msDoCongelamento(gelo * (1 + (a.congelaComoMais ?? 0) / 100), limiar, (a.duracaoCongelamento ?? 0) + (a.duracao ?? 0) + geadasNo(bicho, agora) * GEADA.duracaoCongelamentoPct) : 0;
+    const congelarMs = tentou ? Math.round(msDoCongelamento(gelo * (1 + (a.congelaComoMais ?? 0) / 100), limiar, (a.duracaoCongelamento ?? 0) + (a.duracao ?? 0) + geadasNo(bicho, agora) * GEADA.duracaoCongelamentoPct) * duracaoEmSi('congelamento')) : 0;
     const congela = congelarMs > 0;
     if (tentou && !congela && a.geada) {
       const e = (bicho.estados ??= {});
@@ -398,6 +402,8 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     let lento = resfria > 0 ? comEfeito(forca(resfria * (1 + (a.resfriaComoMais ?? 0) / 100), limiar, { ...BASE.resfriamento, maximo: maxResfria }), (a.efeitoResfriamento ?? 0) + efeitoDoCritico, maxResfria) : 0;
     // (lote A5, dono 20/10) "X% mais Efeito de Resfriamento" (o Estalo Gélido): multiplica a força, no teto
     if (lento > 0 && a.efeitoResfriamentoMais) lento = Math.min(maxResfria, Math.round(lento * Math.max(0, 1 + a.efeitoResfriamentoMais / 100) * 10) / 10);
+    // (lote 2) o efeito do Resfriamento EM SI do monstro (a efetividade reduzida)
+    if (lento > 0 && bicho.afeccaoEfeitoPct?.resfriamento) lento = Math.round(lento * efeitoEmSi('resfriamento') * 10) / 10;
     if (resfria > 0 && a.resfriamentoMinimo > 0) lento = Math.min(maxResfria, Math.max(lento, a.resfriamentoMinimo));
     postos.push(...Estados.aplicar(bicho, {
       ...(congela ? { congelarChance: 100, congelarMs, ...(a.congelamentoMinimoMs > 0 ? { congelarMinimoMs: a.congelamentoMinimoMs } : {}), ...(a.resfriarAoDescongelar > 0 ? { resfriarAoDescongelar: a.resfriarAoDescongelar } : {}) } : {}),

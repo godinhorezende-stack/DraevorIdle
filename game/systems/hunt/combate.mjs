@@ -52,6 +52,7 @@ import * as ItensPoeJogo from '../itens-poe/jogo.mjs';
 import * as Instancia from './instancia.mjs';
 import * as SinteseMapas from '../itens-poe/sintese-mapas.mjs';
 import * as Cartas from '../itens-poe/cartas.mjs';
+import * as LootDosTocados from '../itens-poe/loot-dos-tocados.mjs';
 import * as Doryani from '../itens-poe/doryani.mjs';
 import * as MoedasPoe from '../itens-poe/moedas.mjs';
 // (100% — dados, 03/11) as Tatuagens do PoE (a fonte simples, sem a liga Ancestral — `passivas/tatuagens.dropDoMonstro`)
@@ -264,13 +265,14 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segun
   // A ficha do golpe básico: + crítico de auto-ataque da proficiência.
   const ficha = Ficha.combate(estado);
   // Accuracy: o tiro pode errar (a mana já foi gasta, como um golpe no ar).
-  if (Defesa.errou(ficha, hunt, alvo)) {
+  // (+ 09/11, lote 4: o monstro que Evita Projéteis — o tiro da varinha é um projétil)
+  if (Defesa.errou(ficha, hunt, alvo) || AtributosDoMob.evitouProjetil(alvo)) {
     eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', esquiva: true, errou: true });
     return true;
   }
   // O bicho BLOQUEIA o tiro (só quem tem bloqueio configurado): sem dano. ("Monstros não podem Bloquear seus Ataques": não bloqueia.)
   // (lote A2: + o Subjugado no bicho — a Redução de Chance de Bloqueio)
-  if (!(ModsPoe.valor(ficha, 'inimigos_nao_bloqueiam') > 0) && AtributosDoMob.bloqueou(alvo, Math.random, 1, { menosPontos: AtributosDoMob.subjugadoPontos(alvo, hunt.clock ?? 0) })) {
+  if (!(ModsPoe.valor(ficha, 'inimigos_nao_bloqueiam') > 0) && AtributosDoMob.bloqueou(alvo, Math.random, 1, { menosPontos: AtributosDoMob.subjugadoPontos(alvo, hunt.clock ?? 0), hunt, eventos })) {
     eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', bloqueado: true });
     return true;
   }
@@ -905,7 +907,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   alvo.expDasMoedas = Math.round(semOnline);
   alvo.exp = exp;
   // (08/11: + a raridade — os visuais e sons das peças no abate, `visuais-unicos.mjs`)
-  eventos.push({ t: 'kill', name: alvo.name, exp, quem: personagem.nome, x: alvo.x, y: alvo.y, color: '#ffffff', raridade: alvo.raridade ?? 'normal', ...(alvo.boss || alvo.isBoss ? { chefe: true } : {}) });
+  // (+ 09/11, lote 6: o sangue do monstro — "Sanguinolência Extra" e "Sangue de Robô", `visuais-unicos.abate`)
+  eventos.push({ t: 'kill', name: alvo.name, exp, quem: personagem.nome, x: alvo.x, y: alvo.y, color: '#ffffff', raridade: alvo.raridade ?? 'normal', ...(alvo.boss || alvo.isBoss ? { chefe: true } : {}), ...(alvo.sangueRobo ? { sangue: 'robo' } : alvo.sangueExtra ? { sangue: 'extra' } : {}) });
   estado.xp = (estado.xp ?? 0) + exp;
   const sessao = hunt.sessao;
   if (sessao) {
@@ -1108,7 +1111,17 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     const p = ItensPoeJogo.unicoNaBase('Doryanis_Delusion', Doryani.ELEMENTOS[el]?.base, nivelDoMorto);
     if (p) doSintetizado.push(ItensPoeJogo.semIdentificar(p));
   }
-  for (const daPoe of [...ItensPoeJogo.dropsDoMonstro(nivelDoMorto, tipoDoBicho(alvo), Math.random, undefined, quantidadeDoJogador, raridadeDoMorto, { unicoPct: Number(sint.unicoPct) || 0 }), ...rarosDoChefe, ...doSintetizado]) {
+  // (09/11, lote 5 dos modificadores de monstro) o LOOT dos Tocados: cada peça vira o que o modificador diz (moedas, carta, mapa, outra classe; corrompida, uma
+  // raridade acima, com o máximo de encaixes) — `itens-poe/loot-dos-tocados.mjs`; as moedas e as cartas vão como as outras moedas (`darExtra`)
+  const pecasDoMorto = [...ItensPoeJogo.dropsDoMonstro(nivelDoMorto, tipoDoBicho(alvo), Math.random, undefined, quantidadeDoJogador, raridadeDoMorto, { unicoPct: Number(sint.unicoPct) || 0 }), ...rarosDoChefe, ...doSintetizado];
+  const doMorto = LootDosTocados.mudaOLoot(alvo)
+    ? pecasDoMorto.flatMap((p) => {
+        const r = LootDosTocados.converter(p, alvo, { nivel: nivelDoMorto, tierDaArea: noMapa?.tier ?? null, ato: Number(contextoDoDrop(hunt).ato) || 1, gema: () => GemasDeSkill.sortearDrop({ ato: Number(contextoDoDrop(hunt).ato) || 1, levelDaFase: nivelDoMorto, fatorDeChance: 1e9 }) });
+        for (const m of r.moedas) for (let i = 0; i < (m.count ?? 1); i++) darExtra({ ...m, count: 1 });
+        return r.pecas;
+      })
+    : pecasDoMorto;
+  for (const daPoe of doMorto) {
     if (corrompidosPct > 0 && Math.random() * 100 < corrompidosPct) daPoe.poe.corrompido = true;
     identificarAoAchar(estado, daPoe);
     // O FILTRO DE LOOT (dono, 08/10: "está pegando itens mesmo setando as coisas"): a peça que o filtro não pega fica no chão ("Ignorado").
@@ -1376,6 +1389,13 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   const emFogoPct = ModsPoe.ativo(bicho.estados?.fisicoEmFogo, agoraDoGolpe) ? bicho.estados.fisicoEmFogo.pct : 0;
   // (06/11, o Aperto Pirotécnico Chocante: o Eletrizado por você converte parte do Físico em Raio — `mods-poe.aurasProximas` põe `fisicoEmRaio`)
   const emRaioPct = Math.min(100 - emFogoPct, ModsPoe.ativo(bicho.estados?.fisicoEmRaio, agoraDoGolpe) ? bicho.estados.fisicoEmRaio.pct : 0);
+  // (09/11, lote 1 dos modificadores de monstro) + a CONVERSÃO do próprio monstro ("25% do Dano Físico Convertido em Fogo/Gelo/Raio/Caos" —
+  // `conversaoPct`): somada às das auras; passando de 100%, todas encolhem na mesma proporção (o PoE)
+  const convBruta = { fire: emFogoPct, energy: emRaioPct, ice: 0, chaos: 0 };
+  for (const [el, p] of Object.entries(AtributosDoMob.conversaoDoBicho(bicho))) if (el in convBruta) convBruta[el] += Number(p) || 0;
+  const somaConv = Object.values(convBruta).reduce((a, b) => a + b, 0);
+  const conv = Object.fromEntries(Object.entries(convBruta).map(([el, p]) => [el, somaConv > 100 ? (p * 100) / somaConv : p]));
+  const restoFisicoPct = Math.max(0, 100 - Object.values(conv).reduce((a, b) => a + b, 0));
   // (06/11, a Parede de Névoa: "+X% de chance de evitar dano de cada elemento de ataques durante Forma Etérea"; a Réplica: "+X% de chance de Evitar Dano Físico de
   // Acertos enquanto Trespassando" — cada tipo sorteia uma vez no golpe; o evitado não entra)
   const evitarEl = itensPoeLigado() ? ModsPoe.valor(ficha, 'evitar_dano_elemental_ataque') : 0;
@@ -1386,7 +1406,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   }));
   const evitouFisico = itensPoeLigado() && ModsPoe.valor(ficha, 'evitar_dano_fisico_acerto') > 0 && Math.random() * 100 < Math.min(75, ModsPoe.valor(ficha, 'evitar_dano_fisico_acerto'));
   const elemFator = (el) => (evitado[el] ? 0 : 1) * (['fire', 'ice', 'energy'].includes(el) && ModsPoe.ativo(bicho.estados?.elemMenos, agoraDoGolpe) ? Math.max(0, 1 - bicho.estados.elemMenos.pct / 100) : 1);
-  const brutoFisico = evitouFisico ? 0 : bruto * (1 - (emFogoPct + emRaioPct) / 100);
+  // (lote 1: o "Dano Físico aumentado em X%" do monstro — `AtributosDoMob.fatorDoTipo` — só na parte física e na convertida dela)
+  const brutoFisico = evitouFisico ? 0 : bruto * (restoFisicoPct / 100) * AtributosDoMob.fatorDoTipo(bicho, 'physical');
   // O golpe ACERTOU (passou da esquiva e do bloqueio): boss e elite podem CONGELAR, ATORDOAR ou fazer LENTIDÃO no jogador
   // (`combate/controle.mjs`), mesmo que o Energy Shield engula o dano; a resistência a controle dele encurta o efeito.
   if (bruto > 0) {
@@ -1416,7 +1437,7 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   const fixoFisico = ModsPoe.fixoRecebido(ficha, 'physical', { ataque: true, de: bicho });
   const protegido = somaFisica
     // (08/11, a Síntese: "X% de Redução adicional de Dano Físico contra Monstros Abissais" — o golpe do monstro das ondas do Abismo)
-    ? Math.max(0, Math.round(ModsPoe.acertoFisicoRecebido(ficha, brutoFisico, armorDoPersonagem(estado), { fixo: fixoFisico, ...(bicho.abissal && ModsPoe.valor(ficha, 'phys_res_vs_abissal') ? { protecao: { ...(ficha.protection ?? {}), physical: (Number(ficha.protection?.physical) || 0) + ModsPoe.valor(ficha, 'phys_res_vs_abissal') } } : {}) })))
+    ? Math.max(0, Math.round(ModsPoe.acertoFisicoRecebido(ficha, brutoFisico, armorDoPersonagem(estado), { fixo: fixoFisico, overwhelm: Number(bicho.sobrecargaFisicaPct) || 0, ...(bicho.abissal && ModsPoe.valor(ficha, 'phys_res_vs_abissal') ? { protecao: { ...(ficha.protection ?? {}), physical: (Number(ficha.protection?.physical) || 0) + ModsPoe.valor(ficha, 'phys_res_vs_abissal') } } : {}) })))
     : Math.max(0, Math.round(brutoFisico * (itensPoeLigado() ? ModsPoe.fatorDaResistenciaRecebida(ficha, 'physical') : 1 - Math.min(100, ficha.protection.physical ?? 0) / 100) + fixoFisico));
   // (PoE: o Físico NEGADO pela defesa — o "Regenerado como Escudo de Energia/Vida por segundo" do Escudo Divino.)
   ModsPoe.registrarFisicoNegado(hunt, Math.max(0, brutoFisico - protegido));
@@ -1435,7 +1456,10 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   const brutas = { physical: brutoFisico };
   const partes = {};
   const somarParte = (el, antes, depois) => { brutas[el] = (brutas[el] ?? 0) + antes; partes[el] = (partes[el] ?? 0) + depois; return depois; };
-  const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(bicho).reduce((n, x) => { const parte = rolarParte(x) * forcaDoGolpe * critDoMob.fator * elemFator(x.elemento); return n + somarParte(x.elemento, parte, Math.round(parte * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento) * ModsPoe.armaduraNoElemento(ficha, x.elemento, parte))); }, 0) + somarParte('fire', bruto * (emFogoPct / 100) * elemFator('fire'), Math.round(bruto * (emFogoPct / 100) * elemFator('fire') * ModsPoe.fatorDaResistenciaRecebida(ficha, 'fire'))) + somarParte('energy', bruto * (emRaioPct / 100) * elemFator('energy'), Math.round(bruto * (emRaioPct / 100) * elemFator('energy') * ModsPoe.fatorDaResistenciaRecebida(ficha, 'energy'))) + Math.round(ModsPoe.extraDoFisicoRecebido(ficha, brutoFisico)) + AtributosDoMob.danoExtraPctDoBicho(bicho).reduce((n, x) => n + somarParte(x.elemento, bruto * (x.pct / 100) * elemFator(x.elemento), Math.round(bruto * (x.pct / 100) * elemFator(x.elemento) * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento))), 0);
+  // (lote 1) cada parte com o aumento do SEU tipo (`fatorDoTipo`): a convertida e a "extra como" levam também o do Físico, de onde vieram
+  const fatorEl = (el, doFisico) => elemFator(el) * AtributosDoMob.fatorDoTipo(bicho, el, { convertidoDoFisico: doFisico });
+  const convertidas = Object.entries(conv).filter(([, p]) => p > 0).reduce((n, [el, p]) => { const parte = bruto * (p / 100) * fatorEl(el, true) * (excomungado && el === 'chaos' ? 0 : 1); return n + somarParte(el, parte, Math.round(parte * ModsPoe.fatorDaResistenciaRecebida(ficha, el))); }, 0);
+  const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(bicho).reduce((n, x) => { const parte = rolarParte(x) * forcaDoGolpe * critDoMob.fator * fatorEl(x.elemento, false); return n + somarParte(x.elemento, parte, Math.round(parte * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento) * ModsPoe.armaduraNoElemento(ficha, x.elemento, parte))); }, 0) + convertidas + Math.round(ModsPoe.extraDoFisicoRecebido(ficha, brutoFisico)) + [...AtributosDoMob.danoExtraPctDoBicho(bicho), ...AtributosDoMob.extrasDoFisicoDoBicho(bicho), ...(AtributosDoMob.naoCaosComoCaosDoBicho(bicho) > 0 ? [{ elemento: 'chaos', pct: AtributosDoMob.naoCaosComoCaosDoBicho(bicho) }] : [])].reduce((n, x) => { const parte = bruto * (x.pct / 100) * fatorEl(x.elemento, true) * (excomungado && x.elemento === 'chaos' ? 0 : 1); return n + somarParte(x.elemento, parte, Math.round(parte * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento))); }, 0);
   // (06/11, o Rompe-amanhecer: "por cada 200 de Dano de Fogo sofrido de Acertos Recentemente" — o Fogo deste acerto, depois das resistências: a escala `fogoSofridoRecente`)
   if (itensPoeLigado() && (partes.fire ?? 0) > 0) { (hunt.poeFogoSofrido ??= []).push({ em: agoraDoGolpe, v: partes.fire }); if (ModsPoe.usaFogoSofrido(ficha)) hunt.poeFichaMudou = true; }
   // Prey de defesa: corta o que SOBROU da armadura. Antes dela, a armadura
@@ -1447,7 +1471,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // (lote G-B — D7: + a Armadura Ártica Vaal, "Você sofre 90% menos Dano de Acertos" — o MORE do PoB, `GemasGBD.fatorDoGeloVaal`)
   // (06/11, A Princesa: "Dano recebido de Esqueletos / de Fantasmas aumentado em X%" — pelo nome do monstro)
   const daPrincesa = itensPoeLigado() ? ((/esqueleto|skeleton/i.test(bicho.name ?? '') ? ModsPoe.valor(ficha, 'dano_de_esqueletos_inc') : 0) + (/fantasma|ghost|phantasm/i.test(bicho.name ?? '') ? ModsPoe.valor(ficha, 'dano_de_fantasmas_inc') : 0)) : 0;
-  const fatorFinal = (1 + daPrincesa / 100) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100) * Math.max(0, 1 - ModsPoe.valor(ficha, 'menos_dano_acertos') / 100) * Math.max(0, 1 - Acoes.menosDanoDaCanalizacao(estado, hunt) / 100) * GemasGBD.fatorDoGeloVaal(hunt, hunt.clock ?? 0);
+  // (+ 09/11, lote 6: o Executor — mais dano por cada 10% da sua vida faltando)
+  const fatorFinal = AtributosDoMob.fatorDoExecutor(bicho, estado) * (1 + daPrincesa / 100) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100) * Math.max(0, 1 - ModsPoe.valor(ficha, 'menos_dano_acertos') / 100) * Math.max(0, 1 - Acoes.menosDanoDaCanalizacao(estado, hunt) / 100) * GemasGBD.fatorDoGeloVaal(hunt, hunt.clock ?? 0);
   let final = Math.round((fisicoProtegido + doutrosTipos) * fatorFinal);
   // (lote G-B — D6) o Chamado Imortal Vaal: você não pode morrer — o PoB: immortal_call_prevent_all_damage (todo dano impedido)
   if (final > 0 && GemasGBD.imortal(hunt, hunt.clock ?? 0)) final = 0;
@@ -1658,7 +1683,7 @@ export function golpesDosMonstros(estado, hunt, personagem) {
     // O modificador de velocidade de ataque (`velocidadeDeAtaque`) encurta o intervalo do golpe.
     // (+ o buff de velocidade de ataque das mecânicas: Enfurecido, Vingativo — `mobs/buffs.mjs`.)
     // O intervalo entre golpes (`mobs/atributos.mjs`): o base × a lentidão ÷ a velocidade (modificador × buffs), com limites configuráveis.
-    bicho.proximoGolpe = agora + AtributosDoMob.intervaloDoGolpe(bicho, { base: bicho.boss?.melee?.intervaloMs ?? ATAQUE_DO_MONSTRO_MS, lentidao: Estados.fatorDeLentidao(bicho, agora) * GemasGAC.fatorDeAcao(bicho, agora), buffPct: BuffsDeMob.soma(bicho, agora, 'velocidadeDeAtaquePct') });
+    bicho.proximoGolpe = agora + AtributosDoMob.intervaloDoGolpe(bicho, { base: bicho.boss?.melee?.intervaloMs ?? ATAQUE_DO_MONSTRO_MS, lentidao: Estados.fatorDeLentidao(bicho, agora) * GemasGAC.fatorDeAcao(bicho, agora), buffPct: BuffsDeMob.soma(bicho, agora, 'velocidadeDeAtaquePct'), contar: true });
     contraAtaque(estado, hunt, personagem, bicho, eventos);
   }
   return eventos;
@@ -1886,7 +1911,8 @@ function golpeDoRound(estado, personagem) {
         // (lote G20b: o golpe de longe é um projétil de ataque seu, acerte ou erre — a Balista Focada ataca depois dele, `cacadas.tiqueDosLacaios`)
         if (!segundo && categoriaDaArma(arma) === 'distancia') hunt.poeProjetilDeAtaqueEm = hunt.clock ?? 0;
         // Accuracy: o golpe pode errar o bicho (a perícia treina igual, como no Tibia).
-        if (Defesa.errou(ficha, hunt, alvo)) {
+        // (+ 09/11, lote 4: a flecha do arco — um projétil — no monstro que Evita Projéteis)
+        if (Defesa.errou(ficha, hunt, alvo) || (categoriaDaArma(arma) === 'distancia' && AtributosDoMob.evitouProjetil(alvo))) {
           Treino.treinar(estado, pericia);
           if (categoriaDaArma(arma) === 'distancia' && !tiroJaSaiu) eventos.push({ t: 'shot', id: tiroDaArma(estado, arma), x: hunt.pos.x, y: hunt.pos.y, tx: alvo.x, ty: alvo.y });
           eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', esquiva: true, errou: true });
@@ -1894,7 +1920,7 @@ function golpeDoRound(estado, personagem) {
         }
         // O bicho BLOQUEIA o golpe (só quem tem bloqueio configurado — `mobs/atributos.mjs`): o golpe não causa dano.
       // ("Chance de Inimigos Bloquearem Ataques com Espada reduzida em X%" — `inimigos_bloqueio_red@comEspada`.)
-      if (!(ModsPoe.valor(ficha, 'inimigos_nao_bloqueiam') > 0) && AtributosDoMob.bloqueou(alvo, Math.random, Math.max(0, 1 - ModsPoe.valor(ficha, 'inimigos_bloqueio_red') / 100), { menosPontos: AtributosDoMob.subjugadoPontos(alvo, hunt.clock ?? 0) })) {
+      if (!(ModsPoe.valor(ficha, 'inimigos_nao_bloqueiam') > 0) && AtributosDoMob.bloqueou(alvo, Math.random, Math.max(0, 1 - ModsPoe.valor(ficha, 'inimigos_bloqueio_red') / 100), { menosPontos: AtributosDoMob.subjugadoPontos(alvo, hunt.clock ?? 0), hunt, eventos })) {
         Treino.treinar(estado, pericia);
         eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', bloqueado: true });
         return true;

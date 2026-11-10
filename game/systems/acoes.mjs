@@ -7656,6 +7656,11 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
         registrarGolpe(() => ({ origem: 'gema-errou', habilidade: entry.id, alvo: bicho.name, errou: true, precisao: fichaNoAlvo.accuracy ?? 0 }));
         return;
       }
+      // (09/11, lote 4) o monstro que Evita Projéteis (o Fragmentador): o projétil que ele evitou erra
+      if (deProjetil && !entry.overTime && AtributosDoMob.evitouProjetil(bicho)) {
+        eventos.push({ t: 'block', uid: bicho.uid, x: bicho.x, y: bicho.y, color: '#999999', esquiva: true, errou: true });
+        return;
+      }
       if (rolaPrecisao) { acertadosNoUso.add(bicho); acertadosNoPasse.add(bicho); }
       // O golpe da gema do PoE com MAIS DE UM elemento (ou de outro elemento que o da skill): cada parte com o "aumentado", a marca de
       // vulnerável e a resistência do elemento dela; o golpe leva o elemento da maior parte (a cor, o registro, as mecânicas do mob).
@@ -7744,7 +7749,7 @@ function dispararSemMarcarDentro(estado, hunt, personagem, slot, alvo, { conclui
       // (lote A2: + a Redução de Chance de Bloqueio — os pontos a menos do suporte, o "reduzido" da qualidade e o Subjugado no bicho; ao bloquear, o
       // suporte o Subjuga — `subjugarAoBloquear`)
       // (revisão do C4, 21/10) a magia SEM ACERTO (`semAcertoDaGema` — a Praga, o Definhar, o Contágio…) não é bloqueada: no PoE só o ACERTO pode ser bloqueado
-      if (!semAcertoDaGema && !(ModsPoe.valor(ficha, 'inimigos_nao_bloqueiam') > 0 && ehAtaque) && AtributosDoMob.bloqueou(bicho, Math.random, (ehAtaque ? Math.max(0, 1 - ModsPoe.valor(ficha, 'inimigos_bloqueio_red') / 100) : 1) * Math.max(0, 1 - (efeitoDaGema?.bloqueioInimigoReduzidoPct ?? 0) / 100), { menosPontos: (efeitoDaGema?.bloqueioInimigoMenos ?? 0) + AtributosDoMob.subjugadoPontos(bicho, agora) })) {
+      if (!semAcertoDaGema && !(ModsPoe.valor(ficha, 'inimigos_nao_bloqueiam') > 0 && ehAtaque) && AtributosDoMob.bloqueou(bicho, Math.random, (ehAtaque ? Math.max(0, 1 - ModsPoe.valor(ficha, 'inimigos_bloqueio_red') / 100) : 1) * Math.max(0, 1 - (efeitoDaGema?.bloqueioInimigoReduzidoPct ?? 0) / 100), { menosPontos: (efeitoDaGema?.bloqueioInimigoMenos ?? 0) + AtributosDoMob.subjugadoPontos(bicho, agora), magia: !ehAtaque, hunt, eventos })) {
         eventos.push({ t: 'block', uid: bicho.uid, x: bicho.x, y: bicho.y, color: '#999999', bloqueado: true });
         if (efeitoDaGema?.subjugadoMs > 0) AtributosDoMob.subjugar(bicho, efeitoDaGema.subjugadoMs, efeitoDaGema.subjugadoPct ?? 5, agora);
         return;

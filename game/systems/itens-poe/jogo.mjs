@@ -985,6 +985,22 @@ export function pecaDaClasse(classe, nivel, { raridade = 'raro', rng = Math.rand
   return qualidadeDoDrop(pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras, base: base.id, raridade: r, ilvl, rng }), regras, rng), rng, regras);
 }
 
+/**
+ * (09/11, lote 5 dos modificadores de monstro — o Tocado por Kitava: "itens soltos uma raridade acima") a peça da BASE `baseId` na `raridade`, no `ilvl`. O
+ * Único sem Único naquela base fica Raro; o Frasco não é Raro (vira Mágico). Null sem a base.
+ */
+export function pecaNaRaridade(baseId, raridade, ilvl, rng = Math.random, regras = Catalogo.REGRAS) {
+  const cat = Catalogo.catalogo();
+  const [classe] = String(baseId ?? '').split('/');
+  const c = cat?.classes?.[classe];
+  const b = c?.bases.find((x) => x.id === baseId);
+  if (!b) return null;
+  let r = raridade === 'unico' && !c.unicos.some((u) => u.base === b.nome && caiNoSorteio(u)) ? 'raro' : raridade;
+  if (r === 'raro' && FRASCOS.includes(classe)) r = 'magico';
+  if (!podeCairComo(c, b, r)) return null;
+  return qualidadeDoDrop(pecaDoJogo(gerarPeca({ catalogo: cat, regras, base: baseId, raridade: r, ilvl: Math.max(1, Math.round(Number(ilvl) || 1)), rng }), regras, rng), rng, regras);
+}
+
 /** (08/11) O Único `slug` na base de nome `nomeDaBase` (o português do catálogo — a Ilusão de Doryani nas Grevas do Leviatã), no `nivel`. Null sem ela. */
 export function unicoNaBase(slug, nomeDaBase, nivel, rng = Math.random, regras = Catalogo.REGRAS) {
   for (const c of Object.values(Catalogo.catalogo()?.classes ?? {})) {

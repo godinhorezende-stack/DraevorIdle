@@ -15,20 +15,109 @@ const DESTINO = new URL('../gamedata/itens-poe/modificadores-monstro.json', impo
 /** Stat do PoE → o que soma nos campos do mob do Draevor (`t`). `aprox` = aproximado (o Draevor não tem a mesma conta). */
 const MAPA = {
   'damage +%': { f: (t, v) => (t.danoPct += v) },
-  'physical damage +%': { f: (t, v) => (t.danoPct += v), aprox: true },
-  'fire damage +%': { f: (t, v) => (t.danoPct += v / 2), aprox: true },
-  'cold damage +%': { f: (t, v) => (t.danoPct += v / 2), aprox: true },
-  'lightning damage +%': { f: (t, v) => (t.danoPct += v / 2), aprox: true },
-  'chaos damage +%': { f: (t, v) => (t.danoPct += v / 2), aprox: true },
-  'projectile damage +%': { f: (t, v) => (t.danoPct += v / 2), aprox: true },
-  'physical damage % to add as fire': { f: (t, v) => (t.danoPct += v), aprox: true },
-  'physical damage % to add as cold': { f: (t, v) => (t.danoPct += v), aprox: true },
-  'physical damage % to add as lightning': { f: (t, v) => (t.danoPct += v), aprox: true },
-  'physical damage % to add as random element': { f: (t, v) => (t.danoPct += v), aprox: true },
-  'non chaos damage to add as chaos damage %': { f: (t, v) => (t.danoPct += v), aprox: true },
+  // (09/11, lote 1 — dono: "resolver os aproximados e parciais") o dano POR TIPO, como no PoE (`mobs/atributos.fatorDoTipo`, `hunt/combate`, `poderes`):
+  // o "+X% de Dano de Fogo" só na parte de Fogo (e na convertida do Físico), a conversão, o extra que sai do Físico, o de Projéteis
+  'physical damage +%': { f: (t, v) => porEl(t, 'danoTipoPct', 'physical', v) },
+  'fire damage +%': { f: (t, v) => porEl(t, 'danoTipoPct', 'fire', v) },
+  'cold damage +%': { f: (t, v) => porEl(t, 'danoTipoPct', 'ice', v) },
+  'lightning damage +%': { f: (t, v) => porEl(t, 'danoTipoPct', 'energy', v) },
+  'chaos damage +%': { f: (t, v) => porEl(t, 'danoTipoPct', 'chaos', v) },
+  'projectile damage +%': { f: (t, v) => (t.danoProjetilPct += v) },
+  'physical damage % to add as fire': { f: (t, v) => porEl(t, 'danoExtraPct', 'fire', v) },
+  'physical damage % to add as cold': { f: (t, v) => porEl(t, 'danoExtraPct', 'ice', v) },
+  'physical damage % to add as lightning': { f: (t, v) => porEl(t, 'danoExtraPct', 'energy', v) },
+  'physical damage % to add as random element': { f: (t, v) => (t.danoExtraAleatorioPct += v) },
+  'non chaos damage to add as chaos damage %': { f: (t, v) => (t.naoCaosComoCaosPct += v) },
+  'base physical damage % to convert to fire': { f: (t, v) => porEl(t, 'conversaoPct', 'fire', v) },
+  'base physical damage % to convert to cold': { f: (t, v) => porEl(t, 'conversaoPct', 'ice', v) },
+  'base physical damage % to convert to lightning': { f: (t, v) => porEl(t, 'conversaoPct', 'energy', v) },
+  'base physical damage % to convert to chaos': { f: (t, v) => porEl(t, 'conversaoPct', 'chaos', v) },
+  // (09/11, lote 2) as AFECÇÕES: as que o monstro sofre (efeito e duração em si — `itens-poe/afeccoes.aoAcertar`, `mods-poe.porNoAlvo`), a resistência a mais
+  // contra o dano contínuo e o Físico contínuo sofrido (`hunt/resistencia.resistido`), e as que ele causa em você (`mobs/mecanicas.aoAcertarJogador`).
+  // (O "-%" do poedb vem com sinal trocado em alguns: a linha do PoE é sempre "reduzida" — vale o módulo.)
+  'lightning ailment effect on self +%': { f: (t, v) => porEl(t, 'afeccaoEfeitoPct', 'eletrizacao', v) },
+  'shocked effect on self +%': { f: (t, v) => porEl(t, 'afeccaoEfeitoPct', 'eletrizacao', v) },
+  'cold ailment effect on self +%': { f: (t, v) => porEl(t, 'afeccaoEfeitoPct', 'resfriamento', v) },
+  'chill effectiveness on self +%': { f: (t, v) => porEl(t, 'afeccaoEfeitoPct', 'resfriamento', v) },
+  'scorch ailment effect on self +%': { f: (t, v) => porEl(t, 'afeccaoEfeitoPct', 'causticacao', v) },
+  'base self freeze duration -%': { f: (t, v) => porEl(t, 'afeccaoDuracaoPct', 'congelamento', -Math.abs(v)) },
+  'base self ignite duration -%': { f: (t, v) => porEl(t, 'afeccaoDuracaoPct', 'incendio', -Math.abs(v)) },
+  'self wither duration +%': { f: (t, v) => porEl(t, 'afeccaoDuracaoPct', 'definhar', v) },
+  'additional chaos resistance against damage over time %': { f: (t, v) => porEl(t, 'resistDot', 'chaos', v) },
+  'additional fire resistance against damage over time %': { f: (t, v) => porEl(t, 'resistDot', 'fire', v) },
+  'base physical damage over time taken +%': { f: (t, v) => (t.dotFisicoSofridoPct += v) },
+  'chill effect +%': { f: (t, v) => (t.efeitoResfriamentoPct += v) },
+  'always shock': { f: (t) => (t.sempreEletriza = 1) },
+  'all damage can chill': { f: (t) => (t.todoDanoResfria = 1) },
+  'all damage can shock': { f: (t) => (t.todoDanoEletriza = 1) },
+  'shock effect +%': { f: (t, v) => (t.efeitoEletrizacaoPct += v) },
+  'shock duration +%': { f: (t, v) => (t.duracaoEletrizacaoPct += v) },
+  'base chance to freeze %': { f: (t, v) => (t.chanceCongelar += v) },
+  'all damage can freeze': { f: (t) => (t.todoDanoCongela = 1) },
+  'freeze duration +%': { f: (t, v) => (t.duracaoCongelamentoPct += v) },
+  // (09/11, lote 3) a DEFESA do monstro (ver `mobs/raridade.aplicar`)
+  'base spell block %': { f: (t, v) => (t.bloqueioMagia += v) },
+  'base block % damage taken': { f: (t, v) => (t.danoBloqueadoPct += v) },
+  'stun threshold +%': { f: (t, v) => (t.limiarAtordoamentoPct += v) },
+  'base cannot be stunned': { f: (t) => (t.imuneAtordoamento = 1) },
+  'always stun': { f: (t) => (t.sempreAtordoa = 1) },
+  'chance to double stun duration %': { f: (t, v) => (t.dobrarAtordoamentoPct += v) },
+  'base stun threshold reduction +%': { f: (t, v) => (t.limiarInimigoMenosPct += v) },
+  'immune to culling strike': { f: (t) => (t.imuneMisericordia = 1) },
+  'base self critical strike multiplier -%': { f: (t, v) => (t.danoExtraCriticoRedPct += Math.abs(v)) },
+  'action speed cannot be reduced below base': { f: (t) => (t.semLentidao = 1) },
+  'movement speed cannot be reduced below base': { f: (t) => (t.semLentidaoMovimento = 1) },
+  'self take no extra damage from critical strikes': { f: (t) => (t.danoExtraCriticoRedPct += 100) },
+  'enemy phys reduction % penalty vs hit': { f: (t, v) => (t.sobrecargaFisicaPct += v) },
+  // ("Dano de Caos sofrido não ultrapassa o Escudo de Energia": no jogo o Escudo do monstro já fica por cima de TODO dano, o Caos também — `skills/estados`, `esPoe`)
+  'chaos damage does not bypass energy shield': { f: () => {} },
+  // (09/11, lote 4) o TAMANHO (o desenho — `iluminacao.tamanhoDoMonstro`, que lê o stat do PoE), a ÁREA das magias, Evitar Projéteis, as Ações Triplas e a União das Almas
+  'base actor scale +%': { f: () => {} },
+  'base skill area of effect +%': { f: (t, v) => (t.areaPct += v) },
+  'base avoid projectiles % chance': { f: (t, v) => (t.evitarProjeteisPct += v) },
+  'skill repeat count': { f: (t, v) => (t.repeticoes += v) },
+  'interrupt for X ms after skill use': { f: (t, v) => (t.pausaMs += v) },
+  'maximum life +% granted to pack members on death': { f: (t, v) => (t.packVidaPct += v) },
+  'actor scale +% granted to pack members on death': { f: (t, v) => (t.packEscalaPct += v) },
+  // (09/11, lote 5) o LOOT dos Tocados (`itens-poe/loot-dos-tocados.mjs`; decisões do dono: a moeda pela raridade, o Escaravelho vira Mapa)
+  'dropped items are converted to currency based on rarity': { f: (t, v) => { if (v) t.lootVira = 'moeda'; } },
+  'dropped items are converted to divination cards': { f: (t, v) => { if (v) t.lootVira = 'carta'; } },
+  'dropped items are converted to maps': { f: (t, v) => { if (v) t.lootVira = 'mapa'; } },
+  'dropped items are converted to scarabs based on rarity': { f: (t, v) => { if (v) t.lootVira = 'escaravelho'; } },
+  'dropped items are converted to jewels': { f: (t, v) => { if (v) t.lootVira = 'joia'; } },
+  'dropped items are converted to rings': { f: (t, v) => { if (v) t.lootVira = 'anel'; } },
+  'dropped items are converted to amulets': { f: (t, v) => { if (v) t.lootVira = 'amuleto'; } },
+  'dropped items are converted to utility flasks': { f: (t, v) => { if (v) t.lootVira = 'frascoUtilitario'; } },
+  'dropped items are converted to gems': { f: (t, v) => { if (v) t.lootVira = 'gema'; } },
+  'dropped items are corrupted': { f: (t, v) => (t.lootCorrompido = v ? 1 : t.lootCorrompido) },
+  'dropped items are one rarity higher': { f: (t, v) => (t.lootRaridadeAcima = v ? 1 : t.lootRaridadeAcima) },
+  'dropped items have maximum sockets': { f: (t, v) => (t.lootSoquetesMax = v ? 1 : t.lootSoquetesMax) },
+  'dropped quality items converted to 20 quality currency': { f: (t, v) => (t.lootQualidadeViraMoeda = v ? 1 : t.lootQualidadeViraMoeda) },
+  // (09/11, lote 6) o resto: o Maldito ("X% menos Dano final"), o Executor, o Equilíbrio Elemental (em você), o Sangue Corrompido em quem o acerta, o sangue na tela
+  'hellscape monster damage +% final': { f: (t, v) => (t.danoFinalPct += v) },
+  'hit damage +% per 10% missing enemy life': { f: (t, v) => (t.executorPct += v) },
+  'keystone elemental equilibrium': { f: (t) => (t.equilibrioElemental = 1) },
+  'base corrupt blood when hit % average damage to deal per minute per stack': { f: (t, v) => (t.sangueAoSerAcertadoPct += v) },
+  'extra gore': { f: (t) => (t.sangueExtra = 1) },
+  'blood and armour type override robot': { f: (t) => (t.sangueRobo = 1) },
+  // ("buff impl stat": o stat interno do PoE, sem linha nem efeito na tela; "Habilidades disparam N Projéteis adicionais": saem, mas contra você só UM acerta —
+  // o dono, 09/11)
+  'buff impl stat': { f: () => {} },
+  // (decisões do dono, 09/11 — sem número no poedb nem no PoB) o Executor: com ele vivo na tela você não recupera acima de 50%; o Portador da Seca: o acerto tira 1 carga de
+  // cada frasco e a aura (4 casas) 6 a cada 3 s; o Guardião Benevolente: a cada 4 s os monstros a até 3 casas ficam 1 s sem sofrer dano; a Cria de Abaxoth: ao morrer, nasce um Comum
+  'archnemesis cannot recover life or energy shield above %': { f: (t) => (t.tetoDeRecuperacao = 1) },
+  'remove enemy flask charge on hit % chance': { f: (t, v) => (t.tiraCargaDeFrascoPct += v) },
+  'flask charges recovered per 3 seconds': { f: (t, v) => (t.secaAura = v ? 1 : t.secaAura) },
+  'monster allies cannot take damage pulse owner': { f: (t) => (t.guardiaoPulso = 1) },
+  'monster voidspawn': { f: (t) => (t.criaAoMorrer = 1) },
+  'number of additional projectiles': { f: () => {} },
+  // (o Combardeiro: o Ricochete — contra você o projétil não volta, como os adicionais; o dano pela distância vale — `poderes`, `danoPorDistanciaPct`)
+  'number of chains': { f: () => {} },
+  'projectile chain from terrain chance %': { f: () => {} },
+  'projectile damage +% max as distance travelled increases': { f: (t, v) => (t.danoPorDistanciaPct += v) },
   'attack speed +%': { f: (t, v) => (t.velocidadeDeAtaquePct += v) },
-  'base cast speed +%': { f: (t, v) => (t.velocidadeDeAtaquePct += v), aprox: true },
-  'attack and cast speed +%': { f: (t, v) => (t.velocidadeDeAtaquePct += v) },
+  'base cast speed +%': { f: (t, v) => (t.velocidadeDeConjuracaoPct += v) },
+  'attack and cast speed +%': { f: (t, v) => { t.velocidadeDeAtaquePct += v; t.velocidadeDeConjuracaoPct += v; } },
   'base movement velocity +%': { f: (t, v) => (t.velocidadePct += v) },
   'accuracy rating +%': { f: (t, v) => (t.precisaoPct += v) },
   'evasion rating +%': { f: (t, v) => (t.evasaoPct += v) },
@@ -45,14 +134,16 @@ const MAPA = {
   'cannot have life leeched from': { f: (t) => (t.semDreno = 1) },
   'life regeneration rate per minute %': { f: (t, v) => (t.regenPct += v / 60) },
   'monster base block %': { f: (t, v) => (t.bloqueio += v) },
-  'base additional physical damage reduction %': { f: (t, v) => (t.resist.physical = (t.resist.physical ?? 0) + v), aprox: true },
+  // (lote 1) a Redução de Dano Físico adicional do monstro: SOMA com a armadura dele, no teto de 90% (`hunt/resistencia`, o PoE — dono, 10/10)
+  'base additional physical damage reduction %': { f: (t, v) => (t.resist.physical = (t.resist.physical ?? 0) + v) },
   'base resist all elements %': { f: (t, v) => { for (const e of ['fire', 'ice', 'energy']) t.resist[e] = (t.resist[e] ?? 0) + v; } },
   'base fire damage resistance %': { f: (t, v) => (t.resist.fire = (t.resist.fire ?? 0) + v) },
   'base cold damage resistance %': { f: (t, v) => (t.resist.ice = (t.resist.ice ?? 0) + v) },
   'base lightning damage resistance %': { f: (t, v) => (t.resist.energy = (t.resist.energy ?? 0) + v) },
   'base chaos damage resistance %': { f: (t, v) => (t.resist.chaos = (t.resist.chaos ?? 0) + v) },
-  'critical strike chance +%': { f: (t, v) => (t.critChance += Math.round((5 * v) / 100)), aprox: true }, // "aumentada" sobre os 5% de base
-  'always crit': { f: (t) => (t.critChance += 100), aprox: true },
+  // (lote 1) o crítico: "aumentada" multiplica a base da espécie (`mobs/atributos.critico`); "Sempre Crita" crita em todo acerto
+  'critical strike chance +%': { f: (t, v) => (t.critChancePct += v) },
+  'always crit': { f: (t) => (t.sempreCritico = 1) },
   'base damage taken +%': { f: (t, v) => (t.reducaoDeDano -= v) },
   // As doenças (ailments) que dão dano ao longo do tempo: viram o debuff no golpe dos mobs do Draevor (`mobs/mecanicas.aoAtacar`, `combate/dot.mjs`).
   'always ignite': { f: (t) => dot(t, 'fire') },
@@ -64,8 +155,9 @@ const MAPA = {
   'ignite duration +%': { f: (t, v) => (dot(t, 'fire').duracao += v) },
   'base poison duration +%': { f: (t, v) => (dot(t, 'earth').duracao += v) },
   'base bleed duration +%': { f: (t, v) => (dot(t, 'physical').duracao += v) },
-  'all damage can ignite': { f: () => {}, aprox: true },
-  'all damage can poison': { f: () => {}, aprox: true },
+  // (lote 1) "Todo o Dano pode Incendiar/Envenenar": o debuff do monstro já sai do golpe INTEIRO (`danoPctDoGolpe` sobre todos os tipos — `mobs/mecanicas`)
+  'all damage can ignite': { f: () => {} },
+  'all damage can poison': { f: () => {} },
   // (12/10 — dono: "ligar os modificadores" que a árvore combate) O que o monstro faz ao ACERTAR você — o golpe e a magia
   // (`mobs/mecanicas.aoAcertarJogador`, gatilho `aoAtacar`): Cegar, a Exposição, o Sangue Corrompido, o dreno de vida e as cargas.
   'global chance to blind on hit %': { f: (t, v) => (acerto(t).cegar.chance += v) },
@@ -77,10 +169,10 @@ const MAPA = {
   'fire exposure on hit magnitude': { f: (t, v) => Object.assign(acerto(t).exposicao.fire, { chance: 100, pct: Math.abs(v) }) },
   'cold exposure on hit magnitude': { f: (t, v) => Object.assign(acerto(t).exposicao.ice, { chance: 100, pct: Math.abs(v) }) },
   'lightning exposure on hit magnitude': { f: (t, v) => Object.assign(acerto(t).exposicao.energy, { chance: 100, pct: Math.abs(v) }) },
-  // (O Sangue Corrompido: o PoE renova a duração de todos os acúmulos a cada acerto; no jogo cada acúmulo tem a sua — aproximado.)
-  'corrupted blood on hit duration': { f: (t, v) => (acerto(t).sangue.duracaoMs = v), aprox: true },
-  'corrupted blood on hit num stacks': { f: (t, v) => (acerto(t).sangue.pilhas = v), aprox: true },
-  'corrupted blood on hit % average damage to deal per minute per stack': { f: (t, v) => (acerto(t).sangue.pctPorMinuto = v), aprox: true },
+  // (O Sangue Corrompido: o acerto renova a duração de todos os acúmulos — `mobs/mecanicas.renovarSangueCorrompido`, lote 1.)
+  'corrupted blood on hit duration': { f: (t, v) => (acerto(t).sangue.duracaoMs = v) },
+  'corrupted blood on hit num stacks': { f: (t, v) => (acerto(t).sangue.pilhas = v) },
+  'corrupted blood on hit % average damage to deal per minute per stack': { f: (t, v) => (acerto(t).sangue.pctPorMinuto = v) },
   'life leech from any damage permyriad': { f: (t, v) => (acerto(t).dreno.pct = v / 100) },
   'life leech speed +%': { f: (t, v) => (acerto(t).dreno.velocidadePct += v) },
   'life leech does not stop at full life': { f: (t) => (acerto(t).dreno.naoParaNaVidaCheia = true) },
@@ -88,9 +180,9 @@ const MAPA = {
   // De Você" (o seu dreno de Escudo de Energia não pega nele — `mobs/mecanicas.semDrenoDeEs`).
   'damage +% while life leeching': { f: (t, v) => (acerto(t).dreno.danoPct += v) },
   'cannot have energy shield leeched from': { f: (t) => (acerto(t).semDrenoDeEs = true) },
-  // (As cargas do monstro: o efeito por carga é o do personagem — o PoE não mostra o dos monstros; aproximado.)
-  'add frenzy charge on skill hit %': { f: (t, v) => (acerto(t).frenesi += v), aprox: true },
-  'gain endurance charge per second if have been hit recently': { f: (t, v) => (acerto(t).toleranciaPorSegundo += v), aprox: true },
+  // (As cargas do monstro: o efeito por carga é o do PoB para monstros — `monstros-no-jogador.NUMEROS.cargas`, lote 6.)
+  'add frenzy charge on skill hit %': { f: (t, v) => (acerto(t).frenesi += v) },
+  'gain endurance charge per second if have been hit recently': { f: (t, v) => (acerto(t).toleranciaPorSegundo += v) },
 };
 
 /** O debuff de dano ao longo do tempo de um elemento (a base do PoE: queimadura 90% do golpe em 4 s; veneno 30% em 2 s; sangramento 70% em 5 s, em 25% dos golpes). */
@@ -102,8 +194,10 @@ function mecanicasDosDots(dots) {
     .map(([el, d]) => ({ gatilho: 'aoAtacar', efeito: 'debuff', elemento: el, chance: BASE_DO_DOT[el].chance, danoPctDoGolpe: Math.round(BASE_DO_DOT[el].pct * (1 + d.mais / 100)), duracaoMs: Math.round((BASE_DO_DOT[el].ms * (1 + d.duracao / 100)) / 1000) * 1000 }));
 }
 
-const vazio = () => ({ vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0, esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, resist: {}, _dots: {} });
-const limpar = (t) => Object.fromEntries(Object.entries(t).filter(([k]) => k !== '_dots' && k !== '_acerto').filter(([k, v]) => (k === 'resist' ? Object.keys(v).length : v)).map(([k, v]) => [k, k === 'resist' ? v : Math.round(v * 100) / 100]));
+const vazio = () => ({ vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, velocidadeDeConjuracaoPct: 0, danoProjetilPct: 0, danoExtraAleatorioPct: 0, naoCaosComoCaosPct: 0, critChancePct: 0, sempreCritico: 0, dotFisicoSofridoPct: 0, sempreEletriza: 0, todoDanoResfria: 0, todoDanoEletriza: 0, efeitoResfriamentoPct: 0, efeitoEletrizacaoPct: 0, duracaoEletrizacaoPct: 0, chanceCongelar: 0, todoDanoCongela: 0, duracaoCongelamentoPct: 0, bloqueioMagia: 0, danoBloqueadoPct: 0, limiarAtordoamentoPct: 0, imuneAtordoamento: 0, sempreAtordoa: 0, dobrarAtordoamentoPct: 0, limiarInimigoMenosPct: 0, imuneMisericordia: 0, danoExtraCriticoRedPct: 0, semLentidao: 0, semLentidaoMovimento: 0, sobrecargaFisicaPct: 0, areaPct: 0, evitarProjeteisPct: 0, repeticoes: 0, pausaMs: 0, packVidaPct: 0, packEscalaPct: 0, lootCorrompido: 0, lootRaridadeAcima: 0, lootSoquetesMax: 0, lootQualidadeViraMoeda: 0, lootVira: null, danoFinalPct: 0, executorPct: 0, equilibrioElemental: 0, sangueAoSerAcertadoPct: 0, sangueExtra: 0, sangueRobo: 0, danoPorDistanciaPct: 0, tetoDeRecuperacao: 0, secaAura: 0, tiraCargaDeFrascoPct: 0, guardiaoPulso: 0, criaAoMorrer: 0, danoTipoPct: {}, danoExtraPct: {}, conversaoPct: {}, afeccaoEfeitoPct: {}, afeccaoDuracaoPct: {}, resistDot: {}, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0, esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, resist: {}, _dots: {} });
+const POR_ELEMENTO = ['resist', 'danoTipoPct', 'danoExtraPct', 'conversaoPct', 'afeccaoEfeitoPct', 'afeccaoDuracaoPct', 'resistDot'];
+const porEl = (t, campo, el, v) => (t[campo][el] = (t[campo][el] ?? 0) + v);
+const limpar = (t) => Object.fromEntries(Object.entries(t).filter(([k]) => k !== '_dots' && k !== '_acerto').filter(([k, v]) => (POR_ELEMENTO.includes(k) ? Object.keys(v).length : v)).map(([k, v]) => [k, POR_ELEMENTO.includes(k) || typeof v === 'string' ? v : Math.round(v * 100) / 100]));
 
 /** O que o monstro faz ao acertar (12/10): os acumuladores dos stats do PoE, que viram as mecânicas `aoAtacar` (e a Tolerância por segundo, `aoReceberDano`). */
 const acerto = (t) => (t._acerto ??= {
@@ -147,7 +241,7 @@ const HABILIDADES = {
  */
 const SEM_A_IDENTIDADE = new Set();
 /** O poedb escreve "Seus Acertos empre Incendeiam/Eletrizam" (sem o s): a linha sai certa. */
-const corrigirTexto = (l) => String(l).replace(/\bempre\b/g, 'sempre');
+const corrigirTexto = (l) => String(l).replace(/\bempre\b/g, 'sempre').replace(/Duração do Incêndio em Você aumentada em/, 'Duração do Incêndio em Você reduzida em'); // (lote 2: o PoE — "80% reduced Ignite Duration on you")
 
 /** Os stats do PoE → os do Draevor e o estado. */
 export function traduzir(statsPoe) {

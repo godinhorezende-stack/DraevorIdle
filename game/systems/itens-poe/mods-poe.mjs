@@ -169,7 +169,8 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
   // ATORDOAMENTO (o do PoE: pelo tamanho do acerto em relação à vida do alvo).
   // (+ "Acertos Atordoam como se causassem X% mais Dano de Fogo Corpo a Corpo": a parte de FOGO do acerto corpo a corpo — `fogo`, depois da
   // resistência, como o `dano` — conta X% a mais. Lote 31, P034: antes, o golpe inteiro com Fogo.)
-  const limiar = Math.max(1, (alvo.maxHp ?? alvo.hp) * Math.max(0.05, 1 - v('enemy_stun_threshold_red') / 100));
+  // (09/11, lote 3: × o "Ponto de Atordoamento aumentado em X%" do monstro — `limiarAtordoamentoPct`)
+  const limiar = Math.max(1, (alvo.maxHp ?? alvo.hp) * Math.max(0.05, 1 - v('enemy_stun_threshold_red') / 100) * (1 + Math.max(0, Number(alvo.limiarAtordoamentoPct) || 0) / 100));
   const comoFogo = tags.has('corpo') && fogo > 0 ? (Math.min(fogo, dano) * v('atordoar_como_fogo_mais')) / 100 : 0;
   const chanceAtordoar = (NO_ACERTO.atordoamento.fator * (dano + comoFogo)) / limiar;
   if (chanceAtordoar >= NO_ACERTO.atordoamento.minimoPct && rng() * 100 < Math.min(100, chanceAtordoar)) {
@@ -335,7 +336,8 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
   const raroOuUnico = /raro|unico/.test(alvo.raridade ?? alvo.raridadePoe ?? '') || alvo.boss || alvo.chefe;
   const doFraco = raroOuUnico || /elite/.test(alvo.raridade ?? '') ? 0 : v('culling_normal_magico');
   const comCulling = v('culling') + v('culling_limiar') + doFraco;
-  if (comCulling > 0 && alvo.hp > 0 && !alvo.dummy && alvo.maxHp > 0) {
+  // (lote 3: "Imune a Golpe de Misericórdia" do monstro — `imuneMisericordia`)
+  if (comCulling > 0 && alvo.hp > 0 && !alvo.dummy && alvo.maxHp > 0 && !alvo.imuneMisericordia) {
     // (+ lote F: "Mata Inimigos que possuem X% ou menos de Vida quando Acertado por suas Habilidades" — o limiar maior vale.)
     const limiar = Math.max(v('culling') + v('culling_limiar') > 0 ? (raroOuUnico ? 0.05 : 0.1) : 0, v('culling_limiar') / 100, doFraco / 100);
     if (alvo.hp <= alvo.maxHp * limiar) {
@@ -866,7 +868,9 @@ export const CORROSAO = Object.freeze({ armadura: 5000, evasao: 1000 });
 const naoFoge = (alvo) => !!(alvo?.boss || alvo?.chefe || alvo?.isBoss || /raro|elite|unico|único|boss/i.test(String(alvo?.raridade ?? '')));
 const SEGUNDOS_PADRAO = 4;
 /** Põe um estado do PoE (`cego`, `cinzas`, `definhado`…) no alvo até `ate` — o mesmo das auras e dos eventos (o dos lacaios usa). */
-export const porNoAlvo = (alvo, nome, ate, agora) => (nome === 'fugindo' && naoFoge(alvo) ? undefined : ESTADOS_NO_ALVO[nome]?.((alvo.estados ??= {}), ate, agora));
+// (09/11, lote 2 dos modificadores de monstro) "Duração do Definhamento em si reduzida" do monstro (`afeccaoDuracaoPct.definhar`)
+const ateNoAlvo = (alvo, nome, ate, agora) => (nome === 'definhado' && alvo?.afeccaoDuracaoPct?.definhar ? agora + Math.max(0, Math.round((ate - agora) * Math.max(0, 1 + alvo.afeccaoDuracaoPct.definhar / 100))) : ate);
+export const porNoAlvo = (alvo, nome, ate, agora) => (nome === 'fugindo' && naoFoge(alvo) ? undefined : ESTADOS_NO_ALVO[nome]?.((alvo.estados ??= {}), ateNoAlvo(alvo, nome, ate, agora), agora));
 /**
  * (11/10) Põe o estado com os mods do personagem: o DEFINHAMENTO — "Definhamentos infligidos por você expiram X% mais lentamente" (a duração ÷
  * (1 − X%)) e "X% de chance de, quando você infligir Definhamento, infligir até um máximo de 15 Debuffs de Definhamento ao invés".
@@ -887,7 +891,7 @@ function porComMods(fazer, nome, e, ate, agora, ficha, rng) {
   if (menos > 0) e.resMenosDefinhado = Math.max(e.resMenosDefinhado ?? 0, menos);
 }
 /** (lote A1) Põe o estado no alvo com os mods do personagem (`porComMods`) — o Definhar do Passo Definhante (`acoes.passoDefinhante`). */
-export const porNoAlvoComMods = (alvo, nome, ate, agora, ficha, rng = Math.random) => (ESTADOS_NO_ALVO[nome] ? porComMods(ESTADOS_NO_ALVO[nome], nome, (alvo.estados ??= {}), ate, agora, ficha, rng) : undefined);
+export const porNoAlvoComMods = (alvo, nome, ate, agora, ficha, rng = Math.random) => (ESTADOS_NO_ALVO[nome] ? porComMods(ESTADOS_NO_ALVO[nome], nome, (alvo.estados ??= {}), ateNoAlvo(alvo, nome, ate, agora), agora, ficha, rng) : undefined);
 // (lote 31, P044) O dano da EXPLOSÃO em cada vizinho, pela defesa dele (`hunt/resistencia.resistido`): quem registra é a caçada (o ciclo de imports).
 // eslint-disable-next-line no-var
 var danoDaExplosao;

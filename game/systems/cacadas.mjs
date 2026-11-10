@@ -3395,7 +3395,7 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       const metade = provocadoPorEste ? 1 : 0.5;
       if (provocadoPorEste) {
         if (!R.jaPode(relogio, b.proximoGolpe) || !Estados.podeAgir(b, relogio)) continue;
-        b.proximoGolpe = relogio + AtributosDoMob.intervaloDoGolpe(b, { base: b.boss?.melee?.intervaloMs ?? ATAQUE_DO_MONSTRO_MS, lentidao: Estados.fatorDeLentidao(b, relogio), buffPct: 0 });
+        b.proximoGolpe = relogio + AtributosDoMob.intervaloDoGolpe(b, { base: b.boss?.melee?.intervaloMs ?? ATAQUE_DO_MONSTRO_MS, lentidao: Estados.fatorDeLentidao(b, relogio), buffPct: 0, contar: true });
       } else if (Math.random() > 0.125) continue;
       // (lote 41, P019: o golpe corpo a corpo é ATAQUE — as magias do bicho vão de verdade no lacaio, `Poderes.lancar` → `magiaNoLacaio`; antes,
       // o golpe de um conjurador contava como magia)

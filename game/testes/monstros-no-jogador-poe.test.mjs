@@ -251,15 +251,16 @@ test('o VAMPÍRICO (dono, 12/10: "igual no PoE"): sorteia; drena 100% do dano; "
   assert.ok(e.hunt.roubos.filter((r) => r.recurso === 'es').length > 0, 'num monstro comum, drena');
 });
 
-test('CARGAS do monstro: Frenesi no acerto (até 3, +4% de velocidade de ataque e de dano cada), Tolerância por segundo se acertado recentemente, Poder do mapa (+50% de chance de crítico cada); "Monstros Inimigos não podem ganhar Cargas" impede', { skip: SEM }, () => {
+test('CARGAS do monstro: Frenesi no acerto (até 3, +11% de velocidade de ataque e 4% mais dano cada — o PoB), Tolerância por segundo se acertado recentemente, Poder do mapa (+150% de chance de crítico cada — o PoB); "Monstros Inimigos não podem ganhar Cargas" impede', { skip: SEM }, () => {
   const e = novo();
   const m = comMods(['MonsterModFrenzyChargeGain']);
   cacada(e, [m]);
   for (let i = 0; i < 5; i++) acertar(e, m);
   const agora = e.hunt.clock;
   assert.equal(Mecanicas.cargasDe(m, agora).frenesi, 3);
-  assert.equal(BuffsDeMob.soma(m, agora, 'velocidadeDeAtaquePct'), 12);
-  assert.equal(BuffsDeMob.soma(m, agora, 'danoPct'), 12);
+  // (09/11, aval do dono: "os do PoB" — `data.monsterConstants`, o monstro que não é lacaio do jogador)
+  assert.equal(BuffsDeMob.soma(m, agora, 'velocidadeDeAtaquePct'), 33);
+  assert.equal(Math.round(BuffsDeMob.produto(m, agora, 'danoMaisPct') * 1e4), Math.round(1.04 ** 3 * 1e4));
   assert.equal(Mecanicas.cargasDe(m, agora + 10_001).frenesi, 0, 'acabam juntas em 10 s');
   // Tolerância: só depois de ser acertado (há até 4 s), uma por segundo.
   const t = comMods(['MonsterModEnduranceChargeGain']);
@@ -276,7 +277,7 @@ test('CARGAS do monstro: Frenesi no acerto (até 3, +4% de velocidade de ataque 
   for (const x of Mapas.DADOS.classe.paginas.alto.sufixos.find((l) => l.familia === 'MapMonstersPowerChargeOnHit').efeitos) Mapas.somar(ef, x, []);
   const pm = MapasAreas.aplicarEfeitos(monstro(), ef.monstros);
   acertar(e, pm);
-  assert.equal(ModsPoe.doBicho(pm, e.hunt.clock).criticoFator, 1.5);
+  assert.equal(ModsPoe.doBicho(pm, e.hunt.clock).criticoFator, 2.5);
   const p = novo();
   alocar(p, /^inimigos_sem_cargas$/);
   const m2 = comMods(['MonsterModFrenzyChargeGain']);
@@ -322,12 +323,14 @@ test('a AFECÇÃO INERENTE do Golpe Crítico do monstro: Fogo incendeia, Gelo co
   assert.ok(Math.abs(pct - Math.round(50 * 0.1 ** 0.4 * 10) / 10) < 1e-9, String(pct));
   assert.equal(Afixos.soma(e).dano_recebido_inc ?? 0, pct, 'Eletrizado: dano recebido aumentado');
   assert.ok(ev.some((x) => x.estado === 'eletrizado'));
-  // sem crítico, nada
+  // sem crítico, nada de inerente — só o Resfriamento, que todo acerto com Gelo põe (09/11, aval do dono: "manter a regra do PoE")
   const s = novo();
   cacada(s);
   acertar(s, monstro(), { ...golpe, critico: false });
   assert.equal(s.hunt.efeitosDoJogador.dots.length, 0);
-  assert.equal(s.hunt.controle, undefined);
+  assert.equal(s.hunt.controle?.congelado, undefined);
+  assert.equal(NoJogador.ativosEmVoce(s.hunt).eletrizado, 0);
+  assert.ok(s.hunt.controle?.lento?.pct > 0, 'o Gelo resfria mesmo sem crítico');
   const p = novo();
   alocar(p, /^critico_recebido_sem_afeccao$/);
   cacada(p);

@@ -69,7 +69,11 @@
    "nivel": 14,
    "pesoMagico": 0,
    "pesoRaro": 1500,
-   "stats": {},
+   "stats": {
+    "resistDot": {
+     "chaos": 25
+    }
+   },
    "mecanicas": [
     {
      "gatilho": "aoAtacar",
@@ -80,8 +84,8 @@
      "duracaoMs": 3000
     }
    ],
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -126,13 +130,19 @@
    "pesoMagico": 3000,
    "pesoRaro": 3000,
    "stats": {
-    "danoPct": 15,
+    "naoCaosComoCaosPct": 15,
+    "conversaoPct": {
+     "chaos": 25
+    },
+    "afeccaoDuracaoPct": {
+     "definhar": -60
+    },
     "resist": {
      "chaos": 40
     }
    },
-   "estado": "parcial",
-   "valem": 2,
+   "estado": "efeito",
+   "valem": 4,
    "total": 4,
    "statsPoe": [
     {
@@ -174,7 +184,18 @@
    "pesoMagico": 5000,
    "pesoRaro": 5000,
    "stats": {
-    "danoPct": 75,
+    "danoTipoPct": {
+     "ice": 50
+    },
+    "danoExtraPct": {
+     "ice": 50
+    },
+    "conversaoPct": {
+     "ice": 25
+    },
+    "afeccaoEfeitoPct": {
+     "resfriamento": -50
+    },
     "resist": {
      "ice": 50
     }
@@ -188,8 +209,8 @@
      "pct": 10
     }
    ],
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 6,
    "total": 6,
    "statsPoe": [
     {
@@ -238,9 +259,16 @@
    "nivel": 54,
    "pesoMagico": 0,
    "pesoRaro": 2500,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "chanceCongelar": 35,
+    "todoDanoCongela": 1,
+    "duracaoCongelamentoPct": 25,
+    "afeccaoEfeitoPct": {
+     "resfriamento": -80
+    }
+   },
+   "estado": "efeito",
+   "valem": 4,
    "total": 4,
    "statsPoe": [
     {
@@ -279,10 +307,11 @@
    "pesoRaro": 8000,
    "stats": {
     "velocidadePct": 40,
-    "velocidadeDeAtaquePct": 60,
+    "velocidadeDeAtaquePct": 30,
+    "velocidadeDeConjuracaoPct": 30,
     "evasaoPct": 100
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 5,
    "total": 5,
    "statsPoe": [
@@ -327,10 +356,10 @@
    "pesoRaro": 3000,
    "stats": {
     "danoPct": 20,
-    "precisaoPct": 100,
-    "critChance": 5
+    "critChancePct": 100,
+    "precisaoPct": 100
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 3,
    "total": 3,
    "statsPoe": [
@@ -367,9 +396,11 @@
    "nivel": 27,
    "pesoMagico": 0,
    "pesoRaro": 0,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "danoPorDistanciaPct": 60
+   },
+   "estado": "efeito",
+   "valem": 4,
    "total": 4,
    "statsPoe": [
     {
@@ -411,7 +442,18 @@
    "pesoMagico": 5000,
    "pesoRaro": 5000,
    "stats": {
-    "danoPct": 75,
+    "danoTipoPct": {
+     "fire": 50
+    },
+    "danoExtraPct": {
+     "fire": 50
+    },
+    "conversaoPct": {
+     "fire": 25
+    },
+    "afeccaoEfeitoPct": {
+     "causticacao": -50
+    },
     "resist": {
      "fire": 50
     }
@@ -425,8 +467,8 @@
      "pct": 10
     }
    ],
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 6,
    "total": 6,
    "statsPoe": [
     {
@@ -475,7 +517,11 @@
    "nivel": 27,
    "pesoMagico": 0,
    "pesoRaro": 2500,
-   "stats": {},
+   "stats": {
+    "resistDot": {
+     "fire": 30
+    }
+   },
    "mecanicas": [
     {
      "gatilho": "aoAtacar",
@@ -486,8 +532,8 @@
      "duracaoMs": 5000
     }
    ],
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -534,8 +580,8 @@
     "esPct": 40,
     "esAtrasoMenosPct": 150
    },
-   "estado": "parcial",
-   "valem": 2,
+   "estado": "efeito",
+   "valem": 3,
    "total": 3,
    "statsPoe": [
     {
@@ -590,7 +636,18 @@
    "pesoMagico": 5000,
    "pesoRaro": 5000,
    "stats": {
-    "danoPct": 75,
+    "danoTipoPct": {
+     "energy": 50
+    },
+    "danoExtraPct": {
+     "energy": 50
+    },
+    "conversaoPct": {
+     "energy": 25
+    },
+    "afeccaoEfeitoPct": {
+     "eletrizacao": -50
+    },
     "resist": {
      "energy": 50
     }
@@ -604,8 +661,8 @@
      "pct": 10
     }
    ],
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 6,
    "total": 6,
    "statsPoe": [
     {
@@ -655,9 +712,17 @@
    "nivel": 10,
    "pesoMagico": 0,
    "pesoRaro": 2500,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "sempreEletriza": 1,
+    "todoDanoEletriza": 1,
+    "efeitoEletrizacaoPct": 25,
+    "duracaoEletrizacaoPct": 50,
+    "afeccaoEfeitoPct": {
+     "eletrizacao": -80
+    }
+   },
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -706,12 +771,19 @@
    "pesoMagico": 0,
    "pesoRaro": 3000,
    "stats": {
-    "danoPct": 40,
     "velocidadeDeAtaquePct": -30,
+    "velocidadeDeConjuracaoPct": -30,
+    "limiarAtordoamentoPct": 250,
+    "sempreAtordoa": 1,
+    "dobrarAtordoamentoPct": 25,
+    "sangueExtra": 1,
+    "danoTipoPct": {
+     "physical": 40
+    },
     "precisaoPct": 100
    },
-   "estado": "parcial",
-   "valem": 3,
+   "estado": "efeito",
+   "valem": 8,
    "total": 8,
    "statsPoe": [
     {
@@ -771,7 +843,9 @@
    "nivel": 19,
    "pesoMagico": 0,
    "pesoRaro": 1500,
-   "stats": {},
+   "stats": {
+    "dotFisicoSofridoPct": -25
+   },
    "mecanicas": [
     {
      "gatilho": "aoAtacar",
@@ -782,8 +856,8 @@
      "duracaoMs": 6000
     }
    ],
-   "estado": "parcial",
-   "valem": 3,
+   "estado": "efeito",
+   "valem": 4,
    "total": 4,
    "statsPoe": [
     {
@@ -824,13 +898,18 @@
    "pesoMagico": 5000,
    "pesoRaro": 5000,
    "stats": {
-    "danoPct": 40,
+    "limiarAtordoamentoPct": 250,
+    "sobrecargaFisicaPct": 10,
+    "sangueRobo": 1,
+    "danoTipoPct": {
+     "physical": 40
+    },
     "resist": {
      "physical": 30
     }
    },
-   "estado": "parcial",
-   "valem": 2,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -877,10 +956,11 @@
    "pesoRaro": 8000,
    "stats": {
     "vidaPct": 40,
-    "danoPct": 20
+    "danoPct": 20,
+    "areaPct": 80
    },
-   "estado": "parcial",
-   "valem": 2,
+   "estado": "efeito",
+   "valem": 4,
    "total": 4,
    "statsPoe": [
     {
@@ -920,11 +1000,13 @@
    "stats": {
     "danoPct": 40,
     "velocidadePct": 40,
-    "velocidadeDeAtaquePct": 150,
+    "velocidadeDeAtaquePct": 75,
+    "velocidadeDeConjuracaoPct": 75,
+    "imuneMisericordia": 1,
     "reducaoDeDano": 30
    },
-   "estado": "parcial",
-   "valem": 5,
+   "estado": "efeito",
+   "valem": 7,
    "total": 7,
    "statsPoe": [
     {
@@ -979,10 +1061,12 @@
    "pesoMagico": 0,
    "pesoRaro": 3000,
    "stats": {
+    "bloqueioMagia": 50,
+    "danoBloqueadoPct": 20,
     "bloqueio": 50
    },
-   "estado": "parcial",
-   "valem": 1,
+   "estado": "efeito",
+   "valem": 3,
    "total": 3,
    "statsPoe": [
     {
@@ -1021,7 +1105,11 @@
    "pesoMagico": 2000,
    "pesoRaro": 2000,
    "stats": {
-    "danoPct": 20
+    "danoPct": 20,
+    "imuneAtordoamento": 1,
+    "semLentidao": 1,
+    "semLentidaoMovimento": 1,
+    "areaPct": 30
    },
    "mecanicas": [
     {
@@ -1031,8 +1119,8 @@
      "porSegundo": 2
     }
    ],
-   "estado": "parcial",
-   "valem": 2,
+   "estado": "efeito",
+   "valem": 7,
    "total": 7,
    "statsPoe": [
     {
@@ -1243,10 +1331,11 @@
    "pesoRaro": 1000,
    "stats": {
     "velocidadePct": -20,
+    "danoFinalPct": -30,
     "reducaoDeDano": -30
    },
-   "estado": "parcial",
-   "valem": 2,
+   "estado": "efeito",
+   "valem": 3,
    "total": 3,
    "statsPoe": [
     {
@@ -1332,9 +1421,11 @@
    "nivel": 54,
    "pesoMagico": 0,
    "pesoRaro": 200,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "lootSoquetesMax": 1
+   },
+   "estado": "efeito",
+   "valem": 2,
    "total": 2,
    "statsPoe": [
     {
@@ -1365,7 +1456,8 @@
    "pesoMagico": 800,
    "pesoRaro": 800,
    "stats": {
-    "critChance": 100
+    "sempreCritico": 1,
+    "danoExtraCriticoRedPct": 50
    },
    "mecanicas": [
     {
@@ -1375,8 +1467,8 @@
      "efeitoPct": 100
     }
    ],
-   "estado": "parcial",
-   "valem": 3,
+   "estado": "efeito",
+   "valem": 4,
    "total": 4,
    "statsPoe": [
     {
@@ -1462,10 +1554,11 @@
    "pesoRaro": 200,
    "stats": {
     "vidaPct": 30,
-    "danoPct": 10
+    "naoCaosComoCaosPct": 10,
+    "lootQualidadeViraMoeda": 1
    },
-   "estado": "parcial",
-   "valem": 2,
+   "estado": "efeito",
+   "valem": 3,
    "total": 3,
    "statsPoe": [
     {
@@ -1531,9 +1624,13 @@
    "nivel": 27,
    "pesoMagico": 0,
    "pesoRaro": 800,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "imuneMisericordia": 1,
+    "executorPct": 15,
+    "tetoDeRecuperacao": 1
+   },
+   "estado": "efeito",
+   "valem": 3,
    "total": 3,
    "statsPoe": [
     {
@@ -1592,10 +1689,13 @@
    "pesoMagico": 0,
    "pesoRaro": 200,
    "stats": {
+    "lootVira": "frascoUtilitario",
+    "secaAura": 1,
+    "tiraCargaDeFrascoPct": 100,
     "regenPct": 1.5
    },
-   "estado": "parcial",
-   "valem": 1,
+   "estado": "efeito",
+   "valem": 4,
    "total": 4,
    "statsPoe": [
     {
@@ -1635,6 +1735,7 @@
    "pesoMagico": 0,
    "pesoRaro": 200,
    "stats": {
+    "lootVira": "joia",
     "resist": {
      "chaos": 25
     }
@@ -1649,8 +1750,8 @@
      "duracaoMs": 2000
     }
    ],
-   "estado": "parcial",
-   "valem": 3,
+   "estado": "efeito",
+   "valem": 4,
    "total": 4,
    "statsPoe": [
     {
@@ -1767,13 +1868,25 @@
    "pesoMagico": 0,
    "pesoRaro": 1000,
    "stats": {
-    "danoPct": 40,
+    "efeitoResfriamentoPct": 200,
+    "danoTipoPct": {
+     "ice": 30
+    },
+    "danoExtraPct": {
+     "ice": 25
+    },
+    "conversaoPct": {
+     "ice": 50
+    },
+    "afeccaoEfeitoPct": {
+     "resfriamento": -50
+    },
     "resist": {
      "ice": 40
     }
    },
-   "estado": "parcial",
-   "valem": 3,
+   "estado": "efeito",
+   "valem": 6,
    "total": 6,
    "statsPoe": [
     {
@@ -1825,14 +1938,25 @@
    "pesoMagico": 0,
    "pesoRaro": 800,
    "stats": {
-    "danoPct": 40,
+    "danoTipoPct": {
+     "ice": 30
+    },
+    "danoExtraPct": {
+     "ice": 25
+    },
+    "conversaoPct": {
+     "ice": 50
+    },
+    "afeccaoEfeitoPct": {
+     "resfriamento": -50
+    },
     "resist": {
      "ice": 40,
      "physical": 20
     }
    },
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 6,
    "total": 6,
    "statsPoe": [
     {
@@ -1933,7 +2057,18 @@
    "pesoMagico": 0,
    "pesoRaro": 1000,
    "stats": {
-    "danoPct": 40,
+    "danoTipoPct": {
+     "fire": 30
+    },
+    "danoExtraPct": {
+     "fire": 25
+    },
+    "conversaoPct": {
+     "fire": 50
+    },
+    "afeccaoEfeitoPct": {
+     "causticacao": -50
+    },
     "resist": {
      "fire": 40
     }
@@ -1948,8 +2083,8 @@
      "duracaoMs": 4000
     }
    ],
-   "estado": "parcial",
-   "valem": 5,
+   "estado": "efeito",
+   "valem": 7,
    "total": 7,
    "statsPoe": [
     {
@@ -2002,12 +2137,13 @@
    "pesoMagico": 0,
    "pesoRaro": 200,
    "stats": {
+    "lootVira": "anel",
     "resist": {
      "fire": 40
     }
    },
-   "estado": "parcial",
-   "valem": 1,
+   "estado": "efeito",
+   "valem": 2,
    "total": 2,
    "statsPoe": [
     {
@@ -2040,7 +2176,10 @@
    "pesoMagico": 0,
    "pesoRaro": 800,
    "stats": {
-    "danoPct": 60,
+    "danoExtraAleatorioPct": 60,
+    "sempreEletriza": 1,
+    "todoDanoResfria": 1,
+    "todoDanoEletriza": 1,
     "resist": {
      "fire": 50,
      "ice": 50,
@@ -2057,8 +2196,8 @@
      "duracaoMs": 4000
     }
    ],
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 7,
    "total": 7,
    "statsPoe": [
     {
@@ -2115,14 +2254,23 @@
    "pesoMagico": 0,
    "pesoRaro": 200,
    "stats": {
-    "danoPct": 40,
+    "lootSoquetesMax": 1,
+    "danoTipoPct": {
+     "fire": 30
+    },
+    "danoExtraPct": {
+     "fire": 25
+    },
+    "conversaoPct": {
+     "fire": 25
+    },
     "resist": {
      "fire": 40,
      "physical": 25
     }
    },
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 6,
    "total": 6,
    "statsPoe": [
     {
@@ -2197,13 +2345,24 @@
    "pesoMagico": 0,
    "pesoRaro": 1000,
    "stats": {
-    "danoPct": 40,
+    "danoTipoPct": {
+     "energy": 30
+    },
+    "danoExtraPct": {
+     "energy": 25
+    },
+    "conversaoPct": {
+     "energy": 50
+    },
+    "afeccaoEfeitoPct": {
+     "eletrizacao": -50
+    },
     "resist": {
      "energy": 40
     }
    },
-   "estado": "parcial",
-   "valem": 3,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -2249,13 +2408,25 @@
    "pesoMagico": 0,
    "pesoRaro": 200,
    "stats": {
-    "danoPct": 40,
+    "lootVira": "amuleto",
+    "danoTipoPct": {
+     "energy": 30
+    },
+    "danoExtraPct": {
+     "energy": 25
+    },
+    "conversaoPct": {
+     "energy": 50
+    },
+    "afeccaoEfeitoPct": {
+     "eletrizacao": -50
+    },
     "resist": {
      "energy": 40
     }
    },
-   "estado": "parcial",
-   "valem": 3,
+   "estado": "efeito",
+   "valem": 6,
    "total": 6,
    "statsPoe": [
     {
@@ -2306,7 +2477,10 @@
    "nivel": 36,
    "pesoMagico": 0,
    "pesoRaro": 200,
-   "stats": {},
+   "stats": {
+    "lootCorrompido": 1,
+    "sangueAoSerAcertadoPct": 60
+   },
    "mecanicas": [
     {
      "gatilho": "aoAtacar",
@@ -2317,8 +2491,8 @@
      "pilhas": 1
     }
    ],
-   "estado": "parcial",
-   "valem": 3,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -2363,10 +2537,13 @@
    "pesoMagico": 0,
    "pesoRaro": 300,
    "stats": {
+    "bloqueioMagia": 30,
+    "danoBloqueadoPct": 20,
+    "guardiaoPulso": 1,
     "bloqueio": 30
    },
-   "estado": "parcial",
-   "valem": 1,
+   "estado": "efeito",
+   "valem": 4,
    "total": 4,
    "statsPoe": [
     {
@@ -2405,15 +2582,16 @@
    "pesoMagico": 0,
    "pesoRaro": 200,
    "stats": {
-    "danoPct": 40,
+    "danoExtraAleatorioPct": 40,
+    "lootVira": "gema",
     "resist": {
      "fire": 40,
      "ice": 40,
      "energy": 40
     }
    },
-   "estado": "parcial",
-   "valem": 2,
+   "estado": "efeito",
+   "valem": 3,
    "total": 3,
    "statsPoe": [
     {
@@ -2498,6 +2676,7 @@
    "pesoRaro": 0,
    "stats": {
     "danoPct": 50,
+    "lootVira": "moeda",
     "resist": {
      "fire": 30,
      "ice": 30,
@@ -2506,8 +2685,8 @@
      "physical": 10
     }
    },
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -2554,6 +2733,7 @@
    "pesoRaro": 0,
    "stats": {
     "danoPct": 50,
+    "lootVira": "moeda",
     "resist": {
      "fire": 30,
      "ice": 30,
@@ -2562,8 +2742,8 @@
      "physical": 10
     }
    },
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -2611,6 +2791,7 @@
    "pesoRaro": 0,
    "stats": {
     "danoPct": 50,
+    "lootVira": "carta",
     "resist": {
      "fire": 30,
      "ice": 30,
@@ -2619,8 +2800,8 @@
      "physical": 10
     }
    },
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -2668,6 +2849,7 @@
    "pesoRaro": 0,
    "stats": {
     "danoPct": 50,
+    "lootVira": "carta",
     "resist": {
      "fire": 30,
      "ice": 30,
@@ -2676,8 +2858,8 @@
      "physical": 10
     }
    },
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -2725,6 +2907,7 @@
    "pesoRaro": 0,
    "stats": {
     "danoPct": 50,
+    "lootVira": "mapa",
     "resist": {
      "fire": 30,
      "ice": 30,
@@ -2733,8 +2916,8 @@
      "physical": 10
     }
    },
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -2782,6 +2965,7 @@
    "pesoRaro": 0,
    "stats": {
     "danoPct": 50,
+    "lootVira": "mapa",
     "resist": {
      "fire": 30,
      "ice": 30,
@@ -2790,8 +2974,8 @@
      "physical": 10
     }
    },
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -2838,6 +3022,7 @@
    "pesoRaro": 0,
    "stats": {
     "danoPct": 50,
+    "lootVira": "moeda",
     "resist": {
      "fire": 30,
      "ice": 30,
@@ -2846,8 +3031,8 @@
      "physical": 10
     }
    },
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -2895,6 +3080,7 @@
    "pesoRaro": 0,
    "stats": {
     "danoPct": 50,
+    "lootVira": "escaravelho",
     "resist": {
      "fire": 40,
      "ice": 40,
@@ -2903,8 +3089,8 @@
      "physical": 15
     }
    },
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -2951,6 +3137,7 @@
    "pesoRaro": 0,
    "stats": {
     "danoPct": 50,
+    "lootRaridadeAcima": 1,
     "resist": {
      "fire": 40,
      "ice": 40,
@@ -2959,8 +3146,8 @@
      "physical": 15
     }
    },
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -3005,7 +3192,9 @@
    "nivel": 14,
    "pesoMagico": 1500,
    "pesoRaro": 0,
-   "stats": {},
+   "stats": {
+    "dotFisicoSofridoPct": -25
+   },
    "mecanicas": [
     {
      "gatilho": "aoAtacar",
@@ -3016,8 +3205,8 @@
      "duracaoMs": 6000
     }
    ],
-   "estado": "parcial",
-   "valem": 3,
+   "estado": "efeito",
+   "valem": 4,
    "total": 4,
    "statsPoe": [
     {
@@ -3117,10 +3306,13 @@
    "pesoMagico": 1000,
    "pesoRaro": 0,
    "stats": {
-    "vidaPct": 30
+    "vidaPct": 30,
+    "areaPct": 20,
+    "packVidaPct": 40,
+    "packEscalaPct": 10
    },
-   "estado": "parcial",
-   "valem": 1,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -3167,6 +3359,7 @@
    "pesoRaro": 0,
    "stats": {
     "danoPct": 50,
+    "criaAoMorrer": 1,
     "resist": {
      "fire": 50,
      "ice": 50,
@@ -3175,8 +3368,8 @@
      "physical": 40
     }
    },
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -3222,13 +3415,24 @@
    "pesoMagico": 0,
    "pesoRaro": 800,
    "stats": {
-    "danoPct": 40,
+    "danoTipoPct": {
+     "energy": 30
+    },
+    "danoExtraPct": {
+     "energy": 25
+    },
+    "conversaoPct": {
+     "energy": 50
+    },
+    "afeccaoEfeitoPct": {
+     "eletrizacao": -50
+    },
     "resist": {
      "energy": 40
     }
    },
-   "estado": "parcial",
-   "valem": 3,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -3312,8 +3516,8 @@
     "esPct": 40,
     "esAtrasoMenosPct": 50
    },
-   "estado": "parcial",
-   "valem": 2,
+   "estado": "efeito",
+   "valem": 3,
    "total": 3,
    "statsPoe": [
     {
@@ -3352,7 +3556,10 @@
    "pesoMagico": 800,
    "pesoRaro": 0,
    "stats": {
-    "danoPct": 60,
+    "danoExtraAleatorioPct": 60,
+    "sempreEletriza": 1,
+    "todoDanoResfria": 1,
+    "todoDanoEletriza": 1,
     "resist": {
      "fire": 50,
      "ice": 50,
@@ -3369,8 +3576,8 @@
      "duracaoMs": 4000
     }
    ],
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 7,
    "total": 7,
    "statsPoe": [
     {
@@ -3426,10 +3633,10 @@
    "pesoRaro": 0,
    "stats": {
     "danoPct": 30,
-    "precisaoPct": 100,
-    "critChance": 5
+    "critChancePct": 100,
+    "precisaoPct": 100
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 3,
    "total": 3,
    "statsPoe": [
@@ -3467,10 +3674,11 @@
    "pesoRaro": 0,
    "stats": {
     "velocidadePct": 40,
-    "velocidadeDeAtaquePct": 60,
+    "velocidadeDeAtaquePct": 30,
+    "velocidadeDeConjuracaoPct": 30,
     "evasaoPct": 100
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 5,
    "total": 5,
    "statsPoe": [
@@ -3521,12 +3729,19 @@
    "pesoMagico": 3000,
    "pesoRaro": 0,
    "stats": {
-    "danoPct": 60,
     "velocidadeDeAtaquePct": -40,
+    "velocidadeDeConjuracaoPct": -40,
+    "limiarAtordoamentoPct": 250,
+    "dobrarAtordoamentoPct": 25,
+    "limiarInimigoMenosPct": 50,
+    "sangueExtra": 1,
+    "danoTipoPct": {
+     "physical": 60
+    },
     "precisaoPct": 100
    },
-   "estado": "parcial",
-   "valem": 3,
+   "estado": "efeito",
+   "valem": 8,
    "total": 8,
    "statsPoe": [
     {
@@ -3586,10 +3801,11 @@
    "pesoMagico": 0,
    "pesoRaro": 0,
    "stats": {
-    "danoPct": 15
+    "danoProjetilPct": 30,
+    "evitarProjeteisPct": 30
    },
-   "estado": "parcial",
-   "valem": 1,
+   "estado": "efeito",
+   "valem": 3,
    "total": 3,
    "statsPoe": [
     {
@@ -3622,9 +3838,15 @@
    "nivel": 54,
    "pesoMagico": 2500,
    "pesoRaro": 0,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "chanceCongelar": 20,
+    "todoDanoCongela": 1,
+    "afeccaoEfeitoPct": {
+     "resfriamento": 1
+    }
+   },
+   "estado": "efeito",
+   "valem": 4,
    "total": 4,
    "statsPoe": [
     {
@@ -3665,7 +3887,11 @@
    "nivel": 14,
    "pesoMagico": 1500,
    "pesoRaro": 0,
-   "stats": {},
+   "stats": {
+    "resistDot": {
+     "chaos": 25
+    }
+   },
    "mecanicas": [
     {
      "gatilho": "aoAtacar",
@@ -3676,8 +3902,8 @@
      "duracaoMs": 3000
     }
    ],
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -3721,7 +3947,11 @@
    "nivel": 27,
    "pesoMagico": 2500,
    "pesoRaro": 0,
-   "stats": {},
+   "stats": {
+    "resistDot": {
+     "fire": 30
+    }
+   },
    "mecanicas": [
     {
      "gatilho": "aoAtacar",
@@ -3732,8 +3962,8 @@
      "duracaoMs": 5000
     }
    ],
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -3778,9 +4008,17 @@
    "nivel": 10,
    "pesoMagico": 2500,
    "pesoRaro": 0,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "sempreEletriza": 1,
+    "todoDanoEletriza": 1,
+    "efeitoEletrizacaoPct": 25,
+    "duracaoEletrizacaoPct": 50,
+    "afeccaoEfeitoPct": {
+     "eletrizacao": -80
+    }
+   },
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -3845,7 +4083,18 @@
    "pesoMagico": 1000,
    "pesoRaro": 0,
    "stats": {
-    "danoPct": 40,
+    "danoTipoPct": {
+     "fire": 30
+    },
+    "danoExtraPct": {
+     "fire": 25
+    },
+    "conversaoPct": {
+     "fire": 50
+    },
+    "afeccaoEfeitoPct": {
+     "causticacao": -50
+    },
     "resist": {
      "fire": 40
     }
@@ -3860,8 +4109,8 @@
      "duracaoMs": 4000
     }
    ],
-   "estado": "parcial",
-   "valem": 5,
+   "estado": "efeito",
+   "valem": 7,
    "total": 7,
    "statsPoe": [
     {
@@ -3918,13 +4167,25 @@
    "pesoMagico": 1000,
    "pesoRaro": 0,
    "stats": {
-    "danoPct": 40,
+    "efeitoResfriamentoPct": 200,
+    "danoTipoPct": {
+     "ice": 30
+    },
+    "danoExtraPct": {
+     "ice": 25
+    },
+    "conversaoPct": {
+     "ice": 50
+    },
+    "afeccaoEfeitoPct": {
+     "resfriamento": -50
+    },
     "resist": {
      "ice": 40
     }
    },
-   "estado": "parcial",
-   "valem": 3,
+   "estado": "efeito",
+   "valem": 6,
    "total": 6,
    "statsPoe": [
     {
@@ -3975,13 +4236,24 @@
    "pesoMagico": 1000,
    "pesoRaro": 0,
    "stats": {
-    "danoPct": 40,
+    "danoTipoPct": {
+     "energy": 30
+    },
+    "danoExtraPct": {
+     "energy": 25
+    },
+    "conversaoPct": {
+     "energy": 50
+    },
+    "afeccaoEfeitoPct": {
+     "eletrizacao": -50
+    },
     "resist": {
      "energy": 40
     }
    },
-   "estado": "parcial",
-   "valem": 3,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -4027,7 +4299,9 @@
    "nivel": 36,
    "pesoMagico": 800,
    "pesoRaro": 0,
-   "stats": {},
+   "stats": {
+    "sangueAoSerAcertadoPct": 60
+   },
    "mecanicas": [
     {
      "gatilho": "aoAtacar",
@@ -4038,8 +4312,8 @@
      "pilhas": 1
     }
    ],
-   "estado": "parcial",
-   "valem": 3,
+   "estado": "efeito",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -4084,10 +4358,12 @@
    "pesoMagico": 3000,
    "pesoRaro": 0,
    "stats": {
+    "bloqueioMagia": 50,
+    "danoBloqueadoPct": 10,
     "bloqueio": 50
    },
-   "estado": "parcial",
-   "valem": 1,
+   "estado": "efeito",
+   "valem": 3,
    "total": 3,
    "statsPoe": [
     {
@@ -4145,7 +4421,9 @@
    "pesoMagico": 5000,
    "pesoRaro": 5000,
    "stats": {
-    "danoPct": 50
+    "danoExtraPct": {
+     "fire": 50
+    }
    },
    "mecanicas": [
     {
@@ -4156,7 +4434,7 @@
      "pct": 25
     }
    ],
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 2,
    "total": 2,
    "statsPoe": [
@@ -4186,7 +4464,9 @@
    "pesoMagico": 5000,
    "pesoRaro": 5000,
    "stats": {
-    "danoPct": 50
+    "danoExtraPct": {
+     "ice": 50
+    }
    },
    "mecanicas": [
     {
@@ -4197,7 +4477,7 @@
      "pct": 25
     }
    ],
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 2,
    "total": 2,
    "statsPoe": [
@@ -4227,7 +4507,9 @@
    "pesoMagico": 5000,
    "pesoRaro": 5000,
    "stats": {
-    "danoPct": 50
+    "danoExtraPct": {
+     "energy": 50
+    }
    },
    "mecanicas": [
     {
@@ -4238,7 +4520,7 @@
      "pct": 25
     }
    ],
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 2,
    "total": 2,
    "statsPoe": [
@@ -4267,9 +4549,9 @@
    "pesoMagico": 3000,
    "pesoRaro": 3000,
    "stats": {
-    "danoPct": 15
+    "naoCaosComoCaosPct": 15
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 1,
    "total": 1,
    "statsPoe": [
@@ -4294,10 +4576,11 @@
    "pesoMagico": 0,
    "pesoRaro": 0,
    "stats": {
-    "danoPct": 60
+    "danoExtraAleatorioPct": 60,
+    "equilibrioElemental": 1
    },
-   "estado": "parcial",
-   "valem": 1,
+   "estado": "efeito",
+   "valem": 2,
    "total": 2,
    "statsPoe": [
     {
@@ -4329,7 +4612,7 @@
      "physical": 50
     }
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 1,
    "total": 1,
    "statsPoe": [
@@ -4348,18 +4631,21 @@
    "familia": "MonsterModResistantToFire",
    "linhas": [
     "+75% de Resistência a Fogo",
-    "Duração do Incêndio em Você aumentada em 80%"
+    "Duração do Incêndio em Você reduzida em 80%"
    ],
    "nivel": 1,
    "pesoMagico": 5000,
    "pesoRaro": 5000,
    "stats": {
+    "afeccaoDuracaoPct": {
+     "incendio": -80
+    },
     "resist": {
      "fire": 75
     }
    },
-   "estado": "parcial",
-   "valem": 1,
+   "estado": "efeito",
+   "valem": 2,
    "total": 2,
    "statsPoe": [
     {
@@ -4389,12 +4675,18 @@
    "pesoMagico": 5000,
    "pesoRaro": 5000,
    "stats": {
+    "afeccaoEfeitoPct": {
+     "resfriamento": -80
+    },
+    "afeccaoDuracaoPct": {
+     "congelamento": -80
+    },
     "resist": {
      "ice": 75
     }
    },
-   "estado": "parcial",
-   "valem": 1,
+   "estado": "efeito",
+   "valem": 3,
    "total": 3,
    "statsPoe": [
     {
@@ -4428,12 +4720,15 @@
    "pesoMagico": 5000,
    "pesoRaro": 5000,
    "stats": {
+    "afeccaoEfeitoPct": {
+     "eletrizacao": -80
+    },
     "resist": {
      "energy": 75
     }
    },
-   "estado": "parcial",
-   "valem": 1,
+   "estado": "efeito",
+   "valem": 2,
    "total": 2,
    "statsPoe": [
     {
@@ -4461,12 +4756,15 @@
    "pesoMagico": 3000,
    "pesoRaro": 3000,
    "stats": {
+    "afeccaoDuracaoPct": {
+     "definhar": -80
+    },
     "resist": {
      "chaos": 60
     }
    },
-   "estado": "parcial",
-   "valem": 1,
+   "estado": "efeito",
+   "valem": 2,
    "total": 2,
    "statsPoe": [
     {
@@ -4605,9 +4903,9 @@
    "pesoMagico": 3000,
    "pesoRaro": 3000,
    "stats": {
-    "critChance": 15
+    "critChancePct": 300
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 1,
    "total": 1,
    "statsPoe": [
@@ -4695,9 +4993,11 @@
    "nivel": 27,
    "pesoMagico": 0,
    "pesoRaro": 0,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "sempreEletriza": 1
+   },
+   "estado": "efeito",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -4797,9 +5097,11 @@
    "nivel": 27,
    "pesoMagico": 0,
    "pesoRaro": 0,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "chanceCongelar": 25
+   },
+   "estado": "efeito",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -4821,9 +5123,11 @@
    "nivel": 27,
    "pesoMagico": 0,
    "pesoRaro": 1500,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "sempreAtordoa": 1
+   },
+   "estado": "efeito",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -4845,9 +5149,11 @@
    "nivel": 9,
    "pesoMagico": 3000,
    "pesoRaro": 3000,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "areaPct": 80
+   },
+   "estado": "efeito",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -4873,9 +5179,10 @@
    "pesoRaro": 8000,
    "stats": {
     "velocidadePct": 40,
-    "velocidadeDeAtaquePct": 60
+    "velocidadeDeAtaquePct": 30,
+    "velocidadeDeConjuracaoPct": 30
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 3,
    "total": 3,
    "statsPoe": [
@@ -4911,10 +5218,13 @@
    "pesoMagico": 0,
    "pesoRaro": 0,
    "stats": {
-    "velocidadeDeAtaquePct": 400
+    "velocidadeDeAtaquePct": 200,
+    "velocidadeDeConjuracaoPct": 200,
+    "repeticoes": 2,
+    "pausaMs": 1500
    },
-   "estado": "parcial",
-   "valem": 2,
+   "estado": "efeito",
+   "valem": 4,
    "total": 4,
    "statsPoe": [
     {
@@ -4952,8 +5262,8 @@
    "pesoMagico": 0,
    "pesoRaro": 0,
    "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "estado": "efeito",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -5067,7 +5377,7 @@
      "porSegundo": 1
     }
    ],
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 1,
    "total": 1,
    "statsPoe": [
@@ -5099,7 +5409,7 @@
      "chance": 100
     }
    ],
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 1,
    "total": 1,
    "statsPoe": [
@@ -5147,9 +5457,12 @@
    "nivel": 19,
    "pesoMagico": 2000,
    "pesoRaro": 2000,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "semLentidao": 1,
+    "semLentidaoMovimento": 1
+   },
+   "estado": "efeito",
+   "valem": 2,
    "total": 2,
    "statsPoe": [
     {
@@ -5176,9 +5489,11 @@
    "nivel": 19,
    "pesoMagico": 2000,
    "pesoRaro": 2000,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "imuneAtordoamento": 1
+   },
+   "estado": "efeito",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -5219,9 +5534,9 @@
    "pesoMagico": 1500,
    "pesoRaro": 1500,
    "stats": {
-    "critChance": 100
+    "sempreCritico": 1
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 1,
    "total": 1,
    "statsPoe": [
@@ -5282,9 +5597,11 @@
    "nivel": 19,
    "pesoMagico": 1500,
    "pesoRaro": 1500,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "danoExtraCriticoRedPct": 100
+   },
+   "estado": "efeito",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -5334,8 +5651,8 @@
    "pesoMagico": 0,
    "pesoRaro": 0,
    "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "estado": "efeito",
+   "valem": 2,
    "total": 2,
    "statsPoe": [
     {
@@ -5363,9 +5680,11 @@
    "nivel": 27,
    "pesoMagico": 0,
    "pesoRaro": 0,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "danoPorDistanciaPct": 60
+   },
+   "estado": "efeito",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -5387,9 +5706,11 @@
    "nivel": 27,
    "pesoMagico": 1500,
    "pesoRaro": 1500,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "executorPct": 20
+   },
+   "estado": "efeito",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -5438,7 +5759,9 @@
    "nivel": 36,
    "pesoMagico": 500,
    "pesoRaro": 500,
-   "stats": {},
+   "stats": {
+    "sangueAoSerAcertadoPct": 60
+   },
    "mecanicas": [
     {
      "gatilho": "aoAtacar",
@@ -5449,8 +5772,8 @@
      "pilhas": 1
     }
    ],
-   "estado": "parcial",
-   "valem": 3,
+   "estado": "efeito",
+   "valem": 4,
    "total": 4,
    "statsPoe": [
     {
@@ -5591,9 +5914,10 @@
    "pesoRaro": 3000,
    "stats": {
     "velocidadePct": 30,
-    "velocidadeDeAtaquePct": 80
+    "velocidadeDeAtaquePct": 40,
+    "velocidadeDeConjuracaoPct": 40
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 3,
    "total": 3,
    "statsPoe": [
@@ -5672,10 +5996,10 @@
    "pesoMagico": 0,
    "pesoRaro": 3000,
    "stats": {
-    "precisaoPct": 100,
-    "critChance": 15
+    "critChancePct": 300,
+    "precisaoPct": 100
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 2,
    "total": 2,
    "statsPoe": [
@@ -5824,9 +6148,11 @@
    "pesoMagico": 0,
    "pesoRaro": 3000,
    "stats": {
-    "danoPct": 40
+    "danoTipoPct": {
+     "physical": 40
+    }
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 1,
    "total": 1,
    "statsPoe": [
@@ -5957,9 +6283,11 @@
    "nivel": 27,
    "pesoMagico": 0,
    "pesoRaro": 1000,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "tetoDeRecuperacao": 1
+   },
+   "estado": "efeito",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -6086,9 +6414,11 @@
    "nivel": 27,
    "pesoMagico": 0,
    "pesoRaro": 1000,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "guardiaoPulso": 1
+   },
+   "estado": "efeito",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -6110,9 +6440,11 @@
    "nivel": 36,
    "pesoMagico": 0,
    "pesoRaro": 1000,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "secaAura": 1
+   },
+   "estado": "efeito",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -6707,11 +7039,12 @@
    "stats": {
     "danoPct": 40,
     "velocidadePct": 40,
-    "velocidadeDeAtaquePct": 150,
+    "velocidadeDeAtaquePct": 75,
+    "velocidadeDeConjuracaoPct": 75,
     "reducaoDeDano": 30
    },
-   "estado": "parcial",
-   "valem": 5,
+   "estado": "efeito",
+   "valem": 6,
    "total": 6,
    "statsPoe": [
     {
@@ -6831,7 +7164,7 @@
      "physical": 10
     }
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 4,
    "total": 4,
    "statsPoe": [
@@ -6882,7 +7215,7 @@
      "physical": 10
     }
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 4,
    "total": 4,
    "statsPoe": [
@@ -6933,7 +7266,7 @@
      "physical": 10
     }
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 4,
    "total": 4,
    "statsPoe": [
@@ -6984,7 +7317,7 @@
      "physical": 10
     }
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 4,
    "total": 4,
    "statsPoe": [
@@ -7035,7 +7368,7 @@
      "physical": 10
     }
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 4,
    "total": 4,
    "statsPoe": [
@@ -7086,7 +7419,7 @@
      "physical": 10
     }
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 4,
    "total": 4,
    "statsPoe": [
@@ -7137,7 +7470,7 @@
      "physical": 10
     }
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 4,
    "total": 4,
    "statsPoe": [
@@ -7188,7 +7521,7 @@
      "physical": 15
     }
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 4,
    "total": 4,
    "statsPoe": [
@@ -7239,7 +7572,7 @@
      "physical": 15
     }
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 4,
    "total": 4,
    "statsPoe": [
@@ -7302,9 +7635,12 @@
    "nivel": 19,
    "pesoMagico": 1000,
    "pesoRaro": 0,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "packVidaPct": 40,
+    "packEscalaPct": 10
+   },
+   "estado": "efeito",
+   "valem": 2,
    "total": 2,
    "statsPoe": [
     {
@@ -7352,11 +7688,12 @@
    "pesoMagico": 0,
    "pesoRaro": 0,
    "stats": {
-    "precisaoPct": 80,
-    "critChance": 6
+    "critChancePct": 120,
+    "danoExtraCriticoRedPct": 100,
+    "precisaoPct": 80
    },
-   "estado": "parcial",
-   "valem": 2,
+   "estado": "efeito",
+   "valem": 3,
    "total": 3,
    "statsPoe": [
     {
@@ -7392,10 +7729,11 @@
    "pesoRaro": 0,
    "stats": {
     "danoPct": 100,
+    "imuneAtordoamento": 1,
     "regenPct": 3
    },
-   "estado": "parcial",
-   "valem": 2,
+   "estado": "efeito",
+   "valem": 3,
    "total": 3,
    "statsPoe": [
     {
@@ -7432,10 +7770,12 @@
    "pesoRaro": 0,
    "stats": {
     "velocidadePct": 20,
-    "velocidadeDeAtaquePct": 40
+    "velocidadeDeAtaquePct": 20,
+    "velocidadeDeConjuracaoPct": 20,
+    "semLentidao": 1
    },
-   "estado": "parcial",
-   "valem": 3,
+   "estado": "efeito",
+   "valem": 4,
    "total": 4,
    "statsPoe": [
     {

@@ -58,8 +58,8 @@ export function resistenciaDe(hunt, alvo, tipo) {
  * A resistência EFETIVA do bicho a um golpe do atacante (`ficha`): a do bicho, no teto, menos a penetração do atacante naquele tipo.
  * Sem `ficha`, é a resistência do bicho no teto (sem penetração).
  */
-export function resistenciaEfetivaDe(hunt, alvo, tipo, ficha = null) {
-  let res = resistenciaDe(hunt, alvo, tipo);
+export function resistenciaEfetivaDe(hunt, alvo, tipo, ficha = null, { extra = 0 } = {}) {
+  let res = resistenciaDe(hunt, alvo, tipo) + extra;
   let pen = Limites.penetracaoDe(ficha?.penetracao, tipo);
   // As regras dos únicos do PoE (o atacante — `ficha.afPoe`): "Dano Elemental Causado por você com Acertos é Resistido pela Resistência
   // Elemental mais baixa ao invés"; "Trata os valores das Resistências Elementais (a de Caos) dos Monstros Inimigos como invertidos" (a
@@ -96,8 +96,14 @@ export function resistenciaEfetivaDe(hunt, alvo, tipo, ficha = null) {
  * físico: a armadura e a redução física adicional somadas, com teto — `fracaoFisicaDoPoe`.)
  * (`mobs/atributos.mjs`: armadura, bloqueio e redução vêm da espécie e dos modificadores.)
  */
-export function resistido(hunt, alvo, tipo, valor, ficha = null, { armadura = true } = {}) {
+export function resistido(hunt, alvo, tipo, valor, ficha = null, { armadura = true, dot = false } = {}) {
   let v = valor;
+  // (09/11, lote 6) o Guardião Benevolente: o monstro no pulso dele não sofre dano (`estados.semDano` — `mobs/mecanicas.tiqueDosEspeciais`)
+  if (alvo?.estados?.semDano && alvo.estados.semDano.ate > (hunt?.clock ?? 0)) return 0;
+  // (09/11, lote 3) o golpe que o monstro bloqueou e ainda passa ("Você sofre 20% do Dano de Acertos Bloqueados" — `AtributosDoMob.bloqueou`)
+  if (ficha && !dot && hunt?.bloqueioParcial && hunt.bloqueioParcial.uid === alvo?.uid && hunt.bloqueioParcial.em === (hunt.clock ?? 0)) v *= hunt.bloqueioParcial.fator;
+  // (09/11, lote 2 dos modificadores de monstro) o DANO CONTÍNUO: "Dano Físico Degenerativo sofrido aumentado" (`dotFisicoSofridoPct`)
+  if (dot && tipo === 'physical' && alvo?.dotFisicoSofridoPct) v *= Math.max(0, 1 + alvo.dotFisicoSofridoPct / 100);
   // PoE: "Acertos ignoram a Redução de Dano Físico dos Monstros Inimigos" (a ficha do golpe sorteou): sem armadura nem resistência física.
   if (ficha?.ignoraReducaoFisica && tipo === 'physical') return Math.max(0, Math.round(v));
   // PoE 1 (dono, 10/10): no físico, a armadura e a redução física adicional SOMAM, no teto de 90% (`fracaoFisicaDoPoe`) — no lugar da
@@ -110,7 +116,9 @@ export function resistido(hunt, alvo, tipo, valor, ficha = null, { armadura = tr
   // (+ os estados do PoE no bicho: Cinzas, Intimidado, Definhado.)
   if (ficha) v *= ModsPoe.fatorRecebidoPeloBicho(alvo, tipo, ficha, hunt?.clock ?? 0);
   if (somaDoPoe) return Math.max(0, Math.round(v));
-  return Math.max(0, Math.round(Limites.danoAposResistencia(v, resistenciaEfetivaDe(hunt, alvo, tipo, ficha))));
+  // (lote 2) "+X% de Resistência a Fogo/Caos adicional contra Dano Degenerativo" (`resistDot`): soma à resistência do monstro, no mesmo teto
+  const contraDot = dot ? Number(alvo?.resistDot?.[tipo]) || 0 : 0;
+  return Math.max(0, Math.round(Limites.danoAposResistencia(v, resistenciaEfetivaDe(hunt, alvo, tipo, ficha, { extra: contraDot }))));
 }
 
 /**

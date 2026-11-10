@@ -23,6 +23,8 @@ import * as Raridade from './raridade.mjs';
 import * as Areas from '../../engine/areas.mjs';
 import * as Buffs from './buffs.mjs';
 import * as Poderes from '../poderes.mjs';
+import * as R from '../regras.mjs';
+import * as FrascosPoe from '../itens-poe/frascos.mjs';
 import * as Ficha from '../ficha.mjs';
 import { criarMonstro, BESTIARY } from '../hunt/monstros.mjs';
 import { definirRacaDoBicho } from '../itens-poe/condicoes-poe.mjs';
@@ -158,7 +160,41 @@ function gerar(hunt, m, mec, eventos) {
   return novos;
 }
 
-/** Quando `m` morre: as mecânicas `aoMorrer` dele e as `aliadoMorreu` dos vizinhos. */
+/**
+ * (09/11, lote 6 dos modificadores de monstro — decisões do dono) os que agem a cada tique:
+ *   - o EXECUTOR vivo na tela (até `RAIO_DA_TELA` casas): você não RECUPERA Vida nem Escudo de Energia acima de 50% — o que subiu acima disso desde o tique
+ *     anterior volta (o que já estava acima fica);
+ *   - o PORTADOR DA SECA: a aura (até 4 casas) tira 6 cargas de cada frasco seu a cada 3 s;
+ *   - o GUARDIÃO BENEVOLENTE: a cada 4 s, os monstros a até 3 casas dele ficam 1 s sem sofrer dano (`estados.semDano` — `hunt/resistencia.resistido`).
+ */
+export const ESPECIAIS = Object.freeze({ raioDaTela: 8, tetoExecutor: 0.5, secaRaio: 4, secaCargas: 6, secaCadaMs: 3000, guardiaoCadaMs: 4000, guardiaoRaio: 3, guardiaoMs: 1000 });
+function tiqueDosEspeciais(estado, hunt, personagem, eventos, agora) {
+  const E = ESPECIAIS;
+  const vivos = (hunt.monstros ?? []).filter((m) => m.hp > 0 && !m.dummy);
+  const executor = hunt.pos && vivos.some((m) => m.tetoDeRecuperacao && distancia(hunt.pos, m) <= E.raioDaTela);
+  if (executor && estado.hp > 0) {
+    const ante = hunt.recuperacaoAntes ?? { hp: estado.hp, es: estado.es ?? 0 };
+    const tetoVida = (estado.maxHp ?? 0) * E.tetoExecutor;
+    if (estado.hp > ante.hp && estado.hp > tetoVida) estado.hp = Math.max(ante.hp, tetoVida);
+    const maxEs = Ficha.combate(estado).energyShield ?? 0;
+    const tetoEs = maxEs * E.tetoExecutor;
+    if ((estado.es ?? 0) > ante.es && (estado.es ?? 0) > tetoEs) estado.es = Math.max(ante.es, tetoEs);
+  }
+  hunt.recuperacaoAntes = { hp: estado.hp, es: estado.es ?? 0 };
+  for (const m of vivos) {
+    if (m.secaAura && hunt.pos && distancia(hunt.pos, m) <= E.secaRaio && agora >= (m.proximaSeca ?? 0)) {
+      m.proximaSeca = agora + E.secaCadaMs;
+      if (FrascosPoe.perderCargas(estado, E.secaCargas)) Ficha.invalidar(estado);
+    }
+    if (m.guardiaoPulso && agora >= (m.proximoPulso ?? 0)) {
+      m.proximoPulso = agora + E.guardiaoCadaMs;
+      for (const o of vivos) if (distancia(o, m) <= E.guardiaoRaio) (o.estados ??= {}).semDano = { ate: agora + E.guardiaoMs };
+      eventos.push({ t: 'fx', id: 14, uid: m.uid, x: m.x, y: m.y });
+    }
+  }
+}
+
+/** Quando `m` morre: as mecânicas `aoMorrer` dele e as `aliadoMorreu` dos vizinhos. *//** Quando `m` morre: as mecânicas `aoMorrer` dele e as `aliadoMorreu` dos vizinhos. */
 export function aoMorrer(estado, hunt, personagem, m, eventos) {
   const agora = relogio(hunt);
   for (const mec of Raridade.mecanicasDe(m)) {
@@ -172,6 +208,22 @@ export function aoMorrer(estado, hunt, personagem, m, eventos) {
       }
     } else if (mec.efeito === 'gerar') gerar(hunt, m, mec, eventos);
     else if (mec.efeito === 'solo') criarSolo(hunt, m, mec, agora, eventos);
+  }
+  // (09/11, lote 6 — decisão do dono) a CRIA DE ABAXOTH: ao morrer, nasce um monstro Comum da mesma espécie no lugar (sem os modificadores dele, sem loot)
+  if (m.criaAoMorrer) gerar(hunt, m, { quantidade: 1, vidaPct: 100 }, eventos);
+  // (09/11, lote 4 dos modificadores de monstro) a UNIÃO DAS ALMAS: ao morrer, os do MESMO bando (o mesmo spawn — `spawnId`; sem ele, os de perto) ganham
+  // "+X% de Vida Máxima" (a vida que falta continua faltando) e "+X% de Tamanho" (o desenho — `iluminacao.tamanhoDoMonstro`)
+  if (m.packVidaPct > 0 || m.packEscalaPct > 0) {
+    for (const o of hunt.monstros) {
+      if (o === m || o.hp <= 0 || o.dummy || (m.spawnId != null ? o.spawnId !== m.spawnId : distancia(o, m) > 6)) continue;
+      if (m.packVidaPct > 0) {
+        const novo = Math.round((o.maxHp ?? o.hp) * (1 + m.packVidaPct / 100));
+        o.hp += novo - (o.maxHp ?? o.hp);
+        o.maxHp = novo;
+      }
+      if (m.packEscalaPct > 0) o.escalaExtraPct = (o.escalaExtraPct ?? 0) + m.packEscalaPct;
+      eventos.push({ t: 'fx', id: 14, uid: o.uid, x: o.x, y: o.y });
+    }
   }
   for (const o of hunt.monstros) {
     if (o === m || o.hp <= 0) continue;
@@ -273,6 +325,16 @@ export function aoReceberDano(estado, hunt, personagem, m, dano, tipo, eventos, 
   if (corpoACorpo && !doTotem && m.espinhos && ehRaro(m) && estado.hp > 0 && itensPoeLigado()) espinhos(estado, hunt, personagem, m, eventos);
   if (!m.mods?.length) return;
   const agora = relogio(hunt);
+  // (09/11, lote 6) "Inflige Sangue Corrompido em quem o Acerta" (o Corrompedor — `sangueAoSerAcertadoPct`: % da média de dano DELE por minuto, por acúmulo, 4 s): o seu
+  // acerto nele (não o do totem) põe um acúmulo em você e renova os outros, como o Sangue Corrompido do acerto dele
+  if (m.sangueAoSerAcertadoPct > 0 && !doTotem && estado.hp > 0 && itensPoeLigado()) {
+    const media = (Poderes.golpeMedioDoBicho(m) ?? R.ataqueDoMonstro(m)) * (m.forca ?? 1);
+    const total = ((media * m.sangueAoSerAcertadoPct) / 100 / 60) * 4;
+    if (ModsPoe.dotNoJogador(hunt, { tipo: 'sangueCorrompido', total, duracaoMs: 4000, origem: { fonte: 'mob', mob: m.name, uid: m.uid, key: m.key } }, agora)) {
+      renovarSangueCorrompido(hunt);
+      eventos?.push({ t: 'estado', uid: 'player', quem: personagem?.nome, x: hunt.pos?.x, y: hunt.pos?.y, estado: 'sangueCorrompido', de: m.name });
+    }
+  }
   for (const mec of Raridade.mecanicasDe(m)) {
     if (mec.gatilho !== 'aoReceberDano') continue;
     // (PoE: "Ganha N Cargas … por segundo se foi Acertado Recentemente" — o tique lê `acertadoEm`.)
@@ -297,8 +359,9 @@ export function ganharCarga(m, tipo, agora, ficha = null) {
   if (!e || !m || !(m.hp > 0) || Number(ficha?.afPoe?.inimigos_sem_cargas) > 0) return false;
   Buffs.por(m, {
     chave: `carga:${tipo}`, ate: agora + C.duracaoMs, acumulaAte: C.maximo, carga: tipo,
-    ...(e.resist ? { resist: { physical: e.resist, fire: e.resist, ice: e.resist, energy: e.resist } } : {}),
-    ...(e.danoPct ? { danoPct: e.danoPct } : {}), ...(e.velocidadeDeAtaquePct ? { velocidadeDeAtaquePct: e.velocidadeDeAtaquePct } : {}), ...(e.critAumentadoPct ? { critAumentadoPct: e.critAumentadoPct } : {}),
+    ...(e.fisicoPct || e.elementalPct ? { resist: { physical: e.fisicoPct ?? 0, fire: e.elementalPct ?? 0, ice: e.elementalPct ?? 0, energy: e.elementalPct ?? 0 } } : {}),
+    ...(e.danoMaisPct ? { danoMaisPct: e.danoMaisPct } : {}), ...(e.velocidadeDeAtaquePct ? { velocidadeDeAtaquePct: e.velocidadeDeAtaquePct } : {}), ...(e.critAumentadoPct ? { critAumentadoPct: e.critAumentadoPct } : {}),
+    ...(e.velocidadeDeConjuracaoPct ? { velocidadeDeConjuracaoPct: e.velocidadeDeConjuracaoPct } : {}), ...(e.velocidadePct ? { velocidadePct: e.velocidadePct } : {}),
   }, agora);
   return true;
 }
@@ -346,6 +409,18 @@ export const semDrenoDeEs = (m) => !!m?.mods?.length && Raridade.mecanicasDe(m).
 /** Os efeitos do PoE no acerto do monstro (gatilho `aoAtacar`; o `debuff` e a `maldicao` de sempre ficam com `aoAtacar`, só no golpe). */
 const DO_ACERTO = new Set(['cegar', 'mutilar', 'empalar', 'exposicao', 'sangueCorrompido', 'drenar', 'carga']);
 
+/** Estende os acúmulos de Sangue Corrompido no jogador até o fim do mais novo, com o dano a mais do tempo a mais (o mesmo por pulso). */
+export function renovarSangueCorrompido(hunt) {
+  const pulsoMs = Dot.CONFIG.tipos.sangueCorrompido?.pulsoMs ?? 1000;
+  const lista = (hunt.efeitosDoJogador?.dots ?? []).filter((d) => d.tipo === 'sangueCorrompido' && d.falta > 0);
+  const ate = Math.max(0, ...lista.map((d) => d.ate ?? 0));
+  for (const d of lista) {
+    if (d.tipo !== 'sangueCorrompido' || !(d.falta > 0) || !(ate > d.ate)) continue;
+    d.falta += (d.porPulso ?? 0) * Math.floor((ate - d.ate) / pulsoMs);
+    d.ate = ate;
+  }
+}
+
 /** O que o MAPA pôs nos monstros para o acerto (`m.noAcerto` — `itens-poe/mapas-areas.aplicarEfeitos`), no formato das mecânicas. */
 function doMapa(m) {
   const n = m?.noAcerto;
@@ -372,7 +447,8 @@ export function aoAcertarJogador(estado, hunt, personagem, m, { dano = 0, bruto 
   const agora = relogio(hunt);
   const mecs = m.mods?.length ? Raridade.mecanicasDe(m).filter((x) => x.gatilho === 'aoAtacar' && DO_ACERTO.has(x.efeito)) : [];
   const efeitos = [...mecs, ...doMapa(m)];
-  if (!efeitos.length && !critico && !hunt.debuffsDoJogador?.empalamentos?.length) return;
+  // (lote 2: + o Resfriamento do Gelo, o "Sempre Eletriza" e o "Todo o Dano pode Resfriar" — valem em todo acerto, ver o fim)
+  if (!efeitos.length && !critico && !hunt.debuffsDoJogador?.empalamentos?.length && !((brutas.ice ?? 0) > 0) && !m.sempreEletriza && !m.todoDanoResfria && !(m.chanceCongelar > 0) && !m.sempreAtordoa && !m.equilibrioElemental && !(m.tiraCargaDeFrascoPct > 0) && !(Number(Ficha.combate(estado).afPoe?.todo_dano_resfria_voce) > 0)) return;
   const ficha = Ficha.combate(estado);
   const naTela = (nome, extra = {}) => eventos.push({ t: 'estado', uid: 'player', quem: personagem?.nome, x: hunt.pos?.x, y: hunt.pos?.y, estado: nome, de: m.name, ...extra });
   const origem = { fonte: 'mob', mob: m.name, uid: m.uid, key: m.key };
@@ -397,6 +473,9 @@ export function aoAcertarJogador(estado, hunt, personagem, m, { dano = 0, bruto 
       const total = ((bruto * (mec.pctPorMinuto ?? 0)) / 100 / 60) * ((mec.duracaoMs ?? 4000) / 1000);
       let posto = null;
       for (let i = 0; i < Math.max(1, mec.pilhas ?? 1); i++) posto = ModsPoe.dotNoJogador(hunt, { tipo: 'sangueCorrompido', total, duracaoMs: mec.duracaoMs ?? null, origem }, agora, rng) ?? posto;
+      // (09/11, lote 1 dos modificadores de monstro) como no PoE, o acerto RENOVA a duração de todos os acúmulos que já estão em você (cada um
+      // segue pagando o mesmo por segundo até o fim novo)
+      if (posto) renovarSangueCorrompido(hunt);
       if (posto) naTela('sangueCorrompido');
     } else if (mec.efeito === 'drenar') drenar(m, ficha, dano, mec, agora);
     else if (mec.efeito === 'carga' && ganharCarga(m, mec.carga, agora, ficha)) eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: `carga:${mec.carga}` });
@@ -423,14 +502,45 @@ export function aoAcertarJogador(estado, hunt, personagem, m, { dano = 0, bruto 
     const peloEscudo = Number(ficha.afPoe?.congelamento_pelo_escudo_pct) || 0;
     const msGelo = NoJogador.msDoCongelamento(partes.ice ?? 0, peloEscudo > 0 ? Math.max(1, ((Number(ficha.energyShield) || 0) * peloEscudo) / 100) : vidaMax);
     if (msGelo > 0 && pega() && Controle.congelar(hunt, ficha, msGelo, agora, rng)) naTela('congelado');
-    // (07/11, lote 16 das inertes, o Chamado do Vazio: "Todo o Dano Sofrido de Acertos pode te Resfriar" — o Resfriamento do dano todo do acerto, como o Incêndio do Mokou)
-    if (Number(ficha.afPoe?.todo_dano_resfria_voce) > 0) {
-      const pctFrio = NoJogador.pctDoResfriamento(Object.values(brutas).reduce((t, x) => t + (Number(x) || 0), 0), peloEscudo > 0 ? Math.max(1, ((Number(ficha.energyShield) || 0) * peloEscudo) / 100) : vidaMax);
-      if (pctFrio > 0 && pega() && Controle.resfriar(hunt, ficha, pctFrio, agora, rng, N.resfriamento.duracaoMs)) naTela('enregelado', { pct: pctFrio });
-    }
-    if ((partes.energy ?? 0) > 0 && pega()) {
+    if ((partes.energy ?? 0) > 0 && pega() && !m.sempreEletriza) {
       const eletrizou = NoJogador.eletrizar(hunt, ficha, partes.energy ?? 0, vidaMax, { agora, rng });
       if (eletrizou > 0) { naTela('eletrizado', { pct: eletrizou }); mudou = true; }
+    }
+  }
+  // (09/11, lote 2 dos modificadores de monstro) o RESFRIAMENTO do PoE: todo acerto com Gelo te Resfria (inerente, sem chance nem crítico), pela força do
+  // Gelo sobre o limiar; com "Todo o Dano pode Resfriar" do monstro (o Prismático) ou o "Todo o Dano Sofrido de Acertos pode te Resfriar" (o Chamado do Vazio),
+  // o dano todo do acerto; × o "Efeito do Resfriamento aumentado" do monstro (o Andarilho Gélido)
+  if (estado.hp > 0 && !Vinculos.noFeixe(hunt, m)) {
+    const N = NoJogador.NUMEROS;
+    const peloEscudo = Number(ficha.afPoe?.congelamento_pelo_escudo_pct) || 0;
+    const limiar = peloEscudo > 0 ? Math.max(1, ((Number(ficha.energyShield) || 0) * peloEscudo) / 100) : Math.max(1, estado.maxHp ?? 0);
+    const todoResfria = m.todoDanoResfria || Number(ficha.afPoe?.todo_dano_resfria_voce) > 0;
+    const frio = todoResfria ? Object.values(brutas).reduce((t, x) => t + (Number(x) || 0), 0) : brutas.ice ?? 0;
+    const pctFrio = Math.min(N.resfriamento.maximoPct, Math.round(NoJogador.pctDoResfriamento(frio, limiar) * Math.max(0, 1 + (Number(m.efeitoResfriamentoPct) || 0) / 100) * 10) / 10);
+    if (pctFrio > 0 && Controle.resfriar(hunt, ficha, pctFrio, agora, rng, N.resfriamento.duracaoMs)) naTela('enregelado', { pct: pctFrio });
+    // "Sempre Eletriza" (o Prismático): todo acerto com Raio te Eletriza — com "Todo o Dano pode Eletrizar", o dano todo
+    // (o Eletrocutante: + o "Efeito/Duração da Eletrização em Inimigos aumentado" dele)
+    if (m.sempreEletriza) {
+      const raio = m.todoDanoEletriza ? Object.values(partes).reduce((t, x) => t + (Number(x) || 0), 0) : partes.energy ?? 0;
+      const eletrizou = raio > 0 ? NoJogador.eletrizar(hunt, ficha, raio, Math.max(1, estado.maxHp ?? 0), { agora, rng, efeitoPct: Number(m.efeitoEletrizacaoPct) || 0, duracaoPct: Number(m.duracaoEletrizacaoPct) || 0 }) : 0;
+      if (eletrizou > 0) { naTela('eletrizado', { pct: eletrizou }); mudou = true; }
+    }
+    // "X% de chance de Congelar" (o Congelamento Permanente): o Congelamento pelo Gelo do acerto — com "Todo Dano pode Congelar", o dano todo —, × a
+    // "Duração do Congelamento em Inimigos aumentada"
+    // (09/11, lote 6) o EQUILÍBRIO ELEMENTAL do monstro: o acerto com dano elemental deixa você com +25% de Resistência aos elementos dele e −50% aos outros, por 5 s
+    // (o PoE — a keystone nos inimigos que você acerta; aqui, em você)
+    if (m.equilibrioElemental) {
+      const els = ['fire', 'ice', 'energy'].filter((el) => (partes[el] ?? 0) > 0);
+      if (els.length) { (hunt.debuffsDoJogador ??= {}).equilibrio = { ate: agora + NoJogador.NUMEROS.equilibrio.duracaoMs, els }; mudou = true; }
+    }
+    // (lote 6) o Portador da Seca: o acerto dele tira 1 carga de cada frasco seu
+    if (m.tiraCargaDeFrascoPct > 0 && rng() * 100 < m.tiraCargaDeFrascoPct && FrascosPoe.perderCargas(estado, 1)) mudou = true;
+    // (lote 3) "Sempre Atordoa Inimigos ao Acertar" (o Quebra-ossos), com o "25% de chance de dobrar a Duração de Atordoamentos"
+    if (m.sempreAtordoa && Controle.atordoarJogador(hunt, ficha, agora, rng, { dobrarChance: Number(m.dobrarAtordoamentoPct) || 0 })) naTela('atordoado');
+    if (m.chanceCongelar > 0 && rng() * 100 < m.chanceCongelar) {
+      const gelo = m.todoDanoCongela ? Object.values(partes).reduce((t, x) => t + (Number(x) || 0), 0) : partes.ice ?? 0;
+      const ms = Math.round(NoJogador.msDoCongelamento(gelo, limiar) * Math.max(0, 1 + (Number(m.duracaoCongelamentoPct) || 0) / 100));
+      if (ms > 0 && Controle.congelar(hunt, ficha, ms, agora, rng)) naTela('congelado');
     }
   }
   if (mudou) Ficha.invalidar(estado);
@@ -480,6 +590,7 @@ export function tique(estado, hunt, personagem, eventos) {
   const agora = relogio(hunt);
   const fichaDoJogador = ModsPoe.fichaDa?.(hunt) ?? null;
   tiqueDosSolos(estado, hunt, personagem, eventos, agora, fichaDoJogador);
+  tiqueDosEspeciais(estado, hunt, personagem, eventos, agora);
   for (const m of hunt.monstros) {
     // (PoE, 12/10) A vida que o monstro drenou de você volta ao longo do tempo.
     if (m.drenoPoe && m.hp > 0) tiqueDoDreno(m, agora);

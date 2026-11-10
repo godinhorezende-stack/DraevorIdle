@@ -30,6 +30,24 @@ import { gradeDeEquipamento } from '/client/src/paperdoll.mjs';
 import { fichaDeItem, juntarDados } from '/client/src/tooltip.mjs';
 import { linhaDaGuilda } from '/client/site/brasao-no-site.mjs';
 
+/*
+ * (09/11 — o dono: "demora carregar e parece que começa carregando o clássico") No jogo oficial o retrato é o da CLASSE do PoE (o rosto da
+ * ilustração da classe na árvore de passivas, `assets/classes/<Classe>.webp`, ~5 KB cada): chega junto com a página, sem esperar o atlas
+ * de outfits, e sem o boneco do Draevor clássico. Sem classe conhecida (o clássico), fica o boneco de sempre.
+ */
+const CLASSE_DO_NOME = { Marauder: 'Marauder', 'Caçadora': 'Ranger', Ranger: 'Ranger', Bruxa: 'Witch', Witch: 'Witch', Duelista: 'Duelist', Duelist: 'Duelist', 'Templário': 'Templar', Templar: 'Templar', Sombra: 'Shadow', Shadow: 'Shadow', Herdeira: 'Scion', Scion: 'Scion' };
+function retratoDaClasse(nome, lado) {
+  const slug = CLASSE_DO_NOME[String(nome ?? '').trim()];
+  if (!slug) return null;
+  const img = document.createElement('img');
+  img.src = `/client/assets/classes/${slug}.webp`;
+  img.alt = '';
+  img.width = lado;
+  img.height = lado;
+  img.className = 'retrato-da-classe';
+  return img;
+}
+
 const $ = (id) => document.getElementById(id);
 const numero = (valor) => Number(valor ?? 0).toLocaleString('pt-BR');
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -57,7 +75,9 @@ const CATEGORIAS = [
   ['fishing', 'Fishing', 'sk-fishing'],
 ];
 
-const sprites = loadSpriteData().then(() => true).catch(() => false);
+// Só quando precisa (o boneco do clássico, o balão do inventário): no jogo oficial a capa abre sem baixar o atlas de outfits.
+let pedidoDosSprites = null;
+const sprites = () => (pedidoDosSprites ??= loadSpriteData().then(() => true).catch(() => false));
 let categoria = 'level';
 /* As categorias que o SERVIDOR tem (`/api/status` → `categorias`). No jogo oficial (PoE) são só experiência e level: as abas das perícias
  * do Draevor somem, e o balão do personagem não mostra perícias (o PoE não tem). */
@@ -160,9 +180,14 @@ async function pintar() {
     if (linhaAtual) esconderInventario();
     itens.forEach((li, i) => ligarBalao(li, top[i]));
     lista.replaceChildren(...itens);
-    if (!(await sprites) || meu !== pedido) return;
     top.forEach((entrada, i) => {
-      if (!entrada.outfit?.type) return;
+      const r = retratoDaClasse(entrada.classe, 46);
+      if (r) itens[i].querySelector('.top5-retrato')?.append(r);
+    });
+    if (top.every((entrada) => CLASSE_DO_NOME[entrada.classe])) return;
+    if (!(await sprites()) || meu !== pedido) return;
+    top.forEach((entrada, i) => {
+      if (!entrada.outfit?.type || CLASSE_DO_NOME[entrada.classe]) return;
       try {
         itens[i].querySelector('.top5-retrato').append(outfitCanvas(entrada.outfit.type, entrada.outfit, 46));
       } catch { /* outfit sem desenho: fica a moldura */ }
@@ -361,11 +386,15 @@ function pintarTopExp(dados) {
 
   caixa.replaceChildren(cartaz);
 
-  // O boneco, depois que o atlas chegar — como no top 5.
-  sprites.then((pronto) => {
+  // O retrato da classe do PoE, na hora; sem ele, o boneco depois que o atlas chegar — como no top 5.
+  for (const { faixa, dono } of feitos) {
+    const r = retratoDaClasse(dono?.classe, 42);
+    if (r) faixa.querySelector('.top-exp-retrato')?.append(r);
+  }
+  if (feitos.some(({ dono }) => dono?.outfit?.type && !CLASSE_DO_NOME[dono.classe])) sprites().then((pronto) => {
     if (!pronto) return;
     for (const { faixa, dono } of feitos) {
-      if (!dono?.outfit?.type) continue;
+      if (!dono?.outfit?.type || CLASSE_DO_NOME[dono.classe]) continue;
       const retrato = faixa.querySelector('.top-exp-retrato');
       if (!retrato || retrato.firstChild) continue;
       try {
@@ -536,7 +565,7 @@ async function mostrarInventario(li, entrada) {
         <img src="/client/assets/icons/sk-${chave}.png" alt=""><b>${numero(chave === 'magic' ? p.magic : p.skills?.[chave])}</b><span>${rotulo}</span>
       </div>`).join('')}</div>`}
     <div class="top5-pop-rodape">clique para abrir a ficha completa</div>`;
-  const temSprites = await sprites;
+  const temSprites = await sprites();
   /*
    * O ADAPTADOR desta página: a ficha pública devolve um mapa por casa, com a
    * peça inteira dentro (`.peca`), a raridade num mapa de itens e a régua dos
@@ -602,7 +631,9 @@ async function mostrarInventario(li, entrada) {
   const daGuilda = linhaDaGuilda(p.guilda);
   if (daGuilda) balao.querySelector('.top5-pop-voc')?.insertAdjacentElement('afterend', daGuilda);
 
-  if (temSprites && p.outfit?.type) {
+  const retrato = retratoDaClasse(p.vocacaoNome, 64);
+  if (retrato) balao.querySelector('.top5-pop-boneco')?.append(retrato);
+  else if (temSprites && p.outfit?.type) {
     try { balao.querySelector('.top5-pop-boneco').append(outfitCanvas(p.outfit.type, p.outfit, 64, 2, true)); } catch { /* sem boneco */ }
   }
   // (A capa refaz as linhas a cada 30 s: a linha que saiu da página não tem onde ancorar o balão — o mouse na nova abre o dela.)

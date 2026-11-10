@@ -166,7 +166,7 @@ export function tique(hunt, eventos, agora) {
         const parte = Math.max(1, Math.round(Math.min(d.falta, porPulso)));
         // (o Sangramento no bicho em movimento ou Agravado: × 3 no pulso — `fatorDoMovimento`)
         // (lote C4, dono 21/10: + o dano sofrido aumentado do alvo — `recebidoNoPulso`)
-        const v = resistido(hunt, m, d.elemento, parte * fatorDoMovimento(d, m, agora) * recebidoNoPulso(m, d, agora) * (rup?.mais ?? 1));
+        const v = resistido(hunt, m, d.elemento, parte * fatorDoMovimento(d, m, agora) * recebidoNoPulso(m, d, agora) * (rup?.mais ?? 1), null, { dot: true });
         m.hp -= v;
         // (lote 31, S001: o dano contínuo é de quem o pôs — o do lacaio é dele; não é acerto; lote G20a: o do totem é dele)
         QuemFeriu.carimbar(m, d.origem?.fonte === 'lacaio' ? QuemFeriu.LACAIO : d.origem?.fonte === 'totem' ? QuemFeriu.TOTEM : QuemFeriu.VOCE);

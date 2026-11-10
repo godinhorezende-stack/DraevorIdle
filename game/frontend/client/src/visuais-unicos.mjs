@@ -97,12 +97,15 @@ export function criarVisuais() {
     /** O evento `kill` (com a raridade): o sangue a mais e os sons de quem tem a peça. */
     abate(eu, event, now) {
       if (!eu) return;
-      if (tem(eu, 'sangue')) {
-        const n = 18;
+      // (09/11, lote 6 dos modificadores de monstro) o monstro com "Sanguinolência Extra" espirra sangue ao morrer, e o "Sangue de Robô" (o Infundido com Aço)
+      // solta faíscas no lugar — `event.sangue` ('extra' | 'robo'), com ou sem a peça
+      if (tem(eu, 'sangue') || event.sangue) {
+        const robo = event.sangue === 'robo';
+        const n = event.sangue === 'extra' && tem(eu, 'sangue') ? 30 : 18;
         for (let i = 0; i < n; i++) {
           const ang = (Math.PI * 2 * i) / n + Math.random() * 0.4;
           const vel = 30 + Math.random() * 60;
-          sangue.push({ x: event.x * TILE + TILE / 2, y: event.y * TILE + TILE / 2, vx: Math.cos(ang) * vel, vy: Math.sin(ang) * vel - 30, nasceu: now, r: 1.5 + Math.random() * 2.5 });
+          sangue.push({ x: event.x * TILE + TILE / 2, y: event.y * TILE + TILE / 2, vx: Math.cos(ang) * vel, vy: Math.sin(ang) * vel - 30, nasceu: now, r: 1.5 + Math.random() * 2.5, ...(robo ? { cor: Math.random() < 0.5 ? '#ffd27a' : '#c9c9c9' } : {}) });
         }
         if (sangue.length > 400) sangue.splice(0, sangue.length - 400);
       }
@@ -211,7 +214,7 @@ export function criarVisuais() {
         const y = g.y + g.vy * voo + 120 * voo * voo - camera.y;
         ctx.save();
         ctx.globalAlpha = Math.max(0, 1 - t / 1.6);
-        ctx.fillStyle = '#7a0a0c';
+        ctx.fillStyle = g.cor ?? '#7a0a0c';
         ctx.beginPath();
         ctx.arc(x, y, g.r * (t > 0.45 ? 1.4 : 1), 0, Math.PI * 2);
         ctx.fill();

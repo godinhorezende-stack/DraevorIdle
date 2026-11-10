@@ -27,5 +27,8 @@ export function por(m, buff, agora) {
 /** A soma de um campo numérico dos buffs ativos (× as pilhas). */
 export const soma = (m, agora, campo) => ativos(m, agora).reduce((s, b) => s + (b[campo] ?? 0) * (b.pilhas ?? 1), 0);
 
+/** (09/11, lote 6) O produto de um campo "X% MAIS" dos buffs ativos: Π (1 + X%)^pilhas (as Cargas de Frenesi do monstro — 4% mais Dano cada). */
+export const produto = (m, agora, campo) => ativos(m, agora).reduce((f, b) => f * Math.pow(Math.max(0, 1 + (b[campo] ?? 0) / 100), b.pilhas ?? 1), 1);
+
 /** A resistência a mais (em %) dos buffs ativos para o `tipo` de dano. */
 export const resistencia = (m, agora, tipo) => ativos(m, agora).reduce((s, b) => s + (b.resist?.[tipo] ?? 0) * (b.pilhas ?? 1), 0);
