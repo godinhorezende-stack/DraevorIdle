@@ -52,7 +52,7 @@ import { alvoAtual, esperaOAlvoChegar, voltariaAtras, PERSEGUICAO_MAXIMA_MS } fr
 import { passoComProgresso, faltaAte, aindaTravado } from './hunt/progresso.mjs';
 import * as Diag from './hunt/diagnostico.mjs';
 import { limiteDoOffline, HORAS_DO_OFFLINE } from '../database/caca-offline.mjs';
-import { waypointMaisPerto, passoNoPercurso } from './hunt/percurso.mjs';
+import { waypointMaisPerto, passoNoPercurso, irAoAndarComBichos } from './hunt/percurso.mjs';
 import { proximoMonstroForaDeAlcance, metaDoLure, atualizarLure } from './hunt/lure.mjs';
 import { aliadosPorCasa } from './hunt/aliados.mjs';
 import * as Defesa from './personagem/defesa.mjs';
@@ -2255,15 +2255,21 @@ function tiqueDaCacada(estado, personagem, agora) {
         // instância está mais perto (`BausPoe.bauMaisPerto`) — o idle de quem ataca de longe também passa por eles.
         // (03/11, rodada 2: também com a instância já LIMPA — o mapa do endgame conclui ao limpar e a saída espera os baús, `BausPoe.seguramASaidaDoMapa`)
         let rumoDoBau = null;
+        // (10/11) nenhum bicho da instância alcançável neste andar: o laço vai direto ao andar que tem (`irAoAndarComBichos`, mais abaixo)
+        let andarSemResto = false;
         const statusDaSala = Instancia.daSala(hunt)?.status;
         if (!hunt.lurando && hunt.alvo == null && (statusDaSala === 'ativa' || statusDaSala === 'limpa') && !alvoAtual(hunt)) {
           const ateOResto = {};
           const resto = Instancia.bichoMaisPerto(hunt, grade, ateOResto);
+          andarSemResto = statusDaSala === 'ativa' && !resto;
           const bau = itensPoeLigado() ? BausPoe.bauMaisPerto(hunt, grade) : null;
           if (bau && (!resto || bau.d <= ateOResto.d)) rumoDoBau = bau.e;
           else if (resto) {
             hunt.alvo = resto.uid;
             hunt.alvoDaLimpeza = resto.uid;
+            // (10/11) o prazo da perseguição do resto é o do CAMINHO a pé até ele (× 1,5), não os 15 s de sempre: a 81 casas (Grande Arena) ele
+            // largava o bicho no meio do caminho, ia atrás de outro e voltava — o "vai em áreas errando, que não tem mob" do dono
+            hunt.prazoDaLimpeza = { uid: resto.uid, ms: Math.max(PERSEGUICAO_MAXIMA_MS, Math.round((ateOResto.d * R.PASSO_MS * 1.5) / razaoDeVelocidade(estado))) };
           }
         }
         const alvo = segueARota ? null : hunt.lurando ? proximoMonstroForaDeAlcance(hunt) : alvoAtual(hunt);
@@ -2286,7 +2292,8 @@ function tiqueDaCacada(estado, personagem, agora) {
         if (!alvo || d <= querDistancia || hunt.perseguicao?.uid !== alvo.uid) {
           hunt.perseguicao = alvo && d > querDistancia ? { uid: alvo.uid, desde: hunt.clock ?? 0 } : null;
         }
-        const cansou = hunt.percurso && hunt.perseguicao && (hunt.clock ?? 0) - hunt.perseguicao.desde > PERSEGUICAO_MAXIMA_MS;
+        const prazo = hunt.prazoDaLimpeza?.uid === alvo?.uid && hunt.alvo === hunt.alvoDaLimpeza ? hunt.prazoDaLimpeza.ms : PERSEGUICAO_MAXIMA_MS;
+        const cansou = hunt.percurso && hunt.perseguicao && (hunt.clock ?? 0) - hunt.perseguicao.desde > prazo;
         /*
          * (R3, dono 27/10) A TORMENTA DO VAZIO explode quando VOCÊ entra nela: com uma tormenta carregada (estágio cheio, inimigo dentro) a até 5 casas e nada mais urgente
          * (sem lurar, com metade da Vida ou mais, e já na distância do alvo — sem o kite pedindo recuo — ou sem alvo), ele anda até ela. Comprometido com uma, segue até
@@ -2381,6 +2388,7 @@ function tiqueDaCacada(estado, personagem, agora) {
            * nenhum é que o passo desfaz o anterior, e aí a regra abaixo encerra a
            * juntada como antes.
            */
+          if (andarSemResto && !rumoDoBau) irAoAndarComBichos(hunt, grade, gradeDaCacada, Instancia.daSala(hunt)?.id);
           destino = passoNoPercurso(estado, hunt, grade, casasDeBicho, hunt.lurando && colado ? hunt.casaAnterior : null);
           /*
            * Lurando num corredor, a leva que vem atrás fecha a passagem: o passo
@@ -2685,7 +2693,24 @@ function passoDoFamiliar(hunt, grade, f, agora, ate, { pararEm, longe = 3 }) {
   // (lote E2A: + o movimento da Oferenda Carnal no lacaio, no relógio dela — o do tique)
   // (lote D1, decisão do dono 27/10: o teto dos Espectros — +75% no total — vale também com a Adrenalina e o Frenesi Faminto)
   const movimentoPct = Math.min(f.poe?.movTetoPct ?? Infinity, LacaiosPoe.movimentoDoLacaio(f, hunt.clock ?? 0, (GemasE1a.oferendaAtiva(f, agora)?.velMovPct ?? 0) + SuportesS2B.movDoLacaio(hunt, f, hunt.clock ?? 0)));
-  const passos = (d > longe ? 2 : 1) + (movimentoPct > 0 && Math.random() * 100 < movimentoPct ? 1 : 0);
+  /*
+   * (10/11, dono: "quero que os lacaios andem igual o player, hoje parece que está puxando algo") o passo do lacaio é o do JOGADOR: a velocidade do dono
+   * (`hunt.razaoDoDono`) × a dele, num crédito de passo (`passosDoTique`) e o desenho de um passo constante (`moveMs`). Antes, longe, ele dava 2 casas num
+   * tique desenhadas em meio tique (disparava e parava a cada 250 ms, como puxado), e a Velocidade de Movimento virava um passo a mais SORTEADO.
+   * Longe do que segue, corre `CORRIDA_DO_LACAIO`× (até 2 casas por tique) para alcançar.
+   */
+  const razao = Math.min(2, Math.max(0.25, (hunt.razaoDoDono ?? 1) * Math.max(0.25, 1 + movimentoPct / 100) * (d > longe ? CORRIDA_DO_LACAIO : 1)));
+  f.creditoDePasso = (f.creditoDePasso ?? 0) + razao;
+  const passos = Math.min(2, Math.floor(f.creditoDePasso));
+  f.creditoDePasso = Math.min(1, f.creditoDePasso - passos);
+  // O desenho do tique: a tela liga a casa de antes à de agora em `moveMs` — o tempo que ESTAS casas levam nesta velocidade (2 casas a 2× = um tique
+  // inteiro, sem disparar e parar; 1 ou 2 casas alternadas a 1,5× viram um desenho contínuo).
+  f.moveMs = Math.round((R.PASSO_MS * Math.max(1, passos)) / razao);
+  if (!passos) {
+    f.andando = true;
+    f.proximoPassoEm = agora + R.PASSO_MS;
+    return true;
+  }
   let deu = 0;
   for (let k = 0; k < passos; k++) {
     let destino;
@@ -2710,9 +2735,15 @@ function passoDoFamiliar(hunt, grade, f, agora, ate, { pararEm, longe = 3 }) {
     f.andando = false;
     return false;
   }
-  f.moveMs = Math.round(R.PASSO_MS / deu);
   f.proximoPassoEm = agora + R.PASSO_MS;
   return true;
+}
+/** Quanto mais rápido que o dono o lacaio anda quando está longe do que segue (para alcançar). */
+export const CORRIDA_DO_LACAIO = 2;
+/** A velocidade de movimento do dono (a da ficha sobre a base do level, sem a lentidão DELE): a base do passo dos lacaios. */
+export function razaoDoDono(estado) {
+  const base = R.baseSpeed(estado.level ?? 1);
+  return Math.min(2, Math.max(0.25, (Ficha.combate(estado).speed ?? base) / Math.max(1, base)));
 }
 
 /** O follow: acompanha o dono, começando a andar passando de `perto` casas e parando uma casa antes (histerese). */
@@ -2772,6 +2803,8 @@ export function alvoDoFamiliar(hunt, f, agora) {
 function tiqueDoFamiliar(estado, hunt, personagem, grade, agora) {
   const f = hunt.summon;
   const eventos = [];
+  // (10/11) o passo do familiar é o do dono (`passoDoFamiliar`)
+  Object.defineProperty(hunt, 'razaoDoDono', { value: razaoDoDono(estado), enumerable: false, writable: true, configurable: true });
   if (agora >= f.ate) {
     hunt.summon = null;
     return eventos;
@@ -3271,6 +3304,8 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
   // (lote "projetil": `let` — o golpe do projétil do lacaio que chega depois sai com os eventos da chegada, `voarDoLacaio`)
   let eventos = [];
   const ficha = Ficha.combate(estado);
+  // (10/11) o passo dos lacaios é o do dono (`passoDoFamiliar`)
+  Object.defineProperty(hunt, 'razaoDoDono', { value: razaoDoDono(estado), enumerable: false, writable: true, configurable: true });
   // (PoE, 13/10) as SUAS auras "Você e Aliados" nos seus lacaios (no PoE, "Aliados" inclui os lacaios): o dano, o bloqueio, as resistências,
   // a velocidade das auras e a sua Fortificação — `itens-poe/aliados.mjs`.
   const aliadoBase = itensPoeLigado() ? Aliados.doLacaio(estado, ficha.afPoe, ModsPoe.fortificacao(estado, ficha.afPoe)) : null;

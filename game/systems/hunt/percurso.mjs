@@ -1,8 +1,8 @@
 // Andar no laço da Caça Automática: waypoint da vez, retomar depois da briga, contar as voltas.
 // Parte de `cacadas.mjs` (dividido em 2026-09-25); a fachada continua lá.
 import { huntOuMapaCustom, gradeDaHunt } from './terreno.mjs';
-import { noAndar } from './andares.mjs';
-import { proximoPassoAte, distancia } from './caminho.mjs';
+import { noAndar, andarDaGrade } from './andares.mjs';
+import { proximoPassoAte, distancia, VIZINHANCA_8 } from './caminho.mjs';
 import { trocarDeAndar } from './monstros.mjs';
 
 /**
@@ -125,4 +125,117 @@ export function passoNoPercurso(estado, hunt, grade, casasDeBicho, evitar = null
   if (destino) p.andou = (p.andou ?? 0) + 1;
   else avancar();
   return destino;
+}
+
+/*
+ * ---- O andar vazio: vai direto ao andar que tem bicho ----
+ *
+ * (10/11, dono: "um player reclamou que o personagem fica um tempo andando perdido sem completar a fase" — Caminhos Fluviais, sobre o Amazon Camp de 7
+ * andares) Sem bicho que ele alcance no andar dele, o passo seguia o laço inteiro da rota: medido, 50 s rodando o andar 7 vazio com 38 bichos no andar 8,
+ * e secas de até 77 s sem matar nada. Agora, na instância, ele planeja pelas TROCAS DE ANDAR da rota (o waypoint antes de uma troca é a escada; o
+ * seguinte, onde se chega): o caminho mais curto (Dijkstra, em casas) da posição dele até a chegada de uma escada num PEDAÇO de andar que tem bicho
+ * vivo — pedaço, porque um andar pode ter partes que não se ligam a pé (o andar 6 do Amazon Camp: um bolso visitado pela rota, sem saída para o resto).
+ * Põe o waypoint da vez na chegada da PRIMEIRA escada desse caminho: `passoNoPercurso` anda até ela e troca de andar; no andar seguinte, planeja de novo.
+ * Devolve `true` quando apontou para uma escada.
+ */
+export function irAoAndarComBichos(hunt, grade, gradeCompleta, idDaInstancia) {
+  const pontos = grade.percurso;
+  const p = hunt.percurso;
+  if (!pontos || !p || idDaInstancia == null) return false;
+  const vivo = (m) => m.hp > 0 && m.instancia === idDaInstancia && (m.semCaminhoAte ?? 0) <= (hunt.clock ?? 0);
+  const bichosDo = (z) => (z === hunt.z ? hunt.monstros : hunt.outrosAndares?.[z] ?? []).filter(vivo);
+  const andares = new Set(Object.keys(hunt.outrosAndares ?? {}).map(Number).filter((z) => (hunt.outrosAndares[z] ?? []).some(vivo)));
+  if (!andares.size) return false;
+  const pedaco = pedacosDosAndares(gradeCompleta);
+  const meu = pedaco(hunt.z, hunt.pos);
+  if (meu == null) return false;
+  // Os pedaços com bicho (a casa dele ou uma vizinha, que a casa do bicho às vezes não é andável).
+  const comBicho = new Set();
+  for (const z of [hunt.z, ...andares]) for (const m of bichosDo(z)) { const c = pedaco(z, m); if (c != null) comBicho.add(`${z}:${c}`); }
+  comBicho.delete(`${hunt.z}:${meu}`);
+  if (!comBicho.size) return false;
+  const chave = `${hunt.z}:${meu}|${[...comBicho].sort().join(',')}`;
+  let i = p.atalho?.chave === chave ? p.atalho.i : null;
+  if (i == null) {
+    i = primeiraEscada(pontos, pedaco, { z: hunt.z, pos: hunt.pos, pedaco: meu }, comBicho);
+    if (i == null) return false;
+    p.atalho = { chave, i };
+  }
+  p.passo = (i + 1) % pontos.length;
+  p.desviou = false;
+  return true;
+}
+
+/** As trocas de andar da rota: `{ i, de, para, escada, chegada }` (a escada é o waypoint `i`; a chegada, o seguinte). */
+function trocasDaRota(pontos) {
+  const n = pontos.length;
+  const trocas = [];
+  for (let i = 0; i < n; i++) {
+    const a = pontos[i];
+    const b = pontos[(i + 1) % n];
+    if (a.z != null && b.z != null && a.z !== b.z) trocas.push({ i, de: a.z, para: b.z, escada: a, chegada: b });
+  }
+  return trocas;
+}
+
+/** Dijkstra pelas escadas, da `origem` até a chegada num pedaço de `destinos` (`"z:pedaço"`): o índice da primeira escada, ou null. */
+function primeiraEscada(pontos, pedaco, origem, destinos) {
+  const trocas = trocasDaRota(pontos);
+  const custo = new Map();
+  const primeira = new Map();
+  const abertos = [];
+  const alcancaveis = (z, pos, c) => trocas.filter((t) => t.de === z && pedaco(z, t.escada) === c).map((t) => [t, distancia(pos, t.escada) + 1]);
+  for (const [t, d] of alcancaveis(origem.z, origem.pos, origem.pedaco)) if (d < (custo.get(t.i) ?? Infinity)) { custo.set(t.i, d); primeira.set(t.i, t.i); abertos.push(t); }
+  const feitos = new Set();
+  while (abertos.length) {
+    abertos.sort((a, b) => custo.get(a.i) - custo.get(b.i));
+    const t = abertos.shift();
+    if (feitos.has(t.i)) continue;
+    feitos.add(t.i);
+    const c = pedaco(t.para, t.chegada);
+    if (c == null) continue;
+    if (destinos.has(`${t.para}:${c}`)) return primeira.get(t.i);
+    for (const [u, d] of alcancaveis(t.para, t.chegada, c)) {
+      const novo = custo.get(t.i) + d;
+      if (!feitos.has(u.i) && novo < (custo.get(u.i) ?? Infinity)) { custo.set(u.i, novo); primeira.set(u.i, primeira.get(t.i)); abertos.push(u); }
+    }
+  }
+  return null;
+}
+
+/*
+ * Os PEDAÇOS de cada andar: as partes andáveis que se ligam a pé (8 vizinhas), numeradas uma vez por mapa e guardadas na grade (não enumerável — o
+ * mapa não muda). Devolve `pedaco(z, casa)`: o número do pedaço da casa (ou de uma vizinha andável), ou null.
+ */
+function pedacosDosAndares(gradeCompleta) {
+  if (!gradeCompleta.pedacos) Object.defineProperty(gradeCompleta, 'pedacos', { value: new Map(), enumerable: false });
+  const porAndar = gradeCompleta.pedacos;
+  const doAndar = (z) => {
+    if (porAndar.has(z)) return porAndar.get(z);
+    const g = andarDaGrade(gradeCompleta, z);
+    const rotulo = new Map();
+    let n = 0;
+    for (const k of g.andavel) {
+      if (rotulo.has(k)) continue;
+      rotulo.set(k, n);
+      const fila = [k];
+      while (fila.length) {
+        const [x, y] = fila.pop().split(',').map(Number);
+        for (const [dx, dy] of VIZINHANCA_8) {
+          const v = `${x + dx},${y + dy}`;
+          if (g.andavel.has(v) && !rotulo.has(v)) { rotulo.set(v, n); fila.push(v); }
+        }
+      }
+      n++;
+    }
+    porAndar.set(z, rotulo);
+    return rotulo;
+  };
+  return (z, c) => {
+    const r = doAndar(z);
+    const aqui = r.get(`${c.x},${c.y}`);
+    if (aqui != null) return aqui;
+    for (const [dx, dy] of VIZINHANCA_8) { const v = r.get(`${c.x + dx},${c.y + dy}`); if (v != null) return v; }
+    return null;
+  };
 }
