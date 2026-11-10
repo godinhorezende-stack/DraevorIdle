@@ -37,7 +37,8 @@ const norm = (t) => String(t).replace(/(\d)%/g, '$1 %').replace(/\\n/g, ' ').rep
 const somar = (linhas, re, g = 1) => linhas.reduce((t, l) => t + (Number(re.exec(norm(l))?.[g]) || 0), 0);
 const achar = (linhas, re, g = 1) => { for (const l of linhas) { const m = re.exec(norm(l)); if (m) return Number(m[g]); } return null; };
 const tem = (linhas, re) => linhas.some((l) => re.test(norm(l)));
-const ativo = (x, agora) => (x?.ate ?? 0) > agora;
+// (09/11: sem o estado não está ativo — antes, com o relógio negativo, o `ate` ausente (0) contava como ativo e o `danoDoUrso` lia `ursoE2b` de um monstro sem estados)
+const ativo = (x, agora) => !!x && (x.ate ?? 0) > agora;
 
 // ---------------------------------------------------------------- a Armadilha Explosiva
 
